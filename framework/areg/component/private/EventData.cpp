@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/EventData.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -26,31 +26,28 @@
 //////////////////////////////////////////////////////////////////////////
 // EventData class Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-EventData::EventData( unsigned int msgId, EventDataStream::eEventData dataType, const char* name /*= nullptr*/ )
+EventData::EventData( unsigned int msgId, EventDataStream::eEventData dataType, const String & name /*= String::EmptyString*/ )
     : mDataType (NEService::getMessageDataType(msgId))
     , mData     (dataType, name)
 {
 }
 
-EventData::EventData( unsigned int msgId, const EventDataStream & args, const char* name /*= nullptr*/ )
+EventData::EventData( unsigned int msgId, const EventDataStream & args, const String & name /*= String::EmptyString*/ )
     : mDataType (NEService::getMessageDataType(msgId))
     , mData     (args, name)
 {
-    mData.resetCursor();
 }
 
 EventData::EventData( const EventData& src )
     : mDataType (src.mDataType)
     , mData     (src.mData)
 {
-    mData.resetCursor();
 }
 
 EventData::EventData( EventData && src ) noexcept
     : mDataType ( std::move(src.mDataType) )
     , mData     ( std::move(src.mData) )
 {
-    mData.resetCursor( );
 }
 
 EventData::EventData(const IEInStream & stream)
@@ -78,20 +75,4 @@ EventData & EventData::operator = ( EventData && src ) noexcept
     }
 
     return (*this);
-}
-
-AREG_API const IEInStream & operator >> ( const IEInStream & stream, EventData & input )
-{
-    stream >> input.mDataType;
-    stream >> input.mData;
-    input.mData.resetCursor();
-    return stream;
-}
-
-AREG_API IEOutStream & operator << ( IEOutStream & stream, const EventData & output )
-{
-    stream << output.mDataType;
-    stream << output.mData;
-    output.mData.resetCursor();
-    return stream;
 }

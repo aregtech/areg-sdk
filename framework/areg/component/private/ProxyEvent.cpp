@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ProxyEvent.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -14,6 +14,7 @@
  *
  ************************************************************************/
 #include "areg/component/ProxyEvent.hpp"
+
 #include "areg/component/private/ProxyConnectEvent.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/ServiceResponseEvent.hpp"
@@ -161,9 +162,13 @@ void IEProxyEventConsumer::startEventProcessing( Event & eventElem )
                     {
                         ProxyEvent* proxyEvent = RUNTIME_CAST(&eventElem, ProxyEvent);
                         if (proxyEvent != nullptr)
+                        {
                             processProxyEvent(*proxyEvent);
+                        }
                         else
+                        {
                             processGenericEvent(eventElem);
+                        }
                     }
                 }
             }

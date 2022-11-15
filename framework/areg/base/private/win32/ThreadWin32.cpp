@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/win32/ThreadWin32.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -63,14 +63,16 @@ void Thread::_setThreadName( id_type threadId, const char* threadName)
     info.dwThreadID = static_cast<DWORD>(threadId);
     info.dwFlags    = 0;
 
+#pragma warning(disable: 6312)
     __try
     {
         RaiseException( SET_NAME_MS_VC_EXCEPTION, 0, sizeof(info)/sizeof(ULONG_PTR), (ULONG_PTR*)&info );
     }
     __except(EXCEPTION_CONTINUE_EXECUTION)
     {
-        // do nothing
+        return;
     }
+#pragma warning(default: 6312)
 }
 
 void Thread::_closeHandle(  THREADHANDLE handle )
@@ -114,17 +116,21 @@ Thread::eCompletionStatus Thread::destroyThread(unsigned int waitForStopMs /* = 
             //              and see the point where the thread is suspended
             //////////////////////////////////////////////////////////////////////////
             ::SuspendThread(handle);
-            ASSERT(false);  // <== rais assertion
-            ::ResumeThread(handle);
+            // ASSERT(false);  // <== raise assertion
+            // ::ResumeThread(handle);
             //////////////////////////////////////////////////////////////////////////
             //
             //////////////////////////////////////////////////////////////////////////
 #endif  // _DEBUG
 
+#pragma warning(disable: 6258)
             // here we assume that it was requested to wait for thread exit, but it is still running
             // force to terminate thread and close handles due to waiting timeout expire
             result = Thread::eCompletionStatus::ThreadTerminated;
             ::TerminateThread(static_cast<HANDLE>(handle), static_cast<DWORD>(IEThreadConsumer::eExitCodes::ExitTerminated));
+            this->mWaitForRun.resetEvent();
+            this->mWaitForExit.setEvent();
+#pragma warning(default: 6258)
         }
         else
         {

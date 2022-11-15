@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_PRIVATE_EVENTCONSUMERMAP_HPP
+#define AREG_COMPONENT_PRIVATE_EVENTCONSUMERMAP_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/EventConsumerMap.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -44,8 +45,7 @@ class IEEventConsumer;
 //////////////////////////////////////////////////////////////////////////
 // EventConsumerList class declaration
 //////////////////////////////////////////////////////////////////////////
-using ImplEventConsumerList = TEListImpl<IEEventConsumer *>;
-using EventConsumerListBase	= TELinkedList<IEEventConsumer *, IEEventConsumer *, ImplEventConsumerList>;
+using EventConsumerListBase	= TELinkedList<IEEventConsumer *>;
 
 /**
  * \brief   Event Consumer List is a helper class containing 
@@ -165,5 +165,7 @@ using EventConsumerMap  = TELockRuntimeResourceMap<EventConsumerList, ImplEventC
 //////////////////////////////////////////////////////////////////////////
 inline bool EventConsumerList::existConsumer( IEEventConsumer & whichConsumer ) const
 {
-    return (EventConsumerListBase::find( &whichConsumer, nullptr) != nullptr);
+    return EventConsumerListBase::contains( &whichConsumer);
 }
+
+#endif  // AREG_COMPONENT_PRIVATE_EVENTCONSUMERMAP_HPP

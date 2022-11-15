@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_GEMACROS_H
+#define AREG_BASE_GEMACROS_H
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/GEMacros.h
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Predefined MACRO
  *
@@ -43,25 +44,6 @@
  * \brief   An empty MACRO, does nothing
  **/
 #define EMPTY_MACRO
-/**
- * \brief   A MACRO of empty string
- **/
-#define EMPTY_STRING            ""
-
-/**
- * \brief   ASCII nullptr string
- **/
-#define NULL_STRING             static_cast<const char *>(nullptr)
-
-/**
- * \brief   Wide nullptr string
- **/
-#define NULL_STRING_W           static_cast<const wchar_t *>(nullptr)
-
-/**
- * \brief	nullptr buffer
- **/
-#define	NULL_BUF		        static_cast<const unsigned char *>(nullptr)
 
 /**
  * \brief   Success error code. Mainly used in POSIX methods
@@ -78,30 +60,44 @@
 /**
  * \brief   extracts unsigned low-byte value of 16-bit argument
  **/
-#ifndef MACRO_LO_BYTE16
-    #define  MACRO_LO_BYTE16(n) (static_cast<unsigned char>( static_cast<unsigned short>(n) >>  0 ) & 0xFF)
-#endif  // MACRO_LO_BYTE16
+#ifndef MACRO_16_LO_BYTE8
+    #define  MACRO_16_LO_BYTE8(n)   (static_cast<unsigned char>( static_cast<unsigned short>(n) >>  0 ) & 0xFF )
+#endif  // MACRO_16_LO_BYTE8
 
 /**
  * \brief   extracts unsigned low-byte value of 32-bit argument
  **/
-#ifndef MACRO_LO_BYTE32
-    #define  MACRO_LO_BYTE32(n) (static_cast<unsigned char>( static_cast<unsigned int>(n) >>  0 ) & 0xFF)
-#endif  // MACRO_LO_BYTE32
+#ifndef MACRO_32_LO_BYTE8
+    #define  MACRO_32_LO_BYTE8(n)   (static_cast<unsigned char>( static_cast<unsigned int>(n) >>  0 ) & 0xFF )
+#endif  // MACRO_32_LO_BYTE8
+
+/**
+ * \brief   extracts unsigned low 16-bits value of 32-bit argument
+ **/
+#ifndef MACRO_32_LO_BYTE16
+    #define  MACRO_32_LO_BYTE16(n)  (static_cast<unsigned short>( static_cast<unsigned int>(n) >>  0 ) & 0xFFFF )
+#endif  // MACRO_32_LO_BYTE16
 
 /**
  * \brief   extracts unsigned high-byte value of 16-bit argument
  **/
-#ifndef MACRO_HI_BYTE16
-    #define  MACRO_HI_BYTE16(n) (static_cast<unsigned char>( static_cast<unsigned short>(n) >>  8 ) & 0xFF)
-#endif  // MACRO_HI_BYTE16
+#ifndef MACRO_16_HI_BYTE8
+    #define  MACRO_16_HI_BYTE8(n)   (static_cast<unsigned char>( static_cast<unsigned short>(n) >>  8 ) & 0xFF )
+#endif  // MACRO_16_HI_BYTE8
 
 /**
  * \brief   extracts unsigned high-byte value of 32-bit argument
  **/
-#ifndef MACRO_HI_BYTE32
-    #define  MACRO_HI_BYTE32(n) (static_cast<unsigned char>( static_cast<unsigned int>(n) >> 24 ) & 0xFF)
-#endif  // MACRO_HI_BYTE32
+#ifndef MACRO_32_HI_BYTE8
+    #define  MACRO_32_HI_BYTE8(n)   (static_cast<unsigned char>( static_cast<unsigned int>(n) >> 24 ) & 0xFF )
+#endif  // MACRO_32_HI_BYTE8
+
+/**
+ * \brief   extracts unsigned high 16-bits value of 32-bit argument
+ **/
+#ifndef MACRO_32_HI_BYTE16
+    #define  MACRO_32_HI_BYTE16(n)  (static_cast<unsigned short>( static_cast<unsigned int>(n) >> 16 ) & 0xFFFF )
+#endif  // MACRO_32_HI_BYTE8
 
 /**
  * \brief   swaps bytes in 16-bit number
@@ -133,14 +129,12 @@
 #endif  // MACRO_MAKE_64
 
 /**
- * \brief   Combines high and low bits of 64-bit number into 32-bit number, i.e.
- *          high 16-bits are set high bits of 64-bit number
- *          low 16-bits are set low bits of 64-bit number
+ * \brief   Makes 64-bit number from 2 16-bit numbers
  **/
 #ifndef MACRO_MAKE_32
-    #define MACRO_MAKE_32(Bit64)                \
-            (   ( (static_cast<unsigned int>( (static_cast<uint64_t>(Bit64) >> 32) & static_cast<uint64_t>(0x00000000FFFFFFFF)) << 16) & static_cast<unsigned int>(0xFFFF0000) )  |  \
-                ( (static_cast<unsigned int>( (static_cast<uint64_t>(Bit64) >>  0) & static_cast<uint64_t>(0x00000000FFFFFFFF)) <<  0) & static_cast<unsigned int>(0x0000FFFF) )  )
+    #define MACRO_MAKE_32(hi16, lo16)                \
+            (   ( (static_cast<uint32_t>(hi16) << 16) & static_cast<uint32_t>(0xFFFF0000) ) |   \
+                ( (static_cast<uint32_t>(lo16) <<  0) & static_cast<uint32_t>(0x0000FFFF) ) )
 #endif  // MACRO_MAKE_32
 
 #ifndef MACRO_64_LO_BYTE32
@@ -208,7 +202,7 @@
 #endif  // CASE_DEFAULT
 
 /**
- * \brief   No copiable class declaration.
+ * \brief   No copyable class declaration.
  **/
 #ifndef DECLARE_NOCOPY
     #define DECLARE_NOCOPY(ClassName)                                       \
@@ -226,7 +220,7 @@
 #endif // !DECLARE_NOMOVE
 
 /**
- * \brief   No copiable and no movable class declaration.
+ * \brief   No copyable and no movable class declaration.
  **/
 #ifndef DECLARE_NOCOPY_NOMOVE
     #define DECLARE_NOCOPY_NOMOVE( ClassName )                              \
@@ -235,8 +229,39 @@
 #endif // !DECLARE_NOCOPY_NOMOVE
 
 /**
- * \brief   PI number
+ * \brief   No copy for class templates.
+ *          ClassName   The name of class
+ *          Typenames   The name of class
+ *      Example: DECLARE_NOCOPY_TEMPLATE(TEString, <CharType>)
  **/
+#ifndef DECLARE_NOCOPY_TEMPLATE
+    #define DECLARE_NOCOPY_TEMPLATE(ClassName, Typenames)                                           \
+        ClassName( const ClassName##Typenames & /*src*/ ) = delete;                                 \
+        ClassName##Typenames & operator = ( const ClassName##Typenames & /*src*/ ) = delete
+#endif // !DECLARE_NOCOPY_TEMPLATE
+
+/**
+ * \brief   No move for class templates.
+ *          ClassName   The name of class
+ *          Typenames   The name of class
+ *      Example: DECLARE_NOMOVE_TEMPLATE(TEString, <CharType>)
+ **/
+#ifndef DECLARE_NOMOVE_TEMPLATE
+    #define DECLARE_NOMOVE_TEMPLATE(ClassName, Typenames)                                           \
+            ClassName( ClassName##Typenames && /*src*/ ) noexcept = delete;                         \
+            ClassName##Typenames & operator = ( ClassName##Typenames && /*src*/ ) noexcept = delete
+#endif // !DECLARE_NOMOVE_TEMPLATE
+
+#ifndef DECLARE_NOCOPY_NOMOVE_TEMPLATE
+    #define DECLARE_NOCOPY_NOMOVE_TEMPLATE( ClassName, Typenames )                                  \
+                DECLARE_NOCOPY_TEMPLATE( ClassName, Typenames );                                    \
+                DECLARE_NOMOVE_TEMPLATE( ClassName, Typenames )
+
+#endif // !DECLARE_NOCOPY_NOMOVE
+
+ /**
+  * \brief   PI number
+  **/
 #ifndef M_PI
   #define M_PI              static_cast<double>(3.14159265358979323846) //  pi
 #endif
@@ -304,7 +329,7 @@
 #endif  // MACRO_MIN
 
 /**
- * \brief   Checks whether the x is in range or rmin and rmax
+ * \brief   Checks whether the x is in range of rmin and rmax
  **/
 #ifndef MACRO_IN_RANGE
     #define MACRO_IN_RANGE(x, rmin, rmax)       ( ((rmin) <= (x)) && ((rmax) >= (x)) )
@@ -388,7 +413,7 @@
 
     #ifndef ASSERT
         #define ASSERT(x)                       assert(x)
-    #endif   // ASSERT   
+    #endif   // ASSERT
     #ifndef ASSERT_MSG
         #define  ASSERT_MSG(x, msg)             ASSERT(x)
     #endif   // ASSERT_MSG
@@ -533,3 +558,5 @@
     #endif
 
 #endif  // _DEBUG
+
+#endif  // AREG_BASE_GEMACROS_H

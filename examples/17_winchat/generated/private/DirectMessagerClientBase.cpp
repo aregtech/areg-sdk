@@ -2,9 +2,9 @@
 // Begin generate generated/private/DirectMessagerClientBase.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:16 GMT+02:00 
+ * Generated at     13.08.2022  02:48:00 GMT+02:00
  *                  Create by AREG SDK code generator tool from source DirectMessager.
  *
  * \file            generated/DirectMessagerClientBase.hpp
@@ -30,7 +30,7 @@ namespace NEDirectMessager
      * \brief   Initialize request failure function pointers to make error handling
      **/
     typedef void (DirectMessagerClientBase::* FuncRequestFailure) ( NEService::eResultType );
-    static FuncRequestFailure failureFunctions[] = 
+    static constexpr FuncRequestFailure failureFunctions[]
     {
           &DirectMessagerClientBase::requestChatJoinFailed
         , &DirectMessagerClientBase::requestMessageSendFailed
@@ -47,7 +47,7 @@ namespace NEDirectMessager
  * Constructor / Destructor
  ************************************************************************/
 
-DirectMessagerClientBase::DirectMessagerClientBase( const char * roleName, const char * ownerThread /*= nullptr*/ )
+DirectMessagerClientBase::DirectMessagerClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -56,7 +56,7 @@ DirectMessagerClientBase::DirectMessagerClientBase( const char * roleName, const
 {
 }
 
-DirectMessagerClientBase::DirectMessagerClientBase( const char * roleName, DispatcherThread & ownerThread )
+DirectMessagerClientBase::DirectMessagerClientBase( const String & roleName, DispatcherThread & ownerThread )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -65,7 +65,7 @@ DirectMessagerClientBase::DirectMessagerClientBase( const char * roleName, Dispa
 {
 }
 
-DirectMessagerClientBase::DirectMessagerClientBase( const char* roleName, Component & owner )
+DirectMessagerClientBase::DirectMessagerClientBase( const String & roleName, Component & owner )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -82,7 +82,7 @@ DirectMessagerClientBase::~DirectMessagerClientBase( void )
         mProxy->freeProxy( static_cast<IEProxyListener &>(self()) );
         mProxy  = nullptr;
     }
-    
+
     mIsConnected= false;
 }
 
@@ -95,11 +95,11 @@ bool DirectMessagerClientBase::recreateProxy( void )
     bool result         = false;
     if (mProxy != nullptr)
     {
-        String roleName   = mProxy->getProxyAddress().getRoleName();
-        String threadName = mProxy->getProxyAddress().getThread();
+        const String & roleName   = mProxy->getProxyAddress().getRoleName();
+        const String & threadName = mProxy->getProxyAddress().getThread();
         if ( roleName.isEmpty() == false )
         {
-            DirectMessagerProxy * newProxy = DirectMessagerProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(self()), threadName.getString());
+            DirectMessagerProxy * newProxy = DirectMessagerProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), threadName);
             if (newProxy != nullptr)
             {
                 mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
@@ -107,8 +107,9 @@ bool DirectMessagerClientBase::recreateProxy( void )
                 mProxy = newProxy;
                 result = true;
             }
-        }    
+        }
     }
+
     return result;
 }
 
@@ -121,7 +122,7 @@ DEF_TRACE_SCOPE(generated_DirectMessagerClientBase_serviceConnected);
 bool DirectMessagerClientBase::serviceConnected( bool isConnected, ProxyBase & proxy )
 {
     TRACE_SCOPE(generated_DirectMessagerClientBase_serviceConnected);
-    
+
     bool result = false;
     if(mProxy == &proxy)
     {
@@ -130,11 +131,11 @@ bool DirectMessagerClientBase::serviceConnected( bool isConnected, ProxyBase & p
                  , proxy.getProxyAddress().getServiceName().getString()
                  , proxy.getProxyAddress().getRoleName().getString()
                  , isConnected ? "CONNECTED" : "DISCONNECTED");
-        
+
         mIsConnected= isConnected;
         result      = true;
     }
-    
+
     return result;
 }
 
@@ -174,7 +175,7 @@ void DirectMessagerClientBase::processNotificationEvent( NotificationEvent & eve
     case NEService::eResultType::RequestInvalid:
         {
         /************************************************************************
-         * Trigger invalid response / broadcast handling. May happen when remove notification 
+         * Trigger invalid response / broadcast handling. May happen when remove notification
          ************************************************************************/
             DirectMessagerClientBase::invalidResponse(msgId);
         }
@@ -316,7 +317,7 @@ void DirectMessagerClientBase::invalidRequest( NEDirectMessager::eMessageIDs Inv
                     , NEDirectMessager::getString(InvalidReqId)
                     , static_cast<unsigned int>(InvalidReqId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString() );
-                    
+
     ASSERT(false);
 }
 
@@ -329,7 +330,7 @@ void DirectMessagerClientBase::requestFailed( NEDirectMessager::eMessageIDs Fail
                     , static_cast<unsigned int>(FailureMsgId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason) );
-                    
+
     unsigned int index = static_cast<msg_id>(NEDirectMessager::eMessageIDs::MsgId_Invalid);
     index = static_cast<msg_id>( NEService::isResponseId(static_cast<unsigned int>(FailureMsgId)) ? NEDirectMessager::getRequestId(FailureMsgId) : FailureMsgId);
     index = NEService::isRequestId(index)  ? GET_REQ_INDEX(index) : static_cast<msg_id>(NEDirectMessager::eMessageIDs::MsgId_Invalid);
@@ -359,7 +360,7 @@ void DirectMessagerClientBase::onChatParticipantsUpdate( const NEDirectMessager:
 /************************************************************************
  * Request failure / Response and Broadcast notifications
  ************************************************************************/
- 
+
 DEF_TRACE_SCOPE(generated_DirectMessagerClientBase_requestChatJoinFailed);
 void DirectMessagerClientBase::requestChatJoinFailed( NEService::eResultType FailureReason )
 {

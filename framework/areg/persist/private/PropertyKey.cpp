@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/persist/private/PropertyKey.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -20,18 +20,18 @@
 #include <utility>
 
 PropertyKey::PropertyKey( const PropertyKey & source )
-    : mSection  ( source.mSection )
-    , mProperty ( source.mProperty )
-    , mModule   ( source.mModule )
-    , mPosition ( source.mPosition )
+    : mSection  ( source.mSection   )
+    , mProperty ( source.mProperty  )
+    , mModule   ( source.mModule    )
+    , mPosition ( source.mPosition  )
 {
 }
 
 PropertyKey::PropertyKey( PropertyKey && source ) noexcept
-    : mSection  ( std::move(source.mSection)   )
-    , mProperty ( std::move(source.mProperty)  )
-    , mModule   ( std::move(source.mModule)    )
-    , mPosition ( std::move(source.mPosition)  )
+    : mSection  ( std::move(source.mSection)    )
+    , mProperty ( std::move(source.mProperty)   )
+    , mModule   ( std::move(source.mModule)     )
+    , mPosition ( std::move(source.mPosition)   )
 {
 }
 
@@ -42,6 +42,15 @@ PropertyKey::PropertyKey( const String & key )
     , mPosition ( )
 {
     parseKey( key );
+}
+
+PropertyKey::PropertyKey( String && key )
+    : mSection  ( )
+    , mProperty ( )
+    , mModule   ( )
+    , mPosition ( )
+{
+    parseKey( std::move(key) );
 }
 
 PropertyKey & PropertyKey::operator = ( const PropertyKey & source )
@@ -73,6 +82,12 @@ PropertyKey & PropertyKey::operator = ( const String & params )
     return (*this);
 }
 
+PropertyKey & PropertyKey::operator = ( String && params )
+{
+    parseKey(std::move(params));
+    return (*this);
+}
+
 bool PropertyKey::operator == ( const PropertyKey & other ) const
 {
     bool result = true;
@@ -84,12 +99,14 @@ bool PropertyKey::operator == ( const PropertyKey & other ) const
         if ( result && mSection.isEmpty() == false )
             result = other.mSection.isEmpty() || mSection == other.mSection;
     }
+
     return result;
 }
 
 bool PropertyKey::operator != ( const PropertyKey & other ) const
 {
     bool result = false;
+
     if ( this != &other )
     {
         result = mSection != other.mSection || mProperty != other.mProperty;
@@ -108,71 +125,62 @@ PropertyKey::operator unsigned int (void) const
 
 bool PropertyKey::parseKey( const String & key )
 {
-    String temp;
-    key.trimAll(temp);
+    String temp(key);
+    temp.trimAll(temp);
     if ( temp.isEmpty() == false )
     {
-        NEString::CharPos pos   = temp.findFirstOf( NEPersistence::SYNTAX_OBJECT_SEPARATOR );
-        NEString::CharPos oldPos= NEString::START_POS;
-        if ( pos != NEString::INVALID_POS )
-        {
-            mSection    = temp.substring(oldPos, pos - oldPos);
-            oldPos      = pos + 1;
-            pos         = temp.findFirstOf( NEPersistence::SYNTAX_OBJECT_SEPARATOR, oldPos );
-            if ( pos != NEString::INVALID_POS )
-            {
-                mProperty   = temp.substring(oldPos, pos - oldPos);
-                oldPos      = pos + 1;
-                pos         = temp.findFirstOf( NEPersistence::SYNTAX_OBJECT_SEPARATOR, oldPos );
-                if ( pos != NEString::INVALID_POS )
-                {
-                    mModule     = temp.substring(oldPos, pos - oldPos);
-                    oldPos      = pos + 1;
-                    pos         = temp.findFirstOf( NEPersistence::SYNTAX_OBJECT_SEPARATOR, oldPos );
-                    mPosition   = pos != NEString::INVALID_POS ? temp.substring( oldPos, pos - oldPos ) : temp.substring(oldPos);
-                }
-                else
-                {
-                    mModule     = temp.substring(oldPos);
-                }
-            }
-            else
-            {
-                mProperty       = temp.substring(oldPos);
-            }
-        }
+        _parseKey(temp);
     }
+
+    return isValid();
+}
+
+bool PropertyKey::parseKey( String && key )
+{
+    String temp(std::move(key));
+    temp.trimAll(temp);
+    if ( temp.isEmpty() == false )
+    {
+        _parseKey(temp);
+    }
+
     return isValid();
 }
 
 String PropertyKey::convToString(void) const
 {
-    String result("");
+    String result(static_cast<uint32_t>(0xFF));
     if ( isValid() )
     {
-        result += mSection;
-        result += NEPersistence::SYNTAX_OBJECT_SEPARATOR;
-        result += mProperty;
+        result.append(mSection).append(NEPersistence::SYNTAX_OBJECT_SEPARATOR).append(mProperty);
+
         if ( mModule.isEmpty() == false )
         {
-            result += NEPersistence::SYNTAX_OBJECT_SEPARATOR;
-            result += mModule;
+            result.append(NEPersistence::SYNTAX_OBJECT_SEPARATOR).append(mModule);
             if ( mPosition.isEmpty() == false )
             {
-                result += NEPersistence::SYNTAX_OBJECT_SEPARATOR;
-                result += mPosition;
+                result.append(NEPersistence::SYNTAX_OBJECT_SEPARATOR).append(mPosition);
             }
         }
     }
+
     return result;
 }
 
 void PropertyKey::setValues(const char * section, const char * property, const char * module /*= nullptr*/, const char * position /*= nullptr*/)
 {
-    mSection    = section != nullptr ? section  : "";
-    mProperty   = property!= nullptr ? property : "";
-    mModule     = module  != nullptr ? module   : "";
-    mPosition   = position!= nullptr ? position : "";
+    mSection    = section != nullptr ? section  : String::EmptyString;
+    mProperty   = property!= nullptr ? property : String::EmptyString;
+    mModule     = module  != nullptr ? module   : String::EmptyString;
+    mPosition   = position!= nullptr ? position : String::EmptyString;
+}
+
+void PropertyKey::setValues(const String& section, const String& property, const String& module, const String& position)
+{
+    mSection    = section;
+    mProperty   = property;
+    mModule     = module;
+    mPosition   = position;
 }
 
 const String & PropertyKey::getSection(void) const
@@ -216,4 +224,39 @@ void PropertyKey::resetKey(void)
     mProperty.clear();
     mModule.clear();
     mPosition.clear();
+}
+
+inline void PropertyKey::_parseKey(String& key)
+{
+    NEString::CharPos pos = key.findFirst(NEPersistence::SYNTAX_OBJECT_SEPARATOR);
+    NEString::CharPos oldPos = NEString::START_POS;
+    if (key.isValidPosition(pos))
+    {
+        key.substring(mSection, oldPos, pos - oldPos);
+
+        oldPos = pos + 1;
+        pos = key.findFirst(NEPersistence::SYNTAX_OBJECT_SEPARATOR, oldPos);
+        if (key.isValidPosition(pos))
+        {
+            key.substring(mProperty, oldPos, pos - oldPos);
+            oldPos = pos + 1;
+            pos = key.findFirst(NEPersistence::SYNTAX_OBJECT_SEPARATOR, oldPos);
+            if (key.isValidPosition(pos))
+            {
+                key.substring(mModule, oldPos, pos - oldPos);
+                oldPos = pos + 1;
+                pos = key.findFirst(NEPersistence::SYNTAX_OBJECT_SEPARATOR, oldPos);
+
+                key.substring(mPosition, oldPos, key.isValidPosition(pos) ? pos - oldPos : NEString::COUNT_ALL);
+            }
+            else
+            {
+                mModule = key.substring(oldPos);
+            }
+        }
+        else
+        {
+            mProperty = key.substring(oldPos);
+        }
+    }
 }

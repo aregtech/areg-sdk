@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_THREADLOCALSTORAGE_HPP
+#define AREG_BASE_THREADLOCALSTORAGE_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/ThreadLocalStorage.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -22,7 +23,6 @@
 
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/TEPair.hpp"
 #include "areg/base/TELinkedList.hpp"
 
 /************************************************************************
@@ -36,8 +36,8 @@ class Thread;
 /**
  * \brief   A local storage of a thread.
  *          When thread starts, it initializes local storage.
- *          Any object of local threadcan save an entry in thread local storage
- *          accessed by unique name. By default, every local storage ot a Thread
+ *          Any object of local thread can save an entry in thread local storage
+ *          accessed by unique name. By default, every local storage of a Thread
  *          contains the entry of the thread consumer. The entries of the 
  *          local storage are access by name.
  * \see     Thread
@@ -57,17 +57,10 @@ private:
     // ThreadLocalStorage::StorageItem class declaration
     //////////////////////////////////////////////////////////////////////////
 
-    //!< Definition of storage helper object to compare keys and values.
-    using ImplStorageItem   = TEPairImpl<const String &, NEMemory::uAlign>;
-
     //!< Definition of storage item to store.
-    using StorageItem       = TEPair<String, NEMemory::uAlign, const String &, NEMemory::uAlign, ImplStorageItem>;
-
-    //!< Definition of storage list helper object to compare values.
-    using ImplStorageList   = TEListImpl<const ThreadLocalStorage::StorageItem &>;
-
+    using StorageItem       = std::pair<String, NEMemory::uAlign>;
     //!< Definition of storage list object to store items.
-    using StorageList       = TELinkedList<ThreadLocalStorage::StorageItem, const ThreadLocalStorage::StorageItem &, ImplStorageList>;
+    using StorageList       = TELinkedList<ThreadLocalStorage::StorageItem>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -103,7 +96,7 @@ public:
      * \param   Key     The name of a local storage item.
      * \return  Returns true if local storage has an item with specified name.
      **/
-    bool existKey(const char* Key) const;
+    bool existKey(const String & Key) const;
 
     /**
      * \brief   Returns the owning thread object.
@@ -114,7 +107,7 @@ public:
      * \brief   Returns the size of a thread local storage, 
      *          i.e. the number of items saved in storage.
      **/
-    inline int getSize( void ) const;
+    inline uint32_t getSize( void ) const;
 
     /**
      * \brief   Returns the element value, saved in the 
@@ -123,14 +116,14 @@ public:
      *          Otherwise it will return NEMemory::InvalidElement element,
      *          which is defining invalid element.
      *          If element was not found, it will raise assertion in Debug version.
-     *          In release version either call existKey() before calling thie method,
+     *          In release version either call existKey() before calling the method,
      *          or check the address of returned element with NEMemory::InvalidElement
      * \param   Key     The name of a local storage item.
      * \return  Returns local storage element if Key exists. 
      *          Otherwise it returns NEMemory::InvalidElement, if there is no element
      *          with specified name.
      **/
-    NEMemory::uAlign getStorageItem( const char * Key ) const;
+    NEMemory::uAlign getStorageItem( const String & Key ) const;
 
     /**
      * \brief   Saves specified item in thread local storage object.
@@ -141,7 +134,7 @@ public:
      * \param   Key     The name of local storage item
      * \param   Value   The value of local storage item
      **/
-    void setStorageItem(const char * Key, NEMemory::uAlign Value);
+    void setStorageItem(const String & Key, NEMemory::uAlign Value);
 
     /**
      * \brief   Saves pointer value in thread local storage object.
@@ -152,7 +145,7 @@ public:
      * \param   Key     The name of local storage item
      * \param   Value   The value of local storage item
      **/
-    void setStorageItem(const char * Key, const void * Value);
+    void setStorageItem(const String & Key, const void * Value);
 
     /**
      * \brief   Saves integer value in thread local storage object.
@@ -163,7 +156,7 @@ public:
      * \param   Key     The name of local storage item
      * \param   Value   The value of local storage item
      **/
-    void setStorageItem(const char * Key, unsigned int Value);
+    void setStorageItem(const String & Key, unsigned int Value);
 
     /**
      * \brief   Saves 64-bit integer value in thread local storage object.
@@ -174,7 +167,7 @@ public:
      * \param   Key     The name of local storage item
      * \param   Value   The value of local storage item
      **/
-    void setStorageItem(const char * Key, uint64_t Value);
+    void setStorageItem(const String & Key, uint64_t Value);
 
     /**
      * \brief   Saves number with floating point value in thread local storage object.
@@ -185,7 +178,7 @@ public:
      * \param   Key     The name of local storage item
      * \param   Value   The value of local storage item
      **/
-    void setStorageItem(const char * Key, double Value);
+    void setStorageItem(const String & Key, double Value);
 
     /**
      * \brief   If thread local storage has an item with specified name
@@ -196,12 +189,12 @@ public:
      * \return  Returns the value of returned element. If element does not
      *          exist, it will return dummy zero value.
      **/
-    NEMemory::uAlign removeStoragteItem(const char * Key);
+    NEMemory::uAlign removeStoragteItem(const String & Key);
 
     /**
      * \brief   Removes all items in thread local storage
      **/
-    inline void removeAll( void );
+    inline void clear( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -212,7 +205,7 @@ private:
 #endif  // _MSC_VER
 
     /**
-     * \brief   The storage list object, which contains (key; value) pair entrier
+     * \brief   The storage list object, which contains (key; value) pair entries
      **/
     StorageList mStorageList;
 
@@ -242,12 +235,14 @@ inline Thread & ThreadLocalStorage::getOwnerThread( void ) const
     return mOwningThread;
 }
 
-inline int ThreadLocalStorage::getSize( void ) const
+inline uint32_t ThreadLocalStorage::getSize( void ) const
 {
     return mStorageList.getSize();
 }
 
-inline void ThreadLocalStorage::removeAll( void )
+inline void ThreadLocalStorage::clear(void )
 {
-    return mStorageList.removeAll();
+    mStorageList.clear();
 }
+
+#endif  // AREG_BASE_THREADLOCALSTORAGE_HPP

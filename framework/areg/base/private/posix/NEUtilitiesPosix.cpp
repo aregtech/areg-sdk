@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/NEUtilitiesPosix.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
@@ -28,7 +28,7 @@ namespace NEUtilities
 {
 
     /**
-     * \brief   Generates a name, sets the timestapt of now.
+     * \brief   Generates a name, sets the timestamp of now.
      * 
      * \param   prefix          The prefix to add to name.
      * \param   out_buffer[out] On output, this contains the result.
@@ -45,7 +45,7 @@ namespace NEUtilities
             const char * spec = specChar != nullptr ? specChar : NECommon::DEFAULT_SPECIAL_CHAR.data();
             *out_buffer = '\0';
             struct timespec now;
-            clock_gettime(CLOCK_REALTIME, &now);
+            ::clock_gettime(CLOCK_MONOTONIC, &now);
             String::formatString( out_buffer, length, strFormat
                                 , prefix != nullptr ? prefix : NEUtilities::DEFAULT_GENERATED_NAME.data()
                                 , spec
@@ -75,7 +75,7 @@ namespace NEUtilities
     }
 }   // namespace
 
-AREG_API bool NEUtilities::convToLocalTime( const TIME64 & inUtcTime, sSystemTime & outLocalTime )
+AREG_API_IMPL bool NEUtilities::convToLocalTime( const TIME64 & inUtcTime, sSystemTime & OUT outLocalTime )
 {
     bool result = false;
 
@@ -88,7 +88,7 @@ AREG_API bool NEUtilities::convToLocalTime( const TIME64 & inUtcTime, sSystemTim
     unsigned short milli, micro;
     _convertMicrosecs(inUtcTime, secs, milli, micro);
 
-    struct tm * conv = localtime(&secs);
+    struct tm * conv = ::localtime(&secs);
     if (conv != nullptr)
     {
         outLocalTime.stYear      = conv->tm_year + 1900;
@@ -107,7 +107,7 @@ AREG_API bool NEUtilities::convToLocalTime( const TIME64 & inUtcTime, sSystemTim
     return result;
 }
 
-AREG_API bool NEUtilities::convToLocalTime( const sSystemTime &inUtcTime, sSystemTime & outLocalTime )
+AREG_API_IMPL bool NEUtilities::convToLocalTime( const sSystemTime &inUtcTime, sSystemTime & OUT outLocalTime )
 {
     bool result = false;
     TIME64 quad = NEUtilities::convToTime(inUtcTime);
@@ -121,7 +121,7 @@ AREG_API bool NEUtilities::convToLocalTime( const sSystemTime &inUtcTime, sSyste
     unsigned short milli, micro;
     _convertMicrosecs(quad, secs, milli, micro);
 
-    struct tm * conv = localtime(&secs);
+    struct tm * conv = ::localtime(&secs);
     if (conv != nullptr)
     {
         outLocalTime.stYear      = conv->tm_year + 1900;
@@ -140,21 +140,21 @@ AREG_API bool NEUtilities::convToLocalTime( const sSystemTime &inUtcTime, sSyste
     return result;
 }
 
-AREG_API uint64_t NEUtilities::getTickCount( void )
+AREG_API_IMPL uint64_t NEUtilities::getTickCount( void )
 {
     struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
+    ::clock_gettime(CLOCK_MONOTONIC, &ts);
 
     TIME64 result = (ts.tv_sec * SEC_TO_MILLISECS) + ts.tv_nsec / MILLISEC_TO_NS;
     return result;
 }
 
-AREG_API void NEUtilities::systemTimeNow( NEUtilities::sSystemTime & out_sysTime, bool localTime )
+AREG_API_IMPL void NEUtilities::systemTimeNow( NEUtilities::sSystemTime & OUT out_sysTime, bool localTime )
 {
     struct timespec ts;
     struct tm now;
 
-    clock_gettime(CLOCK_REALTIME, &ts);
+    ::clock_gettime(CLOCK_REALTIME, &ts);
     if (localTime)
     {
         ::localtime_r(&ts.tv_sec, &now);
@@ -181,10 +181,10 @@ AREG_API void NEUtilities::systemTimeNow( NEUtilities::sSystemTime & out_sysTime
     out_sysTime.stMicrosecs = micro;
 }
 
-AREG_API void NEUtilities::systemTimeNow( NEUtilities::sFileTime & out_fileTime, bool localTime )
+AREG_API_IMPL void NEUtilities::systemTimeNow( NEUtilities::sFileTime & OUT out_fileTime, bool localTime )
 {
     struct timespec ts;
-    clock_gettime(CLOCK_REALTIME, &ts);
+    ::clock_gettime(CLOCK_REALTIME, &ts);
 
     if (localTime)
     {
@@ -203,16 +203,16 @@ AREG_API void NEUtilities::systemTimeNow( NEUtilities::sFileTime & out_fileTime,
     }
 }
 
-AREG_API TIME64 NEUtilities::systemTimeNow( void )
+AREG_API_IMPL TIME64 NEUtilities::systemTimeNow( void )
 {
     struct timespec ts;
-    clock_gettime(CLOCK_REALTIME, &ts);
+    ::clock_gettime(CLOCK_REALTIME, &ts);
 
     TIME64 quad = ts.tv_sec * SEC_TO_MICROSECS + ts.tv_nsec / MICROSEC_TO_NS;
     return quad;
 }
 
-AREG_API TIME64 NEUtilities::convToTime( const NEUtilities::sSystemTime & sysTime )
+AREG_API_IMPL TIME64 NEUtilities::convToTime( const NEUtilities::sSystemTime & sysTime )
 {
     TIME64 quad = 0;
 
@@ -226,7 +226,7 @@ AREG_API TIME64 NEUtilities::convToTime( const NEUtilities::sSystemTime & sysTim
     sys.tm_wday     = sysTime.stDayOfWeek;
     sys.tm_isdst    = 0;
 
-    time_t secs = mktime(&sys);
+    time_t secs = ::mktime(&sys);
     if (secs != static_cast<time_t>(-1))
     {
         quad = (secs * SEC_TO_MICROSECS) + (sysTime.stMillisecs * MILLISEC_TO_MICROSECS) + sysTime.stMicrosecs;
@@ -235,7 +235,7 @@ AREG_API TIME64 NEUtilities::convToTime( const NEUtilities::sSystemTime & sysTim
     return quad;
 }
 
-AREG_API void NEUtilities::convToSystemTime( const TIME64 &  timeValue, NEUtilities::sSystemTime & out_sysTime )
+AREG_API_IMPL void NEUtilities::convToSystemTime( const TIME64 &  timeValue, NEUtilities::sSystemTime & out_sysTime )
 {
     NEMemory::memZero(&out_sysTime, sizeof(NEUtilities::sSystemTime));
 
@@ -248,7 +248,7 @@ AREG_API void NEUtilities::convToSystemTime( const TIME64 &  timeValue, NEUtilit
     unsigned short milli, micro;
     _convertMicrosecs(timeValue, secs, milli, micro);
 
-    struct tm * conv = gmtime(&secs);
+    struct tm * conv = ::gmtime(&secs);
     if (conv != nullptr)
     {
         out_sysTime.stYear      = conv->tm_year + 1900;
@@ -263,13 +263,13 @@ AREG_API void NEUtilities::convToSystemTime( const TIME64 &  timeValue, NEUtilit
     }
 }
 
-AREG_API void NEUtilities::convToSystemTime( const NEUtilities::sFileTime & fileTime, NEUtilities::sSystemTime & out_sysTime )
+AREG_API_IMPL void NEUtilities::convToSystemTime( const NEUtilities::sFileTime & fileTime, NEUtilities::sSystemTime & out_sysTime )
 {
     TIME64 quad = MACRO_MAKE_64(fileTime.ftHighDateTime, fileTime.ftLowDateTime);
     NEUtilities::convToSystemTime(quad, out_sysTime);
 }
 
-AREG_API void NEUtilities::convToFileTime( const NEUtilities::sSystemTime & sysTime, NEUtilities::sFileTime & out_fileTime )
+AREG_API_IMPL void NEUtilities::convToFileTime( const NEUtilities::sSystemTime & sysTime, NEUtilities::sFileTime & out_fileTime )
 {
     TIME64 quad = NEUtilities::convToTime(sysTime);
     out_fileTime.ftLowDateTime = MACRO_64_LO_BYTE32(quad);

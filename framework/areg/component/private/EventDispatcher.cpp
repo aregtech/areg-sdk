@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/EventDispatcher.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -25,7 +25,7 @@
 //////////////////////////////////////////////////////////////////////////
 // EventDispatcher class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-EventDispatcher::EventDispatcher( const char* name )
+EventDispatcher::EventDispatcher( const String & name )
     : EventDispatcherBase   ( name )
     , IEThreadConsumer      (  )
     , IEEventRouter         (  )
@@ -75,8 +75,9 @@ bool EventDispatcher::postEvent( Event& eventElem )
     bool result = mDispatcherThread != nullptr ? queueEvent(eventElem) : false;
     if (result == false)
     {
-        OUTPUT_ERR("Failed to queue event of type [ %s ], going to destroy", eventElem.getRuntimeClassName());
+        OUTPUT_ERR("Failed to queue event of type [ %s ], going to destroy", eventElem.getRuntimeClassName().getString());
         eventElem.destroy();
     }
+
     return result;
 }

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_MCROUTER_TCP_PRIVATE_SERVERRECEIVETHREAD_HPP
+#define AREG_MCROUTER_TCP_PRIVATE_SERVERRECEIVETHREAD_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        mcrouter/tcp/private/ServerReceiveThread.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -19,6 +20,8 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/component/DispatcherThread.hpp"
+
+#include <atomic>
 
 /************************************************************************
  * Dependencies
@@ -35,6 +38,8 @@ class ServerConnection;
  **/
 class ServerReceiveThread    : public    DispatcherThread
 {
+    static constexpr uint32_t RETRY_COUNT{ 5 };
+
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
@@ -50,6 +55,15 @@ public:
      * \brief   Destructor
      **/
     virtual ~ServerReceiveThread( void ) = default;
+
+// Actions and attributes.
+/************************************************************************/
+public:
+    /**
+     * \brief   Returns accumulative value of received data size and rests the existing value to zero.
+     *          The operations are atomic. The value can be used to display data rate, for example.
+     **/
+    inline uint32_t extractDataReceive( void );
 
 protected:
 /************************************************************************/
@@ -81,6 +95,10 @@ private:
      * \brief   The instance of server connection object
      **/
     ServerConnection &          mConnection;
+    /**
+     * \brief   Accumulative value of received data size.
+     */
+    std::atomic_uint            mBytesReceive;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -89,3 +107,10 @@ private:
     ServerReceiveThread( void ) = delete;
     DECLARE_NOCOPY_NOMOVE( ServerReceiveThread );
 };
+
+inline uint32_t ServerReceiveThread::extractDataReceive(void)
+{
+    return mBytesReceive.exchange(0);
+}
+
+#endif  // AREG_MCROUTER_TCP_PRIVATE_SERVERRECEIVETHREAD_HPP

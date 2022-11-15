@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/EventConsumerMap.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -36,7 +36,7 @@ EventConsumerList::~EventConsumerList( void )
 bool EventConsumerList::addConsumer( IEEventConsumer& whichConsumer )
 {
     bool result = false;
-    if (EventConsumerListBase::pushLast(&whichConsumer) != nullptr)
+    if (EventConsumerListBase::pushLastIfUnique(&whichConsumer))
     {
         result = true;
         whichConsumer.consumerRegistered(true);
@@ -48,7 +48,7 @@ bool EventConsumerList::addConsumer( IEEventConsumer& whichConsumer )
 bool EventConsumerList::removeConsumer( IEEventConsumer& whichConsumer )
 {
     bool result = false;
-    if ( EventConsumerListBase::removeEntry(&whichConsumer, nullptr) )
+    if ( EventConsumerListBase::removeEntry(&whichConsumer) )
     {
         result = true;
         whichConsumer.consumerRegistered(false);
@@ -59,14 +59,15 @@ bool EventConsumerList::removeConsumer( IEEventConsumer& whichConsumer )
 
 void EventConsumerList::removeAllConsumers( void )
 {
-    while (EventConsumerListBase::isEmpty() == false)
+    EventConsumerListBase::LISTPOS pos = EventConsumerListBase::firstPosition();
+    for (; isValidPosition(pos); pos = nextPosition(pos))
     {
-        IEEventConsumer *consumer = EventConsumerListBase::removeFirst();
+        IEEventConsumer* consumer = valueAtPosition(pos);
         ASSERT(consumer != nullptr);
         consumer->consumerRegistered(false);
     }
-    
-    EventConsumerListBase::removeAll();
+
+    EventConsumerListBase::clear();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -78,7 +79,7 @@ void EventConsumerList::removeAllConsumers( void )
 #if defined(DEBUG) && defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_DEBUG)
 void ImplEventConsumerMap::implCleanResource( RuntimeClassID & Key, EventConsumerList * Resource )
 {
-    OUTPUT_DBG("Resource [ %s ]: Removing all consumers and deleting resource at address [ %p ]", Key.getName(), Resource);
+    OUTPUT_DBG("Resource [ %s ]: Removing all consumers and deleting resource at address [ %p ]", Key.getName().getString(), Resource);
     ASSERT(Resource != nullptr);
     Resource->removeAllConsumers();
     delete Resource;

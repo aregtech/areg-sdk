@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/TimerManagerWin.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
@@ -28,84 +28,48 @@
 #include <time.h>
 #include <errno.h>
 
-DEF_TRACE_SCOPE(areg_component_private_posix_TimerManager__createSystemTimer);
+DEF_TRACE_SCOPE(areg_component_private_posix_TimerManager__systemTimerStart);
 DEF_TRACE_SCOPE(areg_component_private_posix_TimerManager__defaultPosixTimerExpiredRoutine);
 
 //////////////////////////////////////////////////////////////////////////
 // Linux specific methods
 //////////////////////////////////////////////////////////////////////////
 
-TIMERHANDLE TimerManager::_createWaitableTimer( const char * /* timerName */ )
-{
-    return static_cast<TIMERHANDLE>(DEBUG_NEW TimerPosix());
-}
-
-void TimerManager::_stopSystemTimer( TIMERHANDLE timerHandle )
-{
-    TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(timerHandle);
-    if ( posixTimer != nullptr )
-        posixTimer->stopTimer();
-}
-
-void TimerManager::_destroyWaitableTimer( TIMERHANDLE timerHandle, bool /* cancelTimer */ )
+void TimerManager::_systemTimerStop( TIMERHANDLE timerHandle )
 {
     TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(timerHandle);
     if ( posixTimer != nullptr )
     {
-        posixTimer->destroyTimer();
-        delete posixTimer;
+        posixTimer->stopTimer();
     }
 }
 
-bool TimerManager::_createSystemTimer( TimerInfo & timerInfo, MapTimerTable & timerTable )
+bool TimerManager::_systemTimerStart( Timer & timer )
 {
-    TRACE_SCOPE(areg_component_private_posix_TimerManager__createSystemTimer);
+    TRACE_SCOPE(areg_component_private_posix_TimerManager__systemTimerStart);
 
-    bool result = false;
-    TimerPosix * posixTimer   = reinterpret_cast<TimerPosix *>(timerInfo.getHandle());
-    Timer * whichTimer        = timerInfo.getTimer();
-    if ((posixTimer != nullptr) && (whichTimer != nullptr))
+    bool result{ false };
+    TimerPosix * posixTimer   = reinterpret_cast<TimerPosix *>(timer.getHandle());
+    ASSERT(posixTimer != nullptr);
+
+    struct timespec startTime;
+    ::clock_gettime( CLOCK_MONOTONIC, &startTime );
+    timer.timerStarting(startTime.tv_sec, startTime.tv_nsec, reinterpret_cast<ptr_type>(posixTimer));
+
+    if (posixTimer->startTimer(timer, 0, &TimerManager::_defaultPosixTimerExpiredRoutine))
     {
-    	ASSERT(posixTimer->mContext == nullptr);
-        if (posixTimer->createTimer(&TimerManager::_defaultPosixTimerExpiredRoutine))
-        {
-            struct timespec ts;
-            clock_gettime(CLOCK_REALTIME, &ts);
-            timerInfo.timerStarting( static_cast<unsigned int>(ts.tv_sec), static_cast<unsigned int>(ts.tv_nsec));
-            timerTable.registerObject( whichTimer, timerInfo );
-
-            result = true;
-            if (posixTimer->startTimer(*whichTimer) == false)
-            {
-                TRACE_ERR( "System Failed to start timer in period [ %d ] ms, timer name [ %s ]. System Error [ %p ]"
-                                , whichTimer->getFireTime( )
-                                , whichTimer->getName( ).getString()
-                                , static_cast<id_type>(errno) );
-
-                result = false;
-                timerInfo.mTimerState   = TimerInfo::eTimerState::TimerIdle;
-                timerTable.updateObject( whichTimer, timerInfo );
-            }
-            else
-            {
-                TRACE_DBG("Started timer [ %s ], starting time at [ %u ]:[ %u ], expire time at [ %u ]:[ %u ], difference: [ %u ] sec and [ %u ] ns "
-                            , whichTimer->getName().getString()
-                            , ts.tv_sec
-                            , ts.tv_nsec
-                            , posixTimer->getDueTime().tv_sec
-                            , posixTimer->getDueTime().tv_nsec
-                            , posixTimer->getDueTime().tv_sec - ts.tv_sec
-                            , posixTimer->getDueTime().tv_nsec- ts.tv_nsec);
-            }
-        }
-        else
-        {
-        	TRACE_ERR("Failed to create instance of POSIX system timer [ %s ]", whichTimer->getName().getString());
-        }
+        result = true;
+        TRACE_DBG("Started timer [ %s ], expire time at [ %u ]sec : [ %u ] ns"
+                        , timer.getName().getString()
+                        , posixTimer->getDueTime().tv_sec
+                        , posixTimer->getDueTime().tv_nsec);
     }
     else
     {
-    	TRACE_ERR("Either POSIX system [ %p ], or the timer [ %p ] object are null", posixTimer, whichTimer);
+        TRACE_ERR( "System Failed to start timer in period [ %d ] ms, timer name [ %s ]. System Error [ %p ]"
+                        , timer.getTimeout( )
+                        , timer.getName( ).getString()
+                        , static_cast<id_type>(errno) );
     }
 
     return result;
@@ -115,21 +79,22 @@ void TimerManager::_defaultPosixTimerExpiredRoutine( union sigval argSig )
 {
     TRACE_SCOPE(areg_component_private_posix_TimerManager__defaultPosixTimerExpiredRoutine);
 
+    TimerManager& timerManager = TimerManager::getInstance();
     TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(argSig.sival_ptr);
-    Timer *timer = TimerManager::getInstance().mTimerResource.findResourceObject(reinterpret_cast<TIMERHANDLE>(posixTimer));
+    ASSERT(posixTimer != nullptr);
+    Timer *timer = timerManager.mTimerResource.findResourceObject(reinterpret_cast<TIMERHANDLE>(posixTimer));
 
     if ((timer != nullptr) && (posixTimer->isValid()))
     {
-        TRACE_DBG("Timer [ %s ] expired at [ %u ] sec and [ %u ] ns, going to notify thread [ %u ]"
-                        , posixTimer->mContext->getName().getString()
+        TRACE_DBG("Timer [ %s ] expired at [ %u ] sec and [ %u ] ns"
+                        , timer->getName().getString()
                         , posixTimer->getDueTime().tv_sec
-                        , posixTimer->getDueTime().tv_nsec
-                        , static_cast<unsigned int>(posixTimer->mThreadId));
+                        , posixTimer->getDueTime().tv_nsec);
 
         unsigned int highValue  = static_cast<unsigned int>(posixTimer->mDueTime.tv_sec );
         unsigned int lowValue   = static_cast<unsigned int>(posixTimer->mDueTime.tv_nsec);
         posixTimer->timerExpired();
-        TimerManager::getInstance()._timerExpired(posixTimer->mContext, highValue, lowValue);
+        timerManager._processExpiredTimer(timer, reinterpret_cast<TIMERHANDLE>(posixTimer), highValue, lowValue);
     }
     else
     {

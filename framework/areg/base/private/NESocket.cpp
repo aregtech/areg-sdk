@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/NESocketWin.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -36,6 +36,54 @@
 
 #include <utility>
 
+namespace NESocket
+{
+    // OS specific methods
+
+    /**
+     * \brief   OS specific socket initialization. Required in Win32 to initialize resources.
+     * \return  Returns true if initialization succeeded.
+     **/
+    bool _osInitSocket(void);
+
+    /**
+     * \brief   OS specific socket release. Required in Win32 to release resources.
+     */
+    void _osReleaseSocket(void);
+
+    /**
+     * \brief   OS specific socket close.
+     */
+    void _osCloseSocket(SOCKETHANDLE hSocket);
+
+    /**
+     * \brief   OS specific send data implementation. All checkups and validations should
+     *          be done before calling the method.
+     * \return  Returns number of bytes sent via network.
+     */
+    int _osSendData(SOCKETHANDLE hSocket, const unsigned char* dataBuffer, int dataLength, int blockMaxSize);
+
+    /**
+     * \brief   OS specific receive data implementation. All checkups and validations should
+     *          be done before calling the method.
+     * \return  Returns number of bytes received via network.
+     */
+    int _osRecvData(SOCKETHANDLE hSocket, unsigned char* dataBuffer, int dataLength, int blockMaxSize);
+
+    /**
+     * \brief   OS specific implementation of socket control call.
+     * \return  Returns true if operation succeeded.
+     */
+    bool _osControl(SOCKETHANDLE hSocket, int cmd, unsigned long & arg);
+
+    /**
+     * \brief   OS specific implementation of retrieving socket option.
+     *          On output the 'value' indicates the value of the option,
+     *          which is valid only if function returns true.
+     */
+    bool _osGetOption(SOCKETHANDLE hSocket, int level, int name, unsigned long & value);
+}
+
 DEF_TRACE_SCOPE(areg_base_NESocket_clientSocketConnect);
 DEF_TRACE_SCOPE(areg_base_NESocket_serverSocketConnect);
 DEF_TRACE_SCOPE(areg_base_NESocket_serverAcceptConnection);
@@ -45,20 +93,15 @@ DEF_TRACE_SCOPE(areg_base_NESocket_serverAcceptConnection);
 //////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief   Constant, identifying invalid socket descriptor.
- **/
-AREG_API const SOCKETHANDLE         NESocket::InvalidSocketHandle      = static_cast<SOCKETHANDLE>(~0);
-
-/**
  * \brief   Constant, identifying maximum number of listeners in the queue. Used by server socket when set to listen connection.
  **/
-AREG_API const int                  NESocket::MAXIMUM_LISTEN_QUEUE_SIZE = SOMAXCONN;
+AREG_API_IMPL const int NESocket::MAXIMUM_LISTEN_QUEUE_SIZE = SOMAXCONN;
 
 //////////////////////////////////////////////////////////////////////////
 // NESocket::SocketAddress class implementation
 //////////////////////////////////////////////////////////////////////////
 NESocket::SocketAddress::SocketAddress( void )
-    : mIpAddr   ( "" )
+    : mIpAddr   ( )
     , mPortNr   ( NESocket::InvalidPort )
 {
 }
@@ -103,15 +146,17 @@ bool NESocket::SocketAddress::getAddress(struct sockaddr_in & out_sockAddr) cons
         {
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1800)
-            result = RETURNED_OK == inet_pton(AF_INET, mIpAddr.getString(), &out_sockAddr.sin_addr);
-#else   // (_MSC_VER >= 1800)
-            out_sockAddr.sin_addr.s_addr = inet_addr(mIpAddr.getString());
+
+            result = 1 == ::inet_pton(AF_INET, mIpAddr.getString(), &out_sockAddr.sin_addr);
+
+#else   // (_MSC_VER >= 1800) || POSIX
+
+            out_sockAddr.sin_addr.s_addr = ::inet_addr(mIpAddr.getString());
             result = true;
-#endif  // (_MSC_VER >= 1800)
+
+#endif  // (_MSC_VER >= 1800) || POSIX
 
         }
-
-        result = true;
     }
 
     return result;
@@ -120,16 +165,21 @@ bool NESocket::SocketAddress::getAddress(struct sockaddr_in & out_sockAddr) cons
 void NESocket::SocketAddress::setAddress(const struct sockaddr_in & addrHost)
 {
     mPortNr = ntohs(addrHost.sin_port);
+
 #if defined(_MSC_VER) && (_MSC_VER >= 1800)
+
     char ipAddr[32] = { 0 };
     IN_ADDR & inAddr = const_cast<IN_ADDR &>(addrHost.sin_addr);
-    if ( RETURNED_OK == inet_ntop(AF_INET, &inAddr, ipAddr, 32) )
+    if ( nullptr != inet_ntop(AF_INET, &inAddr, ipAddr, 32) )
     {
         mIpAddr = ipAddr;
     }
-#else   // (_MSC_VER >= 1800)
+
+#else   // (_MSC_VER >= 1800) || POSIX
+
     mIpAddr = inet_ntoa(addrHost.sin_addr);
-#endif  // (_MSC_VER >= 1800)
+
+#endif  // (_MSC_VER >= 1800) || POSIX
 }
 
 bool NESocket::SocketAddress::resolveSocket(SOCKETHANDLE hSocket)
@@ -140,34 +190,17 @@ bool NESocket::SocketAddress::resolveSocket(SOCKETHANDLE hSocket)
 
     if ( hSocket != NESocket::InvalidSocketHandle )
     {
-        // struct sockaddr sa  = {0};
         struct sockaddr_in sAddr;
         NEMemory::memZero(&sAddr, sizeof(sockaddr));
 
-#ifdef  _WINDOWS
-        int len = sizeof(sockaddr);
-#else   // !_WINDOWS
         socklen_t len = sizeof(sockaddr);
-#endif  // _WINDOWS
-
-        if ( RETURNED_OK == getpeername(hSocket, reinterpret_cast<struct sockaddr *>(&sAddr), &len) )
+        if ( RETURNED_OK == ::getpeername(hSocket, reinterpret_cast<struct sockaddr *>(&sAddr), &len) )
         {
             sockaddr_in & addr_in = reinterpret_cast<sockaddr_in &>(sAddr);
             if ( addr_in.sin_family == AF_INET )
             {
-                mPortNr = ntohs( static_cast<uint16_t>(addr_in.sin_port) );
-
-#if defined(_MSC_VER) && (_MSC_VER >= 1800)
-                char ipAddr[32] = { 0 };
-                if ( RETURNED_OK == inet_ntop(AF_INET, &addr_in.sin_addr, ipAddr, 32) )
-                {
-                    mIpAddr = ipAddr;
-                    result = true;
-                }
-#else   // (_MSC_VER >= 1800)
-                mIpAddr = inet_ntoa(addr_in.sin_addr);
+                setAddress(addr_in);
                 result = true;
-#endif  // (_MSC_VER >= 1800)
 
                 OUTPUT_DBG("Succeeded to resolve name of socket [ %u ]. IP address = [ %s ], port number [ %u ]"
                             , static_cast<unsigned int>(hSocket)
@@ -197,13 +230,12 @@ bool NESocket::SocketAddress::resolveAddress( const std::string_view & hostName,
     mPortNr = NESocket::InvalidPort;
     mIpAddr = "";
 
-    if ( isalnum(*host) )
+    if ( ::isalnum(*host) )
     {
         // acquire address info
         char svcName[0x0F];
         String::formatString(svcName, 0x0F, "%u", portNr);
 
-        // struct addrinfo hints = {0};
         struct addrinfo hints;
         NEMemory::memZero(&hints, sizeof(addrinfo));
         hints.ai_family     = AF_INET;
@@ -212,7 +244,7 @@ bool NESocket::SocketAddress::resolveAddress( const std::string_view & hostName,
         hints.ai_protocol   = IPPROTO_TCP;
         addrinfo * aiResult = nullptr;
 
-        if ( RETURNED_OK == getaddrinfo(host, static_cast<const char *>(svcName), &hints, &aiResult) )
+        if ( RETURNED_OK == ::getaddrinfo(host, static_cast<const char *>(svcName), &hints, &aiResult) )
         {
             ASSERT(aiResult != nullptr);
             for ( addrinfo * addrInfo = aiResult; addrInfo != nullptr; addrInfo = addrInfo->ai_next)
@@ -220,15 +252,10 @@ bool NESocket::SocketAddress::resolveAddress( const std::string_view & hostName,
                 if ( addrInfo->ai_family == AF_INET && addrInfo->ai_socktype == SOCK_STREAM )
                 {
                     struct sockaddr_in * addrIn = reinterpret_cast<struct sockaddr_in *>(addrInfo->ai_addr);
+                    setAddress(*addrIn);
+                    result = mIpAddr.isEmpty() == false;
                     mPortNr = portNr;
-#if defined(_MSC_VER) && (_MSC_VER >= 1800)
-                    char ipAddr[32] = { 0 };
-                    mIpAddr = inet_ntop( AF_INET, &addrIn->sin_addr, ipAddr, 32 );
-                    result  = mIpAddr.isEmpty() == false;
-#else   // (_MSC_VER >= 1800)
-                    mIpAddr = inet_ntoa(addrIn->sin_addr);
-                    result = true;
-#endif  // (_MSC_VER >= 1800)
+
                     OUTPUT_DBG("Succeeded to resolve name [ %s ] of [ %s ]. The IP address [ %s ], port number [ %u ]"
                                 , host
                                 , isServer ? "SERVER" : "CLIENT"
@@ -239,7 +266,7 @@ bool NESocket::SocketAddress::resolveAddress( const std::string_view & hostName,
                 }
             }
 
-            freeaddrinfo( aiResult );
+            ::freeaddrinfo( aiResult );
         }
         else
         {
@@ -271,53 +298,72 @@ bool NESocket::SocketAddress::operator != ( const NESocket::SocketAddress & othe
 // NESocket namespace functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-AREG_API bool NESocket::isSocketHandleValid(SOCKETHANDLE hSocket)
+AREG_API_IMPL bool NESocket::isSocketHandleValid(SOCKETHANDLE hSocket)
 {
     return (hSocket != NESocket::InvalidSocketHandle);
 }
 
-AREG_API SOCKETHANDLE NESocket::socketCreate( void )
+AREG_API_IMPL SOCKETHANDLE NESocket::socketCreate( void )
 {
     return static_cast<SOCKETHANDLE>( socket(AF_INET, SOCK_STREAM, IPPROTO_TCP) );
 }
 
-AREG_API int NESocket::getMaxSendSize( SOCKETHANDLE hSocket )
+AREG_API_IMPL unsigned int NESocket::getMaxSendSize( SOCKETHANDLE hSocket )
 {
-    long maxData= NESocket::DEFAULT_SEGMENT_SIZE;
+    ASSERT(hSocket != NESocket::InvalidSocketHandle);
 
-#ifdef  _WINDOWS
-        int len = sizeof(long);
-#else   // !_WINDOWS
-        socklen_t len = sizeof(long);
-#endif  // _WINDOWS
-
-    if ( (RETURNED_OK == getsockopt(hSocket, SOL_SOCKET, SO_SNDBUF, reinterpret_cast<char *>(&maxData), &len))  || (maxData < 0) )
-    {
-        maxData = NESocket::DEFAULT_SEGMENT_SIZE;
-    }
-
-    return static_cast<int>(maxData);
+    unsigned long maxData= NESocket::DEFAULT_SEGMENT_SIZE;
+    return (_osGetOption(hSocket, SOL_SOCKET, SO_SNDBUF, maxData) ? static_cast<unsigned int>(maxData) : NESocket::DEFAULT_SEGMENT_SIZE);
 }
 
-AREG_API int NESocket::getMaxReceiveSize( SOCKETHANDLE hSocket )
+AREG_API_IMPL unsigned int NESocket::setMaxSendSize(SOCKETHANDLE hSocket, unsigned int sendSize)
 {
-    long maxData= NESocket::DEFAULT_SEGMENT_SIZE;
+    ASSERT(hSocket != NESocket::InvalidSocketHandle);
 
-#ifdef  _WINDOWS
-        int len = sizeof(long);
-#else   // !_WINDOWS
-        socklen_t len = sizeof(long);
-#endif  // _WINDOWS
-
-    if ( (RETURNED_OK == getsockopt(hSocket, SOL_SOCKET, SO_RCVBUF, reinterpret_cast<char *>(&maxData), &len)) || (maxData < 0) )
+    if (sendSize == 0)
     {
-        maxData = NESocket::DEFAULT_SEGMENT_SIZE;
+        sendSize = NESocket::DEFAULT_SEGMENT_SIZE;
+    }
+    else if (sendSize < NESocket::MIN_SEGMENT_SIZE)
+    {
+        sendSize = NESocket::MIN_SEGMENT_SIZE;
+    }
+    else if (sendSize > NESocket::MAX_SEGMENT_SIZE)
+    {
+        sendSize = NESocket::MAX_SEGMENT_SIZE;
     }
 
-    return static_cast<int>(maxData);
+    return (RETURNED_OK == ::setsockopt(hSocket, SOL_SOCKET, SO_SNDBUF, reinterpret_cast<const char*>(&sendSize), sizeof(sendSize)) ? sendSize : NESocket::MIN_SEGMENT_SIZE);
 }
 
-AREG_API SOCKETHANDLE NESocket::clientSocketConnect(const std::string_view & hostName, unsigned short portNr, NESocket::SocketAddress * out_socketAddr /*= nullptr*/)
+AREG_API_IMPL unsigned int NESocket::getMaxReceiveSize( SOCKETHANDLE hSocket )
+{
+    ASSERT(hSocket != NESocket::InvalidSocketHandle);
+    unsigned long maxData = NESocket::DEFAULT_SEGMENT_SIZE;
+    return (_osGetOption(hSocket, SOL_SOCKET, SO_RCVBUF, maxData) ? static_cast<unsigned int>(maxData) : NESocket::DEFAULT_SEGMENT_SIZE);
+}
+
+AREG_API_IMPL unsigned int NESocket::setMaxReceiveSize(SOCKETHANDLE hSocket, unsigned int recvSize)
+{
+    ASSERT(hSocket != NESocket::InvalidSocketHandle);
+
+    if (recvSize == 0)
+    {
+        recvSize = NESocket::DEFAULT_SEGMENT_SIZE;
+    }
+    else if (recvSize < NESocket::MIN_SEGMENT_SIZE)
+    {
+        recvSize = NESocket::MIN_SEGMENT_SIZE;
+    }
+    else if (recvSize > NESocket::MAX_SEGMENT_SIZE)
+    {
+        recvSize = NESocket::MAX_SEGMENT_SIZE;
+    }
+
+    return (RETURNED_OK == ::setsockopt(hSocket, SOL_SOCKET, SO_RCVBUF, reinterpret_cast<const char*>(&recvSize), sizeof(recvSize)) ? recvSize : NESocket::MIN_SEGMENT_SIZE);
+}
+
+AREG_API_IMPL SOCKETHANDLE NESocket::clientSocketConnect(const std::string_view & hostName, unsigned short portNr, NESocket::SocketAddress * out_socketAddr /*= nullptr*/)
 {
     TRACE_SCOPE(areg_base_NESocket_clientSocketConnect);
 
@@ -325,16 +371,20 @@ AREG_API SOCKETHANDLE NESocket::clientSocketConnect(const std::string_view & hos
 
     TRACE_DBG("Creating client socket to connect remote host [ %s ] and port number [ %u ]", host, static_cast<unsigned int>(portNr));
 
-    if ( out_socketAddr != nullptr )
+    if (out_socketAddr != nullptr)
+    {
         out_socketAddr->resetAddress();
+    }
 
     SOCKETHANDLE result   = NESocket::InvalidSocketHandle;
     NESocket::SocketAddress sockAddress;
     if ( sockAddress.resolveAddress(host, portNr, false) )
     {
         result = NESocket::clientSocketConnect(sockAddress);
-        if ( result != NESocket::InvalidSocketHandle && out_socketAddr != nullptr )
+        if ((result != NESocket::InvalidSocketHandle) && (out_socketAddr != nullptr))
+        {
             *out_socketAddr = sockAddress;
+        }
     }
     else
     {
@@ -344,7 +394,7 @@ AREG_API SOCKETHANDLE NESocket::clientSocketConnect(const std::string_view & hos
     return result;
 }
 
-AREG_API SOCKETHANDLE NESocket::clientSocketConnect(const SocketAddress & peerAddr)
+AREG_API_IMPL SOCKETHANDLE NESocket::clientSocketConnect(const SocketAddress & peerAddr)
 {
     TRACE_SCOPE(areg_base_NESocket_clientSocketConnect);
 
@@ -390,7 +440,7 @@ AREG_API SOCKETHANDLE NESocket::clientSocketConnect(const SocketAddress & peerAd
     return result;
 }
 
-AREG_API SOCKETHANDLE NESocket::serverSocketConnect(const std::string_view & hostName, unsigned short portNr, SocketAddress * out_socketAddr /*= nullptr */)
+AREG_API_IMPL SOCKETHANDLE NESocket::serverSocketConnect(const std::string_view & hostName, unsigned short portNr, SocketAddress * out_socketAddr /*= nullptr */)
 {
     TRACE_SCOPE(areg_base_NESocket_serverSocketConnect);
 
@@ -399,8 +449,10 @@ AREG_API SOCKETHANDLE NESocket::serverSocketConnect(const std::string_view & hos
     TRACE_DBG("Creating server socket on host [ %s ] and port number [ %u ]", host, static_cast<unsigned int>(portNr));
 
 
-    if ( out_socketAddr != nullptr )
+    if (out_socketAddr != nullptr)
+    {
         out_socketAddr->resetAddress();
+    }
 
     SOCKETHANDLE result   = NESocket::InvalidSocketHandle;
     NESocket::SocketAddress sockAddress;
@@ -418,7 +470,7 @@ AREG_API SOCKETHANDLE NESocket::serverSocketConnect(const std::string_view & hos
     return result;
 }
 
-AREG_API SOCKETHANDLE NESocket::serverSocketConnect(const SocketAddress & peerAddr)
+AREG_API_IMPL SOCKETHANDLE NESocket::serverSocketConnect(const SocketAddress & peerAddr)
 {
     TRACE_SCOPE(areg_base_NESocket_serverSocketConnect);
 
@@ -432,7 +484,7 @@ AREG_API SOCKETHANDLE NESocket::serverSocketConnect(const SocketAddress & peerAd
         if ( result != NESocket::InvalidSocketHandle )
         {
             int yes = 1;    // avoid the "address already in use" error message
-            setsockopt( result, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&yes), sizeof(int) );
+            ::setsockopt( result, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char *>(&yes), sizeof(int) );
             if ( RETURNED_OK != bind(result, reinterpret_cast<sockaddr *>(&serverAddr), sizeof(sockaddr_in)) )
             {
                 TRACE_ERR("Server failed to bind on host [ %s ] and port number [ %u ]. Closing socket [ %u ]"
@@ -467,21 +519,28 @@ AREG_API SOCKETHANDLE NESocket::serverSocketConnect(const SocketAddress & peerAd
     return result;
 }
 
-AREG_API bool NESocket::serverListenConnection(SOCKETHANDLE serverSocket, int maxQueueSize /*= NESocket::MAXIMUM_LISTEN_QUEUE_SIZE*/)
+AREG_API_IMPL bool NESocket::serverListenConnection(SOCKETHANDLE serverSocket, int maxQueueSize /*= NESocket::MAXIMUM_LISTEN_QUEUE_SIZE*/)
 {
     return ( (serverSocket != NESocket::InvalidSocketHandle) && (RETURNED_OK == listen(serverSocket, maxQueueSize)) );
 }
 
-AREG_API SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int entriesCount, NESocket::SocketAddress * out_socketAddr /*= nullptr*/)
+AREG_API_IMPL SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int entriesCount, NESocket::SocketAddress * out_socketAddr /*= nullptr*/)
 {
     TRACE_SCOPE(areg_base_NESocket_serverAcceptConnection);
-
     TRACE_DBG("Checking server socket event, server socket handle [ %u ]", static_cast<unsigned int>(serverSocket));
 
-    if (out_socketAddr != nullptr )
-        out_socketAddr->resetAddress();
-
     SOCKETHANDLE result = NESocket::InvalidSocketHandle;
+    if (masterList == nullptr)
+    {
+        TRACE_ERR("Invalid list of sockets, cannot accept connection");
+        return result;
+    }
+
+    if (out_socketAddr != nullptr)
+    {
+        out_socketAddr->resetAddress();
+    }
+
     if ( serverSocket != NESocket::InvalidSocketHandle )
     {
         fd_set readList;
@@ -489,18 +548,18 @@ AREG_API SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverSocket
         FD_SET( serverSocket, &readList );
         SOCKETHANDLE maxSocket = serverSocket;
 
-        if ( (masterList != nullptr) && (entriesCount > 0) )
+        if ( entriesCount > 0 )
         {
             entriesCount= MACRO_MIN(entriesCount, (FD_SETSIZE - 1));
 
-#ifdef  WINDOWS
+#ifdef  _WINDOWS
 
             for ( int count = 0; count < entriesCount; ++ count)
                 readList.fd_array[count + 1] = masterList[count];
             
             readList.fd_count = static_cast<u_int>( entriesCount + 1 );
 
-#else   // !WINDOWS
+#else   // !_WINDOWS
 
             TRACE_DBG("There are [ %d ] socket entries in the master list, setting FD_SET", entriesCount);
             for ( int count = 0; count < entriesCount; ++ count)
@@ -519,7 +578,7 @@ AREG_API SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverSocket
                 }
             }
 
-#endif  // WINDOWS
+#endif  // !_WINDOWS
         }
 
         if (result == NESocket::InvalidSocketHandle)
@@ -534,24 +593,21 @@ AREG_API SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverSocket
                     struct sockaddr_in acceptAddr; // connecting client address information
                     NEMemory::memZero(&acceptAddr, sizeof(sockaddr_in));
 
-#ifdef  _WINDOWS
-                    int len = sizeof(sockaddr_in);
-#else   // !_WINDOWS
                     socklen_t len = sizeof(sockaddr_in);
-#endif  // _WINDOWS
-
                     TRACE_DBG("... server waiting for new connection event ...");
-                    result = accept( serverSocket, reinterpret_cast<sockaddr *>(&acceptAddr), &len );
+                    result = ::accept( serverSocket, reinterpret_cast<sockaddr *>(&acceptAddr), &len );
                     TRACE_DBG("Server accepted new connection of client socket [ %u ]", static_cast<unsigned int>(result));
-                    if ( (result != NESocket::InvalidSocketHandle) && (out_socketAddr != nullptr) )
+                    if ((result != NESocket::InvalidSocketHandle) && (out_socketAddr != nullptr))
+                    {
                         out_socketAddr->setAddress(acceptAddr);
+                    }
                 }
                 else
                 {
                     TRACE_DBG("Have got select event of existing connection, going to resolve socket");
 
                     //  check whether have got connection from existing clients. if 'yes', server can read data.
-                    for ( int count = 0; result == NESocket::InvalidSocketHandle && count < entriesCount; ++ count )
+                    for ( int count = 0; count < entriesCount; ++ count )
                     {
                         if (FD_ISSET( masterList[count], &readList ) != 0)
                         {
@@ -565,6 +621,7 @@ AREG_API SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverSocket
             else
             {
                 TRACE_ERR("Failed to select connection. The server socket [ %u ] might be closed and not valid anymore, return value [ %d ]", static_cast<unsigned int>(serverSocket), selected);
+                result = NESocket::FailedSocketHandle;
             }
         }
         else
@@ -581,31 +638,85 @@ AREG_API SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverSocket
     return result;
 }
 
-AREG_API bool NESocket::isSocketAlive(SOCKETHANDLE hSocket)
+AREG_API_IMPL bool NESocket::isSocketAlive(SOCKETHANDLE hSocket)
 {
-    bool result = false;
+    unsigned long error = 0;
+    return ((hSocket != NESocket::InvalidSocketHandle) && _osGetOption(hSocket, SOL_SOCKET, SO_ERROR, error) && (error == 0));
+}
 
-    int error = 0;
-    socklen_t len = sizeof (error);
+AREG_API_IMPL unsigned int NESocket::pendingRead(SOCKETHANDLE hSocket)
+{
+    unsigned long result = 0;
+    return ((hSocket != NESocket::InvalidSocketHandle) && _osControl(hSocket, FIONREAD, result) ? static_cast<unsigned int>(result) : 0);
+}
 
-#ifdef _WINDOWS
-    result = (getsockopt(static_cast<SOCKET>(hSocket), SOL_SOCKET, SO_ERROR, reinterpret_cast<char *>(&error), &len) == 0) && (error == 0);
-#else
-    result = (getsockopt(static_cast<int>(hSocket), SOL_SOCKET, SO_ERROR, reinterpret_cast<char *>(&error), &len) == 0) && (error == 0);
-#endif
+AREG_API_IMPL bool NESocket::socketInitialize(void)
+{
+    return _osInitSocket();
+}
+
+AREG_API_IMPL void NESocket::socketRelease(void)
+{
+    _osReleaseSocket();
+}
+
+AREG_API_IMPL void NESocket::socketClose(SOCKETHANDLE hSocket)
+{
+    if (hSocket != NESocket::InvalidSocketHandle)
+    {
+        _osCloseSocket(hSocket);
+    }
+}
+
+AREG_API_IMPL int NESocket::sendData(SOCKETHANDLE hSocket, const unsigned char* dataBuffer, int dataLength, int blockMaxSize /*= NECommon::DEFAULT_SIZE*/)
+{
+    int result = -1;
+    if (hSocket != NESocket::InvalidSocketHandle)
+    {
+        result = 0;
+        if ((dataBuffer != nullptr) && (dataLength > 0))
+        {
+            result = _osSendData(hSocket, dataBuffer, dataLength, blockMaxSize > 0 ? blockMaxSize : NESocket::getMaxSendSize(hSocket));
+        }
+    }
 
     return result;
 }
 
-AREG_API int NESocket::pendingRead(SOCKETHANDLE hSocket)
+AREG_API_IMPL int NESocket::receiveData(SOCKETHANDLE hSocket, unsigned char* dataBuffer, int dataLength, int blockMaxSize )
 {
-#ifdef _WINDOWS
-    unsigned long result = 0;
-    return (ioctlsocket(static_cast<SOCKET>(hSocket), FIONREAD, &result) == 0 ? static_cast<int>(result) : -1);
-#else   // _WINDOWS
-    int result = 0;
-    return (ioctl(static_cast<int>(hSocket), FIONREAD, &result) == 0 ? result : -1);
-#endif  // _WINDOWS
+    int result = -1;
 
-    return static_cast<int>(result);
+    if (hSocket != NESocket::InvalidSocketHandle)
+    {
+        result = 0;
+        if ((dataBuffer != nullptr) && (dataLength > 0))
+        {
+            result = _osRecvData(hSocket, dataBuffer, dataLength, blockMaxSize > 0 ? blockMaxSize : NESocket::getMaxReceiveSize(hSocket));
+        }
+    }
+
+    return result;
+}
+
+AREG_API_IMPL bool NESocket::disableSend(SOCKETHANDLE hSocket)
+{
+#ifdef WINDOWS
+    int flag{ SD_SEND };
+#else
+    int flag{ SHUT_WR };
+#endif // WINDOWS
+
+    return (hSocket != NESocket::InvalidSocketHandle ? RETURNED_OK == ::shutdown(hSocket, flag) : false);
+}
+
+AREG_API_IMPL bool NESocket::disableReceive(SOCKETHANDLE hSocket)
+{
+#ifdef WINDOWS
+    int flag{ SD_RECEIVE };
+#else
+    int flag{ SHUT_RD };
+#endif // WINDOWS
+
+    return (hSocket != NESocket::InvalidSocketHandle ? RETURNED_OK == ::shutdown(hSocket, flag) : false);
 }

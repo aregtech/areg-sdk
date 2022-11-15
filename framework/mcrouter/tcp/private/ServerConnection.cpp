@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        mcrouter/tcp/private/ServerConnection.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -48,17 +48,17 @@ void ServerConnection::closeAllConnections(void)
         msgBeyClient.bufferCompletionFix();
     }
 
-    for ( MAPPOS pos = mAcceptedConnections.firstPosition(); pos != nullptr; pos = mAcceptedConnections.nextPosition(pos) )
+    for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.firstPosition(); mAcceptedConnections.isValidPosition(pos); pos = mAcceptedConnections.nextPosition(pos) )
     {
         SocketAccepted clientConnection = mAcceptedConnections.valueAtPosition(pos);
         msgBeyClient.setTarget( getCookie(clientConnection) );
         sendMessage(msgBeyClient, clientConnection);
     }
 
-    mMasterList.removeAll();
-    mCookieToSocket.removeAll();
-    mSocketToCookie.removeAll();
-    mAcceptedConnections.removeAll();
+    mMasterList.clear();
+    mCookieToSocket.clear();
+    mSocketToCookie.clear();
+    mAcceptedConnections.clear();
 
     mCookieGenerator    = static_cast<ITEM_ID>(NEService::eCookies::CookieFirstValid);
 }

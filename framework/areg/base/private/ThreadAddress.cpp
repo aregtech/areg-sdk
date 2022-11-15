@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/ThreadAddress.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -45,16 +45,23 @@ const ThreadAddress   ThreadAddress::INVALID_THREAD_ADDRESS;
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 ThreadAddress::ThreadAddress( void )
-    : mThreadName   ( INVALID_THREAD_NAME.data() )
+    : mThreadName   ( INVALID_THREAD_NAME )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
 }
 
 ThreadAddress::ThreadAddress( const char * threadName )
-    : mThreadName   ( threadName != nullptr ? threadName : INVALID_THREAD_NAME.data() )
+    : mThreadName   ( threadName != nullptr ? threadName : INVALID_THREAD_NAME )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
     mThreadName.truncate( NEUtilities::ITEM_NAMES_MAX_LENGTH );
+    mMagicNum    = ThreadAddress::_magicNumber(*this);
+}
+
+ThreadAddress::ThreadAddress( const String & threadName )
+    : mThreadName   ( threadName )
+    , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
+{
     mMagicNum    = ThreadAddress::_magicNumber(*this);
 }
 
@@ -91,7 +98,7 @@ String ThreadAddress::convAddressToPath( const ThreadAddress& threadAddress )
     return threadAddress.convToString();
 }
 
-ThreadAddress ThreadAddress::convPathToAddress( const char* threadPath, const char** out_nextPart /*= nullptr*/ )
+ThreadAddress ThreadAddress::convPathToAddress( const char* threadPath, const char** OUT out_nextPart /*= nullptr*/ )
 {
     ThreadAddress result;
     result.convFromString(threadPath, out_nextPart);
@@ -122,7 +129,7 @@ void ThreadAddress::convFromString(const char * threadPath, const char** OUT out
 unsigned int ThreadAddress::_magicNumber(const ThreadAddress & addrThread)
 {
     unsigned int result = NEMath::CHECKSUM_IGNORE;
-    if ((addrThread.mThreadName.isEmpty() == false) && (addrThread.mThreadName != INVALID_THREAD_NAME.data( )))
+    if ((addrThread.mThreadName.isEmpty() == false) && (addrThread.mThreadName != INVALID_THREAD_NAME))
     {
         result = NEMath::crc32Calculate(addrThread.mThreadName.getString());
     }

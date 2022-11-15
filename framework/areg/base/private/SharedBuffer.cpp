@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/SharedBuffer.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -41,7 +41,7 @@ SharedBuffer::SharedBuffer( unsigned int reserveSize, unsigned int blockSize)
 
     , mBlockSize        ( MACRO_ALIGN_SIZE(blockSize, NEMemory::BLOCK_SIZE) )
 {
-    resize(reserveSize, false);
+    reserve(reserveSize, false);
 }
 
 SharedBuffer::SharedBuffer( const unsigned char* buffer, unsigned int size, unsigned int blockSize /*= NEMemory::BLOCK_SIZE*/ )
@@ -50,7 +50,7 @@ SharedBuffer::SharedBuffer( const unsigned char* buffer, unsigned int size, unsi
 
     , mBlockSize        ( MACRO_ALIGN_SIZE(blockSize, NEMemory::BLOCK_SIZE) )
 {
-    resize(size, false);
+    reserve(size, false);
     writeData(buffer, size);
 }
 
@@ -61,7 +61,7 @@ SharedBuffer::SharedBuffer(const char * textString, unsigned int blockSize /*= N
     , mBlockSize        ( MACRO_ALIGN_SIZE(blockSize, NEMemory::BLOCK_SIZE) )
 {
     unsigned int size   = (NEString::getStringLength<char>(textString) + 1) * sizeof(char);
-    size = resize(size, false);
+    size = reserve(size, false);
     writeData( reinterpret_cast<const unsigned char *>(textString != nullptr ? textString : NEString::EmptyStringA.data( )), size);
 }
 
@@ -72,7 +72,7 @@ SharedBuffer::SharedBuffer(const wchar_t * textString, unsigned int blockSize /*
     , mBlockSize        ( MACRO_ALIGN_SIZE(blockSize, NEMemory::BLOCK_SIZE) )
 {
     unsigned int size   = (NEString::getStringLength<wchar_t>(textString) + 1) * sizeof(wchar_t);
-    size = resize(size, false);
+    size = reserve(size, false);
     writeData( reinterpret_cast<const unsigned char *>(textString != nullptr ? textString : NEString::EmptyStringW.data( )), size);
 }
 
@@ -83,10 +83,7 @@ SharedBuffer::SharedBuffer( const SharedBuffer & src )
     , mBlockSize        (src.mBlockSize)
 {
     mByteBuffer = src.mByteBuffer;
-    if (src.isValid())
-    {
-        BufferPosition::moveToBegin();
-    }
+    BufferPosition::setPosition(0, IECursorPosition::eCursorPosition::PositionBegin);
 }
 
 SharedBuffer::SharedBuffer( SharedBuffer && src ) noexcept
@@ -96,11 +93,7 @@ SharedBuffer::SharedBuffer( SharedBuffer && src ) noexcept
     , mBlockSize        ( src.mBlockSize )
 {
     mByteBuffer = src.mByteBuffer;
-    if ( src.isValid() )
-    {
-        BufferPosition::setPosition(src.getPosition(), IECursorPosition::eCursorPosition::PositionBegin);
-    }
-
+    BufferPosition::setPosition(0, IECursorPosition::eCursorPosition::PositionBegin);
     src.invalidate();
 }
 
@@ -115,7 +108,7 @@ SharedBuffer & SharedBuffer::operator = ( const SharedBuffer &src )
         if (src.isValid())
         {
             mByteBuffer = src.mByteBuffer;
-            moveToBegin( );
+            BufferPosition::setPosition(0, IECursorPosition::eCursorPosition::PositionBegin);
         }
         else
         {
@@ -133,7 +126,7 @@ SharedBuffer & SharedBuffer::operator = ( SharedBuffer && src ) noexcept
         if ( src.isValid( ) )
         {
             mByteBuffer = src.mByteBuffer;
-            BufferPosition::setPosition( src.getPosition( ), IECursorPosition::eCursorPosition::PositionBegin );
+            BufferPosition::setPosition( 0, IECursorPosition::eCursorPosition::PositionBegin );
             src.invalidate();
         }
         else

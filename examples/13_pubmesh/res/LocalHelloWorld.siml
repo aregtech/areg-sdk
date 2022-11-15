@@ -40,10 +40,6 @@ This interface serves only local components and can be duplicated in other proce
                 <Parameter DataType="String" ID="8" Name="roleName">
                     <Description>The role name of client component that requested to print hello world</Description>
                 </Parameter>
-                <Parameter DataType="String" ID="9" Name="addMessage">
-                    <Value IsDefault="true">""</Value>
-                    <Description>Additional message to output. Can be empty.</Description>
-                </Parameter>
             </ParamList>
         </Method>
         <Method ID="10" MethodType="response" Name="HelloWorld">

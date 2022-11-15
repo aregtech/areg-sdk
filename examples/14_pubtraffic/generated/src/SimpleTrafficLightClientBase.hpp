@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/src/SimpleTrafficLightClientBase.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_SRC_SIMPLETRAFFICLIGHTCLIENTBASE_HPP
+#define  GENERATED_SRC_SIMPLETRAFFICLIGHTCLIENTBASE_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  02:45:32 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficLight.
  *
  * \file            generated/src/SimpleTrafficLightClientBase.hpp
@@ -48,13 +49,13 @@ class SimpleTrafficLightClientBase  : public IEProxyListener
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initialize SimpleTrafficLight Service Interface client object. 
+     * \brief   Initialize SimpleTrafficLight Service Interface client object.
      *          Specifies used service and owner thread.
      * \param   roleName    The role name assigned to SimpleTrafficLight servicing component object.
      * \param   ownerThread The name of component owner thread to dispatch messages.
      *                      If nullptr, all messages are dispatched in current component thread.
      **/
-    SimpleTrafficLightClientBase( const char* roleName, const char * ownerThread = nullptr );
+    SimpleTrafficLightClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
 
     /**
      * \brief   Initialize SimpleTrafficLight Service Interface client object.
@@ -62,7 +63,7 @@ protected:
      * \param   roleName    The role name assigned to SimpleTrafficLight servicing component object.
      * \param   ownerThread The instance of component owner thread to dispatch messages.
      **/
-    SimpleTrafficLightClientBase( const char* roleName, DispatcherThread & ownerThread );
+    SimpleTrafficLightClientBase( const String & roleName, DispatcherThread & ownerThread );
 
     /**
      * \brief   Initialize SimpleTrafficLight Service Interface client object.
@@ -72,7 +73,7 @@ protected:
      * \note    When this constructor is used, it is important that the Component object is already initialized.
      *          and the component thread is set.
      **/
-    SimpleTrafficLightClientBase( const char* roleName, Component & owner );
+    SimpleTrafficLightClientBase( const String & roleName, Component & owner );
 
     /**
      * \brief   Destructor.
@@ -99,12 +100,12 @@ public:
      * \brief   Returns true if client object has got connection with servicing component
      **/
     inline bool isConnected( void ) const;
-    
+
     /**
      * \brief   Returns the name of used service.
      **/
     inline const String & getServiceName( void ) const;
-    
+
     /**
      * \brief   Returns the version of used service.
      **/
@@ -118,6 +119,7 @@ public:
 // SimpleTrafficLight Interface Attributes
 //////////////////////////////////////////////////////////////////////////
 public:
+
 /************************************************************************
  * Attribute SouthNorth functions
  ************************************************************************/
@@ -128,18 +130,18 @@ public:
     inline bool isSouthNorthValid( void ) const;
     /**
      * \brief   Returns the value of SouthNorth attribute.
-     *          To get valid value, the Update Notification should be enabled. 
-     *          Attribute SouthNorth description: 
+     *          To get valid value, the Update Notification should be enabled.
+     *          Attribute SouthNorth description:
      *          The light state of south-north traffic.
-     * \param   state   On returns, contains the validation flag of attribute data. 
+     * \param   state   On returns, contains the validation flag of attribute data.
      *                  Check validation flag before use attribute value.
      * \see     isSouthNorthValid, notifySouthNorthUpdate, onSouthNorthUpdate
      **/
     inline NESimpleTrafficLight::eTrafficLight getSouthNorth( NEService::eDataStateType & state ) const;
     /**
      * \brief   Call to enable or disable receiving notifications on SouthNorth attribute update.
-     *          Once notification is enabled and the data is updated, 
-     *          the getSouthNorth method will return valid data 
+     *          Once notification is enabled and the data is updated,
+     *          the getSouthNorth method will return valid data
      *          Attribute SouthNorth description:
      *          The light state of south-north traffic.
      * \param   notify  If true, notification will be enable. If false, notification is disabled
@@ -150,7 +152,7 @@ public:
      * \brief   Triggered, when SouthNorth attribute is updated. The function contains
      *          attribute value and validation flag. When notification is enabled,
      *          the method should be overwritten in derived class.
-     *          Attributes SouthNorth description: 
+     *          Attributes SouthNorth description:
      *          The light state of south-north traffic.
      * \param   SouthNorth  The value of SouthNorth attribute.
      * \param   state       The data validation flag.
@@ -167,18 +169,18 @@ public:
     inline bool isEastWestValid( void ) const;
     /**
      * \brief   Returns the value of EastWest attribute.
-     *          To get valid value, the Update Notification should be enabled. 
-     *          Attribute EastWest description: 
+     *          To get valid value, the Update Notification should be enabled.
+     *          Attribute EastWest description:
      *          The light state of east-west traffic.
-     * \param   state   On returns, contains the validation flag of attribute data. 
+     * \param   state   On returns, contains the validation flag of attribute data.
      *                  Check validation flag before use attribute value.
      * \see     isEastWestValid, notifyEastWestUpdate, onEastWestUpdate
      **/
     inline NESimpleTrafficLight::eTrafficLight getEastWest( NEService::eDataStateType & state ) const;
     /**
      * \brief   Call to enable or disable receiving notifications on EastWest attribute update.
-     *          Once notification is enabled and the data is updated, 
-     *          the getEastWest method will return valid data 
+     *          Once notification is enabled and the data is updated,
+     *          the getEastWest method will return valid data
      *          Attribute EastWest description:
      *          The light state of east-west traffic.
      * \param   notify  If true, notification will be enable. If false, notification is disabled
@@ -189,13 +191,12 @@ public:
      * \brief   Triggered, when EastWest attribute is updated. The function contains
      *          attribute value and validation flag. When notification is enabled,
      *          the method should be overwritten in derived class.
-     *          Attributes EastWest description: 
+     *          Attributes EastWest description:
      *          The light state of east-west traffic.
      * \param   EastWest    The value of EastWest attribute.
      * \param   state       The data validation flag.
      **/
     virtual void onEastWestUpdate( NESimpleTrafficLight::eTrafficLight EastWest, NEService::eDataStateType state );
-
 
 //////////////////////////////////////////////////////////////////////////
 // SimpleTrafficLight Interface Requests / Responses / Broadcasts
@@ -208,7 +209,7 @@ public:
     /**
      * \brief   Server broadcast.
      *          Triggered when the light state of traffic is changed.
-     *          Overwrite, if need to handle Broadcast call of server object. 
+     *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   SouthNorth  The light state of south-north traffic.
      * \param   EastWest    The light state of east-west traffic.
@@ -262,16 +263,16 @@ protected:
      * \param   InvalidReqId    The ID of invalid request
      **/
     virtual void invalidRequest( NESimpleTrafficLight::eMessageIDs InvalidReqId );
-    
+
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
 
     /**
      * \brief   Call to recreate Proxy for the client. This call will remove and unregister all existing notifications
-     *          and the client will not receive pending update or response notifications. 
+     *          and the client will not receive pending update or response notifications.
      *          The client first will receive disconnect message, then again connect.
-     *          Reset update notifications manually in connect if need.          
+     *          Reset update notifications manually in connect if need.
      *          This function call can be used when the client instance should be registered and run in new thread.
      *
      * \return  Returns true if Proxy was created with success.
@@ -283,7 +284,7 @@ protected:
      *         The function can return nullptr if Proxy was not instantiated yet.
      **/
     DispatcherThread * getDispatcherThread( void );
-     
+
     /**
      * \brief   Returns the current sequence number
      **/
@@ -293,7 +294,7 @@ protected:
      * \brief  Returns instance of proxy object.
      */
     inline const SimpleTrafficLightProxy * getProxy( void ) const;
-      
+
     /**
      * \brief Returns target service component role name.
      **/
@@ -329,7 +330,7 @@ private:
      * \param   eventElem   Notification Event object to process
      **/
     virtual void processNotificationEvent( NotificationEvent & eventElem ) override;
-    
+
 /************************************************************************/
 // SimpleTrafficLightClientBase hidden methods
 /************************************************************************/
@@ -337,12 +338,12 @@ private:
     /**
      * \brief   Enables / Disables notification flags on appropriate message call.
      * \param   msgId   The ID of message to enable / disable notification
-     * \param   notify  If true, the notification is enabled. 
+     * \param   notify  If true, the notification is enabled.
      *                  If false, the notification is disabled.
      * \param   always  Flag, indicating whether should notify always or not.
      *                  if 'notify' parameter is true and the notification is already
      *                  assigned, then if parameter 'always' is true, it will trigger
-     *                  notification immediately after call. 
+     *                  notification immediately after call.
      **/
     void notifyOn( NESimpleTrafficLight::eMessageIDs msgId, bool notify, bool always = false );
     /**
@@ -362,7 +363,6 @@ private:
     /**
      * \brief   Returns reference of SimpleTrafficLightClientBase object
      **/
-
     inline SimpleTrafficLightClientBase & self( void );
 
 //////////////////////////////////////////////////////////////////////////
@@ -410,7 +410,7 @@ inline const String & SimpleTrafficLightClientBase::getServiceName( void ) const
     ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getServiceName();
 }
-    
+
 inline const Version & SimpleTrafficLightClientBase::getServiceVersion( void ) const
 {
     ASSERT(mProxy != nullptr);
@@ -472,6 +472,8 @@ inline const String & SimpleTrafficLightClientBase::getServiceRole( void ) const
     ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getRoleName();
 }
+
+#endif   // GENERATED_SRC_SIMPLETRAFFICLIGHTCLIENTBASE_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/SimpleTrafficLightClientBase.hpp file

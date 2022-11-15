@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/src/HelloWorldStub.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_SRC_HELLOWORLDSTUB_HPP
+#define  GENERATED_SRC_HELLOWORLDSTUB_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:11 GMT+02:00 
+ * Generated at     13.08.2022  12:57:45 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/HelloWorldStub.hpp
@@ -52,7 +53,7 @@ protected:
      * \brief   Destructor.
      **/
     virtual ~HelloWorldStub( void ) = default;
-    
+
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
@@ -149,11 +150,9 @@ public:
      * \brief   Request call.
      *          Request to print hello world
      * \param   roleName    The role name of client component that requested to print hello world
-     * \param   addMessage  Additional message to output. Can be empty.
-     *          Has default value: ""
      * \see     responseHelloWorld
      **/
-    virtual void requestHelloWorld( const String & roleName, const String & addMessage = "" ) = 0;
+    virtual void requestHelloWorld( const String & roleName ) = 0;
 
     /**
      * \brief   Request call.
@@ -191,7 +190,7 @@ public:
 
     /**
      * \brief   Broadcast call.
-     *          DESCRIPTION MISSED
+     *          Triggered when the service is unavailable.
      **/
     virtual void broadcastServiceUnavailable( void );
 
@@ -208,8 +207,8 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Sends update notification message to all clients. 
-     *          This method can be called manually to send update 
+     * \brief   Sends update notification message to all clients.
+     *          This method can be called manually to send update
      *          notification message after updating attribute value.
      *
      * \param   msgId   The attribute message ID to notify clients.
@@ -254,7 +253,7 @@ protected:
     virtual void shutdownServiceIntrface ( Component & holder ) override;
 
 /************************************************************************/
-// StubBase overrides. Protected methods 
+// StubBase overrides. Protected methods
 /************************************************************************/
 
     /**
@@ -403,6 +402,8 @@ inline short & HelloWorldStub::getRemainOutput( void )
 //////////////////////////////////////////////////////////////////////////
 // HelloWorldStub class declaration End
 //////////////////////////////////////////////////////////////////////////
+
+#endif   // GENERATED_SRC_HELLOWORLDSTUB_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/HelloWorldStub.hpp file

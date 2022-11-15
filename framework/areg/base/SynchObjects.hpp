@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_SYNCHOBJECTS_HPP
+#define AREG_BASE_SYNCHOBJECTS_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/SynchObjects.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -33,7 +34,7 @@
 #include "areg/base/IESynchObject.hpp"
 
 #include <atomic>
-#include <mutex>
+#include <chrono>
 
 /**
  * \brief   This file contains synchronization objects used to synchronize data access
@@ -67,6 +68,7 @@
 
 class Lock;
 class MultiLock;
+class Wait;
 
 //////////////////////////////////////////////////////////////////////////
 // IEResourceLock class declaration
@@ -157,8 +159,9 @@ public:
      *          thread, the current thread will wait timeout milliseconds
      *          and will resume execution.
      *          If timeout is WAIT_INFINITE, current thread will wait
-     *          as long, as mutex ownership is not released by owning thread
-     * \param	timeout	Timeout in milliseconds to wait.
+     *          as long, as mutex ownership is not released by owning thread.
+     * 
+     * \param	timeout	The timeout in milliseconds to wait.
      * \return	Returns true if current thread successfully got mutex ownership
      **/
     virtual bool lock( unsigned int timeout = NECommon::WAIT_INFINITE ) override;
@@ -199,7 +202,7 @@ private:
 
     /**
      * \brief   Locks the mutex, takes the ownership.
-     * \param   timeout     The timeout in milliseconds to wait for mutext to lock.
+     * \param   timeout     The timeout in milliseconds to wait for mutex to lock.
      **/
     bool _lockMutex( unsigned int timeout );
 
@@ -268,7 +271,7 @@ public:
      * \param	lock	    If true, the initial state of Event is non-signaled.
      *                      When Event state is non-signaled, any thread trying
      *                      lock Event, will be blocked until Event object
-     *                      is not unlocked / signaled by any other thread.
+     *                      is unlocked / signaled by any other thread.
      *                      By default, the initial state is locked / non-signaled
      * \param	autoReset	If true, Event object is auto-reset and whenever
      *                      a single waiting thread is released, it will change
@@ -292,7 +295,7 @@ public:
      *          or until timeout is expired. If Timeout is WAIT_INFINITE, thread
      *          will be unlocked only when event signaled / unlocked.
      *          If Event is auto-reset, this call automatically set to non-signaled state 
-     * \param	timeout	    Timeout in milliseconds to wait until Event is not
+     * \param	timeout	    The timeout in milliseconds to wait until Event is not
      *                      signaled / unlocked. If WAIT_INFINITE, 
      *                      specify that the wait will not time out. 
      * \return	Returns true if Event was unlocked / signaled and thread was unblock
@@ -321,7 +324,7 @@ public:
     bool resetEvent( void );
 
     /**
-     * \brief   Pulse event once. It it was not set, it will set once and immediately
+     * \brief   Pulse event once. If it was not set, it sets once and immediately
      *          reset to non-signaled state.
      **/
     void pulseEvent( void );
@@ -627,7 +630,7 @@ public:
     virtual bool unlock( void ) override;
 
     /**
-     * \brief   Attempts to take the spin-lock ownershipt without blocking thread.
+     * \brief   Attempts to take the spin-lock ownership without blocking thread.
      *          If the call is successful, the calling thread
      *          takes ownership of the spin-lock.
      * \return  If current thread successfully has taken the ownership or the thread
@@ -636,6 +639,21 @@ public:
      *          the return value is false.
      **/
     virtual bool tryLock( void ) override;
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+
+    //! An atomic object to use for locking
+    std::atomic_bool    mLock;
+
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls
@@ -697,7 +715,7 @@ public:
     virtual bool unlock( void ) override;
 
     /**
-     * \brief   Attempts to take the resource lock ownershipt without blocking thread.
+     * \brief   Attempts to take the resource lock ownership without blocking thread.
      *          If the call is succeeds, the calling thread takes the ownership 
      *          of the resource lock object.
      * \return  If current thread successfully has taken the ownership or the resource lock
@@ -810,23 +828,21 @@ class AREG_API SynchTimer: public IESynchObject
 public:
     /**
      * \brief	Creates Waitable Timer, either manual-reset synchronization or periodic timer.
-     * \param	timeMilliseconds	Time in milliseconds of Waitable Timer
-     * \param	periodic	        If true, it is periodic timer
-     * \param	autoReset	        If true, it is synchronization timer,
-     *                              otherwise it is manual-reset timer.
-     * \param	initSignaled        If true, the timer is activated and
-     *                              set	to signaled state.
+     * \param	msTimeout	Time in milliseconds of Waitable Timer
+     * \param	isPeriodic  If true, it is periodic timer
+     * \param	isAutoReset	If true, it is synchronization timer, otherwise it is manual-reset timer.
+     * \param   isSteady    If true, it uses steady high resolution timer;
      **/
-    SynchTimer( unsigned int timeMilliseconds, bool periodic = false, bool autoReset = true, bool initSignaled = true );
+    SynchTimer( unsigned int msTimeout, bool isPeriodic = false, bool isAutoReset = true, bool isSteady = true );
 
     /**
      * \brief   Destructor. Signals and Destroys waitable timer.
      **/
     virtual ~SynchTimer( void );
 
-    //////////////////////////////////////////////////////////////////////////
-    // Override operations, IESynchObject interface
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Override operations, IESynchObject interface
+//////////////////////////////////////////////////////////////////////////
 public:
     /**
      * \brief	If waitable timer is in non-signaled / locked state,
@@ -848,9 +864,9 @@ public:
      **/
     virtual bool unlock( void ) override;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Operations / Attributes
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Operations / Attributes
+//////////////////////////////////////////////////////////////////////////
 public:
     /**
      * \brief   Activates timer manually. Same as unlock() function call.
@@ -885,14 +901,14 @@ public:
      **/
     bool isAutoreset( void ) const;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Member variables
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Due time in milliseconds
+     * \brief   Timeout in milliseconds
      **/
-    const unsigned int  mTimeMilliseconds;
+    const unsigned int  mTimeout;
     /**
      * \brief   Flag containing information whether timer is periodic or not
      **/
@@ -902,9 +918,9 @@ private:
      **/
     const bool          mIsAutoReset;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Hidden / Forbidden methods
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Hidden / Forbidden methods
+//////////////////////////////////////////////////////////////////////////
 private:
     SynchTimer( void ) = delete;
     DECLARE_NOCOPY_NOMOVE( SynchTimer );
@@ -922,11 +938,11 @@ private:
  * \example Mutex use
  *
  *          In this example bellow MyClass contains Mutex as a synchronization object
- *          Any time thread is calling foo() or bar() methods ot MyClass, on funtion entry
+ *          Any time thread is calling foo() or bar() methods of MyClass, on function entry
  *          Single Synchronization Object Locking instance is created,
  *          which gets a reference to the Mutex object.
  *          By default, the auto-locking is enable, and by this current thread will try
- *          to get Mutext ownership and will call lock() function during initialization.
+ *          to get Mutex ownership and will call lock() function during initialization.
  *          As soon as thread gets ownership, it will continue code execution in foo() and bar()
  *          function. And as soon as thread leaves these function, i.e. gets out of function scope,
  *          the destructor of locking object will automatically release mutex ownership
@@ -1122,7 +1138,7 @@ public:
      *          The call of function can block calling thread either until
      *          at least one object is signaled or all of them, depending on
      *          passed flag.
-     * \param	timeout	    Timeout to wait for signaled objects
+     * \param	timeout	    The timeout to wait for signaled objects
      * \param	waitForAll	If true, it will wait until all objects are signaled
      * \param   isAlertable If this parameter is true and the thread is in the 
      *                      waiting state, the function returns when the system 
@@ -1184,6 +1200,187 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
+// Wait class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   The Wait puts the thread in a waiting state for seconds, milliseconds
+ *          or microseconds. Do not use this object if the thread should sleep
+ *          for longer time like minutes or even ten seconds. Use this object
+ *          for a very short time where the high resolution timer matters.
+ *          The minimum timeout to suspend the calling thread is 1 microsecond.
+ *          The object ignores passed timeouts in nanoseconds and rounds
+ *          it to microseconds. The calling thread continues execution when 
+ *          the timeout expires.
+ *          The Wait object is not designed to use for synchronization.
+ **/
+class AREG_API Wait
+{
+//////////////////////////////////////////////////////////////////////////
+// Internal types and constants
+//////////////////////////////////////////////////////////////////////////
+public:
+    //!< The high resolution clock, close to real-time
+    using SteadyTime    = std::chrono::steady_clock::time_point;
+    //!< The system clock, with higher precision
+    using SystemTime    = std::chrono::system_clock::time_point;
+    //!< Duration in nanoseconds.
+    using Duration      = std::chrono::nanoseconds;
+
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+
+    //!< One nanosecond duration
+    static constexpr Duration   ONE_NS      { NECommon::DURATION_1_NS };
+    //!< One microsecond duration
+    static constexpr Duration   ONE_MUS     { NECommon::DURATION_1_MICRO };
+    //!< One millisecond duration
+    static constexpr Duration   ONE_MS      { NECommon::DURATION_1_MILLI };
+    //!< One second duration
+    static constexpr Duration   ONE_SEC     { NECommon::DURATION_1_SEC };
+    //!< The minimum waiting timeout
+    static constexpr Duration   MIN_WAIT    { ONE_MS  * 5 };
+
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
+
+    //!< The waiting results
+    enum class eWaitResult
+    {
+          WaitInvalid   = 0 //!< No waiting, due to invalid timeout
+        , WaitIgnored   = 1 //!< The waiting timeout is value, but ignored waiting, because timeout in nanoseconds
+        , WaitInMilli   = 2 //!< Wait thread in milliseconds or longer
+        , WaitInMicro   = 3 //!< Wait thread in microseconds up to MIN_WAIT.
+    };
+
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    Wait(void);
+    ~Wait(void);
+
+//////////////////////////////////////////////////////////////////////////
+// Static operations
+//////////////////////////////////////////////////////////////////////////
+public:
+
+    /**
+     * \brief   Converts the system clock to high resolution steady clock.
+     * \param   time    The system time to convert.
+     * \return  Returns converted high resolution steady clock.
+     **/
+    static inline Wait::SystemTime convertToSystemClock(const Wait::SteadyTime& time);
+    
+    /**
+     * \brief   Converts the high resolution steady clock to system clock .
+     * \param   time    The high resolution steady time to convert.
+     * \return  Returns converted system clock.
+     **/
+    static inline Wait::SteadyTime convertToSteadyClock(const Wait::SystemTime& time);
+
+    /**
+     * \brief   Calculates and returns time difference in nanoseconds when the 
+     *          method is called until the specified steady high-resolution time
+     *          in the future. Returns negative value is specified future time 
+     *          is already passed.
+     * 
+     * \param   future  The steady high-resolution time in future.
+     * \return  The time difference in nanoseconds.
+     **/
+    static inline Wait::Duration fromNow(const Wait::SteadyTime& future);
+
+    /**
+     * \brief   Calculates and returns time difference in nanoseconds of the steady
+     *          high-resolution time in the passed until the time when the method 
+     *          is called. Returns negative value if specified passed time is in the
+     *          future (i.e. did not reach).
+     *
+     * \param   passed  The steady high-resolution time in passed.
+     * \return  The time difference in nanoseconds.
+     **/
+    static inline Wait::Duration untilNow(const Wait::SteadyTime& past);
+
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+
+    /**
+     * \brief   Suspends the thread from further execution for specified timeout
+     *          in milliseconds.
+     * 
+     * \param   ms      The timeout in milliseconds.
+     * \return  Returns waiting results. Any value, which is not equal to eWaitResult::WaitInvalid
+     *          is considered successful operation.
+     **/
+    inline Wait::eWaitResult wait(uint32_t ms) const;
+
+    /**
+     * \brief   Suspends the thread from further execution for specified timeout
+     *          in nanoseconds. The nanosecond part of the timeout is ignored and
+     *          rounded to microseconds, so that the thread is suspended from the
+     *          execution in microseconds.
+     *
+     *          The accuracy of timeout depends on the system and supported feature
+     *          of the hardware.
+     *
+     * \param   timeout     The timeout in microseconds with nanoseconds duration.
+     * \return  Returns waiting results. Any value, which is not equal to eWaitResult::WaitInvalid
+     *          is considered successful operation.
+     **/
+    inline Wait::eWaitResult waitFor(Wait::Duration timeout) const;
+
+    /**
+     * \brief   Suspends the thread from execution until reached the steady high 
+     *          resolution timer.
+     *
+     * \param   future  The time in the future. The thread is not suspended
+     *                  if difference between time in the future is less than
+     *                  the time when the method is called or the difference
+     *                  is in nanoseconds. The minimum timeout should be
+     *                  1 microsecond.
+     * \return  Returns waiting results. Any value, which is not equal to eWaitResult::WaitInvalid
+     *          is considered successful operation.
+     **/
+    inline Wait::eWaitResult waitUntil(const Wait::SteadyTime& future) const;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden OS dependent calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   Initializes the timer object depending on the OS.
+     **/
+    void _osInitTimer(void);
+    /**
+     * \brief   Releases the timer object depending on the OS.
+     **/
+    void _osReleaseTimer(void);
+    /**
+     * \brief   OS dependent implementation of thread waiting.
+     *          The accuracy depends on the OS and hardware provided features.
+     * \param   time    The time in the future to suspend thread and wait.
+     * \return  Returns waiting results. Any value, which is not equal to eWaitResult::WaitInvalid
+     *          is considered successful operation.
+     **/
+    eWaitResult _osWaitFor(const Wait::Duration& timeout) const;
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+    //!< OS dependent timer.
+    TIMERHANDLE mTimer;
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+    DECLARE_NOCOPY_NOMOVE(Wait);
+};
+
+//////////////////////////////////////////////////////////////////////////
 // Inline functions
 //////////////////////////////////////////////////////////////////////////
 
@@ -1226,7 +1423,7 @@ inline long Semaphore::getCurrentCount( void ) const
 //////////////////////////////////////////////////////////////////////////
 inline unsigned int SynchTimer::dueTime( void ) const
 {
-    return mTimeMilliseconds;
+    return mTimeout;
 }
 
 inline bool SynchTimer::isPeriodic( void ) const
@@ -1275,3 +1472,48 @@ inline bool Lock::unlock( void )
 {
     return mSynchObject.unlock();
 }
+
+//////////////////////////////////////////////////////////////////////////
+// Wait class inline functions
+//////////////////////////////////////////////////////////////////////////
+
+inline Wait::SystemTime Wait::convertToSystemClock(const Wait::SteadyTime& time)
+{
+    SystemTime result = std::chrono::system_clock::now();
+    SteadyTime steady = std::chrono::steady_clock::now();
+    return std::chrono::time_point_cast<SystemTime::duration>(result + (time - steady));
+}
+
+inline Wait::SteadyTime Wait::convertToSteadyClock(const Wait::SystemTime& time)
+{
+    SteadyTime result = std::chrono::steady_clock::now();
+    SystemTime system = std::chrono::system_clock::now();
+    return std::chrono::time_point_cast<SteadyTime::duration>(result + (time - system));
+}
+
+inline Wait::Duration Wait::fromNow(const Wait::SteadyTime& future)
+{
+    return (future - std::chrono::steady_clock::now());
+}
+
+inline Wait::Duration Wait::untilNow(const Wait::SteadyTime& past)
+{
+    return (std::chrono::steady_clock::now() - past);
+}
+
+inline Wait::eWaitResult Wait::wait(uint32_t ms) const
+{
+    return _osWaitFor(Wait::Duration{ ms * Wait::ONE_MS });
+}
+
+inline Wait::eWaitResult Wait::waitFor(Wait::Duration timeout) const
+{
+    return _osWaitFor(timeout);
+}
+
+inline Wait::eWaitResult Wait::waitUntil(const Wait::SteadyTime& future) const
+{
+    return _osWaitFor(future - std::chrono::steady_clock::now());
+}
+
+#endif  // AREG_BASE_SYNCHOBJECTS_HPP

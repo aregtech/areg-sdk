@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/NEMath.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -153,39 +153,7 @@ static constexpr unsigned char _crc32LookupTable[] = {
     0x1B, 0xDF, 0x05, 0x5A, 0x8D, 0xEF, 0x02, 0x2D, 
 };
 
-NEMath::S_LargeInteger & NEMath::sLargeInteger::operator =  ( const NEMath::S_LargeInteger & src )
-{
-    hiBits  = src.hiBits;
-    loBits  = src.loBits;
-
-    return (*this);
-}
-
-NEMath::S_LargeInteger & NEMath::sLargeInteger::operator =  ( NEMath::S_LargeInteger && src ) noexcept
-{
-    hiBits  = src.hiBits;
-    loBits  = src.loBits;
-
-    return (*this);
-}
-
-AREG_API void NEMath::setBits( sLargeInteger &num, unsigned int hi, unsigned int lo )
-{
-    num.hiBits = hi;
-    num.loBits = lo;
-}
-
-AREG_API unsigned int NEMath::getHighBits( const sLargeInteger &num )
-{
-    return (num.hiBits);
-}
-
-unsigned int AREG_API NEMath::getLowBits( const sLargeInteger &num )
-{
-    return (num.loBits);
-}
-
-AREG_API unsigned int NEMath::crc32Calculate( const unsigned char* data, int size )
+AREG_API_IMPL unsigned int NEMath::crc32Calculate( const unsigned char* data, int size )
 {
     unsigned int result = static_cast<unsigned int>(~0);   // initialize
     const unsigned int* crc32Tab = reinterpret_cast<const unsigned int *>(::_crc32LookupTable);   // get converted lookup table
@@ -194,7 +162,7 @@ AREG_API unsigned int NEMath::crc32Calculate( const unsigned char* data, int siz
     return (~result);   // return result
 }
 
-AREG_API unsigned int NEMath::crc32Calculate( const char * strData )
+AREG_API_IMPL unsigned int NEMath::crc32Calculate( const char * strData )
 {
     unsigned int result = static_cast<unsigned int>(~0);   // initialize
     if ( strData != nullptr )
@@ -206,7 +174,7 @@ AREG_API unsigned int NEMath::crc32Calculate( const char * strData )
     return (~result);   // return result
 }
 
-AREG_API unsigned int NEMath::crc32Calculate( const wchar_t * strData )
+AREG_API_IMPL unsigned int NEMath::crc32Calculate( const wchar_t * strData )
 {
     unsigned int result = static_cast<unsigned int>(~0);   // initialize
     if ( strData != nullptr )
@@ -221,8 +189,8 @@ AREG_API unsigned int NEMath::crc32Calculate( const wchar_t * strData )
             }
             else
             {
-                unsigned char low    = static_cast<unsigned char>( MACRO_LO_BYTE16(data) );
-                unsigned char high   = static_cast<unsigned char>( MACRO_HI_BYTE16(data) );
+                unsigned char low    = static_cast<unsigned char>( MACRO_16_LO_BYTE8(data) );
+                unsigned char high   = static_cast<unsigned char>( MACRO_16_HI_BYTE8(data) );
                 result = (result >> 8) ^ crc32Tab[static_cast<unsigned char>(low ) ^ static_cast<unsigned char>(result & 0x000000FF)];  // calculate low bits
                 result = (result >> 8) ^ crc32Tab[static_cast<unsigned char>(high) ^ static_cast<unsigned char>(result & 0x000000FF)];  // calculate hight bits
             }
@@ -231,12 +199,12 @@ AREG_API unsigned int NEMath::crc32Calculate( const wchar_t * strData )
     return (~result);   // return result
 }
 
-AREG_API unsigned int NEMath::crc32Init( void )
+AREG_API_IMPL unsigned int NEMath::crc32Init( void )
 {
     return static_cast<unsigned int>(~0);
 }
 
-AREG_API unsigned int NEMath::crc32Start( unsigned int crcInit, const unsigned char* data, int size )
+AREG_API_IMPL unsigned int NEMath::crc32Start( unsigned int crcInit, const unsigned char* data, int size )
 {
     unsigned int result = crcInit;
     if ( data != nullptr && size > 0)
@@ -269,7 +237,7 @@ AREG_API unsigned int NEMath::crc32Start( unsigned int crcInit, const unsigned c
     return result;
 }
 
-AREG_API unsigned int NEMath::crc32Start(unsigned int crcInit, const char * data)
+AREG_API_IMPL unsigned int NEMath::crc32Start(unsigned int crcInit, const char * data)
 {
     unsigned int result = crcInit;
     if ( data != nullptr && *data != '\0')
@@ -281,7 +249,7 @@ AREG_API unsigned int NEMath::crc32Start(unsigned int crcInit, const char * data
     return result;
 }
 
-AREG_API unsigned int NEMath::crc32Start(unsigned int crcInit, unsigned char uch)
+AREG_API_IMPL unsigned int NEMath::crc32Start(unsigned int crcInit, unsigned char uch)
 {
     unsigned int result = crcInit;
     const unsigned int* crc32Table = reinterpret_cast<const unsigned int *>(::_crc32LookupTable);  // get converted lookup table
@@ -289,12 +257,12 @@ AREG_API unsigned int NEMath::crc32Start(unsigned int crcInit, unsigned char uch
     return result;
 }
 
-AREG_API unsigned int NEMath::crc32Finish( unsigned int crc )
+AREG_API_IMPL unsigned int NEMath::crc32Finish( unsigned int crc )
 {
     return (~crc);
 }
 
-AREG_API double NEMath::round(double val)
+AREG_API_IMPL double NEMath::round(double val)
 {
     return ( (val) < 0.0 ? ::ceil( static_cast<float>(val) - 0.5 ) : ::floor( static_cast<float>(val) + 0.5 ) );
 }

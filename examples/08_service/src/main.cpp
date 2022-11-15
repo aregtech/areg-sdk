@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech (c) 2021
+// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
 // Description : This project demonstrates the use of simple local servicing 
 //               objects to create multithreading applications.It instantiates
 //               a dummy ( empty ) local service interface, which is not 
@@ -31,7 +31,7 @@ constexpr char const _modelName[] { "TestModel" };  //!< The name of model
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "Test_ServiceThread" )
+    BEGIN_REGISTER_THREAD( "Test_ServiceThread", NECommon::WATCHDOG_IGNORE)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( "TestServicingComponent", ServicingComponent )
             // register dummy 'empty service'. In this example we demonstrate simple initialization
@@ -57,8 +57,8 @@ int main()
     printf("Initializing servicing component...\n");
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START( nullptr );
-    // Initialize application, enable logging, servicing and the timer.
-    Application::initApplication(true, true, false, true, nullptr, nullptr );
+    // Initialize application, enable logging, servicing, timer and watchdog.
+    Application::initApplication(true, true, false, true, true, nullptr, nullptr );
 
     do 
     {

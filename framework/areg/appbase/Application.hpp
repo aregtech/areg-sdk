@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_APPBASE_CEAPPLICATION_HPP
+#define AREG_APPBASE_CEAPPLICATION_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/appbase/Application.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -49,8 +50,7 @@ class AREG_API Application
      *          by given names. If a stored element is created by manually allocating memory, the memory
      *          should be as well manually freed.
      **/
-    using ImplStringHashMap = TEHashMapImpl<const String &, const NEMemory::uAlign>;
-    using MapAppStorage     = TEStringHashMap<NEMemory::uAlign, const NEMemory::uAlign, ImplStringHashMap>;
+    using MapAppStorage     = TEStringHashMap<NEMemory::uAlign>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constants and statics
@@ -82,6 +82,7 @@ public:
      * \param   startServicing      If true, application starts Service Manager. This parameter is ignored if 'startRouting' is true.
      * \param   startRouting        If true, application starts multi-cast router client and Service Manager (if not started).
      * \param   startTimer          If true, application starts timer manager. If Service Managers, Timer Manager automatically starts.
+     * \param   startWatchdog       If true, application starts watchdog manager, so that it can track the component threads.
      * \param   fileTraceConfig     If nullptr or empty, configures Tracing from specified file. Default location is './config/log.init' (NEApplication::DEFAULT_TRACING_CONFIG_FILE)
      * \param   fileRouterConfig    If nullptr or empty, configures  Router client from specified file. Default location is './config/router.init' (NEApplication::DEFAULT_ROUTER_CONFIG_FILE).
      * \see     release, loadModel
@@ -92,7 +93,7 @@ public:
      *          Application::initApplication();
      *
      *          // In this example, start all services and configuration files from user home folder:
-     *          Application::initApplication(true, true, true, true, "%user%/log.init", "%user%/mcrouter.init");
+     *          Application::initApplication(true, true, true, true, true, "%user%/log.init", "%user%/mcrouter.init");
      *
      *          // In this example, start all services, even if Service Manager marked 'false', because
      *          // routing requires to start Service Manager first. Read configuration files from default location:
@@ -100,12 +101,13 @@ public:
      *
      *          // In this example start no service, only make configuration of system, read configuration files from
      *          // user home folder.The services can start later:
-     *          Application::initApplication(false, false, false, false, "%user%/log.init", "%user%/connect.init");
+     *          Application::initApplication(false, false, false, false, false, "%user%/log.init", "%user%/connect.init");
      **/
     static void initApplication(  bool startTracing   = true
                                 , bool startServicing = true
                                 , bool startRouting   = true
                                 , bool startTimer     = true
+                                , bool startWatchdog  = true
                                 , const char * fileTraceConfig = NEApplication::DEFAULT_TRACING_CONFIG_FILE.data()
                                 , const char * fileRouterConfig= NEApplication::DEFAULT_ROUTER_CONFIG_FILE.data() );
 
@@ -115,11 +117,6 @@ public:
     static void releaseApplication( void );
 
     /**
-     * \brief   Setup application handlers. In Linux, it sets up the signal handlers.
-     **/
-    static void setupHandlers( void );
-
-    /**
      * \brief   Call to load and start particular registered model in the system.
      *          If mode name is nullptr or empty, all registered models are started.
      * \param   modelName   The unique name of model to load. If nullptr, all models will be loaded.
@@ -127,7 +124,7 @@ public:
      *
      * \example     Start Model
      *          // In this example the system starts services and starts all models:
-     *          Application::initializ();
+     *          Application::initialize();
      *          Application::loadModel();
      **/
     static bool loadModel( const char * modelName = nullptr );
@@ -140,7 +137,7 @@ public:
      * \example     Start and Stop all models
      *          // This example starts all services, loads all models. 1 second later stops and unloads all models,
      *          // stop all services, release all resources:
-     *          Application::initiali();
+     *          Application::initialize();
      *          Application::loadModel();
      *          Thread::sleep(1000);
      *          Application::unloadModel();
@@ -232,6 +229,17 @@ public:
     static void stopTimerManager( void );
 
     /**
+     * \brief   Call to start timer manager, so that the components can trigger timers.
+     * \return  Returns true if timer manager is running.
+     **/
+    static bool startWatchdogManager(void);
+
+    /**
+     * \brief   Call to stop timer manager.
+     **/
+    static void stopWatchdogManager(void);
+
+    /**
      * \brief   Returns true, if Message Router client is started.
      **/
     static bool isServiceManagerStarted( void );
@@ -302,20 +310,6 @@ public:
     static bool isRouterConnected( void );
 
     /**
-     * \brief   Returns true, if it was requested to start tracer.
-     *          The tracer starts if any model requests to start it.
-     *          Then the flag remains unchanged even if any model requests do not start the tracer.
-     **/
-    inline static bool startTracerRequested( void );
-
-    /**
-     * \brief   Returns true, if it was requested to start Router Service.
-     *          The Router Service starts if any model requests to start if.
-     *          Then the flag remains unchanged even if any model requests do not start the Router Service.
-     **/
-    inline static bool startServiceManagerRequested( void );
-
-    /**
      * \brief   Returns the config file name of tracer.
      *          The config file is setup once when any module first requests to setup tracer.
      **/
@@ -335,7 +329,7 @@ public:
 
     /**
      * \brief   Saves element in application storage. If storage already has element save with specified
-     *          name, the function returns stored element. Otherwise, retirns NEMemroy::InvalidElement.
+     *          name, the function returns stored element. Otherwise, returns NEMemroy::InvalidElement.
      * \param   elemName    The name of element to save.
      * \param   elem        The element to save in storage.
      * \return  If storage already has an element saved with same name, it returns previously save element.
@@ -377,25 +371,9 @@ private:
      */
     bool            mSetup;
     /**
-     * \brief   Requested to start tracer
-     **/
-    bool            mStartTracer;
-    /**
      * \brief   The config file name of Tracer
      **/
     String          mConfigTracer;
-    /**
-     * \brief   Requested to start service manager.
-     **/
-    bool            mStartService;
-    /**
-     * \brief   Requested to start timer manager.
-     **/
-    bool            mStartTimer;
-    /**
-     * \brief   Requested to start Router Service client. THe service manager should start fits.
-     **/
-    bool            mStartRouting;
     /**
      * \brief   The config file name of Router Service
      **/
@@ -447,18 +425,31 @@ private:
     static inline Application & getInstance( void );
 
     /**
-     * \brief   Operating system specific implementation to start router service on machine.
-     * \return  Returns true if succeeded to start service.
-     **/
-    static bool _startRouterService( void );
-
-    /**
      * \brief   Sets new state of application. The state can be changed in following sequence:
      *          AppStateUndefined => AppStateInitializing => AppStateReady => AppStateReleasing => AppStateUndefined
      * \param   newState    The new sate of application to set.
      * \return  Returns true if succeeded to change the application state.
      **/
-    static bool _setAppState( eAppState newState );
+    static bool _setAppState(eAppState newState);
+
+    /**
+     * \brief   Operating system specific implementation to start router service on machine.
+     * \return  Returns true if succeeded to start service.
+     **/
+    static bool _osStartRouterService( void );
+
+    /**
+     * \brief   OS specific implementation to make setups.
+     *          In Linux it sets up signal handlers.
+     *          In Windows it sets up time period.
+     **/
+    static void _osSetupHandlers(void);
+
+    /**
+     * \brief   OS specific implementation to release resources.
+     * 
+     **/
+    static void _osReleaseHandlers(void);
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden methods.
@@ -470,15 +461,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Application class inline methods.
 //////////////////////////////////////////////////////////////////////////
-inline bool Application::startTracerRequested( void )
-{
-    return Application::getInstance().mStartTracer;
-}
-
-inline bool Application::startServiceManagerRequested( void )
-{
-    return Application::getInstance().mStartService;
-}
 
 inline const char * Application::getTracerConfigFile( void )
 {
@@ -494,3 +476,5 @@ inline Application & Application::getInstance( void )
 {
     return Application::_theApplication;
 }
+
+#endif  // AREG_APPBASE_CEAPPLICATION_HPP

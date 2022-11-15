@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/WorkerThread.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -33,11 +33,15 @@ IMPLEMENT_RUNTIME(WorkerThread, DispatcherThread)
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-WorkerThread::WorkerThread( const char * threadName, Component & bindingComponent, IEWorkerThreadConsumer & threadConsumer)
-    : DispatcherThread    ( threadName )
+WorkerThread::WorkerThread( const String & threadName
+                          , Component & bindingComponent
+                          , IEWorkerThreadConsumer & threadConsumer
+                          , uint32_t watchdogTimeout /*= NECommon::WATCHDOG_IGNORE*/)
+    : DispatcherThread      ( threadName )
 
     , mBindingComponent     ( bindingComponent )
     , mWorkerThreadConsumer ( threadConsumer )
+    , mWatchdog             ( self(), watchdogTimeout )
 {
     ASSERT(NEString::isEmpty<char>(threadName) == false);
 }
@@ -54,7 +58,7 @@ bool WorkerThread::postEvent( Event& eventElem )
     }
     else
     {
-        OUTPUT_ERR("Wrong event to post, event type [ %s ], category [ %d ]", eventElem.getRuntimeClassName(), eventElem.getEventType());
+        OUTPUT_ERR("Wrong event to post, event type [ %s ], category [ %d ]", eventElem.getRuntimeClassName().getString(), static_cast<int>(eventElem.getEventType()));
         eventElem.destroy();
         ASSERT(false);
     }
@@ -75,7 +79,26 @@ DispatcherThread* WorkerThread::getEventConsumerThread( const RuntimeClassID& wh
     return (hasRegisteredConsumer(whichClass) ? static_cast<DispatcherThread *>(this) : getBindingComponent().findEventConsumer(whichClass));
 }
 
+bool WorkerThread::dispatchEvent(Event& eventElem)
+{
+    mWatchdog.startGuard();
+    bool result = DispatcherThread::dispatchEvent(eventElem);
+    mWatchdog.stopGuard();
+
+    return result;
+}
+
 ComponentThread & WorkerThread::getBindingComponentThread( void ) const
 {
     return mBindingComponent.getMasterThread();
+}
+
+void WorkerThread::terminateSelf(void)
+{
+    mHasStarted = false;
+    removeAllEvents();
+    mEventExit.setEvent();
+    Thread::destroyThread(NECommon::TIMEOUT_10_MS);
+
+    delete this;
 }

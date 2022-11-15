@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/NEService.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -19,18 +19,30 @@
 //////////////////////////////////////////////////////////////////////////
 // class NEService::StateArray implementation
 //////////////////////////////////////////////////////////////////////////
-NEService::StateArray::StateArray( int size /*= 0*/ )
-    : StateArrayBase(size)
+NEService::StateArray::StateArray(uint32_t count)
+    : StateArrayBase(count)
+    , mExternal     (false)
 {
+    ASSERT((count != 0) || (mValueList == nullptr));
     resetStates();
 }
 
 NEService::StateArray::StateArray( unsigned char* thisBuffer, int elemCount )
     : StateArrayBase( )
+    , mExternal     (true)
 {
-    this->mValueList    = reinterpret_cast<NEService::eDataStateType *>(thisBuffer + sizeof(NEService::StateArray));
-    this->mElemCount    = elemCount;
+    mValueList  = reinterpret_cast<NEService::eDataStateType *>(thisBuffer);
+    mElemCount  = elemCount;
     resetStates();
+}
+
+NEService::StateArray::~StateArray(void)
+{
+    if (mExternal)
+    {
+        mValueList = nullptr;
+        mElemCount = 0;
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -90,22 +102,22 @@ void NEService::ParameterArray::construct( const unsigned int * params, int coun
 {
     if ( (params != nullptr) && (count > 0) )
     {
-        unsigned int single		= static_cast<unsigned int>(sizeof(NEService::StateArray *));
+        uint32_t single = static_cast<unsigned int>(sizeof(NEService::StateArray *));
         // count pointers to state array
-        unsigned int size       = count * single;
+        uint32_t size   = count * single;
 
         // how many bytes need to skip to start param Elements
-        unsigned int skipList   = size;
+        uint32_t skipList   = size;
 
         // reserve space for one "no param" element
-        size += static_cast<unsigned int>( sizeof(NEService::StateArray) );
+        size += static_cast<uint32_t>( sizeof(NEService::StateArray) );
 
         // here we start having parameter list.
         unsigned int skipBegin  = size;
         // space for parameters
         size += countParamSpace(params, count);
 
-        unsigned char* buffer = DEBUG_NEW unsigned char[size];
+        uint8_t* buffer = DEBUG_NEW uint8_t[size];
         if (buffer != nullptr)
         {
             // set element count
@@ -114,13 +126,13 @@ void NEService::ParameterArray::construct( const unsigned int * params, int coun
             mParamList  = reinterpret_cast<NEService::StateArray **>(buffer);
 
             // here is reserved "no param" element
-            NEService::StateArray*  noParam      = reinterpret_cast<NEService::StateArray  *>(buffer + skipList);
+            NEService::StateArray* noParam = reinterpret_cast<NEService::StateArray  *>(buffer + skipList);
 
             // here start actual params
-            unsigned char* paramElem                = buffer + skipBegin;
+            uint8_t* paramElem  = buffer + skipBegin;
 
             // initialize "no param" element
-            new (noParam) NEService::StateArray();
+            new (noParam) NEService::StateArray(0);
 
             // start initializing
             for ( int i = 0; i < mElemCount; ++ i )
@@ -132,10 +144,10 @@ void NEService::ParameterArray::construct( const unsigned int * params, int coun
                     // if parameter count is not zero
                     param = reinterpret_cast<NEService::StateArray *>(paramElem);
                     // initialize by calling private construct, implemented for this case.
-                    new (param) NEService::StateArray(paramElem, static_cast<int>(params[i]));
+                    new (param) NEService::StateArray(paramElem + sizeof(NEService::StateArray), static_cast<int>(params[i]));
 
                     // go to next elem
-                    unsigned int next = static_cast<unsigned int>(sizeof(NEService::StateArray) + params[i] * sizeof(NEService::eDataStateType));
+                    uint32_t next = static_cast<uint32_t>(sizeof(NEService::StateArray) + params[i] * sizeof(NEService::eDataStateType));
                     paramElem += next;
                 }
                 else
@@ -178,11 +190,6 @@ NEService::ProxyData::ProxyData( const NEService::SInterfaceData& ifData )
     , mParamState   (ifData)
 {
     resetStates(); 
-}
-
-NEService::ProxyData::~ProxyData( void )
-{
-    ; // do noting
 }
 
 void NEService::ProxyData::resetStates( void )
@@ -234,9 +241,9 @@ unsigned int NEService::ProxyData::getResponseId( unsigned int requestId ) const
             );
 }
 
-AREG_API const Version NEService::EmptyServiceVersion (1, 0, 0);
+AREG_API_IMPL const Version NEService::EmptyServiceVersion (1, 0, 0);
 
-AREG_API NEService::SInterfaceData & NEService::getEmptyInterface(void)
+AREG_API_IMPL NEService::SInterfaceData & NEService::getEmptyInterface(void)
 {
     /**
      * \brief   System Service Interface data

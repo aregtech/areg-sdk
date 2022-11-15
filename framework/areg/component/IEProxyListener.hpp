@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_IEPROXYLISTENER_HPP
+#define AREG_COMPONENT_IEPROXYLISTENER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/IEProxyListener.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -23,17 +24,13 @@
 // IEProxyListener class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       A base class for all Proxy Notification event listeners.
- *              Implemented in client class to receive notifications
- *              from Proxy object. Clients also receive service
- *              connected message.
- * 
- * \details     When a Service Event is processed and clients needs to be
- *              notified, Proxy object creates internal notification 
- *              and sends to all its clients. The client objects should
- *              be instances of Proxy Listener to receive those 
- *              notification events.
- *
+ * \brief   A base class for all Proxy Notification event listeners.
+ *          Implemented in client class to receive notifications from
+ *          Proxy object. Clients also receive service connected message.
+ *          When a Service Event is processed and clients needs to be 
+ *          notified, the Proxy object creates internal notification
+ *          and sends to all its clients. The client objects are instances
+ *          of Proxy Listener to receive those notification events.
  **/
 class AREG_API IEProxyListener  : public IENotificationEventConsumer
 {
@@ -107,3 +104,5 @@ public:
 private:
     DECLARE_NOCOPY_NOMOVE( IEProxyListener );
 };
+
+#endif  // AREG_COMPONENT_IEPROXYLISTENER_HPP

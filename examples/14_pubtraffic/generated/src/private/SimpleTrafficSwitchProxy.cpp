@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:13 GMT+02:00 
+ * Generated at     13.08.2022  02:45:34 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficSwitch.
  *
  * \file            generated/src/private/SimpleTrafficSwitchProxy.hpp
@@ -42,12 +42,12 @@ SimpleTrafficSwitchProxy::SimpleTrafficSwitchServiceAvailableEvent::SimpleTraffi
 // static function implementation
 //////////////////////////////////////////////////////////////////////////
 
-ProxyBase * SimpleTrafficSwitchProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+ProxyBase * SimpleTrafficSwitchProxy::_createProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
 {
     return DEBUG_NEW SimpleTrafficSwitchProxy(roleName, ownerThread);
 }
 
-SimpleTrafficSwitchProxy * SimpleTrafficSwitchProxy::createProxy( const char * roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
+SimpleTrafficSwitchProxy * SimpleTrafficSwitchProxy::createProxy( const String & roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
 {
     return static_cast<SimpleTrafficSwitchProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NESimpleTrafficSwitch::getInterfaceData()
@@ -56,7 +56,7 @@ SimpleTrafficSwitchProxy * SimpleTrafficSwitchProxy::createProxy( const char * r
                                                                       , ownerThread) );
 }
 
-SimpleTrafficSwitchProxy * SimpleTrafficSwitchProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= nullptr*/ )
+SimpleTrafficSwitchProxy * SimpleTrafficSwitchProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
 {
     return static_cast<SimpleTrafficSwitchProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NESimpleTrafficSwitch::getInterfaceData()
@@ -68,7 +68,7 @@ SimpleTrafficSwitchProxy * SimpleTrafficSwitchProxy::createProxy( const char * r
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-SimpleTrafficSwitchProxy::SimpleTrafficSwitchProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+SimpleTrafficSwitchProxy::SimpleTrafficSwitchProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
     : ProxyBase(roleName, NESimpleTrafficSwitch::getInterfaceData(), ownerThread)
 
 /************************************************************************
@@ -126,7 +126,7 @@ void SimpleTrafficSwitchProxy::unregisterServiceListeners( void )
 /************************************************************************
  * Requests.
  ************************************************************************/
- 
+
 void SimpleTrafficSwitchProxy::requestSwitchLight( bool switchOn )
 {
     static const NESimpleTrafficSwitch::eMessageIDs msgId = NESimpleTrafficSwitch::eMessageIDs::MsgId_requestSwitchLight;
@@ -138,7 +138,7 @@ void SimpleTrafficSwitchProxy::requestSwitchLight( bool switchOn )
 /************************************************************************
  * Event processing.
  ************************************************************************/
- 
+
 /************************************************************************
  * IEProxyEventConsumer interface overrides.
  ************************************************************************/
@@ -196,8 +196,8 @@ void SimpleTrafficSwitchProxy::updateData( SimpleTrafficSwitchResponseEvent & ev
         break;
     }
 }
- 
-void SimpleTrafficSwitchProxy::processResponse( SimpleTrafficSwitchResponseEvent & evenElem )
+
+    void SimpleTrafficSwitchProxy::processResponse( SimpleTrafficSwitchResponseEvent & evenElem )
 {
     NESimpleTrafficSwitch::eMessageIDs respId  = static_cast<NESimpleTrafficSwitch::eMessageIDs>(evenElem.getResponseId());
     NEService::eResultType resultType  = evenElem.getResult();
@@ -223,8 +223,8 @@ void SimpleTrafficSwitchProxy::processResponse( SimpleTrafficSwitchResponseEvent
         {
             respId  = static_cast<NESimpleTrafficSwitch::eMessageIDs>( mProxyData.getResponseId(static_cast<msg_id>(respId)) );
         }
-        
-        setStates   = respId != NESimpleTrafficSwitch::eMessageIDs::MsgId_NotProcessed;            
+
+        setStates   = respId != NESimpleTrafficSwitch::eMessageIDs::MsgId_NotProcessed;
         break;
 
     case NEService::eResultType::RequestOK:     // fall through
@@ -241,16 +241,15 @@ void SimpleTrafficSwitchProxy::processResponse( SimpleTrafficSwitchResponseEvent
     {
         updateData(evenElem, respId);
     }
-       
+
     if (setStates == true)
     {
         setState(static_cast<msg_id>(respId), dataValid ? NEService::eDataStateType::DataIsOK : NEService::eDataStateType::DataIsInvalid);
     }
-    
+
     notifyListeners(static_cast<msg_id>(respId), resultType, evenElem.getSequenceNumber());
 }
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/private/SimpleTrafficSwitchProxy.cpp file
 //////////////////////////////////////////////////////////////////////////
- 

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_THREAD_HPP
+#define AREG_BASE_THREAD_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/Thread.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -53,7 +54,7 @@ class String;
  *          to save thread specific storage to store objects that are not accessible outside
  *          of the thread context.
  * 
- *          The derived objects are Dispather, Worker and Component threads that are able
+ *          The derived objects are Dispatcher, Worker and Component threads that are able
  *          to receive and process thread specific events.
  *
  * \see     IEThreadConsumer, ThreadLocalStorage, DispatcherThread, WorkerThread, ComponentThread
@@ -144,7 +145,7 @@ public:
      *                          If nullptr or the name is duplicated, the system will not
      *                          be able to track the thread by name.
      **/
-    Thread( IEThreadConsumer & threadConsumer, const char * threadName = nullptr);
+    Thread( IEThreadConsumer & threadConsumer, const String & threadName );
 
     /**
      * \brief	Free thread resources and ensures that thread handle is closed.
@@ -166,7 +167,7 @@ public:
      *                          is created and running.
      *                          -   Set DO_NOT_WAIT to escape waiting. The function
      *                              returns immediately when thread is created and
-     *                              gives no guarantie that it already runs.
+     *                              gives no guarantee that it already runs.
      *                          -   Set WAIT_INFINITE to ensure that thread is running.
      *                          -   Set any other value in milliseconds to specify waiting time
      *                              until thread starts running or timeout expires.
@@ -206,6 +207,20 @@ public:
      * \return  Returns true if either thread completed or the waiting timeout is NECommon::DO_NOT_WAIT.
      **/
     virtual bool completionWait( unsigned int waitForCompleteMs = NECommon::WAIT_INFINITE );
+
+    /**
+     * \brief   It calls destroyThread() with waiting timeout 10 ms. If waiting time is expired, 
+     *          it immediately terminates the thread and returns completion status 'terminated'.
+     *          Use this function only if thread does not react anymore and immediate termination
+     *          is required. By calling this method, the system does not guarantee the graceful
+     *          way of cleaning resources and stacks.
+     * 
+     * \return	Returns the thread completion status. The following statuses are defined:
+     *              Thread::ThreadTerminated  -- The waiting timeout expired and thread was terminated;
+     *              Thread::ThreadCompleted   -- The thread was valid and completed normally;
+     *              Thread::ThreadInvalid     -- The thread was not valid and was not running, nothing was done.
+     **/
+    virtual Thread::eCompletionStatus terminateThread( void );
 
 /************************************************************************
  * Attributes
@@ -276,7 +291,7 @@ public:
      * \param	threadName	The unique name of thread to search
      * \return	If not nullptr, the thread object was found.
      **/
-    inline static Thread * findThreadByName( const char * threadName) ;
+    inline static Thread * findThreadByName( const String & threadName) ;
 
     /**
      * \brief	Search by thread ID and return pointer the thread object.
@@ -311,7 +326,7 @@ public:
      * \return	If found, returns valid thread address object.
      *          Otherwise returns invalid thread address.
      **/
-    inline static const ThreadAddress & findThreadAddressByName( const char * threadName );
+    inline static const ThreadAddress & findThreadAddressByName( const String & threadName );
 
     /**
      * \brief   Suspends current thread and puts in a sleep mode for specified timeout in milliseconds.
@@ -583,26 +598,23 @@ private:
      * \brief   Thread resource mapping by thread ID.
      *          The unique thread ID is set when thread is created
      **/
-    using   ImplMapThreadID         = TEHashMapImpl<id_type, Thread *>;
-    using   MapThreadID             = TEIdHashMap<Thread *, Thread *, ImplMapThreadID>;
+    using   MapThreadID             = TEIdMap< Thread* >;
     using   ImplThreadIDResource    = TEResourceMapImpl<id_type, Thread>;
-    typedef TELockResourceMap<id_type, Thread, MapThreadID,ImplThreadIDResource>        MapThreadIDResource;
+    using   MapThreadIDResource     = TELockResourceMap<id_type, Thread, MapThreadID,ImplThreadIDResource>;
     /**
      * \brief   Thread resource mapping by thread handle. 
      *          The unique thread handle can be used to access thread object.
      **/
-    using   ImplMapThreadHandle     = TEPointerHashMapImpl<void *, Thread *>;
-    using   MapThreadPoiters        = TEPointerHashMap<Thread *, Thread *, ImplMapThreadHandle>;
-    using   ImplThreadHandleResource= TEResourceMapImpl<void *, Thread>;
-    typedef TELockResourceMap<void *, Thread, MapThreadPoiters,ImplThreadHandleResource> MapThreadHandleResource;
+    using   MapThreadPoiters        = TEPointerMap< Thread* >;
+    using   ImplThreadHandleResource= TEResourceMapImpl< void *, Thread >;
+    using   MapThreadHandleResource = TELockResourceMap< void *, Thread, MapThreadPoiters,ImplThreadHandleResource >;
     /**
      * \brief   Thread resource mapping by thread name. 
      *          The unique thread name can be used to access thread object.
      **/
-    using   ImplMapThreadName       = TEHashMapImpl<const String &, Thread *>;
-    using   MapThreadName           = TEStringHashMap<Thread *, Thread *, ImplMapThreadName>;
+    using   MapThreadName           = TEStringMap<Thread *>;
     using   ImplThreadNameResource  = TEResourceMapImpl<String, Thread>;
-    typedef TELockResourceMap<String, Thread, MapThreadName, ImplThreadNameResource>    MapThreadNameResource;
+    using   MapThreadNameResource   = TELockResourceMap<String, Thread, MapThreadName, ImplThreadNameResource>;
 
 /************************************************************************/
 // Resource controlling and mapping variables
@@ -675,9 +687,9 @@ inline const ThreadAddress & Thread::getAddress( void ) const
     return mThreadAddress;
 }
 
-inline Thread* Thread::findThreadByName(const char* threadName)
+inline Thread* Thread::findThreadByName(const String & threadName)
 {
-    return (threadName != nullptr ? Thread::_mapThreadName.findResourceObject(threadName) : nullptr);
+    return (!threadName.isEmpty() ? Thread::_mapThreadName.findResourceObject(threadName) : nullptr);
 }
 
 inline Thread* Thread::findThreadById( id_type threadId)
@@ -696,7 +708,7 @@ inline const ThreadAddress & Thread::findThreadAddressById( id_type threadId)
     return (threadObj != nullptr ? threadObj->getAddress() : ThreadAddress::INVALID_THREAD_ADDRESS);
 }
 
-inline const ThreadAddress& Thread::findThreadAddressByName(const char* threadName)
+inline const ThreadAddress& Thread::findThreadAddressByName(const String & threadName)
 {
     Thread* threadObj = Thread::findThreadByName(threadName);
     return (threadObj != nullptr ? threadObj->getAddress() : ThreadAddress::INVALID_THREAD_ADDRESS);
@@ -743,3 +755,5 @@ inline const char * Thread::getString( Thread::eThreadPriority threadPriority )
         return "ERR: Invalid Thread::eThreadPriority value!";
     }
 }
+
+#endif  // AREG_BASE_THREAD_HPP

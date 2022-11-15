@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/ConnectionManagerStub.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_CONNECTIONMANAGERSTUB_HPP
+#define  GENERATED_CONNECTIONMANAGERSTUB_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:14 GMT+02:00 
+ * Generated at     13.08.2022  02:47:58 GMT+02:00
  *                  Create by AREG SDK code generator tool from source ConnectionManager.
  *
  * \file            generated/ConnectionManagerStub.hpp
@@ -52,7 +53,7 @@ protected:
      * \brief   Destructor.
      **/
     virtual ~ConnectionManagerStub( void ) = default;
-    
+
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
@@ -115,10 +116,10 @@ public:
      * \brief   Request call.
      *          The request to connect to system
      * \param   nickName    The nick name of connecting client service
-     * \param   dateTime    The connecting client connection timestamp in UTC
+     * \param   dateTime    The connecting client connection time-stamp in UTC
      * \see     responseConnect
      **/
-    virtual void requestConnet( const String & nickName, const DateTime & dateTime ) = 0;
+    virtual void requestConnect( const String & nickName, const DateTime & dateTime ) = 0;
 
     /**
      * \brief   Request call.
@@ -126,7 +127,7 @@ public:
      * \param   nickName        The nick name of connection used in service
      * \param   cookie          The cookie value to set
      * \param   connectCookie   The cookie to use for registration. 
-     * \param   dateRegister    The connection registration timestamp
+     * \param   dateRegister    The connection registration time-stamp
      * \see     responseRegisterConnection
      **/
     virtual void requestRegisterConnection( const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister ) = 0;
@@ -139,7 +140,7 @@ public:
      * \param   dateTime    Disconnect request date-time
      * \note    Has no response
      **/
-    virtual void requestDiconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime ) = 0;
+    virtual void requestDisconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // ConnectionManager Interface Responses
@@ -151,9 +152,9 @@ public:
      *          The result of connection request.
      * \param   nickName    Client connection data, which contains nick name and connection date-time
      * \param   cookie      Connection assigned cookie for client service
-     * \param   dateTime    The client service connection timestamp in UTC
+     * \param   dateTime    The client service connection time-stamp in UTC
      * \param   result      The connection operation result
-     * \see     requestConnet
+     * \see     requestConnect
      **/
     virtual void responseConnect( const String & nickName, unsigned int cookie, const DateTime & dateTime, NEConnectionManager::eConnectionResult result );
 
@@ -206,8 +207,8 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Sends update notification message to all clients. 
-     *          This method can be called manually to send update 
+     * \brief   Sends update notification message to all clients.
+     *          This method can be called manually to send update
      *          notification message after updating attribute value.
      *
      * \param   msgId   The attribute message ID to notify clients.
@@ -252,7 +253,7 @@ protected:
     virtual void shutdownServiceIntrface ( Component & holder ) override;
 
 /************************************************************************/
-// StubBase overrides. Protected methods 
+// StubBase overrides. Protected methods
 /************************************************************************/
 
     /**
@@ -266,7 +267,7 @@ protected:
     virtual ResponseEvent * createResponseEvent( const ProxyAddress & proxy, unsigned int msgId, NEService::eResultType result, const EventDataStream & data ) const override;
 
     /**
-     * \brief   Overwrite method to create remote service request event from streaming object for 
+     * \brief   Overwrite method to create remote service request event from streaming object for
      *          further dispatching by stub.
      * \param   stream  Streaming object, which contains event data.
      * \return  If operation succeeds, returns valid pointer to Service Request event object.
@@ -275,7 +276,7 @@ protected:
     virtual RemoteRequestEvent * createRemoteRequestEvent( const IEInStream & stream ) const override;
 
     /**
-     * \brief   Overwrite method to create remote notify request event from streaming object for 
+     * \brief   Overwrite method to create remote notify request event from streaming object for
      *          further dispatching by stub.
      * \param   stream  Streaming object, which contains event data.
      * \return  If operation succeeds, returns valid pointer to Service Request event object.
@@ -380,6 +381,8 @@ inline NEConnectionManager::MapConnection & ConnectionManagerStub::getConnection
 //////////////////////////////////////////////////////////////////////////
 // ConnectionManagerStub class declaration End
 //////////////////////////////////////////////////////////////////////////
+
+#endif   // GENERATED_CONNECTIONMANAGERSTUB_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/ConnectionManagerStub.hpp file

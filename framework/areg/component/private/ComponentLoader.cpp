@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ComponentLoader.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -14,6 +14,7 @@
  *
  ************************************************************************/
 #include "areg/component/ComponentLoader.hpp"
+
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/component/private/ServiceManager.hpp"
@@ -52,7 +53,7 @@ ComponentLoader & ComponentLoader::getInstance( void )
     return _componentLoader;
 }
 
-bool ComponentLoader::loadComponentModel( const char * modelName /*= nullptr*/ )
+bool ComponentLoader::loadComponentModel( const String & modelName /*= String::EmptyString*/ )
 {
     bool result = ComponentLoader::getInstance().loadModel( modelName );
     if ( result == false)
@@ -60,29 +61,32 @@ bool ComponentLoader::loadComponentModel( const char * modelName /*= nullptr*/ )
     return result;
 }
 
-void ComponentLoader::unloadComponentModel( const char * modelName /*= nullptr*/ )
+void ComponentLoader::unloadComponentModel( const String & modelName /*= String::EmptyString*/ )
 {
     ComponentLoader::getInstance( ).unloadModel( modelName );
 }
 
-const NERegistry::ComponentList& ComponentLoader::getComponentList( const char* threadName )
+const NERegistry::ComponentList& ComponentLoader::getComponentList( const String & threadName )
 {
 
     const NERegistry::ComponentList* result  = nullptr;
     ComponentLoader& loader = getInstance();
     Lock lock(loader.mLock);
 
-    for ( int i = 0; result == nullptr && i < loader.mModelList.getSize(); ++ i )
+    for ( uint32_t i = 0; result == nullptr && i < loader.mModelList.getSize(); ++ i )
     {
         const NERegistry::Model & model = loader.mModelList.getAt(i);
         if ( model.isModelLoaded() )
         {
             const NERegistry::ComponentThreadList & threadList = model.getThreadList();
-            for ( int j = 0; result == nullptr && j < threadList.getSize(); ++ j )
+            for ( uint32_t j = 0; j < threadList.mListThreads.getSize(); ++ j )
             {
-                const NERegistry::ComponentThreadEntry & thrEntry = threadList.getAt(j);
+                const NERegistry::ComponentThreadEntry & thrEntry = threadList.mListThreads.getAt(j);
                 if (thrEntry.mThreadName == threadName)
-                    result  = &thrEntry.mComponents;
+                {
+                    result = &thrEntry.mComponents;
+                    break;
+                }
             }
         }
     }
@@ -90,51 +94,87 @@ const NERegistry::ComponentList& ComponentLoader::getComponentList( const char* 
     return (result != nullptr ? *result : NERegistry::INVALID_COMPONENT_LIST);
 }
 
-const NERegistry::ComponentEntry& ComponentLoader::findComponentEntry( const char* roleName, const char* threadName )
+const NERegistry::ComponentEntry& ComponentLoader::findComponentEntry( const String & roleName, const String & threadName )
 {
     const NERegistry::ComponentEntry* result = nullptr;
     const NERegistry::ComponentList& comList = getComponentList(threadName);
     if (comList.isValid())
     {
-        for (int i = 0; result == nullptr && i < comList.getSize(); ++ i)
+        for (uint32_t i = 0; i < comList.mListComponents.getSize(); ++ i)
         {
-            const NERegistry::ComponentEntry& entry = comList[i];
-            result = entry.mRoleName == roleName ? &entry : nullptr;
+            const NERegistry::ComponentEntry& entry = comList.mListComponents[i];
+            if (entry.mRoleName == roleName)
+            {
+                result = &entry;
+                break;
+            }
         }
     }
+
     return (result != nullptr ? *result : NERegistry::INVALID_COMPONENT_ENTRY);
 }
 
-const NERegistry::ComponentEntry& ComponentLoader::findComponentEntry( const char* roleName )
+const NERegistry::ComponentEntry& ComponentLoader::findComponentEntry( const String & roleName )
 {
     const NERegistry::ComponentEntry* result = nullptr;
     ComponentLoader & loader = ComponentLoader::getInstance();
     Lock lock(loader.mLock);
 
-    for ( int i = 0; result == nullptr && i < loader.mModelList.getSize(); ++ i )
+    for (uint32_t i = 0; (result == nullptr) && (i < loader.mModelList.getSize()); ++ i )
     {
         const NERegistry::ComponentThreadList & threadList = loader.mModelList.getAt(i).getThreadList();
 
-        for ( int j = 0; result == nullptr && j < threadList.getSize(); ++ j )
+        for (uint32_t j = 0; (result == nullptr) && (j < threadList.mListThreads.getSize()); ++ j )
         {
-            const NERegistry::ComponentThreadEntry & threadEntry = threadList.getAt(j);
-            for ( int k = 0; result == nullptr && k < threadEntry.mComponents.getSize(); ++ k )
-                result = threadEntry.mComponents.getAt(k).mRoleName == roleName ? &threadEntry.mComponents.getAt(k) : nullptr;
+            const NERegistry::ComponentThreadEntry & threadEntry = threadList.mListThreads.getAt(j);
+            for (uint32_t k = 0; k < threadEntry.mComponents.mListComponents.getSize(); ++k)
+            {
+                if (threadEntry.mComponents.mListComponents.getAt(k).mRoleName == roleName)
+                {
+                    result = &threadEntry.mComponents.mListComponents.getAt(k);
+                    break;
+                }
+            }
         }
     }
+
     return (result != nullptr ? *result : NERegistry::INVALID_COMPONENT_ENTRY);
 }
 
-bool ComponentLoader::isModelLoaded( const char * modelName )
+const NERegistry::ComponentThreadEntry& ComponentLoader::findThreadEntry(const String& threadName)
+{
+    const NERegistry::ComponentThreadEntry* result = nullptr;
+    ComponentLoader& loader = ComponentLoader::getInstance();
+    Lock lock(loader.mLock);
+
+    for (uint32_t i = 0; (result == nullptr) && (i < loader.mModelList.getSize()); ++i)
+    {
+        const NERegistry::ComponentThreadList& threadList = loader.mModelList.getAt(i).getThreadList();
+
+        for (uint32_t j = 0; j < threadList.mListThreads.getSize(); ++j)
+        {
+            const NERegistry::ComponentThreadEntry& threadEntry = threadList.mListThreads.getAt(j);
+            if (threadEntry.mThreadName == threadName)
+            {
+                result = &threadEntry;
+                break;
+            }
+        }
+    }
+
+    return (result != nullptr ? *result : NERegistry::INVALID_THREAD_ENTRY);
+}
+
+bool ComponentLoader::isModelLoaded( const String & modelName )
 {
     bool result = false;
 
-    if ( NEString::isEmpty<char>(modelName) == false )
+    if ( modelName.isEmpty() == false)
     {
         ComponentLoader & loader = ComponentLoader::getInstance();
         Lock lock(loader.mLock);
 
-        for ( int i = 0; i < loader.mModelList.getSize(); ++ i )
+        for ( uint32_t i = 0; i < loader.mModelList.getSize(); ++ i )
         {
             const NERegistry::Model & model = loader.mModelList.getAt(i);
             if ( model.getModelName() == modelName )
@@ -144,10 +184,11 @@ bool ComponentLoader::isModelLoaded( const char * modelName )
             }
         }
     }
+
     return result;
 }
 
-bool ComponentLoader::existModel( const char * modelName )
+bool ComponentLoader::existModel( const String & modelName )
 {
     bool result = false;
 
@@ -156,7 +197,7 @@ bool ComponentLoader::existModel( const char * modelName )
         ComponentLoader & loader = ComponentLoader::getInstance( );
         Lock lock( loader.mLock );
 
-        for ( int i = 0; i < loader.mModelList.getSize( ); ++ i )
+        for ( uint32_t i = 0; i < loader.mModelList.getSize( ); ++ i )
         {
             const NERegistry::Model & model = loader.mModelList.getAt( i );
             if ( model.getModelName( ) == modelName )
@@ -166,16 +207,17 @@ bool ComponentLoader::existModel( const char * modelName )
             }
         }
     }
+
     return result;
 }
 
-bool ComponentLoader::setComponentData( const char * roleName, NEMemory::uAlign compData )
+bool ComponentLoader::setComponentData( const String & roleName, NEMemory::uAlign compData )
 {
     bool result = false;
     ComponentLoader & loader = ComponentLoader::getInstance( );
     Lock lock( loader.mLock );
 
-    for ( int i = 0; i < loader.mModelList.getSize( ); ++ i )
+    for ( uint32_t i = 0; i < loader.mModelList.getSize( ); ++ i )
     {
         NERegistry::Model & model = loader.mModelList.getAt( i );
         if ( model.setComponentData( roleName, compData ) )
@@ -184,6 +226,7 @@ bool ComponentLoader::setComponentData( const char * roleName, NEMemory::uAlign 
             break;
         }
     }
+
     return result;
 }
 
@@ -194,15 +237,15 @@ bool ComponentLoader::addModelUnique(const NERegistry::Model & newModel)
     return loader.addModel(newModel);
 }
 
-void ComponentLoader::removeComponentModel(const char * modelName /*= nullptr */)
+void ComponentLoader::removeComponentModel(const String & modelName /*= String::EmptyString */)
 {
-    OUTPUT_WARN("Removing components and model [ %s ]", modelName != nullptr ? modelName : "ALL MODELS");
+    OUTPUT_WARN("Removing components and model [ %s ]", modelName.isEmpty() ? "ALL MODELS" : modelName.getString());
     ComponentLoader::unloadComponentModel(modelName);
     ComponentLoader & loader = ComponentLoader::getInstance();
     Lock lock( loader.mLock );
-    if ( NEString::isEmpty<char>(modelName) == false )
+    if ( modelName.isEmpty() == false)
     {
-        for ( int i = 0; i < loader.mModelList.getSize(); ++ i )
+        for ( uint32_t i = 0; i < loader.mModelList.getSize(); ++ i )
         {
             NERegistry::Model & model = loader.mModelList[i];
             if ( model.getModelName() == modelName )
@@ -214,7 +257,7 @@ void ComponentLoader::removeComponentModel(const char * modelName /*= nullptr */
     }
     else
     {
-        loader.mModelList.removeAll();
+        loader.mModelList.clear();
     }
 }
 
@@ -230,7 +273,7 @@ ComponentLoader::ComponentLoader( void )
 
 ComponentLoader::~ComponentLoader( void )
 {
-    mModelList.removeAll();
+    mModelList.clear();
     mDefaultModel   = NEString::EmptyStringA.data( );
 }
 
@@ -246,21 +289,21 @@ bool ComponentLoader::addModel( const NERegistry::Model & newModel )
     ASSERT(hasError == false);
 
     // search if model with the same name exists
-    for (int i = 0; hasError == false && i < mModelList.getSize(); ++ i )
+    for (uint32_t i = 0; hasError == false && i < mModelList.getSize(); ++ i )
     {
         const NERegistry::Model & regModel = mModelList.getAt(i);
         if ( newModel.getModelName() != regModel.getModelName() )
         {
             const NERegistry::ComponentThreadList & regThreadList = regModel.getThreadList();
-            for ( int j = 0; hasError == false && j < regThreadList.getSize(); ++ j )
+            for ( uint32_t j = 0; hasError == false && j < regThreadList.mListThreads.getSize(); ++ j )
             {
-                const NERegistry::ComponentThreadEntry & regThreadEntry = regThreadList.getAt(j);
+                const NERegistry::ComponentThreadEntry & regThreadEntry = regThreadList.mListThreads.getAt(j);
                 if ( newModel.findThread(regThreadEntry) < 0 )
                 {
                     const NERegistry::ComponentList & regComponentList = regThreadEntry.mComponents;
-                    for ( int k = 0; hasError == false && k < regComponentList.getSize(); ++ k )
+                    for ( uint32_t k = 0; hasError == false && k < regComponentList.mListComponents.getSize(); ++ k )
                     {
-                        const NERegistry::ComponentEntry & regComponentEntry = regComponentList.getAt(k);
+                        const NERegistry::ComponentEntry & regComponentEntry = regComponentList.mListComponents.getAt(k);
                         if ( newModel.hasRegisteredComponent(regComponentEntry) )
                         {
                             OUTPUT_ERR("The component with role name [ %s ] is already registered in thread [ %s ] of model [ %s ], cannot add new model!"
@@ -300,22 +343,22 @@ bool ComponentLoader::addModel( const NERegistry::Model & newModel )
         mModelList.add(newModel);
         if ( mDefaultModel.isEmpty() )
         {
-            mDefaultModel = newModel.getModelName().getString();
+            mDefaultModel = newModel.getModelName();
         }
     }
     return (hasError == false);
 }
 
-bool ComponentLoader::loadModel( const char * modelName /*= nullptr*/ )
+bool ComponentLoader::loadModel( const String & modelName /*= String::EmptyString*/ )
 {
     Lock lock(mLock);
     bool result = false;
     
-    OUTPUT_DBG("Requested to start load model [ %s ].", NEString::isEmpty<char>(modelName) ? "ALL" : modelName);
-    if ( NEString::isEmpty<char>(modelName) )
+    OUTPUT_DBG("Requested to start load model [ %s ].", modelName.isEmpty() ? "ALL" : modelName.getString());
+    if ( modelName.isEmpty() )
     {
         result = mModelList.getSize() > 0;
-        for ( int i = 0; result && i < mModelList.getSize(); ++ i )
+        for ( uint32_t i = 0; result && i < mModelList.getSize(); ++ i )
         {
             NERegistry::Model & model = mModelList[i];
             if ( model.isModelLoaded() == false )
@@ -326,22 +369,21 @@ bool ComponentLoader::loadModel( const char * modelName /*= nullptr*/ )
     }
     else
     {
-        OUTPUT_DBG("Searching model [ %s ] in the list with size [ %d ]", modelName, mModelList.getSize() );
-        int index = -1;
-        for ( int i = 0; (index == -1) && (i < mModelList.getSize()); ++ i )
+        OUTPUT_DBG("Searching model [ %s ] in the list with size [ %d ]", modelName.getString(), mModelList.getSize());
+        for ( uint32_t i = 0; i < mModelList.getSize(); ++ i )
         {
             NERegistry::Model & model = mModelList[i];
             OUTPUT_DBG("Checking the name, the entry [ %d ] has name [ %s ]", i, model.getModelName().getString());
             if ( model.getModelName() == modelName )
             {
-                OUTPUT_DBG("Found model with name [ %s ] at position [ %d ]", modelName, i);
-                index = i;
+                OUTPUT_DBG("Found model with name [ %s ] at position [ %d ]", modelName.getString(), i);
                 result = loadModel(model);
+                break;
             }
         }
     }
 
-    OUTPUT_DBG("Model [ %s ] loaded with [ %s ].", NEString::isEmpty<char>(modelName) ? "ALL" : modelName, result ? "SUCCESS" : "ERROR");
+    OUTPUT_DBG("Model [ %s ] loaded with [ %s ].", modelName.isEmpty() ? "ALL" : modelName.getString(), result ? "SUCCESS" : "ERROR");
     
     return result;
 }
@@ -355,17 +397,17 @@ bool ComponentLoader::loadModel( NERegistry::Model & whichModel ) const
         const NERegistry::ComponentThreadList& thrList = whichModel.getThreadList( );
         OUTPUT_DBG( "Starting to load model [ %s ]. There are [ %d ] component threads to start. Component loader is going to load objects and start Service Manager"
                         , whichModel.getModelName( ).getString( )
-                        , thrList.getSize( ) );
+                        , thrList.mListThreads.getSize( ) );
 
         whichModel.markModelLoaded( true );
         result = true;
-        for ( int i = 0; result && i < thrList.getSize( ); ++ i )
+        for ( uint32_t i = 0; result && i < thrList.mListThreads.getSize( ); ++ i )
         {
             Lock lock( mLock );
-            const NERegistry::ComponentThreadEntry& entry = thrList[i];
-            if ( entry.isValid( ) && Thread::findThreadByName( entry.mThreadName.getString( ) ) == nullptr )
+            const NERegistry::ComponentThreadEntry& entry = thrList.mListThreads[i];
+            if ( entry.isValid( ) && Thread::findThreadByName( entry.mThreadName ) == nullptr )
             {
-                ComponentThread* thrObject = DEBUG_NEW ComponentThread( entry.mThreadName.getString( ) );
+                ComponentThread* thrObject = DEBUG_NEW ComponentThread( entry.mThreadName, entry.mWatchdogTimeout );
                 if ( thrObject != nullptr )
                 {
                     OUTPUT_DBG( "Starting thread [ %s ] and loading components.", thrObject->getName( ).getString( ) );
@@ -402,14 +444,14 @@ bool ComponentLoader::loadModel( NERegistry::Model & whichModel ) const
     return result;
 }
 
-void ComponentLoader::unloadModel( const char * modelName /*= nullptr*/ )
+void ComponentLoader::unloadModel( const String & modelName /*= String::EmptyString*/ )
 {
     Lock lock(mLock);
 
-    OUTPUT_DBG("Requested to unload model [ %s ].", NEString::isEmpty<char>(modelName) ? "ALL" : modelName);
-    if ( NEString::isEmpty<char>(modelName) )
+    OUTPUT_DBG("Requested to unload model [ %s ].", modelName.isEmpty() ? "ALL" : modelName.getString());
+    if ( modelName.isEmpty() )
     {
-        for ( int i = 0; i < mModelList.getSize(); ++ i )
+        for ( uint32_t i = 0; i < mModelList.getSize(); ++ i )
         {
             NERegistry::Model & model = mModelList[i];
             lock.unlock();
@@ -420,16 +462,16 @@ void ComponentLoader::unloadModel( const char * modelName /*= nullptr*/ )
     }
     else
     {
-        int index = -1;
-        for ( int i = 0; index == -1 && i < mModelList.getSize(); ++ i )
+        for ( uint32_t i = 0; i < mModelList.getSize(); ++ i )
         {
             NERegistry::Model & model = mModelList[i];
             if ( model.getModelName() == modelName )
             {
-                index = i;
                 lock.unlock();
                 unloadModel(model);
                 lock.lock();
+
+                break;
             }
         }
     }
@@ -460,10 +502,10 @@ void ComponentLoader::unloadModel( NERegistry::Model & whichModel ) const
 void ComponentLoader::shutdownThreads( const NERegistry::ComponentThreadList & whichThreads ) const
 {
     OUTPUT_INFO("Starting First Level model shutdown. Shutdown Threads and Components");
-    for (int i = 0; i < whichThreads.getSize(); ++ i )
+    for (uint32_t i = 0; i < whichThreads.mListThreads.getSize(); ++ i )
     {
-        const NERegistry::ComponentThreadEntry& entry = whichThreads[i];
-        Thread* thrObject = Thread::findThreadByName(entry.mThreadName.getString());
+        const NERegistry::ComponentThreadEntry& entry = whichThreads.mListThreads[i];
+        Thread* thrObject = Thread::findThreadByName(entry.mThreadName);
         if (thrObject != nullptr)
         {
             ASSERT(RUNTIME_CAST(thrObject, ComponentThread) != nullptr);
@@ -472,7 +514,7 @@ void ComponentLoader::shutdownThreads( const NERegistry::ComponentThreadList & w
         }
         else
         {
-            OUTPUT_WARN("Could not find thread entry [ %s ]. Ignoring stoppint thread.", entry.mThreadName.getString());
+            OUTPUT_WARN("Could not find thread entry [ %s ]. Ignoring stopping thread.", entry.mThreadName.getString());
         }
     }
     OUTPUT_INFO("Shuts down Service Manager thread!");
@@ -484,10 +526,10 @@ void ComponentLoader::waitThreadsCompletion( const NERegistry::ComponentThreadLi
     OUTPUT_INFO("Starting Second Level model shutdown. Wait for Threads completion!");
 
 
-    for ( int i = 0; i < whichThreads.getSize(); ++ i )
+    for ( uint32_t i = 0; i < whichThreads.mListThreads.getSize(); ++ i )
     {
-        const NERegistry::ComponentThreadEntry& entry = whichThreads[i];
-        Thread* thrObject = Thread::findThreadByName(entry.mThreadName.getString());
+        const NERegistry::ComponentThreadEntry& entry = whichThreads.mListThreads[i];
+        Thread* thrObject = Thread::findThreadByName(entry.mThreadName);
         if (thrObject != nullptr)
         {
             ASSERT(RUNTIME_CAST(thrObject, ComponentThread) != nullptr);
@@ -496,7 +538,7 @@ void ComponentLoader::waitThreadsCompletion( const NERegistry::ComponentThreadLi
         }
         else
         {
-            OUTPUT_WARN("Could not find thread entry [ %s ]. Ignoring stoppint thread.", entry.mThreadName.getString());
+            OUTPUT_WARN("Could not find thread entry [ %s ]. Ignoring stopping thread.", entry.mThreadName.getString());
         }
     }
 }
@@ -505,10 +547,10 @@ void ComponentLoader::destroyThreads( const NERegistry::ComponentThreadList & wh
 {
     OUTPUT_INFO("Starting Third Level model shutdown. Destroy threads and components!");
 
-    for ( int i = 0; i < whichThreads.getSize(); ++ i )
+    for ( uint32_t i = 0; i < whichThreads.mListThreads.getSize(); ++ i )
     {
-        const NERegistry::ComponentThreadEntry& entry = whichThreads[i];
-        Thread* thrObject = Thread::findThreadByName(entry.mThreadName.getString());
+        const NERegistry::ComponentThreadEntry& entry = whichThreads.mListThreads[i];
+        Thread* thrObject = Thread::findThreadByName(entry.mThreadName);
         if (thrObject != nullptr)
         {
             ASSERT(RUNTIME_CAST(thrObject, ComponentThread) != nullptr);
@@ -518,64 +560,73 @@ void ComponentLoader::destroyThreads( const NERegistry::ComponentThreadList & wh
         }
         else
         {
-            OUTPUT_WARN("Could not find thread entry [ %s ]. Ignoring stoppint thread.", entry.mThreadName.getString());
+            OUTPUT_WARN("Could not find thread entry [ %s ]. Ignoring stopping thread.", entry.mThreadName.getString());
         }
     }
 }
 
-const NERegistry::Model * ComponentLoader::findModelByName( const char * modelName ) const
+const NERegistry::Model * ComponentLoader::findModelByName( const String & modelName ) const
 {
     const NERegistry::Model * result = nullptr;
-    if ( NEString::isEmpty<char>(modelName) == false )
+    if ( modelName.isEmpty() == false)
     {
-        for ( int i = 0; (result == nullptr) && (i < mModelList.getSize( )); ++i )
+        for ( uint32_t i = 0; i < mModelList.getSize( ); ++i )
         {
             const NERegistry::Model & model = mModelList[i];
-            result = model.getModelName( ) == modelName ? &model : nullptr;
+            if (model.getModelName() == modelName)
+            {
+                result = &model;
+                break;
+            }
         }
     }
+
     return result;
 }
 
-const NERegistry::ComponentThreadEntry * ComponentLoader::findThreadEntryByName( const char * threadName ) const
+const NERegistry::ComponentThreadEntry * ComponentLoader::findThreadEntryByName( const String & threadName ) const
 {
     const NERegistry::ComponentThreadEntry * result = nullptr;
-    if ( NEString::isEmpty<char>(threadName) == false )
+    if ( threadName.isEmpty() == false)
     {
-        for ( int i = 0; (result == nullptr) && (i < mModelList.getSize()); ++i )
+        for ( uint32_t i = 0; i < mModelList.getSize(); ++i )
         {
             const NERegistry::Model & model = mModelList[i];
             int index = model.findThread(threadName);
             if ( index != NECommon::INVALID_INDEX )
             {
-                const NERegistry::ComponentThreadEntry & entry = model.getThreadList().getAt(index);
+                const NERegistry::ComponentThreadEntry & entry = model.getThreadList().mListThreads.getAt(index);
                 result = &entry;
+                break;
             }
         }
     }
+
     return result;
 }
 
-const NERegistry::ComponentEntry * ComponentLoader::findComponentEntryByName( const char * roleName ) const
+const NERegistry::ComponentEntry * ComponentLoader::findComponentEntryByName( const String & roleName ) const
 {
     const NERegistry::ComponentEntry * result = nullptr;
-    if ( NEString::isEmpty<char>(roleName) == false )
+    if ( roleName.isEmpty() == false)
     {
-        for ( int i = 0; (result == nullptr) && (i < mModelList.getSize()); ++i )
+        for ( uint32_t i = 0; (result == nullptr) && (i < mModelList.getSize()); ++i )
         {
-            const NERegistry::Model & model          = mModelList[i];
+            const NERegistry::Model & model = mModelList[i];
             const NERegistry::ComponentThreadList & threadList= model.getThreadList();
-            for ( int j = 0; (result == nullptr) && (i < threadList.getSize()); ++i )
+            for ( uint32_t j = 0; i < threadList.mListThreads.getSize(); ++i )
             {
-                const NERegistry::ComponentThreadEntry & thread   = threadList.getAt(j);
+                const NERegistry::ComponentThreadEntry & thread   = threadList.mListThreads.getAt(j);
                 int index = thread.findComponentEntry(roleName);
                 if ( index != NECommon::INVALID_INDEX )
                 {
-                    const NERegistry::ComponentEntry & entry = thread.mComponents.getAt(index);
+                    const NERegistry::ComponentEntry & entry = thread.mComponents.mListComponents.getAt(index);
                     result = & entry;
+                    break;
                 }
             }
         }
     }
+
     return result;
 }

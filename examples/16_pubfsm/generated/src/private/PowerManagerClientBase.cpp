@@ -2,9 +2,9 @@
 // Begin generate generated/src/private/PowerManagerClientBase.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  02:47:34 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PowerManager.
  *
  * \file            generated/src/PowerManagerClientBase.hpp
@@ -30,7 +30,7 @@ namespace NEPowerManager
      * \brief   Initialize request failure function pointers to make error handling
      **/
     typedef void (PowerManagerClientBase::* FuncRequestFailure) ( NEService::eResultType );
-    static FuncRequestFailure failureFunctions[] = 
+    static constexpr FuncRequestFailure failureFunctions[]
     {
           &PowerManagerClientBase::requestPowerOnFailed
         , &PowerManagerClientBase::requestPowerOffFailed
@@ -47,7 +47,7 @@ namespace NEPowerManager
  * Constructor / Destructor
  ************************************************************************/
 
-PowerManagerClientBase::PowerManagerClientBase( const char * roleName, const char * ownerThread /*= nullptr*/ )
+PowerManagerClientBase::PowerManagerClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -56,7 +56,7 @@ PowerManagerClientBase::PowerManagerClientBase( const char * roleName, const cha
 {
 }
 
-PowerManagerClientBase::PowerManagerClientBase( const char * roleName, DispatcherThread & ownerThread )
+PowerManagerClientBase::PowerManagerClientBase( const String & roleName, DispatcherThread & ownerThread )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -65,7 +65,7 @@ PowerManagerClientBase::PowerManagerClientBase( const char * roleName, Dispatche
 {
 }
 
-PowerManagerClientBase::PowerManagerClientBase( const char* roleName, Component & owner )
+PowerManagerClientBase::PowerManagerClientBase( const String & roleName, Component & owner )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -82,7 +82,7 @@ PowerManagerClientBase::~PowerManagerClientBase( void )
         mProxy->freeProxy( static_cast<IEProxyListener &>(self()) );
         mProxy  = nullptr;
     }
-    
+
     mIsConnected= false;
 }
 
@@ -95,11 +95,11 @@ bool PowerManagerClientBase::recreateProxy( void )
     bool result         = false;
     if (mProxy != nullptr)
     {
-        String roleName   = mProxy->getProxyAddress().getRoleName();
-        String threadName = mProxy->getProxyAddress().getThread();
+        const String & roleName   = mProxy->getProxyAddress().getRoleName();
+        const String & threadName = mProxy->getProxyAddress().getThread();
         if ( roleName.isEmpty() == false )
         {
-            PowerManagerProxy * newProxy = PowerManagerProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(self()), threadName.getString());
+            PowerManagerProxy * newProxy = PowerManagerProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), threadName);
             if (newProxy != nullptr)
             {
                 mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
@@ -107,8 +107,9 @@ bool PowerManagerClientBase::recreateProxy( void )
                 mProxy = newProxy;
                 result = true;
             }
-        }    
+        }
     }
+
     return result;
 }
 
@@ -121,7 +122,7 @@ DEF_TRACE_SCOPE(generated_src_PowerManagerClientBase_serviceConnected);
 bool PowerManagerClientBase::serviceConnected( bool isConnected, ProxyBase & proxy )
 {
     TRACE_SCOPE(generated_src_PowerManagerClientBase_serviceConnected);
-    
+
     bool result = false;
     if(mProxy == &proxy)
     {
@@ -130,11 +131,11 @@ bool PowerManagerClientBase::serviceConnected( bool isConnected, ProxyBase & pro
                  , proxy.getProxyAddress().getServiceName().getString()
                  , proxy.getProxyAddress().getRoleName().getString()
                  , isConnected ? "CONNECTED" : "DISCONNECTED");
-        
+
         mIsConnected= isConnected;
         result      = true;
     }
-    
+
     return result;
 }
 
@@ -174,7 +175,7 @@ void PowerManagerClientBase::processNotificationEvent( NotificationEvent & event
     case NEService::eResultType::RequestInvalid:
         {
         /************************************************************************
-         * Trigger invalid response / broadcast handling. May happen when remove notification 
+         * Trigger invalid response / broadcast handling. May happen when remove notification
          ************************************************************************/
             PowerManagerClientBase::invalidResponse(msgId);
         }
@@ -281,7 +282,7 @@ void PowerManagerClientBase::invalidRequest( NEPowerManager::eMessageIDs Invalid
                     , NEPowerManager::getString(InvalidReqId)
                     , static_cast<unsigned int>(InvalidReqId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString() );
-                    
+
     ASSERT(false);
 }
 
@@ -294,7 +295,7 @@ void PowerManagerClientBase::requestFailed( NEPowerManager::eMessageIDs FailureM
                     , static_cast<unsigned int>(FailureMsgId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason) );
-                    
+
     unsigned int index = static_cast<msg_id>(NEPowerManager::eMessageIDs::MsgId_Invalid);
     index = static_cast<msg_id>( NEService::isResponseId(static_cast<unsigned int>(FailureMsgId)) ? NEPowerManager::getRequestId(FailureMsgId) : FailureMsgId);
     index = NEService::isRequestId(index)  ? GET_REQ_INDEX(index) : static_cast<msg_id>(NEPowerManager::eMessageIDs::MsgId_Invalid);
@@ -324,7 +325,7 @@ void PowerManagerClientBase::onLightsPowerStateUpdate( NEPowerManager::ePoweredS
 /************************************************************************
  * Request failure / Response and Broadcast notifications
  ************************************************************************/
- 
+
 DEF_TRACE_SCOPE(generated_src_PowerManagerClientBase_requestPowerOnFailed);
 void PowerManagerClientBase::requestPowerOnFailed( NEService::eResultType FailureReason )
 {

@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/File.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -25,6 +25,8 @@
 #include "areg/base/NEString.hpp"
 #include "areg/base/Containers.hpp"
 
+#include <filesystem>
+
 //////////////////////////////////////////////////////////////////////////
 // File class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -38,7 +40,7 @@ File::File( void )
 {
 }
 
-File::File(const char* fileName, unsigned int mode /* = (FileBase::FO_MODE_WRITE | FileBase::FO_MODE_BINARY) */)
+File::File(const String& fileName, unsigned int mode /* = (FileBase::FO_MODE_WRITE | FileBase::FO_MODE_BINARY) */)
     : FileBase    ( )
     , mFileHandle   (File::INVALID_HANDLE)
 {
@@ -48,7 +50,7 @@ File::File(const char* fileName, unsigned int mode /* = (FileBase::FO_MODE_WRITE
 
 File::~File( void )
 {
-    _closeFile();
+    _osCloseFile();
 
     mFileHandle = File::INVALID_HANDLE;
     mFileMode   = FileBase::FO_MODE_INVALID;
@@ -58,10 +60,10 @@ File::~File( void )
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-bool File::open(const char* fileName, unsigned int mode)
+bool File::open(const String& fileName, unsigned int mode)
 {
     bool result = false;
-    if ((isOpened() == false) && (NEString::isEmpty<char>(fileName) == false) )
+    if ((isOpened() == false) && (fileName.isEmpty() == false))
     {
         mFileMode = mode;
         mFileName = File::normalizePath(fileName);
@@ -72,7 +74,18 @@ bool File::open(const char* fileName, unsigned int mode)
     {
         OUTPUT_WARN("File is already opened. Close file.");
     }
+
     return result;
+}
+
+bool File::open(void)
+{
+    return _osOpenFile();
+}
+
+void File::close(void)
+{
+    _osCloseFile();
 }
 
 unsigned int File::getSizeReadable( void ) const
@@ -81,9 +94,13 @@ unsigned int File::getSizeReadable( void ) const
     unsigned int lenUsed = 0;
     if (isOpened())
     {
-        lenRead = getPosition();
-        lenUsed = getLength();
+        std::error_code err;
+        std::uintmax_t sz = std::filesystem::file_size(mFileName.getObject(), err);
+
+        lenRead = _osGetPositionFile();
+        lenUsed = !err ? static_cast<unsigned int>(sz) : 0;
     }
+
     ASSERT(lenRead <= lenUsed);
     return (lenUsed - lenRead);
 }
@@ -94,9 +111,13 @@ unsigned int File::getSizeWritable( void ) const
     unsigned int lenAvailable   = 0;
     if (isOpened())
     {
-        lenWritten  = getPosition();
-        lenAvailable= getLength();
+        std::error_code err;
+        std::uintmax_t sz = std::filesystem::file_size(mFileName.getObject(), err);
+
+        lenWritten  = _osGetPositionFile();
+        lenAvailable = !err ? static_cast<unsigned int>(sz) : 0;
     }
+
     ASSERT(lenWritten <= lenAvailable);
     return (lenAvailable - lenWritten);
 }
@@ -110,12 +131,13 @@ bool File::remove( void )
         ASSERT(mFileName.isEmpty() == false);
 
         close();
-        result = File::deleteFile(mFileName);
+        std::error_code err;
+        result = std::filesystem::remove(mFileName.getObject(), err);
     }
 
     mFileHandle = File::INVALID_HANDLE;
     mFileMode   = FileBase::FO_MODE_INVALID;
-    mFileName   = String::EmptyString.data();
+    mFileName   = String::EmptyString;
 
     return result;
 }
@@ -145,7 +167,7 @@ inline bool File::_nameHasCurrentFolder(const char * filePath, bool skipSep)
 
 inline bool File::_nameHasParentFolder(const char * filePath, bool skipSep)
 {
-    bool result = false;
+    bool result{ false };
     if (NEString::isEmpty<char>(filePath) == false)
     {
         if ((filePath[0] == File::DIR_PARENT[0]) && (filePath[1] == File::DIR_PARENT[1]))
@@ -153,6 +175,29 @@ inline bool File::_nameHasParentFolder(const char * filePath, bool skipSep)
             result = (skipSep && filePath[2] == NEString::EndOfString) || (filePath[2] == File::UNIX_SEPARATOR) ||  (filePath[2] == File::DOS_SEPARATOR);
         }
     }
+
+    return result;
+}
+
+String File::genTempFileName(const char* prefix, bool unique, bool inTempFolder)
+{
+    String result;
+
+    result.reserve(File::MAXIMUM_PATH);
+    unsigned int space{ 0 };
+    if (result.getCapacity() != 0)
+    {
+        char* buffer = result.getBuffer();
+        unsigned int ticks = unique ? 0 : static_cast<unsigned int>(DateTime::getSystemTickCount());
+        prefix = prefix == nullptr ? File::TEMP_FILE_PREFIX.data() : prefix;
+        String dir = inTempFolder ? File::getTempDir() : File::getCurrentDir();
+        if (dir.isEmpty() == false)
+        {
+            space = _osCreateTempFile(buffer, dir.getString(), prefix, ticks);
+        }
+    }
+
+    result.resize(space);
 
     return result;
 }
@@ -169,29 +214,30 @@ const String & File::getExecutableDir(void)
 
 String File::getFileNameWithExtension( const char* filePath )
 {
-    const char * result = "";
+    const char * result = nullptr;
     if ( NEString::isEmpty<char>(filePath) == false )
     {
-        int len = NEString::getStringLength<char>(filePath);
-        if (filePath[len - 1] != File::PATH_SEPARATOR)
+        NEString::CharPos pos = NEString::getStringLength<char>(filePath) - 1;
+        if (filePath[pos] != File::PATH_SEPARATOR)
         {
-            NEString::CharPos pos = NEString::findLastOf<char>(File::PATH_SEPARATOR, filePath, NEString::END_POS, nullptr);
-            if (pos != NEString::INVALID_POS)
+            pos = NEString::findLast<char>(File::PATH_SEPARATOR, filePath, pos - 1, nullptr);
+            if (NEString::isPositionValid(pos))
+            {
                 result = filePath + pos + 1;
+            }
         }
     }
 
-    return String(result);
+    return (result != nullptr ? String(result) : String::EmptyString);
 }
 
 String File::getFileName( const char* filePath )
 {
-    String result;
-    String fileName = File::getFileNameWithExtension(filePath);
-    NEString::CharPos pos = fileName.findLastOf(File::EXTENSION_SEPARATOR, NEString::END_POS, true);
-    if (pos != NEString::INVALID_POS && NEString::isAlphanumeric<char>(fileName.getAt(pos + 1)) )
+    String result(File::getFileNameWithExtension(filePath));
+    NEString::CharPos pos = result.findLast(File::EXTENSION_SEPARATOR, NEString::END_POS, true);
+    if (NEString::isPositionValid(pos) && NEString::isAlphanumeric<char>(result[pos + 1]) )
     {
-        result = fileName.substring( 0, pos );
+        result.substring(0, pos);
     }
 
     return result;
@@ -200,11 +246,11 @@ String File::getFileName( const char* filePath )
 String File::getFileExtension( const char* filePath )
 {
     String result;
-    String fileName = File::getFileNameWithExtension(filePath);
-    NEString::CharPos pos = fileName.findLastOf(File::EXTENSION_SEPARATOR, NEString::END_POS, true);
-    if (pos != NEString::INVALID_POS && NEString::isAlphanumeric<char>(fileName.getAt(pos + 1)) )
+    String fileName(File::getFileNameWithExtension(filePath));
+    NEString::CharPos pos = fileName.findLast(File::EXTENSION_SEPARATOR, NEString::END_POS, true);
+    if (NEString::isPositionValid(pos) && NEString::isAlphanumeric<char>(fileName[pos + 1]) )
     {
-        result = fileName.substring( pos, NEString::COUNT_ALL );
+        fileName.substring(result, pos, NEString::COUNT_ALL);
     }
 
     return result;
@@ -212,143 +258,30 @@ String File::getFileExtension( const char* filePath )
 
 String File::getFileDirectory(const char* filePath)
 {
-    NEString::CharPos pos = NEString::isEmpty<char>(filePath) ? NEString::INVALID_POS : NEString::findLastOf<char>(File::PATH_SEPARATOR, filePath, NEString::END_POS, nullptr);
-    return (pos > 0 ? String(filePath, pos) : String(String::EmptyString.data(), 0));
+    NEString::CharPos pos = NEString::isEmpty<char>(filePath) ? NEString::INVALID_POS : NEString::findLast<char>(File::PATH_SEPARATOR, filePath, NEString::END_POS, nullptr);
+    return (NEString::isPositionValid(pos) ? String(filePath, pos) : String(String::EmptyString));
 }
 
 bool File::createDirCascaded( const char* dirPath )
 {
-    bool result = false;
-    if ( NEString::isEmpty<char>(dirPath) == false )
-    {
-        char * buffer = DEBUG_NEW char[ static_cast<unsigned int>(File::MAXIMUM_PATH + 1) ];
-        if ( buffer != nullptr )
-        {
-            const char * src    = dirPath;
-            char *       dst    = buffer;
-            bool doCreate       = false;
-
-            do 
-            {
-                if (*src == File::PATH_SEPARATOR)
-                    *dst ++ = *src++;
-
-                while (*src != File::PATH_SEPARATOR && *src != '\0')
-                    *dst ++ = *src ++;
-
-                *dst    = '\0';
-
-                doCreate = File::existDir(buffer) || File::_createFolder(buffer);
-
-            } while (doCreate && (*src != '\0'));
-
-            result = doCreate;
-            delete [] buffer;
-        }
-    }
-
-    return result;
+    std::error_code err;
+    return (NEString::isEmpty<char>(dirPath) == false ? std::filesystem::create_directories(dirPath, err) : false);
 }
 
-String File::normalizePath( const char * fileName )
+String File::normalizePath(const char* fileName)
 {
-#ifndef WINDOWS
-    static const String _PSEUDO_ROOT( "<root>" );
-#endif // !WINDOWS
-
-    
     String result;
-    StringList list;
-    if (fileName != nullptr)
+    if (NEString::isEmpty<char>(fileName) == false)
     {
-        if ( File::_nameHasCurrentFolder(fileName, false) || _nameHasParentFolder(fileName, false) )
+        result = fileName;
+        FileBase::normalizeName(result);
+        std::error_code err;
+        std::filesystem::path fp = std::filesystem::absolute(result.getObject(), err);
+        if (!err)
         {
-            String curDir = File::getCurrentDir();
-            File::splitPath(curDir.getString(), list);
-#ifndef WINDOWS
-            list.pushFirst(_PSEUDO_ROOT);
-#endif // WINDOWS
-        }
-        else if (*fileName == '%')
-        {
-            for ( int i = 0; i < File::LEN_SPECIAL_MASKS; ++ i )
-            {
-                if (NEString::stringStartsWith<char>(fileName, SPEACIAL_MASKS[i].data(), false))
-                {
-                    String special = File::getSpecialDir(static_cast<File::eSpecialFolder>(i));
-                    File::splitPath(special.getString(), list);
-#ifndef WINDOWS
-                    list.pushFirst(_PSEUDO_ROOT);
-#endif // WINDOWS
-                    break;
-                }
-            }
-        }
-#ifndef WINDOWS
-        else if ((*fileName == File::UNIX_SEPARATOR))
-        {
-            list.pushFirst(_PSEUDO_ROOT);
-        }
-#endif  // !WINDOWS
-    }
-
-    File::splitPath(fileName, list);
-
-    bool isInvalid  = false;
-    for (LISTPOS pos = list.firstPosition(); pos != nullptr; )
-    {
-        const String & node = list.getAt(pos);
-        if (File::_nameHasParentFolder(node, true))
-        {
-            LISTPOS next = list.nextPosition(pos);
-            LISTPOS prev = list.prevPosition(pos);
-            list.removeAt(pos);
-            if (prev != nullptr)
-            {
-                list.removeAt(prev);
-            }
-            else
-            {
-                isInvalid = true;
-                break;
-            }
-            
-            pos = next;
-        }
-        else if (File::_nameHasCurrentFolder(node, true))
-        {
-            LISTPOS next = list.nextPosition(pos);
-            list.removeAt(pos);
-            pos = next;
-        }
-        else
-        {
-            pos = list.nextPosition(pos);
+            result = fp.string();
         }
     }
-
-    if (isInvalid || list.isEmpty())
-        return result;
-
-    String first = list.removeFirst();
-#ifndef WINDOWS
-    if (first == _PSEUDO_ROOT)
-    {
-        result = File::PATH_SEPARATOR;
-        if (list.isEmpty() == false)
-            first = list.removeFirst();
-    }
-#endif // !WINDOWS
-
-    result += first;
-    for (LISTPOS pos = list.firstPosition(); pos != nullptr; pos = list.nextPosition(pos))
-    {
-        result += File::PATH_SEPARATOR;
-        result += list.getAt(pos);
-    }
-
-    FileBase::normalizeName(result);
-
     return result;
 }
 
@@ -374,7 +307,7 @@ bool File::findParent(const char * filePath, const char ** nextPos, const char *
 
         if (length != 0)
         {
-            int pos = NEString::findLastOf(File::PATH_SEPARATOR, filePath, NEString::END_POS, nextPos);
+            int pos = NEString::findLast(File::PATH_SEPARATOR, filePath, NEString::END_POS, nextPos);
             if ((pos > 0) && (pos < length))
             {
                 result = true;
@@ -393,7 +326,7 @@ String File::getParentDir(const char * filePath)
     const char * end = nullptr;
     if (File::findParent(filePath, &end))
     {
-        result.copy(filePath, static_cast<NEString::CharCount>(end - filePath));
+        result.assign(filePath, MACRO_ELEM_COUNT(filePath, end));
     }
 
     return result;
@@ -401,9 +334,9 @@ String File::getParentDir(const char * filePath)
 
 int File::splitPath(const char * filePath, StringList & in_out_List)
 {
-    int oldCount        = in_out_List.getSize();
-    const char * start  = filePath;
-    const char * end    = filePath;
+    int oldCount        { static_cast<int>(in_out_List.getSize()) };
+    const char * start  { filePath };
+    const char * end    { filePath };
 
     while (*end != NEString::EndOfString)
     {
@@ -446,6 +379,28 @@ unsigned int File::read(WideString & wideString) const
     return FileBase::read(wideString);
 }
 
+unsigned int File::read(unsigned char* buffer, unsigned int size) const
+{
+    unsigned int result = 0;
+    if (isOpened() && canRead())
+    {
+        if ((buffer != nullptr) && (size > 0))
+        {
+            result = _osReadFile(buffer, size);
+        }
+        else
+        {
+            OUTPUT_WARN("The length is zero, do not copy data.");
+        }
+    }
+    else
+    {
+        OUTPUT_ERR("Either file [ %s ] is not opened [ %s ], or reading mode is not set (mode = [ %d ]).", mFileName.getString(), isOpened() ? "true" : "false", mFileMode);
+    }
+
+    return result;
+}
+
 unsigned int File::write(const IEByteBuffer & buffer)
 {
     return FileBase::write(buffer);
@@ -459,4 +414,213 @@ unsigned int File::write(const String & asciiString)
 unsigned int File::write(const WideString & wideString)
 {
     return FileBase::write(wideString);
+}
+
+unsigned int File::write(const unsigned char* buffer, unsigned int size)
+{
+    unsigned int result = 0;
+    if (isOpened() && canWrite())
+    {
+        if ((buffer != nullptr) && (size > 0))
+        {
+            result = _osWriteFile(buffer, size);
+        }
+        else
+        {
+            OUTPUT_WARN("The size of data is zero, ignoring to write data.");
+        }
+    }
+    else
+    {
+        OUTPUT_ERR("Either file [ %s ] is not opened [ %s ], or writing mode is not set (mode = [ %d ]).", mFileName.getString(), isOpened() ? "true" : "false", mFileMode);
+    }
+
+    return result;
+}
+
+unsigned int File::setPosition(int offset, IECursorPosition::eCursorPosition startAt) const
+{
+    return (isOpened() ? _osSetPositionFile(offset, startAt) : IECursorPosition::INVALID_CURSOR_POSITION);
+}
+
+unsigned int File::getPosition(void) const
+{
+    return (isOpened() ? _osGetPositionFile() : IECursorPosition::INVALID_CURSOR_POSITION);
+}
+
+unsigned int File::getLength(void) const
+{
+    unsigned int result{ 0 };
+    if (isOpened())
+    {
+        std::error_code err;
+        std::uintmax_t sz = std::filesystem::file_size(mFileName.getObject(), err);
+        result = !err ? static_cast<unsigned int>(sz) : 0;
+    }
+    return result;
+}
+
+unsigned int File::reserve(unsigned int newSize)
+{
+    OUTPUT_DBG("Going to reserve [ %u ] of data for file [ %s ].", newSize, mFileName.isValid() ? static_cast<const char*>(mFileName) : "null");
+    unsigned int result = IECursorPosition::INVALID_CURSOR_POSITION;
+    if (isOpened() && canWrite())
+    {
+        unsigned int curPos = _osGetPositionFile();
+        close();
+
+        std::error_code err;
+        std::filesystem::resize_file(mFileName.getObject(), newSize, err);
+        if (open() && !err)
+        {
+            if (newSize == 0)
+            {
+                if (moveToBegin())
+                {
+                    result = IECursorPosition::START_CURSOR_POSITION;
+                }
+            }
+            else if (newSize <= curPos)
+            {
+                if (moveToEnd())
+                {
+                    result = newSize;
+                }
+            }
+            else
+            {
+                result = setPosition(static_cast<int>(curPos), IECursorPosition::eCursorPosition::PositionBegin);
+            }
+        }
+    }
+
+    return result;
+}
+
+bool File::truncate(void)
+{
+    return (isOpened() && canWrite() ? _osTruncateFile() : false);
+}
+
+void File::flush(void)
+{
+    if (isOpened())
+    {
+        _osFlushFile();
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Static methods
+//////////////////////////////////////////////////////////////////////////
+
+bool File::deleteFile(const char* filePath)
+{
+    std::error_code err;
+    return (NEString::isEmpty<char>(filePath) == false ? std::filesystem::remove(filePath, err) : false);
+}
+
+bool File::createDir(const char* dirPath)
+{
+    std::error_code err;
+    return (NEString::isEmpty<char>(dirPath) == false ? std::filesystem::create_directory(dirPath, err) : false);
+}
+
+bool File::deleteDir(const char* dirPath)
+{
+    bool result{ false };
+    if (NEString::isEmpty<char>(dirPath) == false)
+    {
+        std::error_code err;
+        std::filesystem::remove_all(dirPath, err);
+        result = !err;
+    }
+
+    return result;
+}
+
+bool File::moveFile(const char* oldPath, const char* newPath)
+{
+    bool result{ false };
+    if ( (NEString::isEmpty<char>(oldPath) == false) && (NEString::isEmpty<char>(newPath) == false) )
+    {
+        std::error_code err;
+        std::filesystem::rename(oldPath, newPath, err);
+        result = !err;
+    }
+    return result;
+}
+
+String File::getCurrentDir(void)
+{
+    std::error_code err;
+    return String(std::filesystem::current_path(err).string());
+}
+
+bool File::setCurrentDir(const char* dirPath)
+{
+    bool result{ false };
+    if (NEString::isEmpty<char>(dirPath) == false)
+    {
+        std::error_code err;
+        std::filesystem::current_path(dirPath, err);
+        result = !err;
+    }
+
+    return result;
+}
+
+bool File::copyFile( const char* originPath, const char* newPath, bool copyForce )
+{
+    bool result{ false };
+    if ( (NEString::isEmpty<char>(originPath) == false) && (NEString::isEmpty<char>(newPath) == false) )
+    {
+        std::filesystem::copy_options opt = copyForce ? std::filesystem::copy_options::overwrite_existing : std::filesystem::copy_options::skip_existing;
+        std::error_code err;
+        result = std::filesystem::copy_file(originPath, newPath, opt, err);
+    }
+
+    return result;
+}
+
+String File::getTempDir(void)
+{
+    std::error_code err;
+    return String(std::filesystem::temp_directory_path(err).string());
+}
+
+bool File::existDir(const char* dirPath)
+{
+    std::error_code err;
+    return (NEString::isEmpty<char>(dirPath) == false ? std::filesystem::is_directory(dirPath, err) : false);
+}
+
+bool File::existFile(const char* filePath)
+{
+    std::error_code err;
+    return (NEString::isEmpty<char>(filePath) == false ? std::filesystem::is_regular_file(filePath, err) : false);
+}
+
+String File::getFileFullPath(const char* filePath)
+{
+    String result;
+    if (NEString::isEmpty<char>(filePath) == false)
+    {
+        std::error_code err;
+        std::filesystem::path fp = std::filesystem::absolute(filePath, err);
+        result = !err ? fp.string() : filePath;
+    }
+
+    return result;
+}
+
+String File::getSpecialDir(File::eSpecialFolder specialFolder)
+{
+    String result;
+    
+    result.reserve(File::MAXIMUM_PATH);
+    unsigned int space = result.getCapacity() != 0 ? _osGetSpecialDir(result.getBuffer(), File::MAXIMUM_PATH, specialFolder) : 0;
+    result.resize(space);
+
+    return result;
 }

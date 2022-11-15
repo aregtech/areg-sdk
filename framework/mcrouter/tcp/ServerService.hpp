@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_MCROUTER_TCP_SERVERSERVICE_HPP
+#define AREG_MCROUTER_TCP_SERVERSERVICE_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        mcrouter/tcp/ServerService.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -120,6 +121,18 @@ public:
      **/
     inline void removeBlackList( const NESocket::SocketAddress & addrClient );
 
+    /**
+     * \brief   Each time querying the bytes sent via network connection returns
+     *          the value after last query.
+     **/
+    inline uint32_t queryBytesSent(void);
+
+    /**
+     * \brief   Each time querying the bytes received via network connection returns
+     *          the value after last query.
+     **/
+    inline uint32_t queryBytesReceived(void);
+
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
@@ -138,7 +151,7 @@ public:
      *                      If nullptr or empty, it will use default settings.
      * \return  Returns true if system could configure. Otherwise, it returns false.
      **/
-    virtual bool configureRemoteServicing( const char * configFile ) override;
+    virtual bool configureRemoteServicing( const String & configFile ) override;
 
     /**
      * \brief   Call manually to set routing service host name and port number.
@@ -147,13 +160,21 @@ public:
      * \param   hostName    IP-address or host name of routing service to connect.
      * \param   portNr      Port number of routing service to connect.
      **/
-    virtual void setRemoteServiceAddress( const char * hostName, unsigned short portNr ) override;
+    virtual void setRemoteServiceAddress( const String & hostName, unsigned short portNr ) override;
 
     /**
      * \brief   Call to start remote service. The host name and port number should be already set.
      * \return  Returns true if start service is triggered.
      **/
     virtual bool startRemoteServicing( void ) override;
+
+    /**
+     * \brief   Call to restart remove service. The host name and the port number should be already set.
+     *          If the service had connection, it will be lost and re-connected again. If there was no
+     *          connection, it starts new connection.
+     * \return  Returns true if succeeded to restart service.
+     **/
+    virtual bool restartRemoteServicing(void) override;
 
     /**
      * \brief   Call to stop service. No more remote communication should be possible.
@@ -237,6 +258,11 @@ protected:
      **/
     virtual void connectionLost( SocketAccepted & clientSocket ) override;
 
+    /**
+     * \brief   Triggered, when there is a connection failure. Normally, this should restart the connection.
+     **/
+    virtual void connectionFailure( void ) override;
+
 /************************************************************************/
 // IETimerConsumer interface overrides.
 /************************************************************************/
@@ -272,7 +298,7 @@ protected:
      * \param   out_listStubs   On output this will contain list of remote stub addresses connected with specified cookie value.
      * \param   out_lisProxies  On output this will contain list of remote proxy addresses connected with specified cookie value.
      **/
-    virtual void getServiceList( ITEM_ID cookie, TEArrayList<StubAddress, const StubAddress &> & OUT out_listStubs, TEArrayList<ProxyAddress, const ProxyAddress &> & OUT out_lisProxies ) const override;
+    virtual void getServiceList( ITEM_ID IN cookie, TEArrayList<StubAddress> & OUT out_listStubs, TEArrayList<ProxyAddress> & OUT out_lisProxies ) const override;
 
     /**
      * \brief   Registers remote stub in the current process.
@@ -405,6 +431,11 @@ private:
     bool startConnection( void );
 
     /**
+     * \brief   Call to restart the connection. Returns true if succeeded to reconnect.
+     **/
+    bool restartConnection( void );
+
+    /**
      * \brief   Called to stop connection. All clients are automatically disconnected.
      **/
     void stopConnection( void );
@@ -473,10 +504,22 @@ inline void ServerService::addBlackList(const NESocket::SocketAddress & addrClie
 
 inline void ServerService::removeWhiteList(const NESocket::SocketAddress & addrClient)
 {
-    mWhiteList.remove( addrClient.getHostAddress(), 0);
+    mWhiteList.removeElem( addrClient.getHostAddress(), 0);
 }
 
 inline void ServerService::removeBlackList(const NESocket::SocketAddress & addrClient)
 {
-    mBlackList.remove( addrClient.getHostAddress(), 0);
+    mBlackList.removeElem( addrClient.getHostAddress(), 0);
 }
+
+inline uint32_t ServerService::queryBytesSent(void)
+{
+    return mThreadSend.extractDataSend();
+}
+
+inline uint32_t ServerService::queryBytesReceived(void)
+{
+    return mThreadReceive.extractDataReceive();
+}
+
+#endif  // AREG_MCROUTER_TCP_SERVERSERVICE_HPP

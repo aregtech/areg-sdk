@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_RUNTIMEOBJECT_HPP
+#define AREG_BASE_RUNTIMEOBJECT_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/RuntimeObject.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -24,8 +25,9 @@
 #include "areg/base/Object.hpp"
 #include "areg/base/private/RuntimeBase.hpp"
 
-#include "areg/base/RuntimeClassID.hpp"
 #include "areg/base/NEUtilities.hpp"
+#include "areg/base/String.hpp"
+#include "areg/base/RuntimeClassID.hpp"
 
 /**
  * \brief       MACRO to declare Runtime Class ID in runtime object.
@@ -79,21 +81,22 @@ public:                                                                         
     /** \brief   Returns the Runtime Class Identifier object        **/                                 \
     virtual const RuntimeClassID & getRuntimeClassId( void ) const override;                            \
     /** \brief   Returns the class name (Identifier name)           **/                                 \
-    virtual const char* getRuntimeClassName( void ) const override;                                     \
+    virtual const String& getRuntimeClassName( void ) const override;                                   \
     /** \brief   Returns the calculated number of runtime class.    **/                                 \
     virtual unsigned int getRuntimeClassNumber( void ) const override;                                  \
     /** \brief   Checks class instance by Class Identifier          **/                                 \
-    /**          Checking is done hiearchically and if any class    **/                                 \
-    /**          in base hierarchi has same RuntimeClassID,         **/                                 \
+    /**          Checking is done hierarchically and if any class   **/                                 \
+    /**          in base hierarchy has same RuntimeClassID,         **/                                 \
     /**          returns true. Otherwise, return false.             **/                                 \
     /** \param   classId    The Class Identifier to check.          **/                                 \
     virtual bool isInstanceOfRuntimeClass(const RuntimeClassID & classId) const override;               \
     /** \brief   Checks class instance by given name                **/                                 \
-    /**          Checking is done hiearchically and if any class    **/                                 \
-    /**          in base hierarchi has same name, returns true.     **/                                 \
+    /**          Checking is done hierarchically and if any class   **/                                 \
+    /**          in base hierarchy has same name, returns true.     **/                                 \
     /**          Otherwise, return false.                           **/                                 \
     /** \param   className  The name of class to check.             **/                                 \
     virtual bool isInstanceOfRuntimeClass(const char * className) const override;                       \
+    virtual bool isInstanceOfRuntimeClass(const String & className) const override;                     \
     /** \brief   Checks class instance by name.                     **/                                 \
     /** \param   className   The name of class to check.            **/                                 \
     virtual bool isInstanceOfRuntimeClass( unsigned int classMagic ) const override;                    \
@@ -116,7 +119,7 @@ const RuntimeClassID & ClassName::_getClassId( void )                           
 const RuntimeClassID & ClassName::getRuntimeClassId( void ) const                                               \
 {   return ClassName::_getClassId();                                                                        }   \
 /** Return class name **/                                                                                       \
-const char* ClassName::getRuntimeClassName( void ) const                                                        \
+const String& ClassName::getRuntimeClassName( void ) const                                                      \
 {   return ClassName::_getClassId().getName();                                                              }   \
 /** Return calculated number **/                                                                                \
 unsigned int ClassName::getRuntimeClassNumber( void ) const                                                     \
@@ -126,6 +129,8 @@ bool ClassName::isInstanceOfRuntimeClass( const RuntimeClassID & classId ) const
 {   return ((ClassName::_getClassId() == classId) || BaseClassName::isInstanceOfRuntimeClass(classId));     }   \
 /** Check class instance by name **/                                                                            \
 bool ClassName::isInstanceOfRuntimeClass( const char * className ) const                                        \
+{   return ((className == ClassName::_getClassId()) || BaseClassName::isInstanceOfRuntimeClass(className)); }   \
+bool ClassName::isInstanceOfRuntimeClass( const String & className ) const                                      \
 {   return ((className == ClassName::_getClassId()) || BaseClassName::isInstanceOfRuntimeClass(className)); }   \
 /** Check class instance by number **/                                                                          \
 bool ClassName::isInstanceOfRuntimeClass( unsigned int classMagic ) const                                       \
@@ -151,7 +156,7 @@ Template const RuntimeClassID & ClassName::_getClassId( void )                  
 Template const RuntimeClassID& ClassName::getRuntimeClassId( void ) const                                       \
 {   return ClassName::_getClassId();                                                                        }   \
 /** Return class name **/                                                                                       \
-Template const char* ClassName::getRuntimeClassName( void ) const                                               \
+Template const String & ClassName::getRuntimeClassName( void ) const                                            \
 {   return ClassName::_getClassId().getName();                                                              }   \
 /** Return class number **/                                                                                     \
 Template unsigned int ClassName::getRuntimeClassNumber( void ) const                                            \
@@ -161,6 +166,8 @@ Template bool ClassName::isInstanceOfRuntimeClass( const RuntimeClassID & classI
 {   return ((ClassName::_getClassId() == classId) || BaseClassName::isInstanceOfRuntimeClass(classId));     }   \
 /** Check class instance by name**/                                                                             \
 Template bool ClassName::isInstanceOfRuntimeClass( const char * className ) const                               \
+{   return ((className == ClassName::_getClassId()) || BaseClassName::isInstanceOfRuntimeClass(className)); }   \
+Template bool ClassName::isInstanceOfRuntimeClass( const String & className ) const                             \
 {   return ((className == ClassName::_getClassId()) || BaseClassName::isInstanceOfRuntimeClass(className)); }   \
 /** Check class instance by number **/                                                                          \
 Template bool ClassName::isInstanceOfRuntimeClass( unsigned int classMagic ) const                              \
@@ -267,6 +274,7 @@ public:
      *          class name. Otherwise return nullptr.
      **/
     inline const RuntimeObject* runtimeCast(const char * className) const;
+    inline const RuntimeObject* runtimeCast(const String & className) const;
 
     /**
      * \brief	Makes casting of pointer of object during runtime 
@@ -306,6 +314,7 @@ public:
      *          class name. Otherwise return nullptr.
      **/
     friend inline const RuntimeObject* RuntimeCast(const RuntimeObject* ptr, const char* className);
+    friend inline const RuntimeObject* RuntimeCast(const RuntimeObject* ptr, const String & className);
 
     /**
      * \brief	Makes casting of constant pointer of object during runtime
@@ -340,6 +349,11 @@ inline const RuntimeObject* RuntimeObject::runtimeCast( const char* className ) 
     return (isInstanceOfRuntimeClass( className ) ? this : nullptr);
 }
 
+inline const RuntimeObject* RuntimeObject::runtimeCast(const String & className) const
+{
+    return (isInstanceOfRuntimeClass(className) ? this : nullptr);
+}
+
 inline const RuntimeObject* RuntimeObject::runtimeCast( unsigned int classNumber ) const
 {
     return (isInstanceOfRuntimeClass( classNumber ) ? this : nullptr);
@@ -355,7 +369,14 @@ inline const RuntimeObject* RuntimeCast(const RuntimeObject * ptr, const char * 
     return (ptr != nullptr ? ptr->runtimeCast(className) : nullptr);
 }
 
+inline const RuntimeObject* RuntimeCast(const RuntimeObject* ptr, const String & className)
+{
+    return (ptr != nullptr ? ptr->runtimeCast(className) : nullptr);
+}
+
 inline const RuntimeObject* RuntimeCast(const RuntimeObject* ptr, unsigned int classNumber)
 {
     return (ptr != nullptr ? ptr->runtimeCast(classNumber) : nullptr);
 }
+
+#endif  // AREG_BASE_RUNTIMEOBJECT_HPP

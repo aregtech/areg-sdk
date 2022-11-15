@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_IPC_IEREMOTESERVICECONSUMER_HPP
+#define AREG_IPC_IEREMOTESERVICECONSUMER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/ipc/IERemoteServiceConsumer.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -66,7 +67,7 @@ public:
      * \param   out_listStubs   On output this will contain list of remote stub addresses connected with specified cookie value.
      * \param   out_lisProxies  On output this will contain list of remote proxy addresses connected with specified cookie value.
      **/
-    virtual void getServiceList( ITEM_ID cookie, TEArrayList<StubAddress, const StubAddress &> & OUT out_listStubs, TEArrayList<ProxyAddress, const ProxyAddress &> & OUT out_lisProxies ) const = 0;
+    virtual void getServiceList( ITEM_ID cookie, TEArrayList<StubAddress> & OUT out_listStubs, TEArrayList<ProxyAddress> & OUT out_lisProxies ) const = 0;
 
     /**
      * \brief   Registers remote stub in the current process.
@@ -123,3 +124,5 @@ public:
 private:
     DECLARE_NOCOPY_NOMOVE( IERemoteServiceConsumer );
 };
+
+#endif  // AREG_IPC_IEREMOTESERVICECONSUMER_HPP

@@ -2,9 +2,9 @@
 // Begin generate generated/src/private/PatientInformationClientBase.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  02:46:19 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PatientInformation.
  *
  * \file            generated/src/PatientInformationClientBase.hpp
@@ -43,7 +43,7 @@ namespace NEPatientInformation
  * Constructor / Destructor
  ************************************************************************/
 
-PatientInformationClientBase::PatientInformationClientBase( const char * roleName, const char * ownerThread /*= nullptr*/ )
+PatientInformationClientBase::PatientInformationClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -52,7 +52,7 @@ PatientInformationClientBase::PatientInformationClientBase( const char * roleNam
 {
 }
 
-PatientInformationClientBase::PatientInformationClientBase( const char * roleName, DispatcherThread & ownerThread )
+PatientInformationClientBase::PatientInformationClientBase( const String & roleName, DispatcherThread & ownerThread )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -61,7 +61,7 @@ PatientInformationClientBase::PatientInformationClientBase( const char * roleNam
 {
 }
 
-PatientInformationClientBase::PatientInformationClientBase( const char* roleName, Component & owner )
+PatientInformationClientBase::PatientInformationClientBase( const String & roleName, Component & owner )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -78,7 +78,7 @@ PatientInformationClientBase::~PatientInformationClientBase( void )
         mProxy->freeProxy( static_cast<IEProxyListener &>(self()) );
         mProxy  = nullptr;
     }
-    
+
     mIsConnected= false;
 }
 
@@ -91,11 +91,11 @@ bool PatientInformationClientBase::recreateProxy( void )
     bool result         = false;
     if (mProxy != nullptr)
     {
-        String roleName   = mProxy->getProxyAddress().getRoleName();
-        String threadName = mProxy->getProxyAddress().getThread();
+        const String & roleName   = mProxy->getProxyAddress().getRoleName();
+        const String & threadName = mProxy->getProxyAddress().getThread();
         if ( roleName.isEmpty() == false )
         {
-            PatientInformationProxy * newProxy = PatientInformationProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(self()), threadName.getString());
+            PatientInformationProxy * newProxy = PatientInformationProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), threadName);
             if (newProxy != nullptr)
             {
                 mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
@@ -103,8 +103,9 @@ bool PatientInformationClientBase::recreateProxy( void )
                 mProxy = newProxy;
                 result = true;
             }
-        }    
+        }
     }
+
     return result;
 }
 
@@ -117,7 +118,7 @@ DEF_TRACE_SCOPE(generated_src_PatientInformationClientBase_serviceConnected);
 bool PatientInformationClientBase::serviceConnected( bool isConnected, ProxyBase & proxy )
 {
     TRACE_SCOPE(generated_src_PatientInformationClientBase_serviceConnected);
-    
+
     bool result = false;
     if(mProxy == &proxy)
     {
@@ -126,11 +127,11 @@ bool PatientInformationClientBase::serviceConnected( bool isConnected, ProxyBase
                  , proxy.getProxyAddress().getServiceName().getString()
                  , proxy.getProxyAddress().getRoleName().getString()
                  , isConnected ? "CONNECTED" : "DISCONNECTED");
-        
+
         mIsConnected= isConnected;
         result      = true;
     }
-    
+
     return result;
 }
 
@@ -170,7 +171,7 @@ void PatientInformationClientBase::processNotificationEvent( NotificationEvent &
     case NEService::eResultType::RequestInvalid:
         {
         /************************************************************************
-         * Trigger invalid response / broadcast handling. May happen when remove notification 
+         * Trigger invalid response / broadcast handling. May happen when remove notification
          ************************************************************************/
             PatientInformationClientBase::invalidResponse(msgId);
         }
@@ -243,7 +244,7 @@ void PatientInformationClientBase::invalidRequest( NEPatientInformation::eMessag
                     , NEPatientInformation::getString(InvalidReqId)
                     , static_cast<unsigned int>(InvalidReqId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString() );
-                    
+
     ASSERT(false);
 }
 
@@ -256,7 +257,7 @@ void PatientInformationClientBase::requestFailed( NEPatientInformation::eMessage
                     , static_cast<unsigned int>(FailureMsgId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason) );
-                    
+
     ASSERT(NEPatientInformation::failureFunctions == nullptr);
     invalidRequest( FailureMsgId );
 }
@@ -277,7 +278,7 @@ void PatientInformationClientBase::onPatientUpdate( const NEPatientInformation::
 /************************************************************************
  * Request failure / Response and Broadcast notifications
  ************************************************************************/
- 
+
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/private/PatientInformationClientBase.cpp file
 //////////////////////////////////////////////////////////////////////////

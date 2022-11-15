@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_RESPONSEEVENTS_HPP
+#define AREG_COMPONENT_RESPONSEEVENTS_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/ResponseEvents.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -95,7 +96,7 @@ protected:
                  , unsigned int respId
                  , Event::eEventType eventType
                  , unsigned int seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
-                 , const char* name = nullptr );
+                 , const String & name = String::EmptyString );
 
     /**
      * \brief	Clones existing information, except target Proxy address to send same message to different Proxies.
@@ -131,7 +132,7 @@ public:
 
     /**
      * \brief   Returns reference of data input streaming object
-     *          to de-serialize parameters.
+     *          to deserialize parameters.
      **/
     inline const IEInStream & getReadStream( void ) const;
 
@@ -235,7 +236,7 @@ protected:
                       , NEService::eResultType result
                       , unsigned int respId
                       , unsigned int seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
-                      , const char* name = nullptr);
+                      , const String & name = String::EmptyString );
 
     /**
      * \brief	Clones existing information, except target Proxy address to send same message to different Proxies.
@@ -314,7 +315,7 @@ protected:
                        , NEService::eResultType result
                        , unsigned int respId
                        , unsigned int seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
-                       , const char* name = nullptr);
+                       , const String & name = String::EmptyString );
 
     /**
      * \brief	Clones existing information, except target Proxy address to send same message to different Proxies.
@@ -400,3 +401,5 @@ inline const Channel & RemoteResponseEvent::getTargetChannel( void ) const
 {
     return mTargetProxyAddress.getChannel();
 }
+
+#endif  // AREG_COMPONENT_RESPONSEEVENTS_HPP

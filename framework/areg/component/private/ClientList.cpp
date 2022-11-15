@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ClientList.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Client List implementation
  *
@@ -27,64 +27,48 @@
 //////////////////////////////////////////////////////////////////////////
 bool ClientList::existClient( const ProxyAddress & client ) const
 {
-    ClientInfo clientInfo(client);
-    LISTPOS pos = firstPosition();
-    for ( ; pos != nullptr; pos = nextPosition(pos))
-    {
-        if ( isEqualValues(getAt(pos), clientInfo) )
-            break;
-    }
-    return (pos != nullptr ? true : false);
+    return contains(ClientInfo(client));
 }
 
 const ClientInfo & ClientList::getClient( const ProxyAddress & whichClient ) const
 {
-    ClientInfo clientInfo(whichClient);
-    LISTPOS pos = firstPosition();
-    for ( ; pos != nullptr; pos = nextPosition(pos))
-    {
-        if ( isEqualValues(getAt(pos), clientInfo) )
-            break;
-    }
-    return (pos != nullptr ? getAt(pos) : ClientInfo::INVALID_CLIENT_INFO);
+    LISTPOS pos = find(ClientInfo(whichClient));
+    return (isValidPosition(pos) ? *pos : ClientInfo::INVALID_CLIENT_INFO);
 }
 
 const ClientInfo & ClientList::registerClient( const ProxyAddress & whichClient, const ServerInfo & server )
 {
-    ClientInfo clientInfo(whichClient);
-    LISTPOS pos = firstPosition();
-    for ( ; pos != nullptr; pos = nextPosition(pos))
+    ClientInfo clInfo(whichClient);
+    LISTPOS pos = find(clInfo);
+    if (isInvalidPosition(pos))
     {
-        if ( isEqualValues(getAt(pos), clientInfo) )
-            break;
+        pushLast(std::move(clInfo));
+        pos = lastPosition();
     }
-    if (pos == nullptr)
-        pos = pushLast( clientInfo );
 
-    ClientInfo & client = getAt(pos);
+    ClientInfo & client = valueAtPosition(pos);
     client.setTargetServer( server.getAddress() );
     client.setConnectionStatus( server.getConnectionStatus() );
+
     return client;
 }
 
 bool ClientList::unregisterClient( const ProxyAddress & whichClient, ClientInfo & out_client )
 {
-    bool exist = false;
-    ClientInfo clientInfo(whichClient);
-    for ( LISTPOS pos = firstPosition(); pos != nullptr; pos = nextPosition(pos) )
+    bool result = false;
+
+    ClientInfo client(whichClient);
+    LISTPOS pos = find(client);
+    if (isValidPosition(pos))
     {
-        ClientInfo & client = getAt(pos);
-        if ( isEqualValues(client, clientInfo) )
-        {
-            exist       = true;
-            client.setTargetServer( StubAddress::INVALID_STUB_ADDRESS );
-            client.setConnectionStatus( NEService::eServiceConnection::ServicePending );
-            out_client  = client;
-            removeAt(pos);
-            break;
-        }
+        ClientInfo& client = valueAtPosition(pos);
+        client.setTargetServer(StubAddress::INVALID_STUB_ADDRESS);
+        client.setConnectionStatus(NEService::eServiceConnection::ServicePending);
+        removeAt(pos);
+        result = true;
     }
-    return exist;
+
+    return result;
 }
 
 void ClientList::serverAvailable( const ServerInfo & whichServer, ClientList & out_clientList )
@@ -92,9 +76,9 @@ void ClientList::serverAvailable( const ServerInfo & whichServer, ClientList & o
     NEService::eServiceConnection state = whichServer.getConnectionStatus();
     const StubAddress & addrStub = whichServer.getAddress();
 
-    for ( LISTPOS pos = firstPosition(); pos != nullptr; pos = nextPosition(pos))
+    for ( LISTPOS pos = firstPosition(); isValidPosition(pos); ++ pos)
     {
-        ClientInfo & client = getAt(pos);
+        ClientInfo & client = *pos;
         client.setTargetServer(addrStub);
         client.setConnectionStatus( state );
         out_clientList.pushFirst(client);
@@ -103,12 +87,11 @@ void ClientList::serverAvailable( const ServerInfo & whichServer, ClientList & o
 
 void ClientList::serverUnavailable( ClientList & out_clientList )
 {
-    for ( LISTPOS pos = firstPosition(); pos != nullptr; )
+    for (LISTPOS pos = firstPosition(); isValidPosition(pos); ++pos )
     {
-        ClientInfo & client = getAt( pos );
+        ClientInfo & client = valueAtPosition( pos );
         client.setTargetServer( StubAddress::INVALID_STUB_ADDRESS );
         client.setConnectionStatus( NEService::eServiceConnection::ServicePending );
         out_clientList.pushLast(client);
-        pos = nextPosition(pos);
     }
 }

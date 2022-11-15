@@ -89,7 +89,7 @@ public:
      * \param   ownerThread     The instance of thread to dispatch messages.
      * \return  Returns pointer to instantiated proxy object.
      **/
-    static HelloServiceProxy * createProxy( const char * roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread );
+    static HelloServiceProxy * createProxy( const String & roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread );
 
     /**
      * \brief   Returns existing or creates new proxy object if it is not existing
@@ -100,7 +100,7 @@ public:
      *                          If nullptr, current dispatching thread is used to dispatch messages.
      * \return  Returns pointer to instantiated proxy object.
      **/
-    static HelloServiceProxy * createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread = nullptr );
+    static HelloServiceProxy * createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread = String::EmptyString );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
@@ -113,7 +113,7 @@ protected:
      * \param   ownerThread The instance of thread to dispatch messages.
      *                      If nullptr, current dispatching thread is used to dispatch messages.
      **/
-    explicit HelloServiceProxy( const char * roleName, DispatcherThread * ownerThread = nullptr );
+    explicit HelloServiceProxy( const String & roleName, DispatcherThread * ownerThread = nullptr );
     /**
      * \brief   Destructor
      **/
@@ -144,7 +144,7 @@ public:
      * \brief   Request call.
      *          The request to output greeting.
      * \param   caller  The reference of caller object to get response.
-     * \param   client  The name of client to output greeting.
+     * \param   client  The name of the client to output greeting.
      * \return  The sequence count number of call
      * \see     responseHelloService
      **/
@@ -335,7 +335,7 @@ private:
      *                      If nullptr, current dispatching thread is used to dispatch messages.
      * \return  Pointer to instantiated proxy object.
      **/
-    static ProxyBase * _createProxy( const char * roleName, DispatcherThread * ownerThread = nullptr );
+    static ProxyBase * _createProxy( const String & roleName, DispatcherThread * ownerThread = nullptr );
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

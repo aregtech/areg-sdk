@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:15 GMT+02:00 
+ * Generated at     13.08.2022  13:59:49 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SystemShutdown.
  *
  * \file            generated/src/private/SystemShutdownEvents.hpp
@@ -17,8 +17,8 @@
 /************************************************************************
  * Include files
  ************************************************************************/
- #include "generated/src/private/SystemShutdownEvents.hpp"
- 
+#include "generated/src/private/SystemShutdownEvents.hpp"
+
 //////////////////////////////////////////////////////////////////////////
 // SystemShutdownRequestEvent class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ SystemShutdownRequestEvent::SystemShutdownRequestEvent( const EventDataStream & 
 SystemShutdownRequestEvent::SystemShutdownRequestEvent( const IEInStream & stream )
     : RemoteRequestEvent( stream )
 {
-}    
+}
 
 //////////////////////////////////////////////////////////////////////////
 // SystemShutdownNotifyRequestEvent class implementation
@@ -72,7 +72,7 @@ SystemShutdownNotifyRequestEvent::SystemShutdownNotifyRequestEvent( const ProxyA
 SystemShutdownNotifyRequestEvent::SystemShutdownNotifyRequestEvent( const IEInStream & stream )
     : RemoteNotifyRequestEvent( stream )
 {
-}    
+}
 
 //////////////////////////////////////////////////////////////////////////
 // SystemShutdownResponseEvent class implementation
@@ -106,7 +106,7 @@ SystemShutdownResponseEvent::SystemShutdownResponseEvent( const ProxyAddress & p
 SystemShutdownResponseEvent::SystemShutdownResponseEvent( const IEInStream & stream )
     : RemoteResponseEvent( stream )
 {
-}    
+}
 
 //////////////////////////////////////////////////////////////////////////
 // SystemShutdownResponseEvent class, Methods

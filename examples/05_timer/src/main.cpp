@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech (c) 2021
+// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
 // Description : This project demonstrates use of timers. The demo initializes,
 //               starts and stops multiple timers processed in different 
 //               threads. The timers require the start of Timer Manager (timer 
@@ -28,7 +28,7 @@
     #pragma comment(lib, "areg.lib")
 #endif // WINDOWS
 
-constexpr unsigned int TIMEOUT_APPLICATION  = Timer::TIMEOUT_1_SEC * 5;
+constexpr unsigned int TIMEOUT_APPLICATION{ NECommon::TIMEOUT_1_SEC * 5 };
 
 //////////////////////////////////////////////////////////////////////////
 // TimerDispatcher class declaration
@@ -44,9 +44,9 @@ constexpr unsigned int TIMEOUT_APPLICATION  = Timer::TIMEOUT_1_SEC * 5;
 class TimerDispatcher   : public    DispatcherThread
                         , private   IETimerConsumer
 {
-    static constexpr unsigned int TIMEOUT_ONE_TIME          = Timer::TIMEOUT_1_MS * 500;//!< The timeout in milliseconds of one time timer
-    static constexpr unsigned int TIMEOUT_PERIODIC_TIME     = Timer::TIMEOUT_1_MS * 80; //!< The timeout in milliseconds of periodic timer
-    static constexpr unsigned int TIMEOUT_CONTINUOUS_TIME   = Timer::TIMEOUT_1_MS * 50; //!< The timeout in milliseconds of continues timer
+    static constexpr unsigned int TIMEOUT_ONE_TIME          { NECommon::TIMEOUT_1_MS * 500 }; //!< The timeout in milliseconds of one time timer
+    static constexpr unsigned int TIMEOUT_PERIODIC_TIME     { NECommon::TIMEOUT_1_MS * 80  }; //!< The timeout in milliseconds of periodic timer
+    static constexpr unsigned int TIMEOUT_CONTINUOUS_TIME   { NECommon::TIMEOUT_1_MS * 50  }; //!< The timeout in milliseconds of continues timer
 
 public:
 
@@ -145,7 +145,7 @@ bool TimerDispatcher::postEvent( Event & eventElem )
     }
     else
     {
-        TRACE_ERR( "Unexpected event of type [ %s ] for this example. Raising assertion!", eventElem.getRuntimeClassName( ) );
+        TRACE_ERR( "Unexpected event of type [ %s ] for this example. Raising assertion!", eventElem.getRuntimeClassName( ).getString() );
         eventElem.destroy( );
         ASSERT(false);
     }
@@ -156,7 +156,7 @@ bool TimerDispatcher::postEvent( Event & eventElem )
 void TimerDispatcher::processTimer( Timer & timer )
 {
     TRACE_SCOPE(main_TimerDispatcher_processTimer);
-    TRACE_DBG("The timer [ %s ] has expired. Timeout [ %u ] ms, Event Count [ %u ], processing in Thread [ %s ]", timer.getName( ).getString( ), timer.getTimeout(), timer.getEventCount(), getName().getString());
+    TRACE_DBG("The timer [ %s ] has expired. Timeout [ %u ] ms, Event Count [ %d ], processing in Thread [ %s ]", timer.getName( ).getString( ), timer.getTimeout(), timer.getEventCount(), getName().getString());
 
     printf("[ %s ] : Timer [ %s ] expired...\n", DateTime::getNow().formatTime().getString(), timer.getName().getString());
 
@@ -259,7 +259,7 @@ static void stopTimerThread( TimerDispatcher & aThread )
     TRACE_INFO("Stopping timers of thread [ %s ]", aThread.getName().getString());
     aThread.stopTimers();
 
-    TRACE_DBG("Comleted demo, going to stop and exit dispatcher thread [ %s ]", aThread.getName().getString());
+    TRACE_DBG("Completed demo, going to stop and exit dispatcher thread [ %s ]", aThread.getName().getString());
     aThread.triggerExitEvent();
     aThread.completionWait(NECommon::WAIT_INFINITE);
 

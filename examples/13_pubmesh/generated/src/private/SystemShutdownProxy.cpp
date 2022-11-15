@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:15 GMT+02:00 
+ * Generated at     13.08.2022  13:59:49 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SystemShutdown.
  *
  * \file            generated/src/private/SystemShutdownProxy.hpp
@@ -42,12 +42,12 @@ SystemShutdownProxy::SystemShutdownServiceAvailableEvent::SystemShutdownServiceA
 // static function implementation
 //////////////////////////////////////////////////////////////////////////
 
-ProxyBase * SystemShutdownProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+ProxyBase * SystemShutdownProxy::_createProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
 {
     return DEBUG_NEW SystemShutdownProxy(roleName, ownerThread);
 }
 
-SystemShutdownProxy * SystemShutdownProxy::createProxy( const char * roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
+SystemShutdownProxy * SystemShutdownProxy::createProxy( const String & roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
 {
     return static_cast<SystemShutdownProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NESystemShutdown::getInterfaceData()
@@ -56,7 +56,7 @@ SystemShutdownProxy * SystemShutdownProxy::createProxy( const char * roleName, I
                                                                       , ownerThread) );
 }
 
-SystemShutdownProxy * SystemShutdownProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= nullptr*/ )
+SystemShutdownProxy * SystemShutdownProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
 {
     return static_cast<SystemShutdownProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NESystemShutdown::getInterfaceData()
@@ -68,7 +68,7 @@ SystemShutdownProxy * SystemShutdownProxy::createProxy( const char * roleName, I
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-SystemShutdownProxy::SystemShutdownProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+SystemShutdownProxy::SystemShutdownProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
     : ProxyBase(roleName, NESystemShutdown::getInterfaceData(), ownerThread)
 
 /************************************************************************
@@ -136,11 +136,11 @@ void SystemShutdownProxy::unregisterServiceListeners( void )
 /************************************************************************
  * Requests.
  ************************************************************************/
- 
+
 /************************************************************************
  * Event processing.
  ************************************************************************/
- 
+
 /************************************************************************
  * IEProxyEventConsumer interface overrides.
  ************************************************************************/
@@ -204,8 +204,8 @@ void SystemShutdownProxy::updateData( SystemShutdownResponseEvent & eventElem, N
         break;
     }
 }
- 
-void SystemShutdownProxy::processResponse( SystemShutdownResponseEvent & evenElem )
+
+    void SystemShutdownProxy::processResponse( SystemShutdownResponseEvent & evenElem )
 {
     NESystemShutdown::eMessageIDs respId  = static_cast<NESystemShutdown::eMessageIDs>(evenElem.getResponseId());
     NEService::eResultType resultType  = evenElem.getResult();
@@ -231,8 +231,8 @@ void SystemShutdownProxy::processResponse( SystemShutdownResponseEvent & evenEle
         {
             respId  = static_cast<NESystemShutdown::eMessageIDs>( mProxyData.getResponseId(static_cast<msg_id>(respId)) );
         }
-        
-        setStates   = respId != NESystemShutdown::eMessageIDs::MsgId_NotProcessed;            
+
+        setStates   = respId != NESystemShutdown::eMessageIDs::MsgId_NotProcessed;
         break;
 
     case NEService::eResultType::RequestOK:     // fall through
@@ -249,16 +249,15 @@ void SystemShutdownProxy::processResponse( SystemShutdownResponseEvent & evenEle
     {
         updateData(evenElem, respId);
     }
-       
+
     if (setStates == true)
     {
         setState(static_cast<msg_id>(respId), dataValid ? NEService::eDataStateType::DataIsOK : NEService::eDataStateType::DataIsInvalid);
     }
-    
+
     notifyListeners(static_cast<msg_id>(respId), resultType, evenElem.getSequenceNumber());
 }
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/private/SystemShutdownProxy.cpp file
 //////////////////////////////////////////////////////////////////////////
- 

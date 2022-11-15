@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_TRACE_PRIVATE_TRACEPROPERTY_HPP
+#define AREG_TRACE_PRIVATE_TRACEPROPERTY_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/TraceProperty.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -85,6 +86,12 @@ public:
      * \param   Value   The logging property value as a boolean to set.
      **/
     TraceProperty( const char * Key, bool Value );
+    /**
+     * \brief   Initializes the property parameters by receiving data as a string.
+     *          It parses the string and extracts comments, property key and value pair.
+     * \param source    The source as a string to parse.
+     */
+    TraceProperty( String & source );
     /**
      * \brief   Copies trance property data from given source.
      * \param   source  The source to copy data
@@ -248,6 +255,16 @@ public:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
+     * \brief   Parses the property as a string and extracts appropriate comment, key and value pairs.
+     * \param   source  The property as a string to pars and extract data.
+     **/
+    void _parseProperty(String& source);
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
      * \brief   The property object of logging
      **/
     TraceProperty::Property   mProperty;
@@ -258,71 +275,90 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
+// Hasher of TraceProperty class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the TraceProperty.
+ */
+namespace std
+{
+    template<>
+    struct hash<TraceProperty>
+    {
+        //! A function to convert TraceProperty object to unsigned int.
+        inline unsigned int operator()(const TraceProperty& key) const
+        {
+            return static_cast<unsigned int>(key);
+        }
+    };
+}
+
+//////////////////////////////////////////////////////////////////////////
 // TraceProperty class inline methods implementation
 //////////////////////////////////////////////////////////////////////////
 
 inline TraceProperty & TraceProperty::operator = ( const char * newValue )
 {
-    mProperty.mValue= newValue;
+    mProperty.mValue.second = newValue;
     return (*this);
 }
 
 inline TraceProperty & TraceProperty::operator = ( unsigned int newValue )
 {
-    mProperty.mValue= newValue;
+    mProperty.mValue.second = newValue;
     return (*this);
 }
 
 inline TraceProperty & TraceProperty::operator = ( NETrace::eLogPriority newValue )
 {
-    mProperty.mValue= newValue;
+    mProperty.mValue.second = newValue;
     return (*this);
 }
 
 inline TraceProperty & TraceProperty::operator = ( bool newValue )
 {
-    mProperty.mValue= newValue;
+    mProperty.mValue.second = newValue;
     return (*this);
 }
 
 inline TraceProperty::operator const char * ( void ) const
 {
-    return static_cast<const char *>(mProperty.mValue);
+    return static_cast<const char *>(mProperty.mValue.second);
 }
 
 inline TraceProperty::operator const String & ( void ) const
 {
-    return static_cast<const String &>(mProperty.mValue);
+    return static_cast<const String &>(mProperty.mValue.second);
 }
 
 inline TraceProperty::operator unsigned int ( void ) const
 {
-    return static_cast<unsigned int>(mProperty.mValue);
+    return static_cast<unsigned int>(mProperty.mValue.second);
 }
 
 inline TraceProperty::operator NETrace::eLogPriority ( void ) const
 {
-    return static_cast<NETrace::eLogPriority>(mProperty.mValue);
+    return static_cast<NETrace::eLogPriority>(mProperty.mValue.second);
 }
 
 inline TraceProperty::operator bool( void ) const
 {
-    return static_cast<bool>(mProperty.mValue);
+    return static_cast<bool>(mProperty.mValue.second);
 }
 
 inline const TracePropertyKey & TraceProperty::getKey( void ) const
 {
-    return mProperty.mKey;
+    return mProperty.mValue.first;
 }
 
 inline const TracePropertyValue & TraceProperty::getValue( void ) const
 {
-    return mProperty.mValue;
+    return mProperty.mValue.second;
 }
 
 inline TracePropertyValue & TraceProperty::getValue( void )
 {
-    return mProperty.mValue;
+    return mProperty.mValue.second;
 }
 
 inline const String & TraceProperty::getComment( void ) const
@@ -332,5 +368,7 @@ inline const String & TraceProperty::getComment( void ) const
 
 inline bool TraceProperty::isValid(void) const
 {
-    return (mProperty.mKey.isValidKey() && mProperty.mValue.isValid());
+    return (mProperty.mValue.first.isValidKey() && mProperty.mValue.second.isValid());
 }
+
+#endif  // AREG_TRACE_PRIVATE_TRACEPROPERTY_HPP

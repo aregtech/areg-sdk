@@ -2,9 +2,9 @@
 // Begin generate generated/private/CentralMessagerClientBase.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  02:47:56 GMT+02:00
  *                  Create by AREG SDK code generator tool from source CentralMessager.
  *
  * \file            generated/CentralMessagerClientBase.hpp
@@ -30,7 +30,7 @@ namespace NECentralMessager
      * \brief   Initialize request failure function pointers to make error handling
      **/
     typedef void (CentralMessagerClientBase::* FuncRequestFailure) ( NEService::eResultType );
-    static FuncRequestFailure failureFunctions[] = 
+    static constexpr FuncRequestFailure failureFunctions[]
     {
           &CentralMessagerClientBase::requestSendMessageFailed
         , &CentralMessagerClientBase::requestKeyTypingFailed
@@ -45,7 +45,7 @@ namespace NECentralMessager
  * Constructor / Destructor
  ************************************************************************/
 
-CentralMessagerClientBase::CentralMessagerClientBase( const char * roleName, const char * ownerThread /*= nullptr*/ )
+CentralMessagerClientBase::CentralMessagerClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -54,7 +54,7 @@ CentralMessagerClientBase::CentralMessagerClientBase( const char * roleName, con
 {
 }
 
-CentralMessagerClientBase::CentralMessagerClientBase( const char * roleName, DispatcherThread & ownerThread )
+CentralMessagerClientBase::CentralMessagerClientBase( const String & roleName, DispatcherThread & ownerThread )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -63,7 +63,7 @@ CentralMessagerClientBase::CentralMessagerClientBase( const char * roleName, Dis
 {
 }
 
-CentralMessagerClientBase::CentralMessagerClientBase( const char* roleName, Component & owner )
+CentralMessagerClientBase::CentralMessagerClientBase( const String & roleName, Component & owner )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -80,7 +80,7 @@ CentralMessagerClientBase::~CentralMessagerClientBase( void )
         mProxy->freeProxy( static_cast<IEProxyListener &>(self()) );
         mProxy  = nullptr;
     }
-    
+
     mIsConnected= false;
 }
 
@@ -93,11 +93,11 @@ bool CentralMessagerClientBase::recreateProxy( void )
     bool result         = false;
     if (mProxy != nullptr)
     {
-        String roleName   = mProxy->getProxyAddress().getRoleName();
-        String threadName = mProxy->getProxyAddress().getThread();
+        const String & roleName   = mProxy->getProxyAddress().getRoleName();
+        const String & threadName = mProxy->getProxyAddress().getThread();
         if ( roleName.isEmpty() == false )
         {
-            CentralMessagerProxy * newProxy = CentralMessagerProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(self()), threadName.getString());
+            CentralMessagerProxy * newProxy = CentralMessagerProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), threadName);
             if (newProxy != nullptr)
             {
                 mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
@@ -105,8 +105,9 @@ bool CentralMessagerClientBase::recreateProxy( void )
                 mProxy = newProxy;
                 result = true;
             }
-        }    
+        }
     }
+
     return result;
 }
 
@@ -119,7 +120,7 @@ DEF_TRACE_SCOPE(generated_CentralMessagerClientBase_serviceConnected);
 bool CentralMessagerClientBase::serviceConnected( bool isConnected, ProxyBase & proxy )
 {
     TRACE_SCOPE(generated_CentralMessagerClientBase_serviceConnected);
-    
+
     bool result = false;
     if(mProxy == &proxy)
     {
@@ -128,11 +129,11 @@ bool CentralMessagerClientBase::serviceConnected( bool isConnected, ProxyBase & 
                  , proxy.getProxyAddress().getServiceName().getString()
                  , proxy.getProxyAddress().getRoleName().getString()
                  , isConnected ? "CONNECTED" : "DISCONNECTED");
-        
+
         mIsConnected= isConnected;
         result      = true;
     }
-    
+
     return result;
 }
 
@@ -172,7 +173,7 @@ void CentralMessagerClientBase::processNotificationEvent( NotificationEvent & ev
     case NEService::eResultType::RequestInvalid:
         {
         /************************************************************************
-         * Trigger invalid response / broadcast handling. May happen when remove notification 
+         * Trigger invalid response / broadcast handling. May happen when remove notification
          ************************************************************************/
             CentralMessagerClientBase::invalidResponse(msgId);
         }
@@ -267,7 +268,7 @@ void CentralMessagerClientBase::invalidRequest( NECentralMessager::eMessageIDs I
                     , NECentralMessager::getString(InvalidReqId)
                     , static_cast<unsigned int>(InvalidReqId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString() );
-                    
+
     ASSERT(false);
 }
 
@@ -280,7 +281,7 @@ void CentralMessagerClientBase::requestFailed( NECentralMessager::eMessageIDs Fa
                     , static_cast<unsigned int>(FailureMsgId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason) );
-                    
+
     unsigned int index = static_cast<msg_id>(NECentralMessager::eMessageIDs::MsgId_Invalid);
     index = static_cast<msg_id>( NEService::isResponseId(static_cast<unsigned int>(FailureMsgId)) ? NECentralMessager::getRequestId(FailureMsgId) : FailureMsgId);
     index = NEService::isRequestId(index)  ? GET_REQ_INDEX(index) : static_cast<msg_id>(NECentralMessager::eMessageIDs::MsgId_Invalid);
@@ -301,7 +302,7 @@ void CentralMessagerClientBase::requestFailed( NECentralMessager::eMessageIDs Fa
 /************************************************************************
  * Request failure / Response and Broadcast notifications
  ************************************************************************/
- 
+
 DEF_TRACE_SCOPE(generated_CentralMessagerClientBase_requestSendMessageFailed);
 void CentralMessagerClientBase::requestSendMessageFailed( NEService::eResultType FailureReason )
 {

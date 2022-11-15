@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/SpinLockIX.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
@@ -35,12 +35,8 @@ SpinLockIX::SpinLockIX( void )
     , mLockCount    ( 0 )
     , mIsValid      ( false )
 {
-    static_assert(std::atomic<pthread_t>::is_always_lock_free);
-    static_assert(std::atomic<uint32_t>::is_always_lock_free);
-    static_assert(std::atomic<bool>::is_always_lock_free);
-
-    mIsValid =  (RETURNED_OK == pthread_spin_init( &mSpinLock, PTHREAD_PROCESS_PRIVATE   ) ) && 
-                (RETURNED_OK == pthread_spin_init( &mInternLock, PTHREAD_PROCESS_PRIVATE ) );
+    mIsValid =  (RETURNED_OK == ::pthread_spin_init( &mSpinLock, PTHREAD_PROCESS_PRIVATE   ) ) && 
+                (RETURNED_OK == ::pthread_spin_init( &mInternLock, PTHREAD_PROCESS_PRIVATE ) );
 }
 
 SpinLockIX::~SpinLockIX( void )
@@ -56,7 +52,7 @@ bool SpinLockIX::lock( void )
     {
         lockIntern( );
 
-        pthread_t curThread = pthread_self( );
+        pthread_t curThread = ::pthread_self( );
         if ( mSpinOwner != curThread )
         {
             unlockIntern( );
@@ -91,7 +87,7 @@ bool SpinLockIX::unlock( void )
     {
         lockIntern( );
 
-        if ( mSpinOwner == pthread_self( ) )
+        if ( mSpinOwner == ::pthread_self( ) )
         {
             ASSERT( mLockCount  != 0 );
             mLockCount --;
@@ -119,12 +115,12 @@ bool SpinLockIX::tryLock( void )
     {
         lockIntern( );
 
-        pthread_t curThread = pthread_self( );
+        pthread_t curThread = ::pthread_self( );
         if ( mSpinOwner != curThread )
         {
             unlockIntern( );
 
-            if ( RETURNED_OK == pthread_spin_trylock( &mSpinLock ) )
+            if ( RETURNED_OK == ::pthread_spin_trylock( &mSpinLock ) )
             {
                 lockIntern( );
 
@@ -152,8 +148,8 @@ void SpinLockIX::freeResources( void )
     {
         mIsValid    = false;
 
-        pthread_spin_destroy( &mSpinLock );
-        pthread_spin_destroy( &mInternLock );
+        ::pthread_spin_destroy( &mSpinLock );
+        ::pthread_spin_destroy( &mInternLock );
 
         mSpinLock   = 0;
         mInternLock = 0;
@@ -165,22 +161,22 @@ void SpinLockIX::freeResources( void )
 
 inline bool SpinLockIX::lockSpin( void )
 {
-    return (RETURNED_OK == pthread_spin_lock( &mSpinLock ));
+    return (RETURNED_OK == ::pthread_spin_lock( &mSpinLock ));
 }
 
 inline void SpinLockIX::unlockSpin( void )
 {
-    pthread_spin_unlock( &mSpinLock );
+    ::pthread_spin_unlock( &mSpinLock );
 }
 
 inline void SpinLockIX::lockIntern( void )
 {
-    pthread_spin_lock( &mInternLock );
+    ::pthread_spin_lock( &mInternLock );
 }
 
 inline void SpinLockIX::unlockIntern( void )
 {
-    pthread_spin_unlock( &mInternLock );
+    ::pthread_spin_unlock( &mInternLock );
 }
 
 #endif // defined(_POSIX) || defined(POSIX)

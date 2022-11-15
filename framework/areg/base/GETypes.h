@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_GETYPES_H
+#define AREG_BASE_GETYPES_H
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/GETypes.h
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -65,7 +66,7 @@
         typedef uintptr_t   id_type;
     #else   // !_UINTPTR_T_DEFINED
         typedef uint64_t    id_type;
-    #endif  // _UINTPTR_T_DEFINED
+#endif  // _UINTPTR_T_DEFINED
 #else   // defined(BIT32)
     #ifdef _UINTPTR_T_DEFINED
         typedef uintptr_t   id_type;
@@ -74,26 +75,12 @@
     #endif  // _UINTPTR_T_DEFINED
 #endif  // id_type
 
+typedef id_type    ptr_type;
+
 /**
  * \brief   The type defines an item ID.
  **/
 typedef uint64_t    ITEM_ID;
-
-/**
- * \brief   Type, defining position of element in Lists.
- **/
-/**
- * \brief   Type definition of position in Linked List
- **/
-typedef void *          LISTPOS;
-/**
- * \brief   Type definition of position in Stack List
- **/
-typedef void *          STACKPOS;
-/**
- * \brief   Type definition of position in Hash Map
- **/
-typedef void *          MAPPOS;
 
 /**
  * \brief   Type definition of socket descriptor. Differs in on different platforms
@@ -143,3 +130,5 @@ typedef uint64_t        TIME64;
  * \brief   The message ID type.
  **/
 typedef uint32_t        msg_id;
+
+#endif  // AREG_BASE_GETYPES_H

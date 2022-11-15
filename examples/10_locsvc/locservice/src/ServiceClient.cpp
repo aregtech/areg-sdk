@@ -52,7 +52,7 @@ bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
     TRACE_DBG("Client [ %s ] of [ %s ] service is [ %s ]"
                 , proxy.getProxyAddress().getRoleName().getString()
                 , proxy.getProxyAddress().getServiceName().getString()
-                , isConnected ? "connected to" : "disconnected from");
+                , isConnected ? "connected" : "disconnected");
 
     if (isConnected)
     {
@@ -117,5 +117,5 @@ void ServiceClient::processTimer(Timer & timer)
     ASSERT(&timer == &mTimer);
 
     TRACE_DBG("Timer [ %s ] expired, send request to output message.", timer.getName().getString());
-    requestHelloWorld(getRoleName(), "");
+    requestHelloWorld(getRoleName());
 }

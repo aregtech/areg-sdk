@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_STUBBASE_HPP
+#define AREG_COMPONENT_STUBBASE_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/StubBase.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -175,42 +176,20 @@ protected:
     /**
      * \brief   StubBase::StubListenerList class defines list of pending listeners.
      **/
-    using StubListenerList  = TELinkedList<StubBase::Listener, const StubBase::Listener &>;
+    using StubListenerList  = TELinkedList<StubBase::Listener>;
 
     //////////////////////////////////////////////////////////////////////////
     // StubBase session tracking
     //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Stub Session map helper class.
-     **/
-    using ImplStubSessionMap= TEHashMapImpl<unsigned int, const StubBase::Listener &>;
-    /**
      * \brief   StubBase::StubSessionMap class defines list of Session IDs and unblocked requests.
      **/
-    using MapStubSession     = TEIntegerHashMap<StubBase::Listener, const StubBase::Listener &, ImplStubSessionMap>;
+    using MapStubSession     = TEIntegerHashMap<StubBase::Listener>;
 
     //////////////////////////////////////////////////////////////////////////
     // StubBase resource tracking
     //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   Stub resource hash map helper class.
-     **/
-    class ImplStubMap	: public TEHashMapImpl<const StubAddress &, StubBase *>
-    {
-    public:
-        /**
-         * \brief   Compares 2 keys, returns true if they are equal.
-         * \param   Value1  The key of right-side object to compare.
-         * \param   Value2  The key of left-side object to compare.
-         * \return  Returns true if 2 keys are equal.
-         **/
-        inline bool implEqualKeys( const StubAddress & Key1, const StubAddress & Key2 ) const
-        {
-            return ( static_cast<const ServiceAddress &>(Key1) == static_cast<const ServiceAddress &>(Key2) && Key1.getThread() == Key2.getThread() );
-        }
-    };
-
-    using MapStub           = TEHashMap<StubAddress, StubBase*, const StubAddress&, StubBase*, ImplStubMap>;
+    using MapStub           = TEHashMap<StubAddress, StubBase*>;
     /**
      * \brief   Stub resource helper definition.
      **/
@@ -251,7 +230,12 @@ public:
     /**
      * \brief   Returns the address of Stub object.
      **/
-    const StubAddress & getAddress( void ) const;
+    inline const StubAddress & getAddress( void ) const;
+
+    /**
+     * \brief   Returns the name of the implemented service.
+     **/
+    inline const String & getServiceName( void ) const;
 
     /**
      * \brief   Sends error event to all pending responses and notification updates
@@ -680,15 +664,15 @@ protected:
      **/
     StubBase::StubListenerList          mListListener;
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
-#endif  // _MSC_VER
-
 private:
     /**
      * \brief   The position of current listener, which is processing. When canceled, it sets nullptr.
      **/
-    LISTPOS                             mCurrListener;
+    StubListenerList::LISTPOS           mCurrListener;
+
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
 
     /**
      * \brief   Used to generate unique session ID. The uniqueness is provided within single stub object scope
@@ -811,3 +795,15 @@ inline StubBase & StubBase::self( void )
 {
     return (*this);
 }
+
+inline const StubAddress& StubBase::getAddress(void) const
+{
+    return mAddress;
+}
+
+inline const String& StubBase::getServiceName(void) const
+{
+    return mAddress.getServiceName();
+}
+
+#endif  // AREG_COMPONENT_STUBBASE_HPP

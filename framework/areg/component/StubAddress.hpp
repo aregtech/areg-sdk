@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_STUBADDRESS_HPP
+#define AREG_COMPONENT_STUBADDRESS_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/StubAddress.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -99,11 +100,11 @@ public:
      * \param   roleName        The role name of holder component
      * \param   threadName      Optional thread name of Stub. If nullptr, the current thread where Stub instantiated is set.
      **/
-    StubAddress( const char * serviceName
+    StubAddress( const String & serviceName
                , const Version & serviceVersion
                , NEService::eServiceType serviceType
-               , const char * roleName
-               , const char * threadName = nullptr );
+               , const String & roleName
+               , const String & threadName = String::EmptyString );
 
     /**
      * \brief   Initialize Stub address from given service item, role name and holder thread.
@@ -111,7 +112,7 @@ public:
      * \param   roleName        The role name of holder component
      * \param   threadName      Optional thread name of Stub. If nullptr, the current thread where Stub instantiated is set.
      **/
-    StubAddress( const ServiceItem & service, const char * roleName, const char * threadName = nullptr );
+    StubAddress( const ServiceItem & service, const String & roleName, const String & threadName = String::EmptyString );
 
     /**
      * \brief   Initialize Stub address from given service data, role name and holder thread.
@@ -119,7 +120,7 @@ public:
      * \param   roleName        The role name of holder component
      * \param   threadName      Optional thread name of Stub. If nullptr, the current thread where Stub instantiated is set.
      **/
-    StubAddress( const NEService::SInterfaceData & siData, const char * roleName, const char * threadName = nullptr );
+    StubAddress( const NEService::SInterfaceData & siData, const String & roleName, const String & threadName = String::EmptyString );
 
     /**
      * \brief   Copy constructor.
@@ -132,6 +133,18 @@ public:
      * \param   source  The source of data to move.
      **/
     StubAddress( StubAddress && source ) noexcept;
+
+    /**
+     * \brief   Initializes stub address by copying service address data.
+     * \param   source  The service address source of data to copy.
+     **/
+    explicit StubAddress( const ServiceAddress & source );
+
+    /**
+     * \brief   Initializes stub address by moving service address data.
+     * \param   source  The service address source of data to move.
+     **/
+    explicit StubAddress( ServiceAddress && source );
 
     /**
      * \brief   Initialize Stub address from stream.
@@ -270,7 +283,7 @@ public:
      * \brief   Sets the service owner thread name.
      * \param   threadName  The thread name to set.
      **/
-    void setThread( const char * threadName );
+    void setThread( const String & threadName );
 
     /**
      * \brief   Returns validity of stub address. Returns true if Stub Address is not a StubAddress::INVALID_STUB_ADDRESS
@@ -323,7 +336,10 @@ protected:
     bool isValidated( void ) const;
 
 private:
-
+    /**
+     * \brief   Returns own object.
+     **/
+    inline StubAddress& self(void);
     /**
      * \brief   Returns the calculated hash-key value of specified stub address object.
      **/
@@ -348,6 +364,35 @@ private:
      **/
     unsigned int    mMagicNum;
 };
+
+//////////////////////////////////////////////////////////////////////////
+// Hasher of StubAddress class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the StubAddress.
+ */
+namespace std
+{
+    //! Calculates the hash value of the StubAddress object
+    template<> struct hash<StubAddress>
+    {
+        //! A function operator to convert StubAddress object to hash value.
+        inline unsigned int operator()(const StubAddress& key) const
+        {
+            return static_cast<unsigned int>(key);
+        }
+    };
+
+    //!< Compares 2 StubAddress objects
+    template<> struct equal_to<StubAddress>
+    {
+        //! A function operator to compare 2 StubAddress objects.
+        inline bool operator() (const StubAddress& key1, const StubAddress& key2) const
+        {
+            return static_cast<const ServiceAddress&>(key1) == static_cast<const ServiceAddress&>(key2);
+        }
+    };
+}
 
 //////////////////////////////////////////////////////////////////////////
 // StubAddress class inline functions implementation
@@ -388,7 +433,7 @@ inline StubAddress & StubAddress::operator = (const ServiceAddress & addrService
     if ( static_cast<const ServiceAddress *>(this) != &addrService)
     {
         static_cast<ServiceAddress &>(*this) = static_cast<const ServiceAddress &>(addrService);
-        mThreadName = "";
+        mThreadName = String::EmptyString;
         mChannel    = Channel();
         mMagicNum   = StubAddress::_magicNumber(*this);
     }
@@ -401,7 +446,7 @@ inline StubAddress & StubAddress::operator = ( ServiceAddress && addrService ) n
     if ( static_cast<const ServiceAddress *>(this) != &addrService )
     {
         static_cast<ServiceAddress &>(*this) = static_cast<ServiceAddress &&>(addrService);
-        mThreadName = "";
+        mThreadName = String::EmptyString;
         mChannel    = Channel( );
         mMagicNum   = StubAddress::_magicNumber( *this );
     }
@@ -473,3 +518,10 @@ inline void StubAddress::setSource( ITEM_ID source )
 {
     return mChannel.setSource(source);
 }
+
+inline StubAddress& StubAddress::self(void)
+{
+    return (*this);
+}
+
+#endif  // AREG_COMPONENT_STUBADDRESS_HPP

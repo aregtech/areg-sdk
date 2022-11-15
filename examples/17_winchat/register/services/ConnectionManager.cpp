@@ -17,15 +17,15 @@
 DEF_TRACE_SCOPE( centralapp_ConnectionManager_CreateComponent );
 DEF_TRACE_SCOPE( centralapp_ConnectionManager_DeleteComponent );
 DEF_TRACE_SCOPE( centralapp_ConnectionManager_startupServiceInterface );
-DEF_TRACE_SCOPE( centralapp_ConnectionManager_requestConnet );
+DEF_TRACE_SCOPE( centralapp_ConnectionManager_requestConnect );
 DEF_TRACE_SCOPE( centralapp_ConnectionManager_requestRegisterConnection );
-DEF_TRACE_SCOPE( centralapp_ConnectionManager_requestDiconnect );
+DEF_TRACE_SCOPE( centralapp_ConnectionManager_requestDisconnect );
 DEF_TRACE_SCOPE( centralapp_ConnectionManager_requestSendMessage );
 DEF_TRACE_SCOPE( centralapp_ConnectionManager_requestKeyTyping );
 
 BEGIN_MODEL(NECommon::MODEL_NAME_CENTRAL_SERVER)
 
-    BEGIN_REGISTER_THREAD( NECentralApp::THREAD_CENTRAL )
+    BEGIN_REGISTER_THREAD( NECentralApp::THREAD_CENTRAL, NECommon::WATCHDOG_IGNORE)
         BEGIN_REGISTER_COMPONENT( NECommon::COMP_NAME_CENTRAL_SERVER, ConnectionManager )
             REGISTER_IMPLEMENT_SERVICE( NEConnectionManager::ServiceName, NEConnectionManager::InterfaceVersion )
             REGISTER_IMPLEMENT_SERVICE( NECentralMessager::ServiceName, NECentralMessager::InterfaceVersion )
@@ -82,9 +82,9 @@ void ConnectionManager::startupServiceInterface( Component & holder )
     setConnectionList( NEConnectionManager::MapConnection( ) );
 }
 
-void ConnectionManager::requestConnet( const String & nickName, const DateTime & dateTime )
+void ConnectionManager::requestConnect( const String & nickName, const DateTime & dateTime )
 {
-    TRACE_SCOPE( centralapp_ConnectionManager_requestConnet );
+    TRACE_SCOPE( centralapp_ConnectionManager_requestConnect );
     TRACE_DBG("Received connection request from client [ %s ] sent at time [ %s ]", static_cast<const char *>(nickName), static_cast<const char *>(dateTime.formatTime()));
 
     NEConnectionManager::sConnection connection;
@@ -122,6 +122,8 @@ void ConnectionManager::requestConnet( const String & nickName, const DateTime &
 
 void ConnectionManager::requestRegisterConnection( const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister )
 {
+    using MAPPOS = NEConnectionManager::MapConnection::MAPPOS;
+
     TRACE_SCOPE( centralapp_ConnectionManager_requestRegisterConnection );
     TRACE_DBG( "Received registration request from client [ %s ] with cookie [ %u ] sent at time [ %s ]", static_cast<const char *>(nickName), cookie, static_cast<const char *>(dateRegister.formatTime( )) );
 
@@ -140,9 +142,9 @@ void ConnectionManager::requestRegisterConnection( const String & nickName, unsi
                 NEConnectionManager::MapConnection & mapConnections = getConnectionList( );
                 listConnections.resize(mapConnections.getSize( ));
                 int count = 0;
-                for ( MAPPOS pos = mapConnections.firstPosition(); pos != nullptr; pos = mapConnections.nextPosition( pos ) )
+                for ( MAPPOS pos = mapConnections.firstPosition(); mapConnections.isValidPosition(pos); pos = mapConnections.nextPosition( pos ) )
                 {
-                    const NEConnectionManager::sConnection & entry = mapConnections.getPosition( pos );
+                    const NEConnectionManager::sConnection & entry = mapConnections.valueAtPosition( pos );
                     ASSERT(connection != entry);
                     listConnections.setAt(count ++, entry);
                 }
@@ -150,7 +152,7 @@ void ConnectionManager::requestRegisterConnection( const String & nickName, unsi
                 uint32_t cookie = connection.cookie != NEConnectionManager::InvalidCookie ? connection.cookie : connectCookie;
                 connection.cookie       = cookie != NEConnectionManager::InvalidCookie ? cookie : getNextCookie();
                 connection.connectedTime= DateTime::getNow( );
-                mapConnections.setAt( connection.cookie, connection, false );
+                mapConnections.setAt( connection.cookie, connection );
 
                 TRACE_DBG( "Accepted new connection registration [ %s ] at time [ %s ]", static_cast<const char *>(nickName), static_cast<const char *>(connection.connectedTime.formatTime( )) );
 
@@ -198,9 +200,9 @@ void ConnectionManager::requestRegisterConnection( const String & nickName, unsi
     }
 }
 
-void ConnectionManager::requestDiconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime )
+void ConnectionManager::requestDisconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime )
 {
-    TRACE_SCOPE( centralapp_ConnectionManager_requestDiconnect );
+    TRACE_SCOPE( centralapp_ConnectionManager_requestDisconnect );
     NEConnectionManager::sConnection connection;
     NEConnectionManager::MapConnection & mapConnections = getConnectionList( );
     bool found = cookie != NEConnectionManager::InvalidCookie ? mapConnections.find(cookie, connection) : FindConnection(nickName, connection);
@@ -239,7 +241,7 @@ void ConnectionManager::requestDiconnect( const String & nickName, unsigned int 
     }
     else
     {
-        TRACE_DBG( "There is not connected cient [ %s ] at time [ %s ]. Ignoring request to connect", static_cast<const char *>(nickName), static_cast<const char *>(dateTime.formatTime( )) );
+        TRACE_DBG( "There is not connected client [ %s ] at time [ %s ]. Ignoring request to connect", static_cast<const char *>(nickName), static_cast<const char *>(dateTime.formatTime( )) );
     }
 }
 
@@ -313,9 +315,11 @@ void ConnectionManager::requestKeyTyping( const String & nickName, unsigned int 
 
 bool ConnectionManager::FindConnection( const String & nickName, NEConnectionManager::sConnection & connection )
 {
+    using MAPPOS = NEConnectionManager::MapConnection::MAPPOS;
+
     bool result = false;
     const NEConnectionManager::MapConnection & mapClients = getConnectionList();
-    for ( MAPPOS pos = mapClients.firstPosition(); (result == false) && (pos != nullptr); pos = mapClients.nextPosition(pos) )
+    for ( MAPPOS pos = mapClients.firstPosition(); (result == false) && mapClients.isValidPosition(pos); pos = mapClients.nextPosition(pos) )
     {
         const NEConnectionManager::sConnection & temp = mapClients.valueAtPosition(pos);
         if ( nickName == temp.nickName )
@@ -342,7 +346,7 @@ bool ConnectionManager::IsReservedNickname( const String & nickName ) const
 inline bool ConnectionManager::connectionExist( uint32_t cookie ) const
 {
     const NEConnectionManager::MapConnection & mapConnections = getConnectionList( );
-    return (mapConnections.find(cookie) != nullptr);
+    return mapConnections.contains(cookie);
 }
 
 inline uint32_t ConnectionManager::getNextCookie( void )

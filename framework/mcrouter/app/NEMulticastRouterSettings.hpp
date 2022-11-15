@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_MCROUTER_APP_NEMULTICASTROUTERSETTINGS_HPP
+#define AREG_MCROUTER_APP_NEMULTICASTROUTERSETTINGS_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,11 +8,11 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        mcrouter/app/NEMulticastRouterSettings.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       AREG Platform, Multicast routing settings.
+ * \brief       AREG Platform, Multi-cast routing settings.
  ************************************************************************/
 
 /************************************************************************
@@ -20,13 +21,15 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/trace/GETrace.h"
 
+#include "areg/appbase/Console.hpp"
+
 #include <string_view>
 
 namespace NEMulticastRouterSettings
 {
     /**
      * \brief   NEMulticastRouterSettings::eRouterState
-     *          Describes the multicast router state.
+     *          Describes the multi-cast router state.
      **/
     typedef enum class E_RouterState
     {
@@ -55,6 +58,7 @@ namespace NEMulticastRouterSettings
         , CMD_Uninstall     //!< Command is to uninstall (unregister) service in the system
         , CMD_Service       //!< Command is to execute process as a system service (in background)
         , CMD_Console       //!< Command is to execute process as console application.
+        , CMD_Verbose       //!< Command is to display the data rate when execute process as console application.
     } eServiceCommand;
 
     /**
@@ -65,13 +69,13 @@ namespace NEMulticastRouterSettings
     /**
      * \brief   The ASCII name of router as a system service.
      **/
-    extern char *       SERVICE_NAME_ASCII          /*= NEApplication::ROUTER_SERVICE_NAME_ASCII*/;
+    extern char *               SERVICE_NAME_ASCII  /*= NEApplication::ROUTER_SERVICE_NAME_ASCII*/;
     /**
      * \brief   The UNICODE name of router as a system service.
      **/
-    extern wchar_t *    SERVICE_NAME_WIDE           /*= NEApplication::ROUTER_SERVICE_NAME_WIDE*/;
+    extern wchar_t *            SERVICE_NAME_WIDE   /*= NEApplication::ROUTER_SERVICE_NAME_WIDE*/;
     /**
-     * \brief   Default option. Set if multicast service starts without an option.
+     * \brief   The default option to run multicast router as a console application.
      **/
     constexpr eServiceCommand   DEFAULT_OPTION      { eServiceCommand::CMD_Console };
     /**
@@ -90,9 +94,10 @@ namespace NEMulticastRouterSettings
     constexpr sServiceCommand   ServiceCommands[]   
     {
           {"--install"  , "-i", eServiceCommand::CMD_Install}   //!< Command to install service. Valid for Windows OS.
-        , {"--uninstall", "-u", eServiceCommand::CMD_Uninstall} //!< Command to unistall service. Valid for Windows OS.
+        , {"--uninstall", "-u", eServiceCommand::CMD_Uninstall} //!< Command to uninstall service. Valid for Windows OS.
         , {"--service"  , "-s", eServiceCommand::CMD_Service}   //!< Command to run process as a system service process.
         , {"--console"  , "-c", eServiceCommand::CMD_Console}   //!< Command to run process as a console application.
+        , {"--verbose"  , "-v", eServiceCommand::CMD_Verbose}   //!< Command to display data rate when run as console application.
         , {""           , ""  , eServiceCommand::CMD_Undefined} //!< Any other command.
     };
 
@@ -106,6 +111,52 @@ namespace NEMulticastRouterSettings
      * \brief   The name of main service router thread.
      **/
     constexpr char      RouterThreadName[]          { "_AREG_SERVICEROUTER_THREAD_" };
+
+    /**
+     * \brief   The default option to run multicast router in verbose mode to output send and receive data rate.
+     */
+    constexpr bool              DEFAULT_VERBOSE{ true };
+    /**
+     * \brief   Output send data rate message format.
+     **/
+    constexpr std::string_view  FORMAT_SEND_DATA{ "Send data with the rate: % 7.02f %s" };
+    /**
+     * \brief   Output receive data rate message format.
+     **/
+    constexpr std::string_view  FORMAT_RECV_DATA{ "Recv data with the rate: % 7.02f %s" };
+    /**
+     * \brief   Error command output message format.
+     **/
+    constexpr std::string_view  FORMAT_MSG_ERROR{ "ERROR, unexpected command [ %s ], please type again ..." };
+    /**
+     * \brief   Wait for user input command message format.
+     **/
+    constexpr std::string_view  FORMAT_WAIT_QUIT{ "Type \'quit\' or \'q\' to quit message router ...: " };
+    /**
+     * \brief   Message quit application.
+     **/
+    constexpr std::string_view  FORMAT_QUIT_APP{ "\nQuit the application ...\n" };
+    //!< Char command quit.
+    constexpr char              QUIT_CH{ 'q' };
+    //!< String command quit.
+    constexpr std::string_view  QUIT_STR{ "quit" };
+
+    /**
+     * \brief   Coordinate to start to display send data rate message.
+     **/
+    constexpr Console::Coord    COORD_SEND_RATE{ 0, 0 };
+    /**
+     * \brief   Coordinate to start to display receive data rate message.
+     **/
+    constexpr Console::Coord    COORD_RECV_RATE{ 0, 1 };
+    /**
+     * \brief   Coordinate to start to display user input message.
+     **/
+    constexpr Console::Coord    COORD_USER_INPUT{ 0, 2 };
+    /**
+     * \brief   Coordinate to start to display error message.
+     **/
+    constexpr Console::Coord    COORD_ERROR_MSG{ 0, 3 };
 
 } // namespace NEMulticastRouterSettings
 
@@ -151,6 +202,8 @@ inline const char * NEMulticastRouterSettings::getString( NEMulticastRouterSetti
         return "NEMulticastRouterSettings::CMD_Service";
     case NEMulticastRouterSettings::eServiceCommand::CMD_Console:
         return "NEMulticastRouterSettings::CMD_Console";
+    case NEMulticastRouterSettings::eServiceCommand::CMD_Verbose:
+        return "NEMulticastRouterSettings::CMD_Verbose";
     default:
         ASSERT( false );
         return "ERR: Unexpected NEMulticastRouterSettings::eServiceCommand value!";
@@ -179,3 +232,5 @@ inline NEMulticastRouterSettings::eServiceCommand NEMulticastRouterSettings::par
 
     return result;
 }
+
+#endif  // AREG_MCROUTER_APP_NEMULTICASTROUTERSETTINGS_HPP

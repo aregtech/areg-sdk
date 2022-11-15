@@ -86,7 +86,7 @@ void PageNetworkSetup::OnServiceNetwork( bool isConnected, DispatcherThread * ow
         if ( (mConnectionHandler.GetNickName().isEmpty() == false) && (mConnectionHandler.GetCookie() == NECommon::InvalidCookie) )
         {
             ASSERT(mNetworkSetup != nullptr);
-            mNetworkSetup->requestConnet(mConnectionHandler.GetNickName(), DateTime::getNow() );
+            mNetworkSetup->requestConnect(mConnectionHandler.GetNickName(), DateTime::getNow() );
         }
     }
     mConnectPending = isConnected ? false : mConnectPending;
@@ -113,7 +113,7 @@ void PageNetworkSetup::OnClientRegistration( bool isRegistered, DispatcherThread
     }
     else if ( (isRegistered == false) && (mNetworkSetup != nullptr) )
     {
-        mNetworkSetup->requestDiconnect( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), DateTime::getNow());
+        mNetworkSetup->requestDisconnect( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), DateTime::getNow());
         mConnectionHandler.ResetConnectionList( );
     }
 }
@@ -137,7 +137,7 @@ void PageNetworkSetup::OnDisconnectTriggered( void )
 {
     if ( mNetworkSetup != nullptr )
     {
-        mNetworkSetup->requestDiconnect(mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), mConnectionHandler.GetTimeConnect());
+        mNetworkSetup->requestDisconnect(mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), mConnectionHandler.GetTimeConnect());
         delete mNetworkSetup;
         mNetworkSetup = nullptr;
     }
@@ -181,12 +181,12 @@ void PageNetworkSetup::OnClickedBrokerConnect()
     String check( port.GetBuffer( ) );
     if ( (check.isNumeric( false ) == true) && (mCtrlAddress.GetAddress( ip1, ip2, ip3, ip4 ) == 4) )
     {
-        uint32_t temp = check.convToUInt32( );
+        uint32_t temp = check.toUInt32( );
         if ( (temp != NESocket::InvalidPort) && (temp < 0xFFFFu) )
         {
             mBrokerPort = temp;
             String ipAddress;
-            ipAddress.formatString( "%u.%u.%u.%u", ip1, ip2, ip3, ip4 );
+            ipAddress.format( "%u.%u.%u.%u", ip1, ip2, ip3, ip4 );
             if ( Application::startMessageRouting( ipAddress, mBrokerPort ) )
             {
                 Application::loadModel( NECommon::MODEL_NAME_DISTRIBUTED_CLIENT );
@@ -225,7 +225,7 @@ void PageNetworkSetup::OnClickedButtonRegister( )
             mRegisterPending = true;
             mConnectionHandler.SetRegistered(false);
             mConnectionHandler.SetNickName(nickName);
-            mNetworkSetup->requestConnet(nickName, DateTime::getNow() );
+            mNetworkSetup->requestConnect(nickName, DateTime::getNow() );
         }
         else
         {
@@ -238,7 +238,7 @@ void PageNetworkSetup::OnUpdateEditNickname()
 {
     UpdateData( TRUE );
     String nickName(mNickName.GetString());
-    if (mNickName.GetLength() != static_cast<int>(nickName.makeAlphanumeric()))
+    if (mNickName.GetLength() != nickName.makeAlphanumeric().getLength())
     {
         mNickName = nickName.getBuffer();
         UpdateData(FALSE);
@@ -260,7 +260,7 @@ void PageNetworkSetup::OnBnUpdateBrokerConnect( CCmdUI* pCmdUI )
     String check( port.GetBuffer( ) );
     if ( (check.isNumeric( false ) == true) && (mCtrlAddress.GetAddress( ip1, ip2, ip3, ip4 ) == 4) )
     {
-        uint32_t temp = check.convToUInt32( );
+        uint32_t temp = check.toUInt32( );
         mBrokerPort = temp > 0xFFFFu ? 0xFFFFu : temp;
     }
     else
@@ -383,7 +383,7 @@ BOOL PageNetworkSetup::OnInitDialog( )
         if ( config.getConnectionHostIpAddress( field0, field1, field2, field3, NERemoteService::eServiceConnection::ConnectionTcpip ) )
         {
             mBrokerPort = static_cast<USHORT>(config.getConnectionPort( NERemoteService::eServiceConnection::ConnectionTcpip ));
-            CString port( String::uint32ToString( mBrokerPort ).getString( ) );
+            CString port( String::toString( mBrokerPort ).getString( ) );
             mCtrlAddress.SetAddress( field0, field1, field2, field3 );
             mCtrlPort.SetWindowText( port );
         }
@@ -401,7 +401,7 @@ void PageNetworkSetup::OnDestroy( )
 
     if ( mNetworkSetup != nullptr )
     {
-        mNetworkSetup->requestDiconnect( mConnectionHandler.GetNickName( ), mConnectionHandler.GetCookie( ), mConnectionHandler.GetTimeConnect( ) );
+        mNetworkSetup->requestDisconnect( mConnectionHandler.GetNickName( ), mConnectionHandler.GetCookie( ), mConnectionHandler.GetTimeConnect( ) );
         delete mNetworkSetup;
         mNetworkSetup = nullptr;
     }

@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  13:39:07 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/NEHelloWorld.hpp
@@ -29,16 +29,16 @@ const NEService::SInterfaceData & NEHelloWorld::getInterfaceData( void )
     /************************************************************************
      * The list of requests
      ************************************************************************/
-    static constexpr unsigned int _RequestList[] 
+    static constexpr unsigned int _RequestList[]
     {
-          static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_requestHelloWorld            ) // requestHelloWorld( const String & roleName, const String & addMessage = "" )
+          static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_requestHelloWorld            ) // requestHelloWorld( const String & roleName )
         , static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_requestClientShutdown        ) // requestClientShutdown( unsigned int clientID, const String & roleName )
     };
 
     /************************************************************************
      * The list of responses and broadcasts
      ************************************************************************/
-    static constexpr unsigned int _ResponseList[] 
+    static constexpr unsigned int _ResponseList[]
     {
           static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_responseHelloWorld           ) // responseHelloWorld( const NEHelloWorld::sConnectedClient & clientInfo )
         , static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_broadcastHelloClients        ) // broadcastHelloClients( const NEHelloWorld::ConnectionList & clientList )
@@ -48,7 +48,7 @@ const NEService::SInterfaceData & NEHelloWorld::getInterfaceData( void )
     /************************************************************************
      * The list of attributes
      ************************************************************************/
-    static constexpr unsigned int _AttributeList[] 
+    static constexpr unsigned int _AttributeList[]
     {
           static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_ConnectedClients             ) // NEHelloWorld::ConnectionList mConnectedClients;
         , static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_RemainOutput                 ) // short mRemainOutput;
@@ -59,7 +59,7 @@ const NEService::SInterfaceData & NEHelloWorld::getInterfaceData( void )
      ************************************************************************/
     static constexpr unsigned int _RequestToResponseMap[] 
     {
-          static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_responseHelloWorld           ) // requestHelloWorld( const String & roleName, const String & addMessage = "" )
+          static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_responseHelloWorld           ) // requestHelloWorld( const String & roleName )
         , static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_NotProcessed                 ) // requestClientShutdown( unsigned int clientID, const String & roleName )
     };
 
@@ -80,7 +80,7 @@ const NEService::SInterfaceData & NEHelloWorld::getInterfaceData( void )
         0, // void broadcastServiceUnavailable( void )
 
     };
-    
+
     /************************************************************************
      * HelloWorld Service Interface data
      ************************************************************************/
@@ -102,7 +102,7 @@ const NEService::SInterfaceData & NEHelloWorld::getInterfaceData( void )
     return _InterfaceData;
 }
 
-NEHelloWorld::eMessageIDs NEHelloWorld::getResponseId( NEHelloWorld::eMessageIDs reqId )
+NEHelloWorld::eMessageIDs NEHelloWorld::getResponseId( NEHelloWorld::eMessageIDs reqId)
 {
     const NEService::SInterfaceData & sid = NEHelloWorld::getInterfaceData();
     msg_id index = GET_REQ_INDEX(reqId);
@@ -118,7 +118,7 @@ NEHelloWorld::eMessageIDs NEHelloWorld::getRequestId( NEHelloWorld::eMessageIDs 
     {
         result = sid.idRequestToResponseMap[i] == static_cast<msg_id>(respId) ? static_cast<NEHelloWorld::eMessageIDs>(sid.idRequestList[i]) : NEHelloWorld::eMessageIDs::MsgId_Invalid;
     }
-    
+
     return result;
 }
 

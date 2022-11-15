@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:13 GMT+02:00 
+ * Generated at     13.08.2022  13:59:48 GMT+02:00
  *                  Create by AREG SDK code generator tool from source RemoteRegistry.
  *
  * \file            generated/src/private/RemoteRegistryEvents.hpp
@@ -17,8 +17,8 @@
 /************************************************************************
  * Include files
  ************************************************************************/
- #include "generated/src/private/RemoteRegistryEvents.hpp"
- 
+#include "generated/src/private/RemoteRegistryEvents.hpp"
+
 //////////////////////////////////////////////////////////////////////////
 // RemoteRegistryRequestEvent class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ RemoteRegistryRequestEvent::RemoteRegistryRequestEvent( const EventDataStream & 
 RemoteRegistryRequestEvent::RemoteRegistryRequestEvent( const IEInStream & stream )
     : RemoteRequestEvent( stream )
 {
-}    
+}
 
 //////////////////////////////////////////////////////////////////////////
 // RemoteRegistryNotifyRequestEvent class implementation
@@ -72,7 +72,7 @@ RemoteRegistryNotifyRequestEvent::RemoteRegistryNotifyRequestEvent( const ProxyA
 RemoteRegistryNotifyRequestEvent::RemoteRegistryNotifyRequestEvent( const IEInStream & stream )
     : RemoteNotifyRequestEvent( stream )
 {
-}    
+}
 
 //////////////////////////////////////////////////////////////////////////
 // RemoteRegistryResponseEvent class implementation
@@ -106,7 +106,7 @@ RemoteRegistryResponseEvent::RemoteRegistryResponseEvent( const ProxyAddress & p
 RemoteRegistryResponseEvent::RemoteRegistryResponseEvent( const IEInStream & stream )
     : RemoteResponseEvent( stream )
 {
-}    
+}
 
 //////////////////////////////////////////////////////////////////////////
 // RemoteRegistryResponseEvent class, Methods

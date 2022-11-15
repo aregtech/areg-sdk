@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/Identifier.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -43,18 +43,30 @@ namespace
 //////////////////////////////////////////////////////////////////////////
 // Types and constants
 //////////////////////////////////////////////////////////////////////////
-const Identifier    Identifier::BAD_IDENTIFIER( BAD_IDENTIFIER_VALUE, BAD_IDENTIFIER_NAME.data( ) );
+const Identifier    Identifier::BAD_IDENTIFIER( BAD_IDENTIFIER_VALUE, BAD_IDENTIFIER_NAME );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 Identifier::Identifier( void )
     : mValue    (BAD_IDENTIFIER_VALUE)
-    , mName     (BAD_IDENTIFIER_NAME.data())
+    , mName     (BAD_IDENTIFIER_NAME)
 {
 }
 
 Identifier::Identifier( unsigned int idValue, const char * idName )
+    : mValue    (idValue)
+    , mName     (idName)
+{
+}
+
+Identifier::Identifier( unsigned int idValue, const std::string_view& idName )
+    : mValue    (idValue)
+    , mName     (idName)
+{
+}
+
+Identifier::Identifier( unsigned int idValue, const String& idName )
     : mValue    (idValue)
     , mName     (idName)
 {

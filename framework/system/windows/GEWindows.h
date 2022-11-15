@@ -12,7 +12,7 @@
  * Include files.
  ************************************************************************/
 
-#if defined(_WINDOWS) || defined(WINDWOS)
+#if (defined(_WINDOWS) || defined(WINDOWS))
 
 #ifdef WINDOWS
     #ifndef _WINDOWS
@@ -25,7 +25,7 @@
 #endif // WINDOWS
 
 
-#ifdef _WIN32
+#if defined(_WIN32)
     #ifndef WIN32
         #define WIN32   _WIN32
     #endif  // WIN32
@@ -33,12 +33,9 @@
     #ifndef _WIN32
         #define _WIN32  WIN32
     #endif  // _WIN32
-#else
-    #define WIN32
-    #define _WIN32
-#endif // _WIN32
+#endif // (defined(_WINDOWS) || defined(WINDOWS))
 
-#if defined(BIT64) || defined(_BIT64) || defined(WIN64) || defined(_WIN64) || defined(_M_X64) || defined(_Wp64) || defined(_M_AMD64)
+#if defined(BIT64) || defined(_BIT64) || defined(WIN64) || defined(_WIN64)
 
     #if defined(BIT32) || defined(_BIT32)
         #undef  BIT32
@@ -63,7 +60,7 @@
         #define _WIN64       1
     #endif  // !defined(_WIN64) || (_WIN64 != 1)
 
-#elif defined(BIT32) || defined(_BIT32) || defined(_M_IX86) || defined(_M_IX86_FP)
+#elif defined(BIT32) || defined(_BIT32)
 
     #ifndef BIT32
         #define BIT32
@@ -73,7 +70,37 @@
         #define _BIT32
     #endif // !_BIT32
 
-#else   // defined(BIT32) || defined(_BIT32) || defined(_M_IX86) || defined(_M_IX86_FP)
+#elif defined(_M_X64) || defined(_Wp64) || defined(_M_AMD64) || defined(__x86_64__)
+
+    #ifndef BIT64
+        #define BIT64
+    #endif // !BIT64
+
+    #ifndef _BIT64
+        #define _BIT64
+    #endif // !_BIT64
+
+    #if !defined(WIN64) || (WIN64 != 1)
+        #undef  WIN64
+        #define WIN64       1
+    #endif  // !defined(WIN64) || (WIN64 != 1)
+
+    #if !defined(_WIN64) || (_WIN64 != 1)
+        #undef  _WIN64
+        #define _WIN64       1
+    #endif  // !defined(_WIN64) || (_WIN64 != 1)
+
+#elif defined(_M_IX86) || defined(_M_IX86_FP) || defined(__i386__)
+
+    #ifndef BIT32
+        #define BIT32
+    #endif // !BIT32
+
+    #ifndef _BIT32
+        #define _BIT32
+    #endif // !_BIT32
+
+#else   // defined(_M_IX86) || defined(_M_IX86_FP) || defined(__i386__)
 
     #error  Cannot detect the target bitness
 
@@ -106,9 +133,11 @@
 /************************************************************************
  * common defines
  ************************************************************************/
-#ifndef __THREAD_LOCAL
+#if (defined(_WIN32) && !defined(__THREAD_LOCAL))
     #define __THREAD_LOCAL  __declspec( thread )
-#endif  // __THREAD_LOCAL
+#else   // !(defined(_WIN32) && !defined(__THREAD_LOCAL))
+    #define __THREAD_LOCAL 
+#endif  // !(defined(_WIN32) && !defined(__THREAD_LOCAL))
 
 #endif  // defined(_WINDOWS) || defined(WINDWOS)
 

@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+  </ImportGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{B8900569-8956-47AF-A2E7-50EB1DD788DD}</ProjectGuid>
+    <ProjectName>20_generated</ProjectName>
+    <RootNamespace>20_generated</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <OutDir>$(OutLibDir)\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
+    <ClCompile>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
+    <ClCompile>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="generated\src\private\LargeDataClientBase.cpp" />
+    <ClCompile Include="generated\src\private\LargeDataEvents.cpp" />
+    <ClCompile Include="generated\src\private\LargeDataProxy.cpp" />
+    <ClCompile Include="generated\src\private\LargeDataStub.cpp" />
+    <ClCompile Include="generated\src\private\NELargeData.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="generated\src\LargeDataClientBase.hpp" />
+    <ClInclude Include="generated\src\LargeDataStub.hpp" />
+    <ClInclude Include="generated\src\NELargeData.hpp" />
+    <ClInclude Include="generated\src\private\LargeDataEvents.hpp" />
+    <ClInclude Include="generated\src\private\LargeDataProxy.hpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

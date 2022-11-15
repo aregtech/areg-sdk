@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/FileBuffer.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -72,7 +72,7 @@ bool FileBuffer::open( void )
         mFileMode = normalizeMode(mFileMode);
         if (isAttachMode() == false)
         {
-            mSharedBuffer.resize(mSharedBuffer.getBlockSize(), false);
+            mSharedBuffer.reserve(mSharedBuffer.getBlockSize(), false);
         }
         else
         {
@@ -88,7 +88,7 @@ bool FileBuffer::open( void )
     return mIsOpened;
 }
 
-bool FileBuffer::open(const char* fileName, unsigned int mode)
+bool FileBuffer::open(const String& fileName, unsigned int mode)
 {
     bool result = false;
     if (isOpened() == false)
@@ -166,7 +166,7 @@ bool FileBuffer::remove( void )
 {
     mSharedBuffer.invalidate();
 
-    mFileName   = String::EmptyString.data();
+    mFileName   = String::EmptyString;
     mFileMode   = FileBase::FO_MODE_INVALID;
     mIsOpened   = false;
 
@@ -183,9 +183,9 @@ bool FileBuffer::isOpened() const
     return mIsOpened;
 }
 
-unsigned int FileBuffer::reserve(int newSize)
+unsigned int FileBuffer::reserve(unsigned int newSize)
 {
-    return (isOpened() && (newSize >= 0) ? mSharedBuffer.resize(static_cast<unsigned int>(newSize), false) : NEMemory::INVALID_SIZE);
+    return (isOpened() ? mSharedBuffer.reserve(newSize, false) : NEMemory::INVALID_SIZE);
 }
 
 bool FileBuffer::truncate( void )

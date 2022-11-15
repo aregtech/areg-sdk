@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech (c) 2021
+// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
 // Description : This project contains an instance service client, which model
 //               is defined dynamically during run-time.This approach 
 //               guaranties to start and run several instance of the same 
@@ -44,7 +44,7 @@ static const char* const _compName  = NEUtilities::generateName(NECommon::Serivc
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( _threadName )
+    BEGIN_REGISTER_THREAD( _threadName, NECommon::WATCHDOG_IGNORE)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( _compName, TrafficLightClient )
             // register TrafficController dependency.
@@ -87,12 +87,14 @@ int main()
     }
 
     // Check whether the right option is selected.
-    if ( (NEString::compareFastIgnoreCase(buffer, "sn") == 0) || (NEString::compareFast(buffer, "1") == 0) )
+    if ( (NEString::compareFastIgnoreCase(buffer, "sn") == NEMath::eCompare::Equal) || 
+         (NEString::compareFast(buffer, "1") == NEMath::eCompare::Equal) )
     {
         isEastWest = false;
         printf("\nSelected Choice: South-North traffic.\n");
     }
-    else if ( (NEString::compareFastIgnoreCase(buffer, "ew") == 0) || (NEString::compareFast(buffer, "2") == 0) )
+    else if ((NEString::compareFastIgnoreCase(buffer, "ew") == NEMath::eCompare::Equal) || 
+             (NEString::compareFast(buffer, "2") == NEMath::eCompare::Equal) )
     {
         isEastWest = true;
         printf("\nSelected Choice: East-West traffic.\n");
@@ -109,8 +111,9 @@ int main()
     data.alignBool.mElement = isEastWest;
     ComponentLoader::setComponentData(_compName, data);
 
-    // Initialize application, disable logging, enables servicing and the timer.
-    Application::initApplication(true, true, true, true, nullptr, nullptr );
+    // Initialize application, enable logging, servicing, routing, timer and watchdog.
+    // Use default settings.
+    Application::initApplication( );
 
     do 
     {

@@ -14,13 +14,13 @@ It as well broadcasts own text message to all connected clients.</Description>
                     <Description>The nick name of initiator</Description>
                 </Parameter>
                 <Parameter DataType="uint32" ID="4" Name="cookie">
-                    <Description>Cookie given by connection manager. Should not be invalid.</Description>
+                    <Description>The cookie given by connection manager. Should not be invalid.</Description>
                 </Parameter>
                 <Parameter DataType="String" ID="5" Name="newMessage">
                     <Description>The message sent by connected initiator</Description>
                 </Parameter>
                 <Parameter DataType="DateTime" ID="6" Name="dateTime">
-                    <Description>The timestamp create on local host of initiator</Description>
+                    <Description>The time-stamp create on local host of initiator</Description>
                 </Parameter>
             </ParamList>
         </Method>
@@ -51,7 +51,7 @@ It as well broadcasts own text message to all connected clients.</Description>
                     <Description>The message sent by initiator</Description>
                 </Parameter>
                 <Parameter DataType="DateTime" ID="15" Name="dateTime">
-                    <Description>The local timestamp of initiator</Description>
+                    <Description>The local time-stamp of initiator</Description>
                 </Parameter>
             </ParamList>
         </Method>
@@ -76,7 +76,7 @@ It as well broadcasts own text message to all connected clients.</Description>
                     <Description>The message sent by servicing server</Description>
                 </Parameter>
                 <Parameter DataType="DateTime" ID="22" Name="dateTime">
-                    <Description>The timestamp of servicing component</Description>
+                    <Description>The time-stamp of servicing component</Description>
                 </Parameter>
             </ParamList>
         </Method>

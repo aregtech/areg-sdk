@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_TRACE_PRIVATE_LAYOUTMANAGER_HPP
+#define AREG_TRACE_PRIVATE_LAYOUTMANAGER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/LayoutManager.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -17,7 +18,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/TEStack.hpp"
+#include "areg/base/TEArrayList.hpp"
 #include "areg/trace/NETrace.hpp"
 
 /************************************************************************
@@ -43,7 +44,7 @@ class LayoutManager
 // Local types and constants.
 //////////////////////////////////////////////////////////////////////////
 private:
-    using ListLayouts   = TENolockStack<IELayout *, IELayout *>;
+    using ListLayouts   = TEArrayList<IELayout *>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -52,7 +53,7 @@ public:
     /**
      * \brief   Default constructor
      **/
-    LayoutManager( void );
+    LayoutManager( void ) = default;
     /**
      * \brief   Destructor
      **/
@@ -68,6 +69,7 @@ public:
      * \return  Returns true if after parsing the layout manager contains at least one layout object.
      **/
     bool createLayouts( const char * layoutFormat );
+    bool createLayouts( const String & layoutFormat );
 
     /**
      * \brief   Release and delete list of layout objects.
@@ -81,13 +83,21 @@ public:
      * \param   stream  The streaming object to write output message.
      * \return  Returns true if operation succeeded.
      **/
-    bool logMessage( const NETrace::sLogMessage & logMsg, IEOutStream & stream ) const;
+    void logMessage( const NETrace::sLogMessage & logMsg, IEOutStream & stream ) const;
 
     /**
      * \brief   Returns true if layout manager is valid.
      *          The layout manager is valid if it has at least one layout object.
      **/
     inline bool isValid( void ) const;
+
+private:
+
+    /**
+     * \brief   Instantiates and creates layout objects out of layout format string.
+     * \param   layoutFormat    The layout string to parse and create objects.
+     **/
+    inline void _createLayouts(char* layoutFormat);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -112,3 +122,5 @@ inline bool LayoutManager::isValid( void ) const
 {
     return (mLayoutList.isEmpty() == false);
 }
+
+#endif  // AREG_TRACE_PRIVATE_LAYOUTMANAGER_HPP

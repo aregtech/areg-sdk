@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/FileLogger.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -35,17 +35,21 @@ bool FileLogger::openLogger( void )
         const TraceProperty & prop = traceConfig.getLogFile();
         if ( prop.isValid() )
         {
-            String fileName = File::normalizePath( static_cast<const char *>(prop.getValue()) );
-            // fileName = File::NormalizeFilePath( fileName );
+            String fileName(File::normalizePath(static_cast<const char *>(prop.getValue())) );
             if ( fileName.isEmpty() == false )
             {
                 bool newFile      = static_cast<bool>(traceConfig.getAppendData()) == false;
                 unsigned int mode = File::FO_MODE_WRITE | File::FO_MODE_READ | File::FO_MODE_SHARE_READ | File::FO_MODE_SHARE_WRITE | File::FO_MODE_TEXT;
 
-                if ( File::existFile(fileName) )
+                if (File::existFile(fileName))
+                {
                     mode |= newFile ? File::FO_MODE_TRUNCATE : File::FO_MODE_EXIST;
+                }
                 else
+                {
                     mode |= FileBase::FO_MODE_CREATE;
+                }
+
                 if ( mLogFile.open( fileName, mode) && createLayouts() )
                 {
                     
@@ -115,23 +119,22 @@ void FileLogger::closeLogger(void)
     mLogFile.close();
 }
 
-bool FileLogger::logMessage( const NETrace::sLogMessage & logMessage )
+void FileLogger::logMessage( const NETrace::sLogMessage & logMessage )
 {
-    bool result = false;
     if ( mLogFile.isOpened() )
     {
         switch (logMessage.lmHeader.logType)
         {
         case NETrace::LogMessage:
-            result = getLayoutMessage().logMessage( logMessage, static_cast<IEOutStream &>(mLogFile) );
+            getLayoutMessage().logMessage( logMessage, static_cast<IEOutStream &>(mLogFile) );
             break;
 
         case NETrace::LogScopeEnter:
-            result = getLayoutEnterScope().logMessage( logMessage, static_cast<IEOutStream &>(mLogFile) );
+            getLayoutEnterScope().logMessage( logMessage, static_cast<IEOutStream &>(mLogFile) );
             break;
 
         case NETrace::LogScopeExit:
-            result = getLayoutExitScope().logMessage( logMessage, static_cast<IEOutStream &>(mLogFile) );
+            getLayoutExitScope().logMessage( logMessage, static_cast<IEOutStream &>(mLogFile) );
             break;
 
         case NETrace::LogCommand:
@@ -143,8 +146,6 @@ bool FileLogger::logMessage( const NETrace::sLogMessage & logMessage )
             break;
         }
     }
-
-    return result;
 }
 
 bool FileLogger::isLoggerOpened(void) const

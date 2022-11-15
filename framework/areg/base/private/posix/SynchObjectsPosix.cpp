@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/ESynchObjectsWin.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
@@ -30,6 +30,7 @@
 #include "areg/base/private/posix/SynchLockAndWaitIX.hpp"
 
 #include <string.h>
+#include <time.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Internal static methods
@@ -68,7 +69,6 @@ Mutex::Mutex(bool lock /* = true */)
 
     , mOwnerThreadId        ( 0 )
 {
-    static_assert(std::atomic<id_type>::is_always_lock_free);
     mSynchObject    = DEBUG_NEW WaitableMutexIX(lock, "POSIX_Mutex");
 }
 
@@ -83,7 +83,7 @@ bool Mutex::_lockMutex( unsigned int timeout )
     WaitableMutexIX * synchMutex = reinterpret_cast<WaitableMutexIX *>(mSynchObject);
     if ( (synchMutex != nullptr) && (NESynchTypesIX::SynchObject0 == SynchLockAndWaitIX::waitForSingleObject(*synchMutex, timeout)) )
     {
-        mOwnerThreadId.store(synchMutex->getOwningThreadId());
+        mOwnerThreadId.store(reinterpret_cast<id_type>(synchMutex->getOwningThreadId()));
         result = true;
     }
 
@@ -173,8 +173,6 @@ Semaphore::Semaphore(int maxCount, int initCount /* = 0 */)
     , mMaxCount     ( MACRO_MAX(maxCount, 1) )
     , mCurrCount    ( MACRO_IN_RANGE(initCount, 0, mMaxCount) ? initCount : 0 )
 {
-    static_assert(std::atomic_long::is_always_lock_free);
-
     mSynchObject = DEBUG_NEW WaitableSemaphoreIX(mMaxCount, mCurrCount.load(), "POSIX_Semaphore");
 }
 
@@ -264,6 +262,7 @@ bool CriticalSection::tryLock( void )
 //////////////////////////////////////////////////////////////////////////
 // SpinLock class implementation
 //////////////////////////////////////////////////////////////////////////
+#if 0 // TODO: Probably don't need anymore and should be removed
 
 SpinLock::SpinLock( void )
     : IEResourceLock( IESynchObject::eSyncObject::SoSpinlock )
@@ -294,6 +293,7 @@ bool SpinLock::tryLock( void )
 {
     return (mSynchObject != nullptr ? reinterpret_cast<SpinLockIX *>(mSynchObject)->tryLock( ) : false);
 }
+#endif //0
 
 //////////////////////////////////////////////////////////////////////////
 // ResourceLock class implementation
@@ -337,14 +337,14 @@ bool ResourceLock::tryLock(void)
 //////////////////////////////////////////////////////////////////////////
 // SynchTimer class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-SynchTimer::SynchTimer( unsigned int timeMilliseconds, bool periodic /* = false */, bool autoReset /* = true */, bool initSignaled /* = true */ )
-    : IESynchObject   ( IESynchObject::eSyncObject::SoTimer )
+SynchTimer::SynchTimer( unsigned int msTimeout, bool isPeriodic /* = false */, bool isAutoReset /* = true */, bool /*isSteady*/ /* = true */ )
+    : IESynchObject ( IESynchObject::eSyncObject::SoTimer )
 
-    , mTimeMilliseconds ( timeMilliseconds )
-    , mIsPeriodic       ( periodic )
-    , mIsAutoReset      ( autoReset )
+    , mTimeout 		( msTimeout )
+    , mIsPeriodic   ( isPeriodic )
+    , mIsAutoReset  ( isAutoReset )
 {
-    mSynchObject= static_cast<void *>(DEBUG_NEW WaitableTimerIX( mIsAutoReset, initSignaled, "POSIX_WaitableTimer" ));
+    mSynchObject= static_cast<void *>(DEBUG_NEW WaitableTimerIX( mIsAutoReset, "POSIX_WaitableTimer" ));
 }
 
 SynchTimer::~SynchTimer( void )
@@ -370,7 +370,7 @@ bool SynchTimer::unlock( void )
 
 bool SynchTimer::setTimer( void )
 {
-    return ((mSynchObject != nullptr) && reinterpret_cast<WaitableTimerIX *>(mSynchObject)->setTimer( mTimeMilliseconds, mIsPeriodic ));
+    return ((mSynchObject != nullptr) && reinterpret_cast<WaitableTimerIX *>(mSynchObject)->setTimer( mTimeout, mIsPeriodic ));
 }
 
 bool SynchTimer::cancelTimer( void )
@@ -436,6 +436,44 @@ int MultiLock::lock(unsigned int timeout /* = NECommon::WAIT_INFINITE */, bool w
     } while(false);
 
     return index;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Wait class implementation
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// Wait class, Methods
+//////////////////////////////////////////////////////////////////////////
+
+void Wait::_osInitTimer(void)
+{
+}
+
+void Wait::_osReleaseTimer(void)
+{
+}
+
+Wait::eWaitResult Wait::_osWaitFor(const Wait::Duration& timeout) const
+{
+    Wait::eWaitResult result{ timeout.count() >= 0 ? Wait::eWaitResult::WaitIgnored : Wait::eWaitResult::WaitInvalid };
+    if (timeout >= Wait::ONE_MUS)
+    {
+        struct timespec dueTime;
+        Wait::Duration mus{ timeout - (timeout % Wait::ONE_MUS) };
+        dueTime.tv_sec  = mus >= Wait::ONE_SEC ? (mus.count() / Wait::ONE_SEC.count()) : 0;
+        dueTime.tv_nsec = mus.count() % Wait::ONE_SEC.count();
+        if (::nanosleep(&dueTime, nullptr) == RETURNED_OK)
+        {
+            result = timeout >= Wait::MIN_WAIT ? Wait::eWaitResult::WaitInMilli : Wait::eWaitResult::WaitInMicro;
+        }
+        else
+        {
+            result = Wait::eWaitResult::WaitInvalid;
+        }
+    }
+
+    return result;
 }
 
 #endif  // defined(_POSIX) || defined(POSIX)

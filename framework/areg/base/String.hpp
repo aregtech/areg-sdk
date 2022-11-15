@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_STRING_HPP
+#define AREG_BASE_STRING_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,9 +8,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/String.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, String Class to handle basic
  *              null-terminated string operations.
@@ -19,8 +20,10 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/base/TEString.hpp"
-#include <stdio.h>
+
+#include <functional>
 #include <stdarg.h>
+#include <stdio.h>
 #include <string_view>
 
 /************************************************************************
@@ -41,89 +44,90 @@ class WideString;
  *          supports streaming and used in Hash Map since has operator
  *          to covert string value to integer.
  **/
-class AREG_API String : public TEString<char, TEStringImpl<char> >
-{
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+class AREG_API String : public TEString<char>
+ {
     friend class BufferStreamBase;
+
+    using Base = TEString<char>;
 
 //////////////////////////////////////////////////////////////////////////
 // defined constants
 //////////////////////////////////////////////////////////////////////////
 public:
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(disable: 4251)
-#endif  // _MSC_VER
-
     /**
      * \brief   String::EmptyString
      *          The empty string.
      **/
     static constexpr std::string_view   EmptyString      { "" };   //!< Empty String
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
-#endif  // _MSC_VER
-
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
+
     /**
      * \brief   Default constructor.
      **/
-    inline String( void );
+    String( void ) = default;
+
+    /**
+     * \brief   Destructor.
+     **/
+    ~String(void) = default;
+
+    /**
+     * \brief   Copy constructor.
+     * \param   source  The source to copy data.
+     **/
+    String(const String& source) = default;
+
+    /**
+     * \brief   Move constructor.
+     * \param   source  The source to copy data.
+     **/
+    String(String&& source) noexcept = default;
+
     /**
      * \brief    Initialization constructor. Copies data from source
      * \param    source    The string data source. If nullptr, sets empty string.
      **/
-    inline String( const char * source );
+    inline String(const char* source);
+    inline String(const std::string& source);
+    inline String(const std::string_view& source);
+    inline String(std::string&& source) noexcept;
+    inline String(const WideString& source);
+    inline String(const std::wstring& source);
+    inline String(const wchar_t* source);
+
     /**
      * \brief    Initialization constructor. Copies carCount chars from source
      * \param    source       The string source
      * \param    charCount    The number of characters to copy.
      **/
-    inline String( const char * source, int charCount );
+    inline String(const char* source, uint32_t charCount);
+    inline String(const wchar_t* source, uint32_t charCount);
+
     /**
      * \brief    Copies char as source
      * \param    ch    Char as string.
      **/
-    inline String( char ch );
+    inline explicit String( char ch );
+
     /**
-     * \brief   Copy constructor.
-     * \param   source  The source to copy data.
-     **/
-    inline String( const String & source );
-    /**
-     * \brief   Copy constructor.
-     * \param   source  The source to copy data.
-     **/
-    inline String( String && source ) noexcept;
-    /**
-     * \brief   Initialization constructor. Converts wide char and copies string
-     * \param   source  The source of wide char string
-     **/
-    inline String( const wchar_t* source );
-    /**
-     * \brief   Initialization constructor. Converts wide char string and
-     *          copied first charCount symbols.
-     * \param   source      The source of wide char string
-     * \param   charCount   The number of character to copy from 
-     *                      given string source
-     **/
-    inline String( const wchar_t* source, int charCount );
-    /**
-     * \brief   Initialization constructor. Copies data from wide char string
-     * \param   source  The source object of wide char string
-     **/
-    String( const WideString & source );
+     * \brief   Initializes string and reserves a space for specified amount of characters.
+     *          Note, the size of string remains zero.
+     *
+     * \param   count   The space to reserve.
+     */
+    inline explicit String(uint32_t count);
+
     /**
      * \brief   Constructor, initializes string from streaming object
      **/
-    String( const IEInStream & stream );
-
-    /**
-     * \brief   Destructor.
-     **/
-    virtual ~String( void ) = default;
+    explicit String( const IEInStream & stream );
 
 //////////////////////////////////////////////////////////////////////////
 // operators
@@ -133,53 +137,22 @@ public:
     /**
      * \brief   Converting operator, converts object to unsigned int primitive
      **/
-    explicit operator unsigned int ( void ) const;
-
-    /**
-     * \brief   Converting operator, converts object to string buffer
-     **/
-    inline operator const char * ( void ) const;
-
-    /**
-     * \brief   Assigning operator, copies data from given string source
-     * \param   src     The source of string to copy.
-     * \return  Returns the string object.
-     **/
-    String & operator = ( const String & src );
-
-    /**
-     * \brief   Move operator, moves data from given string source
-     * \param   src     The source of string to copy.
-     * \return  Returns the string object.
-     **/
-    String & operator = ( String && src ) noexcept;
-
-    /**
-     * \brief   Assigning operator, copies data from given null-terminated string source
-     * \param   src     The source of null-terminated string to copy.
-     * \return  Returns the string object.
-     **/
-    String & operator = ( const char * src );
+    explicit inline operator unsigned int(void) const;
 
     /**
      * \brief   Assigning operator, copies data from given null-terminated wide-char string source
-     * \param   src     The source of null-terminated wide-char string to copy.
+     * \param   src     The source of null-terminated string to copy.
      * \return  Returns the string object.
      **/
-    String & operator = ( const wchar_t * src );
-
-    /**
-     * \brief   Assigning operator, copies data from given character source
-     * \param   chSource    The source of character to copy.
-     * \return  Returns the string object.
-     **/
-    String & operator = ( char chSource );
-
-    /**
-     * \brief   Assigning operator, copies data from given wide-string source
-     * \param   src     The source of wide-string to copy.
-     * \return  Returns the string object.
-     **/
+    inline String & operator = (const String & src);
+    inline String & operator = (const std::string& src);
+    inline String & operator = (const std::string_view& src);
+    inline String & operator = (const char* src);
+    inline String & operator = (const char src);
+    inline String & operator = (const std::wstring& src);
+    inline String & operator = (const wchar_t * src );
+    inline String & operator = (const wchar_t src );
+    inline String & operator = (String && src) noexcept;
     String & operator = ( const WideString & src );
 
     /**
@@ -190,159 +163,74 @@ public:
      * \return  Returns true if 2 strings are equal.
      * \see     Compare
      **/
-    inline bool operator == (const String & other) const;
-           bool operator == (const WideString & other) const;
+    inline bool operator == (const String& other) const;
+    inline bool operator == (const std::string& other) const;
+    inline bool operator == (const std::string_view& other) const;
+    inline bool operator == (const char* other) const;
+    inline bool operator == (const char ch) const;
+    bool operator == (const wchar_t* other) const;
+    bool operator == (const std::wstring& other) const;
+    bool operator == (const WideString& other) const;
 
-    /**
-     * \brief   Determines equality of two strings.
-     * \remark  The comparing of strings is case-sensitive.
-     *          To compare case-insensitive, use Compare() method.
-     * \param   other   The null-terminated string to compare
-     * \return  Returns true if 2 strings are equal.
-     * \see     Compare
-     **/
-    inline bool operator == (const char * other) const;
-    inline bool operator == (const wchar_t * other) const;
-
-    /**
-     * \brief   Determines whether the string is equal to character, i.e. it is one symbol
-     *          string and this symbol is equal to specified character.
-     * \remark  The comparing of strings is case-sensitive.
-     *          To compare case-insensitive, use Compare() method.
-     * \param   ch      A character to compare.
-     * \return  Returns true if the length of string is 1 and the single symbol is equal
-     *          to specified character.
-     * \see     Compare
-     **/
-    inline bool operator == (char ch) const;
-    inline bool operator == (wchar_t ch) const;
-
-    /**
-     * \brief   Determines inequality of two strings.
-     * \remark  The comparing of strings is case-sensitive.
-     *          To compare case-insensitive, use Compare() method.
-     * \param   other   The second string to compare
-     * \return  Returns true if 2 strings are unequal.
-     * \see     Compare
-     **/
-    inline bool operator != (const String & other) const;
-
-    /**
-     * \brief   Determines inequality of two strings.
-     * \remark  The comparing of strings is case-sensitive.
-     *          To compare case-insensitive, use Compare() method.
-     * \param   other   The null-terminated string to compare
-     * \return  Returns true if 2 strings are unequal.
-     * \see     Compare
-     **/
-    inline bool operator != (const char * other) const;
-
-    /**
-     * \brief   Determines whether existing string is more than given strings.
-     *          The operator is needed for sorting algorithms
-     * \remark  The comparing of strings is case-sensitive.
-     *          To compare case-insensitive, use Compare() method.
-     * \param   other   The second string to compare
-     * \return  Returns true if existing string is more than given.
-     * \see     Compare
-     **/
-    inline bool operator > ( const String & other ) const;
-
-    /**
-     * \brief   Determines whether existing string is less than given strings.
-     *          The operator is needed for sorting algorithms
-     * \remark  The comparing of strings is case-sensitive.
-     *          To compare case-insensitive, use Compare() method.
-     * \param   other   The second string to compare
-     * \return  Returns true if existing string is less than given.
-     * \see     Compare
-     **/
-    inline bool operator < ( const String & other ) const;
-
-    /**
-     * \brief   Appends given string at the end of existing string.
-     * \param   src     The source of string to append at the end
-     * \return  Returns string object
-     **/
-    String & operator += ( const String & src );
-
-    /**
-     * \brief   Appends given null-terminated string at the end of existing string.
-     * \param   src     The source of null-terminated string to append at the end
-     * \return  Returns string object
-     **/
-    String & operator += ( const char * src );
+    inline bool operator != (const String& other) const;
+    inline bool operator != (const std::string& other) const;
+    inline bool operator != (const std::string_view& other) const;
+    inline bool operator != (const char* other) const;
+    inline bool operator != ( const char ch ) const;
+    bool operator != (const wchar_t* other) const;
+    bool operator != (const std::wstring& other) const;
+    bool operator != (const WideString& other) const;
 
     /**
      * \brief   Appends given null-terminated wide-char string at the end of existing string.
      * \param   src     The source of null-terminated wide-char string to append at the end
      * \return  Returns string object
      **/
-    String & operator += ( const wchar_t * src );
-
-    /**
-     * \brief   Appends given wide string at the end of existing string.
-     * \param   src     The source of wide-string to append at the end
-     * \return  Returns string object
-     **/
+    inline String& operator += (const String& src);
+    inline String& operator += (const std::string& src);
+    inline String& operator += (const std::string_view& src);
+    inline String& operator += (const char* src);
+    inline String& operator += (const char chSource);
+    inline String& operator += (const wchar_t* src);
+    inline String& operator += (const wchar_t src);
+    inline String& operator += (const std::wstring& src);
     String & operator += ( const WideString & src );
-
-    /**
-     * \brief   Appends given character at the end of existing string.
-     * \param   chSource   The source of character to append at the end
-     * \return  Returns string object
-     **/
-    String & operator += ( char chSource );
-
-    /**
-     * \brief   Returns character at given position. The position should be valid.
-     * \param   atPos   The valid position in string buffer.
-     * \return  Returns character at given position.
-     **/
-    char operator [ ] (int atPos) const;
 
 /************************************************************************/
 // Friend global operators to operate String
 /************************************************************************/
+
     /**
      * \brief   Operator to concatenate 2 strings.
      * \param   lhs     Left-hand side string object
      * \param   rhs     Right-hand side string object
      * \return  Returns newly constructed string object by concatenating 2 strings
      **/
-    friend AREG_API String operator + (const String & lhs, const String & rhs);
-    
+    friend inline String operator + (const String& lhs, const String& rhs);
+    friend inline String operator + (const String& lhs, const std::string& rhs);
+    friend inline String operator + (const String& lhs, const std::string_view& rhs);
+    friend inline String operator + (const String& lhs, const char* rhs);
+    friend inline String operator + (const String& lhs, const char rhs);
+    friend inline String operator + (const std::string& lhs, const String& rhs);
+    friend inline String operator + (const std::string_view& lhs, const String& rhs);
+    friend inline String operator + (const char* lhs, const String& rhs);
+    friend inline String operator + (const char lhs, const String& rhs);
+
     /**
      * \brief   Operator to concatenate 2 strings.
      * \param   lhs     Left-hand side string object
      * \param   rhs     Right-hand side null-terminated string
      * \return  Returns newly constructed string object by concatenating 2 strings
      **/
-    friend AREG_API String operator + (const String & lhs, const char * rhs);
-    
+    friend inline String operator + (const String & lhs, const wchar_t * rhs);
+
     /**
      * \brief   Operator to concatenate 2 strings.
      * \param   lhs     Left-hand side null-terminated string
      * \param   rhs     Right-hand side string object
      * \return  Returns newly constructed string object by concatenating 2 strings
      **/
-    friend AREG_API String operator + (const char * lhs, const String & rhs);
-    
-    /**
-     * \brief   Operator to concatenate string and 8-bit character.
-     * \param   lhs     Left-hand side string object
-     * \param   rhs     Right-hand side 8-bit character
-     * \return  Returns newly constructed string object by concatenating string and char
-     **/
-    friend AREG_API String operator + (const String & lhs, char chRhs);
-    
-    /**
-     * \brief   Operator to concatenate 8-bit character and string.
-     * \param   lhs     Left-hand side 8-bit character
-     * \param   rhs     Right-hand side string object
-     * \return  Returns newly constructed string object by concatenating char and string
-     **/
-    friend AREG_API String operator + (char chLhs, const String & rhs);
+    friend inline  String operator + (const wchar_t * lhs, const String & rhs);
 
 /************************************************************************/
 // Friend global operators to stream String
@@ -350,19 +238,19 @@ public:
     /**
      * \brief   Streams to input object, i.e. reads data from streaming object to string,
      *          and initialize string data.
-     * \param    stream  Streaming object to read string data
-     * \param    input    String object to initialize and write string data.
-     * \return    Reference to stream object.
+     * \param   stream  Streaming object to read string data
+     * \param   input    String object to initialize and write string data.
+     * \return  Reference to stream object.
      **/
-    friend AREG_API const IEInStream & operator >> (const IEInStream & stream, String & input);
-    
+    friend inline const IEInStream & operator >> (const IEInStream & stream, String & input);
+
     /**
-     * \brief    Streams from output object, i.e. write data from string to streaming object.
-     * \param    stream    Streaming object to write data.
-     * \param    output    String object to read data from
-     * \return    Reference to stream object.
+     * \brief   Streams from output object, i.e. write data from string to streaming object.
+     * \param   stream    Streaming object to write data.
+     * \param   output    String object to read data from
+     * \return  Reference to stream object.
      **/
-    friend AREG_API IEOutStream & operator << (IEOutStream & stream, const String & output);
+    friend inline IEOutStream & operator << (IEOutStream & stream, const String & output);
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -384,14 +272,14 @@ public:
      * \return  Returns string copied until matched phrase.
      *
      * \example getSubstring
-     * 
+     *
      *  String test("0123 456 789 0123");
-     * 
+     *
      *  const char * next = static_cast<const char *>(test);            // next == "0123 456 789 0123"
      *  String result1 = String::getSubstring( next, "0123", &next);    // results: result1 == ""           , next == " 456 789 0123"
      *  String result2 = String::getSubstring( next, "0123", &next);    // results: result2 == " 456 789 "  , next == ""
      *  String result3 = String::getSubstring( next, "0123", &next);    // results: result3 == ""           , next == nullptr;
-     *  
+     *
      *  next = static_cast<const char *>(test);                         // next == "0123 456 789 0123"
      *  String result4 = String::getSubstring( next, " ", &next);       // results: result4 == "0123"       , next == "456 789 0123"
      *  String result5 = String::getSubstring( next, " ", &next);       // results: result5 == "456 789"    , next == "789 0123"
@@ -460,46 +348,46 @@ public:
      * \param   radix       The base value to make conversion. The lowest is 2 (binary) and the highest is hexadecimal (16)
      * \return  Returns converted string.
      **/
-    static String int32ToString( int32_t number, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
+    static String toString( int32_t number, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
     /**
      * \brief   Converts given unsigned 32-bit integer into the string. The conversion is done on radix base, which by default is decimal (10).
      * \param   number      The number to convert to string
      * \param   radix       The base value to make conversion. The lowest is 2 (binary) and the highest is hexadecimal (16)
      * \return  Returns converted string.
      **/
-    static String uint32ToString( uint32_t number, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
+    static String toString( uint32_t number, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
     /**
      * \brief   Converts given signed 64-bit integer into the string. The conversion is done on radix base, which by default is decimal (10).
      * \param   number      The number to convert to string
      * \param   radix       The base value to make conversion. The lowest is 2 (binary) and the highest is hexadecimal (16)
      * \return  Returns converted string.
      **/
-    static String int64ToString( int64_t number, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
+    static String toString( int64_t number, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
     /**
      * \brief   Converts given unsigned 64-bit integer into the string. The conversion is done on radix base, which by default is decimal (10).
      * \param   number      The number to convert to string
      * \param   radix       The base value to make conversion. The lowest is 2 (binary) and the highest is hexadecimal (16)
      * \return  Returns converted string.
      **/
-    static String uint64ToString( uint64_t number, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
+    static String toString( uint64_t number, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
     /**
      * \brief   Converts given 32-bit digit with floating point into the string. The conversion is done on radix base, which by default is decimal (10).
      * \param   number      The number to convert to string
      * \return  Returns converted string.
      **/
-    static String floatToString( float number );
+    static String toString( float number );
     /**
      * \brief   Converts given 32-bit digit with floating point into the string. The conversion is done on radix base, which by default is decimal (10).
      * \param   number      The number to convert to string
      * \return  Returns converted string.
      **/
-    static String doubleToString( double number );
+    static String toString( double number );
     /**
      * \brief   Converts given boolean value to string.
      * \param   value   The boolean value to convert to string
      * \return  Returns converted string.
      **/
-    static String boolToString( bool value );
+    static String toString( bool value );
 
     /**
      * \brief   Formats the string. The classic rules similar of 'spintf' are applied.
@@ -529,76 +417,6 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Returns substring of existing string. The substring is formed starting at given position in string buffer
-     *          and number of characters to get in string or until end of string if 'charCount' is NEString::COUNT_ALL
-     * \param   startPos    The starting position in existing string buffer. Should be valid position.
-     *                      By default, starting position is begin of string buffer, i.e. NEString::START_POS
-     * \param   charCount   The number of characters to copy to substring. If equal to NEString::COUNT_ALL,
-     *                      it copies characters until end of string.
-     * \return  Returns created substring.
-     **/
-    inline String substring( NEString::CharPos startPos = NEString::START_POS, NEString::CharCount charCount = NEString::COUNT_ALL ) const;
-
-    /**
-     * \brief   Searches given phrase in the string starting from given position until the end of string.
-     *          If found, copies the string data into the result until the found position and returns position
-     *          next after phrase. If not found, will copy complete string until end.
-     * \param   outResult   On output, the string contains result of copied data until found position
-     *                      or contains the complete string until the end.
-     * \param   strPhrase   The phrase to search in the string.
-     * \param   startPos    The starting position to search the string.
-     * \return  Returns following values:
-     *              -   Valid string position not equal to NEString::END_POS,
-     *                  if found phrase and the phrase is not at the end;
-     *              -   NEString::END_POS if found the phrase at end of string;
-     *              -   NEString::INVALID_POS if could not find the phrase.
-     *
-     * \example String::substring
-     *
-     *  String test("0123 456 789 0123");
-     *  String result;
-     *  NEString::CharPos next = NEString::START_POS;
-     *  next = test.substring(result, "0123", next);   // results: next == 4, result == ""
-     *  next = test.substring(result, "0123", next);   // results: next == NEString::END_POS, result == " 456 789 "
-     *
-     *  next = NEString::START_POS;
-     *  next = test.substring(result, " ", next);      // results: next == 5, result == "0123"
-     *  next = test.substring(result, " ", next);      // results: next == 9, result == "456"
-     *  next = test.substring(result, " ", next);      // results: next == NEString::INVALID_POS, result == "0123"
-     **/
-    inline NEString::CharPos substring( String & outResult, const char * strPhrase, NEString::CharPos startPos = NEString::START_POS ) const;
-
-    /**
-     * \brief   Searches given symbol in the string starting from given position until end of string.
-     *          If found, copies the string data into the result until the found position and returns position
-     *          next after symbol. If not found, will copy complete string until end.
-     * \param   outResult   On output, the string contains result of copied data until found position
-     *                      or contains the complete string until the end.
-     * \param   chSymbol    The symbol to search in the string.
-     * \param   startPos    The starting position to search the symbol.
-     * \return  Returns next position after searched symbol and value are followings:
-     *              -   Valid string position not equal to NEString::END_POS,
-     *                  if found phrase and the symbol is not at the end;
-     *              -   NEString::END_POS if found the symbol at end of string;
-     *              -   NEString::INVALID_POS if could not find the phrase.
-     **/
-    inline NEString::CharPos substring( String & outResult, char chSymbol, NEString::CharPos startPos = NEString::START_POS ) const;
-
-    /**
-     * \brief   Returns left side (begin) substring of length 'charCount'
-     * \param   charCount   The number of characters to extract.
-     * \return  Returns the left side substring of length 'charCount' or empty string is string is empty.
-     **/
-    inline String leftSide( NEString::CharCount charCount ) const;
-
-    /**
-     * \brief   Returns right side (end) substring of length 'charCount'
-     * \param   charCount   The number of characters to extract.
-     * \return  Returns the right side substring of length 'charCount' or empty string is string is empty.
-     **/
-    inline String rightSide( NEString::CharCount charCount ) const;
-
-    /**
      * \brief   Formats the string. The classic rules similar of 'spintf' are applied.
      * \param   format  The format of string, then followed values to output if they exist.
      * \param   ...     Additional arguments
@@ -606,7 +424,7 @@ public:
      * \note    By default, it will be 128 character space allocated to format string.
      *          If fails, will try repeat operation with 512 chars
      **/
-    const String & formatString( const char * format, ... );
+    const String& format(const char* format, ...);
 
     /**
      * \brief   Formats the string. The classic rules similar of 'vsprintf' are applied.
@@ -616,47 +434,82 @@ public:
      * \note    By default, it will be 128 character space allocated to format string.
      *          If fails, will try repeat operation with 512 chars
      **/
-    const String & formatList( const char * format, va_list argptr );
+    const String& formatList(const char* format, va_list argptr);
+
+    /**
+     * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
+     *          If string has not enough space to copy characters, it will reallocate the space.
+     *
+     * \param   source  The source of string to copy characters.
+     * \param   pos     The position in source string to start to copy.
+     * \param   count   The number of characters to copy. By default, it copies all characters.
+     * \param   ch      A character to assign.
+     * \return  Returns modified string.
+     **/
+    String& assign(const wchar_t* source, NEString::CharCount count = NEString::COUNT_ALL);
+    inline String& assign(const char* source, NEString::CharCount count = NEString::COUNT_ALL);
+    inline String& assign(const std::string& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline String& assign(const std::string_view& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline String& assign(const String& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline String& assign(const char ch);
+
+    /**
+     * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
+     *          and by amount of characters to append.
+     *
+     * \param   source  The source of string to append characters.
+     * \param   pos     If specified the valid zero-based position in the given string to append.
+     *                  Otherwise, it append starting from the beginning.
+     * \param   count   If specified, the number of characters to append. By default, it appends all characters.
+     * \param   ch      A character to append.
+     * \return  Returns modified string.
+     **/
+    String& append(const wchar_t* source, NEString::CharCount count = NEString::COUNT_ALL);
+    inline String& append(const char* source, NEString::CharCount count = NEString::COUNT_ALL);
+    inline String& append(const std::string& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline String& append(const std::string_view& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline String& append(const String& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline String& append(const char ch);
 
     /**
      * \brief   Converts string of digits to 32-bit integer
      * \param   radix       The base value when calculate integer.
      * \return  Returns the 32-bit integer
      **/
-    inline int32_t convToInt32( NEString::eRadix radix = NEString::eRadix::RadixDecimal ) const;
+    inline int32_t toInt32( NEString::eRadix radix = NEString::eRadix::RadixDecimal ) const;
     /**
      * \brief   Converts string of digits to 32-bit unsigned integer
      * \param   radix       The base value when calculate integer.
      * \return  Returns the 32-bit unsigned integer
      **/
-    inline uint32_t convToUInt32( NEString::eRadix radix = NEString::eRadix::RadixDecimal ) const;
+    inline uint32_t toUInt32( NEString::eRadix radix = NEString::eRadix::RadixDecimal ) const;
     /**
      * \brief   Converts string of digits to 64-bit integer
      * \param   radix       The base value when calculate integer.
      * \return  Returns the 64-bit integer
      **/
-    inline int64_t convToInt64( NEString::eRadix radix = NEString::eRadix::RadixDecimal ) const;
+    inline int64_t toInt64( NEString::eRadix radix = NEString::eRadix::RadixDecimal ) const;
     /**
      * \brief   Converts string of digits to 64-bit unsigned integer
      * \param   radix       The base value when calculate integer.
      * \return  Returns the 64-bit unsigned integer
      **/
-    inline uint64_t convToUInt64( NEString::eRadix radix = NEString::eRadix::RadixDecimal ) const;
+    inline uint64_t toUInt64( NEString::eRadix radix = NEString::eRadix::RadixDecimal ) const;
     /**
      * \brief   Converts string of digits to 32-bit digit with floating point
      * \return  Returns the 32-bit digit with floating point
      **/
-    inline float convToFloat( void ) const;
+    inline float toFloat( void ) const;
     /**
      * \brief   Converts string of digits to 64-bit digit with floating point
      * \return  Returns the 64-bit digit with floating point
      **/
-    inline double convToDouble( void ) const;
+    inline double toDouble( void ) const;
     /**
      * \brief   Converts string to boolean value. If value is "true", it returns true. Otherwise returns false.
      * \return  Returns boolean value.
      **/
-    inline bool convToBool( void ) const;
+    inline bool toBool( void ) const;
 
     /**
      * \brief   Converts and sets 32-bit signed digit in the string based on radix bases.
@@ -669,7 +522,7 @@ public:
      *          If need to convert negative number to Hexadecimal or Octal,
      *          might make sense to use FromUInt32 method.
      **/
-    inline String & convFromInt32( int32_t value, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
+    inline String & fromInt32( int32_t value, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
 
     /**
      * \brief   Converts and sets 32-bit unsigned digit in the string based on radix bases.
@@ -679,9 +532,9 @@ public:
      * \return  Returns string with value.
      * \note    In case of RadixHexadecimal, it adds "0x" at the begin and the total length
      *          of string is 10, where first 2 positions are "0x" and the rest 8 positions
-     *          are filled with 
+     *          are filled with
      **/
-    inline String & convFromUInt32( uint32_t value, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
+    inline String & fromUInt32( uint32_t value, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
     /**
      * \brief   Converts and sets 64-bit signed digit in the string based on radix bases.
      * \param   value   The 64-bit signed integer value to set in the string.
@@ -693,7 +546,7 @@ public:
      *          If need to convert negative number to Hexadecimal or Octal,
      *          might make sense to use FromUInt32 method.
      **/
-    inline String & convFromInt64( int64_t value, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
+    inline String & fromInt64( int64_t value, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
     /**
      * \brief   Converts and sets 64-bit unsigned digit in the string based on radix bases.
      * \param   value   The 64-bit unsigned integer value to set in the string.
@@ -702,81 +555,112 @@ public:
      * \return  Returns string with value.
      * \note    In case of RadixHexadecimal, it adds "0x" at the begin and the total length
      *          of string is 10, where first 2 positions are "0x" and the rest 8 positions
-     *          are filled with 
+     *          are filled with
      **/
-    inline String & convFromUInt64( uint64_t value, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
+    inline String & fromUInt64( uint64_t value, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
     /**
      * \brief   Converts and sets float digit in the string.
      * \param   value   The value of number with floating point to set in the string.
      * \return  Returns string with value.
      **/
-    inline String & convFromFloat( float value );
+    inline String & fromFloat( float value );
     /**
      * \brief   Converts and sets double digit in the string.
      * \param   value   The value of number with floating point to set in the string.
      * \return  Returns string with value.
      **/
-    inline String & convFromDouble( double value );
+    inline String & fromDouble( double value );
     /**
      * \brief   Converts and sets boolean value in the string.
      * \param   value   The boolean value to set in the string.
      * \return  Returns string with value.
      **/
-    inline String & convFromBool( bool value );
+    inline String & fromBool( bool value );
 
 /************************************************************************/
-// String overrides
+// String protected
 /************************************************************************/
 protected:
     /**
-    * \brief   Reads string data from streaming object.
-    * \param   stream  The streaming object, which contains string source data
-    **/
-    virtual void readStream(const IEInStream & stream);
-
-    /**
-    * \brief   Writes string data to streaming object.
-    * \param   stream  The streaming object to write string data.
-    **/
-    virtual void writeStream(IEOutStream & stream) const;
-
-    /**
-     * \brief   Copies byte buffer ASCII string. Used when de-serialize string.
-     * \param   buffer  The null-terminated string as a byte buffer.
-     * \return  The new length of string, i.e. the number of copied characters.
+     * \brief   Reads string data from streaming object.
+     * \param   stream  The streaming object, which contains string source data
      **/
-    int setString(const unsigned char * buffer);
+    void readStream(const IEInStream & stream);
+
+    /**
+     * \brief   Writes string data to streaming object.
+     * \param   stream  The streaming object to write string data.
+     **/
+    void writeStream(IEOutStream & stream) const;
+};
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
 
 //////////////////////////////////////////////////////////////////////////
-// Hidden methods
+// Hasher of String class
 //////////////////////////////////////////////////////////////////////////
-private:
-    inline String & self( void );                 //!< Returns reference object of string itself
-    inline const String & self( void ) const;     //!< Returns reference object of string itself
-};
+/**
+ * \brief   A template to calculate hash value of the String.
+ */
+namespace std
+{
+    template<>
+    struct hash<String>
+    {
+        //! An operator to convert String object to unsigned int.
+        inline unsigned int operator()(const String& key) const
+        {
+            return static_cast<unsigned int>(std::hash<std::string>{}(key.getObject()));
+        }
+    };
+}
 
 //////////////////////////////////////////////////////////////////////////
 // String class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline String & String::self( void )
-{
-    return (*this);
-}
-
-inline const String & String::self( void ) const
-{
-    return (*this);
-}
-
-inline String::String( void )
-    : TEString<char>( )
+inline String::String(const char* source)
+    : TEString<char>(source)
 {
 }
 
-inline String::String( const char * source )
-    : TEString<char>( source )
+inline String::String(const std::string& source)
+    : TEString<char>(source)
 {
+}
+
+inline String::String(const std::string_view& source)
+    : TEString<char>(source)
+{
+}
+
+inline String::String(std::string&& source) noexcept
+    : TEString<char>(std::move(source))
+{
+}
+
+inline String::String(const std::wstring& source)
+    : TEString<char>()
+{
+    assign(source.c_str(), static_cast<NEString::CharCount>(source.length()));
+}
+
+inline String::String(const wchar_t* source)
+    : TEString<char>()
+{
+    assign(source, NEString::COUNT_ALL);
+}
+
+inline String::String(const char* source, uint32_t charCount)
+    : TEString<char>(source, static_cast<NEString::CharCount>(charCount))
+{
+}
+
+inline String::String(const wchar_t* source, uint32_t charCount)
+    : TEString<char>()
+{
+    assign(source, static_cast<NEString::CharCount>(charCount));
 }
 
 inline String::String( char ch )
@@ -784,212 +668,392 @@ inline String::String( char ch )
 {
 }
 
-inline String::String( const String & source )
-    : TEString<char>( static_cast<const TEString<char> &>(source) )
+inline String::String(uint32_t count)
+    : TEString<char>( static_cast<uint32_t>(count) )
 {
 }
 
-inline String::String( String && source ) noexcept
-    : TEString<char>( static_cast<TEString<char> &&>(source) )
+inline String::operator unsigned int(void) const
 {
+    return static_cast<unsigned int>(std::hash<std::string>{}(mData));
 }
 
-inline String::String( const char * source, int charCount )
-    : TEString<char>( source, static_cast<NEString::CharCount>(charCount) )
+inline String& String::operator = (const wchar_t* src)
 {
+    assign(src, NEString::COUNT_ALL);
+    return (*this);
 }
 
-inline String::String( const wchar_t* source )
-    : TEString<char>( NULL_STRING, NEString::getStringLength<wchar_t>( source ) )
+inline String& String::operator = (const wchar_t src)
 {
-    NEString::copyString<char, wchar_t>( getDataString( ), source );
-#ifdef DEBUG
-    mString = mData != nullptr ? mData->strBuffer : nullptr;
-#endif // DEBUG
+    (*this) = static_cast<char>(src);
+    return (*this);
 }
 
-inline String::String( const wchar_t* source, int charCount )
-    : TEString<char>( NULL_STRING, static_cast<NEString::CharCount>(charCount) )
+inline String& String::operator = (const String& src)
 {
-    NEString::copyString<char, wchar_t>( getDataString( ), source, NEString::START_POS, static_cast<NEString::CharCount>(charCount) );
-#ifdef DEBUG
-    mString = mData != nullptr ? mData->strBuffer : nullptr;
-#endif // DEBUG
+    Base::operator = (static_cast<const Base&>(src));
+    return (*this);
 }
 
-inline String::operator const char *(void) const
+inline String& String::operator = (const std::string& src)
 {
-    return getString();
+    Base::operator = (src);
+    return (*this);
 }
 
-inline bool String::operator == (const String & other) const
+inline String& String::operator = (const std::wstring& src)
 {
-    int len = getLength();
-    if ( len == other.getLength() )
-    {
-        return (NEString::compareFast<char>( getString( ), other.getString( ), len ) == 0);
-    }
-    else
-    {
-        return false;
-    }
+    assign(src.c_str(), static_cast<NEString::CharCount>(src.length()));
+    return (*this);
 }
 
-inline bool String::operator == (const char * other) const
+inline String& String::operator = (const std::string_view& src)
 {
-    return (NEString::compare<char>( getString( ), other ) == 0);
+    Base::operator = (src);
+    return (*this);
 }
 
-inline bool String::operator == (const wchar_t * other) const
+inline String& String::operator = (const char* src)
 {
-    return (NEString::compareFast<char, wchar_t>( getString( ), other ) == 0);
+    Base::operator = (src);
+    return (*this);
+}
+
+inline String& String::operator = (String&& src) noexcept
+{
+    Base::operator = (std::move(src));
+    return (*this);
+}
+
+inline String& String::operator = (const char src)
+{
+    Base::operator = (src);
+    return (*this);
+}
+
+inline bool String::operator == (const String& other) const
+{
+    return Base::operator==(static_cast<const Base&>(other));
+}
+
+inline bool String::operator == (const std::string& other) const
+{
+    return Base::operator==(other);
+}
+
+inline bool String::operator == (const std::string_view& other) const
+{
+    return Base::operator==(other);
+}
+
+inline bool String::operator == (const char* other) const
+{
+    return Base::operator==(other);
 }
 
 inline bool String::operator == (const char ch) const
 {
-    return ((getLength() == static_cast<NEString::CharCount>(1)) && (getAt(0) == ch));
+    return Base::operator==(ch);
 }
 
-inline bool String::operator == (const wchar_t ch) const
+inline bool String::operator != (const String& other) const
 {
-    return ((getLength() == static_cast<NEString::CharCount>(1)) && (getAt(0) == ch));
+    return Base::operator!=(static_cast<const Base&>(other));
 }
 
-inline bool String::operator != (const String & other) const
+inline bool String::operator != (const std::string& other) const
 {
-    int len = getLength();
-    if ( len == other.getLength() )
-    {
-        return (NEString::compareFast<char>( getString( ), other.getString( ), len ) != 0);
-    }
-    else
-    {
-        return true; 
-    }
+    return Base::operator!=(other);
 }
 
-inline bool String::operator != (const char * other) const
+inline bool String::operator != (const std::string_view& other) const
 {
-    return (NEString::compare<char>( getString( ), other ) != 0);
+    return Base::operator!=(other);
 }
 
-inline bool String::operator > (const String & other) const
+inline bool String::operator != (const char* other) const
 {
-    return (NEString::compare<char>( getString( ), other.getString() ) > 0);
+    return Base::operator!=(other);
 }
 
-inline bool String::operator < (const String & other) const
+inline bool String::operator != (const char ch) const
 {
-    return (NEString::compare<char>( getString( ), other.getString() ) < 0);
+    return Base::operator != (ch);
 }
 
-inline NEString::CharPos String::substring( String & outResult, const char * strPhrase, NEString::CharPos startPos /*= NEString::START_POS*/ ) const
+inline String& String::operator += (const String& src)
 {
-    return TEString<char>::substring( outResult, strPhrase, startPos );
+    Base::operator+=(static_cast<const Base&>(src));
+    return (*this);
 }
 
-inline NEString::CharPos String::substring( String & outResult, char chSymbol, NEString::CharPos startPos /*= NEString::START_POS */ ) const
+inline String& String::operator += (const std::string& src)
 {
-    return TEString<char>::substring(outResult, chSymbol, startPos);
+    Base::operator+=(src);
+    return (*this);
 }
 
-inline String String::substring( NEString::CharPos startPos /*= NEString::START_POS*/, NEString::CharCount charCount /*= NEString::COUNT_ALL*/ ) const
+inline String& String::operator += (const std::string_view& src)
 {
-    String result;
-    TEString<char>::substring(result, startPos, charCount);
+    Base::operator+=(src);
+    return (*this);
+}
+
+inline String& String::operator += (const char* src)
+{
+    Base::operator+=(src);
+    return (*this);
+}
+
+inline String& String::operator += (const char chSource)
+{
+    Base::operator+=(chSource);
+    return (*this);
+}
+
+inline String& String::operator += (const wchar_t* src)
+{
+    append(src, NEString::COUNT_ALL);
+    return (*this);
+}
+
+String& String::operator += (const wchar_t chSource)
+{
+    append(&chSource, 1);
+    return (*this);
+}
+
+inline String& String::operator += (const std::wstring& src)
+{
+    append(src.c_str(), static_cast<NEString::CharCount>(src.length()));
+    return (*this);
+}
+
+inline String operator + (const String& lhs, const String& rhs)
+{
+    String result(lhs);
+    result.append(rhs);
     return result;
 }
 
-inline String String::leftSide( NEString::CharCount charCount ) const
+inline String operator + (const String& lhs, const std::string& rhs)
 {
-    String result;
-    TEString<char>::substring( result, NEString::START_POS, charCount );
+    String result(lhs);
+    result.append(rhs);
     return result;
 }
 
-inline String String::rightSide( NEString::CharCount charCount ) const
+inline String operator + (const String& lhs, const std::string_view& rhs)
 {
-    String result;
-
-    NEString::CharCount len = getLength();
-    NEString::CharPos pos   = charCount < len ? len - charCount : NEString::START_POS;
-    TEString<char>::substring( result, pos, NEString::COUNT_ALL );
+    String result(lhs);
+    result.append(rhs);
     return result;
 }
 
-inline int32_t String::convToInt32( NEString::eRadix radix /*= NEString::RadixDecimal */ ) const
+inline String operator + (const String& lhs, const char* rhs)
+{
+    String result(lhs);
+    result.append(rhs);
+    return result;
+}
+
+inline String operator + (const String& lhs, const char rhs)
+{
+    String result(lhs);
+    result += rhs;
+    return result;
+}
+
+inline String operator + (const std::string& lhs, const String& rhs)
+{
+    String result(lhs);
+    result.append(rhs);
+    return result;
+}
+
+inline String operator + (const std::string_view& lhs, const String& rhs)
+{
+    String result(lhs);
+    result.append(rhs);
+    return result;
+}
+
+inline String operator + (const char* lhs, const String& rhs)
+{
+    String result(lhs);
+    result.append(rhs);
+    return result;
+}
+
+inline String operator + (const char lhs, const String& rhs)
+{
+    String result(lhs);
+    result.append(rhs);
+    return result;
+}
+
+inline String operator + (const String& lhs, const wchar_t* rhs)
+{
+    String result(lhs);
+    result.append(rhs);
+    return result;
+}
+
+inline String operator + (const wchar_t* lhs, const String& rhs)
+{
+    String result(lhs);
+    result.append(rhs);
+    return result;
+}
+
+inline const IEInStream& operator >> (const IEInStream& stream, String& input)
+{
+    input.readStream(stream);
+    return stream;
+}
+
+inline IEOutStream& operator << (IEOutStream& stream, const String& output)
+{
+    output.writeStream(stream);
+    return stream;
+}
+
+inline int32_t String::toInt32( NEString::eRadix radix /*= NEString::RadixDecimal */ ) const
 {
     return String::makeInt32(getString(), radix, nullptr );
 }
 
-inline uint32_t String::convToUInt32( NEString::eRadix radix /*= NEString::RadixDecimal */ ) const
+inline uint32_t String::toUInt32( NEString::eRadix radix /*= NEString::RadixDecimal */ ) const
 {
     return String::makeUInt32(getString(), radix, nullptr );
 }
 
-inline int64_t String::convToInt64( NEString::eRadix radix /*= NEString::RadixDecimal */ ) const
+inline int64_t String::toInt64( NEString::eRadix radix /*= NEString::RadixDecimal */ ) const
 {
     return String::makeInt64(getString(), radix, nullptr );
 }
 
-inline uint64_t String::convToUInt64( NEString::eRadix radix /*= NEString::RadixDecimal */ ) const
+inline uint64_t String::toUInt64( NEString::eRadix radix /*= NEString::RadixDecimal */ ) const
 {
     return String::makeUInt64(getString(), radix, nullptr );
 }
 
-inline float String::convToFloat( void ) const
+inline float String::toFloat( void ) const
 {
     return String::makeFloat(getString(), nullptr );
 }
 
-inline double String::convToDouble( void ) const
+inline double String::toDouble( void ) const
 {
     return String::makeDouble(getString(), nullptr );
 }
 
-inline bool String::convToBool( void ) const
+inline bool String::toBool( void ) const
 {
-    return (NEString::compareIgnoreCase<char, char>( getString(), NECommon::BOOLEAN_TRUE.data() ) == 0);
+    return (NEString::compareIgnoreCase<char, char>( getString(), NECommon::BOOLEAN_TRUE.data() ) == NEMath::eCompare::Equal);
 }
 
-inline String & String::convFromInt32( int32_t value, NEString::eRadix radix /*= NEString::RadixDecimal */ )
+inline String & String::fromInt32( int32_t value, NEString::eRadix radix /*= NEString::RadixDecimal */ )
 {
-    self() = String::int32ToString(value, radix);
-    return self();
+    *this = String::toString(value, radix);
+    return (*this);
 }
 
-inline String & String::convFromUInt32( uint32_t value, NEString::eRadix radix /*= NEString::RadixDecimal */ )
+inline String & String::fromUInt32( uint32_t value, NEString::eRadix radix /*= NEString::RadixDecimal */ )
 {
-    self( ) = String::uint32ToString( value, radix );
-    return self( );
+    (*this) = String::toString( value, radix );
+    return (*this);
 }
 
-inline String & String::convFromInt64( int64_t value, NEString::eRadix radix /*= NEString::RadixDecimal */ )
+inline String & String::fromInt64( int64_t value, NEString::eRadix radix /*= NEString::RadixDecimal */ )
 {
-    self( ) = String::int64ToString( value, radix );
-    return self( );
+    (*this) = String::toString( value, radix );
+    return (*this);
 }
 
-inline String & String::convFromUInt64( uint64_t value, NEString::eRadix radix /*= NEString::RadixDecimal */ )
+inline String & String::fromUInt64( uint64_t value, NEString::eRadix radix /*= NEString::RadixDecimal */ )
 {
-    self( ) = String::uint64ToString( value, radix );
-    return self( );
+    (*this) = String::toString( value, radix );
+    return (*this);
 }
 
-inline String & String::convFromFloat( float value )
+inline String & String::fromFloat( float value )
 {
-    self( ) = String::floatToString( value );
-    return self( );
+    (*this) = String::toString( value );
+    return (*this);
 }
 
-inline String & String::convFromDouble( double value )
+inline String & String::fromDouble( double value )
 {
-    self( ) = String::doubleToString( value );
-    return self( );
+    (*this) = String::toString( value );
+    return (*this);
 }
 
-inline String & String::convFromBool( bool value )
+inline String & String::fromBool( bool value )
 {
-    self( ) = String::boolToString( value );
-    return self( );
+    (*this) = String::toString( value );
+    return (*this);
 }
+
+inline String& String::assign(const char* source, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+{
+    Base::assign(source, count);
+    return (*this);
+}
+
+inline String& String::assign(const std::string& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+{
+    Base::assign(static_cast<const std::basic_string<char> &>(source), pos, count);
+    return (*this);
+}
+
+inline String& String::assign(const std::string_view& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+{
+    Base::assign(static_cast<const std::basic_string_view<char> &>(source), pos, count);
+    return (*this);
+}
+
+inline String& String::assign(const String& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+{
+    Base::assign(source, pos, count);
+    return (*this);
+}
+
+inline String & String::assign(const char ch)
+{
+    Base::assign(ch);
+    return (*this);
+}
+
+inline String& String::append(const char* source, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+{
+    Base::append(source, count);
+    return (*this);
+}
+
+inline String& String::append(const std::string& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+{
+    Base::append(static_cast<const std::basic_string<char>&>(source), pos, count);
+    return (*this);
+}
+
+inline String& String::append(const std::string_view& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+{
+    Base::append(static_cast<const std::basic_string_view<char>&>(source), pos, count);
+    return (*this);
+}
+
+inline String& String::append(const String& source, NEString::CharPos pos /*= NEString::START_POS*/, NEString::CharCount count /*= NEString::COUNT_ALL*/)
+{
+    Base::append(static_cast<const Base&>(source), pos, count);
+    return (*this);
+}
+
+inline String & String::append(const char ch)
+{
+    Base::append(ch);
+    return (*this);
+}
+
+#endif  // AREG_BASE_STRING_HPP

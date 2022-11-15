@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_EVENTDATASTREAM_HPP
+#define AREG_COMPONENT_EVENTDATASTREAM_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,12 +8,12 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/EventDataStream.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Event data streaming object.
- *              This object is used to serialize and de-serialize
+ *              This object is used to serialize and deserialize
  *              data when service event is passed.
  *
  ************************************************************************/
@@ -30,7 +31,7 @@
 // EventDataStream class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief       This object is used to serialize and de-serialize event
+ * \brief       This object is used to serialize and deserialize event
  *              data. Every instance of Component and Proxy event
  *              contains data, which has a streaming object and which
  *              contains at least information of function parameters,
@@ -38,7 +39,8 @@
  **/
 class AREG_API EventDataStream : public IEIOStream
 {
-    using SharedList    = TENolockStack<SharedBuffer, const SharedBuffer &>;
+    //! The list of shared buffer list (stack).
+    using SharedList    = TENolockStack<SharedBuffer>;
 
 //////////////////////////////////////////////////////////////////////////
 // Internal constants and types public
@@ -48,7 +50,7 @@ public:
      * \brief   EventDataStream::EmptyData
      *          Predefined Empty Data object. Can be used when event has
      *          no data to transfer and no data should be write or read,
-     *          because it is instance of Invalid Buffer and any 
+     *          because it is instance of Invalid Buffer and any
      *          read / write will fail.
      **/
     static const EventDataStream  EmptyData;
@@ -61,8 +63,9 @@ public:
      **/
     typedef enum class E_EventData : uint8_t
     {
-          EventDataInternal //!< Internal Data
-        , EventDataExternal //!< External Data
+          EventDataInternal     = 1 //!< Internal Data
+        , EventDataExternal     = 2 //!< External Data
+        , EventDataEmpty        = 3 //!< An empty data
 
     } eEventData;
 
@@ -76,14 +79,14 @@ public:
      * \param   evetDataType    The type of event data. Either for internal or for external communication
      * \param   name            The name for streaming object. Can be ignored.
      **/
-    explicit EventDataStream( EventDataStream::eEventData evetDataType, const char* name = nullptr );
+    explicit EventDataStream( EventDataStream::eEventData evetDataType, const String & name = String::EmptyString );
 
     /**
      * \brief	Constructor. Creates read only event data streaming object containing read only data of shared buffer.
      * \param	buffer	The shared buffer to pass to streaming object.
-     * \param	name	The name of streaming object. Can be ignored.
+     * \param	name	The name of streaming object.
      **/
-    EventDataStream(const EventDataStream & buffer, const char* name );
+    EventDataStream(const EventDataStream & buffer, const String & name);
 
     /**
      * \brief   Copy constructor.
@@ -135,13 +138,13 @@ public:
      * \param	stream	The data streaming object to read data
      * \param	input	The Event Data Stream Buffer object to write data
      **/
-    friend AREG_API const IEInStream & operator >> ( const IEInStream & stream, EventDataStream & input );
+    friend inline const IEInStream & operator >> ( const IEInStream & stream, EventDataStream & input );
     /**
      * \brief	Friend global operator declaration to write data to streaming object
      * \param	stream	The data streaming object to write data
      * \param	output	The Event Data Stream Buffer object containing data
      **/
-    friend AREG_API IEOutStream & operator << ( IEOutStream & stream, const EventDataStream & output );
+    friend inline IEOutStream & operator << ( IEOutStream & stream, const EventDataStream & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -288,7 +291,7 @@ protected:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 protected:
-    
+
     /**
      * \brief   The type of Event Data. Either internal or external.
      **/
@@ -310,7 +313,7 @@ protected:
 
     /**
      * \brief   FIFO Stack of Shared Buffers. Used only if the data type is internal.
-     *          All Shared Buffers instead of copying data, will be added to this list.
+     *          All Shared Buffer objects instead of copying data, will be added to this list.
      **/
     mutable SharedList          mSharedList;
 
@@ -332,7 +335,7 @@ inline bool EventDataStream::isEmpty( void ) const
 
 inline bool EventDataStream::isExternalDataStream( void ) const
 {
-    return (mEventDataType == EventDataStream::eEventData::EventDataExternal);
+    return (mEventDataType != EventDataStream::eEventData::EventDataInternal);
 }
 
 inline const IEInStream & EventDataStream::getStreamForRead( void ) const
@@ -344,3 +347,22 @@ inline IEOutStream & EventDataStream::getStreamForWrite( void )
 {
     return static_cast<IEOutStream &>(*this);
 }
+
+inline const IEInStream & operator >> ( const IEInStream & stream, EventDataStream & input )
+{
+    stream >> input.mEventDataType;
+    stream >> input.mBufferName;
+    stream >> input.mDataBuffer;
+    return stream;
+}
+
+inline IEOutStream & operator << ( IEOutStream & stream, const EventDataStream & output )
+{
+    ASSERT(output.mEventDataType != EventDataStream::eEventData::EventDataInternal);
+    stream << EventDataStream::eEventData::EventDataExternal;
+    stream << output.mBufferName;
+    stream << output.mDataBuffer;
+    return stream;
+}
+
+#endif  // AREG_COMPONENT_EVENTDATASTREAM_HPP

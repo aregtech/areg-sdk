@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_PRIVATE_SERVERINFO_HPP
+#define AREG_COMPONENT_PRIVATE_SERVERINFO_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ServerInfo.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -205,6 +206,35 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
+// Hasher of ServerInfo class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the ServerInfo.
+ */
+namespace std
+{
+    //! Calculates the hash value of the ServerInfo object
+    template<> struct hash<ServerInfo>
+    {
+        //! A function to convert ServerInfo object to unsigned int.
+        inline unsigned int operator()(const ServerInfo& key) const
+        {
+            return static_cast<unsigned int>(static_cast<const ServiceAddress &>(key.getAddress()));
+        }
+    };
+
+    //!< Compares 2 ServerInfo objects
+    template<> struct equal_to<ServerInfo>
+    {
+        //! A function operator to compare 2 ServerInfo objects.
+        inline bool operator() (const ServerInfo& key1, const ServerInfo& key2) const
+        {
+            return static_cast<const ServiceAddress&>(key1.getAddress()) == static_cast<const ServiceAddress&>(key2.getAddress());
+        }
+    };
+}
+
+//////////////////////////////////////////////////////////////////////////
 // ServerInfo class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
@@ -227,3 +257,5 @@ inline bool ServerInfo::isWaiting( void ) const
 {
     return mServerState == NEService::eServiceConnection::ServicePending;
 }
+
+#endif  // AREG_COMPONENT_PRIVATE_SERVERINFO_HPP

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_IPC_NEREMOTESERVICE_HPP
+#define AREG_IPC_NEREMOTESERVICE_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/ipc/NERemoteService.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -20,8 +21,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/appbase/NEApplication.hpp"
 #include "areg/base/NESocket.hpp"
-
-#include <string_view>
+#include "areg/base/String.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // NERemoteService namespace declaration
@@ -114,12 +114,14 @@ namespace NERemoteService
      *          Returns the string value of service connection type
      * \param   connectionType  The connection type to convert
      **/
-    AREG_API const char * getServiceConnectionTypeString( NERemoteService::eServiceConnection connectionType );
+    AREG_API String getServiceConnectionTypeString( NERemoteService::eServiceConnection connectionType );
     /**
      * \brief   NERemoteService::GetServiceConnectionType
      *          Converts string to connection type value.
      * \param   connectionType  The string of connection type name to convert
      * \param   caseSensitive   Flag, indicating whether the given name to convert is case sensitive or not.
      **/
-    AREG_API NERemoteService::eServiceConnection getServiceConnectionType( const char * connectionType, bool caseSensitive = true );
+    AREG_API NERemoteService::eServiceConnection getServiceConnectionType( const String & connectionType, bool caseSensitive = true );
 }
+
+#endif  // AREG_IPC_NEREMOTESERVICE_HPP

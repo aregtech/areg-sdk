@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/persist/private/PersistenceManager.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -23,22 +23,10 @@ PersistenceManager & PersistenceManager::getInstance(void)
     return _persistence;
 }
 
-PersistenceManager::PersistenceManager(void)
-    : mMapReadOnly  ( )
-    , mMapWritable  ( )
-{
-}
-
-PersistenceManager::~PersistenceManager(void)
-{
-    mMapReadOnly.removeAll();
-    mMapWritable.removeAll();
-}
-
 bool PersistenceManager::parseReadable(const char * filePath)
 {
-    mMapReadOnly.removeAll();
-    mFileReadOnly = NEString::isEmpty<char>(filePath) == false ? File::getFileFullPath(filePath) : String("");
+    mMapReadOnly.clear();
+    mFileReadOnly = NEString::isEmpty<char>(filePath) == false ? File::getFileFullPath(filePath) : String(String::EmptyString);
     if ( mFileReadOnly.isEmpty() == false )
     {
         File fileConfig( static_cast<const char *>(mFileReadOnly), FileBase::FO_MODE_EXIST | FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_SHARE_READ );
@@ -73,8 +61,8 @@ bool PersistenceManager::parseReadable(const char * filePath)
 
 bool PersistenceManager::parseWritable(const char * filePath)
 {
-    mMapWritable.removeAll();
-    mFileWritable = NEString::isEmpty<char>(filePath) == false ? File::getFileFullPath(filePath) : String("");
+    mMapWritable.clear();
+    mFileWritable = NEString::isEmpty<char>(filePath) == false ? File::getFileFullPath(filePath) : String(String::EmptyString);
     if ( mFileReadOnly.isEmpty() == false )
     {
         File fileConfig( static_cast<const char *>(mFileReadOnly), FileBase::FO_MODE_EXIST | FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_SHARE_READ );
@@ -107,10 +95,10 @@ bool PersistenceManager::parseWritable(const char * filePath)
     return mMapWritable.isEmpty() == false;
 }
 
-int PersistenceManager::getProperty( const char * /*section*/
-                                   , const char * /*property*/
-                                   , const char * /*position*/
-                                   , TEArrayList<Property, const Property &> & /*out_listProperties*/)
+int PersistenceManager::getProperty( const String & /*section*/
+                                   , const String & /*property*/
+                                   , const String & /*position*/
+                                   , TEArrayList<Property> & /*out_listProperties*/)
 {
     return 0;
 }

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_MCROUTER_TCP_PRIVATE_SERVICEREGISTRY_HPP
+#define AREG_MCROUTER_TCP_PRIVATE_SERVICEREGISTRY_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        mcrouter/tcp/private/ServiceRegistry.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -26,24 +27,7 @@
 //////////////////////////////////////////////////////////////////////////
 // ServiceRegistry class declaration
 //////////////////////////////////////////////////////////////////////////
-/**
- * \brief   Service registry map helper class.
- **/
-class ImplServiceRegistry  : public TEHashMapImpl<const ServiceStub &, const ListServiceProxies &>
-{
-public:
-    /**
-     * \brief   Called to calculate the 32-bit hash key value.
-     * \ param  Key     The object to calculate 32-bit hash key.
-     * \return  Returns 32-bit hash key value.
-     **/
-    inline unsigned int implHashKey( const ServiceStub & Key ) const
-    {
-        return static_cast<unsigned int>(static_cast<const ServiceAddress &>(Key.getServiceAddress()));
-    }
-};
-
-using ServiceRegistryBase = TEHashMap<ServiceStub, ListServiceProxies, const ServiceStub &, const ListServiceProxies &, ImplServiceRegistry>;
+using ServiceRegistryBase = TEHashMap<ServiceStub, ListServiceProxies>;
 
 /**
  * \brief   The remote services registration map, which is a map of stub and list of connected proxies.
@@ -53,11 +37,6 @@ class ServiceRegistry   : public ServiceRegistryBase
 //////////////////////////////////////////////////////////////////////////
 // Predefined types and constants
 //////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   ServiceRegistry::ServiceBlock
-     *          Defines Block class of Hash Map as ServiceBlock. Defined to short syntax.
-     **/
-    using ServiceBlock = ServiceRegistryBase::Block;
 
     /**
      * \brief   ServiceRegistry::InvalidStubService
@@ -185,7 +164,7 @@ public:
      * \param   out_listStubs   On output this will contain list of remote stub addresses connected with specified cookie value.
      * \param   out_lisProxies  On output this will contain list of remote proxy addresses connected with specified cookie value.
      **/
-    void getServiceList( ITEM_ID cookie, TEArrayList<StubAddress, const StubAddress &> & OUT out_listStubs, TEArrayList<ProxyAddress, const ProxyAddress &> & OUT out_lisProxies ) const;
+    void getServiceList( ITEM_ID cookie, TEArrayList<StubAddress> & OUT out_listStubs, TEArrayList<ProxyAddress> & OUT out_lisProxies ) const;
 
     /**
      * \brief   Call to get list of registered remote stub and proxy services of specified cookie source.
@@ -194,7 +173,7 @@ public:
      * \param   stubSource      On output the list contains stub address objects that have sources of specified cookie.
      * \param   proxySources    On output the list contains proxy address objects that have sources of specified cookie.
      **/
-    void getServiceSources( ITEM_ID cookie, TEArrayList<StubAddress, const StubAddress &> & OUT stubSource, TEArrayList<ProxyAddress, const ProxyAddress &> & OUT proxySources);
+    void getServiceSources( ITEM_ID cookie, TEArrayList<StubAddress> & OUT stubSource, TEArrayList<ProxyAddress> & OUT proxySources);
 
     /**
      * \brief   Call to disconnect proxy service specified by proxy address.
@@ -223,3 +202,5 @@ private:
 private:
     DECLARE_NOCOPY_NOMOVE( ServiceRegistry );
 };
+
+#endif  // AREG_MCROUTER_TCP_PRIVATE_SERVICEREGISTRY_HPP

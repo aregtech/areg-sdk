@@ -49,16 +49,16 @@ void ServicingComponent::startupServiceInterface( Component & holder )
     setRemainOutput(NEHelloWorld::MaxMessages);
 }
 
-void ServicingComponent::requestHelloWorld(const String & roleName, const String & addMessage /*= "" */)
+void ServicingComponent::requestHelloWorld(const String & roleName)
 {
     TRACE_SCOPE(examples_10_locservice_ServicingComponent_requestHelloWorld);
 
     NEHelloWorld::ConnectionList & list = getConnectedClients();
-    LISTPOS pos = list.firstPosition();
+    NEHelloWorld::ConnectionList::LISTPOS pos = list.firstPosition();
     NEHelloWorld::sConnectedClient cl;
-    for ( ; pos != nullptr; pos = list.nextPosition(pos))
+    for ( ; list.isValidPosition(pos); pos = list.nextPosition(pos))
     {
-        const NEHelloWorld::sConnectedClient & client = list.getAt(pos);
+        const NEHelloWorld::sConnectedClient & client = list.valueAtPosition(pos);
         if (roleName == client.ccName)
         {
             TRACE_DBG("Found connected client [ %s ] with ID [ %u ] in the list.", client.ccName.getString(), client.ccID);
@@ -69,11 +69,11 @@ void ServicingComponent::requestHelloWorld(const String & roleName, const String
         }
     }
 
-    if (pos == nullptr )
+    if (list.isInvalidPosition(pos))
     {
         cl.ccID     = ++ mGnerateID;
         cl.ccName   = roleName;
-        
+
         TRACE_INFO("Registered new client component [ %s ] with ID [ %u ]", cl.ccName.getString(), cl.ccID);
 
         list.pushLast(cl);
@@ -104,11 +104,7 @@ void ServicingComponent::requestHelloWorld(const String & roleName, const String
         TRACE_WARN("Still making output of queued requests to print Hello World.");
     }
 
-    printf("Client [ %s ] says \"!!!Hello World!!!\". Remain [ %d ].\n", roleName.getString(), outputs - 1);
-    if (addMessage.isEmpty() == false)
-    {
-        printf("\t>>> The additional message: %s.\n", addMessage.getString());
-    }
+    printf("\"Hello client [ %s ]!\", remain [ %d ].\n", roleName.getString(), outputs - 1);
 }
 
 void ServicingComponent::requestClientShutdown(unsigned int clientID, const String & roleName)
@@ -117,11 +113,11 @@ void ServicingComponent::requestClientShutdown(unsigned int clientID, const Stri
 
     TRACE_DBG("A client [ %s ] with ID [ %u ] notified shutdown.", roleName.getString(), clientID);
     NEHelloWorld::ConnectionList & list = getConnectedClients();
-    LISTPOS pos = list.firstPosition();
+    NEHelloWorld::ConnectionList::LISTPOS pos = list.firstPosition();
 
-    for ( ; pos != nullptr; pos = list.nextPosition(pos))
+    for ( ; list.isValidPosition(pos); pos = list.nextPosition(pos))
     {
-        const NEHelloWorld::sConnectedClient & client = list.getAt(pos);
+        const NEHelloWorld::sConnectedClient & client = list.valueAtPosition(pos);
         if (client.ccID == clientID)
         {
             ASSERT(client.ccName == roleName);
@@ -130,8 +126,6 @@ void ServicingComponent::requestClientShutdown(unsigned int clientID, const Stri
             break;
         }
     }
-
-    ASSERT(pos != nullptr );
 
     if (list.isEmpty() && getRemainOutput() == 0)
     {

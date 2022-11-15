@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/src/NESimpleTrafficSwitch.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_SRC_NESIMPLETRAFFICSWITCH_HPP
+#define  GENERATED_SRC_NESIMPLETRAFFICSWITCH_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:13 GMT+02:00 
+ * Generated at     13.08.2022  02:45:34 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficSwitch.
  *
  * \file            generated/src/NESimpleTrafficSwitch.hpp
@@ -42,7 +43,7 @@
 //////////////////////////////////////////////////////////////////////////
 /**
  *
- * \brief   SimpleTrafficSwitch Service Interface defined constants, 
+ * \brief   SimpleTrafficSwitch Service Interface defined constants,
  *          types and structures message IDs, global static methods.
  *
  *          Simple traffic light switch on/off.
@@ -56,15 +57,15 @@ namespace   NESimpleTrafficSwitch
 // Service Interface constants
 /************************************************************************/
     /**
-     * \brief   Service Interface Name
+     * \brief   Service Interface Name.
      *          NESimpleTrafficSwitch::ServiceName
      **/
-    constexpr char        ServiceName[]       { "SimpleTrafficSwitch" };
+    constexpr   char    ServiceName[]   { "SimpleTrafficSwitch" };
     /**
-     * \brief   Implemented Version
+     * \brief   Implemented Version.
      *          NESimpleTrafficSwitch::InterfaceVersion
      **/
-    const Version         InterfaceVersion    = "1.0.0";
+    const       Version InterfaceVersion{ 1, 0, 0 };
 
 /************************************************************************/
 // Service Interface data types
@@ -87,15 +88,15 @@ namespace   NESimpleTrafficSwitch
          * \brief   Request ID: MsgId_requestSwitchLight
          *          Sets the traffic light ON or OFF.
          **/
-          MsgId_requestSwitchLight    = NEService::REQUEST_ID_FIRST     // void requestSwitchLight( bool switchOn );
-     
+          MsgId_requestSwitchLight    = NEService::REQUEST_ID_FIRST   // void requestSwitchLight( bool switchOn );
+
     /************************************************************************
      * Response IDs
-     ************************************************************************/     
+     ************************************************************************/
     /************************************************************************
      * Broadcast IDs
      ************************************************************************/
-     
+
     /************************************************************************
      * Attributes IDs
      ************************************************************************/
@@ -103,30 +104,30 @@ namespace   NESimpleTrafficSwitch
          * \brief   Attribute ID: MsgId_IsSwitchedOn
          *          Flag that indicates the light on/off state.
          **/
-        , MsgId_IsSwitchedOn          = NEService::ATTRIBUTE_ID_FIRST   // bool mIsSwitchedOn;
-     
+        , MsgId_IsSwitchedOn          = NEService::ATTRIBUTE_ID_FIRST // bool mIsSwitchedOn;
+
     /************************************************************************
      * Reserved constant IDs
      ************************************************************************/
         /**
          * \brief   ID of empty function
          **/
-        , MsgId_NotProcessed          = NEService::INVALID_MESSAGE_ID  
+        , MsgId_NotProcessed          = NEService::INVALID_MESSAGE_ID
         /**
          * \brief   ID of invalid call
          **/
-        , MsgId_Invalid               = NEService::RESPONSE_ID_NONE    
-     
+        , MsgId_Invalid               = NEService::RESPONSE_ID_NONE
+
     };
     /**
      * \brief   Returns string value of NESimpleTrafficSwitch::eMessageIDs
      **/
     inline const char * getString( NESimpleTrafficSwitch::eMessageIDs msgId );
-     
+
 /************************************************************************
  * Service Interface standard functions and variables
  ************************************************************************/
- 
+
     /**
      * \brief   Creates and returns Service Interface Data
      **/
@@ -167,7 +168,6 @@ inline const char * NESimpleTrafficSwitch::getString( NESimpleTrafficSwitch::eMe
 
     case NESimpleTrafficSwitch::eMessageIDs::MsgId_NotProcessed:
         return "NESimpleTrafficSwitch::eMessageIDs::MsgId_NotProcessed";
-        
     case NESimpleTrafficSwitch::eMessageIDs::MsgId_Invalid:
         return "NESimpleTrafficSwitch::eMessageIDs::MsgId_Invalid";
     default:
@@ -179,6 +179,8 @@ inline const char * NESimpleTrafficSwitch::getString( NESimpleTrafficSwitch::eMe
 //////////////////////////////////////////////////////////////////////////
 // NESimpleTrafficSwitch namespace declaration End
 //////////////////////////////////////////////////////////////////////////
+
+#endif  // GENERATED_SRC_NESIMPLETRAFFICSWITCH_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/NESimpleTrafficSwitch.hpp file

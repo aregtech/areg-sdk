@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_DATETIME_HPP
+#define AREG_BASE_DATETIME_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/DateTime.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -18,16 +19,17 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
+
+#include "areg/base/IEIOStream.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/NEUtilities.hpp"
+
 #include <string_view>
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
 struct tm;
-class IEInStream;
-class IEOutStream;
 //////////////////////////////////////////////////////////////////////////
 // DateTime class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -37,27 +39,26 @@ class IEOutStream;
  **/
 class AREG_API DateTime
 {
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(disable: 4251)
-#endif  // _MSC_VER
-
 public:
 /************************************************************************/
 // Public constants
 /************************************************************************/
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
 
     /**
-     * \brief   ISO8601 format of timestamp to display logs
+     * \brief   ISO8601 format of time-stamp to display logs
      **/
     static constexpr std::string_view   TIME_FORMAT_ISO8601_OUTPUT          { "%Y-%m-%d %H:%M:%S,%l" };
 
     /**
-     * \brief   Absolute time format of timestamp
+     * \brief   Absolute time format of time-stamp
      **/
     static constexpr std::string_view   TIME_FORMAT_ABSOLUTE_OUTPUT         { "%H:%M:%S,%l" };
 
     /**
-     * \brief   Format only data of timestamp
+     * \brief   Format only data of time-stamp
      **/
     static constexpr std::string_view   TIME_FORMAT_DATE_OUTPUT             { "%d %b %Y %H:%M:%S,%l" };
 
@@ -178,12 +179,12 @@ public:
     bool operator <= ( const DateTime & other ) const;
 
     /**
-     * \brief   Reads (de-serializes) date and time value from streaming object.
+     * \brief   Reads (deserializes) date and time value from streaming object.
      * \param   stream  Streaming object, which contains serialized date and time value
-     * \param   input   Date and time object, which is initialized by de-serializing 
+     * \param   input   Date and time object, which is initialized by deserializing 
      *                  date and time value from stream
      **/
-    friend AREG_API const IEInStream & operator >> ( const IEInStream & stream, DateTime & input );
+    friend inline const IEInStream & operator >> ( const IEInStream & stream, DateTime & input );
 
     /**
      * \brief   Writes (serializes) date and time value to streaming object.
@@ -191,7 +192,7 @@ public:
      * \param   input   Date and time object, which is contains date and time value and
      *                  should be serialized to streaming object
      **/
-    friend AREG_API IEOutStream & operator << ( IEOutStream & stream, const DateTime & output );
+    friend inline IEOutStream & operator << ( IEOutStream & stream, const DateTime & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -295,3 +296,17 @@ inline bool DateTime::isValid( void ) const
 {
     return (mDateTime != 0);
 }
+
+inline const IEInStream & operator >> ( const IEInStream & stream, DateTime & input )
+{
+    stream >> input.mDateTime;
+    return stream;
+}
+
+inline IEOutStream & operator << ( IEOutStream & stream, const DateTime & output )
+{
+    stream << output.mDateTime;
+    return stream;
+}
+
+#endif  // AREG_BASE_DATETIME_HPP

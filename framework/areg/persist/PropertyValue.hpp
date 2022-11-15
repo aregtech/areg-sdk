@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_PERSIST_PROPERTYVALUE_HPP
+#define AREG_PERSIST_PROPERTYVALUE_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/persist/PropertyValue.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -57,12 +58,13 @@ public:
      * \brief   Initializes Value from list of identifiers.
      * \param   value    The Value as a list of identifiers to set.
      **/
-    explicit PropertyValue( const TEArrayList<Identifier, const Identifier &> idList );
+    explicit PropertyValue( const TEArrayList<Identifier> idList );
     /**
      * \brief   Copies value from given source
      * \param   value   The source to copy value
      **/
     explicit PropertyValue( const String & value );
+    explicit PropertyValue( String && value ) noexcept;
     /**
      * \brief   Copies data from given source
      * \param   source  The source to copy data
@@ -99,6 +101,7 @@ public:
      * \param   value   The source as string to parse and copy data.
      **/
     PropertyValue & operator = ( const String & value );
+    PropertyValue & operator = ( String && value ) noexcept;
 
     /**
      * \brief   Copies property Value from given source as a 32-bit unsigned integer
@@ -116,7 +119,7 @@ public:
      * \brief   Copies property Value from given source as a list of identifiers
      * \param   idList      The data to convert.
      **/
-    PropertyValue & operator = ( const TEArrayList<Identifier, const Identifier &> & idList );
+    PropertyValue & operator = ( const TEArrayList<Identifier> & idList );
 
     /**
      * \brief   Checks equality of two Value objects.
@@ -162,7 +165,7 @@ public:
     /**
      * \brief   Returns value as a string
      **/
-    const char * getString( void ) const;
+    const String & getString( void ) const;
 
     /**
      * \brief   Sets value as a string
@@ -198,13 +201,13 @@ public:
      * \param   idList  On output, this contains list of identifiers
      * \return  Number of identifiers in the list.
      **/
-    unsigned int getIndetifier( const TEArrayList<Identifier, const Identifier &> idList ) const;
+    unsigned int getIndetifier( const TEArrayList<Identifier> idList ) const;
 
     /**
      * \brief   Converts and sets value as a list of Identifiers
      * \param   idList      The list of Identifiers to convert and set.
      **/
-    void setIndentifier( const TEArrayList<Identifier, const Identifier &> idList );
+    void setIndentifier( const TEArrayList<Identifier> idList );
 
     /**
      * \brief   Parses given string, extracts Value data.
@@ -235,6 +238,14 @@ public:
     String convToString( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
+// Hidden members
+//////////////////////////////////////////////////////////////////////////
+private:
+
+    //! Parses and normalizes the value data.
+    inline void _parseValue(void);
+
+//////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
@@ -243,3 +254,5 @@ private:
      **/
     String mValue;
 };
+
+#endif  // AREG_PERSIST_PROPERTYVALUE_HPP

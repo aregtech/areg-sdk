@@ -2,9 +2,9 @@
 // Begin generate generated/private/DirectMessagerStub.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:16 GMT+02:00 
+ * Generated at     13.08.2022  02:48:00 GMT+02:00
  *                  Create by AREG SDK code generator tool from source DirectMessager.
  *
  * \file            generated/DirectMessagerStub.hpp
@@ -20,7 +20,8 @@
 #include "generated/private/DirectMessagerEvents.hpp"
 
 #include "areg/component/ServiceResponseEvent.hpp"
-#include "areg/base/Thread.hpp"
+#include "areg/component/Component.hpp"
+#include "areg/component/ComponentThread.hpp"
 #include "areg/trace/GETrace.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -32,7 +33,7 @@
 //////////////////////////////////////////////////////////////////////////
 DirectMessagerStub::DirectMessagerStub( Component & masterComp )
     : StubBase    ( masterComp, NEDirectMessager::getInterfaceData() )
-    
+
     , mChatParticipants       (  )
     , mChatParticipantsState  ( NEService::eDataStateType::DataIsUnavailable )
     
@@ -56,9 +57,9 @@ DEF_TRACE_SCOPE(generated_DirectMessagerStub_startupServiceInterface);
 void DirectMessagerStub::startupServiceInterface( Component & holder )
 {
     TRACE_SCOPE(generated_DirectMessagerStub_startupServiceInterface);
-    
-    DirectMessagerRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
-    DirectMessagerNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
+
+    DirectMessagerRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
+    DirectMessagerNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
     StubBase::startupServiceInterface( holder );
 
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] has been started and is available ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
@@ -69,9 +70,9 @@ void DirectMessagerStub::shutdownServiceIntrface( Component & holder )
 {
     TRACE_SCOPE(generated_DirectMessagerStub_shutdownServiceIntrface);
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] is shutting down and not available anymore ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
-    
-    DirectMessagerRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
-    DirectMessagerNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
+
+    DirectMessagerRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
+    DirectMessagerNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
     StubBase::shutdownServiceIntrface( holder );
 }
 
@@ -119,7 +120,7 @@ void DirectMessagerStub::errorRequest( unsigned int msgId, bool msgCancel )
 {
     NEService::eResultType result = NEService::eResultType::NotProcessed;
     msg_id listenerId = msgId;
-    
+
     switch ( static_cast<NEDirectMessager::eMessageIDs>(msgId) )
     {
 /************************************************************************
@@ -161,7 +162,7 @@ void DirectMessagerStub::errorRequest( unsigned int msgId, bool msgCancel )
         ASSERT(false);
         break;
     }
-    
+
     StubBase::StubListenerList listeners;
     if ( findListeners(listenerId, listeners) > 0 )
     {
@@ -281,47 +282,47 @@ void DirectMessagerStub::processRequestEvent( ServiceRequestEvent & eventElem )
             {
                 NEDirectMessager::sParticipant  participant;
                 DateTime                        timeConnect;
-                stream >> participant;                
-                stream >> timeConnect;                
+                stream >> participant;
+                stream >> timeConnect;
                 requestChatJoin( participant, timeConnect );
             }
             break;
-            
+
         case NEDirectMessager::eMessageIDs::MsgId_requestMessageSend:
             if ( true )
             {
                 NEDirectMessager::sParticipant  sender;
                 String                          msgText;
                 DateTime                        timeSent;
-                stream >> sender;                
-                stream >> msgText;                
-                stream >> timeSent;                
+                stream >> sender;
+                stream >> msgText;
+                stream >> timeSent;
                 requestMessageSend( sender, msgText, timeSent );
             }
             break;
-            
+
         case NEDirectMessager::eMessageIDs::MsgId_requestMessageType:
             if ( true )
             {
                 NEDirectMessager::sParticipant  participant;
                 String                          msgText;
-                stream >> participant;                
-                stream >> msgText;                
+                stream >> participant;
+                stream >> msgText;
                 requestMessageType( participant, msgText );
             }
             break;
-            
+
         case NEDirectMessager::eMessageIDs::MsgId_requestChatLeave:
             if ( true )
             {
                 NEDirectMessager::sParticipant  participant;
                 DateTime                        timeLeave;
-                stream >> participant;                
-                stream >> timeLeave;                
+                stream >> participant;
+                stream >> timeLeave;
                 requestChatLeave( participant, timeLeave );
             }
             break;
-            
+
         default:
             {
                 TRACE_SCOPE(generated_DirectMessagerStub_processRequestEvent);

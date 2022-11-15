@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ServerList.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -32,75 +32,47 @@ DEF_TRACE_SCOPE(areg_component_private_ServerList_unregisterServer);
 //////////////////////////////////////////////////////////////////////////
 // Methods.
 //////////////////////////////////////////////////////////////////////////
-MAPPOS ServerList::findServer(const ServerInfo & server) const
+ServerList::MAPPOS ServerList::findServer(const ServerInfo& server) const
 {
     return find(server);
 }
 
-MAPPOS ServerList::findServer( const StubAddress & whichServer ) const
+ServerList::MAPPOS ServerList::findServer(const StubAddress& whichServer) const
 {
     TRACE_SCOPE(areg_component_private_ServerList_findServer);
-    TRACE_DBG("Search server [ %s ]", StubAddress::convAddressToPath(whichServer).getString());
+    TRACE_DBG("Search server based on server address [ %s ]", StubAddress::convAddressToPath(whichServer).getString());
 
     ServerInfo server(whichServer);
-
-    const unsigned int hash = getHashKey(server);
-    ServiceBlock** block    = &mHashTable[hash % mHashTableSize];
-
-    for ( ; *block != nullptr; block = &(*block)->mNext)
-    {
-        if ( hash == (*block)->mHash )
-        {
-            if ( static_cast<const ServiceAddress &>(whichServer) == static_cast<const ServiceAddress &>((*block)->mKey.getAddress()) )
-            {
-                break;
-            }
-        }
-    }
-
-    TRACE_DBG("[ %s ] server [ %s ] in the list", (*block ) != nullptr ? "FOUND" : "DID NOT FIND", StubAddress::convAddressToPath(whichServer).getString());
-
-    return (*block);
+    return ServerList::find(server);
 }
 
-MAPPOS ServerList::findServer( const ProxyAddress & whichClient ) const
+ServerList::MAPPOS ServerList::findServer(const ProxyAddress& whichClient) const
 {
+    TRACE_SCOPE(areg_component_private_ServerList_findServer);
+    TRACE_DBG("Search server based on proxy address [ %s ]", ProxyAddress::convAddressToPath(whichClient).getString());
+
     ServerInfo server(whichClient);
-
-    const unsigned int hash = getHashKey(server);
-    ServiceBlock** block    = &mHashTable[hash % mHashTableSize];
-
-    for ( ; *block != nullptr; block = &(*block)->mNext)
-    {
-        if ( hash == (*block)->mHash )
-        {
-            if ( static_cast<const ServiceAddress &>(whichClient) == static_cast<const ServiceAddress &>((*block)->mKey.getAddress()) )
-            {
-                break;
-            }
-        }
-    }
-    
-    return (*block);
+    return ServerList::find(server);
 }
 
 const ServerInfo & ServerList::registerClient( const ProxyAddress & whichClient, ClientInfo & out_client )
 {
     TRACE_SCOPE(areg_component_private_ServerList_registerClient);
 
-    MAPPOS pos  = findServer( whichClient );
-    if ( pos == nullptr )
-    {
-        TRACE_DBG("No service for client [ %s ], crate new entry.", ProxyAddress::convAddressToPath(whichClient).getString());
-        pos = setAt( ServerInfo( whichClient ), ClientList( ), false );
-    }
+    std::pair<ServerListBase::MAPPOS, bool> added = addIfUnique(ServerInfo(whichClient), ClientList());
+    TRACE_DBG("[ %s ] entry for client [ %s ]"
+                , added.second ? "CREATED NEW" : "EXTRACTED EXISTING"
+                , ProxyAddress::convAddressToPath(whichClient).getString());
 
-    ASSERT(pos != nullptr);
-    ServiceBlock* block = static_cast<ServiceBlock *>(pos);
-    out_client = block->mValue.registerClient(whichClient, block->mKey);
-    TRACE_DBG("There are [ %d ] registered clients for service [ %s ]", block->mValue.getSize(), StubAddress::convAddressToPath(block->mKey.getAddress()).getString());
+    ServerListBase::MAPPOS pos = added.first;
+    ASSERT(ServerListBase::isValidPosition(pos));
 
-    return block->mKey;
+    out_client = pos->second.registerClient(whichClient, pos->first);
+    TRACE_DBG("There are [ %d ] registered clients for service [ %s ]"
+                , pos->second.getSize()
+                , StubAddress::convAddressToPath(pos->first.getAddress()).getString());
+
+    return pos->first;
 }
 
 
@@ -109,25 +81,26 @@ ServerInfo ServerList::unregisterClient( const ProxyAddress & whichClient, Clien
     TRACE_SCOPE(areg_component_private_ServerList_unregisterClient);
 
     ServerInfo result;
-    MAPPOS pos = findServer(whichClient);
-    if ( pos != nullptr )
+    ServerListBase::MAPPOS pos = findServer(whichClient);
+    if (ServerListBase::isValidPosition(pos))
     {
-        ServiceBlock* block = static_cast<ServiceBlock *>(pos);
-        block->mValue.unregisterClient(whichClient, out_client);
-        result = block->mKey;
+        pos->second.unregisterClient(whichClient, out_client);
+        result = pos->first;
 
         TRACE_DBG("Unregistered client [ %s ] from [ %s ] service [ %s ] with status [ %s ]. There are still [ %d ] registered clients"
                     , ProxyAddress::convAddressToPath(out_client.getAddress()).getString()
-                    , block->mKey.getAddress().isRemoteAddress() ? "REMOTE" : "LOCAL"
-                    , StubAddress::convAddressToPath(block->mKey.getAddress()).getString()
-                    , NEService::getString(block->mKey.getConnectionStatus())
-                    , block->mValue.getSize());
+                    , pos->first.getAddress().isRemoteAddress() ? "REMOTE" : "LOCAL"
+                    , StubAddress::convAddressToPath(pos->first.getAddress()).getString()
+                    , NEService::getString(pos->first.getConnectionStatus())
+                    , pos->second.getSize());
 
-        if ( block->mValue.getSize() == 0 )
+        if (pos->second.isEmpty())
         {
-            const StubAddress & addrStub = block->mKey.getAddress();
-            if ( addrStub.getSource() == NEService::SOURCE_UNKNOWN || addrStub.isRemoteAddress() )
-                removePosition( pos );
+            const StubAddress & addrStub = pos->first.getAddress();
+            if (addrStub.getSource() == NEService::SOURCE_UNKNOWN || addrStub.isRemoteAddress())
+            {
+                removePosition(pos);
+            }
         }
     }
     else
@@ -145,18 +118,20 @@ const ServerInfo & ServerList::registerServer( const StubAddress & addrStub, Cli
     ASSERT(addrStub.isValid() );
 
     ServerInfo server(addrStub);
-    MAPPOS pos  = findServer(addrStub);
-    if ( pos == nullptr )
-    {
-        TRACE_DBG("There are still no clients for service [ %s ], create new entry", StubAddress::convAddressToPath(addrStub).getString());
-        pos = setAt( server, ClientList(), false);
-    }
+    std::pair<ServerListBase::MAPPOS, bool> added = addIfUnique(server, ClientList());
+    TRACE_DBG("[ %s ] entry for server [ %s ]"
+                , added.second ? "CREATED NEW" : "EXTRACTED EXISTING"
+                , StubAddress::convAddressToPath(addrStub).getString());
 
-    ASSERT(pos != nullptr);
-    ServiceBlock* block = static_cast<ServiceBlock *>(pos);
-    block->mKey = server;
-    block->mKey.setConnectionStatus( addrStub.getSource() != NEService::SOURCE_UNKNOWN ? NEService::eServiceConnection::ServiceConnected : NEService::eServiceConnection::ServicePending );
-    block->mValue.serverAvailable(block->mKey, out_clinetList);
+    ServerListBase::MAPPOS pos = added.first;
+    ASSERT(ServerListBase::isValidPosition(pos));
+
+    ServerInfo& key = ServerListBase::keyAtPosition(pos);
+    ClientList& value = ServerListBase::valueAtPosition(pos);
+
+    key = server;
+    key.setConnectionStatus( addrStub.getSource() != NEService::SOURCE_UNKNOWN ? NEService::eServiceConnection::ServiceConnected : NEService::eServiceConnection::ServicePending );
+    value.serverAvailable(key, out_clinetList);
 
     TRACE_DBG("The [ %s ] service [ %s ] is with status [ %s ]. [ %d ] clients are going to be notified."
                     , addrStub.isRemoteAddress() ? "REMOTE" : "LOCAL"
@@ -164,7 +139,7 @@ const ServerInfo & ServerList::registerServer( const StubAddress & addrStub, Cli
                     , NEService::getString(server.getConnectionStatus())
                     , out_clinetList.getSize());
 
-    return block->mKey;
+    return key;
 }
 
 ServerInfo ServerList::unregisterServer( const StubAddress & whichServer, ClientList & out_clinetList )
@@ -172,27 +147,29 @@ ServerInfo ServerList::unregisterServer( const StubAddress & whichServer, Client
     TRACE_SCOPE(areg_component_private_ServerList_unregisterServer);
 
     ServerInfo result(whichServer);
+    ServerListBase::MAPPOS pos = find(result);
 
-    MAPPOS pos = find(result);
-    ServiceBlock* block = static_cast<ServiceBlock *>(pos);
-    if (block != nullptr)
+    if (ServerListBase::isValidPosition(pos))
     {
-        result = block->mKey;
-        block->mValue.serverUnavailable(out_clinetList);
+        ServerInfo& key = ServerListBase::keyAtPosition(pos);
+        ClientList& value = ServerListBase::valueAtPosition(pos);
+
+        result = key;
+        value.serverUnavailable(out_clinetList);
 
         TRACE_INFO("Found and unregistered [ %s ] service [ %s ], [ %d ] clients are going to be notified, the list is [ %s ]"
                         , whichServer.isRemoteAddress() ? "REMOTE" : "LOCAL"
                         , StubAddress::convAddressToPath(whichServer).getString()
                         , out_clinetList.getSize()
-                        , block->mValue.isEmpty() ? "EMPTY" : "NOT EMPTY");
+                        , value.isEmpty() ? "EMPTY" : "NOT EMPTY");
 
-        if ( block->mValue.isEmpty())
+        if ( value.isEmpty())
         {
             removePosition(pos);
         }
         else
         {
-            block->mKey = static_cast<const ServiceAddress &>(whichServer);
+            key = static_cast<const ServiceAddress&>(whichServer);
         }
     }
 
@@ -201,27 +178,24 @@ ServerInfo ServerList::unregisterServer( const StubAddress & whichServer, Client
 
 NEService::eServiceConnection ServerList::getServerState(const StubAddress & whichServer) const
 {
-    MAPPOS pos = findServer(whichServer);
-    ServiceBlock* block = static_cast<ServiceBlock *>(pos);
-    return (block != nullptr ? block->mKey.getConnectionStatus() : NEService::eServiceConnection::ServiceConnectionUnknown);
+    ServerListBase::MAPPOS pos = findServer(whichServer);
+    return (ServerListBase::isValidPosition(pos) ? pos->first.getConnectionStatus() : NEService::eServiceConnection::ServiceConnectionUnknown);
 }
 
 const ClientList & ServerList::getClientList(const StubAddress & whichServer) const
 {
-    MAPPOS pos = findServer(whichServer);
-    ServiceBlock* block = static_cast<ServiceBlock *>(pos);
-    ASSERT(block != nullptr);
-    return block->mValue;
+    ServerListBase::MAPPOS pos = findServer(whichServer);
+    ASSERT(ServerListBase::isValidPosition(pos));
+    return pos->second;
 }
 
 bool ServerList::isServerRegistered(const StubAddress & server) const
 {
-    return find(ServerInfo(server)) != nullptr;
+    return (ServerListBase::isValidPosition(find(ServerInfo(server))));
 }
 
 const ServerInfo * ServerList::findClientServer(const ProxyAddress & whichClient) const
 {
-    MAPPOS pos = findServer( whichClient );
-    ServiceBlock* block = static_cast<ServiceBlock *>(pos);
-    return ( block != nullptr ? &block->mKey : nullptr );
+    ServerListBase::MAPPOS pos = findServer( whichClient );
+    return ( ServerListBase::isValidPosition(pos) ? &(pos->first) : nullptr);
 }

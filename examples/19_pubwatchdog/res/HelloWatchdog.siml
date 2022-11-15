@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.0.0">
+    <Overview ID="1" Name="HelloWatchdog" Version="1.0.0" isRemote="true">
+        <Description>Simple Service Interface to demonstrate working features of AREG SDK.
+This service will demonstrate how the system watchdog works in case of public service.</Description>
+    </Overview>
+    <DataTypeList>
+        <DataType ID="27" Name="eState" Type="Enumerate" Values="default">
+            <Description>The state of component to start a timer and output "Hello Watchdog" message.</Description>
+            <FieldList>
+                <EnumEntry ID="29" Name="Initialized">
+                    <Value/>
+                    <Description>The service just initialized and ready to execute.</Description>
+                </EnumEntry>
+                <EnumEntry ID="30" Name="Started">
+                    <Value/>
+                    <Description>The timer is started to output messages.</Description>
+                </EnumEntry>
+                <EnumEntry ID="31" Name="Stopped">
+                    <Value/>
+                    <Description>The timer is requested to stop.</Description>
+                </EnumEntry>
+            </FieldList>
+        </DataType>
+    </DataTypeList>
+    <AttributeList>
+        <Attribute DataType="eState" ID="33" Name="ServiceState" Notify="OnChange">
+            <Description>The state of the service.</Description>
+        </Attribute>
+    </AttributeList>
+    <MethodList>
+        <Method ID="22" MethodType="request" Name="StartSleep" Response="StartSleep">
+            <Description>The response triggered when the thread resumed from suspended mode.</Description>
+            <ParamList>
+                <Parameter DataType="uint32" ID="23" Name="timeoutSleep">
+                    <Description>The timeout in milliseconds to suspend the thread.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="26" MethodType="response" Name="StartSleep">
+            <Description>Triggered to stop the timer.</Description>
+            <ParamList>
+                <Parameter DataType="uint32" ID="37" Name="timeoutSleep">
+                    <Description>The timeout in milliseconds while thread was in suspended mode.</Description>
+                </Parameter>
+            </ParamList>
+        </Method>
+        <Method ID="40" MethodType="request" Name="StopService">
+            <Description>Called to stop the service.</Description>
+        </Method>
+        <Method ID="41" MethodType="request" Name="ShutdownService">
+            <Description>Called to shutdown service and exit application.</Description>
+        </Method>
+    </MethodList>
+    <ConstantList>
+        <Constant DataType="uint32" ID="34" Name="TimeoutWatchdog">
+            <Value>1000</Value>
+            <Description>The timeout of the watchdog</Description>
+        </Constant>
+        <Constant DataType="uint32" ID="35" Name="TimeoutStep">
+            <Value>300</Value>
+            <Description>The step to increase sleep timeout.</Description>
+        </Constant>
+        <Constant DataType="uint32" ID="36" Name="InitialSleepTimeout">
+            <Value>300</Value>
+            <Description>The initial timeout to sleep a thread.</Description>
+        </Constant>
+        <Constant DataType="uint32" ID="38" Name="MaximumRestarts">
+            <Value>4</Value>
+            <Description>The maximum restarts of service.</Description>
+        </Constant>
+    </ConstantList>
+</ServiceInterface>

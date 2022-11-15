@@ -18,22 +18,16 @@
     #pragma comment(lib, "00_generated.lib")
 #endif // WINDOWS
 
-
-namespace
-{
 //!< The name of model
-constexpr char const _modelName[]   { "ServiceModel" };
-//! Service component role
-constexpr char const _service[]     { "ServiceComponent" };
-}
+constexpr char const _modelName[]{ "ServiceModel" };
 
 // Describe model, register the provided service in this model
 BEGIN_MODEL(_modelName)
 
-    BEGIN_REGISTER_THREAD( "Thread1" )
-        BEGIN_REGISTER_COMPONENT( _service, ServiceComponent )
+    BEGIN_REGISTER_THREAD( "Thread1", NECommon::WATCHDOG_IGNORE )
+        BEGIN_REGISTER_COMPONENT( "ServiceComponent", ServiceComponent )
             REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
-        END_REGISTER_COMPONENT( _service )
+        END_REGISTER_COMPONENT( "ServiceComponent" )
     END_REGISTER_THREAD( "Thread1" )
 
 // end of model description
@@ -45,8 +39,9 @@ END_MODEL(_modelName)
 
 int main( void )
 {
-    // Initialize application, enable logging, servicing and the timer.
-    Application::initApplication(true, true, true, true, nullptr, nullptr );
+    // Initialize application, enable logging, servicing, routing, timer and watchdog.
+    // Use default settings.
+    Application::initApplication( );
 
     // load model to initialize components
     Application::loadModel(_modelName);

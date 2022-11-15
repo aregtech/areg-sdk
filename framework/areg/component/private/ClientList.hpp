@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_PRIVATE_CLIENTLIST_HPP
+#define AREG_COMPONENT_PRIVATE_CLIENTLIST_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ClientList.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -27,32 +28,14 @@
 class ProxyAddress;
 class ServerInfo;
 
-//////////////////////////////////////////////////////////////////////////
-// ClientList class declaration
-//////////////////////////////////////////////////////////////////////////
-class ImplClientList	: public TEListImpl<const ClientInfo &>
-{
-public:
-    /**
-     * \brief   Compares 2 values, returns true if they are equal.
-     * \param   Value1  The right-side value to compare.
-     * \param   Value2  The left-side value to compare.
-     * \return  Returns true if 2 values are equal.
-     **/
-    inline bool implEqualValues( const ClientInfo & value1, const ClientInfo & value2) const
-    {
-        return ( value1.getAddress() == value2.getAddress() );
-    }
-};
-
-using ClientListBse = TELinkedList<ClientInfo, const ClientInfo &, ImplClientList>;
+using ClientListBase = TELinkedList<ClientInfo>;
 
 /**
  * \brief   ClientList is a linked list object containing the list
  *          of Client Info objects related to one server Stub address.
  *          The object is used in Router Service to control clients.
  **/
-class ClientList    : public ClientListBse
+class ClientList    : public ClientListBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -168,3 +151,5 @@ public:
      **/
     void serverUnavailable( ClientList & out_clientList );
 };
+
+#endif  // AREG_COMPONENT_PRIVATE_CLIENTLIST_HPP

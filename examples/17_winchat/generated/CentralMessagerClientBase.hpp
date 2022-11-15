@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/CentralMessagerClientBase.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_CENTRALMESSAGERCLIENTBASE_HPP
+#define  GENERATED_CENTRALMESSAGERCLIENTBASE_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  02:47:56 GMT+02:00
  *                  Create by AREG SDK code generator tool from source CentralMessager.
  *
  * \file            generated/CentralMessagerClientBase.hpp
@@ -51,13 +52,13 @@ class CentralMessagerClientBase  : public IEProxyListener
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initialize CentralMessager Service Interface client object. 
+     * \brief   Initialize CentralMessager Service Interface client object.
      *          Specifies used service and owner thread.
      * \param   roleName    The role name assigned to CentralMessager servicing component object.
      * \param   ownerThread The name of component owner thread to dispatch messages.
      *                      If nullptr, all messages are dispatched in current component thread.
      **/
-    CentralMessagerClientBase( const char* roleName, const char * ownerThread = nullptr );
+    CentralMessagerClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
 
     /**
      * \brief   Initialize CentralMessager Service Interface client object.
@@ -65,7 +66,7 @@ protected:
      * \param   roleName    The role name assigned to CentralMessager servicing component object.
      * \param   ownerThread The instance of component owner thread to dispatch messages.
      **/
-    CentralMessagerClientBase( const char* roleName, DispatcherThread & ownerThread );
+    CentralMessagerClientBase( const String & roleName, DispatcherThread & ownerThread );
 
     /**
      * \brief   Initialize CentralMessager Service Interface client object.
@@ -75,7 +76,7 @@ protected:
      * \note    When this constructor is used, it is important that the Component object is already initialized.
      *          and the component thread is set.
      **/
-    CentralMessagerClientBase( const char* roleName, Component & owner );
+    CentralMessagerClientBase( const String & roleName, Component & owner );
 
     /**
      * \brief   Destructor.
@@ -102,12 +103,12 @@ public:
      * \brief   Returns true if client object has got connection with servicing component
      **/
     inline bool isConnected( void ) const;
-    
+
     /**
      * \brief   Returns the name of used service.
      **/
     inline const String & getServiceName( void ) const;
-    
+
     /**
      * \brief   Returns the version of used service.
      **/
@@ -134,9 +135,9 @@ public:
      * \brief   Request call.
      *          Request to sends message that all clients can see.
      * \param   nickName    The nick name of initiator
-     * \param   cookie      Cookie given by connection manager. Should not be invalid.
+     * \param   cookie      The cookie given by connection manager. Should not be invalid.
      * \param   newMessage  The message sent by connected initiator
-     * \param   dateTime    The timestamp create on local host of initiator
+     * \param   dateTime    The time-stamp create on local host of initiator
      * \see     Has no response
      **/
     inline void requestSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime );
@@ -145,7 +146,7 @@ public:
      * \param   FailureReason   The failure reason value of request call.
      **/
     virtual void requestSendMessageFailed( NEService::eResultType FailureReason );
-    
+
 /************************************************************************
  * Request KeyTyping
  ************************************************************************/
@@ -163,19 +164,19 @@ public:
      * \param   FailureReason   The failure reason value of request call.
      **/
     virtual void requestKeyTypingFailed( NEService::eResultType FailureReason );
-    
+
 /************************************************************************
  * Broadcast SendMessage
  ************************************************************************/
     /**
      * \brief   Server broadcast.
      *          The response, sent by connection manager to notify the message typing update
-     *          Overwrite, if need to handle Broadcast call of server object. 
+     *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   nickName    The nick name of initiator
      * \param   cookie      The cookie assigned to initiator
      * \param   newMessage  The message sent by initiator
-     * \param   dateTime    The local timestamp of initiator
+     * \param   dateTime    The local time-stamp of initiator
      **/
     virtual void broadcastSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime );
     /**
@@ -192,7 +193,7 @@ public:
     /**
      * \brief   Server broadcast.
      *          Sent each time when a client is typing a key
-     *          Overwrite, if need to handle Broadcast call of server object. 
+     *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   nickName    The nick name of initiator
      * \param   cookie      Assigned cookie of initiator
@@ -213,10 +214,10 @@ public:
     /**
      * \brief   Server broadcast.
      *          Server broadcasts a message to all clients.
-     *          Overwrite, if need to handle Broadcast call of server object. 
+     *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   serverMessage   The message sent by servicing server
-     * \param   dateTime        The timestamp of servicing component
+     * \param   dateTime        The time-stamp of servicing component
      **/
     virtual void broadcastBroadcastMessage( const String & serverMessage, const DateTime & dateTime );
     /**
@@ -267,16 +268,16 @@ protected:
      * \param   InvalidReqId    The ID of invalid request
      **/
     virtual void invalidRequest( NECentralMessager::eMessageIDs InvalidReqId );
-    
+
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
 
     /**
      * \brief   Call to recreate Proxy for the client. This call will remove and unregister all existing notifications
-     *          and the client will not receive pending update or response notifications. 
+     *          and the client will not receive pending update or response notifications.
      *          The client first will receive disconnect message, then again connect.
-     *          Reset update notifications manually in connect if need.          
+     *          Reset update notifications manually in connect if need.
      *          This function call can be used when the client instance should be registered and run in new thread.
      *
      * \return  Returns true if Proxy was created with success.
@@ -288,7 +289,7 @@ protected:
      *         The function can return nullptr if Proxy was not instantiated yet.
      **/
     DispatcherThread * getDispatcherThread( void );
-     
+
     /**
      * \brief   Returns the current sequence number
      **/
@@ -298,7 +299,7 @@ protected:
      * \brief  Returns instance of proxy object.
      */
     inline const CentralMessagerProxy * getProxy( void ) const;
-      
+
     /**
      * \brief Returns target service component role name.
      **/
@@ -334,7 +335,7 @@ private:
      * \param   eventElem   Notification Event object to process
      **/
     virtual void processNotificationEvent( NotificationEvent & eventElem ) override;
-    
+
 /************************************************************************/
 // CentralMessagerClientBase hidden methods
 /************************************************************************/
@@ -342,12 +343,12 @@ private:
     /**
      * \brief   Enables / Disables notification flags on appropriate message call.
      * \param   msgId   The ID of message to enable / disable notification
-     * \param   notify  If true, the notification is enabled. 
+     * \param   notify  If true, the notification is enabled.
      *                  If false, the notification is disabled.
      * \param   always  Flag, indicating whether should notify always or not.
      *                  if 'notify' parameter is true and the notification is already
      *                  assigned, then if parameter 'always' is true, it will trigger
-     *                  notification immediately after call. 
+     *                  notification immediately after call.
      **/
     void notifyOn( NECentralMessager::eMessageIDs msgId, bool notify, bool always = false );
     /**
@@ -367,7 +368,6 @@ private:
     /**
      * \brief   Returns reference of CentralMessagerClientBase object
      **/
-
     inline CentralMessagerClientBase & self( void );
 
 //////////////////////////////////////////////////////////////////////////
@@ -415,7 +415,7 @@ inline const String & CentralMessagerClientBase::getServiceName( void ) const
     ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getServiceName();
 }
-    
+
 inline const Version & CentralMessagerClientBase::getServiceVersion( void ) const
 {
     ASSERT(mProxy != nullptr);
@@ -467,6 +467,8 @@ inline const String & CentralMessagerClientBase::getServiceRole( void ) const
     ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getRoleName();
 }
+
+#endif   // GENERATED_CENTRALMESSAGERCLIENTBASE_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/CentralMessagerClientBase.hpp file

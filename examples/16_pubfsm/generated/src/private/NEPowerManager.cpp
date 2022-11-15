@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  02:47:34 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PowerManager.
  *
  * \file            generated/src/NEPowerManager.hpp
@@ -29,7 +29,7 @@ const NEService::SInterfaceData & NEPowerManager::getInterfaceData( void )
     /************************************************************************
      * The list of requests
      ************************************************************************/
-    static constexpr unsigned int _RequestList[] 
+    static constexpr unsigned int _RequestList[]
     {
           static_cast<unsigned int>( NEPowerManager::eMessageIDs::MsgId_requestPowerOn             ) // requestPowerOn( void )
         , static_cast<unsigned int>( NEPowerManager::eMessageIDs::MsgId_requestPowerOff            ) // requestPowerOff( void )
@@ -40,7 +40,7 @@ const NEService::SInterfaceData & NEPowerManager::getInterfaceData( void )
     /************************************************************************
      * The list of responses and broadcasts
      ************************************************************************/
-    static constexpr unsigned int _ResponseList[] 
+    static constexpr unsigned int _ResponseList[]
     {
           static_cast<unsigned int>( NEPowerManager::eMessageIDs::MsgId_responseStartTrafficLight  ) // responseStartTrafficLight( bool Success )
         , static_cast<unsigned int>( NEPowerManager::eMessageIDs::MsgId_responseStopTrafficLight   ) // responseStopTrafficLight( bool Success )
@@ -49,7 +49,7 @@ const NEService::SInterfaceData & NEPowerManager::getInterfaceData( void )
     /************************************************************************
      * The list of attributes
      ************************************************************************/
-    static constexpr unsigned int _AttributeList[] 
+    static constexpr unsigned int _AttributeList[]
     {
           static_cast<unsigned int>( NEPowerManager::eMessageIDs::MsgId_LightsPowerState           ) // NEPowerManager::ePoweredState mLightsPowerState;
     };
@@ -81,7 +81,7 @@ const NEService::SInterfaceData & NEPowerManager::getInterfaceData( void )
      ************************************************************************/
 
     };
-    
+
     /************************************************************************
      * PowerManager Service Interface data
      ************************************************************************/
@@ -103,7 +103,7 @@ const NEService::SInterfaceData & NEPowerManager::getInterfaceData( void )
     return _InterfaceData;
 }
 
-NEPowerManager::eMessageIDs NEPowerManager::getResponseId( NEPowerManager::eMessageIDs reqId )
+NEPowerManager::eMessageIDs NEPowerManager::getResponseId( NEPowerManager::eMessageIDs reqId)
 {
     const NEService::SInterfaceData & sid = NEPowerManager::getInterfaceData();
     msg_id index = GET_REQ_INDEX(reqId);
@@ -119,7 +119,7 @@ NEPowerManager::eMessageIDs NEPowerManager::getRequestId( NEPowerManager::eMessa
     {
         result = sid.idRequestToResponseMap[i] == static_cast<msg_id>(respId) ? static_cast<NEPowerManager::eMessageIDs>(sid.idRequestList[i]) : NEPowerManager::eMessageIDs::MsgId_Invalid;
     }
-    
+
     return result;
 }
 

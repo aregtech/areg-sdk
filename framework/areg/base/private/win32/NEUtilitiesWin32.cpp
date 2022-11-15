@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/win32/NEUtilitiesWin32.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -26,7 +26,7 @@
 namespace NEUtilities {
 
     /**
-     * \brief   Generates a name, sets the timestapt of now.
+     * \brief   Generates a name, sets the timestamp of now.
      *
      * \param   prefix          The prefix to add to name.
      * \param   out_buffer[out] On output, this contains the result.
@@ -70,7 +70,7 @@ namespace NEUtilities {
         aregTime.stMicrosecs    = 0;
     }
 
-    //!< Converts areg specific time structure to Windos system time.
+    //!< Converts areg specific time structure to Windows system time.
     inline void _convAregSysTime2WinSysTime( const NEUtilities::sSystemTime & IN aregTime, SYSTEMTIME & OUT winTime )
     {
         winTime.wYear           = aregTime.stYear;
@@ -109,7 +109,7 @@ namespace NEUtilities {
         // winTime.dwHighDateTime  = MACRO_64_HI_BYTE32(quad);
     }
 
-    //!< Converts windows 64-bit file strcutre to areg 64-bit time.
+    //!< Converts windows 64-bit file structure to areg 64-bit time.
     inline void _convWinFileTime2AregTime( const FILETIME & IN winTime, TIME64 & OUT aregTime)
     {
         aregTime = MACRO_MAKE_64(winTime.dwHighDateTime, winTime.dwLowDateTime);
@@ -136,12 +136,12 @@ namespace NEUtilities {
 
 } // namespace
 
-AREG_API uint64_t NEUtilities::getTickCount( void )
+AREG_API_IMPL uint64_t NEUtilities::getTickCount( void )
 {
     return static_cast<uint64_t>(::GetTickCount64( ));
 }
 
-AREG_API bool NEUtilities::convToLocalTime( const sSystemTime &inUtcTime, sSystemTime & outLocalTime )
+AREG_API_IMPL bool NEUtilities::convToLocalTime( const sSystemTime &inUtcTime, sSystemTime & outLocalTime )
 {
     bool result = false;
 
@@ -165,14 +165,14 @@ AREG_API bool NEUtilities::convToLocalTime( const sSystemTime &inUtcTime, sSyste
     return result;
 }
 
-AREG_API bool NEUtilities::convToLocalTime( const TIME64 & inUtcTime, sSystemTime & outLocalTime )
+AREG_API_IMPL bool NEUtilities::convToLocalTime( const TIME64 & inUtcTime, sSystemTime & outLocalTime )
 {
     NEUtilities::sSystemTime sysTime;
     convToSystemTime( inUtcTime, sysTime );
     return convToLocalTime(sysTime, outLocalTime);
 }
 
-AREG_API void NEUtilities::systemTimeNow( NEUtilities::sSystemTime & out_sysTime, bool localTime )
+AREG_API_IMPL void NEUtilities::systemTimeNow( NEUtilities::sSystemTime & OUT out_sysTime, bool localTime )
 {
     SYSTEMTIME st;
     NEMemory::zeroElement<SYSTEMTIME>(st);
@@ -195,7 +195,7 @@ AREG_API void NEUtilities::systemTimeNow( NEUtilities::sSystemTime & out_sysTime
     }
 }
 
-AREG_API void NEUtilities::systemTimeNow( NEUtilities::sFileTime & out_fileTime, bool localTime )
+AREG_API_IMPL void NEUtilities::systemTimeNow( NEUtilities::sFileTime & OUT out_fileTime, bool localTime )
 {
     SYSTEMTIME st, local;
     SYSTEMTIME *src = &st;
@@ -220,7 +220,7 @@ AREG_API void NEUtilities::systemTimeNow( NEUtilities::sFileTime & out_fileTime,
     NEUtilities::_convWinFileTime2AregFileTime( ft, out_fileTime );
 }
 
-AREG_API TIME64 NEUtilities::systemTimeNow( void )
+AREG_API_IMPL TIME64 NEUtilities::systemTimeNow( void )
 {
     SYSTEMTIME st;
     NEMemory::zeroElement<SYSTEMTIME>( st );
@@ -233,7 +233,7 @@ AREG_API TIME64 NEUtilities::systemTimeNow( void )
     return _convWinFileTime2AregTime(ft);
 }
 
-AREG_API TIME64 NEUtilities::convToTime( const NEUtilities::sSystemTime & sysTime )
+AREG_API_IMPL TIME64 NEUtilities::convToTime( const NEUtilities::sSystemTime & sysTime )
 {
     SYSTEMTIME st;
     NEUtilities::_convAregSysTime2WinSysTime(sysTime, st);
@@ -246,7 +246,7 @@ AREG_API TIME64 NEUtilities::convToTime( const NEUtilities::sSystemTime & sysTim
 }
 
 
-AREG_API void NEUtilities::convToSystemTime( const TIME64 &  timeValue, NEUtilities::sSystemTime & out_sysTime )
+AREG_API_IMPL void NEUtilities::convToSystemTime( const TIME64 &  timeValue, NEUtilities::sSystemTime & out_sysTime )
 {
     FILETIME ft;
     NEUtilities::_convAregTime2WinFileTime(timeValue, ft);
@@ -258,7 +258,7 @@ AREG_API void NEUtilities::convToSystemTime( const TIME64 &  timeValue, NEUtilit
     NEUtilities::_convWinSysTime2AregSysTime(st, out_sysTime);
 }
 
-AREG_API void NEUtilities::convToSystemTime( const NEUtilities::sFileTime & fileTime, NEUtilities::sSystemTime & out_sysTime )
+AREG_API_IMPL void NEUtilities::convToSystemTime( const NEUtilities::sFileTime & fileTime, NEUtilities::sSystemTime & out_sysTime )
 {
     FILETIME ft;
     NEUtilities::_convAregFileTime2WinFileTime(fileTime, ft);
@@ -270,7 +270,7 @@ AREG_API void NEUtilities::convToSystemTime( const NEUtilities::sFileTime & file
     NEUtilities::_convWinSysTime2AregSysTime(st, out_sysTime);
 }
 
-AREG_API void NEUtilities::convToFileTime( const NEUtilities::sSystemTime & sysTime, NEUtilities::sFileTime & out_fileTime )
+AREG_API_IMPL void NEUtilities::convToFileTime( const NEUtilities::sSystemTime & sysTime, NEUtilities::sFileTime & out_fileTime )
 {
     SYSTEMTIME st;
     NEUtilities::_convAregSysTime2WinSysTime(sysTime, st);

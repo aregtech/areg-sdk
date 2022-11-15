@@ -8,7 +8,7 @@
             <Description>The request to output greeting.</Description>
             <ParamList>
                 <Parameter DataType="String" ID="3" Name="client">
-                    <Description>The name of client to output greeting.</Description>
+                    <Description>The name of the client to output greeting.</Description>
                 </Parameter>
             </ParamList>
         </Method>

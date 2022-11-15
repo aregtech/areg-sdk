@@ -44,11 +44,14 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="areg\appbase\private\ApplicationPosix.cpp" />
-    <ClCompile Include="areg\appbase\private\ApplicationWin.cpp" />
+    <ClCompile Include="areg\appbase\private\Console.cpp" />
+    <ClCompile Include="areg\appbase\private\posix\ApplicationPosix.cpp" />
+    <ClCompile Include="areg\appbase\private\win32\ApplicationWin32.cpp" />
     <ClCompile Include="areg\appbase\private\configure.cpp" />
     <ClCompile Include="areg\appbase\private\Application.cpp" />
     <ClCompile Include="areg\appbase\private\NEApplication.cpp" />
+    <ClCompile Include="areg\appbase\private\posix\ConsolePosix.cpp" />
+    <ClCompile Include="areg\appbase\private\win32\ConsoleWin32.cpp" />
     <ClCompile Include="areg\base\private\posix\CriticalSectionIX.cpp" />
     <ClCompile Include="areg\base\private\posix\FilePosix.cpp" />
     <ClCompile Include="areg\base\private\posix\MutexIX.cpp" />
@@ -116,8 +119,15 @@
     <ClCompile Include="areg\base\private\NEDebug.cpp" />
     <ClCompile Include="areg\base\private\NEMemory.cpp" />
     <ClCompile Include="areg\base\private\NEUtilities.cpp" />
+    <ClCompile Include="areg\component\private\posix\TimerBasePosix.cpp" />
     <ClCompile Include="areg\component\private\posix\TimerManagerPosix.cpp" />
     <ClCompile Include="areg\component\private\posix\TimerPosix.cpp" />
+    <ClCompile Include="areg\component\private\posix\WatchdogManagerPosix.cpp" />
+    <ClCompile Include="areg\component\private\TimerBase.cpp" />
+    <ClCompile Include="areg\component\private\TimerManagerBase.cpp" />
+    <ClCompile Include="areg\component\private\TimerManagerEvent.cpp" />
+    <ClCompile Include="areg\component\private\Watchdog.cpp" />
+    <ClCompile Include="areg\component\private\win32\TimerBaseWin32.cpp" />
     <ClCompile Include="areg\component\private\win32\TimerManagerWin32.cpp" />
     <ClCompile Include="areg\component\private\ClientInfo.cpp" />
     <ClCompile Include="areg\component\private\ClientList.cpp" />
@@ -161,9 +171,8 @@
     <ClCompile Include="areg\component\private\Timer.cpp" />
     <ClCompile Include="areg\component\private\IETimerConsumer.cpp" />
     <ClCompile Include="areg\component\private\TimerEventData.cpp" />
-    <ClCompile Include="areg\component\private\TimerInfo.cpp" />
     <ClCompile Include="areg\component\private\TimerManager.cpp" />
-    <ClCompile Include="areg\component\private\TimerManagingEvent.cpp" />
+    <ClCompile Include="areg\component\private\win32\WatchdogManagerWin32.cpp" />
     <ClCompile Include="areg\component\private\WorkerThread.cpp" />
     <ClCompile Include="areg\component\private\IEEventConsumer.cpp" />
     <ClCompile Include="areg\component\private\IEEventDispatcher.cpp" />
@@ -210,11 +219,14 @@
     <ClCompile Include="areg\trace\private\NELogConfig.cpp" />
     <ClCompile Include="areg\trace\private\FileLogger.cpp" />
     <ClCompile Include="areg\trace\private\LoggerBase.cpp" />
+    <ClCompile Include="areg\component\private\WatchdogManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="areg\appbase\Console.hpp" />
     <ClInclude Include="areg\base\DateTime.hpp" />
     <ClInclude Include="areg\base\private\posix\SpinLockIX.hpp" />
     <ClInclude Include="areg\base\private\win32\SpinLockWin32.hpp" />
+    <ClInclude Include="areg\base\TEMap.hpp" />
     <ClInclude Include="areg\base\TETemplateBase.hpp" />
     <ClInclude Include="areg\base\IESynchObject.hpp" />
     <ClInclude Include="areg\base\NECommon.hpp" />
@@ -243,6 +255,9 @@
     <ClInclude Include="areg\appbase\Application.hpp" />
     <ClInclude Include="areg\appbase\NEApplication.hpp" />
     <ClInclude Include="areg\component\EventData.hpp" />
+    <ClInclude Include="areg\component\private\TimerManagerBase.hpp" />
+    <ClInclude Include="areg\component\private\TimerManagerEvent.hpp" />
+    <ClInclude Include="areg\component\private\Watchdog.hpp" />
     <ClInclude Include="areg\component\RemoteEventFactory.hpp" />
     <ClInclude Include="areg\component\RequestEvents.hpp" />
     <ClInclude Include="areg\component\ResponseEvents.hpp" />
@@ -292,10 +307,9 @@
     <ClInclude Include="areg\component\Timer.hpp" />
     <ClInclude Include="areg\component\IETimerConsumer.hpp" />
     <ClInclude Include="areg\component\private\TimerEventData.hpp" />
-    <ClInclude Include="areg\component\private\TimerInfo.hpp" />
     <ClInclude Include="areg\component\private\TimerManager.hpp" />
-    <ClInclude Include="areg\component\private\TimerManagingEvent.hpp" />
     <ClInclude Include="areg\base\Version.hpp" />
+    <ClInclude Include="areg\component\TimerBase.hpp" />
     <ClInclude Include="areg\component\WorkerThread.hpp" />
     <ClInclude Include="areg\base\private\WriteConverter.hpp" />
     <ClInclude Include="areg\base\GEGlobal.h" />
@@ -324,7 +338,6 @@
     <ClInclude Include="areg\base\TEFixedArray.hpp" />
     <ClInclude Include="areg\base\TEHashMap.hpp" />
     <ClInclude Include="areg\base\TELinkedList.hpp" />
-    <ClInclude Include="areg\base\TEPair.hpp" />
     <ClInclude Include="areg\base\TEResourceMap.hpp" />
     <ClInclude Include="areg\base\TERuntimeResourceMap.hpp" />
     <ClInclude Include="areg\base\TEStack.hpp" />
@@ -382,6 +395,7 @@
     <ClInclude Include="system\posix\GEPosix.h" />
     <ClInclude Include="system\windows\GEWindows.h" />
     <ClInclude Include="system\GEPlatform.h" />
+    <ClInclude Include="areg\component\private\WatchdogManager.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="areg\resources\areg.rc" />

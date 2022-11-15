@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/win32/SpinLockWin32.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
@@ -35,8 +35,6 @@ SpinLockWin32::SpinLockWin32( void )
     , mOwnerThread  ( 0 )
     , mLockCount    ( 0 )
 {
-    static_assert(std::atomic<id_type>::is_always_lock_free);
-    static_assert(std::atomic<uint32_t>::is_always_lock_free);
 }
 
 SpinLockWin32::~SpinLockWin32( void )

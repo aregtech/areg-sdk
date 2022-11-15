@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_PRIVATE_POSIX_TIMERPOSIX_HPP
+#define AREG_COMPONENT_PRIVATE_POSIX_TIMERPOSIX_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/posix/TimerPosix.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -21,13 +22,14 @@
 
 #if defined(_POSIX) || defined(POSIX)
 
-#include "areg/component/Timer.hpp"
 #include "areg/base/private/posix/SpinLockIX.hpp"
+#include <sys/types.h>
 #include <time.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Dependency.
 //////////////////////////////////////////////////////////////////////////
+class TimerBase;
 
 /**
  * \brief   The POSIX timer routing method triggered in a separate thread.
@@ -46,12 +48,13 @@ class TimerPosix
 // Friend class and constants
 //////////////////////////////////////////////////////////////////////////
     friend class TimerManager;
+    friend class WatchdogManager;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor.
 //////////////////////////////////////////////////////////////////////////
 public:
-    
+
     /**
      * \brief   Initializes the POSIX timer object. Sets context, timeout and period.
      * \param   context         The timer context to set. If this value is nullptr, the timer is invalid
@@ -64,7 +67,7 @@ public:
      *                          or endless until it is not stopped (value TIMER_PERIOD_ENDLESS).
      **/
     TimerPosix( void );
-    
+
     /**
      * \brief   Destructor.
      **/
@@ -81,21 +84,20 @@ public:
     inline timer_t getTimerId( void ) const;
 
     /**
-     * \brief   Returns POSIX timer context.
+     * \brief   Returns POSIX timer context pointer.
      **/
-    inline Timer * getContext( void ) const;
+    inline void * getContext( void ) const;
+
+    /**
+     * \brief   Returns POSIX timer context ID.
+     **/
+    inline id_type getContextId( void ) const;
 
     /**
      * \brief   Returns timeout due date and time when timer expired or should expire next.
      **/
     inline const timespec & getDueTime( void ) const;
 
-    /**
-     * \brief   Returns period. If zero, the timer is nnot run. If TimerPosix::TIMER_PERIOD_ENDLESS 
-     *          the timer is endless until it is not stopped. Any other value specifies the remaining
-     *          period to run timer.
-     **/
-    inline unsigned int getRemainPeriod( void ) const;
 
     /**
      * \brief   Returns true if timer is valid, i.e. the timer ID and context are valid.
@@ -113,29 +115,23 @@ public:
     /**
      * \brief   Creates and starts timer with timeout and period count values specified in
      *          the give Timer object. If the specified timeout or period values in
-     *          the Timer object are zero, the timer is created, but not not started.
+     *          the Timer object are zero, the timer is created, but not started.
      *          This function creates a timer to handle in a separate thread.
      * \param   context     The timer object that contains timeout and period information.
+     * \param   contextId   The timer context ID to set.
      * \param   funcTimer   Pointer to the timer handling function triggered when timer expires.
      * \return  Returns true if timer is created and started with success.
      **/
-    bool startTimer( Timer & context, FuncPosixTimerRoutine funcTimer );
+    bool startTimer( TimerBase & context, id_type contextId, FuncPosixTimerRoutine funcTimer );
 
     /**
      * \brief   Starts initialized timer if the timeout and the period values are not zero.
      *          The timer should be initialized before calling this method.
      * \param   context     The timer object that contains timeout and period information.
+     * \param   contextId   The timer context ID to set.
      * \return  Returns true if timer is started with success.
-     */
-    bool startTimer( Timer & context );
-
-    /**
-     * \brief   Starts the timer that was initialized. This function ignores starting timer
-     *          if either it was not initialized, or timeout is zero, or the period is zero.
-     *          The timer, timeout and periodic values should be set before starting timer.
-     * \return  Returns true if timer is initialized and started with success.
      **/
-    bool startTimer( void );
+    bool startTimer( TimerBase & context, id_type contextId );
 
     /**
      * \brief   Stops timer, resets timeout and period values.
@@ -162,7 +158,8 @@ protected:
      *          can continue running. Returns false if timer should be stopped.
      *          The timer can run if it is periodic and the period count is greater 
      *          than zero. The timer is stopped if period count is zero.
-     * \param   Returns true if timer can continue running. Returns false if timer 
+     * \param   timeoutMs   The timeout in milliseconds when timer expired.
+     * \return  Returns true if timer can continue running. Returns false if timer 
      *          should be stopped.
      **/
     void timerExpired( void );
@@ -183,17 +180,11 @@ private:
 
     /**
      * \brief	Initializes and starts the timer.
-     * \param	context	The pointer to Timer object as a timer context.
+     * \param	context	    The pointer to timer context object.
+     * \param   contextId   The ID relevant with timer context object.
      * \return	Returns true if timer succeeded to start.
      **/
-    inline bool _startTimer( Timer * context );
-    /**
-     * \brief   Starts the initialized timer.
-     * \param   msTimeout   The timeout of timer is milliseconds.
-     * \param   eventCount  The number of periods to trigger.
-     * \return  Returns true if succeeded to start timer.
-     **/
-    inline bool _startTimer( unsigned int msTimeout, unsigned int eventCount );
+    inline bool _startTimer( TimerBase * context, id_type contextId );
 
     /**
      * \brief   Stops the timer.
@@ -221,24 +212,21 @@ private:
     timer_t                 mTimerId;
 
     /**
-     * \brief   The valid pointer to Timer object that contains timeout and period information.
+     * \brief   The context pointer passed to POSIX timer, set when using Timer object.
+     *          Otherwise, should be nullptr.
      */
-    Timer *                 mContext;
+    TimerBase *             mContext;
 
     /**
-     * \brief   The number of events to trigger timer. Should be more than zero.
-     */
-    unsigned int            mEventCount;
+     * \brief   The context ID passed to POSIX timer, set when using Watchdog object.
+     *          Otherwise, should be zero.
+     **/
+    id_type                 mContextId;
 
     /**
      * \brief   The timer timeout information.
      */
     struct timespec         mDueTime;
-
-    /**
-     * \brief   The ID of thread where timer is started.
-     */
-    id_type                 mThreadId;
 
     /**
      * \brief   Synchronization object.
@@ -262,10 +250,16 @@ inline timer_t TimerPosix::getTimerId(void) const
     return mTimerId;
 }
 
-inline Timer * TimerPosix::getContext(void) const
+inline void * TimerPosix::getContext(void) const
 {
 	SpinAutolockIX lock(mLock);
     return mContext;
+}
+
+inline id_type TimerPosix::getContextId(void) const
+{
+    SpinAutolockIX lock(mLock);
+    return mContextId;
 }
 
 inline const timespec & TimerPosix::getDueTime(void) const
@@ -274,16 +268,10 @@ inline const timespec & TimerPosix::getDueTime(void) const
     return mDueTime;
 }
 
-inline unsigned int TimerPosix::getRemainPeriod(void) const
-{
-	SpinAutolockIX lock(mLock);
-    return mContext->getEventCount();
-}
-
 inline bool TimerPosix::isValid(void) const
 {
 	SpinAutolockIX lock(mLock);
-    return ((mContext != nullptr) && (mTimerId != 0));
+    return (((mContext != nullptr) || (mContextId != 0u)) && (mTimerId != 0));
 }
 
 inline bool TimerPosix::_isStarted(void) const
@@ -292,3 +280,5 @@ inline bool TimerPosix::_isStarted(void) const
 }
 
 #endif  // defined(_POSIX) || defined(POSIX)
+
+#endif  // AREG_COMPONENT_PRIVATE_POSIX_TIMERPOSIX_HPP

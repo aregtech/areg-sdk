@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_SERVICEITEM_HPP
+#define AREG_COMPONENT_SERVICEITEM_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/ServiceItem.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -17,6 +18,8 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
+
+#include "areg/base/IEIOStream.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/Version.hpp"
 #include "areg/base/NEUtilities.hpp"
@@ -87,7 +90,7 @@ public:
      * \brief   Creates service item, sets service name.
      * \param   serviceName     The service name to set.
      **/
-    explicit ServiceItem( const char * serviceName );
+    explicit ServiceItem( const String & serviceName );
 
     /**
      * \brief   Creates service item, sets service name, version and type.
@@ -95,7 +98,7 @@ public:
      * \param   serviceVersion  The service version to set.
      * \param   serviceType     The type of service
      **/
-    ServiceItem( const char * serviceName, const Version & serviceVersion, NEService::eServiceType serviceType );
+    ServiceItem( const String & serviceName, const Version & serviceVersion, NEService::eServiceType serviceType );
 
     /**
      * \brief   Creates service item and initializes data from given stream.
@@ -162,7 +165,7 @@ public:
      * \param   stream  The streaming object to read out data
      * \param   input   The Service Item to initialize data from stream.
      **/
-    friend AREG_API const IEInStream & operator >> ( const IEInStream & stream, ServiceItem & input);
+    friend inline const IEInStream & operator >> ( const IEInStream & stream, ServiceItem & input);
 
     /**
      * \brief   Streaming operator.
@@ -170,7 +173,7 @@ public:
      * \param   stream  The streaming object to write data
      * \param   output  The Service Item containing data for streaming
      **/
-    friend AREG_API IEOutStream & operator << ( IEOutStream & stream, const ServiceItem & output );
+    friend inline IEOutStream & operator << ( IEOutStream & stream, const ServiceItem & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -189,7 +192,7 @@ public:
     /**
      * \brief   Sets the service name
      **/
-    inline void setServiceName( const char * serviceName );
+    inline void setServiceName( const String & serviceName );
 
     /**
      * \brief   Returns service version
@@ -275,6 +278,25 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
+// Hasher of ServiceItem class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the ServiceItem.
+ */
+namespace std
+{
+    template<>
+    struct hash<ServiceItem>
+    {
+        //! A function to convert ServiceItem object to unsigned int.
+        inline unsigned int operator()(const ServiceItem& key) const
+        {
+            return static_cast<unsigned int>(key);
+        }
+    };
+}
+
+//////////////////////////////////////////////////////////////////////////
 // ServiceItem class inline functions
 //////////////////////////////////////////////////////////////////////////
 
@@ -283,7 +305,7 @@ inline const String & ServiceItem::getServiceName( void ) const
     return mServiceName;
 }
 
-inline void ServiceItem::setServiceName( const char * serviceName )
+inline void ServiceItem::setServiceName( const String & serviceName )
 {
     mServiceName = serviceName;
     mServiceName.truncate(NEUtilities::ITEM_NAMES_MAX_LENGTH);
@@ -374,3 +396,24 @@ inline bool ServiceItem::isServiceCompatible( const ServiceItem & other ) const
 {
     return ((mMagicNum == other.mMagicNum) && mServiceVersion.isCompatible(other.mServiceVersion));
 }
+
+inline const IEInStream & operator >> ( const IEInStream & stream, ServiceItem & input )
+{
+    stream >> input.mServiceName;
+    stream >> input.mServiceVersion;
+    stream >> input.mServiceType;
+    
+    input.mMagicNum = ServiceItem::_magicNumber(input);
+
+    return stream;
+}
+
+inline IEOutStream & operator << ( IEOutStream & stream, const ServiceItem & output )
+{
+    stream << output.mServiceName;
+    stream << output.mServiceVersion;
+    stream << output.mServiceType;
+    return stream;
+}
+
+#endif  // AREG_COMPONENT_SERVICEITEM_HPP

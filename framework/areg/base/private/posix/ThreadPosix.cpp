@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/ThreadWin.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
@@ -50,12 +50,16 @@ namespace
 /************************************************************************/
 void * Thread::_posixThreadRoutine( void * data )
 {
-    int oldState = 0;
-    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &oldState);
+    int oldState{ 0 };
+    int oldType{ 0 };
+    ::pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &oldState);
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, &oldType);
 
     Thread::_defaultThreadFunction(data);
 
-    pthread_setcancelstate(oldState, nullptr);
+    ::pthread_setcancelstate(oldState, nullptr);
+    ::pthread_setcanceltype(oldType, nullptr);
+
     return nullptr;
 }
 
@@ -115,14 +119,14 @@ void Thread::sleep(unsigned int ms)
 
 id_type Thread::getCurrentThreadId( void )
 {
-    return  static_cast<id_type>( pthread_self() );
+    return  reinterpret_cast<id_type>( pthread_self() );
 }
 
 Thread::eCompletionStatus Thread::destroyThread(unsigned int waitForStopMs /* = NECommon::DO_NOT_WAIT */)
 {
     // Initially, the thread is not valid and not running, nothing to destroy
     Thread::eCompletionStatus result = Thread::eCompletionStatus::ThreadInvalid;
-    pthread_t threadId  = static_cast<pthread_t>(Thread::INVALID_THREAD_ID);
+    pthread_t threadId  = reinterpret_cast<pthread_t>(Thread::INVALID_THREAD_ID);
 
     do
     {
@@ -132,7 +136,7 @@ Thread::eCompletionStatus Thread::destroyThread(unsigned int waitForStopMs /* = 
             return Thread::eCompletionStatus::ThreadInvalid;
         }
 
-        threadId = static_cast<pthread_t>(mThreadId);
+        threadId = reinterpret_cast<pthread_t>(mThreadId);
         _unregisterThread();
 
     } while(false);
@@ -174,13 +178,13 @@ bool Thread::_createSystemThread( void )
             mWaitForRun.resetEvent();
             mWaitForExit.resetEvent( );
 
-            if ((RETURNED_OK == pthread_attr_init(&handle->pthreadAttr)) &&
-                (RETURNED_OK == pthread_attr_setdetachstate(&handle->pthreadAttr, PTHREAD_CREATE_DETACHED)) &&
-                (RETURNED_OK == pthread_create(&handle->pthreadId, &handle->pthreadAttr, &Thread::_posixThreadRoutine, static_cast<void *>(this))) )
+            if ((RETURNED_OK == ::pthread_attr_init(&handle->pthreadAttr)) &&
+                (RETURNED_OK == ::pthread_attr_setdetachstate(&handle->pthreadAttr, PTHREAD_CREATE_DETACHED)) &&
+                (RETURNED_OK == ::pthread_create(&handle->pthreadId, &handle->pthreadAttr, &Thread::_posixThreadRoutine, static_cast<void *>(this))) )
             {
                 result          = true;
                 mThreadHandle   = static_cast<THREADHANDLE>(handle);
-                mThreadId       = static_cast<id_type>(handle->pthreadId);
+                mThreadId       = reinterpret_cast<id_type>(handle->pthreadId);
                 mThreadPriority = Thread::eThreadPriority::PriorityNormal;
 
                 if (_registerThread() == false)
@@ -216,7 +220,7 @@ Thread::eThreadPriority Thread::setPriority( eThreadPriority newPriority )
     if (_isValidNoLock() && (newPriority != oldPrio))
     {
         int schedPrio       = MIN_INT_32;
-        pthread_t threadId  = static_cast<pthread_t>(mThreadId);
+        pthread_t threadId  = reinterpret_cast<pthread_t>(mThreadId);
         switch (newPriority)
         {
         case Thread::eThreadPriority::PriorityLowest:
@@ -246,7 +250,7 @@ Thread::eThreadPriority Thread::setPriority( eThreadPriority newPriority )
         struct sched_param schedParam;
         schedParam.sched_priority   = schedPrio;
 
-        if ((MIN_INT_32 != schedPrio) && (RETURNED_OK == pthread_setschedparam(threadId, schedPolicy, &schedParam)))
+        if ((MIN_INT_32 != schedPrio) && (RETURNED_OK == ::pthread_setschedparam(threadId, schedPolicy, &schedParam)))
         {
             mThreadPriority = newPriority;
         }

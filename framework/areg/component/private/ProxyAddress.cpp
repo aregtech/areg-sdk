@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ProxyAddress.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -76,14 +76,18 @@ ProxyAddress ProxyAddress::convPathToAddress( const char* pathProxy, const char*
 //////////////////////////////////////////////////////////////////////////
 
 ProxyAddress::ProxyAddress( void )
-    : ServiceAddress( ServiceItem(), INVALID_PROXY_NAME.data() )
+    : ServiceAddress( ServiceItem(), INVALID_PROXY_NAME )
     , mThreadName   ( ThreadAddress::INVALID_THREAD_ADDRESS.getThreadName() )
     , mChannel      ( )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
 }
 
-ProxyAddress::ProxyAddress( const char * serviceName, const Version & serviceVersion, NEService::eServiceType serviceType, const char * roleName, const char * threadName /*= nullptr*/ )
+ProxyAddress::ProxyAddress( const String & serviceName
+                          , const Version & serviceVersion
+                          , NEService::eServiceType serviceType
+                          , const String & roleName
+                          , const String & threadName /*= String::EmptyString*/ )
     : ServiceAddress( serviceName, serviceVersion, serviceType, roleName )
     , mThreadName   ( threadName )
     , mChannel      ( )
@@ -94,7 +98,7 @@ ProxyAddress::ProxyAddress( const char * serviceName, const Version & serviceVer
         mChannel.setCookie(NEService::COOKIE_LOCAL);
 }
 
-ProxyAddress::ProxyAddress( const ServiceItem & service, const char * roleName, const char * threadName /*= nullptr*/ )
+ProxyAddress::ProxyAddress( const ServiceItem & service, const String & roleName, const String & threadName /*= String::EmptyString*/ )
     : ServiceAddress( service, roleName )
     , mThreadName   ( "" )
     , mChannel      ( )
@@ -105,7 +109,7 @@ ProxyAddress::ProxyAddress( const ServiceItem & service, const char * roleName, 
         mChannel.setCookie(NEService::COOKIE_LOCAL);
 }
 
-ProxyAddress::ProxyAddress(const NEService::SInterfaceData & siData, const char * roleName, const char * threadName /*= nullptr */)
+ProxyAddress::ProxyAddress(const NEService::SInterfaceData & siData, const String & roleName, const String & threadName /*= String::EmptyString*/)
     : ServiceAddress( siData.idServiceName, siData.idVersion, siData.idServiceType, roleName )
     , mThreadName   ( "" )
     , mChannel      ( )
@@ -132,6 +136,22 @@ ProxyAddress::ProxyAddress( ProxyAddress && source ) noexcept
 {
 }
 
+ProxyAddress::ProxyAddress(const ServiceAddress & source)
+    : ServiceAddress(static_cast<const ServiceAddress&>(source))
+    , mThreadName   ("")
+    , mChannel      ( )
+    , mMagicNum     (static_cast<unsigned int>(source))
+{
+}
+
+ProxyAddress::ProxyAddress( ServiceAddress && source)
+    : ServiceAddress(std::move(source))
+    , mThreadName   ("")
+    , mChannel      ( )
+    , mMagicNum     (static_cast<unsigned int>(static_cast<const ServiceAddress &>(self())))
+{
+}
+
 ProxyAddress::ProxyAddress( const IEInStream & stream )
     : ServiceAddress( stream )
     , mThreadName   ( stream )
@@ -151,9 +171,9 @@ bool ProxyAddress::isStubCompatible(const StubAddress & addrStub ) const
     return addrStub.isProxyCompatible(*this);
 }
 
-void ProxyAddress::setThread( const char * threadName )
+void ProxyAddress::setThread( const String & threadName )
 {
-    Thread * thread = NEString::isEmpty<char>(threadName) ? Thread::getCurrentThread() : Thread::findThreadByName(threadName);
+    Thread * thread = threadName.isEmpty() ? Thread::getCurrentThread() : Thread::findThreadByName(threadName);
     DispatcherThread * dispatcher = RUNTIME_CAST( thread, DispatcherThread);
     if ( (dispatcher != nullptr) && dispatcher->isValid() )
     {
@@ -231,15 +251,15 @@ unsigned int ProxyAddress::_magicNumber(const ProxyAddress & proxy)
 
 String ProxyAddress::convToString(void) const
 {
-    String result = "";
+    String result(static_cast<uint32_t>(0xFF));
 
-    result += EXTENTION_PROXY.data();
-    result += NECommon::COMPONENT_PATH_SEPARATOR.data();
-    result += ServiceAddress::convToString( );
-    result += NECommon::COMPONENT_PATH_SEPARATOR.data();
-    result += mThreadName;
-    result += NECommon::COMPONENT_PATH_SEPARATOR.data();
-    result += mChannel.convToString();
+    result.append(EXTENTION_PROXY)
+          .append(NECommon::COMPONENT_PATH_SEPARATOR)
+          .append(ServiceAddress::convToString( ))
+          .append(NECommon::COMPONENT_PATH_SEPARATOR)
+          .append(mThreadName)
+          .append(NECommon::COMPONENT_PATH_SEPARATOR)
+          .append(mChannel.convToString());
 
     return result;
 }
@@ -247,11 +267,11 @@ String ProxyAddress::convToString(void) const
 void ProxyAddress::convFromString(const char * pathProxy, const char** out_nextPart /*= nullptr*/)
 {
     const char* strSource = pathProxy;
-    if ( String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data(), &strSource) == EXTENTION_PROXY.data() )
+    if ( String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data(), &strSource) == EXTENTION_PROXY )
     {
         ServiceAddress::convFromString(strSource, &strSource);
         mThreadName  = String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
-        mChannel.convFromString( String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data( ), &strSource).getString() );
+        mChannel.convFromString( String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data( ), &strSource) );
 
         mMagicNum = ProxyAddress::_magicNumber(*this);
     }
@@ -269,7 +289,7 @@ bool ProxyAddress::isValidated(void) const
     return ServiceAddress::isValidated() && (mThreadName.isEmpty() == false) && (mThreadName != ThreadAddress::INVALID_THREAD_ADDRESS.getThreadName());
 }
 
-AREG_API const IEInStream & operator >> ( const IEInStream & stream, ProxyAddress & input )
+AREG_API_IMPL const IEInStream & operator >> ( const IEInStream & stream, ProxyAddress & input )
 {
     ITEM_ID cookie = NEService::COOKIE_LOCAL;
     stream >> static_cast<ServiceAddress &>(input);
@@ -282,7 +302,7 @@ AREG_API const IEInStream & operator >> ( const IEInStream & stream, ProxyAddres
     return stream;
 }
 
-AREG_API IEOutStream & operator << ( IEOutStream & stream, const ProxyAddress & output)
+AREG_API_IMPL IEOutStream & operator << ( IEOutStream & stream, const ProxyAddress & output)
 {
     stream << static_cast<const ServiceAddress &>(output);
     stream << output.mThreadName;

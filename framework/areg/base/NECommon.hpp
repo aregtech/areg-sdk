@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_NECOMMON_HPP
+#define AREG_BASE_NECOMMON_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/NECommon.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -20,6 +21,8 @@
 #include "areg/base/GEGlobal.h"
 
 #include <string_view>
+#include <limits>
+#include <utility>
 
 namespace NECommon
 {
@@ -49,7 +52,7 @@ namespace NECommon
          **/
           StopOnOverlap     = 0
         /**
-         * \brief   Shifts start position, if ring is full, insert new elemen,
+         * \brief   Shifts start position, if ring is full, insert new element,
          *          and do not resize ring. Last element is lost.
          **/
         , ShiftOnOverlap    = 1
@@ -111,69 +114,94 @@ namespace NECommon
     constexpr ElemCount     DEFAULT_BLOCK_SIZE      { 32 };
 
     /**
+     * \brief   NECommon::INVALID_POSITIOIN
+     *          The invalid position as unsigned int.
+     */
+    constexpr unsigned int  INVALID_POSITION        { static_cast<unsigned int>(~0) };
+
+    /**
      * \brief   NECommon::MAXIMUM_WAITING_OBJECTS
      *          The maximum number of synchronization objects that is able to lock. 
      **/
     constexpr int           MAXIMUM_WAITING_OBJECTS { 64 };
 
     /**
-     * \brief   NECommon::MAP_INVALID_HASH
-     *          Defines invalid Hash value
+     * \brief   NECommon::VALUE_MAX_INT8
+     *          The maximum 8-bit signed integer value.
      **/
-    constexpr unsigned int  MAP_INVALID_HASH        { static_cast<unsigned int>(~0) };
+    constexpr int8_t        VALUE_MAX_INT8          { static_cast<int8_t>(0x7F) };
+
     /**
-     * \brief   NECommon::MAP_DEFAULT_BLOCK_SIZE
-     *          The number of blocks by default created when increase list in map. For hash map internal use
+     * \brief   NECommon::VALUE_MIN_INT8
+     *          The minimum 8-bit signed integer value.
      **/
-    constexpr int           MAP_DEFAULT_BLOCK_SIZE  { static_cast<int>(64) };
+    constexpr int8_t        VALUE_MIN_INT8          { static_cast<int8_t>(0x80) };
+
     /**
-     * \brief   NECommon::MAP_MAX_BLOCK_SIZE
-     *          The number of maximum blocks created at once when increase list in map. For hash map internal use
+     * \brief   NECommon::VALUE_MAX_UINT8
+     *          The maximum 8-bit unsigned integer value.
      **/
-    constexpr int           MAP_MAX_BLOCK_SIZE      { static_cast<int>(2048) };
+    constexpr uint8_t       VALUE_MAX_UINT8         { static_cast<uint8_t>(0xFFu) };
+
+    /**
+     * \brief   NECommon::VALUE_MAX_INT16
+     *          The maximum 16-bit signed integer value.
+     **/
+    constexpr int16_t       VALUE_MAX_INT16         { static_cast<int16_t>(0x7FFF) };
+
+    /**
+     * \brief   NECommon::VALUE_MIN_INT16
+     *          The minimum 16-bit signed integer value.
+     **/
+    constexpr int16_t       VALUE_MIN_INT16         { static_cast<int16_t>(0x8000) };
+
+    /**
+     * \brief   NECommon::VALUE_MAX_UINT16
+     *          The maximum 16-bit unsigned integer value.
+     **/
+    constexpr uint16_t      VALUE_MAX_UINT16        { static_cast<uint16_t>(0xFFFFu) };
+
+    /**
+     * \brief   NECommon::VALUE_MAX_INT32
+     *          The maximum 32-bit signed integer value.
+     **/
+    constexpr int32_t       VALUE_MAX_INT32         { static_cast<int32_t>(0x7FFFFFFF) };
+
+    /**
+     * \brief   NECommon::VALUE_MIN_INT32
+     *          The minimum 32-bit signed integer value.
+     **/
+    constexpr int           VALUE_MIN_INT32         { static_cast<int32_t>(0x80000000) };
+
+    /**
+     * \brief   NECommon::VALUE_MAX_UINT32
+     *          The maximum 32-bit unsigned integer value.
+     **/
+    constexpr unsigned int  VALUE_MAX_UINT32        { static_cast<unsigned int>(0xFFFFFFFF) };
+
+    /**
+     * \brief   NECommon::MAX_CONTAINER_SIZE
+     *          The maximum size of the containers such as array, list or map.
+     **/
+    constexpr unsigned int  MAX_CONTAINER_SIZE      { static_cast<unsigned int>(VALUE_MAX_INT32 - 1) };
+
     /**
      * \brief   NECommon::MAP_DEFAULT_HASH_SIZE
      *          The size of hash table by default created in map. For hash map internal use
      **/
-    constexpr int           MAP_DEFAULT_HASH_SIZE   { static_cast<int>(64) };
-    /**
-     * \brief   NECommon::MAP_DEFAULT_HASH_SIZE
-     *          The maximum size of hash table created in map. For hash map internal use
-     **/
-    constexpr int           MAP_MAX_TABLE_SIZE      { static_cast<int>(2048) };
-    /**
-     * \brief   NECommon::ARRAY_DEFAULT_MIN_GROW
-     *          The minimum new created entries when grow array
-     **/
-    constexpr int           ARRAY_DEFAULT_MIN_GROW  { static_cast<int>(4) };
-    /**
-     * \brief   NECommon::ARRAY_DEFAULT_MAX_GROW
-     *          The maximum new created entries when grow array
-     **/
-    constexpr int           ARRAY_DEFAULT_MAX_GROW  { static_cast<int>(2048) };
-    /**
-     * \brief   NECommon::ARRAY_DEFAULT_INCREASE
-     *          Defines default increase. When used, default values should be used.
-     **/
-    constexpr int           ARRAY_DEFAULT_INCREASE  { static_cast<int>(~0) };
+    constexpr unsigned int  MAP_DEFAULT_HASH_SIZE   { static_cast<unsigned int>(64 - 1) };
 
     /**
-     * \brief   NECommon::INVALID_POSITION
-     *          Defines invalid position.
+     * \brief   NECommon::ARRAY_DEFAULT_CAPACITY
+     *          The default capacity of the array.
      **/
-    constexpr void * const  INVALID_POSITION        { nullptr };
+    constexpr unsigned int  ARRAY_DEFAULT_CAPACITY  { static_cast<unsigned int>(2048) };
 
     /**
      * \brief   NECommon::RING_START_POSITION
      *          Defines first index in the ring.
      **/
-    constexpr int           RING_START_POSITION     { static_cast<int>(MIN_INT_32) };
-
-    /**
-     * \brief   NECommon::START_POSITION
-     *          Defines starting position in hash-map
-     **/
-    extern AREG_API void *  START_POSITION          /*= reinterpret_cast<void *>(~0)*/;
+    constexpr unsigned int  RING_START_POSITION     { static_cast<unsigned int>(MAX_UINT_32) };
 
     /**
      * \brief   NECommon::WAIT_INFINITE
@@ -225,22 +253,136 @@ namespace NECommon
      * \brief   NECommon::WAIT_1_SECOND
      *          Constant, wait for 1 second of created thread startup
      **/
-    constexpr unsigned int      WAIT_1_SECOND          { 1 * 1'000u };
+    constexpr unsigned int  WAIT_1_SECOND           { 1 * 1'000u };
     /**
      * \brief   NECommon::WAIT_5_SECONDS
      *          Constant, wait for 5 seconds of created thread startup
      **/
-    constexpr unsigned int      WAIT_5_SECONDS         { 5 * WAIT_1_SECOND };
+    constexpr unsigned int  WAIT_5_SECONDS          { 5 * WAIT_1_SECOND };
     /**
      * \brief   NECommon::WAIT_10_SECONDS
      *          Constant, wait for 10 seconds of created thread startup
      **/
-    constexpr unsigned int      WAIT_10_SECONDS        { 10 * WAIT_1_SECOND };
+    constexpr unsigned int  WAIT_10_SECONDS         { 10 * WAIT_1_SECOND };
     /**
-     * \brief   IESynchObject::WAIT_1_MIN
+     * \brief   NECommon::WAIT_1_MIN
      *          Waiting time 1 minute
      **/
-    constexpr unsigned int      WAIT_1_MINUTE          { 60 * WAIT_1_SECOND };
+    constexpr unsigned int  WAIT_1_MINUTE           { 60 * WAIT_1_SECOND };
+
+    /**
+     * \brief   NECommon::INVALID_TIMEOUT
+     *          A value, indicating invalid timeout. The timers with invalid timeouts are invalid
+     **/
+    constexpr unsigned int   INVALID_TIMEOUT        { DO_NOT_WAIT };
+
+    /**
+     * \brief   NECommon::WATCHDOG_IGNORE
+     *          A value used when declare component thread. It indicates that watchdog should be ignored.
+     **/
+    constexpr unsigned int   WATCHDOG_IGNORE        { DO_NOT_WAIT };
+
+    /**
+     * \brief   NECommon::TIMEOUT_1_MS
+     *          Timeout 1 millisecond
+     **/
+    constexpr unsigned int   TIMEOUT_1_MS           { WAIT_1_MILLISECOND};
+
+    /**
+     * \brief   NECommon::TIMEOUT_10_MS
+     *          Timeout 10 millisecond
+     **/
+    constexpr unsigned int   TIMEOUT_10_MS          { WAIT_10_MILLISECONDS };
+
+    /**
+     * \brief   NECommon::TIMEOUT_50_MS
+     *          Timeout 50 millisecond
+     **/
+    constexpr unsigned int   TIMEOUT_50_MS          { WAIT_50_MILLISECONDS };
+
+    /**
+     * \brief   NECommon::TIMEOUT_100_MS
+     *          Timeout 100 millisecond
+     **/
+    constexpr unsigned int  TIMEOUT_100_MS          { WAIT_100_MILLISECONDS };
+
+    /**
+     * \brief   NECommon::TIMEOUT_500_MS
+     *          Timeout 500 millisecond
+     **/
+    constexpr unsigned int  TIMEOUT_500_MS          { WAIT_500_MILLISECONDS };
+
+    /**
+     * \brief   NECommon::TIMEOUT_1_SEC
+     *          Timeout 1 second
+     **/
+    constexpr unsigned int  TIMEOUT_1_SEC           { WAIT_1_SECOND };
+
+    /**
+     * \brief   NECommon::TIMEOUT_1_MIN
+     *          Timeout 1 minute
+     **/
+    constexpr unsigned int  TIMEOUT_1_MIN           { WAIT_1_MINUTE };
+
+    /**
+     * \brief   NECommon::DURATION_1_NS
+     *          1 nanosecond duration.
+     **/
+    constexpr unsigned int  DURATION_1_NS           { 1 };
+
+    /**
+     * \brief   NECommon::DURATION_1_MICRO
+     *          1 microsecond duration in nanoseconds.
+     **/
+    constexpr unsigned int  DURATION_1_MICRO        { 1'000 * DURATION_1_NS };
+
+    /**
+     * \brief   NECommon::DURATION_1_MILLI
+     *          1 millisecond duration in nanoseconds.
+     **/
+    constexpr unsigned int  DURATION_1_MILLI        { 1'000 * DURATION_1_MICRO };
+
+    /**
+     * \brief   NECommon::DURATION_1_SEC
+     *          1 second duration in nanoseconds.
+     **/
+    constexpr unsigned int  DURATION_1_SEC          { 1'000 * DURATION_1_MILLI };
+
+    /**
+     * \brief   NECommon::DURATION_DURATION_1_MIN1_SEC
+     *          1 minute duration in nanoseconds.
+     **/
+    constexpr unsigned int  DURATION_1_MIN          { 60 * DURATION_1_SEC };
+
+    /**
+     * \brief   NECommon::BITS_IN_BYTE
+     *          Bits in one byte.
+     **/
+    constexpr unsigned int  BITS_IN_BYTE            { 8 };
+
+    /**
+     * \brief   NECommon::ONE_BYTE
+     *          Size of one byte.
+     **/
+    constexpr unsigned int  ONE_BYTE                { 1 };
+
+    /**
+     * \brief   NECommon::ONE_KILOBYTE
+     *          Size of one Kilobyte.
+     **/
+    constexpr unsigned int  ONE_KILOBYTE            { 1'000 * ONE_BYTE };
+
+    /**
+     * \brief   NECommon::ONE_MEGABYTE
+     *          Size of one Megabyte.
+     **/
+    constexpr unsigned int  ONE_MEGABYTE            { 1'000 * ONE_KILOBYTE };
+
+    /**
+     * \brief   NECommon::ONE_GIGABYTE
+     *          Size of one Gigabyte.
+     **/
+    constexpr unsigned int  ONE_GIGABYTE            { 1'000 * ONE_MEGABYTE };
 
     /**
      * \brief   NECommon::COMPONENT_PATH_SEPARATOR
@@ -257,35 +399,28 @@ namespace NECommon
      *          different role names, the named items can differ by
      *          unique role name contained in the named items.
      **/
-    constexpr std::string_view      COMPONENT_ITEM_SEPARATOR    { ":" };
+    constexpr std::string_view  COMPONENT_ITEM_SEPARATOR        { ":" };
     /**
      * \brief   NECommon::DEFAULT_SPECIAL_CHAR
      *          Constant. Defines default special character used in generated names.
      **/
-    constexpr std::string_view      DEFAULT_SPECIAL_CHAR        { "_" };
+    constexpr std::string_view  DEFAULT_SPECIAL_CHAR            { "_" };
     /**
      * \brief   NECommon::BOOLEAN_TRUE
      *          Boolean 'true' value as a string.
      **/
-    constexpr std::string_view      BOOLEAN_TRUE                { "true" };   //!< Boolean value 'true' as string
+    constexpr std::string_view  BOOLEAN_TRUE                    { "true" };   //!< Boolean value 'true' as string
     /**
      * \brief   NECommon::BOOLEAN_FALSE
      *          Boolean 'false' value as a string.
      **/
-    constexpr std::string_view      BOOLEAN_FALSE               { "false" };  //!< Boolean value 'false' as string
-    /**
-     * \brief   NECommon::BOOLEAN_TRUE_W
-     *          Boolean 'true' value as a wide-string.
-     **/
-    constexpr std::wstring_view     BOOLEAN_TRUE_W              { L"true" };   //!< Boolean value 'true' as string
-    /**
-     * \brief   NECommon::BOOLEAN_FALSE_W
-     *          Boolean 'false' value as a wide-string.
-     **/
-    constexpr std::wstring_view     BOOLEAN_FALSE_W             { L"false" };  //!< Boolean value 'false' as string
+    constexpr std::string_view  BOOLEAN_FALSE                   { "false" };  //!< Boolean value 'false' as string
+
     /**
      * \brief   NECommon::OBJECT_SEPARATOR
      *          Object separator such as channel or version numbers.
      **/
-    constexpr char                  OBJECT_SEPARATOR            { '.' };
+    constexpr char              OBJECT_SEPARATOR                { '.' };
 }
+
+#endif  // AREG_BASE_NECOMMON_HPP

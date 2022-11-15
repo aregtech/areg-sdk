@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_TRACE_PRIVATE_DEBUGOUTPUTLOGGER_HPP
+#define AREG_TRACE_PRIVATE_DEBUGOUTPUTLOGGER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/DebugOutputLogger.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -21,6 +22,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/trace/private/LoggerBase.hpp"
 #include "areg/base/IEIOStream.hpp"
+
 #include "areg/base/String.hpp"
 
 //////////////////////////////////////////////////////////////////////////
@@ -49,7 +51,7 @@ public:
      *                          required by logger during initialization (open)
      *                          and when outputs message.
      **/
-    DebugOutputLogger( LogConfiguration & tracerConfig );
+    explicit DebugOutputLogger( LogConfiguration & tracerConfig );
 
     /**
      * \brief   Destructor
@@ -84,7 +86,7 @@ public:
      * \brief   Called when message should be logged.
      *          Every logger should implement method to process logger specific logging.
      **/
-    virtual bool logMessage( const NETrace::sLogMessage & logMessage ) override;
+    virtual void logMessage( const NETrace::sLogMessage & logMessage ) override;
 
     /**
      * \brief   Call to flush logs, if they are queued. Some loggers might ignore this.
@@ -162,11 +164,11 @@ private:
     /**
      * \brief   Flag, indicating whether the debug output logger is opened or not.
      **/
-    bool                mIsOpened;
+    bool    mIsOpened;
     /**
      * \brief   The generated ASCII message to output.
      **/
-    String            mOutputMessageA;
+    String  mOutputMessageA;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden calls.
@@ -175,3 +177,5 @@ private:
     DebugOutputLogger( void ) = delete;
     DECLARE_NOCOPY_NOMOVE( DebugOutputLogger );
 };
+
+#endif  // AREG_TRACE_PRIVATE_DEBUGOUTPUTLOGGER_HPP

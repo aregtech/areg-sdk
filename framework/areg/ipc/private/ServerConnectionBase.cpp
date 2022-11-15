@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/ipc/private/ServerConnectionBase.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -25,7 +25,7 @@ ServerConnectionBase::ServerConnectionBase( void )
 {
 }
 
-ServerConnectionBase::ServerConnectionBase(const char * hostName, unsigned short portNr)
+ServerConnectionBase::ServerConnectionBase(const String & hostName, unsigned short portNr)
     : mServerSocket         ( hostName, portNr )
     , mCookieGenerator      ( static_cast<ITEM_ID>(NEService::eCookies::CookieFirstValid) )
     , mAcceptedConnections  ( )
@@ -47,7 +47,7 @@ ServerConnectionBase::ServerConnectionBase(const NESocket::SocketAddress & serve
 {
 }
 
-bool ServerConnectionBase::createSocket(const char * hostName, unsigned short portNr)
+bool ServerConnectionBase::createSocket(const String & hostName, unsigned short portNr)
 {
     Lock lock(mLock);
     return mServerSocket.createSocket(hostName, portNr);
@@ -62,10 +62,10 @@ bool ServerConnectionBase::createSocket(void)
 void ServerConnectionBase::closeSocket(void)
 {
     Lock lock(mLock);
-    mMasterList.removeAll();
-    mCookieToSocket.removeAll();
-    mSocketToCookie.removeAll();
-    mAcceptedConnections.removeAll();
+    mMasterList.clear();
+    mCookieToSocket.clear();
+    mSocketToCookie.clear();
+    mAcceptedConnections.clear();
     mCookieGenerator = static_cast<ITEM_ID>(NEService::eCookies::CookieFirstValid);
 
     mServerSocket.closeSocket();
@@ -95,8 +95,8 @@ bool ServerConnectionBase::acceptConnection(SocketAccepted & clientConnection)
 
             if ( mMasterList.find(hSocket) == -1)
             {
-                ASSERT(mAcceptedConnections.find( hSocket ) == nullptr);
-                ASSERT(mSocketToCookie.find(hSocket) == nullptr);
+                ASSERT(mAcceptedConnections.contains( hSocket ) == false);
+                ASSERT(mSocketToCookie.contains(hSocket) == false);
 
                 ITEM_ID cookie = mCookieGenerator ++;
                 ASSERT(cookie >= static_cast<ITEM_ID>(NEService::eCookies::CookieFirstValid));
@@ -109,8 +109,8 @@ bool ServerConnectionBase::acceptConnection(SocketAccepted & clientConnection)
             }
             else
             {
-                ASSERT(mAcceptedConnections.find( hSocket ) != nullptr);
-                ASSERT(mSocketToCookie.find(hSocket) != nullptr);
+                ASSERT(mAcceptedConnections.contains( hSocket ));
+                ASSERT(mSocketToCookie.contains(hSocket));
                 result = true;
             }
         }
@@ -124,13 +124,13 @@ void ServerConnectionBase::closeConnection(SocketAccepted & clientConnection)
     Lock lock( mLock );
 
     SOCKETHANDLE hSocket= clientConnection.getHandle();
-    MAPPOS pos = mSocketToCookie.find(hSocket);
-    ITEM_ID cookie = pos != nullptr ? mSocketToCookie.valueAtPosition(pos) : NEService::COOKIE_UNKNOWN;
+    MapSocketToCookie::MAPPOS pos = mSocketToCookie.find(hSocket);
+    ITEM_ID cookie = mSocketToCookie.isValidPosition(pos) ? mSocketToCookie.valueAtPosition(pos) : NEService::COOKIE_UNKNOWN;
 
     mSocketToCookie.removeAt(hSocket);
     mCookieToSocket.removeAt(cookie);
     mAcceptedConnections.removeAt(hSocket);
-    mMasterList.remove(hSocket, 0);
+    mMasterList.removeElem(hSocket, 0);
 
     clientConnection.closeSocket();
 }
@@ -139,16 +139,19 @@ void ServerConnectionBase::closeConnection( ITEM_ID cookie )
 {
     Lock lock(mLock);
 
-    MAPPOS posCookie = mCookieToSocket.find( cookie );
-    if (posCookie != nullptr)
+    MapCookieToSocket::MAPPOS posCookie = mCookieToSocket.find( cookie );
+    if (mCookieToSocket.isValidPosition(posCookie))
     {
-        SOCKETHANDLE hSocket= mCookieToSocket.removePosition( posCookie );
-        MAPPOS posClient    = mAcceptedConnections.find( hSocket );
+        SOCKETHANDLE hSocket = mCookieToSocket.valueAtPosition(posCookie);
+        MapSocketToObject::MAPPOS posClient = mAcceptedConnections.find(hSocket);
+
+        mCookieToSocket.removePosition( posCookie );        
         mSocketToCookie.removeAt( hSocket );
-        mMasterList.remove( hSocket, 0 );
-        if (posClient != nullptr)
+        mMasterList.removeElem( hSocket, 0 );
+        if (mAcceptedConnections.isValidPosition(posClient))
         {
-            SocketAccepted client(mAcceptedConnections.removePosition(posClient));
+            SocketAccepted client(mAcceptedConnections.valueAtPosition(posClient));
+            mAcceptedConnections.removePosition(posClient);
             client.closeSocket( );
         }
     }

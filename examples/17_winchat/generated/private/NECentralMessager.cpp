@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  02:47:56 GMT+02:00
  *                  Create by AREG SDK code generator tool from source CentralMessager.
  *
  * \file            generated/NECentralMessager.hpp
@@ -29,7 +29,7 @@ const NEService::SInterfaceData & NECentralMessager::getInterfaceData( void )
     /************************************************************************
      * The list of requests
      ************************************************************************/
-    static constexpr unsigned int _RequestList[] 
+    static constexpr unsigned int _RequestList[]
     {
           static_cast<unsigned int>( NECentralMessager::eMessageIDs::MsgId_requestSendMessage         ) // requestSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime )
         , static_cast<unsigned int>( NECentralMessager::eMessageIDs::MsgId_requestKeyTyping           ) // requestKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage )
@@ -38,7 +38,7 @@ const NEService::SInterfaceData & NECentralMessager::getInterfaceData( void )
     /************************************************************************
      * The list of responses and broadcasts
      ************************************************************************/
-    static constexpr unsigned int _ResponseList[] 
+    static constexpr unsigned int _ResponseList[]
     {
           static_cast<unsigned int>( NECentralMessager::eMessageIDs::MsgId_broadcastSendMessage       ) // broadcastSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime )
         , static_cast<unsigned int>( NECentralMessager::eMessageIDs::MsgId_broadcastKeyTyping         ) // broadcastKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage )
@@ -76,7 +76,7 @@ const NEService::SInterfaceData & NECentralMessager::getInterfaceData( void )
         2, // void broadcastBroadcastMessage( const String & serverMessage, const DateTime & dateTime )
 
     };
-    
+
     /************************************************************************
      * CentralMessager Service Interface data
      ************************************************************************/
@@ -98,7 +98,7 @@ const NEService::SInterfaceData & NECentralMessager::getInterfaceData( void )
     return _InterfaceData;
 }
 
-NECentralMessager::eMessageIDs NECentralMessager::getResponseId( NECentralMessager::eMessageIDs reqId )
+NECentralMessager::eMessageIDs NECentralMessager::getResponseId( NECentralMessager::eMessageIDs /* reqId */ )
 {
     return NECentralMessager::eMessageIDs::MsgId_Invalid;
 }
@@ -111,7 +111,7 @@ NECentralMessager::eMessageIDs NECentralMessager::getRequestId( NECentralMessage
     {
         result = sid.idRequestToResponseMap[i] == static_cast<msg_id>(respId) ? static_cast<NECentralMessager::eMessageIDs>(sid.idRequestList[i]) : NECentralMessager::eMessageIDs::MsgId_Invalid;
     }
-    
+
     return result;
 }
 

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_PRIVATE_CLIENTINFO_HPP
+#define AREG_COMPONENT_PRIVATE_CLIENTINFO_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ClientInfo.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -196,6 +197,25 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
+// Hasher of ClientInfo class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the ClientInfo.
+ */
+namespace std
+{
+    template<>
+    struct hash<ClientInfo>
+    {
+        //! A function to convert ClientInfo object to unsigned int.
+        inline unsigned int operator()(const ClientInfo& key) const
+        {
+            return static_cast<unsigned int>(key);
+        }
+    };
+}
+
+//////////////////////////////////////////////////////////////////////////
 // ClientInfo class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
@@ -218,3 +238,5 @@ inline bool ClientInfo::isConnected( void ) const
 {
     return (mClientState == NEService::eServiceConnection::ServiceConnected);
 }
+
+#endif  // AREG_COMPONENT_PRIVATE_CLIENTINFO_HPP

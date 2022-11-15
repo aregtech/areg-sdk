@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_PRIVATE_POSIX_SYNCHLOCKANDWAITIX_HPP
+#define AREG_BASE_PRIVATE_POSIX_SYNCHLOCKANDWAITIX_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/SynchLockAndWaitIX.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
@@ -53,21 +54,13 @@ class SynchLockAndWaitIX;
 class SynchLockAndWaitIX
 {
     /**
-     * \brief   Declaration of list helper object.
-     **/
-    using ImplListLockAndWait   = TEListImpl<const SynchLockAndWaitIX *>;
-    /**
      * \brief   The list of LockAndWait objects.
      **/
-    using ListLockAndWait       = TELinkedList<SynchLockAndWaitIX *, SynchLockAndWaitIX *, ImplListLockAndWait>;
-    /**
-     * \brief   Declaration of hash map helper object.
-     **/
-    using ImplMapLockAndWait    = TEPointerHashMapImpl<const IEWaitableBaseIX *, ListLockAndWait &>;
+    using ListLockAndWait       = TELinkedList<SynchLockAndWaitIX *>;
     /**
      * \brief   The hash map container of waitable object and LockAndWait lists.
      **/
-    using MapLockAndWait        = TEHashMap<IEWaitableBaseIX *, ListLockAndWait, IEWaitableBaseIX *, ListLockAndWait &, ImplMapLockAndWait>;
+    using MapLockAndWait        = TEMap<IEWaitableBaseIX *, ListLockAndWait>;
 
 //////////////////////////////////////////////////////////////////////////
 // SynchWaitableMapIX class declaration
@@ -87,7 +80,7 @@ class SynchLockAndWaitIX
          **/
         inline void implCleanResourceList( IEWaitableBaseIX * & /* Key */, ListLockAndWait & List )
         {
-        	List.removeAll();
+        	List.clear();
         }
 
         /**
@@ -116,19 +109,15 @@ class SynchLockAndWaitIX
      *          and the resource objects are WaitAndLock objects in the list. The WaitAndLock
      *          objects in the entire map are not unique, but should be unique in the list.
      **/
-    using SynchResourceMapIX = TELockResourceListMap<IEWaitableBaseIX *, SynchLockAndWaitIX, MapLockAndWait, ListLockAndWait, ImplResourceListMap>;
+    using SynchResourceMapIX = TELockResourceListMap<IEWaitableBaseIX *, SynchLockAndWaitIX, ListLockAndWait, MapLockAndWait, ImplResourceListMap>;
 
 //////////////////////////////////////////////////////////////////////////
 // The resource map for timer.
 //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Helper class of hash map basic methods implementation.
-     **/
-    using ImplMapWaitID     = TEHashMapImpl<id_type, SynchLockAndWaitIX * >;
-    /**
      * \brief   The resource map of waitable, where keys are id_type and the values are WaitAndLock objects
      **/
-    using MapWaitID         = TEIdHashMap<SynchLockAndWaitIX *, SynchLockAndWaitIX *, ImplMapWaitID>;
+    using MapWaitID         = TEIdHashMap<SynchLockAndWaitIX *>;
     /**
      * \brief   Helper object for resource map basic method implementations
      **/
@@ -174,7 +163,7 @@ private:
     /**
      * \brief   The fixed array of waitable. The maximum size of array is NECommon::MAXIMUM_WAITING_OBJECTS
      **/
-    using WaitingList   = TEFixedArray<IEWaitableBaseIX *, IEWaitableBaseIX *>;
+    using WaitingList   = TEFixedArray<IEWaitableBaseIX *>;
 
 //////////////////////////////////////////////////////////////////////////
 // Public static methods.
@@ -221,7 +210,7 @@ public:
      *              - NESynchTypesIX::SynchObjectAll if 'waitAll' flag is true and all waitables are signaled.
      *              - NESynchTypesIX::SynchObjectTimeout if waiting timeout is expired;
      *              - NESynchTypesIX::SynchWaitInterrupted if waiting was interrupted by such event like timer;
-     *              - NESynchTypesIX::SynchObject0Error + N if error happened, where 'N' is the indes of failed waitalbe object. For example, the waitable is invalidated.
+     *              - NESynchTypesIX::SynchObject0Error + N if error happened, where 'N' is the index of failed waitable object. For example, the waitable is invalidated.
      **/
     static int waitForMultipleObjects( IEWaitableBaseIX ** listWaitables, int count, bool waitAll = false, unsigned int msTimeout = NECommon::WAIT_INFINITE);
 
@@ -439,3 +428,5 @@ private:
 };
 
 #endif  // defined(_POSIX) || defined(POSIX)
+
+#endif  // AREG_BASE_PRIVATE_POSIX_SYNCHLOCKANDWAITIX_HPP

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_REMOTEMESSAGE_HPP
+#define AREG_BASE_REMOTEMESSAGE_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/RemoteMessage.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -76,7 +77,7 @@ public:
 
     /**
      * \brief	Move the data from given source.
-     * \param	src     The source of of data.
+     * \param	src     The source of data.
      **/
     RemoteMessage( RemoteMessage && src ) noexcept = default;
 
@@ -129,7 +130,7 @@ public:
 // Attributes
 //////////////////////////////////////////////////////////////////////////////
 public:
-    
+
     /**
      * \brief   Returns remote message structure data
      **/
@@ -145,7 +146,7 @@ public:
      * \brief   Returns the ID of remote source set in Remote Buffer header.
      **/
     inline uint64_t getSource( void ) const;
-    
+
     /**
      * \brief   Sets the ID of source in Remote Buffer.
      * \param   idSource    The ID of source to set in Remote Buffer
@@ -156,7 +157,7 @@ public:
      * \brief   Returns the ID of remote target set in Remote Buffer header.
      **/
     inline uint64_t getTarget( void ) const;
-    
+
     /**
      * \brief   Sets the ID of target in Remote Buffer.
      * \param   idTarget    The ID of target to set in Remote Buffer
@@ -235,7 +236,7 @@ protected:
      *          If needed, it will copy existing binary data to passed buffer.
      *          The function is called from child classes when new byte buffer
      *          is created and the existing data should be passed to new buffer.
-     * \param	newBuffer	The buffer to initialize. 
+     * \param	newBuffer	The buffer to initialize.
      * \param	bufLength	The length in bytes of the entire buffer object.
      * \param	makeCopy	If 'true' it will make copy of existing buffer
      * \return	Returns the current writing position in initialized buffer.
@@ -393,3 +394,5 @@ inline IEOutStream & operator << (IEOutStream & stream, const RemoteMessage & ou
     
     return stream;
 }
+
+#endif  // AREG_BASE_REMOTEMESSAGE_HPP

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_MCROUTER_APP_MULTICASTROUTER_HPP
+#define AREG_MCROUTER_APP_MULTICASTROUTER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,11 +8,11 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        mcrouter/app/MulticastRouter.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       AREG Platform, Multicast routing to run as process or service.
+ * \brief       AREG Platform, Multi-cast routing to run as process or service.
  ************************************************************************/
 
 /************************************************************************
@@ -21,6 +22,8 @@
 #include "mcrouter/app/NEMulticastRouterSettings.hpp"
 #include "mcrouter/tcp/ServerService.hpp"
 #include "areg/base/SynchObjects.hpp"
+
+class Console;
 
 //////////////////////////////////////////////////////////////////////////
 // MulticastRouter class declaration
@@ -69,7 +72,7 @@ public:
     bool serviceInstall( void );
 
     /**
-     * \brief   Call to un-install (unregister) message router service in the system.
+     * \brief   Call to uninstall (unregister) message router service in the system.
      **/
     void serviceUninstall( void );
 
@@ -105,12 +108,12 @@ public:
      * \brief   Opens operating system service DB for further processing.
      * \return  Returns true if succeeded.
      **/
-    bool serviceOpen( void );
+    inline bool serviceOpen( void );
 
     /**
      * \brief   Returns current command of message router service.
      **/
-    NEMulticastRouterSettings::eServiceCommand getCurrentCommand( void ) const;
+    inline NEMulticastRouterSettings::eServiceCommand getCurrentCommand( void ) const;
 
     /**
      * \brief   Sets the current command of message router service.
@@ -121,12 +124,36 @@ public:
     /**
      * \brief   Returns the state of message router service.
      **/
-    NEMulticastRouterSettings::eRouterState getState( void ) const;
+    inline NEMulticastRouterSettings::eRouterState getState( void ) const;
+
+    /**
+     * \brief   Resets default options.
+     **/
+    inline void resetDefaultOptions(void);
+
+    /**
+     * \brief   Call to query the size in bytes of data sent.
+     **/
+    inline uint32_t queryDataReceived(void);
+
+    /**
+     * \brief   Call to query the size in bytes of data received.
+     **/
+    inline uint32_t queryDataSent(void);
+
+    inline bool isVerbose( void ) const;
 
     /**
      * \brief   Sets the state of message router service.
      **/
     bool setState( NEMulticastRouterSettings::eRouterState newState );
+
+    /**
+     * \brief   Parses the options and returns true if succeeded.
+     * \param   argc    The number of options to parse.
+     * \param   argv    The options to parse.
+     */
+    bool parseOptions(int argc, char** argv);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.
@@ -161,6 +188,7 @@ private:
      * \brief   Returns instance of message router service.
      **/
     inline MulticastRouter & self( void );
+    static bool _checkCommand(const String& cmd);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -174,6 +202,10 @@ private:
      * \brief   The current command to execute by message router service.
      **/
     NEMulticastRouterSettings::eServiceCommand  mServiceCmd;
+    /**
+     * \brief   Flag, indicating whether the process should run verbose or not. Valid only if process runs as console application.
+     */
+    bool            mRunVerbose;
     /**
      * \brief   The instance of message router service server to accept connections from applications.
      **/
@@ -197,6 +229,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // MulticastRouter class inline methods.
 //////////////////////////////////////////////////////////////////////////
+
 inline NEMulticastRouterSettings::eRouterState MulticastRouter::getState( void ) const
 {
     return mRouterState;
@@ -217,7 +250,30 @@ inline void MulticastRouter::setCurrentCommand( NEMulticastRouterSettings::eServ
     mServiceCmd = cmdService;
 }
 
+inline void MulticastRouter::resetDefaultOptions(void)
+{
+    mServiceCmd = NEMulticastRouterSettings::DEFAULT_OPTION;
+    mRunVerbose = NEMulticastRouterSettings::DEFAULT_VERBOSE;
+}
+
+inline uint32_t MulticastRouter::queryDataReceived(void)
+{
+    return mServiceServer.queryBytesReceived();
+}
+
+inline uint32_t MulticastRouter::queryDataSent(void)
+{
+    return mServiceServer.queryBytesSent();
+}
+
+inline bool MulticastRouter::isVerbose(void) const
+{
+    return mRunVerbose;
+}
+
 inline MulticastRouter & MulticastRouter::self( void )
 {
     return (*this);
 }
+
+#endif  // AREG_MCROUTER_APP_MULTICASTROUTER_HPP

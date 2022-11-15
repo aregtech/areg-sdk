@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/ipc/ClientConnection.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -25,7 +25,7 @@ ClientConnection::ClientConnection( void )
 {
 }
 
-ClientConnection::ClientConnection(const char * hostName, unsigned short portNr)
+ClientConnection::ClientConnection(const String & hostName, unsigned short portNr)
     : SocketConnectionBase    ( )
     , mClientSocket ( hostName, portNr )
     , mCookie       ( NEService::COOKIE_UNKNOWN )
@@ -40,7 +40,7 @@ ClientConnection::ClientConnection(const NESocket::SocketAddress & remoteAddress
 }
 
 
-bool ClientConnection::createSocket(const char * hostName, unsigned short portNr)
+bool ClientConnection::createSocket(const String & hostName, unsigned short portNr)
 {
     setCookie( mClientSocket.createSocket(hostName, portNr) ? NEService::COOKIE_LOCAL : NEService::COOKIE_UNKNOWN );
     return mClientSocket.isValid();

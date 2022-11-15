@@ -39,16 +39,16 @@ void LocalServicingComponent::startupServiceInterface( Component & holder )
     setRemainOutput(NELocalHelloWorld::MaxMessages);
 }
 
-void LocalServicingComponent::requestHelloWorld(const String & roleName, const String & addMessage /*= "" */)
+void LocalServicingComponent::requestHelloWorld(const String & roleName)
 {
     TRACE_SCOPE(examples_13_shareipcmix_LocalServicingComponent_requestHelloWorld);
 
     NELocalHelloWorld::ConnectionList & list = getConnectedClients();
-    LISTPOS pos = list.firstPosition();
+    NELocalHelloWorld::ConnectionList::LISTPOS pos = list.firstPosition();
     NELocalHelloWorld::sConnectedClient cl;
-    for ( ; pos != nullptr; pos = list.nextPosition(pos))
+    for ( ; list.isValidPosition(pos); pos = list.nextPosition(pos))
     {
-        const NELocalHelloWorld::sConnectedClient & client = list.getAt(pos);
+        const NELocalHelloWorld::sConnectedClient & client = list.valueAtPosition(pos);
         if (roleName == client.ccName)
         {
             TRACE_DBG("Component [ %s ] found client [ %s ] with ID [ %u ] in the list.", getRoleName().getString(), client.ccName.getString(), client.ccID);
@@ -59,11 +59,11 @@ void LocalServicingComponent::requestHelloWorld(const String & roleName, const S
         }
     }
 
-    if (pos == nullptr )
+    if (list.isInvalidPosition(pos))
     {
         cl.ccID     = ++ mGnerateID;
         cl.ccName   = roleName;
-        
+
         TRACE_INFO("Component [ %s ] got new client [ %s ] with ID [ %u ]", getRoleName().getString(), cl.ccName.getString(), cl.ccID);
 
         list.pushLast(cl);
@@ -80,5 +80,5 @@ void LocalServicingComponent::requestHelloWorld(const String & roleName, const S
     setRemainOutput(static_cast<short>(outputs));
     TRACE_DBG("Remain  to output message [ %d ] in local servicing component [ %s ]", outputs, getRoleName().getString() );
 
-    printf(">> LOCAL service [ %s ] client [ %s ]>: \"Hi there!\". Remain [ %d ].\n", roleName.getString(), getRoleName().getString(), outputs);
+    printf("\"Hi LOCAL [ %s ] [ %d ] times1\"\n", roleName.getString(), outputs);
 }

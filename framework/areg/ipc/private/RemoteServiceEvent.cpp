@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/ipc/private/RemoteServiceEvent.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -25,6 +25,12 @@ SendMessageEventData::SendMessageEventData( const RemoteMessage & remoteMessage 
 SendMessageEventData::SendMessageEventData( SendMessageEventData && source ) noexcept
     : mRemoteMessage    ( std::move(source.mRemoteMessage) )
 {
+}
+
+SendMessageEventData& SendMessageEventData::operator = (const SendMessageEventData& source)
+{
+    mRemoteMessage = source.mRemoteMessage;
+    return (*this);
 }
 
 SendMessageEventData & SendMessageEventData::operator = ( SendMessageEventData && source ) noexcept

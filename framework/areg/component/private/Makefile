@@ -50,11 +50,18 @@ areg_SRC += \
 	$(areg_BASE)/component/private/TEEvent.cpp \
 	$(areg_BASE)/component/private/ThreadEventBase.cpp \
 	$(areg_BASE)/component/private/Timer.cpp \
+	$(areg_BASE)/component/private/TimerBase.cpp \
 	$(areg_BASE)/component/private/TimerEventData.cpp \
-	$(areg_BASE)/component/private/TimerInfo.cpp \
 	$(areg_BASE)/component/private/TimerManager.cpp \
-	$(areg_BASE)/component/private/TimerManagingEvent.cpp \
+	$(areg_BASE)/component/private/TimerManagerBase.cpp \
+	$(areg_BASE)/component/private/TimerManagerEvent.cpp \
+	$(areg_BASE)/component/private/Watchdog.cpp \
+	$(areg_BASE)/component/private/WatchdogManager.cpp \
 	$(areg_BASE)/component/private/WorkerThread.cpp \
+	$(areg_BASE)/component/private/posix/TimerBasePosix.cpp \
 	$(areg_BASE)/component/private/posix/TimerManagerPosix.cpp \
 	$(areg_BASE)/component/private/posix/TimerPosix.cpp \
+	$(areg_BASE)/component/private/posix/WatchdogManagerPosix.cpp \
+	$(areg_BASE)/component/private/win32/TimerBaseWin32.cpp \
 	$(areg_BASE)/component/private/win32/TimerManagerWin32.cpp \
+	$(areg_BASE)/component/private/win32/WatchdogManagerWin32.cpp \

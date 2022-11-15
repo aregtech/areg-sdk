@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_NESOCKET_HPP
+#define AREG_BASE_NESOCKET_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/NESocket.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -192,13 +193,12 @@ namespace NESocket
      * \brief   NESocket::InvalidSocketHandle
      *          Constant, identifying invalid socket descriptor.
      **/
-    extern AREG_API const SOCKETHANDLE  InvalidSocketHandle         /*= INVALID_SOCKET*/; // invalid socket descriptor
+    constexpr const SOCKETHANDLE        InvalidSocketHandle         { static_cast<SOCKETHANDLE>(~0) };
     /**
-     * \brief   NESocket::MAXIMUM_LISTEN_QUEUE_SIZE
-     *          Constant, identifying maximum number of listeners in the queue.
-     *          Used by server socket when set to listen connection.
+     * \brief   NESocket::FailedSocketHandle
+     *          Invalid connection socket descriptor. Used to indicate failure on server socket.
      **/
-    extern AREG_API const int           MAXIMUM_LISTEN_QUEUE_SIZE   /*= SOMAXCONN*/;
+    constexpr const SOCKETHANDLE        FailedSocketHandle          { static_cast<SOCKETHANDLE>(~1) };
     /**
      * \brief   NESocket::InvalidSocket
      *          Constant, identifying invalid port number
@@ -218,7 +218,29 @@ namespace NESocket
      * \brief   NESocket::DEFAULT_SEGMENT_SIZE
      *          The default size of segment when sends or receives data.
      **/
-    constexpr int                       DEFAULT_SEGMENT_SIZE        { 16384 };
+    constexpr unsigned int              DEFAULT_SEGMENT_SIZE        { 16384 };
+    /**
+     * \brief   NESocket::MAX_SEGMENT_SIZE
+     *          The maximum size of segment when sends or receives data.
+     **/
+    constexpr unsigned int              MAX_SEGMENT_SIZE            { 8 * NECommon::ONE_MEGABYTE };
+    /**
+     * \brief   NESocket::MIN_SEGMENT_SIZE
+     *          The minimum size of segment when sends or receives data.
+     **/
+    constexpr unsigned int              MIN_SEGMENT_SIZE            { 8 * NECommon::ONE_KILOBYTE };
+    /**
+     * \brief   NESocket::SEGMENT_INVALID_SIZE
+     *          The invalid size of segment.
+     **/
+    constexpr unsigned int              SEGMENT_INVALID_SIZE        { 0 };
+
+    /**
+     * \brief   NESocket::MAXIMUM_LISTEN_QUEUE_SIZE
+     *          Constant, identifying maximum number of listeners in the queue.
+     *          Used by server socket when set to listen connection.
+     **/
+    extern AREG_API const int           MAXIMUM_LISTEN_QUEUE_SIZE   /*= SOMAXCONN*/;
 
 //////////////////////////////////////////////////////////////////////////
 // NESocket namespace functions
@@ -340,17 +362,28 @@ namespace NESocket
      *                          Note:   the data will be valid only in case of new accepted connections.
      *                                  In all other cases there will be no valid data.
      * \return  If succeeds to accept connection, returns valid accepted socket descriptor.
-     *          Otherwise, if server socket is not valid anymore, returns NESocket::InvalidSocketHandle.
+     *          If server socket is not valid anymore, returns NESocket::FailedSocketHandle.
+     *          In all other failure cases, returns NESocket::InvalidSocketHandle.
      **/
     AREG_API SOCKETHANDLE serverAcceptConnection( SOCKETHANDLE serverSocket, const SOCKETHANDLE * masterList, int entriesCount, NESocket::SocketAddress * out_socketAddr = nullptr );
 
     /**
      * \brief   NESocket::getMaxSendSize
-     *          Calculated the maximum number of package size in bytes, which can be sent.
+     *          Returns the socket buffer size in bytes to send the packet at once.
      *          This value may vary by protocol.
      * \param   hSocket     The valid socket descriptor to retrieve value.
      **/
-    AREG_API int getMaxSendSize( SOCKETHANDLE hSocket );
+    AREG_API unsigned int getMaxSendSize( SOCKETHANDLE hSocket );
+
+    /**
+     * \brief   NESocket::setMaxSendSize
+     *          Sets the socket buffer size in bytes to send the packet at once.
+     * \param   hSocket     The valid socket descriptor to set the value.
+     * \param   sendSize    The size in bytes to sent the packet at once.
+     *                      The minimum size is NESocket::MIN_SEGMENT_SIZE,
+     *                      the maximum is NESocket::MAX_SEGMENT_SIZE.
+     **/
+    AREG_API unsigned int setMaxSendSize(SOCKETHANDLE hSocket, unsigned int sendSize);
 
     /**
      * \brief   NESocket::getMaxReceiveSize
@@ -358,7 +391,17 @@ namespace NESocket
      *          This value may vary by protocol.
      * \param   hSocket     The valid socket descriptor to retrieve value.
      **/
-    AREG_API int getMaxReceiveSize( SOCKETHANDLE hSocket );
+    AREG_API unsigned int getMaxReceiveSize( SOCKETHANDLE hSocket );
+
+    /**
+     * \brief   NESocket::setMaxReceiveSize
+     *          Sets the socket buffer size in bytes to receive the packet at once.
+     * \param   hSocket     The valid socket descriptor to set the value.
+     * \param   recvSize    The size in bytes to receive the packet at once.
+     *                      The minimum size is NESocket::MIN_SEGMENT_SIZE,
+     *                      the maximum is NESocket::MAX_SEGMENT_SIZE.
+     **/
+    AREG_API unsigned int setMaxReceiveSize(SOCKETHANDLE hSocket, unsigned int recvSize);
 
     /**
      * \brief   NESocket::sendData
@@ -369,12 +412,12 @@ namespace NESocket
      * \param   dataBuffer      The pointer to data buffer, which should be sent.
      * \param   dataLength      The length of buffer in bytes.
      * \param   blockMaxSize    The maximum size of package in bytes to sent at once.
-     *                          If negative value, it will first retrieve value and sent data.
+     *                          If negative or zero value, it will first retrieve value and sent data.
      * \return  If succeeds, returns number of bytes sent.
      *          If failles, returns negative number.
      *          Returns zero if buffer is empty and nothing to sent.
      **/
-    AREG_API int sendData( SOCKETHANDLE hSocket, const unsigned char * dataBuffer, int dataLength, int blockMaxSize = NECommon::DEFAULT_SIZE );
+    AREG_API int sendData( SOCKETHANDLE hSocket, const unsigned char * dataBuffer, int dataLength, int blockMaxSize );
 
     /**
      * \brief   NESocket::receiveData
@@ -385,13 +428,13 @@ namespace NESocket
      * \param   dataBuffer      The pointer to data buffer, which should be filled.
      * \param   dataLength      The length of buffer in bytes.
      * \param   blockMaxSize    The maximum size of package in bytes to receive at once.
-     *                          If negative value, it will first retrieve value and start receive data.
+     *                          If negative or zero value, it will first retrieve value and start receive data.
      * \return  If succeeds, returns number of bytes received.
      *          If failles, returns negative number. Failure might happen if opposite side closes connection.
      *          In case of failure, the specified socket should be closed.
      *          Returns zero if buffer is empty and nothing to receive.
      **/
-    AREG_API int receiveData( SOCKETHANDLE hSocket, unsigned char * dataBuffer, int dataLength, int blockMaxSize  = NECommon::DEFAULT_SIZE );
+    AREG_API int receiveData( SOCKETHANDLE hSocket, unsigned char * dataBuffer, int dataLength, int blockMaxSize );
 
     /**
      * \brief   NESocket::disableSend
@@ -410,14 +453,6 @@ namespace NESocket
     AREG_API bool disableReceive( SOCKETHANDLE hSocket );
 
     /**
-     * \brief   NESocket::remainDataRead
-     *          Returns the remaining amount of data in bytes to read in a single receive call.
-     * \param   hSocket     The socket handle to check
-     * \return  Returns the remaining amount of data in bytes to receive in single call.
-     **/
-    AREG_API unsigned int remainDataRead( SOCKETHANDLE hSocket );
-
-    /**
      * \brief   Checks and returns socket alive state.
      * \param   hSocket     The socked handle to check.
      * \return  Returns true if specified socket is alive and is not closed.
@@ -425,12 +460,12 @@ namespace NESocket
     AREG_API bool isSocketAlive( SOCKETHANDLE hSocket );
 
     /**
-     * \brief   Checks and returns number of bytes remain to read from socket buffer.
-     *          Returns negative value if socket is invalid.
+     * \brief   NESocket::pendingRead
+     *          Checks and returns number of bytes remain to read from socket buffer.
      * \param   hSocket     The socket handle to check.
      * \return  Returns number of bytes available to read from specified socket buffer.
      **/
-    AREG_API int pendingRead( SOCKETHANDLE hSocket );
+    AREG_API unsigned int pendingRead( SOCKETHANDLE hSocket );
 
 }   // namespace NESocket end
 
@@ -455,6 +490,8 @@ inline unsigned short NESocket::SocketAddress::getHostPort( void ) const
 
 inline void NESocket::SocketAddress::resetAddress( void )
 {
-    mIpAddr = String::EmptyString.data();
+    mIpAddr = String::EmptyString;
     mPortNr = NESocket::InvalidPort;
 }
+
+#endif  // AREG_BASE_NESOCKET_HPP

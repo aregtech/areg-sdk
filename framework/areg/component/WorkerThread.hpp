@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_WORKERTHREAD_HPP
+#define AREG_COMPONENT_WORKERTHREAD_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/WorkerThread.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -20,6 +21,8 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/component/DispatcherThread.hpp"
+
+#include "areg/component/private/Watchdog.hpp"
 
 /************************************************************************
  * Dependencies
@@ -84,8 +87,17 @@ public:
      *                              unique in application.
      * \param   bindingComponent    The master (binding) component
      * \param   threadConsumer      The Consumer object.
+     * \param   watchdogTimeout     The watchdog timeout in milliseconds.
+     *                              The watchdog is a guard to set the timeout to process and event.
+     *                              If timeout is not zero and it expires before the thread processed
+     *                              an event, it terminates and restarts the thread again.
+     *                              There is no guarantee that terminated thread will make all cleanups properly.
+     *                              Watchdog timeout is ignored if it is equal to NECommon::WATCHDOG_IGNORE.
      **/
-    WorkerThread( const char * threadName, Component & bindingComponent, IEWorkerThreadConsumer & threadConsumer);
+    WorkerThread( const String & threadName
+                , Component & bindingComponent
+                , IEWorkerThreadConsumer & threadConsumer
+                , uint32_t watchdogTimeout = NECommon::WATCHDOG_IGNORE);
 
     /**
      * \brief   Destructor
@@ -105,6 +117,17 @@ public:
      * \brief   Returns binding component thread object
      **/
     ComponentThread & getBindingComponentThread( void ) const;
+
+    /**
+     * \brief   Call to make emergency termination of worker thread.
+     **/
+    void terminateSelf(void);
+
+    /**
+     * \brief   Returns the watchdog timeout value in milliseconds. The value 0
+     *          (NECommon::WATCHDOG_IGNORE) means the watchdog is ignored by the worker thread.
+     **/
+    inline uint32_t getWatchdogTimeout(void) const;
 
 //////////////////////////////////////////////////////////////////////////
 // overrides
@@ -150,6 +173,20 @@ protected:
      **/
     virtual DispatcherThread * getEventConsumerThread( const RuntimeClassID & whichClass ) override;
 
+/************************************************************************/
+// IEEventDispatcher overrides
+/************************************************************************/
+
+    /**
+     * \brief	The method is triggered to start dispatching valid event.
+     *          Here dispatcher should forward message to appropriate 
+     *          registered event consumer
+     * \param	eventElem   Event element to dispatch	
+     * \return	Returns true if at least one consumer processed event.
+     *          Otherwise it returns false.
+     **/
+    virtual bool dispatchEvent( Event & eventElem ) override;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -163,6 +200,11 @@ private:
      * \brief   Worker Thread Consumer object
      **/
     IEWorkerThreadConsumer &   mWorkerThreadConsumer;
+
+    /**
+     * \brief   The watchdog object to track the event processing.
+     **/
+    Watchdog                    mWatchdog;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -194,3 +236,10 @@ inline WorkerThread& WorkerThread::self( void )
 {
     return (*this);
 }
+
+inline uint32_t WorkerThread::getWatchdogTimeout(void) const
+{
+    return mWatchdog.getTimeout();
+}
+
+#endif  // AREG_COMPONENT_WORKERTHREAD_HPP

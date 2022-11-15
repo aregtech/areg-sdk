@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_FILE_HPP
+#define AREG_BASE_FILE_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/File.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -138,7 +139,7 @@ public:
      * \param	mode	    file open mode. 
      *                      For modes, see description in FileBase class 
      **/
-    explicit File(const char * fileName, unsigned int mode = (FileBase::FO_MODE_WRITE | FileBase::FO_MODE_BINARY | FileBase::FOB_SHARE_READ));
+    explicit File(const String& fileName, unsigned int mode = (FileBase::FO_MODE_WRITE | FileBase::FO_MODE_BINARY));
 
     /**
      * \brief   Destructor
@@ -185,7 +186,7 @@ public:
      *
      * \return	Returns true if file was opened with success.
      **/
-    virtual bool open(const char * fileName, unsigned int mode) override;
+    virtual bool open(const String& fileName, unsigned int mode) override;
 
     /**
      * \brief   Call to close file object.
@@ -215,14 +216,14 @@ public:
      *                  IECursorPosition::eCursorPosition::PositionCurrent -- from current pointer position
      *                  IECursorPosition::eCursorPosition::PositionEnd     -- from end of file
      *
-     * \return	If succeeds, returns the current position of pointer in bytes or value INVALID_POINTER_POSITION if fails.
+     * \return	If succeeds, returns the current position of pointer in bytes or value IECursorPosition::INVALID_CURSOR_POSITION if fails.
      **/
     virtual unsigned int setPosition(int offset, IECursorPosition::eCursorPosition startAt) const override;
 
     /**
-     * \brief	If succeeds, returns the current position of pointer in bytes or value INVALID_POINTER_POSITION if fails.
+     * \brief	If succeeds, returns the current position of pointer in bytes or value IECursorPosition::INVALID_CURSOR_POSITION if fails.
      *          Before calling function, the file object should be opened.
-     * \return	If succeeds, returns the current position of pointer in bytes or value INVALID_POINTER_POSITION if fails.
+     * \return	If succeeds, returns the current position of pointer in bytes or value IECursorPosition::INVALID_CURSOR_POSITION if fails.
      **/
     virtual unsigned int getPosition( void ) const override;
 
@@ -243,11 +244,11 @@ public:
      *          If new size is less than the current size of file object, data will be truncated until the new size, 
      *          and if the new size is less than the current pointer position, the pointer will be move at the end of file.
      * 
-     * \param	size	New Size is bytes to reserve or set. Positive value will set the size. Negative value will set size zero.
+     * \param	size	New Size is bytes to reserve or set.
      *
-     * \return  If succeeds, returns the current position of file pointer. Otherwise it returns value INVALID_POINTER_POSITION.
+     * \return  If succeeds, returns the current position of file pointer. Otherwise it returns value IECursorPosition::INVALID_CURSOR_POSITION.
      **/
-    virtual unsigned int reserve(int newSize) override;
+    virtual unsigned int reserve(unsigned int newSize) override;
 
     /**
      * \brief   Purge file object data, sets the size zero and if succeeds, return true
@@ -415,14 +416,14 @@ public:
 
     /**
      * \brief	Copies file from old location to new location. File in original location will remain unchanged
-     * \param	originPath	Relative or absolute path of original file
-     * \param	newPath	    Relative or absolute path to new location to copy
+     * \param	srcPath	    Relative or absolute path of source file.
+     * \param	newPath	    Relative or absolute path to new location to copy.
      * \param	copyForce	If new location already contains file:
      *                          - if true, file will be overwritten
      *                          - if false, operation will fail
      * \return	Returns true if operation succeeds.
      **/
-    static bool copyFile(const char * originPath, const char * newPath, bool copyForce);
+    static bool copyFile(const char * srcPath, const char * newPath, bool copyForce);
 
     /**
      * \brief	Checks whether the given path is an existing file or not.
@@ -483,17 +484,17 @@ public:
 
     /**
      * \brief   1.  Normalizes file path, replaces current and parent folder symbols like "." or "..".
-     *          2.  Generates file name setting timestamp on the name of file 
-     *              timestamp in format yyyy_mm_dd_hh_mm_ss_ms keeping the file extension.
+     *          2.  Generates file name setting time-stamp on the name of file 
+     *              time-stamp in format yyyy_mm_dd_hh_mm_ss_ms keeping the file extension.
      *              If passed file name has keyword "%time%" it will replace with mentioned
-     *              timestamp format.
+     *              time-stamp format.
      *          3.  Replaces special folder masks such as user home or temp.
      *
      *          Examples:
      *              a. "./dir1/dir2/..\\dir4\\file.dat" ==> converted to "<current dir>/dir1/dir4/file.dat",
      *                  where <current dir> is current working directory.
      *
-     *              2.  ".logs/logs_%timestamp%.dat" ==> converted to "<current dir>/logs_yyyy_mm_dd_hh_mm_ss_ms.dat",
+     *              2.  ".logs/logs_%time-stamp%.dat" ==> converted to "<current dir>/logs_yyyy_mm_dd_hh_mm_ss_ms.dat",
      *                  where <current dir> is current working directory and "yyyy_mm_dd_hh_mm_ss_ms" is a data-time format.
      *
      *              3.  "%personal%/my_file.dat" ==> converted to "<user document dir>/my_file.dat", where
@@ -612,21 +613,95 @@ private:
      **/
     static inline bool _nameHasParentFolder( const char * filePath, bool skipSep );
 
-    /**
-     * \brief   OS specific wrapper to create directory.
-     * \param   dirPath     The full path to directory to create.
-     *                      The parent directory must already exist.
-     * \return  If succeeds, returns true.
-     **/
-    static bool _createFolder( const char * dirPath );
-
 //////////////////////////////////////////////////////////////////////////
 // OS specific methods
 //////////////////////////////////////////////////////////////////////////
+private:
     /**
-     * \brief   Free OS specific resources and close currently opened file.
+     * \brief   OS specific method to close file and free resources.
      */
-    void _closeFile( void );
+    void _osCloseFile( void );
+    
+    /**
+     * \brief   OS specific method to open file for reading and/or writing.
+     * \return  Returns true if succeeded to open the file.
+     */
+    bool _osOpenFile( void );
+
+    /**
+     * \brief   OS specific method to read data from opened file.
+     * 
+     * \param   buffer  The buffer to read data.
+     * \param   size    The size in bytes of the buffer.
+     * \return  Returns the size of data that could read from the file.
+     *          Returns zero if failed to read or no more data to read.
+     */
+    unsigned int _osReadFile(unsigned char* buffer, unsigned int size) const;
+
+    /**
+     * \brief   OS specific method to write data into the file. The file should
+     *          be opened for writing.
+     * 
+     * \param   buffer  The buffer to write data.
+     * \param   size    The size in bytes of data in the buffer to write.
+     * \return  Returns the size of data that could write into the file.
+     *          Returns zero if failed to write or no data to write.
+     */
+    unsigned int _osWriteFile( const unsigned char* buffer, unsigned int size );
+
+    /**
+     * \brief   OS specific method to move cursor position in the file.
+     * 
+     * \param   offset  The offset in bytes to move cursor. Positive value means move
+     *                  cursor forward. The negative value means move cursor back.
+     * \param   startAt The position to start moving cursor.
+     * \return  If succeeded, returns the new position of the cursor. Otherwise, returns
+     *          invalid position (IECursorPosition::INVALID_CURSOR_POSITION).
+     */
+    unsigned int _osSetPositionFile(int offset, IECursorPosition::eCursorPosition startAt) const;
+
+    /**
+     * \brief   If file is opened, return the current cursor position in the file.
+     *          Otherwise, returns invalid position (IECursorPosition::INVALID_CURSOR_POSITION).
+     */
+    unsigned int _osGetPositionFile(void) const;
+
+    /**
+     * \brief   OS specific method to truncate the opened file until the current position of the cursor.
+     *          The file should be opened for the writing.
+     * \return  Returns true if operation succeeded. Otherwise, returns false.
+     */
+    bool _osTruncateFile(void);
+
+    /**
+     * \brief   OS specific method to flash file buffer into the file system.
+     */
+    void _osFlushFile(void);
+
+    /**
+     * \brief   OS specific method to generate temporary file name.
+     *          On output, the 'buffer' contains the name of the file.
+     *          The buffer size is File::MAXIMUM_PATH characters, including
+     *          null-terminated character.
+     * 
+     * \param   buffer  The buffer that will contain the temporary file name.
+     *                  Initially, the size of buffer is File::MAXIMUM_PATH.
+     * \param   folder  The name of the folder to create temporary file.
+     * \param   prefix  The prefix to add in front of the file name.
+     * \param   unique  If true, the name of the file is unique.
+     * \return  Returns the length of data in the buffer.
+     */
+    static unsigned int _osCreateTempFile(char* buffer, const char* folder, const char * prefix, unsigned int unique);
+
+    /**
+     * \brief   OS specific method to retrieve the OS specific methods.
+     * 
+     * \param   buffer          The buffer to write generated file name.
+     * \param   length          The length of the buffer to write the name of special file name.
+     * \param   specialFolder   THe flag indicating the uniqueness and specialty of the file.
+     * \return  Return the length of the path in the 'buffer'.
+     */
+    static unsigned int _osGetSpecialDir(char* buffer, unsigned int length, const eSpecialFolder specialFolder);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -643,3 +718,5 @@ protected:
 private:
     DECLARE_NOCOPY_NOMOVE( File );
 };
+
+#endif  // AREG_BASE_FILE_HPP

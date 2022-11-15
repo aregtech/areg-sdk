@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_TRACE_PRIVATE_TRACEPROPERTYKEY_HPP
+#define AREG_TRACE_PRIVATE_TRACEPROPERTYKEY_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/TracePropertyKey.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -151,7 +152,7 @@ public:
      * \brief   Parses given string and initializes property key data
      * \param   fullKey     The full string of property key to parse and initialize.
      **/
-    void setKey( const char * fullKey );
+    void setKey( const String & fullKey );
 
     /**
      * \brief   Returns true if the module key is empty or equal to given module name.
@@ -161,12 +162,12 @@ public:
      * \return  Returns true if property key is set and either module name is empty (i.e. global visibility)
      *          or equal to the given module name.
      **/
-    bool isModuleKeySet( const char * moduleName = nullptr ) const;
+    bool isModuleKeySet( const String & moduleName = String::EmptyString ) const;
 
     /**
      * \brief   Returns the syntax name of the property key.
      **/
-    const char * getKeySytax( void ) const;
+    const String getKeySyntax( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -255,3 +256,5 @@ inline bool TracePropertyKey::isValidKey( void ) const
 {
     return ( mConfigKey != NELogConfig::eConfigKey::KeyUndefined );
 }
+
+#endif  // AREG_TRACE_PRIVATE_TRACEPROPERTYKEY_HPP

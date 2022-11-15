@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_IDENTIFIER_HPP
+#define AREG_BASE_IDENTIFIER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/Identifier.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -45,7 +46,7 @@ public:
      *          Bad Identifier object, which integer value is BAD_IDENTIFIER_VALUE
      *          and string value is BAD_IDENTIFIER_NAME
      **/
-    static const Identifier             BAD_IDENTIFIER          /* = {BAD_IDENTIFIER_VALUE, BAD_IDENTIFIER_NAME.data()} */;
+    static const Identifier             BAD_IDENTIFIER          /* = {BAD_IDENTIFIER_VALUE, BAD_IDENTIFIER_NAME} */;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -63,7 +64,9 @@ public:
      * \param   idValue     The integer value of identifier
      * \param   idName      The name of identifier associated with integer value.
      **/
-    Identifier(unsigned int idValue, const char * idName);
+    Identifier(unsigned int idValue, const char* idName);
+    Identifier(unsigned int idValue, const std::string_view& idName);
+    Identifier(unsigned int idValue, const String& idName);
 
     /**
      * \brief   Copy constructor.
@@ -164,7 +167,7 @@ public:
     /**
      * \brief   Returns Identifier string value
      **/
-    inline const char* getName( void ) const;
+    inline const String & getName( void ) const;
 
     /**
      * \brief   Returns Identifier integer value
@@ -230,9 +233,9 @@ inline void Identifier::invalidate( void )
     mName   = BAD_IDENTIFIER.mName;
 }
 
-inline const char* Identifier::getName( void ) const
+inline const String & Identifier::getName( void ) const
 {
-    return static_cast<const char*>(mName);
+    return mName;
 }
 
 inline unsigned int Identifier::getValue( void ) const
@@ -257,3 +260,5 @@ inline IEOutStream & operator << (IEOutStream& stream, const Identifier& output)
     stream << output.mName;
     return stream;
 }
+
+#endif  // AREG_BASE_IDENTIFIER_HPP

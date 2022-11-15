@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/StubEvent.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -100,9 +100,13 @@ inline void IEStubEventConsumer::localProcessRequestEvent( RequestEvent & reques
     ComponentThread::setCurrentComponent(curComponent);
 
     if (NEService::isRequestId(requestEvent.getRequestId()))
+    {
         processRequestEvent(requestEvent);
+    }
     else
-        processStubEvent( static_cast<StubEvent &>(requestEvent));
+    {
+        processStubEvent(static_cast<StubEvent&>(requestEvent));
+    }
 
     ComponentThread::setCurrentComponent(nullptr);
 }
@@ -129,10 +133,14 @@ inline void IEStubEventConsumer::localProcessConnectEvent( StubConnectEvent & no
 {
     if ( notifyConnect.getRequestId() == static_cast<unsigned int>(NEService::eFuncIdRange::ServiceNotifyConnection) )
     {
-        if ( notifyConnect.getRequestType() == NEService::eRequestType::ServiceConnection )
-            processStubRegisteredEvent( notifyConnect.getTargetStub(), notifyConnect.getConnectionStatus() );
+        if (notifyConnect.getRequestType() == NEService::eRequestType::ServiceConnection)
+        {
+            processStubRegisteredEvent(notifyConnect.getTargetStub(), notifyConnect.getConnectionStatus());
+        }
         else
-            processClientConnectEvent( notifyConnect.getEventSource(), notifyConnect.getConnectionStatus() );
+        {
+            processClientConnectEvent(notifyConnect.getEventSource(), notifyConnect.getConnectionStatus());
+        }
     }
     else
     {
@@ -165,10 +173,14 @@ void IEStubEventConsumer::startEventProcessing( Event & eventElem )
                 else
                 {
                     StubConnectEvent * stubConnectEvent = RUNTIME_CAST(stubEvent, StubConnectEvent);
-                    if ( stubConnectEvent != nullptr )
+                    if (stubConnectEvent != nullptr)
+                    {
                         localProcessConnectEvent(*stubConnectEvent);
+                    }
                     else
+                    {
                         processStubEvent(*stubEvent);
+                    }
                 }
             }
         }

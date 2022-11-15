@@ -33,8 +33,8 @@ class ServicingComponent    : public    Component
 // Constants
 //////////////////////////////////////////////////////////////////////////
 private:
-    static const unsigned int   TIMER_TIMEOUT   =  Timer::TIMEOUT_100_MS;   //!< Timer timeout in milliseconds
-    static const int            TIMER_EVENTS    =  10;   					//!< Fired timer count.
+    static const unsigned int   TIMER_TIMEOUT   { NECommon::TIMEOUT_100_MS };   //!< Timer timeout in milliseconds
+    static const int            TIMER_EVENTS    { 10 };   					    //!< Fired timer count.
 
 //////////////////////////////////////////////////////////////////////////
 // Static methods
@@ -59,7 +59,7 @@ public:
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    
+
     /**
      * \brief   Instantiates the component object.
      * \param   masterThread    The instance of component owner thread.
@@ -111,12 +111,12 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 protected:
 /************************************************************************/
-// StubBase overrides. Public pure virtual methods 
+// StubBase overrides. Public pure virtual methods
 /************************************************************************/
 
     /**
-     * \brief   Sends update notification message to all clients. 
-     *          This method can be called manually to send update 
+     * \brief   Sends update notification message to all clients.
+     *          This method can be called manually to send update
      *          notification message after updating attribute value.
      *
      *          Overwrite to implement method
@@ -152,7 +152,7 @@ protected:
      *                      call ID and parameters.
      **/
     virtual void processRequestEvent( ServiceRequestEvent & eventElem ) override;
-    
+
     /**
      * \brief   Triggered to process attribute update notification event.
      *          Override method to process request to get attribute value and

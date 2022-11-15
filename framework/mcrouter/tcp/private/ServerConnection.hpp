@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_MCROUTER_TCP_PRIVATE_SERVERCONNECTION_HPP
+#define AREG_MCROUTER_TCP_PRIVATE_SERVERCONNECTION_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        mcrouter/tcp/private/ServerConnection.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -24,8 +25,6 @@
 #include "areg/base/SynchObjects.hpp"
 #include "areg/base/SocketServer.hpp"
 #include "areg/base/SocketAccepted.hpp"
-#include "areg/base/TEHashMap.hpp"
-#include "areg/base/TEArrayList.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ServerConnection class declaration.
@@ -205,3 +204,5 @@ inline int ServerConnection::receiveMessage(RemoteMessage & out_message, ITEM_ID
 {
     return SocketConnectionBase::receiveMessage(out_message,getClientByCookie(clientCookie));
 }
+
+#endif  // AREG_MCROUTER_TCP_PRIVATE_SERVERCONNECTION_HPP

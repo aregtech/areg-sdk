@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/appbase/private/configure.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -23,10 +23,10 @@
         #pragma comment(lib, "dbghelp.lib")
     #endif  // _DEBUG
 
+    #pragma comment(lib, "advapi32.lib")
     #pragma comment(lib, "psapi.lib")
     #pragma comment(lib, "shell32.lib")
     #pragma comment(lib, "ws2_32.lib")
-    #pragma comment(lib, "advapi32.lib")
 
 #else   // !WIN32
 

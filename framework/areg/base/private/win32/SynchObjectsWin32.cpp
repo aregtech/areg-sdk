@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/win32/ESynchObjectsWin32.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -156,7 +156,6 @@ Semaphore::Semaphore(int maxCount, int initCount /* = 0 */)
     , mMaxCount     ( MACRO_MAX( maxCount, 1 ) )
     , mCurrCount    ( MACRO_IN_RANGE( initCount, 0, mMaxCount ) ? initCount : 0 )
 {
-    static_assert(std::atomic_long::is_always_lock_free);
     mSynchObject= static_cast<void *>(CreateSemaphore(nullptr, mCurrCount.load(), mMaxCount, nullptr));
 }
 
@@ -251,6 +250,8 @@ bool CriticalSection::tryLock( void )
     return ( (mSynchObject != nullptr) && (TryEnterCriticalSection(reinterpret_cast<LPCRITICAL_SECTION>(mSynchObject)) == TRUE) );
 }
 
+#if 0 // TODO: Probably don't need anymore and should be removed
+
 //////////////////////////////////////////////////////////////////////////
 // SpinLock class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -304,6 +305,7 @@ bool SpinLock::tryLock( void )
     return (mSynchObject != nullptr ? reinterpret_cast<CriticalSection *>(mSynchObject)->tryLock( ) : false);
 #endif // defined (__cplusplus) && (__cplusplus > 201703L)
 }
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 // ResourceLock class implementation
@@ -360,18 +362,24 @@ bool ResourceLock::tryLock(void)
 //////////////////////////////////////////////////////////////////////////
 // SynchTimer class, Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-SynchTimer::SynchTimer( unsigned int timeMilliseconds, bool periodic /* = false */, bool autoReset /* = true */, bool initSignaled /* = true */ )
-    : IESynchObject   ( IESynchObject::eSyncObject::SoTimer )
+SynchTimer::SynchTimer( unsigned int msTimeout, bool isPeriodic /* = false */, bool isAutoReset /* = true */, bool isSteady /* = true */)
+    : IESynchObject ( IESynchObject::eSyncObject::SoTimer )
 
-    , mTimeMilliseconds ( timeMilliseconds )
-    , mIsPeriodic       ( periodic )
-    , mIsAutoReset      ( autoReset )
+    , mTimeout      (msTimeout)
+    , mIsPeriodic   (isPeriodic)
+    , mIsAutoReset  (isAutoReset)
 {
-    mSynchObject= static_cast<SYNCHANDLE>(CreateWaitableTimer( nullptr, autoReset ? FALSE : TRUE, nullptr ));
-    if ( initSignaled == false )
+    DWORD flag = 0;
+    if (isSteady)
     {
-        setTimer( );
+        flag |= CREATE_WAITABLE_TIMER_HIGH_RESOLUTION;
     }
+    if (isAutoReset == false)
+    {
+        flag |= CREATE_WAITABLE_TIMER_MANUAL_RESET;
+    }
+
+    mSynchObject = static_cast<SYNCHANDLE>(::CreateWaitableTimerEx(nullptr, nullptr, flag, TIMER_ALL_ACCESS));
 }
 
 SynchTimer::~SynchTimer( void )
@@ -400,11 +408,11 @@ bool SynchTimer::unlock( void )
 
 bool SynchTimer::setTimer( void )
 {
-    constexpr unsigned int   NANOSECONDS_KOEF_100    = 10'000u;
+    constexpr int NANOSECONDS_COEF_100  = 10'000;
 
     LARGE_INTEGER dueTime;
-    dueTime.QuadPart = static_cast<int64_t>(-1) * static_cast<int64_t>(mTimeMilliseconds) * static_cast<int64_t>(NANOSECONDS_KOEF_100);
-    LONG lPeriod = mIsPeriodic ? static_cast<LONG>(mTimeMilliseconds) : 0;
+    dueTime.QuadPart = -(static_cast<int64_t>(mTimeout) * NANOSECONDS_COEF_100);
+    LONG lPeriod = mIsPeriodic ? static_cast<LONG>(mTimeout) : 0;
     return (SetWaitableTimer( static_cast<HANDLE>(mSynchObject), &dueTime, lPeriod, nullptr, nullptr, FALSE ) != FALSE);
 }
 
@@ -460,5 +468,83 @@ int MultiLock::lock(unsigned int timeout /* = NECommon::WAIT_INFINITE */, bool w
 
     return index;
 }
+
+//////////////////////////////////////////////////////////////////////////
+// Wait class implementation
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// Wait class, Methods
+//////////////////////////////////////////////////////////////////////////
+
+namespace
+{
+    inline double _getFrequencyNs(void)
+    {
+        LARGE_INTEGER frequency{ 0 };
+        QueryPerformanceFrequency(&frequency);
+        return ( static_cast<double>(frequency.QuadPart / static_cast<double>(Wait::ONE_SEC.count())) );
+    }
+
+    const double _ticksPerNs{ _getFrequencyNs() };
+
+}
+
+void Wait::_osInitTimer(void)
+{
+    if (mTimer == nullptr)
+    {
+        mTimer = ::CreateWaitableTimerEx(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
+    }
+}
+
+void Wait::_osReleaseTimer(void)
+{
+    if (mTimer != nullptr)
+    {
+        ::CancelWaitableTimer(mTimer);
+        ::CloseHandle(mTimer);
+        mTimer = nullptr;
+    }
+}
+
+Wait::eWaitResult Wait::_osWaitFor(const Wait::Duration& timeout) const
+{
+    static constexpr int64_t _COEF{ -10'000 };
+
+    Wait::eWaitResult result {Wait::eWaitResult::WaitInvalid};
+    if (timeout >= Wait::MIN_WAIT)
+    {
+        LARGE_INTEGER dueTime;
+        dueTime.QuadPart = static_cast<int64_t>(timeout.count() / ONE_MS.count()) * _COEF;
+        ::SetWaitableTimer(mTimer, &dueTime, 0, nullptr, nullptr, FALSE);
+        if (::WaitForSingleObject(mTimer, INFINITE) == WAIT_OBJECT_0)
+        {
+            result = Wait::eWaitResult::WaitInMilli;
+        }
+    }
+    else if (timeout >= Wait::ONE_MUS)
+    {
+        LARGE_INTEGER start, dueTime;
+        QueryPerformanceCounter(&start);
+        // due time is current time in ticks + expected ticks
+        int64_t deadline = start.QuadPart + static_cast<int64_t>(timeout.count() * _ticksPerNs);
+        
+        do
+        {
+            ::Sleep(NECommon::DO_NOT_WAIT);
+            ::QueryPerformanceCounter(&dueTime);
+        } while (dueTime.QuadPart < deadline);
+
+        result = Wait::eWaitResult::WaitInMicro;
+    }
+    else if (timeout.count() > 0)
+    {
+        result = Wait::eWaitResult::WaitIgnored;
+    }
+
+    return result;
+}
+
 
 #endif  // _WINDOWS

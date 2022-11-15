@@ -23,7 +23,7 @@
 #include "areg/base/Containers.hpp"
 
 class PageChat;
-typedef TEStringHashMap<PageChat *, PageChat *>   MapChatPages;
+typedef TEStringHashMap<PageChat *>   MapChatPages;
 
 class DistributedDialog : public CPropertySheet
                         , public ConnectionHandler

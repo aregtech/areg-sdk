@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech (c) 2021
+// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
 // Description : This project demonstrates how to create custom event 
 //               dispatching and simple threads.As events to dispatch, the 
 //               demo uses timers and timer events.
@@ -226,7 +226,7 @@ bool HelloDispatcher::postEvent( Event& eventElem )
 bool HelloDispatcher::dispatchEvent(Event & eventElem)
 {
     TRACE_SCOPE(main_HelloDispatcher_postEvent);
-    TRACE_DBG("Received event [ %s ], the custom event dispatching can be set here", eventElem.getRuntimeClassName());
+    TRACE_DBG("Received event [ %s ], the custom event dispatching can be set here", eventElem.getRuntimeClassName().getString());
     return true; // break dispatching event.
 }
 

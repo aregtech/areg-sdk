@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  02:45:32 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficLight.
  *
  * \file            generated/src/private/SimpleTrafficLightEvents.hpp
@@ -17,8 +17,8 @@
 /************************************************************************
  * Include files
  ************************************************************************/
- #include "generated/src/private/SimpleTrafficLightEvents.hpp"
- 
+#include "generated/src/private/SimpleTrafficLightEvents.hpp"
+
 //////////////////////////////////////////////////////////////////////////
 // SimpleTrafficLightRequestEvent class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ SimpleTrafficLightRequestEvent::SimpleTrafficLightRequestEvent( const EventDataS
 SimpleTrafficLightRequestEvent::SimpleTrafficLightRequestEvent( const IEInStream & stream )
     : RemoteRequestEvent( stream )
 {
-}    
+}
 
 //////////////////////////////////////////////////////////////////////////
 // SimpleTrafficLightNotifyRequestEvent class implementation
@@ -72,7 +72,7 @@ SimpleTrafficLightNotifyRequestEvent::SimpleTrafficLightNotifyRequestEvent( cons
 SimpleTrafficLightNotifyRequestEvent::SimpleTrafficLightNotifyRequestEvent( const IEInStream & stream )
     : RemoteNotifyRequestEvent( stream )
 {
-}    
+}
 
 //////////////////////////////////////////////////////////////////////////
 // SimpleTrafficLightResponseEvent class implementation
@@ -106,7 +106,7 @@ SimpleTrafficLightResponseEvent::SimpleTrafficLightResponseEvent( const ProxyAdd
 SimpleTrafficLightResponseEvent::SimpleTrafficLightResponseEvent( const IEInStream & stream )
     : RemoteResponseEvent( stream )
 {
-}    
+}
 
 //////////////////////////////////////////////////////////////////////////
 // SimpleTrafficLightResponseEvent class, Methods

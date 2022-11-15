@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/src/NESimpleTrafficLight.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_SRC_NESIMPLETRAFFICLIGHT_HPP
+#define  GENERATED_SRC_NESIMPLETRAFFICLIGHT_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  02:45:32 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficLight.
  *
  * \file            generated/src/NESimpleTrafficLight.hpp
@@ -42,7 +43,7 @@
 //////////////////////////////////////////////////////////////////////////
 /**
  *
- * \brief   SimpleTrafficLight Service Interface defined constants, 
+ * \brief   SimpleTrafficLight Service Interface defined constants,
  *          types and structures message IDs, global static methods.
  *
  *          The simple traffic light that triggers timeout and changes traffic light state.
@@ -55,15 +56,15 @@ namespace   NESimpleTrafficLight
 // Service Interface constants
 /************************************************************************/
     /**
-     * \brief   Service Interface Name
+     * \brief   Service Interface Name.
      *          NESimpleTrafficLight::ServiceName
      **/
-    constexpr char        ServiceName[]       { "SimpleTrafficLight" };
+    constexpr   char    ServiceName[]   { "SimpleTrafficLight" };
     /**
-     * \brief   Implemented Version
+     * \brief   Implemented Version.
      *          NESimpleTrafficLight::InterfaceVersion
      **/
-    const Version         InterfaceVersion    = "1.0.0";
+    const       Version InterfaceVersion{ 1, 0, 0 };
 
     /**
      * \brief   The red light timeout in milliseconds.
@@ -87,7 +88,7 @@ namespace   NESimpleTrafficLight
 // Service Interface data types
 /************************************************************************/
 
-    
+
     /**
      * \brief   The simple traffic light states
      *          NESimpleTrafficLight::eTrafficLight
@@ -97,19 +98,19 @@ namespace   NESimpleTrafficLight
         /**
          * \brief   The light is off.
          **/
-          LightOff    
+          LightOff
         /**
          * \brief   The light is red.
          **/
-        , LightRed    
+        , LightRed
         /**
          * \brief   The light is yellow.
          **/
-        , LightYellow 
+        , LightYellow
         /**
          * \brief   The light is green.
          **/
-        , LightGreen  
+        , LightGreen
     };
     /**
      * \brief   Returns string value of NESimpleTrafficLight::eTrafficLight
@@ -128,10 +129,10 @@ namespace   NESimpleTrafficLight
     /************************************************************************
      * Request IDs
      ************************************************************************/
-     
+
     /************************************************************************
      * Response IDs
-     ************************************************************************/     
+     ************************************************************************/
     /************************************************************************
      * Broadcast IDs
      ************************************************************************/
@@ -139,8 +140,8 @@ namespace   NESimpleTrafficLight
          * \brief   Broadcast ID: MsgId_broadcastLightChanged
          *          Triggered when the light state of traffic is changed.
          **/
-          MsgId_broadcastLightChanged = NEService::RESPONSE_ID_FIRST    // void broadcastLightChanged( NESimpleTrafficLight::eTrafficLight SouthNorth, NESimpleTrafficLight::eTrafficLight EastWest );
-     
+          MsgId_broadcastLightChanged = NEService::RESPONSE_ID_FIRST  // void broadcastLightChanged( NESimpleTrafficLight::eTrafficLight SouthNorth, NESimpleTrafficLight::eTrafficLight EastWest );
+
     /************************************************************************
      * Attributes IDs
      ************************************************************************/
@@ -148,35 +149,35 @@ namespace   NESimpleTrafficLight
          * \brief   Attribute ID: MsgId_SouthNorth
          *          The light state of south-north traffic.
          **/
-        , MsgId_SouthNorth            = NEService::ATTRIBUTE_ID_FIRST   // NESimpleTrafficLight::eTrafficLight mSouthNorth;
+        , MsgId_SouthNorth            = NEService::ATTRIBUTE_ID_FIRST // NESimpleTrafficLight::eTrafficLight mSouthNorth;
         /**
          * \brief   Attribute ID: MsgId_EastWest
          *          The light state of east-west traffic.
          **/
         , MsgId_EastWest                                                // NESimpleTrafficLight::eTrafficLight mEastWest;
-     
+
     /************************************************************************
      * Reserved constant IDs
      ************************************************************************/
         /**
          * \brief   ID of empty function
          **/
-        , MsgId_NotProcessed          = NEService::INVALID_MESSAGE_ID  
+        , MsgId_NotProcessed          = NEService::INVALID_MESSAGE_ID
         /**
          * \brief   ID of invalid call
          **/
-        , MsgId_Invalid               = NEService::RESPONSE_ID_NONE    
-     
+        , MsgId_Invalid               = NEService::RESPONSE_ID_NONE
+
     };
     /**
      * \brief   Returns string value of NESimpleTrafficLight::eMessageIDs
      **/
     inline const char * getString( NESimpleTrafficLight::eMessageIDs msgId );
-     
+
 /************************************************************************
  * Service Interface standard functions and variables
  ************************************************************************/
- 
+
     /**
      * \brief   Creates and returns Service Interface Data
      **/
@@ -245,7 +246,6 @@ inline const char * NESimpleTrafficLight::getString( NESimpleTrafficLight::eMess
 
     case NESimpleTrafficLight::eMessageIDs::MsgId_NotProcessed:
         return "NESimpleTrafficLight::eMessageIDs::MsgId_NotProcessed";
-        
     case NESimpleTrafficLight::eMessageIDs::MsgId_Invalid:
         return "NESimpleTrafficLight::eMessageIDs::MsgId_Invalid";
     default:
@@ -257,6 +257,8 @@ inline const char * NESimpleTrafficLight::getString( NESimpleTrafficLight::eMess
 //////////////////////////////////////////////////////////////////////////
 // NESimpleTrafficLight namespace declaration End
 //////////////////////////////////////////////////////////////////////////
+
+#endif  // GENERATED_SRC_NESIMPLETRAFFICLIGHT_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/NESimpleTrafficLight.hpp file

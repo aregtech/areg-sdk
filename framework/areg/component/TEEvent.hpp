@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_TEEVENT_HPP
+#define AREG_COMPONENT_TEEVENT_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
 * \file     areg/component/TEEvent.hpp
 * \ingroup  AREG SDK, Asynchronous Event Generator Software Development Kit 
 * \author   Artak Avetyan
@@ -144,7 +145,7 @@ protected:                                                                      
     /**                                                                                                                     **/                     \
 protected:                                                                                                                                          \
     /**                                                                                                                     **/                     \
-    /** \brief  Override operation. Implement this function to receive events and make processing                           **/                     \
+    /** \brief  Override operation. Implement this function to receive events and make processing.                          **/                     \
     /** \param  data    The data, which was passed as an event.                                                             **/                     \
     /**                                                                                                                     **/                     \
     virtual void processEvent(const DATA_CLASS & data) = 0;                                                                                         \
@@ -251,9 +252,9 @@ public:                                                                         
     /**                                                                                                                     **/                     \
     static inline bool sendEvent(const DATA_CLASS & data, __##ConsumerClass<DATA_CLASS> & listener, Event::eEventType eventType);                   \
     /**                                                                                                                     **/                     \
-    /** \brief  Sends event to specified dispatcher thread, which should alredy have registered event consumer.             **/                     \
+    /** \brief  Sends event to specified dispatcher thread, which should already have registered event consumer.            **/                     \
     /**         Call this method if sure that event should be processed within specified thread scope and                   **/                     \
-    /**         the dispatcher thread has reigistered consumer for the event.                                               **/                     \
+    /**         the dispatcher thread has registered consumer for the event.                                                **/                     \
     /**         Returns true if could send event.                                                                           **/                     \
     /**         It creates event object and pushes it into thread event queue for further processing.                       **/                     \
     /** \param  data        The data object to send as an event.                                                            **/                     \
@@ -287,7 +288,7 @@ public:                                                                         
     /** \return Returns true if consumer registration succeeded.                                                            **/                     \
     /**         Returns false if thread already has consumer registered or registration failed.                             **/                     \
     /**                                                                                                                     **/                     \
-    static inline bool addListener(__##ConsumerClass<DATA_CLASS> & listener, const char * whichThread);                                             \
+    static inline bool addListener(__##ConsumerClass<DATA_CLASS> & listener, const String & whichThread);                                           \
     /**                                                                                                                     **/                     \
     /** \brief  Registers Consumer in the worker / component thread                                                         **/                     \
     /**         Returns true if successfully registered consumer                                                            **/                     \
@@ -320,7 +321,7 @@ public:                                                                         
     /** \param  whichThread The name of thread to unregister consumer. If null, it will unregister in current thread.       **/                     \
     /** \return Returns true if consumer is unregistered with success.                                                      **/                     \
     /**                                                                                                                     **/                     \
-    static inline bool removeListener(__##ConsumerClass<DATA_CLASS> & listener, const char * whichThread);                                          \
+    static inline bool removeListener(__##ConsumerClass<DATA_CLASS> & listener, const String & whichThread);                                        \
     /**                                                                                                                     **/                     \
     /** \brief  Unregisters Consumer from worker / component thread.                                                        **/                     \
     /**         Returns true if successfully removed registered consumer                                                    **/                     \
@@ -367,7 +368,7 @@ private:                                                                        
 /*****************************************************************************************************************************/                     \
 typedef __##EventClass<DATA_CLASS>       EventClass;                                                                                                \
 /*****************************************************************************************************************************/                     \
-/** Event class implementatation                                                                                            **/                     \
+/** Event class implementation                                                                                              **/                     \
 /*****************************************************************************************************************************/                     \
 /**                                                                                                                         **/                     \
 /** Implement Runtime Object overrides and get Runtime Class ID                                                             **/                     \
@@ -456,7 +457,7 @@ inline bool __##EventClass<DATA_CLASS>::sendEvent(const DATA_CLASS & data, __##C
 /** Returns false if failed to register consumer or consumer was already registered for specified event                     **/                     \
 /**                                                                                                                         **/                     \
 template <class DATA_CLASS>                                                                                                                         \
-inline bool __##EventClass<DATA_CLASS>::addListener(__##ConsumerClass<DATA_CLASS> & listener, const char * whichThread)                             \
+inline bool __##EventClass<DATA_CLASS>::addListener(__##ConsumerClass<DATA_CLASS> & listener, const String & whichThread)                           \
 {   return Event::addListener(__##EventClass<DATA_CLASS>::_getClassId(), listener, whichThread);                                    }               \
 /**                                                                                                                         **/                     \
 /** Adds listener (registers consumer) for specified thread ID. The thread should be already running.                     **/                       \
@@ -464,7 +465,7 @@ inline bool __##EventClass<DATA_CLASS>::addListener(__##ConsumerClass<DATA_CLASS
 /** Returns false if failed to register consumer or consumer was already registered for specified event                     **/                     \
 /**                                                                                                                         **/                     \
 template <class DATA_CLASS>                                                                                                                         \
-inline bool __##EventClass<DATA_CLASS>::addListener(__##ConsumerClass<DATA_CLASS> & listener, id_type whichThread)                              \
+inline bool __##EventClass<DATA_CLASS>::addListener(__##ConsumerClass<DATA_CLASS> & listener, id_type whichThread)                                  \
 {   return Event::addListener(__##EventClass<DATA_CLASS>::_getClassId(), listener, whichThread);                                    }               \
 /**                                                                                                                         **/                     \
 /** Adds listener (registers consumer) for specified dispatcher thread. The thread should be already running.               **/                     \
@@ -478,7 +479,7 @@ inline bool __##EventClass<DATA_CLASS>::addListener(__##ConsumerClass<DATA_CLASS
 /** Removes registered consumer. If succeed, returns true. Otherwise returns false.                                         **/                     \
 /**                                                                                                                         **/                     \
 template <class DATA_CLASS>                                                                                                                         \
-inline bool __##EventClass<DATA_CLASS>::removeListener(__##ConsumerClass<DATA_CLASS> & listener, const char * whichThread)                          \
+inline bool __##EventClass<DATA_CLASS>::removeListener(__##ConsumerClass<DATA_CLASS> & listener, const String & whichThread)                        \
 {   return Event::removeListener(__##EventClass<DATA_CLASS>::_getClassId(), listener, whichThread);                                 }               \
 /**                                                                                                                         **/                     \
 /** Removes registered consumer. If succeed, returns true. Otherwise returns false.                                         **/                     \
@@ -742,3 +743,5 @@ __##ConsumerClass##Extended<DATA_CLASS>::__##ConsumerClass##Extended( void )    
  **/
 #define DECLARE_EVENT_EX(DataClass, EventClass, ConsumerClass, ConsumerThreadName)                                                                  \
     DECLARE_EXTERNAL_EVENT_EXTENDED(DataClass, EventClass, ConsumerClass, ConsumerThreadName)
+
+#endif  // AREG_COMPONENT_TEEVENT_HPP

@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ComponentInfo.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -36,7 +36,7 @@
 //////////////////////////////////////////////////////////////////////////
 // ComponentInfo class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-ComponentInfo::ComponentInfo( ComponentThread& masterThread, const char* roleName )
+ComponentInfo::ComponentInfo( ComponentThread& masterThread, const String & roleName )
     : mComponentAddress (masterThread.getAddress(), roleName)
     , mMasterThread     (masterThread)
     , mWorkerThreadMap  ( )
@@ -75,9 +75,9 @@ DispatcherThread * ComponentInfo::findEventConsumer( const RuntimeClassID& which
     return result;
 }
 
-bool ComponentInfo::registerWorkerThread( WorkerThread& workerThread )
+void ComponentInfo::registerWorkerThread( WorkerThread& workerThread )
 {
-    return mWorkerThreadMap.registerResourceObject(workerThread.getAddress(), &workerThread);
+    mWorkerThreadMap.registerResourceObject(workerThread.getAddress(), &workerThread);
 }
 
 bool ComponentInfo::unregisterWorkerThread( WorkerThread& workerThread )

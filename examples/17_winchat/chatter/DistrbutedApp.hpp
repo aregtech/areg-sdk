@@ -10,6 +10,7 @@
 // All rights reserved.
 
 // DistrbutedApp.hpp : main header file for the distrbutedapp application
+// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
 //
 #pragma once
 

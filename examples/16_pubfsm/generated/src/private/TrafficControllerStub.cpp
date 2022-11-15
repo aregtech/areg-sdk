@@ -2,9 +2,9 @@
 // Begin generate generated/src/private/TrafficControllerStub.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:14 GMT+02:00 
+ * Generated at     13.08.2022  02:47:36 GMT+02:00
  *                  Create by AREG SDK code generator tool from source TrafficController.
  *
  * \file            generated/src/TrafficControllerStub.hpp
@@ -20,7 +20,8 @@
 #include "generated/src/private/TrafficControllerEvents.hpp"
 
 #include "areg/component/ServiceResponseEvent.hpp"
-#include "areg/base/Thread.hpp"
+#include "areg/component/Component.hpp"
+#include "areg/component/ComponentThread.hpp"
 #include "areg/trace/GETrace.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -32,7 +33,7 @@
 //////////////////////////////////////////////////////////////////////////
 TrafficControllerStub::TrafficControllerStub( Component & masterComp )
     : StubBase    ( masterComp, NETrafficController::getInterfaceData() )
-    
+
     , mTrafficSouthNorth      (  )
     , mTrafficSouthNorthState ( NEService::eDataStateType::DataIsUnavailable )
     
@@ -59,9 +60,9 @@ DEF_TRACE_SCOPE(generated_src_TrafficControllerStub_startupServiceInterface);
 void TrafficControllerStub::startupServiceInterface( Component & holder )
 {
     TRACE_SCOPE(generated_src_TrafficControllerStub_startupServiceInterface);
-    
-    TrafficControllerRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
-    TrafficControllerNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
+
+    TrafficControllerRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
+    TrafficControllerNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
     StubBase::startupServiceInterface( holder );
 
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] has been started and is available ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
@@ -72,9 +73,9 @@ void TrafficControllerStub::shutdownServiceIntrface( Component & holder )
 {
     TRACE_SCOPE(generated_src_TrafficControllerStub_shutdownServiceIntrface);
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] is shutting down and not available anymore ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
-    
-    TrafficControllerRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
-    TrafficControllerNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
+
+    TrafficControllerRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
+    TrafficControllerNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
     StubBase::shutdownServiceIntrface( holder );
 }
 
@@ -128,7 +129,7 @@ void TrafficControllerStub::errorRequest( unsigned int msgId, bool msgCancel )
 {
     NEService::eResultType result = NEService::eResultType::NotProcessed;
     msg_id listenerId = msgId;
-    
+
     switch ( static_cast<NETrafficController::eMessageIDs>(msgId) )
     {
 /************************************************************************
@@ -163,7 +164,7 @@ void TrafficControllerStub::errorRequest( unsigned int msgId, bool msgCancel )
         ASSERT(false);
         break;
     }
-    
+
     StubBase::StubListenerList listeners;
     if ( findListeners(listenerId, listeners) > 0 )
     {

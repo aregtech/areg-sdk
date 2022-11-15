@@ -6,16 +6,17 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/Process.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
  * \brief       The class to handle process. Get process ID, process handle, process name, etc.
- *              OS indipendant implementation
+ *              OS independent implementation
  ************************************************************************/
 #include "areg/base/Process.hpp"
 
 #include "areg/base/File.hpp"
+#include <filesystem>
 
 //////////////////////////////////////////////////////////////////////////
 // Process class implementation
@@ -38,21 +39,17 @@ Process::Process( void )
 
 void Process::_initPaths( const char * fullPath )
 {
-    mProcessFullPath= fullPath;
+    ASSERT(fullPath != nullptr);
 
+    // mProcessFullPath= File::normalizePath(fullPath);
+    mProcessFullPath.assign( fullPath );
+    std::filesystem::path procPath(mProcessFullPath.getObject());
 
-    NEString::CharPos pos = mProcessFullPath.findLastOf(File::PATH_SEPARATOR);
-    if ( pos != NEString::INVALID_POS )
+    if (procPath.empty() != false)
     {
-        mProcessPath   = mProcessFullPath.substring(NEString::START_POS, static_cast<NEString::CharCount>(pos));
-        mProcessName   = mProcessFullPath.substring(pos + 1, NEString::END_POS);
-        mAppName       = mProcessName;     // initial value
-    }
-
-    pos = mProcessName.findLastOf(File::EXTENSION_SEPARATOR);
-    if ( pos != NEString::INVALID_POS )
-    {
-        mAppName    = mProcessName.substring(NEString::START_POS, static_cast<NEString::CharCount>(pos));
-        mProcessExt = mProcessName.substring(pos + 1, NEString::END_POS);
+        mProcessPath = procPath.parent_path().empty() ? String::EmptyString : procPath.parent_path().string();
+        mProcessName = procPath.filename().empty()    ? String::EmptyString : procPath.filename().string();
+        mAppName     = procPath.stem().empty()        ? String::EmptyString : procPath.stem().string();
+        mProcessExt  = procPath.extension().empty()   ? String::EmptyString : procPath.extension().string();
     }
 }

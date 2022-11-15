@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_MCROUTER_TCP_PRIVATE_SERVICEPROXY_HPP
+#define AREG_MCROUTER_TCP_PRIVATE_SERVICEPROXY_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        mcrouter/tcp/private/ServiceProxy.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -47,7 +48,7 @@ public:
      * \brief   The remote proxy address to set in object
      * \param   addrProxy   The address of remote proxy object.
      **/
-    explicit ServiceProxy( const ProxyAddress & addrProxy );
+    ServiceProxy( const ProxyAddress & addrProxy );
 
     /**
      * \brief   The remote proxy address to set in object
@@ -56,10 +57,22 @@ public:
     ServiceProxy( ProxyAddress && addrProxy ) noexcept;
 
     /**
+     * \brief   Extracts relevant data from given Stub address and initializes Proxy service object.
+     * \param   addrStub    The Stub address to extract information.
+     **/
+    explicit ServiceProxy(const StubAddress & addrStub);
+
+    /**
+     * \brief   Extracts relevant data from given Stub address and initializes Stub service object.
+     * \param   addrStub    The Stub address to extract information.
+     **/
+    explicit ServiceProxy(StubAddress && addrStub) noexcept;
+
+    /**
      * \brief   Copies data from given source.
      * \param   serviceProxy    The source object to copy data.
      **/
-    explicit ServiceProxy( const ServiceProxy & serviceProxy );
+    ServiceProxy( const ServiceProxy & serviceProxy );
 
     /**
      * \brief   Moves data from given source.
@@ -232,3 +245,5 @@ inline bool ServiceProxy::isWaiting( void ) const
 {
     return ( mConnectStatus == NEService::eServiceConnection::ServicePending );
 }
+
+#endif  // AREG_MCROUTER_TCP_PRIVATE_SERVICEPROXY_HPP

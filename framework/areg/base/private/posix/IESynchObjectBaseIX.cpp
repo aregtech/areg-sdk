@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/IESynchObjectBaseIX.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
@@ -30,8 +30,8 @@
 
 IESynchObjectBaseIX::IESynchObjectBaseIX( NESynchTypesIX::eSynchObject synchType, const char* asciiName /* = nullptr */ )
     : mSynchType    ( synchType )
+    , mSynchName    ( asciiName != nullptr ? asciiName : String::EmptyString )
 {
-    NEString::copyString<char, char>(mSynchName, IESynchObjectBaseIX::_MAX_NAME_LENGTH, asciiName != nullptr ? asciiName : NEString::EmptyStringA.data());
 }
 
 #endif //  defined(_POSIX) || defined(POSIX)

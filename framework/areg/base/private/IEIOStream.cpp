@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/IEIOStream.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -24,28 +24,28 @@
 
 uint8_t IEInStream::read8Bits(void) const
 {
-    uint8_t result = 0;
+    uint8_t result{ 0u };
     read( reinterpret_cast<unsigned char *>(&result), 1 );
     return result;
 }
 
 uint16_t IEInStream::read16Bits(void) const
 {
-    uint16_t result = 0;
+    uint16_t result{ 0u };
     read( reinterpret_cast<unsigned char *>(&result), 2 );
     return result;
 }
 
 uint32_t IEInStream::read32Bits(void) const
 {
-    uint32_t result = 0;
+    uint32_t result{ 0u };
     read( reinterpret_cast<unsigned char *>(&result), 4 );
     return result;
 }
 
 uint64_t IEInStream::read64Bits(void) const
 {
-    uint64_t result = 0;
+    uint64_t result{ 0u };
     read( reinterpret_cast<unsigned char *>(&result), 8 );
     return result;
 }

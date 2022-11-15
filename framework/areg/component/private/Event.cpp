@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/Event.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -36,7 +36,7 @@ IMPLEMENT_RUNTIME_EVENT(Event, RuntimeObject)
  **/
 const Event Event::BAD_EVENT(Event::eEventType::EventUnknown);
 
-bool Event::addListener( const RuntimeClassID & classId, IEEventConsumer & eventConsumer, const char* whichThread )
+bool Event::addListener( const RuntimeClassID & classId, IEEventConsumer & eventConsumer, const String & whichThread )
 {
     return Event::addListener(classId, eventConsumer, DispatcherThread::getDispatcherThread(whichThread));
 }
@@ -52,7 +52,7 @@ bool Event::addListener( const RuntimeClassID & classId, IEEventConsumer & event
     return dispThread.registerEventConsumer(classId, eventConsumer);
 }
 
-bool Event::removeListener( const RuntimeClassID & classId, IEEventConsumer & eventConsumer, const char* whichThread )
+bool Event::removeListener( const RuntimeClassID & classId, IEEventConsumer & eventConsumer, const String & whichThread )
 {
     return Event::removeListener(classId, eventConsumer, DispatcherThread::getDispatcherThread(whichThread));
 }
@@ -121,15 +121,15 @@ void Event::deliverEvent( void )
     }
     else
     {
-        OUTPUT_ERR("The event target is unknown! Event type [ %s ] is going to be deleted.", getRuntimeClassName());
+        OUTPUT_ERR("The event target is unknown! Event type [ %s ] is going to be deleted.", getRuntimeClassName().getString());
         destroy();
     }
 }
 
 bool Event::registerForThread( id_type whichThread /*= 0*/ )
 {
-    return registerForThread(whichThread != 0 ? RUNTIME_CAST(Thread::findThreadById(whichThread), DispatcherThread) : 
-                                                RUNTIME_CAST(Thread::getCurrentThread(), DispatcherThread));
+    return registerForThread(whichThread != 0 ? RUNTIME_CAST(Thread::findThreadById(whichThread), DispatcherThread)
+                                              : RUNTIME_CAST(Thread::getCurrentThread(), DispatcherThread));
 }
 
 bool Event::registerForThread( const char* whichThread )
@@ -173,11 +173,11 @@ void Event::dispatchSelf( IEEventConsumer* consumer )
         }
         else
         {
-            OUTPUT_WARN("The Event [ %s ] is interrupted and not going to be processed", getRuntimeClassName());
+            OUTPUT_WARN("The Event [ %s ] is interrupted and not going to be processed", getRuntimeClassName().getString());
         }
     }
     else
     {
-        OUTPUT_ERR("The Event [ %s ] has invalid consumer. The event cannot be processed!", getRuntimeClassName());
+        OUTPUT_ERR("The Event [ %s ] has invalid consumer. The event cannot be processed!", getRuntimeClassName().getString());
     }
 }

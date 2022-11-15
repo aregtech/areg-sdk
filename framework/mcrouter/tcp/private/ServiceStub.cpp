@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        mcrouter/tcp/private/ServiceStub.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -31,19 +31,13 @@ ServiceStub::ServiceStub( const StubAddress & addrStub )
 
 ServiceStub::ServiceStub( StubAddress && addrStub ) noexcept
     : mStubAddress  ( std::move(addrStub) )
-    , mConnectStatus( addrStub.isValid( ) ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown )
+    , mConnectStatus(mStubAddress.isValid( ) ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown )
 {
 }
 
 ServiceStub::ServiceStub( const ProxyAddress & addrProxy )
     : mStubAddress  ( static_cast<const ServiceItem &>(addrProxy), addrProxy.getRoleName(), "" )
     , mConnectStatus( addrProxy.isValid() ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown )
-{
-}
-
-ServiceStub::ServiceStub( ProxyAddress && addrProxy ) noexcept
-    : mStubAddress  ( static_cast<ServiceItem &&>(addrProxy), addrProxy.getRoleName( ), "" )
-    , mConnectStatus( addrProxy.isValid( ) ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown )
 {
 }
 
@@ -59,6 +53,18 @@ ServiceStub::ServiceStub( ServiceStub && stubService ) noexcept
 {
 }
 
+ServiceStub::ServiceStub(const ServiceAddress& addrService)
+    : mStubAddress  (addrService)
+    , mConnectStatus(NEService::eServiceConnection::ServiceConnectionUnknown)
+{
+}
+
+ServiceStub::ServiceStub( ServiceAddress && addrService)
+    : mStubAddress  (std::move(addrService))
+    , mConnectStatus(NEService::eServiceConnection::ServiceConnectionUnknown)
+{
+}
+
 ServiceStub & ServiceStub::operator = ( const StubAddress & addrStub )
 {
     mStubAddress    = addrStub;
@@ -70,7 +76,7 @@ ServiceStub & ServiceStub::operator = ( const StubAddress & addrStub )
 ServiceStub & ServiceStub::operator = ( StubAddress && addrStub ) noexcept
 {
     mStubAddress    = std::move(addrStub);
-    mConnectStatus  = addrStub.isValid( ) ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown;
+    mConnectStatus  = mStubAddress.isValid( ) ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown;
     
     return (*this);
 }
@@ -79,14 +85,6 @@ ServiceStub & ServiceStub::operator = ( const ProxyAddress & addrProxy )
 {
     mStubAddress    = static_cast<const ServiceAddress &>(addrProxy);
     mConnectStatus  = addrProxy.isValid() ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown;
-
-    return (*this);
-}
-
-ServiceStub & ServiceStub::operator = ( ProxyAddress && addrProxy ) noexcept
-{
-    mStubAddress    = static_cast<ServiceAddress &&>(addrProxy);
-    mConnectStatus  = addrProxy.isValid( ) ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown;
 
     return (*this);
 }

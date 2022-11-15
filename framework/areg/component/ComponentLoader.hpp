@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_COMPONENTLOADER_HPP
+#define AREG_COMPONENT_COMPONENTLOADER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/ComponentLoader.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -66,11 +67,13 @@
  *          Declare as many component thread, as needed for application.
  *
  * \param   thread_name The name of component thread, which should be unique.
+ * \param   timeout             The watchdog timeout in milliseconds of the worker thread.
+ *                              The value 0 (NECommon::WATCHDOG_IGNORE) ignores the watchdog
  **/
-#define BEGIN_REGISTER_THREAD(thread_name)                                                                      \
+#define BEGIN_REGISTER_THREAD(thread_name, timeout)                                                             \
         {                                                                                                       \
             /*  Begin registering component thread                                  */                          \
-            NERegistry::ComponentThreadEntry  thrEntry((thread_name));
+            NERegistry::ComponentThreadEntry  thrEntry((thread_name), (timeout));
 
 #define END_REGISTER_THREAD(thread_name)                                                                        \
             /*  End registering component thread, add to model                      */                          \
@@ -142,9 +145,9 @@
  *                          Can be repeated within different component scopes
  *                          in different threads. Cannot be repeat within same
  *                          component scope
- * \param   major           Major version number of implemented service interface
- * \param   minor           Minor version number of implemented service interface
- * \param   patch           Patch version number of implemented service interface
+ * \param   major           The major version number of implemented service interface
+ * \param   minor           The minor version number of implemented service interface
+ * \param   patch           The patch version number of implemented service interface
  **/
 #define REGISTER_IMPLEMENT_SERVICE(service_name, implemented_version)                                           \
                 /*  Register implemented service in component                       */                          \
@@ -163,13 +166,16 @@
  * \param   worker_thread_name  The name of worker thread.
  * \param   consumer_name       The consumer name of worker thread. Differentiate consumer
  *                              names if one component has more than one worker thread.
+ * \param   timeout             The watchdog timeout in milliseconds of the worker thread.
+ *                              The value 0 (NECommon::WATCHDOG_IGNORE) ignores the watchdog
  **/
-#define REGISTER_WORKER_THREAD(worker_thread_name, consumer_name)                                               \
+#define REGISTER_WORKER_THREAD(worker_thread_name, consumer_name, timeout)                                      \
                 /*  Register component worker thread                                */                          \
                 comEntry.addWorkerThread(     NERegistry::WorkerThreadEntry(comEntry.mThreadName.getString()    \
                                             , (worker_thread_name)                                              \
                                             , comEntry.mRoleName.getString()                                    \
-                                            , (consumer_name))  );
+                                            , (consumer_name)                                                   \
+                                            , (timeout))  );
 
 /**
  * \brief   Declare and register component dependency. Optional.
@@ -229,7 +235,7 @@
  *
  *  BEGIN_MODEL("test_model")
  *  
- *      BEGIN_REGISTER_THREAD("test_thread")
+ *      BEGIN_REGISTER_THREAD("test_thread", 0)
  *
  *          BEGIN_REGISTER_COMPONENT_EX("test_component", TestCompLoad, TestCompUnload)
  *              REGISTER_IMPLEMENT_SERVICE("test_service_1", Version(1, 0, 0))
@@ -239,13 +245,13 @@
  *          BEGIN_REGISTER_COMPONENT_EX("another_component", AnotherCompLoad, AnotherCompUnload)
  *              REGISTER_IMPLEMENT_SERVICE("another_service_1", Version(1, 0, 0))
  *              REGISTER_IMPLEMENT_SERVICE("another_service_2", Version(1, 0, 0))
- *              REGISTER_WORKER_THREAD("another_worker_thread", "consumer_name")
+ *              REGISTER_WORKER_THREAD("another_worker_thread", "consumer_name", , NECommon::WATCHDOG_IGNORE)
  *              REGISTER_DEPENDENCY("secondary_component")
  *          END_REGISTER_COMPONENT("another_component")
  *
  *      END_REGISTER_THREAD("text_thread")
  *
- *      BEGIN_REGISTER_THREAD("secondary_thread")
+ *      BEGIN_REGISTER_THREAD("secondary_thread", NECommon::WATCHDOG_IGNORE)
  *
  *          BEGIN_REGISTER_COMPONENT_EX("secondary_component", SecondaryCompLoad, SecondaryCompUnload)
  *              REGISTER_IMPLEMENT_SERVICE("secondary_service_1", Version(1, 0, 0))
@@ -356,7 +362,7 @@ private:
      * \brief   ComponentLoader::ModelList
      *          Linked List of Model objects
      **/
-    using ModelList     = TEArrayList<NERegistry::Model, const NERegistry::Model &>;
+    using ModelList     = TEArrayList<NERegistry::Model>;
 
 //////////////////////////////////////////////////////////////////////////
 // Static members
@@ -378,18 +384,18 @@ public:
      *          loading Model completed with success.
      *          The function returns false, if there is no Model with specified name
      *          or failed loading mode.
-     * \param   modelName   The name of model to load. If nullptr, it will load all
+     * \param   modelName   The name of model to load. If empty, it will load all
      *                      models, which are not loaded yet.
      * \return  Returns true if model is loaded with success.
      **/
-    static bool loadComponentModel( const char * modelName = nullptr );
+    static bool loadComponentModel( const String & modelName = String::EmptyString );
 
     /**
      * \brief   Call to shutdown and destroy instantiated objects of mode, and make cleanups.
      * \param   modelName   The name of model to unload. If nullptr, it will unloaded
      *                      all previously loaded models.
      **/
-    static void unloadComponentModel( const char * modelName = nullptr );
+    static void unloadComponentModel( const String & modelName = String::EmptyString );
 
     /**
      * \brief   This call unloads components of specified mode and remove model
@@ -397,7 +403,7 @@ public:
      * \param   modelName   The name of model to unload and remove. If nullptr, it will unloaded
      *                      all previously loaded models and all models will be removed.
      **/
-    static void removeComponentModel( const char * modelName = nullptr );
+    static void removeComponentModel( const String & modelName = String::EmptyString );
 
     /**
      * \brief   Adds new model to the model list. The name of the new model, names of threads and
@@ -418,7 +424,7 @@ public:
      * \return  If the thread name is valid, it returns list of registered components.
      *          Otherwise, returns NERegistry::ComponentList::INVALID_COMPONENT_LIST list.
      **/
-    static const NERegistry::ComponentList & getComponentList( const char * threadName );
+    static const NERegistry::ComponentList & getComponentList( const String & threadName );
 
     /**
      * \brief   Returns registered component entry object of
@@ -426,28 +432,35 @@ public:
      * \param   roleName    The role name of registered component to lookup
      * \param   threadName  The name of registered thread.
      **/
-    static const NERegistry::ComponentEntry & findComponentEntry(const char * roleName, const char* threadName);
+    static const NERegistry::ComponentEntry & findComponentEntry(const String & roleName, const String & threadName);
 
     /**
      * \brief   Returns registered component entry object having specified role name.
      *          The component is searched in the complete Model list.
      * \param   roleName    The role name of registered component to lookup
      **/
-    static const NERegistry::ComponentEntry & findComponentEntry(const char * roleName);
+    static const NERegistry::ComponentEntry & findComponentEntry(const String & roleName);
+
+    /**
+     * \brief   Returns registered component thread entry object having specified thread name.
+     *          The component thread entry is searched in the complete Model list.
+     * \param   threadName  The name of the component thread name to search.
+     **/
+    static const NERegistry::ComponentThreadEntry & findThreadEntry( const String & threadName );
 
     /**
      * \brief   Returns true, if Model with specified name is already registered and loaded.
      * \param   modelName   The name of model to check. The name must be unique.
      * \return  Returns true, if Model with specified name is already loaded.
      **/
-    static bool isModelLoaded( const char * modelName );
+    static bool isModelLoaded( const String & modelName );
 
     /**
      * \brief   Returns true, if the model with specified name is already registered.
      * \param   modelName   The unique name of model to search in registered list.
      * \return  Returns true, if the Model with specified name is already exist in the list.
      **/
-    static bool existModel( const char * modelName );
+    static bool existModel( const String & modelName );
 
     /**
      * \brief   Searches in the list the component by given name. If found, sets component data.
@@ -458,7 +471,7 @@ public:
      *          if as a component data a pointer to manually allocated object is passed,
      *          it should be as well manually freed.
      **/
-    static bool setComponentData( const char * roleName, NEMemory::uAlign compData );
+    static bool setComponentData( const String & roleName, NEMemory::uAlign compData );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructors / Destructor
@@ -490,7 +503,7 @@ protected:
      *                      it loads all models, which are not loaded yet.
      * \return  Returns true if components are loaded with success.
      **/
-    bool loadModel( const char * modelName = nullptr );
+    bool loadModel( const String & modelName = String::EmptyString );
 
     /**
      * \brief   Loads specified Model. It will start all registered in Model threads,
@@ -506,7 +519,7 @@ protected:
      *          If modelName is nullptr or empty, it will unload all models.
      * \param   modelName   The name of model to unload. If nullptr, it will unload all models
      **/
-    void unloadModel( const char * modelName = nullptr );
+    void unloadModel( const String & modelName = String::EmptyString );
 
     /**
      * \brief   Unloads specified Model, deletes components and stops threads.
@@ -519,7 +532,7 @@ protected:
      * \param   modelName   The name of model to search. All models should be unique within one process context.
      * \return  If found model, returns valid pointer. Otherwise, returns null.
      **/
-    const NERegistry::Model * findModelByName( const char * modelName ) const;
+    const NERegistry::Model * findModelByName( const String & modelName ) const;
 
     /**
      * \brief   Searches in registries thread entry by name. The threads should have unique names within process context.
@@ -527,7 +540,7 @@ protected:
      * \param   threadName  The name of thread to search in system.
      * \return  Returns valid pointer if found thread entry registered with specified name. Otherwise, returns null.
      **/
-    const NERegistry::ComponentThreadEntry * findThreadEntryByName( const char * threadName ) const;
+    const NERegistry::ComponentThreadEntry * findThreadEntryByName( const String & threadName ) const;
 
     /**
      * \brief   Searches in registries component entry by role name. The role names should have unique within process context.
@@ -535,7 +548,7 @@ protected:
      * \param   roleName    The role name of component to search in system.
      * \return  Returns valid pointer if found component entry registered with specified role name. Otherwise, returns null.
      **/
-    const NERegistry::ComponentEntry * findComponentEntryByName( const char * roleName ) const;
+    const NERegistry::ComponentEntry * findComponentEntryByName( const String & roleName ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -619,6 +632,4 @@ private:
     DECLARE_NOCOPY_NOMOVE( ComponentLoader );
 };
 
-//////////////////////////////////////////////////////////////////////////
-// ComponentLoader class inline function implementation
-//////////////////////////////////////////////////////////////////////////
+#endif  // AREG_COMPONENT_COMPONENTLOADER_HPP

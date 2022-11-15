@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_IPC_IEREMOTESERVICE_HPP
+#define AREG_IPC_IEREMOTESERVICE_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/ipc/IERemoteService.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -22,6 +23,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
+class String;
 class StubAddress;
 class ProxyAddress;
 class RemoteMessage;
@@ -72,7 +74,7 @@ public:
      *                      If nullptr or empty, it will use default settings.
      * \return  Returns true if system could configure. Otherwise, it returns false.
      **/
-    virtual bool configureRemoteServicing( const char * configFile ) = 0;
+    virtual bool configureRemoteServicing( const String & configFile ) = 0;
 
     /**
      * \brief   Call manually to set router service host name and port number.
@@ -81,13 +83,21 @@ public:
      * \param   hostName    IP-address or host name of routing service to connect.
      * \param   portNr      Port number of routing service to connect.
      **/
-    virtual void setRemoteServiceAddress( const char * hostName, unsigned short portNr ) = 0;
+    virtual void setRemoteServiceAddress( const String & hostName, unsigned short portNr ) = 0;
 
     /**
      * \brief   Call to start remote service. The host name and port number should be already set.
      * \return  Returns true if start service is triggered.
      **/
     virtual bool startRemoteServicing( void ) = 0;
+
+    /**
+     * \brief   Call to restart remove service. The host name and the port number should be already set.
+     *          If the service had connection, it will be lost and re-connected again. If there was no
+     *          connection, it starts new connection.
+     * \return  Returns true if succeeded to restart service.
+     **/
+    virtual bool restartRemoteServicing(void) = 0;
 
     /**
      * \brief   Call to stop service. No more remote communication should be possible.
@@ -154,3 +164,5 @@ public:
 private:
     DECLARE_NOCOPY_NOMOVE( IERemoteService );
 };
+
+#endif  // AREG_IPC_IEREMOTESERVICE_HPP

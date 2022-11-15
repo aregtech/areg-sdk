@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:16 GMT+02:00 
+ * Generated at     13.08.2022  02:48:00 GMT+02:00
  *                  Create by AREG SDK code generator tool from source DirectMessager.
  *
  * \file            generated/private/DirectMessagerProxy.hpp
@@ -42,12 +42,12 @@ DirectMessagerProxy::DirectMessagerServiceAvailableEvent::DirectMessagerServiceA
 // static function implementation
 //////////////////////////////////////////////////////////////////////////
 
-ProxyBase * DirectMessagerProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+ProxyBase * DirectMessagerProxy::_createProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
 {
     return DEBUG_NEW DirectMessagerProxy(roleName, ownerThread);
 }
 
-DirectMessagerProxy * DirectMessagerProxy::createProxy( const char * roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
+DirectMessagerProxy * DirectMessagerProxy::createProxy( const String & roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
 {
     return static_cast<DirectMessagerProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEDirectMessager::getInterfaceData()
@@ -56,7 +56,7 @@ DirectMessagerProxy * DirectMessagerProxy::createProxy( const char * roleName, I
                                                                       , ownerThread) );
 }
 
-DirectMessagerProxy * DirectMessagerProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= nullptr*/ )
+DirectMessagerProxy * DirectMessagerProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
 {
     return static_cast<DirectMessagerProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEDirectMessager::getInterfaceData()
@@ -68,7 +68,7 @@ DirectMessagerProxy * DirectMessagerProxy::createProxy( const char * roleName, I
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-DirectMessagerProxy::DirectMessagerProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+DirectMessagerProxy::DirectMessagerProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
     : ProxyBase(roleName, NEDirectMessager::getInterfaceData(), ownerThread)
 
 /************************************************************************
@@ -146,7 +146,7 @@ void DirectMessagerProxy::unregisterServiceListeners( void )
 /************************************************************************
  * Requests.
  ************************************************************************/
- 
+
 unsigned int DirectMessagerProxy::requestChatJoin( IENotificationEventConsumer & caller, const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect )
 {
     static const NEDirectMessager::eMessageIDs msgId = NEDirectMessager::eMessageIDs::MsgId_requestChatJoin;
@@ -189,7 +189,7 @@ void DirectMessagerProxy::requestChatLeave( const NEDirectMessager::sParticipant
 /************************************************************************
  * Event processing.
  ************************************************************************/
- 
+
 /************************************************************************
  * IEProxyEventConsumer interface overrides.
  ************************************************************************/
@@ -278,8 +278,8 @@ void DirectMessagerProxy::updateData( DirectMessagerResponseEvent & eventElem, N
         break;
     }
 }
- 
-void DirectMessagerProxy::processResponse( DirectMessagerResponseEvent & evenElem )
+
+    void DirectMessagerProxy::processResponse( DirectMessagerResponseEvent & evenElem )
 {
     NEDirectMessager::eMessageIDs respId  = static_cast<NEDirectMessager::eMessageIDs>(evenElem.getResponseId());
     NEService::eResultType resultType  = evenElem.getResult();
@@ -305,8 +305,8 @@ void DirectMessagerProxy::processResponse( DirectMessagerResponseEvent & evenEle
         {
             respId  = static_cast<NEDirectMessager::eMessageIDs>( mProxyData.getResponseId(static_cast<msg_id>(respId)) );
         }
-        
-        setStates   = respId != NEDirectMessager::eMessageIDs::MsgId_NotProcessed;            
+
+        setStates   = respId != NEDirectMessager::eMessageIDs::MsgId_NotProcessed;
         break;
 
     case NEService::eResultType::RequestOK:     // fall through
@@ -323,16 +323,15 @@ void DirectMessagerProxy::processResponse( DirectMessagerResponseEvent & evenEle
     {
         updateData(evenElem, respId);
     }
-       
+
     if (setStates == true)
     {
         setState(static_cast<msg_id>(respId), dataValid ? NEService::eDataStateType::DataIsOK : NEService::eDataStateType::DataIsInvalid);
     }
-    
+
     notifyListeners(static_cast<msg_id>(respId), resultType, evenElem.getSequenceNumber());
 }
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/private/DirectMessagerProxy.cpp file
 //////////////////////////////////////////////////////////////////////////
- 

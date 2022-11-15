@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/ThreadLocalStorage.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -32,22 +32,23 @@ ThreadLocalStorage::ThreadLocalStorage(Thread & owningThread)
 
 ThreadLocalStorage::~ThreadLocalStorage( void )
 {
-    mStorageList.removeAll();
+    mStorageList.clear();
 }
 
 //////////////////////////////////////////////////////////////////////////
 // ThreadLocalStorage class methods
 //////////////////////////////////////////////////////////////////////////
-NEMemory::uAlign ThreadLocalStorage::getStorageItem( const char * Key ) const
+NEMemory::uAlign ThreadLocalStorage::getStorageItem( const String & Key ) const
 {
     NEMemory::uAlign result = NEMemory::InvalidElement;
 
-    LISTPOS pos = mStorageList.firstPosition();
-    for ( ; pos != nullptr; pos = mStorageList.nextPosition(pos))
+    StorageList::LISTPOS pos = mStorageList.firstPosition();
+    for ( ; mStorageList.isValidPosition(pos); pos = mStorageList.nextPosition(pos))
     {
-        if (mStorageList.getAt(pos).mKey == Key)
+        const ThreadLocalStorage::StorageItem& value = mStorageList.valueAtPosition(pos);
+        if (value.first == Key)
         {
-            result = mStorageList.getAt(pos).mValue;
+            result = value.second;
             break;
         }
     }
@@ -55,48 +56,50 @@ NEMemory::uAlign ThreadLocalStorage::getStorageItem( const char * Key ) const
     return result;
 }
 
-void ThreadLocalStorage::setStorageItem(const char* Key, NEMemory::uAlign Value)
+void ThreadLocalStorage::setStorageItem(const String & Key, NEMemory::uAlign Value)
 {
     mStorageList.pushFirst(ThreadLocalStorage::StorageItem(Key, Value));
 }
 
-void ThreadLocalStorage::setStorageItem( const char* Key, const void* Value )
+void ThreadLocalStorage::setStorageItem( const String & Key, const void* Value )
 {
     NEMemory::uAlign aln;
     aln.alignPtr.mElement = (void *)(Value);
     setStorageItem(Key, aln);
 }
 
-void ThreadLocalStorage::setStorageItem( const char * Key, unsigned int Value )
+void ThreadLocalStorage::setStorageItem( const String & Key, unsigned int Value )
 {
     NEMemory::uAlign aln;
     aln.alignUInt.mElement = Value;
     setStorageItem(Key, aln);
 }
 
-void ThreadLocalStorage::setStorageItem( const char * Key, uint64_t Value )
+void ThreadLocalStorage::setStorageItem( const String & Key, uint64_t Value )
 {
     NEMemory::uAlign aln;
     aln.alignUInt64.mElement = Value;
     setStorageItem(Key, aln);
 }
 
-void ThreadLocalStorage::setStorageItem( const char * Key, double Value )
+void ThreadLocalStorage::setStorageItem( const String & Key, double Value )
 {
     NEMemory::uAlign aln;
     aln.alignDouble.mElement = Value;
     setStorageItem(Key, aln);
 }
 
-NEMemory::uAlign ThreadLocalStorage::removeStoragteItem( const char * Key )
+NEMemory::uAlign ThreadLocalStorage::removeStoragteItem( const String & Key )
 {
-    NEMemory::uAlign result = {0};
-    LISTPOS pos = mStorageList.firstPosition();
-    for ( ; pos != nullptr; pos = mStorageList.nextPosition(pos))
+    NEMemory::uAlign result{ {0} };
+    StorageList::LISTPOS pos = mStorageList.firstPosition();
+    for ( ; mStorageList.isValidPosition(pos); pos = mStorageList.nextPosition(pos))
     {
-        if (mStorageList.getAt(pos).mKey == Key)
+        const ThreadLocalStorage::StorageItem & value = mStorageList.valueAtPosition(pos);
+        if (value.first == Key)
         {
-            result = mStorageList.removeAt(pos).mValue;
+            result = value.second;
+            mStorageList.removeAt(pos);
             break;
         }
     }
@@ -104,16 +107,16 @@ NEMemory::uAlign ThreadLocalStorage::removeStoragteItem( const char * Key )
     return result;
 }
 
-bool ThreadLocalStorage::existKey( const char* Key ) const
+bool ThreadLocalStorage::existKey( const String & Key ) const
 {
-    LISTPOS pos = mStorageList.firstPosition();
-    for ( ; pos != nullptr; pos = mStorageList.nextPosition(pos))
+    StorageList::LISTPOS pos = mStorageList.firstPosition();
+    for ( ; mStorageList.isValidPosition(pos); pos = mStorageList.nextPosition(pos))
     {
-        if (mStorageList.getAt(pos).mKey == Key)
+        if (mStorageList.valueAtPosition(pos).first== Key)
             break;
     }
 
-    return (pos != nullptr);
+    return mStorageList.isValidPosition(pos);
 }
 
 const String & ThreadLocalStorage::getName( void ) const

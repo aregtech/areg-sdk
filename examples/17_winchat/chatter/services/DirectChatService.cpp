@@ -35,7 +35,7 @@ NERegistry::Model DirectChatService::GetModel( const NEDirectMessager::sParticip
     {
         const NEDirectConnection::sParticipant & participant = listParticipants[i];
         NERegistry::DependencyEntry entry( NEDistributedApp::getConnectionServiceRole( participant.nickName, participant.cookie ) );
-        listDependencies.add( entry );
+        listDependencies.mListDependencies.add( entry );
     }
 
     NERegistry::ServiceEntry          serviceEntry( NEDirectMessager::ServiceName, NEDirectMessager::InterfaceVersion );
@@ -84,7 +84,7 @@ void DirectChatService::startupComponent( ComponentThread & comThread )
 
     const NEDirectConnection::sInitiator & initiator = mPaticipantsHandler.GetInitiator();
     const NEDirectConnection::ListParticipants & listParticipants = mPaticipantsHandler.GetParticipantList();
-    for ( int i = 0; i < listParticipants.getSize( ); ++ i )
+    for (uint32_t i = 0; i < listParticipants.getSize( ); ++ i )
     {
         const NEDirectConnection::sParticipant & target = listParticipants[i];
         if ( target != initiator )
@@ -100,13 +100,12 @@ void DirectChatService::shutdownComponent( ComponentThread & comThread )
     TRACE_SCOPE( distrbutedapp_DirectChatService_ShutdownComponent );
     mPaticipantsHandler.SetConnectionService( nullptr );
 
-    for ( int i = 0; i < mListClients.getSize(); ++ i )
+    for (uint32_t i = 0; i < mListClients.getSize(); ++ i )
     {
         DirectConnectionClient * client = mListClients[i];
-        if ( client != nullptr )
-            delete client;
+        delete client;
     }
-    mListClients.removeAll();
+    mListClients.clear();
 
     Component::shutdownComponent(comThread);
 }
@@ -124,7 +123,7 @@ void DirectChatService::requestChatJoin( const NEDirectMessager::sParticipant & 
     {
         bool newParticipant = false;
         NEDirectMessager::ListParticipants & chatParticipants = getChatParticipants();
-        if ( chatParticipants.exist(participant, 0) == false )
+        if ( chatParticipants.contains(participant, 0) == false )
         {
             chatParticipants.add(participant);
             newParticipant = true;
@@ -147,7 +146,7 @@ void DirectChatService::requestMessageSend( const NEDirectMessager::sParticipant
 {
     TRACE_SCOPE( distrbutedapp_DirectChatService_RequestMessageSend );
     const NEDirectMessager::ListParticipants & chatParticipants = getChatParticipants( );
-    if ( chatParticipants.exist(participant, 0) )
+    if ( chatParticipants.contains(participant, 0) )
     {
         broadcastMessageSent(participant, msgText, timeSent );
         broadcastMessageTyped( participant, String::EmptyString.data() );
@@ -158,7 +157,7 @@ void DirectChatService::requestMessageType( const NEDirectMessager::sParticipant
 {
     TRACE_SCOPE( distrbutedapp_DirectChatService_RequestMessageType );
     const NEDirectMessager::ListParticipants & chatParticipants = getChatParticipants( );
-    if ( chatParticipants.exist( participant, 0 ) )
+    if ( chatParticipants.contains( participant, 0 ) )
     {
         broadcastMessageTyped( participant, msgText );
     }
@@ -168,7 +167,7 @@ void DirectChatService::requestChatLeave( const NEDirectMessager::sParticipant &
 {
     TRACE_SCOPE( distrbutedapp_DirectChatService_RequestChatLeave );
     NEDirectMessager::ListParticipants & chatParticipants = getChatParticipants( );
-    if ( chatParticipants.remove( participant, 0 ) )
+    if ( chatParticipants.removeElem( participant, 0 ) )
     {
         broadcastParticipantLeft( participant, timeLeave );
         notifyChatParticipantsUpdated( );

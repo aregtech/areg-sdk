@@ -2,9 +2,9 @@
 // Begin generate generated/src/private/HelloWorldStub.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  13:08:11 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/HelloWorldStub.hpp
@@ -20,7 +20,8 @@
 #include "generated/src/private/HelloWorldEvents.hpp"
 
 #include "areg/component/ServiceResponseEvent.hpp"
-#include "areg/base/Thread.hpp"
+#include "areg/component/Component.hpp"
+#include "areg/component/ComponentThread.hpp"
 #include "areg/trace/GETrace.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -32,7 +33,7 @@
 //////////////////////////////////////////////////////////////////////////
 HelloWorldStub::HelloWorldStub( Component & masterComp )
     : StubBase    ( masterComp, NEHelloWorld::getInterfaceData() )
-    
+
     , mConnectedClients       (  )
     , mConnectedClientsState  ( NEService::eDataStateType::DataIsUnavailable )
     
@@ -59,9 +60,9 @@ DEF_TRACE_SCOPE(generated_src_HelloWorldStub_startupServiceInterface);
 void HelloWorldStub::startupServiceInterface( Component & holder )
 {
     TRACE_SCOPE(generated_src_HelloWorldStub_startupServiceInterface);
-    
-    HelloWorldRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
-    HelloWorldNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
+
+    HelloWorldRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
+    HelloWorldNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
     StubBase::startupServiceInterface( holder );
 
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] has been started and is available ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
@@ -72,9 +73,9 @@ void HelloWorldStub::shutdownServiceIntrface( Component & holder )
 {
     TRACE_SCOPE(generated_src_HelloWorldStub_shutdownServiceIntrface);
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] is shutting down and not available anymore ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
-    
-    HelloWorldRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
-    HelloWorldNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
+
+    HelloWorldRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
+    HelloWorldNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
     StubBase::shutdownServiceIntrface( holder );
 }
 
@@ -118,7 +119,7 @@ void HelloWorldStub::errorRequest( unsigned int msgId, bool msgCancel )
 {
     NEService::eResultType result = NEService::eResultType::NotProcessed;
     msg_id listenerId = msgId;
-    
+
     switch ( static_cast<NEHelloWorld::eMessageIDs>(msgId) )
     {
 /************************************************************************
@@ -160,7 +161,7 @@ void HelloWorldStub::errorRequest( unsigned int msgId, bool msgCancel )
         ASSERT(false);
         break;
     }
-    
+
     StubBase::StubListenerList listeners;
     if ( findListeners(listenerId, listeners) > 0 )
     {
@@ -253,24 +254,22 @@ void HelloWorldStub::processRequestEvent( ServiceRequestEvent & eventElem )
             if ( canExecuteRequest(listener, static_cast<msg_id>(respId), reqEvent->getSequenceNumber()) )
             {
                 String  roleName;
-                String  addMessage  = "";
-                stream >> roleName;                
-                stream >> addMessage;                
-                requestHelloWorld( roleName, addMessage );
+                stream >> roleName;
+                requestHelloWorld( roleName );
             }
             break;
-            
+
         case NEHelloWorld::eMessageIDs::MsgId_requestClientShutdown:
             if ( true )
             {
                 unsigned int    clientID;
                 String          roleName;
-                stream >> clientID;                
-                stream >> roleName;                
+                stream >> clientID;
+                stream >> roleName;
                 requestClientShutdown( clientID, roleName );
             }
             break;
-            
+
         default:
             {
                 TRACE_SCOPE(generated_src_HelloWorldStub_processRequestEvent);

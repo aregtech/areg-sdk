@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_PRIVATE_SERVERLIST_HPP
+#define AREG_COMPONENT_PRIVATE_SERVERLIST_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ServerList.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -35,7 +36,7 @@ class ProxyAddress;
 /**
  * \brief   Server List helper class.
  **/
-using ImplServerList    = TEHashMapImpl<const ServerInfo &, const ClientList &>;
+using ServerListBase    = TEHashMap<ServerInfo, ClientList>;
 
 /**
  * \brief   Server List is a Hash Map class containing information
@@ -46,16 +47,8 @@ using ImplServerList    = TEHashMapImpl<const ServerInfo &, const ClientList &>;
  *          The controlling of server and connected clients done via
  *          registration of client(s).
  **/
-class ServerList  : public TEHashMap<ServerInfo, ClientList, const ServerInfo &, const ClientList &, ImplServerList>
+class ServerList  : public ServerListBase
 {
-//////////////////////////////////////////////////////////////////////////
-// Predefined types and constants
-//////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   ServerList::ServiceBlock
-     *          Define Block class of Hash Map as ServiceBlock. Defined to short syntax.
-     **/
-    using ServiceBlock  = TEHashMap<ServerInfo, ClientList, const ServerInfo &, const ClientList &, ImplServerList>::Block;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -172,17 +165,17 @@ private:
     /**
      * \brief   Find server component by client proxy address.
      **/
-    MAPPOS findServer( const ProxyAddress & whichClient ) const;
+    MAPPOS findServer(const ProxyAddress& whichClient) const;
 
     /**
      * \brief   Find server component by service address.
      **/
-    MAPPOS findServer( const StubAddress & whichServer ) const;
+    MAPPOS findServer(const StubAddress& whichServer) const;
 
     /**
      * \brief   Find server component by server info.
      **/
-    MAPPOS findServer( const ServerInfo & server ) const;
+    MAPPOS findServer(const ServerInfo& server) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -191,6 +184,4 @@ private:
     DECLARE_NOCOPY_NOMOVE( ServerList );
 };
 
-//////////////////////////////////////////////////////////////////////////
-// ServerList class inline functions
-//////////////////////////////////////////////////////////////////////////
+#endif  // AREG_COMPONENT_PRIVATE_SERVERLIST_HPP

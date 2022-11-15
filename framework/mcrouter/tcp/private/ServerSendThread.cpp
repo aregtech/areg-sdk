@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        mcrouter/tcp/private/ServerSendThread.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -14,7 +14,9 @@
  ************************************************************************/
 #include "mcrouter/tcp/private/ServerSendThread.hpp"
 
+#include "mcrouter/app/MulticastRouter.hpp"
 #include "mcrouter/tcp/private/ServerConnection.hpp"
+
 #include "areg/ipc/NEConnection.hpp"
 #include "areg/ipc/IERemoteServiceHandler.hpp"
 #include "areg/component/NEService.hpp"
@@ -28,6 +30,7 @@ ServerSendThread::ServerSendThread(IERemoteServiceHandler & remoteService, Serve
     , IESendMessageEventConsumer( )
     , mRemoteService            ( remoteService )
     , mConnection               ( connection )
+    , mBytesSend                ( 0 )
 {
 }
 
@@ -49,7 +52,7 @@ void ServerSendThread::processEvent( const SendMessageEventData & data )
     {
         ITEM_ID target = static_cast<ITEM_ID>(msgSend.getTarget());
         SocketAccepted client = mConnection.getClientByCookie(target);
-        
+
         TRACE_DBG("Sending message [ %s ] (ID = [ %u ]) to client [ %s : %d ] of socket [ %u ]. The message sent from source [ %u ] to target [ %u ]"
                     , NEService::getString( static_cast<NEService::eFuncIdRange>(msgSend.getMessageId()) )
                     , static_cast<unsigned int>(msgSend.getMessageId())
@@ -59,7 +62,8 @@ void ServerSendThread::processEvent( const SendMessageEventData & data )
                     , static_cast<unsigned int>(msgSend.getSource())
                     , static_cast<unsigned int>(msgSend.getTarget()));
 
-        if ( (client.isAlive() == false) || (mConnection.sendMessage( msgSend, client ) <= 0) )
+        int sentBytes = 0;
+        if ( (client.isAlive() == false) || ((sentBytes = mConnection.sendMessage( msgSend, client )) <= 0) )
         {
             TRACE_WARN("Failed to send message [ %u ] to target [ %u ], client is [ %s ]"
                             , msgSend.getMessageId()
@@ -70,6 +74,7 @@ void ServerSendThread::processEvent( const SendMessageEventData & data )
         }
         else
         {
+            mBytesSend += sentBytes;
             TRACE_DBG("Succeeded to send message [ %u ] to target [ %p ]", msgSend.getMessageId(), static_cast<id_type>(msgSend.getTarget()));
         }
     }

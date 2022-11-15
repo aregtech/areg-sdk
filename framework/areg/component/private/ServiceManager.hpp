@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_PRIVATE_SERVICEMANAGER_HPP
+#define AREG_COMPONENT_PRIVATE_SERVICEMANAGER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ServiceManager.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -42,9 +43,9 @@ class ServiceResponseEvent;
 /**
  * \brief   Service Manager is a singleton module, which should be instantiated
  *          and run on System Startup. The service manager is responsible
- *          for service regustration and automated service disconvery.
+ *          for service registration and automated service discovery.
  * 
- *          All system proxies and serviers are automatically registered at
+ *          All system proxies and servers are automatically registered at
  *          Service Manager. As soon as a service server is available, the
  *          Service Manager generates appropriate events and automatically
  *          sends notifications to proxies to notify service availability, 
@@ -140,6 +141,17 @@ public:
     static void requestUnregisterClient( const ProxyAddress & whichClient );
 
     /**
+     * \brief   Static method to be called globally.
+     *          The function is called if the component thread should be terminated and
+     *          restarted again. This will terminate all worker threads, components, service,
+     *          and the proxies of the component thread. Delete and re-create and restart the
+     *          component thread, so that it can restart again.
+     * 
+     * \param   whichThread     The instance of valid component thread.
+     */
+    static void requestRecreateThread( const ComponentThread & whichThread );
+
+    /**
      * \brief   The function returns true, if Service Manager is running and ready to
      *          process Service Manager Events. Otherwise, it returns false.
      **/
@@ -164,7 +176,7 @@ private:
     /**
      * \brief   This function called, when Service Manager should stop activities.
      *          The function is called from application manager when all
-     *          Component Threads are stopped and completed completed.
+     *          Component Threads are stopped and completed.
      **/
     static void _stopServiceManager( void );
 
@@ -183,7 +195,7 @@ private:
      *          Otherwise, it returns false.
      * \see     _routingServiceStart
      **/
-    static bool _routingServiceConfigure( const char * configFile = nullptr );
+    static bool _routingServiceConfigure( const String & configFile = String::EmptyString );
 
     /**
      * \brief   Call to start the client part of remove Routing Service.
@@ -194,7 +206,7 @@ private:
      * \return  Returns true if succeeded to start router client.
      * \see     _routingServiceConfigure, _routingServiceStop
      **/
-    static bool _routingServiceStart( const char * configFile = nullptr );
+    static bool _routingServiceStart( const String & configFile = String::EmptyString );
 
 
     /**
@@ -205,7 +217,7 @@ private:
      * \return  Returns true if router client successfully started.
      * \see     _routingServiceConfigure, _routingServiceStop
      **/
-    static bool _routingServiceStart( const char * ipAddress, unsigned short portNr );
+    static bool _routingServiceStart( const String & ipAddress, unsigned short portNr );
 
     /**
      * \brief   Call to stop router client.
@@ -235,6 +247,14 @@ private:
      * \brief   Returns true if remote Routing Service is enabled.
      **/
     static bool _isRoutingServiceEnabled( void );
+
+    /**
+     * \brief   The function generates an event to create and start component thread.
+     *          Only for internal use.
+     * 
+     * \param   componentThread The name of the thread to create and restart.
+     **/
+    static void _requestCreateThread( const String & componentThread );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -285,7 +305,7 @@ private:
      * \param   out_listStubs   On output this will contain list of remote stub addresses connected with specified cookie value.
      * \param   out_lisProxies  On output this will contain list of remote proxy addresses connected with specified cookie value.
      **/
-    virtual void getServiceList( ITEM_ID cookie, TEArrayList<StubAddress, const StubAddress &> & OUT out_listStubs, TEArrayList<ProxyAddress, const ProxyAddress &> & OUT out_lisProxies ) const override;
+    virtual void getServiceList( ITEM_ID cookie, TEArrayList<StubAddress> & OUT out_listStubs, TEArrayList<ProxyAddress> & OUT out_lisProxies ) const override;
 
     /**
      * \brief   Registers remote stub in the current process.
@@ -453,6 +473,21 @@ private:
     void _stopServiceManagerThread( void );
 
     /**
+     * \brief   Terminates the component thread. No guarantee that all resources are cleanup.
+     *          After processing this method the thread is not operable anymore.
+     * \param   threadName  The name of component thread to terminate.
+     **/
+    bool _terminateComponentThread( const String& threadName );
+    
+    /**
+     * \brief   Creates new instance of the component thread after it was terminated.
+     *          All components, services, proxies and worker threads related with the
+     *          component thread are restarted again.
+     * \param   threadName  The name of the thread to re-start.
+     */
+    void _startComponentThread( const String & threadName );
+
+    /**
      * \brief   Returns reference to ServiceManager object
      **/
     inline ServiceManager & self( void );
@@ -489,3 +524,5 @@ inline ServiceManager & ServiceManager::self( void )
 {
     return (*this);
 }
+
+#endif  // AREG_COMPONENT_PRIVATE_SERVICEMANAGER_HPP

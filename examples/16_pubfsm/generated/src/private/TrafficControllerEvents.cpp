@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:14 GMT+02:00 
+ * Generated at     13.08.2022  02:47:36 GMT+02:00
  *                  Create by AREG SDK code generator tool from source TrafficController.
  *
  * \file            generated/src/private/TrafficControllerEvents.hpp
@@ -17,8 +17,8 @@
 /************************************************************************
  * Include files
  ************************************************************************/
- #include "generated/src/private/TrafficControllerEvents.hpp"
- 
+#include "generated/src/private/TrafficControllerEvents.hpp"
+
 //////////////////////////////////////////////////////////////////////////
 // TrafficControllerRequestEvent class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ TrafficControllerRequestEvent::TrafficControllerRequestEvent( const EventDataStr
 TrafficControllerRequestEvent::TrafficControllerRequestEvent( const IEInStream & stream )
     : RemoteRequestEvent( stream )
 {
-}    
+}
 
 //////////////////////////////////////////////////////////////////////////
 // TrafficControllerNotifyRequestEvent class implementation
@@ -72,7 +72,7 @@ TrafficControllerNotifyRequestEvent::TrafficControllerNotifyRequestEvent( const 
 TrafficControllerNotifyRequestEvent::TrafficControllerNotifyRequestEvent( const IEInStream & stream )
     : RemoteNotifyRequestEvent( stream )
 {
-}    
+}
 
 //////////////////////////////////////////////////////////////////////////
 // TrafficControllerResponseEvent class implementation
@@ -106,7 +106,7 @@ TrafficControllerResponseEvent::TrafficControllerResponseEvent( const ProxyAddre
 TrafficControllerResponseEvent::TrafficControllerResponseEvent( const IEInStream & stream )
     : RemoteResponseEvent( stream )
 {
-}    
+}
 
 //////////////////////////////////////////////////////////////////////////
 // TrafficControllerResponseEvent class, Methods

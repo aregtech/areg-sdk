@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech (c) 2021
+// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
 // Description : This project demonstrates how to instantiate multiple 
 //               instances of the same service differing by names. It is an
 //               extension of 08_service, uses empty services and instantiates
@@ -46,7 +46,7 @@ constexpr char const _modelName[] { "TestModel" };  //!< The name of model
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestServiceThread1" )
+    BEGIN_REGISTER_THREAD( "TestServiceThread1", NECommon::WATCHDOG_IGNORE)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( "TestService1", ServicingComponent )
             // register dummy 'empty service'. In this example we demonstrate simple initialization
@@ -67,7 +67,7 @@ BEGIN_MODEL(_modelName)
     //////////////////////////////////////////////////////////////////////////
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestServiceThread2" )
+    BEGIN_REGISTER_THREAD( "TestServiceThread2", NECommon::WATCHDOG_IGNORE)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( "TestService2", ServicingComponent )
             // register dummy 'empty service'. In this example we demonstrate simple initialization
@@ -94,8 +94,8 @@ int main()
 
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START( nullptr );
-    // Initialize application, enable logging, servicing and the timer.
-    Application::initApplication(true, true, false, true, nullptr, nullptr );
+    // Initialize application, enable logging, servicing, timer and watchdog.
+    Application::initApplication(true, true, false, true, true, nullptr, nullptr );
 
     do 
     {
@@ -106,7 +106,7 @@ int main()
         Application::loadModel(_modelName);
 
         TRACE_DBG("Servicing model is loaded");
-        
+
         // wait until 'gExit' event is signaled
         Application::waitAppQuit(NECommon::WAIT_INFINITE);
 
@@ -117,7 +117,7 @@ int main()
         Application::releaseApplication();
 
     } while (false);
-    
+
     printf("Completed testing multiple empty servicing components, check logs...\n");
 
 	return 0;

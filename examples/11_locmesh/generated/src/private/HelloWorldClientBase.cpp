@@ -2,9 +2,9 @@
 // Begin generate generated/src/private/HelloWorldClientBase.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  13:08:11 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/HelloWorldClientBase.hpp
@@ -30,7 +30,7 @@ namespace NEHelloWorld
      * \brief   Initialize request failure function pointers to make error handling
      **/
     typedef void (HelloWorldClientBase::* FuncRequestFailure) ( NEService::eResultType );
-    static FuncRequestFailure failureFunctions[] = 
+    static constexpr FuncRequestFailure failureFunctions[]
     {
           &HelloWorldClientBase::requestHelloWorldFailed
         , &HelloWorldClientBase::requestClientShutdownFailed
@@ -45,7 +45,7 @@ namespace NEHelloWorld
  * Constructor / Destructor
  ************************************************************************/
 
-HelloWorldClientBase::HelloWorldClientBase( const char * roleName, const char * ownerThread /*= nullptr*/ )
+HelloWorldClientBase::HelloWorldClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -54,7 +54,7 @@ HelloWorldClientBase::HelloWorldClientBase( const char * roleName, const char * 
 {
 }
 
-HelloWorldClientBase::HelloWorldClientBase( const char * roleName, DispatcherThread & ownerThread )
+HelloWorldClientBase::HelloWorldClientBase( const String & roleName, DispatcherThread & ownerThread )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -63,7 +63,7 @@ HelloWorldClientBase::HelloWorldClientBase( const char * roleName, DispatcherThr
 {
 }
 
-HelloWorldClientBase::HelloWorldClientBase( const char* roleName, Component & owner )
+HelloWorldClientBase::HelloWorldClientBase( const String & roleName, Component & owner )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -80,7 +80,7 @@ HelloWorldClientBase::~HelloWorldClientBase( void )
         mProxy->freeProxy( static_cast<IEProxyListener &>(self()) );
         mProxy  = nullptr;
     }
-    
+
     mIsConnected= false;
 }
 
@@ -93,11 +93,11 @@ bool HelloWorldClientBase::recreateProxy( void )
     bool result         = false;
     if (mProxy != nullptr)
     {
-        String roleName   = mProxy->getProxyAddress().getRoleName();
-        String threadName = mProxy->getProxyAddress().getThread();
+        const String & roleName   = mProxy->getProxyAddress().getRoleName();
+        const String & threadName = mProxy->getProxyAddress().getThread();
         if ( roleName.isEmpty() == false )
         {
-            HelloWorldProxy * newProxy = HelloWorldProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(self()), threadName.getString());
+            HelloWorldProxy * newProxy = HelloWorldProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), threadName);
             if (newProxy != nullptr)
             {
                 mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
@@ -105,8 +105,9 @@ bool HelloWorldClientBase::recreateProxy( void )
                 mProxy = newProxy;
                 result = true;
             }
-        }    
+        }
     }
+
     return result;
 }
 
@@ -119,7 +120,7 @@ DEF_TRACE_SCOPE(generated_src_HelloWorldClientBase_serviceConnected);
 bool HelloWorldClientBase::serviceConnected( bool isConnected, ProxyBase & proxy )
 {
     TRACE_SCOPE(generated_src_HelloWorldClientBase_serviceConnected);
-    
+
     bool result = false;
     if(mProxy == &proxy)
     {
@@ -128,11 +129,11 @@ bool HelloWorldClientBase::serviceConnected( bool isConnected, ProxyBase & proxy
                  , proxy.getProxyAddress().getServiceName().getString()
                  , proxy.getProxyAddress().getRoleName().getString()
                  , isConnected ? "CONNECTED" : "DISCONNECTED");
-        
+
         mIsConnected= isConnected;
         result      = true;
     }
-    
+
     return result;
 }
 
@@ -172,7 +173,7 @@ void HelloWorldClientBase::processNotificationEvent( NotificationEvent & eventEl
     case NEService::eResultType::RequestInvalid:
         {
         /************************************************************************
-         * Trigger invalid response / broadcast handling. May happen when remove notification 
+         * Trigger invalid response / broadcast handling. May happen when remove notification
          ************************************************************************/
             HelloWorldClientBase::invalidResponse(msgId);
         }
@@ -292,7 +293,7 @@ void HelloWorldClientBase::invalidRequest( NEHelloWorld::eMessageIDs InvalidReqI
                     , NEHelloWorld::getString(InvalidReqId)
                     , static_cast<unsigned int>(InvalidReqId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString() );
-                    
+
     ASSERT(false);
 }
 
@@ -305,7 +306,7 @@ void HelloWorldClientBase::requestFailed( NEHelloWorld::eMessageIDs FailureMsgId
                     , static_cast<unsigned int>(FailureMsgId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason) );
-                    
+
     unsigned int index = static_cast<msg_id>(NEHelloWorld::eMessageIDs::MsgId_Invalid);
     index = static_cast<msg_id>( NEService::isResponseId(static_cast<unsigned int>(FailureMsgId)) ? NEHelloWorld::getRequestId(FailureMsgId) : FailureMsgId);
     index = NEService::isRequestId(index)  ? GET_REQ_INDEX(index) : static_cast<msg_id>(NEHelloWorld::eMessageIDs::MsgId_Invalid);
@@ -344,7 +345,7 @@ void HelloWorldClientBase::onRemainOutputUpdate( short /* RemainOutput */, NESer
 /************************************************************************
  * Request failure / Response and Broadcast notifications
  ************************************************************************/
- 
+
 DEF_TRACE_SCOPE(generated_src_HelloWorldClientBase_requestHelloWorldFailed);
 void HelloWorldClientBase::requestHelloWorldFailed( NEService::eResultType FailureReason )
 {

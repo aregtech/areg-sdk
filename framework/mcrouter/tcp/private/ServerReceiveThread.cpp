@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        mcrouter/tcp/private/ServerReceiveThread.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -14,8 +14,10 @@
  ************************************************************************/
 #include "mcrouter/tcp/private/ServerReceiveThread.hpp"
 
+#include "mcrouter/app/MulticastRouter.hpp"
 #include "mcrouter/tcp/private/IEServerConnectionHandler.hpp"
 #include "mcrouter/tcp/private/ServerConnection.hpp"
+
 #include "areg/ipc/IERemoteServiceHandler.hpp"
 #include "areg/ipc/NEConnection.hpp"
 #include "areg/base/RemoteMessage.hpp"
@@ -30,6 +32,7 @@ ServerReceiveThread::ServerReceiveThread( IEServerConnectionHandler & connectHan
     , mRemoteService    ( remoteService )
     , mConnectHandler   ( connectHandler )
     , mConnection       ( connection )
+    , mBytesReceive     ( 0 )
 {
 }
 
@@ -47,6 +50,7 @@ bool ServerReceiveThread::runDispatcher(void)
         MultiLock multiLock(syncObjects, 2, false);
 
         RemoteMessage msgReceived;
+        uint32_t retryCount = 0;
         do 
         {
             whichEvent = multiLock.lock(NECommon::DO_NOT_WAIT, false);
@@ -55,8 +59,20 @@ bool ServerReceiveThread::runDispatcher(void)
                 whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue); // escape quit
                 NESocket::SocketAddress addrAccepted;
                 SOCKETHANDLE hSocket = mConnection.waitForConnectionEvent(addrAccepted);
-                if ( hSocket != NESocket::InvalidSocketHandle )
+
+                if (hSocket == NESocket::FailedSocketHandle)
                 {
+                    TRACE_WARN("Failed selecting server socket, going to retry [ %d ] times before restart.", (RETRY_COUNT - retryCount - 1));
+                    if (++retryCount >= RETRY_COUNT)
+                    {
+                        mConnectHandler.connectionFailure();
+                        whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventExit);
+                    }
+                }
+                else if ( hSocket != NESocket::InvalidSocketHandle )
+                {
+                    retryCount = 0;
+
                     SocketAccepted clientSocket;
                     if (mConnection.isConnectionAccepted(hSocket) )
                     {
@@ -92,7 +108,8 @@ bool ServerReceiveThread::runDispatcher(void)
                     }
 
                     const NESocket::SocketAddress& addSocket = clientSocket.getAddress();
-                    if ( mConnection.receiveMessage(msgReceived, clientSocket) > 0 )
+                    int sizeReceived = mConnection.receiveMessage(msgReceived, clientSocket);
+                    if (sizeReceived > 0 )
                     {
                         TRACE_DBG("Received message [ %p ] from source [ %p ], client [ %s : %d ]"
                                     , static_cast<id_type>(msgReceived.getMessageId())
@@ -100,6 +117,7 @@ bool ServerReceiveThread::runDispatcher(void)
                                     , addSocket.getHostAddress().getString()
                                     , addSocket.getHostPort());
 
+                        mBytesReceive += sizeReceived;
                         mRemoteService.processReceivedMessage(msgReceived, addSocket, clientSocket.getHandle());
                     }
                     else

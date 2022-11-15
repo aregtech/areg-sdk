@@ -1,7 +1,7 @@
-#ifndef MCROUTER_RESOUR_TARGETVER_HPP
-#define MCROUTER_RESOUR_TARGETVER_HPP
+#ifndef AREG_MCROUTER_RESOUR_TARGETVER_HPP
+#define AREG_MCROUTER_RESOUR_TARGETVER_HPP
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
 
 
 // Including SDKDDKVer.h defines the highest available Windows platform.
@@ -11,6 +11,6 @@
 
 #include <SDKDDKVer.h>
 
-#endif // WINDOWS
+#endif // _WINDOWS
 
-#endif // !MCROUTER_RESOUR_TARGETVER_HPP
+#endif // AREG_MCROUTER_RESOUR_TARGETVER_HPP

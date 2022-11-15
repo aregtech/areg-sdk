@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_IPC_PRIVATE_CLIENTCONNECTION_HPP
+#define AREG_IPC_PRIVATE_CLIENTCONNECTION_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/ipc/private/ClientConnection.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -55,7 +56,7 @@ public:
      *                      is setup for localhost.
      * \param   portNr      Port number of remote server to connect, should not be invalid port.
      **/
-    ClientConnection( const char * hostName, unsigned short portNr );
+    ClientConnection( const String & hostName, unsigned short portNr );
 
     /**
      * \brief   Creates instance of object with invalid socket object. Before sending
@@ -105,7 +106,7 @@ public:
      * \param   portNr      Valid port number of socket connection.
      * \return  Returns true if succeeded to resolve and set Socket Address.
      **/
-    bool setAddress( const char * hostName, unsigned short portNr );
+    bool setAddress( const String & hostName, unsigned short portNr );
 
     /**
      * \brief   Sets socket address. The address should be either invalid
@@ -137,7 +138,7 @@ public:
      * \param   portNr      The valid port number to connect.
      * \return  Returns true if operation succeeded.
      **/
-    bool createSocket( const char * hostName, unsigned short portNr );
+    bool createSocket( const String & hostName, unsigned short portNr );
 
     /**
      * \brief   Before sending or receiving any data from remote host,
@@ -249,7 +250,7 @@ private:
 // ClientConnection class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline bool ClientConnection::setAddress(const char * hostName, unsigned short portNr)
+inline bool ClientConnection::setAddress(const String & hostName, unsigned short portNr)
 {
     return mClientSocket.setAddress(hostName, portNr, false);
 }
@@ -303,3 +304,5 @@ inline int ClientConnection::receiveMessage(RemoteMessage & out_message) const
 {
     return SocketConnectionBase::receiveMessage(out_message, mClientSocket);
 }
+
+#endif  // AREG_IPC_PRIVATE_CLIENTCONNECTION_HPP

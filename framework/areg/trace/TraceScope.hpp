@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_TRACE_TRACESCOPE_HPP
+#define AREG_TRACE_TRACESCOPE_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/trace/TraceScope.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -106,6 +107,7 @@ public:
      * \param   newPrio     The name of message priority to set
      **/
     inline void setPriority( const char * newPrio );
+    inline void setPriority( const String & newPrio );
 
     /**
      * \brief   Adds the message priority of scope by given value of priority.
@@ -120,6 +122,7 @@ public:
      * \param   addPrio     The name of message priority to add
      **/
     inline void addPriority( const char * addPrio );
+    inline void addPriority( const String & addPrio );
 
     /**
      * \brief   Removes the message priority of scope by given value of priority.
@@ -134,6 +137,7 @@ public:
      * \param   remPrio     The name of message priority to remove
      **/
     inline void removePriority( const char * remPrio );
+    inline void removePriority( const String & remPrio );
 
     /**
      * \brief   Returns value of trace scope message priority
@@ -185,6 +189,25 @@ private:
     DECLARE_NOCOPY_NOMOVE( TraceScope );
 };
 
+//////////////////////////////////////////////////////////////////////////
+// Hasher of TraceScope class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the TraceScope.
+ */
+namespace std
+{
+    template<>
+    struct hash<TraceScope>
+    {
+        //! A function to convert TraceScope object to unsigned int.
+        inline unsigned int operator()(const TraceScope& key) const
+        {
+            return static_cast<unsigned int>(key);
+        }
+    };
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // TraceScope class inline functions implementation
 //////////////////////////////////////////////////////////////////////////////
@@ -209,6 +232,11 @@ inline void TraceScope::setPriority( const char * newPrio )
     setPriority( NETrace::convFromString(newPrio) );
 }
 
+inline void TraceScope::setPriority( const String & newPrio )
+{
+    setPriority( NETrace::convFromString(newPrio) );
+}
+
 inline void TraceScope::addPriority( NETrace::eLogPriority addPrio )
 {
     mScopePrio  |= static_cast<unsigned int>(addPrio);
@@ -219,12 +247,22 @@ inline void TraceScope::addPriority( const char * addPrio )
     addPriority( NETrace::convFromString(addPrio) );
 }
 
+inline void TraceScope::addPriority( const String & addPrio )
+{
+    addPriority( NETrace::convFromString(addPrio) );
+}
+
 inline void TraceScope::removePriority( NETrace::eLogPriority remPrio )
 {
     mScopePrio  &= ~static_cast<unsigned int>(remPrio);
 }
 
 inline void TraceScope::removePriority( const char * remPrio )
+{
+    removePriority( NETrace::convFromString(remPrio) );
+}
+
+inline void TraceScope::removePriority( const String & remPrio )
 {
     removePriority( NETrace::convFromString(remPrio) );
 }
@@ -243,3 +281,5 @@ inline const String & TraceScope::getScopeName( void ) const
 {
     return mScopeName;
 }
+
+#endif  // AREG_TRACE_TRACESCOPE_HPP

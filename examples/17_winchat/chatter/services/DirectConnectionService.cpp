@@ -103,13 +103,13 @@ inline bool DirectConnectionService::isInitiatorValid( const NEDirectConnection:
 
 inline bool DirectConnectionService::exists( const NEDirectConnection::sInitiator & initiator ) const
 {
-    return (getInitiatedConnections().find(initiator) != nullptr);
+    return (getInitiatedConnections().contains(initiator));
 }
 
 uint64_t DirectConnectionService::getSession( const NEDirectConnection::ListParticipants & listParticipants )
 {
     uint64_t result = NEDirectConnection::InvalidSession;
-    for ( int i = 0; i < listParticipants.getSize(); ++ i )
+    for (uint32_t i = 0; i < listParticipants.getSize(); ++ i )
     {
         const NEDirectConnection::sParticipant & participant = listParticipants[i];
         if ( (participant.nickName == mNickName) && (participant.cookie == mCookie) )
@@ -137,7 +137,7 @@ void DirectConnectionService::requestConnectoinSetup( const NEDirectConnection::
     {
         if ( exists(initiator) == false )
         {
-            TRACE_DBG("[ %s ] at timestampt [ %s ] initiated chat with [ %d ] clients. Setting up chat."
+            TRACE_DBG("[ %s ] at time-stamps [ %s ] initiated chat with [ %d ] clients. Setting up chat."
                             , initiator.nickName.getBuffer()
                             , DateTime(initiator.sessionId).formatTime().getBuffer()
                             , listParticipants.getSize() );
@@ -165,7 +165,7 @@ void DirectConnectionService::requestConnectoinSetup( const NEDirectConnection::
         {
             const NEDirectConnection::MapParticipants &  mapParticipants = getInitiatedConnections( );
             const NEDirectConnection::ListParticipants & listParticipants= mapParticipants.getAt(initiator);
-            TRACE_WARN("[ %s ] at timestampt [ %s ] has already initiated chat with [ %d ] clients. Ignoring chat setup."
+            TRACE_WARN("[ %s ] at time-stamps [ %s ] has already initiated chat with [ %d ] clients. Ignoring chat setup."
                             , participant.nickName.getString()
                             , DateTime(initiator.sessionId).formatTime().getString()
                             , mapParticipants.getSize() );
@@ -191,7 +191,7 @@ void DirectConnectionService::requestAddParticipant( const NEDirectConnection::s
     {
         if ( exists(initiator) == true )
         {
-            TRACE_DBG("[ %s ] at timestampt [ %s ] is adding chat participants of [ %d ] clients."
+            TRACE_DBG("[ %s ] at time-stamps [ %s ] is adding chat participants of [ %d ] clients."
                             , initiator.nickName.getBuffer()
                             , DateTime(initiator.sessionId).formatTime().getBuffer()
                             , listParticipants.getSize() );
@@ -207,7 +207,7 @@ void DirectConnectionService::requestAddParticipant( const NEDirectConnection::s
         }
         else
         {
-            TRACE_WARN("[ %s ] at timestampt [ %s ] has no participants. Ignoring request to add participants."
+            TRACE_WARN("[ %s ] at time-stamps [ %s ] has no participants. Ignoring request to add participants."
                             , initiator.nickName.getBuffer()
                             , DateTime(initiator.sessionId).formatTime().getBuffer() );
             responseAddParticipant(false, NEDirectConnection::ListParticipants());
@@ -228,17 +228,17 @@ void DirectConnectionService::requestRemoveParticipant( const NEDirectConnection
     {
         if ( exists(initiator) == true )
         {
-            TRACE_DBG("[ %s ] at timestampt [ %s ] is removing chat participants of [ %d ] clients."
+            TRACE_DBG("[ %s ] at time-stamps [ %s ] is removing chat participants of [ %d ] clients."
                             , initiator.nickName.getBuffer()
                             , DateTime(initiator.sessionId).formatTime().getBuffer()
                             , listParticipants.getSize() );
 
             NEDirectConnection::MapParticipants & mapParticpants = getInitiatedConnections( );
             NEDirectConnection::ListParticipants listRegistered( mapParticpants.getAt( initiator ) );
-            for ( int i = 0; i < listParticipants.getSize(); ++ i )
+            for (uint32_t i = 0; i < listParticipants.getSize(); ++ i )
             {
                 const NEDirectConnection::sParticipant & particpant = listParticipants[i];
-                for ( int j = 0; j < listRegistered.getSize(); ++ j )
+                for (uint32_t j = 0; j < listRegistered.getSize(); ++ j )
                 {
                     if ( particpant == listRegistered[j] )
                     {
@@ -255,6 +255,7 @@ void DirectConnectionService::requestRemoveParticipant( const NEDirectConnection
             {
                 mapParticpants.setAt(initiator, listRegistered);
             }
+
             responseRemoveParticipant( true, listRegistered );
             NEDirectConnection::sInitiator      * wParam = new NEDirectConnection::sInitiator(initiator);
             NEDirectConnection::ListParticipants* lParam = new NEDirectConnection::ListParticipants(listRegistered);
@@ -262,7 +263,7 @@ void DirectConnectionService::requestRemoveParticipant( const NEDirectConnection
         }
         else
         {
-            TRACE_WARN("[ %s ] at timestampt [ %s ] has no participants. Ignoring request to remove participants."
+            TRACE_WARN("[ %s ] at time-stamps [ %s ] has no participants. Ignoring request to remove participants."
                             , initiator.nickName.getBuffer()
                             , DateTime(initiator.sessionId).formatTime().getBuffer() );
             responseRemoveParticipant(false, NEDirectConnection::ListParticipants());

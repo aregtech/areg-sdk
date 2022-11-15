@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_IECURSORPOSITION_HPP
+#define AREG_BASE_IECURSORPOSITION_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/IECursorPosition.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -150,3 +151,5 @@ inline bool IECursorPosition::moveToEnd( void ) const
 {
     return (setPosition(0, IECursorPosition::eCursorPosition::PositionEnd)   != IECursorPosition::INVALID_CURSOR_POSITION);
 }
+
+#endif  // AREG_BASE_IECURSORPOSITION_HPP

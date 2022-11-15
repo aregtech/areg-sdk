@@ -25,8 +25,8 @@ public:
      *          This call will be automatically triggered, on every appropriate request call
      * \param   succeed         Flag, indicating whether connection is accepted or not.
      * \param   listParticipant The list of participants.
-     * \param   timeConnect     Timestamp when it was requested to join chat
-     * \param   timeConnected   Timestamp when the request to join was accepted and new participants was registered.
+     * \param   timeConnect     Time-stamp when it was requested to join chat
+     * \param   timeConnected   Time-stamp when the request to join was accepted and new participants was registered.
      * \see     requestChatJoin
      **/
     virtual void responseChatJoin( bool succeed, const NEDirectMessager::ListParticipants & listParticipant, const DateTime & timeConnect, const DateTime & timeConnected );
@@ -38,7 +38,7 @@ public:
      *          This call will be automatically triggered, on every appropriate request call
      * \param   sender      The structure of participant, who sent the message.
      * \param   msgText     The message, which was sent.
-     * \param   timeSent    The timestamp when the message was sent.
+     * \param   timeSent    The time-stamp when the message was sent.
      **/
     virtual void broadcastMessageSent( const NEDirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent );
 
@@ -58,7 +58,7 @@ public:
      *          Overwrite, if need to handle Broadcast call of server object. 
      *          This call will be automatically triggered, on every appropriate request call
      * \param   participant The structure of participant, joined chat-room.
-     * \param   timeJoined  Timestamp when participant joined the chat-room
+     * \param   timeJoined  Time-stamp when participant joined the chat-room
      **/
     virtual void broadcastParticipantJoined( const NEDirectMessager::sParticipant & participant, const DateTime & timeJoined );
 
@@ -68,7 +68,7 @@ public:
      *          Overwrite, if need to handle Broadcast call of server object. 
      *          This call will be automatically triggered, on every appropriate request call
      * \param   participant The structure of participant, who left the chat-room.
-     * \param   timeLeft    The timestamp when the participant left chat-room.
+     * \param   timeLeft    The time-stamp when the participant left chat-room.
      **/
     virtual void broadcastParticipantLeft( const NEDirectMessager::sParticipant & participant, const DateTime & timeLeft );
 

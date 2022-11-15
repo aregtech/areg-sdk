@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_PERSIST_PROPERTY_HPP
+#define AREG_PERSIST_PROPERTY_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/persist/Property.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -55,13 +56,13 @@ public:
      * \param   valueSet    The Value as a string to parse.
      * \param   comment     The optional comment for the property.
      **/
-    Property( const char * keySet, const char * valueSet, const char * comment = nullptr );
+    Property( const String & keySet, const String & valueSet, const String & comment = String::EmptyString );
     /**
      * \brief   Initializes Key, value and the comment.
      * \param   newProperty The property as a key and value pair to set.
      * \param   comment     The optional comment for the property.
      **/
-    Property( const Property::Entry & newProperty, const char * comment = nullptr );
+    Property( const Property::Entry & newProperty, const String & comment = String::EmptyString );
     /**
      * \brief   Copies data from given source
      * \param   source  The source to copy data
@@ -121,7 +122,7 @@ public:
      *          separated by key-separator symbol
      * \param   keySet  The key as a string to set and parse.
      **/
-    void parseKey( const char * keySet );
+    void parseKey( const String & keySet );
 
     /**
      * \brief   Sets the key of property.
@@ -151,7 +152,7 @@ public:
      * \brief   Sets and parses the value of property.
      * \param   valueSet    The value as a string to set and parse.
      **/
-    void parseValue( const char * valueSet );
+    void parseValue( const String & valueSet );
 
     /**
      * \brief   Sets Value of the property.
@@ -177,17 +178,17 @@ public:
     /**
      * \brief   Sets property comment, which is optional.
      **/
-    void setComment( const char * comment );
+    void setComment( const String & comment );
 
     /**
      * \brief   Adds comment to the property
      **/
-    void addComment( const char * comment );
+    void addComment( const String & comment );
 
     /**
      * \brief   Returns comment of the property
      **/
-    const char * getComment( void ) const;
+    const String & getComment( void ) const;
 
     /**
      * \brief   Sets the Key-Value pair of the property.
@@ -218,7 +219,7 @@ public:
      * \param   strProperties   The string, which contains data to set for Key and Value.
      * \return  Returns true if parsing succeeded and could extract property data.
      **/
-    bool parseProperty( const char * strProperties );
+    bool parseProperty( String strProperties );
 
     /**
      * \brief   Converts Key-Value pair data to the string.
@@ -252,3 +253,24 @@ protected:
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
 };
+
+//////////////////////////////////////////////////////////////////////////
+// Hasher of Property class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the Property.
+ */
+namespace std
+{
+    template<>
+    struct hash<Property>
+    {
+        //! A function to convert Property object to unsigned int.
+        inline unsigned int operator()(const Property& key) const
+        {
+            return static_cast<unsigned int>(key);
+        }
+    };
+}
+
+#endif  // AREG_PERSIST_PROPERTY_HPP

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_COMPONENTADDRESS_HPP
+#define AREG_COMPONENT_COMPONENTADDRESS_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/ComponentAddress.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -107,7 +108,7 @@ public:
      * \param	threadAddress	The address of master component thread.
      * \param	roleName	    The role name of component.
      **/
-    ComponentAddress( const ThreadAddress & threadAddress, const char * roleName );
+    ComponentAddress( const ThreadAddress & threadAddress, const String & roleName );
 
     /**
      * \brief	Initialization component.
@@ -118,7 +119,7 @@ public:
      * \param	roleName	The role name of component.
      * \return	
      **/
-    ComponentAddress( const char * roleName );
+    ComponentAddress( const String & roleName );
 
     /**
      * \brief	Initialization component.
@@ -128,7 +129,7 @@ public:
      * \param	roleName	The role name of component.
      * \param	nameThread	The thread name of master component thread.
      **/
-    ComponentAddress( const char * roleName, const char * nameThread );
+    ComponentAddress( const String & roleName, const String & nameThread );
 
     /**
      * \brief   Copy constructor.
@@ -271,6 +272,25 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
+// Hasher of ComponentAddress class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the ComponentAddress.
+ */
+namespace std
+{
+    template<>
+    struct hash<ComponentAddress>
+    {
+        //! A function to convert ComponentAddress object to unsigned int.
+        inline unsigned int operator()(const ComponentAddress& key) const
+        {
+            return static_cast<unsigned int>(key);
+        }
+    };
+}
+
+//////////////////////////////////////////////////////////////////////////
 // ComponentAddress class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
@@ -336,3 +356,5 @@ inline IEOutStream & operator << (IEOutStream & stream, const ComponentAddress &
     stream << output.mThreadAddress;
     return stream;
 }
+
+#endif  // AREG_COMPONENT_COMPONENTADDRESS_HPP

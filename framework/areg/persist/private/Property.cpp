@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/persist/private/Property.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -18,14 +18,14 @@
 
 #include <utility>
 
-Property::Property(const char * keySet, const char * valueSet, const char * comment /*= nullptr */)
-    : mComment  ( comment != nullptr ? comment : "")
+Property::Property(const String & keySet, const String & valueSet, const String & comment /*= String::EmptyString */)
+    : mComment  ( comment )
     , mProperty ( PropertyKey(keySet), PropertyValue(valueSet) )
 {
 }
 
-Property::Property(const Property::Entry & newProperty, const char * comment /*= nullptr */)
-    : mComment  ( comment != nullptr ? comment : "")
+Property::Property(const Property::Entry & newProperty, const String & comment /*= String::EmptyString */)
+    : mComment  ( comment )
     , mProperty ( newProperty )
 {
 }
@@ -70,84 +70,86 @@ bool Property::operator != (const Property & other) const
 
 Property::operator unsigned int ( void ) const
 {
-    return static_cast<unsigned int>(mProperty.mKey);
+    return static_cast<unsigned int>(mProperty.mValue.first);
 }
 
-void Property::parseKey(const char * keySet)
+void Property::parseKey(const String & keySet)
 {
-    mProperty.mKey.parseKey(keySet);
+    mProperty.mValue.first.parseKey(keySet);
 }
 
 void Property::setKey(const PropertyKey & Key)
 {
-    mProperty.mKey = Key;
+    mProperty.mValue.first = Key;
 }
 
 void Property::setKey( PropertyKey && Key )
 {
-    mProperty.mKey = static_cast<PropertyKey &&>(Key);
+    mProperty.mValue.first = std::move(Key);
 }
 
 const PropertyKey & Property::getKey(void) const
 {
-    return mProperty.mKey;
+    return mProperty.mValue.first;
 }
 
 String Property::getKeyString(void) const
 {
-    return mProperty.mKey.convToString();
+    return mProperty.mValue.first.convToString();
 }
 
-void Property::parseValue(const char * valueSet)
+void Property::parseValue(const String & valueSet)
 {
-    mProperty.mValue.parseValue(valueSet);
+    mProperty.mValue.second.parseValue(valueSet);
 }
 
 void Property::setValue(const PropertyValue & Value)
 {
-    mProperty.mValue = Value;
+    mProperty.mValue.second = Value;
 }
 
 void Property::setValue( PropertyValue && Value )
 {
-    mProperty.mValue = static_cast<PropertyValue &&>(Value);
+    mProperty.mValue.second = std::move(Value);
 }
 
 const PropertyValue & Property::getValue(void) const
 {
-    return mProperty.mValue;
+    return mProperty.mValue.second;
 }
 
 String Property::getValueString(void) const
 {
-    return mProperty.mValue.getString();
+    return mProperty.mValue.second.getString();
 }
 
-void Property::setComment(const char * comment)
+void Property::setComment(const String & comment)
 {
     mComment = comment;
 }
 
-void Property::addComment(const char * comment)
+void Property::addComment(const String & comment)
 {
     if ( mComment.isEmpty() == false )
     {
-        mComment.append( NEPersistence::SYNTAX_LINEEND.data( ), static_cast<int>(NEPersistence::SYNTAX_LINEEND.length( )) );
+        mComment += NEPersistence::SYNTAX_LINEEND;
     }
 
-    String temp(comment);
     // if does not begin with "# "
-    if ( (temp.isEmpty() == false) && (temp.compare(NEPersistence::SYNTAX_COMMENT.data()) != NEMath::eCompare::Equal) )
+    if (comment.startsWith(NEPersistence::SYNTAX_COMMENT))
     {
-        mComment.append( NEPersistence::SYNTAX_COMMENT.data(), static_cast<int>(NEPersistence::SYNTAX_COMMENT.length()) );
+        mComment += comment;
     }
-
-    mComment.append(temp.getString(), temp.getLength());
+    else
+    {
+        mComment += NEPersistence::SYNTAX_COMMENT;
+        mComment += comment;
+    }
 }
 
-const char * Property::getComment(void) const
+const String & Property::getComment(void) const
 {
-    return mComment.getString();
+    return mComment;
 }
 
 void Property::setPropertyPair(const Property::Entry & newPair)
@@ -167,40 +169,39 @@ const Property::Entry & Property::getPropertyPair(void) const
 
 bool Property::isValid(void) const
 {
-    return mProperty.mKey.isValid();
+    return mProperty.mValue.first.isValid();
 }
 
-bool Property::parseProperty(const char * strProperties)
+bool Property::parseProperty(String strProperties)
 {
-    if ( NEString::isEmpty<char>(strProperties) == false )
+    if ( strProperties.isEmpty() == false)
     {
-        String values         = strProperties != nullptr ? strProperties : "";
-        NEString::CharPos pos   = values.findFirstOf(NEPersistence::SYNTAX_COMMENT.data());
+        NEString::CharPos pos = strProperties.findFirst(NEPersistence::SYNTAX_COMMENT.data());
 
-        if ( pos != NEString::INVALID_POS)
+        if (strProperties.isValidPosition(pos))
         {
-            addComment( strProperties + static_cast<int>(pos));
-            values = values.substring(0, pos);
+            addComment(strProperties.getBuffer(pos));
+            strProperties.substring(0, pos);
         }
 
-        if ( values.isEmpty() == false )
+        if (strProperties.isEmpty() == false )
         {
             const char * value  = nullptr;
-            String key        = String::getSubstring(values.getString(), NEPersistence::SYNTAX_EQUAL.data(), &value);
+            String key          = String::getSubstring(strProperties.getString(), NEPersistence::SYNTAX_EQUAL.data(), &value);
 
-            mProperty.mKey.parseKey(key.getString());
-            mProperty.mValue.parseValue(value);
+            mProperty.mValue.first.parseKey(key);
+            mProperty.mValue.second.parseValue(value);
         }
 
-        if ( mProperty.mKey.isValid() == false )
+        if ( mProperty.mValue.first.isValid() == false )
         {
-            mProperty.mKey.resetKey();
-            mProperty.mValue.resetValue();
+            mProperty.mValue.first.resetKey();
+            mProperty.mValue.second.resetValue();
         }
     }
     else
     {
-        addComment("");
+        addComment(String::EmptyString);
     }
 
     return isValid();
@@ -208,31 +209,28 @@ bool Property::parseProperty(const char * strProperties)
 
 String Property::convToString(void) const
 {
-    String result = "";
-    String key     = mProperty.mKey.convToString();
-    String value   = mProperty.mValue.convToString();
-    if ( (key.isEmpty() == false) && (value.isEmpty() == false) )
+    String result;
+    String key  (mProperty.mValue.first.convToString());
+    String value(mProperty.mValue.second.convToString());
+
+    if ( !key.isEmpty() && !value.isEmpty() )
     {
-        key += NEPersistence::SYNTAX_WHITESPACE_DELIMITER;
-        key += NEPersistence::SYNTAX_EQUAL.data();
-        key += NEPersistence::SYNTAX_WHITESPACE_DELIMITER;
-        key += value;
+        key.append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER)
+           .append(NEPersistence::SYNTAX_EQUAL)
+           .append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER)
+           .append(value);
     }
 
     if ( mComment.isEmpty() == false )
     {
-        if ((mComment.findFirstOf(NEPersistence::SYNTAX_LINEEND.data()) != NEString::INVALID_POS) || (mComment.getLength() >= 64))
+        if (mComment.isValidPosition(mComment.findFirst(NEPersistence::SYNTAX_LINEEND.data())) || (mComment.getLength() >= 64))
         {
-            result += mComment;
-            result += NEPersistence::SYNTAX_LINEEND.data();
-            result += key;
+            result.append(mComment).append(NEPersistence::SYNTAX_LINEEND).append(key);
         }
-    }
-    else if ( mComment.isEmpty() == false )
-    {
-        result += key;
-        result += NEPersistence::SYNTAX_WHITESPACE_DELIMITER;
-        result += mComment;
+        else
+        {
+            result.append(key).append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER).append(mComment);
+        }
     }
     else
     {
@@ -244,7 +242,7 @@ String Property::convToString(void) const
 
 void Property::resetData(void)
 {
-    mProperty.mKey.resetKey();
-    mProperty.mValue.resetValue();
+    mProperty.mValue.first.resetKey();
+    mProperty.mValue.second.resetValue();
     mComment.clear();
 }

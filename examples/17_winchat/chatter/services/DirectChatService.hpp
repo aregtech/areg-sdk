@@ -22,11 +22,9 @@ class DirectChatService : public Component
                         , public DirectMessagerStub
                           
 {
-private:
-    typedef TEHashMap<String, DirectChatService *, const String &, DirectChatService *>     HashMapDirectConnections;
-    typedef TELockResourceMap<String, DirectChatService *, HashMapDirectConnections>            MapDirectConnections;
-    typedef TEArrayList<DirectConnectionClient *>                                                 ListDirectConnectionClients;
-
+    using HashMapDirectConnections      = TEMap<String, DirectChatService *>;
+    using MapDirectConnections          = TELockResourceMap<String, DirectChatService *, HashMapDirectConnections>;
+    using ListDirectConnectionClients   = TEArrayList<DirectConnectionClient *>;
 
 //////////////////////////////////////////////////////////////////////////
 // Create and delete component
@@ -47,7 +45,7 @@ public:
      * \brief   Request call.
      *          Request to join chat. The participant should be in the list of connections
      * \param   participant The participant to join chat. The participant should be in the connection list.
-     * \param   timeConnect The timestamp when the request was sent.
+     * \param   timeConnect The time-stamp when the request was sent.
      * \see     responseChatJoin
      **/
     virtual void requestChatJoin( const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect );
@@ -57,7 +55,7 @@ public:
      *          Request to send a message, has no response
      * \param   sender      The participant structure of message sender
      * \param   msgText     The text message to send
-     * \param   timeSent    The timestamp when the message is requested to send.
+     * \param   timeSent    The time-stamp when the message is requested to send.
      * \note    Has no response
      **/
     virtual void requestMessageSend( const NEDirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent );
@@ -75,7 +73,7 @@ public:
      * \brief   Request call.
      *          The request to leave chat-room. Has no response.
      * \param   participant The structure of chat-room participant.
-     * \param   timeLeave   Timestamp when it was requested to leave chat-room.
+     * \param   timeLeave   Time-stamp when it was requested to leave chat-room.
      * \note    Has no response
      **/
     virtual void requestChatLeave( const NEDirectMessager::sParticipant & participant, const DateTime & timeLeave );

@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  02:46:19 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PatientInformation.
  *
  * \file            generated/src/private/PatientInformationProxy.hpp
@@ -42,12 +42,12 @@ PatientInformationProxy::PatientInformationServiceAvailableEvent::PatientInforma
 // static function implementation
 //////////////////////////////////////////////////////////////////////////
 
-ProxyBase * PatientInformationProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+ProxyBase * PatientInformationProxy::_createProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
 {
     return DEBUG_NEW PatientInformationProxy(roleName, ownerThread);
 }
 
-PatientInformationProxy * PatientInformationProxy::createProxy( const char * roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
+PatientInformationProxy * PatientInformationProxy::createProxy( const String & roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
 {
     return static_cast<PatientInformationProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEPatientInformation::getInterfaceData()
@@ -56,7 +56,7 @@ PatientInformationProxy * PatientInformationProxy::createProxy( const char * rol
                                                                       , ownerThread) );
 }
 
-PatientInformationProxy * PatientInformationProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= nullptr*/ )
+PatientInformationProxy * PatientInformationProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
 {
     return static_cast<PatientInformationProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEPatientInformation::getInterfaceData()
@@ -68,7 +68,7 @@ PatientInformationProxy * PatientInformationProxy::createProxy( const char * rol
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-PatientInformationProxy::PatientInformationProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+PatientInformationProxy::PatientInformationProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
     : ProxyBase(roleName, NEPatientInformation::getInterfaceData(), ownerThread)
 
 /************************************************************************
@@ -136,11 +136,11 @@ void PatientInformationProxy::unregisterServiceListeners( void )
 /************************************************************************
  * Requests.
  ************************************************************************/
- 
+
 /************************************************************************
  * Event processing.
  ************************************************************************/
- 
+
 /************************************************************************
  * IEProxyEventConsumer interface overrides.
  ************************************************************************/
@@ -198,8 +198,8 @@ void PatientInformationProxy::updateData( PatientInformationResponseEvent & even
         break;
     }
 }
- 
-void PatientInformationProxy::processResponse( PatientInformationResponseEvent & evenElem )
+
+    void PatientInformationProxy::processResponse( PatientInformationResponseEvent & evenElem )
 {
     NEPatientInformation::eMessageIDs respId  = static_cast<NEPatientInformation::eMessageIDs>(evenElem.getResponseId());
     NEService::eResultType resultType  = evenElem.getResult();
@@ -225,8 +225,8 @@ void PatientInformationProxy::processResponse( PatientInformationResponseEvent &
         {
             respId  = static_cast<NEPatientInformation::eMessageIDs>( mProxyData.getResponseId(static_cast<msg_id>(respId)) );
         }
-        
-        setStates   = respId != NEPatientInformation::eMessageIDs::MsgId_NotProcessed;            
+
+        setStates   = respId != NEPatientInformation::eMessageIDs::MsgId_NotProcessed;
         break;
 
     case NEService::eResultType::RequestOK:     // fall through
@@ -243,16 +243,15 @@ void PatientInformationProxy::processResponse( PatientInformationResponseEvent &
     {
         updateData(evenElem, respId);
     }
-       
+
     if (setStates == true)
     {
         setState(static_cast<msg_id>(respId), dataValid ? NEService::eDataStateType::DataIsOK : NEService::eDataStateType::DataIsInvalid);
     }
-    
+
     notifyListeners(static_cast<msg_id>(respId), resultType, evenElem.getSequenceNumber());
 }
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/private/PatientInformationProxy.cpp file
 //////////////////////////////////////////////////////////////////////////
- 

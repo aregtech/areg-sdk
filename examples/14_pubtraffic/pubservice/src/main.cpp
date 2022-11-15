@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech (c) 2021
+// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
 // Description : This project creates an instance of Public service. It also
 //               defines and processes custom events.
 //
@@ -42,7 +42,7 @@ constexpr char const _threadName[] { "TestSimpleTrafficThread" };	// The name of
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( _threadName )
+    BEGIN_REGISTER_THREAD( _threadName, NECommon::WATCHDOG_IGNORE)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( NECommon::SimpleLightControllerName, TrafficLightService )
             // register SimpleTrafficLight and SimpleTrafficSwitch service implementation.
@@ -65,8 +65,8 @@ END_MODEL(_modelName)
  **/
 int main()
 {
-    // Initialize application, disable logging, enables servicing and the timer.
-    Application::initApplication(false, true, true, true, nullptr, nullptr );
+    // Initialize application, enable servicing, routing, timer and watchdog.
+    Application::initApplication(false, true, true, true, true, nullptr, nullptr );
 
 
     // load model to initialize components
@@ -104,19 +104,20 @@ int main()
         }
 
 
-        if ( NEString::compareFastIgnoreCase<char, char>("start", command) == 0 )
+        if ( NEString::compareFastIgnoreCase<char, char>("start", command) == NEMath::eCompare::Equal)
         {
             // It is 'start' --> start the traffic light.
             DispatcherThread * dispatcher = static_cast<DispatcherThread *>(thread);
             TrafficSwitchEvent::sendEvent( TrafficSwitchData(true), *dispatcher);
         }
-        else if ( NEString::compareFastIgnoreCase<char, char>("stop", command) == 0 )
+        else if ( NEString::compareFastIgnoreCase<char, char>("stop", command) == NEMath::eCompare::Equal)
         {
             // It is 'stop' --> stop the traffic light.
             DispatcherThread * dispatcher = static_cast<DispatcherThread *>(thread);
             TrafficSwitchEvent::sendEvent( TrafficSwitchData(false), *dispatcher);
         }
-        else if ( (NEString::compareFastIgnoreCase<char, char>("quit", command) == 0 ) || (NEString::compareFastIgnoreCase<char, char>("q", command) == 0 ) )
+        else if ( (NEString::compareFastIgnoreCase<char, char>("quit", command) == NEMath::eCompare::Equal) || 
+                  (NEString::compareFastIgnoreCase<char, char>("q", command) == NEMath::eCompare::Equal) )
         {
             // It is 'quit' --> quit application(s).
             DispatcherThread * dispatcher = static_cast<DispatcherThread *>(thread);

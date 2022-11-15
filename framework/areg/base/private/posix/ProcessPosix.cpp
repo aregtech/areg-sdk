@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/Process.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
@@ -31,29 +31,29 @@ Process & Process::initilize( void )
 {
     if ( mIsInitialized == false )
     {
-        constexpr char const fmt[] { "/proc/%d/cmdline" };
+        mIsInitialized = true;
+        mProcessId = ::getpid( );
+        mProcessHandle = static_cast<void *>(&mProcessId);
 
-        mIsInitialized  = true;
-        mProcessId      = getpid();
-        mProcessHandle  = static_cast<void *>(&mProcessId);
+        char buffer[File::MAXIMUM_PATH];
+        char path[256];
 
-        char * buffer = DEBUG_NEW char [ File::MAXIMUM_PATH + 1 ];
-        if ( buffer != nullptr )
+        buffer[0] = path[0] = '\0';
+
+        sprintf( path, "/proc/%lu/cmdLine", static_cast<uint64_t>(mProcessId) );
+        FILE * file = ::fopen( path, "r" );
+        if ( (file == nullptr) || (::fgets( buffer, File::MAXIMUM_PATH, file ) == nullptr))
         {
-            sprintf(buffer, fmt, static_cast<pid_t>(mProcessId));
-            FILE * file = fopen(buffer, "r");
-            if (file != nullptr)
-            {
-                if (fgets(buffer, File::MAXIMUM_PATH + 1, file) != nullptr)
-                {
-                    _initPaths(buffer);
-                }
-
-                fclose(file);
-            }
-
-            delete [] buffer;
+            sprintf( path, "/proc/%lu/exe", static_cast<uint64_t>(mProcessId) );
+            readlink( path, buffer, File::MAXIMUM_PATH );
         }
+
+        if (file != nullptr)
+        {
+            ::fclose(file);
+        }
+
+        _initPaths( buffer );
     }
 
     return (*this);
@@ -62,7 +62,7 @@ Process & Process::initilize( void )
 
 String Process::getSafeEnvVariable( const char* var ) const
 {
-    return String(var != nullptr ? getenv(var) : String::EmptyString.data());
+    return String(var != nullptr ? ::getenv(var) : String::EmptyString);
 }
 
 #endif // defined(_POSIX) || defined(POSIX)

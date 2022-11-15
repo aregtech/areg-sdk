@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:13 GMT+02:00 
+ * Generated at     13.08.2022  02:45:34 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficSwitch.
  *
  * \file            generated/src/NESimpleTrafficSwitch.hpp
@@ -29,7 +29,7 @@ const NEService::SInterfaceData & NESimpleTrafficSwitch::getInterfaceData( void 
     /************************************************************************
      * The list of requests
      ************************************************************************/
-    static constexpr unsigned int _RequestList[] 
+    static constexpr unsigned int _RequestList[]
     {
           static_cast<unsigned int>( NESimpleTrafficSwitch::eMessageIDs::MsgId_requestSwitchLight  ) // requestSwitchLight( bool switchOn )
     };
@@ -42,7 +42,7 @@ const NEService::SInterfaceData & NESimpleTrafficSwitch::getInterfaceData( void 
     /************************************************************************
      * The list of attributes
      ************************************************************************/
-    static constexpr unsigned int _AttributeList[] 
+    static constexpr unsigned int _AttributeList[]
     {
           static_cast<unsigned int>( NESimpleTrafficSwitch::eMessageIDs::MsgId_IsSwitchedOn        ) // bool mIsSwitchedOn;
     };
@@ -59,7 +59,7 @@ const NEService::SInterfaceData & NESimpleTrafficSwitch::getInterfaceData( void 
      * Initialization of parameter entry validation map in responses and in broadcasts
      ************************************************************************/
     constexpr unsigned int * _ResponseParamStateMap { nullptr }; // EMPTY RESPONSE AND BROADCAST LIST
-    
+
     /************************************************************************
      * SimpleTrafficSwitch Service Interface data
      ************************************************************************/
@@ -81,7 +81,7 @@ const NEService::SInterfaceData & NESimpleTrafficSwitch::getInterfaceData( void 
     return _InterfaceData;
 }
 
-NESimpleTrafficSwitch::eMessageIDs NESimpleTrafficSwitch::getResponseId( NESimpleTrafficSwitch::eMessageIDs reqId )
+NESimpleTrafficSwitch::eMessageIDs NESimpleTrafficSwitch::getResponseId( NESimpleTrafficSwitch::eMessageIDs /* reqId */ )
 {
     return NESimpleTrafficSwitch::eMessageIDs::MsgId_Invalid;
 }
@@ -94,7 +94,7 @@ NESimpleTrafficSwitch::eMessageIDs NESimpleTrafficSwitch::getRequestId( NESimple
     {
         result = sid.idRequestToResponseMap[i] == static_cast<msg_id>(respId) ? static_cast<NESimpleTrafficSwitch::eMessageIDs>(sid.idRequestList[i]) : NESimpleTrafficSwitch::eMessageIDs::MsgId_Invalid;
     }
-    
+
     return result;
 }
 

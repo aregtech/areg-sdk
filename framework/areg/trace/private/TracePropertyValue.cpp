@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/TracePropertyValue.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -20,25 +20,31 @@
 
 #include <utility>
 
-inline void TracePropertyValue::_setValue( const char * newValue )
+inline void TracePropertyValue::_setValue( const String & newValue )
 {
-    mValue = newValue != nullptr ? newValue : "";
-    NEString::CharPos pos = mValue.findFirstOf(NELogConfig::SYNTAX_END_COMMAND_DELIMITER);
-    if ( pos != NEString::INVALID_POS )
-        mValue  = mValue.substring(0, pos);
+    mValue = newValue;
+    NEString::CharPos pos = newValue.findFirst(NELogConfig::SYNTAX_END_COMMAND_DELIMITER);
+    if (newValue.isValidPosition(pos))
+    {
+        newValue.substring(mValue, 0, pos);
+    }
+    else
+    {
+        mValue = newValue;
+    }
     
     mValue.trimAll();
 
     String prio = mValue;
     mPriority   = static_cast<unsigned int>(NETrace::PrioNotset);
-    pos         = mValue.findFirstOf(NELogConfig::SYNTAX_LOGICAL_OR.data());
-    if ( pos != NEString::INVALID_POS )
+    pos         = mValue.findFirst(NELogConfig::SYNTAX_LOGICAL_OR.data());
+    if ( mValue.isValidPosition(pos) )
     {
-        prio = mValue.substring(0, pos);
+        mValue.substring(prio, 0, pos);
         prio.trimAll();
         mPriority |= static_cast<unsigned int>( NETrace::convFromString(prio.getString()));
 
-        prio = mValue.substring(pos + 1);
+        mValue.substring(prio, pos + 1);
         prio.trimAll();
         mPriority |= static_cast<unsigned int>( NETrace::convFromString(prio.getString()));
     }
@@ -89,7 +95,7 @@ TracePropertyValue & TracePropertyValue::operator = ( bool newValue )
 
 TracePropertyValue::operator unsigned int ( void ) const
 {
-    return static_cast<unsigned int>(mValue.isEmpty( ) == false ? mValue.convToUInt32( NEString::eRadix::RadixDecimal ) : NELogConfig::DEFAULT_INTEGER_VALUE);
+    return static_cast<unsigned int>(mValue.isEmpty( ) == false ? mValue.toUInt32( NEString::eRadix::RadixDecimal ) : NELogConfig::DEFAULT_INTEGER_VALUE);
 }
 
 TracePropertyValue::operator bool ( void ) const
@@ -111,7 +117,7 @@ TracePropertyValue::operator unsigned char ( void ) const
 
 TracePropertyValue::operator float ( void ) const
 {
-    return (mValue.isEmpty( ) == false ? mValue.convToFloat( ) : static_cast<float>(NELogConfig::DEFAULT_INTEGER_VALUE));
+    return (mValue.isEmpty( ) == false ? mValue.toFloat( ) : static_cast<float>(NELogConfig::DEFAULT_INTEGER_VALUE));
 }
 
 TracePropertyValue & TracePropertyValue::operator += ( NETrace::eLogPriority newValue )

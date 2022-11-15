@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/RuntimeClassID.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -39,16 +39,27 @@ namespace
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 RuntimeClassID::RuntimeClassID( void )
-    : mClassName(BAD_CLASS_ID.data(), static_cast<int>(BAD_CLASS_ID.length()))
+    : mClassName(BAD_CLASS_ID)
     , mMagicNum (NEMath::CHECKSUM_IGNORE)
 {
 }
 
 RuntimeClassID::RuntimeClassID( const char * className )
-    : mClassName( BAD_CLASS_ID.data( ), static_cast<int>(BAD_CLASS_ID.length( )) )
+    : mClassName(BAD_CLASS_ID)
     , mMagicNum (NEMath::CHECKSUM_IGNORE)
 {
     if (NEString::isEmpty<char>(className) == false)
+    {
+        mClassName  = className;
+        mMagicNum   = NEMath::crc32Calculate(className);
+    }
+}
+
+RuntimeClassID::RuntimeClassID( const String& className )
+    : mClassName(BAD_CLASS_ID)
+    , mMagicNum (NEMath::CHECKSUM_IGNORE)
+{
+    if (className.isEmpty() == false)
     {
         mClassName  = className;
         mMagicNum   = NEMath::crc32Calculate(className);
@@ -73,11 +84,25 @@ RuntimeClassID::RuntimeClassID( RuntimeClassID && src ) noexcept
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
+void RuntimeClassID::setName( const String& className )
+{
+    if ( className.isEmpty() || (className == BAD_CLASS_ID))
+    {
+        mClassName  = BAD_CLASS_ID;
+        mMagicNum   = NEMath::CHECKSUM_IGNORE;
+    }
+    else
+    {
+        mClassName  = className;
+        mMagicNum   = NEMath::crc32Calculate(className.getString());
+    }
+}
+
 void RuntimeClassID::setName( const char* className )
 {
     if ( NEString::isEmpty<char>(className) || (BAD_CLASS_ID == className) )
     {
-        mClassName  = BAD_CLASS_ID.data();
+        mClassName  = BAD_CLASS_ID;
         mMagicNum   = NEMath::CHECKSUM_IGNORE;
     }
     else

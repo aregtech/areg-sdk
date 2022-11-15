@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/ipc/private/ConnectionConfiguration.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -22,13 +22,13 @@
 
 ConnectionConfiguration::eConnectionProperty ConnectionConfiguration::getPosition(const String & strProperty)
 {
-    if ( strProperty == NERemoteService::CONFIG_KEY_PROP_ENABLE.data( ) )
+    if ( strProperty == NERemoteService::CONFIG_KEY_PROP_ENABLE )
         return eConnectionProperty::PropertyEnabled;
-    else if ( strProperty == NERemoteService::CONFIG_KEY_PROP_NAME.data( ) )
+    else if ( strProperty == NERemoteService::CONFIG_KEY_PROP_NAME )
         return eConnectionProperty::PropertyName;
-    else if (strProperty == NERemoteService::CONFIG_KEY_PROP_ADDRESS.data( ) )
+    else if (strProperty == NERemoteService::CONFIG_KEY_PROP_ADDRESS )
         return eConnectionProperty::PropertyHost;
-    else if (strProperty == NERemoteService::CONFIG_KEY_PROP_PORT.data( ) )
+    else if (strProperty == NERemoteService::CONFIG_KEY_PROP_PORT )
         return eConnectionProperty::PropertyPort;
     else
         return eConnectionProperty::PropertyInvalid;
@@ -36,8 +36,8 @@ ConnectionConfiguration::eConnectionProperty ConnectionConfiguration::getPositio
 
 bool ConnectionConfiguration::loadConfiguration(const char * filePath /* = nullptr */)
 {
-    mConfigFile = File::getFileFullPath( NEString::isEmpty<char>(filePath) ? NEApplication::DEFAULT_ROUTER_CONFIG_FILE.data() : filePath );
-    File fileConfig( static_cast<const char *>(mConfigFile), FileBase::FO_MODE_EXIST | FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_SHARE_READ );
+    mConfigFile = File::getFileFullPath( NEString::isEmpty<char>(filePath) ? NEApplication::DEFAULT_ROUTER_CONFIG_FILE.data() : filePath);
+    File fileConfig( mConfigFile, FileBase::FO_MODE_EXIST | FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_SHARE_READ );
     fileConfig.open( );
 
     return loadConfiguration(fileConfig);
@@ -45,7 +45,7 @@ bool ConnectionConfiguration::loadConfiguration(const char * filePath /* = nullp
 
 bool ConnectionConfiguration::loadConfiguration(FileBase & file)
 {
-    mMapConfig.removeAll();
+    mMapConfig.clear();
 
     if (file.isOpened())
     {
@@ -84,8 +84,8 @@ NERemoteService::eServiceConnection ConnectionConfiguration::_parseConnectionPro
             const String & section    = key.getSection();
             const String & target     = key.getProperty();
 
-            if ( (section   == NERemoteService::CONFIG_KEY_CONNECTION.data( )   ) &&
-                 (target    == NERemoteService::CONFIG_KEY_PROP_TYPE.data( )    ) )
+            if ( (section   == NERemoteService::CONFIG_KEY_CONNECTION   ) &&
+                 (target    == NERemoteService::CONFIG_KEY_PROP_TYPE    ) )
             {
                 result = NERemoteService::getServiceConnectionType(prop.getValue().getString(), false);
             }
@@ -97,23 +97,24 @@ NERemoteService::eServiceConnection ConnectionConfiguration::_parseConnectionPro
 
 bool ConnectionConfiguration::_parseConnectionConfig(ListProperties & listProp, FileBase & file, String & inLine, const String & headModule )
 {
-    listProp.removeAll();
+    listProp.clear();
     listProp.resize( static_cast<int>(ConnectionConfiguration::PropertyLen) );
 
     Property prop;
     while ( (file.readLine( inLine ) > 0) && (_parseConnectionProperty(file, inLine, prop) == NERemoteService::eServiceConnection::ConnectionUndefined) )
     {
         const PropertyKey & key = prop.getKey( );
-        if ( (key.getSection( ) == NERemoteService::CONFIG_KEY_CONNECTION.data()) && (key.getModule( ) == headModule) )
+        if ( (key.getSection( ) == NERemoteService::CONFIG_KEY_CONNECTION) && (key.getModule( ) == headModule) )
         {
             eConnectionProperty pos = getPosition( key.getProperty( ) );
             if ( pos != eConnectionProperty::PropertyInvalid )
             {
-                listProp[pos] = prop;
+                listProp[static_cast<uint32_t>(pos)] = prop;
             }
         }
         prop.resetData();
     }
+
     return (listProp.isEmpty() == false);
 }
 
@@ -123,12 +124,13 @@ String ConnectionConfiguration::_getPropertyValue( NERemoteService::eServiceConn
     if ( mMapConfig.isEmpty( ) == false )
     {
         const ListProperties & listProp = mMapConfig.getAt( key );
-        if ( listProp.getSize( ) > static_cast<int>(entryIndex) )
+        if ( listProp.getSize( ) > static_cast<uint32_t>(entryIndex) )
         {
-            const Property & prop = listProp[static_cast<int>(entryIndex)];
+            const Property & prop = listProp[static_cast<uint32_t>(entryIndex)];
             result = prop.getValue( ).getString( );
         }
     }
+
     return result;
 }
 
@@ -147,13 +149,13 @@ bool ConnectionConfiguration::getConnectionEnableFlag( NERemoteService::eService
     String enabled = _getPropertyValue( section
                                       , ConnectionConfiguration::eConnectionProperty::PropertyEnabled
                                       , NEConnection::DEFAULT_REMOVE_SERVICE_ENABLED ? NECommon::BOOLEAN_TRUE.data() : NECommon::BOOLEAN_FALSE.data());
-    return enabled.convToBool();
+    return enabled.toBool();
 }
 
 unsigned short ConnectionConfiguration::getConnectionPort( NERemoteService::eServiceConnection section /*= NERemoteService::eServiceConnection::ConnectionTcpip */ ) const
 {
-    String port = _getPropertyValue( section, ConnectionConfiguration::PropertyPort, String::uint32ToString(NEConnection::DEFAULT_REMOTE_SERVICE_PORT) );
-    return static_cast<unsigned short>(port.convToUInt32( ));
+    String port = _getPropertyValue( section, ConnectionConfiguration::PropertyPort, String::toString(NEConnection::DEFAULT_REMOTE_SERVICE_PORT).getString() );
+    return static_cast<unsigned short>(port.toUInt32( ));
 }
 
 bool ConnectionConfiguration::getConnectionHostIpAddress( unsigned char & OUT field0

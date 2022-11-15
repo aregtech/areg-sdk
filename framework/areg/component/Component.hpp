@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_COMPONENT_HPP
+#define AREG_COMPONENT_COMPONENT_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/Component.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -49,42 +50,31 @@ class StubBase;
  *          and developers should not mix them. If a service interface object
  *          with the same service interface name can be instantiated several times,
  *          each component must have unique name within their visibility and
- *          accessibility scope, i.e. in case of proveded public service the
+ *          accessibility scope, i.e. in case of provided public service the
  *          name should be unique within network, and in case of provided local
- *          service, the role name shooud be unique within local process.
+ *          service, the role name should be unique within local process.
  **/
 class AREG_API Component   : public    RuntimeObject
 {
 //////////////////////////////////////////////////////////////////////////
 // Predefined types. Fol local use
 //////////////////////////////////////////////////////////////////////////
-    //!< The basic operations of hash-map.
-    using ImplIntegerHashMap	= TEHashMapImpl<unsigned int, Component *>;
     //!< The basic operations of resource-map.
     using ImplComponentResource = TEResourceMapImpl<unsigned int, Component>;
     /**
      * \brief   The integer hash-map to store components where the keys are the calculated number of the component.
      * \tparam  Component           The saved values are Component objects
-     * \tparam  ImplIntegerHashMap	The implementation of hash-map basic operations.
      **/
-    using MaComponentContainer  = TEIntegerHashMap<Component *, Component *, ImplIntegerHashMap>;
+    using MapComponentContainer  = TEIntegerHashMap<Component *>;
     /**
      * \brief   Component::MapComponentResource
      *          The Resource Map of instantiated components.
      * \tparam  unsigned int            The calculated number of component as a key.
      * \tparam  Component               The type of container values, it contains Components
-     * \tparam  MaComponentContainer    The hash-map object to store containers.
-     * \tparam  MapComponentResource    The implementation of basic resource+map operations.
-     * \tparam  TEStringHashMap<Component *, Component *>  The type of Hash Map, it is string-to-pointer hash map
+     * \tparam  MapComponentContainer   The hash-map object to store containers.
+     * \tparam  ImplComponentResource   The implementation of basic resource+map operations.
      **/
-    using MapComponentResource  = TELockResourceMap<unsigned int, Component, MaComponentContainer, ImplComponentResource>;
-    /**
-     * \brief   Component::ListServers
-     *          The list of addresses of Servers.
-     * \tparam  StubBase  The pointer to base class of Stub objects.
-     **/
-    using ListServers           = TELinkedList<StubBase*, StubBase*>;
-
+    using MapComponentResource  = TELockResourceMap<unsigned int, Component, MapComponentContainer, ImplComponentResource>;
 //////////////////////////////////////////////////////////////////////////
 // Declare as runtime object
 //////////////////////////////////////////////////////////////////////////
@@ -94,6 +84,13 @@ class AREG_API Component   : public    RuntimeObject
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 public:
+    /**
+     * \brief   Component::ListServers
+     *          The list of addresses of Servers.
+     * \tparam  StubBase  The pointer to base class of Stub objects.
+     **/
+    using ListServers           = TELinkedList<StubBase*>;
+
 /************************************************************************/
 // static functions to load / unload component
 /************************************************************************/
@@ -102,7 +99,7 @@ public:
      * \brief   This function is loading component. The component loading information
      *          like component create and delete functions, worker thread information
      *          is taken from component entry object.
-     * \param   entry           The NERegistry::ComponentEntry containing component loading infromation.
+     * \param   entry           The NERegistry::ComponentEntry containing component loading information.
      * \param   componentThread The thread, which is loading component and dispatching messages
      * \return  Returns pointer to instantiated component.
      **/
@@ -113,7 +110,7 @@ public:
      *          like component create and delete functions, worker thread information
      *          is taken from component entry object.
      * \param   comItem The component object, which should be unloaded.
-     * \param   entry   The NERegistry::ComponentEntry containing component loading infromation.
+     * \param   entry   The NERegistry::ComponentEntry containing component loading information.
      **/
     static void unloadComponent( Component & comItem, const NERegistry::ComponentEntry & entry);
 
@@ -127,7 +124,7 @@ public:
      * \return	If found, returns pointer to component object.
      *          Otherwise returns nullptr.
      **/
-    static Component * findComponentByName(const char * roleName);
+    static Component * findComponentByName(const String & roleName);
 
     /**
      * \brief	Find and return component by specified component number
@@ -141,7 +138,7 @@ public:
      * \param	roleName	The role name of component to look up
      * \return	Returns true ff found entry in registries. Otherwise returns false.
      **/
-    static bool existComponent(const char * roleName);
+    static bool existComponent(const String & roleName);
 
     /**
      * \brief	Find component in registries by given component address.
@@ -163,7 +160,7 @@ public:
      * \param	roleName	    Role Name of component, which should be
      *                          unique within one process.
      **/
-    Component( ComponentThread & masterThread, const char * roleName );
+    Component( ComponentThread & masterThread, const String & roleName );
     /**
      * \brief   MUST be instantiated in Component Thread!!!
      **/
@@ -173,7 +170,7 @@ public:
      * \param	roleName	    Role Name of component, which should be
      *                          unique within one process.
      **/
-    explicit Component( const char * roleName );
+    explicit Component( const String & roleName );
 
     /**
      * \brief   Destructor.
@@ -228,7 +225,7 @@ public:
      * \param   workerThreadName    The name of worker thread, which consumer should return
      * \return  Return valid pointer if worker thread has assigned consumer.
      **/
-    virtual IEWorkerThreadConsumer * workerThreadConsumer( const char* consumerName, const char* workerThreadName );
+    virtual IEWorkerThreadConsumer * workerThreadConsumer( const String & consumerName, const String & workerThreadName );
 
 /************************************************************************/
 // Component operations
@@ -241,15 +238,23 @@ public:
      * \param   consumer        Worker Thread consumer object, which
      *                          start and stop functions will be triggered.
      * \param   masterThread    The component thread, which owns worker thread,
+     * \param   watchdogTimeout The watchdog timeout in milliseconds.
      * \return	Pointer to created worker thread object.
      **/
-    WorkerThread * createWorkerThread( const char * threadName, IEWorkerThreadConsumer & consumer, ComponentThread & masterThread );
+    WorkerThread * createWorkerThread( const String & threadName, IEWorkerThreadConsumer & consumer, ComponentThread & masterThread, uint32_t watchdogTimeout );
 
     /**
      * \brief	Stops and deletes worker thread by given name
      * \param	threadName	Worker thread name to stop and delete.
      **/
-    void deleteWorkerThread( const char* threadName );
+    void deleteWorkerThread( const String & threadName );
+
+    /**
+     * \brief   Call to terminate the component execution and cleanup resources.
+     *          After calling this method the component deletes all worker threads,
+     *          cleans up resources and components become not operable anymore.
+     **/
+    void terminateSelf( void );
 
     /**
      * \brief	Registers Stub / Server object of component
@@ -263,7 +268,7 @@ public:
      * \param	serviceName	The service name of Stub / Server object.
      * \return	If found, returns pointer to registered server object.
      **/
-    StubBase * findServerByName( const char* serviceName );
+    StubBase * findServerByName( const String & serviceName );
 
     /**
      * \brief	Finds event dispatcher consumer of specific runtime class ID object.
@@ -291,7 +296,7 @@ public:
     /**
      * \brief   Returns the list of registered (provided) Server Service list.
      **/
-    inline const TELinkedList<StubBase*, StubBase*> & getServiceList( void ) const;
+    inline const ListServers & getServiceList( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected members.
@@ -334,7 +339,12 @@ private:
     /**
      * \brief   Returns reference of component object.
      **/
-    Component & self( void );
+    inline Component & self( void );
+
+    /**
+     * \brief   Shutdowns all registered services of the component.
+     **/
+    inline void _shutdownServices( void );
     /**
      * \brief   Static method. Returns the component thread of current component.
      **/
@@ -402,12 +412,14 @@ inline const ComponentAddress& Component::getAddress( void ) const
     return mComponentInfo.getAddress();
 }
 
-inline const TELinkedList<StubBase*, StubBase*> & Component::getServiceList( void ) const
+inline const Component::ListServers & Component::getServiceList( void ) const
 {
-    return static_cast<const TELinkedList<StubBase*, StubBase*> &>(mServerList);
+    return mServerList;
 }
 
 inline Component& Component::self( void )
 {
     return (*this);
 }
+
+#endif  // AREG_COMPONENT_COMPONENT_HPP

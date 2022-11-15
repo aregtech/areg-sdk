@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/ipc/private/SocketConnectionBase.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -44,7 +44,7 @@ int SocketConnectionBase::sendMessage(const RemoteMessage & in_message, const So
                         , buffer.rbhBufHeader.biLength
                         , buffer.rbhChecksum);
 
-        TRACE_DBG("Sending message [ %p ] of [ %d ] bytes of header data, follow data is [ ] bytes."
+        TRACE_DBG("Sending message [ %p ] of [ %d ] bytes of header data, follow data is [ %d ] bytes."
                             , in_message.getMessageId()
                             , sizeof(NEMemory::sRemoteMessageHeader)
                             , buffer.rbhBufHeader.biUsed);

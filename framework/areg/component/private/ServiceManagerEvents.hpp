@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_PRIVATE_SERVICEMANAGEREVENTS_HPP
+#define AREG_COMPONENT_PRIVATE_SERVICEMANAGEREVENTS_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ServiceManagerEvents.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -63,6 +64,8 @@ public:
         , CMD_UnregisterConnection      //!< Requested to unregister connection
         , CMD_LostConnection            //!< Requested to send notifications to components that connection is lost.
         , CMD_ShutdownService           //!< Request to shutdown service.
+        , CMD_TerminateComponentThread  //!< Request to terminate component thread.
+        , CMD_StartComponentThread      //!< Request to start component thread.
     } eServiceManagerCommands;
 
     /**
@@ -154,6 +157,18 @@ public:
      * \param   channel     The Channel information to set for lost connection
      **/
     static ServiceManagerEventData lostConnection( const Channel & channel );
+
+    /**
+     * \brief   Creates an event data to terminate component thread.
+     * \param   threadName  The name of component thread to terminate.
+     **/
+    static ServiceManagerEventData terminateComponentThread( const String & threadName );
+
+    /**
+     * \brief   Creates an event data to create component thread.
+     * \param   threadName  The name of component thread to create.
+     **/
+    static ServiceManagerEventData createComponentThread( const String & threadName );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -318,7 +333,13 @@ inline const char * ServiceManagerEventData::getString( ServiceManagerEventData:
         return "ServiceManagerEventData::eServiceManagerCommands::CMD_LostConnection";
     case ServiceManagerEventData::eServiceManagerCommands::CMD_ShutdownService:
         return "ServiceManagerEventData::eServiceManagerCommands::CMD_ShutdownService";
+    case ServiceManagerEventData::eServiceManagerCommands::CMD_TerminateComponentThread:
+        return "ServiceManagerEventData::eServiceManagerCommands::CMD_TerminateComponentThread";
+    case ServiceManagerEventData::eServiceManagerCommands::CMD_StartComponentThread:
+        return "ServiceManagerEventData::eServiceManagerCommands::CMD_StartComponentThread";
     default:
         return "ERR: undefined ServiceManagerEventData::eServiceManagerCommands value!!!";
     }
 }
+
+#endif  // AREG_COMPONENT_PRIVATE_SERVICEMANAGEREVENTS_HPP

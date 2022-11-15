@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/src/PowerManagerClientBase.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_SRC_POWERMANAGERCLIENTBASE_HPP
+#define  GENERATED_SRC_POWERMANAGERCLIENTBASE_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  02:47:34 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PowerManager.
  *
  * \file            generated/src/PowerManagerClientBase.hpp
@@ -48,13 +49,13 @@ class PowerManagerClientBase  : public IEProxyListener
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initialize PowerManager Service Interface client object. 
+     * \brief   Initialize PowerManager Service Interface client object.
      *          Specifies used service and owner thread.
      * \param   roleName    The role name assigned to PowerManager servicing component object.
      * \param   ownerThread The name of component owner thread to dispatch messages.
      *                      If nullptr, all messages are dispatched in current component thread.
      **/
-    PowerManagerClientBase( const char* roleName, const char * ownerThread = nullptr );
+    PowerManagerClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
 
     /**
      * \brief   Initialize PowerManager Service Interface client object.
@@ -62,7 +63,7 @@ protected:
      * \param   roleName    The role name assigned to PowerManager servicing component object.
      * \param   ownerThread The instance of component owner thread to dispatch messages.
      **/
-    PowerManagerClientBase( const char* roleName, DispatcherThread & ownerThread );
+    PowerManagerClientBase( const String & roleName, DispatcherThread & ownerThread );
 
     /**
      * \brief   Initialize PowerManager Service Interface client object.
@@ -72,7 +73,7 @@ protected:
      * \note    When this constructor is used, it is important that the Component object is already initialized.
      *          and the component thread is set.
      **/
-    PowerManagerClientBase( const char* roleName, Component & owner );
+    PowerManagerClientBase( const String & roleName, Component & owner );
 
     /**
      * \brief   Destructor.
@@ -99,12 +100,12 @@ public:
      * \brief   Returns true if client object has got connection with servicing component
      **/
     inline bool isConnected( void ) const;
-    
+
     /**
      * \brief   Returns the name of used service.
      **/
     inline const String & getServiceName( void ) const;
-    
+
     /**
      * \brief   Returns the version of used service.
      **/
@@ -118,6 +119,7 @@ public:
 // PowerManager Interface Attributes
 //////////////////////////////////////////////////////////////////////////
 public:
+
 /************************************************************************
  * Attribute LightsPowerState functions
  ************************************************************************/
@@ -128,18 +130,18 @@ public:
     inline bool isLightsPowerStateValid( void ) const;
     /**
      * \brief   Returns the value of LightsPowerState attribute.
-     *          To get valid value, the Update Notification should be enabled. 
-     *          Attribute LightsPowerState description: 
+     *          To get valid value, the Update Notification should be enabled.
+     *          Attribute LightsPowerState description:
      *          The power state of the traffic lights.
-     * \param   state   On returns, contains the validation flag of attribute data. 
+     * \param   state   On returns, contains the validation flag of attribute data.
      *                  Check validation flag before use attribute value.
      * \see     isLightsPowerStateValid, notifyLightsPowerStateUpdate, onLightsPowerStateUpdate
      **/
     inline NEPowerManager::ePoweredState getLightsPowerState( NEService::eDataStateType & state ) const;
     /**
      * \brief   Call to enable or disable receiving notifications on LightsPowerState attribute update.
-     *          Once notification is enabled and the data is updated, 
-     *          the getLightsPowerState method will return valid data 
+     *          Once notification is enabled and the data is updated,
+     *          the getLightsPowerState method will return valid data
      *          Attribute LightsPowerState description:
      *          The power state of the traffic lights.
      * \param   notify  If true, notification will be enable. If false, notification is disabled
@@ -150,13 +152,12 @@ public:
      * \brief   Triggered, when LightsPowerState attribute is updated. The function contains
      *          attribute value and validation flag. When notification is enabled,
      *          the method should be overwritten in derived class.
-     *          Attributes LightsPowerState description: 
+     *          Attributes LightsPowerState description:
      *          The power state of the traffic lights.
      * \param   LightsPowerState    The value of LightsPowerState attribute.
      * \param   state               The data validation flag.
      **/
     virtual void onLightsPowerStateUpdate( NEPowerManager::ePoweredState LightsPowerState, NEService::eDataStateType state );
-
 
 //////////////////////////////////////////////////////////////////////////
 // PowerManager Interface Requests / Responses / Broadcasts
@@ -177,7 +178,7 @@ public:
      * \param   FailureReason   The failure reason value of request call.
      **/
     virtual void requestPowerOnFailed( NEService::eResultType FailureReason );
-    
+
 /************************************************************************
  * Request PowerOff
  ************************************************************************/
@@ -192,7 +193,7 @@ public:
      * \param   FailureReason   The failure reason value of request call.
      **/
     virtual void requestPowerOffFailed( NEService::eResultType FailureReason );
-    
+
 /************************************************************************
  * Request StartTrafficLight
  ************************************************************************/
@@ -208,7 +209,7 @@ public:
      * \param   FailureReason   The failure reason value of request call.
      **/
     virtual void requestStartTrafficLightFailed( NEService::eResultType FailureReason );
-    
+
 /************************************************************************
  * Request StopTrafficLight
  ************************************************************************/
@@ -224,14 +225,14 @@ public:
      * \param   FailureReason   The failure reason value of request call.
      **/
     virtual void requestStopTrafficLightFailed( NEService::eResultType FailureReason );
-    
+
 /************************************************************************
  * Response StartTrafficLight
  ************************************************************************/
     /**
      * \brief   Response callback.
      *          Sent as a response to start the traffic light. The traffic light can be started when it is powered ON and in initialization state.
-     *          Overwrite, if need to handle Response call of server object. 
+     *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   Success Flag, indicating whether the operation succeeded or not.
      *          This flag is 'true' if lights are initialization state of if traffic light is already functioning.
@@ -253,7 +254,7 @@ public:
     /**
      * \brief   Response callback.
      *          Response to stop the traffic lights.
-     *          Overwrite, if need to handle Response call of server object. 
+     *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   Success Flag, indicating whether the request was processed with success or not.
      *          This flag is 'true' if traffic light are functioning or lights are in initialization state.
@@ -309,16 +310,16 @@ protected:
      * \param   InvalidReqId    The ID of invalid request
      **/
     virtual void invalidRequest( NEPowerManager::eMessageIDs InvalidReqId );
-    
+
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
 
     /**
      * \brief   Call to recreate Proxy for the client. This call will remove and unregister all existing notifications
-     *          and the client will not receive pending update or response notifications. 
+     *          and the client will not receive pending update or response notifications.
      *          The client first will receive disconnect message, then again connect.
-     *          Reset update notifications manually in connect if need.          
+     *          Reset update notifications manually in connect if need.
      *          This function call can be used when the client instance should be registered and run in new thread.
      *
      * \return  Returns true if Proxy was created with success.
@@ -330,7 +331,7 @@ protected:
      *         The function can return nullptr if Proxy was not instantiated yet.
      **/
     DispatcherThread * getDispatcherThread( void );
-     
+
     /**
      * \brief   Returns the current sequence number
      **/
@@ -340,7 +341,7 @@ protected:
      * \brief  Returns instance of proxy object.
      */
     inline const PowerManagerProxy * getProxy( void ) const;
-      
+
     /**
      * \brief Returns target service component role name.
      **/
@@ -376,7 +377,7 @@ private:
      * \param   eventElem   Notification Event object to process
      **/
     virtual void processNotificationEvent( NotificationEvent & eventElem ) override;
-    
+
 /************************************************************************/
 // PowerManagerClientBase hidden methods
 /************************************************************************/
@@ -384,12 +385,12 @@ private:
     /**
      * \brief   Enables / Disables notification flags on appropriate message call.
      * \param   msgId   The ID of message to enable / disable notification
-     * \param   notify  If true, the notification is enabled. 
+     * \param   notify  If true, the notification is enabled.
      *                  If false, the notification is disabled.
      * \param   always  Flag, indicating whether should notify always or not.
      *                  if 'notify' parameter is true and the notification is already
      *                  assigned, then if parameter 'always' is true, it will trigger
-     *                  notification immediately after call. 
+     *                  notification immediately after call.
      **/
     void notifyOn( NEPowerManager::eMessageIDs msgId, bool notify, bool always = false );
     /**
@@ -409,7 +410,6 @@ private:
     /**
      * \brief   Returns reference of PowerManagerClientBase object
      **/
-
     inline PowerManagerClientBase & self( void );
 
 //////////////////////////////////////////////////////////////////////////
@@ -457,7 +457,7 @@ inline const String & PowerManagerClientBase::getServiceName( void ) const
     ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getServiceName();
 }
-    
+
 inline const Version & PowerManagerClientBase::getServiceVersion( void ) const
 {
     ASSERT(mProxy != nullptr);
@@ -536,6 +536,8 @@ inline const String & PowerManagerClientBase::getServiceRole( void ) const
     ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getRoleName();
 }
+
+#endif   // GENERATED_SRC_POWERMANAGERCLIENTBASE_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/PowerManagerClientBase.hpp file

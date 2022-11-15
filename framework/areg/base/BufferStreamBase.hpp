@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_BUFFERSTREAMBASE_HPP
+#define AREG_BASE_BUFFERSTREAMBASE_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/BufferStreamBase.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -50,7 +51,7 @@ class AREG_API BufferStreamBase : public    IEByteBuffer
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief	Requires intances of byte-buffer, write and read position objects.
+     * \brief	Requires instances of byte-buffer, write and read position objects.
      * \param	readPosition	Read position object.
      * \param	writePosition	Write position object.
      **/
@@ -182,11 +183,11 @@ public:
      *              to write data. Because if data is shared between different instances
      *              of byte-buffer, the size of buffer should not be changed.
      *
-     * \param	size	Size in bytes to reserve
+     * \param	size	The size in bytes to reserve
      * \param	copy    If true and the existing buffer is valid, it will copy data
      * \return	Returns the size available to use (i.e. remaining space).
      **/
-    virtual unsigned int resize(unsigned int size, bool copy) override;
+    virtual unsigned int reserve(unsigned int size, bool copy) override;
 
 protected:
 /************************************************************************/
@@ -274,3 +275,5 @@ private:
     BufferStreamBase( void ) = delete;
     DECLARE_NOCOPY_NOMOVE( BufferStreamBase );
 };
+
+#endif  // AREG_BASE_BUFFERSTREAMBASE_HPP

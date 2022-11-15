@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_SHAREDBUFFER_HPP
+#define AREG_BASE_SHAREDBUFFER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/SharedBuffer.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -107,7 +108,7 @@ public:
 
     /**
      * \brief	Moves data from given source.
-     * \param	src	    The source of shared buffer to mvoe data.
+     * \param	src	    The source of shared buffer to move data.
      **/
     SharedBuffer( SharedBuffer && src ) noexcept;
 
@@ -325,3 +326,5 @@ inline IEOutStream & operator << (IEOutStream & stream, const SharedBuffer & out
 
     return stream;
 }
+
+#endif  // AREG_BASE_SHAREDBUFFER_HPP

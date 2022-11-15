@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_MCROUTER_TCP_PRIVATE_SERVICESTUB_HPP
+#define AREG_MCROUTER_TCP_PRIVATE_SERVICESTUB_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        mcrouter/tcp/private/ServiceStub.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -46,7 +47,7 @@ public:
      * \brief   Initializes Stub address of remote service
      * \param   addrStub    The Stub address to set.
      **/
-    explicit ServiceStub( const StubAddress & addrStub );
+    ServiceStub( const StubAddress & addrStub );
 
     /**
      * \brief   Initializes Stub address of remote service
@@ -61,12 +62,6 @@ public:
     explicit ServiceStub( const ProxyAddress & addrProxy );
 
     /**
-     * \brief   Extracts relevant data from given Proxy address and initializes Stub service object.
-     * \param   addrProxy   The Proxy address to extract information.
-     **/
-    explicit ServiceStub( ProxyAddress && addrProxy ) noexcept;
-
-    /**
      * \brief   Copies Stub service data from given source.
      * \param   stubService     The source of Stub service object to copy data.
      **/
@@ -77,6 +72,18 @@ public:
      * \param   stubService     The source of Stub service object to copy data.
      **/
     ServiceStub( ServiceStub && stubService ) noexcept;
+
+    /**
+     * \brief   Initializes Service stub object by copying the service address data.
+     * \param   addrService     Service address that contains data to copy.
+     **/
+    explicit ServiceStub( const ServiceAddress & addrService );
+
+    /**
+     * \brief   Initializes Service stub object by moving the service address data.
+     * \param   addrService     Service address that contains data to move.
+     **/
+    explicit ServiceStub( ServiceAddress && addrService );
 
     /**
      * \brief   Destructor
@@ -105,12 +112,6 @@ public:
      * \param   addrProxy   The Proxy address to generate Stub address information
      **/
     ServiceStub & operator = ( const ProxyAddress & addrProxy );
-
-    /**
-     * \brief   Creates and moves Stub address data out of Proxy address.
-     * \param   addrProxy   The Proxy address to generate Stub address information
-     **/
-    ServiceStub & operator = ( ProxyAddress && addrProxy ) noexcept;
 
     /**
      * \brief   Copies data from given source
@@ -201,6 +202,35 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
+// Hasher of ServiceStub class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the ServiceStub.
+ */
+namespace std
+{
+    //! Calculates the hash value of the ServiceStub object
+    template<> struct hash<ServiceStub>
+    {
+        //! A function to convert ServiceStub object to unsigned int.
+        inline unsigned int operator()(const ServiceStub& key) const
+        {
+            return static_cast<unsigned int>(static_cast<const ServiceAddress &>(key.getServiceAddress()));
+        }
+    };
+
+    //!< Compares 2 ServiceStub objects
+    template<> struct equal_to<ServiceStub>
+    {
+        //! A function operator to compare 2 StubAddress objects.
+        inline bool operator() (const ServiceStub& key1, const ServiceStub& key2) const
+        {
+            return static_cast<const ServiceAddress&>(key1.getServiceAddress()) == static_cast<const ServiceAddress&>(key2.getServiceAddress());
+        }
+    };
+}
+
+//////////////////////////////////////////////////////////////////////////
 // ServiceStub class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
@@ -223,3 +253,5 @@ inline const StubAddress & ServiceStub::getServiceAddress( void ) const
 {
     return mStubAddress;
 }
+
+#endif  // AREG_MCROUTER_TCP_PRIVATE_SERVICESTUB_HPP

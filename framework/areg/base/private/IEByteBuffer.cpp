@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/IEByteBuffer.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -15,8 +15,8 @@
  ************************************************************************/
 #include "areg/base/IEByteBuffer.hpp"
 
-#include <string.h>
 #include <utility>
+#include <string.h>
 
 //////////////////////////////////////////////////////////////////////////
 // IEByteBuffer class implementation
@@ -48,17 +48,27 @@ void IEByteBuffer::invalidate( void )
     mByteBuffer.reset();
 }
 
-unsigned int IEByteBuffer::resize(unsigned int size, bool copy)
+unsigned int IEByteBuffer::reserve(unsigned int size, bool copy)
 {
     if (size != 0 )
     {
-        // If not enough space
-        unsigned int sizeLength = getSizeAvailable();
-        if (isShared() == false)
+        if (mByteBuffer.use_count() <= 1)
         {
-            unsigned int sizeUsed   = this->getSizeUsed();
-            unsigned int sizeAlign  = this->getAlignedSize();
-            size = size > IEByteBuffer::MAX_BUF_LENGTH ? IEByteBuffer::MAX_BUF_LENGTH : size;
+            // If not enough shared 
+            unsigned int sizeLength{ 0 };
+            unsigned int sizeUsed{ 0 };
+            unsigned int sizeAlign{ getAlignedSize() };
+            if (isValid())
+            {
+                sizeLength  = mByteBuffer->bufHeader.biLength;
+                sizeUsed    = mByteBuffer->bufHeader.biUsed;
+            }
+
+            if (size > IEByteBuffer::MAX_BUF_LENGTH)
+            {
+                size = IEByteBuffer::MAX_BUF_LENGTH;
+            }
+
             if ( (size > sizeLength) || (size < sizeUsed) )
             {
                 unsigned int sizeBuffer = getHeaderSize() + size;
@@ -72,10 +82,7 @@ unsigned int IEByteBuffer::resize(unsigned int size, bool copy)
                 }
                 else
                 {
-                    if (buffer != nullptr)
-                    {
-                        delete [] buffer;
-                    }
+                    delete[] buffer;
                 }
             }
         }
@@ -102,7 +109,7 @@ unsigned int IEByteBuffer::initBuffer(unsigned char * newBuffer, unsigned int bu
         unsigned int dataOffset     = getDataOffset();
         unsigned int dataLength     = bufLength - dataOffset;
 
-        NEMemory::sByteBuffer* buffer= NEMemory::constructElems<NEMemory::sByteBuffer>(newBuffer, 1);    
+        NEMemory::sByteBuffer* buffer= new(newBuffer)NEMemory::sByteBuffer;
         buffer->bufHeader.biBufSize = bufLength;
         buffer->bufHeader.biLength  = dataLength;
         buffer->bufHeader.biOffset  = dataOffset;
@@ -110,23 +117,19 @@ unsigned int IEByteBuffer::initBuffer(unsigned char * newBuffer, unsigned int bu
 
         if ( makeCopy )
         {
-            unsigned char* data         = NEMemory::getBufferDataWrite(buffer);
+            unsigned char* data         = newBuffer + dataOffset;
             const unsigned char* srcBuf = NEMemory::getBufferDataRead(mByteBuffer.get());
-            unsigned int srcCount       = getSizeUsed();
+            unsigned int srcCount       = mByteBuffer->bufHeader.biUsed;
             srcCount                    = MACRO_MIN(srcCount, dataLength);
             result                      = srcCount;
 
             buffer->bufHeader.biUsed    = srcCount;
-            NEMemory::memCopy( data, static_cast<int>(bufLength), srcBuf, srcCount );
+            ::memcpy(data, srcBuf, srcCount);
         }
         else
         {
             buffer->bufHeader.biUsed    = 0;
         }
-    }
-    else
-    {
-        ; // do nothing
     }
 
     return result;

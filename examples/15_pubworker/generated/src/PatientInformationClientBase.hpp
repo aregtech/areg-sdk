@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/src/PatientInformationClientBase.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_SRC_PATIENTINFORMATIONCLIENTBASE_HPP
+#define  GENERATED_SRC_PATIENTINFORMATIONCLIENTBASE_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  02:46:19 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PatientInformation.
  *
  * \file            generated/src/PatientInformationClientBase.hpp
@@ -48,13 +49,13 @@ class PatientInformationClientBase  : public IEProxyListener
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initialize PatientInformation Service Interface client object. 
+     * \brief   Initialize PatientInformation Service Interface client object.
      *          Specifies used service and owner thread.
      * \param   roleName    The role name assigned to PatientInformation servicing component object.
      * \param   ownerThread The name of component owner thread to dispatch messages.
      *                      If nullptr, all messages are dispatched in current component thread.
      **/
-    PatientInformationClientBase( const char* roleName, const char * ownerThread = nullptr );
+    PatientInformationClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
 
     /**
      * \brief   Initialize PatientInformation Service Interface client object.
@@ -62,7 +63,7 @@ protected:
      * \param   roleName    The role name assigned to PatientInformation servicing component object.
      * \param   ownerThread The instance of component owner thread to dispatch messages.
      **/
-    PatientInformationClientBase( const char* roleName, DispatcherThread & ownerThread );
+    PatientInformationClientBase( const String & roleName, DispatcherThread & ownerThread );
 
     /**
      * \brief   Initialize PatientInformation Service Interface client object.
@@ -72,7 +73,7 @@ protected:
      * \note    When this constructor is used, it is important that the Component object is already initialized.
      *          and the component thread is set.
      **/
-    PatientInformationClientBase( const char* roleName, Component & owner );
+    PatientInformationClientBase( const String & roleName, Component & owner );
 
     /**
      * \brief   Destructor.
@@ -99,12 +100,12 @@ public:
      * \brief   Returns true if client object has got connection with servicing component
      **/
     inline bool isConnected( void ) const;
-    
+
     /**
      * \brief   Returns the name of used service.
      **/
     inline const String & getServiceName( void ) const;
-    
+
     /**
      * \brief   Returns the version of used service.
      **/
@@ -118,6 +119,7 @@ public:
 // PatientInformation Interface Attributes
 //////////////////////////////////////////////////////////////////////////
 public:
+
 /************************************************************************
  * Attribute Patient functions
  ************************************************************************/
@@ -128,18 +130,18 @@ public:
     inline bool isPatientValid( void ) const;
     /**
      * \brief   Returns the value of Patient attribute.
-     *          To get valid value, the Update Notification should be enabled. 
-     *          Attribute Patient description: 
+     *          To get valid value, the Update Notification should be enabled.
+     *          Attribute Patient description:
      *          The patient information to apply to hardware.
-     * \param   state   On returns, contains the validation flag of attribute data. 
+     * \param   state   On returns, contains the validation flag of attribute data.
      *                  Check validation flag before use attribute value.
      * \see     isPatientValid, notifyPatientUpdate, onPatientUpdate
      **/
     inline const NEPatientInformation::PatientInfo & getPatient( NEService::eDataStateType & state ) const;
     /**
      * \brief   Call to enable or disable receiving notifications on Patient attribute update.
-     *          Once notification is enabled and the data is updated, 
-     *          the getPatient method will return valid data 
+     *          Once notification is enabled and the data is updated,
+     *          the getPatient method will return valid data
      *          Attribute Patient description:
      *          The patient information to apply to hardware.
      * \param   notify  If true, notification will be enable. If false, notification is disabled
@@ -150,13 +152,12 @@ public:
      * \brief   Triggered, when Patient attribute is updated. The function contains
      *          attribute value and validation flag. When notification is enabled,
      *          the method should be overwritten in derived class.
-     *          Attributes Patient description: 
+     *          Attributes Patient description:
      *          The patient information to apply to hardware.
      * \param   Patient The value of Patient attribute.
      * \param   state   The data validation flag.
      **/
     virtual void onPatientUpdate( const NEPatientInformation::PatientInfo & Patient, NEService::eDataStateType state );
-
 
 //////////////////////////////////////////////////////////////////////////
 // PatientInformation Interface Requests / Responses / Broadcasts
@@ -203,16 +204,16 @@ protected:
      * \param   InvalidReqId    The ID of invalid request
      **/
     virtual void invalidRequest( NEPatientInformation::eMessageIDs InvalidReqId );
-    
+
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
 
     /**
      * \brief   Call to recreate Proxy for the client. This call will remove and unregister all existing notifications
-     *          and the client will not receive pending update or response notifications. 
+     *          and the client will not receive pending update or response notifications.
      *          The client first will receive disconnect message, then again connect.
-     *          Reset update notifications manually in connect if need.          
+     *          Reset update notifications manually in connect if need.
      *          This function call can be used when the client instance should be registered and run in new thread.
      *
      * \return  Returns true if Proxy was created with success.
@@ -224,7 +225,7 @@ protected:
      *         The function can return nullptr if Proxy was not instantiated yet.
      **/
     DispatcherThread * getDispatcherThread( void );
-     
+
     /**
      * \brief   Returns the current sequence number
      **/
@@ -234,7 +235,7 @@ protected:
      * \brief  Returns instance of proxy object.
      */
     inline const PatientInformationProxy * getProxy( void ) const;
-      
+
     /**
      * \brief Returns target service component role name.
      **/
@@ -270,7 +271,7 @@ private:
      * \param   eventElem   Notification Event object to process
      **/
     virtual void processNotificationEvent( NotificationEvent & eventElem ) override;
-    
+
 /************************************************************************/
 // PatientInformationClientBase hidden methods
 /************************************************************************/
@@ -278,12 +279,12 @@ private:
     /**
      * \brief   Enables / Disables notification flags on appropriate message call.
      * \param   msgId   The ID of message to enable / disable notification
-     * \param   notify  If true, the notification is enabled. 
+     * \param   notify  If true, the notification is enabled.
      *                  If false, the notification is disabled.
      * \param   always  Flag, indicating whether should notify always or not.
      *                  if 'notify' parameter is true and the notification is already
      *                  assigned, then if parameter 'always' is true, it will trigger
-     *                  notification immediately after call. 
+     *                  notification immediately after call.
      **/
     void notifyOn( NEPatientInformation::eMessageIDs msgId, bool notify, bool always = false );
     /**
@@ -303,7 +304,6 @@ private:
     /**
      * \brief   Returns reference of PatientInformationClientBase object
      **/
-
     inline PatientInformationClientBase & self( void );
 
 //////////////////////////////////////////////////////////////////////////
@@ -351,7 +351,7 @@ inline const String & PatientInformationClientBase::getServiceName( void ) const
     ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getServiceName();
 }
-    
+
 inline const Version & PatientInformationClientBase::getServiceVersion( void ) const
 {
     ASSERT(mProxy != nullptr);
@@ -388,6 +388,8 @@ inline const String & PatientInformationClientBase::getServiceRole( void ) const
     ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getRoleName();
 }
+
+#endif   // GENERATED_SRC_PATIENTINFORMATIONCLIENTBASE_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/PatientInformationClientBase.hpp file

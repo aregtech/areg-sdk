@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_PRIVATE_RUNTIMEBASE_HPP
+#define AREG_BASE_PRIVATE_RUNTIMEBASE_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/RuntimeBase.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -24,6 +25,7 @@
  * Dependencies
  ************************************************************************/
 class RuntimeClassID;
+class String;
 
 //////////////////////////////////////////////////////////////////////////
 // RuntimeBase class declaration
@@ -73,7 +75,7 @@ public:
     /**
      * \brief   Returns the class name, i.e. the name of Class Identifier
      **/
-    virtual const char * getRuntimeClassName( void ) const;
+    virtual const String& getRuntimeClassName( void ) const;
 
     /**
      * \brief   Returns the calculated number of runtime class.
@@ -85,6 +87,7 @@ public:
      * \param   className   The name of class to check.
      **/
     virtual bool isInstanceOfRuntimeClass( const char* className ) const;
+    virtual bool isInstanceOfRuntimeClass( const String& className ) const;
 
     /**
      * \brief   Checks class instance by name.
@@ -106,3 +109,5 @@ private:
     bool operator == ( const RuntimeBase & /*other*/ ) const = delete;
     bool operator != ( const RuntimeBase & /*other*/ ) const = delete;
 };
+
+#endif  // AREG_BASE_PRIVATE_RUNTIMEBASE_HPP

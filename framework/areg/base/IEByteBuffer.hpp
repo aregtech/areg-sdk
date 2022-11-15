@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_IEBYTEBUFFER_HPP
+#define AREG_BASE_IEBYTEBUFFER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/IEByteBuffer.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -42,9 +43,9 @@ class AREG_API IEByteBuffer
 protected:
 
     /**
-     * \brief   Shared pointer deleter.
+     * \brief   Shared pointer allocator / deleter.
      **/
-    using ByteBufferDeleter = NEMemory::BufferDeleter<NEMemory::sByteBuffer>;
+    using ByteBufferDeleter     = NEMemory::BufferDeleter<NEMemory::sByteBuffer>;
 
     /**
      * \brief   IEByteBuffer::MAX_BUF_LENGTH
@@ -119,11 +120,11 @@ public:
      *              to write data. Because if data is shared between different instances
      *              of byte-buffer, the size of buffer should not be changed.
      *
-     * \param	size	Size in bytes to reserve
+     * \param	size	The size in bytes to reserve
      * \param	copy    If true and the existing buffer is valid, it will copy data
      * \return	Returns the size available to use (i.e. remaining space).
      **/
-    virtual unsigned int resize(unsigned int size, bool copy);
+    virtual unsigned int reserve(unsigned int size, bool copy);
 
 /************************************************************************/
 // IEByteBuffer Attributes and operations
@@ -144,6 +145,13 @@ public:
      **/
     inline unsigned int getSizeUsed( void ) const;
     
+    /**
+     * \brief	Sets the used size value in byte buffer object.
+     *          It should not be more than the length of buffer.
+     * \param	newSize	The new size in bytes to set in byte buffer object.
+     **/
+    inline void setSizeUsed(unsigned int newSize);
+
     /**
      * \brief   Returns the constant pointer to the data buffer of byte buffer
      **/
@@ -181,13 +189,6 @@ protected:
      * \brief   Returns pointer to the byte buffer.
      **/
     inline NEMemory::sByteBuffer * getByteBuffer( void );
-
-    /**
-     * \brief	Sets the used size value in byte buffer object.
-     *          It should not be more than the length of buffer.
-     * \param	newSize	The new size in bytes to set in byte buffer object.
-     **/
-    inline void setSizeUsed(unsigned int newSize);
 
     /**
      * \brief   Returns read-only end-of-buffer, i.e. end of used space. The end of buffer means 
@@ -328,3 +329,5 @@ inline unsigned char * IEByteBuffer::getEndOfBuffer(void)
 {
     return (isValid() ? NEMemory::getBufferDataWrite(mByteBuffer.get()) + mByteBuffer->bufHeader.biUsed : nullptr);
 }
+
+#endif  // AREG_BASE_IEBYTEBUFFER_HPP

@@ -9,11 +9,13 @@
 *.stackdump
 *.d
 
+.git
 .metadata
 .vs
 .vscode
-.github/*
-.github/workflows/*
+
+build/*
+out/*
 product/*
 tools/*.zip
 
@@ -21,15 +23,10 @@ areg-sdk.code-workspace
 
 Debug
 Release
-framework/areg/Debug
-framework/areg/Release
-framework/areg/.settings
-framework/areg/.gitignore
-
-framework/mcrouter/Debug
-framework/mcrouter/Release
-framework/mcrouter/.settings
-framework/mcrouter/.gitignore
+framework/*/Debug
+framework/*/Release
+framework/*/.settings
+framework/*/.gitignore
 
 examples/*/.gitignore
 examples/*/.settings

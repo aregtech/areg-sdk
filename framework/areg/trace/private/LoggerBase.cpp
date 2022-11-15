@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/LoggerBase.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -23,12 +23,6 @@ LoggerBase::LoggerBase( LogConfiguration & tracerConfig )
 {
 }
 
-bool LoggerBase::reopenLogger(void)
-{
-    closeLogger();
-    return openLogger();
-}
-
 bool LoggerBase::createLayouts(void)
 {
     bool result = false;
@@ -38,17 +32,17 @@ bool LoggerBase::createLayouts(void)
 
     if (propMessage.isValid() )
     {
-        result |= mLayoutsMessage.createLayouts( static_cast<const char *>(propMessage.getValue( )) );
+        result |= mLayoutsMessage.createLayouts( static_cast<const String&>(propMessage.getValue( )) );
     }
 
     if ( propEnter.isValid() )
     {
-        result |= mLayoutsScopeEnter.createLayouts( static_cast<const char *>(propEnter.getValue( )) );
+        result |= mLayoutsScopeEnter.createLayouts( static_cast<const String&>(propEnter.getValue( )) );
     }
 
     if ( propExit.isValid() )
     {
-        result |= mLayoutsScopeExit.createLayouts( static_cast<const char *>(propExit.getValue( )) );
+        result |= mLayoutsScopeExit.createLayouts( static_cast<const String&>(propExit.getValue( )) );
     }
 
     return result;

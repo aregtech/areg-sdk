@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_THREADADDRESS_HPP
+#define AREG_BASE_THREADADDRESS_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/ThreadAddress.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -60,6 +61,7 @@ public:
      * \param   threadID    Thread ID to set.
      **/
     explicit ThreadAddress( const char * threadName );
+    explicit ThreadAddress( const String & threadName );
     /**
      * \brief   Copy constructor.
      * \param   src     The source to copy data.
@@ -106,6 +108,18 @@ public:
      *          identical, returns true
      **/
     inline bool operator != (const ThreadAddress & other) const;
+
+    /**
+     * \brief   Returns true if the thread address is greater than the other thread address.
+     *          The comparing is required by sorted map.
+     **/
+    inline bool operator > (const ThreadAddress& other) const;
+
+    /**
+     * \brief   Returns true if the thread address is less than the other thread address.
+     *          The comparing is required by sorted map.
+     **/
+    inline bool operator < (const ThreadAddress& other) const;
 
 /************************************************************************/
 // Friend global operators to make thread address streamable
@@ -208,6 +222,24 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
+// Hasher of ThreadAddress class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the ThreadAddress.
+ */
+namespace std
+{
+    template<> struct hash<ThreadAddress>
+    {
+        //! A function to convert ThreadAddress object to unsigned int.
+        inline unsigned int operator()(const ThreadAddress& key) const
+        {
+            return static_cast<unsigned int>(key);
+        }
+    };
+}
+
+//////////////////////////////////////////////////////////////////////////
 // ThreadAddress class inline function implementation
 //////////////////////////////////////////////////////////////////////////
 inline ThreadAddress & ThreadAddress::operator = ( const ThreadAddress & src )
@@ -245,6 +277,16 @@ inline bool ThreadAddress::operator != ( const ThreadAddress & other ) const
     return (mMagicNum != other.mMagicNum);
 }
 
+inline bool ThreadAddress::operator > (const ThreadAddress& other) const
+{
+    return (mMagicNum > other.mMagicNum);
+}
+
+inline bool ThreadAddress::operator < (const ThreadAddress& other) const
+{
+    return (mMagicNum < other.mMagicNum);
+}
+
 inline ThreadAddress::operator unsigned int( void ) const
 {
     return mMagicNum;
@@ -267,3 +309,5 @@ inline IEOutStream & operator << (IEOutStream & stream, const ThreadAddress & ou
 {
     return ( stream << output.mThreadName );
 }
+
+#endif  // AREG_BASE_THREADADDRESS_HPP

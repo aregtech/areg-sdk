@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/ipc/private/ClientReceiveThread.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -23,7 +23,7 @@
 DEF_TRACE_SCOPE(areg_ipc_private_ClientReceiveThread_runDispatcher);
 
 ClientReceiveThread::ClientReceiveThread( IERemoteServiceHandler & remoteService, ClientConnection & connection )
-    : DispatcherThread  ( NEConnection::CLIENT_RECEIVE_MESSAGE_THREAD.data() )
+    : DispatcherThread  ( NEConnection::CLIENT_RECEIVE_MESSAGE_THREAD )
 
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
@@ -72,8 +72,9 @@ bool ClientReceiveThread::runDispatcher(void)
 
     mEventStarted.resetEvent();
 
-    TRACE_DBG("Exiting client service dispatcher thread [ %s ] with result [ %s ]", getName().getString()
-               , whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventExit) ? "SUCCESS" : "FAILURE");
+    TRACE_DBG("Exiting client service dispatcher thread [ %s ] with result [ %s ]"
+                , getName().getString()
+                , whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventExit) ? "SUCCESS" : "FAILURE");
 
     return (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventExit));
 }

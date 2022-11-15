@@ -80,7 +80,7 @@ public:
     /**
      * \brief   Request call.
      *          The request to output greeting.
-     * \param   client  The name of client to output greeting.
+     * \param   client  The name of the client to output greeting.
      * \see     responseHelloService
      **/
     virtual void requestHelloService( const String & client ) = 0;

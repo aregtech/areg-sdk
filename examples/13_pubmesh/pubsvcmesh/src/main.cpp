@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech (c) 2021
+// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
 // Description : This project contains multiple instances of Public and Local
 //               services that form a mesh of services and make cross-
 //               communication. The application shuts down when the 'main' 
@@ -39,7 +39,7 @@ constexpr char const AnotherLocalService[] { "AnotherLocalService" };
 BEGIN_MODEL(NECommon::ModelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestSecondServiceThread" )
+    BEGIN_REGISTER_THREAD( "TestSecondServiceThread", NECommon::WATCHDOG_IGNORE)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( NECommon::PublicSecondaryService, RemoteServiceComponent )
             // register RemoteRegistry service implementation and the dependencies.
@@ -62,7 +62,7 @@ BEGIN_MODEL(NECommon::ModelName)
     // end of thread description
     END_REGISTER_THREAD( "TestSecondServiceThread" )
 
-    BEGIN_REGISTER_THREAD( "TestThirdServiceThread" )
+    BEGIN_REGISTER_THREAD( "TestThirdServiceThread", NECommon::WATCHDOG_IGNORE)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( NECommon::PublicThirdService, RemoteServiceComponent )
             // register RemoteRegistry service implementation and the dependencies.
@@ -100,8 +100,9 @@ int main()
 {
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START( nullptr );
-    // Initialize application, enable logging, servicing and the timer.
-    Application::initApplication(true, true, true, true, nullptr, nullptr );
+    // Initialize application, enable logging, servicing, routing, timer and watchdog.
+    // Use default settings.
+    Application::initApplication();
 
     do 
     {

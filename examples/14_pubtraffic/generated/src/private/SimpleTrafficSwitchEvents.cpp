@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:13 GMT+02:00 
+ * Generated at     13.08.2022  02:45:34 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficSwitch.
  *
  * \file            generated/src/private/SimpleTrafficSwitchEvents.hpp
@@ -17,8 +17,8 @@
 /************************************************************************
  * Include files
  ************************************************************************/
- #include "generated/src/private/SimpleTrafficSwitchEvents.hpp"
- 
+#include "generated/src/private/SimpleTrafficSwitchEvents.hpp"
+
 //////////////////////////////////////////////////////////////////////////
 // SimpleTrafficSwitchRequestEvent class implementation
 //////////////////////////////////////////////////////////////////////////

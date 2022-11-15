@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/NEUtilities.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -50,8 +50,7 @@ namespace NEUtilities
 /************************************************************************/
 // NEUtilities namespace global functions
 /************************************************************************/
-
-AREG_API NEMath::eCompare NEUtilities::compareTimes( const uint64_t & lsh, const uint64_t & rhs )
+AREG_API_IMPL NEMath::eCompare NEUtilities::compareTimes( const TIME64 & lsh, const TIME64 & rhs )
 {
     NEMath::uLargeInteger lshLi, rshLi;
     lshLi.quadPart  = lsh;
@@ -60,7 +59,7 @@ AREG_API NEMath::eCompare NEUtilities::compareTimes( const uint64_t & lsh, const
     return NEUtilities::compareLargeIntegers(lshLi, rshLi);
 }
 
-AREG_API void NEUtilities::convToTm(const sSystemTime & sysTime, tm & out_time)
+AREG_API_IMPL void NEUtilities::convToTm(const sSystemTime & sysTime, tm & OUT out_time)
 {
     if (sysTime.stYear >= 1900)
     {
@@ -79,7 +78,7 @@ AREG_API void NEUtilities::convToTm(const sSystemTime & sysTime, tm & out_time)
     }
 }
 
-AREG_API void NEUtilities::makeTmLocal( struct tm & IN OUT utcTime )
+AREG_API_IMPL void NEUtilities::makeTmLocal( struct tm & IN OUT utcTime )
 {
     time_t _timer = mktime( &utcTime );
 #ifdef  _WIN32
@@ -91,7 +90,7 @@ AREG_API void NEUtilities::makeTmLocal( struct tm & IN OUT utcTime )
 #endif  // _WIN32
 }
 
-AREG_API void NEUtilities::convToSystemTime(const tm & time, sSystemTime & out_sysTime)
+AREG_API_IMPL void NEUtilities::convToSystemTime(const tm & time, sSystemTime & OUT out_sysTime)
 {
     out_sysTime.stSecond    = static_cast<unsigned short>(time.tm_sec);
     out_sysTime.stMinute    = static_cast<unsigned short>(time.tm_min);
@@ -102,7 +101,7 @@ AREG_API void NEUtilities::convToSystemTime(const tm & time, sSystemTime & out_s
     out_sysTime.stDayOfWeek = static_cast<unsigned short>(time.tm_wday);
 }
 
-AREG_API void NEUtilities::convToFileTime( const uint64_t &  timeValue, NEUtilities::sFileTime & out_fileTime )
+AREG_API_IMPL void NEUtilities::convToFileTime( const TIME64 &  timeValue, NEUtilities::sFileTime & out_fileTime )
 {
     uint64_t quad = timeValue + WIN_TO_POSIX_EPOCH_BIAS_MICROSECS;
 
@@ -110,7 +109,7 @@ AREG_API void NEUtilities::convToFileTime( const uint64_t &  timeValue, NEUtilit
     out_fileTime.ftHighDateTime = MACRO_64_HI_BYTE32(quad);
 }
 
-AREG_API NEMath::eCompare NEUtilities::compareTimes( const NEUtilities::sSystemTime & lsh, const NEUtilities::sSystemTime & rhs )
+AREG_API_IMPL NEMath::eCompare NEUtilities::compareTimes( const NEUtilities::sSystemTime & lsh, const NEUtilities::sSystemTime & rhs )
 {
     sFileTime lshFile, rshFile;
     NEUtilities::convToFileTime( lsh, lshFile );
@@ -119,7 +118,7 @@ AREG_API NEMath::eCompare NEUtilities::compareTimes( const NEUtilities::sSystemT
     return NEUtilities::compareTimes(lshFile, rshFile);
 }
 
-AREG_API NEMath::eCompare NEUtilities::compareTimes( const NEUtilities::sFileTime & lsh, const NEUtilities::sFileTime & rhs )
+AREG_API_IMPL NEMath::eCompare NEUtilities::compareTimes( const NEUtilities::sFileTime & lsh, const NEUtilities::sFileTime & rhs )
 {
     NEMath::uLargeInteger lshLi, rshLi;
     lshLi.u.lowPart = lsh.ftLowDateTime;
@@ -131,7 +130,7 @@ AREG_API NEMath::eCompare NEUtilities::compareTimes( const NEUtilities::sFileTim
     return NEUtilities::compareLargeIntegers( lshLi, rshLi );
 }
 
-AREG_API uint64_t NEUtilities::convToTime( const NEUtilities::sFileTime & fileTime )
+AREG_API_IMPL TIME64 NEUtilities::convToTime( const NEUtilities::sFileTime & fileTime )
 {
     NEMath::uLargeInteger li;
     li.u.lowPart    = fileTime.ftLowDateTime;
@@ -140,44 +139,67 @@ AREG_API uint64_t NEUtilities::convToTime( const NEUtilities::sFileTime & fileTi
     return static_cast<uint64_t>(li.quadPart);
 }
 
-AREG_API String NEUtilities::createComponentItemName( const char * componentName, const char* itemName )
+AREG_API_IMPL String NEUtilities::createComponentItemName( const char * componentName, const char* itemName )
 {
-    std::string result = componentName != nullptr ? componentName : "";
-    if ((result.empty() == false) && (NEString::isEmpty<char>(itemName) == false))
+    String result( componentName != nullptr ? componentName : String::EmptyString );
+    if ((result.isEmpty() == false) && (NEString::isEmpty<char>(itemName) == false))
     {
         result += NECommon::COMPONENT_ITEM_SEPARATOR;
         result += itemName;
 
-        if (result.length() > NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE)
-            result = result.substr(0, NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE);
+        if (result.getLength() > NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE)
+        {
+            result.substring(0, NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE);
+        }
     }
     else
     {
-        result    = "";
+        result    = String::EmptyString;
     }
-    return String(result.c_str());
+
+    return result;
 }
 
-AREG_API String NEUtilities::generateName( const char* prefix )
+AREG_API_IMPL String NEUtilities::createComponentItemName( const String & componentName, const String & itemName )
+{
+    String result( componentName );
+    if ((componentName.isEmpty() == false) && (itemName.isEmpty() == false))
+    {
+        result += NECommon::COMPONENT_ITEM_SEPARATOR;
+        result += itemName;
+
+        if (result.getLength() > NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE)
+        {
+            result.substring(0, NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE);
+        }
+    }
+    else
+    {
+        result    = String::EmptyString;
+    }
+
+    return result;
+}
+
+AREG_API_IMPL String NEUtilities::generateName( const char* prefix )
 {
     char buffer[NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE];
     NEUtilities::generateName(prefix, buffer, NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE);
     return String(buffer);
 }
 
-AREG_API const char * NEUtilities::generateName(const char * prefix, char * out_buffer, int length)
+AREG_API_IMPL const char * NEUtilities::generateName(const char * prefix, char * OUT out_buffer, int length)
 {
     return NEUtilities::generateName(prefix, out_buffer, length, NECommon::DEFAULT_SPECIAL_CHAR.data());
 }
 
-AREG_API const char * NEUtilities::generateName(const char * prefix, char * out_buffer, int length, const char * specChar)
+AREG_API_IMPL const char * NEUtilities::generateName(const char * prefix, char * OUT out_buffer, int length, const char * specChar)
 {
     return NEUtilities::_generateName(prefix, out_buffer, length, specChar);
 }
 
-AREG_API unsigned int NEUtilities::generateUniqueId( void )
+AREG_API_IMPL unsigned int NEUtilities::generateUniqueId( void )
 {
     static std::atomic_uint _id(0u);
-    static_assert( std::atomic_uint::is_always_lock_free );
     return ++ _id;
 }

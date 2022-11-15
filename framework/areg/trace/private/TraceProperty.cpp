@@ -15,32 +15,39 @@ TraceProperty::TraceProperty( const char * Key, const char * Value )
     : mProperty ( )
     , mComment  ( )
 {
-    mProperty.mKey  = Key;
-    mProperty.mValue= Value;
+    mProperty.mValue.first  = Key;
+    mProperty.mValue.second = Value;
 }
 
 TraceProperty::TraceProperty( const char * Key, unsigned int Value )
     : mProperty ( )
     , mComment  ( )
 {
-    mProperty.mKey  = Key;
-    mProperty.mValue= Value;
+    mProperty.mValue.first  = Key;
+    mProperty.mValue.second = Value;
 }
 
 TraceProperty::TraceProperty( const char * Key, NETrace::eLogPriority Value )
     : mProperty ( )
     , mComment  ( )
 {
-    mProperty.mKey  = Key;
-    mProperty.mValue= Value;
+    mProperty.mValue.first  = Key;
+    mProperty.mValue.second = Value;
 }
 
 TraceProperty::TraceProperty( const char * Key, bool Value )
     : mProperty ( )
     , mComment  ( )
 {
-    mProperty.mKey  = Key;
-    mProperty.mValue= Value;
+    mProperty.mValue.first  = Key;
+    mProperty.mValue.second = Value;
+}
+
+TraceProperty::TraceProperty( String & source )
+    : mProperty()
+    , mComment()
+{
+    _parseProperty(source);
 }
 
 TraceProperty::TraceProperty( const TraceProperty & source )
@@ -73,15 +80,15 @@ TraceProperty & TraceProperty::operator = ( TraceProperty && source ) noexcept
 
 void TraceProperty::setData( const char * Key, const char * Value )
 {
-    mProperty.mKey  = Key;
-    mProperty.mValue= Value;
+    mProperty.mValue.first  = Key;
+    mProperty.mValue.second = Value;
 }
 
 void TraceProperty::setData(const char * Key, const char * Value, const char * Comment )
 {
-    mProperty.mKey  = Key;
-    mProperty.mValue= Value;
-    mComment        = Comment;
+    mProperty.mValue.first  = Key;
+    mProperty.mValue.second = Value;
+    mComment                = Comment;
 }
 
 bool TraceProperty::readProperty( const File & fileConfig )
@@ -98,8 +105,8 @@ bool TraceProperty::readProperty( const File & fileConfig )
 
 void TraceProperty::clearProperty( bool clearComment /* = true */ )
 {
-    mProperty.mKey  = String::EmptyString.data();
-    mProperty.mValue= String::EmptyString.data();
+    mProperty.mValue.first  = String::EmptyString.data();
+    mProperty.mValue.second = String::EmptyString.data();
     if ( clearComment )
         mComment = String::EmptyString.data();
 }
@@ -118,24 +125,37 @@ bool TraceProperty::parseProperty( const char * logSetting )
 
 bool TraceProperty::parseProperty( String & line)
 {
-    NEString::CharPos posComment  = line.findFirstOf(NELogConfig::SYNTAX_COMMENT);
-    if (posComment != NEString::INVALID_POS)
-    {
-        mComment   += line.substring(posComment);
-        mComment   += NELogConfig::SYNTAX_LINEEND;
-        line        = line.substring(0, posComment);
-    }
-
-    NEString::CharPos posEqual    = line.findFirstOf(NELogConfig::SYNTAX_EQUAL);
-    if ( (posEqual != NEString::INVALID_POS) && ((posComment == NEString::INVALID_POS) || (posEqual < posComment))  )
-    {
-        mProperty.mKey  = line.substring(NEString::START_POS, posEqual).getString();
-        mProperty.mValue= line.substring( posEqual + 1, posComment != NEString::INVALID_POS ? posComment - posEqual : NEString::END_POS).getString();
-    }
+    _parseProperty(line);
     return isValid();
 }
 
 bool TraceProperty::operator == ( const TraceProperty & other ) const
 {
-    return mProperty.mKey == other.mProperty.mKey;
+    return mProperty.mValue.first == other.mProperty.mValue.first;
+}
+
+void TraceProperty::_parseProperty(String& source)
+{
+    NEString::CharPos posComment = source.findFirst(NELogConfig::SYNTAX_COMMENT);
+    bool isValidPos = false;
+    if (source.isValidPosition(posComment))
+    {
+        isValidPos = true;
+        source.substring(mComment, posComment);
+        mComment += NELogConfig::SYNTAX_LINEEND;
+
+        source.substring(0, posComment);
+    }
+
+    NEString::CharPos posEqual = source.findFirst(NELogConfig::SYNTAX_EQUAL);
+    if (source.isValidPosition(posEqual) && ((isValidPos == false) || (posEqual < posComment)))
+    {
+        String temp;
+
+        source.substring(temp, NEString::START_POS, posEqual);
+        mProperty.mValue.first = temp.getString();
+
+        source.substring(temp, posEqual + 1, isValidPos ? posComment - posEqual : NEString::END_POS);
+        mProperty.mValue.second = temp.getString();
+    }
 }

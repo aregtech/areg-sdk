@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/src/NEPowerManager.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_SRC_NEPOWERMANAGER_HPP
+#define  GENERATED_SRC_NEPOWERMANAGER_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  02:47:34 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PowerManager.
  *
  * \file            generated/src/NEPowerManager.hpp
@@ -42,7 +43,7 @@
 //////////////////////////////////////////////////////////////////////////
 /**
  *
- * \brief   PowerManager Service Interface defined constants, 
+ * \brief   PowerManager Service Interface defined constants,
  *          types and structures message IDs, global static methods.
  *
  *          This is a power manager of Traffic Light Controller. It powers the lights ON and OFF.
@@ -55,21 +56,21 @@ namespace   NEPowerManager
 // Service Interface constants
 /************************************************************************/
     /**
-     * \brief   Service Interface Name
+     * \brief   Service Interface Name.
      *          NEPowerManager::ServiceName
      **/
-    constexpr char        ServiceName[]       { "PowerManager" };
+    constexpr   char    ServiceName[]   { "PowerManager" };
     /**
-     * \brief   Implemented Version
+     * \brief   Implemented Version.
      *          NEPowerManager::InterfaceVersion
      **/
-    const Version         InterfaceVersion    = "1.0.0";
+    const       Version InterfaceVersion{ 1, 0, 0 };
 
 /************************************************************************/
 // Service Interface data types
 /************************************************************************/
 
-    
+
     /**
      * \brief   The power state of the traffic lights.
      *          NEPowerManager::ePoweredState
@@ -79,11 +80,11 @@ namespace   NEPowerManager
         /**
          * \brief   The lights are OFF
          **/
-          LightsOFF   
+          LightsOFF
         /**
          * \brief   The lights are ON.
          **/
-        , LightsON    
+        , LightsON
     };
     /**
      * \brief   Returns string value of NEPowerManager::ePoweredState
@@ -106,7 +107,7 @@ namespace   NEPowerManager
          * \brief   Request ID: MsgId_requestPowerOn
          *          Called to power ON the traffic lights.
          **/
-          MsgId_requestPowerOn            = NEService::REQUEST_ID_FIRST     // void requestPowerOn( void );
+          MsgId_requestPowerOn            = NEService::REQUEST_ID_FIRST   // void requestPowerOn( void );
         /**
          * \brief   Request ID: MsgId_requestPowerOff
          *          Called to power OFF the traffic lights.
@@ -122,7 +123,7 @@ namespace   NEPowerManager
          *          Call to stop the traffic lights and put them in initialization state.
          **/
         , MsgId_requestStopTrafficLight                                     // void requestStopTrafficLight( void );
-     
+
     /************************************************************************
      * Response IDs
      ************************************************************************/
@@ -130,16 +131,16 @@ namespace   NEPowerManager
          * \brief   Response ID: MsgId_responseStartTrafficLight
          *          Sent as a response to start the traffic light. The traffic light can be started when it is powered ON and in initialization state.
          **/
-        , MsgId_responseStartTrafficLight = NEService::RESPONSE_ID_FIRST    // void responseStartTrafficLight( bool Success );
+        , MsgId_responseStartTrafficLight = NEService::RESPONSE_ID_FIRST  // void responseStartTrafficLight( bool Success );
         /**
          * \brief   Response ID: MsgId_responseStopTrafficLight
          *          Response to stop the traffic lights.
          **/
-        , MsgId_responseStopTrafficLight                                    // void responseStopTrafficLight( bool Success );     
+        , MsgId_responseStopTrafficLight                                    // void responseStopTrafficLight( bool Success );
     /************************************************************************
      * Broadcast IDs
      ************************************************************************/
-     
+
     /************************************************************************
      * Attributes IDs
      ************************************************************************/
@@ -147,30 +148,30 @@ namespace   NEPowerManager
          * \brief   Attribute ID: MsgId_LightsPowerState
          *          The power state of the traffic lights.
          **/
-        , MsgId_LightsPowerState          = NEService::ATTRIBUTE_ID_FIRST   // NEPowerManager::ePoweredState mLightsPowerState;
-     
+        , MsgId_LightsPowerState          = NEService::ATTRIBUTE_ID_FIRST // NEPowerManager::ePoweredState mLightsPowerState;
+
     /************************************************************************
      * Reserved constant IDs
      ************************************************************************/
         /**
          * \brief   ID of empty function
          **/
-        , MsgId_NotProcessed              = NEService::INVALID_MESSAGE_ID  
+        , MsgId_NotProcessed              = NEService::INVALID_MESSAGE_ID
         /**
          * \brief   ID of invalid call
          **/
-        , MsgId_Invalid                   = NEService::RESPONSE_ID_NONE    
-     
+        , MsgId_Invalid                   = NEService::RESPONSE_ID_NONE
+
     };
     /**
      * \brief   Returns string value of NEPowerManager::eMessageIDs
      **/
     inline const char * getString( NEPowerManager::eMessageIDs msgId );
-     
+
 /************************************************************************
  * Service Interface standard functions and variables
  ************************************************************************/
- 
+
     /**
      * \brief   Creates and returns Service Interface Data
      **/
@@ -243,7 +244,6 @@ inline const char * NEPowerManager::getString( NEPowerManager::eMessageIDs msgId
 
     case NEPowerManager::eMessageIDs::MsgId_NotProcessed:
         return "NEPowerManager::eMessageIDs::MsgId_NotProcessed";
-        
     case NEPowerManager::eMessageIDs::MsgId_Invalid:
         return "NEPowerManager::eMessageIDs::MsgId_Invalid";
     default:
@@ -255,6 +255,8 @@ inline const char * NEPowerManager::getString( NEPowerManager::eMessageIDs msgId
 //////////////////////////////////////////////////////////////////////////
 // NEPowerManager namespace declaration End
 //////////////////////////////////////////////////////////////////////////
+
+#endif  // GENERATED_SRC_NEPOWERMANAGER_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/NEPowerManager.hpp file

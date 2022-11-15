@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/NEDirectConnection.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_NEDIRECTCONNECTION_HPP
+#define  GENERATED_NEDIRECTCONNECTION_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:15 GMT+02:00 
+ * Generated at     13.08.2022  02:47:59 GMT+02:00
  *                  Create by AREG SDK code generator tool from source DirectConnection.
  *
  * \file            generated/NEDirectConnection.hpp
@@ -44,7 +45,7 @@
 //////////////////////////////////////////////////////////////////////////
 /**
  *
- * \brief   DirectConnection Service Interface defined constants, 
+ * \brief   DirectConnection Service Interface defined constants,
  *          types and structures message IDs, global static methods.
  *
  *          Direct Connection service interface. It is used to send connection messages 
@@ -60,15 +61,15 @@ namespace   NEDirectConnection
 // Service Interface constants
 /************************************************************************/
     /**
-     * \brief   Service Interface Name
+     * \brief   Service Interface Name.
      *          NEDirectConnection::ServiceName
      **/
-    constexpr char            ServiceName[]       { "DirectConnection" };
+    constexpr   char    ServiceName[]   { "DirectConnection" };
     /**
-     * \brief   Implemented Version
+     * \brief   Implemented Version.
      *          NEDirectConnection::InterfaceVersion
      **/
-    const Version             InterfaceVersion    = "1.0.0";
+    const       Version InterfaceVersion{ 1, 0, 0 };
 
     /**
      * \brief   Indicates Invalid session
@@ -139,7 +140,7 @@ namespace   NEDirectConnection
          * \brief   Request ID: MsgId_requestConnectoinSetup
          *          Request to setup the direct connection to chat room initiator.
          **/
-          MsgId_requestConnectoinSetup    = NEService::REQUEST_ID_FIRST     // void requestConnectoinSetup( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
+          MsgId_requestConnectoinSetup    = NEService::REQUEST_ID_FIRST   // void requestConnectoinSetup( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
         /**
          * \brief   Request ID: MsgId_requestAddParticipant
          *          The request to add a participant in the direct chat-room.
@@ -155,7 +156,7 @@ namespace   NEDirectConnection
          *          Request to close chat-room. There is no response expected.
          **/
         , MsgId_requestCloseConnection                                      // void requestCloseConnection( const NEDirectConnection::sInitiator & initiator );
-     
+
     /************************************************************************
      * Response IDs
      ************************************************************************/
@@ -163,7 +164,7 @@ namespace   NEDirectConnection
          * \brief   Response ID: MsgId_responseConnectoinSetup
          *          The response of connection setup
          **/
-        , MsgId_responseConnectoinSetup   = NEService::RESPONSE_ID_FIRST    // void responseConnectoinSetup( bool succeeded, const NEDirectConnection::sParticipant & target, const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
+        , MsgId_responseConnectoinSetup   = NEService::RESPONSE_ID_FIRST  // void responseConnectoinSetup( bool succeeded, const NEDirectConnection::sParticipant & target, const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
         /**
          * \brief   Response ID: MsgId_responseAddParticipant
          *          The response to add initiator to chat room
@@ -173,11 +174,11 @@ namespace   NEDirectConnection
          * \brief   Response ID: MsgId_responseRemoveParticipant
          *          Response to remove initiator from chat-room
          **/
-        , MsgId_responseRemoveParticipant                                   // void responseRemoveParticipant( bool succeeded, const NEDirectConnection::ListParticipants & listParticipants );     
+        , MsgId_responseRemoveParticipant                                   // void responseRemoveParticipant( bool succeeded, const NEDirectConnection::ListParticipants & listParticipants );
     /************************************************************************
      * Broadcast IDs
      ************************************************************************/
-     
+
     /************************************************************************
      * Attributes IDs
      ************************************************************************/
@@ -185,30 +186,30 @@ namespace   NEDirectConnection
          * \brief   Attribute ID: MsgId_InitiatedConnections
          *          The map of initiated connections and list of participants.
          **/
-        , MsgId_InitiatedConnections      = NEService::ATTRIBUTE_ID_FIRST   // NEDirectConnection::MapParticipants mInitiatedConnections;
-     
+        , MsgId_InitiatedConnections      = NEService::ATTRIBUTE_ID_FIRST // NEDirectConnection::MapParticipants mInitiatedConnections;
+
     /************************************************************************
      * Reserved constant IDs
      ************************************************************************/
         /**
          * \brief   ID of empty function
          **/
-        , MsgId_NotProcessed              = NEService::INVALID_MESSAGE_ID  
+        , MsgId_NotProcessed              = NEService::INVALID_MESSAGE_ID
         /**
          * \brief   ID of invalid call
          **/
-        , MsgId_Invalid                   = NEService::RESPONSE_ID_NONE    
-     
+        , MsgId_Invalid                   = NEService::RESPONSE_ID_NONE
+
     };
     /**
      * \brief   Returns string value of NEDirectConnection::eMessageIDs
      **/
     inline const char * getString( NEDirectConnection::eMessageIDs msgId );
-     
+
 /************************************************************************
  * Service Interface standard functions and variables
  ************************************************************************/
- 
+
     /**
      * \brief   Creates and returns Service Interface Data
      **/
@@ -261,7 +262,6 @@ inline const char * NEDirectConnection::getString( NEDirectConnection::eMessageI
 
     case NEDirectConnection::eMessageIDs::MsgId_NotProcessed:
         return "NEDirectConnection::eMessageIDs::MsgId_NotProcessed";
-        
     case NEDirectConnection::eMessageIDs::MsgId_Invalid:
         return "NEDirectConnection::eMessageIDs::MsgId_Invalid";
     default:
@@ -273,6 +273,8 @@ inline const char * NEDirectConnection::getString( NEDirectConnection::eMessageI
 //////////////////////////////////////////////////////////////////////////
 // NEDirectConnection namespace declaration End
 //////////////////////////////////////////////////////////////////////////
+
+#endif  // GENERATED_NEDIRECTCONNECTION_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/NEDirectConnection.hpp file

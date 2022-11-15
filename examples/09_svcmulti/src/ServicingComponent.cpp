@@ -48,14 +48,14 @@ void ServicingComponent::startupServiceInterface(Component & holder)
 
     mTimer.startTimer(TIMER_TIMEOUT, TIMER_EVENTS);
 
-    printf("Local servicing started, waits for [ %d ] ms to stop and exit application...\n", TIMER_TIMEOUT * TIMER_EVENTS);
+    printf("Local servicing started, waits [ %d ] ms to exit application...\n", TIMER_TIMEOUT * TIMER_EVENTS);
 }
 
 void ServicingComponent::shutdownServiceIntrface(Component & holder)
 {
     TRACE_SCOPE(examples_09_svcmulti_ServicingComponent_shutdownServiceIntrface);
     TRACE_WARN("The service [ %s ] of component [ %s ] is shutting down", StubBase::getAddress().getServiceName().getString(), holder.getRoleName().getString());
-    
+
     mTimer.stopTimer();
     StubBase::shutdownServiceIntrface(holder);
 
@@ -68,7 +68,7 @@ void ServicingComponent::processTimer(Timer & timer)
     TRACE_DBG("The timer [ %s ] has expired", timer.getName().getString());
 
     ASSERT(&timer == &mTimer);
-    
+
     ++ mCount; // increase timer count.
     ASSERT(mCount <= TIMER_EVENTS);
 

@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech (c) 2021
+// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
 // Description : This project contains multiple instances of Public service
 //               clients to invoke remote method calls.The system guarantees
 //               that the each call is delivered to the target and the
@@ -28,7 +28,7 @@
 BEGIN_MODEL(NECommon::ModelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestClientProcessThread" )
+    BEGIN_REGISTER_THREAD( "TestClientProcessThread", NECommon::WATCHDOG_IGNORE)
 
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
@@ -60,8 +60,9 @@ int main()
 {
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START( nullptr );
-    // Initialize application, enable logging, servicing and the timer.
-    Application::initApplication(true, true, true, true, nullptr, nullptr );
+    // Initialize application, enable logging, servicing, routing, timer and watchdog.
+    // Use default settings.
+    Application::initApplication( );
 
     do
     {

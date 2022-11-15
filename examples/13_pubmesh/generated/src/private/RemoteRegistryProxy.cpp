@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:13 GMT+02:00 
+ * Generated at     13.08.2022  13:59:48 GMT+02:00
  *                  Create by AREG SDK code generator tool from source RemoteRegistry.
  *
  * \file            generated/src/private/RemoteRegistryProxy.hpp
@@ -42,12 +42,12 @@ RemoteRegistryProxy::RemoteRegistryServiceAvailableEvent::RemoteRegistryServiceA
 // static function implementation
 //////////////////////////////////////////////////////////////////////////
 
-ProxyBase * RemoteRegistryProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+ProxyBase * RemoteRegistryProxy::_createProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
 {
     return DEBUG_NEW RemoteRegistryProxy(roleName, ownerThread);
 }
 
-RemoteRegistryProxy * RemoteRegistryProxy::createProxy( const char * roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
+RemoteRegistryProxy * RemoteRegistryProxy::createProxy( const String & roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
 {
     return static_cast<RemoteRegistryProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NERemoteRegistry::getInterfaceData()
@@ -56,7 +56,7 @@ RemoteRegistryProxy * RemoteRegistryProxy::createProxy( const char * roleName, I
                                                                       , ownerThread) );
 }
 
-RemoteRegistryProxy * RemoteRegistryProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= nullptr*/ )
+RemoteRegistryProxy * RemoteRegistryProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
 {
     return static_cast<RemoteRegistryProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NERemoteRegistry::getInterfaceData()
@@ -68,7 +68,7 @@ RemoteRegistryProxy * RemoteRegistryProxy::createProxy( const char * roleName, I
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-RemoteRegistryProxy::RemoteRegistryProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+RemoteRegistryProxy::RemoteRegistryProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
     : ProxyBase(roleName, NERemoteRegistry::getInterfaceData(), ownerThread)
 
 /************************************************************************
@@ -139,7 +139,7 @@ void RemoteRegistryProxy::unregisterServiceListeners( void )
 /************************************************************************
  * Requests.
  ************************************************************************/
- 
+
 unsigned int RemoteRegistryProxy::requestRegister( IENotificationEventConsumer & caller, const String & name, const ServiceAddress & service, const String & thread, const String & process )
 {
     static const NERemoteRegistry::eMessageIDs msgId = NERemoteRegistry::eMessageIDs::MsgId_requestRegister;
@@ -161,13 +161,12 @@ void RemoteRegistryProxy::requestUnregister( const NERemoteRegistry::sClientRegi
     stream << client;
     sendRequestEvent( static_cast<unsigned int>(msgId), args, nullptr );
 }
-unsigned int RemoteRegistryProxy::requestHelloWorld( IENotificationEventConsumer & caller, unsigned int clientID, const String & addMessage )
+unsigned int RemoteRegistryProxy::requestHelloWorld( IENotificationEventConsumer & caller, unsigned int clientID )
 {
     static const NERemoteRegistry::eMessageIDs msgId = NERemoteRegistry::eMessageIDs::MsgId_requestHelloWorld;
     EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << clientID;
-    stream << addMessage;
     sendRequestEvent( static_cast<unsigned int>(msgId), args, &caller );
     return mSequenceCount;
 }
@@ -175,7 +174,7 @@ unsigned int RemoteRegistryProxy::requestHelloWorld( IENotificationEventConsumer
 /************************************************************************
  * Event processing.
  ************************************************************************/
- 
+
 /************************************************************************
  * IEProxyEventConsumer interface overrides.
  ************************************************************************/
@@ -245,8 +244,8 @@ void RemoteRegistryProxy::updateData( RemoteRegistryResponseEvent & eventElem, N
         break;
     }
 }
- 
-void RemoteRegistryProxy::processResponse( RemoteRegistryResponseEvent & evenElem )
+
+    void RemoteRegistryProxy::processResponse( RemoteRegistryResponseEvent & evenElem )
 {
     NERemoteRegistry::eMessageIDs respId  = static_cast<NERemoteRegistry::eMessageIDs>(evenElem.getResponseId());
     NEService::eResultType resultType  = evenElem.getResult();
@@ -272,8 +271,8 @@ void RemoteRegistryProxy::processResponse( RemoteRegistryResponseEvent & evenEle
         {
             respId  = static_cast<NERemoteRegistry::eMessageIDs>( mProxyData.getResponseId(static_cast<msg_id>(respId)) );
         }
-        
-        setStates   = respId != NERemoteRegistry::eMessageIDs::MsgId_NotProcessed;            
+
+        setStates   = respId != NERemoteRegistry::eMessageIDs::MsgId_NotProcessed;
         break;
 
     case NEService::eResultType::RequestOK:     // fall through
@@ -290,16 +289,15 @@ void RemoteRegistryProxy::processResponse( RemoteRegistryResponseEvent & evenEle
     {
         updateData(evenElem, respId);
     }
-       
+
     if (setStates == true)
     {
         setState(static_cast<msg_id>(respId), dataValid ? NEService::eDataStateType::DataIsOK : NEService::eDataStateType::DataIsInvalid);
     }
-    
+
     notifyListeners(static_cast<msg_id>(respId), resultType, evenElem.getSequenceNumber());
 }
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/private/RemoteRegistryProxy.cpp file
 //////////////////////////////////////////////////////////////////////////
- 

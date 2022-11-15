@@ -40,7 +40,7 @@ protected:
 //////////////////////////////////////////////////////////////////////////
     /**
      * \brief   The request to output a greeting.
-     * \param   client  The name of client to output the greeting.
+     * \param   client  The name of the client to output the greeting.
      **/
     virtual void requestHelloService( const String & client ) override;
 

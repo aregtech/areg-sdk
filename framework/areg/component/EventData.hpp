@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_EVENTDATA_HPP
+#define AREG_COMPONENT_EVENTDATA_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/EventData.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -19,6 +20,8 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
+
+#include "areg/base/IEIOStream.hpp"
 #include "areg/component/EventDataStream.hpp"
 #include "areg/component/NEService.hpp"
 
@@ -50,25 +53,25 @@ class AREG_API EventData
 public:
     /**
      * \brief	Constructor.
-     * \param	msgId	The ID of communication message. 
-     *                  Data type will be set according of 
+     * \param	msgId	The ID of communication message.
+     *                  Data type will be set according of
      *                  message ID type.
      * \param	name	Optional. Used to name data streaming object.
      *                  Can be nullptr if there is no need to name streaming object.
      **/
-    EventData(unsigned int msgId, EventDataStream::eEventData dataType, const char* name = nullptr);
+    EventData(unsigned int msgId, EventDataStream::eEventData dataType, const String & name = String::EmptyString);
 
     /**
      * \brief	Constructor.
-     * \param	msgId	The ID of communication message. 
-     *                  Data type will be set according of 
+     * \param	msgId	The ID of communication message.
+     *                  Data type will be set according of
      *                  message ID type.
      * \param	args	Streaming object containing serialized information
      *                  of parameters.
      * \param	name	Optional. Used to name data streaming object.
      *                  Can be nullptr if there is no need to name streaming object.
      **/
-    EventData(unsigned int msgId, const EventDataStream & args, const char* name = nullptr);
+    EventData(unsigned int msgId, const EventDataStream & args, const String & name = String::EmptyString);
 
     /**
      * \brief   Copy constructor.
@@ -117,7 +120,7 @@ public:
      * \param	input	The Event Data Buffer object to write data.
      * \return	Reference to Streaming object.
      **/
-    friend AREG_API const IEInStream & operator >> ( const IEInStream & stream, EventData & input );
+    friend inline const IEInStream & operator >> ( const IEInStream & stream, EventData & input );
 
     /**
      * \brief	Friend global operator to write object into streaming buffer.
@@ -125,7 +128,7 @@ public:
      * \param	output	The Event Data Buffer object of data source.
      * \return	Reference to Streaming object.
      **/
-    friend AREG_API IEOutStream & operator << ( IEOutStream & stream, const EventData & output );
+    friend inline IEOutStream & operator << ( IEOutStream & stream, const EventData & output );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -140,7 +143,7 @@ public:
     
     /**
      * \brief   Returns reference of data input streaming object
-     *          to de-serialize message parameters.
+     *          to deserialize message parameters.
      **/
     inline const IEInStream & getReadStream( void ) const;
     
@@ -193,3 +196,21 @@ inline const EventDataStream & EventData::getDataStream( void ) const
 {
     return mData;
 }
+
+inline const IEInStream & operator >> ( const IEInStream & stream, EventData & input )
+{
+    stream >> input.mDataType;
+    stream >> input.mData;
+    input.mData.resetCursor();
+    return stream;
+}
+
+inline IEOutStream & operator << ( IEOutStream & stream, const EventData & output )
+{
+    stream << output.mDataType;
+    stream << output.mData;
+    output.mData.resetCursor();
+    return stream;
+}
+
+#endif  // AREG_COMPONENT_EVENTDATA_HPP

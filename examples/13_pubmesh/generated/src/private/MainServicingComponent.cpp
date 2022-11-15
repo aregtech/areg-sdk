@@ -63,16 +63,16 @@ void MainServicingComponent::requestRegister(const String & name, const ServiceA
     }
 }
 
-void MainServicingComponent::requestHelloWorld(unsigned int clientID, const String & addMessage)
+void MainServicingComponent::requestHelloWorld(unsigned int clientID)
 {
     TRACE_SCOPE(examples_13_pubmesh_generated_MainServicingComponent_requestHelloWorld);
     if (getServiceState() == NESystemShutdown::eServiceState::ServiceReady)
     {
-        RemoteServicingComponent::requestHelloWorld(clientID, addMessage);
+        RemoteServicingComponent::requestHelloWorld(clientID);
 
         if (getRemainOutputs() == 0)
         {
-            TRACE_WARN("The maximum of output messages have been reached, the service is not available anymore, going to start shutdown procedure.");
+            TRACE_WARN("The maximum of output messages has been reached, the service is not available anymore, going to start shutdown procedure.");
 
             setServiceState(NESystemShutdown::eServiceState::ServiceUnavailable);
             broadcastServiceUnavailable();
@@ -103,16 +103,16 @@ void MainServicingComponent::clientConnected(const ProxyAddress & client, bool i
 
     if (isConnected == false)
     {
-        TRACE_DBG("Searching serivce address [ %s ] in the thread [ %s ]"
+        TRACE_DBG("Searching service address [ %s ] in the thread [ %s ]"
                         , ServiceAddress::convAddressToPath(static_cast<const ServiceAddress &>(client)).getString()
                         , client.getThread().getString());
 
         NERemoteRegistry::ListRegistry & list = getRegistryList();
         TRACE_DBG("There are [ %d ] entries in the registry list.", list.getSize());
 
-        for ( LISTPOS pos = list.firstPosition(); pos != nullptr; pos = list.nextPosition(pos) )
+        for (NERemoteRegistry::ListRegistry::LISTPOS pos = list.firstPosition(); list.isValidPosition(pos); pos = list.nextPosition(pos) )
         {
-            const NERemoteRegistry::sClientRegister & entry = list.getAt(pos);
+            const NERemoteRegistry::sClientRegister & entry = list.valueAtPosition(pos);
             TRACE_DBG("Compare [ %s ] service and thread [ %s ]"
                             , ServiceAddress::convAddressToPath(entry.crService).getString()
                             , entry.crThread.getString());

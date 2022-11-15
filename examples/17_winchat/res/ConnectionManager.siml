@@ -73,21 +73,21 @@
                     <Description>Connection assigned cookie for client service</Description>
                 </Parameter>
                 <Parameter DataType="DateTime" ID="23" Name="dateTime">
-                    <Description>The client service connection timestamp in UTC</Description>
+                    <Description>The client service connection time-stamp in UTC</Description>
                 </Parameter>
                 <Parameter DataType="eConnectionResult" ID="25" Name="result">
                     <Description>The connection operation result</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="11" MethodType="Request" Name="Connet" Response="Connect">
+        <Method ID="11" MethodType="Request" Name="Connect" Response="Connect">
             <Description>The request to connect to system</Description>
             <ParamList>
                 <Parameter DataType="String" ID="12" Name="nickName">
                     <Description>The nick name of connecting client service</Description>
                 </Parameter>
                 <Parameter DataType="DateTime" ID="13" Name="dateTime">
-                    <Description>The connecting client connection timestamp in UTC</Description>
+                    <Description>The connecting client connection time-stamp in UTC</Description>
                 </Parameter>
             </ParamList>
         </Method>
@@ -118,11 +118,11 @@
                     <Description>The cookie to use for registration. </Description>
                 </Parameter>
                 <Parameter DataType="DateTime" ID="29" Name="dateRegister">
-                    <Description>The connection registration timestamp</Description>
+                    <Description>The connection registration time-stamp</Description>
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="34" MethodType="Request" Name="Diconnect">
+        <Method ID="34" MethodType="Request" Name="Disconnect">
             <Description>Request to disconnect.</Description>
             <ParamList>
                 <Parameter DataType="String" ID="35" Name="nickName">

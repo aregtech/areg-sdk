@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ServiceManagerEvents.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -129,6 +129,22 @@ ServiceManagerEventData ServiceManagerEventData::lostConnection(const Channel & 
     ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_LostConnection );
     IEOutStream & stream = data.getWriteStream();
     stream << channel;
+    return data;
+}
+
+ServiceManagerEventData ServiceManagerEventData::terminateComponentThread(const String& threadName)
+{
+    ServiceManagerEventData data(ServiceManagerEventData::eServiceManagerCommands::CMD_TerminateComponentThread);
+    IEOutStream& stream = data.getWriteStream();
+    stream << threadName;
+    return data;
+}
+
+ServiceManagerEventData ServiceManagerEventData::createComponentThread(const String& threadName)
+{
+    ServiceManagerEventData data(ServiceManagerEventData::eServiceManagerCommands::CMD_StartComponentThread);
+    IEOutStream& stream = data.getWriteStream();
+    stream << threadName;
     return data;
 }
 

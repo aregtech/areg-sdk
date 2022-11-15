@@ -1,0 +1,164 @@
+# ###########################################################################
+# This is a configuration file for logging
+# ###########################################################################
+
+# ###########################################################################
+# 
+# How to configure logging?
+# 
+#   There are at least 2 ways to log traces.
+#   1. Log on File System
+#   2. Log on Remote Host (via TCP/IP connection)
+#   3, Log on Database (in planning)
+#
+#   Logging to file system: To log traces into file, specify 'log.file' parameter and give file name. 
+#                           The file name can be given either absolute or relative.
+#                           Specifying file name, make sure that permissions are granted.
+#                           If file name contains '%appdata%' mark in the path, the logging file is stored
+#                           in system special folder "APPDATA_Roaming" (in Win7 system "C:\Users\<user_name>\AppData\Roaming").
+#                           If file name contains '%time-stamp%' mark, it will add special time-stamp into the file name.
+#                           If file name contains symbol of current folder './', the path is relative to the folder of executable.
+#
+#   Logging to remote host: To log traces to remote host (by further saving), specify host name and the port number.
+#
+#   Meaning of fields in configuration:
+#       1. log.version      -- the logging version
+#       2. log.file         -- name of log file, should be either relative or absolute path. if it contains '%time%' key in the name, then will add time-stamp every time when creates log. If file path contains '%appdata%', logs are saved in user APPDATA_Roaming folder
+#       3. log.append       -- create new file or adds at the end of existing log file. If file name contains '%time%', it will always create new file. If the file name is fixed, it will either overwrite or add logs at the end of file.
+#       4. log.host         -- used for remote logging, specify either IP-address or host name
+#       5. log.port         -- specify port number on remote host to connect.
+#       6. log.layout       -- the logging layout as text. How the message output should look in file or debug output window
+#       7. log.enable       -- Enable / disable log file. If 'false', no log will be created.
+#       8. log.debug        -- Enable / disable logs in Debug output window. Valid only for Debug version.
+#       9. scope.App.XXX    -- The name of scope to apply and filter logging priority.
+#
+#   REMARK Nr. 1:    By specifying module name, it is possible to describe the logging parameter for every module separately.
+#                   If module name is not specified, as displayed above, the parameters are applied to all modules, which load configuration.
+#
+#   Example of setting parameter for modules separately:
+#       log.file.AppExample1        = ./logs/app_example1.log       <== set logging file name for module 'AppExample1'
+#       log.file.AppExample2        = ./logs/app_example2.log       <== set logging file name for module 'AppExample2'
+#       log.file.AppExample3        = ./logs/app_example1.log       <== set logging file name for module 'AppExample3'
+#       log.append                  = true                          <== for all other modules append at the end of log file
+#       log.append.AppExample1      = false                         <== always create file, overwrite if already created
+#       log.enable                  = true                          <== the logging is enabled for all applications, except (see next line)
+#       log.debug                   = false                         <== disable logging to Debug output window
+#       log.enable.AppExample4      = false                         <== disable logging only for application 'AppExample4', no log file is created
+# 
+#   REMARK Nr. 2:    Setting individual settings for a single module must be set after global setting, if it exists
+#
+#   Example of wrong settings:
+#       log.enable.AppExample       = true                          <== enable logging only for application 'AppExample'
+#       log.enable                  = false                         <== this value will overwrite the previous settings and will disable logging for application 'AppExample'
+#
+#   Example of correct settings:
+#       log.enable                  = false                         <== disable logging for all applications
+#       log.enable.AppExample       = true                          <== enable logging only for application 'AppExample', overwrite previously 'disable' flag
+#
+#   Meaning of scopes:
+#       Every scope must start with keyword 'scope.', followed by process name and by scope name or scope group name.
+#       Every single scope should have specified logging priority to log. There are following valid logging priority values
+#           1.  DEBUG       -- Debug level priority. Has lowest logging priority, all logs will be logged: DEBUG, INFO, WARN, ERROR, FATAL
+#           2.  INFO        -- Information level priority. The priority is higher than DEBUG and will log following logs: INFO, WARN, ERROR, FATAL
+#           3.  WARN        -- Warning level priority. The priority is higher than INFO and will log following logs: WARN, ERROR, FATAL
+#           4.  ERROR       -- Error  level priority. The priority is higher than WARN and will log following logs: ERROR, FATAL
+#           5.  FATAL       -- Fatal errors, abnormal run. The highest priority level. It will log only FATAL logs
+#           6.  NOTSET      -- Disable any tracing of concrete scope or group of scopes.
+#
+#       The scopes are possible to specify either one-by-one (single scope) or group of scopes by specifying start ('*') at the end.
+#       If group of scope is specified, the underline symbol is separating every scope group.
+#       The group scope priority is applied to the entire group.
+#
+#       Example specifying scope:
+#
+#       Example 1:  In this example the logging level 'WARN' is applied to the single scope
+#       scope.AppName.project_applications_components_graphics_MyClass_FunctionName   = WARN
+#
+#       Example 2:  In this example the logging level 'DEBUG' is applied to the entire scope group (symbol '_' before '*')
+#       scope.AppName.project_applications_components_graphics_ui_*  = DEBUG
+#
+#       Example 3: In this example, the logging level 'WARN' is applied to the scope group, which is a part of previously (Example 2) defined scope group and in that group only "WARN" message will be logged
+#       scope.AppName.project_applications_components_graphics_ui_controls_*  = WARN
+#
+#       Example 4: In this example the logging level 'ERROR' is applied to the entire module (process) (no scope name after process name)
+#       scope.AppName.*     = ERROR
+# 
+#       These 3 examples can be combined together like this (the sequence does not play role):
+#       scope.AppName.*                                                             = NOTSET    # disable trace output for complete application, except those bellow
+#       scope.AppName.project_applications_components_*                             = ERROR
+#       scope.AppName.project_applications_components_graphics_ui_*                 = DEBUG
+#       scope.AppName.project_applications_components_graphics_ui_controls_*        = WARN
+#       scope.AppName.project_applications_components_graphics_MyClass_FunctionName = WARN
+# 
+#   Meaning of Layout format:
+#       The Layout Format is relevant only for output as a text message. These are outputs in file and debug output.
+#       The Layout Format specification fields are following:
+#           %c      -- the tick clocks, since the application has been started
+#           %d      -- the day-time format output
+#           %e      -- the executable module ID, which is logging
+#           %m      -- the text message to log. The %m and %z are mutually exclusive.
+#           %n      -- the end of line symbol
+#           %p      -- the logging priority
+#           %s      -- the scope ID, which is tracing message
+#           %t      -- the thread ID, where message was triggered
+#           %x      -- the name of executable module
+#           %y      -- the name of tracing thread
+#           %z      -- the name of tracing scope. The %m and %z are mutually exclusive.
+#
+#       The specification '%m' and '%z' are mutually exclusive, because they are using same data to fill information
+#       Do not use these 2 specifications in same layout. Otherwise, only the first matching will be used and the other will be ignored.
+#       The symbol '%%' outputs percent symbol.
+#
+#       There are 3 types of main logging Layouts
+#           1.  Scope Enter Layout      (layout.enter)
+#           2.  Scope Exit Layout       (layout.exit)
+#           3.  Trace Message Layout    (layout.message)
+#
+#       If one of those layouts is not set, the appropriate message will not be printed.
+#       For example, if user is not interested in scope enter / exit message, but only in
+#       message text, then he may specify message output layout only (log.layout.message)
+#       and skip scope enter / exit layouts. In this case, only message logs will be printed
+#       and no scope message will be output.
+#
+#       Example specifying Layouts:
+#       log.layout.enter    = %d: [ %c.%t  %x.%z: Enter --> ]%n
+#       log.layout.message  = %d: [ %c.%t  %p >>> ] %m%n
+#       log.layout.exit     = %d: [ %c.%t  %x.%z: Exit <-- ]%n
+#
+#       Example specifying logging settings:
+#       log.version         = 1.0.0     <== Logging version number
+#       log.enable          = true      <== If 'true', the logging is enabled (by default it is disabled)
+#       log.file            = %appdata%/logs/trace_%time%.log   <== create log file in user's AppData\Roaming folder and set time-stamp on the name of every log file
+#       log.append          = false     <== always create if not existing or overwrite file in case of existing file. In this particular configuration this is not playing any role since the file name always changes
+#       log.layout.message  = %d: [ %u.%t %p >>> ] %m %n      <== logging layout (trace message format)
+#
+# Where to copy this log.init file to be able to log information to file?
+#
+#       Destination folder must be subfolder 'config' of Patterning -> Product folder, e.g.
+#
+#       .\product\build\debug\exe\config
+#   or  .\product\build\release\exe\config
+#
+# ###########################################################################
+
+# ###########################################################################
+# Logging configuration
+# ###########################################################################
+
+log.version                 = 1.0.0
+log.enable                  = true
+log.file                    = ./logs/trace_%time%.log
+log.append                  = false
+log.layout.enter            = %d: [ %t  %x.%z: Enter --> ]%n
+log.layout.message          = %d: [ %t  %p >>> ] %m%n
+log.layout.exit             = %d: [ %t  %x.%z: Exit <-- ]%n
+log.debug                   = false
+
+
+# #######################################
+# Application(s) Scopes
+# #######################################
+
+scope.04_trace.*    = DEBUG | SCOPE ;
+scope.*             = DEBUG | SCOPE ;
+# scope.*.areg_*		= NOTSET;

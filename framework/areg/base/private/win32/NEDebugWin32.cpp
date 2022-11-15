@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/win32/NEDebugWin32.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -32,7 +32,7 @@
     #pragma warning(default: 4091)
 #endif  // _MSC_VER
 
-void AREG_API NEDebug::outputMessageOS( const char * msg )
+void AREG_API_IMPL NEDebug::outputMessageOS( const char * msg )
 {
 #ifdef  _DEBUG
     if ( NEString::isEmpty<char>( msg ) == false )
@@ -40,7 +40,7 @@ void AREG_API NEDebug::outputMessageOS( const char * msg )
 #endif  // _DEBUG
 }
 
-void AREG_API NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep, std::list<std::string> & OUT out_callStack )
+void AREG_API_IMPL NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep, std::list<std::string> & OUT out_callStack )
 {
 #ifdef  _DEBUG
 
@@ -54,7 +54,6 @@ void AREG_API NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep, s
 
     constexpr unsigned int   _stackMaxDepth     { 64 };
     constexpr unsigned int   _symNameLength     { MAX_SYM_NAME };
-    constexpr unsigned int   _messageNameLength { _symNameLength + MAX_PATH + 16 };
     constexpr unsigned int   _sizeOfSymInfo     { MACRO_ALIGN_SIZE( sizeof( SYMBOL_INFO ) + _symNameLength * sizeof( char ), sizeof( ULONG64 ) ) };
 
     out_callStack.clear();

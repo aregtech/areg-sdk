@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/MutexIX.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
@@ -37,7 +37,7 @@ MutexIX::MutexIX( bool initLocked /*= false*/, const char * asciiName /* = nullp
     _initPosixMutex( true );
     if (initLocked)
     {
-        pthread_mutex_lock( &mPosixMutex );
+        ::pthread_mutex_lock( &mPosixMutex );
     }
 }
 
@@ -56,12 +56,12 @@ MutexIX::~MutexIX( void )
 {
     if (mMutexValid)
     {
-        pthread_mutex_destroy(&mPosixMutex);
+        ::pthread_mutex_destroy(&mPosixMutex);
     }
 
     if (mMutexAttrValid)
     {
-        pthread_mutexattr_destroy(&mPosixMutexAttr);
+        ::pthread_mutexattr_destroy(&mPosixMutexAttr);
     }
 
     mMutexValid     = false;
@@ -70,18 +70,18 @@ MutexIX::~MutexIX( void )
 
 inline void MutexIX::_initPosixMutex( bool isRecursive )
 {
-    if ( RETURNED_OK == pthread_mutexattr_init( &mPosixMutexAttr ) )
+    if ( RETURNED_OK == ::pthread_mutexattr_init( &mPosixMutexAttr ) )
     {
         mMutexValid = true;
-        if ( RETURNED_OK == pthread_mutexattr_settype( &mPosixMutexAttr, isRecursive ? PTHREAD_MUTEX_RECURSIVE : PTHREAD_MUTEX_DEFAULT ) )
+        if ( RETURNED_OK == ::pthread_mutexattr_settype( &mPosixMutexAttr, isRecursive ? PTHREAD_MUTEX_RECURSIVE : PTHREAD_MUTEX_DEFAULT ) )
         {
-            if ( RETURNED_OK == pthread_mutex_init( &mPosixMutex, &mPosixMutexAttr ) )
+            if ( RETURNED_OK == ::pthread_mutex_init( &mPosixMutex, &mPosixMutexAttr ) )
             {
                 mMutexAttrValid = true;
             }
             else
             {
-                pthread_mutexattr_destroy( &mPosixMutexAttr );
+                ::pthread_mutexattr_destroy( &mPosixMutexAttr );
                 mMutexAttrValid = false;
                 mMutexValid     = false;
 
@@ -89,7 +89,7 @@ inline void MutexIX::_initPosixMutex( bool isRecursive )
         }
         else
         {
-            pthread_mutexattr_destroy( &mPosixMutexAttr );
+            ::pthread_mutexattr_destroy( &mPosixMutexAttr );
             mMutexAttrValid = false;
         }
     }
@@ -102,13 +102,13 @@ bool MutexIX::lock( unsigned int msTimeout /*= NECommon::WAIT_INFINITE*/ ) const
     {
         if ( NECommon::WAIT_INFINITE == msTimeout )
         {
-            result = RETURNED_OK == pthread_mutex_lock( &mPosixMutex );
+            result = RETURNED_OK == ::pthread_mutex_lock( &mPosixMutex );
         }
         else
         {
             timespec now;
             NESynchTypesIX::timeoutFromNow(now, msTimeout);
-            result = RETURNED_OK == pthread_mutex_timedlock( &mPosixMutex, &now );
+            result = RETURNED_OK == ::pthread_mutex_timedlock( &mPosixMutex, &now );
         }
     }
 
@@ -117,7 +117,7 @@ bool MutexIX::lock( unsigned int msTimeout /*= NECommon::WAIT_INFINITE*/ ) const
 
 bool MutexIX::tryLock( void ) const
 {
-    return (RETURNED_OK == pthread_mutex_trylock( &mPosixMutex ) );
+    return (RETURNED_OK == ::pthread_mutex_trylock( &mPosixMutex ) );
 }
 
 void MutexIX::unlock( void ) const

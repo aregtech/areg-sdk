@@ -2,9 +2,9 @@
 // Begin generate generated/private/ConnectionManagerStub.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:14 GMT+02:00 
+ * Generated at     13.08.2022  02:47:58 GMT+02:00
  *                  Create by AREG SDK code generator tool from source ConnectionManager.
  *
  * \file            generated/ConnectionManagerStub.hpp
@@ -20,7 +20,8 @@
 #include "generated/private/ConnectionManagerEvents.hpp"
 
 #include "areg/component/ServiceResponseEvent.hpp"
-#include "areg/base/Thread.hpp"
+#include "areg/component/Component.hpp"
+#include "areg/component/ComponentThread.hpp"
 #include "areg/trace/GETrace.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -32,7 +33,7 @@
 //////////////////////////////////////////////////////////////////////////
 ConnectionManagerStub::ConnectionManagerStub( Component & masterComp )
     : StubBase    ( masterComp, NEConnectionManager::getInterfaceData() )
-    
+
     , mConnectionList         (  )
     , mConnectionListState    ( NEService::eDataStateType::DataIsUnavailable )
     
@@ -56,9 +57,9 @@ DEF_TRACE_SCOPE(generated_ConnectionManagerStub_startupServiceInterface);
 void ConnectionManagerStub::startupServiceInterface( Component & holder )
 {
     TRACE_SCOPE(generated_ConnectionManagerStub_startupServiceInterface);
-    
-    ConnectionManagerRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
-    ConnectionManagerNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
+
+    ConnectionManagerRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
+    ConnectionManagerNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
     StubBase::startupServiceInterface( holder );
 
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] has been started and is available ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
@@ -69,9 +70,9 @@ void ConnectionManagerStub::shutdownServiceIntrface( Component & holder )
 {
     TRACE_SCOPE(generated_ConnectionManagerStub_shutdownServiceIntrface);
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] is shutting down and not available anymore ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
-    
-    ConnectionManagerRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
-    ConnectionManagerNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
+
+    ConnectionManagerRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
+    ConnectionManagerNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
     StubBase::shutdownServiceIntrface( holder );
 }
 
@@ -119,7 +120,7 @@ void ConnectionManagerStub::errorRequest( unsigned int msgId, bool msgCancel )
 {
     NEService::eResultType result = NEService::eResultType::NotProcessed;
     msg_id listenerId = msgId;
-    
+
     switch ( static_cast<NEConnectionManager::eMessageIDs>(msgId) )
     {
 /************************************************************************
@@ -147,9 +148,9 @@ void ConnectionManagerStub::errorRequest( unsigned int msgId, bool msgCancel )
 /************************************************************************
  * Request errors
  ************************************************************************/
-    case NEConnectionManager::eMessageIDs::MsgId_requestConnet:
+    case NEConnectionManager::eMessageIDs::MsgId_requestConnect:
     case NEConnectionManager::eMessageIDs::MsgId_requestRegisterConnection:
-    case NEConnectionManager::eMessageIDs::MsgId_requestDiconnect:
+    case NEConnectionManager::eMessageIDs::MsgId_requestDisconnect:
         listenerId = static_cast<msg_id>(NEConnectionManager::getResponseId(static_cast< NEConnectionManager::eMessageIDs>(msgId)));
         result = msgCancel ? NEService::eResultType::RequestCanceled : NEService::eResultType::RequestError;
         break;
@@ -159,7 +160,7 @@ void ConnectionManagerStub::errorRequest( unsigned int msgId, bool msgCancel )
         ASSERT(false);
         break;
     }
-    
+
     StubBase::StubListenerList listeners;
     if ( findListeners(listenerId, listeners) > 0 )
     {
@@ -265,17 +266,17 @@ void ConnectionManagerStub::processRequestEvent( ServiceRequestEvent & eventElem
 
         switch ( static_cast<NEConnectionManager::eMessageIDs>(reqId) )
         {
-        case NEConnectionManager::eMessageIDs::MsgId_requestConnet:
+        case NEConnectionManager::eMessageIDs::MsgId_requestConnect:
             if ( canExecuteRequest(listener, static_cast<msg_id>(respId), reqEvent->getSequenceNumber()) )
             {
                 String      nickName;
                 DateTime    dateTime;
-                stream >> nickName;                
-                stream >> dateTime;                
-                requestConnet( nickName, dateTime );
+                stream >> nickName;
+                stream >> dateTime;
+                requestConnect( nickName, dateTime );
             }
             break;
-            
+
         case NEConnectionManager::eMessageIDs::MsgId_requestRegisterConnection:
             if ( canExecuteRequest(listener, static_cast<msg_id>(respId), reqEvent->getSequenceNumber()) )
             {
@@ -283,27 +284,27 @@ void ConnectionManagerStub::processRequestEvent( ServiceRequestEvent & eventElem
                 unsigned int    cookie;
                 unsigned int    connectCookie;
                 DateTime        dateRegister;
-                stream >> nickName;                
-                stream >> cookie;                
-                stream >> connectCookie;                
-                stream >> dateRegister;                
+                stream >> nickName;
+                stream >> cookie;
+                stream >> connectCookie;
+                stream >> dateRegister;
                 requestRegisterConnection( nickName, cookie, connectCookie, dateRegister );
             }
             break;
-            
-        case NEConnectionManager::eMessageIDs::MsgId_requestDiconnect:
+
+        case NEConnectionManager::eMessageIDs::MsgId_requestDisconnect:
             if ( true )
             {
                 String          nickName;
                 unsigned int    cookie;
                 DateTime        dateTime;
-                stream >> nickName;                
-                stream >> cookie;                
-                stream >> dateTime;                
-                requestDiconnect( nickName, cookie, dateTime );
+                stream >> nickName;
+                stream >> cookie;
+                stream >> dateTime;
+                requestDisconnect( nickName, cookie, dateTime );
             }
             break;
-            
+
         default:
             {
                 TRACE_SCOPE(generated_ConnectionManagerStub_processRequestEvent);

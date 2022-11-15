@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/SynchLockAndWaitIX.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
@@ -55,7 +55,7 @@ int SynchLockAndWaitIX::waitForMultipleObjects( IEWaitableBaseIX ** listWaitable
 
         if ( (lockAndWait._isEmpty() == false) && lockAndWait._lock( ) )
         {
-            _mapWaitIdResource.registerResourceObject(static_cast<id_type>(lockAndWait.mContext), &lockAndWait);
+            _mapWaitIdResource.registerResourceObject(reinterpret_cast<id_type>(lockAndWait.mContext), &lockAndWait);
 
             int waitResult = ENOLCK;
             bool makeLoop = true;
@@ -71,7 +71,7 @@ int SynchLockAndWaitIX::waitForMultipleObjects( IEWaitableBaseIX ** listWaitable
                 _mapWaitIdResource.unlock();
             }
 
-            _mapWaitIdResource.unregisterResourceObject(static_cast<id_type>(lockAndWait.mContext));
+            _mapWaitIdResource.unregisterResourceObject(reinterpret_cast<id_type>(lockAndWait.mContext));
 
             lockAndWait._unlock( );
         }
@@ -98,9 +98,10 @@ int SynchLockAndWaitIX::eventSignaled( IEWaitableBaseIX & synchWaitable )
                     , &synchWaitable
                     , waitList->getSize());
 
-        for ( LISTPOS pos = waitList->firstPosition( ); pos != nullptr; )
+        ListLockAndWait::LISTPOS end = waitList->invalidPosition();
+        for ( ListLockAndWait::LISTPOS pos = waitList->firstPosition( ); pos != end; )
         {
-            SynchLockAndWaitIX * lockAndWait = waitList->getAt(pos);
+            SynchLockAndWaitIX * lockAndWait = waitList->valueAtPosition(pos);
             ASSERT(lockAndWait != nullptr);
 
             if (synchWaitable.checkSignaled(lockAndWait->mContext) == false)
@@ -160,16 +161,16 @@ void SynchLockAndWaitIX::eventRemove( IEWaitableBaseIX & synchWaitable )
                     , waitList->getSize());
         ASSERT( waitList->isEmpty( ) == false );
 
-        for ( LISTPOS pos = waitList->firstPosition( ); pos != nullptr ; pos = waitList->nextPosition(pos))
+        ListLockAndWait::LISTPOS end = waitList->invalidPosition();
+        for ( ListLockAndWait::LISTPOS pos = waitList->firstPosition( ); pos != end ; pos = waitList->nextPosition(pos))
         {
-            SynchLockAndWaitIX * lockAndWait = waitList->getAt(pos);
+            SynchLockAndWaitIX * lockAndWait = waitList->valueAtPosition(pos);
             ASSERT(lockAndWait != nullptr);
             if (synchWaitable.checkSignaled(lockAndWait->mContext) == false)
                 break;
 
             int index = lockAndWait->_getWaitableIndex( synchWaitable );
-            ASSERT(index != NECommon::INVALID_INDEX);
-            lockAndWait->mFiredEntry = static_cast<NESynchTypesIX::eSynchObjectFired>(index + NESynchTypesIX::SynchObject0Error);
+            lockAndWait->mFiredEntry = index != NECommon::INVALID_INDEX ? static_cast<NESynchTypesIX::eSynchObjectFired>(index + NESynchTypesIX::SynchObject0Error) : NESynchTypesIX::eSynchObjectFired::SynchWaitInterrupted;
             lockAndWait->_notifyEvent();
         }
 
@@ -190,9 +191,10 @@ void SynchLockAndWaitIX::eventFailed( IEWaitableBaseIX & synchWaitable )
         OUTPUT_WARN("The event [ %p ] failed, going to notify error [ %d ] locked threads.", &synchWaitable, waitList->getSize());
         ASSERT( waitList->isEmpty( ) == false );
 
-        for ( LISTPOS pos = waitList->firstPosition( ); pos != nullptr; pos = waitList->nextPosition(pos))
+        ListLockAndWait::LISTPOS end = waitList->invalidPosition();
+        for ( ListLockAndWait::LISTPOS pos = waitList->firstPosition( ); pos != end; pos = waitList->nextPosition(pos))
         {
-            SynchLockAndWaitIX * lockAndWait = waitList->getAt(pos);
+            SynchLockAndWaitIX * lockAndWait = waitList->valueAtPosition(pos);
             ASSERT(lockAndWait != nullptr);
             if (synchWaitable.checkSignaled(lockAndWait->mContext) == false)
                 break;
@@ -339,7 +341,7 @@ SynchLockAndWaitIX::SynchLockAndWaitIX(   IEWaitableBaseIX ** listWaitables
                 OUTPUT_DBG("Releasing thread [ %p ], all events are fired.", reinterpret_cast<id_type>(mContext));
 
                 mFiredEntry = NESynchTypesIX::SynchObjectAll;
-                for (int i = 0; i < mWaitingList.getSize(); ++ i)
+                for (uint32_t i = 0; i < mWaitingList.getSize(); ++ i)
                 {
                     mWaitingList[i]->notifyReleasedThreads(1);
                 }
@@ -385,22 +387,22 @@ inline bool SynchLockAndWaitIX::_notifyEvent( void )
 inline bool SynchLockAndWaitIX::_initPosixSynchObjects( void )
 {
     // Init POSIX mutex
-    if (RETURNED_OK == pthread_mutexattr_init( &mPosixMutexAttr ))
+    if (RETURNED_OK == ::pthread_mutexattr_init( &mPosixMutexAttr ))
     {
         mMutexAttrValid = true;
-        if (RETURNED_OK == pthread_mutexattr_settype( &mPosixMutexAttr, PTHREAD_MUTEX_NORMAL ))
+        if (RETURNED_OK == ::pthread_mutexattr_settype( &mPosixMutexAttr, PTHREAD_MUTEX_NORMAL ))
         {
-            mMutexValid = (RETURNED_OK == pthread_mutex_init( &mPosixMutex, &mPosixMutexAttr ));
+            mMutexValid = (RETURNED_OK == ::pthread_mutex_init( &mPosixMutex, &mPosixMutexAttr ));
         }
     }
 
     // Init POSIX condition variable
-    if (RETURNED_OK == pthread_condattr_init( &mCondAttribute ))
+    if (RETURNED_OK == ::pthread_condattr_init( &mCondAttribute ))
     {
         mCondAttrValid = true;
-        if (RETURNED_OK == pthread_condattr_setpshared( &mCondAttribute, PTHREAD_PROCESS_PRIVATE ))
+        if (RETURNED_OK == ::pthread_condattr_setpshared( &mCondAttribute, PTHREAD_PROCESS_PRIVATE ))
         {
-            mCondVarValid = (RETURNED_OK == pthread_cond_init( &mCondVariable, &mCondAttribute ));
+            mCondVarValid = (RETURNED_OK == ::pthread_cond_init( &mCondVariable, &mCondAttribute ));
         }
     }
 
@@ -411,25 +413,25 @@ inline void SynchLockAndWaitIX::_releasePosixSynchObjects( void )
 {
     if (mMutexValid)
     {
-        pthread_mutex_destroy(&mPosixMutex);
+        ::pthread_mutex_destroy(&mPosixMutex);
         mMutexValid = false;
     }
 
     if (mMutexAttrValid)
     {
-        pthread_mutexattr_destroy(&mPosixMutexAttr);
+        ::pthread_mutexattr_destroy(&mPosixMutexAttr);
         mMutexAttrValid = false;
     }
 
     if (mCondVarValid)
     {
-        pthread_cond_destroy(&mCondVariable);
+        ::pthread_cond_destroy(&mCondVariable);
         mCondVarValid = false;
     }
 
     if (mCondAttrValid)
     {
-        pthread_condattr_destroy(&mCondAttribute);
+        ::pthread_condattr_destroy(&mCondAttribute);
         mCondAttrValid = false;
     }
 }
@@ -448,7 +450,7 @@ inline void SynchLockAndWaitIX::_unlock( void )
 {
     if (mMutexValid)
     {
-        pthread_mutex_unlock( &mPosixMutex );
+        ::pthread_mutex_unlock( &mPosixMutex );
     }
 }
 
@@ -456,20 +458,20 @@ inline int SynchLockAndWaitIX::_waitCondition( void )
 {
     if ( mWaitTimeout == NECommon::WAIT_INFINITE)
     {
-        return pthread_cond_wait(&mCondVariable, &mPosixMutex);
+        return ::pthread_cond_wait(&mCondVariable, &mPosixMutex);
     }
     else
     {
         timespec waitTimeout;
         NESynchTypesIX::timeoutFromNow(waitTimeout, mWaitTimeout);
-        return pthread_cond_timedwait( &mCondVariable, &mPosixMutex, &waitTimeout );
+        return ::pthread_cond_timedwait( &mCondVariable, &mPosixMutex, &waitTimeout );
     }
 }
 
 inline int SynchLockAndWaitIX::_getWaitableIndex( const IEWaitableBaseIX & synchWaitable ) const
 {
     int result = NECommon::INVALID_INDEX;
-    for ( int i = 0; i < mWaitingList.getSize(); ++ i )
+    for ( uint32_t i = 0; i < mWaitingList.getSize(); ++ i )
     {
         if (mWaitingList[i] == &synchWaitable)
         {
@@ -497,7 +499,7 @@ NESynchTypesIX::eSynchObjectFired SynchLockAndWaitIX::SynchLockAndWaitIX::_check
         }
         else
         {
-            int i = 0;
+            uint32_t i = 0;
 #ifdef _DEBUG
             for ( ; i < mWaitingList.getSize(); ++ i)
             {
@@ -520,7 +522,7 @@ NESynchTypesIX::eSynchObjectFired SynchLockAndWaitIX::SynchLockAndWaitIX::_check
                 }
             }
 #else   // !_DEBUG
-            for (  ; (i < mWaitingList.getSize()) && mWaitingList.getAt(i)->checkSignaled(mContext); ++ i)
+            for (  ; (i < mWaitingList.getSize()) && mWaitingList.valueAtPosition(i)->checkSignaled(mContext); ++ i)
                 ;
 #endif  // !_DEBUG
 
@@ -539,13 +541,13 @@ bool SynchLockAndWaitIX::_requestOwnership( const NESynchTypesIX::eSynchObjectFi
     ASSERT(firedEvent >= NESynchTypesIX::SynchObject0 && firedEvent <= NESynchTypesIX::SynchObjectAll);
     if ( firedEvent != NESynchTypesIX::SynchObjectAll )
     {
-        ASSERT(mWaitingList.getSize() > static_cast<int>(firedEvent));
+        ASSERT(mWaitingList.getSize() > static_cast<uint32_t>(firedEvent));
         IEWaitableBaseIX *waitable = mWaitingList[static_cast<int>(firedEvent)];
         
 #ifdef DEBUG
         if (waitable == nullptr)
         {
-            OUTPUT_ERR("Atention! A waitable at index [ %d ] in the list [ %p ] having size [ %d] of thread [ %p ] has address [ %p ]"
+            OUTPUT_ERR("Attention! A waitable at index [ %d ] in the list [ %p ] having size [ %d] of thread [ %p ] has address [ %p ]"
                         , static_cast<int>(firedEvent)
                         , this
                         , mWaitingList.getSize()
@@ -564,11 +566,11 @@ bool SynchLockAndWaitIX::_requestOwnership( const NESynchTypesIX::eSynchObjectFi
     }
     else
     {
-        ASSERT(mWaitingList.getSize() <= static_cast<int>(firedEvent));
+        ASSERT(mWaitingList.getSize() <= static_cast<uint32_t>(firedEvent));
         OUTPUT_DBG("Thread [ %p ] requests ownership of [ %d ] waitables.", reinterpret_cast<id_type>(mContext), mWaitingList.getSize());
 
         result = true;
-        for (int i = 0; (i < mWaitingList.getSize()) && result; ++ i)
+        for (uint32_t i = 0; (i < mWaitingList.getSize()) && result; ++ i)
         {
             IEWaitableBaseIX *waitable = mWaitingList[i];
             ASSERT(waitable != nullptr);

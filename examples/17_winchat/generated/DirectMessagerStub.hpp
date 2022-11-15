@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/DirectMessagerStub.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_DIRECTMESSAGERSTUB_HPP
+#define  GENERATED_DIRECTMESSAGERSTUB_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:16 GMT+02:00 
+ * Generated at     13.08.2022  02:48:00 GMT+02:00
  *                  Create by AREG SDK code generator tool from source DirectMessager.
  *
  * \file            generated/DirectMessagerStub.hpp
@@ -52,7 +53,7 @@ protected:
      * \brief   Destructor.
      **/
     virtual ~DirectMessagerStub( void ) = default;
-    
+
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
@@ -115,7 +116,7 @@ public:
      * \brief   Request call.
      *          Request to join chat. The participant should be in the list of connections
      * \param   participant The participant to join chat. The participant should be in the connection list.
-     * \param   timeConnect The timestamp when the request was sent.
+     * \param   timeConnect The time-stamp when the request was sent.
      * \see     responseChatJoin
      **/
     virtual void requestChatJoin( const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect ) = 0;
@@ -125,7 +126,7 @@ public:
      *          Request to send a message, has no response
      * \param   sender      The participant structure of message sender
      * \param   msgText     The text message to send
-     * \param   timeSent    The timestamp when the message is requested to send.
+     * \param   timeSent    The time-stamp when the message is requested to send.
      * \note    Has no response
      **/
     virtual void requestMessageSend( const NEDirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent ) = 0;
@@ -143,7 +144,7 @@ public:
      * \brief   Request call.
      *          The request to leave chat-room. Has no response.
      * \param   participant The structure of chat-room participant.
-     * \param   timeLeave   Timestamp when it was requested to leave chat-room.
+     * \param   timeLeave   Time-stamp when it was requested to leave chat-room.
      * \note    Has no response
      **/
     virtual void requestChatLeave( const NEDirectMessager::sParticipant & participant, const DateTime & timeLeave ) = 0;
@@ -158,8 +159,8 @@ public:
      *          Response to join chat
      * \param   succeed         Flag, indicating whether connection is accepted or not.
      * \param   listParticipant The list of participants.
-     * \param   timeConnect     Timestamp when it was requested to join chat
-     * \param   timeConnected   Timestamp when the request to join was accepted and new participants was registered.
+     * \param   timeConnect     Time-stamp when it was requested to join chat
+     * \param   timeConnected   Time-stamp when the request to join was accepted and new participants was registered.
      * \see     requestChatJoin
      **/
     virtual void responseChatJoin( bool succeed, const NEDirectMessager::ListParticipants & listParticipant, const DateTime & timeConnect, const DateTime & timeConnected );
@@ -174,7 +175,7 @@ public:
      *          Informs all connected servicing clients that the message is sent.
      * \param   sender      The structure of participant, who sent the message.
      * \param   msgText     The message, which was sent.
-     * \param   timeSent    The timestamp when the message was sent.
+     * \param   timeSent    The time-stamp when the message was sent.
      **/
     virtual void broadcastMessageSent( const NEDirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent );
 
@@ -190,7 +191,7 @@ public:
      * \brief   Broadcast call.
      *          Informs new participant joined chat-room
      * \param   participant The structure of participant, joined chat-room.
-     * \param   timeJoined  Timestamp when participant joined the chat-room
+     * \param   timeJoined  Time-stamp when participant joined the chat-room
      **/
     virtual void broadcastParticipantJoined( const NEDirectMessager::sParticipant & participant, const DateTime & timeJoined );
 
@@ -198,7 +199,7 @@ public:
      * \brief   Broadcast call.
      *          Informs that a participant left chat-room.
      * \param   participant The structure of participant, who left the chat-room.
-     * \param   timeLeft    The timestamp when the participant left chat-room.
+     * \param   timeLeft    The time-stamp when the participant left chat-room.
      **/
     virtual void broadcastParticipantLeft( const NEDirectMessager::sParticipant & participant, const DateTime & timeLeft );
 
@@ -221,8 +222,8 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Sends update notification message to all clients. 
-     *          This method can be called manually to send update 
+     * \brief   Sends update notification message to all clients.
+     *          This method can be called manually to send update
      *          notification message after updating attribute value.
      *
      * \param   msgId   The attribute message ID to notify clients.
@@ -267,7 +268,7 @@ protected:
     virtual void shutdownServiceIntrface ( Component & holder ) override;
 
 /************************************************************************/
-// StubBase overrides. Protected methods 
+// StubBase overrides. Protected methods
 /************************************************************************/
 
     /**
@@ -281,7 +282,7 @@ protected:
     virtual ResponseEvent * createResponseEvent( const ProxyAddress & proxy, unsigned int msgId, NEService::eResultType result, const EventDataStream & data ) const override;
 
     /**
-     * \brief   Overwrite method to create remote service request event from streaming object for 
+     * \brief   Overwrite method to create remote service request event from streaming object for
      *          further dispatching by stub.
      * \param   stream  Streaming object, which contains event data.
      * \return  If operation succeeds, returns valid pointer to Service Request event object.
@@ -290,7 +291,7 @@ protected:
     virtual RemoteRequestEvent * createRemoteRequestEvent( const IEInStream & stream ) const override;
 
     /**
-     * \brief   Overwrite method to create remote notify request event from streaming object for 
+     * \brief   Overwrite method to create remote notify request event from streaming object for
      *          further dispatching by stub.
      * \param   stream  Streaming object, which contains event data.
      * \return  If operation succeeds, returns valid pointer to Service Request event object.
@@ -395,6 +396,8 @@ inline NEDirectMessager::ListParticipants & DirectMessagerStub::getChatParticipa
 //////////////////////////////////////////////////////////////////////////
 // DirectMessagerStub class declaration End
 //////////////////////////////////////////////////////////////////////////
+
+#endif   // GENERATED_DIRECTMESSAGERSTUB_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/DirectMessagerStub.hpp file

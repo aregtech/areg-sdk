@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/DispatcherThread.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -14,6 +14,7 @@
  *
  ************************************************************************/
 #include "areg/component/DispatcherThread.hpp"
+
 #include "areg/component/ComponentThread.hpp"
 #include "areg/component/Event.hpp"
 #include "areg/component/private/ExitEvent.hpp"
@@ -31,6 +32,15 @@ DEF_TRACE_SCOPE( areg_component_private_DispatcherThread_triggerExitEvent);
  * \brief   NullDispatcherThread is hidden and used only as a dummy thread
  *          to get invalid dispatcher. It will ignore all required operations.
  ************************************************************************/
+
+namespace
+{
+    /**
+     * \brief   Predefined fixed name of invalid Null Dispatcher Thread.
+     **/
+    static constexpr std::string_view   NullDispatcherName{ "_NullDispatcherThread_" };
+}
+
 class AREG_API NullDispatcherThread    : public ComponentThread
 {
 //////////////////////////////////////////////////////////////////////////
@@ -44,13 +54,9 @@ class AREG_API NullDispatcherThread    : public ComponentThread
 // Static members
 //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   Predefined fixed name of invalid Null Dispatcher Thread.
-     **/
-    static const char* const        sNullDispatcherName     /*= "_NullDispatcherThread_"*/;
-    /**
      * \brief   singleton Null Dispatcher Thread. It is not valid and runnable thread.
      **/
-    static NullDispatcherThread   sSelfNullDispatcher;
+    static NullDispatcherThread     sSelfNullDispatcher;
 
 //////////////////////////////////////////////////////////////////////////
 // Declare Runtime
@@ -109,10 +115,6 @@ private:
 // NullDispatcherThread class statics
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Predefined name of invalid Null Dispatcher Thread
- **/
-const char* const        NullDispatcherThread::sNullDispatcherName        = "_NullDispatcherThread_";
-/**
  * \brief   singleton invalid Null Dispatcher Thread.
  **/
 NullDispatcherThread   NullDispatcherThread::sSelfNullDispatcher;
@@ -126,7 +128,7 @@ IMPLEMENT_RUNTIME(NullDispatcherThread, ComponentThread)
 // NullDispatcherThread class Constructor 
 //////////////////////////////////////////////////////////////////////////
 inline NullDispatcherThread::NullDispatcherThread( void )
-    : ComponentThread(NullDispatcherThread::sNullDispatcherName)
+    : ComponentThread(NullDispatcherName)
 {   ;               }
 
 //////////////////////////////////////////////////////////////////////////
@@ -146,7 +148,7 @@ bool NullDispatcherThread::hasRegisteredConsumer( const RuntimeClassID & /* whic
 
 bool NullDispatcherThread::postEvent( Event& eventElem )
 {
-    OUTPUT_ERR("Wrong event dispatcher to post event type [ %s ], going to destroy", eventElem.getRuntimeClassName());
+    OUTPUT_ERR("Wrong event dispatcher to post event type [ %s ], going to destroy", eventElem.getRuntimeClassName().getString());
     eventElem.destroy();
     ASSERT(false);
     return false;
@@ -203,7 +205,7 @@ DispatcherThread & DispatcherThread::_getNullDispatherThread( void )
 //////////////////////////////////////////////////////////////////////////
 // DispatcherThread class Constructor / Destructor.
 //////////////////////////////////////////////////////////////////////////
-DispatcherThread::DispatcherThread (const char* threadName )
+DispatcherThread::DispatcherThread (const String & threadName )
     : Thread          ( static_cast<IEThreadConsumer &>(self()), threadName )
     , EventDispatcher ( threadName )
 
@@ -216,9 +218,10 @@ DispatcherThread::DispatcherThread (const char* threadName )
 //////////////////////////////////////////////////////////////////////////
 bool DispatcherThread::postEvent( Event& eventElem )
 {
-    OUTPUT_ERR("Wrong postEvent function call, destroying event [ %s ]", eventElem.getRuntimeClassName());
+    OUTPUT_ERR("Wrong postEvent function call, destroying event [ %s ]", eventElem.getRuntimeClassName().getString());
     eventElem.destroy();
     ASSERT(false);  // <= this should not be called.
+
     return true;
 }
 

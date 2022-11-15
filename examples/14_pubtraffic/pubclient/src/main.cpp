@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech (c) 2021
+// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
 // Description : This project contains an instance service client, which model
 //               is defined dynamically during run-time. This approach 
 //               guaranties to start and run several instance of the same 
@@ -70,14 +70,16 @@ int main()
     }
 
     // Check whether the right option is selected.
-    if ( (NEString::compareFastIgnoreCase(buffer, "sn") == 0) || (NEString::compareFast(buffer, "1") == 0) )
+    if ( (NEString::compareFastIgnoreCase(buffer, "sn") == NEMath::eCompare::Equal) || 
+         (NEString::compareFast(buffer, "1") == NEMath::eCompare::Equal) )
     {
         trafficDirection = NECommon::eTrafficDirection::DirectionSouthNorth;
         roleName += "SouthNorth";
         roleName = NEUtilities::generateName(roleName, name, 128);
         printf("\nSelected Choice: South-North traffic.\n");
     }
-    else if ( (NEString::compareFastIgnoreCase(buffer, "ew") == 0) || (NEString::compareFast(buffer, "2") == 0) )
+    else if ( (NEString::compareFastIgnoreCase(buffer, "ew") == NEMath::eCompare::Equal) || 
+              (NEString::compareFast(buffer, "2") == NEMath::eCompare::Equal) )
     {
         trafficDirection = NECommon::eTrafficDirection::DirectionEastWest;
         roleName += "EastWest";
@@ -95,8 +97,9 @@ int main()
 
     printf("\n...........................................\n");
 
-    // Initialize application, disable logging, enables servicing and the timer.
-    Application::initApplication(false, true, true, true, nullptr, nullptr );
+    // Initialize application, enable logging, servicing, routing, timer and watchdog.
+    // Use default settings.
+    Application::initApplication( );
 
     // Create model manually during run-time.
     NERegistry::Model model(_modelName);

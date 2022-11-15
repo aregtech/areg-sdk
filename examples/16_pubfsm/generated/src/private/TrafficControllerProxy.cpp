@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:14 GMT+02:00 
+ * Generated at     13.08.2022  02:47:36 GMT+02:00
  *                  Create by AREG SDK code generator tool from source TrafficController.
  *
  * \file            generated/src/private/TrafficControllerProxy.hpp
@@ -42,12 +42,12 @@ TrafficControllerProxy::TrafficControllerServiceAvailableEvent::TrafficControlle
 // static function implementation
 //////////////////////////////////////////////////////////////////////////
 
-ProxyBase * TrafficControllerProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+ProxyBase * TrafficControllerProxy::_createProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
 {
     return DEBUG_NEW TrafficControllerProxy(roleName, ownerThread);
 }
 
-TrafficControllerProxy * TrafficControllerProxy::createProxy( const char * roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
+TrafficControllerProxy * TrafficControllerProxy::createProxy( const String & roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
 {
     return static_cast<TrafficControllerProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NETrafficController::getInterfaceData()
@@ -56,7 +56,7 @@ TrafficControllerProxy * TrafficControllerProxy::createProxy( const char * roleN
                                                                       , ownerThread) );
 }
 
-TrafficControllerProxy * TrafficControllerProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= nullptr*/ )
+TrafficControllerProxy * TrafficControllerProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
 {
     return static_cast<TrafficControllerProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NETrafficController::getInterfaceData()
@@ -68,7 +68,7 @@ TrafficControllerProxy * TrafficControllerProxy::createProxy( const char * roleN
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-TrafficControllerProxy::TrafficControllerProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+TrafficControllerProxy::TrafficControllerProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
     : ProxyBase(roleName, NETrafficController::getInterfaceData(), ownerThread)
 
 /************************************************************************
@@ -139,11 +139,11 @@ void TrafficControllerProxy::unregisterServiceListeners( void )
 /************************************************************************
  * Requests.
  ************************************************************************/
- 
+
 /************************************************************************
  * Event processing.
  ************************************************************************/
- 
+
 /************************************************************************
  * IEProxyEventConsumer interface overrides.
  ************************************************************************/
@@ -215,8 +215,8 @@ void TrafficControllerProxy::updateData( TrafficControllerResponseEvent & eventE
         break;
     }
 }
- 
-void TrafficControllerProxy::processResponse( TrafficControllerResponseEvent & evenElem )
+
+    void TrafficControllerProxy::processResponse( TrafficControllerResponseEvent & evenElem )
 {
     NETrafficController::eMessageIDs respId  = static_cast<NETrafficController::eMessageIDs>(evenElem.getResponseId());
     NEService::eResultType resultType  = evenElem.getResult();
@@ -242,8 +242,8 @@ void TrafficControllerProxy::processResponse( TrafficControllerResponseEvent & e
         {
             respId  = static_cast<NETrafficController::eMessageIDs>( mProxyData.getResponseId(static_cast<msg_id>(respId)) );
         }
-        
-        setStates   = respId != NETrafficController::eMessageIDs::MsgId_NotProcessed;            
+
+        setStates   = respId != NETrafficController::eMessageIDs::MsgId_NotProcessed;
         break;
 
     case NEService::eResultType::RequestOK:     // fall through
@@ -260,16 +260,15 @@ void TrafficControllerProxy::processResponse( TrafficControllerResponseEvent & e
     {
         updateData(evenElem, respId);
     }
-       
+
     if (setStates == true)
     {
         setState(static_cast<msg_id>(respId), dataValid ? NEService::eDataStateType::DataIsOK : NEService::eDataStateType::DataIsInvalid);
     }
-    
+
     notifyListeners(static_cast<msg_id>(respId), resultType, evenElem.getSequenceNumber());
 }
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/private/TrafficControllerProxy.cpp file
 //////////////////////////////////////////////////////////////////////////
- 

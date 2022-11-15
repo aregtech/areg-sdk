@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ResponseEvents.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -44,7 +44,7 @@ ResponseEvent::ResponseEvent( const EventDataStream & args
                             , unsigned int respId
                             , Event::eEventType eventType
                             , unsigned int seqNr  /*= NEService::SEQUENCE_NUMBER_NOTIFY*/
-                            , const char* name    /*= nullptr*/ )
+                            , const String & name /*= String::EmptyString*/ )
     : ServiceResponseEvent(proxyTarget, result, respId, eventType, seqNr)
     , mData (respId, args, name)
 {
@@ -101,7 +101,7 @@ LocalResponseEvent::LocalResponseEvent( const EventDataStream & args
                                       , NEService::eResultType result
                                       , unsigned int respId
                                       , unsigned int seqNr  /*= NEService::SEQUENCE_NUMBER_NOTIFY*/
-                                      , const char * name   /*= nullptr*/ )
+                                      , const String & name /*= String::EmptyString*/ )
     : ResponseEvent(args, proxyTarget, result, respId, Event::eEventType::EventLocalServiceResponse, seqNr, name)
 {
 }
@@ -142,7 +142,7 @@ RemoteResponseEvent::RemoteResponseEvent( const EventDataStream & args
                                         , NEService::eResultType result
                                         , unsigned int respId
                                         , unsigned int seqNr  /*= NEService::SEQUENCE_NUMBER_NOTIFY*/
-                                        , const char* name    /*= nullptr*/ )
+                                        , const String & name /*= String::EmptyString*/ )
     : ResponseEvent(args, proxyTarget, result, respId, Event::eEventType::EventRemoteServiceResponse, seqNr, name)
 {
     ASSERT(getData().getDataStream().isExternalDataStream());

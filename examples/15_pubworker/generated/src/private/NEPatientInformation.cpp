@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  02:46:19 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PatientInformation.
  *
  * \file            generated/src/NEPatientInformation.hpp
@@ -39,7 +39,7 @@ const NEService::SInterfaceData & NEPatientInformation::getInterfaceData( void )
     /************************************************************************
      * The list of attributes
      ************************************************************************/
-    static constexpr unsigned int _AttributeList[] 
+    static constexpr unsigned int _AttributeList[]
     {
           static_cast<unsigned int>( NEPatientInformation::eMessageIDs::MsgId_Patient  ) // NEPatientInformation::PatientInfo mPatient;
     };
@@ -53,7 +53,7 @@ const NEService::SInterfaceData & NEPatientInformation::getInterfaceData( void )
      * Initialization of parameter entry validation map in responses and in broadcasts
      ************************************************************************/
     constexpr unsigned int * _ResponseParamStateMap { nullptr }; // EMPTY RESPONSE AND BROADCAST LIST
-    
+
     /************************************************************************
      * PatientInformation Service Interface data
      ************************************************************************/
@@ -75,12 +75,12 @@ const NEService::SInterfaceData & NEPatientInformation::getInterfaceData( void )
     return _InterfaceData;
 }
 
-NEPatientInformation::eMessageIDs NEPatientInformation::getResponseId( NEPatientInformation::eMessageIDs reqId )
+NEPatientInformation::eMessageIDs NEPatientInformation::getResponseId( NEPatientInformation::eMessageIDs /* reqId */ )
 {
     return NEPatientInformation::eMessageIDs::MsgId_Invalid;
 }
 
-NEPatientInformation::eMessageIDs NEPatientInformation::getRequestId( NEPatientInformation::eMessageIDs respId )
+NEPatientInformation::eMessageIDs NEPatientInformation::getRequestId( NEPatientInformation::eMessageIDs /* respId */ )
 {
     return NEPatientInformation::eMessageIDs::MsgId_Invalid;
 }

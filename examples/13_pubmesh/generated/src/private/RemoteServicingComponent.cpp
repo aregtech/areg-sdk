@@ -50,10 +50,10 @@ void RemoteServicingComponent::requestRegister( const String & name, const Servi
     NERemoteRegistry::sClientRegister newClient;
 
     NERemoteRegistry::ListRegistry & list = getRegistryList();
-    LISTPOS pos = list.firstPosition();
-    for ( ; pos != nullptr; pos = list.nextPosition(pos) )
+    NERemoteRegistry::ListRegistry::LISTPOS pos = list.firstPosition();
+    for ( ; list.isValidPosition(pos); pos = list.nextPosition(pos) )
     {
-        const NERemoteRegistry::sClientRegister & client = list.getAt(pos);
+        const NERemoteRegistry::sClientRegister & client = list.valueAtPosition(pos);
         if ( (client.crName == name) && (client.crService == service) && (client.crThread == thread))
         {
             TRACE_DBG("Found registered client [ %s ], ignoring new registration", name.getString());
@@ -62,7 +62,7 @@ void RemoteServicingComponent::requestRegister( const String & name, const Servi
         }
     }
 
-    if (pos == nullptr )
+    if (list.isInvalidPosition(pos))
     {
         newClient.crID      = ++ mGnerateID;
         newClient.crName    = name;
@@ -90,9 +90,9 @@ void RemoteServicingComponent::requestUnregister( const NERemoteRegistry::sClien
     TRACE_DBG("The client [ %s ] with registered ID [ %u ] requested unregister.", client.crName.getString(), client.crID);
 
     NERemoteRegistry::ListRegistry & list = getRegistryList();
-    for (LISTPOS pos = list.firstPosition(); pos != nullptr; pos = list.nextPosition(pos))
+    for (NERemoteRegistry::ListRegistry::LISTPOS pos = list.firstPosition(); list.isValidPosition(pos); pos = list.nextPosition(pos))
     {
-        const NERemoteRegistry::sClientRegister & entry = list.getAt(pos);
+        const NERemoteRegistry::sClientRegister & entry = list.valueAtPosition(pos);
         if (entry == client)
         {
             list.removeAt(pos);
@@ -104,37 +104,31 @@ void RemoteServicingComponent::requestUnregister( const NERemoteRegistry::sClien
     }
 }
 
-void RemoteServicingComponent::requestHelloWorld( unsigned int clientID, const String & addMessage )
+void RemoteServicingComponent::requestHelloWorld( unsigned int clientID )
 {
     TRACE_SCOPE(examples_13_pubmesh_generated_RemoteServicingComponent_requestHelloWorld);
 
     const NERemoteRegistry::ListRegistry & list = getRegistryList();
-    LISTPOS pos = list.firstPosition();
-    for ( ; pos != nullptr; pos = list.nextPosition(pos))
+    NERemoteRegistry::ListRegistry::LISTPOS pos = list.firstPosition();
+    for ( ; list.isValidPosition(pos); pos = list.nextPosition(pos))
     {
-        const NERemoteRegistry::sClientRegister & entry = list.getAt(pos);
+        const NERemoteRegistry::sClientRegister & entry = list.valueAtPosition(pos);
         if (entry.crID == clientID)
         {
             break;
         }
     }
 
-    if ( pos != nullptr )
+    if ( list.isValidPosition(pos))
     {
         unsigned int outputs   = getRemainOutputs();
-        printf(">>> REMOTE client [ %s ] says \"!Hello World!\". Remain [ %d ].\n", list.getAt(pos).crName.getString(), outputs);
-        if (addMessage.isEmpty() == false)
-        {
-            printf("\t>>> The additional message: %s.\n", addMessage.getString());
-        }
-
+        printf("\"Hello REMOTE [ %s ]!\" Remain [ %d ]\n", list.valueAtPosition(pos).crName.getString(), outputs );
         setRemainOutputs(-- outputs);
-
         responseHelloWorld(clientID);
     }
     else
     {
-        printf("ERROR... ignoring output message!");
+        printf("ERROR... ignoring output message!\n");
         responseHelloWorld(0);
     }
 }

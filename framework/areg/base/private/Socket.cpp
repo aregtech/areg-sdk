@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/Socket.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -28,6 +28,8 @@
 Socket::Socket( void )
     : mSocket   ( )
     , mAddress  ( )
+    , mSendSize ( NESocket::DEFAULT_SEGMENT_SIZE )
+    , mRecvSize ( NESocket::DEFAULT_SEGMENT_SIZE )
 {
     static_cast<void>(NESocket::socketInitialize( ));
 }
@@ -35,6 +37,8 @@ Socket::Socket( void )
 Socket::Socket(const SOCKETHANDLE hSocket, const NESocket::SocketAddress & sockAddress)
     : mSocket   ( std::make_shared<SOCKETHANDLE>(hSocket) )
     , mAddress  ( sockAddress )
+    , mSendSize ( NESocket::DEFAULT_SEGMENT_SIZE )
+    , mRecvSize ( NESocket::DEFAULT_SEGMENT_SIZE )
 {
     static_cast<void>(NESocket::socketInitialize( ));
 }
@@ -42,6 +46,8 @@ Socket::Socket(const SOCKETHANDLE hSocket, const NESocket::SocketAddress & sockA
 Socket::Socket( const Socket & source )
     : mSocket   ( source.mSocket )
     , mAddress  ( source.mAddress )
+    , mSendSize ( source.mSendSize )
+    , mRecvSize ( source.mRecvSize )
 {
     static_cast<void>(NESocket::socketInitialize( ));
 }
@@ -49,6 +55,8 @@ Socket::Socket( const Socket & source )
 Socket::Socket( Socket && source ) noexcept
     : mSocket   ( std::move(source.mSocket)  )
     , mAddress  ( std::move(source.mAddress) )
+    , mSendSize ( source.mSendSize )
+    , mRecvSize ( source.mRecvSize )
 {
     static_cast<void>(NESocket::socketInitialize( ));
 }
@@ -67,6 +75,8 @@ Socket & Socket::operator = ( const Socket & src )
 
 		this->mSocket 	= src.mSocket;
 		this->mAddress	= src.mAddress;
+        this->mSendSize = src.mSendSize;
+        this->mRecvSize = src.mSendSize;
 	}
 
 	return (*this);
@@ -79,8 +89,10 @@ Socket & Socket::operator = ( Socket && src ) noexcept
 		decreaseLock();
 
 		this->mSocket 	= src.mSocket;
-		this->mAddress	= src.mAddress;
-	}
+		this->mAddress	= std::move(src.mAddress);
+        this->mSendSize = src.mSendSize;
+        this->mRecvSize = src.mSendSize;
+    }
 
 	return (*this);
 }
@@ -92,12 +104,26 @@ void Socket::closeSocket(void)
 
 int Socket::sendData( const unsigned char * buffer, int length ) const
 {
-    return (mSocket.get() != nullptr ? NESocket::sendData( *mSocket, buffer, length, -1 ) : 0);
+    int result = 0;
+    if (isValid())
+    {
+        setSendSegmentSize(static_cast<unsigned int>(length), false);
+        result = NESocket::sendData(*mSocket, buffer, length, mSendSize);
+    }
+
+    return result;
 }
 
 int Socket::receiveData( unsigned char * buffer, int length ) const
 {
-    return (mSocket.get() != nullptr ? NESocket::receiveData( *mSocket, buffer, length, -1 ) : 0);
+    int result = 0;
+    if (isValid())
+    {
+        setRecvSegmentSize(static_cast<unsigned int>(length), false);
+        result = NESocket::receiveData(*mSocket, buffer, length, mRecvSize);
+    }
+
+    return result;
 }
 
 bool Socket::setAddress(const char * hostName, unsigned short portNr, bool isServer)
@@ -134,7 +160,32 @@ void Socket::closeSocketHandle( SOCKETHANDLE hSocket )
     }
 }
 
-unsigned int Socket::remainRead( void ) const
+unsigned int Socket::setSendSegmentSize(unsigned int sendSize, bool force /*= false*/) const
 {
-    return (mSocket.get() != nullptr ? NESocket::remainDataRead(*mSocket) : 0);
+    if (isValid() == false)
+    {
+        return NESocket::SEGMENT_INVALID_SIZE;
+    }
+
+    if (force || (sendSize > mSendSize))
+    {
+        mSendSize = NESocket::setMaxSendSize(*mSocket, sendSize);
+    }
+
+    return mSendSize;
+}
+
+inline unsigned int Socket::setRecvSegmentSize(unsigned int recvSize, bool force /*= false*/) const
+{
+    if (isValid() == false)
+    {
+        return NESocket::SEGMENT_INVALID_SIZE;
+    }
+
+    if (force || (recvSize > mRecvSize))
+    {
+        mRecvSize = NESocket::setMaxSendSize(*mSocket, recvSize);
+    }
+
+    return mRecvSize;
 }

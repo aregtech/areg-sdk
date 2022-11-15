@@ -1,6 +1,6 @@
 # ###########################################################################
 # This file is part of AREG SDK
-# Copyright (c) 2017-2021, Aregtech UG
+# Copyright (c) 2017-2022, Aregtech UG
 # Contact: info[at]aregtech.com
 # ###########################################################################
 
@@ -43,8 +43,8 @@ areg   := shared
 bit    :=
 # Modify the 'Config' to change the Configuration
 # Example:
-# Config := Debug
-Config := Release
+Config := Debug
+# Config := Release
 
 # host settings, can leave them blank in case host's OS is Linux.
 Platform :=

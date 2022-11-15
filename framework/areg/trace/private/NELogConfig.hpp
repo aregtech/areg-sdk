@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_TRACE_PRIVATE_NELOGCONFIG_HPP
+#define AREG_TRACE_PRIVATE_NELOGCONFIG_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/NELogConfig.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -123,7 +124,7 @@ namespace NELogConfig
      *          log.layout.enter    = %d: [ %c.%t  %x.%z: Enter --> ]%n
      * 
      *          In this example, the 'enter scope' makes output in following sequence and format:
-     *          <timestamp / day-time>: [ <tick-count>.<thread-ID> <module-name>.<scope-name>: Enter ---> ] \n
+     *          <time-stamp / day-time>: [ <tick-count>.<thread-ID> <module-name>.<scope-name>: Enter ---> ] \n
      *          for example like this:
      *          2019-07-04 14:34:47,969: [ 1587.17524  distrbutedapp.distrbutedapp_ConnectionServicing_CreateComponent: Enter --> ]
      **/
@@ -232,71 +233,71 @@ namespace NELogConfig
      **/
     constexpr std::string_view  SYNTAX_CMD_LOG_FILE                 { "log.file" };
     /**
-     * \breif   The syntax of remote logging service command.
+     * \brief   The syntax of remote logging service command.
      **/
     constexpr std::string_view  SYNTAX_CMD_LOG_REMOTE               { "log.remote" };
     /**
-     * \breif   The syntax of remote logging service host name command.
+     * \brief   The syntax of remote logging service host name command.
      **/
     constexpr std::string_view  SYNTAX_CMD_LOG_REMOTE_HOST          { "log.remote.host" };
     /**
-     * \breif   The syntax of remote logging service port number command.
+     * \brief   The syntax of remote logging service port number command.
      **/
     constexpr std::string_view  SYNTAX_CMD_LOG_REMOTE_PORT          { "log.remote.port" };
     /**
-     * \breif   The syntax of database service command.
+     * \brief   The syntax of database service command.
      **/
     constexpr std::string_view  SYNTAX_CMD_LOG_DB                   { "log.db" };
     /**
-     * \breif   The syntax of database service driver name command.
+     * \brief   The syntax of database service driver name command.
      **/
     constexpr std::string_view  SYNTAX_CMD_LOG_DB_DRIVER            { "log.db.driver" };
     /**
-     * \breif   The syntax of database service driver host command.
+     * \brief   The syntax of database service driver host command.
      **/
     constexpr std::string_view  SYNTAX_CMD_LOG_DB_HOST              { "log.db.host" };
     /**
-     * \breif   The syntax of database service user name command.
+     * \brief   The syntax of database service user name command.
      **/
     constexpr std::string_view  SYNTAX_CMD_LOG_DB_USER              { "log.db.user" };
     /**
-     * \breif   The syntax of database service user password command.
+     * \brief   The syntax of database service user password command.
      **/
     constexpr std::string_view  SYNTAX_CMD_LOG_DB_PASSWORD          { "log.db.pwd" };
     /**
-     * \breif   The syntax of database name command.
+     * \brief   The syntax of database name command.
      **/
     constexpr std::string_view  SYNTAX_CMD_LOG_DB_NAME              { "log.db.name" };
     /**
-     * \breif   The syntax of debug output command.
+     * \brief   The syntax of debug output command.
      **/
     constexpr std::string_view  SYNTAX_CMD_LOG_DEBUG                { "log.debug" };
     /**
-     * \breif   The syntax of target (file or database) output command -- append in existing or create new.
+     * \brief   The syntax of target (file or database) output command -- append in existing or create new.
      **/
     constexpr std::string_view  SYNTAX_CMD_LOG_APPEND               { "log.append" };
     /**
-     * \breif   The syntax of logging stack size command.
+     * \brief   The syntax of logging stack size command.
      **/
     constexpr std::string_view  SYNTAX_CMD_LOG_STACK                { "log.stack" };
     /**
-     * \breif   The syntax of logging enabling command.
+     * \brief   The syntax of logging enabling command.
      **/
     constexpr std::string_view  SYNTAX_CMD_LOG_ENABLE               { "log.enable" };
     /**
-     * \breif   The syntax of logging enter scope command.
+     * \brief   The syntax of logging enter scope command.
      **/
     constexpr std::string_view  SYNTAX_CMD_LOG_LAYOUT_ENTER         { "log.layout.enter" };
     /**
-     * \breif   The syntax of logging message command.
+     * \brief   The syntax of logging message command.
      **/
     constexpr std::string_view  SYNTAX_CMD_LOG_LAYOUT_MESSAGE       { "log.layout.message" };
     /**
-     * \breif   The syntax of logging exit scope command.
+     * \brief   The syntax of logging exit scope command.
      **/
     constexpr std::string_view  SYNTAX_CMD_LOG_LAYOUT_EXIT          { "log.layout.exit" };
     /**
-     * \breif   The syntax of logging general scope command.
+     * \brief   The syntax of logging general scope command.
      **/
     constexpr std::string_view  SYNTAX_CMD_LOG_SCOPE                { "scope" };
 
@@ -316,19 +317,19 @@ namespace NELogConfig
     constexpr std::string_view  INVALID_SCOPE_NAME                  { "INVALID_SCOPE_NAME" };
 
     /**
-     * \brief   Format of timestamp to display logs
+     * \brief   Format of time-stamp to display logs
      **/
     constexpr std::string_view  TIME_FORMAT_ISO8601                 { "ISO8601" };
     constexpr std::string_view  TIME_FORMAT_ISO8601_OUTPUT          { "%Y-%m-%d %H:%M:%S,%l" };
 
     /**
-     * \brief   Absolute time format of timestamp
+     * \brief   Absolute time format of time-stamp
      **/
     constexpr std::string_view  TIME_FORMAT_ABSOLUTE                { "ABSOLUTE" };
     constexpr std::string_view  TIME_FORMAT_ABSOLUTE_OUTPUT         { "%H:%M:%S,%l" };
 
     /**
-     * \brief   Format only data of timestamp
+     * \brief   Format only data of time-stamp
      **/
     constexpr std::string_view  TIME_FORMAT_DATE                    { "DATE" };
     constexpr std::string_view  TIME_FORMAT_DATE_OUTPUT             { "%d %b %Y %H:%M:%S,%l" };
@@ -427,9 +428,9 @@ namespace NELogConfig
     /**
      * \brief   The list of valid syntax lists.
      **/
-    constexpr const std::string_view    ValidSytaxList[ ] = 
+    constexpr const std::string_view    ValidSyntaxList[ ] = 
             {
-                  NEString::EmptyStringA                        //!< eLogConfig::ConfigUnknown
+                  String::EmptyString                           //!< eLogConfig::ConfigUnknown
                 , NELogConfig::SYNTAX_CMD_LOG_VERSION           //!< eLogConfig::ConfigLogVersion
                 , NELogConfig::SYNTAX_CMD_LOG_FILE              //!< eLogConfig::ConfigLogFile
                 , NELogConfig::SYNTAX_CMD_LOG_REMOTE_HOST       //!< eLogConfig::ConfigLogRemoteHost
@@ -455,7 +456,7 @@ namespace NELogConfig
     //!< The default logging enabled flag.
     constexpr std::string_view   DEFAULT_LOG_ENABLE             { "log.enable = true" };
 
-    //!< The default file name of loggs.
+    //!< The default file name to log.
     constexpr std::string_view   DEFAULT_LOG_FILE               { "log.file = ./logs/trace_%time%.log" };
 
     //!< The default flag, indicating whether logs are enabled.
@@ -522,3 +523,5 @@ inline const char * NELogConfig::getString( NELogConfig::eLogConfig logConfig )
     return "ERR: Invalid NELogConfig::eLogConfig value!";
     }
 }
+
+#endif  // AREG_TRACE_PRIVATE_NELOGCONFIG_HPP

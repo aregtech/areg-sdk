@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/Version.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -16,7 +16,6 @@
 
 #include "areg/base/Version.hpp"
 
-#include "areg/base/IEIOStream.hpp"
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/NECommon.hpp"
 
@@ -75,29 +74,42 @@ Version::Version(const char * version)
     , mMinor    (0)
     , mPatch    (0)
 {
+    convFromString( version );
+}
+
+Version::Version(const String & version)
+    : mMajor    (0)
+    , mMinor    (0)
+    , mPatch    (0)
+{
     convFromString(version);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-Version & Version::convFromString( const char * version )
+Version & Version::convFromString( const String & version )
 {
     mMajor  = 0;
     mMinor  = 0;
     mPatch  = 0;
 
-    String temp(version), major, minor, patch;
+    String major, minor, patch;
     NEString::CharPos pos = NEString::START_POS;
-    pos = temp.substring( major, NECommon::OBJECT_SEPARATOR, pos );
-    pos = temp.substring( minor, NECommon::OBJECT_SEPARATOR, pos );
-    pos = temp.substring( patch, NECommon::OBJECT_SEPARATOR, pos );
+    pos = version.substring( major, NECommon::OBJECT_SEPARATOR, pos);
+    pos = version.substring( minor, NECommon::OBJECT_SEPARATOR, pos);
+    version.substring( patch, NECommon::OBJECT_SEPARATOR, pos);
 
-    mMajor  = major.convToUInt32();;
-    mMinor  = minor.convToUInt32();
-    mPatch  = (mMajor != 0) && (mMinor != 0) ? patch.convToUInt32() : 0;
+    mMajor  = major.toUInt32();;
+    mMinor  = minor.toUInt32();
+    mPatch  = (mMajor != 0) && (mMinor != 0) ? patch.toUInt32() : 0;
 
     return (*this);
+}
+
+Version & Version::convFromString( const char * version )
+{
+	return convFromString( String(version != nullptr ? version : String::EmptyString) );
 }
 
 Version & Version::operator = ( const Version &src )
@@ -123,11 +135,6 @@ Version & Version::operator = ( Version && src ) noexcept
     return (*this);
 }
 
-Version & Version::operator = (const char * version)
-{
-    return convFromString( version );
-}
-
 bool Version::operator < ( const Version & version ) const
 {
     return  (this == &version ? false :
@@ -149,38 +156,9 @@ bool Version::operator > ( const Version & version ) const
 String Version::convToString( void ) const
 {
     String result;
-    return result.formatString("%d%c%d%c%d", mMajor, NECommon::OBJECT_SEPARATOR, mMinor, NECommon::OBJECT_SEPARATOR, mPatch);
+    return result.format("%d%c%d%c%d", mMajor, NECommon::OBJECT_SEPARATOR, mMinor, NECommon::OBJECT_SEPARATOR, mPatch);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Version friend global operators to make Version object streamable
 //////////////////////////////////////////////////////////////////////////
-
-/**
- * \brief	Streams to input object, i.e. reads data from streaming object to string,
- *          and initialize string data.
- * \param	stream	Streaming object to read string data
- * \param	input	String object to initialize and write string data.
- * \return	Reference to stream object.
- **/
-AREG_API const IEInStream & operator >> (const IEInStream & stream, Version& input)
-{
-    stream >> input.mMajor;
-    stream >> input.mMinor;
-    stream >> input.mPatch;
-    return stream;
-}
-
-/**
- * \brief	Streams from output object, i.e. write data from string to streaming object.
- * \param	stream	Streaming object to write data.
- * \param	output	String object to read data from
- * \return	Reference to stream object.
- **/
-AREG_API IEOutStream & operator << (IEOutStream& stream, const Version& output)
-{
-    stream << output.mMajor;
-    stream << output.mMinor;
-    stream << output.mPatch;
-    return stream;
-}

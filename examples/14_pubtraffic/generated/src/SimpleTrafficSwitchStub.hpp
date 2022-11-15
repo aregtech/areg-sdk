@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/src/SimpleTrafficSwitchStub.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_SRC_SIMPLETRAFFICSWITCHSTUB_HPP
+#define  GENERATED_SRC_SIMPLETRAFFICSWITCHSTUB_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:13 GMT+02:00 
+ * Generated at     13.08.2022  02:45:34 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficSwitch.
  *
  * \file            generated/src/SimpleTrafficSwitchStub.hpp
@@ -53,7 +54,7 @@ protected:
      * \brief   Destructor.
      **/
     virtual ~SimpleTrafficSwitchStub( void ) = default;
-    
+
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
@@ -143,8 +144,8 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Sends update notification message to all clients. 
-     *          This method can be called manually to send update 
+     * \brief   Sends update notification message to all clients.
+     *          This method can be called manually to send update
      *          notification message after updating attribute value.
      *
      * \param   msgId   The attribute message ID to notify clients.
@@ -189,7 +190,7 @@ protected:
     virtual void shutdownServiceIntrface ( Component & holder ) override;
 
 /************************************************************************/
-// StubBase overrides. Protected methods 
+// StubBase overrides. Protected methods
 /************************************************************************/
 
     /**
@@ -299,6 +300,8 @@ inline bool & SimpleTrafficSwitchStub::getIsSwitchedOn( void )
 //////////////////////////////////////////////////////////////////////////
 // SimpleTrafficSwitchStub class declaration End
 //////////////////////////////////////////////////////////////////////////
+
+#endif   // GENERATED_SRC_SIMPLETRAFFICSWITCHSTUB_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/SimpleTrafficSwitchStub.hpp file

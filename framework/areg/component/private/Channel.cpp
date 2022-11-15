@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/Channel.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -67,40 +67,24 @@ Channel & Channel::operator = ( Channel && source ) noexcept
 String Channel::convToString( void ) const
 {
     String result;
-    return result.formatString("%llu.%llu.%llu", mSource, mTarget, mCookie);
+    return result.format("%llu.%llu.%llu", mSource, mTarget, mCookie);
 }
 
-const Channel & Channel::convFromString(const char * channel)
+const Channel & Channel::convFromString(const String & channel)
 {
     mSource = NEService::SOURCE_UNKNOWN;
     mTarget = NEService::TARGET_UNKNOWN;
     mCookie = NEService::COOKIE_UNKNOWN;
 
-    String temp(channel), source, target, cookie;
+    String source, target, cookie;
     NEString::CharPos pos = NEString::START_POS;
-    pos = temp.substring( source, NECommon::OBJECT_SEPARATOR, pos );
-    pos = temp.substring( target, NECommon::OBJECT_SEPARATOR, pos );
-    pos = temp.substring( cookie, NECommon::OBJECT_SEPARATOR, pos );
+    pos = channel.substring( source, NECommon::OBJECT_SEPARATOR, pos );
+    pos = channel.substring( target, NECommon::OBJECT_SEPARATOR, pos );
+    channel.substring( cookie, NECommon::OBJECT_SEPARATOR, pos );
 
-    mSource = static_cast<ITEM_ID>( source.convToUInt64() );
-    mTarget = static_cast<ITEM_ID>( target.convToUInt64() );
-    mCookie = static_cast<ITEM_ID>( cookie.convToUInt64() );
+    mSource = static_cast<ITEM_ID>( source.toUInt64() );
+    mTarget = static_cast<ITEM_ID>( target.toUInt64() );
+    mCookie = static_cast<ITEM_ID>( cookie.toUInt64() );
 
     return (*this);
-}
-
-AREG_API const IEInStream & operator >> ( const IEInStream & stream, Channel & input )
-{
-    stream >> input.mSource;
-    stream >> input.mTarget;
-    stream >> input.mCookie;
-    return stream;
-}
-
-AREG_API IEOutStream & operator << ( IEOutStream & stream, const Channel & output)
-{
-    stream << output.mSource;
-    stream << output.mTarget;
-    stream << output.mCookie;
-    return stream;
 }

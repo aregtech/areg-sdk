@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_PERSIST_PRIVATE_PERSISTENMANAGER_HPP
+#define AREG_PERSIST_PRIVATE_PERSISTENMANAGER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/persist/private/PersistenceManager.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -37,8 +38,7 @@ class PersistenceManager
     /**
      * \brief   The map of saved properties.
      **/
-    using ImplDataMap	= TEHashMapImpl<unsigned int, const Property &>;
-    using DataMap       = TEIntegerHashMap<Property, const Property &, ImplDataMap>;
+    using DataMap       = TEIntegerMap<Property>;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor / destructor
@@ -47,11 +47,11 @@ private:
     /**
      * \brief   Hidden constructor
      **/
-    PersistenceManager( void );
+    PersistenceManager( void ) = default;
     /**
      * \brief   Destructor
      **/
-    ~PersistenceManager( void );
+    ~PersistenceManager( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Static public
@@ -90,7 +90,7 @@ public:
      * \param   position    The name of position at section to get the values
      * \return  Returns number of properties in the list.
      **/
-    int getProperty( const char * section, const char * property, const char * position, TEArrayList<Property, const Property &> & out_listProperties );
+    int getProperty( const String & section, const String & property, const String & position, TEArrayList<Property> & out_listProperties );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -119,3 +119,5 @@ private:
 private:
     DECLARE_NOCOPY_NOMOVE( PersistenceManager );
 };
+
+#endif  // AREG_PERSIST_PRIVATE_PERSISTENMANAGER_HPP

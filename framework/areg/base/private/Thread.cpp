@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/Thread.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -128,7 +128,7 @@ ThreadLocalStorage* Thread::_getThreadLocalStorage( Thread* ownThread /*= Thread
         // the object should be deleted.
         ASSERT(ownThread == nullptr );
         ASSERT(_localStorage != nullptr );
-        _localStorage->removeAll();
+        _localStorage->clear();
         delete _localStorage;
         _localStorage = nullptr;
     }
@@ -140,13 +140,14 @@ ThreadLocalStorage* Thread::_getThreadLocalStorage( Thread* ownThread /*= Thread
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-Thread::Thread(IEThreadConsumer &threadConsumer, const char* threadName /* = nullptr */)
+
+Thread::Thread(IEThreadConsumer &threadConsumer, const String & threadName )
     : RuntimeObject   ( )
 
     , mThreadConsumer   (threadConsumer)
     , mThreadHandle     (Thread::INVALID_THREAD_HANDLE)
     , mThreadId         (Thread::INVALID_THREAD_ID)
-    , mThreadAddress    (NEString::isEmpty<char>(threadName) == false ? threadName : NEUtilities::generateName(DEFAULT_THREAD_PREFIX.data()).getString())
+    , mThreadAddress    (threadName.isEmpty() == false ? threadName : NEUtilities::generateName(DEFAULT_THREAD_PREFIX.data()))
     , mThreadPriority   (Thread::eThreadPriority::PriorityUndefined)
     , mIsRunning        ( false )
 
@@ -227,6 +228,12 @@ bool Thread::completionWait( unsigned int waitForCompleteMs /*= NECommon::WAIT_I
     return result;
 }
 
+inline Thread::eCompletionStatus Thread::terminateThread(void)
+{
+    return destroyThread(NECommon::WAIT_10_MILLISECONDS);
+}
+
+
 bool Thread::onPreRunThread( void )
 {
     return mWaitForRun.setEvent();
@@ -256,8 +263,6 @@ int Thread::_threadEntry( void )
     if (Thread::_findThreadByHandle(mThreadHandle) != nullptr )
     {
         Thread::getCurrentThreadStorage().setStorageItem(STORAGE_THREAD_CONSUMER.data(), (void *)&mThreadConsumer);
-
-        result = IEThreadConsumer::eExitCodes::ExitError;
 
         _setRunning(true);
 
@@ -332,7 +337,7 @@ IEThreadConsumer& Thread::getCurrentThreadConsumer( void )
 {
     ASSERT(getCurrentThread() != nullptr );
     ThreadLocalStorage& localStorage = Thread::getCurrentThreadStorage();
-    IEThreadConsumer* consumer = reinterpret_cast<IEThreadConsumer *>(localStorage.getStorageItem(STORAGE_THREAD_CONSUMER.data()).alignPtr.mElement);
+    IEThreadConsumer* consumer = reinterpret_cast<IEThreadConsumer *>(localStorage.getStorageItem(STORAGE_THREAD_CONSUMER).alignPtr.mElement);
     ASSERT(consumer != nullptr );
     return (*consumer);
 }
@@ -367,7 +372,8 @@ void Thread::dumpThreads( void )
     if (Thread::_mapThreadName.isEmpty() == false)
     {
         String threadName("");
-        Thread* threadObj = Thread::_mapThreadName.resourceFirstKey(threadName);
+        Thread* threadObj{ nullptr };
+        Thread::_mapThreadName.resourceFirstKey(threadName);
         do
         {
             OUTPUT_WARN("The thread with name [ %s ] is still registered in resource!", static_cast<const char *>(threadName.getString()));

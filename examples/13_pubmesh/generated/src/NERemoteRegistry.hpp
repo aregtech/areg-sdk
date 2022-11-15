@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/src/NERemoteRegistry.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_SRC_NEREMOTEREGISTRY_HPP
+#define  GENERATED_SRC_NEREMOTEREGISTRY_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:13 GMT+02:00 
+ * Generated at     13.08.2022  13:59:48 GMT+02:00
  *                  Create by AREG SDK code generator tool from source RemoteRegistry.
  *
  * \file            generated/src/NERemoteRegistry.hpp
@@ -45,7 +46,7 @@
 //////////////////////////////////////////////////////////////////////////
 /**
  *
- * \brief   RemoteRegistry Service Interface defined constants, 
+ * \brief   RemoteRegistry Service Interface defined constants,
  *          types and structures message IDs, global static methods.
  *
  *          Simple Service Interface to demonstrate working features of AREG SDK.
@@ -62,15 +63,15 @@ namespace   NERemoteRegistry
 // Service Interface constants
 /************************************************************************/
     /**
-     * \brief   Service Interface Name
+     * \brief   Service Interface Name.
      *          NERemoteRegistry::ServiceName
      **/
-    constexpr char        ServiceName[]       { "RemoteRegistry" };
+    constexpr   char    ServiceName[]   { "RemoteRegistry" };
     /**
-     * \brief   Implemented Version
+     * \brief   Implemented Version.
      *          NERemoteRegistry::InterfaceVersion
      **/
-    const Version         InterfaceVersion    = "1.0.0";
+    const       Version InterfaceVersion{ 1, 0, 0 };
 
     /**
      * \brief   DESCRIPTION MISSED
@@ -90,11 +91,10 @@ namespace   NERemoteRegistry
      **/
     struct sClientRegister
     {
-    
     //////////////////////////////////////////////////////////////////////////
     // Constructor/ destructor
     ///////////////////////////////////////////////////////////////////////////
-        
+
         /**
          * \brief   Default constructor. Every field of structure should have default constructor.
          **/
@@ -121,43 +121,34 @@ namespace   NERemoteRegistry
          * \brief   Default destructor.
          **/
         ~sClientRegister( void ) = default;
-    
+
     //////////////////////////////////////////////////////////////////////////
     // Basic operators
     ///////////////////////////////////////////////////////////////////////////
-        
+
         /**
          * \brief   Copies data from given source. Every field of structure should have copy constructor.
          * \param   src     The source of sClientRegister structure to copy data.
          **/
         inline NERemoteRegistry::sClientRegister & operator = ( const NERemoteRegistry::sClientRegister & src );
-        
+
         /**
          * \brief   Moves data from given source. Every field of structure should have move constructor.
          * \param   src     The source of sClientRegister structure to move data.
          **/
         inline NERemoteRegistry::sClientRegister & operator = ( NERemoteRegistry::sClientRegister && src ) noexcept;
-        
+
         /**
          * \brief   Checks equality and returns true if 2 instances of sClientRegister are equal
          * \param   other   The instance of sClientRegister to compare
-         * \return  Returns true if 2 instances are equal
          **/ 
         inline bool operator == ( const NERemoteRegistry::sClientRegister & other ) const;
-        
+
         /**
          * \brief   Checks inequality and returns true if 2 instances of sClientRegister are not equal
          * \param   other   The instance of sClientRegister to compare
-         * \return  Returns true if 2 instances are not equal
          **/ 
         inline bool operator != ( const NERemoteRegistry::sClientRegister & other ) const;
-
-        /**
-         * \brief   Converts data to unsigned int, which might be used as a hash key value in map object.
-         *          The conversion is a sum of each field of structure
-         **/
-         inline explicit operator unsigned int ( void ) const;
-
     //////////////////////////////////////////////////////////////////////////
     // sClientRegister fields
     ///////////////////////////////////////////////////////////////////////////
@@ -206,7 +197,7 @@ namespace   NERemoteRegistry
          * \brief   Request ID: MsgId_requestRegister
          *          Call to register client. Each client should be registered before starting communication.
          **/
-          MsgId_requestRegister       = NEService::REQUEST_ID_FIRST     // void requestRegister( const String & name, const ServiceAddress & service, const String & thread, const String & process );
+          MsgId_requestRegister       = NEService::REQUEST_ID_FIRST   // void requestRegister( const String & name, const ServiceAddress & service, const String & thread, const String & process );
         /**
          * \brief   Request ID: MsgId_requestUnregister
          *          Sent to unregister connected client.
@@ -214,10 +205,10 @@ namespace   NERemoteRegistry
         , MsgId_requestUnregister                                       // void requestUnregister( const NERemoteRegistry::sClientRegister & client );
         /**
          * \brief   Request ID: MsgId_requestHelloWorld
-         *          Outputs message on console. If additional message is not empty, outputs the additional message as well.
+         *          Outputs message on console.
          **/
-        , MsgId_requestHelloWorld                                       // void requestHelloWorld( unsigned int clientID, const String & addMessage );
-     
+        , MsgId_requestHelloWorld                                       // void requestHelloWorld( unsigned int clientID );
+
     /************************************************************************
      * Response IDs
      ************************************************************************/
@@ -225,16 +216,16 @@ namespace   NERemoteRegistry
          * \brief   Response ID: MsgId_responseRegister
          *          Sent when the client is registered. Each registered client has unique ID.
          **/
-        , MsgId_responseRegister      = NEService::RESPONSE_ID_FIRST    // void responseRegister( const NERemoteRegistry::sClientRegister & client );
+        , MsgId_responseRegister      = NEService::RESPONSE_ID_FIRST  // void responseRegister( const NERemoteRegistry::sClientRegister & client );
         /**
          * \brief   Response ID: MsgId_responseHelloWorld
          *          Called as reply to the request to output message.
          **/
-        , MsgId_responseHelloWorld                                      // void responseHelloWorld( unsigned int clientID );     
+        , MsgId_responseHelloWorld                                      // void responseHelloWorld( unsigned int clientID );
     /************************************************************************
      * Broadcast IDs
      ************************************************************************/
-     
+
     /************************************************************************
      * Attributes IDs
      ************************************************************************/
@@ -242,35 +233,35 @@ namespace   NERemoteRegistry
          * \brief   Attribute ID: MsgId_RegistryList
          *          List of registered clients.
          **/
-        , MsgId_RegistryList          = NEService::ATTRIBUTE_ID_FIRST   // NERemoteRegistry::ListRegistry mRegistryList;
+        , MsgId_RegistryList          = NEService::ATTRIBUTE_ID_FIRST // NERemoteRegistry::ListRegistry mRegistryList;
         /**
          * \brief   Attribute ID: MsgId_RemainOutputs
          *          Remaining outputs before reaching maximum.
          **/
         , MsgId_RemainOutputs                                           // unsigned int mRemainOutputs;
-     
+
     /************************************************************************
      * Reserved constant IDs
      ************************************************************************/
         /**
          * \brief   ID of empty function
          **/
-        , MsgId_NotProcessed          = NEService::INVALID_MESSAGE_ID  
+        , MsgId_NotProcessed          = NEService::INVALID_MESSAGE_ID
         /**
          * \brief   ID of invalid call
          **/
-        , MsgId_Invalid               = NEService::RESPONSE_ID_NONE    
-     
+        , MsgId_Invalid               = NEService::RESPONSE_ID_NONE
+
     };
     /**
      * \brief   Returns string value of NERemoteRegistry::eMessageIDs
      **/
     inline const char * getString( NERemoteRegistry::eMessageIDs msgId );
-     
+
 /************************************************************************
  * Service Interface standard functions and variables
  ************************************************************************/
- 
+
     /**
      * \brief   Creates and returns Service Interface Data
      **/
@@ -398,16 +389,6 @@ inline bool NERemoteRegistry::sClientRegister::operator != ( const NERemoteRegis
     }
 }
 
-inline NERemoteRegistry::sClientRegister::operator unsigned int ( void ) const
-{
-    return (
-              static_cast<unsigned int>( crID         )
-            + static_cast<unsigned int>( crName       )
-            + static_cast<unsigned int>( crService    )
-            + static_cast<unsigned int>( crThread     )
-            + static_cast<unsigned int>( crProcess    )
-            );
-}
 
 /**
  * Encode and decode NERemoteRegistry::sClientRegister structure
@@ -456,7 +437,6 @@ inline const char * NERemoteRegistry::getString( NERemoteRegistry::eMessageIDs m
 
     case NERemoteRegistry::eMessageIDs::MsgId_NotProcessed:
         return "NERemoteRegistry::eMessageIDs::MsgId_NotProcessed";
-        
     case NERemoteRegistry::eMessageIDs::MsgId_Invalid:
         return "NERemoteRegistry::eMessageIDs::MsgId_Invalid";
     default:
@@ -468,6 +448,8 @@ inline const char * NERemoteRegistry::getString( NERemoteRegistry::eMessageIDs m
 //////////////////////////////////////////////////////////////////////////
 // NERemoteRegistry namespace declaration End
 //////////////////////////////////////////////////////////////////////////
+
+#endif  // GENERATED_SRC_NEREMOTEREGISTRY_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/NERemoteRegistry.hpp file

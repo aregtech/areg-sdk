@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ServiceAddress.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -43,10 +43,10 @@ ServiceAddress::ServiceAddress( void )
 {
 }
 
-ServiceAddress::ServiceAddress( const char * serviceName
+ServiceAddress::ServiceAddress( const String & serviceName
                               , const Version & serviceVersion
                               , NEService::eServiceType serviceType
-                              , const char * roleName )
+                              , const String & roleName )
     : ServiceItem   ( serviceName, serviceVersion, serviceType )
     , mRoleName     ( roleName )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
@@ -55,7 +55,7 @@ ServiceAddress::ServiceAddress( const char * serviceName
     mMagicNum = ServiceAddress::_magicNumber(*this);
 }
 
-ServiceAddress::ServiceAddress( const ServiceItem & serviceItem, const char * roleName )
+ServiceAddress::ServiceAddress( const ServiceItem & serviceItem, const String & roleName )
     : ServiceItem   ( serviceItem )
     , mRoleName     ( roleName )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
@@ -104,9 +104,8 @@ ServiceAddress::ServiceAddress( ServiceAddress && source ) noexcept
 
 String ServiceAddress::convToString(void) const
 {
-    String result = ServiceItem::convToString();
-    result += NECommon::COMPONENT_PATH_SEPARATOR.data();
-    result += mRoleName;
+    String result( ServiceItem::convToString() );
+    result.append(NECommon::COMPONENT_PATH_SEPARATOR).append(mRoleName);
 
     return result;
 }

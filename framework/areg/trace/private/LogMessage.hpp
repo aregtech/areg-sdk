@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_TRACE_PRIVATE_LOGMESSAGE_HPP
+#define AREG_TRACE_PRIVATE_LOGMESSAGE_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/LogMessage.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -155,7 +156,7 @@ public:
     inline unsigned int getScopeId( void ) const;
 
     /**
-     * \brief   Returns the timestamp of created message log
+     * \brief   Returns the time-stamp of created message log
      **/
     inline const DateTime getTimestamp( void ) const;
 
@@ -289,3 +290,5 @@ inline IEOutStream & operator << ( IEOutStream & stream, const LogMessage & outp
     stream << static_cast<const NETrace::sLogMessage &>(output);
     return stream;
 }
+
+#endif  // AREG_TRACE_PRIVATE_LOGMESSAGE_HPP

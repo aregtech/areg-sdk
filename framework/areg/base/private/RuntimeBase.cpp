@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/RuntimeBase.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -41,12 +41,17 @@ const RuntimeClassID & RuntimeBase::getRuntimeClassId( void ) const
     return _getClassId();
 }
 
-const char * RuntimeBase::getRuntimeClassName( void ) const
+const String & RuntimeBase::getRuntimeClassName( void ) const
 {
     return RuntimeBase::_getClassId().getName();
 }
 
 bool RuntimeBase::isInstanceOfRuntimeClass( const char * className ) const
+{
+    return (RuntimeBase::_getClassId() == className);
+}
+
+bool RuntimeBase::isInstanceOfRuntimeClass( const String & className ) const
 {
     return (RuntimeBase::_getClassId() == className);
 }

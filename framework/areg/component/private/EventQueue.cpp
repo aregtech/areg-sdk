@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/EventQueue.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -29,7 +29,7 @@
 //////////////////////////////////////////////////////////////////////////
 // EventQueue class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-EventQueue::EventQueue( IEQueueListener & eventListener, TEStack<Event *, Event *> & eventQueue )
+EventQueue::EventQueue( IEQueueListener & eventListener, TEStack<Event *> & eventQueue )
     : mEventListener(eventListener)
     , mEventQueue   (eventQueue)
 {
@@ -46,10 +46,14 @@ void EventQueue::pushEvent( Event& evendElem )
 Event* EventQueue::popEvent( void )
 {
     mEventQueue.lock();
-    Event* result = mEventQueue.isEmpty() == false ? mEventQueue.popFirst() : nullptr;
-    if (mEventQueue.isEmpty())
+    Event* result{ nullptr };
+    if (mEventQueue.isEmpty() == false)
     {
-        mEventListener.signalEvent(0);
+        result = mEventQueue.popFirst();
+        if (mEventQueue.isEmpty())
+        {
+            mEventListener.signalEvent(0);
+        }
     }
 
     mEventQueue.unlock();
@@ -67,6 +71,7 @@ void EventQueue::removeAllEvents(void)
         if ( eventElem != nullptr && eventElem != exitEvent )
             eventElem->destroy();
     }
+
     mEventListener.signalEvent( 0 );
     mEventQueue.unlock();
 }
@@ -88,7 +93,7 @@ int EventQueue::removeEvents( const RuntimeClassID & eventClassId )
         mEventQueue.lock();
         removedCount = mEventQueue.getSize();
 
-        TENolockStack<Event *, Event *> tempQueue;        
+        TENolockStack<Event *> tempQueue;        
         while ( mEventQueue.isEmpty() == false )
         {
             Event * elemEvent = mEventQueue.popFirst();
@@ -116,7 +121,7 @@ bool EventQueue::removePendingEvents( bool keepSpecials )
 {
     mEventQueue.lock();
 
-    TENolockStack<Event *, Event *> specials;
+    TENolockStack<Event *> specials;
     Event* exitEvent  = static_cast<Event *>(&ExitEvent::getExitEvent());
 
     while (mEventQueue.isEmpty() == false)
@@ -144,10 +149,6 @@ bool EventQueue::removePendingEvents( bool keepSpecials )
                         specials.pushLast(eventElem);
                         eventElem = nullptr;
                     }
-                    else
-                    {
-                        ; // do nothing, should be removed!
-                    }
                 }
             }
         }
@@ -169,19 +170,15 @@ bool EventQueue::removePendingEvents( bool keepSpecials )
 //////////////////////////////////////////////////////////////////////////
 
 ExternalEventQueue::ExternalEventQueue( IEQueueListener & eventListener )
-    : EventQueue  ( eventListener, static_cast<TEStack<Event *, Event *> &>(self()) )
+    : EventQueue( eventListener, static_cast<TEStack<Event *> &>(mStack) )
+    , mStack    ( )
 {
 }
 
 ExternalEventQueue::~ExternalEventQueue(void)
 {
     removePendingEvents( false );
-    removeAll();
-}
-
-inline ExternalEventQueue & ExternalEventQueue::self( void )
-{
-    return (*this);
+    mStack.clear();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -189,17 +186,18 @@ inline ExternalEventQueue & ExternalEventQueue::self( void )
 //////////////////////////////////////////////////////////////////////////
 
 InternalEventQueue::InternalEventQueue(void)
-    : EventQueue  ( static_cast<IEQueueListener &>(self()), static_cast<TEStack<Event *, Event *> &>(self()) )
+    : EventQueue( static_cast<IEQueueListener &>(self()), static_cast<TEStack<Event *> &>(mStack) )
+    , mStack    ( )
 {
 }
 
 InternalEventQueue::~InternalEventQueue(void)
 {
     removePendingEvents( false );
-    removeAll();
+    mStack.clear();
 }
 
-void InternalEventQueue::signalEvent(int /* eventCount */)
+void InternalEventQueue::signalEvent(uint32_t /* eventCount */)
 {
 }
 

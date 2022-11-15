@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  13:59:46 GMT+02:00
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
  *
  * \file            generated/src/private/LocalHelloWorldProxy.hpp
@@ -42,12 +42,12 @@ LocalHelloWorldProxy::LocalHelloWorldServiceAvailableEvent::LocalHelloWorldServi
 // static function implementation
 //////////////////////////////////////////////////////////////////////////
 
-ProxyBase * LocalHelloWorldProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+ProxyBase * LocalHelloWorldProxy::_createProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
 {
     return DEBUG_NEW LocalHelloWorldProxy(roleName, ownerThread);
 }
 
-LocalHelloWorldProxy * LocalHelloWorldProxy::createProxy( const char * roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
+LocalHelloWorldProxy * LocalHelloWorldProxy::createProxy( const String & roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
 {
     return static_cast<LocalHelloWorldProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NELocalHelloWorld::getInterfaceData()
@@ -56,7 +56,7 @@ LocalHelloWorldProxy * LocalHelloWorldProxy::createProxy( const char * roleName,
                                                                       , ownerThread) );
 }
 
-LocalHelloWorldProxy * LocalHelloWorldProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= nullptr*/ )
+LocalHelloWorldProxy * LocalHelloWorldProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
 {
     return static_cast<LocalHelloWorldProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NELocalHelloWorld::getInterfaceData()
@@ -68,7 +68,7 @@ LocalHelloWorldProxy * LocalHelloWorldProxy::createProxy( const char * roleName,
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-LocalHelloWorldProxy::LocalHelloWorldProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+LocalHelloWorldProxy::LocalHelloWorldProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
     : ProxyBase(roleName, NELocalHelloWorld::getInterfaceData(), ownerThread)
 
 /************************************************************************
@@ -128,14 +128,13 @@ void LocalHelloWorldProxy::unregisterServiceListeners( void )
 /************************************************************************
  * Requests.
  ************************************************************************/
- 
-unsigned int LocalHelloWorldProxy::requestHelloWorld( IENotificationEventConsumer & caller, const String & roleName, const String & addMessage/* = "" */ )
+
+unsigned int LocalHelloWorldProxy::requestHelloWorld( IENotificationEventConsumer & caller, const String & roleName )
 {
     static const NELocalHelloWorld::eMessageIDs msgId = NELocalHelloWorld::eMessageIDs::MsgId_requestHelloWorld;
     EventDataStream args(EventDataStream::eEventData::EventDataInternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << roleName;
-    stream << addMessage;
     sendRequestEvent( static_cast<unsigned int>(msgId), args, &caller );
     return mSequenceCount;
 }
@@ -143,7 +142,7 @@ unsigned int LocalHelloWorldProxy::requestHelloWorld( IENotificationEventConsume
 /************************************************************************
  * Event processing.
  ************************************************************************/
- 
+
 /************************************************************************
  * IEProxyEventConsumer interface overrides.
  ************************************************************************/
@@ -209,8 +208,8 @@ void LocalHelloWorldProxy::updateData( LocalHelloWorldResponseEvent & eventElem,
         break;
     }
 }
- 
-void LocalHelloWorldProxy::processResponse( LocalHelloWorldResponseEvent & evenElem )
+
+    void LocalHelloWorldProxy::processResponse( LocalHelloWorldResponseEvent & evenElem )
 {
     NELocalHelloWorld::eMessageIDs respId  = static_cast<NELocalHelloWorld::eMessageIDs>(evenElem.getResponseId());
     NEService::eResultType resultType  = evenElem.getResult();
@@ -236,8 +235,8 @@ void LocalHelloWorldProxy::processResponse( LocalHelloWorldResponseEvent & evenE
         {
             respId  = static_cast<NELocalHelloWorld::eMessageIDs>( mProxyData.getResponseId(static_cast<msg_id>(respId)) );
         }
-        
-        setStates   = respId != NELocalHelloWorld::eMessageIDs::MsgId_NotProcessed;            
+
+        setStates   = respId != NELocalHelloWorld::eMessageIDs::MsgId_NotProcessed;
         break;
 
     case NEService::eResultType::RequestOK:     // fall through
@@ -254,16 +253,15 @@ void LocalHelloWorldProxy::processResponse( LocalHelloWorldResponseEvent & evenE
     {
         updateData(evenElem, respId);
     }
-       
+
     if (setStates == true)
     {
         setState(static_cast<msg_id>(respId), dataValid ? NEService::eDataStateType::DataIsOK : NEService::eDataStateType::DataIsInvalid);
     }
-    
+
     notifyListeners(static_cast<msg_id>(respId), resultType, evenElem.getSequenceNumber());
 }
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/private/LocalHelloWorldProxy.cpp file
 //////////////////////////////////////////////////////////////////////////
- 

@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/WaitableTimerIX.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
@@ -41,18 +41,28 @@ void WaitableTimerIX::_posixTimerRoutine(union sigval si)
 }
 
 
-WaitableTimerIX::WaitableTimerIX(bool isAutoReset /*= false*/, bool isSignaled /*= true*/, const char * name /*= nullptr*/)
+WaitableTimerIX::WaitableTimerIX(bool isAutoReset /*= false*/, const char * name /*= nullptr*/)
     : IEWaitableBaseIX  ( NESynchTypesIX::eSynchObject::SoWaitTimer, false, name )
 
     , mResetInfo        ( isAutoReset ? NESynchTypesIX::eEventResetInfo::EventResetAutomatic : NESynchTypesIX::eEventResetInfo::EventResetManual )
     , mTimerId          ( static_cast<timer_t>(0) )
     , mTimeout          ( 0 )
-    , mIsSignaled       ( isSignaled )
+    , mIsSignaled       ( false )
     , mFiredCount       ( 0 )
-    , mDueTime          ( )
+    , mDueTime          ( {0, 0} )
     , mThreadId         ( Thread::INVALID_THREAD_ID )
 {
+    struct sigevent sigEvent;
+    NEMemory::memZero(static_cast<void *>(&sigEvent), sizeof(struct sigevent));
+    sigEvent.sigev_notify           = SIGEV_THREAD;
+    sigEvent.sigev_value.sival_ptr  = static_cast<void *>(this);
+    sigEvent.sigev_notify_function  = &WaitableTimerIX::_posixTimerRoutine;
+    sigEvent.sigev_notify_attributes= nullptr;
 
+    if (RETURNED_OK != ::timer_create(CLOCK_MONOTONIC, &sigEvent, &mTimerId))
+    {
+        mTimerId = static_cast<timer_t>(0);
+    }
 }
 
 WaitableTimerIX::~WaitableTimerIX(void)
@@ -65,38 +75,28 @@ bool WaitableTimerIX::setTimer(unsigned int msTimeout, bool isPeriodic)
     bool result = false;    
     ObjectLockIX lock(*this);
 
-    _resetTimer();
-    if (msTimeout != 0)
+    _stopTimer();
+    if ((mTimerId = static_cast<timer_t>(0)) && (msTimeout != 0))
     {
-        struct sigevent sigEvent;
-        NEMemory::memZero(static_cast<void *>(&sigEvent), sizeof(struct sigevent));
-        sigEvent.sigev_notify           = SIGEV_THREAD;
-        sigEvent.sigev_value.sival_ptr  = static_cast<void *>(this);
-        sigEvent.sigev_notify_function  = &WaitableTimerIX::_posixTimerRoutine;
-        sigEvent.sigev_notify_attributes= nullptr;
-
-        if (RETURNED_OK == timer_create(CLOCK_REALTIME, &sigEvent, &mTimerId))
+        struct itimerspec interval;
+        NEMemory::memZero(static_cast<void *>(&interval), sizeof(struct itimerspec));
+        NESynchTypesIX::convTimeout(interval.it_value, msTimeout);
+        if ( isPeriodic )
         {
-            struct itimerspec interval;
-            NEMemory::memZero(static_cast<void *>(&interval), sizeof(struct itimerspec));
-            NESynchTypesIX::convTimeout(interval.it_value, msTimeout);
-            if ( isPeriodic )
-            {
-                interval.it_interval.tv_sec = interval.it_value.tv_sec;
-                interval.it_interval.tv_nsec= interval.it_value.tv_nsec;
-            }
+            interval.it_interval.tv_sec = interval.it_value.tv_sec;
+            interval.it_interval.tv_nsec= interval.it_value.tv_nsec;
+        }
 
-            mDueTime.tv_sec = interval.it_value.tv_sec;
-            mDueTime.tv_nsec= interval.it_value.tv_nsec;
-            mTimeout        = msTimeout;
-            mIsSignaled     = false;
-            mThreadId       = Thread::getCurrentThreadId();
-            result          = true;
-            if ( RETURNED_OK != timer_settime(mTimerId, 0, &interval, nullptr) )
-            {
-                result = false;
-                _resetTimer();
-            }
+        mDueTime.tv_sec = interval.it_value.tv_sec;
+        mDueTime.tv_nsec= interval.it_value.tv_nsec;
+        mTimeout        = msTimeout;
+        mIsSignaled     = false;
+        mThreadId       = Thread::getCurrentThreadId();
+        result          = true;
+        if ( RETURNED_OK != ::timer_settime(mTimerId, 0, &interval, nullptr) )
+        {
+            result = false;
+            _resetTimer();
         }
     }
 
@@ -174,7 +174,7 @@ void WaitableTimerIX::notifyReleasedThreads(int /* numThreads */)
     ObjectLockIX lock(*this);
     if (mResetInfo == NESynchTypesIX::eEventResetInfo::EventResetAutomatic)
     {
-        OUTPUT_DBG("Automatically resets waitable timer [ %s ] state to unsignaled.", getName());
+        OUTPUT_DBG("Automatically resets waitable timer [ %s ] state to un-signaled.", getName());
         mIsSignaled = false;
     }
 }
@@ -182,24 +182,24 @@ void WaitableTimerIX::notifyReleasedThreads(int /* numThreads */)
 inline void WaitableTimerIX::_resetTimer( void )
 {
     _stopTimer();
-    if (mTimerId != nullptr)
+    if (mTimerId != static_cast<timer_t>(0))
     {
-        timer_delete(mTimerId);
+        ::timer_delete(mTimerId);
     }
 
-    mTimerId    = nullptr;
+    mTimerId    = static_cast<timer_t>(0);
     mThreadId   = 0;
 }
 
 inline void WaitableTimerIX::_stopTimer( void )
 {
-    if ((mTimerId != nullptr) && (mTimeout != 0))
+    if ((mTimerId != static_cast<timer_t>(0)) && (mTimeout != 0))
     {
         mDueTime.tv_sec = 0;
         mDueTime.tv_nsec= 0;
         itimerspec cancelSpec;
         NEMemory::memZero(static_cast<void *>(&cancelSpec), sizeof(itimerspec));
-        timer_settime(mTimerId, 0, &cancelSpec, nullptr);
+        ::timer_settime(mTimerId, 0, &cancelSpec, nullptr);
     }
 
     mTimeout    = 0;

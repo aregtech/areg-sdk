@@ -6,40 +6,29 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/TimerManager.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, The System Timer Manager.
  *              Controlling, triggering and stopping timer.
  *
  ************************************************************************/
 #include "areg/component/private/TimerManager.hpp"
-
-#include "areg/component/IETimerConsumer.hpp"
-#include "areg/component/private/TimerEventData.hpp"
 #include "areg/component/private/ExitEvent.hpp"
 
 #include "areg/component/Timer.hpp"
-#include "areg/base/Thread.hpp"
 #include "areg/base/NEUtilities.hpp"
 #include "areg/trace/GETrace.h"
 
-DEF_TRACE_SCOPE(areg_component_private_TimerManager_runDispatcher);
 DEF_TRACE_SCOPE(areg_component_private_TimerManager_startTimer);
 DEF_TRACE_SCOPE(areg_component_private_TimerManager_processEvent);
 DEF_TRACE_SCOPE(areg_component_private_TimerManager__registerTimer);
 DEF_TRACE_SCOPE(areg_component_private_TimerManager__processExpiredTimers);
-DEF_TRACE_SCOPE(areg_component_private_TimerManager__startSystemTimer);
 
 //////////////////////////////////////////////////////////////////////////
 // TimerManager class implementation
 //////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// Implement Runtime
-//////////////////////////////////////////////////////////////////////////
-IMPLEMENT_RUNTIME(TimerManager, DispatcherThread)
 
 //////////////////////////////////////////////////////////////////////////
 // Static functions
@@ -53,12 +42,12 @@ TimerManager & TimerManager::getInstance( void )
 
 bool TimerManager::startTimerManager( void )
 {
-    return getInstance()._startTimerManagerThread( );
+    return getInstance().startTimerManagerThread( );
 }
 
 void TimerManager::stopTimerManager( void )
 {
-    return getInstance()._stopTimerManagerThread();
+    getInstance().stopTimerManagerThread();
 }
 
 bool TimerManager::isTimerManagerStarted( void )
@@ -83,8 +72,13 @@ bool TimerManager::startTimer(Timer &timer, const DispatcherThread & whichThread
         if ( timerManager._registerTimer( timer, whichThread ) )
         {
             TRACE_DBG( "Registered timer [ %s ] for thread [ %p ], sending event to start timer", timer.getName( ).getString( ), whichThread.getId( ) );
-            TimerManagingEventData data( TimerManagingEventData::eTimerAction::TimerStart, &timer, nullptr );
-            result = TimerManagingEvent::sendEvent( data, static_cast<IETimerManagingEventConsumer &>(timerManager), static_cast<DispatcherThread &>(timerManager) );
+            result = TimerManagerEvent::sendEvent( TimerManagerEventData(&timer)
+                                                 , static_cast<IETimerManagerEventConsumer &>(timerManager)
+                                                 , static_cast<DispatcherThread &>(timerManager) );
+        }
+        else
+        {
+            TRACE_ERR("Failed to register timer [ %s ]", timer.getName().getString());
         }
     }
     else
@@ -95,9 +89,9 @@ bool TimerManager::startTimer(Timer &timer, const DispatcherThread & whichThread
     return result;
 }
 
-bool TimerManager::stopTimer( Timer &timer )
+void TimerManager::stopTimer( Timer &timer )
 {
-    return getInstance()._unregisterTimer( &timer );
+    getInstance()._unregisterTimer( timer );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -105,13 +99,9 @@ bool TimerManager::stopTimer( Timer &timer )
 //////////////////////////////////////////////////////////////////////////
 
 TimerManager::TimerManager( void )
-    : DispatcherThread            ( TimerManager::TIMER_THREAD_NAME.data() )
-    , IETimerManagingEventConsumer ( )
+    : TimerManagerBase  ( TimerManager::TIMER_THREAD_NAME )
 
-    , mTimerTable   ( )
-    , mExpiredTimers( )
     , mTimerResource( )
-    , mLock         ( false )
 {
 }
 
@@ -131,27 +121,11 @@ bool TimerManager::_registerTimer(Timer &timer, const DispatcherThread & whichTh
     bool result = false;
     if (timer.isValid() && whichThread.isValid() && whichThread.isRunning() )
     {
-        TIMERHANDLE timerHandle = TimerManager::_createWaitableTimer(timer.hasName() ? timer.getName().getString() : NULL_STRING);
-        if (timerHandle != nullptr)
-        {
-            TimerManager::getInstance().mTimerResource.registerResourceObject(timerHandle, &timer);
-
-            TRACE_DBG("Succeeded to create waitable object for timer [ %s ], going to register", timer.getName().getString());
-
-            do
-            {
-                Lock lock(mLock);
-
-                result = true;
-                mTimerTable.registerObject(&timer, TimerInfo(timer, timerHandle, whichThread.getId()) );
-            } while (false);
-            
-            TRACE_DBG("Registered timer [ %s ]", timer.getName().getString());
-        }
-        else
-        {
-            TRACE_ERR("Failed to create waitable object for timer [ %s ], going to register", timer.getName().getString());
-        }
+        TIMERHANDLE timerHandle = timer.getHandle();
+        ASSERT(timerHandle != nullptr);
+        mTimerResource.registerResourceObject(timerHandle, &timer);
+        TRACE_DBG("Registered timer [ %s ]", timer.getName().getString());
+        result = true;
     }
     else
     {
@@ -168,302 +142,81 @@ bool TimerManager::_registerTimer(Timer &timer, id_type whichThreadId)
     return (disp != nullptr ? _registerTimer(timer, *disp) : false);
 }
 
-bool TimerManager::_unregisterTimer( Timer * timer )
+void TimerManager::_unregisterTimer( Timer & timer )
 {
-    bool result = false;
-
-    if (timer != nullptr)
+    TIMERHANDLE handle = timer.getHandle();
+    if (handle != nullptr)
     {
-        Lock lock(mLock);
-
-        TimerInfo timerInfo;
-        mExpiredTimers.removeAllTimers(timer);
-        if ( mTimerTable.unregisterObject(timer, timerInfo) )
-        {
-            ASSERT(timerInfo.getHandle() != nullptr);
-            TimerManager::getInstance().mTimerResource.unregisterResourceObject(timerInfo.getHandle());
-            TimerManager::_stopSystemTimer(timerInfo.getHandle());
-
-            TimerManagingEventData data(TimerManagingEventData::eTimerAction::TimerRemove, timer, timerInfo.getHandle());
-            TimerManagingEvent::sendEvent(data, static_cast<IETimerManagingEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));
-            result = true;
-
-            OUTPUT_DBG("Successfully unregistered timer [ %s ].", timer->getName().getString());
-        }
+        mTimerResource.unregisterResourceObject(handle);
+        TimerManager::_systemTimerStop(handle);
     }
-
-    return result;
 }
 
 void TimerManager::_removeAllTimers( void )
 {
-    getInstance().mTimerResource.removeAllResources();
+    mTimerResource.lock();
 
-    do
+    std::pair<TIMERHANDLE, Timer*> elem{ nullptr, nullptr };
+    while (mTimerResource.isEmpty() == false)
     {
-        Lock lock(mLock);
+        mTimerResource.removeResourceFirstElement(elem);
+        ASSERT(elem.second != nullptr);
+        TimerManager::_systemTimerStop(elem.first);
+    }
 
-        Timer*    timer  = nullptr;
-        TimerInfo timerInfo;
-        while ( mTimerTable.isEmpty() == false )
-        {
-            VERIFY(mTimerTable.unregisterFirstObject(timer, timerInfo));
-            ASSERT((timer != nullptr) && (timerInfo.getHandle() != nullptr));
-            TimerManager::_destroyWaitableTimer( timerInfo.getHandle( ), true );
-        }
-
-        mTimerTable.removeAll();
-        mExpiredTimers.removeAll();
-    } while (false);
-    
+    mTimerResource.unlock();
 }
 
-void TimerManager::processEvent( const TimerManagingEventData & data )
+void TimerManager::processEvent( const TimerManagerEventData & data )
 {
-    switch(data.getAction())
+    TRACE_SCOPE(areg_component_private_TimerManager_processEvent);
+    Timer* timer = static_cast<Timer*>(data.getTimer());
+    ASSERT(timer != nullptr);
+    if ( mTimerResource.existResource(timer->getHandle( )) )
     {
-    case TimerManagingEventData::eTimerAction::TimerStart:
-    {
-    	TRACE_SCOPE(areg_component_private_TimerManager_processEvent);
-    	Timer *timer = data.getTimer();
-    	ASSERT(timer != nullptr);
-    	TRACE_DBG("Starting timer [ %s ] with timeout [ %u ] ms.", timer->getName().getString(), timer->getTimeout());
-        _startSystemTimer(timer);
+        TRACE_DBG( "Starting timer [ %s ] with timeout [ %u ] ms.", timer->getName( ).getString( ), timer->getTimeout( ) );
+        TimerManager::_systemTimerStart( *timer );
     }
-    break;
-
-    case TimerManagingEventData::eTimerAction::TimerExpired:
-        _processExpiredTimers();
-        break;
-
-    case TimerManagingEventData::eTimerAction::TimerRemove: // fall through
-        TimerManager::_destroyWaitableTimer(data.getHandle(), false);
-        break;
-
-    case TimerManagingEventData::eTimerAction::TimerIgnore: // fall through
-    case TimerManagingEventData::eTimerAction::TimerStop:   // fall through
-    case TimerManagingEventData::eTimerAction::TimerCancel: // fall through
-    default:
-        break; // ignore
+    else
+    {
+        TRACE_WARN("The timer [ %s ] is not registered, ignoring to start.", timer->getName().getString());
     }
 }
 
-void TimerManager::_processExpiredTimers( void )
+void TimerManager::_processExpiredTimer(Timer * timer, TIMERHANDLE handle, uint32_t hiBytes, uint32_t loBytes)
 {
-    do 
+    TRACE_SCOPE(areg_component_private_TimerManager__processExpiredTimers);
+
+    mTimerResource.lock();
+    if (mTimerResource.existResource(handle))
     {
-        TRACE_SCOPE(areg_component_private_TimerManager__processExpiredTimers);
-        Thread::switchThread();
-        Lock lock(mLock);
-
-        TRACE_DBG("There are [ %d ] expired timers in the list to process", mExpiredTimers.getSize());
-
-        if (mExpiredTimers.isEmpty())
+        if (timer->mDispatchThread != nullptr)
         {
-            TRACE_INFO("No more expired timer, finishing the job.");
-            break; // exit loop!!!
-        }
-
-        ExpiredTimerInfo expiredTime = mExpiredTimers.popTimer();
-        Timer * currTimer     = expiredTime.mTimer;
-        TimerInfo * timerInfo = currTimer != nullptr ? mTimerTable.findObject(currTimer) : nullptr;
-
-        if (timerInfo != nullptr)
-        {
-            ASSERT(currTimer != nullptr);
-            id_type threadId = timerInfo->mOwnThreadId;
-
-            if ( timerInfo->canContinueTimer(expiredTime))
+            ASSERT(timer->getHandle() == handle);
+            if (timer->timerIsExpired(hiBytes, loBytes, reinterpret_cast<ptr_type>(handle)) == false)
             {
-                TRACE_DBG("Send timer [ %s ] event to target [ %u ], continuing timer", currTimer->getName().getString(), static_cast<unsigned int>(timerInfo->mOwnThreadId));
+                TRACE_WARN("Either the Timer [ %s ] is not active or cannot send anymore. Going to unregister", timer->getName().getString());
+                _unregisterTimer(*timer);
+                timer->mStarted = false;
             }
             else
             {
-                TRACE_WARN("Either the Timer [ %s ] is not active or cannot send anymore. Going to unregister", currTimer->getName().getString());
-                _unregisterTimer(currTimer);
-            }
-
-            TimerEvent::sendEvent( *currTimer, threadId );
-        }
-        else
-        {
-            TRACE_WARN("Invalid timer in the list of [%d ] expired timers. Cannot get timer [ %p ] information from map of size [ %d ] entries"
-                            , mExpiredTimers.getSize()
-                            , currTimer
-                            , mTimerTable.getSize());
-            break;
-        }
-    } while (true);
-}
-
-void TimerManager::_timerExpired( Timer* whichTimer, unsigned int highValue, unsigned int lowValue )
-{
-    do 
-    {
-        Lock lock(mLock);
-
-        ExpiredTimerInfo expiredTimer(whichTimer, highValue, lowValue);
-        mExpiredTimers.pushTimer( expiredTimer );
-    } while (false);
-
-    TimerManagingEventData data(TimerManagingEventData::eTimerAction::TimerExpired, nullptr, nullptr);
-    TimerManagingEvent::sendEvent(data, static_cast<IETimerManagingEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));
-}
-
-void TimerManager::_startSystemTimer( Timer* whichTimer )
-{
-	TRACE_SCOPE(areg_component_private_TimerManager__startSystemTimer);
-
-    if (whichTimer != nullptr)
-    {
-        Lock lock(mLock);
-
-        TimerInfo * timerInfo = mTimerTable.findObject(whichTimer);
-        if ( timerInfo != nullptr )
-        {
-            ASSERT(timerInfo->mTimer == whichTimer);
-            ASSERT(timerInfo->mHandle != nullptr);
-            if (_startSystemTimer(*timerInfo))
-            {
-                TRACE_DBG("Succeeded starting timer [ %s ]", whichTimer->getName().getString());
-            }
-            else
-            {
-                TRACE_ERR("Failed starting timer [ %s ]", whichTimer->getName().getString());
+                TRACE_DBG("Send timer [ %s ] event to target [ %u ], continuing timer"
+                            , timer->getName().getString()
+                            , static_cast<uint32_t>(timer->mDispatchThread->getId()));
             }
         }
-        else
-        {
-            TRACE_WARN("The timer object is not found in the table. Ignoring request to start timer");
-        }
-    }
-    else
-    {
-        TRACE_ERR("Invalid nullptr pointer ot Timer object. Ignoring starting timer.");
-    }
-}
-
-bool TimerManager::_startSystemTimer( TimerInfo &timerInfo )
-{
-    bool result = false;
-    if (timerInfo.canStartTimer())
-    {
-        result = TimerManager::_createSystemTimer(timerInfo, mTimerTable);
-    }
-    else
-    {
-    	TRACE_SCOPE(areg_component_private_TimerManager__startSystemTimer);
-        TRACE_ERR("Ignoring firing timer because it is not in Idle state. The current state of timer [ %s ] is [ %s ]"
-                    , timerInfo.getTimer()->getName().getString()
-                    , TimerInfo::getString(timerInfo.mTimerState));
     }
 
-    return result;
-}
-
-bool TimerManager::postEvent( Event& eventElem )
-{
-    bool result = false;
-    if ( RUNTIME_CAST(&eventElem, TimerManagingEvent) != nullptr)
-    {
-        result = EventDispatcher::postEvent(eventElem);
-    }
-    else
-    {
-        OUTPUT_ERR("Not a TimerManagingEvent type event, cannot Post. Destroying event type [ %s ]", eventElem.getRuntimeClassName());
-        eventElem.destroy();
-    }
-
-    return result;
-}
-
-bool TimerManager::runDispatcher( void )
-{
-    IESynchObject* synchObjects[] = {&mEventExit, &mEventQueue};
-    MultiLock multiLock(synchObjects, 2, false);
-
-    int whichEvent  = static_cast<int>(EventDispatcherBase::eEventOrder::EventError);
-    const ExitEvent& exitEvent = ExitEvent::getExitEvent();
-
-    readyForEvents(true);
-    do 
-    {
-        whichEvent = multiLock.lock(NECommon::WAIT_INFINITE, false, true);
-        Event* eventElem = whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue) ? pickEvent() : nullptr;
-        if ( static_cast<const Event *>(eventElem) != static_cast<const Event *>(&exitEvent) )
-        {
-            TRACE_SCOPE(areg_component_private_TimerManager_runDispatcher);
-            if ( whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue) )
-            {
-                // proceed one external event.
-                if (prepareDispatchEvent(eventElem))
-                {
-                    dispatchEvent(*eventElem);
-                }
-                 
-                postDispatchEvent(eventElem);
-
-                ASSERT(static_cast<EventQueue &>(mInternalEvents).isEmpty());
-            }
-        }
-        else
-        {
-            OUTPUT_DBG("Received exit event. Going to exit System Timer Thread!");
-            whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventExit);
-        }
-
-    } while (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue) || (whichEvent == MultiLock::LOCK_INDEX_COMPLETION));
-
-    readyForEvents(false);
-    removeAllEvents( );
-
-    ASSERT(static_cast<EventQueue &>(mInternalEvents).isEmpty());
-
-    return (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventExit));
+    mTimerResource.unlock();
 }
 
 void TimerManager::readyForEvents( bool isReady )
 {
-    if (isReady)
+    if (isReady == false)
     {
-        TimerManagingEvent::addListener(static_cast<IETimerManagingEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));
-
-        mHasStarted = true;
-        mEventStarted.setEvent();
-    }
-    else
-    {
-        TimerManagingEvent::removeListener(static_cast<IETimerManagingEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));
-
         _removeAllTimers( );
-        mHasStarted = false;
-        mEventStarted.resetEvent();
-    }
-}
-
-bool TimerManager::_startTimerManagerThread( void )
-{
-    bool result = false;
-    if ( isReady() == false )
-    {
-        ASSERT(isRunning() == false);
-        result = createThread(NECommon::WAIT_INFINITE) && waitForDispatcherStart(NECommon::WAIT_INFINITE);
-#ifdef _DEBUG
-        if ( result == false )
-        {
-            OUTPUT_ERR("Failed to create [ %s ] System Timer Thread", TimerManager::TIMER_THREAD_NAME.data());
-        }
-#endif  // _DEBUG
-    }
-    else
-    {
-        result = true;
     }
 
-    return result;
-}
-
-void TimerManager::_stopTimerManagerThread( void )
-{
-    destroyThread(NECommon::WAIT_INFINITE);
+    TimerManagerBase::readyForEvents(isReady);
 }

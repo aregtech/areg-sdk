@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/RemoteEventFactory.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -14,6 +14,7 @@
  *              from stream and converts event to stream.
  ************************************************************************/
 #include "areg/component/RemoteEventFactory.hpp"
+
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/component/RequestEvents.hpp"
 #include "areg/component/ResponseEvents.hpp"
@@ -64,14 +65,14 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
                     eventRequest->setTargetChannel(chTarget);
                     eventRequest->setSourceChannel(chSource);
 
-                    TRACE_DBG("Created event Event::eEventType::EventRemoteServiceRequest for target stub [ %s ] from source proxy [ %s ]."
+                    TRACE_DBG("Created Event::eEventType::EventRemoteServiceRequest for target stub [ %s ] from source proxy [ %s ]."
                                 , StubAddress::convAddressToPath(eventRequest->getTargetStub()).getString()
                                 , ProxyAddress::convAddressToPath(eventRequest->getEventSource()).getString());
                 }
 
                 result = static_cast<StreamableEvent *>(eventRequest);
             }
-        }        
+        }
         break;
 
     case Event::eEventType::EventRemoteNotifyRequest:
@@ -97,7 +98,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
                     eventNotify->setTargetChannel(chTarget);
                     eventNotify->setSourceChannel(chSource);
 
-                    TRACE_DBG("Created event Event::eEventType::EventRemoteNotifyRequest for target stub [ %s ] from source proxy [ %s ]."
+                    TRACE_DBG("Created Event::eEventType::EventRemoteNotifyRequest for target stub [ %s ] from source proxy [ %s ]."
                                 , StubAddress::convAddressToPath(eventNotify->getTargetStub()).getString()
                                 , ProxyAddress::convAddressToPath(eventNotify->getEventSource()).getString());
                 }
@@ -123,7 +124,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
                     Channel chTarget( proxy->getProxyAddress().getChannel() );
                     eventResponse->setTargetChannel(chTarget);
 
-                    TRACE_DBG("Created event Event::eEventType::EventRemoteServiceResponse for target proxy [ %s ]."
+                    TRACE_DBG("Created Event::eEventType::EventRemoteServiceResponse for target proxy [ %s ]."
                                 , ProxyAddress::convAddressToPath(eventResponse->getTargetProxy()).getString());
                 }
                 result = static_cast<StreamableEvent *>(eventResponse);
@@ -309,7 +310,7 @@ StreamableEvent * RemoteEventFactory::createRequestFailedEvent( const RemoteMess
                                                                                          , eventRequest.getRequestId()
                                                                                          , NEService::eResultType::MessageUndelivered
                                                                                          , eventRequest.getSequenceNumber()) );
-        }        
+        }
         break;
 
     case Event::eEventType::EventRemoteNotifyRequest:

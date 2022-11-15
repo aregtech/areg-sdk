@@ -2,9 +2,9 @@
 // Begin generate generated/src/private/SimpleTrafficLightClientBase.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  02:45:32 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficLight.
  *
  * \file            generated/src/SimpleTrafficLightClientBase.hpp
@@ -43,7 +43,7 @@ namespace NESimpleTrafficLight
  * Constructor / Destructor
  ************************************************************************/
 
-SimpleTrafficLightClientBase::SimpleTrafficLightClientBase( const char * roleName, const char * ownerThread /*= nullptr*/ )
+SimpleTrafficLightClientBase::SimpleTrafficLightClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -52,7 +52,7 @@ SimpleTrafficLightClientBase::SimpleTrafficLightClientBase( const char * roleNam
 {
 }
 
-SimpleTrafficLightClientBase::SimpleTrafficLightClientBase( const char * roleName, DispatcherThread & ownerThread )
+SimpleTrafficLightClientBase::SimpleTrafficLightClientBase( const String & roleName, DispatcherThread & ownerThread )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -61,7 +61,7 @@ SimpleTrafficLightClientBase::SimpleTrafficLightClientBase( const char * roleNam
 {
 }
 
-SimpleTrafficLightClientBase::SimpleTrafficLightClientBase( const char* roleName, Component & owner )
+SimpleTrafficLightClientBase::SimpleTrafficLightClientBase( const String & roleName, Component & owner )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -78,7 +78,7 @@ SimpleTrafficLightClientBase::~SimpleTrafficLightClientBase( void )
         mProxy->freeProxy( static_cast<IEProxyListener &>(self()) );
         mProxy  = nullptr;
     }
-    
+
     mIsConnected= false;
 }
 
@@ -91,11 +91,11 @@ bool SimpleTrafficLightClientBase::recreateProxy( void )
     bool result         = false;
     if (mProxy != nullptr)
     {
-        String roleName   = mProxy->getProxyAddress().getRoleName();
-        String threadName = mProxy->getProxyAddress().getThread();
+        const String & roleName   = mProxy->getProxyAddress().getRoleName();
+        const String & threadName = mProxy->getProxyAddress().getThread();
         if ( roleName.isEmpty() == false )
         {
-            SimpleTrafficLightProxy * newProxy = SimpleTrafficLightProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(self()), threadName.getString());
+            SimpleTrafficLightProxy * newProxy = SimpleTrafficLightProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), threadName);
             if (newProxy != nullptr)
             {
                 mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
@@ -103,8 +103,9 @@ bool SimpleTrafficLightClientBase::recreateProxy( void )
                 mProxy = newProxy;
                 result = true;
             }
-        }    
+        }
     }
+
     return result;
 }
 
@@ -117,7 +118,7 @@ DEF_TRACE_SCOPE(generated_src_SimpleTrafficLightClientBase_serviceConnected);
 bool SimpleTrafficLightClientBase::serviceConnected( bool isConnected, ProxyBase & proxy )
 {
     TRACE_SCOPE(generated_src_SimpleTrafficLightClientBase_serviceConnected);
-    
+
     bool result = false;
     if(mProxy == &proxy)
     {
@@ -126,11 +127,11 @@ bool SimpleTrafficLightClientBase::serviceConnected( bool isConnected, ProxyBase
                  , proxy.getProxyAddress().getServiceName().getString()
                  , proxy.getProxyAddress().getRoleName().getString()
                  , isConnected ? "CONNECTED" : "DISCONNECTED");
-        
+
         mIsConnected= isConnected;
         result      = true;
     }
-    
+
     return result;
 }
 
@@ -170,7 +171,7 @@ void SimpleTrafficLightClientBase::processNotificationEvent( NotificationEvent &
     case NEService::eResultType::RequestInvalid:
         {
         /************************************************************************
-         * Trigger invalid response / broadcast handling. May happen when remove notification 
+         * Trigger invalid response / broadcast handling. May happen when remove notification
          ************************************************************************/
             SimpleTrafficLightClientBase::invalidResponse(msgId);
         }
@@ -278,7 +279,7 @@ void SimpleTrafficLightClientBase::invalidRequest( NESimpleTrafficLight::eMessag
                     , NESimpleTrafficLight::getString(InvalidReqId)
                     , static_cast<unsigned int>(InvalidReqId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString() );
-                    
+
     ASSERT(false);
 }
 
@@ -291,7 +292,7 @@ void SimpleTrafficLightClientBase::requestFailed( NESimpleTrafficLight::eMessage
                     , static_cast<unsigned int>(FailureMsgId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason) );
-                    
+
     ASSERT(NESimpleTrafficLight::failureFunctions == nullptr);
     invalidRequest( FailureMsgId );
 }
@@ -321,7 +322,7 @@ void SimpleTrafficLightClientBase::onEastWestUpdate( NESimpleTrafficLight::eTraf
 /************************************************************************
  * Request failure / Response and Broadcast notifications
  ************************************************************************/
- 
+
 DEF_TRACE_SCOPE(generated_src_SimpleTrafficLightClientBase_broadcastLightChanged);
 void SimpleTrafficLightClientBase::broadcastLightChanged( NESimpleTrafficLight::eTrafficLight /* SouthNorth */, NESimpleTrafficLight::eTrafficLight /* EastWest */ )
 {

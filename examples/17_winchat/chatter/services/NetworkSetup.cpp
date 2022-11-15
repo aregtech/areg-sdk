@@ -64,6 +64,6 @@ void NetworkSetup::DisconnectServicing(void)
     if (mConnectionHandler.GetRegistered())
     {
         mConnectionHandler.SetRegistered(false);
-        requestDiconnect( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), mConnectionHandler.GetTimeConnect() );
+        requestDisconnect( mConnectionHandler.GetNickName(), mConnectionHandler.GetCookie(), mConnectionHandler.GetTimeConnect() );
     }
 }

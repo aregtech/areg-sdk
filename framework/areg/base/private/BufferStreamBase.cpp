@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/BufferStreamBase.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -65,7 +65,7 @@ unsigned int BufferStreamBase::read( IEByteBuffer & buffer ) const
 
         if (read(reinterpret_cast<unsigned char *>(&length), sizeof(unsigned int)) == sizeof(unsigned int))
         {
-            length = buffer.resize(length, false);
+            length = buffer.reserve(length, false);
             if (length != 0)
             {
                 unsigned char* data = buffer.getBuffer();
@@ -94,7 +94,8 @@ unsigned int BufferStreamBase::read( String & asciiString ) const
     const unsigned char* data = getBufferToRead();
     if ( data != nullptr )
     {
-        result = (asciiString.setString(data) + 1) * sizeof(char);
+        asciiString.assign(reinterpret_cast<const char*>(data));
+        result = asciiString.getSpace();
         mReadPosition.setPosition(static_cast<int>(curPos + result), IECursorPosition::eCursorPosition::PositionBegin);
     }
 
@@ -110,10 +111,11 @@ unsigned int BufferStreamBase::read( WideString & wideString ) const
     wideString.clear();
 
     const unsigned int curPos = mReadPosition.getPosition();
-    const unsigned char* data = getBufferToRead();
+    const short * data = reinterpret_cast<const short *>( getBufferToRead() );
     if ( data != nullptr )
     {
-        result = (wideString.setString(data) + 1) * sizeof(wchar_t);
+        wideString.assign(reinterpret_cast<const wchar_t *>(data));
+        result = wideString.getSpace();
         mReadPosition.setPosition(static_cast<int>(curPos + result), IECursorPosition::eCursorPosition::PositionBegin);
     }
 
@@ -167,11 +169,7 @@ unsigned int BufferStreamBase::write( const IEByteBuffer & buffer )
  **/
 unsigned int BufferStreamBase::write( const String & asciiString )
 {
-    const char * buffer = asciiString.getString();
-    buffer = buffer != NULL_STRING ? buffer : String::EmptyString.data();
-    unsigned int len = static_cast<unsigned int>(asciiString.getLength() + 1);
-
-    return write( reinterpret_cast<const unsigned char *>(buffer), len * sizeof(char) );
+    return write( reinterpret_cast<const unsigned char *>(asciiString.getString()), asciiString.getSpace() );
 }
 
 /**
@@ -179,11 +177,7 @@ unsigned int BufferStreamBase::write( const String & asciiString )
  **/
 unsigned int BufferStreamBase::write( const WideString & wideString )
 {
-    const wchar_t * buffer = wideString.getString();
-    buffer = buffer != NULL_STRING_W ? buffer : WideString::EmptyString.data();
-    unsigned int len = static_cast<unsigned int>(wideString.getLength() + 1);
-
-    return write( reinterpret_cast<const unsigned char *>(buffer), len * sizeof(wchar_t) );
+    return write(reinterpret_cast<const unsigned char*>(wideString.getString()), wideString.getSpace());
 }
 
 /**
@@ -239,7 +233,7 @@ unsigned int BufferStreamBase::insertAt( const unsigned char* buffer, unsigned i
         }
         else
         {
-            unsigned int remain = resize(writePos + size, true);
+            unsigned int remain = reserve(writePos + size, true);
             if (remain >= size)
             {
                 ASSERT(isValid());
@@ -274,12 +268,10 @@ unsigned int BufferStreamBase::writeData(const unsigned char* buffer, unsigned i
     ASSERT( (buffer != nullptr) || (size == 0) );
     unsigned int result     = 0;
     unsigned int writePos   = isValid() ? mWritePosition.getPosition() : 0;
-    unsigned int remain     = resize(writePos + size, writePos != 0);
+    unsigned int remain     = reserve(writePos + size, writePos != 0);
 
     if ((remain != 0) && (size != 0))
     {
-        ASSERT(isValid());
-
         result = NEMemory::memCopy( getBuffer( ) + writePos, static_cast<int>(remain), buffer, static_cast<int>(size) );
         unsigned int usedSize   = mByteBuffer->bufHeader.biUsed;
         unsigned int newPos     = writePos + result;
@@ -335,13 +327,12 @@ unsigned char * BufferStreamBase::getBufferToWrite(void)
     return result;
 }
 
-unsigned int BufferStreamBase::resize(unsigned int size, bool copy)
+unsigned int BufferStreamBase::reserve(unsigned int size, bool copy)
 {
-    unsigned int result = IEByteBuffer::resize(size, copy);
+    unsigned int result = IEByteBuffer::reserve(size, copy);
 
     if (result != 0)
     {
-        ASSERT(isValid());
         mWritePosition.setPosition( static_cast<int>(mByteBuffer->bufHeader.biUsed), IECursorPosition::eCursorPosition::PositionBegin );
     }
 

@@ -129,11 +129,12 @@ void PageConnections::OnClientRegistration( bool isRegistered, DispatcherThread 
 
         mCtrlConnections.DeleteAllItems();
         const NECommon::ListConnections & listConnections = mConnectionHandler.GetConnectionList( );
-        for ( int i = 0; i < listConnections.getSize(); ++ i )
+        for ( uint32_t i = 0; i < listConnections.getSize(); ++ i )
         {
             const NECommon::sConnection & connection = listConnections.getAt(i);
             addConnection( connection );
         }
+
         loadModel(nickname, cookie);
     }
     else
@@ -253,12 +254,12 @@ inline void PageConnections::addConnection( const NEConnectionManager::sConnecti
 
 inline int PageConnections::getSelectedConnections( NEDirectConnection::sInitiator & outParticipant, NEDirectConnection::ListParticipants & outListParticipants )
 {
-    outListParticipants.removeAll();
+    outListParticipants.clear();
     UINT selected = mCtrlConnections.GetSelectedCount();
     int count = 0;
     if (selected != 0)
     {
-        outListParticipants.resize(selected + 1, 1);
+        outListParticipants.resize(selected + 1);
         DateTime now = DateTime::getNow();
 
         outParticipant.nickName  = mConnectionHandler.GetNickName();

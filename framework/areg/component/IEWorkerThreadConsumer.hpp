@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_IEWORKERTHREADCONSUMER_HPP
+#define AREG_COMPONENT_IEWORKERTHREADCONSUMER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/IEWorkerThreadConsumer.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -42,7 +43,7 @@ class WorkerThread;
  *          If an object is an instance of Worker Thread Consumer, it will 
  *          get register / unregister calls to notify Thread Start / Stop.
  *          Set listeners in register method to be able to receive notification
- *          messages. Each consumer should have name to differentiat the
+ *          messages. Each consumer should have name to differentiate the
  *          consumers if a component has more than one worker thread.
  **/
 class AREG_API IEWorkerThreadConsumer
@@ -55,7 +56,7 @@ protected:
      * \brief   Creates consumer object and sets name.
      * \param   consumerName    The name of consumer bind to worker thread.
      **/
-    explicit IEWorkerThreadConsumer( const char* const consumerName );
+    explicit IEWorkerThreadConsumer( const String & consumerName );
 
 public:
     /**
@@ -80,7 +81,7 @@ public:
      * \param   consumerName    The name to check.
      * \return  Returns true if passed name is the name of consumer.
      **/
-    inline bool isEqualName( const char* consumerName ) const;
+    inline bool isEqualName( const String & consumerName ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations
@@ -132,7 +133,9 @@ inline const String & IEWorkerThreadConsumer::getConsumerName( void ) const
     return mConsumerName;
 }
 
-inline bool IEWorkerThreadConsumer::isEqualName( const char * consumerName ) const
+inline bool IEWorkerThreadConsumer::isEqualName( const String & consumerName ) const
 {
-    return ((consumerName != nullptr) && (mConsumerName == consumerName));
+    return (mConsumerName == consumerName);
 }
+
+#endif  // AREG_COMPONENT_IEWORKERTHREADCONSUMER_HPP

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_NESERVICE_HPP
+#define AREG_COMPONENT_NESERVICE_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/NEService.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -218,12 +219,12 @@ namespace NEService
      * \brief   NEService::SEQUENCE_NUMBER_NOTIFY
      *          Sequence number predefining notification message ID
      **/
-    const unsigned int  SEQUENCE_NUMBER_NOTIFY  = static_cast<unsigned int>(0);    /*0x00000000*/
+    constexpr unsigned int  SEQUENCE_NUMBER_NOTIFY  { static_cast<unsigned int>(0) };    /*0x00000000*/
     /**
      * \brief   NEService::SEQUENCE_NUMBER_ANY
      *          Any sequence number, used in messages. "Any sequence number" used to find any listener object with same message ID.
      **/
-    const unsigned int  SEQUENCE_NUMBER_ANY     = static_cast<unsigned int>(~0);    /*0xFFFFFFFF*/
+    constexpr unsigned int  SEQUENCE_NUMBER_ANY     { static_cast<unsigned int>(~0) };    /*0xFFFFFFFF*/
 
     /**
      * \brief   NEService::eCookie
@@ -242,42 +243,42 @@ namespace NEService
      * \brief   NEService::COOKIE_UNKNOWN
      *          Unknown cookie
      **/
-    const ITEM_ID   COOKIE_UNKNOWN      = static_cast<ITEM_ID>(NEService::eCookies::CookieInvalid);
+    constexpr ITEM_ID   COOKIE_UNKNOWN      { static_cast<ITEM_ID>(NEService::eCookies::CookieInvalid) };
     /**
      * \brief   NEService::COOKIE_LOCAL
      *          The indication of local service.
      **/
-    const ITEM_ID   COOKIE_LOCAL        = static_cast<ITEM_ID>(NEService::eCookies::CookieLocal);
+    constexpr ITEM_ID   COOKIE_LOCAL        { static_cast<ITEM_ID>(NEService::eCookies::CookieLocal) };
     /**
      * \brief   NEService::COOKIE_ROUTER
      *          Indicates Router cookie
      **/
-    const ITEM_ID   COOKIE_ROUTER       = static_cast<ITEM_ID>(NEService::eCookies::CookieRouter);
+    constexpr ITEM_ID   COOKIE_ROUTER       { static_cast<ITEM_ID>(NEService::eCookies::CookieRouter) };
     /**
      * \brief   NEService::COOKIE_ANY
      *          Indicates any valid cookie
      **/
-    const ITEM_ID   COOKIE_ANY          = static_cast<ITEM_ID>(NEService::eCookies::CookieAny);
+    constexpr ITEM_ID   COOKIE_ANY          { static_cast<ITEM_ID>(NEService::eCookies::CookieAny) };
     /**
      * \brief   NEService::TARGET_UNKNOWN
      *          The unknown target ID
      **/
-    const ITEM_ID   TARGET_UNKNOWN      = static_cast<ITEM_ID>(NEService::eCookies::CookieInvalid);
+    constexpr ITEM_ID   TARGET_UNKNOWN      { static_cast<ITEM_ID>(NEService::eCookies::CookieInvalid) };
     /**
      * \brief   NEService::TARGET_LOCAL
      *          The local target ID
      **/
-    const ITEM_ID   TARGET_LOCAL        = static_cast<ITEM_ID>(NEService::eCookies::CookieLocal);
+    constexpr ITEM_ID   TARGET_LOCAL        { static_cast<ITEM_ID>(NEService::eCookies::CookieLocal) };
     /**
      * \brief   NEService::SOURCE_UNKNOWN
      *          The unknown source ID
      **/
-    const ITEM_ID   SOURCE_UNKNOWN      = static_cast<ITEM_ID>(NEService::eCookies::CookieInvalid);
+    constexpr ITEM_ID   SOURCE_UNKNOWN      { static_cast<ITEM_ID>(NEService::eCookies::CookieInvalid) };
     /**
      * \brief   NEService::SOURCE_UNKNOWN
      *          The unknown source ID
      **/
-    const ITEM_ID   SOURCE_LOCAL        = static_cast<ITEM_ID>(NEService::eCookies::CookieLocal);
+    constexpr ITEM_ID   SOURCE_LOCAL        { static_cast<ITEM_ID>(NEService::eCookies::CookieLocal) };
 
     /**
      * \brief   NEService::eServiceCalls
@@ -295,68 +296,68 @@ namespace NEService
     /**
      * \brief   Predefined range of function message IDs
      **/
-    const unsigned int  FUNC_RANGE              = static_cast<unsigned int>(4095);  /*0x0FFF*/
+    constexpr unsigned int  FUNC_RANGE          { static_cast<unsigned int>(4095) };  /*0x0FFF*/
 
     /**
      * \brief   The first ID of valid service interface function call
      **/
-    const unsigned int  SERVICE_FUNCTION        = static_cast<uint32_t>(eServiceCalls::ServiceCallRequest);    /*0x1000*/
+    constexpr unsigned int  SERVICE_FUNCTION    { static_cast<uint32_t>(eServiceCalls::ServiceCallRequest) };    /*0x1000*/
 
     /**
      * \brief   NEService::REQUEST_ID_FIRST
      *          The first ID in request call.
      **/
-    constexpr unsigned int  REQUEST_ID_FIRST    = static_cast<uint32_t>(eServiceCalls::ServiceCallRequest);
+    constexpr unsigned int  REQUEST_ID_FIRST    { static_cast<uint32_t>(eServiceCalls::ServiceCallRequest) };
     /**
      * \brief   NEService::REQUEST_ID_LAST
      *          The last ID in request call.
      **/
-    constexpr unsigned int  REQUEST_ID_LAST     = REQUEST_ID_FIRST + FUNC_RANGE;
+    constexpr unsigned int  REQUEST_ID_LAST     { REQUEST_ID_FIRST + FUNC_RANGE };
 
     /**
      * \brief   NEService::RESPONSE_ID_FIRST
      *          The first ID in response call.
      **/
-    constexpr unsigned int  RESPONSE_ID_FIRST   = static_cast<uint32_t>(eServiceCalls::ServiceCallResponse);
+    constexpr unsigned int  RESPONSE_ID_FIRST   { static_cast<uint32_t>(eServiceCalls::ServiceCallResponse) };
     /**
      * \brief   NEService::RESPONSE_ID_LAST
      *          The last ID in response call.
      **/
-    constexpr unsigned int  RESPONSE_ID_LAST    = RESPONSE_ID_FIRST + FUNC_RANGE;
+    constexpr unsigned int  RESPONSE_ID_LAST    { RESPONSE_ID_FIRST + FUNC_RANGE };
 
     /**
      * \brief   NEService::ATTRIBUTE_ID_FIRST
      *          The first ID in attribute call.
      **/
-    constexpr unsigned int  ATTRIBUTE_ID_FIRST  = static_cast<uint32_t>(eServiceCalls::ServiceCallAttribute);
+    constexpr unsigned int  ATTRIBUTE_ID_FIRST  { static_cast<uint32_t>(eServiceCalls::ServiceCallAttribute) };
     /**
      * \brief   NEService::ATTRIBUTE_ID_LAST
      *          The last ID in attribute call.
      **/
-    constexpr unsigned int  ATTRIBUTE_ID_LAST   = ATTRIBUTE_ID_FIRST + FUNC_RANGE;
+    constexpr unsigned int  ATTRIBUTE_ID_LAST   { ATTRIBUTE_ID_FIRST + FUNC_RANGE };
 
     /**
      * \brief   NEService::SERVICE_ID_FIRST
      *          The last ID in service call.
      **/
-    constexpr unsigned int  SERVICE_ID_FIRST    = static_cast<uint32_t>(NEService::eServiceCalls::ServiceCallRegister);
+    constexpr unsigned int  SERVICE_ID_FIRST    { static_cast<uint32_t>(NEService::eServiceCalls::ServiceCallRegister) };
     /**
      * \brief   NEService::SERVICE_ID_LAST
      *          The last ID in service call.
      **/
-    constexpr unsigned int  SERVICE_ID_LAST     = SERVICE_ID_FIRST + FUNC_RANGE;
+    constexpr unsigned int  SERVICE_ID_LAST     { SERVICE_ID_FIRST + FUNC_RANGE };
 
     /**
      * \brief   NEService::RESPONSE_ID_NONE
      *          Constant no response. Used to indicate that the request has no response.
      **/
-    constexpr unsigned int  RESPONSE_ID_NONE    = static_cast<uint32_t>(eServiceCalls::ServiceCallNoFunction);
+    constexpr unsigned int  RESPONSE_ID_NONE    { static_cast<uint32_t>(eServiceCalls::ServiceCallNoFunction) };
 
     /**
      * \brief   NEService::INVALID_MESSAGE_ID
      *          The invalid message ID
      **/
-    constexpr unsigned int  INVALID_MESSAGE_ID  = static_cast<unsigned int>(~0);    /*0xFFFFFFFF*/
+    constexpr unsigned int  INVALID_MESSAGE_ID  { static_cast<unsigned int>(~0) };    /*0xFFFFFFFF*/
 
     /**
      * \brief   Predefined range of function calls
@@ -388,11 +389,11 @@ namespace NEService
 
         // Reserved system calls.
 
-        //!< The service registratio call. Service calls should start from this ID.
+        //!< The service registration call. Service calls should start from this ID.
         , ServiceRequestRegister= SERVICE_ID_FIRST
         //!< Sent by client to Stub to get supported version information
         , ServiceRequestVersion
-        //!< Sent by Stub to clients as a reply to get service version and notifies interface implementated version
+        //!< Sent by Stub to clients as a reply to get service version and notifies interface implemented version
         , ServiceNotifyVersion
         //!< Sent by client or stub to request service manager connection.
         , ServiceRequestConnection
@@ -408,7 +409,7 @@ namespace NEService
         , ServiceRouterRegister
         //!< Called by service manager to routing service to query registration status of services.
         , ServiceRouterQuery
-        //!< Sent by Routing Service as a reply to register service and notifies the the registered service availability
+        //!< Sent by Routing Service as a reply to register service and notifies the registered service availability
         , ServiceRouterNotifyRegister
         //!< The last ID of service calls.
         , ServiceLastId         = SERVICE_ID_LAST  //!< Servicing call last ID
@@ -465,12 +466,11 @@ namespace NEService
     //////////////////////////////////////////////////////////////////////////
     // StateArray class declaration
     //////////////////////////////////////////////////////////////////////////
-    using ImplStateArray    = TEListImpl<NEService::eDataStateType>;
-    using StateArrayBase    = TEFixedArray<NEService::eDataStateType, NEService::eDataStateType, ImplStateArray>;
+    using StateArrayBase    = TEFixedArray<NEService::eDataStateType>;
     /**
      * \brief   StateArray class. Keeps data state information
      **/
-    class AREG_API StateArray : public StateArrayBase
+    class AREG_API StateArray : private StateArrayBase
     {
         friend class ParameterArray;
     //////////////////////////////////////////////////////////////////////////
@@ -480,41 +480,37 @@ namespace NEService
         /**
          * \brief   Sets initial size of fixed array. The size of array cannot be changed dynamically.
          **/
-        explicit StateArray(int size = 0);
+        StateArray(uint32_t count);
 
         /**
-         * \brief   Copies entries from given source.
-         * \param   src     The source of data to copy.
+         * \brief   Initialization constructor.
+         *          Does not make hard-copy, only assigns given
+         *          parameters
          **/
-        StateArray(const StateArray & src) = default;
-
-        /**
-         * \brief   Copies entries from given source.
-         * \param   src     The source of data to copy.
-         **/
-        StateArray( StateArray && src ) noexcept = default;
+        StateArray(unsigned char* thisBffer, int elemCount);
 
         /**
          * \brief   Destructor
          **/
-        ~StateArray( void ) = default;
-
-        /**
-         * \brief   Copies data from give source.
-         * \param   src     The source of data to copy.
-         **/
-        StateArray & operator = ( const StateArray & src) = default;
-
-        /**
-         * \brief   Moves data from give source.
-         * \param   src     The source of data to move.
-         **/
-        StateArray & operator = ( StateArray && src) noexcept = default;
+        ~StateArray( void );
 
     //////////////////////////////////////////////////////////////////////////
-    // Attributes and operations
+    // Operators, attributes and operations
     //////////////////////////////////////////////////////////////////////////
     public:
+        /**
+         * \brief   Returns element by the index for reading. The index must be valid.
+         **/
+        inline const NEService::eDataStateType operator [] (int index) const;
+        /**
+         * \brief   Returns element by the index for reading. The index must be valid.
+         **/
+        inline NEService::eDataStateType& operator [] (int index);
+
+        /**
+         * \brief   Returns the number of elements in the array.
+         */
+        inline uint32_t getSize(void) const;
         /**
          * \brief   Resets states in array. All states will be set to NEService::DataIsUnavailable
          **/
@@ -540,16 +536,19 @@ namespace NEService
         inline void setAllState(NEService::eDataStateType newState);
 
     //////////////////////////////////////////////////////////////////////////
-    // Hidden methods
+    // Member variables
     //////////////////////////////////////////////////////////////////////////
     private:
+        //! Flag, indicating whether the state buffer is external or not.
+        //! In case of external buffer, it will not be deleted when release.
+        const bool  mExternal;
 
-        /**
-         * \brief   Initialization constructor.
-         *          Does not make hard-copy, only assigns given
-         *          parameters
-         **/
-        StateArray(unsigned char* thisBffer, int elemCount);
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        StateArray(void) = delete;
+        DECLARE_NOCOPY_NOMOVE(StateArray);
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -563,49 +562,49 @@ namespace NEService
     typedef struct AREG_API S_InterfaceData
     {
         /**
-         * \brief   The name of service (interface)
+         * \brief   The name of service interface.
          **/
-        const char *        idServiceName;      // service (interface) name
+        const char *        idServiceName{ nullptr };
 
         /**
-         * \brief   Implementation version
+         * \brief   Service interface implementation version
          **/
-        Version             idVersion;          // interface version
+        Version             idVersion{ 0, 0, 0 };
 
         /**
-         * \brief   The service type. Either local or remote
+         * \brief   The service type. Should be either local or public / remote.
          **/
-        eServiceType        idServiceType;      // local or publis service type
+        eServiceType        idServiceType{ eServiceType::ServiceInvalid };
 
         /**
          * \brief   Number of requests in service interface
          **/
-        unsigned int        idRequestCount;     // number of requests
+        unsigned int        idRequestCount{ 0u };
 
         /**
-         * \brief   Number of responses in service interface
+         * \brief   Number of responses in service interface, including broadcasts
          **/
-        unsigned int        idResponseCount;    // number of responses
+        unsigned int        idResponseCount{ 0u };
 
         /**
          * \brief   Number of attributes in service interface
          **/
-        unsigned int        idAttributeCount;   // number of attributes
+        unsigned int        idAttributeCount{ 0u };
 
         /**
          * \brief   The list of requests. It is nullptr if the list is empty.
          **/
-        const unsigned int* idRequestList;
+        const unsigned int* idRequestList{ nullptr };
 
         /**
          * \brief   The list of responses. It is nullptr if the list is empty.
          **/
-        const unsigned int* idResponseList;
+        const unsigned int* idResponseList{ nullptr };
 
         /**
          * \brief   The list of attributes. It is nullptr if the list is empty.
          **/
-        const unsigned int* idAttributeList;
+        const unsigned int* idAttributeList{ nullptr };
 
         /**
          * \brief   Request to Response map. All requests are accessed by index 
@@ -613,15 +612,16 @@ namespace NEService
          *          ('request ID' - NEService::eFuncIdRange::RequestFirstId)
          *          Every request should have appropriate response value. If request does not
          *          have response, it should have value NEService::RESPONSE_ID_NONE
+         *          The size of this map should be equal to idRequestCount.
          **/
-        const unsigned int* idRequestToResponseMap;     // fixed map of requests and its responses. Must have same size as idRequestCount
+        const unsigned int* idRequestToResponseMap{ nullptr };
 
         /**
          * \brief   Map of parameter count in every response. Every response index
          *          is calculated by formula ('response ID' - NEService::eFuncIdRange::ResponseFirstId)
-         *          The size of this map should be equal to idResponseCount
+         *          The size of this map should be equal to idResponseCount.
          **/
-        const unsigned int* idResponseParamCountMap;    // map of parameter count in every response. Must have same size as idResponseCount
+        const unsigned int* idResponseParamCountMap{ nullptr };
 
     } SInterfaceData;
 
@@ -864,7 +864,7 @@ namespace NEService
         /**
          * \brief   Destructor
          **/
-        ~ProxyData( void );
+        ~ProxyData( void ) = default;
 
     public:
 
@@ -962,22 +962,22 @@ IMPLEMENT_STREAMABLE(NEService::eFuncIdRange)
 
 inline bool NEService::isRequestId(unsigned int msgId)
 {
-    return (msgId & static_cast<unsigned int>(NEService::eServiceCalls::ServiceCallRequest)) != 0;
+    return ((msgId & static_cast<unsigned int>(NEService::eServiceCalls::ServiceCallRequest)) != 0);
 }
 
 inline bool NEService::isResponseId(unsigned int msgId)
 {
-    return (msgId & static_cast<unsigned int>(NEService::eServiceCalls::ServiceCallResponse)) != 0;
+    return ((msgId & static_cast<unsigned int>(NEService::eServiceCalls::ServiceCallResponse)) != 0);
 }
 
 inline bool NEService::isAttributeId(unsigned int msgId)
 {
-    return (msgId & static_cast<unsigned int>(NEService::eServiceCalls::ServiceCallAttribute)) != 0;
+    return ((msgId & static_cast<unsigned int>(NEService::eServiceCalls::ServiceCallAttribute)) != 0);
 }
 
 inline bool NEService::isRegistrationId( unsigned int msgId )
 {
-    return (msgId & static_cast<unsigned int>(NEService::eServiceCalls::ServiceCallRegister)) != 0;
+    return ((msgId & static_cast<unsigned int>(NEService::eServiceCalls::ServiceCallRegister)) != 0);
 }
 
 inline bool NEService::isEmptyFunctionId(unsigned int msgId)
@@ -1021,6 +1021,22 @@ inline NEService::eMessageDataType NEService::getMessageDataType( unsigned int m
 //////////////////////////////////////////////////////////////////////////
 // class NEService::StateArray inline function implementation
 //////////////////////////////////////////////////////////////////////////
+
+inline const NEService::eDataStateType NEService::StateArray::operator [] (int index) const
+{
+    return StateArrayBase::operator[](index);
+}
+
+inline NEService::eDataStateType& NEService::StateArray::operator [] (int index)
+{
+    return StateArrayBase::operator[](index);
+}
+
+inline uint32_t NEService::StateArray::getSize(void) const
+{
+    return StateArrayBase::getSize();
+}
+
 inline void NEService::StateArray::resetStates( void )
 {
     setAllState(NEService::eDataStateType::DataIsUnavailable);
@@ -1033,13 +1049,12 @@ inline bool NEService::StateArray::hasParams( void ) const
 
 inline void NEService::StateArray::setState(int whichIndex, NEService::eDataStateType newState)
 {
-    ASSERT(isValidIndex(whichIndex));
     mValueList[whichIndex] = newState;
 }
 
 inline void NEService::StateArray::setAllState(NEService::eDataStateType newState)
 {
-    for ( int i = 0; i < this->mElemCount; ++ i )
+    for ( uint32_t i = 0; i < this->mElemCount; ++ i )
         mValueList[i] = newState;
 }
 
@@ -1078,7 +1093,7 @@ inline bool NEService::ParameterArray::hasParameters( int whichRespIndex ) const
 
 inline void NEService::ParameterArray::resetAllStates( void )
 {
-    for (int col = 0; col < mElemCount; col ++)
+    for (int col = 0; col < mElemCount; ++col)
         mParamList[col]->resetStates();
 }
 
@@ -1347,3 +1362,5 @@ inline const char * NEService::getString( NEService::eFuncIdRange funcId )
             return "ERR: Unexpected ID";
     }
 }
+
+#endif  // AREG_COMPONENT_NESERVICE_HPP

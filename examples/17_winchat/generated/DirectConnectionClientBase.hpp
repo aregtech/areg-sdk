@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/DirectConnectionClientBase.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_DIRECTCONNECTIONCLIENTBASE_HPP
+#define  GENERATED_DIRECTCONNECTIONCLIENTBASE_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:15 GMT+02:00 
+ * Generated at     13.08.2022  02:47:59 GMT+02:00
  *                  Create by AREG SDK code generator tool from source DirectConnection.
  *
  * \file            generated/DirectConnectionClientBase.hpp
@@ -51,13 +52,13 @@ class DirectConnectionClientBase  : public IEProxyListener
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initialize DirectConnection Service Interface client object. 
+     * \brief   Initialize DirectConnection Service Interface client object.
      *          Specifies used service and owner thread.
      * \param   roleName    The role name assigned to DirectConnection servicing component object.
      * \param   ownerThread The name of component owner thread to dispatch messages.
      *                      If nullptr, all messages are dispatched in current component thread.
      **/
-    DirectConnectionClientBase( const char* roleName, const char * ownerThread = nullptr );
+    DirectConnectionClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
 
     /**
      * \brief   Initialize DirectConnection Service Interface client object.
@@ -65,7 +66,7 @@ protected:
      * \param   roleName    The role name assigned to DirectConnection servicing component object.
      * \param   ownerThread The instance of component owner thread to dispatch messages.
      **/
-    DirectConnectionClientBase( const char* roleName, DispatcherThread & ownerThread );
+    DirectConnectionClientBase( const String & roleName, DispatcherThread & ownerThread );
 
     /**
      * \brief   Initialize DirectConnection Service Interface client object.
@@ -75,7 +76,7 @@ protected:
      * \note    When this constructor is used, it is important that the Component object is already initialized.
      *          and the component thread is set.
      **/
-    DirectConnectionClientBase( const char* roleName, Component & owner );
+    DirectConnectionClientBase( const String & roleName, Component & owner );
 
     /**
      * \brief   Destructor.
@@ -102,12 +103,12 @@ public:
      * \brief   Returns true if client object has got connection with servicing component
      **/
     inline bool isConnected( void ) const;
-    
+
     /**
      * \brief   Returns the name of used service.
      **/
     inline const String & getServiceName( void ) const;
-    
+
     /**
      * \brief   Returns the version of used service.
      **/
@@ -121,6 +122,7 @@ public:
 // DirectConnection Interface Attributes
 //////////////////////////////////////////////////////////////////////////
 public:
+
 /************************************************************************
  * Attribute InitiatedConnections functions
  ************************************************************************/
@@ -131,18 +133,18 @@ public:
     inline bool isInitiatedConnectionsValid( void ) const;
     /**
      * \brief   Returns the value of InitiatedConnections attribute.
-     *          To get valid value, the Update Notification should be enabled. 
-     *          Attribute InitiatedConnections description: 
+     *          To get valid value, the Update Notification should be enabled.
+     *          Attribute InitiatedConnections description:
      *          The map of initiated connections and list of participants.
-     * \param   state   On returns, contains the validation flag of attribute data. 
+     * \param   state   On returns, contains the validation flag of attribute data.
      *                  Check validation flag before use attribute value.
      * \see     isInitiatedConnectionsValid, notifyInitiatedConnectionsUpdate, onInitiatedConnectionsUpdate
      **/
     inline const NEDirectConnection::MapParticipants & getInitiatedConnections( NEService::eDataStateType & state ) const;
     /**
      * \brief   Call to enable or disable receiving notifications on InitiatedConnections attribute update.
-     *          Once notification is enabled and the data is updated, 
-     *          the getInitiatedConnections method will return valid data 
+     *          Once notification is enabled and the data is updated,
+     *          the getInitiatedConnections method will return valid data
      *          Attribute InitiatedConnections description:
      *          The map of initiated connections and list of participants.
      * \param   notify  If true, notification will be enable. If false, notification is disabled
@@ -153,13 +155,12 @@ public:
      * \brief   Triggered, when InitiatedConnections attribute is updated. The function contains
      *          attribute value and validation flag. When notification is enabled,
      *          the method should be overwritten in derived class.
-     *          Attributes InitiatedConnections description: 
+     *          Attributes InitiatedConnections description:
      *          The map of initiated connections and list of participants.
      * \param   InitiatedConnections    The value of InitiatedConnections attribute.
      * \param   state                   The data validation flag.
      **/
     virtual void onInitiatedConnectionsUpdate( const NEDirectConnection::MapParticipants & InitiatedConnections, NEService::eDataStateType state );
-
 
 //////////////////////////////////////////////////////////////////////////
 // DirectConnection Interface Requests / Responses / Broadcasts
@@ -183,7 +184,7 @@ public:
      * \param   FailureReason   The failure reason value of request call.
      **/
     virtual void requestConnectoinSetupFailed( NEService::eResultType FailureReason );
-    
+
 /************************************************************************
  * Request AddParticipant
  ************************************************************************/
@@ -201,7 +202,7 @@ public:
      * \param   FailureReason   The failure reason value of request call.
      **/
     virtual void requestAddParticipantFailed( NEService::eResultType FailureReason );
-    
+
 /************************************************************************
  * Request RemoveParticipant
  ************************************************************************/
@@ -219,7 +220,7 @@ public:
      * \param   FailureReason   The failure reason value of request call.
      **/
     virtual void requestRemoveParticipantFailed( NEService::eResultType FailureReason );
-    
+
 /************************************************************************
  * Request CloseConnection
  ************************************************************************/
@@ -235,14 +236,14 @@ public:
      * \param   FailureReason   The failure reason value of request call.
      **/
     virtual void requestCloseConnectionFailed( NEService::eResultType FailureReason );
-    
+
 /************************************************************************
  * Response ConnectoinSetup
  ************************************************************************/
     /**
      * \brief   Response callback.
      *          The response of connection setup
-     *          Overwrite, if need to handle Response call of server object. 
+     *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   succeeded           Flag, indicating whether the connection setup succeeded or not.
      * \param   target              The targeted participant to include in chat-room
@@ -265,7 +266,7 @@ public:
     /**
      * \brief   Response callback.
      *          The response to add initiator to chat room
-     *          Overwrite, if need to handle Response call of server object. 
+     *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   succeeded           Flag, indicating whether operation succeeded.
      * \param   listParticipants    New list of participants
@@ -286,7 +287,7 @@ public:
     /**
      * \brief   Response callback.
      *          Response to remove initiator from chat-room
-     *          Overwrite, if need to handle Response call of server object. 
+     *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   succeeded           Flag, indicating whther operation succeeded or not.
      * \param   listParticipants    New lsit of chat-room participants.
@@ -341,16 +342,16 @@ protected:
      * \param   InvalidReqId    The ID of invalid request
      **/
     virtual void invalidRequest( NEDirectConnection::eMessageIDs InvalidReqId );
-    
+
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
 
     /**
      * \brief   Call to recreate Proxy for the client. This call will remove and unregister all existing notifications
-     *          and the client will not receive pending update or response notifications. 
+     *          and the client will not receive pending update or response notifications.
      *          The client first will receive disconnect message, then again connect.
-     *          Reset update notifications manually in connect if need.          
+     *          Reset update notifications manually in connect if need.
      *          This function call can be used when the client instance should be registered and run in new thread.
      *
      * \return  Returns true if Proxy was created with success.
@@ -362,7 +363,7 @@ protected:
      *         The function can return nullptr if Proxy was not instantiated yet.
      **/
     DispatcherThread * getDispatcherThread( void );
-     
+
     /**
      * \brief   Returns the current sequence number
      **/
@@ -372,7 +373,7 @@ protected:
      * \brief  Returns instance of proxy object.
      */
     inline const DirectConnectionProxy * getProxy( void ) const;
-      
+
     /**
      * \brief Returns target service component role name.
      **/
@@ -408,7 +409,7 @@ private:
      * \param   eventElem   Notification Event object to process
      **/
     virtual void processNotificationEvent( NotificationEvent & eventElem ) override;
-    
+
 /************************************************************************/
 // DirectConnectionClientBase hidden methods
 /************************************************************************/
@@ -416,12 +417,12 @@ private:
     /**
      * \brief   Enables / Disables notification flags on appropriate message call.
      * \param   msgId   The ID of message to enable / disable notification
-     * \param   notify  If true, the notification is enabled. 
+     * \param   notify  If true, the notification is enabled.
      *                  If false, the notification is disabled.
      * \param   always  Flag, indicating whether should notify always or not.
      *                  if 'notify' parameter is true and the notification is already
      *                  assigned, then if parameter 'always' is true, it will trigger
-     *                  notification immediately after call. 
+     *                  notification immediately after call.
      **/
     void notifyOn( NEDirectConnection::eMessageIDs msgId, bool notify, bool always = false );
     /**
@@ -441,7 +442,6 @@ private:
     /**
      * \brief   Returns reference of DirectConnectionClientBase object
      **/
-
     inline DirectConnectionClientBase & self( void );
 
 //////////////////////////////////////////////////////////////////////////
@@ -489,7 +489,7 @@ inline const String & DirectConnectionClientBase::getServiceName( void ) const
     ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getServiceName();
 }
-    
+
 inline const Version & DirectConnectionClientBase::getServiceVersion( void ) const
 {
     ASSERT(mProxy != nullptr);
@@ -573,6 +573,8 @@ inline const String & DirectConnectionClientBase::getServiceRole( void ) const
     ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getRoleName();
 }
+
+#endif   // GENERATED_DIRECTCONNECTIONCLIENTBASE_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/DirectConnectionClientBase.hpp file

@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/TraceManager.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -143,6 +143,13 @@ bool TraceManager::isLoggingEnabled(void)
     return traceManager._isEnabled();
 }
 
+const String& TraceManager::getConfigFile(void)
+{
+    TraceManager& traceManager = TraceManager::getInstance();
+    Lock lock(traceManager.mLock);
+    return traceManager.mConfigFile;
+}
+
 bool TraceManager::forceActivateLogging(void)
 {
     bool result = false;
@@ -196,7 +203,7 @@ void TraceManager::_registerScope( TraceScope & scopeRegister )
 #ifdef DEBUG
     if ( mMapTraceScope.findResourceObject( static_cast<unsigned int>(scopeRegister)) != nullptr )
     {
-        OUTPUT_ERR("The scope [ %s ] is already registered", scopeRegister.getScopeName());
+        OUTPUT_ERR("The scope [ %s ] is already registered", scopeRegister.getScopeName().getString());
     }
 #endif // DEBUG
 
@@ -259,17 +266,17 @@ void TraceManager::removeScopePriority(unsigned int scopeId, NETrace::eLogPriori
     mMapTraceScope.unlock();
 }
 
-int TraceManager::setScopeGroupPriority(const char * scopeGroupName, unsigned int newPrio)
+int TraceManager::setScopeGroupPriority(const String & scopeGroupName, unsigned int newPrio)
 {
     int result = 0;
-    if ( NEString::isEmpty<char>(scopeGroupName) == false )
+    if (scopeGroupName.isEmpty() == false)
     {
         mMapTraceScope.lock();
 
         unsigned int scopeId    = 0;
         for ( TraceScope * scope = mMapTraceScope.resourceFirstKey(scopeId); scope != nullptr; scope = mMapTraceScope.resourceNextKey(scopeId) )
         {
-            if ( NEString::compareStrings<char, char>(scopeGroupName, scope->getScopeName(), NEString::COUNT_ALL, false ) == 0 )
+            if ( scopeGroupName.compare(scope->getScopeName(), false) == NEMath::eCompare::Equal )
             {
                 scope->setPriority(newPrio);
                 ++ result;
@@ -281,17 +288,17 @@ int TraceManager::setScopeGroupPriority(const char * scopeGroupName, unsigned in
     return result;
 }
 
-int TraceManager::addScopeGroupPriority(const char * scopeGroupName, NETrace::eLogPriority addPrio)
+int TraceManager::addScopeGroupPriority(const String & scopeGroupName, NETrace::eLogPriority addPrio)
 {
-    int result = 0;
-    if ( NEString::isEmpty<char>(scopeGroupName) == false )
+    int result{ 0 };
+    if ( scopeGroupName.isEmpty() == false)
     {
         mMapTraceScope.lock();
 
-        unsigned int scopeId    = 0;
+        unsigned int scopeId{ 0 };
         for ( TraceScope * scope = mMapTraceScope.resourceFirstKey(scopeId); scope != nullptr; scope = mMapTraceScope.resourceNextKey(scopeId) )
         {
-            if ( NEString::compareStrings<char, char>( scopeGroupName, scope->getScopeName( ), NEString::COUNT_ALL, false ) == 0 )
+            if ( NEString::compareStrings<char, char>( scopeGroupName, scope->getScopeName( ), NEString::COUNT_ALL, false ) == NEMath::eCompare::Equal)
             {
                 scope->addPriority(addPrio);
                 ++ result;
@@ -303,17 +310,17 @@ int TraceManager::addScopeGroupPriority(const char * scopeGroupName, NETrace::eL
     return result;
 }
 
-int TraceManager::removeScopeGroupPriority(const char * scopeGroupName, NETrace::eLogPriority remPrio)
+int TraceManager::removeScopeGroupPriority(const String& scopeGroupName, NETrace::eLogPriority remPrio)
 {
-    int result = 0;
-    if ( NEString::isEmpty<char>(scopeGroupName) == false )
+    int result{ 0 };
+    if ( scopeGroupName.isEmpty() == false)
     {
         mMapTraceScope.lock();
 
-        unsigned int scopeId    = 0;
+        unsigned int scopeId{ 0 };
         for ( TraceScope * scope = mMapTraceScope.resourceFirstKey(scopeId); scope != nullptr; scope = mMapTraceScope.resourceNextKey(scopeId) )
         {
-            if ( NEString::compareStrings<char, char>( scopeGroupName, scope->getScopeName( ), NEString::COUNT_ALL, false ) == 0 )
+            if (scopeGroupName.compare(scope->getScopeName(), false) == NEMath::eCompare::Equal)
             {
                 scope->removePriority(remPrio);
                 ++ result;
@@ -329,8 +336,8 @@ bool TraceManager::loadConfiguration( const char * filePath /*= nullptr */ )
 {
     Lock lock(mLock);
 
-    mConfigFile = File::getFileFullPath( NEString::isEmpty<char>(filePath) ? NEApplication::DEFAULT_TRACING_CONFIG_FILE.data() : filePath );
-    File fileConfig( static_cast<const char *>(mConfigFile), FileBase::FO_MODE_EXIST | FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_SHARE_READ );
+    mConfigFile = File::getFileFullPath( NEString::isEmpty<char>(filePath) ? NEApplication::DEFAULT_TRACING_CONFIG_FILE.data() : filePath);
+    File fileConfig( mConfigFile, FileBase::FO_MODE_EXIST | FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_SHARE_READ );
     fileConfig.open( );
 
     return loadConfiguration( fileConfig ) && initializeConfig( );
@@ -352,8 +359,8 @@ bool TraceManager::loadConfiguration( const FileBase & configFile )
             if ( newProperty.parseProperty(line) )
             {
                 // search, whether the property is already set
-                LISTPOS pos = mPropertyList.find(newProperty, nullptr);
-                if ( pos != nullptr )
+                ListProperties::LISTPOS pos = mPropertyList.find(newProperty);
+                if ( mPropertyList.isValidPosition(pos) )
                 {
                     mPropertyList.setAt( pos, newProperty );
                 }
@@ -376,9 +383,9 @@ void TraceManager::clearConfigData( void )
 
     mLogConfig.clearProperties();
 
-    mConfigScopeList.removeAll();
-    mConfigScopeGroup.removeAll();
-    mPropertyList.removeAll();
+    mConfigScopeList.clear();
+    mConfigScopeGroup.clear();
+    mPropertyList.clear();
 }
 
 bool TraceManager::activateTracingDefaults( void )
@@ -409,9 +416,9 @@ bool TraceManager::initializeConfig(void)
     Lock lock(mLock);
 
     String moduleName      = Process::getInstance().getAppName();
-    for ( LISTPOS pos = mPropertyList.firstPosition(); pos != nullptr; pos = mPropertyList.nextPosition(pos) )
+    for (ListProperties::LISTPOS pos = mPropertyList.firstPosition(); mPropertyList.isValidPosition(pos); pos = mPropertyList.nextPosition(pos) )
     {
-        const TraceProperty &     prop    = mPropertyList.getAt(pos);
+        const TraceProperty &     prop    = mPropertyList.valueAtPosition(pos);
         const TracePropertyKey &  Key     = prop.getKey();
 
         // For any property, either global setting is set, or local
@@ -422,12 +429,12 @@ bool TraceManager::initializeConfig(void)
                 const TracePropertyValue& Value   = prop.getValue( );
                 ASSERT( Key.isValidKey( ) );
                 unsigned int prio = Value.getPriority( );
-                if ( Key.isGlobalKey( ) )
+                if ( Key.isGlobalKey( ) && Key.getModuleData().isEmpty( ) )
                 {
                     ASSERT( Key.getModule( ).isEmpty( ) );
-                    mConfigScopeGroup.setAt( NELogConfig::MODULE_SCOPE.data( ), prio );
+                    mConfigScopeGroup.setAt(NELogConfig::MODULE_SCOPE.data(), prio);
                 }
-                else if ( Key.getModuleData( ).findLastOf( NELogConfig::SYNTAX_SCOPE_GROUP ) != NEString::INVALID_POS )
+                else if ( Key.getModuleData( ).findLast( NELogConfig::SYNTAX_SCOPE_GROUP ) >= NEString::START_POS )
                 {
                     mConfigScopeGroup.setAt( Key.getModuleData( ), prio );
                 }
@@ -604,7 +611,7 @@ void TraceManager::setScopesActivity( bool makeActive )
             unsigned int defaultPrio= NELogConfig::DEFAULT_LOG_PRIORITY;
             mConfigScopeGroup.find( NELogConfig::MODULE_SCOPE.data(),  defaultPrio);
 
-            for ( MAPPOS pos = mMapTraceScope.firstPosition(); pos != nullptr; pos = mMapTraceScope.nextPosition(pos) )
+            for (TraceScopeMap::MAPPOS pos = mMapTraceScope.firstPosition(); mMapTraceScope.isValidPosition(pos); pos = mMapTraceScope.nextPosition(pos) )
             {
                 activateScope(*mMapTraceScope.valueAtPosition(pos), defaultPrio);
             }
@@ -613,7 +620,7 @@ void TraceManager::setScopesActivity( bool makeActive )
         }
         else if ( (makeActive == false) && mScopesActivated )
         {
-            for ( MAPPOS pos = mMapTraceScope.firstPosition(); pos != nullptr; pos = mMapTraceScope.nextPosition(pos) )
+            for (TraceScopeMap::MAPPOS pos = mMapTraceScope.firstPosition(); mMapTraceScope.isValidPosition(pos); pos = mMapTraceScope.nextPosition(pos) )
             {
                 mMapTraceScope.valueAtPosition(pos)->setPriority( NETrace::PrioNotset );
             }
@@ -636,19 +643,19 @@ void TraceManager::onUpdateScopes(SortedStringList & scopeList)
 
     String moduleName = Process::getInstance().getAppName();
 
-    while ( scopeList.isEmpty() == false )
+    String line;
+    while (scopeList.removeLast(line))
     {
-        TraceProperty scopeProperty;
-        String line = scopeList.removeLast();
-        if ( scopeProperty.parseProperty( line ) )
+        TraceProperty scopeProperty(line);
+        if ( scopeProperty.isValid() )
         {
             const TracePropertyKey &  Key     = scopeProperty.getKey();
             const TracePropertyValue & Value  = scopeProperty.getValue();
             if ( Key.getLogConfig() == NELogConfig::eLogConfig::ConfigScope)
             {
                 // first, save property in property list
-                LISTPOS pos = mPropertyList.find(scopeProperty, nullptr);
-                if ( pos != nullptr )
+                ListProperties::LISTPOS pos = mPropertyList.find(scopeProperty);
+                if ( mPropertyList.isValidPosition(pos) )
                 {
                     mPropertyList.setAt(pos, scopeProperty);
                 }
@@ -695,7 +702,7 @@ void TraceManager::activateScope( TraceScope & traceScope )
     Lock lock(mLock);
 
     unsigned int defaultPrio= NELogConfig::DEFAULT_LOG_PRIORITY;
-    if ( mConfigScopeGroup.find( NELogConfig::MODULE_SCOPE.data(),  defaultPrio) == false )
+    if ( mConfigScopeGroup.find( NELogConfig::MODULE_SCOPE,  defaultPrio) == false )
     {
         defaultPrio = NELogConfig::DEFAULT_LOG_PRIORITY;
     }
@@ -708,8 +715,8 @@ void TraceManager::activateScope( TraceScope & traceScope, unsigned int defaultP
     Lock lock(mLock);
 
     traceScope.setPriority( defaultPriority ); // set first default priority
-    const char * scopeName = traceScope.getScopeName();
-    unsigned int scopePrio = defaultPriority;
+    const String& scopeName = traceScope.getScopeName();
+    unsigned int scopePrio  = defaultPriority;
 
     if ( mConfigScopeList.find(scopeName, scopePrio) )
     {
@@ -717,71 +724,70 @@ void TraceManager::activateScope( TraceScope & traceScope, unsigned int defaultP
     }
     else
     {
-
-        char groupName[NETrace::LOG_MESSAGE_BUFFER_SIZE];
-        NEString::CharCount end = NEString::copyString<char>(groupName, NETrace::LOG_MESSAGE_BUFFER_SIZE, scopeName);
-
-        char * separator = groupName + end;
-        do 
+        String groupName( scopeName );
+        NEString::CharPos pos = NEString::END_POS;
+        do
         {
-            *separator= '\0';
-            NEString::CharPos pos = NEString::findLastOf<char>(NELogConfig::SYNTAX_SCOPE_SEPARATOR, groupName, NEString::END_POS);
-            if (pos != NEString::INVALID_POS)
+            pos = groupName.findLast(NELogConfig::SYNTAX_SCOPE_SEPARATOR, pos, true);
+            if (groupName.isValidPosition(pos))
             {
-                separator = groupName + pos;
-                separator[1] = NELogConfig::SYNTAX_SCOPE_GROUP; // replace group syntax
-                separator[2] = NEString::EndOfString;           // set end of string
+                // set group syntax
+                groupName.setAt(NELogConfig::SYNTAX_SCOPE_GROUP, pos + 1).resize(pos + 2);
+                pos -= 1;
             }
             else
             {
-                // Check whether the entire module scopes are enabled
-                groupName[0] = NELogConfig::SYNTAX_SCOPE_GROUP; // set in the first position
-                groupName[1] = NEString::EndOfString;           // set end of string
-                separator    = nullptr;                            // set nullptr to escape loop if needed.
+                pos = NEString::INVALID_POS;
+                groupName = NELogConfig::SYNTAX_SCOPE_GROUP;
             }
 
-            if ( mConfigScopeGroup.find(groupName, scopePrio) )
+            if (mConfigScopeGroup.find(groupName, scopePrio))
             {
                 // Found group priority, set it
-                traceScope.setPriority( scopePrio );
-                separator = nullptr;
+                traceScope.setPriority(scopePrio);
+                break; // found.
             }
 
-        } while (separator != nullptr);
-
+        } while (pos != NEString::INVALID_POS);
     }
 }
 
-void TraceManager::setScopesPriority(const char * scopeName, unsigned int logPriority)
+void TraceManager::setScopesPriority(const String & scopeName, unsigned int logPriority)
 {
-    if ( NEString::isEmpty<char>(scopeName) == false )
+    if (scopeName.isEmpty() == false)
     {
-        NEString::CharPos pos = NEString::findLastOf<char>( NELogConfig::SYNTAX_SCOPE_SEPARATOR, scopeName, NEString::END_POS );
+        NEString::CharPos pos = scopeName.findLast(NELogConfig::SYNTAX_SCOPE_SEPARATOR, NEString::END_POS, true);
         if ( pos == NEString::INVALID_POS )
         {
             // there is a complete scope name, make changes.
             TraceScope * traceScope   = nullptr;
-            mConfigScopeList.setAt(scopeName, static_cast<unsigned int>(logPriority));
-            if ( mMapTraceScope.find(TraceManager::makeScopeId(scopeName), traceScope) && (traceScope != nullptr) )
-                traceScope->setPriority( logPriority );
+            mConfigScopeList.setAt(scopeName, logPriority);
+            if (mMapTraceScope.find(TraceManager::makeScopeId(scopeName.getString()), traceScope) && (traceScope != nullptr))
+            {
+                traceScope->setPriority(logPriority);
+            }
         }
         else if ( pos == NEString::START_POS )
         {
             // change all, it is set group change for complete module
-            mConfigScopeGroup.setAt(scopeName, static_cast<unsigned int>(logPriority));
-            for ( MAPPOS mapPos = mMapTraceScope.firstPosition(); mapPos != nullptr; mapPos = mMapTraceScope.nextPosition(mapPos) )
-                mMapTraceScope.valueAtPosition(mapPos)->setPriority( logPriority );
+            mConfigScopeGroup.setAt(scopeName, logPriority);
+            for (TraceScopeMap::MAPPOS mapPos = mMapTraceScope.firstPosition(); mMapTraceScope.isValidPosition(mapPos); mapPos = mMapTraceScope.nextPosition(mapPos))
+            {
+                mMapTraceScope.valueAtPosition(mapPos)->setPriority(logPriority);
+            }
         }
         else if ( (pos > 0) && (scopeName[pos - 1] == NELogConfig::SYNTAX_SCOPE_SEPARATOR))
         {
             // it is a group scope, update all groups
-            mConfigScopeGroup.setAt(scopeName, static_cast<unsigned int>(logPriority));
+            mConfigScopeGroup.setAt(scopeName, logPriority);
             int len = static_cast<int>(pos - 1);
-            for ( MAPPOS mapPos = mMapTraceScope.firstPosition(); mapPos != nullptr; mapPos = mMapTraceScope.nextPosition(mapPos) )
+            for (TraceScopeMap::MAPPOS mapPos = mMapTraceScope.firstPosition(); mMapTraceScope.isValidPosition(mapPos); mapPos = mMapTraceScope.nextPosition(mapPos) )
             {
                 TraceScope * traceScope = mMapTraceScope.valueAtPosition(mapPos);
-                if ( NEString::compareStrings<char, char>(scopeName, traceScope->getScopeName(), len) == 0 )
-                    traceScope->setPriority( logPriority );
+                if (NEString::compareStrings<char, char>(scopeName, traceScope->getScopeName(), len) == NEMath::eCompare::Equal)
+                {
+                    traceScope->setPriority(logPriority);
+                }
             }
         }
     }
@@ -796,7 +802,7 @@ bool TraceManager::postEvent(Event & eventElem)
     }
     else
     {
-        OUTPUT_ERR("Not a TraceEvent type event, cannot Post. Destroying event type [ %s ]", eventElem.getRuntimeClassName());
+        OUTPUT_ERR("Not a TraceEvent type event, cannot Post. Destroying event type [ %s ]", eventElem.getRuntimeClassName().getString());
         eventElem.destroy();
     }
     return result;

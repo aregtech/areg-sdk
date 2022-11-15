@@ -2,12 +2,13 @@
 // Begin generate generated/src/private/RemoteRegistryEvents.hpp file
 //////////////////////////////////////////////////////////////////////////
 
-#pragma once
+#ifndef  GENERATED_SRC_PRIVATE_REMOTEREGISTRYEVENTS_HPP
+#define  GENERATED_SRC_PRIVATE_REMOTEREGISTRYEVENTS_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:13 GMT+02:00 
+ * Generated at     13.08.2022  13:59:48 GMT+02:00
  *                  Create by AREG SDK code generator tool from source RemoteRegistry.
  *
  * \file            generated/src/private/RemoteRegistryEvents.hpp
@@ -72,14 +73,16 @@ class RemoteRegistryRequestEvent   : public RemoteRequestEvent
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initialization constructor. Gets message source proxy address, message target address and message request ID.
+     * \brief   Gets message source proxy address, message target address and message request ID.
+     *
      * \param   fromSource  The Proxy message source address.
      * \param   toTarget    The Stub message target address to deliver event.
      * \param   reqId       The request message ID.
      **/
     RemoteRegistryRequestEvent( const ProxyAddress & fromSource, const StubAddress & toTarget, unsigned int reqId );
     /**
-     * \brief   Initialization constructor. Gets streamable data of arguments, message source proxy address, message target address  and message request ID.
+     * \brief   Gets streamable data of arguments, message source proxy address, message target address  and message request ID.
+     *
      * \param   args        The streamable object containing message arguments.
      * \param   fromSource  The Proxy message source address.
      * \param   toTarget    The Stub message target address to deliver event.
@@ -87,7 +90,8 @@ public:
      **/
     RemoteRegistryRequestEvent( const EventDataStream & args, const ProxyAddress & fromSource, const StubAddress & toTarget, unsigned int reqId );
     /**
-     * \brief   Initialization constructor. Initializes request event from streaming object, where data is serialized. Used in remote messaging.
+     * \brief   Initializes request event from streaming object, where data is serialized. Used in remote messaging.
+     *
      * \param   stream      The streaming object, where event data is serialized.
      **/
     RemoteRegistryRequestEvent( const IEInStream & stream );
@@ -123,7 +127,8 @@ class RemoteRegistryNotifyRequestEvent : public RemoteNotifyRequestEvent
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initialization constructor. Used to send start / stop notification request from Prosy to Stub.
+     * \brief   Used to send start / stop notification request from Prosy to Stub.
+     *
      * \param   fromProxy   The source Proxy address, requesting start / stop notifications.
      * \param   toStub      The target Stub address to start / stop sending notifications.
      * \param   msgId       The ID of message. Normally either Attribute ID, Broadcast ID or Response ID. The Request IDs cannot be notified.
@@ -131,7 +136,8 @@ public:
      **/
     RemoteRegistryNotifyRequestEvent( const ProxyAddress & fromProxy, const StubAddress & toStub, unsigned int msgId, NEService::eRequestType reqType );
     /**
-     * \brief   Initialization constructor. Initializes notification request event from streaming object, where data is serialized. Used in remote messaging.
+     * \brief   Initializes notification request event from streaming object, where data is serialized. Used in remote messaging.
+     *
      * \param   stream      The streaming object, where event data is serialized.
      **/
     RemoteRegistryNotifyRequestEvent( const IEInStream & stream );
@@ -166,7 +172,8 @@ class RemoteRegistryResponseEvent  : public RemoteResponseEvent
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initialization constructor. Used to send response messages from Stub to Proxy. The argument list is empty.
+     * \brief   Used to send response messages from Stub to Proxy. The argument list is empty.
+     *
      * \param   proxyTarget The target Proxy address to deliver message
      * \param   result      The result code of response message
      * \param   responseId  The response message ID. Normally either attribute, broadcast or response ID.
@@ -174,7 +181,8 @@ public:
      **/
     RemoteRegistryResponseEvent( const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, unsigned int seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
     /**
-     * \brief   Initialization constructor. Used to send response messages from Stub to Proxy with arguments.
+     * \brief   Used to send response messages from Stub to Proxy with arguments.
+     *
      * \param   args        The streamable object containing message arguments.
      * \param   proxyTarget The target Proxy address to deliver message
      * \param   result      The result code of response message
@@ -189,12 +197,13 @@ public:
      **/
     RemoteRegistryResponseEvent( const ProxyAddress & proxyTarget, const RemoteResponseEvent & source );
     /**
-     * \brief   Initialization constructor. Initializes response event from streaming object, where data is serialized. Used in remote messaging.
+     * \brief   Initializes response event from streaming object, where data is serialized. Used in remote messaging.
+     *
      * \param   stream      The streaming object, where event data is serialized.
      **/
     RemoteRegistryResponseEvent( const IEInStream & stream );
     /**
-     * \brief   Destructor
+     * \brief   Destructor.
      **/
     virtual ~RemoteRegistryResponseEvent( void ) = default;
 
@@ -244,17 +253,17 @@ class RemoteRegistryNotificationEvent  : public NotificationEvent
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initialization constructor. Copies notification event data
+     * \brief   Copies notification event data
      * \param   data    The notification event data to copy
      **/
     explicit RemoteRegistryNotificationEvent( const NotificationEventData & data );
 
 protected:
     /**
-     * \brief   Destructor. Protected
+     * \brief   Protected destructor.
      **/
     virtual ~RemoteRegistryNotificationEvent( void ) = default;
-    
+
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
@@ -263,7 +272,8 @@ private:
     DECLARE_NOCOPY_NOMOVE( RemoteRegistryNotificationEvent );
 };
 
+#endif  // GENERATED_SRC_PRIVATE_REMOTEREGISTRYEVENTS_HPP
+
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/private/RemoteRegistryEvents.hpp file
 //////////////////////////////////////////////////////////////////////////
- 

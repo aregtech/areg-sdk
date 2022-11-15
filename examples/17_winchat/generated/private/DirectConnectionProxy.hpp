@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/private/DirectConnectionProxy.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_PRIVATE_DIRECTCONNECTIONPROXY_HPP
+#define  GENERATED_PRIVATE_DIRECTCONNECTIONPROXY_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:15 GMT+02:00 
+ * Generated at     13.08.2022  02:47:59 GMT+02:00
  *                  Create by AREG SDK code generator tool from source DirectConnection.
  *
  * \file            generated/private/DirectConnectionProxy.hpp
@@ -21,12 +22,12 @@
 #include "areg/base/GEGlobal.h"
 #include "generated/NEDirectConnection.hpp"
 #include "areg/component/ProxyBase.hpp"
- 
+
 /************************************************************************
  * Dependencies
  ************************************************************************/
 class DirectConnectionResponseEvent;
- 
+
 //////////////////////////////////////////////////////////////////////////
 // DirectConnectionProxy class declaration Begin
 //////////////////////////////////////////////////////////////////////////
@@ -43,16 +44,14 @@ class DirectConnectionResponseEvent;
  **/
 class DirectConnectionProxy   : public ProxyBase
 {
-
 private:
     //////////////////////////////////////////////////////////////////////////
     // DirectConnectionProxy::DirectConnectionServiceAvailableEvent class declaration
     //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief       The event is used to immediately notify new client
-     *              about service availability and escape duplicating 
-     *              notification for other, already connected clients.
-     *  
+     * \brief   The event is used immediately to notify new client about service
+     *          availability and escape duplicating notification for other,
+     *          already connected clients.
      **/
     class DirectConnectionServiceAvailableEvent : public ProxyBase::ServiceAvailableEvent
     {
@@ -70,7 +69,7 @@ private:
          **/
         explicit DirectConnectionServiceAvailableEvent( IENotificationEventConsumer & consumer );
         /**
-         * \brief   Destructor
+         * \brief   Destructor.
          **/
         virtual ~DirectConnectionServiceAvailableEvent( void ) = default;
     //////////////////////////////////////////////////////////////////////////
@@ -87,36 +86,36 @@ public:
     /**
      * \brief   Returns existing or creates new proxy object if it is not existing
      *          in the current thread scope.
-     * \param   roleName        The role name of stub component object
+     * \param   roleName        The role name of stub component object.
      * \param   connectListener The reference to connection listener
      * \param   ownerThread     The instance of thread to dispatch messages.
      * \return  Returns pointer to instantiated proxy object.
      **/
-    static DirectConnectionProxy * createProxy( const char * roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread );
+    static DirectConnectionProxy * createProxy( const String & roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread );
 
     /**
      * \brief   Returns existing or creates new proxy object if it is not existing
      *          in the current thread scope.
-     * \param   roleName        The role name of stub component object
+     * \param   roleName        The role name of stub component object.
      * \param   connectListener The reference to connection listener
      * \param   ownerThread     The name of thread instance to dispatch messages.
      *                          If nullptr, current dispatching thread is used to dispatch messages.
      * \return  Returns pointer to instantiated proxy object.
      **/
-    static DirectConnectionProxy * createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread = nullptr );
+    static DirectConnectionProxy * createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread = String::EmptyString );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Constructor. Creates Proxy object by given role name. 
+     * \brief   Creates Proxy object by given role name.
      *          Do not create proxy object directly, instead use CreateProxy function.
      * \param   roleName    The role name of proxy, i.e. role name of server component object.
      * \param   ownerThread The instance of thread to dispatch messages.
      *                      If nullptr, current dispatching thread is used to dispatch messages.
      **/
-    explicit DirectConnectionProxy( const char * roleName, DispatcherThread * ownerThread = nullptr );
+    explicit DirectConnectionProxy( const String & roleName, DispatcherThread * ownerThread = nullptr );
     /**
      * \brief   Destructor
      **/
@@ -137,9 +136,9 @@ public:
     /**
      * \brief   Returns the value of InitiatedConnections attribute.
      *          To get valid value, the Update Notification should be enabled. 
-     *          Attribute InitiatedConnections description: 
+     *          Attribute InitiatedConnections description:
      *          The map of initiated connections and list of participants.
-     * \param   state   On returns, contains the validation flag of attribute data. 
+     * \param   state   On returns, contains the validation flag of attribute data.
      *                  Check validation flag before use attribute value.
      **/
     inline const NEDirectConnection::MapParticipants & getInitiatedConnections( NEService::eDataStateType & state ) const;
@@ -150,7 +149,7 @@ public:
     /**
      * \brief   Returns value of succeeded of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
-     *          Parameter succeeded description: 
+     *          Parameter succeeded description:
      *          Flag, indicating whether the connection setup succeeded or not.
      **/
     inline bool getParamsucceeded( void ) const;
@@ -158,7 +157,7 @@ public:
     /**
      * \brief   Returns value of target of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
-     *          Parameter target description: 
+     *          Parameter target description:
      *          The targeted participant to include in chat-room
      **/
     inline const NEDirectConnection::sParticipant & getParamtarget( void ) const;
@@ -166,7 +165,7 @@ public:
     /**
      * \brief   Returns value of initiator of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
-     *          Parameter initiator description: 
+     *          Parameter initiator description:
      *          The chat-room initiator
      **/
     inline const NEDirectConnection::sInitiator & getParaminitiator( void ) const;
@@ -174,7 +173,7 @@ public:
     /**
      * \brief   Returns value of listParticipants of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
-     *          Parameter listParticipants description: 
+     *          Parameter listParticipants description:
      *          List of chat-room participants
      **/
     inline const NEDirectConnection::ListParticipants & getParamlistParticipants( void ) const;
@@ -230,22 +229,21 @@ public:
     /**
      * \brief   Checks whether there is already listener of Notification Event
      *          exists. If does not exit, adds new listener entry in the listener
-     *          list. If need, send appropriate message to Stub to start 
+     *          list. If need, send appropriate message to Stub to start
      *          sending attribute update messages. If already listener
-     *          exists in listener list and notifyAlways flag is true, 
+     *          exists in listener list and notifyAlways flag is true,
      *          sends immediate update notification based on existing update data status.
      * \param   msgId           The Notification Message ID
      * \param   consumer        The pointer of Notification Event consumer
      * \param   notifyAlways    The flag, indicating whether the notification event
      *                          should be send to client immediately if the notification
-     *                          already exists. By default it is false. 
+     *                          already exists. By default it is false.
      **/
     inline void setNotification( NEDirectConnection::eMessageIDs notifyId, IENotificationEventConsumer & listener, bool notifyAlways = false );
     /**
      * \brief   Clears listener entries of specified Notification Event consumer
      * \param   msgId       The Notification Message ID
      * \param   consumer    The pointer of Notification Event Consumer.
-     * \return  
      **/
     inline void clearNotification( NEDirectConnection::eMessageIDs notifyId, IENotificationEventConsumer & listener );
     /**
@@ -272,7 +270,7 @@ protected:
     virtual void processResponseEvent( ServiceResponseEvent & eventElem ) override;
     /**
      * \brief   Method derived from IEProxyEventConsumer interface.
-     *          Triggered when on server side a certain Attribute 
+     *          Triggered when on server side a certain Attribute
      *          value has been updated.
      * \param   eventElem   The Service Response event object.
      *                      Contains new updated value of Attribute
@@ -285,8 +283,8 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Creates notification event to send to client objects. 
-     *          All Notification Events should be internal events and 
+     * \brief   Creates notification event to send to client objects.
+     *          All Notification Events should be internal events and
      *          should be instances of NotificationEvent class.
      * \param   data    The Notification Event data object containing
      *                  notification information.
@@ -295,7 +293,7 @@ protected:
     virtual NotificationEvent * createNotificationEvent( const NotificationEventData & data ) const override;
 
     /**
-     * \brief   Create Request event to send to Stub object. 
+     * \brief   Create Request event to send to Stub object.
      *          Request events are triggering request calls on Stub side.
      * \param   args    The buffer containing serialized arguments of request call.
      * \param   reqId   The ID of request call.
@@ -305,7 +303,7 @@ protected:
 
     /**
      * \brief   Creates event requesting to receive update notification events.
-     *          The caller should be address of current proxy and the target 
+     *          The caller should be address of current proxy and the target
      *          should address of appropriate sub address.
      * \param   msgId       The message ID to send. Should be either attribute or response (info)
      * \param   reqType     The type of request.
@@ -314,7 +312,7 @@ protected:
     virtual ServiceRequestEvent * createNotificationRequestEvent( unsigned int msgId, NEService::eRequestType reqType ) override;
 
     /**
-     * \brief   Overwrite method to create response event from streaming object for 
+     * \brief   Overwrite method to create response event from streaming object for
      *          further dispatching by proxy.
      * \param   stream  Streaming object, which contains event data.
      * \return  If operation succeeds, returns valid pointer to Service Response event object.
@@ -401,7 +399,7 @@ private:
     /**
      * \brief   Updates attribute and response call variable data received from Stub
      * \param   eventElem   The event object containing buffer with serialized data
-     * \param   respId      The response message ID, which received. 
+     * \param   respId      The response message ID, which received.
      *                      It is either attribute or response message ID
      **/
     void updateData( DirectConnectionResponseEvent & eventElem, NEDirectConnection::eMessageIDs respId );
@@ -409,8 +407,8 @@ private:
      * \brief   Starts processing response message. The received event contains
      *          ID of appropriate message to update and contains result flag.
      *          If request calls failed (busy), the ID in event is a request call ID.
-     *          In all other cases, the ID is either response call, info call, 
-     *          or attribute update notification call. 
+     *          In all other cases, the ID is either response call, info call,
+     *          or attribute update notification call.
      *          It will also update parameters and states.
      * \param   evenElem    The response object containing message ID, result and data.
      **/
@@ -432,7 +430,7 @@ private:
      *                      If nullptr, current dispatching thread is used to dispatch messages.
      * \return  Pointer to instantiated proxy object.
      **/
-    static ProxyBase * _createProxy( const char * roleName, DispatcherThread * ownerThread = nullptr );
+    static ProxyBase * _createProxy( const String & roleName, DispatcherThread * ownerThread = nullptr );
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -513,6 +511,7 @@ inline const NEDirectConnection::ListParticipants & DirectConnectionProxy::getPa
     return mParamlistParticipants;
 }
 
+#endif   // GENERATED_PRIVATE_DIRECTCONNECTIONPROXY_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/private/DirectConnectionProxy.hpp file

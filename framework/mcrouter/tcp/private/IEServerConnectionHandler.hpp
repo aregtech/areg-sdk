@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_MCROUTER_TCP_PRIVATE_IESERVERCONNECTIONHANDLER_HPP
+#define AREG_MCROUTER_TCP_PRIVATE_IESERVERCONNECTIONHANDLER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        mcrouter/tcp/private/IEServerConnectionHandler.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -73,9 +74,16 @@ public:
      **/
     virtual void connectionLost( SocketAccepted & clientSocket ) = 0;
 
+    /**
+     * \brief   Triggered, when there is a connection failure. Normally, this should restart the connection.
+     **/
+    virtual void connectionFailure( void ) = 0;
+
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
     DECLARE_NOCOPY_NOMOVE( IEServerConnectionHandler );
 };
+
+#endif  // AREG_MCROUTER_TCP_PRIVATE_IESERVERCONNECTIONHANDLER_HPP

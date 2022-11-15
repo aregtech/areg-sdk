@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_CHANNEL_HPP
+#define AREG_COMPONENT_CHANNEL_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/Channel.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -19,7 +20,9 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
+
 #include "areg/component/NEService.hpp"
+#include "areg/base/IEIOStream.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Channel class declaration.
@@ -121,14 +124,14 @@ public:
      * \param   stream  The streaming object to read data.
      * \param   input   Connection channel to initialize.
      **/
-    friend AREG_API const IEInStream & operator >> ( const IEInStream & stream, Channel & input );
+    friend inline const IEInStream & operator >> ( const IEInStream & stream, Channel & input );
 
     /**
      * \brief   Streaming operator. Writes connection channel data into stream.
      * \param   stream  The streaming object to write data.
      * \param   output  Connection channel to stream.
      **/
-    friend AREG_API IEOutStream & operator << ( IEOutStream & stream, const Channel & output);
+    friend inline IEOutStream & operator << ( IEOutStream & stream, const Channel & output);
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -188,7 +191,7 @@ public:
      * \brief   Creates channel data from string
      * \param   channel     Null-terminated string, which contains channel data.
      **/
-    const Channel & convFromString( const char * channel );
+    const Channel & convFromString( const String & channel );
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -269,3 +272,21 @@ inline void Channel::invalidate( void )
     mTarget = NEService::TARGET_UNKNOWN;
     mCookie = NEService::COOKIE_UNKNOWN;
 }
+
+inline const IEInStream & operator >> ( const IEInStream & stream, Channel & input )
+{
+    stream >> input.mSource;
+    stream >> input.mTarget;
+    stream >> input.mCookie;
+    return stream;
+}
+
+inline IEOutStream & operator << ( IEOutStream & stream, const Channel & output)
+{
+    stream << output.mSource;
+    stream << output.mTarget;
+    stream << output.mCookie;
+    return stream;
+}
+
+#endif  // AREG_COMPONENT_CHANNEL_HPP

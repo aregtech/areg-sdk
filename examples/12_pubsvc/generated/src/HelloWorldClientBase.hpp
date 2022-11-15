@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/src/HelloWorldClientBase.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_SRC_HELLOWORLDCLIENTBASE_HPP
+#define  GENERATED_SRC_HELLOWORLDCLIENTBASE_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  13:39:07 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/HelloWorldClientBase.hpp
@@ -48,13 +49,13 @@ class HelloWorldClientBase  : public IEProxyListener
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initialize HelloWorld Service Interface client object. 
+     * \brief   Initialize HelloWorld Service Interface client object.
      *          Specifies used service and owner thread.
      * \param   roleName    The role name assigned to HelloWorld servicing component object.
      * \param   ownerThread The name of component owner thread to dispatch messages.
      *                      If nullptr, all messages are dispatched in current component thread.
      **/
-    HelloWorldClientBase( const char* roleName, const char * ownerThread = nullptr );
+    HelloWorldClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
 
     /**
      * \brief   Initialize HelloWorld Service Interface client object.
@@ -62,7 +63,7 @@ protected:
      * \param   roleName    The role name assigned to HelloWorld servicing component object.
      * \param   ownerThread The instance of component owner thread to dispatch messages.
      **/
-    HelloWorldClientBase( const char* roleName, DispatcherThread & ownerThread );
+    HelloWorldClientBase( const String & roleName, DispatcherThread & ownerThread );
 
     /**
      * \brief   Initialize HelloWorld Service Interface client object.
@@ -72,7 +73,7 @@ protected:
      * \note    When this constructor is used, it is important that the Component object is already initialized.
      *          and the component thread is set.
      **/
-    HelloWorldClientBase( const char* roleName, Component & owner );
+    HelloWorldClientBase( const String & roleName, Component & owner );
 
     /**
      * \brief   Destructor.
@@ -99,12 +100,12 @@ public:
      * \brief   Returns true if client object has got connection with servicing component
      **/
     inline bool isConnected( void ) const;
-    
+
     /**
      * \brief   Returns the name of used service.
      **/
     inline const String & getServiceName( void ) const;
-    
+
     /**
      * \brief   Returns the version of used service.
      **/
@@ -118,6 +119,7 @@ public:
 // HelloWorld Interface Attributes
 //////////////////////////////////////////////////////////////////////////
 public:
+
 /************************************************************************
  * Attribute ConnectedClients functions
  ************************************************************************/
@@ -128,18 +130,18 @@ public:
     inline bool isConnectedClientsValid( void ) const;
     /**
      * \brief   Returns the value of ConnectedClients attribute.
-     *          To get valid value, the Update Notification should be enabled. 
-     *          Attribute ConnectedClients description: 
+     *          To get valid value, the Update Notification should be enabled.
+     *          Attribute ConnectedClients description:
      *          The list of connected clients. Updated each time when new client requests to output Hello World message.
-     * \param   state   On returns, contains the validation flag of attribute data. 
+     * \param   state   On returns, contains the validation flag of attribute data.
      *                  Check validation flag before use attribute value.
      * \see     isConnectedClientsValid, notifyConnectedClientsUpdate, onConnectedClientsUpdate
      **/
     inline const NEHelloWorld::ConnectionList & getConnectedClients( NEService::eDataStateType & state ) const;
     /**
      * \brief   Call to enable or disable receiving notifications on ConnectedClients attribute update.
-     *          Once notification is enabled and the data is updated, 
-     *          the getConnectedClients method will return valid data 
+     *          Once notification is enabled and the data is updated,
+     *          the getConnectedClients method will return valid data
      *          Attribute ConnectedClients description:
      *          The list of connected clients. Updated each time when new client requests to output Hello World message.
      * \param   notify  If true, notification will be enable. If false, notification is disabled
@@ -150,7 +152,7 @@ public:
      * \brief   Triggered, when ConnectedClients attribute is updated. The function contains
      *          attribute value and validation flag. When notification is enabled,
      *          the method should be overwritten in derived class.
-     *          Attributes ConnectedClients description: 
+     *          Attributes ConnectedClients description:
      *          The list of connected clients. Updated each time when new client requests to output Hello World message.
      * \param   ConnectedClients    The value of ConnectedClients attribute.
      * \param   state               The data validation flag.
@@ -167,18 +169,18 @@ public:
     inline bool isRemainOutputValid( void ) const;
     /**
      * \brief   Returns the value of RemainOutput attribute.
-     *          To get valid value, the Update Notification should be enabled. 
-     *          Attribute RemainOutput description: 
+     *          To get valid value, the Update Notification should be enabled.
+     *          Attribute RemainOutput description:
      *          Remaining number of outputs to print Hello World.
-     * \param   state   On returns, contains the validation flag of attribute data. 
+     * \param   state   On returns, contains the validation flag of attribute data.
      *                  Check validation flag before use attribute value.
      * \see     isRemainOutputValid, notifyRemainOutputUpdate, onRemainOutputUpdate
      **/
     inline short getRemainOutput( NEService::eDataStateType & state ) const;
     /**
      * \brief   Call to enable or disable receiving notifications on RemainOutput attribute update.
-     *          Once notification is enabled and the data is updated, 
-     *          the getRemainOutput method will return valid data 
+     *          Once notification is enabled and the data is updated,
+     *          the getRemainOutput method will return valid data
      *          Attribute RemainOutput description:
      *          Remaining number of outputs to print Hello World.
      * \param   notify  If true, notification will be enable. If false, notification is disabled
@@ -189,13 +191,12 @@ public:
      * \brief   Triggered, when RemainOutput attribute is updated. The function contains
      *          attribute value and validation flag. When notification is enabled,
      *          the method should be overwritten in derived class.
-     *          Attributes RemainOutput description: 
+     *          Attributes RemainOutput description:
      *          Remaining number of outputs to print Hello World.
      * \param   RemainOutput    The value of RemainOutput attribute.
      * \param   state           The data validation flag.
      **/
     virtual void onRemainOutputUpdate( short RemainOutput, NEService::eDataStateType state );
-
 
 //////////////////////////////////////////////////////////////////////////
 // HelloWorld Interface Requests / Responses / Broadcasts
@@ -209,18 +210,16 @@ public:
      * \brief   Request call.
      *          Request to print hello world
      * \param   roleName    The role name of client component that requested to print hello world
-     * \param   addMessage  Additional message to output. Can be empty.
-     *          Has default value: ""
      * \return  The sequence count number of call
      * \see     responseHelloWorld
      **/
-    inline unsigned int requestHelloWorld( const String & roleName, const String & addMessage = "" );
+    inline unsigned int requestHelloWorld( const String & roleName );
     /**
      * \brief   Overwrite to handle error of HelloWorld request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
     virtual void requestHelloWorldFailed( NEService::eResultType FailureReason );
-    
+
 /************************************************************************
  * Request ClientShutdown
  ************************************************************************/
@@ -237,14 +236,14 @@ public:
      * \param   FailureReason   The failure reason value of request call.
      **/
     virtual void requestClientShutdownFailed( NEService::eResultType FailureReason );
-    
+
 /************************************************************************
  * Response HelloWorld
  ************************************************************************/
     /**
      * \brief   Response callback.
      *          The response to hello world request.
-     *          Overwrite, if need to handle Response call of server object. 
+     *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientInfo  The client information set by servicing component. If empty or invalid ID, the message output failed.
      * \see     requestHelloWorld
@@ -264,7 +263,7 @@ public:
     /**
      * \brief   Server broadcast.
      *          Broadcast to notify all clients about connection
-     *          Overwrite, if need to handle Broadcast call of server object. 
+     *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientList  List of currently active clients.
      **/
@@ -282,8 +281,8 @@ public:
  ************************************************************************/
     /**
      * \brief   Server broadcast.
-     *          DESCRIPTION MISSED
-     *          Overwrite, if need to handle Broadcast call of server object. 
+     *          Triggered when the service is unavailable.
+     *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      **/
     virtual void broadcastServiceUnavailable( void );
@@ -335,16 +334,16 @@ protected:
      * \param   InvalidReqId    The ID of invalid request
      **/
     virtual void invalidRequest( NEHelloWorld::eMessageIDs InvalidReqId );
-    
+
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
 
     /**
      * \brief   Call to recreate Proxy for the client. This call will remove and unregister all existing notifications
-     *          and the client will not receive pending update or response notifications. 
+     *          and the client will not receive pending update or response notifications.
      *          The client first will receive disconnect message, then again connect.
-     *          Reset update notifications manually in connect if need.          
+     *          Reset update notifications manually in connect if need.
      *          This function call can be used when the client instance should be registered and run in new thread.
      *
      * \return  Returns true if Proxy was created with success.
@@ -356,7 +355,7 @@ protected:
      *         The function can return nullptr if Proxy was not instantiated yet.
      **/
     DispatcherThread * getDispatcherThread( void );
-     
+
     /**
      * \brief   Returns the current sequence number
      **/
@@ -366,7 +365,7 @@ protected:
      * \brief  Returns instance of proxy object.
      */
     inline const HelloWorldProxy * getProxy( void ) const;
-      
+
     /**
      * \brief Returns target service component role name.
      **/
@@ -402,7 +401,7 @@ private:
      * \param   eventElem   Notification Event object to process
      **/
     virtual void processNotificationEvent( NotificationEvent & eventElem ) override;
-    
+
 /************************************************************************/
 // HelloWorldClientBase hidden methods
 /************************************************************************/
@@ -410,12 +409,12 @@ private:
     /**
      * \brief   Enables / Disables notification flags on appropriate message call.
      * \param   msgId   The ID of message to enable / disable notification
-     * \param   notify  If true, the notification is enabled. 
+     * \param   notify  If true, the notification is enabled.
      *                  If false, the notification is disabled.
      * \param   always  Flag, indicating whether should notify always or not.
      *                  if 'notify' parameter is true and the notification is already
      *                  assigned, then if parameter 'always' is true, it will trigger
-     *                  notification immediately after call. 
+     *                  notification immediately after call.
      **/
     void notifyOn( NEHelloWorld::eMessageIDs msgId, bool notify, bool always = false );
     /**
@@ -435,7 +434,6 @@ private:
     /**
      * \brief   Returns reference of HelloWorldClientBase object
      **/
-
     inline HelloWorldClientBase & self( void );
 
 //////////////////////////////////////////////////////////////////////////
@@ -483,7 +481,7 @@ inline const String & HelloWorldClientBase::getServiceName( void ) const
     ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getServiceName();
 }
-    
+
 inline const Version & HelloWorldClientBase::getServiceVersion( void ) const
 {
     ASSERT(mProxy != nullptr);
@@ -530,10 +528,10 @@ inline void HelloWorldClientBase::notifyOnRemainOutputUpdate( bool notify /* = t
  * Request calls
  ************************************************************************/
 
-inline unsigned int HelloWorldClientBase::requestHelloWorld( const String & roleName, const String & addMessage/* = "" */ )
+inline unsigned int HelloWorldClientBase::requestHelloWorld( const String & roleName )
 {
     ASSERT(mProxy != nullptr);
-    return mProxy->requestHelloWorld( static_cast<IENotificationEventConsumer &>(self()), roleName, addMessage );
+    return mProxy->requestHelloWorld( static_cast<IENotificationEventConsumer &>(self()), roleName );
 }
 
 inline void HelloWorldClientBase::requestClientShutdown( unsigned int clientID, const String & roleName )
@@ -575,6 +573,8 @@ inline const String & HelloWorldClientBase::getServiceRole( void ) const
     ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getRoleName();
 }
+
+#endif   // GENERATED_SRC_HELLOWORLDCLIENTBASE_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/HelloWorldClientBase.hpp file

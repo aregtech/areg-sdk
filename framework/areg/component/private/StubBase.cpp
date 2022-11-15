@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/StubBase.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -44,9 +44,13 @@ bool StubBase::Listener::operator == ( const StubBase::Listener & other ) const
         if (mMessageId == other.mMessageId)
         {
             if (NEService::SEQUENCE_NUMBER_ANY == other.mSequenceNr)
+            {
                 result = true;
-            else if (mSequenceNr == other.mSequenceNr || mSequenceNr == static_cast<unsigned int>( -1 * static_cast<int>(mSequenceNr == other.mSequenceNr)))
+            }
+            else if (mSequenceNr == other.mSequenceNr || mSequenceNr == static_cast<unsigned int>(-1 * static_cast<int>(mSequenceNr == other.mSequenceNr)))
+            {
                 result = true;
+            }
         }
     }
 
@@ -63,14 +67,14 @@ bool StubBase::Listener::operator == ( const StubBase::Listener & other ) const
 //////////////////////////////////////////////////////////////////////////
 
 StubBase::StubBase( Component & masterComp, const NEService::SInterfaceData & siData )
-    : IEStubEventConsumer  ( mAddress )
+    : IEStubEventConsumer   ( mAddress )
 
     , mComponent            (masterComp)
     , mInterface            (siData)
     , mAddress              (siData, masterComp.getAddress().getRoleName(), masterComp.getAddress().getThreadAddress().getThreadName())
     , mConnectionStatus     ( NEService::eServiceConnection::ServiceDisconnected )
     , mListListener         ( )
-    , mCurrListener         (nullptr)
+    , mCurrListener         (mListListener.invalidPosition())
     , mSessionId            (0)
     , mMapSessions          ( )
 {
@@ -83,18 +87,13 @@ StubBase::~StubBase( void )
     _mapRegisteredStubs.unregisterResourceObject(mAddress);
 }
 
-const StubAddress & StubBase::getAddress( void ) const
-{
-    return mAddress;
-}
-
 bool StubBase::isBusy( unsigned int requestId ) const
 {
     bool result = false;
-    LISTPOS pos = mListListener.find(StubBase::Listener(requestId, NEService::SEQUENCE_NUMBER_ANY), nullptr);
-    for ( ; result == false && pos != nullptr; pos = mListListener.nextPosition(pos))
+    StubBase::StubListenerList::LISTPOS pos = mListListener.find(StubBase::Listener(requestId, NEService::SEQUENCE_NUMBER_ANY));
+    for ( ; (result == false) && mListListener.isValidPosition(pos); pos = mListListener.nextPosition(pos))
     {
-        result = mListListener[pos].mSequenceNr != 0;
+        result = mListListener.valueAtPosition(pos).mSequenceNr != 0;
     }
 
     return result;
@@ -104,52 +103,56 @@ SessionID StubBase::unblockCurrentRequest( void )
 {
     SessionID result = StubBase::INVALID_SESSION_ID;
     StubBase::Listener listener;
-    if ( mCurrListener != nullptr )
+    if (mListListener.isValidPosition(mCurrListener) )
     {
         mListListener.removeAt(mCurrListener, listener);
         result = ++ mSessionId;
         mMapSessions.setAt(result, listener);
-        mCurrListener   = nullptr;
+        mCurrListener   = mListListener.invalidPosition();
     }
+
     return result;
 }
 
 void StubBase::prepareResponse( SessionID sessionId )
 {
     StubBase::Listener listener;
-    if ( mMapSessions.removeAt(sessionId, listener) )
+    if (mMapSessions.removeAt(sessionId, listener))
+    {
         mListListener.pushFirst(listener);
+    }
 }
 
 void StubBase::prepareRequest( Listener & listener, unsigned int seqNr, unsigned int responseId )
 {
     listener.mMessageId = responseId;
-    listener.mSequenceNr= mListListener.find(listener, nullptr) == nullptr ? seqNr : static_cast<unsigned int>(-1 * static_cast<int>(seqNr));
-    mCurrListener = mListListener.pushFirst(listener);
+    listener.mSequenceNr= mListListener.isInvalidPosition(mListListener.find(listener)) ? seqNr : static_cast<unsigned int>(-1 * static_cast<int>(seqNr));
+    mListListener.pushFirst(listener);
+    mCurrListener = mListListener.firstPosition();
 }
 
 int StubBase::findListeners( unsigned int requestId, StubListenerList & out_listners ) const
 {
     StubBase::Listener listener(requestId, NEService::SEQUENCE_NUMBER_ANY);
-    LISTPOS pos = mListListener.find(listener, nullptr);
-    while (pos != nullptr)
+    StubListenerList::LISTPOS pos = mListListener.find(listener);
+    while (mListListener.isValidPosition(pos))
     {
         out_listners.pushLast(mListListener[pos]);
         pos = mListListener.find(listener, pos);
     }
+
     return out_listners.getSize();
 }
 
 void StubBase::clearAllListeners( const ProxyAddress & whichProxy, IntegerArray & removedIDs )
 {
-    LISTPOS pos = mListListener.firstPosition();
-    while ( pos != nullptr )
+    StubListenerList::LISTPOS pos = mListListener.firstPosition();
+    while ( mListListener.isValidPosition(pos))
     {
         if (mListListener[pos].mProxy == whichProxy)
         {
-            LISTPOS temp = pos;
-            pos = mListListener.nextPosition(pos);
-            removedIDs.add(mListListener.removeAt(temp).mMessageId);
+            removedIDs.add(mListListener.valueAtPosition(pos).mMessageId);
+            pos = mListListener.removeAt(pos);
         }
         else
         {
@@ -160,14 +163,12 @@ void StubBase::clearAllListeners( const ProxyAddress & whichProxy, IntegerArray 
 
 void StubBase::clearAllListeners( const ProxyAddress & whichProxy )
 {
-    LISTPOS pos = mListListener.firstPosition();
-    while ( pos != nullptr )
+    StubListenerList::LISTPOS pos = mListListener.firstPosition();
+    while ( mListListener.isValidPosition(pos) )
     {
         if (mListListener[pos].mProxy == whichProxy)
         {
-            LISTPOS temp = pos;
-            pos = mListListener.nextPosition(pos);
-            mListListener.removeAt(temp);
+            pos = mListListener.removeAt(pos);
         }
         else
         {
@@ -178,7 +179,7 @@ void StubBase::clearAllListeners( const ProxyAddress & whichProxy )
 
 void StubBase::sendResponseNotification( const StubListenerList & whichListeners, const ServiceResponseEvent& masterEvent )
 {
-    for( LISTPOS pos = whichListeners.firstPosition(); pos != nullptr; pos = whichListeners.nextPosition(pos) )
+    for(StubListenerList::LISTPOS pos = whichListeners.firstPosition(); whichListeners.isValidPosition(pos); pos = whichListeners.nextPosition(pos) )
     {
         const StubBase::Listener& listener = whichListeners[pos];
         ServiceResponseEvent* eventResp = masterEvent.cloneForTarget(listener.mProxy);
@@ -194,7 +195,7 @@ void StubBase::sendResponseNotification( const StubListenerList & whichListeners
             {
                 eventResp->setSequenceNumber(static_cast<unsigned int>(-1 * static_cast<int>(listener.mSequenceNr)));
                 StubBase::Listener removed(masterEvent.getResponseId(), 0, listener.mProxy);
-                mListListener.removeEntry(removed, nullptr);
+                mListListener.removeEntry(removed);
             }
 
             sendServiceResponse(*eventResp);
@@ -204,7 +205,7 @@ void StubBase::sendResponseNotification( const StubListenerList & whichListeners
 
 void StubBase::sendErrorNotification( const StubListenerList & whichListeners, const ServiceResponseEvent & masterEvent )
 {
-    for( LISTPOS pos = whichListeners.firstPosition(); pos != nullptr; pos = whichListeners.nextPosition(pos))
+    for(StubListenerList::LISTPOS pos = whichListeners.firstPosition(); whichListeners.isValidPosition(pos); pos = whichListeners.nextPosition(pos))
     {
         const StubBase::Listener& listener = whichListeners[pos];
         ServiceResponseEvent* eventError = masterEvent.cloneForTarget(listener.mProxy);
@@ -228,7 +229,7 @@ void StubBase::sendErrorNotification( const StubListenerList & whichListeners, c
 
 void StubBase::sendUpdateNotification( const StubListenerList & whichListeners, const ServiceResponseEvent & masterEvent ) const
 {
-    for (LISTPOS pos = whichListeners.firstPosition(); pos != nullptr; pos = whichListeners.nextPosition(pos))
+    for (StubListenerList::LISTPOS pos = whichListeners.firstPosition(); whichListeners.isValidPosition(pos); pos = whichListeners.nextPosition(pos))
     {
         const StubBase::Listener& listener = whichListeners[pos];
         ServiceResponseEvent* eventResp = masterEvent.cloneForTarget(listener.mProxy);
@@ -244,7 +245,7 @@ void StubBase::sendServiceResponse( ServiceResponseEvent & eventElem ) const
 
 void StubBase::cancelCurrentRequest( void )
 {
-    mCurrListener   = nullptr;
+    mCurrListener   = mListListener.invalidPosition();
 }
 
 ComponentThread & StubBase::getComponentThread( void ) const
@@ -282,14 +283,20 @@ void StubBase::errorAllRequests( void )
     ASSERT(respIds != nullptr || numOfResp == 0);
     ASSERT(reqIds  != nullptr || numOfReqs == 0);
 
-    for ( i = 0; i < numOfAttr; ++ i )
+    for (i = 0; i < numOfAttr; ++i)
+    {
         errorRequest(attrIds[i], false);
+    }
 
-    for ( i = 0; i < numOfResp; ++ i )
+    for (i = 0; i < numOfResp; ++i)
+    {
         errorRequest(respIds[i], false);
+    }
 
-    for ( i = 0; i < numOfReqs; ++ i )
-        errorRequest( reqIds[i], false);
+    for (i = 0; i < numOfReqs; ++i)
+    {
+        errorRequest(reqIds[i], false);
+    }
 }
 
 void StubBase::cancelAllRequests( void )
@@ -297,7 +304,9 @@ void StubBase::cancelAllRequests( void )
     const unsigned int numOfReqs= getNumberOfRequests();
     const unsigned int* reqIds  = getRequestIds();
     for ( unsigned int i = 0; i < numOfReqs; ++ i )
-        errorRequest( reqIds[i], true);
+    {
+        errorRequest( reqIds[i], true );
+    }
 }
 
 void StubBase::invalidateAttribute( unsigned int attrId )
@@ -366,10 +375,10 @@ bool StubBase::existNotificationListener( unsigned int msgId, const ProxyAddress
     bool result = false;
     if ( notifySource.isValid() )
     {
-        LISTPOS pos = mListListener.firstPosition();
-        while ( (pos != nullptr) && (result == false) )
+        StubListenerList::LISTPOS pos = mListListener.firstPosition();
+        for ( ; (result == false) && mListListener.isValidPosition(pos); pos = mListListener.nextPosition(pos) )
         {
-            const StubBase::Listener & listener = mListListener.getNext(pos);
+            const StubBase::Listener & listener = mListListener.valueAtPosition(pos);
             result = (NEService::SEQUENCE_NUMBER_NOTIFY == listener.mSequenceNr) &&
                      (msgId == listener.mMessageId) &&
                      (notifySource == listener.mProxy);
@@ -386,16 +395,17 @@ bool StubBase::addNotificationListener(unsigned int msgId, const ProxyAddress & 
     if (notifySource.isValid())
     {
         bool hasEntry   = false;
-        LISTPOS pos     = mListListener.firstPosition();
-        while ( (hasEntry == false) && (pos != nullptr) )
+        StubListenerList::LISTPOS pos     = mListListener.firstPosition();
+        for ( ; (hasEntry == false) && mListListener.isValidPosition(pos); pos = mListListener.nextPosition(pos) )
         {
-            const StubBase::Listener & listener = mListListener.getNext(pos);
+            const StubBase::Listener & listener = mListListener.valueAtPosition(pos);
             hasEntry = (NEService::SEQUENCE_NUMBER_NOTIFY == listener.mSequenceNr) &&
                        (msgId == listener.mMessageId) &&
                        (notifySource == listener.mProxy);
         }
 
-        result = ( (hasEntry == false) && (mListListener.pushLast( StubBase::Listener(msgId, NEService::SEQUENCE_NUMBER_NOTIFY, notifySource) ) != nullptr));
+        mListListener.pushLast(StubBase::Listener(msgId, NEService::SEQUENCE_NUMBER_NOTIFY, notifySource));
+        result = (hasEntry == false);
     }
 
     return result;
@@ -403,9 +413,9 @@ bool StubBase::addNotificationListener(unsigned int msgId, const ProxyAddress & 
 
 void StubBase::removeNotificationListener( unsigned int msgId, const ProxyAddress & notifySource )
 {
-    for ( LISTPOS pos = mListListener.firstPosition(); pos != nullptr; pos = mListListener.nextPosition(pos) )
+    for (StubListenerList::LISTPOS pos = mListListener.firstPosition(); mListListener.isValidPosition(pos); pos = mListListener.nextPosition(pos) )
     {
-        const StubBase::Listener & listener = mListListener.getAt(pos);
+        const StubBase::Listener & listener = mListListener.valueAtPosition(pos);
         if ( NEService::SEQUENCE_NUMBER_NOTIFY == listener.mSequenceNr && msgId == listener.mMessageId && notifySource == listener.mProxy )
         {
             mListListener.removeAt(pos);

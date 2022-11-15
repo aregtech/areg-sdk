@@ -62,7 +62,7 @@ void PowerControllerClient::onThreadRuns(void)
         printf("\t1. Type \"off\" to power OFF the traffic light;\n");
         printf("\t2. Type \"on\" to power ON the traffic light;\n");
         printf("\t3. Type \"stop\" to stop the traffic light controlling;\n");
-        printf("\t4. Type \"start\" to start the traffic light controling;\n");
+        printf("\t4. Type \"start\" to start the traffic light controlling;\n");
         printf("\t5. Type \"quit\" or \"q\" to exit application;\n");
         printf("---------------------------------------------------------\n");
         printf("Type your command: ");
@@ -70,32 +70,38 @@ void PowerControllerClient::onThreadRuns(void)
        if (MACRO_SCANF("%31s", command, 32) != 1)
         {
             // should never happen
-            printf("\nERROR: Unexpectd command, quiting applicatio ...\n");
+            printf("\nERROR: Unexpected command, quiting application ...\n");
             break;
 
         }
 
-        if ((NEString::compareFastIgnoreCase<char, char>(command, "off") == 0) || (NEString::compareFastIgnoreCase<char, char>(command, "1") == 0))
+        if ((NEString::compareFastIgnoreCase<char, char>(command, "off") == NEMath::eCompare::Equal) || 
+            (NEString::compareFastIgnoreCase<char, char>(command, "1") == NEMath::eCompare::Equal))
         {
             TRACE_DBG("User requested command to power OFF the traffic lights");
             PowerControllerEvent::sendEvent( PowerControllerEventData(PowerControllerEventData::eAction::ActionPowerOff) );
         }
-        else if ((NEString::compareFastIgnoreCase<char, char>(command, "on") == 0) || (NEString::compareFastIgnoreCase<char, char>(command, "2") == 0))
+        else if ((NEString::compareFastIgnoreCase<char, char>(command, "on") == NEMath::eCompare::Equal) || 
+                 (NEString::compareFastIgnoreCase<char, char>(command, "2") == NEMath::eCompare::Equal))
         {
             TRACE_DBG("User requested command to power ON the traffic lights");
             PowerControllerEvent::sendEvent( PowerControllerEventData(PowerControllerEventData::eAction::ActionPowerOn) );
         }
-        else if ((NEString::compareFastIgnoreCase<char, char>(command, "stop") == 0) || (NEString::compareFastIgnoreCase<char, char>(command, "3") == 0))
+        else if ((NEString::compareFastIgnoreCase<char, char>(command, "stop") == NEMath::eCompare::Equal) || 
+                 (NEString::compareFastIgnoreCase<char, char>(command, "3") == NEMath::eCompare::Equal))
         {
             TRACE_DBG("User requested command to stop the traffic light controller.");
             PowerControllerEvent::sendEvent( PowerControllerEventData(PowerControllerEventData::eAction::ActionStopLight) );
         }
-        else if ((NEString::compareFastIgnoreCase<char, char>(command, "start") == 0) || (NEString::compareFastIgnoreCase<char, char>(command, "4") == 0))
+        else if ((NEString::compareFastIgnoreCase<char, char>(command, "start") == NEMath::eCompare::Equal) || 
+                 (NEString::compareFastIgnoreCase<char, char>(command, "4") == NEMath::eCompare::Equal))
         {
             TRACE_DBG("User requested command to start the traffic light controller.");
             PowerControllerEvent::sendEvent( PowerControllerEventData(PowerControllerEventData::eAction::ActionStartLight) );
         }
-        else if ((NEString::compareFastIgnoreCase<char, char>(command, "quit") == 0) || (NEString::compareFastIgnoreCase<char, char>(command, "q") == 0) || (NEString::compareFastIgnoreCase<char, char>(command, "5") == 0))
+        else if ((NEString::compareFastIgnoreCase<char, char>(command, "quit") == NEMath::eCompare::Equal) || 
+                 (NEString::compareFastIgnoreCase<char, char>(command, "q") == NEMath::eCompare::Equal) || 
+                 (NEString::compareFastIgnoreCase<char, char>(command, "5") == NEMath::eCompare::Equal))
         {
             TRACE_DBG("User requested command to quit the traffic light controller application.");
             loop = false;

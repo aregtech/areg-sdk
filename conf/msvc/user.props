@@ -12,11 +12,11 @@
     <!-- User Macro names and values. Definition.                                                                                           -->
     <!-- ********************************************************************************************************************************** -->
     <PropertyGroup Label="UserMacros">
-    
+
         <!-- ****************************************************************************************************************************** -->
         <!-- User Project settings and environment change definitions                                                                       -->
         <!-- ****************************************************************************************************************************** -->
-    
+
         <!-- ****************************************************************************************************************************** -->
         <!-- BASIC    SETTINGS     CHANGE                                                                                                   -->
         <!-- ****************************************************************************************************************************** -->
@@ -45,7 +45,7 @@
         <!-- ENABLED_TRACES 	: enable compilation with logging; remove if no logging required.                                           -->
         <!-- OUTPUT_DEBUG   	: set 1 to enable outputs in Output Window; set 0 to disabled outputs.                                      -->
         <!-- ENABLE_LEAK_DETECT : is not used at the moment                                                                                 -->
-        <UserPreprocessorDefines Condition="'$(ConfigShortName)'=='Debug'">ENABLE_TRACES;OUTPUT_DEBUG=0;ENABLE_LEAK_DETECT=0;</UserPreprocessorDefines>
+        <UserPreprocessorDefines Condition="'$(ConfigShortName)'=='Debug'">ENABLE_TRACES;OUTPUT_DEBUG_LEVEL=0;OUTPUT_DEBUG=0;</UserPreprocessorDefines>
         <UserPreprocessorDefines Condition="'$(ConfigShortName)'=='Release'">ENABLE_TRACES;</UserPreprocessorDefines>
 
         <!-- ****************************************************************************************************************************** -->
@@ -150,7 +150,7 @@
         <SrcRes>$(ProjectSourceDir)\$(ProjectName)\resources</SrcRes>
         <!-- ****************************************************************************************************************************** -->
         <!-- The project specific preprocessor definitions. Change this name if using other name.                                           -->
-        <ProjectPreprocessorDefines></ProjectPreprocessorDefines>
+        <ProjectPreprocessorDefines>UNICODE;_UNICODE</ProjectPreprocessorDefines>
         <!-- ****************************************************************************************************************************** -->
         <!-- The project specific additional include folders. Change this name if using other name.                                         -->
         <ProjectAdditionalIncludes></ProjectAdditionalIncludes>
@@ -165,7 +165,7 @@
         <ProjectScriptDir>$(ProjectResourceDir)</ProjectScriptDir>
 
     </PropertyGroup>
-  
+
     <!-- ********************************************************************************************************************************** -->
     <!-- User Macro defines. Do not make changes here!                                                                                      -->
     <!-- ********************************************************************************************************************************** -->
@@ -173,11 +173,11 @@
         <BuildMacro Include="ProjectRootDir">
             <Value>$(ProjectRootDir)</Value>
         </BuildMacro>
-        
+
         <BuildMacro Include="ThirdSources">
             <Value>$(ThirdSources)</Value>
         </BuildMacro>
-        
+
         <BuildMacro Include="UserPreprocessorDefines">
             <Value>$(UserPreprocessorDefines)</Value>
         </BuildMacro>
@@ -187,7 +187,7 @@
         <BuildMacro Include="UserDefLibs">
             <Value>$(UserDefLibs)</Value>
         </BuildMacro>
-        
+
         <BuildMacro Include="ProjectProductDirName">
             <Value>$(ProjectProductDirName)</Value>
         </BuildMacro>
@@ -295,6 +295,6 @@
         <BuildMacro Include="ProjectScriptDir">
             <Value>$(ProjectScriptDir)</Value>
         </BuildMacro>
-        
+
     </ItemGroup>
 </Project>

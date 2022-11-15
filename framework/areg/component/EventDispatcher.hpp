@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_EVENTDISPATCHER_HPP
+#define AREG_COMPONENT_EVENTDISPATCHER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/EventDispatcher.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -42,12 +43,12 @@ class AREG_API EventDispatcher  : public    EventDispatcherBase
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-public:
+protected:
     /**
      * \brief   Initialization constructor.
      * \param   name    The name of Event Dispatcher
      **/
-    explicit EventDispatcher( const char* name );
+    explicit EventDispatcher( const String & name );
     /**
      * \brief   Destructor.
      **/
@@ -69,7 +70,7 @@ public:
      *          than function run() is called.
      * \param	threadObj	The new created Thread object, 
      *                      which contains this consumer.
-     * \return	Return true if thread should run. Return false, it it should not run.
+     * \return	Return true if thread should run. Return false, it should not run.
      **/
     virtual bool onThreadRegistered( Thread * threadObj ) override;
 
@@ -128,7 +129,7 @@ private:
      *          The pointer is set after thread has been created and reset
      *          when it is destroyed.
      **/
-    DispatcherThread *    mDispatcherThread;
+    DispatcherThread *  mDispatcherThread;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls.
@@ -150,3 +151,5 @@ inline bool EventDispatcher::hasMoreEvents( void ) const
 {
     return (static_cast<const EventQueue &>(mExternaEvents).getSize() > 0);
 }
+
+#endif  // AREG_COMPONENT_EVENTDISPATCHER_HPP

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_PROXYADDRESS_HPP
+#define AREG_COMPONENT_PROXYADDRESS_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/ProxyAddress.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -97,7 +98,11 @@ public:
      * \param   roleName        Assigned role name of Proxy
      * \param   threadName      The name of thread where Proxy should act. If null, it is processed in current thread.
      **/
-    ProxyAddress( const char * serviceName, const Version & serviceVersion, NEService::eServiceType serviceType, const char * roleName, const char * threadName = nullptr );
+    ProxyAddress( const String & serviceName
+                , const Version & serviceVersion
+                , NEService::eServiceType serviceType
+                , const String & roleName
+                , const String & threadName = String::EmptyString );
     /**
      * \brief	Creates Proxy address according required connected component role name,
      *          service name and thread address of Proxy.
@@ -105,7 +110,7 @@ public:
      * \param   roleName        Assigned role name of Proxy
      * \param   threadName      The name of thread where Proxy should act. If null, it is processed in current thread.
      **/
-    ProxyAddress( const ServiceItem & service, const char * roleName, const char * threadName = nullptr );
+    ProxyAddress( const ServiceItem & service, const String & roleName, const String & threadName = String::EmptyString );
     /**
      * \brief	Creates Proxy address according required connected component role name,
      *          service name and thread address of Proxy.
@@ -113,7 +118,7 @@ public:
      * \param   roleName        Assigned role name of Proxy
      * \param   threadName      The name of thread where Proxy should act. If null, it is processed in current thread.
      **/
-    ProxyAddress( const NEService::SInterfaceData & siData, const char * roleName, const char * threadName = nullptr );
+    ProxyAddress( const NEService::SInterfaceData & siData, const String & roleName, const String & threadName = String::EmptyString );
 
     /**
      * \brief   Copy constructor.
@@ -126,6 +131,18 @@ public:
      * \param   source  The source of data to move.
      **/
     ProxyAddress( ProxyAddress && source ) noexcept;
+
+    /**
+     * \brief   Initializes proxy address by copying service address data.
+     * \param   source  The service address source of data to copy.
+     **/
+    explicit ProxyAddress(const ServiceAddress & source);
+
+    /**
+     * \brief   Initializes proxy address by moving service address data.
+     * \param   source  The service address source of data to move.
+     **/
+    explicit ProxyAddress(ServiceAddress && source);
 
     /**
      * \brief   Initialize proxy address from streaming object.
@@ -219,7 +236,7 @@ public:
     /**
      * \brief   Sets the thread name of processed Proxy
      **/
-    void setThread( const char * threadName );
+    void setThread( const String & threadName );
     /**
      * \brief   Returns Proxy communication channel object
      **/
@@ -318,6 +335,10 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
+     * \brief   Returns own object.
+     **/
+    inline ProxyAddress& self(void);
+    /**
      * \brief   Delivers specified service event to target.
      * \param   serviceEvent    The service event to deliver
      * \param   idTarget        The ID of target service to deliver event
@@ -351,6 +372,25 @@ private:
      **/
     unsigned int    mMagicNum;
 };
+
+//////////////////////////////////////////////////////////////////////////
+// Hasher of ProxyAddress class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the ProxyAddress.
+ */
+namespace std
+{
+    template<>
+    struct hash<ProxyAddress>
+    {
+        //! A function to convert ProxyAddress object to unsigned int.
+        inline unsigned int operator()(const ProxyAddress& key) const
+        {
+            return static_cast<unsigned int>(key);
+        }
+    };
+}
 
 //////////////////////////////////////////////////////////////////////////
 // ProxyAddress class inline functions
@@ -456,3 +496,10 @@ inline void ProxyAddress::setTarget( ITEM_ID target )
 {
     return mChannel.setTarget(target);
 }
+
+inline ProxyAddress& ProxyAddress::self(void)
+{
+    return (*this);
+}
+
+#endif  // AREG_COMPONENT_PROXYADDRESS_HPP

@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/src/NEHelloWorld.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_SRC_NEHELLOWORLD_HPP
+#define  GENERATED_SRC_NEHELLOWORLD_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  13:08:11 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/NEHelloWorld.hpp
@@ -44,7 +45,7 @@
 //////////////////////////////////////////////////////////////////////////
 /**
  *
- * \brief   HelloWorld Service Interface defined constants, 
+ * \brief   HelloWorld Service Interface defined constants,
  *          types and structures message IDs, global static methods.
  *
  *          Simple Service Interface to demonstrate working features of AREG SDK.
@@ -57,15 +58,15 @@ namespace   NEHelloWorld
 // Service Interface constants
 /************************************************************************/
     /**
-     * \brief   Service Interface Name
+     * \brief   Service Interface Name.
      *          NEHelloWorld::ServiceName
      **/
-    constexpr char        ServiceName[]       { "HelloWorld" };
+    constexpr   char    ServiceName[]   { "HelloWorld" };
     /**
-     * \brief   Implemented Version
+     * \brief   Implemented Version.
      *          NEHelloWorld::InterfaceVersion
      **/
-    const Version         InterfaceVersion    = "1.0.0";
+    const       Version InterfaceVersion{ 1, 0, 0 };
 
     /**
      * \brief   The maximum number of messages to output.
@@ -85,11 +86,10 @@ namespace   NEHelloWorld
      **/
     struct sConnectedClient
     {
-    
     //////////////////////////////////////////////////////////////////////////
     // Constructor/ destructor
     ///////////////////////////////////////////////////////////////////////////
-        
+
         /**
          * \brief   Default constructor. Every field of structure should have default constructor.
          **/
@@ -116,43 +116,34 @@ namespace   NEHelloWorld
          * \brief   Default destructor.
          **/
         ~sConnectedClient( void ) = default;
-    
+
     //////////////////////////////////////////////////////////////////////////
     // Basic operators
     ///////////////////////////////////////////////////////////////////////////
-        
+
         /**
          * \brief   Copies data from given source. Every field of structure should have copy constructor.
          * \param   src     The source of sConnectedClient structure to copy data.
          **/
         inline NEHelloWorld::sConnectedClient & operator = ( const NEHelloWorld::sConnectedClient & src );
-        
+
         /**
          * \brief   Moves data from given source. Every field of structure should have move constructor.
          * \param   src     The source of sConnectedClient structure to move data.
          **/
         inline NEHelloWorld::sConnectedClient & operator = ( NEHelloWorld::sConnectedClient && src ) noexcept;
-        
+
         /**
          * \brief   Checks equality and returns true if 2 instances of sConnectedClient are equal
          * \param   other   The instance of sConnectedClient to compare
-         * \return  Returns true if 2 instances are equal
          **/ 
         inline bool operator == ( const NEHelloWorld::sConnectedClient & other ) const;
-        
+
         /**
          * \brief   Checks inequality and returns true if 2 instances of sConnectedClient are not equal
          * \param   other   The instance of sConnectedClient to compare
-         * \return  Returns true if 2 instances are not equal
          **/ 
         inline bool operator != ( const NEHelloWorld::sConnectedClient & other ) const;
-
-        /**
-         * \brief   Converts data to unsigned int, which might be used as a hash key value in map object.
-         *          The conversion is a sum of each field of structure
-         **/
-         inline explicit operator unsigned int ( void ) const;
-
     //////////////////////////////////////////////////////////////////////////
     // sConnectedClient fields
     ///////////////////////////////////////////////////////////////////////////
@@ -189,13 +180,13 @@ namespace   NEHelloWorld
          * \brief   Request ID: MsgId_requestHelloWorld
          *          Request to print hello world
          **/
-          MsgId_requestHelloWorld             = NEService::REQUEST_ID_FIRST     // void requestHelloWorld( const String & roleName, const String & addMessage = "" );
+          MsgId_requestHelloWorld             = NEService::REQUEST_ID_FIRST   // void requestHelloWorld( const String & roleName );
         /**
          * \brief   Request ID: MsgId_requestClientShutdown
          *          Sent by client to notify the shutdown. This removes client from the list. This request has no response.
          **/
         , MsgId_requestClientShutdown                                           // void requestClientShutdown( unsigned int clientID, const String & roleName );
-     
+
     /************************************************************************
      * Response IDs
      ************************************************************************/
@@ -203,7 +194,7 @@ namespace   NEHelloWorld
          * \brief   Response ID: MsgId_responseHelloWorld
          *          The response to hello world request.
          **/
-        , MsgId_responseHelloWorld            = NEService::RESPONSE_ID_FIRST    // void responseHelloWorld( const NEHelloWorld::sConnectedClient & clientInfo );     
+        , MsgId_responseHelloWorld            = NEService::RESPONSE_ID_FIRST  // void responseHelloWorld( const NEHelloWorld::sConnectedClient & clientInfo );
     /************************************************************************
      * Broadcast IDs
      ************************************************************************/
@@ -214,10 +205,10 @@ namespace   NEHelloWorld
         , MsgId_broadcastHelloClients                                           // void broadcastHelloClients( const NEHelloWorld::ConnectionList & clientList );
         /**
          * \brief   Broadcast ID: MsgId_broadcastServiceUnavailable
-         *          DESCRIPTION MISSED
+         *          Triggered when the service is unavailable.
          **/
         , MsgId_broadcastServiceUnavailable                                     // void broadcastServiceUnavailable( void );
-     
+
     /************************************************************************
      * Attributes IDs
      ************************************************************************/
@@ -225,35 +216,35 @@ namespace   NEHelloWorld
          * \brief   Attribute ID: MsgId_ConnectedClients
          *          The list of connected clients. Updated each time when new client requests to output Hello World message.
          **/
-        , MsgId_ConnectedClients              = NEService::ATTRIBUTE_ID_FIRST   // NEHelloWorld::ConnectionList mConnectedClients;
+        , MsgId_ConnectedClients              = NEService::ATTRIBUTE_ID_FIRST // NEHelloWorld::ConnectionList mConnectedClients;
         /**
          * \brief   Attribute ID: MsgId_RemainOutput
          *          Remaining number of outputs to print Hello World.
          **/
         , MsgId_RemainOutput                                                    // short mRemainOutput;
-     
+
     /************************************************************************
      * Reserved constant IDs
      ************************************************************************/
         /**
          * \brief   ID of empty function
          **/
-        , MsgId_NotProcessed                  = NEService::INVALID_MESSAGE_ID  
+        , MsgId_NotProcessed                  = NEService::INVALID_MESSAGE_ID
         /**
          * \brief   ID of invalid call
          **/
-        , MsgId_Invalid                       = NEService::RESPONSE_ID_NONE    
-     
+        , MsgId_Invalid                       = NEService::RESPONSE_ID_NONE
+
     };
     /**
      * \brief   Returns string value of NEHelloWorld::eMessageIDs
      **/
     inline const char * getString( NEHelloWorld::eMessageIDs msgId );
-     
+
 /************************************************************************
  * Service Interface standard functions and variables
  ************************************************************************/
- 
+
     /**
      * \brief   Creates and returns Service Interface Data
      **/
@@ -357,13 +348,6 @@ inline bool NEHelloWorld::sConnectedClient::operator != ( const NEHelloWorld::sC
     }
 }
 
-inline NEHelloWorld::sConnectedClient::operator unsigned int ( void ) const
-{
-    return (
-              static_cast<unsigned int>( ccID     )
-            + static_cast<unsigned int>( ccName   )
-            );
-}
 
 /**
  * Encode and decode NEHelloWorld::sConnectedClient structure
@@ -406,7 +390,6 @@ inline const char * NEHelloWorld::getString( NEHelloWorld::eMessageIDs msgId )
 
     case NEHelloWorld::eMessageIDs::MsgId_NotProcessed:
         return "NEHelloWorld::eMessageIDs::MsgId_NotProcessed";
-        
     case NEHelloWorld::eMessageIDs::MsgId_Invalid:
         return "NEHelloWorld::eMessageIDs::MsgId_Invalid";
     default:
@@ -418,6 +401,8 @@ inline const char * NEHelloWorld::getString( NEHelloWorld::eMessageIDs msgId )
 //////////////////////////////////////////////////////////////////////////
 // NEHelloWorld namespace declaration End
 //////////////////////////////////////////////////////////////////////////
+
+#endif  // GENERATED_SRC_NEHELLOWORLD_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/NEHelloWorld.hpp file

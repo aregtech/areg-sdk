@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:13 GMT+02:00 
+ * Generated at     13.08.2022  13:59:48 GMT+02:00
  *                  Create by AREG SDK code generator tool from source RemoteRegistry.
  *
  * \file            generated/src/NERemoteRegistry.hpp
@@ -29,17 +29,17 @@ const NEService::SInterfaceData & NERemoteRegistry::getInterfaceData( void )
     /************************************************************************
      * The list of requests
      ************************************************************************/
-    static constexpr unsigned int _RequestList[] 
+    static constexpr unsigned int _RequestList[]
     {
           static_cast<unsigned int>( NERemoteRegistry::eMessageIDs::MsgId_requestRegister     ) // requestRegister( const String & name, const ServiceAddress & service, const String & thread, const String & process )
         , static_cast<unsigned int>( NERemoteRegistry::eMessageIDs::MsgId_requestUnregister   ) // requestUnregister( const NERemoteRegistry::sClientRegister & client )
-        , static_cast<unsigned int>( NERemoteRegistry::eMessageIDs::MsgId_requestHelloWorld   ) // requestHelloWorld( unsigned int clientID, const String & addMessage )
+        , static_cast<unsigned int>( NERemoteRegistry::eMessageIDs::MsgId_requestHelloWorld   ) // requestHelloWorld( unsigned int clientID )
     };
 
     /************************************************************************
      * The list of responses and broadcasts
      ************************************************************************/
-    static constexpr unsigned int _ResponseList[] 
+    static constexpr unsigned int _ResponseList[]
     {
           static_cast<unsigned int>( NERemoteRegistry::eMessageIDs::MsgId_responseRegister    ) // responseRegister( const NERemoteRegistry::sClientRegister & client )
         , static_cast<unsigned int>( NERemoteRegistry::eMessageIDs::MsgId_responseHelloWorld  ) // responseHelloWorld( unsigned int clientID )
@@ -48,7 +48,7 @@ const NEService::SInterfaceData & NERemoteRegistry::getInterfaceData( void )
     /************************************************************************
      * The list of attributes
      ************************************************************************/
-    static constexpr unsigned int _AttributeList[] 
+    static constexpr unsigned int _AttributeList[]
     {
           static_cast<unsigned int>( NERemoteRegistry::eMessageIDs::MsgId_RegistryList        ) // NERemoteRegistry::ListRegistry mRegistryList;
         , static_cast<unsigned int>( NERemoteRegistry::eMessageIDs::MsgId_RemainOutputs       ) // unsigned int mRemainOutputs;
@@ -61,7 +61,7 @@ const NEService::SInterfaceData & NERemoteRegistry::getInterfaceData( void )
     {
           static_cast<unsigned int>( NERemoteRegistry::eMessageIDs::MsgId_responseRegister    ) // requestRegister( const String & name, const ServiceAddress & service, const String & thread, const String & process )
         , static_cast<unsigned int>( NERemoteRegistry::eMessageIDs::MsgId_NotProcessed        ) // requestUnregister( const NERemoteRegistry::sClientRegister & client )
-        , static_cast<unsigned int>( NERemoteRegistry::eMessageIDs::MsgId_responseHelloWorld  ) // requestHelloWorld( unsigned int clientID, const String & addMessage )
+        , static_cast<unsigned int>( NERemoteRegistry::eMessageIDs::MsgId_responseHelloWorld  ) // requestHelloWorld( unsigned int clientID )
     };
 
     /************************************************************************
@@ -80,7 +80,7 @@ const NEService::SInterfaceData & NERemoteRegistry::getInterfaceData( void )
      ************************************************************************/
 
     };
-    
+
     /************************************************************************
      * RemoteRegistry Service Interface data
      ************************************************************************/
@@ -102,7 +102,7 @@ const NEService::SInterfaceData & NERemoteRegistry::getInterfaceData( void )
     return _InterfaceData;
 }
 
-NERemoteRegistry::eMessageIDs NERemoteRegistry::getResponseId( NERemoteRegistry::eMessageIDs reqId )
+NERemoteRegistry::eMessageIDs NERemoteRegistry::getResponseId( NERemoteRegistry::eMessageIDs reqId)
 {
     const NEService::SInterfaceData & sid = NERemoteRegistry::getInterfaceData();
     msg_id index = GET_REQ_INDEX(reqId);
@@ -118,7 +118,7 @@ NERemoteRegistry::eMessageIDs NERemoteRegistry::getRequestId( NERemoteRegistry::
     {
         result = sid.idRequestToResponseMap[i] == static_cast<msg_id>(respId) ? static_cast<NERemoteRegistry::eMessageIDs>(sid.idRequestList[i]) : NERemoteRegistry::eMessageIDs::MsgId_Invalid;
     }
-    
+
     return result;
 }
 

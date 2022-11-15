@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech (c) 2021
+// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
 // Description : This project creates an instance of Public services that 
 //               contain a finite state-machine ( FSM ). A local service 
 //               interacts with the user to change the states of FSM, to run 
@@ -40,7 +40,7 @@ constexpr char const _threadName[] { "TestSimpleTrafficThread" };	// The name of
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( _threadName )
+    BEGIN_REGISTER_THREAD( _threadName, NECommon::WATCHDOG_IGNORE)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( NECommon::ServiceLightController, TrafficLightService )
             // register PowerManager and TrafficController service implementation, and the dependencies (client runs in the same thread).
@@ -65,8 +65,9 @@ END_MODEL(_modelName)
  **/
 int main()
 {
-    // Initialize application, disable logging, enables servicing and the timer.
-    Application::initApplication(true, true, true, true, nullptr, nullptr );
+    // Initialize application, enable logging, servicing, routing, timer and watchdog.
+    // Use default settings.
+    Application::initApplication( );
 
     // load model to initialize components
     Application::loadModel(_modelName);

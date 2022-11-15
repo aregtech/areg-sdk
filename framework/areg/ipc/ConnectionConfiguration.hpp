@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_IPC_CONNECTIONCONFIGURATION_HPP
+#define AREG_IPC_CONNECTIONCONFIGURATION_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/ipc/ConnectionConfigurator.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -18,8 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/TEArrayList.hpp"
-#include "areg/base/TEHashMap.hpp"
+#include "areg/base/Containers.hpp"
 #include "areg/base/String.hpp"
 #include "areg/persist/Property.hpp"
 #include "areg/ipc/NERemoteService.hpp"
@@ -46,17 +46,13 @@ private:
     /**
      * \brief   List of configuration properties
      **/
-    using ListProperties        = TEArrayList<Property, const Property &>;
-    /**
-     * \brief   Remote servicing map helper class.
-     **/
-    using ImplMapConfiguration	= TEHashMapImpl<NERemoteService::eServiceConnection, const ListProperties &>;
+    using ListProperties        = TEArrayList<Property>;
     /**
      * \brief   Map of configuration type and list of configuration properties.
      * \tparam  NERemoteService::eServiceConnection         The section / type of configuration.
      * \tparam  ConnectionConfiguration::ListProperties   The list of configuration properties.
      **/
-    using MapConfiguration		= TEHashMap<NERemoteService::eServiceConnection, ListProperties, NERemoteService::eServiceConnection, const ListProperties &, ImplMapConfiguration>;
+    using MapConfiguration		= TEMap<NERemoteService::eServiceConnection, ListProperties>;
 
     /**
      * \brief   Connection configuration property indexes.
@@ -216,7 +212,9 @@ private:
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
-    MapConfiguration    mMapConfig;     //!< The configuratio map where the keys are configuration section types and value is property list.
+
+    MapConfiguration    mMapConfig;     //!< The configuration map where the keys are configuration section types and value is property list.
+
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
@@ -235,3 +233,5 @@ inline const String & ConnectionConfiguration::getConfigFileName( void ) const
 {
     return mConfigFile;
 }
+
+#endif  // AREG_IPC_CONNECTIONCONFIGURATION_HPP

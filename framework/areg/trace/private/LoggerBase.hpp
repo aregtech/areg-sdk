@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_TRACE_PRIVATE_LOGGERBASE_HPP
+#define AREG_TRACE_PRIVATE_LOGGERBASE_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/LoggerBase.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -68,7 +69,7 @@ protected:
      *                          required by logger during initialization (open)
      *                          and when outputs message.
      **/
-    LoggerBase( LogConfiguration & tracerConfig );
+    explicit LoggerBase( LogConfiguration & tracerConfig );
 
     /**
      * \brief   Destructor
@@ -103,7 +104,7 @@ public:
      * \brief   Called when message should be logged.
      *          Every logger should implement method to process logger specific logging.
      **/
-    virtual bool logMessage( const NETrace::sLogMessage & logMessage ) = 0;
+    virtual void logMessage( const NETrace::sLogMessage & logMessage ) = 0;
 
     /**
      * \brief   Call to flush logs, if they are queued. Some loggers might ignore this.
@@ -125,7 +126,7 @@ public:
      *          to logger to make outputs. Otherwise, the logger will be stopped
      *          receiving log messages.
      **/
-    bool reopenLogger( void );
+    inline bool reopenLogger( void );
 
     /**
      * \brief   Return instance of trace configuration object.
@@ -194,6 +195,12 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // LoggerBase class inline methods
 //////////////////////////////////////////////////////////////////////////
+inline bool LoggerBase::reopenLogger(void)
+{
+    closeLogger();
+    return openLogger();
+}
+
 inline const LogConfiguration & LoggerBase::getTraceConfiguration( void ) const
 {
     return mTracerConfiguration;
@@ -213,3 +220,5 @@ inline const LayoutManager & LoggerBase::getLayoutExitScope(void) const
 {
     return mLayoutsScopeExit;
 }
+
+#endif  // AREG_TRACE_PRIVATE_LOGGERBASE_HPP

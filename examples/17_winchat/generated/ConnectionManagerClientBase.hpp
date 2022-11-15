@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/ConnectionManagerClientBase.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_CONNECTIONMANAGERCLIENTBASE_HPP
+#define  GENERATED_CONNECTIONMANAGERCLIENTBASE_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:14 GMT+02:00 
+ * Generated at     13.08.2022  02:47:58 GMT+02:00
  *                  Create by AREG SDK code generator tool from source ConnectionManager.
  *
  * \file            generated/ConnectionManagerClientBase.hpp
@@ -48,13 +49,13 @@ class ConnectionManagerClientBase  : public IEProxyListener
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initialize ConnectionManager Service Interface client object. 
+     * \brief   Initialize ConnectionManager Service Interface client object.
      *          Specifies used service and owner thread.
      * \param   roleName    The role name assigned to ConnectionManager servicing component object.
      * \param   ownerThread The name of component owner thread to dispatch messages.
      *                      If nullptr, all messages are dispatched in current component thread.
      **/
-    ConnectionManagerClientBase( const char* roleName, const char * ownerThread = nullptr );
+    ConnectionManagerClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
 
     /**
      * \brief   Initialize ConnectionManager Service Interface client object.
@@ -62,7 +63,7 @@ protected:
      * \param   roleName    The role name assigned to ConnectionManager servicing component object.
      * \param   ownerThread The instance of component owner thread to dispatch messages.
      **/
-    ConnectionManagerClientBase( const char* roleName, DispatcherThread & ownerThread );
+    ConnectionManagerClientBase( const String & roleName, DispatcherThread & ownerThread );
 
     /**
      * \brief   Initialize ConnectionManager Service Interface client object.
@@ -72,7 +73,7 @@ protected:
      * \note    When this constructor is used, it is important that the Component object is already initialized.
      *          and the component thread is set.
      **/
-    ConnectionManagerClientBase( const char* roleName, Component & owner );
+    ConnectionManagerClientBase( const String & roleName, Component & owner );
 
     /**
      * \brief   Destructor.
@@ -99,12 +100,12 @@ public:
      * \brief   Returns true if client object has got connection with servicing component
      **/
     inline bool isConnected( void ) const;
-    
+
     /**
      * \brief   Returns the name of used service.
      **/
     inline const String & getServiceName( void ) const;
-    
+
     /**
      * \brief   Returns the version of used service.
      **/
@@ -118,6 +119,7 @@ public:
 // ConnectionManager Interface Attributes
 //////////////////////////////////////////////////////////////////////////
 public:
+
 /************************************************************************
  * Attribute ConnectionList functions
  ************************************************************************/
@@ -128,18 +130,18 @@ public:
     inline bool isConnectionListValid( void ) const;
     /**
      * \brief   Returns the value of ConnectionList attribute.
-     *          To get valid value, the Update Notification should be enabled. 
-     *          Attribute ConnectionList description: 
+     *          To get valid value, the Update Notification should be enabled.
+     *          Attribute ConnectionList description:
      *          The map of all active connections
-     * \param   state   On returns, contains the validation flag of attribute data. 
+     * \param   state   On returns, contains the validation flag of attribute data.
      *                  Check validation flag before use attribute value.
      * \see     isConnectionListValid, notifyConnectionListUpdate, onConnectionListUpdate
      **/
     inline const NEConnectionManager::MapConnection & getConnectionList( NEService::eDataStateType & state ) const;
     /**
      * \brief   Call to enable or disable receiving notifications on ConnectionList attribute update.
-     *          Once notification is enabled and the data is updated, 
-     *          the getConnectionList method will return valid data 
+     *          Once notification is enabled and the data is updated,
+     *          the getConnectionList method will return valid data
      *          Attribute ConnectionList description:
      *          The map of all active connections
      * \param   notify  If true, notification will be enable. If false, notification is disabled
@@ -150,13 +152,12 @@ public:
      * \brief   Triggered, when ConnectionList attribute is updated. The function contains
      *          attribute value and validation flag. When notification is enabled,
      *          the method should be overwritten in derived class.
-     *          Attributes ConnectionList description: 
+     *          Attributes ConnectionList description:
      *          The map of all active connections
      * \param   ConnectionList  The value of ConnectionList attribute.
      * \param   state           The data validation flag.
      **/
     virtual void onConnectionListUpdate( const NEConnectionManager::MapConnection & ConnectionList, NEService::eDataStateType state );
-
 
 //////////////////////////////////////////////////////////////////////////
 // ConnectionManager Interface Requests / Responses / Broadcasts
@@ -164,23 +165,23 @@ public:
 public:
 
 /************************************************************************
- * Request Connet
+ * Request Connect
  ************************************************************************/
     /**
      * \brief   Request call.
      *          The request to connect to system
      * \param   nickName    The nick name of connecting client service
-     * \param   dateTime    The connecting client connection timestamp in UTC
+     * \param   dateTime    The connecting client connection time-stamp in UTC
      * \return  The sequence count number of call
      * \see     responseConnect
      **/
-    inline unsigned int requestConnet( const String & nickName, const DateTime & dateTime );
+    inline unsigned int requestConnect( const String & nickName, const DateTime & dateTime );
     /**
-     * \brief   Overwrite to handle error of Connet request call.
+     * \brief   Overwrite to handle error of Connect request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void requestConnetFailed( NEService::eResultType FailureReason );
-    
+    virtual void requestConnectFailed( NEService::eResultType FailureReason );
+
 /************************************************************************
  * Request RegisterConnection
  ************************************************************************/
@@ -190,7 +191,7 @@ public:
      * \param   nickName        The nick name of connection used in service
      * \param   cookie          The cookie value to set
      * \param   connectCookie   The cookie to use for registration. 
-     * \param   dateRegister    The connection registration timestamp
+     * \param   dateRegister    The connection registration time-stamp
      * \return  The sequence count number of call
      * \see     responseRegisterConnection
      **/
@@ -200,9 +201,9 @@ public:
      * \param   FailureReason   The failure reason value of request call.
      **/
     virtual void requestRegisterConnectionFailed( NEService::eResultType FailureReason );
-    
+
 /************************************************************************
- * Request Diconnect
+ * Request Disconnect
  ************************************************************************/
     /**
      * \brief   Request call.
@@ -212,26 +213,26 @@ public:
      * \param   dateTime    Disconnect request date-time
      * \see     Has no response
      **/
-    inline void requestDiconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime );
+    inline void requestDisconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime );
     /**
-     * \brief   Overwrite to handle error of Diconnect request call.
+     * \brief   Overwrite to handle error of Disconnect request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void requestDiconnectFailed( NEService::eResultType FailureReason );
-    
+    virtual void requestDisconnectFailed( NEService::eResultType FailureReason );
+
 /************************************************************************
  * Response Connect
  ************************************************************************/
     /**
      * \brief   Response callback.
      *          The result of connection request.
-     *          Overwrite, if need to handle Response call of server object. 
+     *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   nickName    Client connection data, which contains nick name and connection date-time
      * \param   cookie      Connection assigned cookie for client service
-     * \param   dateTime    The client service connection timestamp in UTC
+     * \param   dateTime    The client service connection time-stamp in UTC
      * \param   result      The connection operation result
-     * \see     requestConnet
+     * \see     requestConnect
      **/
     virtual void responseConnect( const String & nickName, unsigned int cookie, const DateTime & dateTime, NEConnectionManager::eConnectionResult result );
     /**
@@ -248,7 +249,7 @@ public:
     /**
      * \brief   Response callback.
      *          The result of request to register direct connection service.
-     *          Overwrite, if need to handle Response call of server object. 
+     *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   connection      The connection structure after registration.
      * \param   connectionList  The list of all servicing connections.
@@ -270,7 +271,7 @@ public:
     /**
      * \brief   Server broadcast.
      *          Notifies all client components the connection has been updated.
-     *          Overwrite, if need to handle Broadcast call of server object. 
+     *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   updatedList The complete list of clients to send.
      **/
@@ -289,7 +290,7 @@ public:
     /**
      * \brief   Server broadcast.
      *          Notifies that a new client has been connected.
-     *          Overwrite, if need to handle Broadcast call of server object. 
+     *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientConnected New client data, which contains nick name and connected date-time
      **/
@@ -308,7 +309,7 @@ public:
     /**
      * \brief   Server broadcast.
      *          Notifies a client has been disconnected.
-     *          Overwrite, if need to handle Broadcast call of server object. 
+     *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientLeft  The connection data of disconnected client.
      **/
@@ -361,16 +362,16 @@ protected:
      * \param   InvalidReqId    The ID of invalid request
      **/
     virtual void invalidRequest( NEConnectionManager::eMessageIDs InvalidReqId );
-    
+
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
 
     /**
      * \brief   Call to recreate Proxy for the client. This call will remove and unregister all existing notifications
-     *          and the client will not receive pending update or response notifications. 
+     *          and the client will not receive pending update or response notifications.
      *          The client first will receive disconnect message, then again connect.
-     *          Reset update notifications manually in connect if need.          
+     *          Reset update notifications manually in connect if need.
      *          This function call can be used when the client instance should be registered and run in new thread.
      *
      * \return  Returns true if Proxy was created with success.
@@ -382,7 +383,7 @@ protected:
      *         The function can return nullptr if Proxy was not instantiated yet.
      **/
     DispatcherThread * getDispatcherThread( void );
-     
+
     /**
      * \brief   Returns the current sequence number
      **/
@@ -392,7 +393,7 @@ protected:
      * \brief  Returns instance of proxy object.
      */
     inline const ConnectionManagerProxy * getProxy( void ) const;
-      
+
     /**
      * \brief Returns target service component role name.
      **/
@@ -428,7 +429,7 @@ private:
      * \param   eventElem   Notification Event object to process
      **/
     virtual void processNotificationEvent( NotificationEvent & eventElem ) override;
-    
+
 /************************************************************************/
 // ConnectionManagerClientBase hidden methods
 /************************************************************************/
@@ -436,12 +437,12 @@ private:
     /**
      * \brief   Enables / Disables notification flags on appropriate message call.
      * \param   msgId   The ID of message to enable / disable notification
-     * \param   notify  If true, the notification is enabled. 
+     * \param   notify  If true, the notification is enabled.
      *                  If false, the notification is disabled.
      * \param   always  Flag, indicating whether should notify always or not.
      *                  if 'notify' parameter is true and the notification is already
      *                  assigned, then if parameter 'always' is true, it will trigger
-     *                  notification immediately after call. 
+     *                  notification immediately after call.
      **/
     void notifyOn( NEConnectionManager::eMessageIDs msgId, bool notify, bool always = false );
     /**
@@ -461,7 +462,6 @@ private:
     /**
      * \brief   Returns reference of ConnectionManagerClientBase object
      **/
-
     inline ConnectionManagerClientBase & self( void );
 
 //////////////////////////////////////////////////////////////////////////
@@ -509,7 +509,7 @@ inline const String & ConnectionManagerClientBase::getServiceName( void ) const
     ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getServiceName();
 }
-    
+
 inline const Version & ConnectionManagerClientBase::getServiceVersion( void ) const
 {
     ASSERT(mProxy != nullptr);
@@ -540,10 +540,10 @@ inline void ConnectionManagerClientBase::notifyOnConnectionListUpdate( bool noti
  * Request calls
  ************************************************************************/
 
-inline unsigned int ConnectionManagerClientBase::requestConnet( const String & nickName, const DateTime & dateTime )
+inline unsigned int ConnectionManagerClientBase::requestConnect( const String & nickName, const DateTime & dateTime )
 {
     ASSERT(mProxy != nullptr);
-    return mProxy->requestConnet( static_cast<IENotificationEventConsumer &>(self()), nickName, dateTime );
+    return mProxy->requestConnect( static_cast<IENotificationEventConsumer &>(self()), nickName, dateTime );
 }
 
 inline unsigned int ConnectionManagerClientBase::requestRegisterConnection( const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister )
@@ -552,10 +552,10 @@ inline unsigned int ConnectionManagerClientBase::requestRegisterConnection( cons
     return mProxy->requestRegisterConnection( static_cast<IENotificationEventConsumer &>(self()), nickName, cookie, connectCookie, dateRegister );
 }
 
-inline void ConnectionManagerClientBase::requestDiconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime )
+inline void ConnectionManagerClientBase::requestDisconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime )
 {
     ASSERT(mProxy != nullptr);
-    mProxy->requestDiconnect( nickName, cookie, dateTime );
+    mProxy->requestDisconnect( nickName, cookie, dateTime );
 }
 
 /************************************************************************
@@ -601,6 +601,8 @@ inline const String & ConnectionManagerClientBase::getServiceRole( void ) const
     ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getRoleName();
 }
+
+#endif   // GENERATED_CONNECTIONMANAGERCLIENTBASE_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/ConnectionManagerClientBase.hpp file

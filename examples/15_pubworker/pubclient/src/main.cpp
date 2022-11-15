@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech (c) 2021
+// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
 // Description : This project contains service client and the worker thread 
 //               described in the model.The worker thread imitates the output
 //               device.
@@ -29,13 +29,13 @@ constexpr char const _modelName[]  { "TheModel" };   // The name of model
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestPatientMonitoring" )
+    BEGIN_REGISTER_THREAD( "TestPatientMonitoring", NECommon::WATCHDOG_IGNORE)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( NECommon::ServiceNameHwManager, PatientClient )
             // register service dependencies
             REGISTER_DEPENDENCY( NECommon::ServiceNamePatientInfo )
             // register HW worker thread
-            REGISTER_WORKER_THREAD( PatientClient::HwWorkerThreadName.data(), PatientClient::HwWorkerThreadConsumer.data() )
+            REGISTER_WORKER_THREAD( PatientClient::HwWorkerThreadName.data(), PatientClient::HwWorkerThreadConsumer.data(), NECommon::WATCHDOG_IGNORE)
         // end of component description
         END_REGISTER_COMPONENT( NECommon::ServiceNameHwManager )
     // end of thread description
@@ -53,8 +53,8 @@ END_MODEL(_modelName)
  **/
 int main()
 {
-    // Initialize application, disable logging, enables servicing and the timer.
-    Application::initApplication(false, true, true, true, nullptr, nullptr );
+    // Initialize application, enable servicing, routing, timer and watchdog.
+    Application::initApplication(false, true, true, true, true, nullptr, nullptr );
 
 
     // load model to initialize components

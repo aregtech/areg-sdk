@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/Containers.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -21,35 +21,42 @@
 //////////////////////////////////////////////////////////////////////////
 
 Tokenizer::Tokenizer( const String & str, const String & delimiters, bool keepEmpty/*=true*/)
+    : mTokens   ()
 {
-    Tokenize(str, delimiters, keepEmpty);
+   tokenize(str, delimiters, keepEmpty);
 }
 
 Tokenizer::Tokenizer( const Tokenizer & src )
-    : StringArray( static_cast<const StringArray &>(src) )
+    : mTokens( src.mTokens )
 {
 }
 
 Tokenizer::Tokenizer( Tokenizer && src ) noexcept
-    : StringArray( static_cast<StringArray &&>(src) )
+    : mTokens( std::move(src.mTokens) )
 {
 }
 
-void Tokenizer::Tokenize( const String & str, const String & delimiters, bool keepEmpty/*=true*/)
+const StringArray& Tokenizer::tokenize( const String & str, const String & delimiters, bool keepEmpty/*=true*/)
 {
     NEString::CharPos lastPos   = 0;
     NEString::CharCount length  = str.getLength();
     // empty self
-    removeAll();
+    mTokens.clear();
     while (lastPos <= length)
     {
         NEString::CharPos pos = str.findOneOf(delimiters, lastPos);
-        if (pos == NEString::INVALID_POS)
+        if (pos < 0)
            pos = length;
 
         if (pos != lastPos || keepEmpty)
-            add(str.substring(lastPos, pos - lastPos));
+        {
+            String temp;
+            str.substring(temp, lastPos, pos - lastPos);
+            mTokens.add(temp);
+        }
         
         lastPos = pos + 1;
     }
+
+    return mTokens;
 }

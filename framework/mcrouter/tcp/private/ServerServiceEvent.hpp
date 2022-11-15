@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_MCROUTER_TCP_PRIVATE_SERVERSERVICEEVENT_HPP
+#define AREG_MCROUTER_TCP_PRIVATE_SERVERSERVICEEVENT_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        mcrouter/tcp/private/ServerServiceEvent.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -39,10 +40,11 @@ public:
      **/
     typedef enum class E_ServerServiceCommands
     {
-          CMD_StartService          //!< Sent to start message router connection service
-        , CMD_StopService           //!< Sent to stop message router connection service
-        , CMD_ServiceSendMsg        //!< Sent to notify to sent messages to connected client
-        , CMD_ServiceReceivedMsg    //!< Sent to notify received message from connected client
+          CMD_StartService          //!< Start message router connection service
+        , CMD_StopService           //!< Stop message router connection service
+        , CMD_RestartService        //!< Restart the message router connection service
+        , CMD_ServiceSendMsg        //!< Notify to sent messages to connected client
+        , CMD_ServiceReceivedMsg    //!< Notify received message from connected client
     } eServerServiceCommands;
 
     /**
@@ -155,6 +157,8 @@ inline const char * ServerServiceEventData::getString( ServerServiceEventData::e
         return "ServerServiceEventData::CMD_StartService";
     case ServerServiceEventData::eServerServiceCommands::CMD_StopService:
         return "ServerServiceEventData::CMD_StopService";
+    case ServerServiceEventData::eServerServiceCommands::CMD_RestartService:
+        return "ServerServiceEventData::CMD_RestartService";
     case ServerServiceEventData::eServerServiceCommands::CMD_ServiceSendMsg:
         return "ServerServiceEventData::CMD_ServiceSendMsg";
     case ServerServiceEventData::eServerServiceCommands::CMD_ServiceReceivedMsg:
@@ -163,3 +167,5 @@ inline const char * ServerServiceEventData::getString( ServerServiceEventData::e
         return "ERR: Unexpected ServerServiceEventData::eServerServiceCommands value!!!";
     }
 }
+
+#endif  // AREG_MCROUTER_TCP_PRIVATE_SERVERSERVICEEVENT_HPP

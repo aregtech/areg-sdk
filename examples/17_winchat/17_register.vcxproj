@@ -82,6 +82,9 @@
   <ItemGroup>
     <Image Include="register\res\register.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="register\res\register.rc2" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

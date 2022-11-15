@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/win32/Process32.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -45,7 +45,7 @@ Process & Process::initilize( void )
 
         if ( ::GetModuleFileNameEx( (HANDLE)(mProcessHandle), nullptr, fullPath, MAX_PATH) != 0 )
         {
-            String temp = fullPath;
+            String temp(fullPath);
             _initPaths(temp.getString());
         }
     }
@@ -56,14 +56,16 @@ Process & Process::initilize( void )
 String Process::getSafeEnvVariable( const char* var ) const
 {
     String result;
-    DWORD length = ::GetEnvironmentVariableA(var, nullptr, 0);
-    if (length > 0)
+    uint32_t length = static_cast<uint32_t>(::GetEnvironmentVariableA(var, nullptr, 0));
+    uint32_t size = length + 1u;
+    if (size > 1)
     {
-        char *buffer = DEBUG_NEW char[length + 1];
+        char *buffer = DEBUG_NEW char[size];
         ::GetEnvironmentVariableA(var, buffer, length);
         result = buffer;
         delete [] buffer;
     }
+
     return result;
 }
 

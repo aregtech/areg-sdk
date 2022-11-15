@@ -6,9 +6,9 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/TimerManagerWin.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, The System Timer Manager.
  *              Controlling, triggering and stopping timer.
@@ -29,77 +29,40 @@
 //  Windows OS specific methods
 //////////////////////////////////////////////////////////////////////////
 
-TIMERHANDLE TimerManager::_createWaitableTimer( const char * timerName )
-{
-    TIMERHANDLE result = nullptr;
-    TCHAR* name = nullptr;
-    TCHAR convertName[MAX_PATH];
-
-    if ( NEString::isEmpty<char>(timerName) == false )
-    {
-        NEString::copyString<TCHAR, char>(convertName, MAX_PATH, timerName);
-        name = convertName;
-    }
-    result = static_cast<TIMERHANDLE>( ::CreateWaitableTimer( nullptr, FALSE, name ) );
-
-#ifdef _DEBUG
-    if ( result == nullptr )
-    {
-        OUTPUT_ERR( "Failed creating timer [ %s ], the system error code is [ 0xp ]", timerName != NULL_STRING ? timerName : "nullptr", GetLastError( ) );
-    }
-#endif // _DEBUG
-
-    return result;
-}
-
-void TimerManager::_destroyWaitableTimer( TIMERHANDLE timerHandle, bool cancelTimer )
-{
-    ASSERT( timerHandle != nullptr );
-    if ( cancelTimer )
-    {
-        _stopSystemTimer(timerHandle);
-    }
-
-    ::CloseHandle( static_cast<HANDLE>(timerHandle) );
-}
-
-void TimerManager::_stopSystemTimer( TIMERHANDLE timerHandle )
+void TimerManager::_systemTimerStop( TIMERHANDLE timerHandle )
 {
 
     ASSERT( timerHandle != nullptr );
     ::CancelWaitableTimer( static_cast<HANDLE>(timerHandle) );
 }
 
-bool TimerManager::_createSystemTimer( TimerInfo & timerInfo, MapTimerTable & timerTable )
+bool TimerManager::_systemTimerStart( Timer & timer )
 {
     bool result = false;
 
-    FILETIME fileTime;
-    ::GetSystemTimeAsFileTime( &fileTime );
-    timerInfo.timerStarting( fileTime.dwHighDateTime, fileTime.dwLowDateTime );
-
-    Timer* whichTimer = timerInfo.mTimer;
-    ASSERT( whichTimer != nullptr );
+    ASSERT(timer.getHandle() != nullptr);
 
     // the period of time. If should be fired several times, set the period value. Otherwise set zero to fire once.
-    long period     = whichTimer->getEventCount( ) > 1 ? static_cast<long>(whichTimer->getFireTime()) : 0;
-    int64_t dueTime = static_cast<int64_t>(whichTimer->getFireTime( ) * NEUtilities::MILLISEC_TO_100NS);  // timer from now
+    long period = timer.getEventCount() > 1 ? static_cast<long>(timer.getTimeout()) : 0;
+    int64_t dueTime = static_cast<int64_t>(timer.getTimeout()) * NEUtilities::MILLISEC_TO_100NS;  // timer from now
     dueTime *= -1;
     LARGE_INTEGER timeTrigger;
+    timeTrigger.QuadPart = dueTime;
 
-    timeTrigger.LowPart = static_cast<unsigned long>(MACRO_64_LO_BYTE32( dueTime ));
-    timeTrigger.HighPart= static_cast<  signed long>(MACRO_64_HI_BYTE32( dueTime ));
+    FILETIME fileTime;
+    ::GetSystemTimeAsFileTime( &fileTime );
+    timer.timerStarting( fileTime.dwHighDateTime, fileTime.dwLowDateTime, reinterpret_cast<ptr_type>(timer.getHandle()) );
 
-    timerTable.registerObject( whichTimer, timerInfo );
-    if ( ::SetWaitableTimer( timerInfo.mHandle, &timeTrigger, period, reinterpret_cast<PTIMERAPCROUTINE>(&TimerManager::_defaultWindowsTimerExpiredRoutine), static_cast<void *>(whichTimer), FALSE ) == FALSE )
+    if ( ::SetWaitableTimer( timer.getHandle()
+                           , &timeTrigger
+                           , period
+                           , reinterpret_cast<PTIMERAPCROUTINE>(&TimerManager::_defaultWindowsTimerExpiredRoutine)
+                           , static_cast<void *>(timer.getHandle()), FALSE ) == FALSE )
     {
         OUTPUT_ERR( "System Failed to start timer in period [ %d ] ms, timer name [ %s ]. System Error [ %p ]"
-                        , whichTimer->getFireTime( )
-                        , whichTimer->getName( ).getString()
+                        , timer.getTimeout( )
+                        , timer.getName( ).getString()
                         , static_cast<id_type>(GetLastError( )) );
-
-        timerInfo.mTimerState = TimerInfo::eTimerState::TimerIdle;
-        timerTable.updateObject( whichTimer, timerInfo );
     }
     else
     {
@@ -117,8 +80,14 @@ bool TimerManager::_createSystemTimer( TimerInfo & timerInfo, MapTimerTable & ti
  **/
 void TimerManager::_defaultWindowsTimerExpiredRoutine( void * argPtr, unsigned long lowValue, unsigned long highValue )
 {
+    TimerManager& timerManager = TimerManager::getInstance();
     ASSERT(argPtr != nullptr);
-    TimerManager::getInstance()._timerExpired(reinterpret_cast<Timer *>(argPtr), highValue, lowValue);
+    TIMERHANDLE handle = reinterpret_cast<void*>(argPtr);
+    Timer* timer = timerManager.mTimerResource.findResourceObject(handle);
+    if (timer != nullptr)
+    {
+        timerManager._processExpiredTimer(timer, handle, highValue, lowValue);
+    }
 }
 
 #endif // _WINDOWS

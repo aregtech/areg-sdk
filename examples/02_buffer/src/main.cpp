@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech (c) 2021
+// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
 // Description : This project demonstrates the use of a Shared Buffer object, 
 //               initialization streaming, read and write, passing in 
 //               multithreading environment.

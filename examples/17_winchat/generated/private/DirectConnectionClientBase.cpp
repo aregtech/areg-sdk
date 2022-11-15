@@ -2,9 +2,9 @@
 // Begin generate generated/private/DirectConnectionClientBase.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:15 GMT+02:00 
+ * Generated at     13.08.2022  02:47:59 GMT+02:00
  *                  Create by AREG SDK code generator tool from source DirectConnection.
  *
  * \file            generated/DirectConnectionClientBase.hpp
@@ -30,7 +30,7 @@ namespace NEDirectConnection
      * \brief   Initialize request failure function pointers to make error handling
      **/
     typedef void (DirectConnectionClientBase::* FuncRequestFailure) ( NEService::eResultType );
-    static FuncRequestFailure failureFunctions[] = 
+    static constexpr FuncRequestFailure failureFunctions[]
     {
           &DirectConnectionClientBase::requestConnectoinSetupFailed
         , &DirectConnectionClientBase::requestAddParticipantFailed
@@ -47,7 +47,7 @@ namespace NEDirectConnection
  * Constructor / Destructor
  ************************************************************************/
 
-DirectConnectionClientBase::DirectConnectionClientBase( const char * roleName, const char * ownerThread /*= nullptr*/ )
+DirectConnectionClientBase::DirectConnectionClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -56,7 +56,7 @@ DirectConnectionClientBase::DirectConnectionClientBase( const char * roleName, c
 {
 }
 
-DirectConnectionClientBase::DirectConnectionClientBase( const char * roleName, DispatcherThread & ownerThread )
+DirectConnectionClientBase::DirectConnectionClientBase( const String & roleName, DispatcherThread & ownerThread )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -65,7 +65,7 @@ DirectConnectionClientBase::DirectConnectionClientBase( const char * roleName, D
 {
 }
 
-DirectConnectionClientBase::DirectConnectionClientBase( const char* roleName, Component & owner )
+DirectConnectionClientBase::DirectConnectionClientBase( const String & roleName, Component & owner )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -82,7 +82,7 @@ DirectConnectionClientBase::~DirectConnectionClientBase( void )
         mProxy->freeProxy( static_cast<IEProxyListener &>(self()) );
         mProxy  = nullptr;
     }
-    
+
     mIsConnected= false;
 }
 
@@ -95,11 +95,11 @@ bool DirectConnectionClientBase::recreateProxy( void )
     bool result         = false;
     if (mProxy != nullptr)
     {
-        String roleName   = mProxy->getProxyAddress().getRoleName();
-        String threadName = mProxy->getProxyAddress().getThread();
+        const String & roleName   = mProxy->getProxyAddress().getRoleName();
+        const String & threadName = mProxy->getProxyAddress().getThread();
         if ( roleName.isEmpty() == false )
         {
-            DirectConnectionProxy * newProxy = DirectConnectionProxy::createProxy(roleName.getString(), static_cast<IEProxyListener &>(self()), threadName.getString());
+            DirectConnectionProxy * newProxy = DirectConnectionProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), threadName);
             if (newProxy != nullptr)
             {
                 mProxy->clearAllNotifications( static_cast<IENotificationEventConsumer &>(self()) );
@@ -107,8 +107,9 @@ bool DirectConnectionClientBase::recreateProxy( void )
                 mProxy = newProxy;
                 result = true;
             }
-        }    
+        }
     }
+
     return result;
 }
 
@@ -121,7 +122,7 @@ DEF_TRACE_SCOPE(generated_DirectConnectionClientBase_serviceConnected);
 bool DirectConnectionClientBase::serviceConnected( bool isConnected, ProxyBase & proxy )
 {
     TRACE_SCOPE(generated_DirectConnectionClientBase_serviceConnected);
-    
+
     bool result = false;
     if(mProxy == &proxy)
     {
@@ -130,11 +131,11 @@ bool DirectConnectionClientBase::serviceConnected( bool isConnected, ProxyBase &
                  , proxy.getProxyAddress().getServiceName().getString()
                  , proxy.getProxyAddress().getRoleName().getString()
                  , isConnected ? "CONNECTED" : "DISCONNECTED");
-        
+
         mIsConnected= isConnected;
         result      = true;
     }
-    
+
     return result;
 }
 
@@ -174,7 +175,7 @@ void DirectConnectionClientBase::processNotificationEvent( NotificationEvent & e
     case NEService::eResultType::RequestInvalid:
         {
         /************************************************************************
-         * Trigger invalid response / broadcast handling. May happen when remove notification 
+         * Trigger invalid response / broadcast handling. May happen when remove notification
          ************************************************************************/
             DirectConnectionClientBase::invalidResponse(msgId);
         }
@@ -293,7 +294,7 @@ void DirectConnectionClientBase::invalidRequest( NEDirectConnection::eMessageIDs
                     , NEDirectConnection::getString(InvalidReqId)
                     , static_cast<unsigned int>(InvalidReqId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString() );
-                    
+
     ASSERT(false);
 }
 
@@ -306,7 +307,7 @@ void DirectConnectionClientBase::requestFailed( NEDirectConnection::eMessageIDs 
                     , static_cast<unsigned int>(FailureMsgId)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason) );
-                    
+
     unsigned int index = static_cast<msg_id>(NEDirectConnection::eMessageIDs::MsgId_Invalid);
     index = static_cast<msg_id>( NEService::isResponseId(static_cast<unsigned int>(FailureMsgId)) ? NEDirectConnection::getRequestId(FailureMsgId) : FailureMsgId);
     index = NEService::isRequestId(index)  ? GET_REQ_INDEX(index) : static_cast<msg_id>(NEDirectConnection::eMessageIDs::MsgId_Invalid);
@@ -336,7 +337,7 @@ void DirectConnectionClientBase::onInitiatedConnectionsUpdate( const NEDirectCon
 /************************************************************************
  * Request failure / Response and Broadcast notifications
  ************************************************************************/
- 
+
 DEF_TRACE_SCOPE(generated_DirectConnectionClientBase_requestConnectoinSetupFailed);
 void DirectConnectionClientBase::requestConnectoinSetupFailed( NEService::eResultType FailureReason )
 {

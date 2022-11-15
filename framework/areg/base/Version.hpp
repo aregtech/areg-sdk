@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_VERSION_HPP
+#define AREG_BASE_VERSION_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/Version.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -20,7 +21,9 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
+
 #include "areg/base/String.hpp"
+#include "areg/base/IEIOStream.hpp"
 
 /************************************************************************
  * Dependencies
@@ -66,6 +69,7 @@ public:
      *          Major, Minor and Patch versions are taken from readable string.
      **/
     Version( const char * version );
+    Version( const String & version );
     /**
      * \brief   Copy constructor.
      * \param   src     The source to copy data.
@@ -103,13 +107,8 @@ public:
 
     /**
      * \brief   Assigning operator. Sets version from string
-     * \brief   Move operator, which moves version information from given source.
      **/
     Version & operator = ( const char * version );
-
-    /**
-     * \brief   Assigning operator. Sets version from string
-     **/
     Version & operator = ( const String & version );
 
     /**
@@ -162,7 +161,7 @@ public:
      * \param	input	Version object to write version data.
      * \return	Reference to stream object.
      **/
-    friend AREG_API const IEInStream & operator >> (const IEInStream & stream, Version & input);
+    friend inline const IEInStream & operator >> (const IEInStream & stream, Version & input);
 
     /**
      * \brief	Streams to input object, i.e. write data from version to streaming object.
@@ -170,7 +169,7 @@ public:
      * \param	input	Version object to read version data.
      * \return	Reference to stream object.
      **/
-    friend AREG_API IEOutStream & operator << (IEOutStream & stream, const Version & output);
+    friend inline IEOutStream & operator << (IEOutStream & stream, const Version & output);
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -221,6 +220,7 @@ public:
      *          format: "major.minor.patch"
      **/
     Version & convFromString( const char * version );
+    Version & convFromString( const String & version );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -269,9 +269,14 @@ inline bool Version::isCompatible( const Version & version ) const
     return ((mMajor == version.mMajor)  && (mMinor >= version.mMinor));
 }
 
+inline Version & Version::operator = ( const char * version )
+{
+    return convFromString(version);
+}
+
 inline Version & Version::operator = ( const String & version )
 {
-    return (*this) = version.getString();
+    return convFromString(version);
 }
 
 inline bool Version::operator == ( const Version &version ) const
@@ -283,3 +288,34 @@ inline bool Version::operator != ( const Version &version ) const
 {
     return  (this != &version ? (mMajor != version.mMajor) || (mMinor != version.mMinor) || (mPatch != version.mPatch) : false);
 }
+
+/**
+ * \brief	Streams to input object, i.e. reads data from streaming object to string,
+ *          and initialize string data.
+ * \param	stream	Streaming object to read string data
+ * \param	input	String object to initialize and write string data.
+ * \return	Reference to stream object.
+ **/
+inline const IEInStream & operator >> (const IEInStream & stream, Version& input)
+{
+    stream >> input.mMajor;
+    stream >> input.mMinor;
+    stream >> input.mPatch;
+    return stream;
+}
+
+/**
+ * \brief	Streams from output object, i.e. write data from string to streaming object.
+ * \param	stream	Streaming object to write data.
+ * \param	output	String object to read data from
+ * \return	Reference to stream object.
+ **/
+inline IEOutStream & operator << (IEOutStream& stream, const Version& output)
+{
+    stream << output.mMajor;
+    stream << output.mMinor;
+    stream << output.mPatch;
+    return stream;
+}
+
+#endif  // AREG_BASE_VERSION_HPP

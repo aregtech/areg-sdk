@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech (c) 2021
+// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
 // Description : The application provides network discoverable Public service,
 //               which predefined methods are called from remote clients.
 //============================================================================
@@ -34,7 +34,7 @@ constexpr char const _modelName[]  { "ServiceModel" };   //!< The name of model
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestServiceThread" )
+    BEGIN_REGISTER_THREAD( "TestServiceThread", NECommon::WATCHDOG_IGNORE)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( NECommon::ServiceHelloName, ServicingComponent )
             // register HelloWorld service implementation.
@@ -57,12 +57,13 @@ DEF_TRACE_SCOPE(example_12_pubservice_main_main);
  **/
 int main()
 {
-    printf("Testing simple remote servicing component. Run as a ultra-small Server...\n");
+    printf("Testing simple remote servicing, run as a ultra-small Server...\n");
 
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START( nullptr );
-    // Initialize application, enable logging, servicing and the timer.
-    Application::initApplication(true, true, true, true, nullptr, nullptr );
+    // Initialize application, enable logging, servicing, routing, timer and watchdog.
+    // Use default settings.
+    Application::initApplication( );
 
     do 
     {
@@ -73,7 +74,7 @@ int main()
         Application::loadModel(_modelName);
 
         TRACE_DBG("Servicing model is loaded");
-        
+
         // wait until Application quit signal is set.
         Application::waitAppQuit(NECommon::WAIT_INFINITE);
 
@@ -84,7 +85,7 @@ int main()
         Application::releaseApplication();
 
     } while (false);
-    
+
     printf("Completed testing simple remote servicing component. Check the logs...\n");
 
 	return 0;

@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  13:59:46 GMT+02:00
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
  *
  * \file            generated/src/NELocalHelloWorld.hpp
@@ -29,15 +29,15 @@ const NEService::SInterfaceData & NELocalHelloWorld::getInterfaceData( void )
     /************************************************************************
      * The list of requests
      ************************************************************************/
-    static constexpr unsigned int _RequestList[] 
+    static constexpr unsigned int _RequestList[]
     {
-          static_cast<unsigned int>( NELocalHelloWorld::eMessageIDs::MsgId_requestHelloWorld   ) // requestHelloWorld( const String & roleName, const String & addMessage = "" )
+          static_cast<unsigned int>( NELocalHelloWorld::eMessageIDs::MsgId_requestHelloWorld   ) // requestHelloWorld( const String & roleName )
     };
 
     /************************************************************************
      * The list of responses and broadcasts
      ************************************************************************/
-    static constexpr unsigned int _ResponseList[] 
+    static constexpr unsigned int _ResponseList[]
     {
           static_cast<unsigned int>( NELocalHelloWorld::eMessageIDs::MsgId_responseHelloWorld  ) // responseHelloWorld( const NELocalHelloWorld::sConnectedClient & clientInfo )
     };
@@ -45,7 +45,7 @@ const NEService::SInterfaceData & NELocalHelloWorld::getInterfaceData( void )
     /************************************************************************
      * The list of attributes
      ************************************************************************/
-    static constexpr unsigned int _AttributeList[] 
+    static constexpr unsigned int _AttributeList[]
     {
           static_cast<unsigned int>( NELocalHelloWorld::eMessageIDs::MsgId_ConnectedClients    ) // NELocalHelloWorld::ConnectionList mConnectedClients;
         , static_cast<unsigned int>( NELocalHelloWorld::eMessageIDs::MsgId_RemainOutput        ) // short mRemainOutput;
@@ -56,7 +56,7 @@ const NEService::SInterfaceData & NELocalHelloWorld::getInterfaceData( void )
      ************************************************************************/
     static constexpr unsigned int _RequestToResponseMap[] 
     {
-          static_cast<unsigned int>( NELocalHelloWorld::eMessageIDs::MsgId_responseHelloWorld  ) // requestHelloWorld( const String & roleName, const String & addMessage = "" )
+          static_cast<unsigned int>( NELocalHelloWorld::eMessageIDs::MsgId_responseHelloWorld  ) // requestHelloWorld( const String & roleName )
     };
 
     /************************************************************************
@@ -74,7 +74,7 @@ const NEService::SInterfaceData & NELocalHelloWorld::getInterfaceData( void )
      ************************************************************************/
 
     };
-    
+
     /************************************************************************
      * LocalHelloWorld Service Interface data
      ************************************************************************/
@@ -96,7 +96,7 @@ const NEService::SInterfaceData & NELocalHelloWorld::getInterfaceData( void )
     return _InterfaceData;
 }
 
-NELocalHelloWorld::eMessageIDs NELocalHelloWorld::getResponseId( NELocalHelloWorld::eMessageIDs reqId )
+NELocalHelloWorld::eMessageIDs NELocalHelloWorld::getResponseId( NELocalHelloWorld::eMessageIDs reqId)
 {
     const NEService::SInterfaceData & sid = NELocalHelloWorld::getInterfaceData();
     msg_id index = GET_REQ_INDEX(reqId);
@@ -112,7 +112,7 @@ NELocalHelloWorld::eMessageIDs NELocalHelloWorld::getRequestId( NELocalHelloWorl
     {
         result = sid.idRequestToResponseMap[i] == static_cast<msg_id>(respId) ? static_cast<NELocalHelloWorld::eMessageIDs>(sid.idRequestList[i]) : NELocalHelloWorld::eMessageIDs::MsgId_Invalid;
     }
-    
+
     return result;
 }
 

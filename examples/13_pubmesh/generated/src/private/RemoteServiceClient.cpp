@@ -162,7 +162,7 @@ void RemoteServiceClient::processTimer(Timer & timer)
     NEService::eDataStateType dataState = NEService::eDataStateType::DataIsInvalid;
     if ( (getServiceState(dataState) == NESystemShutdown::eServiceState::ServiceReady) && (dataState == NEService::eDataStateType::DataIsOK))
     {
-        requestHelloWorld(mClient.crID, "REMOTE");
+        requestHelloWorld(mClient.crID);
     }
     else
     {
@@ -173,11 +173,11 @@ void RemoteServiceClient::processTimer(Timer & timer)
 inline String RemoteServiceClient::timerName( Component & owner ) const
 {
     String result = "";
-    result += owner.getRoleName();
-    result += NECommon::DEFAULT_SPECIAL_CHAR.data();
-    result += RemoteRegistryClientBase::getServiceRole();
-    result += NECommon::DEFAULT_SPECIAL_CHAR.data();
-    result += RemoteRegistryClientBase::getServiceName();
+    result.append(owner.getRoleName())
+          .append(NECommon::DEFAULT_SPECIAL_CHAR)
+          .append(RemoteRegistryClientBase::getServiceRole())
+          .append(NECommon::DEFAULT_SPECIAL_CHAR)
+          .append(RemoteRegistryClientBase::getServiceName());
 
     return result;
 }

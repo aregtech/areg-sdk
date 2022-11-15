@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_PRIVATE_NEDEBUG_HPP
+#define AREG_BASE_PRIVATE_NEDEBUG_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/NEDebug.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -51,11 +52,11 @@ namespace NEDebug
      **/
     typedef enum class E_DegubPrio : int
     {
-          PrioNone  = OUTPUT_DEBUG_LEVEL_NONE   //!< No priority, output message shoud be ignored.
-        , PrioDbg   = OUTPUT_DEBUG_LEVEL_DEBUG  //!< Priority Debug, outputs "DBG:" string in front of message
-        , PrioInfo  = OUTPUT_DEBUG_LEVEL_INFO   //!< Priority Information, outputs "INF:" string in front of message
-        , PrioWarn  = OUTPUT_DEBUG_LEVEL_WARN   //!< Priority Warning, outputs "WRN:" string in front of message
+          PrioNone  = OUTPUT_DEBUG_LEVEL_NONE   //!< No priority, output message should be ignored.
         , PrioErr   = OUTPUT_DEBUG_LEVEL_ERROR  //!< Priority Error, outputs "ERR:" string in front of message
+        , PrioWarn  = OUTPUT_DEBUG_LEVEL_WARN   //!< Priority Warning, outputs "WRN:" string in front of message
+        , PrioInfo  = OUTPUT_DEBUG_LEVEL_INFO   //!< Priority Information, outputs "INF:" string in front of message
+        , PrioDbg   = OUTPUT_DEBUG_LEVEL_DEBUG  //!< Priority Debug, outputs "DBG:" string in front of message
 
     } eDegubPrio;
 
@@ -68,10 +69,10 @@ namespace NEDebug
     constexpr std::string_view PREFIX_DBG_PRIORITIES [] =
     {
           ""        //!< No priority.
-        , "DBG: "   //!< Priority Debug message.
-        , "INF: "   //!< Priority Information message.
-        , "WRN: "   //!< Priority Warning message.
         , "ERR: "   //!< Priority Error message.
+        , "WRN: "   //!< Priority Warning message.
+        , "INF: "   //!< Priority Information message.
+        , "DBG: "   //!< Priority Debug message.
     };
 
     /**
@@ -131,16 +132,6 @@ namespace NEDebug
 inline const char* NEDebug::getPrioPrefix( NEDebug::eDegubPrio priority )
 {
     return NEDebug::PREFIX_DBG_PRIORITIES[ static_cast<int>(priority) ].data();
-    switch ( priority )
-    {
-    case NEDebug::eDegubPrio::PrioNone: // fall through
-    case NEDebug::eDegubPrio::PrioDbg:  // fall through
-    case NEDebug::eDegubPrio::PrioInfo: // fall through
-    case NEDebug::eDegubPrio::PrioWarn: // fall through
-    case NEDebug::eDegubPrio::PrioErr:  // fall through
-        return NEDebug::PREFIX_DBG_PRIORITIES[static_cast<int>(priority)].data( );
-
-    default:
-        return NEDebug::PREFIX_DBG_PRIORITIES[static_cast<int>(NEDebug::eDegubPrio::PrioDbg)].data( );
-    }
 }
+
+#endif  // AREG_BASE_PRIVATE_NEDEBUG_HPP

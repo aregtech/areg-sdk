@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/SynchObjects.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
@@ -96,6 +96,45 @@ NolockSynchObject::~NolockSynchObject( void )
 }
 
 //////////////////////////////////////////////////////////////////////////
+// SpinLock class implementation
+//////////////////////////////////////////////////////////////////////////
+
+SpinLock::SpinLock(void)
+    : IEResourceLock(IESynchObject::eSyncObject::SoSpinlock)
+    , mLock( false )
+{
+}
+
+SpinLock::~SpinLock(void)
+{
+}
+
+bool SpinLock::lock(unsigned int /*timeout = NECommon::WAIT_INFINITE*/)
+{
+    for ( ; ; )
+    {
+        if (mLock.exchange(true, std::memory_order_acquire) == false)
+            break;
+
+        while (mLock.load(std::memory_order_relaxed))
+            Thread::sleep(0);
+    }
+
+    return true;
+}
+
+bool SpinLock::unlock(void)
+{
+    mLock.store(false, std::memory_order_release);
+    return true;
+}
+
+bool SpinLock::tryLock(void)
+{
+    return ((mLock.load(std::memory_order_relaxed) == false) && (mLock.exchange(true, std::memory_order_acquire) == false));
+}
+
+/// //////////////////////////////////////////////////////////////////////////
 // NolockSynchObject class, Methods
 //////////////////////////////////////////////////////////////////////////
 bool NolockSynchObject::lock(unsigned int /*timeout = NECommon::WAIT_INFINITE*/)
@@ -190,4 +229,22 @@ bool MultiLock::unlock( int index )
     }
 
     return result;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Wait class implementation
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// Wait class, Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+Wait::Wait(void)
+    : mTimer(nullptr)
+{
+    _osInitTimer();
+}
+
+Wait::~Wait(void)
+{
+    _osReleaseTimer();
 }

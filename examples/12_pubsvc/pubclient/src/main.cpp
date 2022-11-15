@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : Aregtech (c) 2021
+// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
 // Description : The application contains a Public service client software
 //               component. It receives connected notification and starts 
 //               calling remote method of the Public service. To make periodic
@@ -39,7 +39,7 @@ const String     _serviceClient  = NEUtilities::generateName("ServiceClient"); /
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestServiceThread" )
+    BEGIN_REGISTER_THREAD( "TestServiceThread", NECommon::WATCHDOG_IGNORE)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT( _serviceClient.getString(), ServiceClient )
             // register service dependency
@@ -65,8 +65,9 @@ int main()
     printf("Testing remote servicing ultra-small client...\n");
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START( nullptr );
-    // Initialize application, enable logging, servicing and the timer.
-    Application::initApplication(true, true, true, true, nullptr, nullptr );
+    // Initialize application, enable logging, servicing, routing, timer and watchdog.
+    // Use default settings.
+    Application::initApplication( );
 
     do 
     {
@@ -77,7 +78,7 @@ int main()
         Application::loadModel(_modelName);
 
         TRACE_DBG("Servicing model is loaded");
-        
+
         // wait until Application quit signal is set.
         Application::waitAppQuit(NECommon::WAIT_INFINITE);
 
@@ -88,7 +89,7 @@ int main()
         Application::releaseApplication();
 
     } while (false);
-    
+
     printf("Completed testing remote servicing client, check the logs...\n");
 
 	return 0;

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_FILEBUFFER_HPP
+#define AREG_BASE_FILEBUFFER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/FileBuffer.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -68,14 +69,14 @@ public:
 
     /**
      * \brief	Constructor to set by default attached mode
-     * \param	buffer	The referenced object to shared bufferto attach. 
+     * \param	buffer	The referenced object to shared buffer to attach. 
      * \param	name	The name of file object. Can be nullptr.
      **/
     FileBuffer(SharedBuffer & sharedBuffer, const char * name = nullptr);
 
     /**
      * \brief	Constructor to set by default attached mode
-     * \param	buffer	The referenced object to shared bufferto attach.
+     * \param	buffer	The referenced object to shared buffer to attach.
      * \param	name	The name of file object. Can be nullptr.
      **/
     FileBuffer(const SharedBuffer & sharedBuffer, const char* name = nullptr);
@@ -125,7 +126,7 @@ public:
     inline bool isValid( void ) const;
 
     /**
-     * \brief	If file object was opened and the the size is not zero (i.e. data was written / read) 
+     * \brief	If file object was opened and the size is not zero (i.e. data was written / read) 
      *          it returns the pointer of buffer. Otherwise it will return nullptr.
      **/
     inline const unsigned char * getDataBuffer( void ) const;
@@ -183,7 +184,7 @@ public:
      *
      * \return	Returns true if file was opened with success.
      **/
-    virtual bool open(const char * fileName, unsigned int mode) override;
+    virtual bool open(const String& fileName, unsigned int mode) override;
 
     /**
      * \brief   Call to close file object.
@@ -218,11 +219,11 @@ public:
      *          size of file object, data will be truncated until the new size, and if needed 
      *          the pointer position will be moved to the end of file.
      *
-     * \param	newSize     New Size is bytes to set. Positive value will set the size. Negative value will set size zero.
+     * \param	newSize     New Size is bytes to set.
      *
-     * \return  If succeeds, returns the current position of file pointer. Otherwise it returns value INVALID_POINTER_POSITION.
+     * \return  If succeeds, returns the current position of file pointer. Otherwise it returns value IECursorPosition::INVALID_CURSOR_POSITION.
      **/
-    virtual unsigned int reserve(int newSize) override;
+    virtual unsigned int reserve(unsigned int newSize) override;
 
     /**
      * \brief   Purge file object data, sets the size zero and if succeeds, returns true.
@@ -322,14 +323,14 @@ public:
      *                  IECursorPosition::eCursorPosition::PositionCurrent -- from current pointer position
      *                  IECursorPosition::eCursorPosition::PositionEnd     -- from end of file
      *
-     * \return	If succeeds, returns the current position of pointer in bytes or value INVALID_POINTER_POSITION if fails.
+     * \return	If succeeds, returns the current position of pointer in bytes or value IECursorPosition::INVALID_CURSOR_POSITION if fails.
      **/
     virtual unsigned int setPosition(int offset, IECursorPosition::eCursorPosition startAt) const override;
 
     /**
-     * \brief	If succeeds, returns the current position of pointer in bytes or value INVALID_POINTER_POSITION if fails.
+     * \brief	If succeeds, returns the current position of pointer in bytes or value IECursorPosition::INVALID_CURSOR_POSITION if fails.
      *          Before calling function, the file object should be opened.
-     * \return	If succeeds, returns the current position of pointer in bytes or value INVALID_POINTER_POSITION if fails.
+     * \return	If succeeds, returns the current position of pointer in bytes or value IECursorPosition::INVALID_CURSOR_POSITION if fails.
      **/
     virtual unsigned int getPosition( void ) const override;
 
@@ -429,3 +430,5 @@ inline IEOutStream & operator << ( IEOutStream & stream, const FileBuffer & outp
 {
     return (stream << static_cast<const SharedBuffer &>(output.mSharedBuffer));
 }
+
+#endif  // AREG_BASE_FILEBUFFER_HPP

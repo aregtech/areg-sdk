@@ -6,11 +6,11 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ThreadEventBase.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
- * \brief       AREG Platform, Multithreading Event base class.
+ * \brief       AREG Platform, Multi-threading Event base class.
  *
  ************************************************************************/
 #include "areg/component/private/ThreadEventBase.hpp"

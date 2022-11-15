@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/ipc/private/ClientService.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -61,7 +61,7 @@ ClientService::ClientService( IERemoteServiceConsumer & serviceConsumer )
 
     , mClientConnection ( )
     , mServiceConsumer  ( serviceConsumer )
-    , mTimerConnect     ( static_cast<IETimerConsumer &>(self()), NEConnection::CLIENT_CONNECT_TIMER_NAME.data() )
+    , mTimerConnect     ( static_cast<IETimerConsumer &>(self()), NEConnection::CLIENT_CONNECT_TIMER_NAME )
     , mThreadReceive    ( static_cast<IERemoteServiceHandler &>(self()), mClientConnection )
     , mThreadSend       ( static_cast<IERemoteServiceHandler &>(self()), mClientConnection )
     , mIsServiceEnabled ( NEConnection::DEFAULT_REMOVE_SERVICE_ENABLED )    // TODO: by default, should be false and read out from configuration file.
@@ -72,7 +72,7 @@ ClientService::ClientService( IERemoteServiceConsumer & serviceConsumer )
 {
 }
 
-bool ClientService::configureRemoteServicing( const char * configFile )
+bool ClientService::configureRemoteServicing( const String & configFile )
 {
     Lock lock( mLock );
     ConnectionConfiguration configConnect;
@@ -92,7 +92,7 @@ bool ClientService::configureRemoteServicing( const char * configFile )
     }
 }
 
-void ClientService::setRemoteServiceAddress( const char * hostName, unsigned short portNr )
+void ClientService::setRemoteServiceAddress( const String & hostName, unsigned short portNr )
 {
     Lock lock( mLock );
     mClientConnection.setAddress( hostName, portNr );
@@ -129,6 +129,11 @@ bool ClientService::startRemoteServicing(void)
     }
 
     return result;
+}
+
+bool ClientService::restartRemoteServicing(void)
+{
+    return false;
 }
 
 void ClientService::stopRemoteServicing(void)
@@ -182,7 +187,7 @@ bool ClientService::registerService( const StubAddress & stubService )
     bool result = false;
     if ( isStarted() )
     {
-        TRACE_DBG("Queueing to send register [ %s ] service message by connection [ %d ]"
+        TRACE_DBG("Queuing to send register [ %s ] service message by connection [ %d ]"
                    , StubAddress::convAddressToPath(stubService).getString()
                    , mClientConnection.getCookie());
 
@@ -198,7 +203,7 @@ void ClientService::unregisterService(const StubAddress & stubService)
     Lock lock( mLock );
     if ( isStarted() )
     {
-        TRACE_DBG("Queueing to send unregister [ %s ] service message by connection [ %d ]"
+        TRACE_DBG("Queuing to send unregister [ %s ] service message by connection [ %d ]"
                    , StubAddress::convAddressToPath(stubService).getString()
                    , mClientConnection.getCookie());
 
@@ -213,7 +218,7 @@ bool ClientService::registerServiceClient(const ProxyAddress & proxyService)
     bool result = false;
     if ( isStarted() )
     {
-        TRACE_DBG("Queueing to send register [ %s ] service client message by connection [ %d ]"
+        TRACE_DBG("Queuing to send register [ %s ] service client message by connection [ %d ]"
                    , ProxyAddress::convAddressToPath(proxyService).getString()
                    , mClientConnection.getCookie());
 
@@ -230,7 +235,7 @@ void ClientService::unregisterServiceClient(const ProxyAddress & proxyService)
     Lock lock( mLock );
     if ( isStarted() )
     {
-        TRACE_DBG("Queueing to send unregister [ %s ] service client message by connection [ %d ]"
+        TRACE_DBG("Queuing to send unregister [ %s ] service client message by connection [ %d ]"
                    , ProxyAddress::convAddressToPath(proxyService).getString()
                    , mClientConnection.getCookie());
 
@@ -319,7 +324,8 @@ void ClientService::processEvent( const ClientServiceEventData & data )
 
     case ClientServiceEventData::eClientServiceCommands::CMD_ServiceLost:
     {
-        TRACE_WARN("Client service is lost connection. Resetting cookie and trying to restart, current connection state [ %s ]", ClientService::getString(getConnectionState()));
+        TRACE_WARN("Client service is lost connection. Resetting cookie and trying to restart, current connection state [ %s ]"
+                    , ClientService::getString(getConnectionState()));
         Channel channel = mChannel;
         mChannel.setCookie( NEService::COOKIE_UNKNOWN );
         mChannel.setSource( NEService::SOURCE_UNKNOWN );
@@ -338,7 +344,7 @@ void ClientService::processEvent( const ClientServiceEventData & data )
         }
         else
         {
-            TRACE_WARN("Ignoring lost connection event, either servising state is not allowed, or application is closing.");
+            TRACE_WARN("Ignoring lost connection event, either servicing state is not allowed, or application is closing.");
         }
     }
     break;
@@ -451,6 +457,7 @@ void ClientService::failedSendMessage(const RemoteMessage & msgFailed)
         if ( NEService::isExecutableId(msgId) || NEService::isConnectNotifyId(msgId) )
         {
             TRACE_DBG("Failed message [ %u ] is executable or connection notification", msgId);
+            msgFailed.moveToBegin();
             StreamableEvent * eventError = RemoteEventFactory::createRequestFailedEvent(msgFailed, mChannel);
             if ( eventError != nullptr )
             {
@@ -504,6 +511,7 @@ void ClientService::failedProcessMessage( const RemoteMessage & msgUnprocessed )
         unsigned int msgId = msgUnprocessed.getMessageId();
         if ( NEService::isExecutableId(msgId) )
         {
+            msgUnprocessed.moveToBegin();
             StreamableEvent * eventError = RemoteEventFactory::createRequestFailedEvent(msgUnprocessed, mChannel);
             if ( eventError != nullptr )
             {
@@ -521,7 +529,7 @@ void ClientService::failedProcessMessage( const RemoteMessage & msgUnprocessed )
     }
     else
     {
-        TRACE_WARN("Ignore processing failure message, te application is closing");
+        TRACE_WARN("Ignore processing failure message, the application is closing");
     }
 }
 
@@ -678,7 +686,7 @@ void ClientService::processRemoteRequestEvent( RemoteRequestEvent & requestEvent
     TRACE_DBG("Processing request event [ %s ] with message id [ 0x%X ] of runtime object [ %s ], target stub [ %s ], source proxy [ %s ], request type [ %s ]"
                 , Event::getString( requestEvent.getEventType() )
                 , static_cast<uint32_t>(requestEvent.getRequestId())
-                , requestEvent.getRuntimeClassName()
+                , requestEvent.getRuntimeClassName().getString()
                 , StubAddress::convAddressToPath(requestEvent.getTargetStub()).getString()
                 , ProxyAddress::convAddressToPath(requestEvent.getEventSource()).getString()
                 , NEService::getString(requestEvent.getRequestType()) );
@@ -713,7 +721,7 @@ void ClientService::processRemoteNotifyRequestEvent( RemoteNotifyRequestEvent & 
     TRACE_DBG("Processing notify request event [ %s ] with message id [ 0x%X ] of runtime object [ %s ], target stub [ %s ], source proxy [ %s ], request type [ %s ]"
                 , Event::getString( requestNotifyEvent.getEventType() )
                 , static_cast<uint32_t>(requestNotifyEvent.getRequestId())
-                , requestNotifyEvent.getRuntimeClassName()
+                , requestNotifyEvent.getRuntimeClassName().getString()
                 , StubAddress::convAddressToPath(requestNotifyEvent.getTargetStub()).getString()
                 , ProxyAddress::convAddressToPath(requestNotifyEvent.getEventSource()).getString()
                 , NEService::getString(requestNotifyEvent.getRequestType()) );
@@ -750,7 +758,7 @@ void ClientService::processRemoteResponseEvent(RemoteResponseEvent & responseEve
     TRACE_DBG("Processing response event [ %s ] with message ID [ 0x%X ] of runtime object [ %s ], target proxy [ %s ], data type [ %s ]"
                 , Event::getString( responseEvent.getEventType() )
                 , static_cast<uint32_t>(responseEvent.getResponseId())
-                , responseEvent.getRuntimeClassName()
+                , responseEvent.getRuntimeClassName().getString()
                 , ProxyAddress::convAddressToPath(responseEvent.getTargetProxy()).getString()
                 , NEService::getString(responseEvent.getDataType()) );
 

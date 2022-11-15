@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/DateTime.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -14,7 +14,6 @@
  *
  ************************************************************************/
 #include "areg/base/DateTime.hpp"
-#include "areg/base/IEIOStream.hpp"
 #include "areg/base/NEUtilities.hpp"
 
 #include <time.h>
@@ -72,7 +71,7 @@ uint64_t DateTime::getProcessTickCount(void)
 #else   // _POSIX
 
     struct timespec ts;
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts);
+    ::clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts);
     return ((ts.tv_sec * NEUtilities::SEC_TO_MILLISECS)+ (ts.tv_nsec / NEUtilities::MILLISEC_TO_NS));
 
 #endif // WINDOWS
@@ -149,13 +148,13 @@ String DateTime::formatTime( const std::string_view & formatName /*= DateTime::T
 
         unsigned short milli = sysTime.stMillisecs;
 
-        String str = formatName.empty() == false ? formatName.data() : DateTime::TIME_FORMAT_ISO8601_OUTPUT.data();
-        NEString::CharPos ms = str.findFirstOf( FORMAT_MILLISECOND.data() );
-        if ( ms != NEString::INVALID_POS )
+        String str(formatName.empty() == false ? formatName : DateTime::TIME_FORMAT_ISO8601_OUTPUT);
+        NEString::CharPos ms = str.findFirst( FORMAT_MILLISECOND.data() );
+        if ( str.isValidPosition(ms) )
         {
             char buf[12];
             String::formatString( buf, 12, "%03d", milli );
-            str.replace( buf, ms, static_cast<NEString::CharCount>(FORMAT_MILLISECOND.length()) );
+            str.replace( ms, static_cast<NEString::CharCount>(FORMAT_MILLISECOND.length()), buf);
         }
 
         strftime( buffer, 128, str.getString(), &conv );
@@ -166,16 +165,4 @@ String DateTime::formatTime( const std::string_view & formatName /*= DateTime::T
     }
 
     return String(buffer);
-}
-
-AREG_API const IEInStream & operator >> ( const IEInStream & stream, DateTime & input )
-{
-    stream >> input.mDateTime;
-    return stream;
-}
-
-AREG_API IEOutStream & operator << ( IEOutStream & stream, const DateTime & output )
-{
-    stream << output.mDateTime;
-    return stream;
 }

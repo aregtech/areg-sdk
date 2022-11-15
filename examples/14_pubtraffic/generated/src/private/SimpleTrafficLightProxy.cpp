@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:12 GMT+02:00 
+ * Generated at     13.08.2022  02:45:32 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficLight.
  *
  * \file            generated/src/private/SimpleTrafficLightProxy.hpp
@@ -42,12 +42,12 @@ SimpleTrafficLightProxy::SimpleTrafficLightServiceAvailableEvent::SimpleTrafficL
 // static function implementation
 //////////////////////////////////////////////////////////////////////////
 
-ProxyBase * SimpleTrafficLightProxy::_createProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+ProxyBase * SimpleTrafficLightProxy::_createProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
 {
     return DEBUG_NEW SimpleTrafficLightProxy(roleName, ownerThread);
 }
 
-SimpleTrafficLightProxy * SimpleTrafficLightProxy::createProxy( const char * roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
+SimpleTrafficLightProxy * SimpleTrafficLightProxy::createProxy( const String & roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread )
 {
     return static_cast<SimpleTrafficLightProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NESimpleTrafficLight::getInterfaceData()
@@ -56,7 +56,7 @@ SimpleTrafficLightProxy * SimpleTrafficLightProxy::createProxy( const char * rol
                                                                       , ownerThread) );
 }
 
-SimpleTrafficLightProxy * SimpleTrafficLightProxy::createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread /*= nullptr*/ )
+SimpleTrafficLightProxy * SimpleTrafficLightProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
 {
     return static_cast<SimpleTrafficLightProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NESimpleTrafficLight::getInterfaceData()
@@ -68,7 +68,7 @@ SimpleTrafficLightProxy * SimpleTrafficLightProxy::createProxy( const char * rol
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-SimpleTrafficLightProxy::SimpleTrafficLightProxy( const char * roleName, DispatcherThread * ownerThread /*= nullptr*/ )
+SimpleTrafficLightProxy::SimpleTrafficLightProxy( const String & roleName, DispatcherThread * ownerThread /*= nullptr*/ )
     : ProxyBase(roleName, NESimpleTrafficLight::getInterfaceData(), ownerThread)
 
 /************************************************************************
@@ -139,11 +139,11 @@ void SimpleTrafficLightProxy::unregisterServiceListeners( void )
 /************************************************************************
  * Requests.
  ************************************************************************/
- 
+
 /************************************************************************
  * Event processing.
  ************************************************************************/
- 
+
 /************************************************************************
  * IEProxyEventConsumer interface overrides.
  ************************************************************************/
@@ -210,8 +210,8 @@ void SimpleTrafficLightProxy::updateData( SimpleTrafficLightResponseEvent & even
         break;
     }
 }
- 
-void SimpleTrafficLightProxy::processResponse( SimpleTrafficLightResponseEvent & evenElem )
+
+    void SimpleTrafficLightProxy::processResponse( SimpleTrafficLightResponseEvent & evenElem )
 {
     NESimpleTrafficLight::eMessageIDs respId  = static_cast<NESimpleTrafficLight::eMessageIDs>(evenElem.getResponseId());
     NEService::eResultType resultType  = evenElem.getResult();
@@ -237,8 +237,8 @@ void SimpleTrafficLightProxy::processResponse( SimpleTrafficLightResponseEvent &
         {
             respId  = static_cast<NESimpleTrafficLight::eMessageIDs>( mProxyData.getResponseId(static_cast<msg_id>(respId)) );
         }
-        
-        setStates   = respId != NESimpleTrafficLight::eMessageIDs::MsgId_NotProcessed;            
+
+        setStates   = respId != NESimpleTrafficLight::eMessageIDs::MsgId_NotProcessed;
         break;
 
     case NEService::eResultType::RequestOK:     // fall through
@@ -255,16 +255,15 @@ void SimpleTrafficLightProxy::processResponse( SimpleTrafficLightResponseEvent &
     {
         updateData(evenElem, respId);
     }
-       
+
     if (setStates == true)
     {
         setState(static_cast<msg_id>(respId), dataValid ? NEService::eDataStateType::DataIsOK : NEService::eDataStateType::DataIsInvalid);
     }
-    
+
     notifyListeners(static_cast<msg_id>(respId), resultType, evenElem.getSequenceNumber());
 }
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/private/SimpleTrafficLightProxy.cpp file
 //////////////////////////////////////////////////////////////////////////
- 

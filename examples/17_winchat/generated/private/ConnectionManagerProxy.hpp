@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/private/ConnectionManagerProxy.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_PRIVATE_CONNECTIONMANAGERPROXY_HPP
+#define  GENERATED_PRIVATE_CONNECTIONMANAGERPROXY_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:14 GMT+02:00 
+ * Generated at     13.08.2022  02:47:58 GMT+02:00
  *                  Create by AREG SDK code generator tool from source ConnectionManager.
  *
  * \file            generated/private/ConnectionManagerProxy.hpp
@@ -21,12 +22,12 @@
 #include "areg/base/GEGlobal.h"
 #include "generated/NEConnectionManager.hpp"
 #include "areg/component/ProxyBase.hpp"
- 
+
 /************************************************************************
  * Dependencies
  ************************************************************************/
 class ConnectionManagerResponseEvent;
- 
+
 //////////////////////////////////////////////////////////////////////////
 // ConnectionManagerProxy class declaration Begin
 //////////////////////////////////////////////////////////////////////////
@@ -40,16 +41,14 @@ class ConnectionManagerResponseEvent;
  **/
 class ConnectionManagerProxy   : public ProxyBase
 {
-
 private:
     //////////////////////////////////////////////////////////////////////////
     // ConnectionManagerProxy::ConnectionManagerServiceAvailableEvent class declaration
     //////////////////////////////////////////////////////////////////////////
     /**
-     * \brief       The event is used to immediately notify new client
-     *              about service availability and escape duplicating 
-     *              notification for other, already connected clients.
-     *  
+     * \brief   The event is used immediately to notify new client about service
+     *          availability and escape duplicating notification for other,
+     *          already connected clients.
      **/
     class ConnectionManagerServiceAvailableEvent : public ProxyBase::ServiceAvailableEvent
     {
@@ -67,7 +66,7 @@ private:
          **/
         explicit ConnectionManagerServiceAvailableEvent( IENotificationEventConsumer & consumer );
         /**
-         * \brief   Destructor
+         * \brief   Destructor.
          **/
         virtual ~ConnectionManagerServiceAvailableEvent( void ) = default;
     //////////////////////////////////////////////////////////////////////////
@@ -84,36 +83,36 @@ public:
     /**
      * \brief   Returns existing or creates new proxy object if it is not existing
      *          in the current thread scope.
-     * \param   roleName        The role name of stub component object
+     * \param   roleName        The role name of stub component object.
      * \param   connectListener The reference to connection listener
      * \param   ownerThread     The instance of thread to dispatch messages.
      * \return  Returns pointer to instantiated proxy object.
      **/
-    static ConnectionManagerProxy * createProxy( const char * roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread );
+    static ConnectionManagerProxy * createProxy( const String & roleName, IEProxyListener & connectListener, DispatcherThread & ownerThread );
 
     /**
      * \brief   Returns existing or creates new proxy object if it is not existing
      *          in the current thread scope.
-     * \param   roleName        The role name of stub component object
+     * \param   roleName        The role name of stub component object.
      * \param   connectListener The reference to connection listener
      * \param   ownerThread     The name of thread instance to dispatch messages.
      *                          If nullptr, current dispatching thread is used to dispatch messages.
      * \return  Returns pointer to instantiated proxy object.
      **/
-    static ConnectionManagerProxy * createProxy( const char * roleName, IEProxyListener & connectListener, const char * ownerThread = nullptr );
+    static ConnectionManagerProxy * createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread = String::EmptyString );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Constructor. Creates Proxy object by given role name. 
+     * \brief   Creates Proxy object by given role name.
      *          Do not create proxy object directly, instead use CreateProxy function.
      * \param   roleName    The role name of proxy, i.e. role name of server component object.
      * \param   ownerThread The instance of thread to dispatch messages.
      *                      If nullptr, current dispatching thread is used to dispatch messages.
      **/
-    explicit ConnectionManagerProxy( const char * roleName, DispatcherThread * ownerThread = nullptr );
+    explicit ConnectionManagerProxy( const String & roleName, DispatcherThread * ownerThread = nullptr );
     /**
      * \brief   Destructor
      **/
@@ -134,9 +133,9 @@ public:
     /**
      * \brief   Returns the value of ConnectionList attribute.
      *          To get valid value, the Update Notification should be enabled. 
-     *          Attribute ConnectionList description: 
+     *          Attribute ConnectionList description:
      *          The map of all active connections
-     * \param   state   On returns, contains the validation flag of attribute data. 
+     * \param   state   On returns, contains the validation flag of attribute data.
      *                  Check validation flag before use attribute value.
      **/
     inline const NEConnectionManager::MapConnection & getConnectionList( NEService::eDataStateType & state ) const;
@@ -147,7 +146,7 @@ public:
     /**
      * \brief   Returns value of nickName of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
-     *          Parameter nickName description: 
+     *          Parameter nickName description:
      *          Client connection data, which contains nick name and connection date-time
      **/
     inline const String & getParamnickName( void ) const;
@@ -155,7 +154,7 @@ public:
     /**
      * \brief   Returns value of cookie of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
-     *          Parameter cookie description: 
+     *          Parameter cookie description:
      *          Connection assigned cookie for client service
      **/
     inline unsigned int getParamcookie( void ) const;
@@ -163,15 +162,15 @@ public:
     /**
      * \brief   Returns value of dateTime of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
-     *          Parameter dateTime description: 
-     *          The client service connection timestamp in UTC
+     *          Parameter dateTime description:
+     *          The client service connection time-stamp in UTC
      **/
     inline const DateTime & getParamdateTime( void ) const;
 
     /**
      * \brief   Returns value of result of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
-     *          Parameter result description: 
+     *          Parameter result description:
      *          The connection operation result
      **/
     inline NEConnectionManager::eConnectionResult getParamresult( void ) const;
@@ -179,7 +178,7 @@ public:
     /**
      * \brief   Returns value of connection of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
-     *          Parameter connection description: 
+     *          Parameter connection description:
      *          The connection structure after registration.
      **/
     inline const NEConnectionManager::sConnection & getParamconnection( void ) const;
@@ -187,7 +186,7 @@ public:
     /**
      * \brief   Returns value of connectionList of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
-     *          Parameter connectionList description: 
+     *          Parameter connectionList description:
      *          The list of all servicing connections.
      **/
     inline const NEConnectionManager::ListConnection & getParamconnectionList( void ) const;
@@ -195,7 +194,7 @@ public:
     /**
      * \brief   Returns value of success of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
-     *          Parameter success description: 
+     *          Parameter success description:
      *          Flag, indicating whether the request to register connection succeeded or not.
      **/
     inline bool getParamsuccess( void ) const;
@@ -203,7 +202,7 @@ public:
     /**
      * \brief   Returns value of updatedList of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
-     *          Parameter updatedList description: 
+     *          Parameter updatedList description:
      *          The complete list of clients to send.
      **/
     inline const NEConnectionManager::MapConnection & getParamupdatedList( void ) const;
@@ -211,7 +210,7 @@ public:
     /**
      * \brief   Returns value of clientConnected of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
-     *          Parameter clientConnected description: 
+     *          Parameter clientConnected description:
      *          New client data, which contains nick name and connected date-time
      **/
     inline const NEConnectionManager::sConnection & getParamclientConnected( void ) const;
@@ -219,7 +218,7 @@ public:
     /**
      * \brief   Returns value of clientLeft of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
-     *          Parameter clientLeft description: 
+     *          Parameter clientLeft description:
      *          The connection data of disconnected client.
      **/
     inline const NEConnectionManager::sConnection & getParamclientLeft( void ) const;
@@ -232,11 +231,11 @@ public:
      *          The request to connect to system
      * \param   caller      The reference of caller object to get response.
      * \param   nickName    The nick name of connecting client service
-     * \param   dateTime    The connecting client connection timestamp in UTC
+     * \param   dateTime    The connecting client connection time-stamp in UTC
      * \return  The sequence count number of call
      * \see     responseConnect
      **/
-    unsigned int requestConnet( IENotificationEventConsumer & caller, const String & nickName, const DateTime & dateTime );
+    unsigned int requestConnect( IENotificationEventConsumer & caller, const String & nickName, const DateTime & dateTime );
     
     /**
      * \brief   Request call.
@@ -245,7 +244,7 @@ public:
      * \param   nickName        The nick name of connection used in service
      * \param   cookie          The cookie value to set
      * \param   connectCookie   The cookie to use for registration. 
-     * \param   dateRegister    The connection registration timestamp
+     * \param   dateRegister    The connection registration time-stamp
      * \return  The sequence count number of call
      * \see     responseRegisterConnection
      **/
@@ -259,7 +258,7 @@ public:
      * \param   dateTime    Disconnect request date-time
      * \see     Has no Response.
      **/
-    void requestDiconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime );
+    void requestDisconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations.
@@ -268,22 +267,21 @@ public:
     /**
      * \brief   Checks whether there is already listener of Notification Event
      *          exists. If does not exit, adds new listener entry in the listener
-     *          list. If need, send appropriate message to Stub to start 
+     *          list. If need, send appropriate message to Stub to start
      *          sending attribute update messages. If already listener
-     *          exists in listener list and notifyAlways flag is true, 
+     *          exists in listener list and notifyAlways flag is true,
      *          sends immediate update notification based on existing update data status.
      * \param   msgId           The Notification Message ID
      * \param   consumer        The pointer of Notification Event consumer
      * \param   notifyAlways    The flag, indicating whether the notification event
      *                          should be send to client immediately if the notification
-     *                          already exists. By default it is false. 
+     *                          already exists. By default it is false.
      **/
     inline void setNotification( NEConnectionManager::eMessageIDs notifyId, IENotificationEventConsumer & listener, bool notifyAlways = false );
     /**
      * \brief   Clears listener entries of specified Notification Event consumer
      * \param   msgId       The Notification Message ID
      * \param   consumer    The pointer of Notification Event Consumer.
-     * \return  
      **/
     inline void clearNotification( NEConnectionManager::eMessageIDs notifyId, IENotificationEventConsumer & listener );
     /**
@@ -310,7 +308,7 @@ protected:
     virtual void processResponseEvent( ServiceResponseEvent & eventElem ) override;
     /**
      * \brief   Method derived from IEProxyEventConsumer interface.
-     *          Triggered when on server side a certain Attribute 
+     *          Triggered when on server side a certain Attribute
      *          value has been updated.
      * \param   eventElem   The Service Response event object.
      *                      Contains new updated value of Attribute
@@ -323,8 +321,8 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Creates notification event to send to client objects. 
-     *          All Notification Events should be internal events and 
+     * \brief   Creates notification event to send to client objects.
+     *          All Notification Events should be internal events and
      *          should be instances of NotificationEvent class.
      * \param   data    The Notification Event data object containing
      *                  notification information.
@@ -333,7 +331,7 @@ protected:
     virtual NotificationEvent * createNotificationEvent( const NotificationEventData & data ) const override;
 
     /**
-     * \brief   Create Request event to send to Stub object. 
+     * \brief   Create Request event to send to Stub object.
      *          Request events are triggering request calls on Stub side.
      * \param   args    The buffer containing serialized arguments of request call.
      * \param   reqId   The ID of request call.
@@ -343,7 +341,7 @@ protected:
 
     /**
      * \brief   Creates event requesting to receive update notification events.
-     *          The caller should be address of current proxy and the target 
+     *          The caller should be address of current proxy and the target
      *          should address of appropriate sub address.
      * \param   msgId       The message ID to send. Should be either attribute or response (info)
      * \param   reqType     The type of request.
@@ -352,7 +350,7 @@ protected:
     virtual ServiceRequestEvent * createNotificationRequestEvent( unsigned int msgId, NEService::eRequestType reqType ) override;
 
     /**
-     * \brief   Overwrite method to create response event from streaming object for 
+     * \brief   Overwrite method to create response event from streaming object for
      *          further dispatching by proxy.
      * \param   stream  Streaming object, which contains event data.
      * \return  If operation succeeds, returns valid pointer to Service Response event object.
@@ -419,7 +417,7 @@ private:
 
     /**
      * \brief   dateTime parameter value.
-     *          The client service connection timestamp in UTC
+     *          The client service connection time-stamp in UTC
      **/
     DateTime                                mParamdateTime;
 
@@ -475,7 +473,7 @@ private:
     /**
      * \brief   Updates attribute and response call variable data received from Stub
      * \param   eventElem   The event object containing buffer with serialized data
-     * \param   respId      The response message ID, which received. 
+     * \param   respId      The response message ID, which received.
      *                      It is either attribute or response message ID
      **/
     void updateData( ConnectionManagerResponseEvent & eventElem, NEConnectionManager::eMessageIDs respId );
@@ -483,8 +481,8 @@ private:
      * \brief   Starts processing response message. The received event contains
      *          ID of appropriate message to update and contains result flag.
      *          If request calls failed (busy), the ID in event is a request call ID.
-     *          In all other cases, the ID is either response call, info call, 
-     *          or attribute update notification call. 
+     *          In all other cases, the ID is either response call, info call,
+     *          or attribute update notification call.
      *          It will also update parameters and states.
      * \param   evenElem    The response object containing message ID, result and data.
      **/
@@ -506,7 +504,7 @@ private:
      *                      If nullptr, current dispatching thread is used to dispatch messages.
      * \return  Pointer to instantiated proxy object.
      **/
-    static ProxyBase * _createProxy( const char * roleName, DispatcherThread * ownerThread = nullptr );
+    static ProxyBase * _createProxy( const String & roleName, DispatcherThread * ownerThread = nullptr );
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -617,6 +615,7 @@ inline const NEConnectionManager::sConnection & ConnectionManagerProxy::getParam
     return mParamclientLeft;
 }
 
+#endif   // GENERATED_PRIVATE_CONNECTIONMANAGERPROXY_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/private/ConnectionManagerProxy.hpp file

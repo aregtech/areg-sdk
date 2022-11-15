@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_COMPONENTTHREAD_HPP
+#define AREG_COMPONENT_COMPONENTTHREAD_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/ComponentThread.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -23,6 +24,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/component/DispatcherThread.hpp"
 
+#include "areg/component/private/Watchdog.hpp"
 #include "areg/base/TEResourceMap.hpp"
 
 /************************************************************************
@@ -50,7 +52,7 @@ private:
      * \brief   ComponentThread::ListComponent;
      *          Linked List of instantiated components in the Component Thread.
      **/
-    using ListComponent     = TELinkedList<Component*, Component*>;
+    using ListComponent     = TELinkedList<Component*>;
 
 //////////////////////////////////////////////////////////////////////////
 // Declare as Runtime instance
@@ -93,9 +95,14 @@ public:
     /**
      * \brief   Initialization constructor.
      *          To create dispatcher thread, unique thread name required.
-     * \param   threadName  The unique name of component thread.
+     * \param   threadName      The unique name of component thread.
+     * \param   watchdogTimeout The watchdog timeout in milliseconds.
+     *                          The watchdog is a guard to set the timeout to process and event.
+     *                          If timeout is not zero and it expires before the thread processed
+     *                          an event, it terminates and restarts the thread again.
+     *                          There is no guarantee that terminated thread will make all cleanups properly.
      **/
-    explicit ComponentThread( const char * threadName );
+    explicit ComponentThread( const String & threadName, uint32_t watchdogTimeout = NECommon::WATCHDOG_IGNORE);
 
     /**
      * \brief   Destructor
@@ -105,6 +112,22 @@ public:
 //////////////////////////////////////////////////////////////////////////
 // Operations and overrides.
 //////////////////////////////////////////////////////////////////////////
+
+    /**
+     * \brief   Call to terminate the component thread and make cleanups.
+     *          This method cleans up all components and worker threads bind
+     *          with the component thread. After calling this method the component
+     *          thread is not valid and not operable anymore.
+     *          The method does not automatically delete the component thread object.
+     **/
+    void terminateSelf( void );
+
+    /**
+     * \brief   Returns the watchdog timeout value in milliseconds. The value 0
+     *          (NECommon::WATCHDOG_IGNORE) means the watchdog is ignored by the worker thread.
+     **/
+    inline uint32_t getWatchdogTimeout(void) const;
+
 /************************************************************************/
 // Thread overrides
 /************************************************************************/
@@ -215,6 +238,20 @@ protected:
      **/
     virtual void destroyComponents( void );
 
+/************************************************************************/
+// IEEventDispatcher overrides
+/************************************************************************/
+
+    /**
+     * \brief	The method is triggered to start dispatching valid event.
+     *          Here dispatcher should forward message to appropriate 
+     *          registered event consumer
+     * \param	eventElem   Event element to dispatch	
+     * \return	Returns true if at least one consumer processed event.
+     *          Otherwise it returns false.
+     **/
+    virtual bool dispatchEvent( Event & eventElem ) override;
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
@@ -231,6 +268,16 @@ private:
      **/
     static inline ComponentThread * _getCurrentComponentThread( void );
 
+    /**
+     * \brief   Called to shutdown proxies registered in the thread.
+     **/
+    inline void _shutdownProxies( void );
+
+    /**
+     * \brief   Called to shutdown components registered in the thread.
+     **/
+    inline void _shutdownComponents( void );
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
 //////////////////////////////////////////////////////////////////////////
@@ -238,7 +285,12 @@ protected:
     /**
      * \brief   Current component of Component Thread.
      **/
-    Component *   mCurrentComponent;
+    Component *     mCurrentComponent;
+
+    /**
+     * \brief   The watchdog object to track the event processing.
+     **/
+    Watchdog        mWatchdog;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -266,5 +318,12 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// ComponentThread class inline function implementation
+// ComponentThread inline methods.
 //////////////////////////////////////////////////////////////////////////
+
+inline uint32_t ComponentThread::getWatchdogTimeout(void) const
+{
+    return mWatchdog.getTimeout();
+}
+
+#endif  // AREG_COMPONENT_COMPONENTTHREAD_HPP

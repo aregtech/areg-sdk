@@ -2,9 +2,9 @@
 // Begin generate generated/src/private/SystemShutdownStub.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     30.09.2021  01:22:15 GMT+02:00 
+ * Generated at     13.08.2022  13:59:49 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SystemShutdown.
  *
  * \file            generated/src/SystemShutdownStub.hpp
@@ -20,7 +20,8 @@
 #include "generated/src/private/SystemShutdownEvents.hpp"
 
 #include "areg/component/ServiceResponseEvent.hpp"
-#include "areg/base/Thread.hpp"
+#include "areg/component/Component.hpp"
+#include "areg/component/ComponentThread.hpp"
 #include "areg/trace/GETrace.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -32,7 +33,7 @@
 //////////////////////////////////////////////////////////////////////////
 SystemShutdownStub::SystemShutdownStub( Component & masterComp )
     : StubBase    ( masterComp, NESystemShutdown::getInterfaceData() )
-    
+
     , mServiceState       (  )
     , mServiceStateState  ( NEService::eDataStateType::DataIsUnavailable )
     
@@ -56,9 +57,9 @@ DEF_TRACE_SCOPE(generated_src_SystemShutdownStub_startupServiceInterface);
 void SystemShutdownStub::startupServiceInterface( Component & holder )
 {
     TRACE_SCOPE(generated_src_SystemShutdownStub_startupServiceInterface);
-    
-    SystemShutdownRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
-    SystemShutdownNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
+
+    SystemShutdownRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
+    SystemShutdownNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
     StubBase::startupServiceInterface( holder );
 
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] has been started and is available ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
@@ -69,9 +70,9 @@ void SystemShutdownStub::shutdownServiceIntrface( Component & holder )
 {
     TRACE_SCOPE(generated_src_SystemShutdownStub_shutdownServiceIntrface);
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] is shutting down and not available anymore ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
-    
-    SystemShutdownRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
-    SystemShutdownNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
+
+    SystemShutdownRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
+    SystemShutdownNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
     StubBase::shutdownServiceIntrface( holder );
 }
 
@@ -119,7 +120,7 @@ void SystemShutdownStub::errorRequest( unsigned int msgId, bool msgCancel )
 {
     NEService::eResultType result = NEService::eResultType::NotProcessed;
     msg_id listenerId = msgId;
-    
+
     switch ( static_cast<NESystemShutdown::eMessageIDs>(msgId) )
     {
 /************************************************************************
@@ -149,7 +150,7 @@ void SystemShutdownStub::errorRequest( unsigned int msgId, bool msgCancel )
         ASSERT(false);
         break;
     }
-    
+
     StubBase::StubListenerList listeners;
     if ( findListeners(listenerId, listeners) > 0 )
     {

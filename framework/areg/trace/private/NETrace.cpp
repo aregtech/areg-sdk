@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/NETrace.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -20,51 +20,51 @@
 
 #include <string.h>
 
-AREG_API const char * NETrace::convToString( NETrace::eLogPriority prio )
+AREG_API_IMPL const String& NETrace::convToString( NETrace::eLogPriority prio )
 {
     switch ( prio )
     {
     case NETrace::eLogPriority::PrioNotset:
-        return NETrace::PRIO_NOTSET_STR.data( );
+        return NETrace::PRIO_NOTSET_STR;
     case NETrace::eLogPriority::PrioFatal:
-        return NETrace::PRIO_FATAL_STR.data( );
+        return NETrace::PRIO_FATAL_STR;
     case NETrace::eLogPriority::PrioError:
-        return NETrace::PRIO_ERROR_STR.data( );
+        return NETrace::PRIO_ERROR_STR;
     case NETrace::eLogPriority::PrioWarning:
-        return NETrace::PRIO_WARNING_STR.data( );
+        return NETrace::PRIO_WARNING_STR;
     case NETrace::eLogPriority::PrioInfo:
-        return NETrace::PRIO_INFO_STR.data( );
+        return NETrace::PRIO_INFO_STR;
     case NETrace::eLogPriority::PrioDebug:
-        return NETrace::PRIO_DEBUG_STR.data( );
+        return NETrace::PRIO_DEBUG_STR;
     case NETrace::eLogPriority::PrioScope:
-        return NETrace::PRIO_SCOPE_STR.data( );
+        return NETrace::PRIO_SCOPE_STR;
     case NETrace::eLogPriority::PrioIgnore:
     case NETrace::eLogPriority::PrioIgnoreLayout:
     case NETrace::eLogPriority::PrioAny:
-        return NETrace::PRIO_NO_PRIO.data( );
+        return NETrace::PRIO_NO_PRIO;
     default:
         ASSERT(false);
-        return NETrace::PRIO_NO_PRIO.data( );
+        return NETrace::PRIO_NO_PRIO;
     }
 }
 
-AREG_API NETrace::eLogPriority NETrace::convFromString( const char * strPrio )
+AREG_API_IMPL NETrace::eLogPriority NETrace::convFromString( const String& strPrio )
 {
-    if ( NEString::isEmpty<char>(strPrio) == false )
+    if ( strPrio.isEmpty() == false )
     {
-        if ( NEString::compareIgnoreCase<char, char>( strPrio, NETrace::PRIO_NOTSET_STR.data( ) ) == 0 )
+        if ( strPrio.compare( NETrace::PRIO_NOTSET_STR, false ) == NEMath::eCompare::Equal)
             return NETrace::eLogPriority::PrioNotset;
-        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_SCOPE_STR.data( ) ) == 0 )
+        else if (strPrio.compare( NETrace::PRIO_SCOPE_STR, false ) == NEMath::eCompare::Equal)
             return NETrace::eLogPriority::PrioScope;
-        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_DEBUG_STR.data( ) ) == 0 )
+        else if (strPrio.compare( NETrace::PRIO_DEBUG_STR, false ) == NEMath::eCompare::Equal)
             return NETrace::eLogPriority::PrioDebug;
-        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_INFO_STR.data( ) ) == 0 )
+        else if (strPrio.compare( NETrace::PRIO_INFO_STR, false ) == NEMath::eCompare::Equal)
             return NETrace::eLogPriority::PrioInfo;
-        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_WARNING_STR.data( ) ) == 0 )
+        else if (strPrio.compare( NETrace::PRIO_WARNING_STR, false ) == NEMath::eCompare::Equal)
             return NETrace::eLogPriority::PrioWarning;
-        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_ERROR_STR.data( ) ) == 0 )
+        else if (strPrio.compare( NETrace::PRIO_ERROR_STR, false ) == NEMath::eCompare::Equal)
             return NETrace::eLogPriority::PrioError;
-        else if ( NEString::compareIgnoreCase(strPrio, NETrace::PRIO_FATAL_STR.data( ) ) == 0 )
+        else if (strPrio.compare( NETrace::PRIO_FATAL_STR, false ) == NEMath::eCompare::Equal)
             return NETrace::eLogPriority::PrioFatal;
     }
 
@@ -193,47 +193,52 @@ NETrace::S_LogMessage & NETrace::S_LogMessage::operator = (const NETrace::S_LogM
     return (*this);
 }
 
-AREG_API bool NETrace::startLogging(const char * fileConfig /*= nullptr */ )
+AREG_API_IMPL bool NETrace::startLogging(const char * fileConfig /*= nullptr */ )
 {
     return TraceManager::startLogging(fileConfig);
 }
 
-AREG_API void NETrace::stopLogging(void)
+AREG_API_IMPL void NETrace::stopLogging(void)
 {
     TraceManager::stopLogging();
 }
 
-AREG_API void NETrace::activateScope(TraceScope & traceScope)
+AREG_API_IMPL void NETrace::activateScope(TraceScope & traceScope)
 {
     TraceManager::activateTraceScope(traceScope);
 }
 
-AREG_API bool NETrace::isStarted( void )
+AREG_API_IMPL bool NETrace::isStarted( void )
 {
     return TraceManager::isLoggingStarted();
 }
 
-AREG_API bool NETrace::isConfigured(void)
+AREG_API_IMPL bool NETrace::isConfigured(void)
 {
     return TraceManager::isLoggingEnabled();
 }
 
-AREG_API bool NETrace::configureLoging(const char * fileConfig)
+AREG_API_IMPL bool NETrace::configureLoging(const char * fileConfig)
 {
     return TraceManager::configureLogging(fileConfig);
 }
 
-AREG_API bool NETrace::isEnabled(void)
+AREG_API_IMPL bool NETrace::isEnabled(void)
 {
     return TraceManager::isLoggingEnabled();
 }
 
-AREG_API bool NETrace::forceStartLogging(void)
+AREG_API_IMPL const String& NETrace::getConfigFile(void)
+{
+    return TraceManager::getConfigFile();
+}
+
+AREG_API_IMPL bool NETrace::forceStartLogging(void)
 {
     return TraceManager::forceActivateLogging();
 }
 
-AREG_API bool NETrace::configAndStart(const char * fileConfig /*= nullptr */)
+AREG_API_IMPL bool NETrace::configAndStart(const char * fileConfig /*= nullptr */)
 {
     if (TraceManager::configureLogging(fileConfig))
     {

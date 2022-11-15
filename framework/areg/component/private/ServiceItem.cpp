@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ServiceItem.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -39,8 +39,8 @@ ServiceItem::ServiceItem( void )
 {
 }
 
-ServiceItem::ServiceItem(const char * serviceName)
-    : mServiceName      ( serviceName != nullptr ? serviceName : "")
+ServiceItem::ServiceItem(const String & serviceName)
+    : mServiceName      ( serviceName )
     , mServiceVersion   ( Version::INVALID_VERSION )
     , mServiceType      ( NEService::eServiceType::ServiceLocal )
     , mMagicNum         ( NEMath::CHECKSUM_IGNORE )
@@ -49,8 +49,8 @@ ServiceItem::ServiceItem(const char * serviceName)
     mMagicNum = ServiceItem::_magicNumber(*this);
 }
 
-ServiceItem::ServiceItem( const char * serviceName, const Version & serviceVersion, NEService::eServiceType serviceType )
-    : mServiceName      ( serviceName != nullptr ? serviceName : "")
+ServiceItem::ServiceItem( const String & serviceName, const Version & serviceVersion, NEService::eServiceType serviceType )
+    : mServiceName      ( serviceName )
     , mServiceVersion   ( serviceVersion )
     , mServiceType      ( serviceType )
     , mMagicNum         ( NEMath::CHECKSUM_IGNORE )
@@ -87,13 +87,13 @@ ServiceItem::ServiceItem( ServiceItem && source ) noexcept
 
 String ServiceItem::convToString(void) const
 {
-    String result;
+    String result(static_cast<uint32_t>(0xFF));
 
-    result += mServiceName;
-    result += NECommon::COMPONENT_PATH_SEPARATOR.data();
-    result += mServiceVersion.convToString();
-    result += NECommon::COMPONENT_PATH_SEPARATOR.data();
-    result += String::int32ToString(static_cast<int>(mServiceType), NEString::eRadix::RadixDecimal);
+    result.append(mServiceName)
+          .append(NECommon::COMPONENT_PATH_SEPARATOR)
+          .append(mServiceVersion.convToString())
+          .append(NECommon::COMPONENT_PATH_SEPARATOR)
+          .append(String::toString(static_cast<int>(mServiceType), NEString::eRadix::RadixDecimal));
 
     return result;
 }
@@ -104,7 +104,7 @@ void ServiceItem::convFromString(  const char* pathService, const char** out_nex
     mServiceName        = String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
     mServiceVersion     = String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
     String serviceType  = String::getSubstring(strSource, NECommon::COMPONENT_PATH_SEPARATOR.data( ), &strSource);
-    mServiceType        = static_cast<NEService::eServiceType>(serviceType.convToInt32());
+    mServiceType        = static_cast<NEService::eServiceType>(serviceType.toInt32());
     mMagicNum           = ServiceItem::_magicNumber(*this);
 
     if (out_nextPart != nullptr)
@@ -124,23 +124,4 @@ unsigned int ServiceItem::_magicNumber(const ServiceItem svcItem)
     }
 
     return result;
-}
-
-AREG_API const IEInStream & operator >> ( const IEInStream & stream, ServiceItem & input )
-{
-    stream >> input.mServiceName;
-    stream >> input.mServiceVersion;
-    stream >> input.mServiceType;
-    
-    input.mMagicNum = ServiceItem::_magicNumber(input);
-
-    return stream;
-}
-
-AREG_API IEOutStream & operator << ( IEOutStream & stream, const ServiceItem & output )
-{
-    stream << output.mServiceName;
-    stream << output.mServiceVersion;
-    stream << output.mServiceType;
-    return stream;
 }

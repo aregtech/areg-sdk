@@ -58,7 +58,7 @@ public:
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    
+
     /**
      * \brief   Instantiates the component object.
      * \param   entry   The entry of registry, which describes the component.
@@ -76,7 +76,7 @@ protected:
     /**
      * \brief   Response callback.
      *          The response to hello world request.
-     *          Overwrite, if need to handle Response call of server object. 
+     *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientInfo  The client information set by servicing component. If empty or invalid ID, the message output failed.
      * \see     requestHelloWorld
@@ -85,8 +85,8 @@ protected:
 
     /**
      * \brief   Server broadcast.
-     *          DESCRIPTION MISSED
-     *          Overwrite, if need to handle Broadcast call of server object. 
+     *          Triggered when the service is unavailable.
+     *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      **/
     virtual void broadcastServiceUnavailable( void ) override;
@@ -105,7 +105,7 @@ protected:
      * \param   FailureReason   The failure reason value of request call.
      **/
     virtual void requestClientShutdownFailed( NEService::eResultType FailureReason ) override;
-    
+
 /************************************************************************/
 // IEProxyListener Overrides
 /************************************************************************/
@@ -134,7 +134,7 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Triggered when Timer is expired. 
+     * \brief   Triggered when Timer is expired.
      *          The passed Timer parameter is indicating object, which has been expired.
      *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.

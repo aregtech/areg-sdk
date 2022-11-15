@@ -33,7 +33,7 @@ bool ClientComponent::serviceConnected(bool isConnected, ProxyBase & proxy)
         if (isConnected)
         {
             // Up from this part the client can:
-            //      a. call requests to run on server side.
+            //      a. call requests to run on the server side.
             //      b. subscribe on data update notification
             //      c. subscribe on broadcasts and responses.
 
@@ -55,8 +55,8 @@ void ClientComponent::responseHelloService( bool success )
     printf("%s to output message.\n", success ? "succeeded" : "failed");
 
     // Sleep for no reason! Do not do this in a real application.
-    // It is done to give chance to see output message on console.
-    // Otherwise, the next line of code close the application and yuo miss the message on console.
+    // It is done to give a chance to see an output message on the console.
+    // Otherwise, the next line of code closes the application and you miss the message on console.
     Thread::sleep(NECommon::WAIT_1_SECOND);
 
     // The client completed the job, set signal to quit application

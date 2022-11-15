@@ -141,10 +141,10 @@
     <ClCompile Include="areg\appbase\private\Application.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\appbase\private\ApplicationPosix.cpp">
+    <ClCompile Include="areg\appbase\private\posix\ApplicationPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\appbase\private\ApplicationWin.cpp">
+    <ClCompile Include="areg\appbase\private\win32\ApplicationWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\base\private\posix\CriticalSectionIX.cpp">
@@ -312,13 +312,7 @@
     <ClCompile Include="areg\component\private\TimerEventData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\component\private\TimerInfo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\component\private\TimerManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\component\private\TimerManagingEvent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\component\private\WorkerThread.cpp">
@@ -513,6 +507,42 @@
     <ClCompile Include="areg\trace\private\LogConfiguration.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="areg\component\private\Watchdog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\component\private\WatchdogManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\component\private\win32\WatchdogManagerWin32.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\component\private\posix\WatchdogManagerPosix.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\component\private\TimerBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\component\private\win32\TimerBaseWin32.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\component\private\posix\TimerBasePosix.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\component\private\TimerManagerBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\component\private\TimerManagerEvent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\appbase\private\win32\ConsoleWin32.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\appbase\private\posix\ConsolePosix.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\appbase\private\Console.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\windows\GEWindows.h">
@@ -591,9 +621,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\TELinkedList.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\base\TEPair.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\TEProperty.hpp">
@@ -803,13 +830,7 @@
     <ClInclude Include="areg\component\private\TimerEventData.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\component\private\TimerInfo.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="areg\component\private\TimerManager.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\component\private\TimerManagingEvent.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\component\private\EventDispatcherBase.hpp">
@@ -1026,6 +1047,27 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\trace\private\LogConfiguration.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\component\private\Watchdog.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\component\private\WatchdogManager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\component\TimerBase.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\component\private\TimerManagerBase.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\component\private\TimerManagerEvent.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\base\TEMap.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\appbase\Console.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -6,7 +6,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        mcrouter/tcp/private/ServiceProxy.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -31,7 +31,19 @@ ServiceProxy::ServiceProxy( const ProxyAddress & addrProxy )
 
 ServiceProxy::ServiceProxy( ProxyAddress && addrProxy ) noexcept
     : mProxyAddress ( std::move(addrProxy) )
-    , mConnectStatus( addrProxy.isValid( ) ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown )
+    , mConnectStatus( mProxyAddress.isValid( ) ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown )
+{
+}
+
+ServiceProxy::ServiceProxy(const StubAddress & addrStub)
+    : mProxyAddress (static_cast<const ServiceAddress&>(addrStub))
+    , mConnectStatus(NEService::eServiceConnection::ServiceConnectionUnknown)
+{
+}
+
+ServiceProxy::ServiceProxy( StubAddress && addrStub) noexcept
+    : mProxyAddress (std::move(addrStub))
+    , mConnectStatus(NEService::eServiceConnection::ServiceConnectionUnknown)
 {
 }
 
@@ -74,7 +86,7 @@ ServiceProxy & ServiceProxy::operator = ( const ProxyAddress & addrProxy )
 ServiceProxy & ServiceProxy::operator = ( ProxyAddress && addrProxy ) noexcept
 {
     mProxyAddress   = std::move(addrProxy);
-    mConnectStatus  = addrProxy.isValid( ) ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown;
+    mConnectStatus  = mProxyAddress.isValid( ) ? NEService::eServiceConnection::ServicePending : NEService::eServiceConnection::ServiceConnectionUnknown;
     
     return (*this);
 }

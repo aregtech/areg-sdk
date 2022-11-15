@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_PRIVATE_COMPONENTINFO_HPP
+#define AREG_COMPONENT_PRIVATE_COMPONENTINFO_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/private/ComponentInfo.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
@@ -49,11 +50,6 @@ class AREG_API ComponentInfo
 // Internal class and types
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Helper class for worker thread map.
-     **/
-    using _ImplWorkerThreadMap  = TEHashMapImpl<const ThreadAddress &, WorkerThread *>;
-
     //////////////////////////////////////////////////////////////////////////
     // ComponentInfo::_WorkerThreadMap type declaration
     //////////////////////////////////////////////////////////////////////////
@@ -61,7 +57,7 @@ private:
      * \brief   The Hash Map object to save information of threads
      *          saved in specified Component Info object.
      **/
-    using _WorkerThreadMap  = TEHashMap<ThreadAddress, WorkerThread*, const ThreadAddress &, WorkerThread*, _ImplWorkerThreadMap>;
+    using _WorkerThreadMap  = TEMap<ThreadAddress, WorkerThread*>;
 
     /**
      * \brief   Resource mapping object type. 
@@ -83,7 +79,7 @@ public:
      * \param   masterThread    The Master Thread of Component (Component Thread)
      * \param   roleName        The Role Name of component, must not be empty
      **/
-    ComponentInfo( ComponentThread & masterThread, const char * const roleName );
+    ComponentInfo( ComponentThread & masterThread, const String & roleName );
 
     /**
      * \brief   Destructor
@@ -144,7 +140,7 @@ public:
      *          and returns true, if registration succeeded.
      * \param   workerThread    The Worker Thread to register in Component Info
      **/
-    bool registerWorkerThread( WorkerThread & workerThread );
+    void registerWorkerThread( WorkerThread & workerThread );
 
     /**
      * \brief   Unregisters specified Worker Thread object in Component Info
@@ -173,7 +169,7 @@ public:
      * \return  Returns pointer of valid Worker Thread if there is registered
      *          Worker Thread with specified unique name. Otherwise, returns nullptr.
      **/
-    inline WorkerThread * findWorkerThread( const char* threadName ) const;
+    inline WorkerThread * findWorkerThread( const String & threadName ) const;
 
     /**
      * \brief   Looks up for Worker Thread by specified unique Component Path,
@@ -186,7 +182,7 @@ public:
      * \return  Returns pointer of valid Worker Thread if there is registered
      *          Worker Thread with extracted unique address. Otherwise, returns nullptr.
      **/
-    inline WorkerThread * findThreadByPath( const char* componentPath ) const;
+    inline WorkerThread * findThreadByPath( const String & componentPath ) const;
 
     /**
      * \brief   By specified Event Consumer runtime class ID object, looks up for registered
@@ -230,6 +226,15 @@ public:
      *          in int_out_threadAddress parameter on output. Otherwise, it returns nullptr.
      **/
     inline WorkerThread * getNextWorkerThread( ThreadAddress & int_out_threadAddress );
+
+    /**
+     * \brief   Removes first worker thread from the list of worker threads.
+     * 
+     * \param   out_threadAddress   On output it contains the address of the removed worker thread.
+     * \return  Returns valid pointer to the worker thread object if operation succeeded.
+     *          Otherwise, returns nullptr.
+     */
+    inline WorkerThread * removeFirstWorkerThread( ThreadAddress & OUT out_threadAddress );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -293,13 +298,13 @@ inline WorkerThread* ComponentInfo::findWorkerThread( const ThreadAddress& threa
     return mWorkerThreadMap.findResourceObject(threadAddress);
 }
 
-inline WorkerThread* ComponentInfo::findWorkerThread( const char* threadName ) const
+inline WorkerThread* ComponentInfo::findWorkerThread( const String & threadName ) const
 {
     Thread* targetThread = Thread::findThreadByName(threadName);
     return (targetThread != nullptr ? findWorkerThread(targetThread->getAddress()) : nullptr);
 }
 
-inline WorkerThread* ComponentInfo::findThreadByPath( const char* componentPath ) const
+inline WorkerThread* ComponentInfo::findThreadByPath( const String & componentPath ) const
 {
     ComponentAddress componentAddress = ComponentAddress::convPathToAddress(componentPath);
     return findWorkerThread(componentAddress.getThreadAddress());
@@ -315,7 +320,21 @@ inline WorkerThread* ComponentInfo::getNextWorkerThread( ThreadAddress & int_out
     return mWorkerThreadMap.resourceNextKey(int_out_threadAddress);
 }
 
+inline WorkerThread* ComponentInfo::removeFirstWorkerThread(ThreadAddress& OUT out_threadAddress)
+{
+    std::pair<ThreadAddress, WorkerThread*> elem{ThreadAddress::INVALID_THREAD_ADDRESS, nullptr};
+    if (mWorkerThreadMap.isEmpty() == false)
+    {
+        mWorkerThreadMap.removeResourceFirstElement(elem);
+    }
+
+    out_threadAddress = elem.first;
+    return elem.second;
+}
+
 inline bool ComponentInfo::hasWorkerThreads( void ) const
 {
     return (mWorkerThreadMap.isEmpty() == false);
 }
+
+#endif  // AREG_COMPONENT_PRIVATE_COMPONENTINFO_HPP

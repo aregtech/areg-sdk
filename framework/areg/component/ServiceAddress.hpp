@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_COMPONENT_SERVICEADDRESS_HPP
+#define AREG_COMPONENT_SERVICEADDRESS_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/component/ServiceAddress.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
@@ -74,17 +75,17 @@ public:
      * \param   serviceType     The type of service.
      * \param   roleName        The role name of owner component.
      **/
-    ServiceAddress( const char * serviceName
+    ServiceAddress( const String & serviceName
                   , const Version & serviceVersion
                   , NEService::eServiceType serviceType
-                  , const char * roleName );
+                  , const String & roleName );
 
     /**
      * \brief   Creates service address. Sets given service item information and role name of owner component.
      * \param   serviceItem     The service item object, which contains name, version and type information.
      * \param   roleName        The role name of owner component.
      **/
-    ServiceAddress( const ServiceItem  & serviceItem, const char * roleName );
+    ServiceAddress( const ServiceItem  & serviceItem, const String & roleName );
 
     /**
      * \brief   Creates service address, which is contained in stub address object.
@@ -187,7 +188,7 @@ public:
      * \brief   Sets the role name of service address
      * \param   roleName        New role name to set.
      **/
-    inline void setRoleName( const char * roleName );
+    inline void setRoleName( const String & roleName );
 
     /**
      * \brief   Returns service item information, which contains service name, version and type.
@@ -242,6 +243,25 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
+// Hasher of ServiceAddress class
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   A template to calculate hash value of the ServiceAddress.
+ */
+namespace std
+{
+    template<>
+    struct hash<ServiceAddress>
+    {
+        //! A function to convert ServiceAddress object to unsigned int.
+        inline unsigned int operator()(const ServiceAddress& key) const
+        {
+            return static_cast<unsigned int>(key);
+        }
+    };
+}
+
+//////////////////////////////////////////////////////////////////////////
 // ServiceAddress class inline methods
 //////////////////////////////////////////////////////////////////////////
 
@@ -289,7 +309,7 @@ inline const String & ServiceAddress::getRoleName(void) const
     return mRoleName;
 }
 
-inline void ServiceAddress::setRoleName(const char * roleName)
+inline void ServiceAddress::setRoleName(const String & roleName)
 {
     mRoleName = roleName;
     mRoleName.truncate(NEUtilities::ITEM_NAMES_MAX_LENGTH);
@@ -325,3 +345,5 @@ inline IEOutStream & operator << ( IEOutStream & stream, const ServiceAddress & 
     stream << output.mRoleName;
     return stream;
 }
+
+#endif  // AREG_COMPONENT_SERVICEADDRESS_HPP

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AREG_BASE_PRIVATE_POSIX_IESYNCHOBJECTBASEIX_HPP
+#define AREG_BASE_PRIVATE_POSIX_IESYNCHOBJECTBASEIX_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -7,7 +8,7 @@
  * You should have received a copy of the AREG SDK license description in LICENSE.txt.
  * If not, please contact to info[at]aregtech.com
  *
- * \copyright   (c) 2017-2021 Aregtech UG. All rights reserved.
+ * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
  * \file        areg/base/private/posix/IESynchObjectBaseIX.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
@@ -24,6 +25,7 @@
 
 #include "areg/base/private/posix/NESynchTypesIX.hpp"
 #include "areg/base/IESynchObject.hpp"
+#include "areg/base/String.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Declared classes and hierarchies.
@@ -88,7 +90,7 @@ public:
     /**
      * \brief   Returns synchronization object name.
      **/
-    inline const char * getName( void ) const;
+    inline const String & getName( void ) const;
 
 /************************************************************************/
 // IESynchObjectBaseIX overrides.
@@ -118,7 +120,7 @@ protected:
     /**
      * \brief   The name of synchronization object.
      **/
-    char                                mSynchName[_MAX_NAME_LENGTH];
+    String  mSynchName;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -137,9 +139,11 @@ inline NESynchTypesIX::eSynchObject IESynchObjectBaseIX::getSynchType( void ) co
     return mSynchType;
 }
 
-inline const char * IESynchObjectBaseIX::getName( void ) const
+inline const String & IESynchObjectBaseIX::getName( void ) const
 {
     return mSynchName;
 }
 
 #endif //  defined(_POSIX) || defined(POSIX)
+
+#endif // AREG_BASE_PRIVATE_POSIX_IESYNCHOBJECTBASEIX_HPP

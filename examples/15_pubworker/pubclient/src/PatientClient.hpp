@@ -101,7 +101,7 @@ protected:
      * \param   workerThreadName    The name of worker thread, which consumer should return
      * \return  Return valid pointer if worker thread has assigned consumer.
      **/
-    virtual IEWorkerThreadConsumer * workerThreadConsumer( const char* consumerName, const char* workerThreadName ) override;
+    virtual IEWorkerThreadConsumer * workerThreadConsumer( const String & consumerName, const String & workerThreadName ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
