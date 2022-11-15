@@ -159,7 +159,7 @@ namespace NESocket
     bool _osGetOption(SOCKETHANDLE hSocket, int level, int name, unsigned long& value)
     {
         ASSERT(hSocket != NESocket::InvalidSocketHandle);
-        int len{ sizeof(unsigned long) };
+        socklen_t len{ sizeof(unsigned long) };
         return (RETURNED_OK == ::getsockopt(static_cast<int>(hSocket), level, name, reinterpret_cast<char*>(&value), &len));
     }
 
