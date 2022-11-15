@@ -1,4 +1,4 @@
-﻿# Build with POSIX API
+# Build with POSIX
 ```
 This file is part of AREG SDK.
 Copyright (c) Aregtech, 2021-2022
@@ -84,9 +84,9 @@ AREG SDK requires _POSIX1.c_ API for multithreading and synchronization. The ARE
 
 ---
 
-## POSIX API
+## POSIX methods
 
-The list of POSIX API and macro used in AREG framework (including multicast message router)
+The list of POSIX methods and macro used in AREG framework (including multicast message router)
 
 ```
 accept
