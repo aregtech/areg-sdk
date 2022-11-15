@@ -616,27 +616,91 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // OS specific methods
 //////////////////////////////////////////////////////////////////////////
+private:
     /**
-     * \brief   Free OS specific resources and close currently opened file.
+     * \brief   OS specific method to close file and free resources.
      */
     void _osCloseFile( void );
-
+    
+    /**
+     * \brief   OS specific method to open file for reading and/or writing.
+     * \return  Returns true if succeeded to open the file.
+     */
     bool _osOpenFile( void );
 
+    /**
+     * \brief   OS specific method to read data from opened file.
+     * 
+     * \param   buffer  The buffer to read data.
+     * \param   size    The size in bytes of the buffer.
+     * \return  Returns the size of data that could read from the file.
+     *          Returns zero if failed to read or no more data to read.
+     */
     unsigned int _osReadFile(unsigned char* buffer, unsigned int size) const;
 
+    /**
+     * \brief   OS specific method to write data into the file. The file should
+     *          be opened for writing.
+     * 
+     * \param   buffer  The buffer to write data.
+     * \param   size    The size in bytes of data in the buffer to write.
+     * \return  Returns the size of data that could write into the file.
+     *          Returns zero if failed to write or no data to write.
+     */
     unsigned int _osWriteFile( const unsigned char* buffer, unsigned int size );
 
+    /**
+     * \brief   OS specific method to move cursor position in the file.
+     * 
+     * \param   offset  The offset in bytes to move cursor. Positive value means move
+     *                  cursor forward. The negative value means move cursor back.
+     * \param   startAt The position to start moving cursor.
+     * \return  If succeeded, returns the new position of the cursor. Otherwise, returns
+     *          invalid position (IECursorPosition::INVALID_CURSOR_POSITION).
+     */
     unsigned int _osSetPositionFile(int offset, IECursorPosition::eCursorPosition startAt) const;
 
+    /**
+     * \brief   If file is opened, return the current cursor position in the file.
+     *          Otherwise, returns invalid position (IECursorPosition::INVALID_CURSOR_POSITION).
+     */
     unsigned int _osGetPositionFile(void) const;
 
+    /**
+     * \brief   OS specific method to truncate the opened file until the current position of the cursor.
+     *          The file should be opened for the writing.
+     * \return  Returns true if operation succeeded. Otherwise, returns false.
+     */
     bool _osTruncateFile(void);
 
+    /**
+     * \brief   OS specific method to flash file buffer into the file system.
+     */
     void _osFlushFile(void);
 
+    /**
+     * \brief   OS specific method to generate temporary file name.
+     *          On output, the 'buffer' contains the name of the file.
+     *          The buffer size is File::MAXIMUM_PATH characters, including
+     *          null-terminated character.
+     * 
+     * \param   buffer  The buffer that will contain the temporary file name.
+     *                  Initially, the size of buffer is File::MAXIMUM_PATH.
+     * \param   folder  The name of the folder to create temporary file.
+     * \param   prefix  The prefix to add in front of the file name.
+     * \param   unique  If true, the name of the file is unique.
+     * \return  Returns the length of data in the buffer.
+     */
     static unsigned int _osCreateTempFile(char* buffer, const char* folder, const char * prefix, unsigned int unique);
 
+    /**
+     * \brief   OS specific method to retrieve the OS specific methods.
+     * 
+     * \param   buffer          The buffer to write generated file name.
+     * \param   length          The length of the buffer to write the name of special file name.
+     * \param   specialFolder   THe flag indicating the uniqueness and specialty of the file.
+     * \return  Return the length of the path in the 'buffer'.
+     */
     static unsigned int _osGetSpecialDir(char* buffer, unsigned int length, const eSpecialFolder specialFolder);
 
 //////////////////////////////////////////////////////////////////////////

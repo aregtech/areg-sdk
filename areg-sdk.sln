@@ -175,6 +175,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "10_locsvc", "10_locsvc", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{B3924215-AD6D-45DA-81D7-FE5D406A677B}"
 	ProjectSection(SolutionItems) = preProject
+		examples\10_locsvc\res\generate.bat = examples\10_locsvc\res\generate.bat
+		examples\10_locsvc\res\generate.sh = examples\10_locsvc\res\generate.sh
 		examples\10_locsvc\res\HelloWorld.siml = examples\10_locsvc\res\HelloWorld.siml
 	EndProjectSection
 EndProject
@@ -193,6 +195,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "11_locmesh", "11_locmesh", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{FBEE67BE-BFF5-43BB-A9DB-2E8A65734B3D}"
 	ProjectSection(SolutionItems) = preProject
+		examples\11_locmesh\res\generate.bat = examples\11_locmesh\res\generate.bat
+		examples\11_locmesh\res\generate.sh = examples\11_locmesh\res\generate.sh
 		examples\11_locmesh\res\HelloWorld.siml = examples\11_locmesh\res\HelloWorld.siml
 	EndProjectSection
 EndProject
@@ -211,6 +215,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "12_pubsvc", "12_pubsvc", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{9235A909-A2F2-4C90-977A-DA514B76BBE5}"
 	ProjectSection(SolutionItems) = preProject
+		examples\12_pubsvc\res\generate.bat = examples\12_pubsvc\res\generate.bat
+		examples\12_pubsvc\res\generate.sh = examples\12_pubsvc\res\generate.sh
 		examples\12_pubsvc\res\HelloWorld.siml = examples\12_pubsvc\res\HelloWorld.siml
 	EndProjectSection
 EndProject
@@ -235,6 +241,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "13_pubmesh", "13_pubmesh", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{08364AF0-D407-4FEC-A759-A4499EE45A59}"
 	ProjectSection(SolutionItems) = preProject
+		examples\13_pubmesh\res\generate.bat = examples\13_pubmesh\res\generate.bat
+		examples\13_pubmesh\res\generate.sh = examples\13_pubmesh\res\generate.sh
 		examples\13_pubmesh\res\LocalHelloWorld.siml = examples\13_pubmesh\res\LocalHelloWorld.siml
 		examples\13_pubmesh\res\RemoteRegistry.siml = examples\13_pubmesh\res\RemoteRegistry.siml
 		examples\13_pubmesh\res\SystemShutdown.siml = examples\13_pubmesh\res\SystemShutdown.siml
@@ -267,6 +275,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "14_pubtraffic", "14_pubtraf
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{0AC9ECDD-CCF4-4E61-BAD3-EF379002EDCE}"
 	ProjectSection(SolutionItems) = preProject
+		examples\14_pubtraffic\res\generate.bat = examples\14_pubtraffic\res\generate.bat
+		examples\14_pubtraffic\res\generate.sh = examples\14_pubtraffic\res\generate.sh
 		examples\14_pubtraffic\res\SimpleTrafficLight.siml = examples\14_pubtraffic\res\SimpleTrafficLight.siml
 		examples\14_pubtraffic\res\SimpleTrafficSwitch.siml = examples\14_pubtraffic\res\SimpleTrafficSwitch.siml
 	EndProjectSection
@@ -292,6 +302,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "15_pubworker", "15_pubworke
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{8B53447D-2482-4219-93DA-D33C2F899B71}"
 	ProjectSection(SolutionItems) = preProject
+		examples\15_pubworker\res\generate.bat = examples\15_pubworker\res\generate.bat
+		examples\15_pubworker\res\generate.sh = examples\15_pubworker\res\generate.sh
 		examples\15_pubworker\res\PatientInformation.siml = examples\15_pubworker\res\PatientInformation.siml
 	EndProjectSection
 EndProject
@@ -316,6 +328,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "16_pubfsm", "16_pubfsm", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{58982601-1D8A-4F81-A69E-1D148C667937}"
 	ProjectSection(SolutionItems) = preProject
+		examples\16_pubfsm\res\generate.bat = examples\16_pubfsm\res\generate.bat
+		examples\16_pubfsm\res\generate.sh = examples\16_pubfsm\res\generate.sh
 		examples\16_pubfsm\res\PowerManager.siml = examples\16_pubfsm\res\PowerManager.siml
 		examples\16_pubfsm\res\TrafficController.siml = examples\16_pubfsm\res\TrafficController.siml
 	EndProjectSection
@@ -346,6 +360,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{DF308E31-0D1
 		examples\17_winchat\res\DirectConnection.siml = examples\17_winchat\res\DirectConnection.siml
 		examples\17_winchat\res\DirectMessager.siml = examples\17_winchat\res\DirectMessager.siml
 		examples\17_winchat\res\generate.bat = examples\17_winchat\res\generate.bat
+		examples\17_winchat\res\generate.sh = examples\17_winchat\res\generate.sh
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "17_generated", "examples\17_winchat\17_generated.vcxproj", "{BAD5F8A5-B916-4E76-8594-78B003C1155B}"
@@ -363,6 +378,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "17_register", "examples\17_
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "18_locwatchdog", "18_locwatchdog", "{83821483-D719-475B-88E3-F548C267E3AB}"
+	ProjectSection(SolutionItems) = preProject
+		examples\18_locwatchdog\ReadMe.txt = examples\18_locwatchdog\ReadMe.txt
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "18_generated", "examples\18_locwatchdog\18_generated.vcxproj", "{38A88D1E-B86C-48E2-9B9E-68F672388734}"
 EndProject
@@ -373,6 +391,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "18_locsvcwadog", "examples\
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "19_pubwatchdog", "19_pubwatchdog", "{E5D433F5-DBA3-45D5-8A7A-32A10566AA8E}"
+	ProjectSection(SolutionItems) = preProject
+		examples\19_pubwatchdog\ReadMe.txt = examples\19_pubwatchdog\ReadMe.txt
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "19_generated", "examples\19_pubwatchdog\19_generated.vcxproj", "{F6570975-AE13-41EB-8465-066A6766C211}"
 EndProject
@@ -389,6 +410,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "19_pubservicewdog", "exampl
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "20_pubdatarate", "20_pubdatarate", "{840A1C6C-5940-4464-AF58-DBA24484C64F}"
+	ProjectSection(SolutionItems) = preProject
+		examples\20_pubdatarate\ReadMe.txt = examples\20_pubdatarate\ReadMe.txt
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "multiprocess", "multiprocess", "{9DFC39D1-06B5-4E91-972D-1749CE02ED7F}"
 EndProject
@@ -408,6 +432,27 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "20_pubsvcdatarate", "exampl
 	ProjectSection(ProjectDependencies) = postProject
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
 		{B8900569-8956-47AF-A2E7-50EB1DD788DD} = {B8900569-8956-47AF-A2E7-50EB1DD788DD}
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{C8E80B4D-FE97-48F9-A056-F916E6897CE4}"
+	ProjectSection(SolutionItems) = preProject
+		examples\18_locwatchdog\res\generate.bat = examples\18_locwatchdog\res\generate.bat
+		examples\18_locwatchdog\res\generate.sh = examples\18_locwatchdog\res\generate.sh
+		examples\18_locwatchdog\res\HelloWatchdog.siml = examples\18_locwatchdog\res\HelloWatchdog.siml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{5DF9E173-0D3F-4D4B-A838-37ED95A093FC}"
+	ProjectSection(SolutionItems) = preProject
+		examples\19_pubwatchdog\res\generate.bat = examples\19_pubwatchdog\res\generate.bat
+		examples\19_pubwatchdog\res\generate.sh = examples\19_pubwatchdog\res\generate.sh
+		examples\19_pubwatchdog\res\HelloWatchdog.siml = examples\19_pubwatchdog\res\HelloWatchdog.siml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{5EBF83AB-0028-4075-AA32-CA3EBEA4B7A0}"
+	ProjectSection(SolutionItems) = preProject
+		examples\20_pubdatarate\res\generate.bat = examples\20_pubdatarate\res\generate.bat
+		examples\20_pubdatarate\res\generate.sh = examples\20_pubdatarate\res\generate.sh
+		examples\20_pubdatarate\res\LargeData.siml = examples\20_pubdatarate\res\LargeData.siml
 	EndProjectSection
 EndProject
 Global
@@ -875,6 +920,9 @@ Global
 		{B8900569-8956-47AF-A2E7-50EB1DD788DD} = {840A1C6C-5940-4464-AF58-DBA24484C64F}
 		{70307B6F-61D5-4015-8578-E0E3549B7AB9} = {840A1C6C-5940-4464-AF58-DBA24484C64F}
 		{2F18E4B1-966E-4A8D-B91E-8F216186A6E3} = {840A1C6C-5940-4464-AF58-DBA24484C64F}
+		{C8E80B4D-FE97-48F9-A056-F916E6897CE4} = {83821483-D719-475B-88E3-F548C267E3AB}
+		{5DF9E173-0D3F-4D4B-A838-37ED95A093FC} = {E5D433F5-DBA3-45D5-8A7A-32A10566AA8E}
+		{5EBF83AB-0028-4075-AA32-CA3EBEA4B7A0} = {840A1C6C-5940-4464-AF58-DBA24484C64F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1034084F-74DD-4B33-86E3-D8038C748F48}
