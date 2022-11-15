@@ -111,10 +111,10 @@ unsigned int BufferStreamBase::read( WideString & wideString ) const
     wideString.clear();
 
     const unsigned int curPos = mReadPosition.getPosition();
-    const unsigned char* data = getBufferToRead();
+    const wchar_t * data = reinterpret_cast<const wchar_t *>( getBufferToRead() );
     if ( data != nullptr )
     {
-        wideString.assign(reinterpret_cast<const wchar_t*>(data));
+        wideString.assign(data);
         result = wideString.getSpace();
         mReadPosition.setPosition(static_cast<int>(curPos + result), IECursorPosition::eCursorPosition::PositionBegin);
     }
