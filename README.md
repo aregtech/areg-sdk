@@ -35,7 +35,7 @@ The latest development sources can be cloned from [20220701-candidate](https://g
 ## Table of contents[![](./docs/img/pin.svg)](#table-of-contents)
 1. [Motivation](#motivation)
 2. [More than embedded](#more-than-embedded)
-3. [Flexible and self-sufficient](#flexible-and-self-sufficient)
+3. [Self-sufficiency](#self-sufficiency)
 4. [Composition](#composition)
 5. [Software build](#software-build)
 6. [Software integration](#software-integration)
@@ -84,14 +84,16 @@ The AREG engine forms a fault-tolerant system, automatically discovers services,
 
 ---
 
-## Flexible and self-sufficient[![](./docs/img/pin.svg)](#flexible-and-self-sufficient)
+## Self-sufficiency[![](./docs/img/pin.svg)](#self-sufficiency)
 
-_AREG SDK_ is ideal to develop _multiprocessing_ and _multithreading_ **Desktop** and/or **Embedded** applications. The _interface-centric_ solution of AREG framework includes all features of _action-centric_ (Request-Reply) and _data-centric_ (Publisher-Subscriber) solutions:
-* The request and response mechanisms are as simple as calling an ordinary method of an object.
-* The subscriptions are dynamic and the latest data is delivered immediately after subscribing.
-* Clients may subscribe and unsubscribe on data and events at any time during runtime.
+Our focus to offer simple and self-sufficient system, the best to develop _multiprocessing_ and _multithreading_ **Desktop** and/or **Embedded** applications. Our decision is _interface-centric_ solution of AREG framework, which includes all features of _action-centric_ (Request-Reply) and _data-centric_ (Publisher-Subscriber) solutions:
+* The _request_ and _response_ mechanisms are as simple as calling an ordinary method of an object.
+* The _subscriptions_ are dynamic and the latest data is delivered immediately after subscribing.
+* Clients may _subscribe_ and _unsubscribe_ on data and/or events at any time during runtime.
+* Asynchronous methods of _Service Interfaces_ are invoked in the thread-safe environment.
+* Easily handles cross-dependencies, keeps application architecture modular.
 
-The framework ensures to keep applications modular, where components communicate via predefined _Service Interfaces_, which are invoked in the thread-safe environment. It easily handles cross-dependencies, where applications do not need to have special startup sequences and priorities.
+Applications developed with AREG framework communicate and exchange data without a need to have special startup priorities.
 
 > 💡 The [examples](./examples) of _AREG SDK_ contain multiple projects to check the features and fault tolerant behavior of AREG communication engine.
 
