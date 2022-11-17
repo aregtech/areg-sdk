@@ -28,16 +28,19 @@ The latest development sources can be cloned from [20220701-candidate](https://g
 
 ## Introduction[![](./docs/img/pin.svg)](#introduction)
 
-**AREG SDK** is a developer-friendly, interface-centric real-time asynchronous communication engine to enable [distributed-](https://en.wikipedia.org/wiki/Distributed_computing) and [mist-](https://csrc.nist.gov/publications/detail/sp/500-325/final)computing, where connected Things interact and provide services as if they act like thin distributed servers.
+**AREG SDK** is an interface-centric real-time asynchronous communication engine to enable distributed- and [mist-](https://csrc.nist.gov/publications/detail/sp/500-325/final)computing, where connected Things interact and provide services as if they act like thin distributed servers. The communication engine of AREG SDK is based on Object Remote Procedure Call (**ORPC**) protocol.
 
 ---
 
 ## Table of contents[![](./docs/img/pin.svg)](#table-of-contents)
 1. [Motivation](#motivation)
 2. [More than embedded](#more-than-embedded)
-3. [Self-sufficiency](#self-sufficiency)
-4. [Composition](#composition)
+3. [Composition](#composition)
+4. [Roadmap](#roadmap)
 5. [Software build](#software-build)
+   - [Build with `cmake`](#build-with-cmake)
+   - [Build with `make`](#build-with-make)
+   - [Build with IDE](#build-with-ide)
 6. [Software integration](#software-integration)
    - [Multicast router](#multicast-router)
    - [Logging service](#logging-service)
@@ -56,12 +59,12 @@ The latest development sources can be cloned from [20220701-candidate](https://g
 
 ## Motivation[![](./docs/img/pin.svg)](#motivation)
 
-Traditionally, devices are connected to clients to stream data to the cloud or fog servers for further processing.
+Traditionally, devices act as connected clients to stream data to the cloud or fog servers for further processing.
 <br /><br /><a href="/docs/img/mist-network.png"><img src="/docs/img/mist-network.png" alt="IoT-to-Cloud (Nebula) network" style="width:70%;height:70%"/></a><br /><br />
-Since data is generated and collected at the edge of the network (mist network), it makes sense to change the role of connected Things and provide network-accessible (_Public_) services directly on devices. This extends _Cloud_ to the extreme edge and it is a good foothold for robust solutions such as:
+Since data is generated and collected at the edge of the network (**mist network**), it makes sense to change the role of connected Things and provide network-accessible (_Public_) services directly on devices. This extends _Cloud_ to the extreme edge and it is a good foothold for robust solutions such as:
 * _Increase data privacy_, which is an important factor for sensitive data.
 * _Decrease data streaming_, which is a fundamental condition to optimize network communication.
-* Develop _autonomous, intelligent and self-aware devices_ by providing network services directly in the environment of data origin.
+* Develop _autonomous, intelligent and self-aware devices_ by providing services directly in the environment of data origin.
 
 [ [↑ to top ↑](#table-of-contents) ]
 
@@ -71,31 +74,12 @@ Since data is generated and collected at the edge of the network (mist network),
 
 When we were designing AREG SDK, the guiding principle was to provide a homogeneous solution for Multithreading, Multiprocessing and Internet communication wrapped in services appropriately having _Local_, _Public_ and _Internet_ categories. These services are neither processes nor tasks managed by the operating system, they are software components with a predefined interface, in which methods are invoked remotely.
 <br /><a href="docs/img/areg-services.png"><img src="docs/img/areg-services.png" alt="AREG SDK distributed services" style="width:70%;height:70%"/></a><br />
-> 💡 In current version, the AREG engine handles multithreading (_Local_) and multiprocessing (_Public_) communication. 
+> 💡 In current version, the AREG communication engine supports _Local_ (multithreading) and _Public_ (multiprocessing) service categories. The _Internet_ (web) service category is in development pipeline.
 
-The AREG engine forms a fault-tolerant system, automatically discovers services, automates communication, simplifies distributed programming, and helps developers to focus on application business logic as if they would program a single process application with one thread where methods of objects are event-driven. The engine guarantees that:
+The AREG engine forms a fault-tolerant system and does not require process startup priority. It automatically discovers services, automates communications, enables distributed service programming, and helps developers to focus on application business logic as if they would program a single process application with one thread where methods of objects are event-driven. The engine guarantees that:
 * The crash of one application does not cause the crash of the system.
-* The service clients are automatically notified about service availability status.
-* The client requests are automatically invoked to run on the service component.
-* The service responses are automatically invoked on the exact client, and they are not mixed or missed.
-* The subscriptions on data, responses and broadcasts are automatically invoked on the client when service triggers a call.
-
-[ [↑ to top ↑](#table-of-contents) ]
-
----
-
-## Self-sufficiency[![](./docs/img/pin.svg)](#self-sufficiency)
-
-Our focus to offer simple and self-sufficient system, the best to develop _multiprocessing_ and _multithreading_ **Desktop** and/or **Embedded** applications. Our decision is _interface-centric_ solution of AREG framework, which includes all features of _action-centric_ (Request-Reply) and _data-centric_ (Publisher-Subscriber) solutions:
-* The _request_ and _response_ mechanisms are as simple as calling an ordinary method of an object.
-* The _subscriptions_ are dynamic and the latest data is delivered immediately after subscribing.
-* Clients may _subscribe_ and _unsubscribe_ on data and/or events at any time during runtime.
-* Asynchronous methods of _Service Interfaces_ are invoked in the thread-safe environment.
-* Easily handles cross-dependencies, keeps application architecture modular.
-
-Applications developed with AREG framework communicate and exchange data without a need to have special startup priorities.
-
-> 💡 The [examples](./examples) of _AREG SDK_ contain multiple projects to check the features and fault tolerant behavior of AREG communication engine.
+* The service clients automatically receive service availability status notifications.
+* The requests, response and notifications are automatically invoked and run in thread-safe mode.
 
 [ [↑ to top ↑](#table-of-contents) ]
 
@@ -103,12 +87,30 @@ Applications developed with AREG framework communicate and exchange data without
 
 ## Composition[![](./docs/img/pin.svg)](#composition)
 
-AREG SDK consists of:
+Currently AREG SDK consists of:
 1. [Multicast router (_mcrouter_)](./framework/mcrouter/) to use for IPC. It runs either as a service managed by the OS or as a console application.
-2. [AREG framework (or engine)](./framework/areg/) is a library (shared or static) linked in every application.
+2. [AREG framework (or engine)](./framework/areg/) is a (shared or static) library to link with every application.
 3. [Code generator tool](./tools/) to create client and server base objects from a service prototype document.
 
-The framework contains a dynamic and configurable logging service. More tools and features are planned for future releases.
+> 💡 The [examples](./examples) of _AREG SDK_ contain multiple projects to check the features and fault tolerant behavior of AREG communication engine.
+
+[ [↑ to top ↑](#table-of-contents) ]
+
+---
+
+## Roadmap[![](./docs/img/pin.svg)](#roadmap)
+
+The aim of AREG SDK is a lightweight self-sufficient system consisting of an intelligent framework and multiple tools that help developers to create complex _multiprocessing_ and _multithreading_ **Desktop**, **Embedded** and/or **IoT edge** applications in shorter time (_reduce development and testing time 50-30%_). The network communication model of AREG framework is based on _multicast router_ and service architecture is _interface-centric_, which in combination enable to comprise all features of _action-centric_ architecture (Client-Server / Request-Reply model) and _data-centric_ architecture (Publisher-Subscriber / PubSub model).
+
+The big plans of AREG SDK.
+- **Planned framework features:**
+  * Multichannel and multiprotocol communication.
+  * Logging service (separate process) to collect logs in the network.
+  * _Internet_ (web) category service.
+- **Planned tools:**
+  * Service interface designer.
+  * Interactive log viewer.
+  * Service testing and Data simulation tool.
 
 [ [↑ to top ↑](#table-of-contents) ]
 
@@ -116,69 +118,73 @@ The framework contains a dynamic and configurable logging service. More tools an
 
 ## Software build[![](./docs/img/pin.svg)](#software-build)
 
-An example to get source codes and compile under **Linux**. You'd need at least C++17 `g++` (default) compiler. Open _Terminal_ console in your `projects` folder and take the following steps:
-
-_To build the project using `cmake`_
-```bash
-# Step 1: Get sources from GitHub
-$ git clone https://github.com/aregtech/areg-sdk.git
-$ cd areg-sdk
-
-# Step 2: Create a subdirectory for CMake cache files and change directory to it.
-$ mkdir build && cd build
-
-# Step 3: Initialize CMake cache and build systems configuration.
-#         Enable examples compilation by using BUILD_EXAMPLES flag.
-$ cmake .. -DBUILD_EXAMPLES=ON
-
-# Step 4: Compile sources by calling: cmake --build [CMake cache dir] <optional> -j [concurrent jobs]
-$ cmake --build . -j 8
- ```
-
-_To build the project using `make`_
-```bash
-# Step 1: Get sources from GitHub
-$ git clone https://github.com/aregtech/areg-sdk.git
-$ cd areg-sdk
-
-# Step 2: Compile sources from terminal by calling: make [all] [framework] [examples]
-$ make
-```
-
-After compilation, the binaries are located in `<areg-sdk>/product/build/<compiler-platform-path>/bin` folder.
-
-_AREG SDK sources are developed for:_
+The source codes of AREG framework and examples support following platform, CPU and compilers:
 <table>
   <tr>
-    <td nowrap><strong>Supported OS</strong></td>
-    <td>Linux (list of <a href="./docs/POSIX.md#the-list-of-posix-api-used-in-areg-sdk-including-multicast-message-router" alt="list of POSX API">POSIX API</a>), Windows 8 and higher.</td>
+    <td nowrap><strong>OS</strong></td>
+    <td>Linux (list of <a href="./docs/POSIX.md#posix-api" alt="POSX API">POSIX API</a>), Windows 8 and higher.</td>
   </tr>
   <tr>
-    <td nowrap><strong>Supported CPU</strong></td>
+    <td nowrap><strong>CPU</strong></td>
     <td>x86, x86_64, arm and aarch64.</td>
   </tr>
   <tr>
-    <td nowrap><strong>Supported compilers</strong></td>
-    <td>Version C++17 GCC, g++, clang and MSVC.</td>
+    <td nowrap><strong>Compilers (C++17 or heigher)</strong></td>
+    <td>GCC, g++, clang and MSVC.</td>
   </tr>
 </table>
 
-> 💡 The other POSIX-compliant OS and compilers are not tested yet.
-
-_Compile AREG SDK sources and examples:_
+The tools to use to compile sources:
 | Solution | Platforms | API | Quick actions to compile |
 | --- | --- | --- | --- |
-| `CMakeLists.txt` | **Linux, Windows** | _POSIX_, _Win32_ | It is used to compile applications using following tools:<br /> &nbsp;&nbsp; - call `cmake` in _command line_;<br /> &nbsp;&nbsp; - configure and build in _Visual Studio Code_ IDE;<br /> &nbsp;&nbsp; - build in _Microsoft Visual Studio_ IDE (VS2019 and higher). |
-| `Makefile` | **Linux**| _POSIX_ | It is used to compile application by calling `make` in _command line_. |
-| `areg-sdk.sln` | **Windows** | _Win32_ | It is used to make a build in _Microsof Visual Studio_ IDE (VS2019 and higher). |
-| `.project` | **Linux, Windows** | _POSIX_ | To import and build projects in _Eclipes_ IDE. |
+| `CMakeLists.txt` | **Linux, Windows** | _POSIX_, _Win32_ | Make one of these actions: &nbsp;&nbsp; - Call `cmake` in _command line_.<br /> &nbsp;&nbsp; - Configure and build in _Visual Studio Code_;<br /> &nbsp;&nbsp; - Build in _Microsoft Visual Studio_ (VS2019 and higher). |
+| `Makefile` | **Linux**| _POSIX_ | Call `make` in _command line_. |
+| `areg-sdk.sln` | **Windows** | _Win32_ | Open and build in _Microsof Visual Studio_ IDE (VS2019 and higher). |
+| `.project` | **Linux, Windows** | _POSIX_ | Import and build projects in _Eclipes_ IDE. |
 
-> 💡 Compilation with _Eclipse_ under **Windows** platform might require to switch the Toolchain. For example, `Cygwin GCC`.<br />
-> 💡 For **Linux** platform the default compiler is `g++`. To change the compiler to build with:<br />
-> - `cmake`, update [conf/cmake/pre-project.cmake](./conf/cmake/pre-project.cmake) file. For example, `set(CMAKE_CXX_COMPILER /usr/bin/g++-4.2)`<br />
-> - `make`, update [conf/make/user.mk](./conf/make/user.mk) file. For example, `Toolset := clang++-13`.
+> 💡 The other POSIX-compliant OS and compilers are not tested yet.<br />
+> 💡 Compilation with _Eclipse_ under **Windows** might require to change the Toolchain.<br />
+> 💡 Make user specific changes (like switch compiler or output folder) only in appropriate `user` files:<br />
+> - For `cmake`, make changes in [conf/cmake/user.cmake](./conf/cmake/user.cmake) file.<br />
+> - For `make`, make changes in [conf/make/user.mk](./conf/make/user.mk) file.
 
-Details on how to change compiler, load and compile sources for various targets are described in [HOWTO](./docs/HOWTO.md).
+After compilation, normally binaries are located in `<areg-sdk>/product/build/<compiler-platform-path>/bin` folder. Details on how to change compiler, load and compile sources for various targets are described in [HOWTO](./docs/HOWTO.md) document. The next are quick overviews.
+
+#### Build with `cmake`
+
+Open _Terminal_ console in your `projects` folder and take the following steps:
+
+```bash
+# Step 1: Get sources from GitHub
+$ git clone https://github.com/aregtech/areg-sdk.git
+$ cd areg-sdk
+
+# Step 2: Create a subdirectory for CMake cache files.
+$ mkdir build && cd build
+
+# Step 3: Initialize cache and build configuration, enable examples.
+$ cmake .. -DBUILD_EXAMPLES=ON
+
+# Step 4: Compile sources by calling: cmake --build . [-j [concurrent jobs]]
+$ cmake --build . -j 8
+ ```
+
+#### Build with `make`
+
+Open _Terminal_ console in your `projects` folder and take the following steps:
+
+```bash
+# Step 1: Get sources from GitHub
+$ git clone https://github.com/aregtech/areg-sdk.git
+$ cd areg-sdk
+
+# Step 2: Compile sources by calling: make [all] [framework] [examples]
+$ make
+```
+#### Build with IDE
+
+1. Open `areg-sdk.sln` file in Microsoft Visual Studio (2019 or higher) and compile solution.
+2. 
 
 [ [↑ to top ↑](#table-of-contents) ]
 
