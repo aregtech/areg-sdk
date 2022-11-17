@@ -104,7 +104,7 @@ The aim of AREG SDK is a lightweight self-sufficient system consisting of an int
 
 The big plans of AREG SDK.
 - **Planned framework features:**
-  * Multichannel and multiprotocol communication.
+  * Multi-channel and multi-protocol communication.
   * Logging service (separate process) to collect logs in the network.
   * _Internet_ (web) category service.
 - **Planned tools:**
@@ -137,13 +137,12 @@ The source codes of AREG framework and examples support following platform, CPU 
 The tools to use to compile sources:
 | Solution | Platforms | API | Quick actions to compile |
 | --- | --- | --- | --- |
-| `CMakeLists.txt` | **Linux, Windows** | _POSIX_, _Win32_ | Make one of these actions: &nbsp;&nbsp; - Call `cmake` in _command line_.<br /> &nbsp;&nbsp; - Configure and build in _Visual Studio Code_;<br /> &nbsp;&nbsp; - Build in _Microsoft Visual Studio_ (VS2019 and higher). |
+| `CMakeLists.txt` | **Linux, Windows** | _POSIX_, _Win32_ | Make one of these actions:<br /> &nbsp;&nbsp; - Call `cmake` in _command line_.<br /> &nbsp;&nbsp; - Configure and build in _Visual Studio Code_;<br /> &nbsp;&nbsp; - Build in _Microsoft Visual Studio_ (VS2019 or higher). |
 | `Makefile` | **Linux**| _POSIX_ | Call `make` in _command line_. |
-| `areg-sdk.sln` | **Windows** | _Win32_ | Open and build in _Microsof Visual Studio_ IDE (VS2019 and higher). |
-| `.project` | **Linux, Windows** | _POSIX_ | Import and build projects in _Eclipes_ IDE. |
+| `areg-sdk.sln` | **Windows** | _Win32_ | Open and build in _Microsoft Visual Studio_ IDE (VS2019 or higher). |
+| `.project` | **Linux, Windows** | _POSIX_ | Import and build projects in _Eclipse_ IDE. |
 
 > 💡 The other POSIX-compliant OS and compilers are not tested yet.<br />
-> 💡 Compilation with _Eclipse_ under **Windows** might require to change the Toolchain.<br />
 > 💡 Make user specific changes (like switch compiler or output folder) only in appropriate `user` files:<br />
 > - For `cmake`, make changes in [conf/cmake/user.cmake](./conf/cmake/user.cmake) file.<br />
 > - For `make`, make changes in [conf/make/user.mk](./conf/make/user.mk) file.
@@ -152,7 +151,7 @@ After compilation, normally binaries are located in `<areg-sdk>/product/build/<c
 
 #### Build with `cmake`
 
-Open _Terminal_ console in your `projects` folder and take the following steps:
+To build with [cmake](https://cmake.org/), open _Terminal_ in your `projects` folder and take the steps:
 
 ```bash
 # Step 1: Get sources from GitHub
@@ -171,7 +170,7 @@ $ cmake --build . -j 8
 
 #### Build with `make`
 
-Open _Terminal_ console in your `projects` folder and take the following steps:
+To build with [make](https://www.gnu.org/software/make/), open _Terminal_ in your `projects` folder and take the steps:
 
 ```bash
 # Step 1: Get sources from GitHub
@@ -183,8 +182,20 @@ $ make
 ```
 #### Build with IDE
 
-1. Open `areg-sdk.sln` file in Microsoft Visual Studio (2019 or higher) and compile solution.
-2. 
+Open _Terminal_ or preferred IDE to clone source codes like this:
+```bash
+$ git clone https://github.com/aregtech/areg-sdk.git
+$ cd areg-sdk
+```
+
+Depending on IDE or preferences make one of following:
+
+1. Open `areg-sdk.sln` file in [MSVS](https://visualstudio.microsoft.com/) (2019 or higher) and compile solution.
+2. Open `areg-sdk` folder in [MSVC](https://visualstudio.microsoft.com/) (2019 or higher), select `CMakeLists.txt` located in the `areg-sdk` root, configure and build.
+3. Open `areg-sdk` folder in [VS Code](https://code.visualstudio.com/), select `CMakeLists.txt` located in the `areg-sdk` root, configure and build.
+4. Open [Eclipse](https://www.eclipse.org/ide/), import all projects from `areg-sdk` root, select projects and build.
+
+> 💡 Compilation with _Eclipse_ under **Windows** might require to change the Toolchain.
 
 [ [↑ to top ↑](#table-of-contents) ]
 
