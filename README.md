@@ -92,6 +92,8 @@ Currently AREG SDK consists of:
 2. [AREG framework (or engine)](./framework/areg/) is a (shared or static) library to link with every application.
 3. [Code generator tool](./tools/) to create client and server base objects from a service prototype document.
 
+The network communication model of AREG framework is based on _multicast router_ and service architecture is _interface-centric_, which in combination of both enable to comprise all features of _action-centric_ architecture (Client-Server / Request-Reply model) and _data-centric_ architecture (Publisher-Subscriber / PubSub model).
+
 > 💡 The [examples](./examples) of _AREG SDK_ contain multiple projects to check the features and fault tolerant behavior of AREG communication engine.
 
 [ [↑ to top ↑](#table-of-contents) ]
@@ -99,10 +101,7 @@ Currently AREG SDK consists of:
 ---
 
 ## Roadmap[![](./docs/img/pin.svg)](#roadmap)
-
-The aim of AREG SDK is a lightweight self-sufficient system consisting of an intelligent framework and multiple tools that help developers to create complex _multiprocessing_ and _multithreading_ **Desktop**, **Embedded** and/or **IoT edge** applications in shorter time (_reduce development and testing time 50-30%_). The network communication model of AREG framework is based on _multicast router_ and service architecture is _interface-centric_, which in combination enable to comprise all features of _action-centric_ architecture (Client-Server / Request-Reply model) and _data-centric_ architecture (Publisher-Subscriber / PubSub model).
-
-The big plans of AREG SDK.
+ The aim of AREG SDK is a lightweight self-sufficient system, which consist of an intelligent framework and multiple tools that help developers to create complex **Desktop**, **Embedded** and/or **IoT edge** applications in shorter time (_reduce development and testing time 50-30%_). 
 - **Planned framework features:**
   * Multi-channel and multi-protocol communication.
   * Logging service (separate process) to collect logs in the network.
