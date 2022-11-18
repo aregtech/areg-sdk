@@ -145,6 +145,7 @@ The tools to use to compile sources:
 > 💡 Make user specific changes (like switch compiler or output folder) only in appropriate `user` files:<br />
 > - For `cmake`, make changes in [conf/cmake/user.cmake](./conf/cmake/user.cmake) file.<br />
 > - For `make`, make changes in [conf/make/user.mk](./conf/make/user.mk) file.
+> - For `MSBuild`, make changes in [conf/msvc/user.props](./conf/msvc/user.props) file.
 
 After compilation, normally binaries are located in `<areg-sdk>/product/build/<compiler-platform-path>/bin` folder. Details on how to change compiler, load and compile sources for various targets are described in [HOWTO](./docs/HOWTO.md) document. The next are quick overviews.
 
@@ -281,7 +282,7 @@ This example uses MACRO to create a model `"MyModel"` with two services:
 1. Service with the _role_ `"SystemShutdown"` is registered in the thread `"Thread1"` and provides an interface with name `NESystemShutdown::ServiceName`.
 2.  Service with the _role_ `"RemoteRegistry"` is registered in the thread `"Thread2"`, provides an interface with name `NERemoteRegistry::ServiceName` and has dependency (i.e. _is a client_) of service with _role_ `"SystemShutdown"`.
 
-The services are started when load model by calling function `Application::loadModel("MyModel")`, and stopped when call function `Application::unloadModel("MyModel")`. When define a model, these two services can be registered in the same thread or distributed in 2 processes. In all cases, the physical location of service components remain transparent for developer when program code and for service client objects when send requests and receive response.
+The services are started when load model by calling function `Application::loadModel("MyModel")`, and stopped when call function `Application::unloadModel("MyModel")`. When define a model, these two services can be registered in the same thread or distributed in 2 processes. In all cases, the physical location of service components remain transparent, so that the architectures have more flexibility to distribute computing power.
 
 An example of developing a service and a client in one and multiple processes is in [**Hello Service!**](./docs/DEVELOP.md#hello-service) project described in the development guide.
 
