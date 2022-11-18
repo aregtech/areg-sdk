@@ -28,16 +28,19 @@ The latest development sources can be cloned from [20220701-candidate](https://g
 
 ## Introduction[![](./docs/img/pin.svg)](#introduction)
 
-**AREG SDK** is a developer-friendly, interface-centric real-time asynchronous communication engine to enable [distributed-](https://en.wikipedia.org/wiki/Distributed_computing) and [mist-](https://csrc.nist.gov/publications/detail/sp/500-325/final)computing, where connected Things interact and provide services as if they act like thin distributed servers.
+**AREG SDK** is an interface-centric real-time asynchronous communication engine to enable distributed- and [mist-](https://csrc.nist.gov/publications/detail/sp/500-325/final)computing, where connected Things interact and provide services as if they act like thin distributed servers. The communication engine of AREG SDK is based on Object Remote Procedure Call (**ORPC**) protocol.
 
 ---
 
 ## Table of contents[![](./docs/img/pin.svg)](#table-of-contents)
 1. [Motivation](#motivation)
 2. [More than embedded](#more-than-embedded)
-3. [Flexible and self-sufficient](#flexible-and-self-sufficient)
-4. [Composition](#composition)
+3. [Composition](#composition)
+4. [Roadmap](#roadmap)
 5. [Software build](#software-build)
+   - [Build with `cmake`](#build-with-cmake)
+   - [Build with `make`](#build-with-make)
+   - [Build with IDE](#build-with-ide)
 6. [Software integration](#software-integration)
    - [Multicast router](#multicast-router)
    - [Logging service](#logging-service)
@@ -56,12 +59,12 @@ The latest development sources can be cloned from [20220701-candidate](https://g
 
 ## Motivation[![](./docs/img/pin.svg)](#motivation)
 
-Traditionally, devices are connected to clients to stream data to the cloud or fog servers for further processing.
+Traditionally, devices act as connected clients to stream data to the cloud or fog servers for further processing.
 <br /><br /><a href="/docs/img/mist-network.png"><img src="/docs/img/mist-network.png" alt="IoT-to-Cloud (Nebula) network" style="width:70%;height:70%"/></a><br /><br />
-Since data is generated and collected at the edge of the network (mist network), it makes sense to change the role of connected Things and provide network-accessible (_Public_) services directly on devices. This extends _Cloud_ to the extreme edge and it is a good foothold for robust solutions such as:
+Since data is generated and collected at the edge of the network (**mist network**), it makes sense to change the role of connected Things and provide network-accessible (_Public_) services directly on devices. This extends _Cloud_ to the extreme edge and it is a good foothold for robust solutions such as:
 * _Increase data privacy_, which is an important factor for sensitive data.
 * _Decrease data streaming_, which is a fundamental condition to optimize network communication.
-* Develop _autonomous, intelligent and self-aware devices_ by providing network services directly in the environment of data origin.
+* Develop _autonomous, intelligent and self-aware devices_ by providing services directly in the environment of data origin.
 
 [ [↑ to top ↑](#table-of-contents) ]
 
@@ -71,29 +74,12 @@ Since data is generated and collected at the edge of the network (mist network),
 
 When we were designing AREG SDK, the guiding principle was to provide a homogeneous solution for Multithreading, Multiprocessing and Internet communication wrapped in services appropriately having _Local_, _Public_ and _Internet_ categories. These services are neither processes nor tasks managed by the operating system, they are software components with a predefined interface, in which methods are invoked remotely.
 <br /><a href="docs/img/areg-services.png"><img src="docs/img/areg-services.png" alt="AREG SDK distributed services" style="width:70%;height:70%"/></a><br />
-> 💡 In current version, the AREG engine handles multithreading (_Local_) and multiprocessing (_Public_) communication. 
+> 💡 In current version, the AREG communication engine supports _Local_ (multithreading) and _Public_ (multiprocessing) service categories. The _Internet_ (web) service category is in development pipeline.
 
-The AREG engine forms a fault-tolerant system, automatically discovers services, automates communication, simplifies distributed programming, and helps developers to focus on application business logic as if they would program a single process application with one thread where methods of objects are event-driven. The engine guarantees that:
+The AREG engine forms a fault-tolerant system and does not require process startup priority. It automatically discovers services, automates communications, enables distributed service programming, and helps developers to focus on application business logic as if they would program a single process application with one thread where methods of objects are event-driven. The engine guarantees that:
 * The crash of one application does not cause the crash of the system.
-* The service clients are automatically notified about service availability status.
-* The client requests are automatically invoked to run on the service component.
-* The service responses are automatically invoked on the exact client, and they are not mixed or missed.
-* The subscriptions on data, responses and broadcasts are automatically invoked on the client when service triggers a call.
-
-[ [↑ to top ↑](#table-of-contents) ]
-
----
-
-## Flexible and self-sufficient[![](./docs/img/pin.svg)](#flexible-and-self-sufficient)
-
-_AREG SDK_ is ideal to develop _multiprocessing_ and _multithreading_ **Desktop** and/or **Embedded** applications. The _interface-centric_ solution of AREG framework includes all features of _action-centric_ (Request-Reply) and _data-centric_ (Publisher-Subscriber) solutions:
-* The request and response mechanisms are as simple as calling an ordinary method of an object.
-* The subscriptions are dynamic and the latest data is delivered immediately after subscribing.
-* Clients may subscribe and unsubscribe on data and events at any time during runtime.
-
-The framework ensures to keep applications modular, where components communicate via predefined _Service Interfaces_, which are invoked in the thread-safe environment. It easily handles cross-dependencies, where applications do not need to have special startup sequences and priorities.
-
-> 💡 The [examples](./examples) of _AREG SDK_ contain multiple projects to check the features and fault tolerant behavior of AREG communication engine.
+* The service clients automatically receive service availability status notifications.
+* The requests, response and notifications are automatically invoked and run in thread-safe mode.
 
 [ [↑ to top ↑](#table-of-contents) ]
 
@@ -101,12 +87,29 @@ The framework ensures to keep applications modular, where components communicate
 
 ## Composition[![](./docs/img/pin.svg)](#composition)
 
-AREG SDK consists of:
+Currently AREG SDK consists of:
 1. [Multicast router (_mcrouter_)](./framework/mcrouter/) to use for IPC. It runs either as a service managed by the OS or as a console application.
-2. [AREG framework (or engine)](./framework/areg/) is a library (shared or static) linked in every application.
+2. [AREG framework (or engine)](./framework/areg/) is a (shared or static) library to link with every application.
 3. [Code generator tool](./tools/) to create client and server base objects from a service prototype document.
 
-The framework contains a dynamic and configurable logging service. More tools and features are planned for future releases.
+The network communication model of AREG framework is based on _multicast router_ and service architecture is _interface-centric_, which in combination of both enable to comprise all features of _action-centric_ architecture (Client-Server / Request-Reply model) and _data-centric_ architecture (Publisher-Subscriber / PubSub model).
+
+> 💡 The [examples](./examples) of _AREG SDK_ contain multiple projects to check the features and fault tolerant behavior of AREG communication engine.
+
+[ [↑ to top ↑](#table-of-contents) ]
+
+---
+
+## Roadmap[![](./docs/img/pin.svg)](#roadmap)
+ The aim of AREG SDK is a lightweight self-sufficient system, which consist of an intelligent framework and multiple tools that help developers to create complex **Desktop**, **Embedded** and/or **IoT edge** applications in shorter time (_reduce development and testing time 50-30%_). 
+- **Planned framework features:**
+  * Multi-channel and multi-protocol communication.
+  * Logging service (separate process) to collect logs in the network.
+  * _Internet_ (web) category service.
+- **Planned tools:**
+  * Service interface designer.
+  * Interactive log viewer.
+  * Service testing and Data simulation tool.
 
 [ [↑ to top ↑](#table-of-contents) ]
 
@@ -114,69 +117,83 @@ The framework contains a dynamic and configurable logging service. More tools an
 
 ## Software build[![](./docs/img/pin.svg)](#software-build)
 
-An example to get source codes and compile under **Linux**. You'd need at least C++17 `g++` (default) compiler. Open _Terminal_ console in your `projects` folder and take the following steps:
-
-_To build the project using `cmake`_
-```bash
-# Step 1: Get sources from GitHub
-$ git clone https://github.com/aregtech/areg-sdk.git
-$ cd areg-sdk
-
-# Step 2: Create a subdirectory for CMake cache files and change directory to it.
-$ mkdir build && cd build
-
-# Step 3: Initialize CMake cache and build systems configuration.
-#         Enable examples compilation by using BUILD_EXAMPLES flag.
-$ cmake .. -DBUILD_EXAMPLES=ON
-
-# Step 4: Compile sources by calling: cmake --build [CMake cache dir] <optional> -j [concurrent jobs]
-$ cmake --build . -j 8
- ```
-
-_To build the project using `make`_
-```bash
-# Step 1: Get sources from GitHub
-$ git clone https://github.com/aregtech/areg-sdk.git
-$ cd areg-sdk
-
-# Step 2: Compile sources from terminal by calling: make [all] [framework] [examples]
-$ make
-```
-
-After compilation, the binaries are located in `<areg-sdk>/product/build/<compiler-platform-path>/bin` folder.
-
-_AREG SDK sources are developed for:_
+The source codes of AREG framework and examples support following platform, CPU and compilers:
 <table>
   <tr>
-    <td nowrap><strong>Supported OS</strong></td>
-    <td>Linux (list of <a href="./docs/POSIX.md#the-list-of-posix-api-used-in-areg-sdk-including-multicast-message-router" alt="list of POSX API">POSIX API</a>), Windows 8 and higher.</td>
+    <td nowrap><strong>OS</strong></td>
+    <td>Linux (list of <a href="./docs/POSIX.md#posix-api" alt="POSX API">POSIX API</a>), Windows 8 and higher.</td>
   </tr>
   <tr>
-    <td nowrap><strong>Supported CPU</strong></td>
+    <td nowrap><strong>CPU</strong></td>
     <td>x86, x86_64, arm and aarch64.</td>
   </tr>
   <tr>
-    <td nowrap><strong>Supported compilers</strong></td>
-    <td>Version C++17 GCC, g++, clang and MSVC.</td>
+    <td nowrap><strong>Compilers (C++17 or heigher)</strong></td>
+    <td>GCC, g++, clang and MSVC.</td>
   </tr>
 </table>
 
-> 💡 The other POSIX-compliant OS and compilers are not tested yet.
-
-_Compile AREG SDK sources and examples:_
+The tools to use to compile sources:
 | Solution | Platforms | API | Quick actions to compile |
 | --- | --- | --- | --- |
-| `CMakeLists.txt` | **Linux, Windows** | _POSIX_, _Win32_ | It is used to compile applications using following tools:<br /> &nbsp;&nbsp; - call `cmake` in _command line_;<br /> &nbsp;&nbsp; - configure and build in _Visual Studio Code_ IDE;<br /> &nbsp;&nbsp; - build in _Microsoft Visual Studio_ IDE (VS2019 and higher). |
-| `Makefile` | **Linux**| _POSIX_ | It is used to compile application by calling `make` in _command line_. |
-| `areg-sdk.sln` | **Windows** | _Win32_ | It is used to make a build in _Microsof Visual Studio_ IDE (VS2019 and higher). |
-| `.project` | **Linux, Windows** | _POSIX_ | To import and build projects in _Eclipes_ IDE. |
+| `CMakeLists.txt` | **Linux, Windows** | _POSIX_, _Win32_ | Make one of these actions:<br /> &nbsp;&nbsp; - Call `cmake` in _command line_.<br /> &nbsp;&nbsp; - Configure and build in _Visual Studio Code_;<br /> &nbsp;&nbsp; - Configure and build in _Microsoft Visual Studio_ (VS2019 or higher). |
+| `Makefile` | **Linux**| _POSIX_ | Call `make` in _command line_. |
+| `areg-sdk.sln` | **Windows** | _Win32_ | Open and build in _Microsoft Visual Studio_ (VS2019 or higher). |
+| `.project` | **Linux, Windows** | _POSIX_ | Import and build projects in _Eclipse_. |
 
-> 💡 Compilation with _Eclipse_ under **Windows** platform might require to switch the Toolchain. For example, `Cygwin GCC`.<br />
-> 💡 For **Linux** platform the default compiler is `g++`. To change the compiler to build with:<br />
-> - `cmake`, update [conf/cmake/pre-project.cmake](./conf/cmake/pre-project.cmake) file. For example, `set(CMAKE_CXX_COMPILER /usr/bin/g++-4.2)`<br />
-> - `make`, update [conf/make/user.mk](./conf/make/user.mk) file. For example, `Toolset := clang++-13`.
+> 💡 The other POSIX-compliant OS and compilers are not tested yet.<br />
+> 💡 Make user specific changes (like switch compiler or output folder) only in appropriate `user` files:<br />
+> - For `cmake`, make changes in [conf/cmake/user.cmake](./conf/cmake/user.cmake) file.<br />
+> - For `make`, make changes in [conf/make/user.mk](./conf/make/user.mk) file.
+> - For `MSBuild`, make changes in [conf/msvc/user.props](./conf/msvc/user.props) file.
 
-Details on how to change compiler, load and compile sources for various targets are described in [HOWTO](./docs/HOWTO.md).
+After compilation, normally binaries are located in `<areg-sdk>/product/build/<compiler-platform-path>/bin` folder. Details on how to change compiler, load and compile sources for various targets are described in [HOWTO](./docs/HOWTO.md) document. The next are quick overviews.
+
+#### Build with `cmake`
+
+To build with [cmake](https://cmake.org/), open _Terminal_ in your `projects` folder and take the steps:
+```bash
+# Step 1: Get sources from GitHub
+$ git clone https://github.com/aregtech/areg-sdk.git
+$ cd areg-sdk
+
+# Step 2: Create a subdirectory for CMake cache files.
+$ mkdir build && cd build
+
+# Step 3: Initialize cache and build configuration, enable examples.
+$ cmake .. -DBUILD_EXAMPLES=ON
+
+# Step 4: Compile sources by calling: cmake --build . [-j [concurrent jobs]]
+$ cmake --build . -j 8
+ ```
+
+#### Build with `make`
+
+To build with [make](https://www.gnu.org/software/make/), open _Terminal_ in your `projects` folder and take the steps:
+```bash
+# Step 1: Get sources from GitHub
+$ git clone https://github.com/aregtech/areg-sdk.git
+$ cd areg-sdk
+
+# Step 2: Compile sources by calling: make [all] [framework] [examples]
+$ make
+```
+
+#### Build with IDE
+
+Open _Terminal_ or preferred IDE to clone source codes like this:
+```bash
+$ git clone https://github.com/aregtech/areg-sdk.git
+$ cd areg-sdk
+```
+Depending on IDE or preferences make one of following:
+
+1. Open `areg-sdk.sln` file in [MSVS](https://visualstudio.microsoft.com/) (2019 or higher) and compile solution.
+2. Open `areg-sdk` folder in [MSVC](https://visualstudio.microsoft.com/) (2019 or higher), select `CMakeLists.txt` located in the `areg-sdk` root, configure and build.
+3. Open `areg-sdk` folder in [VS Code](https://code.visualstudio.com/), select `CMakeLists.txt` located in the `areg-sdk` root, configure and build.
+4. Open [Eclipse](https://www.eclipse.org/ide/), import all projects from `areg-sdk` root, select projects and build.
+
+> 💡 Compilation with _Eclipse_ under **Windows** might require to change the Toolchain.
 
 [ [↑ to top ↑](#table-of-contents) ]
 
@@ -186,16 +203,16 @@ Details on how to change compiler, load and compile sources for various targets 
 
 #### Multicast router
 
-Configure [_router.init_](./framework/areg/resources/router.init) file to set the IP-address and the port of _multicast router_:
+Configure [_router.init_](./framework/areg/resources/router.init) file to set the IP-address and the port of _multicast router_ (`mcrouter`):
 ```
 connection.address.tcpip    = 127.0.0.1	# the address of mcrouter host
 connection.port.tcpip       = 8181      # the connection port of mcrouter
 ```
-The multicast router forms the network and can run on any device. For example, in case of M2M communication, it can run on a gateway, in case of IPC, it can run on the same machine. In case of multithreading application development, there is no need to configure `router.init` and run _mcrouter_.
+The multicast router is a process that can run as a system service or application to form the network, and it can run on any device like PC, gateway or even a small router. In case of multithreading application, there is no need to configure and start `mcrouter`.
 
 #### Logging service
 
-Configure [_log.init_](./framework/areg/resources/log.init) to set scopes, log priorities and log file name:
+Configure [_log.init_](./framework/areg/resources/log.init) to set scopes, priorities and file name for logging:
 ```
 log.file        = %home%/logs/%appname%_%time%.log # create logs in 'log' subfolder of user home 
 scope.mcrouter.*= NOTSET ;                         # disable logs for mcrouter.
@@ -206,11 +223,11 @@ scope.my_app.ignore_this_group_* = NOTSET ;        # disable logs of certain sco
 ```
 > 💡 By default, the `router.init` and `log.init` files are located in the `config` subfolder of binaries.<br />
 > 💡 To enable all logs of all applications, use `scope.*  = DEBUG | SCOPE ;` .<br />
-> 💡 In the current version the logging is possible only in file.
+> 💡 Currently logging is possible only in file.
 
-### Development
+#### Development
 
-The development guidance and step-by-step example to create a simple service-enabled application are described in [DEVELOP](./docs/DEVELOP.md).
+The development guidance and step-by-step example to create a simple service-enabled application are described in [DEVELOP](./docs/DEVELOP.md). See [_Hello Service!_](./docs/DEVELOP.md#hello-service) as an example to create service.
 
 [ [↑ to top ↑](#table-of-contents) ]
 
@@ -218,58 +235,54 @@ The development guidance and step-by-step example to create a simple service-ena
 
 ## Use cases and benefits[![](./docs/img/pin.svg)](#use-cases-and-benefits)
 
-AREG SDK can be used in a very large scope of multithreading and multiprocessing application development running on Linux or Windows machines.
+AREG SDK can be used in a very large scope of multithreading and multiprocessing application development.
 
 #### Distributed solution
 
-AREG SDK is a distributed computing solution, where the services can be distributed and run on any node of the network. The automatic service discovery makes service location transparent, so that the applications interact as if the components are located in one process. Developers define a _model_, which is a description of service relationship, and load it to start services during runtime. The services can easily be distributed between multiple processes.
+AREG SDK is a solution of distributed services that can run on any node of the network and because of automations and transparent communication interact as if the components are located in one process. To distribute services in the processes and define relationships, developers create _model_ to load during runtime.
 
-The following is a demonstration of a static _model_ description, which is loaded to start services and unloaded to stop them.
+The following is a demonstration of a static _model_ to start and stop services:
 ```cpp
-// main.cpp source file.
-
 // Defines static model with 2 services
-BEGIN_MODEL(NECommon::ModelName)
+BEGIN_MODEL("MyModel")
 
     BEGIN_REGISTER_THREAD( "Thread1" )
-        BEGIN_REGISTER_COMPONENT( "RemoteRegistry", RemoteRegistryService )
-            REGISTER_IMPLEMENT_SERVICE( NERemoteRegistry::ServiceName, NERemoteRegistry::InterfaceVersion )
-        END_REGISTER_COMPONENT( "RemoteRegistry" )
-    END_REGISTER_THREAD( "Thread1" )
-
-    BEGIN_REGISTER_THREAD( "Thread2" )
         BEGIN_REGISTER_COMPONENT( "SystemShutdown", SystemShutdownService )
             REGISTER_IMPLEMENT_SERVICE( NESystemShutdown::ServiceName, NESystemShutdown::InterfaceVersion )
         END_REGISTER_COMPONENT( "SystemShutdown" )
+    END_REGISTER_THREAD( "Thread1" )
+
+    BEGIN_REGISTER_THREAD( "Thread2" )
+        BEGIN_REGISTER_COMPONENT( "RemoteRegistry", RemoteRegistryService )
+            REGISTER_IMPLEMENT_SERVICE( NERemoteRegistry::ServiceName, NERemoteRegistry::InterfaceVersion )
+            REGISTER_DEPENDENCY("SystemShutdown")
+        END_REGISTER_COMPONENT( "RemoteRegistry" )
     END_REGISTER_THREAD( "Thread2" )
 
-END_MODEL(NECommon::ModelName)
+END_MODEL("MyModel")
 
-// the main function
 int main()
 {
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
     Application::initApplication( );
-
     // load model to start service components
-    Application::loadModel(NECommon::ModelName);
-
+    Application::loadModel("MyModel");
     // wait until Application quit signal is set.
     Application::waitAppQuit(NECommon::WAIT_INFINITE);
-
     // stop and unload service components
-    Application::unloadModel(NECommon::ModelName);
-
+    Application::unloadModel("MyModel");
     // release and cleanup resources of application.
     Application::releaseApplication();
 
     return 0;
 }
 ```
-In the example, the `"RemoveRegistry"` and the `"SystemShudown"` are the names of components called _roles_, and the `NERemoteRegistry::ServiceName` and the `NESystemShutdown::ServiceName` are the _interface names_. In combination, they define the _service name_ used to access in the network. These MACRO create static _model_ `NECommon::ModelName`, which is loaded when call `Application::loadModel(NECommon::ModelName)`, and the services are stopped when call `Application::unloadModel(NECommon::ModelName)`.
+This example uses MACRO to create a model `"MyModel"` with two services:
+1. Service with the _role_ `"SystemShutdown"` is registered in the thread `"Thread1"` and provides an interface with name `NESystemShutdown::ServiceName`.
+2.  Service with the _role_ `"RemoteRegistry"` is registered in the thread `"Thread2"`, provides an interface with name `NERemoteRegistry::ServiceName` and has dependency (i.e. _is a client_) of service with _role_ `"SystemShutdown"`.
 
-In this example, services can be merged in one thread or distributed in 2 processes by defining a _model_ in each process. Independent on service location, neither software developers, nor service client objects feel a difference except for possible slight network latency when running IPC. The services must have unique names within the scope of visibility. Means, in case of _Public_ services, the names are unique within a network, and in case of _Local_ services, the names are unique within a process scope. An example of developing a service and a client in one and multiple processes is in [**Hello Service!**](./docs/DEVELOP.md#hello-service) project described in the development guide.
+The services are started when load model by calling function `Application::loadModel("MyModel")`, and stopped when call function `Application::unloadModel("MyModel")`. When define a model, these two services can be registered in the same thread or distributed in 2 processes. In all cases, the physical location of service components remain transparent, so that the architectures have more flexibility to distribute computing power. An example of developing a service and a client in one and multiple processes is in [**Hello Service!**](./docs/DEVELOP.md#hello-service) project described in the development guide.
 
 #### Driverless devices
 
@@ -277,22 +290,22 @@ Normally, the devices are supplied with the drivers to install in the system and
 <br /><a href="/docs/img/driver-solution.png"><img src="/docs/img/driver-solution.png" alt="Kkernel-mode driver solution" style="width:70%;height:70%"/></a><br />
 Our proposal is to deliver driverless service-enabled devices, where device-specific services are described in the interface prototype documents. 
 <br /><a href="/docs/img/driverless-solution.png"><img src="/docs/img/driverless-solution.png" alt="AREG SDK driverless solution" style="width:70%;height:70%"/></a><br />
-In contrast to drivers, the service development does not differ from user mode application development, it is faster to develop, easily serves multiple applications (service clients), contains fewer risks and requires less development resources. The client object generated from the supplied service interface prototype document is easily integrated into the application to communicate and trigger device-specific service(s).
+In contrast to drivers, the service development does not differ from user mode application development, it is faster to develop, easily serves multiple applications (_service clients_), contains fewer risks and the code generator helps to generate client object from service interface document.
 
 #### Real-time solutions
 
-When a remote method of the service interface is called, the engine of AREG SDK immediately generates and delivers messages to the target component, which invokes appropriate methods of addressed service. This makes communication real-time with ultra-low networking latency. Such solutions are highly required to develop time-sensitive applications for automotive, flock of drones, medtech, real-time manufacturing, real-time monitoring and other projects.
+When a remote method of the service interface is called, the engine of AREG SDK automatically generates and delivers messages to the target and automatically invokes the exact methods of the exact target objects. This makes communication real-time with ultra-low networking latency. Such solutions are highly required to develop time-sensitive applications for automotive, flock of drones, medtech, real-time manufacturing, real-time monitoring and other projects.
 <br /><a href="/docs/img/areg-sdk-features.png"><img src="/docs/img/areg-sdk-features.png" alt="AREG SDK and multicast features" style="width:70%;height:70%"/></a><br />
 
 #### Digital twin
 
-Often, the digital twin applications use client-server architecture, where the middleware server collects the data of external devices and the UI application virtualizes them. In such solutions, devices interact either through server or UI client applications. The event-driven and the service-oriented architecture, and the real-time communication of AREG SDK is a perfect solution to develop digital twin applications that virtualize, monitor and control external devices, and immediately react to environment or device state change in real-time mode. External devices may also communicate without additional layers, which is an important factor for emergency, security and safety cases.
+Often, the digital twin applications use client-server architecture, where the middleware server collects the data of external devices and the UI application virtualizes them. In such solutions, devices interact either through server or UI client applications. The event-driven and the service-oriented architecture, and the real-time communication of AREG framework is a good solution to develop digital twin applications to virtualize, monitor and control external devices, and immediately react to environment or device state change in real-time mode. External devices may also communicate without additional layers, which is an important factor for emergency, security and safety cases.
 
 #### Simulation and test automations
 
-When hardware provisioning to all employees is impossible, testing and checking unexpected phenomena of rapidly changing software in a simulated environment can be the most rational solution. If unit tests are used by developers to test a small portion of code and they may contain bugs, the simulation is used by developers and testers to check the system's functionality and stability. Simulations are portable and accessible to everyone, help to optimize solutions and avoid unnecessary risks. Projects using simulations are better prepared for remote work and easier to outsource.
+When hardware provisioning to all employees is impossible, testing and checking unexpected phenomena of rapidly changing software in a simulated environment can be the most rational solution. If unit tests are used by developers to test a small portion of code and they may contain bugs, the simulation is used by developers and testers to check functionality and stability of the system. Simulations are portable and accessible to everyone, help to optimize solutions and avoid unnecessary risks. Projects using simulations are better prepared for remote work and easier to outsource.
 <br /><a href="/docs/img/software-layers.png"><img src="/docs/img/software-layers.png" alt="Software application 4 layers" style="width:70%;height:70%"/></a><br />
-The software components in applications normally are split into Data, Controller, Business and the optional Presentation layers. Distributed and service-oriented solution of the AREG engine eases system testing in a simulated environment, where the Simulation application provides an implementation of Data layer services, so that the rest of the application can be tested without any change.
+The software components in applications normally are split into Data, Controller, Business and the optional Presentation layers. Distributed and service-oriented solution of AREG framework can ease system testing in a simulated environment, where the Simulation application provides an implementation of Data layer services, so that the rest of the application can be tested without any change.
 
 The same technique of simulating data can be used to create API-driven test automations.
 
@@ -310,9 +323,7 @@ There are various [examples](./examples/) to demonstrate features of the AREG SD
 
 ## Licensing[![](./docs/img/pin.svg)](#licensing)
  
-AREG SDK is dual-licensed under free open source license (Apache version 2 license) and commercial license, which gives the commercial support, full rights to create and distribute software without open source license obligations. For licensing details see [LICENSE](./LICENSE.txt) document.
- 
-For commercial license, support or additional information, please visit [Aregtech](https://www.aregtech.com/) website or contact _info[at]aregtech.com_.
+AREG SDK is under free open source Apache version 2 license. However, AREG SDK can be commercially licensed, which includes the commercial support, full rights to create and distribute software without open source license obligations. For free open source licensing details see [LICENSE](./LICENSE.txt) document. For commercial license, support or additional information, please visit [Aregtech](https://www.aregtech.com/) website or contact _info[at]aregtech[dot]com_.
 
 [ [↑ to top ↑](#table-of-contents) ]
 
@@ -325,9 +336,9 @@ We look for help and welcome to join the project:
 * If you need new features, please open [new issue](https://github.com/aregtech/areg-sdk/issues) or start [new discussion](https://github.com/aregtech/areg-sdk/discussions).
 * Please submit your pull requests in the [candidate branch](https://github.com/aregtech/areg-sdk/tree/20220701-candidate), which is our branch with latest sources.
 * When create a pull request, please understand that reviewing and testing takes time, and we as well pay attention on coding style.
-* If you look for invoiced commercial support or trainings, or if your project has possibility commercially support AREG SDK, please contact info[at]aregtec[dot]com. 
+* If you look for invoiced commercial support or trainings, or if your project has possibility commercially support AREG SDK, please contact info[at]aregtech[dot]com. 
 
-Did we help your project or did you just like the idea? Have you learned something new or have we inspired you for new great ideas? Then we ask you not to be indifferent and [![star AREG SDK](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=star%20AREG%20SDK)](https://github.com/aregtech/areg-sdk/). This small thank will inspire our contributors and help us expand our community. Please also share the project with your connections on [![Twitter](https://img.shields.io/twitter/url?label=Twitter&style=social&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk) and other social media platforms.
+Did we help your project or did you like the idea? Have you learned something new or have we inspired you for new great ideas? Then we ask not to be indifferent and [![star AREG SDK](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=star%20AREG%20SDK)](https://github.com/aregtech/areg-sdk/). This small thank inspires contributors and help us to expand our community. Please also share the project with your connections on [![Twitter](https://img.shields.io/twitter/url?label=Twitter&style=social&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk) and other social media platforms.
 
 [ [↑ to top ↑](#table-of-contents) ]
 
