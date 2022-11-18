@@ -151,7 +151,6 @@ After compilation, normally binaries are located in `<areg-sdk>/product/build/<c
 #### Build with `cmake`
 
 To build with [cmake](https://cmake.org/), open _Terminal_ in your `projects` folder and take the steps:
-
 ```bash
 # Step 1: Get sources from GitHub
 $ git clone https://github.com/aregtech/areg-sdk.git
@@ -170,7 +169,6 @@ $ cmake --build . -j 8
 #### Build with `make`
 
 To build with [make](https://www.gnu.org/software/make/), open _Terminal_ in your `projects` folder and take the steps:
-
 ```bash
 # Step 1: Get sources from GitHub
 $ git clone https://github.com/aregtech/areg-sdk.git
@@ -179,6 +177,7 @@ $ cd areg-sdk
 # Step 2: Compile sources by calling: make [all] [framework] [examples]
 $ make
 ```
+
 #### Build with IDE
 
 Open _Terminal_ or preferred IDE to clone source codes like this:
@@ -186,7 +185,6 @@ Open _Terminal_ or preferred IDE to clone source codes like this:
 $ git clone https://github.com/aregtech/areg-sdk.git
 $ cd areg-sdk
 ```
-
 Depending on IDE or preferences make one of following:
 
 1. Open `areg-sdk.sln` file in [MSVS](https://visualstudio.microsoft.com/) (2019 or higher) and compile solution.
