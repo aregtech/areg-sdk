@@ -136,9 +136,9 @@ The source codes of AREG framework and examples support following platform, CPU 
 The tools to use to compile sources:
 | Solution | Platforms | API | Quick actions to compile |
 | --- | --- | --- | --- |
-| `CMakeLists.txt` | **Linux, Windows** | _POSIX_, _Win32_ | Make one of these actions:<br /> &nbsp;&nbsp; - Call `cmake` in _command line_.<br /> &nbsp;&nbsp; - Configure and build in _Visual Studio Code_;<br /> &nbsp;&nbsp; - Configure and build in _Microsoft Visual Studio_ (MSVS 2019 or higher). |
+| `CMakeLists.txt` | **Linux, Windows** | _POSIX_, _Win32_ | Make one of these actions:<br /> &nbsp;&nbsp; - Call `cmake` in _command line_.<br /> &nbsp;&nbsp; - Configure and build in _Visual Studio Code_;<br /> &nbsp;&nbsp; - Configure and build in _Microsoft Visual Studio_. |
 | `Makefile` | **Linux**| _POSIX_ | Call `make` in _command line_. |
-| `areg-sdk.sln` | **Windows** | _Win32_ | Open and build in _Microsoft Visual Studio_ (MSVS 2019 or higher). |
+| `areg-sdk.sln` | **Windows** | _Win32_ | Open and build in _Microsoft Visual Studio_. |
 | `.project` | **Linux, Windows** | _POSIX_ | Import and build projects in _Eclipse_. |
 
 > 💡 The other POSIX-compliant OS and compilers are not tested yet.<br />
@@ -189,8 +189,8 @@ $ cd areg-sdk
 Depending on IDE or preferences make one of following:
 
 1. Open `areg-sdk.sln` file in [MSVS](https://visualstudio.microsoft.com/) (2019 or higher) and compile solution.
-2. Open `areg-sdk` folder in [MSVC](https://visualstudio.microsoft.com/) (2019 or higher), select `CMakeLists.txt` located in the `areg-sdk` root, configure and build.
-3. Open `areg-sdk` folder in [VS Code](https://code.visualstudio.com/), select `CMakeLists.txt` located in the `areg-sdk` root, configure and build.
+2. Open `areg-sdk` folder in [MSVC](https://visualstudio.microsoft.com/) (2019 or higher), select `CMakeLists.txt` in `areg-sdk` root, configure and build.
+3. Open `areg-sdk` folder in [VS Code](https://code.visualstudio.com/), select `CMakeLists.txt` in `areg-sdk` root, configure and build.
 4. Open [Eclipse](https://www.eclipse.org/ide/), import all projects from `areg-sdk` root, select projects and build.
 
 > 💡 Compilation with _Eclipse_ under **Windows** might require to change the Toolchain.
