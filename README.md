@@ -202,16 +202,16 @@ Depending on IDE or preferences make one of following:
 
 #### Multicast router
 
-Configure [_router.init_](./framework/areg/resources/router.init) file to set the IP-address and the port of _multicast router_:
+Configure [_router.init_](./framework/areg/resources/router.init) file to set the IP-address and the port of _multicast router_ (`mcrouter`):
 ```
 connection.address.tcpip    = 127.0.0.1	# the address of mcrouter host
 connection.port.tcpip       = 8181      # the connection port of mcrouter
 ```
-The multicast router forms the network and can run on any device. For example, in case of M2M communication, it can run on a gateway, in case of IPC, it can run on the same machine. In case of multithreading application development, there is no need to configure `router.init` and run _mcrouter_.
+The multicast router is a process that can run as a system service or application to form the network, and it can run on any device like PC, gateway or even a small router. In case of multithreading application, there is no need to configure and start `mcrouter`.
 
 #### Logging service
 
-Configure [_log.init_](./framework/areg/resources/log.init) to set scopes, log priorities and log file name:
+Configure [_log.init_](./framework/areg/resources/log.init) to set scopes, priorities and file name for logging:
 ```
 log.file        = %home%/logs/%appname%_%time%.log # create logs in 'log' subfolder of user home 
 scope.mcrouter.*= NOTSET ;                         # disable logs for mcrouter.
@@ -222,11 +222,11 @@ scope.my_app.ignore_this_group_* = NOTSET ;        # disable logs of certain sco
 ```
 > 💡 By default, the `router.init` and `log.init` files are located in the `config` subfolder of binaries.<br />
 > 💡 To enable all logs of all applications, use `scope.*  = DEBUG | SCOPE ;` .<br />
-> 💡 In the current version the logging is possible only in file.
+> 💡 Currently logging is possible only in file.
 
 ### Development
 
-The development guidance and step-by-step example to create a simple service-enabled application are described in [DEVELOP](./docs/DEVELOP.md).
+The development guidance and step-by-step example to create a simple service-enabled application are described in [DEVELOP](./docs/DEVELOP.md). See [_Hello Service!_](./docs/DEVELOP.md#hello-service) as an example to create service.
 
 [ [↑ to top ↑](#table-of-contents) ]
 
@@ -234,58 +234,56 @@ The development guidance and step-by-step example to create a simple service-ena
 
 ## Use cases and benefits[![](./docs/img/pin.svg)](#use-cases-and-benefits)
 
-AREG SDK can be used in a very large scope of multithreading and multiprocessing application development running on Linux or Windows machines.
+AREG SDK can be used in a very large scope of multithreading and multiprocessing application development.
 
 #### Distributed solution
 
-AREG SDK is a distributed computing solution, where the services can be distributed and run on any node of the network. The automatic service discovery makes service location transparent, so that the applications interact as if the components are located in one process. Developers define a _model_, which is a description of service relationship, and load it to start services during runtime. The services can easily be distributed between multiple processes.
+AREG SDK is a solution of distributed services that can run on any node of the network and because of automations and transparent communication interact as if the components are located in one process. To distribute services in the processes and define relationships, developers create _model_ to load during runtime.
 
-The following is a demonstration of a static _model_ description, which is loaded to start services and unloaded to stop them.
+The following is a demonstration of a static _model_ to start and stop services:
 ```cpp
-// main.cpp source file.
-
 // Defines static model with 2 services
-BEGIN_MODEL(NECommon::ModelName)
+BEGIN_MODEL("MyModel")
 
     BEGIN_REGISTER_THREAD( "Thread1" )
-        BEGIN_REGISTER_COMPONENT( "RemoteRegistry", RemoteRegistryService )
-            REGISTER_IMPLEMENT_SERVICE( NERemoteRegistry::ServiceName, NERemoteRegistry::InterfaceVersion )
-        END_REGISTER_COMPONENT( "RemoteRegistry" )
-    END_REGISTER_THREAD( "Thread1" )
-
-    BEGIN_REGISTER_THREAD( "Thread2" )
         BEGIN_REGISTER_COMPONENT( "SystemShutdown", SystemShutdownService )
             REGISTER_IMPLEMENT_SERVICE( NESystemShutdown::ServiceName, NESystemShutdown::InterfaceVersion )
         END_REGISTER_COMPONENT( "SystemShutdown" )
+    END_REGISTER_THREAD( "Thread1" )
+
+    BEGIN_REGISTER_THREAD( "Thread2" )
+        BEGIN_REGISTER_COMPONENT( "RemoteRegistry", RemoteRegistryService )
+            REGISTER_IMPLEMENT_SERVICE( NERemoteRegistry::ServiceName, NERemoteRegistry::InterfaceVersion )
+            REGISTER_DEPENDENCY("SystemShutdown")
+        END_REGISTER_COMPONENT( "RemoteRegistry" )
     END_REGISTER_THREAD( "Thread2" )
 
-END_MODEL(NECommon::ModelName)
+END_MODEL("MyModel")
 
-// the main function
 int main()
 {
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
     Application::initApplication( );
-
     // load model to start service components
-    Application::loadModel(NECommon::ModelName);
-
+    Application::loadModel("MyModel");
     // wait until Application quit signal is set.
     Application::waitAppQuit(NECommon::WAIT_INFINITE);
-
     // stop and unload service components
-    Application::unloadModel(NECommon::ModelName);
-
+    Application::unloadModel("MyModel");
     // release and cleanup resources of application.
     Application::releaseApplication();
 
     return 0;
 }
 ```
-In the example, the `"RemoveRegistry"` and the `"SystemShudown"` are the names of components called _roles_, and the `NERemoteRegistry::ServiceName` and the `NESystemShutdown::ServiceName` are the _interface names_. In combination, they define the _service name_ used to access in the network. These MACRO create static _model_ `NECommon::ModelName`, which is loaded when call `Application::loadModel(NECommon::ModelName)`, and the services are stopped when call `Application::unloadModel(NECommon::ModelName)`.
+This example uses MACRO to create a model `"MyModel"` with two services:
+1. Service with the _role_ `"SystemShutdown"` is registered in the thread `"Thread1"` and provides an interface with name `NESystemShutdown::ServiceName`.
+2.  Service with the _role_ `"RemoteRegistry"` is registered in the thread `"Thread2"`, provides an interface with name `NERemoteRegistry::ServiceName` and has dependency (i.e. _is a client_) of service with _role_ `"SystemShutdown"`.
 
-In this example, services can be merged in one thread or distributed in 2 processes by defining a _model_ in each process. Independent on service location, neither software developers, nor service client objects feel a difference except for possible slight network latency when running IPC. The services must have unique names within the scope of visibility. Means, in case of _Public_ services, the names are unique within a network, and in case of _Local_ services, the names are unique within a process scope. An example of developing a service and a client in one and multiple processes is in [**Hello Service!**](./docs/DEVELOP.md#hello-service) project described in the development guide.
+The services are started when load model by calling function `Application::loadModel("MyModel")`, and stopped when call function `Application::unloadModel("MyModel")`. When define a model, these two services can be registered in the same thread or distributed in 2 processes. In all cases, the physical location of service components remain transparent for developer when program code and for service client objects when send requests and receive response.
+
+An example of developing a service and a client in one and multiple processes is in [**Hello Service!**](./docs/DEVELOP.md#hello-service) project described in the development guide.
 
 #### Driverless devices
 
