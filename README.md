@@ -136,9 +136,9 @@ The source codes of AREG framework and examples support following platform, CPU 
 The tools to use to compile sources:
 | Solution | Platforms | API | Quick actions to compile |
 | --- | --- | --- | --- |
-| `CMakeLists.txt` | **Linux, Windows** | _POSIX_, _Win32_ | Make one of these actions:<br /> &nbsp;&nbsp; - Call `cmake` in _command line_.<br /> &nbsp;&nbsp; - Configure and build in _Visual Studio Code_;<br /> &nbsp;&nbsp; - Configure and build in _MS Visual Studio_ (MSVS 2019 or higher). |
+| `CMakeLists.txt` | **Linux, Windows** | _POSIX_, _Win32_ | Make one of these actions:<br /> &nbsp;&nbsp; - Call `cmake` in _command line_.<br /> &nbsp;&nbsp; - Configure and build in _Visual Studio Code_;<br /> &nbsp;&nbsp; - Configure and build in _Microsoft Visual Studio_ (MSVS 2019 or higher). |
 | `Makefile` | **Linux**| _POSIX_ | Call `make` in _command line_. |
-| `areg-sdk.sln` | **Windows** | _Win32_ | Open and build in _MS Visual Studio_ (MSVS 2019 or higher). |
+| `areg-sdk.sln` | **Windows** | _Win32_ | Open and build in _Microsoft Visual Studio_ (MSVS 2019 or higher). |
 | `.project` | **Linux, Windows** | _POSIX_ | Import and build projects in _Eclipse_. |
 
 > 💡 The other POSIX-compliant OS and compilers are not tested yet.<br />
