@@ -246,18 +246,18 @@ The following is a demonstration of a static _model_ to start and stop services:
 // Defines static model with 2 services
 BEGIN_MODEL("MyModel")
 
-    BEGIN_REGISTER_THREAD( "Thread1" )
-        BEGIN_REGISTER_COMPONENT( "SystemShutdown", SystemShutdownService )
-            REGISTER_IMPLEMENT_SERVICE( NESystemShutdown::ServiceName, NESystemShutdown::InterfaceVersion )
-        END_REGISTER_COMPONENT( "SystemShutdown" )
-    END_REGISTER_THREAD( "Thread1" )
+  BEGIN_REGISTER_THREAD( "Thread1" )
+    BEGIN_REGISTER_COMPONENT( "SystemShutdown", SystemShutdownService )
+      REGISTER_IMPLEMENT_SERVICE( NESystemShutdown::ServiceName, NESystemShutdown::InterfaceVersion )
+    END_REGISTER_COMPONENT( "SystemShutdown" )
+  END_REGISTER_THREAD( "Thread1" )
 
-    BEGIN_REGISTER_THREAD( "Thread2" )
-        BEGIN_REGISTER_COMPONENT( "RemoteRegistry", RemoteRegistryService )
-            REGISTER_IMPLEMENT_SERVICE( NERemoteRegistry::ServiceName, NERemoteRegistry::InterfaceVersion )
-            REGISTER_DEPENDENCY("SystemShutdown")
-        END_REGISTER_COMPONENT( "RemoteRegistry" )
-    END_REGISTER_THREAD( "Thread2" )
+  BEGIN_REGISTER_THREAD( "Thread2" )
+    BEGIN_REGISTER_COMPONENT( "RemoteRegistry", RemoteRegistryService )
+      REGISTER_IMPLEMENT_SERVICE( NERemoteRegistry::ServiceName, NERemoteRegistry::InterfaceVersion )
+      REGISTER_DEPENDENCY("SystemShutdown")
+    END_REGISTER_COMPONENT( "RemoteRegistry" )
+  END_REGISTER_THREAD( "Thread2" )
 
 END_MODEL("MyModel")
 
