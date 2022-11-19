@@ -125,7 +125,7 @@ The source codes of AREG framework and examples support following platform, CPU 
   </tr>
   <tr>
     <td nowrap><strong>CPU</strong></td>
-    <td>`x86`, `x86_64`, `arm` and `aarch64`.</td>
+    <td>x86, x86_64, arm and aarch64.</td>
   </tr>
   <tr>
     <td nowrap><strong>Compilers</strong></td>
