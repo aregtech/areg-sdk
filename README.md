@@ -5,7 +5,7 @@
 
 ![Latest release](https://img.shields.io/github/v/release/aregtech/areg-sdk?label=%20%F0%9F%93%A3%20Latest%20release&style=flat&logoColor=b0c0c0&labelColor=363D44)
 
-The latest development sources are in [20220701-candidate](https://github.com/aregtech/areg-sdk/tree/20220701-candidate) branch. Please check the [build status](https://github.com/aregtech/areg-sdk/actions) before clone it.
+The latest development sources are in [20220701-candidate](https://github.com/aregtech/areg-sdk/tree/20220701-candidate) branch. Please check the [build status](https://github.com/aregtech/areg-sdk/actions) before cloning it.
 
 ---
 
@@ -125,7 +125,7 @@ The source codes of AREG framework and examples support following platform, CPU 
   </tr>
   <tr>
     <td nowrap><strong>CPU</strong></td>
-    <td>x86, x86_64, arm and aarch64.</td>
+    <td>`x86`, `x86_64`, `arm` and `aarch64`.</td>
   </tr>
   <tr>
     <td nowrap><strong>Compilers</strong></td>
