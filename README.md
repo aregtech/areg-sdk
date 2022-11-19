@@ -64,7 +64,7 @@ Traditionally, devices act as connected clients to stream data to the cloud or f
 Since data is generated and collected at the edge of the network (**mist network**), it makes sense to change the role of connected Things and provide network-accessible (_Public_) services directly on devices. This extends _Cloud_ to the extreme edge and it is a good foothold for robust solutions such as:
 * _Increase data privacy_, which is an important factor for sensitive data.
 * _Decrease data streaming_, which is a fundamental condition to optimize network communication.
-* _Autonomous, intelligent and self-aware devices_ with provided services directly in the environment of data origin.
+* _Autonomous, intelligent and self-aware devices_ with services directly in the environment of data origin.
 
 [ [↑ to top ↑](#table-of-contents) ]
 
