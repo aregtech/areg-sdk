@@ -121,15 +121,15 @@ The source codes of AREG framework and examples support following platform, CPU 
 <table>
   <tr>
     <td nowrap><strong>OS</strong></td>
-    <td>Linux (list of <a href="./docs/POSIX.md#posix-api" alt="POSX API">POSIX API</a>), Windows 8 and higher.</td>
+    <td><i>Linux</i> (list of <a href="./docs/POSIX.md#posix-api" alt="POSX API">POSIX API</a>), <i>Windows 8</i> and higher.</td>
   </tr>
   <tr>
     <td nowrap><strong>CPU</strong></td>
-    <td>x86, x86_64, arm and aarch64.</td>
+    <td><i>x86</i>, <i>x86_64</i>, <i>arm</i> and <i>aarch64</i>.</td>
   </tr>
   <tr>
     <td nowrap><strong>Compilers</strong></td>
-    <td>GCC, g++, clang and MSVC.</td>
+    <td><i>GCC</i>, <i>g++</i>, <i>clang</i> and <i>MSVC</i>.</td>
   </tr>
 </table>
 
@@ -323,7 +323,7 @@ There are various [examples](./examples/) to demonstrate features of the AREG SD
 
 ## Licensing[![](./docs/img/pin.svg)](#licensing)
  
-AREG SDK is under free open source Apache version 2 license. However, AREG SDK can be commercially licensed, which includes the commercial support, full rights to create and distribute software without open source license obligations. For free open source licensing details see [LICENSE](./LICENSE.txt) document. For commercial license, support or additional information, please visit [Aregtech](https://www.aregtech.com/) website or contact _info[at]aregtech[dot]com_.
+AREG SDK is under free open source [_Apache License Version 2.0_](./LICENSE.txt). However, AREG SDK can be commercially licensed, which includes the commercial support, full rights to create and distribute software without open source license obligations. For commercial license, support or additional information, please visit [Aregtech](https://www.aregtech.com/) website or contact _info[at]aregtech[dot]com_.
 
 [ [↑ to top ↑](#table-of-contents) ]
 
