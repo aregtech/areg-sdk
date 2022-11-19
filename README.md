@@ -5,7 +5,7 @@
 
 ![Latest release](https://img.shields.io/github/v/release/aregtech/areg-sdk?label=%20%F0%9F%93%A3%20Latest%20release&style=flat&logoColor=b0c0c0&labelColor=363D44)
 
-The latest development sources can be cloned from [20220701-candidate](https://github.com/aregtech/areg-sdk/tree/20220701-candidate) branch. Please check the branch [build status](https://github.com/aregtech/areg-sdk/actions) before using it.
+The latest development sources are in [20220701-candidate](https://github.com/aregtech/areg-sdk/tree/20220701-candidate) branch. Please check the [build status](https://github.com/aregtech/areg-sdk/actions) before clone it.
 
 ---
 
@@ -50,7 +50,7 @@ The latest development sources can be cloned from [20220701-candidate](https://g
    - [Driverless devices](#driverless-devices)
    - [Real-time solutions](#real-time-solutions)
    - [Digital twin](#digital-twin)
-   - [Simulation and test automations](#simulation-and-test-automations)
+   - [Simulation and tests](#simulation-and-tests)
 8. [Examples](#examples)
 9. [Licensing](#licensing)
 10. [Call for action](#call-for-action)
@@ -64,7 +64,7 @@ Traditionally, devices act as connected clients to stream data to the cloud or f
 Since data is generated and collected at the edge of the network (**mist network**), it makes sense to change the role of connected Things and provide network-accessible (_Public_) services directly on devices. This extends _Cloud_ to the extreme edge and it is a good foothold for robust solutions such as:
 * _Increase data privacy_, which is an important factor for sensitive data.
 * _Decrease data streaming_, which is a fundamental condition to optimize network communication.
-* Develop _autonomous, intelligent and self-aware devices_ by providing services directly in the environment of data origin.
+* _Autonomous, intelligent and self-aware devices_ with provided services directly in the environment of data origin.
 
 [ [↑ to top ↑](#table-of-contents) ]
 
@@ -88,13 +88,13 @@ The AREG engine forms a fault-tolerant system and does not require process start
 ## Composition[![](./docs/img/pin.svg)](#composition)
 
 Currently AREG SDK consists of:
-1. [Multicast router (_mcrouter_)](./framework/mcrouter/) to use for IPC. It runs either as a service managed by the OS or as a console application.
+1. [Multicast router (_mcrouter_)](./framework/mcrouter/) for IPC that runs either as a service managed by the OS or as a console application.
 2. [AREG framework (or engine)](./framework/areg/) is a (shared or static) library to link with every application.
 3. [Code generator tool](./tools/) to create client and server base objects from a service prototype document.
 
 The network communication model of AREG framework is based on _multicast router_ and service architecture is _interface-centric_, which in combination of both enable to comprise all features of _action-centric_ architecture (Client-Server / Request-Reply model) and _data-centric_ architecture (Publisher-Subscriber / PubSub model).
 
-> 💡 The [examples](./examples) of _AREG SDK_ contain multiple projects to check the features and fault tolerant behavior of AREG communication engine.
+> 💡 The [examples](./examples) of _AREG SDK_ contain multiple projects to demonstrate the features and fault tolerant behavior of AREG communication engine.
 
 [ [↑ to top ↑](#table-of-contents) ]
 
@@ -128,7 +128,7 @@ The source codes of AREG framework and examples support following platform, CPU 
     <td>x86, x86_64, arm and aarch64.</td>
   </tr>
   <tr>
-    <td nowrap><strong>Compilers (C++17 or heigher)</strong></td>
+    <td nowrap><strong>Compilers</strong></td>
     <td>GCC, g++, clang and MSVC.</td>
   </tr>
 </table>
@@ -301,9 +301,9 @@ When a remote method of the service interface is called, the engine of AREG SDK 
 
 Often, the digital twin applications use client-server architecture, where the middleware server collects the data of external devices and the UI application virtualizes them. In such solutions, devices interact either through server or UI client applications. The event-driven and the service-oriented architecture, and the real-time communication of AREG framework is a good solution to develop digital twin applications to virtualize, monitor and control external devices, and immediately react to environment or device state change in real-time mode. External devices may also communicate without additional layers, which is an important factor for emergency, security and safety cases.
 
-#### Simulation and test automations
+#### Simulation and tests
 
-When hardware provisioning to all employees is impossible, testing and checking unexpected phenomena of rapidly changing software in a simulated environment can be the most rational solution. If unit tests are used by developers to test a small portion of code and they may contain bugs, the simulation is used by developers and testers to check functionality and stability of the system. Simulations are portable and accessible to everyone, help to optimize solutions and avoid unnecessary risks. Projects using simulations are better prepared for remote work and easier to outsource.
+When hardware provisioning to all employees is impossible, testing and checking unexpected phenomena of rapidly changing software in a simulated environment is the most rational solution. If unit tests are for testing a small portion of code and the tests may contain bugs, the simulation is used by developers and testers to check functionality and stability of the system. Simulations are portable and accessible to everyone, help to optimize solutions and avoid unnecessary risks. Projects using simulations are better prepared for remote work and easier to outsource.
 <br /><a href="/docs/img/software-layers.png"><img src="/docs/img/software-layers.png" alt="Software application 4 layers" style="width:70%;height:70%"/></a><br />
 The software components in applications normally are split into Data, Controller, Business and the optional Presentation layers. Distributed and service-oriented solution of AREG framework can ease system testing in a simulated environment, where the Simulation application provides an implementation of Data layer services, so that the rest of the application can be tested without any change.
 
@@ -338,7 +338,7 @@ We look for help and welcome to join the project:
 * When create a pull request, please understand that reviewing and testing takes time, and we as well pay attention on coding style.
 * If you look for invoiced commercial support or trainings, or if your project has possibility commercially support AREG SDK, please contact info[at]aregtech[dot]com. 
 
-Did we help your project or did you like the idea? Have you learned something new or have we inspired you for new great ideas? Then we ask not to be indifferent and [![star AREG SDK](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=star%20AREG%20SDK)](https://github.com/aregtech/areg-sdk/). This small thank inspires contributors and help us to expand our community. Please also share the project with your connections on [![Twitter](https://img.shields.io/twitter/url?label=Twitter&style=social&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk) and other social media platforms.
+Did we help your project? Have you learned something new? Have we inspired you for new great ideas? Then we ask not to be indifferent and [![star AREG SDK](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=star%20AREG%20SDK)](https://github.com/aregtech/areg-sdk/). This small thank inspires contributors and help us to expand our community. Please also share the project with your network at [![Twitter](https://img.shields.io/twitter/url?label=Twitter&style=social&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk) and other social media platforms.
 
 [ [↑ to top ↑](#table-of-contents) ]
 
