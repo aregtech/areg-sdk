@@ -39,11 +39,11 @@ void Process::_osInitilize( void )
     ::memset( buffer, 0, File::MAXIMUM_PATH );
     ::memset( path, 0, 256 );
 
-    sprintf( path, "/proc/%llu/cmdLine", static_cast<uint64_t>(mProcessId) );
+    sprintf( path, "/proc/%lu/cmdLine", mProcessId );
     FILE * file = ::fopen( path, "r" );
     if ( (file == nullptr) || (::fgets( buffer, File::MAXIMUM_PATH, file ) == nullptr))
     {
-        sprintf( path, "/proc/%llu/exe", static_cast<uint64_t>(mProcessId) );
+        sprintf( path, "/proc/%lu/exe", mProcessId );
         readlink( path, buffer, File::MAXIMUM_PATH );
     }
 
