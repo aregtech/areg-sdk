@@ -29,7 +29,11 @@
 /**
  * \brief   Invalid client info object
  **/
-const ClientInfo ClientInfo::INVALID_CLIENT_INFO;
+const ClientInfo & ClientInfo::getInvalidClientInfo( void )
+{
+    static const ClientInfo _invalidClientInfo;
+    return _invalidClientInfo;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor

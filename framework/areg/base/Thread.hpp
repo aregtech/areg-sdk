@@ -109,7 +109,7 @@ public:
      * \brief   Thread::INVALID_THREAD_ID
      *          Invalid thread ID.
      **/
-    static constexpr id_type            INVALID_THREAD_ID           = static_cast<unsigned int>(0u);
+    static constexpr id_type            INVALID_THREAD_ID       { 0 };
 
 private:
 /************************************************************************/
@@ -119,13 +119,13 @@ private:
      * \brief   Thread::INVALID_THREAD_HANDLE
      *          Thread invalid handle
      **/
-    static constexpr THREADHANDLE       INVALID_THREAD_HANDLE       = nullptr;
+    static constexpr THREADHANDLE       INVALID_THREAD_HANDLE   { nullptr };
 
     /**
      * \brief   Thread::CURRENT_THREAD
      *          Identified Current Thread. Used for Local Storage
      **/
-    static Thread * const               CURRENT_THREAD          /*= reinterpret_cast<Thread *>(~0)*/;
+    static constexpr ptr_type           CURRENT_THREAD          { static_cast<ptr_type>(~0) };
 
 //////////////////////////////////////////////////////////////////////////
 // Declare Thread as runtime object
@@ -565,7 +565,7 @@ private:
      *                      Use only with Thread::CURRENT_THREAD
      * \return  The pointer of current Local Storage object.
      **/
-    static ThreadLocalStorage * _getThreadLocalStorage(Thread* ownThread = Thread::CURRENT_THREAD);
+    static ThreadLocalStorage * _getThreadLocalStorage( Thread* ownThread );
 
     /**
      * \brief	Search by thread handle and return pointer the thread object.
@@ -705,13 +705,13 @@ inline Thread* Thread::findThreadByAddress(const ThreadAddress& threadAddress)
 inline const ThreadAddress & Thread::findThreadAddressById( id_type threadId)
 {
     Thread* threadObj = Thread::findThreadById(threadId);
-    return (threadObj != nullptr ? threadObj->getAddress() : ThreadAddress::INVALID_THREAD_ADDRESS);
+    return (threadObj != nullptr ? threadObj->getAddress() : ThreadAddress::getInvalidThreadAddress());
 }
 
 inline const ThreadAddress& Thread::findThreadAddressByName(const String & threadName)
 {
     Thread* threadObj = Thread::findThreadByName(threadName);
-    return (threadObj != nullptr ? threadObj->getAddress() : ThreadAddress::INVALID_THREAD_ADDRESS);
+    return (threadObj != nullptr ? threadObj->getAddress() : ThreadAddress::getInvalidThreadAddress());
 }
 
 inline void Thread::_setRunning( bool isRunning )

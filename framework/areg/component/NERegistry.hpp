@@ -121,14 +121,14 @@ namespace NERegistry
         /**
          * \brief   Default constructor. Should not be directly used.
          *          Creates invalid Service Entry and required by Array List object.
-         *          Invalid Service Entry has name NERegistry::INVALID_SERVICE_ENTRY_NAME
+         *          Invalid Service Entry has an empty service name.
          **/
         ServiceEntry( void ) = default;
 
         /**
          * \brief   Initialize service entry by given name and version numbers.
          *          The passed serviceName and the version number should be valid.
-         *          The valid service name should not be empty or equal to NERegistry::INVALID_SERVICE_ENTRY_NAME.
+         *          The valid service name should not be empty.
          *          The version is valid, when either major or minor version numbers are not zero.
          * \param   serviceName     The name of implemented service interface.
          * \param   major           The major version number of implemented interface.
@@ -140,7 +140,7 @@ namespace NERegistry
         /**
          * \brief   Initialize service interface entry by given name and version object.
          *          The passed serviceName and the Version should be valid.
-         *          The valid Service name should not be empty or equal to NERegistry::INVALID_SERVICE_ENTRY_NAME.
+         *          The valid Service name should not be empty.
          *          The Version is valid if major or minor version is not zero.
          * \param   serviceName The name of service interface
          * \param   version     The version object of implemented service interface,
@@ -278,7 +278,7 @@ namespace NERegistry
          * \brief   Operator to access elements of the service list by index.
          * \param   index   Must be valid index of the entry.
          * \return  The instance of service element entry for real-only operations.
-         *          Returns instance of NERegistry::INVALID_SERVICE_ENTRY if index is invalid.
+         *          Returns instance of invalid service entry if index is invalid.
          */
         inline const NERegistry::ServiceEntry& operator [] (uint32_t index) const;
 
@@ -293,8 +293,7 @@ namespace NERegistry
 
         /**
          * \brief   Searches Service Entry having given name. Returns valid
-         *          Service Entry if found, otherwise returns invalid entry
-         *          NERegistry::INVALID_SERVICE_ENTRY.
+         *          Service Entry if found, otherwise returns invalid entry.
          *          There should not be several Service Entries with same
          *          Service name. If a Service Interface should be implemented
          *          more than one time, they should be registered in
@@ -302,7 +301,7 @@ namespace NERegistry
          *          running in different threads.
          * \param   serviceName The name of Service Entry to search.
          * \return  Returns valid Service Entry if found. Otherwise returns
-         *          invalid entry NERegistry::INVALID_SERVICE_ENTRY.
+         *          invalid service entry.
          **/
         const NERegistry::ServiceEntry & getService( const String & serviceName ) const;
 
@@ -497,7 +496,7 @@ namespace NERegistry
          * \brief   Operator to access elements of the worker thread list by index.
          * \param   index   Must be valid index of the entry.
          * \return  The instance of service element entry for real-only operations.
-         *          Returns instance of NERegistry::INVALID_WORKER_THREAD_ENTRY if index is invalid.
+         *          Returns instance of invalid worker thread etnry if index is invalid.
          **/
         inline const NERegistry::WorkerThreadEntry& operator [] (uint32_t index) const;
 
@@ -512,12 +511,11 @@ namespace NERegistry
 
         /**
          * \brief   Searches Worker Thread Entry having given name. Returns valid
-         *          Worker Thread Entry if found, otherwise returns invalid entry
-         *          NERegistry::INVALID_WORKER_THREAD_ENTRY.
+         *          Worker Thread Entry if found, otherwise returns invalid worker thread entry.
          *          There should not be several Worker Thread Entries with same name.
          * \param   threadName  The name of Worker Thread Entry to search.
          * \return  Returns valid Worker Thread Entry if found. Otherwise returns
-         *          invalid entry NERegistry::INVALID_WORKER_THREAD_ENTRY.
+         *          invalid worker thread entry.
          **/
         const NERegistry::WorkerThreadEntry & getWorkerThread( const String & threadName ) const;
 
@@ -714,7 +712,7 @@ namespace NERegistry
          * \brief   Operator to access elements of the dependency service list by index.
          * \param   index   Must be valid index of the entry.
          * \return  The instance of service element entry for real-only operations.
-         *          Returns instance of NERegistry::INVALID_DEPENDENCY_ENTRY if index is invalid.
+         *          Returns instance of invalid dependency entry if index is invalid.
          **/
         inline const NERegistry::DependencyEntry& operator [] (uint32_t index) const;
 
@@ -1218,7 +1216,7 @@ namespace NERegistry
          * \brief   Operator to access elements of the service component list by index.
          * \param   index   Must be valid index of the entry.
          * \return  The instance of service element entry for real-only operations.
-         *          Returns instance of NERegistry::INVALID_COMPONENT_ENTRY if index is invalid.
+         *          Returns instance of invalid component entry if index is invalid.
          **/
         inline const NERegistry::ComponentEntry& operator [] (uint32_t index) const;
 
@@ -1233,12 +1231,11 @@ namespace NERegistry
 
         /**
          * \brief   Searches Component Entry having given name. Returns valid
-         *          Component Entry if found, otherwise returns invalid entry
-         *          NERegistry::INVALID_COMPONENT_ENTRY.
+         *          Component Entry if found, otherwise returns invalid component entry.
          *          There should not be several Component Entries with same name.
          * \param   roleName    The name of Component Entry to search.
          * \return  Returns valid Component Entry if found. Otherwise returns
-         *          invalid entry NERegistry::INVALID_COMPONENT_ENTRY.
+         *          invalid component entry.
          **/
         const NERegistry::ComponentEntry & getComponent( const String & roleName ) const;
 
@@ -1557,7 +1554,7 @@ namespace NERegistry
          * \brief   Operator to access elements of the service component thread list by index.
          * \param   index   Must be valid index of the entry.
          * \return  The instance of service element entry for real-only operations.
-         *          Returns instance of NERegistry::INVALID_THREAD_ENTRY if index is invalid.
+         *          Returns instance of invalid thread entry if index is invalid.
          **/
         inline const NERegistry::ComponentThreadEntry& operator [] (uint32_t index) const;
 
@@ -1572,12 +1569,11 @@ namespace NERegistry
 
         /**
          * \brief   Searches Thread Entry having given name. Returns valid
-         *          Thread Entry if found, otherwise returns invalid entry
-         *          NERegistry::INVALID_THREAD_ENTRY.
+         *          Thread Entry if found, otherwise returns invalid thread entry.
          *          There should not be several Thread Entries with same name.
          * \param   threadName  The name of Thread Entry to search.
          * \return  Returns valid Thread Entry if found. Otherwise returns
-         *          invalid entry NERegistry::INVALID_THREAD_ENTRY.
+         *          invalid thread entry.
          **/
         const NERegistry::ComponentThreadEntry & getThread( const String & threadName ) const;
 
@@ -1820,70 +1816,59 @@ namespace NERegistry
 //////////////////////////////////////////////////////////////////////////
 
     /**
-      * \brief   NERegistry::INVALID_SERVICE_ENTRY
-      *          Predefined invalid Service Entry.
+      * \brief   Predefined invalid Service Entry.
       **/
-     extern AREG_API const NERegistry::ServiceEntry           INVALID_SERVICE_ENTRY;
+     AREG_API const NERegistry::ServiceEntry & invalidServiceEntry( void );;
 
      /**
-      * \brief   NERegistry::INVALID_SERVICE_LIST
-      *          Predefined invalid Service List.
+      * \brief   Predefined invalid Service List.
       **/
-    extern AREG_API const NERegistry::ServiceList             INVALID_SERVICE_LIST;
+    AREG_API const NERegistry::ServiceList & invalidServiceList( void );
 
     /**
-     * \brief   NERegistry::INVALID_WORKER_THREAD_ENTRY
-     *          Predefined invalid Worker Thread Entry.
+     * \brief   Predefined invalid Worker Thread Entry.
      **/
-    extern AREG_API const NERegistry::WorkerThreadEntry       INVALID_WORKER_THREAD_ENTRY;
+    AREG_API const NERegistry::WorkerThreadEntry & invalidWorkerThreadEntry( void );
 
     /**
-     * \brief   NERegistry::INVALID_WORKER_THREAD_LIST
-     *          Predefined invalid Worker Thread List.
+     * \brief   Predefined invalid Worker Thread List.
      **/
-    extern AREG_API const NERegistry::WorkerThreadList        INVALID_WORKER_THREAD_LIST;
+    AREG_API const NERegistry::WorkerThreadList & invalidWorkerThreadList( void );
 
     /**
-     * \brief   NERegistry::INVALID_WORKER_THREAD_LIST
-     *          Predefined invalid service dependency entry.
+     * \brief   Predefined invalid service dependency entry.
      **/
-    extern AREG_API const NERegistry::DependencyEntry         INVALID_DEPENDENCY_ENTRY;
+    AREG_API const NERegistry::DependencyEntry & invalidDepedencyEntry( void );
 
     /**
-     * \brief   NERegistry::INVALID_WORKER_THREAD_LIST
-     *          Predefined invalid service dependency entry.
+     * \brief   Predefined invalid service dependency list.
      **/
-    extern AREG_API const NERegistry::DependencyList          INVALID_DEPENDENCY_LIST;
+    AREG_API const NERegistry::DependencyList & invalidDepedencyList( void );
 
     /**
-     * \brief   NERegistry::INVALID_COMPONENT_ENTRY
-     *          Predefined Invalid Component Entry.
+     * \brief   Predefined Invalid Component Entry.
      **/
-    extern AREG_API const NERegistry::ComponentEntry          INVALID_COMPONENT_ENTRY;
+    AREG_API const NERegistry::ComponentEntry & invalidComponentEntry( void );
 
     /**
-     * \brief   NERegistry::INVALID_COMPONENT_LIST
-     *          Predefined invalid Component List.
+     * \brief   Predefined invalid Component List.
      **/
-    extern AREG_API const NERegistry::ComponentList           INVALID_COMPONENT_LIST;
+    AREG_API const NERegistry::ComponentList & invalidComponentList( void );
 
     /**
-     * \brief   NERegistry::INVALID_THREAD_ENTRY
-     *          Predefined invalid Thread Entry.
+     * \brief   Predefined invalid Thread Entry.
      **/
-    extern AREG_API const NERegistry::ComponentThreadEntry    INVALID_THREAD_ENTRY;
+    AREG_API const NERegistry::ComponentThreadEntry & invalidThreadEntry( void );
 
     /**
-     * \brief   NERegistry::INVALID_THREAD_LIST
-     *          Predefined invalid Thread List. Contains single invalid NERegistry::INVALID_THREAD_ENTRY entry.
+     * \brief   Predefined invalid Thread List. Contains single invalid thread entry.
      **/
-    extern AREG_API const NERegistry::ComponentThreadList     INVALID_THREAD_LIST;
+    AREG_API const NERegistry::ComponentThreadList & invalidThreadList( void );
 
     /**
-     * \brief   NERegistry::Model::INVALID_MODEL
-     *          Predefined invalid Model.
+     * \brief   Predefined invalid Model.
      **/
-    extern AREG_API const NERegistry::Model                   INVALID_MODEL;
+    AREG_API const NERegistry::Model & invalidModel( void );
 
 }
 
@@ -1893,27 +1878,27 @@ namespace NERegistry
 
 inline const NERegistry::ServiceEntry& NERegistry::ServiceList::operator [] (uint32_t index) const
 {
-    return (mListServices.isValidIndex(index) ? mListServices[index] : NERegistry::INVALID_SERVICE_ENTRY);
+    return (mListServices.isValidIndex(index) ? mListServices[index] : NERegistry::invalidServiceEntry());
 }
 
 inline const NERegistry::WorkerThreadEntry& NERegistry::WorkerThreadList::operator [] (uint32_t index) const
 {
-    return (mListWorkers.isValidIndex(index) ? mListWorkers[index] : NERegistry::INVALID_WORKER_THREAD_ENTRY);
+    return (mListWorkers.isValidIndex(index) ? mListWorkers[index] : NERegistry::invalidWorkerThreadEntry());
 }
 
 inline const NERegistry::DependencyEntry& NERegistry::DependencyList::operator [] (uint32_t index) const
 {
-    return (mListDependencies.isValidIndex(index) ? mListDependencies[index] : NERegistry::INVALID_DEPENDENCY_ENTRY);
+    return (mListDependencies.isValidIndex(index) ? mListDependencies[index] : NERegistry::invalidDepedencyEntry());
 }
 
 inline const NERegistry::ComponentEntry& NERegistry::ComponentList::operator [] (uint32_t index) const
 {
-    return (mListComponents.isValidIndex(index) ? mListComponents[index] : NERegistry::INVALID_COMPONENT_ENTRY);
+    return (mListComponents.isValidIndex(index) ? mListComponents[index] : NERegistry::invalidComponentEntry());
 }
 
 inline const NERegistry::ComponentThreadEntry& NERegistry::ComponentThreadList::operator [] (uint32_t index) const
 {
-    return (mListThreads.isValidIndex(index) ? mListThreads[index] : NERegistry::INVALID_THREAD_ENTRY);
+    return (mListThreads.isValidIndex(index) ? mListThreads[index] : NERegistry::invalidThreadEntry());
 }
 
 #endif  // AREG_COMPONENT_NEREGISTRY_HPP

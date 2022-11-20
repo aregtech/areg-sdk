@@ -32,13 +32,6 @@
 // File class implementation
 //////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////
-// defined constants
-//////////////////////////////////////////////////////////////////////////
-const char          File::PATH_SEPARATOR      = '\\';
-const int           File::MAXIMUM_PATH        = 1024;
-void * const        File::INVALID_HANDLE      = static_cast<void *>(INVALID_HANDLE_VALUE);
-
 #if 0
 
 
@@ -86,6 +79,15 @@ static String _searchFile( const char* fileName, const char* fileExtension, cons
 
 #endif
 
+//////////////////////////////////////////////////////////////////////////
+// Methods
+//////////////////////////////////////////////////////////////////////////
+
+FILEHANDLE File::_osGetInvalidHandle( void )
+{
+    return static_cast<FILEHANDLE>(INVALID_HANDLE_VALUE);
+}
+
 void File::_osCloseFile( void )
 {
     if ( isOpened( ) )
@@ -93,12 +95,8 @@ void File::_osCloseFile( void )
         ::CloseHandle(static_cast<HANDLE>(mFileHandle));
     }
 
-    mFileHandle = File::INVALID_HANDLE;
+    mFileHandle = File::_osGetInvalidHandle();
 }
-
-//////////////////////////////////////////////////////////////////////////
-// Methods
-//////////////////////////////////////////////////////////////////////////
 
 bool File::_osOpenFile( void )
 {

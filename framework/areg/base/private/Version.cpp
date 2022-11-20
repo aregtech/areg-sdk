@@ -23,10 +23,11 @@
 // Version class implementation
 //////////////////////////////////////////////////////////////////////////
 
-/**
- * \brief   Invalid Version object. The invalid version contains following version numbers (0, 0, 0)
- **/
-const Version Version::INVALID_VERSION(0, 0, 0);
+const Version & Version::getInvalidVersion( void )
+{
+    static const Version _invalidVersion( 0, 0, 0 );
+    return _invalidVersion;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor

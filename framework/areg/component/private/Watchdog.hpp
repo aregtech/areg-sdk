@@ -75,7 +75,7 @@ public:
     /**
      * \brief   Identifies invalid watchdog ID.
      */
-    static constexpr WATCHDOG_ID    INVALID_WATCHDOG    = static_cast<WATCHDOG_ID>(0u);
+    static constexpr WATCHDOG_ID    INVALID_WATCHDOG    { static_cast<WATCHDOG_ID>(0u) };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor

@@ -47,14 +47,6 @@ namespace
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
-// Predefined constants and statics
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   Predefined Invalid Stub address.
- **/
-const StubAddress StubAddress::INVALID_STUB_ADDRESS;
-
-//////////////////////////////////////////////////////////////////////////
 // Static functions
 //////////////////////////////////////////////////////////////////////////
 String StubAddress::convAddressToPath( const StubAddress & stubAddress )
@@ -64,17 +56,23 @@ String StubAddress::convAddressToPath( const StubAddress & stubAddress )
 
 StubAddress StubAddress::convPathToAddress( const char* pathStub, const char** out_nextPart /*= nullptr*/ )
 {
-    StubAddress result(StubAddress::INVALID_STUB_ADDRESS);
+    StubAddress result(StubAddress::getInvalidStubAddress());
     result.convFromString(pathStub, out_nextPart);
     return result;
+}
+
+const StubAddress & StubAddress::getInvalidStubAddress( void )
+{
+    static const StubAddress _invalidStubAddress;
+    return _invalidStubAddress;
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 StubAddress::StubAddress( void )
-    : ServiceAddress( ServiceItem(), INVALID_STUB_NAME )
-    , mThreadName   ( ThreadAddress::INVALID_THREAD_ADDRESS.getThreadName() )
+    : ServiceAddress( )
+    , mThreadName   ( ThreadAddress::getInvalidThreadAddress().getThreadName() )
     , mChannel      ( )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
@@ -92,7 +90,9 @@ StubAddress::StubAddress( const String & serviceName
 {
     setThread(threadName); // don't change this to fix channel source.
     if ( ServiceAddress::isValid() )
+    {
         mChannel.setCookie(NEService::COOKIE_LOCAL);
+    }
 
     mMagicNum = StubAddress::_magicNumber(*this);
 }
@@ -105,7 +105,9 @@ StubAddress::StubAddress(const ServiceItem & service, const String & roleName, c
 {
     setThread(threadName); // don't change this to fix channel source.
     if ( ServiceAddress::isValid() )
+    {
         mChannel.setCookie(NEService::COOKIE_LOCAL);
+    }
 
     mMagicNum = StubAddress::_magicNumber(*this);
 }
@@ -141,7 +143,7 @@ StubAddress::StubAddress( StubAddress && source ) noexcept
 
 StubAddress::StubAddress(const ServiceAddress & source)
     : ServiceAddress(static_cast<const ServiceAddress&>(source))
-    , mThreadName   (ThreadAddress::INVALID_THREAD_ADDRESS.getThreadName())
+    , mThreadName   (ThreadAddress::getInvalidThreadAddress().getThreadName())
     , mChannel      ( )
     , mMagicNum     (static_cast<unsigned int>(source))
 {
@@ -151,7 +153,7 @@ StubAddress::StubAddress(const ServiceAddress & source)
 
 StubAddress::StubAddress( ServiceAddress && source)
     : ServiceAddress(std::move(source))
-    , mThreadName   (ThreadAddress::INVALID_THREAD_ADDRESS.getThreadName())
+    , mThreadName   (ThreadAddress::getInvalidThreadAddress().getThreadName())
     , mChannel      ( )
     , mMagicNum     (static_cast<unsigned int>(static_cast<const ServiceAddress &>(self())))
 {
@@ -198,7 +200,7 @@ void StubAddress::setThread(const String & threadName)
     else
     {
         mMagicNum   = NEMath::CHECKSUM_IGNORE;
-        mThreadName = ThreadAddress::INVALID_THREAD_ADDRESS.getThreadName();
+        mThreadName = ThreadAddress::getInvalidThreadAddress().getThreadName();
     }
 }
 
@@ -287,7 +289,7 @@ unsigned int StubAddress::_magicNumber(const StubAddress & addrStub)
 
 bool StubAddress::isValidated(void) const
 {
-    return ServiceAddress::isValidated() && (mThreadName.isEmpty() == false) && (mThreadName != ThreadAddress::INVALID_THREAD_ADDRESS.getThreadName());
+    return ServiceAddress::isValidated() && (mThreadName.isEmpty() == false) && (mThreadName != ThreadAddress::getInvalidThreadAddress().getThreadName());
 }
 
 AREG_API_IMPL const IEInStream & operator >> ( const IEInStream & stream, StubAddress & input )

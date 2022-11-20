@@ -33,7 +33,7 @@ bool ClientList::existClient( const ProxyAddress & client ) const
 const ClientInfo & ClientList::getClient( const ProxyAddress & whichClient ) const
 {
     LISTPOS pos = find(ClientInfo(whichClient));
-    return (isValidPosition(pos) ? *pos : ClientInfo::INVALID_CLIENT_INFO);
+    return (isValidPosition(pos) ? *pos : ClientInfo::getInvalidClientInfo());
 }
 
 const ClientInfo & ClientList::registerClient( const ProxyAddress & whichClient, const ServerInfo & server )
@@ -62,7 +62,7 @@ bool ClientList::unregisterClient( const ProxyAddress & whichClient, ClientInfo 
     if (isValidPosition(pos))
     {
         ClientInfo& client = valueAtPosition(pos);
-        client.setTargetServer(StubAddress::INVALID_STUB_ADDRESS);
+        client.setTargetServer(StubAddress::getInvalidStubAddress());
         client.setConnectionStatus(NEService::eServiceConnection::ServicePending);
         removeAt(pos);
         result = true;
@@ -90,7 +90,7 @@ void ClientList::serverUnavailable( ClientList & out_clientList )
     for (LISTPOS pos = firstPosition(); isValidPosition(pos); ++pos )
     {
         ClientInfo & client = valueAtPosition( pos );
-        client.setTargetServer( StubAddress::INVALID_STUB_ADDRESS );
+        client.setTargetServer( StubAddress::getInvalidStubAddress() );
         client.setConnectionStatus( NEService::eServiceConnection::ServicePending );
         out_clientList.pushLast(client);
     }

@@ -42,11 +42,40 @@ class AREG_API ThreadAddress
 // ThreadAddress Internal types and constants
 //////////////////////////////////////////////////////////////////////////
 public:
+//////////////////////////////////////////////////////////////////////////
+// Public static methods
+//////////////////////////////////////////////////////////////////////////
     /**
-     * \brief   ThreadAddress::INVALID_THREAD_ADDRESS
-     *          Invalid thread address constant.
+     * \brief	Converts Thread Address object to the thread path string value.
+     *          the thread path has following format: "<process ID>::<thread name>::",
+     *          where <process ID> is an integer value of process and
+     *          <string name> is the name of string.
+     * \param	threadAddress	The thread address object to convert.
+     * \return	Returns string of thread path
      **/
-    static const ThreadAddress    INVALID_THREAD_ADDRESS;
+    static String convAddressToPath( const ThreadAddress & threadAddress );
+
+    /**
+     * \brief	Parses passed path and converts passed path to the Thread Address object.
+     *          The path should contain at least following format: "<process ID>::<thread name>".
+     *          The first item should be integer.
+     *          If Thread Address was parsed and properly retrieved, on output, parameter 'out_nextPart' 
+     *          will contains address of string in 'threadPath' after Thread Address part.
+     *          For example: if path is "<process ID>::<thread name>::<component name>::<service name>::",
+     *          on output, out_nextPart will contain "<component name>::<service name>::" it is not nullptr
+     * \param	threadPath	    The path of thread to convert.
+     * \param   out_nextPart    If successfully retrieved thread address and it is not nullptr, 
+     *                          on output will contain address of string after retrieving Thread address.
+     *                          If parsing fails, it will contain same address as 'threadPart'.
+     *                          If parameter is nullptr, it will be ignored.
+     * \return	Return created from path thread address object.
+     **/
+    static ThreadAddress convPathToAddress( const char* const threadPath, const char** OUT out_nextPart = nullptr );
+
+    /**
+     * \brief   Returns the invalid thread address object.
+     **/
+    static const ThreadAddress & getInvalidThreadAddress(void);
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -150,36 +179,10 @@ public:
     inline const String & getThreadName( void ) const;
 
     /**
-     * \brief   Return true if current object is not equal to INVALID_THREAD_ADDRESS
+     * \brief   Returns validity of thread address. 
+     *          Returns true if Thread Address is not invalid.
      **/
     bool isValid( void ) const;
-
-    /**
-     * \brief	Converts Thread Address object to the thread path string value.
-     *          the thread path has following format: "<process ID>::<thread name>::",
-     *          where <process ID> is an integer value of process and
-     *          <string name> is the name of string.
-     * \param	threadAddress	The thread address object to convert.
-     * \return	Returns string of thread path
-     **/
-    static String convAddressToPath( const ThreadAddress & threadAddress );
-
-    /**
-     * \brief	Parses passed path and converts passed path to the Thread Address object.
-     *          The path should contain at least following format: "<process ID>::<thread name>".
-     *          The first item should be integer.
-     *          If Thread Address was parsed and properly retrieved, on output, parameter 'out_nextPart' 
-     *          will contains address of string in 'threadPath' after Thread Address part.
-     *          For example: if path is "<process ID>::<thread name>::<component name>::<service name>::",
-     *          on output, out_nextPart will contain "<component name>::<service name>::" it is not nullptr
-     * \param	threadPath	    The path of thread to convert.
-     * \param   out_nextPart    If successfully retrieved thread address and it is not nullptr, 
-     *                          on output will contain address of string after retrieving Thread address.
-     *                          If parsing fails, it will contain same address as 'threadPart'.
-     *                          If parameter is nullptr, it will be ignored.
-     * \return	Return created from path thread address object.
-     **/
-    static ThreadAddress convPathToAddress( const char* const threadPath, const char** OUT out_nextPart = nullptr );
 
     /**
      * \brief	Converts Thread Address object to the thread path string value.

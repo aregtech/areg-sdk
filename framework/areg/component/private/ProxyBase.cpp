@@ -266,7 +266,7 @@ ProxyBase::ProxyBase(const String & roleName, const NEService::SInterfaceData & 
     : IEProxyEventConsumer  ( mProxyAddress )
 
     , mProxyAddress     ( serviceIfData, roleName, (ownerThread != nullptr) && (ownerThread->isValid()) ? ownerThread->getName() : String::EmptyString )
-    , mStubAddress      ( StubAddress::INVALID_STUB_ADDRESS )
+    , mStubAddress      ( StubAddress::getInvalidStubAddress() )
     , mSequenceCount    ( 0 )
     , mListenerList     ( static_cast<int>(serviceIfData.idAttributeCount + serviceIfData.idResponseCount) )
     , mListConnect      (   )
@@ -386,7 +386,7 @@ void ProxyBase::serviceConnectionUpdated( const StubAddress & server, const Chan
         else
         {
             mIsConnected = false;
-            mStubAddress = StubAddress::INVALID_STUB_ADDRESS;
+            mStubAddress = StubAddress::getInvalidStubAddress();
             mProxyData.resetStates();
         }
 
@@ -673,8 +673,8 @@ void ProxyBase::stopProxy(void)
         ServiceManager::requestUnregisterClient( getProxyAddress( ) );
         mDispatcherThread.removeConsumer( *this );
 
-        mStubAddress = StubAddress::INVALID_STUB_ADDRESS;
+        mStubAddress = StubAddress::getInvalidStubAddress();
         mProxyData.resetStates();
-        mProxyAddress.setChannel(Channel::INVALID_CHANNEL);
+        mProxyAddress.setChannel(Channel::getInvalidChannel());
     }
 }

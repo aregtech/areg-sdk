@@ -94,7 +94,7 @@ int SynchLockAndWaitIX::eventSignaled( IEWaitableBaseIX & synchWaitable )
     {
         ASSERT( waitList->isEmpty( ) == false );
         OUTPUT_DBG("Waitable [ %s ] ID [ %p ] is signaled, there are [ %d ] locks accosiated with it."
-                    , synchWaitable.getName()
+                    , synchWaitable.getName().getString()
                     , &synchWaitable
                     , waitList->getSize());
 
@@ -114,7 +114,7 @@ int SynchLockAndWaitIX::eventSignaled( IEWaitableBaseIX & synchWaitable )
                 if (lockAndWait->_requestOwnership(fired))
                 {
                     OUTPUT_DBG(   "The waitable [ %s ] [ %p ] is fired, unlocking thread [ %p ] with fired event reason [ %d ]"
-                                , synchWaitable.getName()
+                                , synchWaitable.getName().getString()
                                 , &synchWaitable
                                 , lockAndWait->mContext
                                 , static_cast<int>(fired));
@@ -139,7 +139,7 @@ int SynchLockAndWaitIX::eventSignaled( IEWaitableBaseIX & synchWaitable )
 
         }
 
-        OUTPUT_DBG("Waitable [ %s ] ID [ %p ] released [ %d ] threads.", synchWaitable.getName(), &synchWaitable, result);
+        OUTPUT_DBG("Waitable [ %s ] ID [ %p ] released [ %d ] threads.", synchWaitable.getName().getString(), &synchWaitable, result);
         synchWaitable.notifyReleasedThreads(result);
     }
 
@@ -290,7 +290,7 @@ SynchLockAndWaitIX::SynchLockAndWaitIX(   IEWaitableBaseIX ** listWaitables
                     if (synchWaitable->checkSignaled(mContext) && synchWaitable->notifyRequestOwnership(mContext))
                     {
                         OUTPUT_DBG("Waitable [ %s ] with ID [ %p ] of type [ %s ] is signaled, going unlock thread [ %p ]"
-                                    , synchWaitable->getName()
+                                    , synchWaitable->getName().getString()
                                     , synchWaitable
                                     , NESynchTypesIX::getString(synchWaitable->getSynchType())
                                     , reinterpret_cast<id_type>(mContext));
@@ -505,21 +505,23 @@ NESynchTypesIX::eSynchObjectFired SynchLockAndWaitIX::SynchLockAndWaitIX::_check
             {
                 IEWaitableBaseIX *waitable = mWaitingList[i];
                 ASSERT(waitable != nullptr);
-                if (waitable->checkSignaled(mContext))
+                if (waitable->checkSignaled(mContext) == false)
                 {
-                    OUTPUT_DBG("Waitable [ %s ] ID [ %p ] type [ %s ] is signaled."
-                                , waitable->getName()
-                                , waitable
-                                , NESynchTypesIX::getString(waitable->getSynchType()));
-                }
-                else
-                {
-                    OUTPUT_DBG("Waitable [ %s ] ID [ %p ] type [ %s ] is NOT signaled yet, interrupting checkup."
-                                , waitable->getName()
-                                , waitable
-                                , NESynchTypesIX::getString(waitable->getSynchType()));
+                    OUTPUT_DBG( "Waitable [ %s ] ID [ %p ] type [ %s ] is NOT signaled yet, interrupting checkup."
+                        , waitable->getName( ).getString( )
+                        , waitable
+                        , NESynchTypesIX::getString( waitable->getSynchType( ) ) );
                     break;
                 }
+#ifdef DEBUG
+                else
+                {
+                    OUTPUT_DBG( "Waitable [ %s ] ID [ %p ] type [ %s ] is signaled."
+                        , waitable->getName( ).getString( )
+                        , waitable
+                        , NESynchTypesIX::getString( waitable->getSynchType( ) ) );
+                }
+#endif // DEBUG
             }
 #else   // !_DEBUG
             for (  ; (i < mWaitingList.getSize()) && mWaitingList.valueAtPosition(i)->checkSignaled(mContext); ++ i)

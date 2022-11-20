@@ -174,7 +174,7 @@ void WaitableTimerIX::notifyReleasedThreads(int /* numThreads */)
     ObjectLockIX lock(*this);
     if (mResetInfo == NESynchTypesIX::eEventResetInfo::EventResetAutomatic)
     {
-        OUTPUT_DBG("Automatically resets waitable timer [ %s ] state to un-signaled.", getName());
+        OUTPUT_DBG("Automatically resets waitable timer [ %s ] state to un-signaled.", getName().getString( ));
         mIsSignaled = false;
     }
 }
@@ -223,7 +223,7 @@ inline void WaitableTimerIX::_timerExpired(void)
             mIsSignaled = true;
             sendSignal  = true;
 
-            OUTPUT_DBG("Waitable timer [ %s ] has fired event [ %d ] times with timeout [ %d ] ms", getName(), mFiredCount, mTimeout);
+            OUTPUT_DBG("Waitable timer [ %s ] has fired event [ %d ] times with timeout [ %d ] ms", getName().getString( ), mFiredCount, mTimeout);
         }
 #ifdef DEBUG
         else

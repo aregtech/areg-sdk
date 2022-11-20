@@ -44,45 +44,37 @@ class Channel;
 namespace NEConnection
 {
     /**
-     * \brief   NEConnection::MessageHelloServer
-     *          Fixed predefined message to start server connection
+     * \brief   Fixed predefined message to start server connection
      **/
-    extern AREG_API const NEMemory::sRemoteMessage      MessageHelloServer;
+    AREG_API const NEMemory::sRemoteMessage & getMessageHelloServer( void );
     /**
-     * \brief   NEConnection::MessageByeServer
-     *          Fixed predefined message to stop server connection
+     * \brief   Fixed predefined message to stop server connection
      **/
-    extern AREG_API const NEMemory::sRemoteMessage      MessageByeServer;
+    AREG_API const NEMemory::sRemoteMessage & getMessageByeServer( void );
     /**
-     * \brief   NEConnection::MessageAcceptClient
-     *          Fixed message to notify client connection acceptance
+     * \brief   Fixed message to notify client connection acceptance
      **/
-    extern AREG_API const NEMemory::sRemoteMessage      MessageAcceptClient;
+    AREG_API const NEMemory::sRemoteMessage & getMessageAcceptClient( void );
     /**
-     * \brief   NEConnection::MessageRejectClient
-     *          Fixed message to notify client connected rejection
+     * \brief   Fixed message to notify client connected rejection
      **/
-    extern AREG_API const NEMemory::sRemoteMessage      MessageRejectClient;
+    AREG_API const NEMemory::sRemoteMessage & getMessageRejectClient( void );
     /**
-     * \brief   NEConnection::MessageByeClient
-     *          Fixed message to notify client disconnect
+     * \brief   Fixed message to notify client disconnect
      **/
-    extern AREG_API const NEMemory::sRemoteMessage      MessageByeClient;
+    AREG_API const NEMemory::sRemoteMessage & getMessageByeClient( void );
     /**
-     * \brief   NEConnection::MessageRegisterService
-     *          Fixed message to start service registration
+     * \brief   Fixed message to start service registration
      **/
-    extern AREG_API const NEMemory::sRemoteMessage      MessageRegisterService;
+    AREG_API const NEMemory::sRemoteMessage & getMessageRegisterService( void );
     /**
-     * \brief   NEConnection::MessageQueryService
-     *          Fixed message to query available services
+     * \brief   Fixed message to query available services
      **/
-    extern AREG_API const NEMemory::sRemoteMessage      MessageQueryService;
+    AREG_API const NEMemory::sRemoteMessage & getMessageQueryService( void );
     /**
-     * \brief   NEConnection::MessageRegisterNotify
-     *          Fixed message to register notification
+     * \brief   Fixed message to register notification
      **/
-    extern AREG_API const NEMemory::sRemoteMessage      MessageRegisterNotify;
+    AREG_API const NEMemory::sRemoteMessage & getMessageRegisterNotify( void );
 
     /**
      * \brief   NEConnection::CLIENT_SEND_MESSAGE_THREAD

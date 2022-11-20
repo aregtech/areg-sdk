@@ -75,7 +75,7 @@ public:
     /**
      * \brief   Returns the instance of process object
      **/
-    static inline Process & getInstance( void );
+    static Process & getInstance( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor, protected
@@ -156,9 +156,9 @@ private:
     void _initPaths( const char * fullPath );
 
     /**
-     * \brief	Initializes process internal data.
+     * \brief	OS specific initialization of process internal data.
      */
-    Process & initilize( void );
+    void _osInitilize( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -200,10 +200,6 @@ private:
      * \brief	Flag, indicating whether process object is initialized or not.
      **/
     bool 			mIsInitialized;
-    /**
-     * \brief	The singleton instance of Process object.
-     */
-    static Process	_theProcess;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -215,11 +211,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Process class inline functions
 //////////////////////////////////////////////////////////////////////////
-
-inline Process & Process::getInstance( void )
-{
-    return Process::_theProcess.initilize();
-}
 
 inline const String & Process::getAppName( void ) const
 {

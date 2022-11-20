@@ -43,14 +43,18 @@ namespace
 /**
  * \brief   The address of invalid component
  **/
-const ComponentAddress    ComponentAddress::INVALID_COMPONENT_ADDRESS(ThreadAddress::INVALID_THREAD_ADDRESS, INVALID_COMPONENT_NAME.data());
+const ComponentAddress & ComponentAddress::getInvalidComponentAddress( void )
+{
+    static const ComponentAddress _invalidComponentAddress(ThreadAddress::getInvalidThreadAddress(), String(INVALID_COMPONENT_NAME));
+    return _invalidComponentAddress;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 ComponentAddress::ComponentAddress( void )
     : mRoleName     ( INVALID_COMPONENT_NAME )
-    , mThreadAddress( ThreadAddress::INVALID_THREAD_ADDRESS )
+    , mThreadAddress( ThreadAddress::getInvalidThreadAddress() )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
 }
@@ -88,7 +92,7 @@ ComponentAddress::ComponentAddress( const String & roleName )
 
 ComponentAddress::ComponentAddress( const String & roleName, const String & nameThread )
     : mRoleName     ( roleName.isEmpty() ? INVALID_COMPONENT_NAME : roleName)
-    , mThreadAddress( nameThread.isEmpty() != false ? DispatcherThread::getDispatcherThread(nameThread).getAddress() : ThreadAddress::INVALID_THREAD_ADDRESS)
+    , mThreadAddress( nameThread.isEmpty() != false ? DispatcherThread::getDispatcherThread(nameThread).getAddress() : ThreadAddress::getInvalidThreadAddress())
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
     mRoleName.truncate(NEUtilities::ITEM_NAMES_MAX_LENGTH);
@@ -148,7 +152,7 @@ void ComponentAddress::convFromString(const char * pathComponent, const char** o
 unsigned int ComponentAddress::_magicNumber(const ComponentAddress & addrComp)
 {
     unsigned int result = NEMath::CHECKSUM_IGNORE;
-    if (addrComp.mThreadAddress.isValid() && (addrComp.mRoleName.isEmpty() == false) && (addrComp.mRoleName != INVALID_COMPONENT_NAME.data()))
+    if (addrComp.mThreadAddress.isValid() && (addrComp.mRoleName.isEmpty() == false) && (addrComp.mRoleName != INVALID_COMPONENT_NAME))
     {
         result = NEMath::crc32Init();
         result = NEMath::crc32Start(result, addrComp.mThreadAddress.getThreadName().getString());

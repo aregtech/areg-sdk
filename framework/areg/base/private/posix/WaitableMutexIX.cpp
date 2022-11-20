@@ -54,7 +54,7 @@ bool WaitableMutexIX::releaseMutex(void)
                 mLockCount  = 0;
                 sendSignal  = true;
 
-                OUTPUT_DBG("Released waitable mutex [ %s ], reached lock count 0.", getName());
+                OUTPUT_DBG("Released waitable mutex [ %s ], reached lock count 0.", getName().getString( ));
             }
             else if (mLockCount > 1)
             {
@@ -103,7 +103,9 @@ bool WaitableMutexIX::notifyRequestOwnership(pthread_t ownerThread)
             mLockCount  = 1;
             mOwnerThread= ownerThread;
 
-            OUTPUT_DBG("Waitable Mutex [ %s ] gave ownership to thread [ %p ]. It is not signaled anymore", getName(), reinterpret_cast<id_type>(ownerThread));
+            OUTPUT_DBG("Waitable Mutex [ %s ] gave ownership to thread [ %p ]. It is not signaled anymore"
+                            , getName().getString( )
+                            , reinterpret_cast<id_type>(ownerThread));
         }
         else if ( mOwnerThread == ownerThread )
         {

@@ -32,25 +32,19 @@
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-Process & Process::initilize( void )
+void Process::_osInitilize( void )
 {
-    if ( mIsInitialized == false )
+    mProcessId      = ::GetCurrentProcessId();
+    mProcessHandle	= static_cast<void *>(::GetCurrentProcess());
+
+    TCHAR fullPath[File::MAXIMUM_PATH];
+    NEMemory::memZero(fullPath, (File::MAXIMUM_PATH) * sizeof(TCHAR));
+
+    if ( ::GetModuleFileNameEx( (HANDLE)(mProcessHandle), nullptr, fullPath, MAX_PATH) != 0 )
     {
-        mIsInitialized 	= true;
-        mProcessId      = ::GetCurrentProcessId();
-        mProcessHandle	= static_cast<void *>(::GetCurrentProcess());
-
-        TCHAR fullPath[ MAX_PATH + 1 ];
-        NEMemory::memZero(fullPath, (MAX_PATH + 1) * sizeof(TCHAR));
-
-        if ( ::GetModuleFileNameEx( (HANDLE)(mProcessHandle), nullptr, fullPath, MAX_PATH) != 0 )
-        {
-            String temp(fullPath);
-            _initPaths(temp.getString());
-        }
+        String temp(fullPath);
+        _initPaths(temp.getString());
     }
-
-    return (*this);
 }
 
 String Process::getSafeEnvVariable( const char* var ) const

@@ -24,7 +24,7 @@
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 ServerInfo::ServerInfo( void )
-    : mServerAddress( StubAddress::INVALID_STUB_ADDRESS )
+    : mServerAddress( StubAddress::getInvalidStubAddress() )
     , mServerState  ( NEService::eServiceConnection::ServiceConnectionUnknown )
 {
 }

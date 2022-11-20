@@ -91,7 +91,7 @@ const NERegistry::ComponentList& ComponentLoader::getComponentList( const String
         }
     }
 
-    return (result != nullptr ? *result : NERegistry::INVALID_COMPONENT_LIST);
+    return (result != nullptr ? *result : NERegistry::invalidComponentList());
 }
 
 const NERegistry::ComponentEntry& ComponentLoader::findComponentEntry( const String & roleName, const String & threadName )
@@ -111,7 +111,7 @@ const NERegistry::ComponentEntry& ComponentLoader::findComponentEntry( const Str
         }
     }
 
-    return (result != nullptr ? *result : NERegistry::INVALID_COMPONENT_ENTRY);
+    return (result != nullptr ? *result : NERegistry::invalidComponentEntry());
 }
 
 const NERegistry::ComponentEntry& ComponentLoader::findComponentEntry( const String & roleName )
@@ -138,7 +138,7 @@ const NERegistry::ComponentEntry& ComponentLoader::findComponentEntry( const Str
         }
     }
 
-    return (result != nullptr ? *result : NERegistry::INVALID_COMPONENT_ENTRY);
+    return (result != nullptr ? *result : NERegistry::invalidComponentEntry());
 }
 
 const NERegistry::ComponentThreadEntry& ComponentLoader::findThreadEntry(const String& threadName)
@@ -162,7 +162,7 @@ const NERegistry::ComponentThreadEntry& ComponentLoader::findThreadEntry(const S
         }
     }
 
-    return (result != nullptr ? *result : NERegistry::INVALID_THREAD_ENTRY);
+    return (result != nullptr ? *result : NERegistry::invalidThreadEntry());
 }
 
 bool ComponentLoader::isModelLoaded( const String & modelName )

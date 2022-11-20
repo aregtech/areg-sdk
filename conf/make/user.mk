@@ -39,8 +39,8 @@ CrossCompile :=
 # Modify 'areg' to the compile target
 # Example:
 # areg   := static 
-areg   := shared
-bit    :=
+areg    := shared
+Bitness :=
 # Modify the 'Config' to change the Configuration
 # Example:
 Config := Debug
@@ -63,11 +63,7 @@ endif
 # ###########################################################################
 
 # AREG SDK root directory without '/'
-AregRoot        := $(AREG_SDK_ROOT)
-
-# The source codes of AREG SDK
-AregInclude     := $(AREG_BASE)
-
+AregBuildRoot   := $(AREG_SDK_ROOT)
 
 # ###########################################################################
 #           USER DEFINED VARIABLES
@@ -99,9 +95,9 @@ UserDefOutput   := product
 ProjBuildPath   := $(shell echo build/$(CrossCompile)$(Toolset)/$(OpSystem)-$(Platform)-$(Config) | tr '[:upper:]' '[:lower:]')
 
 # The project output directory
-ProjOutputDir   := $(AregRoot)/$(UserDefOutput)/$(ProjBuildPath)
+ProjOutputDir   := $(AregBuildRoot)/$(UserDefOutput)/$(ProjBuildPath)
 # The project generated files directory
-ProjGendDir     := $(AregRoot)/$(UserDefOutput)/generate
+ProjGendDir     := $(AregBuildRoot)/$(UserDefOutput)/generate
 # The common object directory, projects can have their own sub-directories
 ProjObjDir      := $(ProjOutputDir)/obj
 
@@ -112,6 +108,6 @@ ProjBinDir      := $(ProjOutputDir)/bin
 
 # The project include directories
 ProjIncludes    := 
-ProjIncludes    += -I$(AregInclude)
+ProjIncludes    += -I$(AREG_BASE)
 ProjIncludes    += -I$(ProjGendDir)
-ProjIncludes    += $(UserDefIncludes)
+ProjIncludes    += -I$(UserDefIncludes)

@@ -419,10 +419,10 @@ public:
      * \brief   In the model list searches thread entry and returns the list of
      *          registered components entries. If the thread name is valid, it 
      *          returns at least one component in the list. Otherwise, returns
-     *          NERegistry::ComponentList::INVALID_COMPONENT_LIST list.
+     *          invalid component list.
      * \param   threadName  The valid component thread name.
      * \return  If the thread name is valid, it returns list of registered components.
-     *          Otherwise, returns NERegistry::ComponentList::INVALID_COMPONENT_LIST list.
+     *          Otherwise, returns invalid list.
      **/
     static const NERegistry::ComponentList & getComponentList( const String & threadName );
 

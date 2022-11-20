@@ -19,165 +19,206 @@
 #include "areg/component/ProxyAddress.hpp"
 #include "areg/base/RemoteMessage.hpp"
 
-AREG_API_IMPL const NEMemory::sRemoteMessage     NEConnection::MessageHelloServer       =
+AREG_API const NEMemory::sRemoteMessage & NEConnection::getMessageHelloServer( void )
 {
+    static constexpr NEMemory::sRemoteMessage _messageHelloServer
     {
-        {   /*rbhBufHeader*/
-              sizeof(NEMemory::sRemoteMessage)          // biBufSize
-            , sizeof(unsigned char)                     // biLength
-            , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
-            , NEMemory::eBufferType::BufferRemote       // biBufType
-            , 0                                         // biUsed
+        {
+            {   /*rbhBufHeader*/
+                  sizeof(NEMemory::sRemoteMessage)          // biBufSize
+                , sizeof(unsigned char)                     // biLength
+                , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
+                , NEMemory::eBufferType::BufferRemote       // biBufType
+                , 0                                         // biUsed
+            }
+            , NEService::COOKIE_ROUTER                      // rbhTarget
+            , NEMemory::INVALID_VALUE                       // rbhChecksum
+            , NEMemory::INVALID_VALUE                       // rbhSource
+            , static_cast<uint32_t>(NEService::eFuncIdRange::ServiceRouterConnect) // rbhMessageId
+            , NEMemory::MESSAGE_SUCCESS                     // rbhResult
+            , NEService::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
         }
-        , NEService::COOKIE_ROUTER                      // rbhTarget
-        , NEMemory::INVALID_VALUE                       // rbhChecksum
-        , NEMemory::INVALID_VALUE                       // rbhSource
-        , static_cast<uint32_t>(NEService::eFuncIdRange::ServiceRouterConnect) // rbhMessageId
-        , NEMemory::MESSAGE_SUCCESS                     // rbhResult
-        , NEService::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
-    }
-    , {static_cast<char>(0)}                            // rbData
-};
+        , {static_cast<char>(0)}                            // rbData
+    };
 
-AREG_API_IMPL const NEMemory::sRemoteMessage     NEConnection::MessageByeServer         =
-{
-    {
-        {   /*rbhBufHeader*/
-              sizeof(NEMemory::sRemoteMessage)          // biBufSize
-            , sizeof(unsigned char)                     // biLength
-            , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
-            , NEMemory::eBufferType::BufferRemote       // biBufType
-            , 0                                         // biUsed
-        }
-        , NEService::COOKIE_ROUTER                      // rbhTarget
-        , NEMemory::INVALID_VALUE                       // rbhChecksum
-        , NEMemory::INVALID_VALUE                       // rbhSource
-        , static_cast<uint32_t>(NEService::eFuncIdRange::ServiceRouterDisconnect) // rbhMessageId
-        , NEMemory::MESSAGE_SUCCESS                     // rbhResult
-        , NEService::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
-    }
-    , {static_cast<char>(0)}
-};
+    return _messageHelloServer;
+}
 
-AREG_API_IMPL const NEMemory::sRemoteMessage     NEConnection::MessageAcceptClient      =
+AREG_API const NEMemory::sRemoteMessage & NEConnection::getMessageByeServer( void )
 {
+    static constexpr NEMemory::sRemoteMessage _messageByeServer
     {
-        {   /*rbhBufHeader*/
-              sizeof(NEMemory::sRemoteMessage)          // biBufSize
-            , sizeof(unsigned char)                     // biLength
-            , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
-            , NEMemory::eBufferType::BufferRemote       // biBufType
-            , 0                                         // biUsed
+        {
+            {   /*rbhBufHeader*/
+                  sizeof(NEMemory::sRemoteMessage)          // biBufSize
+                , sizeof(unsigned char)                     // biLength
+                , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
+                , NEMemory::eBufferType::BufferRemote       // biBufType
+                , 0                                         // biUsed
+            }
+            , NEService::COOKIE_ROUTER                      // rbhTarget
+            , NEMemory::INVALID_VALUE                       // rbhChecksum
+            , NEMemory::INVALID_VALUE                       // rbhSource
+            , static_cast<uint32_t>(NEService::eFuncIdRange::ServiceRouterDisconnect) // rbhMessageId
+            , NEMemory::MESSAGE_SUCCESS                     // rbhResult
+            , NEService::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
         }
-        , NEMemory::INVALID_VALUE                       // rbhTarget
-        , NEMemory::INVALID_VALUE                       // rbhChecksum
-        , NEService::COOKIE_ROUTER                      // rbhSource
-        , static_cast<uint32_t>(NEService::eFuncIdRange::ServiceRouterNotify)   // rbhMessageId
-        , NEMemory::MESSAGE_SUCCESS                     // rbhResult
-        , NEService::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
-    }
-    , {static_cast<char>(0)}
-};
+        , {static_cast<char>(0)}
+    };
 
-AREG_API_IMPL const NEMemory::sRemoteMessage     NEConnection::MessageRejectClient      =
-{
-    {
-        {   /*rbhBufHeader*/
-              sizeof(NEMemory::sRemoteMessage)          // biBufSize
-            , sizeof(unsigned char)                     // biLength
-            , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
-            , NEMemory::eBufferType::BufferRemote       // biBufType
-            , 0                                         // biUsed
-        }
-        , NEMemory::INVALID_VALUE                       // rbhTarget
-        , NEMemory::INVALID_VALUE                       // rbhChecksum
-        , NEService::COOKIE_ROUTER                      // rbhSource
-        , static_cast<uint32_t>(NEService::eFuncIdRange::ServiceRouterNotify)   // rbhMessageId
-        , NEMemory::MESSAGE_SUCCESS                     // rbhResult
-        , NEService::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
-    }
-    , {static_cast<char>(0)}
-};
+    return _messageByeServer;
+}
 
-AREG_API_IMPL const NEMemory::sRemoteMessage     NEConnection::MessageByeClient         =
+AREG_API const NEMemory::sRemoteMessage & NEConnection::getMessageAcceptClient()
 {
+    static constexpr NEMemory::sRemoteMessage _messageAcceptClient
     {
-        {   /*rbhBufHeader*/
-              sizeof(NEMemory::sRemoteMessage)          // biBufSize
-            , sizeof(unsigned char)                     // biLength
-            , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
-            , NEMemory::eBufferType::BufferRemote       // biBufType
-            , 0                                         // biUsed
+        {
+            {   /*rbhBufHeader*/
+                  sizeof(NEMemory::sRemoteMessage)          // biBufSize
+                , sizeof(unsigned char)                     // biLength
+                , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
+                , NEMemory::eBufferType::BufferRemote       // biBufType
+                , 0                                         // biUsed
+            }
+            , NEMemory::INVALID_VALUE                       // rbhTarget
+            , NEMemory::INVALID_VALUE                       // rbhChecksum
+            , NEService::COOKIE_ROUTER                      // rbhSource
+            , static_cast<uint32_t>(NEService::eFuncIdRange::ServiceRouterNotify)   // rbhMessageId
+            , NEMemory::MESSAGE_SUCCESS                     // rbhResult
+            , NEService::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
         }
-        , NEMemory::INVALID_VALUE                       // rbhTarget
-        , NEMemory::INVALID_VALUE                       // rbhChecksum
-        , NEService::COOKIE_ROUTER                      // rbhSource
-        , static_cast<uint32_t>(NEService::eFuncIdRange::ServiceRouterNotify)   // rbhMessageId
-        , NEMemory::MESSAGE_SUCCESS                     // rbhResult
-        , NEService::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
-    }
-    , {static_cast<char>(0)}
-};
+        , {static_cast<char>(0)}
+    };
 
-AREG_API_IMPL const NEMemory::sRemoteMessage     NEConnection::MessageRegisterService   =
-{
-    {
-        {   /*rbhBufHeader*/
-              sizeof(NEMemory::sRemoteMessage)          // biBufSize
-            , sizeof(unsigned char)                     // biLength
-            , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
-            , NEMemory::eBufferType::BufferRemote       // biBufType
-            , 0                                         // biUsed
-        }
-        , NEService::COOKIE_ROUTER                      // rbhTarget
-        , NEMemory::INVALID_VALUE                       // rbhChecksum
-        , NEMemory::INVALID_VALUE                       // rbhSource
-        , static_cast<uint32_t>(NEService::eFuncIdRange::ServiceRouterRegister) // rbhMessageId
-        , NEMemory::MESSAGE_SUCCESS                     // rbhResult
-        , NEService::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
-    }
-    , {static_cast<char>(0)}
-};
+    return _messageAcceptClient;
+}
 
-AREG_API_IMPL const NEMemory::sRemoteMessage     NEConnection::MessageQueryService      =
+AREG_API const NEMemory::sRemoteMessage & NEConnection::getMessageRejectClient( void )
 {
+    static constexpr NEMemory::sRemoteMessage _messageRejectClient
     {
-        {   /*rbhBufHeader*/
-              sizeof(NEMemory::sRemoteMessage)          // biBufSize
-            , sizeof(unsigned char)                     // biLength
-            , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
-            , NEMemory::eBufferType::BufferRemote       // biBufType
-            , 0                                         // biUsed
+        {
+            {   /*rbhBufHeader*/
+                  sizeof(NEMemory::sRemoteMessage)          // biBufSize
+                , sizeof(unsigned char)                     // biLength
+                , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
+                , NEMemory::eBufferType::BufferRemote       // biBufType
+                , 0                                         // biUsed
+            }
+            , NEMemory::INVALID_VALUE                       // rbhTarget
+            , NEMemory::INVALID_VALUE                       // rbhChecksum
+            , NEService::COOKIE_ROUTER                      // rbhSource
+            , static_cast<uint32_t>(NEService::eFuncIdRange::ServiceRouterNotify)   // rbhMessageId
+            , NEMemory::MESSAGE_SUCCESS                     // rbhResult
+            , NEService::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
         }
-        , NEService::COOKIE_ROUTER                      // rbhTarget
-        , NEMemory::INVALID_VALUE                       // rbhChecksum
-        , NEMemory::INVALID_VALUE                       // rbhSource
-        , static_cast<uint32_t>(NEService::eFuncIdRange::ServiceRouterQuery)    // rbhMessageId
-        , NEMemory::MESSAGE_SUCCESS                     // rbhResult
-        , NEService::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
-    }
-    , {static_cast<char>(0)}
-};
+        , {static_cast<char>(0)}
+    };
 
-AREG_API_IMPL const NEMemory::sRemoteMessage     NEConnection::MessageRegisterNotify    =
+    return _messageRejectClient;
+}
+
+
+AREG_API const NEMemory::sRemoteMessage & NEConnection::getMessageByeClient( void )
 {
+    static constexpr NEMemory::sRemoteMessage _messageByeClient
     {
-        {   /*rbhBufHeader*/
-              sizeof(NEMemory::sRemoteMessage)          // biBufSize
-            , sizeof(unsigned char)                     // biLength
-            , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
-            , NEMemory::eBufferType::BufferRemote       // biBufType
-            , 0                                         // biUsed
+        {
+            {   /*rbhBufHeader*/
+                  sizeof(NEMemory::sRemoteMessage)          // biBufSize
+                , sizeof(unsigned char)                     // biLength
+                , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
+                , NEMemory::eBufferType::BufferRemote       // biBufType
+                , 0                                         // biUsed
+            }
+            , NEMemory::INVALID_VALUE                       // rbhTarget
+            , NEMemory::INVALID_VALUE                       // rbhChecksum
+            , NEService::COOKIE_ROUTER                      // rbhSource
+            , static_cast<uint32_t>(NEService::eFuncIdRange::ServiceRouterNotify)   // rbhMessageId
+            , NEMemory::MESSAGE_SUCCESS                     // rbhResult
+            , NEService::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
         }
-        , NEMemory::INVALID_VALUE                       // rbhTarget
-        , NEMemory::INVALID_VALUE                       // rbhChecksum
-        , NEService::COOKIE_ROUTER                      // rbhSource
-        , static_cast<uint32_t>(NEService::eFuncIdRange::ServiceRouterNotifyRegister)   // rbhMessageId
-        , NEMemory::MESSAGE_SUCCESS                     // rbhResult
-        , NEService::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
-    }
-    , {static_cast<char>(0)}
-};
+        , {static_cast<char>(0)}
+    };
+
+    return _messageByeClient;
+}
+
+AREG_API const NEMemory::sRemoteMessage & NEConnection::getMessageRegisterService( void )
+{
+    static constexpr NEMemory::sRemoteMessage _messageRegisterService
+    {
+        {
+            {   /*rbhBufHeader*/
+                  sizeof(NEMemory::sRemoteMessage)          // biBufSize
+                , sizeof(unsigned char)                     // biLength
+                , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
+                , NEMemory::eBufferType::BufferRemote       // biBufType
+                , 0                                         // biUsed
+            }
+            , NEService::COOKIE_ROUTER                      // rbhTarget
+            , NEMemory::INVALID_VALUE                       // rbhChecksum
+            , NEMemory::INVALID_VALUE                       // rbhSource
+            , static_cast<uint32_t>(NEService::eFuncIdRange::ServiceRouterRegister) // rbhMessageId
+            , NEMemory::MESSAGE_SUCCESS                     // rbhResult
+            , NEService::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
+        }
+        , {static_cast<char>(0)}
+    };
+
+    return _messageRegisterService;
+}
+
+AREG_API const NEMemory::sRemoteMessage & NEConnection::getMessageQueryService( void )
+{
+    static constexpr NEMemory::sRemoteMessage _messageQueryService
+    {
+        {
+            {   /*rbhBufHeader*/
+                  sizeof(NEMemory::sRemoteMessage)          // biBufSize
+                , sizeof(unsigned char)                     // biLength
+                , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
+                , NEMemory::eBufferType::BufferRemote       // biBufType
+                , 0                                         // biUsed
+            }
+            , NEService::COOKIE_ROUTER                      // rbhTarget
+            , NEMemory::INVALID_VALUE                       // rbhChecksum
+            , NEMemory::INVALID_VALUE                       // rbhSource
+            , static_cast<uint32_t>(NEService::eFuncIdRange::ServiceRouterQuery)    // rbhMessageId
+            , NEMemory::MESSAGE_SUCCESS                     // rbhResult
+            , NEService::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
+        }
+        , {static_cast<char>(0)}
+    };
+
+    return _messageQueryService;
+}
+
+AREG_API const NEMemory::sRemoteMessage & NEConnection::getMessageRegisterNotify( void )
+{
+    static constexpr NEMemory::sRemoteMessage _messageRegisterNotify
+    {
+        {
+            {   /*rbhBufHeader*/
+                  sizeof(NEMemory::sRemoteMessage)          // biBufSize
+                , sizeof(unsigned char)                     // biLength
+                , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
+                , NEMemory::eBufferType::BufferRemote       // biBufType
+                , 0                                         // biUsed
+            }
+            , NEMemory::INVALID_VALUE                       // rbhTarget
+            , NEMemory::INVALID_VALUE                       // rbhChecksum
+            , NEService::COOKIE_ROUTER                      // rbhSource
+            , static_cast<uint32_t>(NEService::eFuncIdRange::ServiceRouterNotifyRegister)   // rbhMessageId
+            , NEMemory::MESSAGE_SUCCESS                     // rbhResult
+            , NEService::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
+        }
+        , {static_cast<char>(0)}
+    };
+
+    return _messageRegisterNotify;
+}
 
 inline static bool _isValidSource( ITEM_ID client )
 {
@@ -186,7 +227,7 @@ inline static bool _isValidSource( ITEM_ID client )
 
 inline static void _createRegisterRequest( RemoteMessage & out_msgRegister, ITEM_ID source, NEService::eServiceRequestType reqType, const StubAddress & addrService )
 {
-    if ( out_msgRegister.initMessage( NEConnection::MessageRegisterService.rbHeader ) != nullptr )
+    if ( out_msgRegister.initMessage( NEConnection::getMessageRegisterService().rbHeader ) != nullptr )
     {
         out_msgRegister.setSource(source);
         out_msgRegister.setSequenceNr( NEService::SEQUENCE_NUMBER_NOTIFY );
@@ -199,7 +240,7 @@ inline static void _createRegisterRequest( RemoteMessage & out_msgRegister, ITEM
 
 inline static void _createRegisterRequest( RemoteMessage & out_msgRegister, ITEM_ID source, NEService::eServiceRequestType reqType, const ProxyAddress & addrService )
 {
-    if ( out_msgRegister.initMessage( NEConnection::MessageRegisterService.rbHeader ) != nullptr )
+    if ( out_msgRegister.initMessage( NEConnection::getMessageRegisterService().rbHeader ) != nullptr )
     {
         out_msgRegister.setSource(source);
         out_msgRegister.setSequenceNr( NEService::SEQUENCE_NUMBER_NOTIFY );
@@ -211,7 +252,7 @@ inline static void _createRegisterRequest( RemoteMessage & out_msgRegister, ITEM
 
 inline static void _createRegistereNotify( RemoteMessage & out_msgNotify, ITEM_ID target, NEService::eServiceRequestType reqType, const StubAddress & addrService )
 {
-    if ( out_msgNotify.initMessage( NEConnection::MessageRegisterNotify.rbHeader ) != nullptr )
+    if ( out_msgNotify.initMessage( NEConnection::getMessageRegisterNotify().rbHeader ) != nullptr )
     {
         out_msgNotify.setTarget(target);
         out_msgNotify.setSequenceNr( NEService::SEQUENCE_NUMBER_NOTIFY );
@@ -223,7 +264,7 @@ inline static void _createRegistereNotify( RemoteMessage & out_msgNotify, ITEM_I
 
 inline static void _createRegistereNotify( RemoteMessage & out_msgNotify, ITEM_ID target, NEService::eServiceRequestType reqType, const ProxyAddress & addrService )
 {
-    if ( out_msgNotify.initMessage( NEConnection::MessageRegisterNotify.rbHeader ) != nullptr )
+    if ( out_msgNotify.initMessage( NEConnection::getMessageRegisterNotify().rbHeader ) != nullptr )
     {
         out_msgNotify.setTarget(target);
         out_msgNotify.setSequenceNr( NEService::SEQUENCE_NUMBER_NOTIFY );
@@ -384,7 +425,7 @@ AREG_API_IMPL RemoteMessage NEConnection::createServiceClientUnregisteredNotific
 AREG_API_IMPL RemoteMessage NEConnection::createConnectRequest(void)
 {
     RemoteMessage msgHelloServer;
-    if ( msgHelloServer.initMessage( NEConnection::MessageHelloServer.rbHeader ) != nullptr )
+    if ( msgHelloServer.initMessage( NEConnection::getMessageHelloServer().rbHeader ) != nullptr )
     {
         msgHelloServer.setSource( NEService::SOURCE_UNKNOWN );
         msgHelloServer.setSequenceNr( NEService::SEQUENCE_NUMBER_NOTIFY );
@@ -398,7 +439,7 @@ AREG_API_IMPL RemoteMessage NEConnection::createConnectRequest(void)
 AREG_API_IMPL RemoteMessage NEConnection::createDisconnectRequest(ITEM_ID cookie)
 {
     RemoteMessage msgBeyServer;
-    if ( msgBeyServer.initMessage( NEConnection::MessageByeServer.rbHeader ) != nullptr )
+    if ( msgBeyServer.initMessage( NEConnection::getMessageByeServer().rbHeader ) != nullptr )
     {
         msgBeyServer.setSource( cookie );
         msgBeyServer.setSequenceNr( NEService::SEQUENCE_NUMBER_ANY );
@@ -413,7 +454,7 @@ AREG_API_IMPL RemoteMessage NEConnection::createDisconnectRequest(ITEM_ID cookie
 AREG_API_IMPL RemoteMessage NEConnection::createConnectNotify( ITEM_ID cookie  )
 {
     RemoteMessage msgNotifyConnect;
-    if ( msgNotifyConnect.initMessage( NEConnection::MessageAcceptClient.rbHeader ) != nullptr )
+    if ( msgNotifyConnect.initMessage( NEConnection::getMessageAcceptClient().rbHeader ) != nullptr )
     {
         msgNotifyConnect.setTarget( cookie );
         msgNotifyConnect.setSequenceNr( NEService::SEQUENCE_NUMBER_ANY );
@@ -430,7 +471,7 @@ AREG_API_IMPL RemoteMessage NEConnection::createConnectNotify( ITEM_ID cookie  )
 AREG_API_IMPL RemoteMessage NEConnection::createDisconnectNotify(ITEM_ID cookie)
 {
     RemoteMessage msgNotifyDisconnect;
-    if ( msgNotifyDisconnect.initMessage( NEConnection::MessageByeClient.rbHeader ) != nullptr )
+    if ( msgNotifyDisconnect.initMessage( NEConnection::getMessageByeClient().rbHeader ) != nullptr )
     {
         msgNotifyDisconnect.setTarget( cookie );
         msgNotifyDisconnect.setSequenceNr( NEService::SEQUENCE_NUMBER_ANY );
@@ -447,7 +488,7 @@ AREG_API_IMPL RemoteMessage NEConnection::createDisconnectNotify(ITEM_ID cookie)
 AREG_API_IMPL RemoteMessage NEConnection::createRejectNotify(ITEM_ID cookie)
 {
     RemoteMessage msgNotifyReject;
-    if ( msgNotifyReject.initMessage( NEConnection::MessageRejectClient.rbHeader ) != nullptr )
+    if ( msgNotifyReject.initMessage( NEConnection::getMessageRejectClient().rbHeader ) != nullptr )
     {
         msgNotifyReject.setTarget( cookie );
         msgNotifyReject.setSequenceNr( NEService::SEQUENCE_NUMBER_ANY );

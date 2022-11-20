@@ -1,15 +1,57 @@
-include("${CMAKE_CONFIG_DIR}/user.cmake")
+# Identify the OS
+set(OpSystem "${CMAKE_SYSTEM_NAME}")
+if(OpSystem STREQUAL "Darwin")
+    set(OpSystem "MacOS")
+endif()
+
+# Determining bitness by size of void pointer
+# 8 bytes ==> x64 and 4 bytes ==> x86
+if(NOT ${CMAKE_SIZEOF_VOID_P} MATCHES "8")
+    set(Platform "x86")
+endif()
+
+# Relative path of the output folder for the builds
+set(ProjBuildPath "build/${CrossCompile}${CppToolset}/${OpSystem}-${Platform}-${Config}")
+# The absolute path for builds
+set(ProjOutputDir "${AregBuildRoot}/${UserDefOutput}/${ProjBuildPath}")
+
+message(STATUS ">>> Build for ${OpSystem}")
+message(STATUS ">>> Build output ${ProjOutputDir}")
+
+# The absolute path for generated files
+set(ProjGenDir "${AregBuildRoot}/${UserDefOutput}/generate")
+
+# The absolute path for obj files.
+set(ProjObjDir "${ProjOutputDir}/obj")
+
+# The absolute path for static libraries
+set(ProjLibDir "${ProjOutputDir}/lib")
+
+# The absolute path for all executables and shared libraries
+set(ProjBinDir "${ProjOutputDir}/bin")
+
+# Project inclues
+set(ProjIncludes "${ProjIncludes} -I${AREG_BASE} -I${ProjGenDir} -I${UserDefIncludes}")
 
 set(AREG_OUTPUT_OBJ  "${ProjObjDir}")
 set(AREG_OUTPUT_LIB  "${ProjLibDir}")
 set(AREG_OUTPUT_BIN  "${ProjBinDir}")
 set(AREG_INCLUDES    "${ProjIncludes}")
-set(AREG_TOOLCHAIN   "${CrossCompile}${Toolset}")
+set(AREG_TOOLCHAIN   "${CrossCompile}${CppToolset}")
 set(AREG_AR          "${CrossCompile}ar")
 set(AREG_OS          "${OpSystem}")
 set(AREG_DEVELOP_ENV)
 set(AREG_STATIC_LIB)
 set(AREG_EXAMPLES_LDFLAGS)
+
+# if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+#     set(Toolset "clang")
+# elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+#     set(Toolset "g++")
+# elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+#     set(Toolset "MSVC")
+# endif()
+# set(CrossCompile)
 
 if(areg MATCHES "shared")
     set(AREG_BINARY "shared")
@@ -73,7 +115,7 @@ endif()
 # flags for bitness
 if(Platform MATCHES "x86_64" AND NOT AREG_DEVELOP_ENV MATCHES "Windows")
     if(NOT DEFINED CrossCompile)
-        if(bit MATCHES "32")
+        if(Bitness MATCHES "32")
             list(APPEND CompileOptions -m32)
         else()
             list(APPEND CompileOptions -m64)

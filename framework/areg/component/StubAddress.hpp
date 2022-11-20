@@ -44,23 +44,12 @@ class ServiceRequestEvent;
  *              and name of implemented service interface. The events 
  *              sent to Stub object should contain this address as a target
  *              of event delivery and the address should not be equal to
- *              StubAddress::INVALID_STUB_ADDRESS. Check validation
+ *              invalid stub address. Check validation
  *              of Stub address before sending event.
  *
  **/
 class AREG_API StubAddress    : public    ServiceAddress
 {
-public:
-/************************************************************************/
-// Public constants
-/************************************************************************/
-
-    /**
-     * \brief   StubAddress::INVALID_STUB_ADDRESS
-     *          Predefined Invalid Stub address.
-     **/
-    static const StubAddress  INVALID_STUB_ADDRESS;
-
 //////////////////////////////////////////////////////////////////////////
 // Static operations
 //////////////////////////////////////////////////////////////////////////
@@ -82,6 +71,11 @@ public:
      * \return  Returns initialized StubAddress object, containing information taken from path
      **/
     static StubAddress convPathToAddress(const char* pathStub, const char** out_nextPart = nullptr);
+
+    /**
+     * \brief   Returns predefined invalid stub address object.
+     **/
+    static const StubAddress & getInvalidStubAddress(void);
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -286,7 +280,8 @@ public:
     void setThread( const String & threadName );
 
     /**
-     * \brief   Returns validity of stub address. Returns true if Stub Address is not a StubAddress::INVALID_STUB_ADDRESS
+     * \brief   Returns validity of stub address. 
+     *          Returns true if Stub Address is not invalid.
      **/
     bool isValid( void ) const;
 

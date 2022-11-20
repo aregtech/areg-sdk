@@ -66,7 +66,7 @@ typedef ProxyBase* (*FuncCreateProxy)( const String & /*roleName*/, DispatcherTh
 // ProxyBase class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief  Proxy Base is a base class for all proxy instances in the 
+ * \brief   Proxy Base is a base class for all proxy instances in the 
  *          application. It provides communication functionalities with 
  *          server, sends and receives notifications. Triggers calls
  *          to dispatch messages and trigger messages of clients.
@@ -102,7 +102,7 @@ private:
      *          pointer of client object. Every proxy has list of client
      *          listeners only instantiated within same thread.
      **/
-    class Listener
+    class AREG_API Listener
     {
     //////////////////////////////////////////////////////////////////////////
     // ProxyBase::Listener class, Constructors / Destructor

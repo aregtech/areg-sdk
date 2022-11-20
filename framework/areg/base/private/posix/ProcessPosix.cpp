@@ -7,7 +7,7 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
- * \file        areg/base/private/posix/Process.cpp
+ * \file        areg/base/private/posix/ProcessPosix.cpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
  * \author      Artak Avetyan
  * \brief       The class to handle process. Get process ID, process handle, process name, etc.
@@ -22,41 +22,37 @@
 
 #include <unistd.h>
 #include <stdlib.h>     /* getenv */
+#include <iostream>
 
 //////////////////////////////////////////////////////////////////////////
 // Process class implementation
 //////////////////////////////////////////////////////////////////////////
 
-Process & Process::initilize( void )
+void Process::_osInitilize( void )
 {
-    if ( mIsInitialized == false )
+    mProcessId = ::getpid( );
+    mProcessHandle = static_cast<void *>(&mProcessId);
+
+    char buffer[File::MAXIMUM_PATH];
+    char path[256];
+
+    ::memset( buffer, 0, File::MAXIMUM_PATH );
+    ::memset( path, 0, 256 );
+
+    sprintf( path, "/proc/%lu/cmdLine", mProcessId );
+    FILE * file = ::fopen( path, "r" );
+    if ( (file == nullptr) || (::fgets( buffer, File::MAXIMUM_PATH, file ) == nullptr))
     {
-        mIsInitialized = true;
-        mProcessId = ::getpid( );
-        mProcessHandle = static_cast<void *>(&mProcessId);
-
-        char buffer[File::MAXIMUM_PATH];
-        char path[256];
-
-        buffer[0] = path[0] = '\0';
-
-        sprintf( path, "/proc/%lu/cmdLine", static_cast<uint64_t>(mProcessId) );
-        FILE * file = ::fopen( path, "r" );
-        if ( (file == nullptr) || (::fgets( buffer, File::MAXIMUM_PATH, file ) == nullptr))
-        {
-            sprintf( path, "/proc/%lu/exe", static_cast<uint64_t>(mProcessId) );
-            readlink( path, buffer, File::MAXIMUM_PATH );
-        }
-
-        if (file != nullptr)
-        {
-            ::fclose(file);
-        }
-
-        _initPaths( buffer );
+        sprintf( path, "/proc/%lu/exe", mProcessId );
+        readlink( path, buffer, File::MAXIMUM_PATH );
     }
 
-    return (*this);
+    if (file != nullptr)
+    {
+        ::fclose(file);
+    }
+
+    _initPaths( buffer );
 }
 
 

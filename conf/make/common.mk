@@ -36,9 +36,9 @@ endif
 # only native compilers on x86_64 can support bitness?
 ifeq ($(Platform), x86_64)
 ifeq ($(CrossCompile), )
-ifeq ($(bit), 32)
+ifeq ($(Bitness), 32)
 CXXFLAGS += -m32
-else ifeq ($(bit), 64)
+else ifeq ($(Bitness), 64)
 CXXFLAGS += -m64
 endif
 endif
@@ -82,7 +82,7 @@ Usage: make [target] [areg=<static|shared>] [Config=<Release|Debug>] [Toolset=<t
         Config:         Release or Debug build.
         Toolset:        compiler to use, current supported ones is g++/gcc/clang. Default is g++.
         CrossCompile:   Cross compiler prefix. I.e: use arm-linux-gnueabihf- for arm32
-        bit:            bitness of the target binary, supported for x86_64's compilers only for now.
+        Bitness:        bitness of the target binary, supported for x86_64's compilers only for now.
 
     More options can be set directly in conf/make/user.mk
 endef
@@ -105,7 +105,7 @@ endef
 
 # clean targets
 clean:
-	rm -rf $(AregRoot)/$(UserDefOutput)
+	rm -rf $(AregBuildRoot)/$(UserDefOutput)
 clean_build:
 	rm -rf $(ProjOutputDir)
 clean_gen:

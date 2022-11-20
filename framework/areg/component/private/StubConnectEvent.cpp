@@ -21,7 +21,7 @@
 IMPLEMENT_RUNTIME_EVENT(StubConnectEvent, ServiceRequestEvent)
 
 StubConnectEvent::StubConnectEvent(const StubAddress & stubTarget, NEService::eServiceConnection connectStatus)
-    : ServiceRequestEvent   ( ProxyAddress::INVALID_PROXY_ADDRESS
+    : ServiceRequestEvent   ( ProxyAddress::getInvalidProxyAddress()
                             , stubTarget
                             , static_cast<unsigned int>(NEService::eFuncIdRange::ServiceNotifyConnection)
                             , NEService::eRequestType::ServiceConnection
@@ -42,7 +42,7 @@ StubConnectEvent::StubConnectEvent(const ProxyAddress & proxyClient, const StubA
 
 StubConnectEvent::StubConnectEvent( const IEInStream & stream )
     : ServiceRequestEvent   ( stream )
-    ,  mConnectionStatus    ( NEService::eServiceConnection::ServiceConnectionUnknown )
+    , mConnectionStatus    ( NEService::eServiceConnection::ServiceConnectionUnknown )
 {
     stream >> mConnectionStatus;
 }

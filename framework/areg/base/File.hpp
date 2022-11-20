@@ -103,26 +103,24 @@ public:
     static constexpr char               DOS_SEPARATOR       { '\\' };
 
     /**
-     * \brief   File::PATH_SEPARATOR
-     *          OS specific file path separator.
-     **/
-    static const char           PATH_SEPARATOR      /* OS specific */;
-
-    /**
      * \brief   File::MAXIMUM_PATH
      *          The maximum path of file.
      **/
-    static const int            MAXIMUM_PATH        /* OS specific */;
-
-    /**
-     * \brief   File::INVALID_HANDLE
-     *          Invalid file handle
-     **/
-    static FILEHANDLE const     INVALID_HANDLE       /* OS specific */;
+    static constexpr int                MAXIMUM_PATH        {1024};
 
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
+
+//////////////////////////////////////////////////////////////////////////
+// Public static methods
+//////////////////////////////////////////////////////////////////////////
+
+    /**
+     * \brief   Returns path separator. The return character is OS dependent.
+     *          For example, on POSIX it is '/' and on Windows it is '\\'.
+     **/
+    static const char getPathSeparator( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor
@@ -702,6 +700,11 @@ private:
      * \return  Return the length of the path in the 'buffer'.
      */
     static unsigned int _osGetSpecialDir(char* buffer, unsigned int length, const eSpecialFolder specialFolder);
+
+    /**
+     * \brief   Returns OS specific invalid file handle.
+     **/
+    static FILEHANDLE _osGetInvalidHandle( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

@@ -54,7 +54,11 @@ namespace
 /**
  * \brief   Invalid proxy address.
  **/
-const ProxyAddress    ProxyAddress::INVALID_PROXY_ADDRESS;
+const ProxyAddress & ProxyAddress::getInvalidProxyAddress()
+{
+    static const ProxyAddress _invalidProxyAddress;
+    return _invalidProxyAddress;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Static methods
@@ -77,7 +81,7 @@ ProxyAddress ProxyAddress::convPathToAddress( const char* pathProxy, const char*
 
 ProxyAddress::ProxyAddress( void )
     : ServiceAddress( ServiceItem(), INVALID_PROXY_NAME )
-    , mThreadName   ( ThreadAddress::INVALID_THREAD_ADDRESS.getThreadName() )
+    , mThreadName   ( ThreadAddress::getInvalidThreadAddress().getThreadName() )
     , mChannel      ( )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
@@ -184,7 +188,7 @@ void ProxyAddress::setThread( const String & threadName )
     else
     {
         mMagicNum   = NEMath::CHECKSUM_IGNORE;
-        mThreadName = ThreadAddress::INVALID_THREAD_ADDRESS.getThreadName();
+        mThreadName = ThreadAddress::getInvalidThreadAddress().getThreadName();
     }
 }
 
@@ -277,7 +281,7 @@ void ProxyAddress::convFromString(const char * pathProxy, const char** out_nextP
     }
     else
     {
-        *this = ProxyAddress::INVALID_PROXY_ADDRESS;
+        *this = ProxyAddress::getInvalidProxyAddress();
     }
 
     if (out_nextPart != nullptr)
@@ -286,7 +290,7 @@ void ProxyAddress::convFromString(const char * pathProxy, const char** out_nextP
 
 bool ProxyAddress::isValidated(void) const
 {
-    return ServiceAddress::isValidated() && (mThreadName.isEmpty() == false) && (mThreadName != ThreadAddress::INVALID_THREAD_ADDRESS.getThreadName());
+    return ServiceAddress::isValidated() && (mThreadName.isEmpty() == false) && (mThreadName != ThreadAddress::getInvalidThreadAddress().getThreadName());
 }
 
 AREG_API_IMPL const IEInStream & operator >> ( const IEInStream & stream, ProxyAddress & input )

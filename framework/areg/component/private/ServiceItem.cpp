@@ -32,8 +32,8 @@ ServiceItem ServiceItem::convPathToAddress( const char* pathService, const char*
 }
 
 ServiceItem::ServiceItem( void )
-    : mServiceName      ( ServiceItem::INVALID_SERVICE.data() )
-    , mServiceVersion   ( Version::INVALID_VERSION )
+    : mServiceName      ( ServiceItem::INVALID_SERVICE )
+    , mServiceVersion   ( Version::getInvalidVersion() )
     , mServiceType      ( NEService::eServiceType::ServiceLocal )
     , mMagicNum         ( NEMath::CHECKSUM_IGNORE )
 {
@@ -41,7 +41,7 @@ ServiceItem::ServiceItem( void )
 
 ServiceItem::ServiceItem(const String & serviceName)
     : mServiceName      ( serviceName )
-    , mServiceVersion   ( Version::INVALID_VERSION )
+    , mServiceVersion   ( Version::getInvalidVersion() )
     , mServiceType      ( NEService::eServiceType::ServiceLocal )
     , mMagicNum         ( NEMath::CHECKSUM_IGNORE )
 {
