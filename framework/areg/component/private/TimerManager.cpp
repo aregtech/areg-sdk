@@ -127,10 +127,14 @@ bool TimerManager::_registerTimer(Timer &timer, const DispatcherThread & whichTh
         TRACE_DBG("Registered timer [ %s ]", timer.getName().getString());
         result = true;
     }
+#ifdef DEBUG
     else
     {
-        TRACE_ERR("Either times [ %s ] is not valid or thread [ %s ] is not running, cancel timer.", timer.getName().getString(), whichThread.getName().getString());
+        TRACE_ERR("Either times [ %s ] is not valid or thread [ %s ] is not running, cancel timer."
+                        , timer.getName().getString()
+                        , whichThread.getName().getString());
     }
+#endif // DEBUG
 
     return result;
 }
@@ -177,10 +181,12 @@ void TimerManager::processEvent( const TimerManagerEventData & data )
         TRACE_DBG( "Starting timer [ %s ] with timeout [ %u ] ms.", timer->getName( ).getString( ), timer->getTimeout( ) );
         TimerManager::_systemTimerStart( *timer );
     }
+#ifdef DEBUG
     else
     {
         TRACE_WARN("The timer [ %s ] is not registered, ignoring to start.", timer->getName().getString());
     }
+#endif // DEBUG
 }
 
 void TimerManager::_processExpiredTimer(Timer * timer, TIMERHANDLE handle, uint32_t hiBytes, uint32_t loBytes)

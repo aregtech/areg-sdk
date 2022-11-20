@@ -1,60 +1,43 @@
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    set(Toolset "clang")
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    set(Toolset "g++")
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    set(Toolset "MSVC")
-endif()
-set(CrossCompile)
-
 # ###########################################################################
 # Settings
 # ###########################################################################
 
+# Set the compiler toolset here.
+# Set full path if compiler cannot call from command line.
+set(CToolset "gcc")
+set(CppToolset "g++")
+
+# Set the AREG library type to compile.
+# Set "static" for static and "shared" for shared library
 set(areg "shared")
-set(bit "64")
 
-# set(Config "Release")
+# Set build configuration here.
+# Set "Debug" for debug and "Release" for release build
 set(Config "Debug")
+# set(Config "Release")
 
+# Set bitless here
+set(Bitness "64")
+
+# Specify CPU platform here
 set(Platform "x86_64")
 
-set(OpSystem "${CMAKE_SYSTEM_NAME}")
+# Set the areg-sdk build root folder to output files.
+set(AregBuildRoot "${AREG_SDK_ROOT}")
 
-if(OpSystem STREQUAL "Darwin")
-    set(OpSystem "MacOS")
-endif()
-
-# Determining bitness by size of void pointer
-# 8 bytes ==> x64 and 4 bytes ==> x86
-if(NOT ${CMAKE_SIZEOF_VOID_P} MATCHES "8")
-    set(Platform "x86")
-endif()
-
-set(AregRoot "${AREG_SDK_ROOT}")
-
-set(AregInclude "${AREG_BASE}")
-
+# Set user or project specific defines here or keep empty.
+# By default it is compile with enabled logging --> "-DENABLE_TRACES"
 set(UserDefines "-DENABLE_TRACES")
 
+# Set user specific includes here or keep empty
 set(UserDefIncludes)
 
+# Set user specific library paths here or keep empty
 set(UserDefLibPaths)
 
+# Set user specific library list here or keep empty
 set(UserDefLibs)
 
+# Set user specific root folder here
 set(UserDefOutput "product")
 
-set(ProjBuildPath "build/${CrossCompile}${Toolset}/${OpSystem}-${Platform}-${Config}")
-
-set(ProjOutputDir "${AregRoot}/${UserDefOutput}/${ProjBuildPath}")
-
-set(ProjGenDir "${AregRoot}/${UserDefOutput}/generate")
-
-set(ProjObjDir "${ProjOutputDir}/obj")
-
-set(ProjLibDir "${ProjOutputDir}/lib")
-
-set(ProjBinDir "${ProjOutputDir}/bin")
-
-set(ProjIncludes "${ProjIncludes} -I${AregInclude} -I${ProjGenDir} -I${UserDefIncludes}")

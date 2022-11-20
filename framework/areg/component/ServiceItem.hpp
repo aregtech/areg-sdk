@@ -347,7 +347,7 @@ inline bool ServiceItem::isValidated(void) const
 {
     return (mServiceName.isEmpty()  == false                                    ) && 
            (mServiceName            != ServiceItem::INVALID_SERVICE.data()      ) && 
-           (mServiceVersion         != Version::INVALID_VERSION                 ) && 
+           (mServiceVersion         != Version::getInvalidVersion()             ) && 
            (mServiceType            != NEService::eServiceType::ServiceInvalid  );
 }
 

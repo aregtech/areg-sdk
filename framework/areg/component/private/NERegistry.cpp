@@ -31,48 +31,101 @@
 /**
  * \brief   Predefined invalid Service Entry.
  **/
-AREG_API_IMPL const NERegistry::ServiceEntry           NERegistry::INVALID_SERVICE_ENTRY;
+AREG_API const NERegistry::ServiceEntry & NERegistry::invalidServiceEntry( void )
+{
+    static const NERegistry::ServiceEntry _invalidServiceEntry;
+    return _invalidServiceEntry;
+}
+
 /**
  * \brief   Predefined invalid Service List.
  **/
-AREG_API_IMPL const NERegistry::ServiceList            NERegistry::INVALID_SERVICE_LIST;
+AREG_API const NERegistry::ServiceList & NERegistry::invalidServiceList( void )
+{
+    static const NERegistry::ServiceList _invalidServiceList;
+    return _invalidServiceList;
+}
+
 /**
  * \brief   Predefined invalid Worker Thread Entry.
  **/
-AREG_API_IMPL const NERegistry::WorkerThreadEntry      NERegistry::INVALID_WORKER_THREAD_ENTRY;
+AREG_API const NERegistry::WorkerThreadEntry & NERegistry::invalidWorkerThreadEntry( void )
+{
+    static const NERegistry::WorkerThreadEntry _invalidWorkerThreadEntry;
+    return _invalidWorkerThreadEntry;
+}
+
 /**
  * \brief   Predefined invalid Worker Thread List.
  **/
-AREG_API_IMPL const NERegistry::WorkerThreadList       NERegistry::INVALID_WORKER_THREAD_LIST;
+AREG_API const NERegistry::WorkerThreadList & NERegistry::invalidWorkerThreadList( void )
+{
+    static const NERegistry::WorkerThreadList _invalidWorkerThreadList;
+    return _invalidWorkerThreadList;
+}
+
 /**
  * \brief   Predefined invalid service dependency entry.
  **/
-AREG_API_IMPL const NERegistry::DependencyEntry        NERegistry::INVALID_DEPENDENCY_ENTRY;
+AREG_API const NERegistry::DependencyEntry & NERegistry::invalidDepedencyEntry( void )
+{
+    static const NERegistry::DependencyEntry _invalidDepedencyEntry;
+    return _invalidDepedencyEntry;
+}
+
 /**
  * \brief   Predefined invalid service dependency entry.
  **/
-AREG_API_IMPL const NERegistry::DependencyList         NERegistry::INVALID_DEPENDENCY_LIST;
+AREG_API const NERegistry::DependencyList & NERegistry::invalidDepedencyList( void )
+{
+    static const NERegistry::DependencyList _invalidDepedencyList;
+    return _invalidDepedencyList;
+}
+
 /**
  * \brief   Predefined Invalid Component Entry.
  **/
-AREG_API_IMPL const NERegistry::ComponentEntry         NERegistry::INVALID_COMPONENT_ENTRY;
+AREG_API const NERegistry::ComponentEntry & NERegistry::invalidComponentEntry( void )
+{
+    static const NERegistry::ComponentEntry _invalidComponentEntry;
+    return _invalidComponentEntry;
+}
+
 /**
  * \brief   Predefined invalid Component List.
  **/
-AREG_API_IMPL const NERegistry::ComponentList          NERegistry::INVALID_COMPONENT_LIST;
+AREG_API const NERegistry::ComponentList & NERegistry::invalidComponentList( void )
+{
+    static const NERegistry::ComponentList _invalidComponentList;
+    return _invalidComponentList;
+}
+
 /**
  * \brief   Predefined invalid Thread Entry.
  **/
-AREG_API_IMPL const NERegistry::ComponentThreadEntry   NERegistry::INVALID_THREAD_ENTRY;
+AREG_API const NERegistry::ComponentThreadEntry & NERegistry::invalidThreadEntry( void )
+{
+    static const NERegistry::ComponentThreadEntry _invalidThreadEntry;
+    return _invalidThreadEntry;
+}
+
 /**
  * \brief   Predefined invalid Thread List.
  **/
-AREG_API_IMPL const NERegistry::ComponentThreadList    NERegistry::INVALID_THREAD_LIST;
+AREG_API const NERegistry::ComponentThreadList & NERegistry::invalidThreadList( void )
+{
+    static const NERegistry::ComponentThreadList _invalidThreadList;
+    return _invalidThreadList;
+}
+
 /**
  * \brief   Predefined invalid Model.
  **/
-AREG_API_IMPL const NERegistry::Model                  NERegistry::INVALID_MODEL;
-
+AREG_API const NERegistry::Model & NERegistry::invalidModel( void )
+{
+    static const NERegistry::Model _invalidModel;
+    return _invalidModel;
+}
 //////////////////////////////////////////////////////////////////////////
 // class NERegistry::ServiceEntry implementation
 //////////////////////////////////////////////////////////////////////////
@@ -122,7 +175,7 @@ NERegistry::ServiceList::ServiceList( const NERegistry::ServiceEntry & entry )
 const NERegistry::ServiceEntry & NERegistry::ServiceList::getService( const String & serviceName ) const
 {
     int i = findService(serviceName);
-    return (i == NECommon::INVALID_INDEX ? NERegistry::INVALID_SERVICE_ENTRY : mListServices.getAt(i));
+    return (i == NECommon::INVALID_INDEX ? NERegistry::invalidServiceEntry() : mListServices.getAt(i));
 }
 
 int NERegistry::ServiceList::findService( const NERegistry::ServiceEntry & entry ) const
@@ -203,7 +256,7 @@ NERegistry::WorkerThreadList::WorkerThreadList( const NERegistry::WorkerThreadEn
 const NERegistry::WorkerThreadEntry & NERegistry::WorkerThreadList::getWorkerThread( const String & threadName ) const
 {
     int index = findThread(threadName);
-    return (index == NECommon::INVALID_INDEX ? NERegistry::INVALID_WORKER_THREAD_ENTRY : mListWorkers.getAt(index));
+    return (index == NECommon::INVALID_INDEX ? NERegistry::invalidWorkerThreadEntry() : mListWorkers.getAt(index));
 }
 
 int NERegistry::WorkerThreadList::findThread( const String & threadName ) const
@@ -281,7 +334,7 @@ NERegistry::DependencyList::DependencyList( const NERegistry::DependencyEntry & 
 const NERegistry::DependencyEntry & NERegistry::DependencyList::getDependency( const String & roleName ) const
 {
     int index = findDependency(roleName);
-    return (index == NECommon::INVALID_INDEX ? NERegistry::INVALID_DEPENDENCY_ENTRY : mListDependencies.getAt(index) );
+    return (index == NECommon::INVALID_INDEX ? NERegistry::invalidDepedencyEntry() : mListDependencies.getAt(index) );
 }
 
 int NERegistry::DependencyList::findDependency( const NERegistry::DependencyEntry & entry ) const
@@ -666,7 +719,7 @@ NERegistry::ComponentList::ComponentList(  const NERegistry::ComponentEntry & en
 const NERegistry::ComponentEntry & NERegistry::ComponentList::getComponent( const String & roleName ) const
 {
     int index = findComponent(roleName);
-    return (index != NECommon::INVALID_INDEX ? mListComponents.getAt(index) : NERegistry::INVALID_COMPONENT_ENTRY);
+    return (index != NECommon::INVALID_INDEX ? mListComponents.getAt(index) : NERegistry::invalidComponentEntry());
 }
 
 int NERegistry::ComponentList::findComponent(const String & roleName) const
@@ -828,7 +881,7 @@ NERegistry::ComponentThreadList::ComponentThreadList( const NERegistry::Componen
 const NERegistry::ComponentThreadEntry & NERegistry::ComponentThreadList::getThread( const String & threadName ) const
 {
     int index = findThread(threadName);
-    return (index != NECommon::INVALID_INDEX ? mListThreads.getAt(index) : NERegistry::INVALID_THREAD_ENTRY);
+    return (index != NECommon::INVALID_INDEX ? mListThreads.getAt(index) : NERegistry::invalidThreadEntry());
 }
 
 int NERegistry::ComponentThreadList::findThread( const NERegistry::ComponentThreadEntry& entry ) const

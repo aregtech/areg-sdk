@@ -46,10 +46,10 @@ class AREG_API Version
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Version::INVALID_VERSION
-     *          Invalid Version object. The invalid version contains following version numbers (0, 0, 0)
+     * \brief   Returns invalid Version object. 
+     *          The invalid version contains following version numbers (0, 0, 0)
      **/
-    static const Version   INVALID_VERSION;
+    static const Version & getInvalidVersion( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -189,8 +189,7 @@ public:
     inline unsigned int getPatch( void ) const;
 
     /**
-     * \brief   Returns true, if version object is not invalid.
-     *          The invalid version is equal to INVALID_VERSION.
+     * \brief   Returns true, if version is not invalid..
      **/
     inline bool isValid( void ) const;
 

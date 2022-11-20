@@ -93,15 +93,13 @@ namespace
 }
 
 //////////////////////////////////////////////////////////////////////////
-// defined constants
-//////////////////////////////////////////////////////////////////////////
-const char      File::PATH_SEPARATOR    = '/';
-const int       File::MAXIMUM_PATH      = 1024;
-void * const    File::INVALID_HANDLE    = nullptr;
-
-//////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
+
+FILEHANDLE File::_osGetInvalidHandle( void )
+{
+    return static_cast<FILEHANDLE>(nullptr);
+}
 
 void File::_osCloseFile( void )
 {
@@ -117,7 +115,7 @@ void File::_osCloseFile( void )
         delete file;
     }
 
-    mFileHandle = File::INVALID_HANDLE;
+    mFileHandle = File::_osGetInvalidHandle();
 }
 
 bool File::_osOpenFile( void )
@@ -331,7 +329,7 @@ unsigned int File::_osCreateTempFile(char* buffer, const char* folder, const cha
     ASSERT(folder != nullptr);
     ASSERT(prefix != nullptr);
 
-    sprintf(buffer, "%s%c%s%d.tmp", folder, File::PATH_SEPARATOR, prefix, unique);
+    sprintf(buffer, "%s%c%s%d.tmp", folder, File::getPathSeparator(), prefix, unique);
 
     return static_cast<unsigned int>(::mkdtemp(buffer) == buffer ? strlen(buffer) : 0);
 }
@@ -353,7 +351,7 @@ unsigned int File::_osGetSpecialDir(char* buffer, unsigned int /*length*/, const
     case File::eSpecialFolder::SpecialPersonal:
         filePath = _getUserHomeDir();
         ASSERT(filePath != nullptr);
-        ::sprintf(buffer, "%s%c%s", filePath != nullptr ? filePath : "", File::PATH_SEPARATOR, DIR_NAME_DOCUMENTS);
+        ::sprintf(buffer, "%s%c%s", filePath != nullptr ? filePath : "", File::getPathSeparator(), DIR_NAME_DOCUMENTS);
         break;
 
     case File::eSpecialFolder::SpecialAppData:
@@ -361,9 +359,9 @@ unsigned int File::_osGetSpecialDir(char* buffer, unsigned int /*length*/, const
         ASSERT(filePath != nullptr);
         ::sprintf(buffer, "%s%c.%s%c%s"
                     , filePath
-                    , static_cast<int>(File::PATH_SEPARATOR)
+                    , static_cast<int>(File::getPathSeparator())
                     , Process::getInstance().getAppName().getString()
-                    , static_cast<int>(File::PATH_SEPARATOR)
+                    , static_cast<int>(File::getPathSeparator())
                     , DIR_NAME_APPDATA);
         break;
 

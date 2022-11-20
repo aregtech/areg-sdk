@@ -46,14 +46,6 @@ class ServiceResponseEvent;
  **/
 class AREG_API ProxyAddress   : public    ServiceAddress
 {
-public:
-    /**
-     * \brief   ProxyAddress::INVALID_PROXY_ADDRESS
-     *          Invalid proxy address.
-     *          Need to verify Proxy Address validation.
-     **/
-    static const ProxyAddress INVALID_PROXY_ADDRESS;
-
 //////////////////////////////////////////////////////////////////////////
 // Static methods
 //////////////////////////////////////////////////////////////////////////
@@ -78,6 +70,11 @@ public:
      * \return	Proxy address object.
      **/
     static ProxyAddress convPathToAddress(const char * pathProxy, const char** out_nextPart = nullptr);
+
+    /**
+     * \brief   Invalid proxy address used to verify Proxy Address validation.
+     **/
+    static const ProxyAddress & getInvalidProxyAddress( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor

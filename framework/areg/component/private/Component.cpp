@@ -195,7 +195,10 @@ void Component::shutdownComponent( ComponentThread& /* comThread */ )
     WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
     while (workerThread != nullptr)
     {
-        OUTPUT_INFO("Shutting down worker thread [ %s ] of component [ %s ]", workerThread->getName().getString(), getRoleName().getString());
+        OUTPUT_INFO("Shutting down worker thread [ %s ] of component [ %s ]"
+                        , workerThread->getName().getString()
+                        , getRoleName().getString());
+
         workerThread->shutdownThread();
         workerThread = mComponentInfo.getNextWorkerThread(addrThread);
     }
@@ -207,7 +210,9 @@ void Component::notifyComponentShutdown( ComponentThread& /*comThread */ )
     WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
     while (workerThread != nullptr)
     {
-        OUTPUT_INFO("Shutting down worker thread [ %s ] of component [ %s ]", workerThread->getName().getString(), getRoleName().getString());
+        OUTPUT_INFO("Shutting down worker thread [ %s ] of component [ %s ]"
+                        , workerThread->getName().getString()
+                        , getRoleName().getString());
         workerThread->shutdownThread();
         workerThread = mComponentInfo.getNextWorkerThread(addrThread);
     }

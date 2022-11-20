@@ -34,14 +34,13 @@ class StubAddress;
 class ClientInfo
 {
 //////////////////////////////////////////////////////////////////////////
-// ClientInfo predefined types and constants
+// ClientInfo static methods
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   ClientInfo::INVALID_CLIENT_INFO
-     *          Defines invalid client info object
+     * \brief   Predefines invalid client info object
      **/
-    static const ClientInfo   INVALID_CLIENT_INFO;
+    static const ClientInfo & getInvalidClientInfo( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

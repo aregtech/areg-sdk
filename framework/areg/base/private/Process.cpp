@@ -17,12 +17,18 @@
 
 #include "areg/base/File.hpp"
 #include <filesystem>
+#include <iostream>
 
 //////////////////////////////////////////////////////////////////////////
 // Process class implementation
 //////////////////////////////////////////////////////////////////////////
 
-Process Process::_theProcess;
+Process & Process::getInstance( void )
+{
+    static Process _theProcess;
+    return _theProcess;
+}
+
 
 Process::Process( void )
     : mProcEnv          ( static_cast<Process::eProcEnv>(sizeof(id_type)) )
@@ -35,14 +41,15 @@ Process::Process( void )
     , mProcessFullPath  ( )
     , mIsInitialized    ( false )
 {
+    _osInitilize();
 }
 
 void Process::_initPaths( const char * fullPath )
 {
     ASSERT(fullPath != nullptr);
+    OUTPUT_DBG("Initializing data of process [ %s ]", fullPath);
 
-    // mProcessFullPath= File::normalizePath(fullPath);
-    mProcessFullPath.assign( fullPath );
+    mProcessFullPath = fullPath;
     std::filesystem::path procPath(mProcessFullPath.getObject());
 
     if (procPath.empty() != false)

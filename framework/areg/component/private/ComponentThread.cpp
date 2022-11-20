@@ -104,7 +104,10 @@ int ComponentThread::createComponents( void )
                 Component *comObj = Component::loadComponent(entry, self());
                 if (comObj != nullptr)
                 {
-                    OUTPUT_DBG("Component [ %s ] in thread [ %s ] has been created...", comObj->getRoleName().getString(), getName().getString());
+                    OUTPUT_DBG("Component [ %s ] in thread [ %s ] has been created..."
+                                    , comObj->getRoleName().getString()
+                                    , getName().getString());
+
                     mListComponent.pushLast(comObj);
                     result ++;
                 }
@@ -121,14 +124,20 @@ int ComponentThread::createComponents( void )
 
 void ComponentThread::destroyComponents( void )
 {
-    OUTPUT_DBG("Going to destroy components in thread [ %s ]. There are [ %d ] components in the thread.", getName().getString(), mListComponent.getSize());
+    OUTPUT_DBG("Going to destroy components in thread [ %s ]. There are [ %d ] components in the thread."
+                    , getName().getString()
+                    , mListComponent.getSize());
+
     while (mListComponent.isEmpty() == false)
     {
         Component* comObj = nullptr;
         if (mListComponent.removeLast(comObj))
         {
             ASSERT(comObj != nullptr);
-            OUTPUT_DBG("Destroying component [ %s ] in thread [ %s ]...", comObj->getRoleName().getString(), getName().getString());
+            OUTPUT_DBG("Destroying component [ %s ] in thread [ %s ]..."
+                            , comObj->getRoleName().getString()
+                            , getName().getString());
+
             const NERegistry::ComponentEntry& entry = ComponentLoader::findComponentEntry(comObj->getRoleName(), getName());
             if (entry.isValid() && entry.mFuncDelete != nullptr)
             {
@@ -230,7 +239,9 @@ inline void ComponentThread::_shutdownComponents(void)
         Component* comObj = mListComponent.getNext(pos);
         ASSERT(comObj != nullptr);
         comObj->shutdownComponent(self());
-        OUTPUT_DBG("Shutdown component [ %s ] in thread [ %s ]...", comObj->getRoleName().getString(), getName().getString());
+        OUTPUT_DBG("Shutdown component [ %s ] in thread [ %s ]..."
+                        , comObj->getRoleName().getString()
+                        , getName().getString());
     }
 }
 
@@ -242,7 +253,9 @@ void ComponentThread::shutdownThread( void )
         Component* comObj = mListComponent.getNext(pos);
         ASSERT(comObj != nullptr);
         comObj->notifyComponentShutdown(self());
-        OUTPUT_DBG("The component [ %s ] is notified thread [ %s ] is going to shutdown!", comObj->getRoleName().getString(), getName().getString());
+        OUTPUT_DBG("The component [ %s ] is notified thread [ %s ] is going to shutdown!"
+                        , comObj->getRoleName().getString()
+                        , getName().getString());
     }
 
     DispatcherThread::shutdownThread();

@@ -40,10 +40,9 @@ class AREG_API Channel
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Channel::INVALID_CHANNEL
-     *          Defines invalid channel object.
+     * \brief   Defines invalid channel object.
      **/
-    static const Channel    INVALID_CHANNEL;                //!< Invalid channel
+    static const Channel & getInvalidChannel( void);                //!< Invalid channel
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor

@@ -36,10 +36,12 @@ constexpr std::string_view   INVALID_THREAD_NAME     { "INVALID_THREAD_NAME" };
 /************************************************************************/
 // ThreadAddress
 /************************************************************************/
-/**
- * \brief   Invalid thread address constant.
- **/
-const ThreadAddress   ThreadAddress::INVALID_THREAD_ADDRESS;
+
+const ThreadAddress & ThreadAddress::getInvalidThreadAddress(void)
+{
+    static const ThreadAddress _invalidAddress;
+    return _invalidAddress;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

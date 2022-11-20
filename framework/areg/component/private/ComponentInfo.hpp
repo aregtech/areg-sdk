@@ -199,12 +199,11 @@ public:
     /**
      * \brief   Returns pointer of first Worker Thread. On output, out_threadAddress
      *          parameter will contain address of first valid thread, or invalid address
-     *          ThreadAddress::INVALID_THREAD_ADDRESS, if Component Info
-     *          has no registered Worker Thread, and the function returns nullptr.
+     *          if Component Info has no registered Worker Thread, and the function 
+     *          returns nullptr.
      * \param   out_threadAddress   On output, if Component Info has registered
      *                              Worker Thread, it will contain valid address.
-     *                              Otherwise, it will contain invalid address
-     *                              ThreadAddress::INVALID_THREAD_ADDRESS
+     *                              Otherwise, it will contain invalid address.
      * \return  If Component has Worker Threads, it will return valid pointer and the
      *          Worker Thread object will have address specified in out_threadAddress.
      *          If Component has no Worker Thread, it will return nullptr.
@@ -216,11 +215,10 @@ public:
      *          int_out_threadAddress. On input, int_out_threadAddress should be address
      *          of valid thread. On output, if there is next thread, it will contain
      *          address of valid Worker Thread. Otherwise, on output int_out_threadAddress
-     *          is invalid ThreadAddress::INVALID_THREAD_ADDRESS address.
+     *          is invalid address.
      * \param   int_out_threadAddress   On input, this should be valid address of Worker Thread.
      *                                  On output, if there is next thread, it will be valid address
-     *                                  of next Worker Thread. Otherwise, it will be invalid address
-     *                                  ThreadAddress::INVALID_THREAD_ADDRESS
+     *                                  of next Worker Thread. Otherwise, it will be invalid address.
      * \return  If there is next worker thread, the function will return valid pointer of
      *          next Worker Thread object and the address of thread is equal to address
      *          in int_out_threadAddress parameter on output. Otherwise, it returns nullptr.
@@ -322,7 +320,7 @@ inline WorkerThread* ComponentInfo::getNextWorkerThread( ThreadAddress & int_out
 
 inline WorkerThread* ComponentInfo::removeFirstWorkerThread(ThreadAddress& OUT out_threadAddress)
 {
-    std::pair<ThreadAddress, WorkerThread*> elem{ThreadAddress::INVALID_THREAD_ADDRESS, nullptr};
+    std::pair<ThreadAddress, WorkerThread*> elem{ThreadAddress::getInvalidThreadAddress(), nullptr};
     if (mWorkerThreadMap.isEmpty() == false)
     {
         mWorkerThreadMap.removeResourceFirstElement(elem);

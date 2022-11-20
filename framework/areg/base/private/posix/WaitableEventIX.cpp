@@ -81,11 +81,11 @@ bool WaitableEventIX::resetEvent(void)
         {
             if (NESynchTypesIX::eEventResetInfo::EventResetAutomatic == mEventReset)
             {
-                OUTPUT_WARN("Manually reseting auto-reset waitable event [ %s ].", getName());
+                OUTPUT_WARN("Manually reseting auto-reset waitable event [ %s ].", getName().getString());
             }
             else
             {
-                OUTPUT_DBG("Manually reseting event [ %s ]", getName());
+                OUTPUT_DBG("Manually reseting event [ %s ]", getName().getString());
             }
         }
 #endif // DEBUG
@@ -107,7 +107,7 @@ void WaitableEventIX::pulseEvent(void)
         {
             if (mIsSignaled == false)
             {
-                OUTPUT_DBG("Pulsing event [ %s ]", getName());
+                OUTPUT_DBG("Pulsing event [ %s ]", getName().getString( ));
 
                 mIsSignaled = true;
                 lock.unlock();

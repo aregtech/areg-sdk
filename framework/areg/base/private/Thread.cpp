@@ -35,11 +35,6 @@ constexpr std::string_view   STORAGE_THREAD_CONSUMER { "ThreadConsumer" };
 //////////////////////////////////////////////////////////////////////////
 // Thread class constants definition
 //////////////////////////////////////////////////////////////////////////
-/**
- * \brief   Identified Current Thread. Used for Local Storage
- **/
-Thread* const        Thread::CURRENT_THREAD         = reinterpret_cast<Thread *>(~0);
-
 
 /************************************************************************/
 // Thread class
@@ -76,7 +71,7 @@ unsigned long Thread::_defaultThreadFunction(void* data)
             Lock lock(threadObj->mSynchObject);
         } while (false);
 
-        OUTPUT_DBG("Thread [ %s ] starts job...", static_cast<const char *>(threadObj->getName()));
+        OUTPUT_DBG("Thread [ %s ] starts job...", static_cast<const char *>(threadObj->getName().getString( )));
 
         // instantiate thread local storage before starting running
         // it should be created in the thread context
@@ -87,7 +82,9 @@ unsigned long Thread::_defaultThreadFunction(void* data)
         // delete thread local storage.
         Thread::_getThreadLocalStorage(nullptr);
 
-        OUTPUT_DBG("Thread [ %s ] completed job with code [ %s ]", static_cast<const char *>(threadObj->getName()), IEThreadConsumer::getString(result));
+        OUTPUT_DBG("Thread [ %s ] completed job with code [ %s ]"
+                        , threadObj->getName().getString()
+                        , IEThreadConsumer::getString( result ) );
 
         threadObj->mWaitForExit.setEvent();
     }
@@ -104,10 +101,10 @@ unsigned long Thread::_defaultThreadFunction(void* data)
 /************************************************************************/
 // Local static utility methods
 /************************************************************************/
-ThreadLocalStorage* Thread::_getThreadLocalStorage( Thread* ownThread /*= Thread::CURRENT_THREAD*/ )
+ThreadLocalStorage* Thread::_getThreadLocalStorage( Thread* ownThread )
 {
     static __THREAD_LOCAL ThreadLocalStorage* _localStorage = nullptr;
-    if ( ownThread == Thread::CURRENT_THREAD )
+    if ( ownThread == reinterpret_cast<Thread *>(Thread::CURRENT_THREAD) )
     {
         // do nothing, the static local storage item is already instantiated
         ASSERT( _localStorage != nullptr );
@@ -168,7 +165,7 @@ Thread::~Thread( void )
 //////////////////////////////////////////////////////////////////////////
 ThreadLocalStorage & Thread::getCurrentThreadStorage( void )
 {
-    ThreadLocalStorage* localStorage = Thread::_getThreadLocalStorage(Thread::CURRENT_THREAD);
+    ThreadLocalStorage* localStorage = Thread::_getThreadLocalStorage(reinterpret_cast<Thread *>(Thread::CURRENT_THREAD));
     return (*localStorage);
 }
 
@@ -253,7 +250,7 @@ const String & Thread::getThreadName( id_type threadId )
 const ThreadAddress & Thread::getThreadAddress( id_type threadId )
 {
     Thread* threadObj = Thread::findThreadById( threadId);
-    return (threadObj != nullptr ? threadObj->getAddress() : ThreadAddress::INVALID_THREAD_ADDRESS);
+    return (threadObj != nullptr ? threadObj->getAddress() : ThreadAddress::getInvalidThreadAddress());
 }
 
 int Thread::_threadEntry( void )

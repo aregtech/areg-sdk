@@ -41,7 +41,7 @@ void ServerConnection::closeAllConnections(void)
 {
     Lock lock( mLock );
     RemoteMessage msgBeyClient;
-    if ( msgBeyClient.initMessage( NEConnection::MessageByeClient.rbHeader ) != nullptr )
+    if ( msgBeyClient.initMessage( NEConnection::getMessageByeClient().rbHeader ) != nullptr )
     {
         msgBeyClient.setSequenceNr( NEService::SEQUENCE_NUMBER_ANY );
         msgBeyClient.setSource( NEService::COOKIE_ROUTER );

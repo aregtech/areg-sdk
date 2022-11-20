@@ -68,12 +68,12 @@ private:
     /**
      * \brief   Constant. Defines Invalid Session ID
      **/
-    static constexpr SessionID      INVALID_SESSION_ID  = static_cast<SessionID>(~0);
+    static constexpr SessionID      INVALID_SESSION_ID  { static_cast<SessionID>(~0) };
 
     /**
      * \brief   Constant. Defines Invalid Message ID
      */
-    static constexpr unsigned int   INVALID_MESSAGE_ID  = static_cast<unsigned int>(NEService::INVALID_MESSAGE_ID);
+    static constexpr unsigned int   INVALID_MESSAGE_ID  { static_cast<unsigned int>(NEService::INVALID_MESSAGE_ID) };
 
 protected:
     //////////////////////////////////////////////////////////////////////////
@@ -727,21 +727,21 @@ private:
 inline StubBase::Listener::Listener( void )
     : mMessageId ( 0 )
     , mSequenceNr( 0 )
-    , mProxy     ( ProxyAddress::INVALID_PROXY_ADDRESS )
+    , mProxy     ( ProxyAddress::getInvalidProxyAddress() )
 {
 }
 
 inline StubBase::Listener::Listener( unsigned int reqId )
     : mMessageId ( reqId )
     , mSequenceNr( 0 )
-    , mProxy     ( ProxyAddress::INVALID_PROXY_ADDRESS )
+    , mProxy     ( ProxyAddress::getInvalidProxyAddress() )
 {
 }
 
 inline StubBase::Listener::Listener( unsigned int reqId, unsigned int seqId )
     : mMessageId ( reqId )
     , mSequenceNr( seqId )
-    , mProxy     ( ProxyAddress::INVALID_PROXY_ADDRESS )
+    , mProxy     ( ProxyAddress::getInvalidProxyAddress() )
 {
 }
 

@@ -43,7 +43,7 @@ class IEOutStream;
  *              Address and Role Name. It is possible to convert address
  *              to string by creating component path and from component
  *              path string to restore component address. The valid address
- *              of component should differ from INVALID_COMPONENT_ADDRESS.
+ *              of component should differ from invalid component address.
  **/
 class AREG_API ComponentAddress
 {
@@ -63,7 +63,7 @@ public:
      *          To check whether component address or not, call
      *          isValid() method.
      **/
-    static const ComponentAddress INVALID_COMPONENT_ADDRESS;
+    static const ComponentAddress & getInvalidComponentAddress( void );
 
 /************************************************************************/
 // Static methods
@@ -217,7 +217,6 @@ public:
 
     /**
      * \brief   Return true if component address if valid.
-     *          Address is valid if it is not equal to INVALID_COMPONENT_ADDRESS
      **/
     bool isValid( void) const;
 

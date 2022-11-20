@@ -121,16 +121,22 @@ bool EventDispatcherBase::registerEventConsumer( const RuntimeClassID& whichClas
     EventConsumerList* listConsumers = mConsumerMap.findResourceObject(whichClass);
     if (listConsumers == nullptr)
     {
-        OUTPUT_DBG("[ %s ] dispatcher: Did not find consumer list for event [ %s ], creating new", mDispatcherName.getString(), whichClass.getName().getString());
+        OUTPUT_DBG("[ %s ] dispatcher: Did not find consumer list for event [ %s ], creating new"
+                        , mDispatcherName.getString()
+                        , whichClass.getName().getString());
         
         listConsumers   = DEBUG_NEW EventConsumerList();
         if (listConsumers != nullptr)
             mConsumerMap.registerResourceObject(whichClass, listConsumers);
     }
+#ifdef DEBUG
     else
     {
-        OUTPUT_DBG("[ %s ] dispatcher: Fount consumer list for event [ %s ]", mDispatcherName.getString(), whichClass.getName().getString());
+        OUTPUT_DBG("[ %s ] dispatcher: Fount consumer list for event [ %s ]"
+                        , mDispatcherName.getString()
+                        , whichClass.getName().getString());
     }
+#endif // DEBUG
 
     if ( (listConsumers != nullptr) && (listConsumers->existConsumer(whichConsumer) == false) )
     {
@@ -214,7 +220,9 @@ int EventDispatcherBase::removeConsumer( IEEventConsumer & whichConsumer )
         result += Value->removeConsumer(whichConsumer) ? 1 : 0;
         if (Value->isEmpty())
         {
-            OUTPUT_WARN("[ %s ] dispatcher: The Consumer List of event entry [ %s ] is empty, marking for deleting", mDispatcherName.getString(), Key.getName().getString());
+            OUTPUT_WARN("[ %s ] dispatcher: The Consumer List of event entry [ %s ] is empty, marking for deleting"
+                            , mDispatcherName.getString()
+                            , Key.getName().getString());
             removedList.pushFirst(Key);
         }
 

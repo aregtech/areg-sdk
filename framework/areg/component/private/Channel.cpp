@@ -17,7 +17,11 @@
 #include "areg/component/Channel.hpp"
 #include "areg/base/NECommon.hpp"
 
-const Channel   Channel::INVALID_CHANNEL;
+const Channel & Channel::getInvalidChannel( void )
+{
+    static const Channel _invalidChannel( NEService::SOURCE_UNKNOWN, NEService::TARGET_UNKNOWN, NEService::COOKIE_UNKNOWN );
+    return _invalidChannel;
+}
 
 Channel::Channel( void )
     : mSource( NEService::SOURCE_UNKNOWN )
@@ -31,7 +35,6 @@ Channel::Channel( ITEM_ID source, ITEM_ID target /*= NEService::TARGET_UNKNOWN*/
     , mTarget( target )
     , mCookie( cookie )
 {
-
 }
 
 Channel::Channel( const Channel & source )

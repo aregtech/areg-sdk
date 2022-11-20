@@ -98,12 +98,12 @@ public:
      * \brief   Searches in the list Client Info object with specified address,
      *          and there is Client Info object with specified Proxy address,
      *          it will return valid Client Info. Otherwise, it will return
-     *          invalid ClientInfo::INVALID_CLIENT_INFO object.
+     *          invalid client info object.
      *          Check validation of Client Info or call existClient() method.
      * \param   whichClient The address of Proxy of client to search.
      * \return  If there is a Client Info object in the list with specified address
      *          of Proxy of client, it will return valid object. Otherwise, it will return
-     *          invalid ClientInfo::INVALID_CLIENT_INFO object.
+     *          invalid client info object.
      **/
     const ClientInfo & getClient( const ProxyAddress & whichClient ) const;
 

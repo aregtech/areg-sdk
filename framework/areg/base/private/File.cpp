@@ -31,18 +31,23 @@
 // File class implementation
 //////////////////////////////////////////////////////////////////////////
 
+const char File::getPathSeparator( void )
+{
+    return static_cast<char>(std::filesystem::path::preferred_separator);
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor
 //////////////////////////////////////////////////////////////////////////
 File::File( void )
     : FileBase    ( )
-    , mFileHandle   (File::INVALID_HANDLE)
+    , mFileHandle   (File::_osGetInvalidHandle())
 {
 }
 
 File::File(const String& fileName, unsigned int mode /* = (FileBase::FO_MODE_WRITE | FileBase::FO_MODE_BINARY) */)
     : FileBase    ( )
-    , mFileHandle   (File::INVALID_HANDLE)
+    , mFileHandle   (File::_osGetInvalidHandle())
 {
     mFileName = File::normalizePath(fileName);
     mFileMode = mode;
@@ -52,7 +57,7 @@ File::~File( void )
 {
     _osCloseFile();
 
-    mFileHandle = File::INVALID_HANDLE;
+    mFileHandle = File::_osGetInvalidHandle();
     mFileMode   = FileBase::FO_MODE_INVALID;
 }
 
@@ -135,7 +140,7 @@ bool File::remove( void )
         result = std::filesystem::remove(mFileName.getObject(), err);
     }
 
-    mFileHandle = File::INVALID_HANDLE;
+    mFileHandle = File::_osGetInvalidHandle();
     mFileMode   = FileBase::FO_MODE_INVALID;
     mFileName   = String::EmptyString;
 
@@ -144,7 +149,7 @@ bool File::remove( void )
 
 bool File::isOpened() const
 {
-    return (mFileHandle != File::INVALID_HANDLE);
+    return (mFileHandle != File::_osGetInvalidHandle());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -158,7 +163,9 @@ inline bool File::_nameHasCurrentFolder(const char * filePath, bool skipSep)
     {
         if (filePath[0] == File::DIR_CURRENT[0])
         {
-            result = (skipSep && filePath[1] == NEString::EndOfString) || (filePath[1] == File::UNIX_SEPARATOR) ||  (filePath[1] == File::DOS_SEPARATOR);
+            result = (skipSep && filePath[1] == NEString::EndOfString)  || 
+                     (filePath[1] == File::UNIX_SEPARATOR)              ||
+                     (filePath[1] == File::DOS_SEPARATOR);
         }
     }
 
@@ -218,9 +225,9 @@ String File::getFileNameWithExtension( const char* filePath )
     if ( NEString::isEmpty<char>(filePath) == false )
     {
         NEString::CharPos pos = NEString::getStringLength<char>(filePath) - 1;
-        if (filePath[pos] != File::PATH_SEPARATOR)
+        if (filePath[pos] != File::getPathSeparator())
         {
-            pos = NEString::findLast<char>(File::PATH_SEPARATOR, filePath, pos - 1, nullptr);
+            pos = NEString::findLast<char>(File::getPathSeparator(), filePath, pos - 1, nullptr);
             if (NEString::isPositionValid(pos))
             {
                 result = filePath + pos + 1;
@@ -258,7 +265,7 @@ String File::getFileExtension( const char* filePath )
 
 String File::getFileDirectory(const char* filePath)
 {
-    NEString::CharPos pos = NEString::isEmpty<char>(filePath) ? NEString::INVALID_POS : NEString::findLast<char>(File::PATH_SEPARATOR, filePath, NEString::END_POS, nullptr);
+    NEString::CharPos pos = NEString::isEmpty<char>(filePath) ? NEString::INVALID_POS : NEString::findLast<char>(File::getPathSeparator(), filePath, NEString::END_POS, nullptr);
     return (NEString::isPositionValid(pos) ? String(filePath, pos) : String(String::EmptyString));
 }
 
@@ -301,13 +308,13 @@ bool File::findParent(const char * filePath, const char ** nextPos, const char *
         else
         {
             length = NEString::getStringLength<char>(filePath); 
-            if ( filePath[length - 1] == File::PATH_SEPARATOR )
+            if ( filePath[length - 1] == File::getPathSeparator() )
                 -- length;
         }
 
         if (length != 0)
         {
-            int pos = NEString::findLast(File::PATH_SEPARATOR, filePath, NEString::END_POS, nextPos);
+            int pos = NEString::findLast(File::getPathSeparator(), filePath, NEString::END_POS, nextPos);
             if ((pos > 0) && (pos < length))
             {
                 result = true;
@@ -462,7 +469,7 @@ unsigned int File::getLength(void) const
 
 unsigned int File::reserve(unsigned int newSize)
 {
-    OUTPUT_DBG("Going to reserve [ %u ] of data for file [ %s ].", newSize, mFileName.isValid() ? static_cast<const char*>(mFileName) : "null");
+    OUTPUT_DBG("Going to reserve [ %u ] of data for file [ %s ].", newSize, mFileName.isEmpty() == false ? static_cast<const char*>(mFileName) : "null");
     unsigned int result = IECursorPosition::INVALID_CURSOR_POSITION;
     if (isOpened() && canWrite())
     {

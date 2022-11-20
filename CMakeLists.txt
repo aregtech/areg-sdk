@@ -7,8 +7,10 @@ set(CMAKE_CONFIG_DIR "${AREG_SDK_ROOT}/conf/cmake")
 set(AREG_BASE "${AREG_SDK_ROOT}/framework")
 set(AREG_EXAMPLES "${AREG_SDK_ROOT}/examples")
 
-# configurations which must be added *before* project()
-include(${CMAKE_CONFIG_DIR}/pre-project.cmake)
+include(${CMAKE_CONFIG_DIR}/user.cmake)
+
+set(CMAKE_C_COMPILER "${CToolset}")
+set(CMAKE_CXX_COMPILER "${CppToolset}")
 
 # Project's properties
 set(PROJECT_NAME "AREG-SDK")
@@ -18,7 +20,7 @@ project(${PROJECT_NAME} VERSION ${PROJECT_VERSION} LANGUAGES C CXX)
 include(${CMAKE_CONFIG_DIR}/common.cmake)
 
 option(BUILD_TESTS "Build unit tests")
-option(BUILD_EXAMPLES "Build examples")
+option(BUILD_EXAMPLES "Build examples" ON)
 
 include_directories(framework/)
 include(${AREG_BASE}/CMakeLists.txt)
