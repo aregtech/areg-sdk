@@ -1,4 +1,4 @@
-00_serviceproc_PROJECT_NAME := 00_serviceproc
+00_serviceproc_PROJECT_NAME := 00_pubservice
 
 00_serviceproc_TARGET_BIN := $(00_serviceproc_PROJECT_NAME)$(AREG_BIN_EXT)
 00_serviceproc_OUTPUT_OBJ := $(00_helloservice_OUTPUT_OBJ)/$(00_serviceproc_PROJECT_NAME)

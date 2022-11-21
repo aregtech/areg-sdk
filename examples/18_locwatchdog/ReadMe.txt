@@ -25,7 +25,7 @@ and used in multithreading communication.
 
 The project consist of 2 sub-projects:
     1. generated  (18_generated)    -- generated code.
-    2. locservice (18_locwatchdog)  -- service provider and client.
+    2. locservice (18_locservice)   -- service provider and client.
 
 
 ////////////////////////////////////////////////////////////////////////
@@ -38,7 +38,7 @@ and compiled as a static library.
 
 ////////////////////////////////////////////////////////////////////////
 
-        2. Project 'locservice' / 18_locwatchdog
+        2. Project 'locservice' / 18_locservice
 
 The application instantiates a simple local service and the client running in
 differen thread, so that when the thread containing service is killed, the client

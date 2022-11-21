@@ -4,7 +4,7 @@ unset(18_SRC)
 
 # Project names
 set(gen_projName 18_generated)
-set(projName 18_locwatchdog)
+set(projName 18_locservice)
 
 set(18_locwatchdog_BASE ${AREG_EXAMPLES}/18_locwatchdog)
 

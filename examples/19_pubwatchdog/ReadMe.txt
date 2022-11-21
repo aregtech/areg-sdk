@@ -22,9 +22,9 @@ with components.
 The demo creates a public service and the remote client components
 
 The project consist of 3 sub-projects:
-    1. generated  (19_generated)      -- generated code.
-    2. pubservice (19_pubservicewdog) -- public service provider.
-    3. pubclient  (19_pubclientwdog)  -- remote client provider.
+    1. generated  (19_generated)    -- generated code.
+    2. pubservice (19_pubservice)   -- public service provider.
+    3. pubclient  (19_pubclient)    -- remote client provider.
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -36,7 +36,7 @@ and compiled as a static library.
 
 ////////////////////////////////////////////////////////////////////////
 
-        2. Project 'pubservice' / 19_pubservicewdog
+        2. Project 'pubservice' / 19_pubservice
 
 The application instantiates the public service to be triggered by the 
 request of the client. The service provider thread of the application has
@@ -46,7 +46,7 @@ clients are notifies that the service is disconnected.
 
 ////////////////////////////////////////////////////////////////////////
 
-        3. Project 'pubclient' / 19_pubservicewdog
+        3. Project 'pubclient' / 19_pubclient
 
 The application instantiates the remote client to connect to the publicservice
 running in the thread with watchdog. The client send a message to the public

@@ -1,4 +1,4 @@
-13_pubclients_PROJECT_NAME := 13_pubclients
+13_pubclients_PROJECT_NAME := 13_pubclient
 
 13_pubclients_TARGET_BIN := $(13_pubclients_PROJECT_NAME)$(AREG_BIN_EXT)
 13_pubclients_OUTPUT_OBJ := $(13_pubmesh_OUTPUT_OBJ)/$(13_pubclients_PROJECT_NAME)

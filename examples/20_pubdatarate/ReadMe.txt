@@ -11,9 +11,9 @@ This application as well will be used in further versions as a benchmark
 test to demonstrate communication improvements.
 
 The project consists of 3 sub-projects:
-    1. generated  (20_generated)         -- generated codes.
-	2. pubservice (20_pubsvcdatarate)    -- public service provider.
-	3. pubclient  (20_pubclientdatarate) -- public service client.
+    1. generated  (20_generated)    -- generated codes.
+	2. pubservice (20_pubservice)   -- public service provider.
+	3. pubclient  (20_pubclient)    -- public service client.
 
 There is as well common objects used by server and client components.
 The user may type on console commands to change options like
@@ -32,14 +32,14 @@ and compiled as a static library.
 
 ////////////////////////////////////////////////////////////////////////
 
-        2. Project 'pubservice' / 20_pubsvcdatarate
+        2. Project 'pubservice' / 20_pubservice
         
 The application provides public service, which generates data and sends
 to connected clients.
 
 ////////////////////////////////////////////////////////////////////////
 
-        3. Project 'pubclient' / 20_pubclientdatarate
+        3. Project 'pubclient' / 20_pubclient
         
 The application contains a service client component, which receives the
 data from the service component.

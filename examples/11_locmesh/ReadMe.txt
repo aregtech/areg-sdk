@@ -6,6 +6,10 @@ This project demonstrates execution of multiple instances of the same
 service and it is an extension of the project 10_locsvc. Every service 
 instance must have a unique name and be instantiated in different threads.
 
+The project consist of 2 sub-projects:
+    1. generated  (11_generated)    -- generated code.
+    2. locservice (11_locmesh)      -- The mixture of services and clients.
+
 ////////////////////////////////////////////////////////////////////////
 
         1. Project 'generated' / 11_generated
@@ -16,7 +20,7 @@ and compiled as a static library.
 
 ////////////////////////////////////////////////////////////////////////
 
-        2. Project 'locsvcmesh' / 11_locsvcmesh
+        2. Project 'locsvcmesh' / 11_locmesh
 
 The application that instantiates multiple instances of the same service
 and clients in different threads. The definition of servicing components,

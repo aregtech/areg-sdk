@@ -1,4 +1,4 @@
-13_pubsvcmain_PROJECT_NAME := 13_pubsvcmain
+13_pubsvcmain_PROJECT_NAME := 13_pubservice
 
 13_pubsvcmain_TARGET_BIN := $(13_pubsvcmain_PROJECT_NAME)$(AREG_BIN_EXT)
 13_pubsvcmain_OUTPUT_OBJ := $(13_pubmesh_OUTPUT_OBJ)/$(13_pubsvcmain_PROJECT_NAME)

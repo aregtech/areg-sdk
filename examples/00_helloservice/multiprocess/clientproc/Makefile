@@ -1,4 +1,4 @@
-00_clientproc_PROJECT_NAME := 00_clientproc
+00_clientproc_PROJECT_NAME := 00_pubclient
 
 00_clientproc_TARGET_BIN := $(00_clientproc_PROJECT_NAME)$(AREG_BIN_EXT)
 00_clientproc_OUTPUT_OBJ := $(00_helloservice_OUTPUT_OBJ)/$(00_clientproc_PROJECT_NAME)

@@ -1,4 +1,4 @@
-11_locsvcmesh_PROJECT_NAME := 11_locsvcmesh
+11_locsvcmesh_PROJECT_NAME := 11_locmesh
 
 11_locsvcmesh_TARGET_BIN := $(11_locsvcmesh_PROJECT_NAME)$(AREG_BIN_EXT)
 11_locsvcmesh_OUTPUT_OBJ := $(11_locmesh_OUTPUT_OBJ)/$(11_locsvcmesh_PROJECT_NAME)
