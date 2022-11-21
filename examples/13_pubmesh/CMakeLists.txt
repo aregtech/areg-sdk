@@ -6,9 +6,9 @@ unset(13_SRC3)
 
 # Project names
 set(gen_projName 13_generated)
-set(projName1 13_pubclients)
-set(projName2 13_pubsvcmain)
-set(projName3 13_pubsvcmesh)
+set(projName1 13_pubclient)
+set(projName2 13_pubservice)
+set(projName3 13_pubmesh)
 
 set(13_pubmesh_BASE ${AREG_EXAMPLES}/13_pubmesh)
 

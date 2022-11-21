@@ -7,8 +7,8 @@ unset(00_SRC4)
 
 # Project names
 set(gen_projName 00_generated)
-set(projName1 00_clientproc)
-set(projName2 00_serviceproc)
+set(projName1 00_pubclient)
+set(projName2 00_pubservice)
 set(projName3 00_onethread)
 set(projName4 00_twothreads)
 

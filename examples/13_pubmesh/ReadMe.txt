@@ -9,9 +9,9 @@ and enables distributed computing.
 
 The project consists of 4 sub-projects:
     1. generated  (13_generated)  -- generated codes and common objects.
-    2. pubsvcmain (13_pubsvcmain) -- instances of public and local services.
-    3. pubsvcmesh (13_pubsvcmesh) -- mixed instances of services and clients.
-    4. pubclients (13_pubclients) -- public and local service clients.
+    2. pubsvcmain (13_pubservice) -- instances of public and local services.
+    3. pubsvcmesh (13_pubmesh) -- mixed instances of services and clients.
+    4. pubclients (13_pubclient) -- public and local service clients.
 
 All communications pass through mcrouter (multicasting router). Since in
 AREG SDK the service discovery is automated and it provides fault tolerant
@@ -31,7 +31,7 @@ of objects that are used in other projects.
 
 ////////////////////////////////////////////////////////////////////////
 
-        2. Project 'pubsvcmain' / 13_pubsvcmain
+        2. Project 'pubsvcmain' / 13_pubservice
         
 This project is marked as 'main' and contains instances of the Public
 service components, where one service (ServiceShtodwn) handles the 
@@ -40,7 +40,7 @@ when the 'main' application exits and can as well stop working.
 
 ////////////////////////////////////////////////////////////////////////
 
-        3. Project 'pubsvcmesh' / 13_pubsvcmesh
+        3. Project 'pubsvcmesh' / 13_pubmesh
         
 This project contains multiple instances of Public and Local services
 that form a mesh of services and make cross-communication. The application
@@ -48,7 +48,7 @@ shuts down when the 'main' service completes the job and exits.
 
 ////////////////////////////////////////////////////////////////////////
 
-        4. Project 'pubclients' / 13_pubclients
+        4. Project 'pubclients' / 13_pubclient
         
 This project contains multiple instances of Public service clients to 
 invoke remote method calls. The system guarantees that the each call

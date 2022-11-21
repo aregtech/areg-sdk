@@ -5,8 +5,8 @@ unset(20_SRC2)
 
 # Project names
 set(gen_projName 20_generated)
-set(projName1 20_pubclientdatarate)
-set(projName2 20_pubsvcdatarate)
+set(projName1 20_pubclient)
+set(projName2 20_pubservice)
 
 set(20_pubdatarate_BASE ${AREG_EXAMPLES}/20_pubdatarate)
 

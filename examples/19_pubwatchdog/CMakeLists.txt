@@ -5,8 +5,8 @@ unset(19_SRC2)
 
 # Project names
 set(gen_projName 19_generated)
-set(projName1 19_pubclientwdog)
-set(projName2 19_pubservicewdog)
+set(projName1 19_pubclient)
+set(projName2 19_pubservice)
 
 set(19_pubwatchdog_BASE ${AREG_EXAMPLES}/19_pubwatchdog)
 

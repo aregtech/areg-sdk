@@ -1,4 +1,4 @@
-18_locwatchdog_PROJECT_NAME := 18_locwatchdog
+18_locwatchdog_PROJECT_NAME := 18_locservice
 
 18_locservice_TARGET_BIN := $(18_locwatchdog_PROJECT_NAME)$(AREG_BIN_EXT)
 18_locservice_OUTPUT_OBJ := $(18_locwatchdog_OUTPUT_OBJ)/locservice
