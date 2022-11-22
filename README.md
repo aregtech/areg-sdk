@@ -129,7 +129,7 @@ The source codes of AREG framework and examples support following platform, CPU 
   </tr>
   <tr>
     <td nowrap><strong>Compilers</strong></td>
-    <td><i>GCC</i>, <i>g++</i>, <i>clang</i> and <i>MSVC</i>.</td>
+    <td><i>GCC</i>, <i>g++</i>, <i>clang</i>, <i>MSVC</i> and <i>cygwin CC</i>.</td>
   </tr>
 </table>
 
