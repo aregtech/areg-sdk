@@ -37,7 +37,7 @@ DebugOutputLogger::DebugOutputLogger( LogConfiguration & tracerConfig )
 
 bool DebugOutputLogger::openLogger(void)
 {
-#if defined(_OUTPUT_DEBUG)
+#if defined(OUTPUT_DEBUG)
     if ( mIsOpened == false )
     {
         const LogConfiguration & traceConfig = getTraceConfiguration();
@@ -78,14 +78,14 @@ bool DebugOutputLogger::openLogger(void)
             ; // no property was set
         }
     }
-#endif  // !defined(_OUTPUT_DEBUG)
+#endif  // !defined(OUTPUT_DEBUG)
 
     return mIsOpened;
 }
 
 void DebugOutputLogger::closeLogger(void)
 {
-#if defined(_OUTPUT_DEBUG)
+#if defined(OUTPUT_DEBUG)
     if ( mIsOpened )
     {
         Process & curProcess = Process::getInstance();
@@ -109,13 +109,13 @@ void DebugOutputLogger::closeLogger(void)
 
         logMessage(logMsgHello);
     }
-#endif  // !defined(_OUTPUT_DEBUG)
+#endif  // !defined(OUTPUT_DEBUG)
 
     releaseLayouts();
     mIsOpened = false;
 }
 
-#if defined(_OUTPUT_DEBUG)
+#if defined(OUTPUT_DEBUG)
 
 void DebugOutputLogger::logMessage(const NETrace::sLogMessage & logMessage)
 {
@@ -144,13 +144,13 @@ void DebugOutputLogger::logMessage(const NETrace::sLogMessage & logMessage)
     }
 }
 
-#else // !defined(_OUTPUT_DEBUG)
+#else // !defined(OUTPUT_DEBUG)
 
 void DebugOutputLogger::logMessage(const NETrace::sLogMessage & /*logMessage*/)
 {
 }
 
-#endif // !defined(_OUTPUT_DEBUG)
+#endif // !defined(OUTPUT_DEBUG)
 
 
 bool DebugOutputLogger::isLoggerOpened(void) const
@@ -170,25 +170,25 @@ unsigned int DebugOutputLogger::write(const IEByteBuffer & buffer)
 
 unsigned int DebugOutputLogger::write( const String & asciiString )
 {
-#if defined(_OUTPUT_DEBUG)
+#if defined(OUTPUT_DEBUG)
     mOutputMessageA += asciiString;
-#endif  // defined(_OUTPUT_DEBUG)
+#endif  // defined(OUTPUT_DEBUG)
     return asciiString.getSpace();
 }
 
 unsigned int DebugOutputLogger::write( const WideString & wideString )
 {
-#if defined(_OUTPUT_DEBUG)
+#if defined(OUTPUT_DEBUG)
     mOutputMessageA += wideString;
-#endif  // !defined(_OUTPUT_DEBUG)
+#endif  // !defined(OUTPUT_DEBUG)
     return wideString.getSpace();
 }
 
 void DebugOutputLogger::flush(void)
 {
-#if defined(_OUTPUT_DEBUG)
+#if defined(OUTPUT_DEBUG)
     NEDebug::outputMessageOS(mOutputMessageA.getString());
-#endif // !defined(_OUTPUT_DEBUG)
+#endif // !defined(OUTPUT_DEBUG)
 
     mOutputMessageA.clear();
 }

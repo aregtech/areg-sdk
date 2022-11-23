@@ -28,7 +28,6 @@
 									<listOptionValue builtIn="false" value="_POSIX"/>
 									<listOptionValue builtIn="false" value="_DEBUG"/>
 									<listOptionValue builtIn="false" value="_IMPORT_STATIC_SYMBOLS"/>
-									<listOptionValue builtIn="false" value="_OUTPUT_DEBUG_LEVEL=5"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.optimization.level.1290152295" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
 								<option defaultValue="gnu.cpp.compiler.debugging.level.max" id="gnu.cpp.compiler.option.debugging.level.387394869" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" useByScannerDiscovery="false" valueType="enumerated"/>

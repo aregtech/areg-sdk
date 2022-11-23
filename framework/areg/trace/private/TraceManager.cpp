@@ -593,9 +593,9 @@ void TraceManager::traceStartLogs( void )
     {
         setScopesActivity( true );
         mLoggerFile.openLogger();
-#if defined(_OUTPUT_DEBUG)
+#if defined(OUTPUT_DEBUG)
         mLoggerDebug.openLogger();
-#endif // !defined(_OUTPUT_DEBUG)
+#endif // !defined(OUTPUT_DEBUG)
 
         mIsStarted = true;
     }
