@@ -37,11 +37,6 @@
 #define OUTPUT_DEBUG_LEVEL_NONE     0
 #define OUTPUT_DEBUG_LEVEL_ALL      OUTPUT_DEBUG_LEVEL_DEBUG
 
-#ifdef _OUTPUT_DEBUG_LEVEL
-    #undef  OUTPUT_DEBUG_LEVEL
-    #define OUTPUT_DEBUG_LEVEL  _OUTPUT_DEBUG_LEVEL
-#endif //!_OUTPUT_DEBUG_LEVEL
-
 #ifdef DEBUG
     #ifndef OUTPUT_DEBUG_LEVEL
         #define OUTPUT_DEBUG_LEVEL      OUTPUT_DEBUG_LEVEL_NONE
@@ -64,22 +59,18 @@
 #include "areg/base/GEMacros.h"
 
 #ifdef _DEBUG
-    #if ((defined(OUTPUT_DEBUG) && (OUTPUT_DEBUG != 0)) || (defined(_OUTPUT_DEBUG) && (_OUTPUT_DEBUG != 0)))
+    #if (defined(OUTPUT_DEBUG) && (OUTPUT_DEBUG != 0)) 
         
         #undef  OUTPUT_DEBUG
-        #undef _OUTPUT_DEBUG
         #define OUTPUT_DEBUG
-        #define _OUTPUT_DEBUG
 
-    #else // !((defined(OUTPUT_DEBUG) && (OUTPUT_DEBUG != 0)) || (defined(_OUTPUT_DEBUG) && (_OUTPUT_DEBUG != 0)))
+    #else // !(defined(OUTPUT_DEBUG) && (OUTPUT_DEBUG != 0))
 
         #undef  OUTPUT_DEBUG
-        #undef _OUTPUT_DEBUG
     
-    #endif  // !((defined(OUTPUT_DEBUG) && (OUTPUT_DEBUG != 0)) || (defined(_OUTPUT_DEBUG) && (_OUTPUT_DEBUG != 0)))
+    #endif  // !(defined(OUTPUT_DEBUG) && (OUTPUT_DEBUG != 0))
 #else   // _NDEBUG
         #undef  OUTPUT_DEBUG
-        #undef _OUTPUT_DEBUG
 #endif  // _DEBUG
 
 #endif  // AREG_BASE_GEGLOBAL_H

@@ -74,7 +74,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "cmake", "cmake", "{5E95D089-DBB0-467A-BC0A-B00B9297023A}"
 	ProjectSection(SolutionItems) = preProject
 		conf\cmake\common.cmake = conf\cmake\common.cmake
-		conf\cmake\pre-project.cmake = conf\cmake\pre-project.cmake
 		conf\cmake\user.cmake = conf\cmake\user.cmake
 	EndProjectSection
 EndProject
