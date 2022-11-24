@@ -11,6 +11,9 @@
 #include "areg/base/DateTime.hpp"
 #include "chatter/services/DirectMessagingClient.hpp"
 
+#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<unsigned int>(NEDistributedApp::eWndCommands::CmdFirst))
+#define MAKE_MESSAGE(elem)  (static_cast<unsigned int>(elem) + FIRST_MESSAGE)
+
 LPCTSTR PageChat::HEADER_TITILES[] =
 {
       _T( "Nick Name:" )
@@ -72,21 +75,21 @@ void PageChat::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(PageChat, CPropertyPage)
     ON_WM_DESTROY( )
+    ON_WM_TIMER()
     ON_MESSAGE_VOID( WM_KICKIDLE, OnKickIdle )
+    ON_EN_UPDATE(IDC_EDIT_CHAT, &PageChat::OnUpdateEditChat)
+    ON_EN_CHANGE(IDC_CHAT_TIMER, &PageChat::OnEnChangeChatTimer)
     ON_BN_CLICKED( IDC_CHECK_CHAT_MESSAGES, &PageChat::OnClickedCheckChatMessages )
     ON_BN_CLICKED( IDC_CHECK_CHAT_TYPING, &PageChat::OnClickedCheckChatTyping )
-    ON_EN_UPDATE( IDC_EDIT_CHAT, &PageChat::OnUpdateEditChat )
     ON_BN_CLICKED( IDC_BUTTON_CHAT_SEND, &PageChat::OnClickedButtonChatSend )
     ON_BN_CLICKED( IDC_BUTTON_CLOSE_CHAT, &PageChat::OnClickedButtonCloseChat )
+    ON_BN_CLICKED( IDC_CHECK_AUTO, &PageChat::OnBnClickedCheckAuto)
     ON_UPDATE_COMMAND_UI( IDC_BUTTON_CHAT_SEND, &PageChat::OnButtonUpdateChatSend )
     ON_UPDATE_COMMAND_UI( IDC_EDIT_CHAT, &PageChat::OnEditUpdateChat )
-    ON_MESSAGE(NEDistributedApp::CmdChatJoined  , &PageChat::OnCmdChatJoined)
-    ON_MESSAGE(NEDistributedApp::CmdChatMessage , &PageChat::OnCmdChatMessage)
-    ON_MESSAGE(NEDistributedApp::CmdChatTyping  , &PageChat::OnCmdChatTyping)
-    ON_BN_CLICKED(IDC_CHECK_AUTO, &PageChat::OnBnClickedCheckAuto)
-    ON_WM_TIMER()
-    ON_EN_CHANGE(IDC_CHAT_TIMER, &PageChat::OnEnChangeChatTimer)
     ON_NOTIFY(UDN_DELTAPOS, IDC_CHAT_TIMER_SPIN, &PageChat::OnDeltaposChatTimerSpin)
+    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::eWndCommands::CmdChatJoined  ), &PageChat::OnCmdChatJoined)
+    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::eWndCommands::CmdChatMessage ), &PageChat::OnCmdChatMessage)
+    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::eWndCommands::CmdChatTyping  ), &PageChat::OnCmdChatTyping)
 END_MESSAGE_MAP()
 
 
@@ -105,7 +108,7 @@ BOOL PageChat::OnInitDialog( )
     // mCtrlTimerValue.EnableWindow(mDoAutotype);
     // mCtrlTimerSpin.EnableWindow(mDoAutotype);
 
-    SetChatWindow( GetSafeHwnd() );
+    SetChatWindow( reinterpret_cast<ptr_type>(GetSafeHwnd()) );
     setHeaders( );
     srand(static_cast<unsigned int>(time(nullptr)));
 
@@ -212,7 +215,7 @@ void PageChat::OnDestroy( )
     }
 
 
-    SetChatWindow( nullptr );
+    SetChatWindow( 0 );
     SetChatClient( nullptr );
 
     const NEDirectConnection::sInitiator & initiator = GetInitiator();
@@ -234,7 +237,7 @@ void PageChat::OnClickedButtonCloseChat( )
         client->requestChatLeave( GetConnectionOwner( ), DateTime::getNow() );
     }
 
-    SetChatWindow( nullptr );
+    SetChatWindow( 0 );
     SetChatClient( nullptr );
 
     const NEDirectConnection::sInitiator & initiator = GetInitiator();
@@ -243,7 +246,7 @@ void PageChat::OnClickedButtonCloseChat( )
 
     ChatPrticipantHandler::Invalidate();
 
-    ::PostMessage( DistributedDialog::GetDialog()->GetSafeHwnd(), NEDistributedApp::CmdChatClosed, 0, reinterpret_cast<LPARAM>(this));
+    ::PostMessage( DistributedDialog::GetDialog()->GetSafeHwnd(), MAKE_MESSAGE(NEDistributedApp::eWndCommands::CmdChatClosed), 0, reinterpret_cast<LPARAM>(this));
 }
 
 void PageChat::OnKickIdle()

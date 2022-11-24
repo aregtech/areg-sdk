@@ -5,3 +5,6 @@
 
 #include "register/NECentralApp.hpp"
 #include "generated/NECommon.hpp"
+
+#include <windows.h>
+#include <tchar.h>

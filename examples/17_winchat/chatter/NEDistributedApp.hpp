@@ -8,16 +8,13 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/trace/GETrace.h"
 
-#include <windows.h>
-#include <tchar.h>
-
 namespace NEDistributedApp
 {
     const char * const  THREAD_DISTRIBUTED      = "ThreadMessager";
 
-    typedef enum E_WndCommands
+    enum class eWndCommands : unsigned int
     {
-          CmdFirst              = WM_USER + 10
+          CmdFirst              = 0u
 
         , CmdServiceStartup
         , CmdServiceNetwork
@@ -44,7 +41,7 @@ namespace NEDistributedApp
         , CmdChatClosed
 
         , CmdLast
-    } eWndCommands;
+    };
 
     const char * const  PREFIX_TRHEAD       = "thread_";
     const char * const  PREFIX_MODEL        = "model_";

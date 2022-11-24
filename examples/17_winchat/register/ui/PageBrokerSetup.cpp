@@ -14,6 +14,10 @@
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/component/ComponentLoader.hpp"
 
+#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<unsigned int>(NECentralApp::eWndCommands::CmdFirst))
+#define MAKE_MESSAGE(elem)  (static_cast<unsigned int>(elem) + FIRST_MESSAGE)
+
+
 // PageBrokerSetup dialog
 
 IMPLEMENT_DYNAMIC(PageBrokerSetup, CPropertyPage)
@@ -84,7 +88,7 @@ void PageBrokerSetup::OnBnClickedBrokerDisconnect( )
         CPropertySheet * sheet = GetParentSheet();
         if ( sheet != nullptr )
         {
-            ::PostMessage(sheet->m_hWnd, NECentralApp::CmdServiceConnection, static_cast<WPARAM>(false), 0 );
+            ::PostMessage(sheet->m_hWnd, MAKE_MESSAGE(NECentralApp::eWndCommands::CmdServiceConnection), static_cast<WPARAM>(false), 0 );
         }
 
         Application::unloadModel( NECommon::MODEL_NAME_CENTRAL_SERVER );

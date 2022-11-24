@@ -51,11 +51,11 @@ ConnectionServicing::~ConnectionServicing( void )
 void ConnectionServicing::startupComponent( ComponentThread & comThread )
 {
     Component::startupComponent(comThread);
-    DistributedDialog::PostServiceMessage( NEDistributedApp::CmdServiceStartup, 1, reinterpret_cast<LPARAM>(this) );
+    DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdServiceStartup, 1, reinterpret_cast<LPARAM>(this) );
 }
 
 void ConnectionServicing::shutdownComponent( ComponentThread & comThread )
 {
-    DistributedDialog::PostServiceMessage( NEDistributedApp::CmdServiceStartup, 0, 0 );
+    DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdServiceStartup, 0, 0 );
     Component::shutdownComponent(comThread);
 }

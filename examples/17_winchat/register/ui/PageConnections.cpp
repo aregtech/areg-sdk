@@ -14,6 +14,9 @@
 
 // PageConnections
 
+#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<unsigned int>(NECentralApp::eWndCommands::CmdFirst))
+#define MAKE_MESSAGE(elem)  (static_cast<unsigned int>(elem) + FIRST_MESSAGE)
+
 LPCTSTR PageConnections::HEADER_TITILES[] =
 {
       _T( "Nick Name:" )
@@ -94,10 +97,10 @@ BEGIN_MESSAGE_MAP(PageConnections, CPropertyPage)
     ON_UPDATE_COMMAND_UI( IDC_BUTTON_BROADCAST, &PageConnections::OnBtnBroadcastUpdate )
     ON_UPDATE_COMMAND_UI( IDC_EDIT_BROADCAST, &PageConnections::OnEditBroadcastUpdate )
     ON_WM_CREATE( )
-    ON_MESSAGE( NECentralApp::CmdRegistered    , &PageConnections::OnCmdRegistered)
-    ON_MESSAGE( NECentralApp::CmdUnregistered  , &PageConnections::OnCmdUnregistered )
-    ON_MESSAGE( NECentralApp::CmdSendMessage   , &PageConnections::OnCmdSendMessage )
-    ON_MESSAGE( NECentralApp::CmdTypeMessage   , &PageConnections::OnCmdTypeMessage )
+    ON_MESSAGE( MAKE_MESSAGE(NECentralApp::eWndCommands::CmdRegistered  ), &PageConnections::OnCmdRegistered)
+    ON_MESSAGE( MAKE_MESSAGE(NECentralApp::eWndCommands::CmdUnregistered), &PageConnections::OnCmdUnregistered )
+    ON_MESSAGE( MAKE_MESSAGE(NECentralApp::eWndCommands::CmdSendMessage ), &PageConnections::OnCmdSendMessage )
+    ON_MESSAGE( MAKE_MESSAGE(NECentralApp::eWndCommands::CmdTypeMessage ), &PageConnections::OnCmdTypeMessage )
 END_MESSAGE_MAP( )
 
 // PageConnections message handlers

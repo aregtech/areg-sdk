@@ -110,7 +110,9 @@ protected:
 private:
     inline DirectMessagingClient & self( void );
 
-    inline void updateChatOutput( const NEDistributedApp::eWndCommands cmdSend, const NEDirectMessager::sParticipant & participant, const String & msgText, const DateTime & dateStart, const DateTime & dateEnd );
+    inline void updateChatOutput( NEDistributedApp::eWndCommands cmdSend, const NEDirectMessager::sParticipant & participant, const String & msgText, const DateTime & dateStart, const DateTime & dateEnd );
+
+    inline void postMessage(NEDistributedApp::eWndCommands cmdSend, ptr_type wParam, ptr_type lParam);
 
 private:
     ChatPrticipantHandler &   mParticipantsHandler;

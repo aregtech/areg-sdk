@@ -42,7 +42,7 @@ void NetworkSetup::responseConnect( const String & nickName, unsigned int cookie
     mConnectionHandler.SetRegistered( false );
     bool isConnected = result == NEConnectionManager::eConnectionResult::ConnectionAccepted;
     DispatcherThread *dispThread = getDispatcherThread();
-    DistributedDialog::PostServiceMessage( NEDistributedApp::CmdClientConnection, isConnected ? 1 : 0, reinterpret_cast<LPARAM>(dispThread) );
+    DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdClientConnection, isConnected ? 1 : 0, reinterpret_cast<LPARAM>(dispThread) );
 }
 
 bool NetworkSetup::serviceConnected( bool isConnected, ProxyBase & proxy )
@@ -52,9 +52,9 @@ bool NetworkSetup::serviceConnected( bool isConnected, ProxyBase & proxy )
     {
         result = true;
         if ( isConnected )
-            DistributedDialog::PostServiceMessage( NEDistributedApp::CmdServiceNetwork, 1, reinterpret_cast<LPARAM>(getDispatcherThread()) );
+            DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdServiceNetwork, 1, reinterpret_cast<LPARAM>(getDispatcherThread()) );
         else
-            DistributedDialog::PostServiceMessage( NEDistributedApp::CmdServiceNetwork, 0, 0 );
+            DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdServiceNetwork, 0, 0 );
     }
     return result;
 }
