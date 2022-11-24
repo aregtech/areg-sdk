@@ -10,7 +10,6 @@
 
 #include "areg/base/DateTime.hpp"
 #include "areg/base/String.hpp"
-#include <windows.h>
 
 class DirectConnectionService   : public Component
                                 , public DirectConnectionStub
@@ -124,8 +123,8 @@ private:
 private:
     static DirectConnectionService *  mService;
 
-    String        mNickName;
-    uint32_t        mCookie;
+    String      mNickName;
+    uint32_t    mCookie;
 };
 
 inline DirectConnectionService & DirectConnectionService::self( void )

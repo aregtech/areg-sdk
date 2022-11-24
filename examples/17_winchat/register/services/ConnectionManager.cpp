@@ -12,6 +12,9 @@
 #include "areg/component/NERegistry.hpp"
 #include "areg/component/ComponentLoader.hpp"
 
+#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<unsigned int>(NECentralApp::eWndCommands::CmdFirst))
+#define MAKE_MESSAGE(elem)  (static_cast<unsigned int>(elem) + FIRST_MESSAGE)
+
 #define MAKE_HWND(wnd)      reinterpret_cast<HWND>(wnd)
 
 DEF_TRACE_SCOPE( centralapp_ConnectionManager_CreateComponent );
@@ -173,7 +176,7 @@ void ConnectionManager::requestRegisterConnection( const String & nickName, unsi
                         data->timeReceived  = connection.connectedTime;
                         data->message[0]    = static_cast<TCHAR>(NEString::EndOfString);
 
-                        ::PostMessage( hWnd, NECentralApp::CmdRegistered, 0, reinterpret_cast<LPARAM>(data) );
+                        ::PostMessage( hWnd, MAKE_MESSAGE(NECentralApp::eWndCommands::CmdRegistered), 0, reinterpret_cast<LPARAM>(data) );
                     }
                 }
                 else
@@ -228,7 +231,7 @@ void ConnectionManager::requestDisconnect( const String & nickName, unsigned int
                 data->timeReceived  = connection.connectedTime;
                 data->message[0]    = static_cast<TCHAR>(NEString::EndOfString);
 
-                ::PostMessage( hWnd, NECentralApp::CmdUnregistered, 0, reinterpret_cast<LPARAM>(data) );
+                ::PostMessage( hWnd, MAKE_MESSAGE(NECentralApp::eWndCommands::CmdUnregistered), 0, reinterpret_cast<LPARAM>(data) );
             }
         }
         else
@@ -272,7 +275,7 @@ void ConnectionManager::requestSendMessage( const String & nickName, unsigned in
             data->message[0]    = static_cast<TCHAR>(NEString::EndOfString);
             NEString::copyString<TCHAR, char>( data->message, NECentralMessager::MessageMaxLen, newMessage.getString() );
 
-            ::PostMessage( hWnd, NECentralApp::CmdSendMessage, 0, reinterpret_cast<LPARAM>(data) );
+            ::PostMessage( hWnd, MAKE_MESSAGE(NECentralApp::eWndCommands::CmdSendMessage), 0, reinterpret_cast<LPARAM>(data) );
         }
     }
     else
@@ -304,7 +307,7 @@ void ConnectionManager::requestKeyTyping( const String & nickName, unsigned int 
             data->message[0]    = static_cast<TCHAR>(NEString::EndOfString);
             NEString::copyString<TCHAR, char>( data->message, NECentralMessager::MessageMaxLen, newMessage.getString() );
 
-            ::PostMessage( hWnd, NECentralApp::CmdTypeMessage, 0, reinterpret_cast<LPARAM>(data) );
+            ::PostMessage( hWnd, MAKE_MESSAGE(NECentralApp::eWndCommands::CmdTypeMessage), 0, reinterpret_cast<LPARAM>(data) );
         }
     }
     else

@@ -7,6 +7,9 @@
 #include "generated/NECommon.hpp"
 #include "generated/NEDirectConnection.hpp"
 
+#include <windows.h>
+#include <tchar.h>
+
 static inline void _createRoleName( const String & nickName, uint32_t cookie, const char * prefix, String & output )
 {
     if ( (nickName.isEmpty( ) == false) && (cookie != NEDirectConnection::InvalidCookie) )
@@ -32,15 +35,6 @@ String NEDistributedApp::getDirectMessagingRole(const String & nickName, uint32_
     _createRoleName(nickName, cookie, session, isInitiator ? PREFIX_INITIATOR : PREFIX_PARTICIPANT, result);
     return result;
 }
-
-/***
-String NEDistributedApp::getConnectionServiceClientRole( const String & nickName, uint32_t cookie, uint64_t session )
-{
-    String result;
-    _createRoleName( nickName, cookie, session, NEDirectConnection::ServicePrefixClient, result );
-    return result;
-}
-***/
 
 String NEDistributedApp::getDirectConnectionName( const String & nickName, uint32_t cookie, uint64_t session )
 {

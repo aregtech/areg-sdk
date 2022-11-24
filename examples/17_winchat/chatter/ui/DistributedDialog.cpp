@@ -27,6 +27,9 @@
 #define new DEBUG_NEW
 #endif
 
+#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<unsigned int>(NEDistributedApp::eWndCommands::CmdFirst))
+#define MAKE_MESSAGE(elem)  (static_cast<unsigned int>(elem) + FIRST_MESSAGE)
+
 
 // CAboutDlg dialog used for App About
 
@@ -66,7 +69,7 @@ bool DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands cmd, 
     bool result = false;
     DistributedDialog * dlg = DistributedDialog::GetDialog();
     if ( (dlg != nullptr) && (::IsWindow(dlg->GetSafeHwnd()) == TRUE) )
-        result = (::PostMessage( dlg->GetSafeHwnd(), static_cast<UINT>(cmd), wParam, lParam) == TRUE);
+        result = (::PostMessage( dlg->GetSafeHwnd(), MAKE_MESSAGE(cmd), wParam, lParam) == TRUE);
     return result;
 }
 
@@ -108,21 +111,20 @@ BEGIN_MESSAGE_MAP(DistributedDialog, CPropertySheet)
     ON_WM_QUERYDRAGICON()
     ON_COMMAND(IDOK, OnRedirectOK)
 
-    ON_MESSAGE( NEDistributedApp::CmdServiceStartup     , &DistributedDialog::OnCmdServiceStartup )
-    ON_MESSAGE( NEDistributedApp::CmdServiceNetwork     , &DistributedDialog::OnCmdServiceNetwork )
-    ON_MESSAGE( NEDistributedApp::CmdServiceConnection  , &DistributedDialog::OnCmdServiceConnection )
-    ON_MESSAGE( NEDistributedApp::CmdClientConnection   , &DistributedDialog::OnCmdClientConnection )
-    ON_MESSAGE( NEDistributedApp::CmdClientRegistration , &DistributedDialog::OnCmdClientRegistration )
-    ON_MESSAGE( NEDistributedApp::CmdAddConnection      , &DistributedDialog::OnCmdAddConnection )
-    ON_MESSAGE( NEDistributedApp::CmdRemoveConnection   , &DistributedDialog::OnCmdRemoveConnection )
-    ON_MESSAGE( NEDistributedApp::CmdUpdateConnection   , &DistributedDialog::OnCmdUpdateConnection )
-    ON_MESSAGE( NEDistributedApp::CmdDisconnectTriggered, &DistributedDialog::OnCmdDisconnectTriggered)
-    ON_MESSAGE( NEDistributedApp::CmdSendMessage        , &DistributedDialog::OnCmdSendMessage )
-    ON_MESSAGE( NEDistributedApp::CmdTypeMessage        , &DistributedDialog::OnCmdTypeMessage )
+    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::eWndCommands::CmdServiceStartup      ), &DistributedDialog::OnCmdServiceStartup )
+    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::eWndCommands::CmdServiceNetwork      ), &DistributedDialog::OnCmdServiceNetwork )
+    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::eWndCommands::CmdServiceConnection   ), &DistributedDialog::OnCmdServiceConnection )
+    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::eWndCommands::CmdClientConnection    ), &DistributedDialog::OnCmdClientConnection )
+    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::eWndCommands::CmdClientRegistration  ), &DistributedDialog::OnCmdClientRegistration )
+    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::eWndCommands::CmdAddConnection       ), &DistributedDialog::OnCmdAddConnection )
+    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::eWndCommands::CmdRemoveConnection    ), &DistributedDialog::OnCmdRemoveConnection )
+    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::eWndCommands::CmdUpdateConnection    ), &DistributedDialog::OnCmdUpdateConnection )
+    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::eWndCommands::CmdDisconnectTriggered ), &DistributedDialog::OnCmdDisconnectTriggered)
+    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::eWndCommands::CmdSendMessage         ), &DistributedDialog::OnCmdSendMessage )
+    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::eWndCommands::CmdTypeMessage         ), &DistributedDialog::OnCmdTypeMessage )
+    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::eWndCommands::CmdSetDirectConnection ), &DistributedDialog::OnCmdSetDirectConnection )
+    ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::eWndCommands::CmdChatClosed          ), &DistributedDialog::OnCmdChatClosed )
 
-
-    ON_MESSAGE( NEDistributedApp::CmdSetDirectConnection, &DistributedDialog::OnCmdSetDirectConnection )
-    ON_MESSAGE( NEDistributedApp::CmdChatClosed         , &DistributedDialog::OnCmdChatClosed )
 END_MESSAGE_MAP( )
 
 
@@ -464,7 +466,7 @@ bool DistributedDialog::OutputMessage( NEDistributedApp::eWndCommands cmd, void 
         {
             HWND hWnd = static_cast<DistributedDialog *>(mainFrame)->mPageMessaging.GetSafeHwnd();
             if ( ::IsWindow(hWnd) )
-                result = ::PostMessage(hWnd, cmd, reinterpret_cast<WPARAM>(sender), reinterpret_cast<LPARAM>(data)) == TRUE;
+                result = ::PostMessage(hWnd, MAKE_MESSAGE(cmd), reinterpret_cast<WPARAM>(sender), reinterpret_cast<LPARAM>(data)) == TRUE;
         }
         if ( result == false )
             delete data;

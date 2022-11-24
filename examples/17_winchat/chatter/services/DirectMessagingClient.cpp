@@ -8,6 +8,11 @@
 #include "generated/NECommon.hpp"
 #include "areg/trace/GETrace.h"
 
+#include <Windows.h>
+
+#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<unsigned int>(NEDistributedApp::eWndCommands::CmdFirst))
+#define MAKE_MESSAGE(elem)  (static_cast<unsigned int>(elem) + FIRST_MESSAGE)
+
 DEF_TRACE_SCOPE( distrbutedapp_DirectMessagingClient_ServiceConnected );
 DEF_TRACE_SCOPE( distrbutedapp_DirectMessagingClient_responseChatJoin );
 DEF_TRACE_SCOPE( distrbutedapp_DirectMessagingClient_broadcastMessageSent );
@@ -58,45 +63,47 @@ void DirectMessagingClient::responseChatJoin( bool succeed, const NEDirectMessag
 {
     TRACE_SCOPE( distrbutedapp_DirectMessagingClient_responseChatJoin );
 
-    ::PostMessage(mParticipantsHandler.GetChatWindow(), NEDistributedApp::CmdChatJoined, succeed ? 1 : 0, 0);
-    updateChatOutput( NEDistributedApp::CmdChatMessage, mParticipantsHandler.GetConnectionOwner( ), succeed ? "Succeeded join chat..." : "Failed join chat...", timeConnect, timeConnected );
+    postMessage(NEDistributedApp::eWndCommands::CmdChatJoined, succeed ? 1 : 0, 0);
+    updateChatOutput( NEDistributedApp::eWndCommands::CmdChatMessage, mParticipantsHandler.GetConnectionOwner( ), succeed ? "Succeeded join chat..." : "Failed join chat...", timeConnect, timeConnected );
 
     if ( succeed )
     {
-        for (uint32_t i = 0; i < listParticipant.getSize( ); ++ i )
-            updateChatOutput( NEDistributedApp::CmdChatMessage, listParticipant[i], "Is in chat room", DateTime( ), DateTime( ) );
+        for (uint32_t i = 0; i < listParticipant.getSize(); ++i)
+        {
+            updateChatOutput( NEDistributedApp::eWndCommands::CmdChatMessage, listParticipant[i], "Is in chat room", DateTime( ), DateTime( ) );
+        }
     }
 }
 
 void DirectMessagingClient::broadcastMessageSent( const NEDirectMessager::sParticipant & sender, const String & msgText, const DateTime & timeSent )
 {
     TRACE_SCOPE( distrbutedapp_DirectMessagingClient_broadcastMessageSent );
-    updateChatOutput( NEDistributedApp::CmdChatMessage, sender, msgText, timeSent, DateTime::getNow() );
+    updateChatOutput( NEDistributedApp::eWndCommands::CmdChatMessage, sender, msgText, timeSent, DateTime::getNow() );
 }
 
 void DirectMessagingClient::broadcastMessageTyped( const NEDirectMessager::sParticipant & participant, const String & msgText )
 {
     TRACE_SCOPE( distrbutedapp_DirectMessagingClient_broadcastMessageTyped );
-    updateChatOutput( NEDistributedApp::CmdChatTyping, participant, msgText, DateTime( ), DateTime( ) );
+    updateChatOutput( NEDistributedApp::eWndCommands::CmdChatTyping, participant, msgText, DateTime( ), DateTime( ) );
 }
 
 void DirectMessagingClient::broadcastParticipantJoined( const NEDirectMessager::sParticipant & participant, const DateTime & timeJoined )
 {
     TRACE_SCOPE( distrbutedapp_DirectMessagingClient_broadcastParticipantJoined );
     if ( participant != mParticipantsHandler.GetConnectionOwner() )
-        updateChatOutput( NEDistributedApp::CmdChatMessage, participant, String( "Joined chat" ), timeJoined, DateTime::getNow() );
+        updateChatOutput( NEDistributedApp::eWndCommands::CmdChatMessage, participant, String( "Joined chat" ), timeJoined, DateTime::getNow() );
 }
 
 void DirectMessagingClient::broadcastParticipantLeft( const NEDirectMessager::sParticipant & participant, const DateTime & timeLeft )
 {
     TRACE_SCOPE( distrbutedapp_DirectMessagingClient_broadcastParticipantLeft );
-    updateChatOutput( NEDistributedApp::CmdChatMessage, participant, String( "Left chat" ), timeLeft, DateTime::getNow() );
+    updateChatOutput( NEDistributedApp::eWndCommands::CmdChatMessage, participant, String( "Left chat" ), timeLeft, DateTime::getNow() );
 }
 
 void DirectMessagingClient::broadcastChatClosed( void )
 {
     TRACE_SCOPE( distrbutedapp_DirectMessagingClient_broadcastChatClosed );
-    updateChatOutput( NEDistributedApp::CmdChatClosed, NEDirectMessager::sParticipant(), String( "Chat Closed" ), DateTime(), DateTime() );
+    updateChatOutput( NEDistributedApp::eWndCommands::CmdChatClosed, NEDirectMessager::sParticipant(), String( "Chat Closed" ), DateTime(), DateTime() );
 
     notifyOnBroadcastMessageSent( false );
     notifyOnBroadcastMessageTyped( false );
@@ -122,7 +129,14 @@ void DirectMessagingClient::updateChatOutput( const NEDistributedApp::eWndComman
         data->timeReceived  = dateEnd;
         data->dataSave      = participant.cookie;
 
-        HWND hWnd = mParticipantsHandler.GetChatWindow( );
-        ::PostMessage( hWnd, static_cast<UINT>(cmdSend), static_cast<WPARAM>(participant.sessionId), reinterpret_cast<LPARAM>(data) );
+        postMessage(cmdSend, static_cast<ptr_type>(participant.sessionId), reinterpret_cast<ptr_type>(data));
     }
+}
+
+inline void DirectMessagingClient::postMessage(NEDistributedApp::eWndCommands cmdSend, ptr_type wParam, ptr_type lParam)
+{
+    HWND hWnd = reinterpret_cast<HWND>(mParticipantsHandler.GetChatWindow());
+    ASSERT(hWnd != nullptr);
+
+    ::PostMessage(hWnd, MAKE_MESSAGE(cmdSend), static_cast<WPARAM>(wParam), static_cast<LPARAM>(lParam));
 }

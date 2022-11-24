@@ -24,6 +24,9 @@
 #define new DEBUG_NEW
 #endif
 
+#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<unsigned int>(NECentralApp::eWndCommands::CmdFirst))
+#define MAKE_MESSAGE(elem)  (static_cast<unsigned int>(elem) + FIRST_MESSAGE)
+
 
 // CAboutDlg dialog used for App About
 
@@ -94,7 +97,7 @@ bool CentralDialog::StartConnection( const String & ipAddress, unsigned short po
             {
                 message     = _T("Successfully started servicing ...");
                 result = true;
-                ::PostMessage(dlg->GetSafeHwnd(), NECentralApp::CmdServiceConnection, static_cast<WPARAM>(true), 0 );
+                ::PostMessage(dlg->GetSafeHwnd(), MAKE_MESSAGE(NECentralApp::eWndCommands::CmdServiceConnection), static_cast<WPARAM>(true), 0 );
             }
             else
             {
@@ -120,7 +123,7 @@ BEGIN_MESSAGE_MAP(CentralDialog, CPropertySheet)
     ON_WM_QUERYDRAGICON()
     ON_COMMAND(IDOK, OnRedirectOK)
 
-    ON_MESSAGE( NECentralApp::CmdServiceConnection     , &CentralDialog::OnCmdServiceConnection )
+    ON_MESSAGE( MAKE_MESSAGE(NECentralApp::eWndCommands::CmdServiceConnection   ), &CentralDialog::OnCmdServiceConnection )
 END_MESSAGE_MAP()
 
 

@@ -4,6 +4,7 @@
  ************************************************************************/
 
 #include "chatter/services/ChatPrticipantHandler.hpp"
+#include <windows.h>
 
 //////////////////////////////////////////////////////////////////////////
 // ChatPrticipantHandler class implementation
@@ -20,7 +21,7 @@ ChatPrticipantHandler::ChatPrticipantHandler( const String & serviceName
     , mConnectionService( nullptr )
     , mChatClient       ( nullptr )
     , mIsServicing      ( ownerConnection == initiator )
-    , mWndChat          ( nullptr )
+    , mWndChat          ( static_cast<ptr_type>(0) )
     , mLock             ( false )
 {
     ; // do nothing
@@ -127,7 +128,7 @@ void ChatPrticipantHandler::Invalidate( void )
     mConnectionService  = nullptr;
     mChatClient         = nullptr;
     mIsServicing        = false;
-    mWndChat            = nullptr;
+    mWndChat            = static_cast<ptr_type>(0);
 }
 
 int ChatPrticipantHandler::findPosition( const NECommon::sParticipant & participant ) const

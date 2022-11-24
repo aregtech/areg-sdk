@@ -8,8 +8,6 @@
 #include "areg/base/SynchObjects.hpp"
 #include "generated/NECommon.hpp"
 
-#include <windows.h>
-
 //////////////////////////////////////////////////////////////////////////
 // Dependencies
 //////////////////////////////////////////////////////////////////////////
@@ -49,9 +47,9 @@ public:
 
     inline const NECommon::ListParticipants & GetParticipantList( void ) const;
     
-    inline void SetChatWindow( HWND hWnd );
+    inline void SetChatWindow(ptr_type hWnd );
 
-    inline HWND GetChatWindow( void ) const;
+    inline ptr_type GetChatWindow( void ) const;
 
     inline void SetConnectionService( DirectChatService * connectService );
 
@@ -92,15 +90,15 @@ private:
 // member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    String                                mServiceName;
-    NECommon::sParticipant         mOwnerConnection;
-    NECommon::sInitiator           mInitiator;
-    NECommon::ListParticipants     mListParticipants;
-    DirectChatService *                   mConnectionService;
-    DirectMessagingClient *               mChatClient;
-    bool                                    mIsServicing;
-    HWND                                    mWndChat;
-    mutable Mutex                         mLock;
+    String                      mServiceName;
+    NECommon::sParticipant      mOwnerConnection;
+    NECommon::sInitiator        mInitiator;
+    NECommon::ListParticipants  mListParticipants;
+    DirectChatService *         mConnectionService;
+    DirectMessagingClient *     mChatClient;
+    bool                        mIsServicing;
+    ptr_type                    mWndChat;
+    mutable Mutex               mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // forbidden calls
@@ -117,7 +115,7 @@ private:
 
 inline bool ChatPrticipantHandler::IsValid( void ) const
 {
-    return (mWndChat != nullptr) && (mConnectionService != nullptr);
+    return (mWndChat != 0) && (mConnectionService != nullptr);
 }
 
 inline void ChatPrticipantHandler::SetConnectionData( const String & serviceName, const NECommon::sInitiator & initiator, const NECommon::ListParticipants & listParticipants )
@@ -152,13 +150,13 @@ inline const NECommon::ListParticipants & ChatPrticipantHandler::GetParticipantL
     return mListParticipants;
 }
 
-inline void ChatPrticipantHandler::SetChatWindow( HWND hWnd )
+inline void ChatPrticipantHandler::SetChatWindow(ptr_type hWnd )
 {
     Lock lock( mLock );
     mWndChat    = hWnd;
 }
 
-inline HWND ChatPrticipantHandler::GetChatWindow( void ) const
+inline ptr_type ChatPrticipantHandler::GetChatWindow( void ) const
 {
     Lock lock( mLock );
     return mWndChat;

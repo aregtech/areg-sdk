@@ -9,6 +9,8 @@
 #include "chatter/NEDistributedApp.hpp"
 #include "areg/trace/GETrace.h"
 
+#include <windows.h>
+
 DEF_TRACE_SCOPE( distrbutedapp_DirectConnectionService_CreateComponent );
 DEF_TRACE_SCOPE( distrbutedapp_DirectConnectionService_DeleteComponent );
 DEF_TRACE_SCOPE( distrbutedapp_DirectConnectionService_startupServiceInterface );
@@ -153,7 +155,7 @@ void DirectConnectionService::requestConnectoinSetup( const NEDirectConnection::
                 NEDirectConnection::sInitiator      * wParam    = new NEDirectConnection::sInitiator(initiator);
                 NEDirectConnection::ListParticipants * lParam   = new NEDirectConnection::ListParticipants(listParticipants);
 
-                DistributedDialog::PostServiceMessage(NEDistributedApp::CmdSetDirectConnection, reinterpret_cast<WPARAM>(wParam), reinterpret_cast<LPARAM>(lParam) );
+                DistributedDialog::PostServiceMessage(NEDistributedApp::eWndCommands::CmdSetDirectConnection, reinterpret_cast<WPARAM>(wParam), reinterpret_cast<LPARAM>(lParam) );
             }
             else
             {
@@ -203,7 +205,7 @@ void DirectConnectionService::requestAddParticipant( const NEDirectConnection::s
             responseAddParticipant( true, listRegistered );
             NEDirectConnection::sInitiator      * wParam = new NEDirectConnection::sInitiator(initiator);
             NEDirectConnection::ListParticipants* lParam = new NEDirectConnection::ListParticipants(listRegistered);
-            DistributedDialog::PostServiceMessage(NEDistributedApp::CmdDirectConnectionAdd, reinterpret_cast<WPARAM>(wParam), reinterpret_cast<LPARAM>(lParam) );
+            DistributedDialog::PostServiceMessage(NEDistributedApp::eWndCommands::CmdDirectConnectionAdd, reinterpret_cast<WPARAM>(wParam), reinterpret_cast<LPARAM>(lParam) );
         }
         else
         {
@@ -259,7 +261,7 @@ void DirectConnectionService::requestRemoveParticipant( const NEDirectConnection
             responseRemoveParticipant( true, listRegistered );
             NEDirectConnection::sInitiator      * wParam = new NEDirectConnection::sInitiator(initiator);
             NEDirectConnection::ListParticipants* lParam = new NEDirectConnection::ListParticipants(listRegistered);
-            DistributedDialog::PostServiceMessage(NEDistributedApp::CmdDirectConnectionRemove, reinterpret_cast<WPARAM>(wParam), reinterpret_cast<LPARAM>(lParam) );
+            DistributedDialog::PostServiceMessage(NEDistributedApp::eWndCommands::CmdDirectConnectionRemove, reinterpret_cast<WPARAM>(wParam), reinterpret_cast<LPARAM>(lParam) );
         }
         else
         {
@@ -283,5 +285,5 @@ void DirectConnectionService::requestCloseConnection( const NEDirectConnection::
     mapParticipants.removeAt(initiator);
     NEDirectConnection::sInitiator      * wParam = new NEDirectConnection::sInitiator( initiator );
     NEDirectConnection::ListParticipants* lParam = nullptr;
-    DistributedDialog::PostServiceMessage(NEDistributedApp::CmdDirectConnectionClose, reinterpret_cast<WPARAM>(wParam), reinterpret_cast<LPARAM>(lParam) );
+    DistributedDialog::PostServiceMessage(NEDistributedApp::eWndCommands::CmdDirectConnectionClose, reinterpret_cast<WPARAM>(wParam), reinterpret_cast<LPARAM>(lParam) );
 }

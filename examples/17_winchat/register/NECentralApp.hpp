@@ -8,16 +8,13 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/trace/GETrace.h"
 
-#include <windows.h>
-#include <tchar.h>
-
 namespace NECentralApp
 {
     const char * const  THREAD_CENTRAL      = "ThreadCentral";
 
-    typedef enum E_WndCommands
+    enum class eWndCommands : unsigned int
     {
-          CmdFirst              = WM_USER + 10
+          CmdFirst
         , CmdServiceConnection
         , CmdRegistered
         , CmdUnregistered
@@ -25,5 +22,5 @@ namespace NECentralApp
         , CmdTypeMessage
 
         , CmdLast
-    } eWndCommands;
+    } ;
 }

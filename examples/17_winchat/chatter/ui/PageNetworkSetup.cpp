@@ -14,6 +14,9 @@
 #include "areg/appbase/Application.hpp"
 #include "chatter/services/ChatPrticipantHandler.hpp"
 
+#define FIRST_MESSAGE       (WM_USER + 10 + static_cast<unsigned int>(NEDistributedApp::eWndCommands::CmdFirst))
+#define MAKE_MESSAGE(elem)  (static_cast<unsigned int>(elem) + FIRST_MESSAGE)
+
 // PageNetworkSetup dialog
 
 IMPLEMENT_DYNAMIC(PageNetworkSetup, CPropertyPage)
@@ -204,7 +207,7 @@ void PageNetworkSetup::OnClickedBrokerDisconnect()
     if ( mNetworkSetup )
     {
         CWnd * wnd = GetParentSheet();
-        ::SendMessage( wnd->GetSafeHwnd(), NEDistributedApp::CmdDisconnectTriggered, 0, 0);
+        ::SendMessage( wnd->GetSafeHwnd(), MAKE_MESSAGE(NEDistributedApp::eWndCommands::CmdDisconnectTriggered), 0, 0);
         mConnectionHandler.ResetConnectionList();
 
         Application::unloadModel(NECommon::MODEL_NAME_DISTRIBUTED_CLIENT);
