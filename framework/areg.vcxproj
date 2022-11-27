@@ -16,10 +16,9 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="$(SolutionDir)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <PropertyGroup Label="UserMacros" />
-  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
+  <ItemDefinitionGroup>
     <ClCompile>
-      <PreprocessorDefinitions>$(ProjectCommonDefines);_USRDLL;EXP_AREG_DLL=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>$(ProjectCommonDefines);_USRDLL;EXP_AREG_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -33,15 +32,7 @@
     <ClCompile>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>$(ProjectCommonDefines);_USRDLL;EXP_AREG_DLL=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <Link>
-      <SubSystem>Windows</SubSystem>
-    </Link>
-    <PostBuildEvent>
-      <Command Condition="Exists($(ProjectScriptDir))">$(ProjectScriptDir)\areg_post_build.bat $(OutDir) $(ConfigShortName) $(ProjectDir) $(ProjectName) $(ProjectResourceDir) $(UserResourceDir)</Command>
-      <Message Condition="Exists($(ProjectScriptDir))">Copy configuration files into the executable directory</Message>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="areg\appbase\private\Console.cpp" />

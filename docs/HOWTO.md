@@ -1,29 +1,41 @@
 # How To
 ```
 This file is part of AREG SDK
-Copyright (c) 2017-2022, Aregtech
+Copyright (c) 2021-2022, Aregtech
 Contact: info[at]aregtech.com
 Website: https://www.aregtech.com
 ```
 
-This document replies to several howto questions.
+This document replies to several **howto** questions, which are listed in the _Table of content_.
 
-## Table of content
+---
 
-1. [How to use preprocessor directives](#how-to-use-preprocessor-directives).
-2. [How to compile](#how-to-compile).
-    - [POSIX build](#posix-build).
-    - [make](#make).
-    - [Eclipse for C/C++ Developer](#eclipse-for-cc-developer).
-    - [Windows build](#windows-build).
-    - [Other builds](#other-builds).
-3. [How to create a project or integrate in project](#how-to-create-a-project-or-integrate-in-project).
-4. [How to use logging](#how-to-use-logging).
-    - [Enable logging](#enable-logging).
+## Table of content[![](./docs/img/pin.svg)](#table-of-contents)
+
+1. [How to use preprocessor directives](#how-to-use-preprocessor-directives)
+2. [How to compile](#how-to-compile)
+    - [Linux build](#linux-build)
+    - [Windows build](#windows-build)
+    - [CMake build](#cmake-build)
+    - [Make build](#make-build)
+    - [Visual Studio Code build](#visual-studio-code-build)
+    - [Microsoft Visual Studio Build](#microsoft-visual-studio-build)
+    - [Eclipse build](#eclipse-build)
+    - [Other POSIX builds](#other-posix-builds)
+3. [How to debug in IDE](#how-to-debug-in-ide)
+    - [Debug with Visual Studio Code](#debug-with-visual-studio-code)
+    - [Debug with Microsoft Visual Studio](#debug-with-microsoft-visual-studio)
+    - [Debug with Eclipse](#debug-with-eclipse)
+4. [How to create a new project](#how-to-create-a-new-project)
+5. [How to integrate in a project](#how-to-integrate-in-a-project)
+6. [How to use logging](#how-to-use-logging)
+    - [Enable logging](#enable-logging)
     - [Configure logging](#configure-logging)
-5. [How to use multicast router](#how-to-use-multicast-router)
+7. [How to use multicast router](#how-to-use-multicast-router)
 
-## How to use preprocessor directives
+---
+
+## How to use preprocessor directives[![](./img/pin.svg)](#how-to-use-preprocessor-directives)
 
 AREG SDK uses a few preprocessor directives to compile **POSIX** and **Windows** versions of codes. Here is the list:
 | Preprocessor | Description and meaning |
@@ -32,13 +44,34 @@ AREG SDK uses a few preprocessor directives to compile **POSIX** and **Windows**
 | **WINDOWS** | Compile sources with _Win32 API_, details are in [WIN32.md](./WIN32.md). |
 | **DEBUG** | Compile Debug configuration. |
 | **NDEBUG** | Compile Release configuration. |
-| **ENABLE_TRACES** | Enable logging / tracing in sources. |
-| **EXP_AREG_LIB** | Build AREG _static_ library (also can use EXPORT_STATIC_SYMBOLS). |
-| **EXP_AREG_DLL** | Build AREG _shared_ library (also can use EXPORT_SHARED_SYMBOLS). |
-| **IMP_AREG_LIB** | Link with AREG _static_ library (also can use IMPORT_STATIC_SYMBOLS). |
-| **IMP_AREG_DLL** | Link with AREG _shared_ library (also can use IMPORT_SHARED_SYMBOLS). |
+| **EXP_AREG_LIB** | Build AREG framework as a _static_ library (same is **EXPORT_STATIC_SYMBOLS**). |
+| **EXP_AREG_DLL** | Build AREG framework as a _shared_ library (same is **EXPORT_SHARED_SYMBOLS**). |
+| **IMP_AREG_LIB** | Link with _static_ AREG framework library (same is **IMPORT_STATIC_SYMBOLS**). |
+| **IMP_AREG_DLL** | Link with _shared_ AREG framework library (same is **IMPORT_SHARED_SYMBOLS**). |
+| **ENABLE_TRACES** | Enable logging / tracing in the sources. |
 
-A _POSIX_ application usually is compiled with _POSIX, DEBUG (NDEBUG), IMP_AREG_LIB (IMP_AREG_DLL), ENABLE_TRACES_ preprocessor directives.
+The preprocessor directives are either set in `Makefile` or `CMakeList.txt` files, or in the project settings of IDE, or they are automatically set depending on configurations in [user.props](../conf/msvc/user.props), [user.cmake](../conf/cmake/user.cmake) or [user.mk](../conf/make/user.mk) depending on the toolchain that developer is going to use.
+
+Bellow is a quick description of preprocessor directives and settings.
+
+**POSIX and WINDOWS directives**
+
+The _POSIX_ and _WINDOWS_ directives indicate whether the projects are compiled with _POSIX_ or _Win32_ API. In `CMake` and `Make` these directives are automatically set when the compiler is selected. For example, 
+- In `CMake` when set variables `CMAKE_CXX_COMPILER` and `CMAKE_C_COMPILER` in `user.cmake` file, like `set(CMAKE_CXX_COMPILER "gcc")`;
+- In `Make` when set variable `Toolset` in `user.mk` file, like `Toolset := g++`.
+In both this cases the sources are compiled with _POSIX API_. If, for example, set `CMAKE_CXX_COMPILER` to Microsoft Visual C++ compiler, like `set(CMAKE_CXX_COMPILER "cl")`, then the sources will be compiled with _Win32 API_.
+
+**DEBUG and NDEBUG directives**
+
+The _DEBUG_ and _NDEBUG_ directives indicate the build configuration. In `user.cmake` this setting is set by `set(Config "Debug")` and in `user.mk` file it is set by `Config := Debug`.
+ 
+**EXP_AREG_LIB, EXP_AREG_DLL, IMP_AREG_LIB and IMP_AREG_DLL**
+
+This preprocessor directives indicate whether the `areg` library is compiled as _shared_ or _static_ library, and whether the application should be linked with _shared_ or _static_ `areg` library. In `user.cmake` file this setting are set by `set(areg "shared")` and in `user.mk` it is set by `areg := shared`.
+
+**ENABLE_TRACES**
+
+This preprocessor directive is directly set and it indicates whether the sources are compiled with enabled or disabled logs. If logs are enabled, i.e. the sources are compile with `ENABLE_TRACES` option, the sources are contain logs that can be used to log messages. Otherwise, the logs are not included in the builds and application will not log messages.
 
 ## How to compile
 

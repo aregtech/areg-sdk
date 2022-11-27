@@ -9,9 +9,6 @@ set(AREG_EXAMPLES "${AREG_SDK_ROOT}/examples")
 
 include(${CMAKE_CONFIG_DIR}/user.cmake)
 
-set(CMAKE_C_COMPILER "${CToolset}")
-set(CMAKE_CXX_COMPILER "${CppToolset}")
-
 # Project's properties
 set(PROJECT_NAME "AREG-SDK")
 set(PROJECT_VERSION "1.1.0")
