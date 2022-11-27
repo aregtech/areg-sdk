@@ -66,7 +66,7 @@ Since data is generated and collected at the edge of the network (**mist network
 * _Decrease data streaming_, which is a fundamental condition to optimize network communication.
 * _Autonomous, intelligent and self-aware devices_ with services directly in the environment of data origin.
 
-[ [↑ to top ↑](#table-of-contents) ]
+<div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
 ---
 
@@ -81,7 +81,7 @@ The AREG engine forms a fault-tolerant system and does not require process start
 * The service clients automatically receive service availability status notifications.
 * The requests, response and notifications are automatically invoked and run in thread-safe mode.
 
-[ [↑ to top ↑](#table-of-contents) ]
+<div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
 ---
 
@@ -96,7 +96,7 @@ The network communication model of AREG framework is based on _multicast router_
 
 > 💡 The [examples](./examples) of _AREG SDK_ contain multiple projects to demonstrate the features and fault tolerant behavior of AREG communication engine.
 
-[ [↑ to top ↑](#table-of-contents) ]
+<div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
 ---
 
@@ -111,7 +111,7 @@ The network communication model of AREG framework is based on _multicast router_
   * Interactive log viewer.
   * Service testing and Data simulation tool.
 
-[ [↑ to top ↑](#table-of-contents) ]
+<div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
 ---
 
@@ -195,7 +195,7 @@ Depending on IDE or preferences make one of following:
 
 > 💡 Compilation with _Eclipse_ under **Windows** might require to change the Toolchain.
 
-[ [↑ to top ↑](#table-of-contents) ]
+<div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
 ---
 
@@ -229,7 +229,7 @@ scope.my_app.ignore_this_group_* = NOTSET ;        # disable logs of certain sco
 
 The development guidance and step-by-step example to create a simple service-enabled application are described in [DEVELOP](./docs/DEVELOP.md). See [_Hello Service!_](./docs/DEVELOP.md#hello-service) as an example to create service.
 
-[ [↑ to top ↑](#table-of-contents) ]
+<div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
 ---
 
@@ -309,7 +309,7 @@ The software components in applications normally are split into Data, Controller
 
 The same technique of simulating data can be used to create API-driven test automations.
 
-[ [↑ to top ↑](#table-of-contents) ]
+<div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
 ---
 
@@ -317,7 +317,7 @@ The same technique of simulating data can be used to create API-driven test auto
 
 There are various [examples](./examples/) to demonstrate features of the AREG SDK. The examples are listed in the [examples/README.md](./examples/README.md) document.
 
-[ [↑ to top ↑](#table-of-contents) ]
+<div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
 ---
 
@@ -325,7 +325,7 @@ There are various [examples](./examples/) to demonstrate features of the AREG SD
  
 AREG SDK is under free open source [_Apache License Version 2.0_](./LICENSE.txt). However, AREG SDK can be commercially licensed, which includes the commercial support, full rights to create and distribute software without open source license obligations. For commercial license, support or additional information, please visit [Aregtech](https://www.aregtech.com/) website or contact _info[at]aregtech[dot]com_.
 
-[ [↑ to top ↑](#table-of-contents) ]
+<div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
 ---
 
@@ -340,7 +340,7 @@ We look for help and welcome to join the project:
 
 Did we help your project? Have you learned something new? Have we inspired you for new great ideas? Then we ask not to be indifferent and [![star AREG SDK](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=star%20AREG%20SDK)](https://github.com/aregtech/areg-sdk/). This small thank inspires contributors and help us to expand our community. Please also share the project with your network at [![Twitter](https://img.shields.io/twitter/url?label=Twitter&style=social&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk) and other social media platforms.
 
-[ [↑ to top ↑](#table-of-contents) ]
+<div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
 ---
 
