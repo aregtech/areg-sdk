@@ -10,13 +10,16 @@ if(NOT ${CMAKE_SIZEOF_VOID_P} MATCHES "8")
     set(Platform "x86")
 endif()
 
+# The toolset 
+set(Toolset "${CMAKE_CXX_COMPILER_ID}")
+
 # Relative path of the output folder for the builds
-set(ProjBuildPath "build/${CrossCompile}${CppToolset}/${OpSystem}-${Platform}-${Config}")
+set(ProjBuildPath "build/${CrossCompile}${Toolset}/${OpSystem}-${Platform}-${Config}")
 # The absolute path for builds
 set(ProjOutputDir "${AregBuildRoot}/${UserDefOutput}/${ProjBuildPath}")
 
-message(STATUS ">>> Build for ${OpSystem}")
-message(STATUS ">>> Build output ${ProjOutputDir}")
+message(STATUS ">>> Build for \'${CMAKE_SYSTEM_NAME}\' with compiler \'${CMAKE_CXX_COMPILER}\', ID \'${CMAKE_CXX_COMPILER_ID}\'")
+message(STATUS ">>> Build output folder \'${ProjOutputDir}\'")
 
 # The absolute path for generated files
 set(ProjGenDir "${AregBuildRoot}/${UserDefOutput}/generate")
@@ -37,21 +40,12 @@ set(AREG_OUTPUT_OBJ  "${ProjObjDir}")
 set(AREG_OUTPUT_LIB  "${ProjLibDir}")
 set(AREG_OUTPUT_BIN  "${ProjBinDir}")
 set(AREG_INCLUDES    "${ProjIncludes}")
-set(AREG_TOOLCHAIN   "${CrossCompile}${CppToolset}")
+set(AREG_TOOLCHAIN   "${CrossCompile}${Toolset}")
 set(AREG_AR          "${CrossCompile}ar")
 set(AREG_OS          "${OpSystem}")
 set(AREG_DEVELOP_ENV)
 set(AREG_STATIC_LIB)
 set(AREG_EXAMPLES_LDFLAGS)
-
-# if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-#     set(Toolset "clang")
-# elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-#     set(Toolset "g++")
-# elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-#     set(Toolset "MSVC")
-# endif()
-# set(CrossCompile)
 
 if(areg MATCHES "shared")
     set(AREG_BINARY "shared")

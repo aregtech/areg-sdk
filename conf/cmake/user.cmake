@@ -2,10 +2,10 @@
 # Settings
 # ###########################################################################
 
-# Set the compiler toolset here.
-# Set full path if compiler cannot call from command line.
-set(CToolset "gcc")
-set(CppToolset "g++")
+# Set the compiler here. Possible settings: "gcc", "g++", "cl", "clang++-13"
+# Can set compiler full path.
+set(CMAKE_CXX_COMPILER "gcc")
+set(CMAKE_C_COMPILER "gcc")
 
 # Set the AREG library type to compile.
 # Set "static" for static and "shared" for shared library
@@ -40,4 +40,3 @@ set(UserDefLibs)
 
 # Set user specific root folder here
 set(UserDefOutput "product")
-

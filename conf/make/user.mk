@@ -35,14 +35,15 @@ CrossCompile :=
 # Settings
 # ###########################################################################
 
-# taget settings
-# Modify 'areg' to the compile target
-# Example:
+# Target settings. Modify 'areg' to the compile target build
+# This compiles areg framework either as "static" or "shared" library
 # areg   := static 
 areg    := shared
+
 Bitness :=
+
 # Modify the 'Config' to change the Configuration
-# Example:
+# This sets "Release" or "Debug" configuration of builds
 Config := Debug
 # Config := Release
 
@@ -71,7 +72,8 @@ AregBuildRoot   := $(AREG_SDK_ROOT)
 # The user must be able to change the target output folder
 # ###########################################################################
 
-# User can set specific preprocessor directives
+# User can set specific preprocessor define symbols.
+# The 'ENABLE_TRACES' enables logs in the binaries.
 UserDefines     := -DENABLE_TRACES
 
 # User can set specific include paths, must be prefixed with '-I' if used
