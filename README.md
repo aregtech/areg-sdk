@@ -117,6 +117,8 @@ The network communication model of AREG framework is based on _multicast router_
 
 ## Software build[![](./docs/img/pin.svg)](#software-build)
 
+> 💡 Chek the [Wiki page](https://github.com/aregtech/areg-sdk/wiki) of _AREG SDK_ for mode details. We change the content and add more details.
+
 The source codes of AREG framework and examples support following platform, CPU and compilers:
 <table>
   <tr>
@@ -227,7 +229,8 @@ scope.my_app.ignore_this_group_* = NOTSET ;        # disable logs of certain sco
 
 #### Development
 
-The development guidance and step-by-step example to create a simple service-enabled application are described in [DEVELOP](./docs/DEVELOP.md). See [_Hello Service!_](./docs/DEVELOP.md#hello-service) as an example to create service.
+The development guidance and step-by-step example to create a simple service-enabled application are described in [DEVELOP](./docs/DEVELOP.md). See [_Hello Service!_](./docs/DEVELOP.md#hello-service) as an example to create service. More details are in the [Wiki page](https://github.com/aregtech/areg-sdk/wiki) of _AREG SDK_.
+
 
 <div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
