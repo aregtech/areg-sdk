@@ -1,5 +1,5 @@
 /************************************************************************
- * \file        pubsvcmain/src/LocalServiceComponent.cpp
+ * \file        pubservice/src/LocalServiceComponent.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
@@ -9,7 +9,7 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "pubsvcmain/src/LocalServiceComponent.hpp"
+#include "pubservice/src/LocalServiceComponent.hpp"
 
 Component * LocalServiceComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
 {

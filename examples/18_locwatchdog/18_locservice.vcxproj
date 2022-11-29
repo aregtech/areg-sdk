@@ -4,9 +4,9 @@
     <Import Project="$(SolutionDir)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{18CE1C5F-A87D-42E2-B9F8-89FDD6ECE323}</ProjectGuid>
-    <ProjectName>11_locsvcmesh</ProjectName>
-    <RootNamespace>11_locsvcmesh</RootNamespace>
+    <ProjectGuid>{766E4B9C-F428-4289-8975-DC3D22EEDBF6}</ProjectGuid>
+    <ProjectName>18_locservice</ProjectName>
+    <RootNamespace>18_locservice</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -36,19 +36,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="locsvcmesh\src\MainComponent.cpp" />
-    <ClCompile Include="locsvcmesh\src\SecondaryComponent.cpp" />
-    <ClCompile Include="locsvcmesh\src\ServiceClient.cpp" />
-    <ClCompile Include="locsvcmesh\src\ServicingComponent.cpp" />
-    <ClCompile Include="locsvcmesh\src\main.cpp" />
-    <ClCompile Include="locsvcmesh\src\ClientComponent.cpp" />
+    <ClCompile Include="locservice\src\ServiceClient.cpp" />
+    <ClCompile Include="locservice\src\ServicingComponent.cpp" />
+    <ClCompile Include="locservice\src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="locsvcmesh\src\MainComponent.hpp" />
-    <ClInclude Include="locsvcmesh\src\SecondaryComponent.hpp" />
-    <ClInclude Include="locsvcmesh\src\ServiceClient.hpp" />
-    <ClInclude Include="locsvcmesh\src\ServicingComponent.hpp" />
-    <ClInclude Include="locsvcmesh\src\ClientComponent.hpp" />
+    <ClInclude Include="locservice\src\ServiceClient.hpp" />
+    <ClInclude Include="locservice\src\ServicingComponent.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

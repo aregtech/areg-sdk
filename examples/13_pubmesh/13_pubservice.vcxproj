@@ -4,9 +4,9 @@
     <Import Project="$(SolutionDir)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{766E4B9C-F428-4289-8975-DC3D22EEDBF6}</ProjectGuid>
-    <ProjectName>18_locsvcwadog</ProjectName>
-    <RootNamespace>18_locsvcwadog</RootNamespace>
+    <ProjectGuid>{61FF9AD1-F474-4990-9DE5-FA30260B9D39}</ProjectGuid>
+    <ProjectName>13_pubservice</ProjectName>
+    <RootNamespace>13_pubservice</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -36,13 +36,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="locservice\src\ServiceClient.cpp" />
-    <ClCompile Include="locservice\src\ServicingComponent.cpp" />
-    <ClCompile Include="locservice\src\main.cpp" />
+    <ClCompile Include="pubservice\src\LocalServiceComponent.cpp" />
+    <ClCompile Include="pubservice\src\MainServiceComponent.cpp" />
+    <ClCompile Include="pubservice\src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="locservice\src\ServiceClient.hpp" />
-    <ClInclude Include="locservice\src\ServicingComponent.hpp" />
+    <ClInclude Include="pubservice\src\LocalServiceComponent.hpp" />
+    <ClInclude Include="pubservice\src\MainServiceComponent.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

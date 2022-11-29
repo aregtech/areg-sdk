@@ -48,8 +48,8 @@ clients are notifies that the service is disconnected.
 
         3. Project 'pubclient' / 19_pubclient
 
-The application instantiates the remote client to connect to the publicservice
+The application instantiates the remote client to connect to the public service
 running in the thread with watchdog. The client send a message to the public
 service to put thread to the sleep. When service thread is killed and the servicing
 component is deleted, the client receives notification that the service is disconnected.
-When public service is available, the client is notified that service is avaialble.
+When public service is available, the client is notified that service is available.

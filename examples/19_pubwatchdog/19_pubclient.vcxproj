@@ -4,9 +4,9 @@
     <Import Project="$(SolutionDir)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{3A13DBD7-D3CA-4908-8B76-9F8AEB5EC81B}</ProjectGuid>
-    <ProjectName>19_pubservicewdog</ProjectName>
-    <RootNamespace>19_pubservicewdog</RootNamespace>
+    <ProjectGuid>{7ECC4BF9-45A4-4774-869B-239E3B152E05}</ProjectGuid>
+    <ProjectName>19_pubclient</ProjectName>
+    <RootNamespace>19_pubclient</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -36,11 +36,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="pubservice\src\ServicingComponent.cpp" />
-    <ClCompile Include="pubservice\src\main.cpp" />
+    <ClCompile Include="pubclient\src\ServiceClient.cpp" />
+    <ClCompile Include="pubclient\src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pubservice\src\ServicingComponent.hpp" />
+    <ClInclude Include="pubclient\src\ServiceClient.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,5 +1,5 @@
 /************************************************************************
- * \file        pubsvcmain/src/MainServiceComponent.cpp
+ * \file        pubservice/src/MainServiceComponent.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
@@ -10,7 +10,7 @@
  * Include files.
  ************************************************************************/
 
-#include "pubsvcmain/src/MainServiceComponent.hpp"
+#include "pubservice/src/MainServiceComponent.hpp"
 
 const unsigned  int MainServiceComponent::LOCAL_TIMEOUT         = 789;
 

@@ -8,7 +8,7 @@ unset(13_SRC3)
 set(gen_projName 13_generated)
 set(projName1 13_pubclient)
 set(projName2 13_pubservice)
-set(projName3 13_pubmesh)
+set(projName3 13_pubsvcmesh)
 
 set(13_pubmesh_BASE ${AREG_EXAMPLES}/13_pubmesh)
 
@@ -16,7 +16,7 @@ include_directories(${13_pubmesh_BASE})
 
 include(${13_pubmesh_BASE}/generated/CMakeLists.txt)
 include(${13_pubmesh_BASE}/pubclients/CMakeLists.txt)
-include(${13_pubmesh_BASE}/pubsvcmain/CMakeLists.txt)
+include(${13_pubmesh_BASE}/pubservice/CMakeLists.txt)
 include(${13_pubmesh_BASE}/pubsvcmesh/CMakeLists.txt)
 
 add_executable(${projName1} ${13_SRC1})

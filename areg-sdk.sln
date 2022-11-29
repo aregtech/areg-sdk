@@ -201,7 +201,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{FBEE67BE-BFF
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "11_generated", "examples\11_locmesh\11_generated.vcxproj", "{1D3A6135-F0EE-4531-B682-55270B70B699}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "11_locsvcmesh", "examples\11_locmesh\11_locsvcmesh.vcxproj", "{18CE1C5F-A87D-42E2-B9F8-89FDD6ECE323}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "11_locmesh", "examples\11_locmesh\11_locmesh.vcxproj", "{18CE1C5F-A87D-42E2-B9F8-89FDD6ECE323}"
 	ProjectSection(ProjectDependencies) = postProject
 		{1D3A6135-F0EE-4531-B682-55270B70B699} = {1D3A6135-F0EE-4531-B682-55270B70B699}
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
@@ -261,7 +261,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "13_pubsvcmesh", "examples\1
 		{D708316F-7E34-4E09-A782-4021C5500C0D} = {D708316F-7E34-4E09-A782-4021C5500C0D}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "13_pubsvcmain", "examples\13_pubmesh\13_pubsvcmain.vcxproj", "{61FF9AD1-F474-4990-9DE5-FA30260B9D39}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "13_pubservice", "examples\13_pubmesh\13_pubservice.vcxproj", "{61FF9AD1-F474-4990-9DE5-FA30260B9D39}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
 		{D708316F-7E34-4E09-A782-4021C5500C0D} = {D708316F-7E34-4E09-A782-4021C5500C0D}
@@ -383,7 +383,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "18_locwatchdog", "18_locwat
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "18_generated", "examples\18_locwatchdog\18_generated.vcxproj", "{38A88D1E-B86C-48E2-9B9E-68F672388734}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "18_locsvcwadog", "examples\18_locwatchdog\18_locsvcwadog.vcxproj", "{766E4B9C-F428-4289-8975-DC3D22EEDBF6}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "18_locservice", "examples\18_locwatchdog\18_locservice.vcxproj", "{766E4B9C-F428-4289-8975-DC3D22EEDBF6}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
 		{38A88D1E-B86C-48E2-9B9E-68F672388734} = {38A88D1E-B86C-48E2-9B9E-68F672388734}
@@ -396,13 +396,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "19_pubwatchdog", "19_pubwat
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "19_generated", "examples\19_pubwatchdog\19_generated.vcxproj", "{F6570975-AE13-41EB-8465-066A6766C211}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "19_pubclientwdog", "examples\19_pubwatchdog\19_pubclientwdog.vcxproj", "{7ECC4BF9-45A4-4774-869B-239E3B152E05}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "19_pubclient", "examples\19_pubwatchdog\19_pubclient.vcxproj", "{7ECC4BF9-45A4-4774-869B-239E3B152E05}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
 		{F6570975-AE13-41EB-8465-066A6766C211} = {F6570975-AE13-41EB-8465-066A6766C211}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "19_pubservicewdog", "examples\19_pubwatchdog\19_pubservicewdog.vcxproj", "{3A13DBD7-D3CA-4908-8B76-9F8AEB5EC81B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "19_pubservice", "examples\19_pubwatchdog\19_pubservice.vcxproj", "{3A13DBD7-D3CA-4908-8B76-9F8AEB5EC81B}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
 		{F6570975-AE13-41EB-8465-066A6766C211} = {F6570975-AE13-41EB-8465-066A6766C211}
@@ -421,13 +421,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "twothreads", "twothreads", 
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "20_generated", "examples\20_pubdatarate\20_generated.vcxproj", "{B8900569-8956-47AF-A2E7-50EB1DD788DD}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "20_pubclientdatarate", "examples\20_pubdatarate\20_pubclientdatarate.vcxproj", "{70307B6F-61D5-4015-8578-E0E3549B7AB9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "20_pubclient", "examples\20_pubdatarate\20_pubclient.vcxproj", "{70307B6F-61D5-4015-8578-E0E3549B7AB9}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
 		{B8900569-8956-47AF-A2E7-50EB1DD788DD} = {B8900569-8956-47AF-A2E7-50EB1DD788DD}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "20_pubsvcdatarate", "examples\20_pubdatarate\20_pubsvcdatarate.vcxproj", "{2F18E4B1-966E-4A8D-B91E-8F216186A6E3}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "20_pubservice", "examples\20_pubdatarate\20_pubservice.vcxproj", "{2F18E4B1-966E-4A8D-B91E-8F216186A6E3}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
 		{B8900569-8956-47AF-A2E7-50EB1DD788DD} = {B8900569-8956-47AF-A2E7-50EB1DD788DD}

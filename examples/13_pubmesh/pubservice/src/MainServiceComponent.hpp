@@ -1,7 +1,7 @@
 #pragma once
 
 /************************************************************************
- * \file        pubsvcmain/src/MainServiceComponent.hpp
+ * \file        pubservice/src/MainServiceComponent.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.

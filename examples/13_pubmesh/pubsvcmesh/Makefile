@@ -1,6 +1,6 @@
 # example project 13_pubmesh -> 13_pubsvcmesh
 
-13_pubsvcmesh_PROJECT_NAME := 13_pubmesh
+13_pubsvcmesh_PROJECT_NAME := 13_pubsvcmesh
 
 13_pubsvcmesh_BASE := $(13_pubmesh_BASE)/pubsvcmesh
 

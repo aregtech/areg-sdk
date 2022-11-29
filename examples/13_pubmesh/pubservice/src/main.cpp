@@ -16,8 +16,8 @@
 #include "areg/trace/GETrace.h"
 
 #include "generated/src/NECommon.hpp"
-#include "pubsvcmain/src/MainServiceComponent.hpp"
-#include "pubsvcmain/src/LocalServiceComponent.hpp"
+#include "pubservice/src/MainServiceComponent.hpp"
+#include "pubservice/src/LocalServiceComponent.hpp"
 
 #ifdef WINDOWS
     #pragma comment(lib, "areg.lib")
@@ -61,7 +61,7 @@ END_MODEL(NECommon::ModelName)
 //////////////////////////////////////////////////////////////////////////
 // main method.
 //////////////////////////////////////////////////////////////////////////
-DEF_TRACE_SCOPE(example_13_pubsvcmain_main_main);
+DEF_TRACE_SCOPE(example_13_pubservice_main_main);
 /**
  * \brief   The main method enables logging, service manager and timer.
  *          it loads and unloads the services, releases application.
@@ -76,7 +76,7 @@ int main()
 
     do 
     {
-        TRACE_SCOPE(example_13_pubsvcmain_main_main);
+        TRACE_SCOPE(example_13_pubservice_main_main);
         TRACE_DBG("The application has been initialized, loading model [ %s ]", NECommon::ModelName);
 
         NEMemory::uAlign isMain = {true};

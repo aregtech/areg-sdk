@@ -7,9 +7,9 @@
 # 'generated' have to be first
 include $(13_pubmesh_BASE)/generated/Makefile
 include $(13_pubmesh_BASE)/pubclients/Makefile
-include $(13_pubmesh_BASE)/pubsvcmain/Makefile
+include $(13_pubmesh_BASE)/pubservice/Makefile
 include $(13_pubmesh_BASE)/pubsvcmesh/Makefile
 
-13_pubmesh: $(AREG_OUTPUT_BIN)/$(13_pubclients_TARGET_BIN) $(AREG_OUTPUT_BIN)/$(13_pubsvcmain_TARGET_BIN) $(AREG_OUTPUT_BIN)/$(13_pubsvcmesh_TARGET_BIN)
+13_pubmesh: $(AREG_OUTPUT_BIN)/$(13_pubclients_TARGET_BIN) $(AREG_OUTPUT_BIN)/$(13_pubservice_TARGET_BIN) $(AREG_OUTPUT_BIN)/$(13_pubsvcmesh_TARGET_BIN)
 
 .PHONY: 13_pubmesh

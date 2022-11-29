@@ -16,9 +16,9 @@
 #include "areg/appbase/Application.hpp"
 #include <stdlib.h>
 
-DEF_TRACE_SCOPE(examples_19_pubservicewdog_ServicingComponent_startupServiceInterface);
-DEF_TRACE_SCOPE(examples_19_pubservicewdog_ServicingComponent_requestStartSleep);
-DEF_TRACE_SCOPE( examples_19_pubservicewdog_ServicingComponent_requestStopService );
+DEF_TRACE_SCOPE(examples_19_pubservice_ServicingComponent_startupServiceInterface);
+DEF_TRACE_SCOPE(examples_19_pubservice_ServicingComponent_requestStartSleep);
+DEF_TRACE_SCOPE(examples_19_pubservice_ServicingComponent_requestStopService);
 
 Component * ServicingComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
 {
@@ -38,7 +38,7 @@ ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry,
 
 void ServicingComponent::startupServiceInterface( Component & holder )
 {
-    TRACE_SCOPE(examples_19_pubservicewdog_ServicingComponent_startupServiceInterface);
+    TRACE_SCOPE(examples_19_pubservice_ServicingComponent_startupServiceInterface);
     printf("-------------------------------------\n");
     printf("Start service [ %s ] with role [ %s ]\n", HelloWatchdogStub::getServiceName().getString(), getRoleName().getString());
 
@@ -48,7 +48,7 @@ void ServicingComponent::startupServiceInterface( Component & holder )
 
 void ServicingComponent::requestStartSleep( unsigned int timeoutSleep )
 {
-    TRACE_SCOPE(examples_19_pubservicewdog_ServicingComponent_requestStartSleep);
+    TRACE_SCOPE(examples_19_pubservice_ServicingComponent_requestStartSleep);
 
     TRACE_DBG("Received request to sleep [ %u ] ms, the watchdog timeout is [ %u ]", timeoutSleep, NEHelloWatchdog::TimeoutWatchdog);
 
@@ -68,7 +68,7 @@ void ServicingComponent::requestStartSleep( unsigned int timeoutSleep )
 
 void ServicingComponent::requestStopService( void )
 {
-    TRACE_SCOPE( examples_19_pubservicewdog_ServicingComponent_requestStopService );
+    TRACE_SCOPE( examples_19_pubservice_ServicingComponent_requestStopService );
     TRACE_DBG("Received request to stop service");
     printf("Requested to stop the service.\n");
     setServiceState( NEHelloWatchdog::eState::Stopped );
@@ -76,7 +76,7 @@ void ServicingComponent::requestStopService( void )
 
 void ServicingComponent::requestShutdownService( void )
 {
-    TRACE_SCOPE( examples_19_pubservicewdog_ServicingComponent_requestStopService );
+    TRACE_SCOPE( examples_19_pubservice_ServicingComponent_requestStopService );
     TRACE_DBG("Shutdown the service");
     printf( "Shutdown the service and quit application.\n" );
     setServiceState( NEHelloWatchdog::eState::Stopped );

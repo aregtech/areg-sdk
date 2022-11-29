@@ -41,7 +41,7 @@ When the application starts, use one of commands:
 -- "sart" to start the run of FSM (as traffic light controller).
 -- "stop" to stop the run of FSM (as traffic light controller).
 -- "off" to imitate power OFF.
-- "quit" or "q", to exit applications. This also closes all clients.
+-- "quit" or "q", to exit applications. This also closes all clients.
 
 
 ////////////////////////////////////////////////////////////////////////

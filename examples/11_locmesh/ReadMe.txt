@@ -8,7 +8,7 @@ instance must have a unique name and be instantiated in different threads.
 
 The project consist of 2 sub-projects:
     1. generated  (11_generated)    -- generated code.
-    2. locservice (11_locmesh)      -- The mixture of services and clients.
+    2. locsvcmesh (11_locmesh)      -- The mixture of services and clients.
 
 ////////////////////////////////////////////////////////////////////////
 

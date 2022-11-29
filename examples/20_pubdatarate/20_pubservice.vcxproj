@@ -4,9 +4,9 @@
     <Import Project="$(SolutionDir)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{61FF9AD1-F474-4990-9DE5-FA30260B9D39}</ProjectGuid>
-    <ProjectName>13_pubsvcmain</ProjectName>
-    <RootNamespace>13_pubsvcmain</RootNamespace>
+    <ProjectGuid>{2F18E4B1-966E-4A8D-B91E-8F216186A6E3}</ProjectGuid>
+    <ProjectName>20_pubservice</ProjectName>
+    <RootNamespace>20_pubservice</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -36,13 +36,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="pubsvcmain\src\LocalServiceComponent.cpp" />
-    <ClCompile Include="pubsvcmain\src\MainServiceComponent.cpp" />
-    <ClCompile Include="pubsvcmain\src\main.cpp" />
+    <ClCompile Include="pubservice\src\NEUtilities.cpp" />
+    <ClCompile Include="pubservice\src\ServicingComponent.cpp" />
+    <ClCompile Include="pubservice\src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pubsvcmain\src\LocalServiceComponent.hpp" />
-    <ClInclude Include="pubsvcmain\src\MainServiceComponent.hpp" />
+    <ClInclude Include="common\NELargeData.hpp" />
+    <ClInclude Include="common\SimpleBitmap.hpp" />
+    <ClInclude Include="pubservice\src\NEUtilities.hpp" />
+    <ClInclude Include="pubservice\src\ServicingComponent.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
