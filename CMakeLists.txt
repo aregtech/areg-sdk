@@ -25,3 +25,8 @@ include(${AREG_BASE}/CMakeLists.txt)
 if(BUILD_EXAMPLES)
     include(${AREG_EXAMPLES}/CMakeLists.txt)
 endif()
+
+# copying log and router init files to 'bin/config'
+file(MAKE_DIRECTORY ${AREG_OUTPUT_BIN}/config)
+file(COPY ${AREG_BASE}/areg/resources/log.init DESTINATION ${AREG_OUTPUT_BIN}/config)
+file(COPY ${AREG_BASE}/areg/resources/router.init DESTINATION ${AREG_OUTPUT_BIN}/config)

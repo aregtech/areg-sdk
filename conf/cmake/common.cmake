@@ -10,7 +10,7 @@ if(NOT ${CMAKE_SIZEOF_VOID_P} MATCHES "8")
     set(Platform "x86")
 endif()
 
-# The toolset 
+# The toolset
 set(Toolset "${CMAKE_CXX_COMPILER_ID}")
 
 # Relative path of the output folder for the builds
