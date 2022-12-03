@@ -591,17 +591,4 @@ bool SynchLockAndWaitIX::_requestOwnership( const NESynchTypesIX::eSynchObjectFi
     return result;
 }
 
-bool SynchLockAndWaitIX::_notifyAsynchSignal( void )
-{
-    SynchResourceMapIX & mapResource = SynchLockAndWaitIX::_theSynchResourceMapIX;
-    mapResource.lock( );
-
-    mFiredEntry = NESynchTypesIX::SynchAsynchSignal;
-    bool result = _notifyEvent();
-
-    mapResource.unlock( );
-
-    return result;
-}
-
 #endif // defined(_POSIX) || defined(POSIX)

@@ -56,7 +56,7 @@ void Process::_osInitilize( void )
 }
 
 
-String Process::getSafeEnvVariable( const char* var ) const
+String Process::_osGetEnvVariable( const char* var ) const
 {
     return String(var != nullptr ? ::getenv(var) : String::EmptyString);
 }

@@ -267,7 +267,7 @@ public:
      *          If newPriority is Timer::UndefinedPriority, makes not changes and returns current priority level.
      *          If thread is not valid, returns Timer::UndefinedPriority.
      **/
-    Thread::eThreadPriority setPriority( Thread::eThreadPriority newPriority );
+    inline Thread::eThreadPriority setPriority( Thread::eThreadPriority newPriority );
 
     /**
      * \brief   Returns thread current priority level. By default, thread is created with Normal priority level
@@ -279,7 +279,7 @@ public:
      *              - Thread::PriorityHigh    -- Priority above Normal and below Highest
      *              - Thread::PriorityNighest -- The Highest thread priority
      **/
-    Thread::eThreadPriority getPriority( void ) const;
+    inline Thread::eThreadPriority getPriority( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // static operations
@@ -333,36 +333,36 @@ public:
      *          It continues execution when time is expired.
      * \param   msTimeout   Timeout in milliseconds to put thread in sleep mode.
      **/
-    static void sleep( unsigned int msTimeout );
+    inline static void sleep( unsigned int msTimeout );
 
     /**
      * \brief   Switches thread processing time.
      *          It does not put thread in sleep, but let other thread take processing time.
      **/
-    static void switchThread( void );
+    inline static void switchThread( void );
 
     /**
      * \brief   Return the ID of current thread.
      **/
-    static id_type getCurrentThreadId( void );
+    inline static id_type getCurrentThreadId( void );
 
     /**
      * \brief   Returns the thread object of current thread.
      *          The current thread must be registered in the resource map.
      **/
-    static inline Thread * getCurrentThread( void );
+    inline static Thread * getCurrentThread( void );
 
     /**
      * \brief   Returns the name of current thread.
      *          If Thread is not registered, returns empty string.
      **/
-    static inline const String & getCurrentThreadName( void );
+    inline static const String & getCurrentThreadName( void );
 
     /**
      * \brief   Returns the address of current thread.
      *          If Thread is not registered, returns invalid address.
      **/
-    static inline const ThreadAddress & getCurrentThreadAddress( void );
+    inline static const ThreadAddress & getCurrentThreadAddress( void );
 
     /**
      * \brief   Returns the current Thread Consumer, saved in local storage.
@@ -482,15 +482,18 @@ protected:
 // Private / Hidden types, variables and methods
 //////////////////////////////////////////////////////////////////////////
 private:
+
+    /**
+     * \brief   Thread starting point.
+     * \param   data    Pointer to thread class.
+     * \return  Thread exit code. If succeed, returns 0.
+     **/
+    static unsigned long _defaultThreadFunction( void * data );
+
     /**
      * \brief   Cleans data of Thread object, i.e. reset running flag, invalidates thread info.
      **/
     void _cleanResources( void );
-
-    /**
-     * \brief   Creates and Registers Thread. Returns true if succeed
-     **/
-    bool _createSystemThread( void );
 
     /**
      * \brief   Registers Thread. Returns true if succeed
@@ -518,37 +521,6 @@ private:
      * \return  Returns true if thread data is valid.
      **/
     inline bool _isValidNoLock( void ) const;
-
-    /**
-     * \brief   POSIX specific thread routine.
-     *          This calls _defaultThreadFunction.
-     * \param   data    Pointer to the thread object.
-     * \return  Returns nullptr.
-     **/
-    static void * _posixThreadRoutine( void * data);
-
-    /**
-     * \brief   Windows specific thread routine.
-     *          This calls _defaultThreadFunction.
-     * \param   data    Pointer to the thread object.
-     * \return  Returns thread exit code.
-     **/
-    static unsigned long _windowsThreadRoutine( void * data );
-
-    /**
-     * \brief   Thread starting point.
-     * \param   data    Pointer to thread class.
-     * \return  Thread exit code. If succeed, returns 0.
-     **/
-    static unsigned long _defaultThreadFunction( void* data );
-
-    /**
-     * \brief	Sets name to new created name. Might be useful during debugging.
-     * \param	threadId	The unique ID of thread to set name
-     * \param	threadName	The name to set.
-     * \return	
-     **/
-    static void _setThreadName( id_type threadId, const char* threadName);
 
     /**
      * \brief   Creates new, returns current or deletes existing Local Thread Storage
@@ -584,11 +556,68 @@ private:
      **/
     inline static THREADHANDLE _findThreadHandleById( id_type threadId);
 
+//////////////////////////////////////////////////////////////////////////
+// OS specific hidden calls
+//////////////////////////////////////////////////////////////////////////
+private:
+
+    /**
+     * \brief   POSIX specific thread routine.
+     *          This calls _defaultThreadFunction.
+     * \param   data    Pointer to the thread object.
+     * \return  Returns nullptr.
+     **/
+    static void * _posixThreadRoutine( void * data );
+
+    /**
+     * \brief   Windows specific thread routine.
+     *          This calls _defaultThreadFunction.
+     * \param   data    Pointer to the thread object.
+     * \return  Returns thread exit code.
+     **/
+    static unsigned long _windowsThreadRoutine( void * data );
+
+    /**
+     * \brief	Sets name to new created name. Might be useful during debugging.
+     * \param	threadId	The unique ID of thread to set name
+     * \param	threadName	The name to set.
+     * \return
+     **/
+    static void _osSetThreadName( id_type threadId, const char * threadName );
+
     /**
      * \brief   System depended call. Closes the handle object of thread.
      *          Makes thread  data invalid.
      **/
-    static void _closeHandle( THREADHANDLE handle );
+    static void _osCloseHandle( THREADHANDLE handle );
+
+    /**
+     * \brief   Puts the thread in a sleeping mode for specified duration in milliseconds.
+     **/
+    static void _osSleep( unsigned int timeout );
+
+    /**
+     * \brief   OS specific implementation of getting the ID of current thread.
+     **/
+    static id_type _osGetCurrentThreadId( void );
+
+    /**
+     * \brief   OS specific implementation to create and registers thread. Returns true if succeed.
+     **/
+    bool _osCreateSystemThread( void );
+
+    /**
+     * \brief   OS specific implementation of deleting thread. The passed waiting timeout in
+     *          milliseconds specifies how long should the caller wait for thread to complete.
+     *          If timer expires and thread did not complete, it kills / cancels the thread.
+     **/
+    Thread::eCompletionStatus _osDestroyThread( unsigned int waitForStopMs );
+
+    /**
+     * \brief   OS specific implementation to set thread new priority.
+     *          returns the previos priority of the thread.
+     **/
+    Thread::eThreadPriority _osSetPriority( eThreadPriority newPriority );
 
 private:
 /************************************************************************/
@@ -722,17 +751,43 @@ inline void Thread::_setRunning( bool isRunning )
 
 inline Thread * Thread::getCurrentThread( void )
 {
-    return Thread::findThreadById(Thread::getCurrentThreadId());
+    return Thread::findThreadById(Thread::_osGetCurrentThreadId());
 }
 
 inline const String & Thread::getCurrentThreadName( void )
 {
-    return Thread::getThreadName( Thread::getCurrentThreadId() );
+    return Thread::getThreadName( Thread::_osGetCurrentThreadId() );
 }
 
 inline const ThreadAddress & Thread::getCurrentThreadAddress( void )
 {
-    return Thread::getThreadAddress( Thread::getCurrentThreadId() );
+    return Thread::getThreadAddress( Thread::_osGetCurrentThreadId() );
+}
+
+inline Thread::eThreadPriority Thread::getPriority( void ) const
+{
+    Lock  lock( mSynchObject );
+    return (isValid( ) ? mThreadPriority : Thread::eThreadPriority::PriorityUndefined);
+}
+
+inline void Thread::sleep( unsigned int ms )
+{
+    _osSleep( ms );
+}
+
+inline void Thread::switchThread( void )
+{
+    Thread::_osSleep( NECommon::WAIT_SWITCH );
+}
+
+inline id_type Thread::getCurrentThreadId( void )
+{
+    return _osGetCurrentThreadId( );
+}
+
+inline Thread::eThreadPriority Thread::setPriority( eThreadPriority newPriority )
+{
+    return _osSetPriority( newPriority );
 }
 
 inline const char * Thread::getString( Thread::eThreadPriority threadPriority )

@@ -56,6 +56,7 @@ DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_servicePause);
 DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceContinue);
 DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceInstall);
 DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceUninstall);
+DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_setState);
 
 //////////////////////////////////////////////////////////////////////////
 // MulticastRouter class implementation
@@ -78,7 +79,7 @@ MulticastRouter::MulticastRouter( void )
 
 MulticastRouter::~MulticastRouter( void )
 {
-    _freeResources( );
+    _osFreeResources( );
 }
 
 bool MulticastRouter::parseOptions(int argc, char** argv)
@@ -151,7 +152,7 @@ void MulticastRouter::serviceMain( int argc, char ** argv )
             TRACE_DBG("... Command argument [ %d ]: [ %s ]", i, argv[i]);
 #endif  // DEBUG
 
-        if ( _registerService() || (mServiceCmd == NEMulticastRouterSettings::eServiceCommand::CMD_Console) )
+        if ( _osRegisterService() || (mServiceCmd == NEMulticastRouterSettings::eServiceCommand::CMD_Console) )
         {
             TRACE_DBG("Starting service");
             serviceStart();
@@ -258,24 +259,32 @@ bool MulticastRouter::serviceInstall(void)
 {
     TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceInstall);
     
-    if ( _openService() == false )
+    if ( _osOpenService() == false )
     {
-        _createService();
+        _osCcreateService();
     }
 
-    return _isValid();
+    return _osIsValid();
 }
 
 void MulticastRouter::serviceUninstall(void)
 {
     TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceUninstall);
 
-    if ( _openService() )
+    if ( _osOpenService() )
     {
-        _deleteService();
+        _osDeleteService();
     }
 
-    _freeResources();
+    _osFreeResources();
+}
+
+bool MulticastRouter::setState( NEMulticastRouterSettings::eRouterState newState )
+{
+    TRACE_SCOPE( mcrouter_app_MulticastRouter_setState );
+    TRACE_DBG( "Changing Service Router state. Old state [ %s ], new state [ %s ]", NEMulticastRouterSettings::GetString( mRouterState ), NEMulticastRouterSettings::GetString( newState ) );
+
+    return _osSetState( newState );
 }
 
 bool MulticastRouter::_checkCommand(const String& cmd)

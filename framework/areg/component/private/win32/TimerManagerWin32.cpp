@@ -29,14 +29,32 @@
 //  Windows OS specific methods
 //////////////////////////////////////////////////////////////////////////
 
-void TimerManager::_systemTimerStop( TIMERHANDLE timerHandle )
+/**
+ * \brief   Windows OS timer routine function. Triggered, when one of timer is expired.
+ * \param   argPtr      The pointer of argument passed to timer expired callback function
+ * \param   lowValue    The low value of timer expiration
+ * \param   highValue   The high value of timer expiration.
+ **/
+void TimerManager::_windowsTimerExpiredRoutine( void * argPtr, unsigned long lowValue, unsigned long highValue )
+{
+    TimerManager & timerManager = TimerManager::getInstance( );
+    ASSERT( argPtr != nullptr );
+    TIMERHANDLE handle = reinterpret_cast<void *>(argPtr);
+    Timer * timer = timerManager.mTimerResource.findResourceObject( handle );
+    if ( timer != nullptr )
+    {
+        timerManager._processExpiredTimer( timer, handle, highValue, lowValue );
+    }
+}
+
+void TimerManager::_osSsystemTimerStop( TIMERHANDLE timerHandle )
 {
 
     ASSERT( timerHandle != nullptr );
     ::CancelWaitableTimer( static_cast<HANDLE>(timerHandle) );
 }
 
-bool TimerManager::_systemTimerStart( Timer & timer )
+bool TimerManager::_osSystemTimerStart( Timer & timer )
 {
     bool result = false;
 
@@ -56,7 +74,7 @@ bool TimerManager::_systemTimerStart( Timer & timer )
     if ( ::SetWaitableTimer( timer.getHandle()
                            , &timeTrigger
                            , period
-                           , reinterpret_cast<PTIMERAPCROUTINE>(&TimerManager::_defaultWindowsTimerExpiredRoutine)
+                           , reinterpret_cast<PTIMERAPCROUTINE>(&TimerManager::_windowsTimerExpiredRoutine)
                            , static_cast<void *>(timer.getHandle()), FALSE ) == FALSE )
     {
         OUTPUT_ERR( "System Failed to start timer in period [ %d ] ms, timer name [ %s ]. System Error [ %p ]"
@@ -70,24 +88,6 @@ bool TimerManager::_systemTimerStart( Timer & timer )
     }
 
     return result;
-}
-
-/**
- * \brief   Windows OS timer routine function. Triggered, when one of timer is expired.
- * \param   argPtr      The pointer of argument passed to timer expired callback function
- * \param   lowValue    The low value of timer expiration
- * \param   highValue   The high value of timer expiration.
- **/
-void TimerManager::_defaultWindowsTimerExpiredRoutine( void * argPtr, unsigned long lowValue, unsigned long highValue )
-{
-    TimerManager& timerManager = TimerManager::getInstance();
-    ASSERT(argPtr != nullptr);
-    TIMERHANDLE handle = reinterpret_cast<void*>(argPtr);
-    Timer* timer = timerManager.mTimerResource.findResourceObject(handle);
-    if (timer != nullptr)
-    {
-        timerManager._processExpiredTimer(timer, handle, highValue, lowValue);
-    }
 }
 
 #endif // _WINDOWS

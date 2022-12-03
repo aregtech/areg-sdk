@@ -23,15 +23,13 @@
 #include "areg/base/NEString.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/appbase/NEApplication.hpp"
-#include "areg/trace/GETrace.h"
 
-DEF_TRACE_SCOPE(mcrouter_app_MulticastRouterPosix_setState);
 
 //////////////////////////////////////////////////////////////////////////
 // Global functions, Begin
 //////////////////////////////////////////////////////////////////////////
 
-void GServiceMain( int argc, char ** argv );
+void _posixServiceMain( int argc, char ** argv );
 
 int main(int argc, char* argv[], char* envp[])
 {
@@ -54,7 +52,7 @@ int main(int argc, char* argv[], char* envp[])
         break;
 
     case NEMulticastRouterSettings::eServiceCommand::CMD_Console:
-        ::GServiceMain(argc, argv);
+        ::_posixServiceMain(argc, argv);
         router.serviceStop();
         break;
 
@@ -70,7 +68,7 @@ int main(int argc, char* argv[], char* envp[])
     return result;
 }
 
-void GServiceMain( int argc, char ** argv )
+void _posixServiceMain( int argc, char ** argv )
 {
     MulticastRouter & router = MulticastRouter::getInstance();
     router.setState(NEMulticastRouterSettings::eRouterState::RouterStarting);
@@ -85,45 +83,40 @@ void GServiceMain( int argc, char ** argv )
 //////////////////////////////////////////////////////////////////////////
 // MulticastRouter class implementation
 //////////////////////////////////////////////////////////////////////////
-bool MulticastRouter::_isValid( void ) const
+bool MulticastRouter::_osIsValid( void ) const
 {
     return true;
 }
 
-bool MulticastRouter::_registerService( void )
+bool MulticastRouter::_osRegisterService( void )
 {
     return false;
 }
 
 
-void MulticastRouter::_freeResources( void )
+void MulticastRouter::_osFreeResources( void )
 {
     mSvcHandle = nullptr;
     mSeMHandle = nullptr;
 }
 
-bool MulticastRouter::_openService(void)
+bool MulticastRouter::_osOpenService(void)
 {
     return true;
 }
 
-bool MulticastRouter::_createService(void)
+bool MulticastRouter::_osCcreateService(void)
 {
     return true;
 }
 
-void MulticastRouter::_deleteService( void )
+void MulticastRouter::_osDeleteService( void )
 {
 }
 
-bool MulticastRouter::setState( NEMulticastRouterSettings::eRouterState newState )
+bool MulticastRouter::_osSetState( NEMulticastRouterSettings::eRouterState newState )
 {
-    TRACE_SCOPE(mcrouter_app_MulticastRouterPosix_setState);
-    TRACE_DBG("Changing Service Router state. Old state [ %s ], new state [ %s ]"
-                , NEMulticastRouterSettings::GetString(mRouterState)
-                , NEMulticastRouterSettings::GetString(newState));
-
-    bool result = true;
+    bool result{ true };
 
     if ( newState != mRouterState )
     {

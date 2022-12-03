@@ -25,30 +25,16 @@
  // Posix specific methods
  //////////////////////////////////////////////////////////////////////////
 
-bool TimerBase::createWaitableTimer( void )
+TIMERHANDLE TimerBase::_osCreateWaitableTimer( void )
 {
-    Lock lock(mLock);
-
-    if ((mHandle == nullptr) && (mTimeoutInMs != NECommon::INVALID_TIMEOUT))
-    {
-        mHandle = static_cast<TIMERHANDLE>(DEBUG_NEW TimerPosix());
-    }
-
-    return (mHandle != nullptr);
+    return static_cast<TIMERHANDLE>(DEBUG_NEW TimerPosix( ));
 }
 
-void TimerBase::destroyWaitableTimer( void )
+void TimerBase::_osDestroyWaitableTimer( TIMERHANDLE handle )
 {
-    Lock lock(mLock);
-
-    TIMERHANDLE handle  = mHandle;
-    mHandle = nullptr;
-    if (handle != nullptr)
-    {
-        TimerPosix* timer = reinterpret_cast<TimerPosix*>(handle);
-        timer->destroyTimer();
-        delete timer;
-    }
+    TimerPosix * timer = reinterpret_cast<TimerPosix *>(handle);
+    timer->destroyTimer( );
+    delete timer;
 }
 
 #endif  // defined(_POSIX) || defined(POSIX)

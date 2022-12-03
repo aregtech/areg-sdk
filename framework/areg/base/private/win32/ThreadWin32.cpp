@@ -40,7 +40,7 @@ unsigned long Thread::_windowsThreadRoutine( void * data )
  * \brief   This function call is a recommendation from MSDN documentation.
  *          It is using undocumented way to set name of thread in native code.
  **/
-void Thread::_setThreadName( id_type threadId, const char* threadName)
+void Thread::_osSetThreadName( id_type threadId, const char* threadName)
 {
     /**
      * \brief   MS Exception value, used to set thread name.
@@ -75,27 +75,29 @@ void Thread::_setThreadName( id_type threadId, const char* threadName)
 #pragma warning(default: 6312)
 }
 
-void Thread::_closeHandle(  THREADHANDLE handle )
+void Thread::_osCloseHandle(  THREADHANDLE handle )
 {
-    if (handle != nullptr)
+    if ( handle != nullptr )
+    {
         ::CloseHandle(static_cast<HANDLE>(handle));
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-void Thread::sleep(unsigned int ms)
+void Thread::_osSleep(unsigned int timeout)
 {
-    ::Sleep(ms);
+    ::Sleep(timeout);
 }
 
-id_type Thread::getCurrentThreadId( void )
+id_type Thread::_osGetCurrentThreadId( void )
 {
     return static_cast<id_type>(::GetCurrentThreadId());
 }
 
-Thread::eCompletionStatus Thread::destroyThread(unsigned int waitForStopMs /* = NECommon::DO_NOT_WAIT */)
+Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
 {
     mSynchObject.lock(NECommon::WAIT_INFINITE);
 
@@ -147,12 +149,13 @@ Thread::eCompletionStatus Thread::destroyThread(unsigned int waitForStopMs /* = 
         // The thread is not valid and not running, nothing to destroy
         result = Thread::eCompletionStatus::ThreadInvalid;
     }
+
     mSynchObject.unlock(); // nothing to do, the thread is already destroyed
 
     return result;
 }
 
-bool Thread::_createSystemThread( void )
+bool Thread::_osCreateSystemThread( void )
 {
     bool result = false;
     if ((_isValidNoLock() == false) && (mThreadAddress.getThreadName().isEmpty() == false))
@@ -183,10 +186,11 @@ bool Thread::_createSystemThread( void )
     return result;
 }
 
-Thread::eThreadPriority Thread::setPriority( eThreadPriority newPriority )
+Thread::eThreadPriority Thread::_osSetPriority( eThreadPriority newPriority )
 {
     Lock  lock(mSynchObject);
-    Thread::eThreadPriority oldPrio = mThreadPriority;
+    Thread::eThreadPriority oldPrio{ mThreadPriority };
+
     if (_isValidNoLock() && (newPriority != mThreadPriority))
     {
         int Prio = MIN_INT_32;

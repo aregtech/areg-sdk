@@ -344,11 +344,6 @@ private:
      **/
     bool _requestOwnership( const NESynchTypesIX::eSynchObjectFired firedEvent );
 
-    /**
-     * \brief   Called by timer manager to signal asynchronous signal. It is used for waitable timers.
-     **/
-    bool _notifyAsynchSignal( void );
-
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables.
 //////////////////////////////////////////////////////////////////////////

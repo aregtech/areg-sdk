@@ -21,45 +21,34 @@
 
 #include <windows.h>
 
-bool TimerBase::createWaitableTimer()
+TIMERHANDLE TimerBase::_osCreateWaitableTimer()
 {
-    Lock lock(mLock);
+    TIMERHANDLE result{ nullptr };
+    TCHAR * name{ nullptr };
+    TCHAR convertName[MAX_PATH];
 
-    if ((mHandle == nullptr) && (mTimeoutInMs != NECommon::INVALID_TIMEOUT))
+    if ( mName.isEmpty( ) == false )
     {
-        TCHAR* name = nullptr;
-        TCHAR convertName[MAX_PATH];
+        NEString::copyString<TCHAR, char>( convertName, MAX_PATH, mName.getString( ), mName.getLength( ) );
+        name = convertName;
+    }
 
-        if (mName.isEmpty() == false)
-        {
-            NEString::copyString<TCHAR, char>(convertName, MAX_PATH, mName.getString(), mName.getLength());
-            name = convertName;
-        }
-        
-        mHandle = static_cast<TIMERHANDLE>(::CreateWaitableTimer(nullptr, FALSE, name));
+    result = static_cast<TIMERHANDLE>(::CreateWaitableTimer( nullptr, FALSE, name ));
 
 #ifdef _DEBUG
-        if (mHandle == nullptr)
-        {
-            OUTPUT_ERR("Failed creating timer [ %s ], the system error code is [ 0x%p ]", mName.getString(), GetLastError());
-        }
-#endif // _DEBUG
+    if ( result == nullptr )
+    {
+        OUTPUT_ERR( "Failed creating timer [ %s ], the system error code is [ 0x%p ]", mName.getString( ), GetLastError( ) );
     }
+#endif // _DEBUG
 
-    return (mHandle != nullptr);
+    return result;
 }
 
-void TimerBase::destroyWaitableTimer( void )
+void TimerBase::_osDestroyWaitableTimer( TIMERHANDLE handle )
 {
-    Lock lock(mLock);
-
-    TIMERHANDLE handle  = mHandle;
-    mHandle = nullptr;
-    if (handle != nullptr)
-    {
-        ::CancelWaitableTimer(static_cast<HANDLE>(handle));
-        ::CloseHandle(static_cast<HANDLE>(handle));
-    }
+    ::CancelWaitableTimer( static_cast<HANDLE>(handle) );
+    ::CloseHandle( static_cast<HANDLE>(handle) );
 }
 
 #endif // _WINDOWS

@@ -36,7 +36,7 @@ namespace NEUtilities
      * \param   specChar        Special character to add when generating name.
      * \return Generated name.
      **/
-    const char * _generateName( const char * prefix, char * OUT out_buffer, int length, const char * specChar )
+    const char * _osGenerateName( const char * prefix, char * OUT out_buffer, int length, const char * specChar )
     {
         constexpr char strFormat[]   { "%s%s%08x%s%08x" };
         
@@ -73,207 +73,204 @@ namespace NEUtilities
         outMicro    = static_cast<unsigned short>(rest % MILLISEC_TO_MICROSECS);
 
     }
-}   // namespace
 
-AREG_API_IMPL bool NEUtilities::convToLocalTime( const TIME64 & inUtcTime, sSystemTime & OUT outLocalTime )
-{
-    bool result = false;
 
-    // time_t secs = static_cast<time_t>(inUtcTime / SEC_TO_MICROSECS);
-    // time_t rest = inUtcTime - (secs * SEC_TO_MICROSECS);
-    // unsigned short milli = static_cast<unsigned short>(rest / MILLISEC_TO_MICROSECS);
-    // unsigned short micro = static_cast<unsigned short>(rest - (milli * MILLISEC_TO_MICROSECS));
-
-    time_t secs;
-    unsigned short milli, micro;
-    _convertMicrosecs(inUtcTime, secs, milli, micro);
-
-    struct tm * conv = ::localtime(&secs);
-    if (conv != nullptr)
+    uint64_t _osGetTickCount( void )
     {
-        outLocalTime.stYear      = conv->tm_year + 1900;
-        outLocalTime.stMonth     = conv->tm_mon  + 1;
-        outLocalTime.stDay       = conv->tm_mday;
-        outLocalTime.stHour      = conv->tm_hour;
-        outLocalTime.stMinute    = conv->tm_min;
-        outLocalTime.stSecond    = conv->tm_sec;
-        outLocalTime.stDayOfWeek = conv->tm_wday;
-        outLocalTime.stMillisecs = milli;
-        outLocalTime.stMicrosecs = micro;
+        struct timespec ts;
+        ::clock_gettime( CLOCK_MONOTONIC, &ts );
 
-        result = true;
+        TIME64 result = (ts.tv_sec * SEC_TO_MILLISECS) + ts.tv_nsec / MILLISEC_TO_NS;
+        return result;
     }
 
-    return result;
-}
-
-AREG_API_IMPL bool NEUtilities::convToLocalTime( const sSystemTime &inUtcTime, sSystemTime & OUT outLocalTime )
-{
-    bool result = false;
-    TIME64 quad = NEUtilities::convToTime(inUtcTime);
-
-    // time_t secs = static_cast<time_t>(quad / SEC_TO_MICROSECS);
-    // time_t rest = quad - (secs * SEC_TO_MICROSECS);
-    // unsigned short milli = static_cast<unsigned short>(rest / MILLISEC_TO_MICROSECS);
-    // unsigned short micro = static_cast<unsigned short>(rest - (milli * MILLISEC_TO_MICROSECS));
-
-    time_t secs;
-    unsigned short milli, micro;
-    _convertMicrosecs(quad, secs, milli, micro);
-
-    struct tm * conv = ::localtime(&secs);
-    if (conv != nullptr)
+    bool _osConvToLocalTime( const TIME64 & IN utcTime, sSystemTime & OUT localTime )
     {
-        outLocalTime.stYear      = conv->tm_year + 1900;
-        outLocalTime.stMonth     = conv->tm_mon  + 1;
-        outLocalTime.stDay       = conv->tm_mday;
-        outLocalTime.stHour      = conv->tm_hour;
-        outLocalTime.stMinute    = conv->tm_min;
-        outLocalTime.stSecond    = conv->tm_sec;
-        outLocalTime.stDayOfWeek = conv->tm_wday;
-        outLocalTime.stMillisecs = milli;
-        outLocalTime.stMicrosecs = micro;
+        bool result = false;
 
-        result = true;
+        time_t secs;
+        unsigned short milli, micro;
+        _convertMicrosecs( utcTime, secs, milli, micro );
+
+        struct tm * conv = ::localtime( &secs );
+        if ( conv != nullptr )
+        {
+            localTime.stYear = conv->tm_year + 1900;
+            localTime.stMonth = conv->tm_mon + 1;
+            localTime.stDay = conv->tm_mday;
+            localTime.stHour = conv->tm_hour;
+            localTime.stMinute = conv->tm_min;
+            localTime.stSecond = conv->tm_sec;
+            localTime.stDayOfWeek = conv->tm_wday;
+            localTime.stMillisecs = milli;
+            localTime.stMicrosecs = micro;
+
+            result = true;
+        }
+
+        return result;
     }
 
-    return result;
-}
-
-AREG_API_IMPL uint64_t NEUtilities::getTickCount( void )
-{
-    struct timespec ts;
-    ::clock_gettime(CLOCK_MONOTONIC, &ts);
-
-    TIME64 result = (ts.tv_sec * SEC_TO_MILLISECS) + ts.tv_nsec / MILLISEC_TO_NS;
-    return result;
-}
-
-AREG_API_IMPL void NEUtilities::systemTimeNow( NEUtilities::sSystemTime & OUT out_sysTime, bool localTime )
-{
-    struct timespec ts;
-    struct tm now;
-
-    ::clock_gettime(CLOCK_REALTIME, &ts);
-    if (localTime)
+    bool _osConvToLocalTime( const sSystemTime & IN utcTime, sSystemTime & OUT localTime )
     {
-        ::localtime_r(&ts.tv_sec, &now);
+        bool result = false;
+        TIME64 quad = NEUtilities::convToTime( utcTime );
+
+        // time_t secs = static_cast<time_t>(quad / SEC_TO_MICROSECS);
+        // time_t rest = quad - (secs * SEC_TO_MICROSECS);
+        // unsigned short milli = static_cast<unsigned short>(rest / MILLISEC_TO_MICROSECS);
+        // unsigned short micro = static_cast<unsigned short>(rest - (milli * MILLISEC_TO_MICROSECS));
+
+        time_t secs;
+        unsigned short milli, micro;
+        _convertMicrosecs( quad, secs, milli, micro );
+
+        struct tm * conv = ::localtime( &secs );
+        if ( conv != nullptr )
+        {
+            localTime.stYear = conv->tm_year + 1900;
+            localTime.stMonth = conv->tm_mon + 1;
+            localTime.stDay = conv->tm_mday;
+            localTime.stHour = conv->tm_hour;
+            localTime.stMinute = conv->tm_min;
+            localTime.stSecond = conv->tm_sec;
+            localTime.stDayOfWeek = conv->tm_wday;
+            localTime.stMillisecs = milli;
+            localTime.stMicrosecs = micro;
+
+            result = true;
+        }
+
+        return result;
     }
-    else
+
+    void _osSystemTimeNow( NEUtilities::sSystemTime & OUT sysTime, bool localTime )
     {
-        ::gmtime_r(&ts.tv_sec, &now);
-    }
-
-    // unsigned short milli = static_cast<unsigned short>(ts.tv_nsec / MILLISEC_TO_NS);
-    // unsigned short micro = static_cast<unsigned short>((ts.tv_nsec - (milli * MILLISEC_TO_MICROSECS)) / MICROSEC_TO_NS);
-
-    unsigned short milli = static_cast<unsigned short>((ts.tv_nsec / MILLISEC_TO_NS));
-    unsigned short micro = static_cast<unsigned short>((ts.tv_nsec % MILLISEC_TO_NS) / MICROSEC_TO_NS);
-
-    out_sysTime.stYear      = now.tm_year + 1900;
-    out_sysTime.stMonth     = now.tm_mon  + 1;
-    out_sysTime.stDayOfWeek = now.tm_wday;
-    out_sysTime.stDay       = now.tm_mday;
-    out_sysTime.stHour      = now.tm_hour;
-    out_sysTime.stMinute    = now.tm_min;
-    out_sysTime.stSecond    = now.tm_sec;
-    out_sysTime.stMillisecs = milli;
-    out_sysTime.stMicrosecs = micro;
-}
-
-AREG_API_IMPL void NEUtilities::systemTimeNow( NEUtilities::sFileTime & OUT out_fileTime, bool localTime )
-{
-    struct timespec ts;
-    ::clock_gettime(CLOCK_REALTIME, &ts);
-
-    if (localTime)
-    {
+        struct timespec ts;
         struct tm now;
-        ::localtime_r(&ts.tv_sec, &now);
-        time_t local = ::mktime(&now);
-        TIME64 quad = static_cast<TIME64>(local * SEC_TO_MICROSECS) + static_cast<TIME64>(ts.tv_nsec / MICROSEC_TO_NS);
-        out_fileTime.ftLowDateTime  = MACRO_64_LO_BYTE32(quad);
-        out_fileTime.ftHighDateTime = MACRO_64_HI_BYTE32(quad);
+
+        ::clock_gettime( CLOCK_REALTIME, &ts );
+        if ( localTime )
+        {
+            ::localtime_r( &ts.tv_sec, &now );
+        }
+        else
+        {
+            ::gmtime_r( &ts.tv_sec, &now );
+        }
+
+        // unsigned short milli = static_cast<unsigned short>(ts.tv_nsec / MILLISEC_TO_NS);
+        // unsigned short micro = static_cast<unsigned short>((ts.tv_nsec - (milli * MILLISEC_TO_MICROSECS)) / MICROSEC_TO_NS);
+
+        unsigned short milli = static_cast<unsigned short>((ts.tv_nsec / MILLISEC_TO_NS));
+        unsigned short micro = static_cast<unsigned short>((ts.tv_nsec % MILLISEC_TO_NS) / MICROSEC_TO_NS);
+
+        sysTime.stYear = now.tm_year + 1900;
+        sysTime.stMonth = now.tm_mon + 1;
+        sysTime.stDayOfWeek = now.tm_wday;
+        sysTime.stDay = now.tm_mday;
+        sysTime.stHour = now.tm_hour;
+        sysTime.stMinute = now.tm_min;
+        sysTime.stSecond = now.tm_sec;
+        sysTime.stMillisecs = milli;
+        sysTime.stMicrosecs = micro;
     }
-    else
+
+    void _osSystemTimeNow( NEUtilities::sFileTime & OUT fileTime, bool localTime )
     {
-        TIME64 quad = static_cast<TIME64>(ts.tv_sec * SEC_TO_MICROSECS) + static_cast<TIME64>(ts.tv_nsec / MICROSEC_TO_NS);
-        out_fileTime.ftLowDateTime  = MACRO_64_LO_BYTE32(quad);
-        out_fileTime.ftHighDateTime = MACRO_64_HI_BYTE32(quad);
+        struct timespec ts;
+        ::clock_gettime( CLOCK_REALTIME, &ts );
+
+        if ( localTime )
+        {
+            struct tm now;
+            ::localtime_r( &ts.tv_sec, &now );
+            time_t local = ::mktime( &now );
+            TIME64 quad = static_cast<TIME64>(local * SEC_TO_MICROSECS) + static_cast<TIME64>(ts.tv_nsec / MICROSEC_TO_NS);
+            fileTime.ftLowDateTime = MACRO_64_LO_BYTE32( quad );
+            fileTime.ftHighDateTime = MACRO_64_HI_BYTE32( quad );
+        }
+        else
+        {
+            TIME64 quad = static_cast<TIME64>(ts.tv_sec * SEC_TO_MICROSECS) + static_cast<TIME64>(ts.tv_nsec / MICROSEC_TO_NS);
+            fileTime.ftLowDateTime = MACRO_64_LO_BYTE32( quad );
+            fileTime.ftHighDateTime = MACRO_64_HI_BYTE32( quad );
+        }
     }
-}
 
-AREG_API_IMPL TIME64 NEUtilities::systemTimeNow( void )
-{
-    struct timespec ts;
-    ::clock_gettime(CLOCK_REALTIME, &ts);
-
-    TIME64 quad = ts.tv_sec * SEC_TO_MICROSECS + ts.tv_nsec / MICROSEC_TO_NS;
-    return quad;
-}
-
-AREG_API_IMPL TIME64 NEUtilities::convToTime( const NEUtilities::sSystemTime & sysTime )
-{
-    TIME64 quad = 0;
-
-    struct tm sys;
-    sys.tm_year     = sysTime.stYear    - 1900;
-    sys.tm_mon      = sysTime.stMonth   - 1;
-    sys.tm_mday     = sysTime.stDay;
-    sys.tm_hour     = sysTime.stHour;
-    sys.tm_min      = sysTime.stMinute;
-    sys.tm_sec      = sysTime.stSecond;
-    sys.tm_wday     = sysTime.stDayOfWeek;
-    sys.tm_isdst    = 0;
-
-    time_t secs = ::mktime(&sys);
-    if (secs != static_cast<time_t>(-1))
+    TIME64 _osSystemTimeNow( void )
     {
-        quad = (secs * SEC_TO_MICROSECS) + (sysTime.stMillisecs * MILLISEC_TO_MICROSECS) + sysTime.stMicrosecs;
+        struct timespec ts;
+        ::clock_gettime( CLOCK_REALTIME, &ts );
+
+        TIME64 quad = ts.tv_sec * SEC_TO_MICROSECS + ts.tv_nsec / MICROSEC_TO_NS;
+        return quad;
     }
 
-    return quad;
-}
-
-AREG_API_IMPL void NEUtilities::convToSystemTime( const TIME64 &  timeValue, NEUtilities::sSystemTime & out_sysTime )
-{
-    NEMemory::memZero(&out_sysTime, sizeof(NEUtilities::sSystemTime));
-
-    // time_t secs = static_cast<time_t>(timeValue / SEC_TO_MICROSECS);
-    // time_t rest = timeValue - (secs * SEC_TO_MICROSECS);
-    // unsigned short milli = static_cast<unsigned short>(rest / MILLISEC_TO_MICROSECS);
-    // unsigned short micro = static_cast<unsigned short>(rest - (milli * MILLISEC_TO_MICROSECS));
-
-    time_t secs;
-    unsigned short milli, micro;
-    _convertMicrosecs(timeValue, secs, milli, micro);
-
-    struct tm * conv = ::gmtime(&secs);
-    if (conv != nullptr)
+    TIME64 _osConvToTime( const NEUtilities::sSystemTime & sysTime )
     {
-        out_sysTime.stYear      = conv->tm_year + 1900;
-        out_sysTime.stMonth     = conv->tm_mon  + 1;
-        out_sysTime.stDay       = conv->tm_mday;
-        out_sysTime.stHour      = conv->tm_hour;
-        out_sysTime.stMinute    = conv->tm_min;
-        out_sysTime.stSecond    = conv->tm_sec;
-        out_sysTime.stDayOfWeek = conv->tm_wday;
-        out_sysTime.stMillisecs = milli;
-        out_sysTime.stMicrosecs = micro;
+        TIME64 quad = 0;
+
+        struct tm sys;
+        sys.tm_year = sysTime.stYear - 1900;
+        sys.tm_mon = sysTime.stMonth - 1;
+        sys.tm_mday = sysTime.stDay;
+        sys.tm_hour = sysTime.stHour;
+        sys.tm_min = sysTime.stMinute;
+        sys.tm_sec = sysTime.stSecond;
+        sys.tm_wday = sysTime.stDayOfWeek;
+        sys.tm_isdst = 0;
+
+        time_t secs = ::mktime( &sys );
+        if ( secs != static_cast<time_t>(-1) )
+        {
+            quad = (secs * SEC_TO_MICROSECS) + (sysTime.stMillisecs * MILLISEC_TO_MICROSECS) + sysTime.stMicrosecs;
+        }
+
+        return quad;
     }
-}
 
-AREG_API_IMPL void NEUtilities::convToSystemTime( const NEUtilities::sFileTime & fileTime, NEUtilities::sSystemTime & out_sysTime )
-{
-    TIME64 quad = MACRO_MAKE_64(fileTime.ftHighDateTime, fileTime.ftLowDateTime);
-    NEUtilities::convToSystemTime(quad, out_sysTime);
-}
+    void _osConvToSystemTime( const TIME64 & IN timeValue, NEUtilities::sSystemTime & OUT sysTime )
+    {
+        NEMemory::memZero( &sysTime, sizeof( NEUtilities::sSystemTime ) );
 
-AREG_API_IMPL void NEUtilities::convToFileTime( const NEUtilities::sSystemTime & sysTime, NEUtilities::sFileTime & out_fileTime )
-{
-    TIME64 quad = NEUtilities::convToTime(sysTime);
-    out_fileTime.ftLowDateTime = MACRO_64_LO_BYTE32(quad);
-    out_fileTime.ftHighDateTime= MACRO_64_HI_BYTE32(quad);
-}
+        // time_t secs = static_cast<time_t>(timeValue / SEC_TO_MICROSECS);
+        // time_t rest = timeValue - (secs * SEC_TO_MICROSECS);
+        // unsigned short milli = static_cast<unsigned short>(rest / MILLISEC_TO_MICROSECS);
+        // unsigned short micro = static_cast<unsigned short>(rest - (milli * MILLISEC_TO_MICROSECS));
+
+        time_t secs;
+        unsigned short milli, micro;
+        _convertMicrosecs( timeValue, secs, milli, micro );
+
+        struct tm * conv = ::gmtime( &secs );
+        if ( conv != nullptr )
+        {
+            sysTime.stYear = conv->tm_year + 1900;
+            sysTime.stMonth = conv->tm_mon + 1;
+            sysTime.stDay = conv->tm_mday;
+            sysTime.stHour = conv->tm_hour;
+            sysTime.stMinute = conv->tm_min;
+            sysTime.stSecond = conv->tm_sec;
+            sysTime.stDayOfWeek = conv->tm_wday;
+            sysTime.stMillisecs = milli;
+            sysTime.stMicrosecs = micro;
+        }
+    }
+
+    void _osConvToSystemTime( const NEUtilities::sFileTime & IN fileTime, NEUtilities::sSystemTime & OUT sysTime )
+    {
+        TIME64 quad = MACRO_MAKE_64( fileTime.ftHighDateTime, fileTime.ftLowDateTime );
+        NEUtilities::convToSystemTime( quad, sysTime );
+    }
+
+    void _osConvToFileTime( const NEUtilities::sSystemTime & IN sysTime, NEUtilities::sFileTime & OUT fileTime )
+    {
+        TIME64 quad = NEUtilities::convToTime( sysTime );
+        fileTime.ftLowDateTime = MACRO_64_LO_BYTE32( quad );
+        fileTime.ftHighDateTime = MACRO_64_HI_BYTE32( quad );
+    }
+
+}   // namespace
 
 #endif // defined(_POSIX) || defined(POSIX)

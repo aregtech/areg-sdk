@@ -139,11 +139,11 @@ public:
 
     /**
      * \brief   returns the value of the environment variable var, 
-     *          or an empty string if
-     *            - either no such environment variable exists (or is empty)
-     *            - there is a reason it should not be used 
-     *              (e.g. elevated privileges in Linux)
-     * \param   var   the environment variable to return
+     *          or an empty string if:
+     *              -   No such environment variable exists or it is empty.
+     *              -   There is a reason that it should not be used 
+     *                  (e.g. elevated privileges in Linux).
+     * \param   var   The environment variable to return valur.
      **/
     String getSafeEnvVariable( const char * var ) const;
 
@@ -159,6 +159,12 @@ private:
      * \brief	OS specific initialization of process internal data.
      */
     void _osInitilize( void );
+
+    /**
+     * \brief   Returns the value of environment variable or empty strig.
+     * \param   var     The environment variable to return value.
+     **/
+    String _osGetEnvVariable( const char * var ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

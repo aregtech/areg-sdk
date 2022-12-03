@@ -169,11 +169,6 @@ ThreadLocalStorage & Thread::getCurrentThreadStorage( void )
     return (*localStorage);
 }
 
-void Thread::switchThread( void )
-{
-    Thread::sleep( NECommon::WAIT_SWITCH );
-}
-
 bool Thread::createThread(unsigned int waitForStartMs /* = NECommon::DO_NOT_WAIT */)
 {
     bool result = false;
@@ -181,7 +176,7 @@ bool Thread::createThread(unsigned int waitForStartMs /* = NECommon::DO_NOT_WAIT
     do 
     {
         Lock  lock(mSynchObject);
-        result = _createSystemThread();
+        result = _osCreateSystemThread();
     } while (false);
 
     if ( result )
@@ -200,9 +195,19 @@ bool Thread::createThread(unsigned int waitForStartMs /* = NECommon::DO_NOT_WAIT
 }
 
 
+Thread::eCompletionStatus Thread::destroyThread( unsigned int waitForStopMs /* = NECommon::DO_NOT_WAIT */ )
+{
+    return _osDestroyThread( waitForStopMs );
+}
+
 void Thread::shutdownThread( void )
 {
     destroyThread(NECommon::WAIT_INFINITE);
+}
+
+Thread::eCompletionStatus Thread::terminateThread( void )
+{
+    return destroyThread( NECommon::WAIT_10_MILLISECONDS );
 }
 
 bool Thread::completionWait( unsigned int waitForCompleteMs /*= NECommon::WAIT_INFINITE*/ )
@@ -224,12 +229,6 @@ bool Thread::completionWait( unsigned int waitForCompleteMs /*= NECommon::WAIT_I
     }
     return result;
 }
-
-inline Thread::eCompletionStatus Thread::terminateThread(void)
-{
-    return destroyThread(NECommon::WAIT_10_MILLISECONDS);
-}
-
 
 bool Thread::onPreRunThread( void )
 {
@@ -292,7 +291,7 @@ void Thread::_cleanResources( void )
     mIsRunning      = false;
     mThreadPriority = Thread::eThreadPriority::PriorityUndefined;
 
-    Thread::_closeHandle(handle);
+    Thread::_osCloseHandle(handle);
 }
 
 bool Thread::_registerThread( void )
@@ -301,7 +300,7 @@ bool Thread::_registerThread( void )
     Thread::_mapThreadName.registerResourceObject(mThreadAddress.getThreadName(), this);
     Thread::_mapThreadId.registerResourceObject(mThreadId, this);
 
-    _setThreadName(mThreadId, mThreadAddress.getThreadName());
+    _osSetThreadName(mThreadId, mThreadAddress.getThreadName());
     return mThreadConsumer.onThreadRegistered(this);
 }
 
@@ -339,20 +338,14 @@ IEThreadConsumer& Thread::getCurrentThreadConsumer( void )
     return (*consumer);
 }
 
-Thread::eThreadPriority Thread::getPriority( void ) const
+Thread * Thread::getFirstThread( id_type & OUT threadId )
 {
-    Lock  lock(mSynchObject);
-    return (isValid() ? mThreadPriority : Thread::eThreadPriority::PriorityUndefined);
+    return _mapThreadId.resourceFirstKey( threadId );
 }
 
-Thread * Thread::getFirstThread( id_type & OUT threadId)
+Thread * Thread::getNextThread( id_type & IN OUT threadId )
 {
-    return _mapThreadId.resourceFirstKey(threadId);
-}
-
-Thread * Thread::getNextThread( id_type & IN OUT threadId)
-{
-    return _mapThreadId.resourceNextKey(threadId);
+    return _mapThreadId.resourceNextKey( threadId );
 }
 
 #ifdef  _DEBUG

@@ -37,7 +37,7 @@ public:
     /**
      * \brief   Type of supported Synchronization objects
      **/
-    typedef enum class E_SyncObject : short
+    enum class eSyncObject  : short
     {
           SoUnknown     = -1    //!< Unknown type of synchronization object.
         , SoMutex       =  0    //!< Synchronization object is a Mutex.
@@ -48,7 +48,7 @@ public:
         , SoReslock             //!< A synchronization object to use to access resources.
         , SoNolock              //!< Empty / Dummy Synchronization object, no real locking operations are supported
         , SoTimer               //!< Synchronization object is a Waiting Timer.
-    } eSyncObject;
+    };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -129,7 +129,7 @@ private:
     /**
      * \brief   Destroys the synchronization object. Normally called in the destructor.
      **/
-    void _destroySynchObject( void );
+    void _osDestroySynchObject( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

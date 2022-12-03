@@ -29,7 +29,7 @@
  //  Windows OS specific methods
  //////////////////////////////////////////////////////////////////////////
 
-void WatchdogManager::_systemTimerStop(TIMERHANDLE handle)
+void WatchdogManager::_osSystemTimerStop(TIMERHANDLE handle)
 {
 
     if (handle != nullptr)
@@ -38,7 +38,7 @@ void WatchdogManager::_systemTimerStop(TIMERHANDLE handle)
     }
 }
 
-bool WatchdogManager::_systemTimerStart(Watchdog& watchdog)
+bool WatchdogManager::_osSystemTimerStart(Watchdog& watchdog)
 {
     bool result = false;
 
@@ -53,7 +53,7 @@ bool WatchdogManager::_systemTimerStart(Watchdog& watchdog)
     if (::SetWaitableTimer( watchdog.getHandle()
                           , &timeTrigger
                           , period
-                          , reinterpret_cast<PTIMERAPCROUTINE>(&WatchdogManager::_defaultWindowsWatchdogExpiredRoutine)
+                          , reinterpret_cast<PTIMERAPCROUTINE>(&WatchdogManager::_windowsWatchdogExpiredRoutine)
                           , reinterpret_cast<void*>(watchdog.makeWatchdogId(watchdog.getId(), watchdog.getSequence())), FALSE) == FALSE)
     {
         OUTPUT_ERR("System Failed to start watchdog timer in period [ %d ] ms, timer name [ %s ]. System Error [ %p ]"
@@ -75,7 +75,7 @@ bool WatchdogManager::_systemTimerStart(Watchdog& watchdog)
  * \param   lowValue    The low value of timer expiration
  * \param   highValue   The high value of timer expiration.
  **/
-void WatchdogManager::_defaultWindowsWatchdogExpiredRoutine(void* argPtr, unsigned long lowValue, unsigned long highValue)
+void WatchdogManager::_windowsWatchdogExpiredRoutine(void* argPtr, unsigned long lowValue, unsigned long highValue)
 {
     ASSERT(argPtr != nullptr);
     WatchdogManager& watchdogManager = WatchdogManager::getInstance();

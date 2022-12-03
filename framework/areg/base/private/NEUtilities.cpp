@@ -29,9 +29,28 @@
 /************************************************************************/
 namespace NEUtilities 
 {
-    extern const char * _generateName(const char * prefix, char * out_buffer, int length, const char * specChar);
+    extern const char * _osGenerateName(const char * prefix, char * out_buffer, int length, const char * specChar);
 
+    extern uint64_t _osGetTickCount( void );
 
+    extern bool _osConvToLocalTime( const sSystemTime & IN utcTime, sSystemTime & OUT localTime );
+
+    extern bool _osConvToLocalTime( const TIME64 & IN utcTime, sSystemTime & OUT localTime );
+
+    extern void _osSystemTimeNow( NEUtilities::sSystemTime & OUT sysTime, bool localTime );
+
+    extern void _osSystemTimeNow( NEUtilities::sFileTime & OUT fileTime, bool localTime );
+
+    extern TIME64 _osSystemTimeNow( void );
+
+    extern TIME64 _osConvToTime( const NEUtilities::sSystemTime & IN sysTime );
+
+    extern void _osConvToSystemTime( const TIME64 & IN timeValue, NEUtilities::sSystemTime & OUT sysTime );
+    
+    extern void _osConvToSystemTime( const NEUtilities::sFileTime & IN fileTime, NEUtilities::sSystemTime & OUT sysTime );
+
+    extern void _osConvToFileTime( const NEUtilities::sSystemTime & IN sysTime, NEUtilities::sFileTime & OUT fileTime );
+    
     NEMath::eCompare compareLargeIntegers( const NEMath::uLargeInteger & lsh, const NEMath::uLargeInteger & rhs )
     {
         NEMath::eCompare result = NEMath::eCompare::Equal;
@@ -59,22 +78,22 @@ AREG_API_IMPL NEMath::eCompare NEUtilities::compareTimes( const TIME64 & lsh, co
     return NEUtilities::compareLargeIntegers(lshLi, rshLi);
 }
 
-AREG_API_IMPL void NEUtilities::convToTm(const sSystemTime & sysTime, tm & OUT out_time)
+AREG_API_IMPL void NEUtilities::convToTm(const sSystemTime & sysTime, tm & OUT time)
 {
     if (sysTime.stYear >= 1900)
     {
-        out_time.tm_sec     = static_cast<int>( sysTime.stSecond);
-        out_time.tm_min     = static_cast<int>( sysTime.stMinute);
-        out_time.tm_hour    = static_cast<int>( sysTime.stHour);
-        out_time.tm_mday    = static_cast<int>( sysTime.stDay);
-        out_time.tm_mon     = static_cast<int>( sysTime.stMonth - 1);   // tm_mon is 0 based
-        out_time.tm_year    = static_cast<int>( sysTime.stYear - 1900); // tm_year is 1900 based
-        out_time.tm_wday    = static_cast<int>( sysTime.stDayOfWeek);
-        out_time.tm_isdst   = -1;
+        time.tm_sec     = static_cast<int>( sysTime.stSecond);
+        time.tm_min     = static_cast<int>( sysTime.stMinute);
+        time.tm_hour    = static_cast<int>( sysTime.stHour);
+        time.tm_mday    = static_cast<int>( sysTime.stDay);
+        time.tm_mon     = static_cast<int>( sysTime.stMonth - 1);   // tm_mon is 0 based
+        time.tm_year    = static_cast<int>( sysTime.stYear - 1900); // tm_year is 1900 based
+        time.tm_wday    = static_cast<int>( sysTime.stDayOfWeek);
+        time.tm_isdst   = -1;
     }
     else
     {
-        NEMemory::zeroElement<tm>(out_time);
+        NEMemory::zeroElement<tm>(time);
     }
 }
 
@@ -90,23 +109,15 @@ AREG_API_IMPL void NEUtilities::makeTmLocal( struct tm & IN OUT utcTime )
 #endif  // _WIN32
 }
 
-AREG_API_IMPL void NEUtilities::convToSystemTime(const tm & time, sSystemTime & OUT out_sysTime)
+AREG_API_IMPL void NEUtilities::convToSystemTime(const tm & time, sSystemTime & OUT sysTime)
 {
-    out_sysTime.stSecond    = static_cast<unsigned short>(time.tm_sec);
-    out_sysTime.stMinute    = static_cast<unsigned short>(time.tm_min);
-    out_sysTime.stHour      = static_cast<unsigned short>(time.tm_hour);
-    out_sysTime.stDay       = static_cast<unsigned short>(time.tm_mday);
-    out_sysTime.stMonth     = static_cast<unsigned short>(time.tm_mon + 1);
-    out_sysTime.stYear      = static_cast<unsigned short>(time.tm_year + 1900);
-    out_sysTime.stDayOfWeek = static_cast<unsigned short>(time.tm_wday);
-}
-
-AREG_API_IMPL void NEUtilities::convToFileTime( const TIME64 &  timeValue, NEUtilities::sFileTime & out_fileTime )
-{
-    uint64_t quad = timeValue + WIN_TO_POSIX_EPOCH_BIAS_MICROSECS;
-
-    out_fileTime.ftLowDateTime  = MACRO_64_LO_BYTE32(quad);
-    out_fileTime.ftHighDateTime = MACRO_64_HI_BYTE32(quad);
+    sysTime.stSecond    = static_cast<unsigned short>(time.tm_sec);
+    sysTime.stMinute    = static_cast<unsigned short>(time.tm_min);
+    sysTime.stHour      = static_cast<unsigned short>(time.tm_hour);
+    sysTime.stDay       = static_cast<unsigned short>(time.tm_mday);
+    sysTime.stMonth     = static_cast<unsigned short>(time.tm_mon + 1);
+    sysTime.stYear      = static_cast<unsigned short>(time.tm_year + 1900);
+    sysTime.stDayOfWeek = static_cast<unsigned short>(time.tm_wday);
 }
 
 AREG_API_IMPL NEMath::eCompare NEUtilities::compareTimes( const NEUtilities::sSystemTime & lsh, const NEUtilities::sSystemTime & rhs )
@@ -130,7 +141,7 @@ AREG_API_IMPL NEMath::eCompare NEUtilities::compareTimes( const NEUtilities::sFi
     return NEUtilities::compareLargeIntegers( lshLi, rshLi );
 }
 
-AREG_API_IMPL TIME64 NEUtilities::convToTime( const NEUtilities::sFileTime & fileTime )
+AREG_API_IMPL TIME64 NEUtilities::convToTime( const NEUtilities::sFileTime & IN fileTime )
 {
     NEMath::uLargeInteger li;
     li.u.lowPart    = fileTime.ftLowDateTime;
@@ -195,11 +206,69 @@ AREG_API_IMPL const char * NEUtilities::generateName(const char * prefix, char *
 
 AREG_API_IMPL const char * NEUtilities::generateName(const char * prefix, char * OUT out_buffer, int length, const char * specChar)
 {
-    return NEUtilities::_generateName(prefix, out_buffer, length, specChar);
+    return NEUtilities::_osGenerateName(prefix, out_buffer, length, specChar);
 }
 
 AREG_API_IMPL unsigned int NEUtilities::generateUniqueId( void )
 {
     static std::atomic_uint _id(0u);
     return ++ _id;
+}
+
+AREG_API_IMPL uint64_t NEUtilities::getTickCount( void )
+{
+    return _osGetTickCount();
+}
+
+AREG_API_IMPL bool NEUtilities::convToLocalTime( const sSystemTime & IN utcTime, sSystemTime & OUT localTime )
+{
+    return _osConvToLocalTime( static_cast<const sSystemTime & >(utcTime), static_cast<sSystemTime &>(localTime) );
+}
+
+AREG_API_IMPL bool NEUtilities::convToLocalTime( const TIME64 & IN utcTime, sSystemTime & OUT localTime )
+{
+    return _osConvToLocalTime( static_cast<const TIME64 &>(utcTime), static_cast<sSystemTime &>(localTime) );
+}
+
+AREG_API_IMPL void NEUtilities::systemTimeNow( NEUtilities::sSystemTime & OUT sysTime, bool localTime )
+{
+    _osSystemTimeNow( static_cast<NEUtilities::sSystemTime &>(sysTime), localTime );
+}
+
+AREG_API_IMPL void NEUtilities::systemTimeNow( NEUtilities::sFileTime & OUT fileTime, bool localTime )
+{
+    _osSystemTimeNow( static_cast<NEUtilities::sFileTime &>(fileTime), localTime );
+}
+
+AREG_API_IMPL TIME64 NEUtilities::systemTimeNow( void )
+{
+    return _osSystemTimeNow( );
+}
+
+AREG_API_IMPL TIME64 NEUtilities::convToTime( const NEUtilities::sSystemTime & IN sysTime )
+{
+    return _osConvToTime( sysTime );
+}
+
+AREG_API_IMPL void NEUtilities::convToSystemTime( const TIME64 & IN timeValue, NEUtilities::sSystemTime & OUT sysTime )
+{
+    _osConvToSystemTime( static_cast<const TIME64 &>(timeValue), static_cast<NEUtilities::sSystemTime &>(sysTime) );
+}
+
+AREG_API_IMPL void NEUtilities::convToSystemTime( const NEUtilities::sFileTime & IN fileTime, NEUtilities::sSystemTime & OUT sysTime )
+{
+    _osConvToSystemTime( static_cast<const NEUtilities::sFileTime &>(fileTime), static_cast<NEUtilities::sSystemTime &>(sysTime) );
+}
+
+AREG_API_IMPL void NEUtilities::convToFileTime( const NEUtilities::sSystemTime & IN sysTime, NEUtilities::sFileTime & OUT fileTime )
+{
+    _osConvToFileTime( sysTime, fileTime );
+}
+
+AREG_API_IMPL void NEUtilities::convToFileTime( const TIME64 & IN timeValue, NEUtilities::sFileTime & OUT fileTime )
+{
+    uint64_t quad = timeValue + WIN_TO_POSIX_EPOCH_BIAS_MICROSECS;
+
+    fileTime.ftLowDateTime = MACRO_64_LO_BYTE32( quad );
+    fileTime.ftHighDateTime = MACRO_64_HI_BYTE32( quad );
 }

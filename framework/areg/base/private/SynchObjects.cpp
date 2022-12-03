@@ -38,48 +38,155 @@ bool IEResourceLock::tryLock(void)
 }
 
 //////////////////////////////////////////////////////////////////////////
-// Mutex class, Methods
+// Mutex class implementation
 //////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// Mutex class, Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+Mutex::Mutex( bool initLock /* = true */ )
+    : IEResourceLock( IESynchObject::eSyncObject::SoMutex )
+    , mOwnerThreadId( 0 )
+{
+    _osCreateMutex( initLock );
+}
 
 Mutex::~Mutex( void )
 {
-    _unlockMutex( );
-}
-
-bool Mutex::lock(unsigned int timeout /* = NECommon::WAIT_INFINITE */)
-{
-    ASSERT(mSynchObject != nullptr);
-    return _lockMutex(timeout);
-}
-
-bool Mutex::tryLock( void )
-{
-    return lock(NECommon::DO_NOT_WAIT);
-}
-
-bool Mutex::unlock( void )
-{
-    ASSERT(mSynchObject != nullptr);
-    return _unlockMutex( );
+    _osUnlockMutex( );
 }
 
 //////////////////////////////////////////////////////////////////////////
-// SynchEvent class, Methods
+// SynchEvent class implementation
 //////////////////////////////////////////////////////////////////////////
 
-bool SynchEvent::unlock( void )
+//////////////////////////////////////////////////////////////////////////
+// SynchEvent class, Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+SynchEvent::SynchEvent( bool initLock /* = true */, bool autoReset /* = true */ )
+    : IESynchObject( IESynchObject::eSyncObject::SoEvent )
+
+    , mAutoReset( autoReset )
 {
-    ASSERT(mSynchObject != nullptr);
-    return _unlockEvent(mSynchObject);
+    _osCreateEvent( initLock );
+}
+
+SynchEvent::~SynchEvent( void )
+{
+    ASSERT( mSynchObject != nullptr );
+    _osUnlockEvent( mSynchObject );
 }
 
 //////////////////////////////////////////////////////////////////////////
-// Semaphore class, Methods
+// Semaphore class implementation
 //////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// Semaphore class, Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+Semaphore::Semaphore( int maxCount, int initCount /* = 0 */ )
+    : IEResourceLock( IESynchObject::eSyncObject::SoSemaphore )
+
+    , mMaxCount( MACRO_MAX( maxCount, 1 ) )
+    , mCurrCount( MACRO_IN_RANGE( initCount, 0, mMaxCount ) ? initCount : 0 )
+{
+    _osCreateSemaphore( );
+}
+
+Semaphore::~Semaphore( void )
+{
+    ASSERT( mSynchObject != nullptr );
+    _osReleaseSemaphore( );
+}
+
+bool Semaphore::lock( unsigned int timeout /* = NECommon::WAIT_INFINITE */ )
+{
+    ASSERT( mSynchObject != nullptr );
+    bool result = false;
+    if ( _osLock( timeout ) )
+    {
+        mCurrCount.fetch_add( 1 );
+        result = true;
+    }
+
+    return result;
+}
+
+bool Semaphore::unlock( void )
+{
+    ASSERT( mSynchObject != nullptr );
+    bool result = false;
+    if ( _osUnlock() )
+    {
+        mCurrCount.fetch_add( 1 );
+        result = true;
+    }
+
+    return result;
+}
 
 bool Semaphore::tryLock( void )
 {
     return false;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CriticalSection implementation
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+// CriticalSection class, Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+CriticalSection::CriticalSection( void )
+    : IEResourceLock( IESynchObject::eSyncObject::SoCritical )
+{
+    _osCreateCriticalSection( );
+}
+
+CriticalSection::~CriticalSection( void )
+{
+    ASSERT( mSynchObject != nullptr );
+    _osReleaseCriticalSection( );
+}
+
+//////////////////////////////////////////////////////////////////////////
+// SpinLock class implementation
+//////////////////////////////////////////////////////////////////////////
+
+SpinLock::SpinLock( void )
+    : IEResourceLock( IESynchObject::eSyncObject::SoSpinlock )
+    , mLock         ( false )
+{
+}
+
+bool SpinLock::lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/ )
+{
+    for ( ; ; )
+    {
+        if ( mLock.exchange( true, std::memory_order_acquire ) == false )
+            break;
+
+        while ( mLock.load( std::memory_order_relaxed ) )
+            Thread::sleep( 0 );
+    }
+
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ResourceLock class implementation
+//////////////////////////////////////////////////////////////////////////
+
+ResourceLock::ResourceLock( bool initLock /*= false*/ )
+    : IEResourceLock( IESynchObject::eSyncObject::SoReslock )
+{
+    _osCreateResourceLock( initLock );
+}
+
+ResourceLock::~ResourceLock( void )
+{
+    ASSERT( mSynchObject != nullptr );
+    _osReleaseResourceLock( );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -91,65 +198,28 @@ NolockSynchObject::NolockSynchObject( void )
 {
 }
 
-NolockSynchObject::~NolockSynchObject( void )
-{
-}
-
 //////////////////////////////////////////////////////////////////////////
-// SpinLock class implementation
+// SynchTimer implementation
 //////////////////////////////////////////////////////////////////////////
 
-SpinLock::SpinLock(void)
-    : IEResourceLock(IESynchObject::eSyncObject::SoSpinlock)
-    , mLock( false )
-{
-}
-
-SpinLock::~SpinLock(void)
-{
-}
-
-bool SpinLock::lock(unsigned int /*timeout = NECommon::WAIT_INFINITE*/)
-{
-    for ( ; ; )
-    {
-        if (mLock.exchange(true, std::memory_order_acquire) == false)
-            break;
-
-        while (mLock.load(std::memory_order_relaxed))
-            Thread::sleep(0);
-    }
-
-    return true;
-}
-
-bool SpinLock::unlock(void)
-{
-    mLock.store(false, std::memory_order_release);
-    return true;
-}
-
-bool SpinLock::tryLock(void)
-{
-    return ((mLock.load(std::memory_order_relaxed) == false) && (mLock.exchange(true, std::memory_order_acquire) == false));
-}
-
-/// //////////////////////////////////////////////////////////////////////////
-// NolockSynchObject class, Methods
 //////////////////////////////////////////////////////////////////////////
-bool NolockSynchObject::lock(unsigned int /*timeout = NECommon::WAIT_INFINITE*/)
+// SynchTimer class, Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+SynchTimer::SynchTimer( unsigned int msTimeout, bool isPeriodic /* = false */, bool isAutoReset /* = true */, bool isSteady /* = true */ )
+    : IESynchObject ( IESynchObject::eSyncObject::SoTimer )
+
+    , mTimeout      ( msTimeout )
+    , mIsPeriodic   ( isPeriodic )
+    , mIsAutoReset  ( isAutoReset )
 {
-    return true;
+    _osCreateTimer( isSteady );
 }
 
-bool NolockSynchObject::unlock( void )
+SynchTimer::~SynchTimer( void )
 {
-    return true;
-}
-
-bool NolockSynchObject::tryLock( void )
-{
-    return true;
+    ASSERT( mSynchObject != nullptr );
+    _osReleaseTime( );
+    mSynchObject = nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -246,5 +316,6 @@ Wait::Wait(void)
 
 Wait::~Wait(void)
 {
+    ASSERT( mTimer != nullptr );
     _osReleaseTimer();
 }

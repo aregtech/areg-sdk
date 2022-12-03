@@ -41,3 +41,28 @@ TimerBase::~TimerBase(void)
 {
     destroyWaitableTimer();
 }
+
+bool TimerBase::createWaitableTimer( void )
+{
+    Lock lock( mLock );
+
+    if ( (mHandle == nullptr) && (mTimeoutInMs != NECommon::INVALID_TIMEOUT) )
+    {
+        mHandle = _osCreateWaitableTimer( );
+    }
+
+    return (mHandle != nullptr);
+}
+
+
+void TimerBase::destroyWaitableTimer( void )
+{
+    Lock lock( mLock );
+
+    TIMERHANDLE handle = mHandle;
+    mHandle = nullptr;
+    if ( handle != nullptr )
+    {
+        _osDestroyWaitableTimer( handle );
+    }
+}

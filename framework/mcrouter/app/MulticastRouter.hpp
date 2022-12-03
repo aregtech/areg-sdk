@@ -160,35 +160,56 @@ public:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Called to free engaged resources.
+     * \brief   Returns instance of message router service.
      **/
-    void _freeResources( void );
+    inline MulticastRouter & self( void );
+
     /**
-     * \brief   OS specific implementation to open service.
+     * \brief   Checks the command typed on console. Relevant only if it runs as a console application.
+     * \param   cmd     The command typed on the console.
+     * \return  Returns true if command is recognized. Otherwise, returns false.
      **/
-    bool _openService( void );
-    /**
-     * \brief   OS specific implementation to create service.
-     **/
-    bool _createService( void );
-    /**
-     * \brief   OS specific implementation of deleting service.
-     **/
-    void _deleteService( void );
+    static bool _checkCommand(const String& cmd);
+
+//////////////////////////////////////////////////////////////////////////
+// OS specific hidden methods.
+//////////////////////////////////////////////////////////////////////////
+private:
     /**
      * \brief   OS specific validity check of message router service.
      **/
-    bool _isValid( void ) const;
+    bool _osIsValid( void ) const;
+
+    /**
+     * \brief   Called to free engaged resources.
+     **/
+    void _osFreeResources( void );
+
+    /**
+     * \brief   OS specific implementation to open service.
+     **/
+    bool _osOpenService( void );
+
+    /**
+     * \brief   OS specific implementation to create service.
+     **/
+    bool _osCcreateService( void );
+
+    /**
+     * \brief   OS specific implementation of deleting service.
+     **/
+    void _osDeleteService( void );
+
     /**
      * \brief   Registers service and returns true if handle is valid.
      *          The method is valid for Windows OS.
      **/
-    bool _registerService( void );
+    bool _osRegisterService( void );
+
     /**
-     * \brief   Returns instance of message router service.
+     * \brief   OS specific implementation of changing the state of the mcrouter service.
      **/
-    inline MulticastRouter & self( void );
-    static bool _checkCommand(const String& cmd);
+    bool _osSetState( NEMulticastRouterSettings::eRouterState newState );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -237,7 +258,7 @@ inline NEMulticastRouterSettings::eRouterState MulticastRouter::getState( void )
 
 inline bool MulticastRouter::serviceOpen(void)
 {
-    return _openService();
+    return _osOpenService();
 }
 
 inline NEMulticastRouterSettings::eServiceCommand MulticastRouter::getCurrentCommand(void) const

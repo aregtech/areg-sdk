@@ -36,7 +36,7 @@ IESynchObject::IESynchObject(IESynchObject::eSyncObject synchObjectType)
 
 IESynchObject::~IESynchObject( void )
 {
-    _destroySynchObject();
+    _osDestroySynchObject();
 }
 
 //////////////////////////////////////////////////////////////////////////

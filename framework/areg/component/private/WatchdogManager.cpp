@@ -73,7 +73,7 @@ bool WatchdogManager::startTimer(Watchdog& watchdog)
 void WatchdogManager::stopTimer(Watchdog& watchdog)
 {
     getInstance()._unregisterWatchdog(watchdog);
-    WatchdogManager::_systemTimerStop(watchdog.getHandle());
+    WatchdogManager::_osSystemTimerStop(watchdog.getHandle());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -104,7 +104,7 @@ inline void WatchdogManager::_registerWatchdog(Watchdog & watchdog)
 inline void WatchdogManager::_unregisterWatchdog(Watchdog& watchdog)
 {
     mWatchdogResource.unregisterResourceObject(watchdog.getId());
-    WatchdogManager::_systemTimerStop(watchdog.getHandle());
+    WatchdogManager::_osSystemTimerStop(watchdog.getHandle());
 }
 
 void WatchdogManager::_removeAllWatchdogs(void)
@@ -116,7 +116,7 @@ void WatchdogManager::_removeAllWatchdogs(void)
     {
         mWatchdogResource.removeResourceFirstElement(elem);
         ASSERT(elem.second != nullptr);
-        WatchdogManager::_systemTimerStop(elem.second->getHandle());
+        WatchdogManager::_osSystemTimerStop(elem.second->getHandle());
     }
 
     mWatchdogResource.unlock();
@@ -128,7 +128,7 @@ void WatchdogManager::processEvent(const TimerManagerEventData & data)
     ASSERT(watchdog != nullptr);
     if (mWatchdogResource.existResource(watchdog->getId()))
     {
-        WatchdogManager::_systemTimerStart(*watchdog);
+        WatchdogManager::_osSystemTimerStart(*watchdog);
     }
 }
 

@@ -60,3 +60,9 @@ void Process::_initPaths( const char * fullPath )
         mProcessExt  = procPath.extension().empty()   ? String::EmptyString : procPath.extension().string();
     }
 }
+
+String Process::getSafeEnvVariable( const char * var ) const
+{
+    return _osGetEnvVariable( var );
+}
+
