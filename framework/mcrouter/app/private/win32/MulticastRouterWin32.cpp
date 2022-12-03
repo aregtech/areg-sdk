@@ -26,7 +26,6 @@
 #include "areg/base/String.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/appbase/NEApplication.hpp"
-#include "areg/trace/GETrace.h"
 
 #ifndef WIN32_LEAN_AND_MEAN
     #define WIN32_LEAN_AND_MEAN
@@ -38,54 +37,53 @@
 
 #include "mcrouter/resources/resource.hpp"
 
-DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_setState);
-
 //////////////////////////////////////////////////////////////////////////
 // Global functions, Begin
 //////////////////////////////////////////////////////////////////////////
-VOID WINAPI GServiceMain(DWORD argc, LPTSTR * argv);
-VOID WINAPI GServiceCtrlHandler(DWORD);
+VOID WINAPI _win32ServiceMain(DWORD argc, LPTSTR * argv);
+VOID WINAPI _win32ServiceCtrlHandler(DWORD);
 
 namespace
 {
 #ifdef UNICODE
-    wchar_t *               _serviceDescribe    = NEApplication::ROUTER_SERVICE_NAME_WIDE;
+    wchar_t * _serviceDescribe = NEApplication::ROUTER_SERVICE_NAME_WIDE;
 #else
-    char *                  _serviceDescribe    = NEApplication::ROUTER_SERVICE_NAME_ASCII;
+    char * _serviceDescribe = NEApplication::ROUTER_SERVICE_NAME_ASCII;
 #endif // UNICODE
 
     SERVICE_STATUS          _serviceStatus  { 0 };
     SERVICE_STATUS_HANDLE   _statusHandle   { nullptr };
-    SERVICE_TABLE_ENTRY     _serviceTable[] { {_serviceDescribe, &::GServiceMain}, {nullptr, nullptr} };
-}
+    SERVICE_TABLE_ENTRY     _serviceTable[] { {_serviceDescribe, &::_win32ServiceMain}, {nullptr, nullptr} };
 
-inline static char ** _convertArguments( TCHAR ** argv, int argc)
-{
-    char ** argvTemp = argc != 0 ? DEBUG_NEW char * [argc] : nullptr;
-    if ( argvTemp != nullptr )
+    inline char ** _convertArguments( TCHAR ** argv, int argc )
     {
-        for ( int i = 0; i < static_cast<int>(argc); ++ i )
+        char ** argvTemp = argc != 0 ? DEBUG_NEW char * [argc] : nullptr;
+        if ( argvTemp != nullptr )
         {
-            TCHAR * entry   = argv[i];
-            uint32_t length = static_cast<uint32_t>(NEString::getStringLength<TCHAR>(entry));
-            uint32_t size = length + 1u;
-            char * arg      = DEBUG_NEW char[ size ];
-            NEString::copyString<char, TCHAR>(arg, size, entry);
-            argvTemp[i] = arg;
+            for ( int i = 0; i < static_cast<int>(argc); ++i )
+            {
+                TCHAR * entry = argv[i];
+                uint32_t length = static_cast<uint32_t>(NEString::getStringLength<TCHAR>( entry ));
+                uint32_t size = length + 1u;
+                char * arg = DEBUG_NEW char[size];
+                NEString::copyString<char, TCHAR>( arg, size, entry );
+                argvTemp[i] = arg;
+            }
+        }
+        return argvTemp;
+    }
+
+    inline void _deleteArguments( char ** argv, int argc )
+    {
+        if ( argv != nullptr )
+        {
+            for ( int i = 0; i < static_cast<int>(argc); ++i )
+                delete[] argv[i];
+            delete[] argv;
         }
     }
-    return argvTemp;
-}
 
-inline static void _deleteArguments( char ** argv, int argc )
-{
-    if ( argv != nullptr )
-    {
-        for ( int i = 0; i < static_cast<int>(argc); ++ i )
-            delete [] argv[i];
-        delete [] argv;
-    }
-}
+} // namespace
 
 int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
@@ -110,7 +108,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
         break;
 
     case NEMulticastRouterSettings::eServiceCommand::CMD_Console:
-        ::GServiceMain(argc, argv);
+        ::_win32ServiceMain(argc, argv);
         router.serviceStop();
         break;
 
@@ -126,7 +124,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
     return result;
 }
 
-VOID WINAPI GServiceMain( DWORD argc, LPTSTR * argv )
+VOID WINAPI _win32ServiceMain( DWORD argc, LPTSTR * argv )
 {
     try
     {
@@ -156,7 +154,7 @@ VOID WINAPI GServiceMain( DWORD argc, LPTSTR * argv )
 
 }
 
-VOID WINAPI GServiceCtrlHandler (DWORD CtrlCode)
+VOID WINAPI _win32ServiceCtrlHandler(DWORD CtrlCode)
 {
     switch ( CtrlCode )
     {
@@ -184,23 +182,28 @@ VOID WINAPI GServiceCtrlHandler (DWORD CtrlCode)
 //////////////////////////////////////////////////////////////////////////
 // MulticastRouter class implementation
 //////////////////////////////////////////////////////////////////////////
-bool MulticastRouter::_isValid( void ) const
+bool MulticastRouter::_osIsValid( void ) const
 {
     return (mSeMHandle != nullptr && mSvcHandle != nullptr);
 }
 
-void MulticastRouter::_freeResources( void )
+void MulticastRouter::_osFreeResources( void )
 {
     if ( mSvcHandle != nullptr )
+    {
         ::CloseServiceHandle( reinterpret_cast<SC_HANDLE>(mSvcHandle) );
+    }
+
     if ( mSeMHandle != nullptr )
+    {
         ::CloseServiceHandle( reinterpret_cast<SC_HANDLE>(mSeMHandle) );
+    }
 
     mSvcHandle = nullptr;
     mSeMHandle = nullptr;
 }
 
-bool MulticastRouter::_openService(void)
+bool MulticastRouter::_osOpenService(void)
 {
     if ( mSeMHandle == nullptr )
     {
@@ -215,7 +218,7 @@ bool MulticastRouter::_openService(void)
     return ( mSvcHandle != nullptr );
 }
 
-bool MulticastRouter::_createService(void)
+bool MulticastRouter::_osCcreateService(void)
 {
     if ( mSeMHandle == nullptr )
     {
@@ -292,25 +295,28 @@ bool MulticastRouter::_createService(void)
     return ( mSvcHandle != nullptr );
 }
 
-void MulticastRouter::_deleteService( void )
+void MulticastRouter::_osDeleteService( void )
 {
     if ( mSvcHandle != nullptr )
+    {
         ::DeleteService( reinterpret_cast<SC_HANDLE>(mSvcHandle) );
+    }
 }
 
-bool MulticastRouter::_registerService( void )
+bool MulticastRouter::_osRegisterService( void )
 {
     if ( mServiceCmd == NEMulticastRouterSettings::eServiceCommand::CMD_Service )
-        _statusHandle = ::RegisterServiceCtrlHandler( _serviceDescribe, GServiceCtrlHandler);
+    {
+        _statusHandle = ::RegisterServiceCtrlHandler( _serviceDescribe, _win32ServiceCtrlHandler );
+    }
+
     return (_statusHandle != nullptr);
 }
 
-bool MulticastRouter::setState( NEMulticastRouterSettings::eRouterState newState )
+bool MulticastRouter::_osSetState( NEMulticastRouterSettings::eRouterState newState )
 {
-    TRACE_SCOPE(mcrouter_app_MulticastRouter_setState);
-    TRACE_DBG("Changing Service Router state. Old state [ %s ], new state [ %s ]", NEMulticastRouterSettings::GetString(mRouterState), NEMulticastRouterSettings::GetString(newState));
+    bool result{ true };
 
-    bool result = true;
     _serviceStatus.dwControlsAccepted   = 0;
     _serviceStatus.dwWin32ExitCode      = 0;
 
@@ -362,7 +368,9 @@ bool MulticastRouter::setState( NEMulticastRouterSettings::eRouterState newState
         }
         mRouterState = newState;
         if ( _statusHandle != nullptr )
-            result = ::SetServiceStatus(_statusHandle, &_serviceStatus) != FALSE;
+        {
+            result = ::SetServiceStatus( _statusHandle, &_serviceStatus ) != FALSE;
+        }
     }
 
     return result;

@@ -153,17 +153,17 @@ namespace   NEUtilities
 
     /**
      * \brief   Returns current time. On output 'out_sysTime' system time contains the date-time data.
-     * \param   out_sysTime     On output the system time parameter contains date-time of current time.
-     * \param   localTime       If true, in output the out_sysTime contains local time values.
+     * \param   sysTime     On output the system time parameter contains date-time of current time.
+     * \param   localTime   If true, in output the out_sysTime contains local time values.
      **/
-    AREG_API void systemTimeNow( sSystemTime & OUT out_sysTime, bool localTime );
+    AREG_API void systemTimeNow( sSystemTime & OUT sysTime, bool localTime );
 
     /**
      * \brief   Returns current time. On output 'out_fileTime' time contains the date-time data.
-     * \param   out_fileTime    On output the file-time parameter contains date-time of current time.
-     * \param   localTime       If true, in output the out_fileTime contains local time values.
+     * \param   fileTime    On output the file-time parameter contains date-time of current time.
+     * \param   localTime   If true, in output the out_fileTime contains local time values.
      **/
-    AREG_API void systemTimeNow( sFileTime & OUT out_fileTime, bool localTime );
+    AREG_API void systemTimeNow( sFileTime & OUT fileTime, bool localTime );
 
     /**
      * \brief   Returns current system time data as a 64-bit integer value. The returned value is
@@ -178,7 +178,7 @@ namespace   NEUtilities
      * \param   sysTime     The system time structure with data to convert.
      * \return  Returns microseconds passed since January 1, 1970 (UNIX epoch).
      **/
-    AREG_API TIME64 convToTime( const sSystemTime & sysTime );
+    AREG_API TIME64 convToTime( const sSystemTime & IN sysTime );
 
     /**
      * \brief   Returns file time data as a 64-bit integer value. The returned value is
@@ -186,21 +186,14 @@ namespace   NEUtilities
      * \param   fileTime    The system time structure with data to convert.
      * \return  Returns microseconds passed since January 1, 1970 (UNIX epoch).
      **/
-    AREG_API TIME64 convToTime( const sFileTime & fileTime );
+    AREG_API TIME64 convToTime( const sFileTime & IN fileTime );
 
     /**
      * \brief   Converts 64-bit value of microseconds passed since January 1 1970 into system time data structure.
-     * \param   timeValue       64-bit value as microseconds passed since January 1 1970.
-     * \param   out_sysTime     On output the system time parameter contains date-time of converted time.
+     * \param   timeValue   64-bit value as microseconds passed since January 1 1970.
+     * \param   sysTime     On output the system time parameter contains date-time of converted time.
      **/
-    AREG_API void convToSystemTime( const TIME64 &  timeValue, sSystemTime & out_sysTime );
-
-    /**
-     * \brief   Converts 64-bit value of microseconds passed since January 1 1970 into file time data structure.
-     * \param   timeValue       64-bit value as microseconds passed since January 1 1970.
-     * \param   out_fileTime    On output the file-time parameter contains date-time of converted time.
-     **/
-    AREG_API void convToFileTime( const TIME64 &  timeValue, sFileTime & OUT out_fileTime );
+    AREG_API void convToSystemTime( const TIME64 & IN timeValue, sSystemTime & OUT sysTime );
 
     /**
      * \brief   Converts given file-time data structure into system time data structure.
@@ -210,11 +203,18 @@ namespace   NEUtilities
     AREG_API void convToSystemTime( const sFileTime & fileTime, sSystemTime & out_sysTime );
 
     /**
-     * \brief   Converts given system-time data structure into file-time data structure.
-     * \param   sysTime         The system-time data structure to convert.
-     * \param   out_fileTime    On output the file-time parameter contains date-time of converted time.
+     * \brief   Converts 64-bit value of microseconds passed since January 1 1970 into file time data structure.
+     * \param   timeValue   64-bit value as microseconds passed since January 1 1970.
+     * \param   fileTime    On output the file-time parameter contains date-time of converted time.
      **/
-    AREG_API void convToFileTime( const sSystemTime & sysTime, sFileTime & out_fileTime );
+    AREG_API void convToFileTime( const TIME64 & IN timeValue, sFileTime & OUT fileTime );
+
+    /**
+     * \brief   Converts given system-time data structure into file-time data structure.
+     * \param   sysTime     The system-time data structure to convert.
+     * \param   fileTime    On output the file-time parameter contains date-time of converted time.
+     **/
+    AREG_API void convToFileTime( const sSystemTime & IN sysTime, sFileTime & OUT fileTime );
 
     /**
      * \brief   Compare 2 system-time data structures and returns result indicating equality of data.
@@ -252,17 +252,17 @@ namespace   NEUtilities
 
     /**
      * \brief   Converts system-time data structure to standard 'tm' type. In conversion, a milliseconds part of data will be lost.
-     * \param   sysTime         The system-time data structure to convert.
-     * \param   out_time [out]  On output the parameter contains date-time of converted system time without information of milliseconds.
+     * \param   sysTime     The system-time data structure to convert.
+     * \param   time        On output the parameter contains date-time of converted system time without information of milliseconds.
      **/
-    AREG_API void convToTm( const sSystemTime & sysTime, struct tm & OUT out_time );
+    AREG_API void convToTm( const sSystemTime & IN sysTime, struct tm & OUT time );
 
     /**
      * \brief   Converts standard 'tm' type to system-time data structure. In conversion, a milliseconds part of data will not exist.
-     * \param   time            Contains date-time of converted system time without information of milliseconds.
-     * \param   out_sysTime     On output, the parameter contains date-time information in system-time data structure format without millisecond information.
+     * \param   time        Contains date-time of converted system time without information of milliseconds.
+     * \param   sysTime     On output, the parameter contains date-time information in system-time data structure format without millisecond information.
      **/
-    AREG_API void convToSystemTime( const tm & time, sSystemTime & OUT out_sysTime );
+    AREG_API void convToSystemTime( const tm & IN time, sSystemTime & OUT sysTime );
 
     /**
      * \brief   Localizes the UTC time data value. On output the passed structure contains values in UTC timezone.
@@ -278,11 +278,11 @@ namespace   NEUtilities
 
     /**
      * \brief   Converts the system UTC time to local time.
-     * \param   inUtcTime       The UTC time
-     * \param   outLocalTime    On return this structure contains the local time information.
+     * \param   utcTime     The UTC time to convert.
+     * \param   localTime   On output this structure contains the converted local time.
      * \return  Returns true if conversion succeeded.
      **/
-    AREG_API bool convToLocalTime( const sSystemTime &inUtcTime, sSystemTime & outLocalTime );
+    AREG_API bool convToLocalTime( const sSystemTime & IN utcTime, sSystemTime & OUT localTime );
 
     /**
      * \brief   Converts the system UTC time to local time.
@@ -290,7 +290,7 @@ namespace   NEUtilities
      * \param   outLocalTime    On return this structure contains the local time information.
      * \return  Returns true if conversion succeeded.
      **/
-    AREG_API bool convToLocalTime( const TIME64 & inUtcTime, sSystemTime & outLocalTime );
+    AREG_API bool convToLocalTime( const TIME64 & IN utcTime, sSystemTime & OUT localTime );
 
 /************************************************************************/
 // NEUtilities namespace utility functions, generate names

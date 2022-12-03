@@ -75,20 +75,20 @@ unsigned long Thread::_windowsThreadRoutine( void * /* data */ )
  **/
 #if ((__GLIBC__ > 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ >= 12)))
 
-void Thread::_setThreadName( id_type threadId, const char* threadName)
+void Thread::_osSetThreadName( id_type threadId, const char* threadName)
 {
     pthread_setname_np(threadId, threadName != nullptr ? threadName : "");
 }
 
 #else// !((__GLIBC__ > 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ >= 12)))
 
-void Thread::_setThreadName( id_type /*threadId*/, const char* /*threadName*/)
+void Thread::_osSetThreadName( id_type /*threadId*/, const char* /*threadName*/)
 {
 }
 
 #endif // !((__GLIBC__ > 2) || ((__GLIBC__ == 2) && (__GLIBC_MINOR__ >= 12)))
 
-void Thread::_closeHandle(  THREADHANDLE handle )
+void Thread::_osCloseHandle(  THREADHANDLE handle )
 {
     if (handle != nullptr)
     {
@@ -102,7 +102,7 @@ void Thread::_closeHandle(  THREADHANDLE handle )
 // Methods
 //////////////////////////////////////////////////////////////////////////
 
-void Thread::sleep(unsigned int ms)
+void Thread::_osSleep(unsigned int timeout)
 {
     // since _POSIX_C_SOURCE >= 199309L use nanosleep
     // otherwise, can use:
@@ -112,17 +112,17 @@ void Thread::sleep(unsigned int ms)
     //      usleep(micro);
     
     struct timespec ts;
-    ts.tv_sec   = ms / 1000;
-    ts.tv_nsec  = (ms % 1000) * 1000000 + 1;
+    ts.tv_sec   = timeout / 1'000;
+    ts.tv_nsec  = (timeout % 1'000) * 1'000'000 + 1;
     nanosleep(&ts, nullptr);
 }
 
-id_type Thread::getCurrentThreadId( void )
+id_type Thread::_osGetCurrentThreadId( void )
 {
     return  reinterpret_cast<id_type>( pthread_self() );
 }
 
-Thread::eCompletionStatus Thread::destroyThread(unsigned int waitForStopMs /* = NECommon::DO_NOT_WAIT */)
+Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
 {
     // Initially, the thread is not valid and not running, nothing to destroy
     Thread::eCompletionStatus result = Thread::eCompletionStatus::ThreadInvalid;
@@ -166,7 +166,7 @@ Thread::eCompletionStatus Thread::destroyThread(unsigned int waitForStopMs /* = 
     return result;
 }
 
-bool Thread::_createSystemThread( void )
+bool Thread::_osCreateSystemThread( void )
 {
     bool result = false;
 
@@ -204,22 +204,22 @@ bool Thread::_createSystemThread( void )
     return result;
 }
 
-Thread::eThreadPriority Thread::setPriority( eThreadPriority newPriority )
+Thread::eThreadPriority Thread::_osSetPriority( eThreadPriority newPriority )
 {
     /**
      * if priority of a thread is changed, a real-time scheduling policy must be used, 
      * possible policies are SCHED_FIFO and SCHED_RR. We use SCHED_RR (round robin) here.
      **/
-    static const int schedPolicy    = SCHED_RR;
-    static const int minPriority    = sched_get_priority_min(schedPolicy);
-    static const int maxPriority    = sched_get_priority_max(schedPolicy);
-    static const int deltaPrio      = (maxPriority - minPriority) / 4;
+    static constexpr int schedPolicy{ SCHED_RR };
+    static const int minPriority{ sched_get_priority_min( schedPolicy ) };
+    static const int maxPriority{ sched_get_priority_max( schedPolicy ) };
+    static const int deltaPrio  { (maxPriority - minPriority) / 4 };
 
     Lock  lock(mSynchObject);
     Thread::eThreadPriority oldPrio = mThreadPriority;
     if (_isValidNoLock() && (newPriority != oldPrio))
     {
-        int schedPrio       = MIN_INT_32;
+        int schedPrio       { MIN_INT_32 };
         pthread_t threadId  = reinterpret_cast<pthread_t>(mThreadId);
         switch (newPriority)
         {

@@ -28,14 +28,14 @@
 #include <time.h>
 #include <errno.h>
 
-DEF_TRACE_SCOPE(areg_component_private_posix_WatchdogManager__systemTimerStart);
-DEF_TRACE_SCOPE(areg_component_private_posix_WatchdogManager__defaultPosixTimerExpiredRoutine);
+DEF_TRACE_SCOPE(areg_component_private_posix_WatchdogManager__osSystemTimerStart );
+DEF_TRACE_SCOPE(areg_component_private_posix_WatchdogManager__posixWatchdogExpiredRoutine );
 
 //////////////////////////////////////////////////////////////////////////
 // Linux specific methods
 //////////////////////////////////////////////////////////////////////////
 
-void WatchdogManager::_systemTimerStop(TIMERHANDLE handle)
+void WatchdogManager::_osSystemTimerStop(TIMERHANDLE handle)
 {
     TimerPosix* posixTimer = reinterpret_cast<TimerPosix*>(handle);
     if (posixTimer != nullptr)
@@ -44,16 +44,16 @@ void WatchdogManager::_systemTimerStop(TIMERHANDLE handle)
     }
 }
 
-bool WatchdogManager::_systemTimerStart(Watchdog& watchdog)
+bool WatchdogManager::_osSystemTimerStart(Watchdog& watchdog)
 {
-    TRACE_SCOPE(areg_component_private_posix_WatchdogManager__systemTimerStart);
+    TRACE_SCOPE(areg_component_private_posix_WatchdogManager__osSystemTimerStart );
 
     bool result = false;
     TimerPosix* posixTimer = reinterpret_cast<TimerPosix*>(watchdog.getHandle());
     if (posixTimer != nullptr)
     {
         Watchdog::WATCHDOG_ID watchdogId = watchdog.watchdogId();
-        if (posixTimer->startTimer(watchdog, watchdogId, &WatchdogManager::_defaultPosixWatchdogExpiredRoutine))
+        if (posixTimer->startTimer(watchdog, watchdogId, &WatchdogManager::_posixWatchdogExpiredRoutine))
         {
             TRACE_DBG("Started watchdog timer [ %s ] with timeout [ %u ] ms", watchdog.getName().getString(), watchdog.getTimeout());
             result = true;
@@ -74,9 +74,9 @@ bool WatchdogManager::_systemTimerStart(Watchdog& watchdog)
     return result;
 }
 
-void WatchdogManager::_defaultPosixWatchdogExpiredRoutine(union sigval argSig)
+void WatchdogManager::_posixWatchdogExpiredRoutine(union sigval argSig)
 {
-    TRACE_SCOPE(areg_component_private_posix_WatchdogManager__defaultPosixTimerExpiredRoutine);
+    TRACE_SCOPE(areg_component_private_posix_WatchdogManager__posixWatchdogExpiredRoutine );
 
     WatchdogManager& watchdogManager = WatchdogManager::getInstance();
     TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(argSig.sival_ptr);

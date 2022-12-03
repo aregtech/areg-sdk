@@ -47,10 +47,11 @@ void Process::_osInitilize( void )
     }
 }
 
-String Process::getSafeEnvVariable( const char* var ) const
+
+String Process::_osGetEnvVariable( const char* var ) const
 {
     String result;
-    uint32_t length = static_cast<uint32_t>(::GetEnvironmentVariableA(var, nullptr, 0));
+    uint32_t length = var != nullptr ? static_cast<uint32_t>(::GetEnvironmentVariableA(var, nullptr, 0)) : 0;
     uint32_t size = length + 1u;
     if (size > 1)
     {

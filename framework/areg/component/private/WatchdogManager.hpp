@@ -52,29 +52,6 @@ private:
      **/
     static WatchdogManager& getInstance( void );
 
-#ifdef _WINDOWS
-
-    /**
-     * \brief   Windows OS specific timer routine function. Triggered, when one of timer is expired.
-     * \param   argPtr          The pointer of argument passed to timer expired callback function
-     * \param   timerLowValue   The low value of timer expiration
-     * \param   timerHighValue  The high value of timer expiration.
-     **/
-    static void _defaultWindowsWatchdogExpiredRoutine( void * argPtr, unsigned long timerLowValue, unsigned long timerHighValue );
-
-#endif // _WINDOWS
-
-#ifdef _POSIX
-
-    /**
-     * \brief   POSIX timer routine function. Triggered, when one of timer is expired.
-     * \param   argSig          The value passed to thread signal when the timer was created.
-     *                          This value is passed to routine callback.
-     **/
-    static void _defaultPosixWatchdogExpiredRoutine( union sigval argSig );
-
-#endif // _POSIX
-
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
@@ -179,21 +156,45 @@ private:
     inline void _unregisterWatchdog( Watchdog & Watchdog );
 
 //////////////////////////////////////////////////////////////////////////
-//  Operating system specific methods
+//  OS specific hidden methods
 //////////////////////////////////////////////////////////////////////////
+private:
+
+#ifdef _WINDOWS
+
+    /**
+     * \brief   Windows OS specific timer routine function. Triggered, when one of timer is expired.
+     * \param   argPtr          The pointer of argument passed to timer expired callback function
+     * \param   timerLowValue   The low value of timer expiration
+     * \param   timerHighValue  The high value of timer expiration.
+     **/
+    static void _windowsWatchdogExpiredRoutine( void * argPtr, unsigned long timerLowValue, unsigned long timerHighValue );
+
+#endif // _WINDOWS
+
+#ifdef _POSIX
+
+    /**
+     * \brief   POSIX timer routine function. Triggered, when one of timer is expired.
+     * \param   argSig          The value passed to thread signal when the timer was created.
+     *                          This value is passed to routine callback.
+     **/
+    static void _posixWatchdogExpiredRoutine( union sigval argSig );
+
+#endif // _POSIX
 
     /**
      * \brief   Starts system Watchdog and returns true if Watchdog started with success.
      * \param   WatchdogInfo   The Watchdog information object
      * \return  Returns true if system Watchdog started with success.
      **/
-    static bool _systemTimerStart( Watchdog & watchdog );
+    static bool _osSystemTimerStart( Watchdog & watchdog );
 
     /**
      * \brief   Stops previously started waitable timer.
      * \param   timerHandle The waitable timer handle to destroy.
      **/
-    static void _systemTimerStop(TIMERHANDLE handle);
+    static void _osSystemTimerStop(TIMERHANDLE handle);
 
 //////////////////////////////////////////////////////////////////////////
 //  Member variables.

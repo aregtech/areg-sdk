@@ -139,10 +139,10 @@ friend class MultiLock;
 public:
     /**
      * \brief	Initialize Synchronization object.
-     * \param	lock	If true, current thread will get ownership
-     *                  of mutex on initialization
+     * \param	initLock    If true, current thread will get ownership
+     *                      of the mutex on initialization.
      **/
-    explicit Mutex( bool lock = true );
+    explicit Mutex( bool initLock = true );
 
     /**
      * \brief	Destructor
@@ -164,13 +164,13 @@ public:
      * \param	timeout	The timeout in milliseconds to wait.
      * \return	Returns true if current thread successfully got mutex ownership
      **/
-    virtual bool lock( unsigned int timeout = NECommon::WAIT_INFINITE ) override;
+    inline virtual bool lock( unsigned int timeout = NECommon::WAIT_INFINITE ) override;
 
     /**
      * \brief	Unlocks / Release mutex.
      * \return	Returns true if succeeded.
      **/
-    virtual bool unlock( void ) override;
+    inline virtual bool unlock( void ) override;
 
     /**
      * \brief   Attempts to get Mutex object ownership without blocking thread.
@@ -179,7 +179,7 @@ public:
      *          the current thread already owns the Mutex, the return value is true.
      *          If another thread already owns the Mutex, the return value is false.
      **/
-    virtual bool tryLock( void ) override;
+    inline virtual bool tryLock( void ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -196,7 +196,7 @@ public:
     inline id_type getOwnerThreadId( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
-// Internal operations
+// Hidden or OS specific implementations
 //////////////////////////////////////////////////////////////////////////
 private:
 
@@ -204,12 +204,19 @@ private:
      * \brief   Locks the mutex, takes the ownership.
      * \param   timeout     The timeout in milliseconds to wait for mutex to lock.
      **/
-    bool _lockMutex( unsigned int timeout );
+    bool _osLockMutex( unsigned int timeout );
 
     /**
      * \brief   Unlocks the mutex, release the ownership.
      **/
-    bool _unlockMutex( void );
+    bool _osUnlockMutex( void );
+
+    /**
+     * \brief   OS specific method to create mutex.
+     *          The thread immediately gets the ownership of the mutex if
+     *          the parameter 'initLock' is true.
+     **/
+    void _osCreateMutex( bool initLock );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -268,7 +275,7 @@ public:
     /**
      * \brief	Creates either Manual Reset or Auto-reset Event Synchronization object as well as
      *          the initial state of Event -- whether it is signaled or not
-     * \param	lock	    If true, the initial state of Event is non-signaled.
+     * \param	initLock    If true, the initial state of Event is non-signaled.
      *                      When Event state is non-signaled, any thread trying
      *                      lock Event, will be blocked until Event object
      *                      is unlocked / signaled by any other thread.
@@ -278,7 +285,7 @@ public:
      *                      state to non-signaled.
      *                      By default, creates auto-reset Synchronization Event.
      **/
-    explicit SynchEvent (bool lock = true, bool autoReset = true );
+    explicit SynchEvent ( bool initLock = true, bool autoReset = true );
 
     /**
      * \brief   Destructor. Sets Event to signal state first.
@@ -301,13 +308,13 @@ public:
      * \return	Returns true if Event was unlocked / signaled and thread was unblock
      *          with no time out or waiting error.
      **/
-    virtual bool lock( unsigned int timeout = NECommon::WAIT_INFINITE ) override;
+    inline virtual bool lock( unsigned int timeout = NECommon::WAIT_INFINITE ) override;
 
     /**
      * \brief	Unlock Event, i.e. set to signaled state
      * \return	Return true if successfully set event state to signaled.
      **/
-    virtual bool unlock( void ) override;
+    inline virtual bool unlock( void ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations / Attributes
@@ -316,27 +323,64 @@ public:
     /**
      * \brief	Manually sets event state to signaled. Same as calling Unlock()
      **/
-    bool setEvent( void );
+    inline bool setEvent( void );
 
     /**
      * \brief   Manually resets state of event, i.e. set is non-signaled.
      **/
-    bool resetEvent( void );
+    inline bool resetEvent( void );
 
     /**
      * \brief   Pulse event once. If it was not set, it sets once and immediately
      *          reset to non-signaled state.
      **/
-    void pulseEvent( void );
+    inline void pulseEvent( void );
 
     /**
      * \brief   Returns true if event is auto-reset
      **/
     inline bool isAutoReset( void ) const;
 
+//////////////////////////////////////////////////////////////////////////
+// Hidden or OS specific implementations
+//////////////////////////////////////////////////////////////////////////
 private:
     
-    bool _unlockEvent( void * eventHandle );
+    /**
+     * \brief   The OS specific call to create an event.
+     *          The event is in non-signaled state if the 'initLock' parameter
+     *          is true. Otherwise, it is created in signaled state.
+     **/
+    void _osCreateEvent( bool initLock );
+
+    /**
+     * \brief   The OS specific call to set event and release thread(s).
+     * \param   evenHandle      The handle of event object to set.
+     **/
+    bool _osUnlockEvent( void * eventHandle );
+
+    /**
+     * \brief   The OS specific call to lock threads and wait for event.
+     * \param   timeout     The timeout in milliseconds to wait for event.
+     * \return  Returns true if during timeout the event was fired.
+     **/
+    bool _osLockEvent( unsigned int timeout );
+
+    /**
+     * \brief   The OS specific call to set the even in a signaled state.
+     **/
+    bool _osSetEvent( void );
+
+    /**
+     * \brief   The OS specific call to reset the event, i.e. to set in non-signaled state.
+     **/
+    bool _osResetEvent( void );
+
+    /**
+     * \brief   The OS specific call to pulse one time the event to be signaled and release a thread,
+     *          then immediately switch to a non-signaled state.
+     **/
+    void _osPulseEvent( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -423,18 +467,18 @@ public:
      *                      Otherwise the lock count decreased and thread is released.
      * \return	Returns true if thread was released because of signaled state of semaphore.
      **/
-    virtual bool lock( unsigned int timeout = NECommon::WAIT_INFINITE ) override;
+    inline virtual bool lock( unsigned int timeout = NECommon::WAIT_INFINITE ) override;
 
     /**
      * \brief   Unlocks Semaphore, i.e. signals it, and increase lock count number.
      * \return  Returns true if successfully signaled semaphore
      **/
-    virtual bool unlock( void ) override;
+    inline virtual bool unlock( void ) override;
 
     /**
      * \brief   Always return false. No implementation for Semaphore.
      **/
-    virtual bool tryLock( void ) override;
+    inline virtual bool tryLock( void ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -449,6 +493,33 @@ public:
      * \brief   Returns the current lock count of Semaphore object.
      **/
     inline long getCurrentCount( void ) const;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden or OS specific methods
+//////////////////////////////////////////////////////////////////////////
+private:
+
+    /**
+     * \brief   The OS specific implementation to create a semaphore.
+     **/
+    void _osCreateSemaphore( void );
+
+    /**
+     * \brief   The OS specific implementation to release a semaphore.
+     **/
+    void _osReleaseSemaphore( void );
+
+    /**
+     * \brief   Takes the semaphore ownership and locks it. If the semaphore is
+     *          already locked, wait for specified timeout and returns false.
+     **/
+    bool _osLock( unsigned int timeout );
+
+    /**
+     * \brief   Unlocks previousely locked semaphore, so that the other waiting threads
+     *          can take the ownership and continue execution.
+     **/
+    bool _osUnlock( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -559,7 +630,37 @@ public:
     virtual bool tryLock( void ) override;
 
 //////////////////////////////////////////////////////////////////////////
-// Hidden / Forbidden method calls
+// Hidden or OS specific calls
+//////////////////////////////////////////////////////////////////////////
+private:
+
+    /**
+     * \brief   The OS specific call to create critical section.
+     **/
+    void _osCreateCriticalSection( void );
+
+    /**
+     * \brief   The OS specific call to release critical secion.
+     **/
+    void _osReleaseCriticalSection( void );
+
+    /**
+     * \brief   The OS specific implementation to enter and lock critical section.
+     **/
+    bool _osLock( void );
+
+    /**
+     * \brief   The OS specific implementation to enter and lock critical section.
+     **/
+    bool _osUnlock( void );
+
+    /**
+     * \brief   The OS specific implementation to try to lock the critical section.
+     **/
+    bool _osTryLock( void );
+
+    //////////////////////////////////////////////////////////////////////////
+// Forbidden method calls
 //////////////////////////////////////////////////////////////////////////
 private:
     DECLARE_NOCOPY_NOMOVE( CriticalSection );
@@ -595,7 +696,7 @@ public:
     /**
      * \brief   Destroys spin-lock object
      **/
-    virtual ~SpinLock( void );
+    virtual ~SpinLock( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations, IESynchObject interface
@@ -627,7 +728,7 @@ public:
      * \brief   Releases ownership of the spin-lock object.
      * \return  Spin-lock always return true
      **/
-    virtual bool unlock( void ) override;
+    inline virtual bool unlock( void ) override;
 
     /**
      * \brief   Attempts to take the spin-lock ownership without blocking thread.
@@ -638,7 +739,7 @@ public:
      *          If another thread already owns the critical section,
      *          the return value is false.
      **/
-    virtual bool tryLock( void ) override;
+    inline virtual bool tryLock( void ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -706,13 +807,13 @@ public:
      *                      takes the ownership.
      * \return  Always returns true.
      **/
-    virtual bool lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/ ) override;
+    inline virtual bool lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/ ) override;
 
     /**
      * \brief   Releases ownership of the resource lock object.
      * \return  Always returns true.
      **/
-    virtual bool unlock( void ) override;
+    inline virtual bool unlock( void ) override;
 
     /**
      * \brief   Attempts to take the resource lock ownership without blocking thread.
@@ -722,7 +823,39 @@ public:
      *          the method returns true. Otherwise, it returns false. After each there should
      *          be unlock called.
      **/
-    virtual bool tryLock( void ) override;
+    inline virtual bool tryLock( void ) override;
+
+private:
+
+    /**
+     * \brief   Creates the resource lock object.
+     *          May set initially into the monitor more.
+     **/
+    void _osCreateResourceLock( bool initLock );
+
+    /**
+     * \brief   Releases the not used resource lock.
+     **/
+    void _osReleaseResourceLock( void );
+
+    /**
+     * \brief   Call to lock the resource. It suspends the calling thread if the resources is already locked.
+     *          If it is locked, the thread wait for 'timeout' in milliseconds and returns false.
+     *          Returns true if succeeded to lock the resource and take the ownership.
+     **/
+    bool _osLock( unsigned int timeout );
+
+    /**
+     * \brief   Call to unlock previosely locked resources. It releases resource lock and lets the other threads
+     *          to lock and take the ownership.
+     **/
+    bool _osUnlock( void );
+
+    /**
+     * \brief   Tries to lock the resource lock. If resource lock is free, it locks and immediately returns true.
+     *          Otherwise, it is not locked and immediately returns false.
+     **/
+    bool _osTryLock( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -763,7 +896,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~NolockSynchObject( void );
+    virtual ~NolockSynchObject( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations, IESynchObject interface
@@ -781,18 +914,18 @@ public:
      * \param	NOT USED.
      * \return	Always returns true.
      **/
-    virtual bool lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/ ) override;
+    inline virtual bool lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/ ) override;
 
     /**
      * \brief   No real unlocking.
      * \return	Always returns true.
      **/
-    virtual bool unlock( void ) override;
+    inline virtual bool unlock( void ) override;
 
     /**
      * \brief   Always return true. No real locking.
      **/
-    virtual bool tryLock( void ) override;
+    inline virtual bool tryLock( void ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -852,7 +985,7 @@ public:
      * \param	timeout     The timeout to wait if timer is in non-signaled state.
      * \return	Returns true if thread was released because of signaled state of timer.
      **/
-    virtual bool lock( unsigned int timeout = NECommon::WAIT_INFINITE ) override;
+    inline virtual bool lock( unsigned int timeout = NECommon::WAIT_INFINITE ) override;
 
     /**
      * \brief   Activates the specified waitable timer.
@@ -862,7 +995,7 @@ public:
      *          To set due time, timer is using parameters passed in constructor.
      * \return  Return true if timer was successfully activate.
      **/
-    virtual bool unlock( void ) override;
+    inline virtual bool unlock( void ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations / Attributes
@@ -872,7 +1005,7 @@ public:
      * \brief   Activates timer manually. Same as unlock() function call.
      * \return  Returns true if waitable timer successfully activated
      **/
-    bool setTimer( void );
+    inline bool setTimer( void );
 
     /**
      * \brief   Sets the specified waitable timer to the inactive state.
@@ -883,7 +1016,7 @@ public:
      *          and its state is set to signaled. If the timer is already in
      *          the signaled state, it remains in that state.
      **/
-    bool cancelTimer( void );
+    inline bool cancelTimer( void );
 
     /**
      * \brief   Returns due time in milliseconds of waitable timer
@@ -893,13 +1026,45 @@ public:
     /**
      * \brief   If true, the waitable timer is periodic
      **/
-    bool isPeriodic( void ) const;
+    inline bool isPeriodic( void ) const;
 
     /**
      * \brief   If true, it is auto-reset waitable timer
      *          Otherwise, it is manual reset.
      **/
-    bool isAutoreset( void ) const;
+    inline bool isAutoreset( void ) const;
+
+//////////////////////////////////////////////////////////////////////////
+// OS specific hidden methods
+//////////////////////////////////////////////////////////////////////////
+private:
+
+    /**
+     * \brief   OS spceific call to create synchronization timer. 
+     **/
+    void _osCreateTimer( bool isSteady );
+
+    /**
+     * \brief   OS specific call to release the synchronization timer.
+     **/
+    void _osReleaseTime( void );
+
+    /**
+     * \brief   Call to lock the thread for specified timeout. If timer is fired, it releases
+     *          the thread without waiting timeout and returns true.
+     **/
+    bool _osLock( unsigned int timeout );
+
+    /**
+     * \brief   Sets the timer with the timeout specified in the constructor.
+     **/
+    bool _osSetTimer( void );
+
+    /**
+     * \brief   Cancels the timer if did not expired, so that the locked threads are released.
+     *          The same method is called to unlock the timer.
+     **/
+    bool _osCancelTimer( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -1072,36 +1237,36 @@ private:
      * \brief   MultiLock::eLockedState
      *          The current locking state of every single synchronization object
      **/
-    typedef enum class E_LockedState : int
+    enum class eLockedState : int
     {
           StateUnlocked = 0     //!< Unlocked state
         , StateLocked   = 1     //!< Locked state
-    } eLockedState;
+    };
 
 public:
     /**
      * \brief   MultiLock::LOCK_INDEX_INVALID
      *          Invalid index of synchronization list
      **/
-    static constexpr int    LOCK_INDEX_INVALID          = -1;
+    static constexpr int    LOCK_INDEX_INVALID      { -1 };
 
     /**
      * \brief   MultiLock::LOCK_INDEX_COMPLETION
      *          The completion routine index.
      *          Returned if waiting function returns WAIT_IO_COMPLETION
      **/
-    static constexpr int    LOCK_INDEX_COMPLETION      = -2;
+    static constexpr int    LOCK_INDEX_COMPLETION   { -2 };
     /**
      * \brief   MultiLock::LOCK_INDEX_TIMEOUT
      *          The index, indicating waiting timeout.
      **/
-    static constexpr int    LOCK_INDEX_TIMEOUT         = -3;
+    static constexpr int    LOCK_INDEX_TIMEOUT      { -3 };
     /**
      * \brief   MultiLock::LOCK_INDEX_ALL
      *          All synchronization objects are locked.
      *          Same as MAX_SIZE_OF_ARRAY (64)
      **/
-    static constexpr int    LOCK_INDEX_ALL             = NECommon::MAXIMUM_WAITING_OBJECTS;
+    static constexpr int    LOCK_INDEX_ALL          { NECommon::MAXIMUM_WAITING_OBJECTS };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -1155,7 +1320,7 @@ public:
      *          locked / signaled.
      *          Otherwise, it returns valid index of locked object in array.
      **/
-    int lock( unsigned int timeout = NECommon::WAIT_INFINITE, bool waitForAll = false, bool isAlertable = false );
+    inline int lock( unsigned int timeout = NECommon::WAIT_INFINITE, bool waitForAll = false, bool isAlertable = false );
 
     /**
      * \brief   Unlocks every synchronization object, which was locked before
@@ -1168,6 +1333,22 @@ public:
      * \brief   Returns true if operation succeeded.
      **/
     bool unlock(int index);
+
+//////////////////////////////////////////////////////////////////////////
+// Member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   The OS specific call to lock multipe synchronization objects.
+     *          It returns the index of locking object, that the thread has
+     *          taken the ownership.
+     * \pram    timeout     Timeout in milliseconds to wait. If expired,
+     *                      returns timeout expired value withoud locking.
+     * \param   waitForAll  It true, waits for all objects.
+     * \param   isAlertable If true and thread is locked it returns the
+     *                      complition routine index.
+     **/
+    int _osLock( unsigned int timeout, bool waitForAll, bool isAlertable );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -1387,6 +1568,23 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Mutex class inline functions
 //////////////////////////////////////////////////////////////////////////
+inline bool Mutex::lock( unsigned int timeout /* = NECommon::WAIT_INFINITE */ )
+{
+    ASSERT( mSynchObject != nullptr );
+    return _osLockMutex( timeout );
+}
+
+inline bool Mutex::tryLock( void )
+{
+    return lock( NECommon::DO_NOT_WAIT );
+}
+
+inline bool Mutex::unlock( void )
+{
+    ASSERT( mSynchObject != nullptr );
+    return _osUnlockMutex( );
+}
+
 inline bool Mutex::isLocked( void ) const
 {
     return (mOwnerThreadId.load() != 0);
@@ -1400,9 +1598,40 @@ inline id_type Mutex::getOwnerThreadId( void ) const
 //////////////////////////////////////////////////////////////////////////
 // SynchEvent class inline functions
 //////////////////////////////////////////////////////////////////////////
+
 inline bool SynchEvent::isAutoReset( void ) const
 {
     return mAutoReset;
+}
+
+inline bool SynchEvent::unlock( void )
+{
+    ASSERT( mSynchObject != nullptr );
+    return _osUnlockEvent( mSynchObject );
+}
+
+inline bool SynchEvent::lock( unsigned int timeout /* = NECommon::WAIT_INFINITE */ )
+{
+    ASSERT( mSynchObject != nullptr );
+    return _osLockEvent( timeout );
+}
+
+inline bool SynchEvent::setEvent( void )
+{
+    ASSERT( mSynchObject != nullptr );
+    return _osSetEvent( );
+}
+
+inline bool SynchEvent::resetEvent( void )
+{
+    ASSERT( mSynchObject != nullptr );
+    return _osResetEvent( );
+}
+
+inline void SynchEvent::pulseEvent( void )
+{
+    ASSERT( mSynchObject != nullptr );
+    _osPulseEvent( );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1419,8 +1648,126 @@ inline long Semaphore::getCurrentCount( void ) const
 }
 
 //////////////////////////////////////////////////////////////////////////
+// CriticalSection class inline functions
+//////////////////////////////////////////////////////////////////////////
+
+inline bool CriticalSection::lock( unsigned int  /*timeout = NECommon::WAIT_INFINITE */ )
+{
+    ASSERT( mSynchObject != nullptr );
+    return _osLock( );
+}
+
+inline bool CriticalSection::unlock( void )
+{
+    ASSERT( mSynchObject != nullptr );
+    return _osUnlock( );
+}
+
+inline bool CriticalSection::tryLock( void )
+{
+    ASSERT( mSynchObject != nullptr );
+    return _osTryLock( );
+}
+
+inline bool CriticalSection::lock( void )
+{
+    return lock( NECommon::WAIT_INFINITE );
+}
+
+//////////////////////////////////////////////////////////////////////////
+// SpinLock class inline functions
+//////////////////////////////////////////////////////////////////////////
+
+inline bool SpinLock::unlock( void )
+{
+    mLock.store( false, std::memory_order_release );
+    return true;
+}
+
+inline bool SpinLock::tryLock( void )
+{
+    return ((mLock.load( std::memory_order_relaxed ) == false) && (mLock.exchange( true, std::memory_order_acquire ) == false));
+}
+
+inline bool SpinLock::lock( void )
+{
+    return lock( NECommon::WAIT_INFINITE );
+}
+
+//////////////////////////////////////////////////////////////////////////
 // SynchTimer class inline functions
 //////////////////////////////////////////////////////////////////////////
+
+inline bool ResourceLock::lock( unsigned int timeout /*= NECommon::WAIT_INFINITE */ )
+{
+    ASSERT( mSynchObject != nullptr );
+    return _osLock( timeout );
+}
+
+inline bool ResourceLock::unlock( void )
+{
+    ASSERT( mSynchObject != nullptr );
+    return _osUnlock( );
+}
+
+inline bool ResourceLock::tryLock( void )
+{
+    ASSERT( mSynchObject != nullptr );
+    return _osTryLock( );
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ResourceLock class inline functions
+//////////////////////////////////////////////////////////////////////////
+
+inline bool NolockSynchObject::lock( void )
+{
+    return true;
+}
+
+inline bool NolockSynchObject::lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/ )
+{
+    return true;
+}
+
+inline bool NolockSynchObject::unlock( void )
+{
+    return true;
+}
+
+inline bool NolockSynchObject::tryLock( void )
+{
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// SynchTimer class inline functions
+//////////////////////////////////////////////////////////////////////////
+
+inline bool SynchTimer::lock( unsigned int timeout /* = NECommon::WAIT_INFINITE */ )
+{
+    ASSERT( mSynchObject != nullptr );
+    return _osLock( timeout );
+}
+
+inline bool SynchTimer::unlock( void )
+{
+    ASSERT( mSynchObject != nullptr );
+    return _osCancelTimer( );
+}
+
+inline bool SynchTimer::setTimer( void )
+{
+    ASSERT( mSynchObject != nullptr );
+    return _osSetTimer( );
+}
+
+inline bool SynchTimer::cancelTimer( void )
+{
+    ASSERT( mSynchObject != nullptr );
+    return _osCancelTimer( );
+}
+
 inline unsigned int SynchTimer::dueTime( void ) const
 {
     return mTimeout;
@@ -1437,30 +1784,6 @@ inline bool SynchTimer::isAutoreset( void ) const
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CriticalSection class inline functions
-//////////////////////////////////////////////////////////////////////////
-inline bool CriticalSection::lock( void )
-{
-    return lock( NECommon::WAIT_INFINITE );
-}
-
-//////////////////////////////////////////////////////////////////////////
-// SpinLock class inline functions
-//////////////////////////////////////////////////////////////////////////
-inline bool SpinLock::lock( void )
-{
-    return lock(NECommon::WAIT_INFINITE);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// ResourceLock class inline functions
-//////////////////////////////////////////////////////////////////////////
-inline bool NolockSynchObject::lock( void )
-{
-    return true;
-}
-
-//////////////////////////////////////////////////////////////////////////
 // Lock class inline functions
 //////////////////////////////////////////////////////////////////////////
 inline bool Lock::lock(unsigned int timeout /* = NECommon::WAIT_INFINITE */)
@@ -1471,6 +1794,15 @@ inline bool Lock::lock(unsigned int timeout /* = NECommon::WAIT_INFINITE */)
 inline bool Lock::unlock( void )
 {
     return mSynchObject.unlock();
+}
+
+//////////////////////////////////////////////////////////////////////////
+// MultiLock class inline functions
+//////////////////////////////////////////////////////////////////////////
+inline int MultiLock::lock( unsigned int timeout /* = NECommon::WAIT_INFINITE */, bool waitForAll /* = false */, bool isAlertable /*= false*/ )
+{
+    ASSERT( mSizeCount != 0 );
+    return _osLock( timeout, waitForAll, isAlertable );
 }
 
 //////////////////////////////////////////////////////////////////////////

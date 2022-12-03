@@ -152,7 +152,7 @@ void TimerManager::_unregisterTimer( Timer & timer )
     if (handle != nullptr)
     {
         mTimerResource.unregisterResourceObject(handle);
-        TimerManager::_systemTimerStop(handle);
+        TimerManager::_osSsystemTimerStop(handle);
     }
 }
 
@@ -165,7 +165,7 @@ void TimerManager::_removeAllTimers( void )
     {
         mTimerResource.removeResourceFirstElement(elem);
         ASSERT(elem.second != nullptr);
-        TimerManager::_systemTimerStop(elem.first);
+        TimerManager::_osSsystemTimerStop(elem.first);
     }
 
     mTimerResource.unlock();
@@ -179,7 +179,7 @@ void TimerManager::processEvent( const TimerManagerEventData & data )
     if ( mTimerResource.existResource(timer->getHandle( )) )
     {
         TRACE_DBG( "Starting timer [ %s ] with timeout [ %u ] ms.", timer->getName( ).getString( ), timer->getTimeout( ) );
-        TimerManager::_systemTimerStart( *timer );
+        TimerManager::_osSystemTimerStart( *timer );
     }
 #ifdef DEBUG
     else

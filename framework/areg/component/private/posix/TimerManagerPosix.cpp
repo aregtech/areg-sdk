@@ -28,14 +28,41 @@
 #include <time.h>
 #include <errno.h>
 
-DEF_TRACE_SCOPE(areg_component_private_posix_TimerManager__systemTimerStart);
-DEF_TRACE_SCOPE(areg_component_private_posix_TimerManager__defaultPosixTimerExpiredRoutine);
+DEF_TRACE_SCOPE(areg_component_private_posix_TimerManager__osSystemTimerStart );
+DEF_TRACE_SCOPE(areg_component_private_posix_TimerManager__posixTimerExpiredRoutine );
 
 //////////////////////////////////////////////////////////////////////////
-// Linux specific methods
+// POSIX specific methods
 //////////////////////////////////////////////////////////////////////////
 
-void TimerManager::_systemTimerStop( TIMERHANDLE timerHandle )
+void TimerManager::_posixTimerExpiredRoutine( union sigval argSig )
+{
+    TRACE_SCOPE( areg_component_private_posix_TimerManager__posixTimerExpiredRoutine );
+
+    TimerManager & timerManager = TimerManager::getInstance( );
+    TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(argSig.sival_ptr);
+    ASSERT( posixTimer != nullptr );
+    Timer * timer = timerManager.mTimerResource.findResourceObject( reinterpret_cast<TIMERHANDLE>(posixTimer) );
+
+    if ( (timer != nullptr) && (posixTimer->isValid( )) )
+    {
+        TRACE_DBG( "Timer [ %s ] expired at [ %u ] sec and [ %u ] ns"
+            , timer->getName( ).getString( )
+            , posixTimer->getDueTime( ).tv_sec
+            , posixTimer->getDueTime( ).tv_nsec );
+
+        unsigned int highValue = static_cast<unsigned int>(posixTimer->mDueTime.tv_sec);
+        unsigned int lowValue = static_cast<unsigned int>(posixTimer->mDueTime.tv_nsec);
+        posixTimer->timerExpired( );
+        timerManager._processExpiredTimer( timer, reinterpret_cast<TIMERHANDLE>(posixTimer), highValue, lowValue );
+    }
+    else
+    {
+        TRACE_WARN( "Ignore handling timer [ %p ], it is [ %s ]", posixTimer, timer == nullptr ? "NOT REGISTERED ANYMORE" : "ALREADY INVALID" );
+    }
+}
+
+void TimerManager::_osSsystemTimerStop( TIMERHANDLE timerHandle )
 {
     TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(timerHandle);
     if ( posixTimer != nullptr )
@@ -44,9 +71,9 @@ void TimerManager::_systemTimerStop( TIMERHANDLE timerHandle )
     }
 }
 
-bool TimerManager::_systemTimerStart( Timer & timer )
+bool TimerManager::_osSystemTimerStart( Timer & timer )
 {
-    TRACE_SCOPE(areg_component_private_posix_TimerManager__systemTimerStart);
+    TRACE_SCOPE(areg_component_private_posix_TimerManager__osSystemTimerStart );
 
     bool result{ false };
     TimerPosix * posixTimer   = reinterpret_cast<TimerPosix *>(timer.getHandle());
@@ -56,7 +83,7 @@ bool TimerManager::_systemTimerStart( Timer & timer )
     ::clock_gettime( CLOCK_MONOTONIC, &startTime );
     timer.timerStarting(startTime.tv_sec, startTime.tv_nsec, reinterpret_cast<ptr_type>(posixTimer));
 
-    if (posixTimer->startTimer(timer, 0, &TimerManager::_defaultPosixTimerExpiredRoutine))
+    if (posixTimer->startTimer(timer, 0, &TimerManager::_posixTimerExpiredRoutine))
     {
         result = true;
         TRACE_DBG("Started timer [ %s ], expire time at [ %u ]sec : [ %u ] ns"
@@ -73,33 +100,6 @@ bool TimerManager::_systemTimerStart( Timer & timer )
     }
 
     return result;
-}
-
-void TimerManager::_defaultPosixTimerExpiredRoutine( union sigval argSig )
-{
-    TRACE_SCOPE(areg_component_private_posix_TimerManager__defaultPosixTimerExpiredRoutine);
-
-    TimerManager& timerManager = TimerManager::getInstance();
-    TimerPosix * posixTimer = reinterpret_cast<TimerPosix *>(argSig.sival_ptr);
-    ASSERT(posixTimer != nullptr);
-    Timer *timer = timerManager.mTimerResource.findResourceObject(reinterpret_cast<TIMERHANDLE>(posixTimer));
-
-    if ((timer != nullptr) && (posixTimer->isValid()))
-    {
-        TRACE_DBG("Timer [ %s ] expired at [ %u ] sec and [ %u ] ns"
-                        , timer->getName().getString()
-                        , posixTimer->getDueTime().tv_sec
-                        , posixTimer->getDueTime().tv_nsec);
-
-        unsigned int highValue  = static_cast<unsigned int>(posixTimer->mDueTime.tv_sec );
-        unsigned int lowValue   = static_cast<unsigned int>(posixTimer->mDueTime.tv_nsec);
-        posixTimer->timerExpired();
-        timerManager._processExpiredTimer(timer, reinterpret_cast<TIMERHANDLE>(posixTimer), highValue, lowValue);
-    }
-    else
-    {
-        TRACE_WARN("Ignore handling timer [ %p ], it is [ %s ]", posixTimer, timer == nullptr ? "NOT REGISTERED ANYMORE" : "ALREADY INVALID");
-    }
 }
 
 #endif  // defined(_POSIX) || defined(POSIX)

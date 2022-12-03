@@ -47,24 +47,24 @@ public:
      * \brief   The types of supported timers.
      *          At the moment it supports normal timer and watchdog.
      */
-    typedef enum class E_TimerType : uint8_t
+    enum class eTimerType : uint8_t
     {
           TimerTypeNormal       //! Normal timer
         , TimerTypeWatchdog     //! Watchdog timer.
-    } eTimerType;
+    };
 
     /**
      * \brief   TimerBase::CONTINUOUSLY
      *          This value is used to set continues Timer, which will not
      *          stop, until it is not requested to be stopped manually.
      **/
-    static constexpr unsigned int   CONTINUOUSLY        = static_cast<unsigned int>(~0);    /*0xFFFFFFFF*/
+    static constexpr unsigned int   CONTINUOUSLY{ static_cast<unsigned int>(~0) };    /*0xFFFFFFFF*/
 
     /**
      * \brief   TimerBase::ONE_TIME
      *          Timer which is fired one time.
      */
-    static constexpr unsigned int   ONE_TIME            = static_cast<unsigned int>(1u);
+    static constexpr unsigned int   ONE_TIME    { static_cast<unsigned int>(1u) };
 
     /**
      * \brief   Retrieves the number of milliseconds that have elapsed
@@ -196,6 +196,22 @@ protected:
      * \param   timer   The instance of the timer to destroy system waitable timer.
      **/
     void destroyWaitableTimer( void );
+
+//////////////////////////////////////////////////////////////////////////
+// OS specific hidden members
+//////////////////////////////////////////////////////////////////////////
+private:
+
+    /**
+     * \brief   OS cpecific implementation of creating waitable timer and
+     *          returns the handle of created timer.
+     **/
+    TIMERHANDLE _osCreateWaitableTimer( void );
+
+    /**
+     * \brief   OS specific implementation to destroy waitable timer.
+     **/
+    void _osDestroyWaitableTimer( TIMERHANDLE handle );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
