@@ -1,7 +1,10 @@
 # Identify the OS
-set(OpSystem "${CMAKE_SYSTEM_NAME}")
-if(OpSystem STREQUAL "Darwin")
+if(APPLE)
     set(OpSystem "MacOS")
+elseif(UNIX)
+    set(OpSystem "Linux")
+else()
+    set(OpSystem "Windows")
 endif()
 
 # Determining bitness by size of void pointer
@@ -10,7 +13,7 @@ if(NOT ${CMAKE_SIZEOF_VOID_P} MATCHES "8")
     set(Platform "x86")
 endif()
 
-# The toolset 
+# The toolset
 set(Toolset "${CMAKE_CXX_COMPILER_ID}")
 
 # Relative path of the output folder for the builds
@@ -149,3 +152,8 @@ set_property(
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${ProjLibDir})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${ProjBinDir})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${ProjBinDir})
+
+# Only for Linux
+if(UNIX AND NOT APPLE)
+    set(CMAKE_EXECUTABLE_SUFFIX ".out")
+endif()
