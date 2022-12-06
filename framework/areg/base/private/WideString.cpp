@@ -133,7 +133,7 @@ namespace
         return count;
     }
 
-    inline bool isEqual(const wchar_t* str, const char* wstr)
+    inline bool _isEqua(const wchar_t* str, const char* wstr)
     {
         while ((*str != TEString<wchar_t>::EmptyChar) && (*wstr++ == static_cast<char>(*str++)))
             ;
@@ -173,7 +173,7 @@ bool WideString::operator == (const String& other) const
     bool result = false;
     if (getLength() == other.getLength())
     {
-        result = isEqual(getString(), other.getString());
+        result = _isEqua(getString(), other.getString());
     }
 
     return result;
@@ -184,7 +184,7 @@ bool WideString::operator == (const std::string& other) const
     bool result = false;
     if (getLength() == static_cast<NEString::CharCount>(other.length()))
     {
-        result = isEqual(getString(), other.c_str());
+        result = _isEqua(getString(), other.c_str());
     }
 
     return result;
@@ -195,7 +195,7 @@ bool WideString::operator == (const char* other) const
     bool result = false;
     if (getLength() == static_cast<NEString::CharCount>(strlen(other)))
     {
-        result = isEqual(getString(), other);
+        result = _isEqua(getString(), other);
     }
 
     return result;
@@ -206,7 +206,7 @@ bool WideString::operator != (const char* other) const
     bool result = true;
     if (getLength() == static_cast<NEString::CharCount>(strlen(other)))
     {
-        result = isEqual(getString(), other) == false;
+        result = _isEqua(getString(), other) == false;
     }
 
     return result;
@@ -217,7 +217,7 @@ bool WideString::operator != (const std::string& other) const
     bool result = true;
     if (getLength() == static_cast<NEString::CharCount>(other.length()))
     {
-        result = isEqual(getString(), other.c_str()) == false;
+        result = _isEqua(getString(), other.c_str()) == false;
     }
 
     return result;
@@ -228,7 +228,7 @@ bool WideString::operator != (const String& other) const
     bool result = true;
     if (getLength() == other.getLength())
     {
-        result = isEqual(getString(), other.getString()) == false;
+        result = _isEqua(getString(), other.getString()) == false;
     }
 
     return result;

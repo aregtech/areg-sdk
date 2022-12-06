@@ -16,31 +16,23 @@
 //============================================================================
 
 #include "areg/base/GEGlobal.h"
+
+#include "areg/appbase/Application.hpp"
 #include "areg/base/DateTime.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/IETimerConsumer.hpp"
-
 #include "areg/component/Timer.hpp"
-#include "areg/appbase/Application.hpp"
 #include "areg/trace/GETrace.h"
 
-#ifdef WINDOWS
+#ifdef  _WIN32
+    // link with areg library, valid only for MSVC
     #pragma comment(lib, "areg.lib")
-#endif // WINDOWS
+#endif // _WIN32
 
-constexpr unsigned int TIMEOUT_APPLICATION{ NECommon::TIMEOUT_1_SEC * 5 };
-
-//////////////////////////////////////////////////////////////////////////
-// TimerDispatcher class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   An example of thread that processes and dispatches timers.
- *          There can be several instances of thread.
- *          In case instantiate several instances of timer thread,
- *          since the have unique names, it makes sense to add
- *          thread name as a prefix in the name of timer. Otherwise,
- *          the names might be identical, then the processing can be invalid.
- **/
+//! \brief  An example of a dispatcher thread, which starts and processes timers.
+//!         Indifferent in which thread context the timers are started,
+//!         they all are processed in the context of binding thread.
+//!         The timer should have unique names.
 class TimerDispatcher   : public    DispatcherThread
                         , private   IETimerConsumer
 {
@@ -49,11 +41,7 @@ class TimerDispatcher   : public    DispatcherThread
     static constexpr unsigned int TIMEOUT_CONTINUOUS_TIME   { NECommon::TIMEOUT_1_MS * 50  }; //!< The timeout in milliseconds of continues timer
 
 public:
-
-/************************************************************************/
-// Constructor and destructor.
-/************************************************************************/
-    explicit TimerDispatcher( const char * threadName );
+    explicit TimerDispatcher( const String & threadName );
 
     virtual ~TimerDispatcher( void ) = default;
 
@@ -76,24 +64,19 @@ protected:
 // IETimerConsumer interface overrides.
 /************************************************************************/
 
-    /**
-     * \brief   Triggered when Timer is expired. 
-     *          The passed Timer parameter is indicating object, which has been expired.
-     *          Overwrite method to receive messages.
-     * \param   timer   The timer object that is expired.
-     **/
+    //! \brief  Triggered when Timer is expired.
+    //!         The callback always runs in the thread context.
+    //! 
+    //! \param  timer   The timer object that is expired.
     virtual void processTimer( Timer & timer ) override;
 
-    /**
-     * \brief	Posts event and delivers to its target.
-     *          Since the Dispatcher Thread is a Base object for
-     *          Worker and Component threads, it does nothing
-     *          and only destroys event object without processing.
-     *          Override this method or use Worker / Component thread.
-     * \param	eventElem	Event object to post
-     * \return	In this class it always returns true.
-     **/
-    virtual bool postEvent( Event & eventElem ) override;
+    //! Override the default implementation.
+    virtual bool postEvent( Event & eventElem ) override
+    {
+        // Make sure that only timer events are passed.
+        ASSERT( RUNTIME_CAST( &eventElem, TimerEvent ) != nullptr );
+        return EventDispatcher::postEvent( eventElem );
+    }
 
 private:
     Timer   mOneTime;       //!< One time timer
@@ -101,9 +84,53 @@ private:
     Timer   mContinuous;    //!< Continues timer
 
 private:
-    // hidden method, used to wrap 'this' pointer in the constructor to avoid warnings.
-    inline TimerDispatcher & self( void );
+    //! wraps 'this' pointer.
+    inline TimerDispatcher & self( void )
+    {
+        return (*this);
+    }
 };
+
+namespace
+{
+    DEF_TRACE_SCOPE( main_startTimerThread );
+    DEF_TRACE_SCOPE( main_stopTimerThread );
+
+    // A timeout to wait to let threads to run.
+    constexpr unsigned int TIMEOUT_APPLICATION{ NECommon::TIMEOUT_1_SEC * 5 };
+
+    //! Call to start a thread and timers.
+    //! Note:   This method is called in 'main' thread, 
+    //!         but timers are processed in the thread context.
+    void startTimerThread( TimerDispatcher & aThread )
+    {
+        TRACE_SCOPE( main_startTimerThread );
+
+        // create and start thread, wait until it is started.
+        aThread.createThread( NECommon::WAIT_INFINITE );
+        TRACE_DBG( "[ %s ] to create thread [ %s ]", aThread.isValid( ) ? "SUCCEEDED" : "FAILED", aThread.getName( ).getString( ) );
+
+        TRACE_DBG( "Triggering timers...." );
+        aThread.startTimers( );
+    }
+
+    //! Call to stop timers and stop thread.
+    //! Note:   this function is called in 'main' thread.
+    void stopTimerThread( TimerDispatcher & aThread )
+    {
+        TRACE_SCOPE( main_stopTimerThread );
+
+        TRACE_INFO( "Stopping timers of thread [ %s ]", aThread.getName( ).getString( ) );
+        aThread.stopTimers( );
+
+        TRACE_DBG( "Completed demo, going to stop and exit dispatcher thread [ %s ]", aThread.getName( ).getString( ) );
+        aThread.triggerExitEvent( );
+        aThread.completionWait( NECommon::WAIT_INFINITE );
+
+        TRACE_WARN( "The [ %s ] thread has completed job...", aThread.getName( ).getString( ) );
+    }
+
+}   // namespace
 
 //////////////////////////////////////////////////////////////////////////
 // TimerDispatcher class implementation
@@ -112,53 +139,33 @@ private:
 // Define TimerDispatcher trace scopes to make logging
 // Trace scopes must be defined before they are used.
 DEF_TRACE_SCOPE(main_TimerDispatcher_TimerDispatcher);
-DEF_TRACE_SCOPE( main_TimerDispatcher_postEvent );
 DEF_TRACE_SCOPE(main_TimerDispatcher_processTimer);
 DEF_TRACE_SCOPE(main_TimerDispatcher_startTimers);
 DEF_TRACE_SCOPE(main_TimerDispatcher_stopTimers);
 
-TimerDispatcher::TimerDispatcher( const char * threadName )
+TimerDispatcher::TimerDispatcher( const String & threadName )
     : DispatcherThread  (threadName)
     , IETimerConsumer   ( )
 
-    , mOneTime          (self(), String(getName() + "_one_time"  ).getString())
-    , mPeriodic         (self(), String(getName() + "_periodic"  ).getString())
-    , mContinuous       (self(), String(getName() + "_continuous").getString())
+    , mOneTime          (self(), threadName + "_one_time")
+    , mPeriodic         (self(), threadName + "_periodic" )
+    , mContinuous       (self(), threadName + "_continuous")
 {
     TRACE_SCOPE(main_TimerDispatcher_TimerDispatcher);
-    TRACE_DBG("Instantiated timer dispatcher");
-}
-
-inline TimerDispatcher & TimerDispatcher::self( void )
-{
-    return (*this);
-}
-
-bool TimerDispatcher::postEvent( Event & eventElem )
-{
-    TRACE_SCOPE( main_TimerDispatcher_postEvent );
-    bool result = false;
-
-    if ( RUNTIME_CAST( &eventElem, TimerEvent ) != nullptr )
-    {
-        result = EventDispatcher::postEvent( eventElem );
-    }
-    else
-    {
-        TRACE_ERR( "Unexpected event of type [ %s ] for this example. Raising assertion!", eventElem.getRuntimeClassName( ).getString() );
-        eventElem.destroy( );
-        ASSERT(false);
-    }
-
-    return result;
+    TRACE_DBG("Instantiated timer dispatcher thread");
 }
 
 void TimerDispatcher::processTimer( Timer & timer )
 {
     TRACE_SCOPE(main_TimerDispatcher_processTimer);
-    TRACE_DBG("The timer [ %s ] has expired. Timeout [ %u ] ms, Event Count [ %d ], processing in Thread [ %s ]", timer.getName( ).getString( ), timer.getTimeout(), timer.getEventCount(), getName().getString());
+    TRACE_DBG("The timer [ %s ] has expired. Timeout [ %u ] ms, Event Count [ %d ], processing in Thread [ %s ]"
+                , timer.getName( ).getString( )
+                , timer.getTimeout()
+                , timer.getEventCount()
+                , getName().getString());
 
-    printf("[ %s ] : Timer [ %s ] expired...\n", DateTime::getNow().formatTime().getString(), timer.getName().getString());
+    // Use 'printf' to avoid overlapping output messages on console.
+    printf( "%s : The timer [ %s ] is expired.\n", DateTime::getNow( ).formatTime( ).getString(), timer.getName( ).getString() );
 
     if (&timer == &mOneTime)
     {
@@ -229,62 +236,22 @@ void TimerDispatcher::stopTimers(void)
 // Demo
 //////////////////////////////////////////////////////////////////////////
 DEF_TRACE_SCOPE(main_main);
-DEF_TRACE_SCOPE(main_startTimerThread);
-DEF_TRACE_SCOPE(main_stopTimerThread);
 
-/**
- * \brief   Start thread and start timers.
- * \param   aThread     The thread with timers to start.
- **/
-static void startTimerThread( TimerDispatcher & aThread )
-{
-    TRACE_SCOPE(main_startTimerThread);
-
-    // create and start thread, wait until it is started.
-    aThread.createThread(NECommon::WAIT_INFINITE);
-    TRACE_DBG("[ %s ] to create thread [ %s ]", aThread.isValid() ? "SUCCEEDED" : "FAILED", aThread.getName().getString());
-
-    TRACE_DBG("Triggering timers....");
-    aThread.startTimers();
-}
-
-/**
- * \brief   Stops timers and thread.
- * \param   aThread     The thread with timers to stop.
- **/
-static void stopTimerThread( TimerDispatcher & aThread )
-{
-    TRACE_SCOPE(main_stopTimerThread);
-
-    TRACE_INFO("Stopping timers of thread [ %s ]", aThread.getName().getString());
-    aThread.stopTimers();
-
-    TRACE_DBG("Completed demo, going to stop and exit dispatcher thread [ %s ]", aThread.getName().getString());
-    aThread.triggerExitEvent();
-    aThread.completionWait(NECommon::WAIT_INFINITE);
-
-    TRACE_WARN("The [ %s ] thread has completed job...", aThread.getName().getString());
-}
-
-/**
- * \brief   Demo to trigger timers in the separate thread.
- *          There can be several instances of thread created to run timers.
- */
+//! A demo to run timer timers in the binding thread context.
+//! Note:   The threads and timers are started in 'main',
+//!         but they are processed in the binding thread context.
 int main()
 {
-    printf("Initializing timer for testing...\n");
+    std::cout << "Demo to run timers in the binding thread context ..." << std::endl;
+
     // Start tracing. Use default configuration file, which is "./config/log.init"
-    // If not existing, force to start tracer.
     Application::startTracer( nullptr, true);
     
     do 
     {
-        // set this part of code in a block (for example, 'do-while' block).
-        // otherwise, the logs will not be visible, since in the time when
-        // scope is initialized, the logging is not active yet.
+        // After initialization, set scope declaration in the block.
         TRACE_SCOPE(main_main);
 
-        // Start timer service
         TRACE_INFO("Starting timer manager...");
         if (Application::startTimerManager())
         {
@@ -295,16 +262,15 @@ int main()
             TRACE_ERR("Failed to start timer manager!!!");
         }
 
-        // declare thread object.
         TRACE_DBG("Initializing timer dispatching threads");
 
         // Start 'TimerThread_1'
         TimerDispatcher aThread1("TimerThread_1");
-        startTimerThread( aThread1 );
+        startTimerThread(aThread1); // starts timers, which are dispatched in "TimerThread_1" context
 
         // Start 'TimerThread_2'
         TimerDispatcher aThread2("TimerThread_2");
-        startTimerThread(aThread2);
+        startTimerThread(aThread2); // starts timers, which are dispatched in "TimerThread_2" context
 
         // Sleep for a while, let timers run
         TRACE_INFO("Main thread sleeping to let timers run..");
@@ -324,7 +290,6 @@ int main()
     // Stop logging.
     Application::stopTracer();
 
-    printf("Testing timer completed, check the logs...\n");
-
-	return 0;
+    std::cout << "Exit application!" << std::endl;
+    return 0;
 }

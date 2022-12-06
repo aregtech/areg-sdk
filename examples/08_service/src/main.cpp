@@ -21,9 +21,10 @@
 #include "areg/trace/GETrace.h"
 #include "src/ServicingComponent.hpp"
 
-#ifdef WINDOWS
+#ifdef  _WIN32
+    // link with areg library, valid only for MSVC
     #pragma comment(lib, "areg.lib")
-#endif // WINDOWS
+#endif // _WIN32
 
 constexpr char const _modelName[] { "TestModel" };  //!< The name of model
 
@@ -44,45 +45,37 @@ BEGIN_MODEL(_modelName)
 // end of model description
 END_MODEL(_modelName)
 
-//////////////////////////////////////////////////////////////////////////
-// main method.
-//////////////////////////////////////////////////////////////////////////
 DEF_TRACE_SCOPE(main_main);
-/**
- * \brief   The main method enables logging, service manager and timer.
- *          it loads and unloads the services, releases application.
- **/
+//! A Demo of loading and starting an empty service with no functionalities
 int main()
 {
-    printf("Initializing servicing component...\n");
+    std::cout << "A Demo of loading and starting an empty service with no functionalities ..." << std::endl;
+
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START( nullptr );
-    // Initialize application, enable logging, servicing, timer and watchdog.
     Application::initApplication(true, true, false, true, true, nullptr, nullptr );
 
     do 
     {
+        unsigned int timeout{ NECommon::WAIT_5_SECONDS };
+
         TRACE_SCOPE(main_main);
         TRACE_DBG("The application has been initialized, loading model [ %s ]", _modelName);
-
-        // load model to initialize components
         Application::loadModel(_modelName);
+        NEUtilities::TimeDuration duration; // start timer
         TRACE_DBG("Servicing model is loaded");
 
-        // wait for quit signal to complete application.
-        Application::waitAppQuit( NECommon::WAIT_10_SECONDS );
-        
-        printf("10 secs passed. Unloading services and exit application...\n");
+        std::cout << "Waiting maximum for " << timeout << " ms to unload model." << std::endl;
+        Application::waitAppQuit( timeout );    // wait for quit signal to complete application.
+        duration.stop( ); // stop timer
+        timeout = MACRO_MIN( timeout, static_cast<unsigned int>(duration.passedMilliseconds()) );
+        std::cout << timeout << " ms passed. Unloading model and exit application..." << std::endl;
 
-        // stop and unload components
-        Application::unloadModel(_modelName);
-
-        // release and cleanup resources of application.
-        Application::releaseApplication();
+        Application::unloadModel(_modelName);   // stop and unload components
+        Application::releaseApplication();      // release and cleanup resources of application.
 
     } while (false);
     
-    printf("Completed testing servicing component, check the logs...\n");
-
-	return 0;
+    std::cout << "Exit application!" << std::endl;
+    return 0;
 }

@@ -28,49 +28,8 @@ namespace NELargeData
     //!< The role name of the service
     constexpr std::string_view  ServiceRoleName { "LargeDataService" };
 
-    //!< The string for bytes.
-    constexpr std::string_view   STR_BYTES      { " Bytes" };
-
-    //!< The string for kilobytes.
-    constexpr std::string_view   STR_KBYTES     { "KBytes" };
-
-    //!< The string for megabytes.
-    constexpr std::string_view   STR_MBYTES     { "MBytes" };
-
-    //!< The string literal for nanoseconds.
-    constexpr std::string_view   STR_NS         { "ns" };
-
-    //!< The string literal for microseconds.
-    constexpr std::string_view   STR_US         { "us" };
-
-    //!< The string literal for milliseconds.
-    constexpr std::string_view   STR_MS         { "ms" };
-
-    //!< The string literal for seconds.
-    constexpr std::string_view   STR_SEC        { "sec" };
-
     //!< 1 second timeout used to output data rate.
     constexpr uint32_t           TIMER_TIMEOUT  { 1'000u };
-
-    /**
-     * \brief   Converts the data rate value passed in bytes into bytes, kilobytes or megabytes,
-     *          depending on the size.
-     * \param   dataRate    The data rate in bytes to convert.
-     * \return  Returns a pair where the first value contains converted size and
-     *          the second value is the string literal of converted size. For example, 
-     *          the value 2500 bytes is converted in pairs <2.5, 'KBytes'>, i.e. 2.5 kilobytes.
-     */
-    inline std::pair<double, std::string_view> calcDataRate(uint64_t dataRate);
-
-    /**
-     * \brief   Converts nanosecond value into microseconds, milliseconds or seconds,
-     *          depending on the value.
-     * \param   nsTime  The time in nanoseconds to convert.
-     * \return  Returns a pair where the value is converted time and the second value
-     *          is a literal of the converted time. For example, the value 2500 is
-     *          converted into pair <2.5, 'us'>, i.e. 2.5 microseconds.
-     */
-    inline std::pair<double, std::string_view> calcDuration(int64_t nsTime);
 
     //!< The RGB structure of 1 pixel data.
     struct sRBG
@@ -320,49 +279,6 @@ inline void NELargeData::ImageBlock::setIds(uint32_t channelId, uint32_t frameId
         mBlock->channelId = channelId;
         mBlock->frameSeqId = frameId;
     }
-}
-
-inline std::pair<double, std::string_view> NELargeData::calcDataRate(uint64_t dataRate)
-{
-    std::pair<double, std::string_view> result{ 0.0, STR_BYTES };
-    if (dataRate >= NECommon::ONE_MEGABYTE)
-    {
-        result.first = static_cast<double>(dataRate) / NECommon::ONE_MEGABYTE;
-        result.second = STR_MBYTES;
-    }
-    else if (dataRate >= NECommon::ONE_KILOBYTE)
-    {
-        result.first = static_cast<double>(dataRate) / NECommon::ONE_KILOBYTE;
-        result.second = STR_KBYTES;
-    }
-    else
-    {
-        result.first = static_cast<double>(dataRate);
-    }
-
-    return result;
-}
-
-inline std::pair<double, std::string_view> NELargeData::calcDuration(int64_t nsTime)
-{
-    std::pair<double, std::string_view> result{ static_cast<double>(nsTime), STR_NS };
-    if (nsTime >= NECommon::DURATION_1_SEC)
-    {
-        result.first = static_cast<double>(nsTime) / NECommon::DURATION_1_SEC;
-        result.second = STR_SEC;
-    }
-    else if (nsTime >= NECommon::DURATION_1_MILLI)
-    {
-        result.first = static_cast<double>(nsTime) / NECommon::DURATION_1_MILLI;
-        result.second = STR_MS;
-    }
-    else if (nsTime >= NECommon::DURATION_1_MICRO)
-    {
-        result.first = static_cast<double>(nsTime) / NECommon::DURATION_1_MICRO;
-        result.second = STR_US;
-    }
-
-    return result;
 }
 
 inline IEOutStream& NELargeData::operator << (IEOutStream& stream, const NELargeData::ImageBlock& output)

@@ -19,17 +19,19 @@
 //============================================================================
 
 #include "areg/base/GEGlobal.h"
-#include "areg/base/Thread.hpp"
+
 #include "areg/base/IEThreadConsumer.hpp"
+#include "areg/base/Thread.hpp"
+
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/Event.hpp"
+
 #include "areg/trace/GETrace.h"
 
-#include <string_view>
-
-#ifdef WINDOWS
+#ifdef  _WIN32
+    // link with areg library, valid only for MSVC
     #pragma comment(lib, "areg.lib")
-#endif // WINDOWS
+#endif // _WIN32
 
 class HelloThread;
 class GoodbyeThread;
@@ -43,71 +45,42 @@ SynchEvent  gEventRun(true, true);      //!< Non-signaled, auto-reset event
 Mutex       gMutexWait(false);          //!< Not locked mutex
 Mutex       gMutexDummy(false);         //!< Not locked mutex
 
-//////////////////////////////////////////////////////////////////////////
-// HelloThread class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   A simple thread. Demonstration of how to extend thread base class
- *          and implement thread consumer object.
- */
+//!< HelloThread class declaration, simple thread.
 class HelloThread   : public    Thread
                     , protected IEThreadConsumer
 {
-//////////////////////////////////////////////////////////////////////////
-// Internal constants
-//////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   The thread name;
-     */
-    static constexpr std::string_view THREAD_NAME { "HelloThread" };
-
 public:
     HelloThread( void );
 
     virtual ~HelloThread( void ) = default;
 
-    SynchEvent  mQuit;  //!< Event, signaled when thread completes job.
-
 protected:
 /************************************************************************/
 // IEThreadConsumer interface overrides
 /************************************************************************/
     /**
-     * \brief   This callback function is called from Thread object, when it is
-     *          running and fully operable.
+     * \brief   The callback is called from Thread, when it is running and fully operable.
      **/
     virtual void onThreadRuns( void ) override;
 
-//////////////////////////////////////////////////////////////////////////
-// Hidden calls
-//////////////////////////////////////////////////////////////////////////
 private:
-    inline HelloThread & self( void )   {return (*this);}
+    inline HelloThread & self( void )
+    {
+        return (*this);
+    }
+
+public:
+    SynchEvent  mQuit;  //!< Event, signaled when thread completes job.
 };
 
-//////////////////////////////////////////////////////////////////////////
-// GoodbyeThread class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   A simple thread. That is created by another thread.
- */
+//!< GoodbyeThread class declaration, simple thread.
 class GoodbyeThread : public    Thread
                     , protected IEThreadConsumer
 {
-//////////////////////////////////////////////////////////////////////////
-// Internal constants
-//////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   The thread name;
-     */
-    static constexpr std::string_view THREAD_NAME { "GoodbyeThread" };
-
 public:
     GoodbyeThread( void );
     virtual ~GoodbyeThread( void ) = default;
 
-    SynchEvent  mQuit;  //!< Event, which is signaled when thread completes job.
-
 protected:
 /************************************************************************/
 // IEThreadConsumer interface overrides
@@ -122,26 +95,25 @@ protected:
 // Hidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline GoodbyeThread & self( void ) { return (*this); }
+    inline GoodbyeThread & self( void )
+    {
+        return (*this);
+    }
+
+public:
+    SynchEvent  mQuit;  //!< Event, signaled when thread completes job.
 };
 
-//////////////////////////////////////////////////////////////////////////
-// Static member initialization
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-// RunThread implementation
-//////////////////////////////////////////////////////////////////////////
 DEF_TRACE_SCOPE(main_HelloThread_HelloThread);
 DEF_TRACE_SCOPE(main_HelloThread_onThreadRuns);
 
 HelloThread::HelloThread( void )
-    : Thread            ( self(), HelloThread::THREAD_NAME.data() )
+    : Thread( self( ), "HelloThread" )
     , IEThreadConsumer  ( )
     , mQuit             (true, true)
 {
     TRACE_SCOPE(main_HelloThread_HelloThread);
-    TRACE_DBG("Initialized thread [ %s ]", HelloThread::THREAD_NAME.data());
+    TRACE_DBG( "Initialized thread [ %s ]", getName().getString() );
 }
 
 void HelloThread::onThreadRuns( void )
@@ -149,7 +121,7 @@ void HelloThread::onThreadRuns( void )
     TRACE_SCOPE(main_HelloThread_onThreadRuns);
 
     TRACE_INFO("The thread [ %s ] runs, going to output message", getName().getString());
-    TRACE_INFO("!!!Hello World!!! from thread [ %s ]", THREAD_NAME.data());
+    TRACE_INFO("!!!Hello World!!! from thread [ %s ]", getName( ).getString( ) );
 
     // reset events
     mQuit.resetEvent();
@@ -159,44 +131,47 @@ void HelloThread::onThreadRuns( void )
     gEventRun.lock(NECommon::WAIT_INFINITE);
     TRACE_INFO("Auto-reset event \'gEventRun\' is signaled, locking again");
 
-    // Setup multiple locking.
-    constexpr unsigned int waitTimeout        = NECommon::WAIT_1_MILLISECOND * 150;
-
     // This multi-lock uses 3 synchronization events and one mutex
     IESynchObject * synchObjects[]  = {&gEventExit, &gMutexWait, &gEventRun};
-    int count = MACRO_ARRAYLEN(synchObjects);
-    MultiLock multiLock(synchObjects, count, false);
+    MultiLock multiLock(synchObjects, MACRO_ARRAYLEN( synchObjects ), false);
 
     do 
     {
+        constexpr unsigned int waitTimeout{ NECommon::WAIT_1_MILLISECOND * 150 };
+
         // Wait until either all objects are signaled or until timeout expires.
         // If all events are signaled, exit thread.
         // If timeout is expired, make some job and wait again.
-        int waitResult = multiLock.lock(waitTimeout, true, false);
+        int waitResult = multiLock.lock( waitTimeout, true, false);
         
         if (waitResult == MultiLock::LOCK_INDEX_ALL)
         {
-            TRACE_DBG("All waiting objects of thread [ %s ] are signaled, exit the job.", THREAD_NAME.data());
+            std::cout << "All synchronization objects are signaled, exiting thread." << std::endl;
+            TRACE_DBG("All waiting objects of thread [ %s ] are signaled, exit the job.", getName( ).getString( ) );
             break;  // exit loop
         }
         else if ( waitResult == MultiLock::LOCK_INDEX_TIMEOUT )
         {
-            TRACE_DBG("Thread [ %s ] waiting timeout expired, continuing the job", THREAD_NAME.data());
-            Lock lock(gMutexDummy);
+            Lock lock( gMutexDummy );
+
+            std::cout << "Wait multilock timeout expired, continue the job." << std::endl;
+            TRACE_DBG("Thread [ %s ] waiting timeout expired, continuing the job", getName( ).getString( ) );
             Thread::sleep(waitTimeout);
-            TRACE_DBG("Thread [ %s ] continues to wait", THREAD_NAME.data());
+            TRACE_DBG("Thread [ %s ] continues to wait", getName( ).getString( ) );
         }
         else
         {
+            std::cerr << "Unexpected waiting result, breaking the loop" << std::endl;
             TRACE_ERR("Unexpected waiting result, breaking the loop");
         }
 
     } while (true);
 
-    Thread::sleep( waitTimeout );
+    Thread::sleep( NECommon::WAIT_100_MILLISECONDS );
+    gMutexDummy.unlock();
 
-    gMutexDummy.unlock();   // Unlock a mutex
-    mQuit.setEvent();       // Signal, to indicate
+    // set event to inform the thread completed job
+    mQuit.setEvent();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -207,12 +182,12 @@ DEF_TRACE_SCOPE(main_GoodbyeThread_GoodbyeThread);
 DEF_TRACE_SCOPE(main_GoodbyeThread_onThreadRuns);
 
 GoodbyeThread::GoodbyeThread( void )
-    : Thread            ( self(), GoodbyeThread::THREAD_NAME.data() )
+    : Thread( self( ), "GoodbyeThread" )
     , IEThreadConsumer  ( )
     , mQuit             (false, true)
 {
     TRACE_SCOPE(main_GoodbyeThread_GoodbyeThread);
-    TRACE_DBG("Initialized thread [ %s ]", GoodbyeThread::THREAD_NAME.data());
+    TRACE_DBG("Initialized thread [ %s ]", getName( ).getString( ) );
 }
 
 void GoodbyeThread::onThreadRuns( void )
@@ -220,37 +195,33 @@ void GoodbyeThread::onThreadRuns( void )
     TRACE_SCOPE(main_GoodbyeThread_onThreadRuns);
 
     TRACE_INFO("The thread [ %s ] runs, going to output message", getName().getString());
-    TRACE_INFO("!!!Hello World!!! from thread [ %s ]", THREAD_NAME.data());
+    TRACE_INFO("!!!Hello World!!! from thread [ %s ]", getName( ).getString( ) );
 
     mQuit.resetEvent();
 
     // Initialize multi-lock object
-    // This multi-lock uses 1 synchronization event and 1 mutex.
     IESynchObject * synchObjects[]  = {&gEventExit, &gMutexDummy};
     MultiLock multiLock(synchObjects, MACRO_ARRAYLEN(synchObjects), false);
 
+    // This multi-lock uses 1 synchronization event and 1 mutex, waits for any is signaled.
     int waitResult = multiLock.lock( NECommon::WAIT_INFINITE, false, false );
+    std::cout << "Multilock is signaled the elem " << waitResult << " is unlocked" << std::endl;
     TRACE_DBG( "Lock finished with result [ %d ]", waitResult );
+
     multiLock.unlock( waitResult );
     Thread::sleep( NECommon::WAIT_500_MILLISECONDS );
 
-    mQuit.setEvent();           // set event to inform the thread completed job.
+    // set event to inform the thread completed
+    mQuit.setEvent();
 }
 
-//////////////////////////////////////////////////////////////////////////
-// Demo
-//////////////////////////////////////////////////////////////////////////
 DEF_TRACE_SCOPE(main_main);
-/**
- * \brief   Demo to create and destroy thread.
- */
+//! \brief   A Demo of synchronization objects, use of various synch objects in multi-lock.
 int main()
 {
-    printf("Initializing to test synchronization objects...\n");
+    std::cout << "A Demo of synchronization objects, use of various synch objects in multi-lock ..." << std::endl;
+
     // Force to start logging. See outputs log files in appropriate "logs" sub-folder.
-    // To change the configuration and use dynamic logging, use macro TRACER_START_LOGGING
-    // and specify the logging configuration file, where you can change logging format,
-    // filter logging priority and scopes.
     TRACER_CONFIGURE_AND_START( nullptr );
 
     do
@@ -270,30 +241,29 @@ int main()
         HelloThread helloThread;
         helloThread.createThread( NECommon::DO_NOT_WAIT);
 
-        TRACE_INFO( "Sleep thread for [ %d ] ms, to signal \'gEventRun\' auto-reset event.", NECommon::WAIT_500_MILLISECONDS );
+        TRACE_INFO( "Sleep main thread for [ %d ] ms, to signal \'gEventRun\' auto-reset event.", NECommon::WAIT_500_MILLISECONDS );
         Thread::sleep( NECommon::WAIT_500_MILLISECONDS);
         gEventRun.setEvent();                           // signal auto-reset event to let hello thread to run
 
-        Thread::sleep( NECommon::WAIT_500_MILLISECONDS);   // sleep to check whether auto-reset is working
+        Thread::sleep( NECommon::WAIT_500_MILLISECONDS);// sleep to check whether auto-reset is working
         gMutexWait.unlock();                            // release mutex to let other thread to take ownership
-        Thread::sleep( NECommon::WAIT_1_SECOND);           // sleep for no reason
+        Thread::sleep( NECommon::WAIT_1_SECOND);        // sleep for no reason
 
         // Goodbye thread
         TRACE_DBG("Starting Goodbye Thread");
         GoodbyeThread goodbyeThread;
         goodbyeThread.createThread(NECommon::WAIT_INFINITE);
-        TRACE_DBG("Created thread [ %s ], which is in [ %s ] state", goodbyeThread.getName().getString(), goodbyeThread.isRunning() ? "RUNNING" : "NOT RUNNING");
 
-        Thread::sleep( NECommon::WAIT_1_SECOND);           // sleep for no reason
+        Thread::sleep( NECommon::WAIT_1_SECOND);        // sleep for no reason
 
-        // Initialize multi-lock object
-        // In this multi-lock are used 3 synchronization event object.
-        // Wait until all events are signaled.
+        // Initialize multi-lock object, wait for all events
         IESynchObject * synchObjects[] = {&helloThread.mQuit, &goodbyeThread.mQuit, &gMutexDummy};
         gEventExit.setEvent();
         gEventRun.setEvent();
 
         MultiLock multiLock(synchObjects, MACRO_ARRAYLEN(synchObjects), true);
+
+        std::cout << "All synchonization objects are unlocked. Completing all threads." << std::endl;
 
         // stop and destroy thread, clean resources. Wait until thread ends.
         TRACE_INFO("The threads completed jobs, wait threads to shutdown to exit application");
@@ -305,7 +275,6 @@ int main()
     // Stop logging.
     TRACER_STOP_LOGGING();
 
-    printf("Completed testing synchronization objects, check the logs...\n");
-
+    std::cout << "Exit application!" << std::endl;
     return 0;
 }

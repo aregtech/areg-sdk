@@ -123,7 +123,9 @@ protected:
      *
      * \param   msgId   The attribute message ID to notify clients.
      **/
-    virtual void sendNotification( unsigned int msgId ) override;
+    virtual void sendNotification( unsigned int msgId ) override
+    {
+    }
 
     /**
      * \brief   Sends error message to clients.
@@ -139,7 +141,9 @@ protected:
      *                      This parameter has sense only for request IDs.
      *                      It is ignored for response and attributes IDs.
      **/
-    virtual void errorRequest( unsigned int msgId, bool msgCancel ) override;
+    virtual void errorRequest( unsigned int msgId, bool msgCancel ) override
+    {
+    }
 
 /************************************************************************/
 // IEStubEventConsumer interface overrides.
@@ -151,15 +155,19 @@ protected:
      * \param   eventElem   Service Request Event object, contains request
      *                      call ID and parameters.
      **/
-    virtual void processRequestEvent( ServiceRequestEvent & eventElem ) override;
-    
+    virtual void processRequestEvent( ServiceRequestEvent & eventElem ) override
+    {
+    }
+
     /**
      * \brief   Triggered to process attribute update notification event.
      *          Override method to process request to get attribute value and
      *          process notification request of attribute update.
      * \param   eventElem   Service Request Event object, contains attribute ID.
      **/
-    virtual void processAttributeEvent( ServiceRequestEvent & eventElem ) override;
+    virtual void processAttributeEvent( ServiceRequestEvent & eventElem ) override
+    {
+    }
 
 private:
     Timer           mTimer; //!< The timer to run in component thread.

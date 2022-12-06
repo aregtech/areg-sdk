@@ -90,15 +90,22 @@ bool ServiceManager::isServiceManagerStarted( void )
     return ServiceManager::getInstance().isReady();
 }
 
+void ServiceManager::queryCommunicationData( unsigned int & OUT sizeSend, unsigned int & OUT sizeReceive )
+{
+    ServiceManager & serviceManager = ServiceManager::getInstance( );
+    sizeSend    = serviceManager.mConnectService.queryBytesSent( );
+    sizeReceive = serviceManager.mConnectService.queryBytesReceived( );
+}
+
 void ServiceManager::requestRegisterServer( const StubAddress & whichServer )
 {
     TRACE_SCOPE(areg_component_private_ServiceManager_requestRegisterServer);
     TRACE_DBG("Request to register server [ %s ] of interface [ %s ]"
                     , whichServer.getRoleName().getString()
                     , whichServer.getServiceName().getString());
-    
+
     ASSERT(whichServer.isValid());
-    
+
     ServiceManager & serviceManager = ServiceManager::getInstance();
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::registerStub(whichServer)
                                   , static_cast<IEServiceManagerEventConsumer &>(serviceManager)

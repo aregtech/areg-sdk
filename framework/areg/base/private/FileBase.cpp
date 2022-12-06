@@ -537,15 +537,15 @@ unsigned int FileBase::write(const IEByteBuffer & buffer)
     if ( isOpened() && canWrite() )
     {
         const unsigned char * data  = buffer.getBuffer();
-        int sizeUsed                = static_cast<int>(buffer.getSizeUsed());
+        unsigned int sizeUsed       = buffer.getSizeUsed();
 
-        if (writeInt(sizeUsed) && (write(data, static_cast<unsigned int>(sizeUsed)) == static_cast<unsigned int>(sizeUsed)))
+        if (writeInt(static_cast<int>(sizeUsed)) && (write(data, sizeUsed) == sizeUsed))
         {
             result = sizeUsed + sizeof(int);
         }
         else
         {
-            OUTPUT_ERR("Failed to write [ %d ] bytes of data in file [ %s ]", sizeUsed + sizeof(int), mFileName.getString());
+            OUTPUT_ERR("Failed to write [ %u ] bytes of data in file [ %s ]", sizeUsed + sizeof(int), mFileName.getString());
         }
     }
     else

@@ -9,43 +9,27 @@
 //============================================================================
 
 #include "areg/base/GEGlobal.h"
+
+#include "areg/appbase/Application.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/base/IEThreadConsumer.hpp"
 #include "areg/component/DispatcherThread.hpp"
-#include "areg/component/IETimerConsumer.hpp"
-
-#include "areg/appbase/Application.hpp"
 #include "areg/component/Event.hpp"
+#include "areg/component/IETimerConsumer.hpp"
 #include "areg/component/Timer.hpp"
+
 #include "areg/trace/GETrace.h"
 
-#include <string_view>
 
-
-#ifdef WINDOWS
+#ifdef  _WIN32
+    // link with areg library, valid only for MSVC
     #pragma comment(lib, "areg.lib")
-#endif // WINDOWS
+#endif // _WIN32
 
-//////////////////////////////////////////////////////////////////////////
-// HelloThread class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   A thread to run and output message
- */
+//! A thread class.
 class HelloThread   : public    Thread
                     , protected IEThreadConsumer
 {
-//////////////////////////////////////////////////////////////////////////
-// Internal constants
-//////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   The thread name;
-     */
-    static constexpr std::string_view THREAD_NAME { "HelloThread" };
-
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
 public:
     HelloThread( void );
 
@@ -70,7 +54,10 @@ protected:
 // Hidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline HelloThread & self( void );
+    inline HelloThread & self( void )
+    {
+        return (*this);
+    }
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -81,52 +68,28 @@ DEF_TRACE_SCOPE(main_HelloThread_HelloThread);
 DEF_TRACE_SCOPE(main_HelloThread_onThreadRuns);
 
 HelloThread::HelloThread( void )
-    : Thread            ( self(), HelloThread::THREAD_NAME.data() )
+    : Thread( self( ), "HelloThread" )
     , IEThreadConsumer  ( )
 {
     TRACE_SCOPE(main_HelloThread_HelloThread);
-    TRACE_DBG("Initialized thread [ %s ]", HelloThread::THREAD_NAME.data());
-}
-
-inline HelloThread & HelloThread::self( void )
-{
-    return (*this);
+    TRACE_DBG( "Initialized thread [ %s ]", "HelloThread" );
 }
 
 void HelloThread::onThreadRuns( void )
 {
     TRACE_SCOPE(main_HelloThread_onThreadRuns);
 
-    TRACE_INFO("The thread [ %s ] runs, going to output message", getName().getString());
-    TRACE_INFO("!!!Hello World!!! !!!Hello Tracing!!!");
+    TRACE_INFO( "!!!Hello World!!! !!!Hello Tracing!!!" );
+    TRACE_INFO("The thread [ %s ] runs, going to sleep for [ %u ] ms", getName().getString(), NECommon::WAIT_500_MILLISECONDS );
 
     Thread::sleep( NECommon::WAIT_500_MILLISECONDS);
 }
 
-//////////////////////////////////////////////////////////////////////////
-// HelloDispatcher class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   An example of thread that processes and dispatches timers.
- *          There can be several instances of thread.
- *          In case instantiate several instances of timer thread,
- *          since the have unique names, it makes sense to add
- *          thread name as a prefix in the name of timer. Otherwise,
- *          the names might be identical, then the processing can be invalid.
- **/
+//! \brief   A disatcher thread that runs timer.
 class HelloDispatcher   : public    DispatcherThread
                         , private   IETimerConsumer
 {
-    /**
-     * \brief   Thread name.
-     **/
-    static constexpr std::string_view THREAD_NAME { "HelloThread" };
-
 public:
-
-/************************************************************************/
-// Constructor and destructor.
-/************************************************************************/
     HelloDispatcher( void );
 
     virtual ~HelloDispatcher( void ) = default;
@@ -147,24 +110,21 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   The method is triggered to start dispatching valid event.
-     *          Here dispatcher should forward message to appropriate
-     *          registered event consumer
+     * \brief   Triggered to start dispatching valid event.
      * \param   eventElem   Event element to dispatch
-     * \return  Returns true if at least one consumer processed event.
-     *          Otherwise it returns false.
+     * \return  Returns true if at least one consumer processed the event.
      **/
     virtual bool dispatchEvent( Event & eventElem ) override;
 
     /**
-     * \brief   Posts event. Push event in internal or external
-     *          event queue depending on event type.
-     *          Thread should have registered consumer for
-     *          specified event object.
+     * \brief   Posts event and pushes into the internal event queue.
      * \param   eventElem   The event object to push in the queue.
      * \return  Returns true if successfully pushed event in the queue.
      **/
-    virtual bool postEvent( Event & eventElem ) override;
+    virtual bool postEvent( Event & eventElem ) override
+    {
+        return EventDispatcher::postEvent( eventElem );
+    }
 
 /************************************************************************/
 // IETimerConsumer interface overrides.
@@ -172,14 +132,23 @@ protected:
 
     /**
      * \brief   Triggered when Timer is expired.
-     *          The passed Timer parameter is indicating object, which has been expired.
-     *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
-    virtual void processTimer( Timer & timer ) override;
+    virtual void processTimer( Timer & timer ) override
+    {
+        // this never happens, since we break dispatching in dispatchEvent() method.
+        ASSERT( false );
+    }
 
 private:
-    inline HelloDispatcher & self( void );  // wrapper of this pointer.
+    //! 'this' pointer wrapper
+    inline HelloDispatcher & self( void )
+    {
+        return (*this);
+    }
+
+private:
+
     Timer   mTimer; // a dummy timer to force to trigger event.
 };
 
@@ -191,13 +160,13 @@ private:
 // Trace scopes must be defined before they are used.
 DEF_TRACE_SCOPE(main_HelloDispatcher_HelloDispatcher);
 DEF_TRACE_SCOPE(main_HelloDispatcher_readyForEvents );
-DEF_TRACE_SCOPE(main_HelloDispatcher_postEvent);
+DEF_TRACE_SCOPE(main_HelloDispatcher_dispatchEvent);
 
 HelloDispatcher::HelloDispatcher( void )
-    : DispatcherThread  (HelloDispatcher::THREAD_NAME.data())
+    : DispatcherThread( "HelloDispatcher" )
     , IETimerConsumer   ( )
 
-    , mTimer            ( static_cast<IETimerConsumer &>(self()), "aTimerName")
+    , mTimer            ( static_cast<IETimerConsumer &>(self()), "aTimer")
 {
     TRACE_SCOPE(main_HelloDispatcher_HelloDispatcher);
     TRACE_DBG("Instantiated hello dispatcher");
@@ -218,65 +187,40 @@ void HelloDispatcher::readyForEvents(bool isReady )
     }
 }
 
-bool HelloDispatcher::postEvent( Event& eventElem )
-{
-    return EventDispatcher::postEvent( eventElem );
-}
-
 bool HelloDispatcher::dispatchEvent(Event & eventElem)
 {
-    TRACE_SCOPE(main_HelloDispatcher_postEvent);
+    TRACE_SCOPE(main_HelloDispatcher_dispatchEvent);
     TRACE_DBG("Received event [ %s ], the custom event dispatching can be set here", eventElem.getRuntimeClassName().getString());
-    return true; // break dispatching event.
+    return true; // break dispatching event, so that it is never called 'processTimer()' method.
 }
 
-void HelloDispatcher::processTimer( Timer & timer )
-{
-    ASSERT(false);  // this never happens, since we break dispatching in dispatchEvent() method.
-}
-
-inline HelloDispatcher & HelloDispatcher::self( void )
-{
-    return (*this);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// Demo
-//////////////////////////////////////////////////////////////////////////
 DEF_TRACE_SCOPE(main_main);
-/**
- * \brief   Demo to create and destroy thread.
- */
+
+//! \brief   A Demo to create and destroy simple and dispatcher threads.
 int main()
 {
-    printf("Initializing to test threads...\n");
+    std::cout << "A Demo to create and destroy simple and dispatcher threads ..." << std::endl;
+
     // Force to start logging. See outputs log files in appropriate "logs" subfolder.
-    // To change the configuration and use dynamic logging, use macro TRACER_START_LOGGING
-    // and specify the logging configuration file, where you can change logging format,
-    // filter logging priority and scopes.
     TRACER_CONFIGURE_AND_START( nullptr );
 
     do
     {
-        // set this part of code in a block (for example, 'do-while' block).
-        // otherwise, the logs will not be visible, since in the time when
-        // scope is initialized, the logging is not active yet.
+        // After initialization, set scope declaration in the block.
         TRACE_SCOPE(main_main);
 
         // Start timer manager
         Application::startTimerManager( );
 
-        // declare thread object.
+        // Create and start 'Hello Thread'.
         TRACE_DBG("Starting Hello Thread");
         HelloThread helloThread;
-
-        // create and start thread, wait until it is started.
         helloThread.createThread(NECommon::WAIT_INFINITE);
         TRACE_DBG("[ %s ] to create thread [ %s ]", helloThread.isValid() ? "SUCCEEDED" : "FAILED", helloThread.getName().getString());
 
+        //Create and start 'Hello Dispatcher' thread.
         TRACE_DBG("Starting Hello Dispatcher");
         HelloDispatcher helloDispatcher;
-        // create and start thread, wait until it is started.
         helloDispatcher.createThread(NECommon::WAIT_INFINITE);
         TRACE_DBG("[ %s ] to create thread [ %s ]", helloDispatcher.isValid() ? "SUCCEEDED" : "FAILED", helloDispatcher.getName().getString());
 
@@ -295,7 +239,6 @@ int main()
     // Stop logging.
     TRACER_STOP_LOGGING();
 
-    printf("Testing threads completed, check logs...\n");
-
+    std::cout << "Exit application!" << std::endl;
     return 0;
 }

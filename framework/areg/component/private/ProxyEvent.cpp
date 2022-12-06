@@ -96,7 +96,7 @@ IEProxyEventConsumer::IEProxyEventConsumer( const ProxyAddress & proxy )
 //////////////////////////////////////////////////////////////////////////
 // IEProxyEventConsumer class, methods
 //////////////////////////////////////////////////////////////////////////
-inline void IEProxyEventConsumer::localProcessResponseEvent(ResponseEvent & eventResponse)
+inline void IEProxyEventConsumer::_localProcessResponseEvent(ResponseEvent & eventResponse)
 {
     switch (eventResponse.getDataType() )
     {
@@ -119,7 +119,7 @@ inline void IEProxyEventConsumer::localProcessResponseEvent(ResponseEvent & even
     }
 }
 
-inline void IEProxyEventConsumer::localProcessConnectEvent( ProxyConnectEvent & eventConnect )
+inline void IEProxyEventConsumer::_localProcessConnectEvent( ProxyConnectEvent & eventConnect )
 {
     if ( eventConnect.getResponseId() == static_cast<unsigned int>(NEService::eFuncIdRange::ServiceNotifyConnection) )
     {
@@ -142,14 +142,14 @@ void IEProxyEventConsumer::startEventProcessing( Event & eventElem )
             ProxyConnectEvent * eventConnect  = RUNTIME_CAST(&eventElem, ProxyConnectEvent);
             if ( eventConnect != nullptr )
             {
-                localProcessConnectEvent(*eventConnect);
+                _localProcessConnectEvent(*eventConnect);
             }
             else if ( addrProxy.getChannel() == mProxyAddress.getChannel() )
             {
                 ResponseEvent * eventResponse = RUNTIME_CAST(&eventElem, ResponseEvent);
                 if ( eventResponse != nullptr )
                 {
-                    localProcessResponseEvent(*eventResponse);
+                    _localProcessResponseEvent(*eventResponse);
                 }
                 else
                 {

@@ -105,7 +105,7 @@ ClientInfo & ClientInfo::operator = ( ProxyAddress && client ) noexcept
     return (*this);
 }
 
-inline bool ClientInfo::operator == (const ProxyAddress & client) const
+bool ClientInfo::operator == (const ProxyAddress & client) const
 {
     return mClientAddress == client;
 }

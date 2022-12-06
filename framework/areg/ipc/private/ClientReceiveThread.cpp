@@ -24,9 +24,9 @@ DEF_TRACE_SCOPE(areg_ipc_private_ClientReceiveThread_runDispatcher);
 
 ClientReceiveThread::ClientReceiveThread( IERemoteServiceHandler & remoteService, ClientConnection & connection )
     : DispatcherThread  ( NEConnection::CLIENT_RECEIVE_MESSAGE_THREAD )
-
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
+    , mBytesReceive     ( 0 )
 {
 }
 
@@ -47,11 +47,16 @@ bool ClientReceiveThread::runDispatcher(void)
         if ( whichEvent == MultiLock::LOCK_INDEX_TIMEOUT )
         {
             whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue); // escape quit
-            if ( mConnection.receiveMessage(msgReceived) <= 0 )
+            int sizeReceive = mConnection.receiveMessage( msgReceived );
+            if ( sizeReceive <= 0 )
             {
                 msgReceived.invalidate();
                 mRemoteService.failedReceiveMessage( mConnection.getSocketHandle() );
                 pulseExit();
+            }
+            else
+            {
+                mBytesReceive += static_cast<uint32_t>(sizeReceive);
             }
 
             mRemoteService.processReceivedMessage(msgReceived, mConnection.getAddress(), mConnection.getSocketHandle());

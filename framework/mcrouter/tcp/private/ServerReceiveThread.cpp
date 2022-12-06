@@ -117,7 +117,7 @@ bool ServerReceiveThread::runDispatcher(void)
                                     , addSocket.getHostAddress().getString()
                                     , addSocket.getHostPort());
 
-                        mBytesReceive += sizeReceived;
+                        mBytesReceive += static_cast<uint32_t>(sizeReceived);
                         mRemoteService.processReceivedMessage(msgReceived, addSocket, clientSocket.getHandle());
                     }
                     else

@@ -44,7 +44,7 @@ namespace NECommon
      *          3. ResizeOnOvelap   --  Always resize ring if it is full. This changes
      *                                  the actual capacity of ring, making it bigger.
      **/
-    typedef enum class E_RingOverlap    : uint8_t
+    enum class eRingOverlap : uint8_t
     {
         /**
          * \brief   Do not insert new element, if ring is full.
@@ -61,27 +61,27 @@ namespace NECommon
          **/
         , ResizeOnOvelap    = 2
 
-    } eRingOverlap;
+    };
 
     /**
      * \brief   Sorting criteria for containers
      **/
-    typedef enum class E_Sort   : uint8_t
+    enum class eSort   : uint8_t
     {
           NoSorting         //!< No sorting.
         , SortDescending    //!< Sort descending
         , SortAscending     //!< Sort ascending
-    } eSort;
+    };
 
     /**
      * \brief   Indicates the index of an element in the buffer.
      **/
-    typedef enum class E_Index  : ElemPos
+    enum class eIndex  : ElemPos
     {
           InvalidIndex  = -1    //!< Indicates the invalid index in any buffer
         , FirtIndex     =  0    //!< Indicates the first index in a buffer
         , LastIndex     = -2    //!< Indicates the end of the buffer, i.e. the last position.
-    } eIndex;
+    };
 
     /**
      * \brief   The value of invalid position in buffer, list or array.
@@ -331,10 +331,22 @@ namespace NECommon
     constexpr unsigned int  DURATION_1_NS           { 1 };
 
     /**
+     * \brief   NECommon::STR_1_NS_SHORT
+     *          1 nansecond short abbreviation.
+     **/
+    constexpr std::string_view  STR_1_NS_SHORT      { "ns" };
+
+    /**
      * \brief   NECommon::DURATION_1_MICRO
      *          1 microsecond duration in nanoseconds.
      **/
     constexpr unsigned int  DURATION_1_MICRO        { 1'000 * DURATION_1_NS };
+
+    /**
+     * \brief   NECommon::STR_1_MICROSEC_SHORT
+     *          1 microsecond short abbreviation.
+     **/
+    constexpr std::string_view  STR_1_MICROSEC_SHORT{ "us" };
 
     /**
      * \brief   NECommon::DURATION_1_MILLI
@@ -343,16 +355,34 @@ namespace NECommon
     constexpr unsigned int  DURATION_1_MILLI        { 1'000 * DURATION_1_MICRO };
 
     /**
+     * \brief   NECommon::STR_1_MILLISEC_SHORT
+     *          1 millisecond short abbreviation.
+     **/
+    constexpr std::string_view  STR_1_MILLISEC_SHORT{ "ms" };
+
+    /**
      * \brief   NECommon::DURATION_1_SEC
      *          1 second duration in nanoseconds.
      **/
     constexpr unsigned int  DURATION_1_SEC          { 1'000 * DURATION_1_MILLI };
 
     /**
+     * \brief   NECommon::STR_1_SEC_SHORT
+     *          1 second short abbreviation.
+     **/
+    constexpr std::string_view  STR_1_SEC_SHORT     { "sec" };
+
+    /**
      * \brief   NECommon::DURATION_DURATION_1_MIN1_SEC
      *          1 minute duration in nanoseconds.
      **/
     constexpr unsigned int  DURATION_1_MIN          { 60 * DURATION_1_SEC };
+
+    /**
+     * \brief   NECommon::STR_1_MIN_SHORT
+     *          1 minute short abbreviation.
+     **/
+    constexpr std::string_view  STR_1_MIN_SHORT     { "min" };
 
     /**
      * \brief   NECommon::BITS_IN_BYTE
@@ -367,10 +397,22 @@ namespace NECommon
     constexpr unsigned int  ONE_BYTE                { 1 };
 
     /**
+     * \brief   NECommon::STR_ONE_BYTE
+     *          Name (aligned) of one byte.
+     **/
+    constexpr std::string_view  STR_ONE_BYTE        { " Byte" };
+
+    /**
      * \brief   NECommon::ONE_KILOBYTE
      *          Size of one Kilobyte.
      **/
     constexpr unsigned int  ONE_KILOBYTE            { 1'000 * ONE_BYTE };
+
+    /**
+     * \brief   NECommon::STR_ONE_KILOBYTE
+     *          Name (aligned) of one Kilobyte.
+     **/
+    constexpr std::string_view  STR_ONE_KILOBYTE    { "KByte" };
 
     /**
      * \brief   NECommon::ONE_MEGABYTE
@@ -379,10 +421,22 @@ namespace NECommon
     constexpr unsigned int  ONE_MEGABYTE            { 1'000 * ONE_KILOBYTE };
 
     /**
+     * \brief   NECommon::STR_ONE_MEGABYTE
+     *          Name (aligned) of one Megabyte.
+     **/
+    constexpr std::string_view  STR_ONE_MEGABYTE    { "MByte" };
+
+    /**
      * \brief   NECommon::ONE_GIGABYTE
      *          Size of one Gigabyte.
      **/
     constexpr unsigned int  ONE_GIGABYTE            { 1'000 * ONE_MEGABYTE };
+
+    /**
+     * \brief   NECommon::STR_ONE_GIGABYTE
+     *          Name (aligned) of one Gigabyte.
+     **/
+    constexpr std::string_view  STR_ONE_GIGABYTE    { "GByte" };
 
     /**
      * \brief   NECommon::COMPONENT_PATH_SEPARATOR

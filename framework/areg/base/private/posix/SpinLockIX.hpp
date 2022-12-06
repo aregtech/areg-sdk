@@ -101,19 +101,19 @@ private:
      * \brief   Takes the ownership of critical section spin lock.
      * \return  Returns true if operation succeeded.
      */
-    inline bool lockSpin( void );
+    inline bool _lockSpin( void );
     /**
      * \brief   Releases the ownership of critical section spin lock.
      */
-    inline void unlockSpin( void );
+    inline void _unlockSpin( void );
     /**
      * \brief   Takes the ownership of spin lock to access resources of critical section.
      */
-    inline void lockIntern( void );
+    inline void _lockIntern( void );
     /**
      * \brief   Releases the ownership of spin lock to access resources of critical section.
      */
-    inline void unlockIntern( void );
+    inline void _unlockIntern( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

@@ -157,6 +157,21 @@ public:
      **/
     static bool isServiceManagerStarted( void );
 
+    /**
+     * \brief   Call to query the amount of send and receive data size in bytes.
+     *          The call extracts the send and receive sizes, and resets them to zero.
+     *          On output 'sizeSend' and 'sizeReceive' parameters contain the size
+     *          since the last call of the method.
+     *          If need to measure the total amount of data, accumulate calls.
+     *          If need to measure the data rate per second, call this method each second.
+     * 
+     * \param   sizeSend    On output this parameter contains the size of data in bytes
+     *                      sent since the last call of the method.
+     * \param   sizeReceive On output this parameter contains the size of data in bytes
+     *                      received since the last call of the method.
+     **/
+    static void queryCommunicationData( unsigned int & OUT sizeSend, unsigned int & OUT sizeReceive );
+
 /************************************************************************/
 // Service Manager start / stop functions
 /************************************************************************/

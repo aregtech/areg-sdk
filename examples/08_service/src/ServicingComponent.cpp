@@ -57,7 +57,7 @@ void ServicingComponent::shutdownServiceIntrface(Component & holder)
     mTimer.stopTimer();
     StubBase::shutdownServiceIntrface(holder);
 
-    printf("Local servicing stopped...\n");
+    std::cout << "Local servicing stopped..." << std::endl;
 }
 
 void ServicingComponent::processTimer(Timer & timer)
@@ -78,34 +78,14 @@ void ServicingComponent::processTimer(Timer & timer)
 
     if (mTimer.isActive())
     {
-        printf("Hello Service!\n");
+        std::cout << "Hello Service!" << std::endl;
     }
     else
     {
+        std::cout << "Goodbye Service!" << std::endl;
         ASSERT(mCount == TIMER_EVENTS);
-
-        printf("Goodbye Service...\n");
 
         TRACE_INFO("The timer is not active anymore, signaling quit event");
         Application::signalAppQuit();
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-// These methods must exist, but can have empty body
-//////////////////////////////////////////////////////////////////////////
-void ServicingComponent::sendNotification(unsigned int msgId)
-{
-}
-
-void ServicingComponent::errorRequest(unsigned int msgId, bool msgCancel)
-{
-}
-
-void ServicingComponent::processRequestEvent(ServiceRequestEvent & eventElem)
-{
-}
-
-void ServicingComponent::processAttributeEvent(ServiceRequestEvent & eventElem)
-{
 }

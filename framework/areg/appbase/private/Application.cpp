@@ -469,6 +469,11 @@ bool Application::isServicingReady(void)
     return (theApp.mAppState == Application::eAppState::AppStateReady);
 }
 
+void Application::queryCommunicationData( unsigned int & OUT sizeSend, unsigned int & OUT sizeReceive )
+{
+    ServiceManager::queryCommunicationData( sizeSend, sizeReceive );
+}
+
 bool Application::_setAppState(eAppState newState)
 {
     bool result = false;

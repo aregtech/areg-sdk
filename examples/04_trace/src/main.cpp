@@ -16,39 +16,23 @@
 //============================================================================
 
 #include "areg/base/GEGlobal.h"
-#include "areg/base/Thread.hpp"
 #include "areg/base/IEThreadConsumer.hpp"
+#include "areg/base/String.hpp"
+#include "areg/base/Thread.hpp"
+
 #include "areg/trace/GETrace.h"
 
-#include <string_view>
-
-#ifdef WINDOWS
+#ifdef  _WIN32
+    // link with areg library, valid only for MSVC
     #pragma comment(lib, "areg.lib")
-#endif // WINDOWS
+#endif // _WIN32
 
-//////////////////////////////////////////////////////////////////////////
-// HelloThread class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   A thread to run and output message
- */
+//! \brief   A thread to run.
 class HelloThread   : public    Thread
                     , protected IEThreadConsumer
 {
-//////////////////////////////////////////////////////////////////////////
-// Internal constants
-//////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   The thread name;
-     */
-    static constexpr std::string_view THREAD_NAME { "HelloThread" };
-
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
 public:
     HelloThread( void );
-
     virtual ~HelloThread( void ) = default;
 
 protected:
@@ -57,41 +41,32 @@ protected:
 // IEThreadConsumer interface overrides
 /************************************************************************/
 
-    /**
-     * \brief   This callback function is called from Thread object, when it is
-     *          running and fully operable. If thread needs run in loop, the loop
-     *          should be implemented here. When consumer exits this function,
-     *          the thread will complete work. To restart thread running,
-     *          createThread() method should be called again.
-     **/
+    //! \brief  This callback is triggered when thread runs and fully operable.
     virtual void onThreadRuns( void ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline HelloThread & self( void );
+    inline HelloThread & self( void )
+    {
+        return (*this);
+    }
 };
 
 //////////////////////////////////////////////////////////////////////////
 // HelloThread implementation
 //////////////////////////////////////////////////////////////////////////
 
-
 DEF_TRACE_SCOPE(main_HelloThread_HelloThread);
 DEF_TRACE_SCOPE(main_HelloThread_onThreadRuns);
 
 HelloThread::HelloThread( void )
-    : Thread            ( self(), HelloThread::THREAD_NAME.data() )
+    : Thread( self( ), "HelloThread" )
     , IEThreadConsumer  ( )
 {
     TRACE_SCOPE(main_HelloThread_HelloThread);
-    TRACE_DBG("Initialized thread [ %s ]", HelloThread::THREAD_NAME.data());
-}
-
-inline HelloThread & HelloThread::self( void )
-{
-    return (*this);
+    TRACE_DBG("Initialized thread [ %s ]", getName().getString());
 }
 
 void HelloThread::onThreadRuns( void )
@@ -107,12 +82,11 @@ void HelloThread::onThreadRuns( void )
 // Demo
 //////////////////////////////////////////////////////////////////////////
 DEF_TRACE_SCOPE(main_main);
-/**
- * \brief   Demo to create and destroy thread.
- */
+//! \brief   Demo to run tracing / logging.
 int main()
 {
-    printf("Initializing and running tracing.\n");
+    std::cout << "Demo to run tracing / logging ..." << std::endl;
+
     // Force to start logging. See outputs log files in appropriate "logs" subfolder.
     // To change the configuration and use dynamic logging, use macro TRACER_START_LOGGING
     // and specify the logging configuration file, where you can change logging format,
@@ -121,20 +95,16 @@ int main()
 
     do
     {
-        // set this part of code in a block (for example, 'do-while' block).
-        // otherwise, the logs will not be visible, since in the time when
-        // scope is initialized, the logging is not active yet.
+        // After initialization, set scope declaration in the block.
+        // Otherwise, the scope is inactive and logs are written
         TRACE_SCOPE(main_main);
 
-        // declare thread object.
         TRACE_DBG("Starting Hello World thread");
         HelloThread aThread;
 
-        // create and start thread, wait until it is started.
         aThread.createThread(NECommon::WAIT_INFINITE);
         TRACE_DBG("[ %s ] to create thread [ %s ]", aThread.isValid() ? "SUCCEEDED" : "FAILED", aThread.getName().getString());
 
-        // stop and destroy thread, clean resources. Wait until thread ends.
         TRACE_INFO("Going to stop and destroy [ %s ] thread.", aThread.getName().getString());
         aThread.destroyThread(NECommon::WAIT_INFINITE);
 
@@ -143,7 +113,6 @@ int main()
     // Stop logging.
     TRACER_STOP_LOGGING();
 
-    printf("Completed to run tracing.\n");
-
+    std::cout << "Exit application!" << std::endl;
     return 0;
 }

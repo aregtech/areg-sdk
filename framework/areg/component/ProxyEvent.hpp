@@ -239,7 +239,7 @@ private:
      * \brief   Triggered, when processing response event
      * \param   eventResponse   Response event to process
      **/
-    void localProcessResponseEvent( ResponseEvent & eventResponse);
+    void _localProcessResponseEvent( ResponseEvent & eventResponse);
 
     /**
      * \brief   Triggered, when processing connection event.
@@ -247,7 +247,7 @@ private:
      *          to service serve component.
      * \param   eventConnect    The connection event to process.
      **/
-    void localProcessConnectEvent( ProxyConnectEvent & eventConnect );
+    void _localProcessConnectEvent( ProxyConnectEvent & eventConnect );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

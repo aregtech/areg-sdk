@@ -20,11 +20,12 @@
 #include "areg/base/GEGlobal.h"
 
 #include "areg/base/TETemplateBase.hpp"
-#include <string>
-
 #include "areg/base/NEString.hpp"
-#include <locale>
+
 #include <algorithm>
+#include <iostream>
+#include <locale>
+#include <string>
 
 /************************************************************************
  * Dependencies
@@ -241,6 +242,7 @@ public:
      * \brief   Streams to input object, i.e. reads data from streaming object to string,
      *          and initialize string data.
      *
+     * \tparam  CT      The type of character.
      * \param   stream  Streaming object to read string data
      * \param   input   String object to initialize and write string data.
      * \return  Reference to stream object.
@@ -250,12 +252,33 @@ public:
 
     /**
      * \brief   Streams from output object, i.e. write data from string to streaming object.
-     * \param   stream    Streaming object to write data.
-     * \param   output    String object to read data from
+     * \tparam  CT      The type of character.
+     * \param   stream  Streaming object to write data.
+     * \param   output  String object to read data from
      * \return  Reference to stream object.
      **/
     template<typename CT>
     friend inline IEOutStream & operator << (IEOutStream & stream, const TEString<CT> & output);
+
+    /**
+     * \brief   Prints string message to the standard output stream.
+     * \tparam  CT      The type of character.
+     * \param   stream  Standard streaming object to print message.
+     * \param   output  String object with the message.
+     * \return  Reference to stream object.
+     **/
+    template<typename CT>
+    friend inline std::ostream & operator << ( std::ostream & stream, const TEString<CT> & output );
+
+    /**
+     * \brief   Reads string message from the standard input stream.
+     * \tparam  CT      The type of character.
+     * \param   stream  Standard streaming object to read message.
+     * \param   output  String object to save the message.
+     * \return  Reference to stream object.
+     **/
+    template<typename CT>
+    friend inline const std::istream & operator >> ( const std::istream & stream, TEString<CT> & input );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes
@@ -3075,6 +3098,18 @@ template<typename CT>
 inline IEOutStream& operator << (IEOutStream& stream, const TEString<CT>& output)
 {
     return (stream << output.mData);
+}
+
+template<typename CT>
+inline std::ostream & operator << ( std::ostream & stream, const TEString<CT> & output )
+{
+    return (stream << output.getObject( ));
+}
+
+template<typename CT>
+inline const std::istream & operator >> ( const std::istream & stream, TEString<CT> & input )
+{
+    return (stream >> input.getObject( ));
 }
 
 #endif  // AREG_BASE_TESTRING_HPP
