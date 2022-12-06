@@ -40,7 +40,7 @@ ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, Component
 
 void ServiceClient::startupComponent(ComponentThread& comThread)
 {
-    std::pair<double, std::string_view> dataRate = NELargeData::calcDataRate(mDataSize);
+    NEUtilities::DataLiteral dataRate = NEUtilities::convDataSize(mDataSize);
     Console& console = Console::getInstance();
     console.clearCurrentLine();
     console.outputTxt(COORD_TITLE, MSG_APP_TITLE);
@@ -103,7 +103,7 @@ bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
 void ServiceClient::processTimer(Timer& timer)
 {
     Console& console = Console::getInstance();
-    std::pair<double, std::string_view> dataRate = NELargeData::calcDataRate(mDataSize);
+    NEUtilities::DataLiteral dataRate = NEUtilities::convDataSize( mDataSize );
     console.outputMsg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data(), mBlockCount);
     console.refreshScreen();
 
