@@ -49,10 +49,11 @@ void Process::_initPaths( const char * fullPath )
     ASSERT(fullPath != nullptr);
     OUTPUT_DBG("Initializing data of process [ %s ]", fullPath);
 
+
     mProcessFullPath = fullPath;
     std::filesystem::path procPath(mProcessFullPath.getObject());
 
-    if (procPath.empty() != false)
+    if (procPath.empty() == false)
     {
         mProcessPath = procPath.parent_path().empty() ? String::EmptyString : procPath.parent_path().string();
         mProcessName = procPath.filename().empty()    ? String::EmptyString : procPath.filename().string();

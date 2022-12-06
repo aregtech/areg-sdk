@@ -150,27 +150,6 @@ AREG_API_IMPL TIME64 NEUtilities::convToTime( const NEUtilities::sFileTime & IN 
     return static_cast<uint64_t>(li.quadPart);
 }
 
-AREG_API_IMPL String NEUtilities::createComponentItemName( const char * componentName, const char* itemName )
-{
-    String result( componentName != nullptr ? componentName : String::EmptyString );
-    if ((result.isEmpty() == false) && (NEString::isEmpty<char>(itemName) == false))
-    {
-        result += NECommon::COMPONENT_ITEM_SEPARATOR;
-        result += itemName;
-
-        if (result.getLength() > NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE)
-        {
-            result.substring(0, NEUtilities::MAX_GENERATED_NAME_BUFFER_SIZE);
-        }
-    }
-    else
-    {
-        result    = String::EmptyString;
-    }
-
-    return result;
-}
-
 AREG_API_IMPL String NEUtilities::createComponentItemName( const String & componentName, const String & itemName )
 {
     String result( componentName );
@@ -271,4 +250,43 @@ AREG_API_IMPL void NEUtilities::convToFileTime( const TIME64 & IN timeValue, NEU
 
     fileTime.ftLowDateTime = MACRO_64_LO_BYTE32( quad );
     fileTime.ftHighDateTime = MACRO_64_HI_BYTE32( quad );
+}
+
+AREG_API_IMPL NEUtilities::DataLiteral NEUtilities::convDataSize( uint64_t dataSize )
+{
+    NEUtilities::DataLiteral result{ static_cast<double>(dataSize), NECommon::STR_ONE_BYTE};
+    if ( dataSize >= NECommon::ONE_MEGABYTE )
+    {
+        result.first = static_cast<double>(dataSize) / NECommon::ONE_MEGABYTE;
+        result.second = NECommon::STR_ONE_MEGABYTE;
+    }
+    else if ( dataSize >= NECommon::ONE_KILOBYTE )
+    {
+        result.first = static_cast<double>(dataSize) / NECommon::ONE_KILOBYTE;
+        result.second = NECommon::STR_ONE_KILOBYTE;
+    }
+
+    return result;
+}
+
+AREG_API_IMPL NEUtilities::DataLiteral NEUtilities::convDuration( uint64_t timeDuration )
+{
+    NEUtilities::DataLiteral result{ static_cast<double>(timeDuration), NECommon::STR_1_NS_SHORT };
+    if ( timeDuration >= NECommon::DURATION_1_SEC )
+    {
+        result.first = static_cast<double>(timeDuration) / NECommon::DURATION_1_SEC;
+        result.second = NECommon::STR_1_SEC_SHORT;
+    }
+    else if ( timeDuration >= NECommon::DURATION_1_MILLI )
+    {
+        result.first = static_cast<double>(timeDuration) / NECommon::DURATION_1_MILLI;
+        result.second = NECommon::STR_1_MILLISEC_SHORT;
+    }
+    else if ( timeDuration >= NECommon::DURATION_1_MICRO )
+    {
+        result.first = static_cast<double>(timeDuration) / NECommon::DURATION_1_MICRO;
+        result.second = NECommon::STR_1_MICROSEC_SHORT;
+    }
+
+    return result;
 }

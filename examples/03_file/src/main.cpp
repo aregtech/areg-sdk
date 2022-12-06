@@ -15,139 +15,139 @@
 #include "areg/base/IEIOStream.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/FileBuffer.hpp"
-#include <iostream>
-#include <string>
+#include "areg/base/String.hpp"
 
-#ifdef WINDOWS
+#ifdef  _WIN32
+    // link with areg library, valid only for MSVC
     #pragma comment(lib, "areg.lib")
-#endif // WINDOWS
+#endif // _WIN32
 
-
-//!< Write some text to the file.
-static void writeText(FileBase & file)
+namespace
 {
-    std::cout << std::string( 20, '*' ) << std::endl;
-
-    if (file.isValid())
+    //!< Write text to the file.
+    void writeText( FileBase & file )
     {
-        printf( "Writing text to file [ %s ] ...\n", file.getName( ).getString() );
-        // Write some texts.
-        file.write( String( "!!!Hello World!!!" ) );
-        file << "This is some text.";
-        file << "And this one is another part of text.";
-    }
-    else
-    {
-        std::cerr << "Invalid file " << file.getName().getString() << ". Cannot write text ..." << std::endl;
-    }
-}
+        std::cout << std::string( 20, '*' ) << std::endl;
 
-static void writeLines(FileBase & file)
-{
-    std::cout << std::string( 20, '*' ) << std::endl;
+        if ( file.isValid( ) )
+        {
+            std::cout << "Writing text to file [ " << file.getName( ) << " ] ..." << std::endl;
 
-    if ( file.isValid( ) )
-    {
-        printf( "Writing lines of text to file [ %s ] ...\n", file.getName( ).getString() );
-        // Write some texts.
-        file.writeLine( String( "!!!Hello World!!!" ) );
-        file.writeLine( "This is some text." );
-        file.writeLine( "And this one is another part of text." );
+            // Write texts
+            file.write( "!!!Hello World!!!" );
+            file << "This is some text.";
+            file << "And this one is another part of text.";
+        }
+        else
+        {
+            std::cerr << "Invalid file " << file.getName( ) << ". Cannot write text ..." << std::endl;
+        }
     }
-    else
-    {
-        std::cerr << "Invalid file " << file.getName( ).getString() << ". Cannot write text ..." << std::endl;
-    }
-}
 
-//!< Dump the content of the file.
-static void dumpText(FileBase & file)
-{
-    std::cout << std::string( 20, '*' ) << std::endl;
-
-    if (file.isValid())
+    //!< Generate and write texts line-by-line
+    void writeLines( FileBase & file )
     {
-        // read the file content
-        String text;
-        file.moveToBegin();
-        file >> text;
+        std::cout << std::string( 20, '*' ) << std::endl;
 
-        // dump the content
-        printf( "BEGIN File [ %s ] content >>>\n", file.getName( ).getString( ) );
-        std::cout << text.getString( ) << std::endl;
-        printf( "END   File [ %s ] content <<<\n", file.getName( ).getString( ) );
+        if ( file.isValid( ) )
+        {
+            std::cout << "Writing text to file [ " << file.getName( ) << " ] ..." << std::endl;
+
+            // Write lines.
+            file.writeLine( "!!!Hello World!!!" );
+            file.writeLine( "This is some text." );
+            file.writeLine( "And this one is another part of text." );
+        }
+        else
+        {
+            std::cerr << "Invalid file " << file.getName( ) << ". Cannot write line of texts ..." << std::endl;
+        }
     }
-    else
+
+    //!< Dump the content of the file on console.
+    void dumpText( FileBase & file )
     {
-        std::cerr << "Invalid file " << file.getName( ).getString() << ". Cannot dump text ..." << std::endl;
+        std::cout << std::string( 20, '*' ) << std::endl;
+
+        if ( file.isValid( ) )
+        {
+            file.moveToBegin( );
+
+            // read the file content
+            String text;
+            file >> text;
+
+            // dump the content
+            std::cout << "BEGIN File [ " << file.getName() << " ] content >>>" << std::endl;
+            std::cout << text << std::endl;
+            std::cout << "END File [ " << file.getName( ) << " ] content <<<" << std::endl;
+        }
+        else
+        {
+            std::cerr << "Invalid file " << file.getName( ) << ". Cannot dump text ..." << std::endl;
+        }
     }
-}
+
+} // namespace
 
 //////////////////////////////////////////////////////////////////////////
 // Some functionalities of file
 //////////////////////////////////////////////////////////////////////////
 int main()
 {
-    // open for read and write text, create if not existing, share for read and write
-    unsigned int mode = FileBase::FO_MODE_WRITE | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_CREATE | FileBase::FO_MODE_SHARE_READ | FileBase::FO_MODE_SHARE_WRITE;
+    std::cout << "Demo to show file funtionalities ..." << std::endl;
 
-    // Create a normal text file on file system
-    // The file name has relative path to the text file
-    File file("./Debug/hello.txt", mode);
-    if (file.open())
+    // open for read and write text, create if not existing, share for read and write
+    constexpr unsigned int mode{ FileBase::FO_MODE_WRITE | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_CREATE | FileBase::FO_MODE_SHARE_READ | FileBase::FO_MODE_SHARE_WRITE };
+
+    // Create a text file on file system with relative path name
+    File txtFile("./Debug/hello.txt", mode);
+    if ( txtFile.open())
     {
-        // Write a text to the file
-        writeText(file);
-        // output what has written.
-        dumpText(file);
+        writeText( txtFile );   // Fill file with some text
+        dumpText( txtFile );    // Dump on console the file content.
     }
 
-    // Create memory file (i.e. buffer in memory, which acts like a file).
-    // The file name has a time-stamp mask in the name.
+    // Create a file in memory with time-stamp mask in the name
     FileBuffer buffer;
     if (buffer.open("Buffer_%time%", mode))
     {
-        // write a text
-        writeText(buffer);
-        // dump file content
-        dumpText(buffer);
+        writeText(buffer);  // Fill file with some text.
+        dumpText(buffer);   // Dump on console the file content.
     }
 
-    file.close();
-    // Create file and write text line-by-line
-    // The file name has application (process name) mask in the name.
-    if (file.open( "../../../../temp/%appname%.txt", mode))
+    // Create a file with the application name as file name mask. Set line-by-line content.
+    File lineFile;
+    if (lineFile.open( "../../../../temp/%appname%.txt", mode))
     {
-        // write lines of texts.
-        writeLines(file);
-        // dumpp file content
-        dumpText(file);
+        writeLines( lineFile ); // Fill file with line-by-line text.
+        dumpText( lineFile );   // Dump on console the file content.
     }
 
-    // Create binary file
+    // Create a binary file, take out the 'text mode' mask
     File binary( "./Debug/binary.dat", mode & (~FileBase::FO_MODE_TEXT) );
     if (binary.open())
     {
-        // get buffer object of file buffer and write to binary.
+        // write data from memory file
         binary.write( buffer.getDataBuffer( ), buffer.getLength());
-        // dump the content
-        dumpText(binary);
-
-        // increase / reserve file space
-        binary.reserve( 789 );
+        dumpText(binary);       // Dump on console the file content.
+        binary.reserve( 789 );  // Increase / reserve file space
     }
 
     // close all files.
-    file.close( );
+    txtFile.close( );
+    lineFile.close( );
     buffer.close( );
     binary.close( );
 
-    // Make a copy of file
-    // normalize file paths i.e. get file path and resolve masks in the name.
+    // Make a copy of files and normalize path by resolving mask in the names.
     String src(File::normalizePath( "./Debug/hello.txt" ));
     String dst(File::normalizePath( "./Debug/copy_%time%.txt" ));
-    printf( "\nCopying file [ %s ] to [ %s ]\n", src.getString( ), dst.getString( ) );
+
+    std::cout << std::string( 20, '.' ) << std::endl;
+    std::cout << "Copying file [ " << src << " ] to the file [ " << dst << " ]" << std::endl ;
     File::copyFile( src, dst, true );
 
+    std::cout << "Exit application!" << std::endl;
     return 0;
 }

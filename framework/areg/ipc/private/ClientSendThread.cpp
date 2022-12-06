@@ -26,6 +26,7 @@ ClientSendThread::ClientSendThread( IERemoteServiceHandler & remoteService, Clie
     : DispatcherThread  ( NEConnection::CLIENT_SEND_MESSAGE_THREAD )
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
+    , mBytesSend        ( 0 )
 {
 }
 
@@ -48,9 +49,14 @@ void ClientSendThread::processEvent( const SendMessageEventData & data )
     const RemoteMessage & msg = data.getRemoteMessage();
     if ( msg.isValid())
     {
-        if ( mConnection.sendMessage( msg ) <= 0 )
+        int sizeSend = mConnection.sendMessage( msg );
+        if ( sizeSend <= 0 )
         {
             mRemoteService.failedSendMessage( msg );
+        }
+        else
+        {
+            mBytesSend += static_cast<uint32_t>(sizeSend);
         }
     }
 }

@@ -70,15 +70,25 @@ void ServicingComponent::startupServiceInterface( Component & holder )
 {
     TRACE_SCOPE(examples_20_pubservice_ServicingComponent_startupServiceInterface);
 
+    unsigned int sizeSend{ 0 }, sizeReceive{ 0 };
     mQuitThread = false;
     mOptionChanged = true;
     mPauseEvent.resetEvent();   // pause
 
-    std::pair<double, std::string_view> dataRate = NELargeData::calcDataRate(mDataRate);
+    Application::queryCommunicationData( sizeSend, sizeReceive );
+    uint64_t sizeItem = mItemRate != 0 ? mDataRate / mItemRate : 0;
+
+    NEUtilities::DataLiteral dataRate = NEUtilities::convDataSize(mDataRate);
+    NEUtilities::DataLiteral sendRate = NEUtilities::convDataSize( sizeSend );
+    NEUtilities::DataLiteral rcvRate  = NEUtilities::convDataSize( sizeReceive );
+    NEUtilities::DataLiteral itemRate = NEUtilities::convDataSize( sizeItem );
+
+
     Console& console = Console::getInstance();
     console.outputTxt(COORD_TITLE, MSG_APP_TITLE);
+    console.outputMsg(COORD_COMM_RATE, MSG_COMM_RATE.data(), sendRate.first, sendRate.second.data(), rcvRate.first, rcvRate.second.data());
     console.outputMsg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data());
-    console.outputMsg(COORD_ITEM_RATE, MSG_ITEM_RATE.data(), mItemRate, mDidSleep, mIgnoreSleep);
+    console.outputMsg(COORD_ITEM_RATE, MSG_ITEM_RATE.data(), mItemRate, itemRate.first, itemRate.second.data(), mDidSleep, mIgnoreSleep);
     _printInfo();
 
     _initBlockList();
@@ -126,21 +136,32 @@ void ServicingComponent::processTimer(Timer& timer)
 {
     mLock.lock(NECommon::WAIT_INFINITE);
 
-    uint32_t itemRate   = mItemRate;
+    uint32_t rateItem   = mItemRate;
     uint32_t didSleep   = mDidSleep;
     uint32_t ignoreSleep= mIgnoreSleep;
 
-    std::pair<double, std::string_view> dataRate = NELargeData::calcDataRate(mDataRate);
+    unsigned int sizeSend{ 0 }, sizeReceive{ 0 };
+    Application::queryCommunicationData( sizeSend, sizeReceive );
+    uint64_t sizeItem = rateItem != 0 ? mDataRate / rateItem : 0;
+
+    NEUtilities::DataLiteral dataRate = NEUtilities::convDataSize( mDataRate );
+    NEUtilities::DataLiteral sendRate = NEUtilities::convDataSize( sizeSend );
+    NEUtilities::DataLiteral rcvRate  = NEUtilities::convDataSize( sizeReceive );
+    NEUtilities::DataLiteral itemRate = NEUtilities::convDataSize( sizeItem );
+
     mItemRate = 0;
     mDataRate = 0;
     mDidSleep = 0;
     mIgnoreSleep = 0;
-    mLock.unlock();
+    mLock.unlock( );
 
-    Console& console = Console::getInstance();
-    Console::Coord oldPos = console.getCursorCurPosition();
-    console.outputMsg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data());
-    console.outputMsg(COORD_ITEM_RATE, MSG_ITEM_RATE.data(), itemRate, didSleep, ignoreSleep);
+    Console & console = Console::getInstance( );
+    Console::Coord oldPos = console.getCursorCurPosition( );
+
+    console.outputMsg( COORD_COMM_RATE, MSG_COMM_RATE.data( ), sendRate.first, sendRate.second.data( ), rcvRate.first, rcvRate.second.data( ) );
+    console.outputMsg( COORD_DATA_RATE, MSG_DATA_RATE.data( ), dataRate.first, dataRate.second.data( ) );
+    console.outputMsg( COORD_ITEM_RATE, MSG_ITEM_RATE.data( ), rateItem, itemRate.first, itemRate.second.data( ), didSleep, ignoreSleep );
+
     console.setCursorCurPosition(oldPos);
     console.refreshScreen();
 }
@@ -348,9 +369,9 @@ void ServicingComponent::_printInfo(void) const
     uint64_t timePerBlock   = mOptions.nsPerBlock();
 
     double blockRate = (static_cast<double>(NECommon::DURATION_1_SEC) / timePerBlock) * mOptions.mChannels;
-    std::pair<double, std::string_view> dataRate = NELargeData::calcDataRate(static_cast<uint32_t>(blockRate * bytesPerBlock));
-    std::pair<double, std::string_view> blockSize= NELargeData::calcDataRate(bytesPerBlock);
-    std::pair<double, std::string_view> timeRate = NELargeData::calcDuration(timePerBlock);
+    NEUtilities::DataLiteral dataRate = NEUtilities::convDataSize(static_cast<uint32_t>(blockRate * bytesPerBlock));
+    NEUtilities::DataLiteral blockSize= NEUtilities::convDataSize(bytesPerBlock);
+    NEUtilities::DataLiteral timeRate = NEUtilities::convDuration(timePerBlock);
 
     console.printTxt("---------------------------------------\n");
     console.printTxt("Printing image current options:\n");

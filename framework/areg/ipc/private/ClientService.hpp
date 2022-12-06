@@ -105,6 +105,18 @@ public:
      **/
     ITEM_ID getConnectionCookie( void ) const;
 
+    /**
+     * \brief   Each time querying the bytes sent via network connection returns
+     *          the value after last query.
+     **/
+    inline uint32_t queryBytesSent( void );
+
+    /**
+     * \brief   Each time querying the bytes received via network connection returns
+     *          the value after last query.
+     **/
+    inline uint32_t queryBytesReceived( void );
+
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -429,6 +441,15 @@ inline ITEM_ID ClientService::getConnectionCookie( void ) const
     return mClientConnection.getCookie();
 }
 
+inline uint32_t ClientService::queryBytesSent( void )
+{
+    return mThreadSend.extractDataSend();
+}
+
+inline uint32_t ClientService::queryBytesReceived( void )
+{
+    return mThreadReceive.extractDataReceive();
+}
 
 inline const char * ClientService::getString(ClientService::eConnectionState val)
 {

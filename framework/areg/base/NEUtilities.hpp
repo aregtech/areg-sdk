@@ -22,7 +22,9 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/base/NEMath.hpp"
 
+#include <chrono>
 #include <string_view>
+#include <utility>
 
 /************************************************************************
  * Dependencies
@@ -302,7 +304,6 @@ namespace   NEUtilities
      * \param   itemName        The name of component item.
      * \return  Returns created new string containing componentName and itemName separated by COMPONENT_ITEM_SEPARATOR.
      **/
-    AREG_API String createComponentItemName(const char * componentName, const char* itemName);
     AREG_API String createComponentItemName(const String & componentName, const String & itemName);
 
     /**
@@ -355,6 +356,187 @@ namespace   NEUtilities
      * \brief	Generates and returns unique unsigned int value
      **/
     AREG_API unsigned int generateUniqueId( void );
+
+    //!< The data rate type
+    typedef std::pair<double, std::string_view>     DataLiteral;
+
+    /**
+     * \brief   Converts the data size in bytes value into readable values bytes, kilobytes or megabytes.
+     *          In the returned pair type, first parameter contains converted size and the second
+     *          contains the string literal of the size.
+     * 
+     * \param   dataSize    The data size in bytes to convert.
+     * \return  Returns a pair where the first value contains converted size and
+     *          the second value is the string literal of converted size. For example,
+     *          the value 2500 bytes is converted in pairs <2.5, 'KBytes'>, i.e. 2.5 kilobytes.
+     */
+    AREG_API DataLiteral convDataSize( uint64_t dataSize );
+
+    /**
+     * \brief   Converts the time duration in nanoseconds value into readable values nanoseconds,
+     *          microseconds, milliseconds or seconds.
+     *          In the returned pair type, first parameter contains converted duration and the second
+     *          contains the string literal of the duration.
+     *
+     * \param   timeDuration    The time duration in nanoseconds to convert.
+     * \return  Returns a pair where the value is converted time and the second value
+     *          is a literal of the converted time. For example, the value 2500 is
+     *          converted into pair <2.5, 'us'>, i.e. 2.5 microseconds.
+     */
+    AREG_API DataLiteral convDuration( uint64_t timeDuration );
+
+    /**
+     * \brief   A helper class to calculate time passed. Can be used as a stop watch.
+     *          Need to call stop() method to calculate the duration.
+     *          Otherwise, the duration is zero.
+     * 
+     * \example Use of NEUtilities::TimeDuration:
+     * 
+     *          NEUtilities::TimeDuration stopWatch;
+     *          stopWatch.stop();
+     *          std::cout << "Time passed " << stopWatch.passedMillisecond() << " ms" << std::endl;
+     * 
+     *          std::cout << "Started new timer at epoch time " << stopWatch.start() << std::endl;
+     *          std::cout << "Stoppedn timer at epoch time " << stopWatch.stop() << std::endl;
+     *          std::cout << "Time passed: " << stopWatch.passedNanoseconds() << " ns" << std::endl;
+     **/
+    class TimeDuration
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Constructors / Destructor, operators
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Initializes the start and stop times since epoch.
+         *          If call start(), it resets starting time.
+         *          Call stop() to calculate the duration.
+         **/
+        inline TimeDuration( void );
+        TimeDuration( const TimeDuration & src ) = default;
+        ~TimeDuration( void ) = default;
+
+        TimeDuration & operator = ( const TimeDuration & src ) = default;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Operations, attributes.
+    //////////////////////////////////////////////////////////////////////////
+    public:
+
+        /**
+         * \brief   Starts the timer. Call stop() to calculate duration.
+         * \return  Returns the starting time in nanoseconds passed since epoch.
+         **/
+        inline TIME64 start( void );
+
+        /**
+         * \brief   Stops the timer, can calculate duration.
+         * \return  Returns the stopping time in nanoseconds passed since epoch.
+         **/
+        inline TIME64 stop( void );
+
+        /**
+         * \bief    Returns the starting time in nanoseconds since epoch.
+         **/
+        inline TIME64 getStart( void ) const;
+
+        /**
+         * \bief    Returns the stopping time in nanoseconds since epoch.
+         **/
+        inline TIME64 getStop( void ) const;
+
+        /**
+         * \brief   Calculates and returns passed time in nanoseconds.
+         **/
+        inline uint64_t passedNanoseconds( void ) const;
+
+        /**
+         * \brief   Calculates and returns passed time in microseconds.
+         **/
+        inline uint64_t passedMicroseconds( void ) const;
+
+        /**
+         * \brief   Calculates and returns passed time in milliseconds.
+         **/
+        inline uint64_t passedMilliseconds( void ) const;
+
+        /**
+         * \brief   Calculates and returns passed time in seconds.
+         **/
+        inline uint64_t passedSeconds( void ) const;
+
+        /**
+         * \brief   Calculates and returns passed time in minutes.
+         **/
+        inline uint64_t passedMinutes( void ) const;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Member variables
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        //!< The high-resolution starting time since epoch.
+        std::chrono::steady_clock::time_point   mStart;
+        //!< The high-resolution stopping time since epoch.
+        std::chrono::steady_clock::time_point   mStop;
+    };
+}
+
+//////////////////////////////////////////////////////////////////////////
+// NEUtilities::TimeDuration inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline NEUtilities::TimeDuration::TimeDuration( void )
+    : mStart        ( std::chrono::steady_clock::now() )
+    , mStop         ( mStart )
+{
+}
+
+inline TIME64 NEUtilities::TimeDuration::start( void )
+{
+    mStart      = std::chrono::steady_clock::now();
+    mStop       = mStart;
+
+    return mStart.time_since_epoch( ).count( );
+}
+
+inline TIME64 NEUtilities::TimeDuration::stop( void )
+{
+    mStop = std::chrono::steady_clock::now();
+    return mStop.time_since_epoch( ).count( );
+}
+
+inline TIME64 NEUtilities::TimeDuration::getStart( void ) const
+{
+    return mStart.time_since_epoch( ).count( );
+}
+
+inline TIME64 NEUtilities::TimeDuration::getStop( void ) const
+{
+    return mStop.time_since_epoch( ).count( );
+}
+
+inline uint64_t NEUtilities::TimeDuration::passedNanoseconds( void ) const
+{
+    return (mStop - mStart).count();
+}
+
+inline uint64_t NEUtilities::TimeDuration::passedMicroseconds( void ) const
+{
+    return std::chrono::duration_cast<std::chrono::microseconds>(mStop - mStart).count();
+}
+
+inline uint64_t NEUtilities::TimeDuration::passedMilliseconds( void ) const
+{
+    return std::chrono::duration_cast<std::chrono::milliseconds>(mStop - mStart).count( );
+}
+
+inline uint64_t NEUtilities::TimeDuration::passedSeconds( void ) const
+{
+    return std::chrono::duration_cast<std::chrono::seconds>(mStop - mStart).count( );
+}
+
+inline uint64_t NEUtilities::TimeDuration::passedMinutes( void ) const
+{
+    return std::chrono::duration_cast<std::chrono::minutes>(mStop - mStart).count( );
 }
 
 #endif  // AREG_BASE_NEUTILITIES_HPP

@@ -13,36 +13,24 @@
 #include "areg/base/Thread.hpp"
 #include "areg/base/IEThreadConsumer.hpp"
 #include "areg/base/SharedBuffer.hpp"
+#include "areg/base/String.hpp"
 
-#include <iostream>
-#include <string_view>
-
-#ifdef WINDOWS
+#ifdef  _WIN32
+    // link with areg library, valid only for MSVC
     #pragma comment(lib, "areg.lib")
-#endif // WINDOWS
+#endif // _WIN32
 
-//////////////////////////////////////////////////////////////////////////
-// HelloThread class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   A thread to run and output message
- */
+//! \brief   A thread to run and output message
 class HelloThread   : public    Thread
                     , protected IEThreadConsumer
 {
-//////////////////////////////////////////////////////////////////////////
-// Internal constants
-//////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   The thread name;
-     */
-    static constexpr std::string_view THREAD_NAME { "HelloThread" };
-
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
 public:
-    explicit HelloThread( SharedBuffer & buffer );
+    explicit HelloThread( SharedBuffer & buffer )
+        : Thread( self( ), "HelloThread" ) // set consumer and the name
+        , IEThreadConsumer( )
+        , mBuffer( buffer )
+    {
+    }
 
     virtual ~HelloThread( void ) = default;
 
@@ -52,24 +40,17 @@ protected:
 // IEThreadConsumer interface overrides
 /************************************************************************/
 
-    /**
-     * \brief   This callback function is called from Thread object, when it is
-     *          running and fully operable. If thread needs run in loop, the loop
-     *          should be implemented here. When consumer exits this function,
-     *          the thread will complete work. To restart thread running,
-     *          createThread() method should be called again.
-     **/
+    //! \brief  This callback is triggered when thread runs and fully operable.
     virtual void onThreadRuns( void ) override;
 
-//////////////////////////////////////////////////////////////////////////
-// Hidden calls
-//////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Wrapper of this pointer
-     **/
-    inline HelloThread & self( void );
+    //!< The wrapper of 'this' pointer to call in constructor
+    inline HelloThread & self( void )
+    {
+        return (*this);
+    };
 
+private:
     SharedBuffer &  mBuffer;
 };
 
@@ -77,21 +58,9 @@ private:
 // HelloThread implementation
 //////////////////////////////////////////////////////////////////////////
 
-HelloThread::HelloThread( SharedBuffer & buffer )
-    : Thread            ( self(), HelloThread::THREAD_NAME.data() )
-    , IEThreadConsumer  ( )
-    , mBuffer           ( buffer )
-{
-}
-
-inline HelloThread & HelloThread::self( void )
-{
-    return (*this);
-}
-
 void HelloThread::onThreadRuns( void )
 {
-    printf("The thread [ %s ] runs, going to output message:\n", Thread::getCurrentThreadName().getString());
+    std::cout << "The thread [ " << getName( ) << " ] runs, outputing message." << std::endl;
 
     int numDigit  = 0;
     float numPI   = 0.0;
@@ -110,36 +79,34 @@ void HelloThread::onThreadRuns( void )
     std::cout << "END dump buffer data ............" << std::endl;
     std::cout << "*********************************" << std::endl;
 
-    printf( "The thread [ %s ] completed job...\n", getName().getString() );
+    std::cout << "The thread [ " << getName( ) << " ] completed job ..." << std::endl;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// Demo
+// Demo to write and read data from binary buffer.
 //////////////////////////////////////////////////////////////////////////
-/**
- * \brief   Demo to create and destroy thread.
- */
 int main()
 {
-    SharedBuffer buffer;
+    std::cout << "Demo to write and read data from binary buffer ..." << std::endl;
 
+    SharedBuffer buffer;
     buffer << static_cast<int>(1234);
     buffer << static_cast<float>(M_PI);
     buffer << String("!!!Hello World!!!");
 
     buffer.moveToBegin();
-    int   numDigit = 0;
-    float numFloat = 0.0;
-    String msgHello= "";
+    int   numDigit{ 0 };
+    float numFloat{ 0.0 };
+    String msgHello{ "" };
 
     buffer >> numDigit;
     buffer >> numFloat;
     buffer >> msgHello;
 
     // make debug output here, check values.
-    printf("The integer number is .: %d\n", numDigit);
-    printf("The floating number is : %f\n", numFloat);
-    printf("The string message is .: %s\n", msgHello.getString());
+    std::cout << "The integer number is .: " << numDigit << std::endl;
+    std::cout << "The floating number is : " << numFloat << std::endl;
+    std::cout << "The string message is .: " << msgHello << std::endl;
 
     // declare thread object.
     HelloThread aThread(buffer);

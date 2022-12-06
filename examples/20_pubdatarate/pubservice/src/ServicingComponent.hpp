@@ -59,38 +59,42 @@ class ServicingComponent    : public    Component
     //!< Coordinates to output application title / headline
     static constexpr Console::Coord     COORD_TITLE     { 0, 0 };
 
+    static constexpr Console::Coord     COORD_COMM_RATE { 0, 1 };
+
     //!< Coordinates to output data rate
-    static constexpr Console::Coord     COORD_DATA_RATE { 0, 1 };
+    static constexpr Console::Coord     COORD_DATA_RATE { 0, 2 };
 
     //!< Coordinates to output item rate
-    static constexpr Console::Coord     COORD_ITEM_RATE { 0, 2 };
+    static constexpr Console::Coord     COORD_ITEM_RATE { 0, 3 };
 
     //!< Coordinates to output information of thread suspend statistics
-    static constexpr Console::Coord     COORD_INFO_SLEEP{ 0, 3 };
+    static constexpr Console::Coord     COORD_INFO_SLEEP{ 0, 4 };
 
     //!< Coordinates to input the option commands
-    static constexpr Console::Coord     COORD_OPTIONS   { 0, 4 };
+    static constexpr Console::Coord     COORD_OPTIONS   { 0, 5 };
 
     //!< Coordinates to output the error information.
-    static constexpr Console::Coord     COORD_ERROR_INFO{ 0, 5 };
+    static constexpr Console::Coord     COORD_ERROR_INFO{ 0, 6 };
 
     //!< Coordinates to output the options information or application help
-    static constexpr Console::Coord     COORD_OPT_INFO  { 0, 7 };
+    static constexpr Console::Coord     COORD_OPT_INFO  { 0, 8 };
 
     //!< Message to output as application title / headline
     static constexpr std::string_view   MSG_APP_TITLE   { "Application to test data rate, service part..." };
+
+    static constexpr std::string_view   MSG_COMM_RATE   { "Network communication: sent [ % 4.02f ] %s / sec, receive [ % 4.02f ] %s / sec." };
+
+    //!< Message to output data rate information
+    static constexpr std::string_view   MSG_DATA_RATE   { "Data rate: sent [ % 4.02f ] %s / sec." };
+
+    //!< Message to output item rate information
+    static constexpr std::string_view   MSG_ITEM_RATE   { "Block rate: sent [ %u ] items / sec, each [ % 4.02f ] %s. Sleep [ %u ] times, ignored [ %u ] times." };
 
     //!< Message to output as application option input
     static constexpr std::string_view   MSG_INPUT_OPTION{ "Input options. Or type \'-q\' to quit application, or type \'-h\' to read help: " };
 
     //!< Message to output as an error.
     static constexpr std::string_view   MSG_INVALID_CMD { "Invalid command or value, type \'-h\' or \'--help\' for commands." };
-
-    //!< Message to output data rate information
-    static constexpr std::string_view   MSG_DATA_RATE   { "Data rate: sent [ % 4.02f ] %s / sec." };
-
-    //!< Message to output item rate information
-    static constexpr std::string_view   MSG_ITEM_RATE   { "Item rate: sent [ %u ] items / sec. Sleep [ %u ] times, ignored [ %u ] times." };
 
     //!< The option command input thread.
     static constexpr std::string_view   THREAD_WAITINPUT{ "ConsoleInputThread" };
@@ -99,7 +103,7 @@ class ServicingComponent    : public    Component
     static constexpr std::string_view   THREAD_GENERATE { "GenerateImageThread" };
 
     //!< Timer name.
-    static constexpr std::string_view   TIMER_NAME     { "LargeDataTimer" };
+    static constexpr std::string_view   TIMER_NAME      { "DataRateTimer" };
 
     using ImageBlock = NELargeData::ImageBlock;
 

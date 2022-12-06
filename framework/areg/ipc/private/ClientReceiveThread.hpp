@@ -54,6 +54,16 @@ public:
      **/
     virtual ~ClientReceiveThread( void ) = default;
 
+/************************************************************************/
+// Actions and attributes.
+/************************************************************************/
+public:
+    /**
+     * \brief   Returns accumulative value of received data size and rests the existing value to zero.
+     *          The operations are atomic. The value can be used to display data rate, for example.
+     **/
+    inline uint32_t extractDataReceive( void );
+
 protected:
 /************************************************************************/
 // DispatcherThread overrides
@@ -81,6 +91,11 @@ private:
      **/
     ClientConnection &          mConnection;
 
+    /**
+     * \brief   Accumulative value of received data size.
+     */
+    std::atomic_uint            mBytesReceive;
+
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
@@ -88,5 +103,10 @@ private:
     ClientReceiveThread( void ) = delete;
     DECLARE_NOCOPY_NOMOVE( ClientReceiveThread );
 };
+
+inline uint32_t ClientReceiveThread::extractDataReceive( void )
+{
+    return static_cast<uint32_t>(mBytesReceive.exchange(0));
+}
 
 #endif  // AREG_IPC_PRIVATE_CLIENTRECEIVETHREAD_HPP
