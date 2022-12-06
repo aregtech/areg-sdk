@@ -343,32 +343,32 @@ private:
     /**
      * \brief   Called to start client socket connection. Returns true if connected.
      **/
-    inline bool startConnection( void );
+    inline bool _startConnection( void );
     /**
      * \brief   Called to stop client socket connection.
      **/
-    inline void stopConnection( void );
+    inline void _stopConnection( void );
     /**
      * \brief   Called when connection is lost and should be immediately canceled.
      **/
-    inline void cancelConnection( void );
+    inline void _cancelConnection( void );
     /**
      * \brief   Returns true if client socket connection is started.
      **/
-    inline bool isStarted( void ) const;
+    inline bool _isStarted( void ) const;
     /**
      * \brief   Sets client socket connection state.
      * \param   newState    The connection state to set.
      **/
-    inline void setConnectionState( ClientService::eConnectionState newState );
+    inline void _setConnectionState( ClientService::eConnectionState newState );
     /**
      * \brief   Returns current client socket connection state.
      **/
-    inline ClientService::eConnectionState getConnectionState( void ) const;
+    inline ClientService::eConnectionState _getConnectionState( void ) const;
     /**
      * \brief   Queues the message for sending
      **/
-    inline bool queueSendMessage(const RemoteMessage & data);
+    inline bool _queueSendMessage(const RemoteMessage & data);
     /**
      * \brief   Returns instance of client servicing object.
      **/

@@ -102,7 +102,7 @@ void ConsoleService::processTimer( Timer & timer )
     ASSERT( &timer == &mTimer );
     if ( mTimer.isActive( ) )
     {
-        outputDataRate(MulticastRouter::getInstance().queryDataSent(), MulticastRouter::getInstance().queryDataReceived());
+        _outputDataRate(MulticastRouter::getInstance().queryDataSent(), MulticastRouter::getInstance().queryDataReceived());
     }
 }
 
@@ -125,7 +125,7 @@ void ConsoleService::processAttributeEvent( ServiceRequestEvent & eventElem )
 {
 }
 
-inline void ConsoleService::outputDataRate(uint32_t bytesSend, uint32_t bytesRecv)
+inline void ConsoleService::_outputDataRate(uint32_t bytesSend, uint32_t bytesRecv)
 {
     Console& console = Console::getInstance();
 

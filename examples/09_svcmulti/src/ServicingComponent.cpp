@@ -93,19 +93,3 @@ void ServicingComponent::processTimer(Timer & timer)
         Application::signalAppQuit();
     }
 }
-
-void ServicingComponent::sendNotification(unsigned int msgId)
-{
-}
-
-void ServicingComponent::errorRequest(unsigned int msgId, bool msgCancel)
-{
-}
-
-void ServicingComponent::processRequestEvent(ServiceRequestEvent & eventElem)
-{
-}
-
-void ServicingComponent::processAttributeEvent(ServiceRequestEvent & eventElem)
-{
-}

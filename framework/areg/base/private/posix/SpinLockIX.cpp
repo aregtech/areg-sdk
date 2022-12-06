@@ -50,29 +50,29 @@ bool SpinLockIX::lock( void )
 
     if ( mIsValid.load() )
     {
-        lockIntern( );
+        _lockIntern( );
 
         pthread_t curThread = ::pthread_self( );
         if ( mSpinOwner != curThread )
         {
-            unlockIntern( );
+            _unlockIntern( );
 
-            if ( lockSpin( ) )
+            if ( _lockSpin( ) )
             {
-                lockIntern( );
+                _lockIntern( );
 
                 result = true;
                 mSpinOwner  = curThread;
                 mLockCount  = 1;
 
-                unlockIntern( );
+                _unlockIntern( );
             }
         }
         else
         {
             result = true;
             mLockCount ++;
-            unlockIntern( );
+            _unlockIntern( );
         }
     }
 
@@ -85,7 +85,7 @@ bool SpinLockIX::unlock( void )
 
     if ( mIsValid.load() )
     {
-        lockIntern( );
+        _lockIntern( );
 
         if ( mSpinOwner == ::pthread_self( ) )
         {
@@ -95,13 +95,13 @@ bool SpinLockIX::unlock( void )
             if ( mLockCount == 0 )
             {
                 mSpinOwner = 0;
-                unlockSpin( );
+                _unlockSpin( );
             }
 
             result = true;
         }
 
-        unlockIntern( );
+        _unlockIntern( );
     }
 
     return result;
@@ -113,29 +113,29 @@ bool SpinLockIX::tryLock( void )
 
     if ( mIsValid.load() )
     {
-        lockIntern( );
+        _lockIntern( );
 
         pthread_t curThread = ::pthread_self( );
         if ( mSpinOwner != curThread )
         {
-            unlockIntern( );
+            _unlockIntern( );
 
             if ( RETURNED_OK == ::pthread_spin_trylock( &mSpinLock ) )
             {
-                lockIntern( );
+                _lockIntern( );
 
                 mSpinOwner  = curThread;
                 mLockCount  = 1;
                 result = true;
 
-                unlockIntern( );
+                _unlockIntern( );
             }
         }
         else
         {
             mLockCount ++;
             result = true;
-            unlockIntern( );
+            _unlockIntern( );
         }
     }
 
@@ -159,22 +159,22 @@ void SpinLockIX::freeResources( void )
 }
 
 
-inline bool SpinLockIX::lockSpin( void )
+inline bool SpinLockIX::_lockSpin( void )
 {
     return (RETURNED_OK == ::pthread_spin_lock( &mSpinLock ));
 }
 
-inline void SpinLockIX::unlockSpin( void )
+inline void SpinLockIX::_unlockSpin( void )
 {
     ::pthread_spin_unlock( &mSpinLock );
 }
 
-inline void SpinLockIX::lockIntern( void )
+inline void SpinLockIX::_lockIntern( void )
 {
     ::pthread_spin_lock( &mInternLock );
 }
 
-inline void SpinLockIX::unlockIntern( void )
+inline void SpinLockIX::_unlockIntern( void )
 {
     ::pthread_spin_unlock( &mInternLock );
 }

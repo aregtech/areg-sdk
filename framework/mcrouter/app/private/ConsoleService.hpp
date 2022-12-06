@@ -207,7 +207,7 @@ private:
     /**
      * \brief   Called to output sent and received data rate messages.
      **/
-    inline void outputDataRate(uint32_t bytesSend, uint32_t bytesRecv);
+    inline void _outputDataRate(uint32_t bytesSend, uint32_t bytesRecv);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables

@@ -1,16 +1,24 @@
 # Identify the OS
 if(APPLE)
-    set(OpSystem "MacOS")
+    set(OpSystem "macOS")
 elseif(UNIX)
-    set(OpSystem "Linux")
+    set(OpSystem "linux")
 else()
-    set(OpSystem "Windows")
+    set(OpSystem "windows")
 endif()
 
 # Determining bitness by size of void pointer
 # 8 bytes ==> x64 and 4 bytes ==> x86
 if(NOT ${CMAKE_SIZEOF_VOID_P} MATCHES "8")
     set(Platform "x86")
+endif()
+
+if(CMAKE_BUILD_TYPE MATCHES "Release")
+    set(CMAKE_BUILD_TYPE "Release")
+    add_definitions(-DNDEBUG)
+else()
+    set(CMAKE_BUILD_TYPE "Debug")
+    add_definitions(-DDEBUG)
 endif()
 
 # The toolset
@@ -60,13 +68,6 @@ endif()
 set(aregCXXStandard "17")
 
 add_definitions(-DUNICODE)
-if(Config MATCHES "Release")
-    set(CMAKE_BUILD_TYPE "Release")
-    add_definitions(-DNDEBUG)
-else()
-    set(CMAKE_BUILD_TYPE "Debug")
-    add_definitions(-DDEBUG)
-endif()
 
 # Checking Compiler for adding corresponded tweaks and flags
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
@@ -74,7 +75,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # POSIX API
     add_definitions(-DPOSIX)
     set(AREG_DEVELOP_ENV "Posix")
-    if (Config MATCHES "Release")
+    if (CMAKE_BUILD_TYPE MATCHES "Release")
         list(APPEND CompileOptions -O2)
     else()
         list(APPEND CompileOptions -O0 -g3)
@@ -88,7 +89,7 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # POSIX API
     add_definitions(-DPOSIX)
     set(AREG_DEVELOP_ENV "Posix")
-    if (Config MATCHES "Release")
+    if (CMAKE_BUILD_TYPE MATCHES "Release")
         list(APPEND CompileOptions -O2)
     else()
         list(APPEND CompileOptions -O0 -g3)
@@ -103,7 +104,7 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # Windows / Win32 API
     add_definitions(-DWINDOWS)
     set(AREG_DEVELOP_ENV "Windows")
-    if(NOT Config MATCHES "Release")
+    if(NOT CMAKE_BUILD_TYPE MATCHES "Release")
         list(APPEND CompileOptions -Od -RTC1 -c)
     endif()
 

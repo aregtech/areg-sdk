@@ -175,7 +175,7 @@ unsigned int Socket::setSendSegmentSize(unsigned int sendSize, bool force /*= fa
     return mSendSize;
 }
 
-inline unsigned int Socket::setRecvSegmentSize(unsigned int recvSize, bool force /*= false*/) const
+unsigned int Socket::setRecvSegmentSize(unsigned int recvSize, bool force /*= false*/) const
 {
     if (isValid() == false)
     {
