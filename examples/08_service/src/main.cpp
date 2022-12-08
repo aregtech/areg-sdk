@@ -61,17 +61,16 @@ int main()
 
         TRACE_SCOPE(main_main);
         TRACE_DBG("The application has been initialized, loading model [ %s ]", _modelName);
+        ASSERT( Application::findModel( _modelName ).isValid( ) );
+
         Application::loadModel(_modelName);
-        NEUtilities::TimeDuration duration; // start timer
-        TRACE_DBG("Servicing model is loaded");
-
-        std::cout << "Waiting maximum for " << timeout << " ms to unload model." << std::endl;
+        std::cout << "Service moder is loaded. Waiting maximum for " << timeout << " ms to unload model." << std::endl;
         Application::waitAppQuit( timeout );    // wait for quit signal to complete application.
-        duration.stop( ); // stop timer
-        timeout = MACRO_MIN( timeout, static_cast<unsigned int>(duration.passedMilliseconds()) );
-        std::cout << timeout << " ms passed. Unloading model and exit application..." << std::endl;
-
         Application::unloadModel(_modelName);   // stop and unload components
+        
+        unsigned int duration = static_cast<unsigned int>(Application::findModel( _modelName ).getAliveDuration( ) / NECommon::DURATION_1_MILLI);
+        timeout = MACRO_MIN( timeout, duration );
+        std::cout << timeout << " ms passed. Model is unloaded, releasing resources to exit application..." << std::endl;
         Application::releaseApplication();      // release and cleanup resources of application.
 
     } while (false);

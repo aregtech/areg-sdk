@@ -93,7 +93,7 @@ int ComponentThread::createComponents( void )
 {
     OUTPUT_DBG("Starting to create components in thread [ %s ].", getName().getString());
     int result = 0;
-    const NERegistry::ComponentList& comList = ComponentLoader::getComponentList(getName());
+    const NERegistry::ComponentList& comList = ComponentLoader::findComponentList(getName());
     if (comList.isValid())
     {
         for (uint32_t i = 0; i < comList.mListComponents.getSize(); ++ i)

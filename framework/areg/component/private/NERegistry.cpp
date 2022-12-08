@@ -916,21 +916,24 @@ bool NERegistry::ComponentThreadList::isValid( void ) const
 NERegistry::Model::Model( void )
     : mModelName    ( )
     , mModelThreads ( )
-    , mIsLoaded     ( false )
+    , mLoadState    ( Model::eModelState::ModelInitialized )
+    , mAliveDuration( )
 {
 }
 
 NERegistry::Model::Model( const String & modelName )
     : mModelName    (modelName)
     , mModelThreads ( )
-    , mIsLoaded     ( false )
+    , mLoadState    ( Model::eModelState::ModelInitialized )
+    , mAliveDuration( )
 {
 }
 
 NERegistry::Model::Model( const String & modelName, const ComponentThreadList & threadList  )
     : mModelName    (modelName)
     , mModelThreads (threadList)
-    , mIsLoaded     ( false )
+    , mLoadState    ( Model::eModelState::ModelInitialized )
+    , mAliveDuration( )
 {
 }
 
@@ -1035,12 +1038,24 @@ bool NERegistry::Model::hasRegisteredComponent( const String & roleName ) const
 
 bool NERegistry::Model::isModelLoaded( void ) const
 {
-    return mIsLoaded;
+    return (mLoadState == NERegistry::Model::eModelState::ModelLoaded);
 }
 
 void NERegistry::Model::markModelLoaded( bool isLoaded /*= true */ )
 {
-    mIsLoaded = isLoaded;
+    mLoadState = isLoaded ? mLoadState = Model::eModelState::ModelLoaded : Model::eModelState::ModelUnloaded;
+}
+
+void NERegistry::Model::markModelAlive( bool isAlive )
+{
+    if ( isAlive )
+    {
+        mAliveDuration.start( );
+    }
+    else
+    {
+        mAliveDuration.stop( );
+    }
 }
 
 const NERegistry::ComponentThreadList & NERegistry::Model::getThreadList( void ) const

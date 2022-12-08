@@ -131,6 +131,11 @@ bool Application::isModelLoaded(const char * modelName)
     return ComponentLoader::isModelLoaded(modelName);
 }
 
+const NERegistry::Model & Application::findModel( const char * modelName )
+{
+    return ComponentLoader::findModel( modelName );
+}
+
 void Application::setWorkingDirectory( const char * dirPath /*= nullptr*/ )
 {
     String path( NEString::isEmpty<char>(dirPath) ? Process::getInstance().getPath().getString() : dirPath);
