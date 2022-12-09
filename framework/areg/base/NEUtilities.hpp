@@ -390,9 +390,9 @@ namespace   NEUtilities
      *          Need to call stop() method to calculate the duration.
      *          Otherwise, the duration is zero.
      * 
-     * \example Use of NEUtilities::TimeDuration:
+     * \example Use of NEUtilities::Duration:
      * 
-     *          NEUtilities::TimeDuration stopWatch;
+     *          NEUtilities::Duration stopWatch;
      *          stopWatch.stop();
      *          std::cout << "Time passed " << stopWatch.passedMillisecond() << " ms" << std::endl;
      * 
@@ -400,7 +400,7 @@ namespace   NEUtilities
      *          std::cout << "Stoppedn timer at epoch time " << stopWatch.stop() << std::endl;
      *          std::cout << "Time passed: " << stopWatch.passedNanoseconds() << " ns" << std::endl;
      **/
-    class TimeDuration
+    class AREG_API Duration
     {
     //////////////////////////////////////////////////////////////////////////
     // Constructors / Destructor, operators
@@ -411,11 +411,11 @@ namespace   NEUtilities
          *          If call start(), it resets starting time.
          *          Call stop() to calculate the duration.
          **/
-        inline TimeDuration( void );
-        TimeDuration( const TimeDuration & src ) = default;
-        ~TimeDuration( void ) = default;
+        inline Duration( void );
+        Duration( const Duration & src ) = default;
+        ~Duration( void ) = default;
 
-        TimeDuration & operator = ( const TimeDuration & src ) = default;
+        Duration & operator = ( const Duration & src ) = default;
 
     //////////////////////////////////////////////////////////////////////////
     // Operations, attributes.
@@ -469,28 +469,41 @@ namespace   NEUtilities
          **/
         inline uint64_t passedMinutes( void ) const;
 
+        /**
+         * \bried   Returns the duration in nanoseconds since watch timer started.
+         *          If the stop was called before, it returns the duration between start and stop calls.
+         *          If the stop was not called, it returns the duration since last time started. 
+         **/
+        inline uint64_t durationSinceStart( void ) const;
+
     //////////////////////////////////////////////////////////////////////////
     // Member variables
     //////////////////////////////////////////////////////////////////////////
     private:
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
         //!< The high-resolution starting time since epoch.
         std::chrono::steady_clock::time_point   mStart;
         //!< The high-resolution stopping time since epoch.
         std::chrono::steady_clock::time_point   mStop;
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
     };
 }
 
 //////////////////////////////////////////////////////////////////////////
-// NEUtilities::TimeDuration inline methods
+// NEUtilities::Duration inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline NEUtilities::TimeDuration::TimeDuration( void )
+inline NEUtilities::Duration::Duration( void )
     : mStart        ( std::chrono::steady_clock::now() )
     , mStop         ( mStart )
 {
 }
 
-inline TIME64 NEUtilities::TimeDuration::start( void )
+inline TIME64 NEUtilities::Duration::start( void )
 {
     mStart      = std::chrono::steady_clock::now();
     mStop       = mStart;
@@ -498,45 +511,54 @@ inline TIME64 NEUtilities::TimeDuration::start( void )
     return mStart.time_since_epoch( ).count( );
 }
 
-inline TIME64 NEUtilities::TimeDuration::stop( void )
+inline TIME64 NEUtilities::Duration::stop( void )
 {
-    mStop = std::chrono::steady_clock::now();
+    if ( mStop == mStart )
+    {
+        mStop = std::chrono::steady_clock::now( );
+    }
+
     return mStop.time_since_epoch( ).count( );
 }
 
-inline TIME64 NEUtilities::TimeDuration::getStart( void ) const
+inline TIME64 NEUtilities::Duration::getStart( void ) const
 {
     return mStart.time_since_epoch( ).count( );
 }
 
-inline TIME64 NEUtilities::TimeDuration::getStop( void ) const
+inline TIME64 NEUtilities::Duration::getStop( void ) const
 {
     return mStop.time_since_epoch( ).count( );
 }
 
-inline uint64_t NEUtilities::TimeDuration::passedNanoseconds( void ) const
+inline uint64_t NEUtilities::Duration::passedNanoseconds( void ) const
 {
     return (mStop - mStart).count();
 }
 
-inline uint64_t NEUtilities::TimeDuration::passedMicroseconds( void ) const
+inline uint64_t NEUtilities::Duration::passedMicroseconds( void ) const
 {
     return std::chrono::duration_cast<std::chrono::microseconds>(mStop - mStart).count();
 }
 
-inline uint64_t NEUtilities::TimeDuration::passedMilliseconds( void ) const
+inline uint64_t NEUtilities::Duration::passedMilliseconds( void ) const
 {
     return std::chrono::duration_cast<std::chrono::milliseconds>(mStop - mStart).count( );
 }
 
-inline uint64_t NEUtilities::TimeDuration::passedSeconds( void ) const
+inline uint64_t NEUtilities::Duration::passedSeconds( void ) const
 {
     return std::chrono::duration_cast<std::chrono::seconds>(mStop - mStart).count( );
 }
 
-inline uint64_t NEUtilities::TimeDuration::passedMinutes( void ) const
+inline uint64_t NEUtilities::Duration::passedMinutes( void ) const
 {
     return std::chrono::duration_cast<std::chrono::minutes>(mStop - mStart).count( );
+}
+
+inline uint64_t NEUtilities::Duration::durationSinceStart( void ) const
+{
+    return (mStop > mStart ? (mStop - mStart).count( ) : (std::chrono::steady_clock::now( ) - mStart).count( ));
 }
 
 #endif  // AREG_BASE_NEUTILITIES_HPP

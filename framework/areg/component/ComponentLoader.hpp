@@ -416,6 +416,14 @@ public:
     static bool addModelUnique( const NERegistry::Model & newModel );
 
     /**
+     * \brief   Searches a model by name in the registered model list.
+     * \param   modelName   The name of the model to search.
+     * \return  Returns instance of the model. If found, the model is valid. Otherwise, it is invalid model.
+     *          Check the validity of the model by calling isValid() method.
+     **/
+    static const NERegistry::Model & findModel( const String & modelName );
+
+    /**
      * \brief   In the model list searches thread entry and returns the list of
      *          registered components entries. If the thread name is valid, it 
      *          returns at least one component in the list. Otherwise, returns
@@ -424,7 +432,7 @@ public:
      * \return  If the thread name is valid, it returns list of registered components.
      *          Otherwise, returns invalid list.
      **/
-    static const NERegistry::ComponentList & getComponentList( const String & threadName );
+    static const NERegistry::ComponentList & findComponentList( const String & threadName );
 
     /**
      * \brief   Returns registered component entry object of
@@ -493,14 +501,20 @@ private:
 protected:
 
     /**
+     * \breif   Loads all models, which are not loaded yet.
+     * \return  Returns true if succeeded to load models.
+     **/
+    bool loadAllModels( void );
+
+    /**
      * \brief   Loads threads and components of specified model.
      *          It will start registered threads, which will load registered components.
      *          If modelName is nullptr or empty, it will load all Models.
      *          If modelName is not nullptr and not empty, it will search for Model with
      *          specified name and will start registered threads.
      *          Function returns when all threads are started with success.
-     * \param   modelName   The name of Model to load. If nullptr or empty string,
-     *                      it loads all models, which are not loaded yet.
+     * \param   modelName   The name of Model to load. If empty string, loads all models,
+     *                      which are not loaded yet.
      * \return  Returns true if components are loaded with success.
      **/
     bool loadModel( const String & modelName = String::EmptyString );

@@ -25,6 +25,7 @@
 #include "areg/base/Containers.hpp"
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/SynchObjects.hpp"
+#include "areg/component/NERegistry.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Dependencies
@@ -152,6 +153,14 @@ public:
      *\return   Returns true is model is loaded. Otherwise, returns false.
      **/
     static bool isModelLoaded( const char * modelName );
+
+    /**
+     * \brief   Searches model by name.
+     * \param   moldelName  The name of model to search.
+     * \return  If found, returns valid model. Otherwise, returns invalid model.
+     *          The invalid model has empty name.
+     **/
+    static const NERegistry::Model & findModel( const char * modelName );
 
     /**
      * \brief   Sets up the current working directory.

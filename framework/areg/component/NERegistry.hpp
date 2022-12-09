@@ -25,6 +25,7 @@
 #include "areg/base/TELinkedList.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/NEMemory.hpp"
+#include "areg/base/NEUtilities.hpp"
 
 /************************************************************************
  * Declared classes
@@ -1627,6 +1628,13 @@ namespace NERegistry
     //////////////////////////////////////////////////////////////////////////
         friend class ComponentLoader;
 
+        enum class eModelState : unsigned char
+        {
+              ModelInitialized
+            , ModelLoaded
+            , ModelUnloaded
+        };
+
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::Model class, Constructors / Destructor
     //////////////////////////////////////////////////////////////////////////
@@ -1726,6 +1734,15 @@ namespace NERegistry
         void markModelLoaded( bool isLoaded = true );
 
         /**
+         * \brief   Call to mark model as alive. It will start the timer and
+         *          stop the timer when it is not alive anymore, so that the
+         *          duration in nanoseconds can be calculated.
+         * \param   isAlive     If true, the model is alive and it starts the timer.
+         *                      If false, the model is not alive anymore and stop the timer.
+         **/
+        void markModelAlive( bool isAlive);
+
+        /**
          * \brief   Adds supported Thread Entry to the list of Model.
          *          Every Thread Entry should have global unique Name.
          * \param   entry   The Thread Entry to add.
@@ -1791,6 +1808,14 @@ namespace NERegistry
          **/
         bool setComponentData( const String & roleName, const NEMemory::uAlign & compData );
 
+        /**
+         * \brief   Returns duration in nansocends when the model was loaded and alive.
+         *          Returns zero if model was not loaded at all.
+         *          Returns valid duration until the current time if model is still loaded.
+         *          Returns last alive duration if it was alive and currently is stopped.
+         **/
+        inline TIME64 getAliveDuration( void ) const;
+
     //////////////////////////////////////////////////////////////////////////
     // NERegistry::Model class, Member variables
     //////////////////////////////////////////////////////////////////////////
@@ -1808,7 +1833,12 @@ namespace NERegistry
         /**
          * \brief   The Flag, indicating whether model is loaded or not.
          **/
-        bool                    mIsLoaded;
+        eModelState             mLoadState;
+
+        /**
+         * \brief   The duration of time where model was loaded and alive.
+         **/
+        NEUtilities::Duration   mAliveDuration;
     };
 
 //////////////////////////////////////////////////////////////////////////
@@ -1899,6 +1929,11 @@ inline const NERegistry::ComponentEntry& NERegistry::ComponentList::operator [] 
 inline const NERegistry::ComponentThreadEntry& NERegistry::ComponentThreadList::operator [] (uint32_t index) const
 {
     return (mListThreads.isValidIndex(index) ? mListThreads[index] : NERegistry::invalidThreadEntry());
+}
+
+inline TIME64 NERegistry::Model::getAliveDuration( void ) const
+{
+    return (mLoadState == eModelState::ModelInitialized ? 0 : mAliveDuration.durationSinceStart());
 }
 
 #endif  // AREG_COMPONENT_NEREGISTRY_HPP
