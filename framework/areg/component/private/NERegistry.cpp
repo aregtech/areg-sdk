@@ -1043,7 +1043,7 @@ bool NERegistry::Model::isModelLoaded( void ) const
 
 void NERegistry::Model::markModelLoaded( bool isLoaded /*= true */ )
 {
-    mLoadState = isLoaded ? mLoadState = Model::eModelState::ModelLoaded : Model::eModelState::ModelUnloaded;
+    mLoadState = isLoaded ? Model::eModelState::ModelLoaded : Model::eModelState::ModelUnloaded;
 }
 
 void NERegistry::Model::markModelAlive( bool isAlive )
