@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <ServiceInterface FormatVersion="1.0.0">
-    <Overview ID="1" Name="HelloWorld" Version="1.0.0">
+    <Overview ID="1" Name="HelloWorld" Version="1.0.1">
         <Description>Simple Service Interface to demonstrate working features of AREG SDK.</Description>
     </Overview>
     <DataTypeList>
@@ -35,8 +35,8 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="14" MethodType="request" Name="ClientShutdown">
-            <Description>Sent by client to notify the shutdown. This removes client from the list. This request has no response.</Description>
+        <Method ID="14" MethodType="request" Name="ShutdownService">
+            <Description>Sent by client to request to shutdown service and the application. This request has no response.</Description>
             <ParamList>
                 <Parameter DataType="uint32" ID="16" Name="clientID">
                     <Description>The ID of client that requests to shutdown. The ID is given by service when first time client requests to output message.</Description>

@@ -15,10 +15,10 @@
 #include "areg/appbase/Application.hpp"
 
 DEF_TRACE_SCOPE(examples_12_pubclient_ServiceClient_serviceConnected);
-DEF_TRACE_SCOPE(examples_12_pubclient_ServiceClient_broadcastServiceUnavailable);
+DEF_TRACE_SCOPE(examples_12_pubclient_ServiceClient_broadcastReachedMaximum);
 DEF_TRACE_SCOPE(examples_12_pubclient_ServiceClient_responseHelloWorld);
 DEF_TRACE_SCOPE(examples_12_pubclient_ServiceClient_requestHelloWorldFailed);
-DEF_TRACE_SCOPE(examples_12_pubclient_ServiceClient_requestClientShutdownFailed);
+DEF_TRACE_SCOPE(examples_12_pubclient_ServiceClient_requestShutdownServiceFailed);
 DEF_TRACE_SCOPE(examples_12_pubclient_ServiceClient_processTimer);
 DEF_TRACE_SCOPE(examples_12_pubclient_ServiceClient_ServiceClient);
 
@@ -63,7 +63,7 @@ bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
                 , isConnected ? "connected" : "disconnected");
 
     // subscribe when service connected and un-subscribe when disconnected.
-    notifyOnBroadcastServiceUnavailable(isConnected);
+    notifyOnBroadcastReachedMaximum(isConnected);
     if (isConnected)
     {
         mTimer.startTimer(ServiceClient::TIMEOUT_VALUE);
@@ -72,7 +72,6 @@ bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
     {
         TRACE_WARN("Shutting down application!");
         mTimer.stopTimer();
-        clearAllNotifications();
         Application::signalAppQuit();
     }
 
@@ -92,13 +91,13 @@ void ServiceClient::responseHelloWorld(const NEHelloWorld::sConnectedClient & cl
     }
 }
 
-void ServiceClient::broadcastServiceUnavailable(void)
+void ServiceClient::broadcastReachedMaximum( int maxNumber )
 {
-    TRACE_SCOPE(examples_12_pubclient_ServiceClient_broadcastServiceUnavailable);
+    TRACE_SCOPE(examples_12_pubclient_ServiceClient_broadcastReachedMaximum);
     TRACE_WARN("Service reached message output maximum, starting shutdown procedure");
     TRACE_INFO("Sending request to shutdown service for client [ %s ] with ID [ %d ]", mTimer.getName().getString(), mID);
 
-    requestClientShutdown(mID, mTimer.getName());
+    requestShutdownService(mID, mTimer.getName());
     mID = 0;
 }
 
@@ -108,6 +107,8 @@ void ServiceClient::processTimer(Timer & timer)
     ASSERT(&timer == &mTimer);
 
     TRACE_DBG("Timer [ %s ] expired, send request to output message.", timer.getName().getString());
+    std::cout << "Call request to run on remote service" << std::endl;
+
     requestHelloWorld(timer.getName());
 }
 
@@ -116,21 +117,21 @@ void ServiceClient::requestHelloWorldFailed(NEService::eResultType FailureReason
     // make error handling here.
     TRACE_SCOPE(examples_12_pubclient_ServiceClient_requestHelloWorldFailed);
     TRACE_ERR("Request to output greetings failed with reason [ %s ]", NEService::getString(FailureReason));
+    std::cerr << "There was a problem running request, error: " << NEService::getString( FailureReason ) << std::endl;
 }
 
-void ServiceClient::requestClientShutdownFailed(NEService::eResultType FailureReason)
+void ServiceClient::requestShutdownServiceFailed(NEService::eResultType FailureReason)
 {
     // make error handling here.
-    TRACE_SCOPE(examples_12_pubclient_ServiceClient_requestClientShutdownFailed);
+    TRACE_SCOPE(examples_12_pubclient_ServiceClient_requestShutdownServiceFailed);
     TRACE_ERR("Request to notify client shutdown failed with reason [ %s ]", NEService::getString(FailureReason));
+    std::cerr << "There was a problem running request, error: " << NEService::getString( FailureReason ) << std::endl;
 }
 
 inline String ServiceClient::timerName( Component & owner ) const
 {
     String result = "";
-    result.append(owner.getRoleName())
-          .append(NECommon::DEFAULT_SPECIAL_CHAR)
-          .append(getServiceRole())
+    result.append(getServiceRole())
           .append(NECommon::DEFAULT_SPECIAL_CHAR)
           .append(getServiceName());
 

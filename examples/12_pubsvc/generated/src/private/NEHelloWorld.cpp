@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  13:39:07 GMT+02:00
+ * Generated at     10.12.2022  04:48:18 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/NEHelloWorld.hpp
@@ -31,8 +31,8 @@ const NEService::SInterfaceData & NEHelloWorld::getInterfaceData( void )
      ************************************************************************/
     static constexpr unsigned int _RequestList[]
     {
-          static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_requestHelloWorld            ) // requestHelloWorld( const String & roleName )
-        , static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_requestClientShutdown        ) // requestClientShutdown( unsigned int clientID, const String & roleName )
+          static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_requestHelloWorld        ) // requestHelloWorld( const String & roleName )
+        , static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_requestShutdownService   ) // requestShutdownService( unsigned int clientID, const String & roleName )
     };
 
     /************************************************************************
@@ -40,27 +40,22 @@ const NEService::SInterfaceData & NEHelloWorld::getInterfaceData( void )
      ************************************************************************/
     static constexpr unsigned int _ResponseList[]
     {
-          static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_responseHelloWorld           ) // responseHelloWorld( const NEHelloWorld::sConnectedClient & clientInfo )
-        , static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_broadcastHelloClients        ) // broadcastHelloClients( const NEHelloWorld::ConnectionList & clientList )
-        , static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_broadcastServiceUnavailable  ) // broadcastServiceUnavailable( void )
+          static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_responseHelloWorld       ) // responseHelloWorld( const NEHelloWorld::sConnectedClient & clientInfo )
+        , static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_broadcastReachedMaximum  ) // broadcastReachedMaximum( int maxNumber )
     };
 
     /************************************************************************
      * The list of attributes
      ************************************************************************/
-    static constexpr unsigned int _AttributeList[]
-    {
-          static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_ConnectedClients             ) // NEHelloWorld::ConnectionList mConnectedClients;
-        , static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_RemainOutput                 ) // short mRemainOutput;
-    };
+    constexpr unsigned int * _AttributeList { nullptr };    /* There are no attributes. Set Invalid message ID */
 
     /************************************************************************
      * The map of requests and responses
      ************************************************************************/
     static constexpr unsigned int _RequestToResponseMap[] 
     {
-          static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_responseHelloWorld           ) // requestHelloWorld( const String & roleName )
-        , static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_NotProcessed                 ) // requestClientShutdown( unsigned int clientID, const String & roleName )
+          static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_responseHelloWorld       ) // requestHelloWorld( const String & roleName )
+        , static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_NotProcessed             ) // requestShutdownService( unsigned int clientID, const String & roleName )
     };
 
     /************************************************************************
@@ -76,8 +71,7 @@ const NEService::SInterfaceData & NEHelloWorld::getInterfaceData( void )
     /************************************************************************
      * Broadcasts
      ************************************************************************/
-        1, // void broadcastHelloClients( const NEHelloWorld::ConnectionList & clientList )
-        0, // void broadcastServiceUnavailable( void )
+        1, // void broadcastReachedMaximum( int maxNumber )
 
     };
 
@@ -90,8 +84,8 @@ const NEService::SInterfaceData & NEHelloWorld::getInterfaceData( void )
         , NEHelloWorld::InterfaceVersion
         , NEService::eServiceType::ServicePublic
         , 2
-        , 3
         , 2
+        , 0
         , _RequestList
         , _ResponseList
         , _AttributeList

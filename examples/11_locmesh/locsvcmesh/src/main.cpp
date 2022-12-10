@@ -25,10 +25,10 @@
 #include "locsvcmesh/src/ClientComponent.hpp"
 #include "locsvcmesh/src/ServicingComponents.hpp"
 
-#ifdef WINDOWS
+#ifdef _WIN32
     #pragma comment(lib, "areg.lib")
     #pragma comment(lib, "11_generated.lib")
-#endif // WINDOWS
+#endif // _WIN32
 
 constexpr char const _modelName[]       { "TestModel" };    //!< The name of model
 constexpr char const _mainServiceName[] { "MainService" };  //!< Main component that controls shutdown.
@@ -102,13 +102,11 @@ END_MODEL(_modelName)
 // main method.
 //////////////////////////////////////////////////////////////////////////
 DEF_TRACE_SCOPE(example_11_locsvcmesh_main);
-/**
- * \brief   The main method enables logging, service manager and timer.
- *          it loads and unloads the services, releases application.
- **/
+//! \brief   A Demo of mesh of local services and clients.
 int main()
 {
-    printf("Testing multiple local servicing components running in different threads...\n");
+    std::cout << "A Demo of mesh of local services and clients ..." << std::endl;
+
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START( nullptr );
     Application::initApplication( true, true, false, true, true, nullptr, nullptr );
@@ -138,6 +136,6 @@ int main()
 
     } while (false);
 
-    std::cout << "Exit application!" << std::endl;
+    std::cout << "Exit application, check the logs for details!" << std::endl;
     return 0;
 }

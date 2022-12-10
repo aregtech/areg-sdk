@@ -18,7 +18,7 @@
 
 
 DEF_TRACE_SCOPE(examples_10_locservice_ServicingComponent_requestHelloWorld);
-DEF_TRACE_SCOPE(examples_10_locservice_ServicingComponent_requestClientShutdown);
+DEF_TRACE_SCOPE(examples_10_locservice_ServicingComponent_requestShutdownService);
 
 Component * ServicingComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
 {
@@ -82,9 +82,9 @@ void ServicingComponent::requestHelloWorld(const String & roleName)
     }
 }
 
-void ServicingComponent::requestClientShutdown(unsigned int clientID, const String & roleName)
+void ServicingComponent::requestShutdownService(unsigned int clientID, const String & roleName)
 {
-    TRACE_SCOPE(examples_10_locservice_ServicingComponent_requestClientShutdown);
+    TRACE_SCOPE(examples_10_locservice_ServicingComponent_requestShutdownService);
     TRACE_DBG("A client [ %s ] with ID [ %u ] requests to shut down.", roleName.getString(), clientID);
     Application::signalAppQuit( );
 }

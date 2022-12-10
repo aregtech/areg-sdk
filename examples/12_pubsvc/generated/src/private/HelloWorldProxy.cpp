@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  13:39:07 GMT+02:00
+ * Generated at     10.12.2022  04:48:18 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/private/HelloWorldProxy.hpp
@@ -74,14 +74,12 @@ HelloWorldProxy::HelloWorldProxy( const String & roleName, DispatcherThread * ow
 /************************************************************************
  * Attributes
  ************************************************************************/
-    , mConnectedClients   (  )
-    , mRemainOutput       (  )
 
 /************************************************************************
  * Parameters
  ************************************************************************/
     , mParamclientInfo    (  )
-    , mParamclientList    (  )
+    , mParammaxNumber     (  )
 {
 }
 
@@ -150,9 +148,9 @@ unsigned int HelloWorldProxy::requestHelloWorld( IENotificationEventConsumer & c
     return mSequenceCount;
 }
     
-void HelloWorldProxy::requestClientShutdown( unsigned int clientID, const String & roleName )
+void HelloWorldProxy::requestShutdownService( unsigned int clientID, const String & roleName )
 {
-    static const NEHelloWorld::eMessageIDs msgId = NEHelloWorld::eMessageIDs::MsgId_requestClientShutdown;
+    static const NEHelloWorld::eMessageIDs msgId = NEHelloWorld::eMessageIDs::MsgId_requestShutdownService;
     EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << clientID;
@@ -206,24 +204,13 @@ void HelloWorldProxy::updateData( HelloWorldResponseEvent & eventElem, NEHelloWo
     /************************************************************************
      * Update Broadcast parameters
      ************************************************************************/
-    case NEHelloWorld::eMessageIDs::MsgId_broadcastHelloClients:
-        stream >> mParamclientList;
-        break;
-
-    case NEHelloWorld::eMessageIDs::MsgId_broadcastServiceUnavailable:
+    case NEHelloWorld::eMessageIDs::MsgId_broadcastReachedMaximum:
+        stream >> mParammaxNumber;
         break;
 
     /************************************************************************
      * Update Attribute values
      ************************************************************************/
-    case NEHelloWorld::eMessageIDs::MsgId_ConnectedClients:
-        stream >> mConnectedClients;
-        break;
-
-    case NEHelloWorld::eMessageIDs::MsgId_RemainOutput:
-        stream >> mRemainOutput;
-        break;
-
     default:
         {
             TRACE_SCOPE(generated_src_private_HelloWorldProxy_updateData);

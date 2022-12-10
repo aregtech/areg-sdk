@@ -15,10 +15,10 @@
 #include "generated/src/NECommon.hpp"
 #include "pubservice/src/ServicingComponent.hpp"
 
-#ifdef WINDOWS
+#ifdef _WIN32
     #pragma comment(lib, "areg.lib")
     #pragma comment(lib, "12_generated.lib")
-#endif // WINDOWS
+#endif // _WIN32
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -51,18 +51,14 @@ END_MODEL(_modelName)
 // main method.
 //////////////////////////////////////////////////////////////////////////
 DEF_TRACE_SCOPE(example_12_pubservice_main_main);
-/**
- * \brief   The main method enables logging, service manager and timer.
- *          it loads and unloads the services, releases application.
- **/
+//! \brief   A Demo public service to process requests, and send response and broadcast.
 int main()
 {
-    printf("Testing simple remote servicing, run as a ultra-small Server...\n");
+    std::cout << "A Demo public service to process requests, and send response and broadcast ..." << std::endl;
 
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START( nullptr );
-    // Initialize application, enable logging, servicing, routing, timer and watchdog.
-    // Use default settings.
+    // Initialize application use default settings: enable logging, servicing, routing, timer and watchdog.
     Application::initApplication( );
 
     do 
@@ -71,22 +67,23 @@ int main()
         TRACE_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         // load model to initialize components
-        Application::loadModel(_modelName);
-
-        TRACE_DBG("Servicing model is loaded");
-
+        Application::loadModel( _modelName );
+        TRACE_DBG( "Servicing model is loaded" );
         // wait until Application quit signal is set.
-        Application::waitAppQuit(NECommon::WAIT_INFINITE);
-
+        Application::waitAppQuit( NECommon::WAIT_INFINITE );
         // stop and unload components
-        Application::unloadModel(_modelName);
+        Application::unloadModel( _modelName );
+
+        std::cout
+            << (Application::findModel( _modelName ).getAliveDuration( ) / NECommon::DURATION_1_MILLI)
+            << " ms passed. Model is unloaded, releasing resources to exit application ..."
+            << std::endl;
 
         // release and cleanup resources of application.
-        Application::releaseApplication();
+        Application::releaseApplication( );
 
     } while (false);
 
-    printf("Completed testing simple remote servicing component. Check the logs...\n");
-
-	return 0;
+    std::cout << "Exit application, check the logs for details!" << std::endl;
+    return 0;
 }

@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  13:39:07 GMT+02:00
+ * Generated at     10.12.2022  04:48:18 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/HelloWorldStub.hpp
@@ -73,74 +73,6 @@ public:
 // HelloWorld Interface Attributes
 //////////////////////////////////////////////////////////////////////////
  public:
-/************************************************************************
- * Attribute ConnectedClients functions
- ************************************************************************/
-
-    /**
-     * \brief   Returns true if ConnectedClients attribute is valid
-     **/
-    inline bool isConnectedClientsValid( void ) const;
-    /**
-     * \brief   Invalidates ConnectedClients attribute and
-     *          sends error update notification message to clients.
-     **/
-    inline void invalidateConnectedClients( void );
-    /**
-     * \brief   Force to send ConnectedClients attribute notification message to all clients.
-     *          The method can be called when the attribute is updated not via set-method.
-     **/
-     inline void notifyConnectedClientsUpdated( void );
-    /**
-     * \brief   Set ConnectedClients attribute value and send notification event to all clients.
-     *          The notification is sent only when value is updated or validated.
-     * \param   newValue    New value of ConnectedClients attribute to set.
-     *                      The ConnectedClients attribute description:
-     *                      The list of connected clients. Updated each time when new client requests to output Hello World message.
-     **/
-    virtual void setConnectedClients( const NEHelloWorld::ConnectionList & newValue );
-    /**
-     * \brief   Returns the value of ConnectedClients attribute.
-     *          The ConnectedClients attribute description:
-     *          The list of connected clients. Updated each time when new client requests to output Hello World message.
-     **/
-    inline const NEHelloWorld::ConnectionList & getConnectedClients( void ) const;
-    inline NEHelloWorld::ConnectionList & getConnectedClients( void );
-
-/************************************************************************
- * Attribute RemainOutput functions
- ************************************************************************/
-
-    /**
-     * \brief   Returns true if RemainOutput attribute is valid
-     **/
-    inline bool isRemainOutputValid( void ) const;
-    /**
-     * \brief   Invalidates RemainOutput attribute and
-     *          sends error update notification message to clients.
-     **/
-    inline void invalidateRemainOutput( void );
-    /**
-     * \brief   Force to send RemainOutput attribute notification message to all clients.
-     *          The method can be called when the attribute is updated not via set-method.
-     **/
-     inline void notifyRemainOutputUpdated( void );
-    /**
-     * \brief   Set RemainOutput attribute value and send notification event to all clients.
-     *          The notification is sent only when value is updated or validated.
-     * \param   newValue    New value of RemainOutput attribute to set.
-     *                      The RemainOutput attribute description:
-     *                      Remaining number of outputs to print Hello World.
-     **/
-    virtual void setRemainOutput( const short & newValue );
-    /**
-     * \brief   Returns the value of RemainOutput attribute.
-     *          The RemainOutput attribute description:
-     *          Remaining number of outputs to print Hello World.
-     **/
-    inline const short & getRemainOutput( void ) const;
-    inline short & getRemainOutput( void );
-
 //////////////////////////////////////////////////////////////////////////
 // HelloWorld Interface Requests
 //////////////////////////////////////////////////////////////////////////
@@ -156,12 +88,12 @@ public:
 
     /**
      * \brief   Request call.
-     *          Sent by client to notify the shutdown. This removes client from the list. This request has no response.
+     *          Sent by client to request to shutdown service and the application. This request has no response.
      * \param   clientID    The ID of client that requests to shutdown. The ID is given by service when first time client requests to output message.
      * \param   roleName    Service client component role name
      * \note    Has no response
      **/
-    virtual void requestClientShutdown( unsigned int clientID, const String & roleName ) = 0;
+    virtual void requestShutdownService( unsigned int clientID, const String & roleName ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // HelloWorld Interface Responses
@@ -183,16 +115,10 @@ public:
 
     /**
      * \brief   Broadcast call.
-     *          Broadcast to notify all clients about connection
-     * \param   clientList  List of currently active clients.
+     *          Triggered to notify that  reached the maximum number of requests.
+     * \param   maxNumber   The maximum number of reqeusts.
      **/
-    virtual void broadcastHelloClients( const NEHelloWorld::ConnectionList & clientList );
-
-    /**
-     * \brief   Broadcast call.
-     *          Triggered when the service is unavailable.
-     **/
-    virtual void broadcastServiceUnavailable( void );
+    virtual void broadcastReachedMaximum( int maxNumber );
 
 //////////////////////////////////////////////////////////////////////////
 // End Service Interface operations / attributes and overrides declaration
@@ -322,26 +248,6 @@ private:
  * Attributes
  ************************************************************************/
 
-    /**
-     * \brief   Attribute ConnectedClients
-     *          The list of connected clients. Updated each time when new client requests to output Hello World message.
-     **/
-    NEHelloWorld::ConnectionList    mConnectedClients;
-    /**
-     * \brief   Attribute ConnectedClients data validation state.
-     **/
-    NEService::eDataStateType       mConnectedClientsState;
-
-    /**
-     * \brief   Attribute RemainOutput
-     *          Remaining number of outputs to print Hello World.
-     **/
-    short                           mRemainOutput;
-    /**
-     * \brief   Attribute RemainOutput data validation state.
-     **/
-    NEService::eDataStateType       mRemainOutputState;
-
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
@@ -357,64 +263,6 @@ private:
 inline HelloWorldStub & HelloWorldStub::self( void )
 {
     return (*this);
-}
-
-/************************************************************************
- * \brief   ConnectedClients attribute functions
- ************************************************************************/
- 
-inline bool HelloWorldStub::isConnectedClientsValid( void ) const
-{
-    return (mConnectedClientsState  == NEService::eDataStateType::DataIsOK);
-}
-
-inline void HelloWorldStub::invalidateConnectedClients( void )
-{
-    errorRequest( static_cast<msg_id>(NEHelloWorld::eMessageIDs::MsgId_ConnectedClients), false );
-}
-
-inline void HelloWorldStub::notifyConnectedClientsUpdated( void )
-{
-    sendNotification( static_cast<msg_id>(NEHelloWorld::eMessageIDs::MsgId_ConnectedClients) );
-}
-
-inline const NEHelloWorld::ConnectionList & HelloWorldStub::getConnectedClients( void ) const
-{
-    return mConnectedClients;
-}
-
-inline NEHelloWorld::ConnectionList & HelloWorldStub::getConnectedClients( void )
-{
-    return mConnectedClients;
-}
-
-/************************************************************************
- * \brief   RemainOutput attribute functions
- ************************************************************************/
- 
-inline bool HelloWorldStub::isRemainOutputValid( void ) const
-{
-    return (mRemainOutputState  == NEService::eDataStateType::DataIsOK);
-}
-
-inline void HelloWorldStub::invalidateRemainOutput( void )
-{
-    errorRequest( static_cast<msg_id>(NEHelloWorld::eMessageIDs::MsgId_RemainOutput), false );
-}
-
-inline void HelloWorldStub::notifyRemainOutputUpdated( void )
-{
-    sendNotification( static_cast<msg_id>(NEHelloWorld::eMessageIDs::MsgId_RemainOutput) );
-}
-
-inline const short & HelloWorldStub::getRemainOutput( void ) const
-{
-    return mRemainOutput;
-}
-
-inline short & HelloWorldStub::getRemainOutput( void )
-{
-    return mRemainOutput;
 }
 
 //////////////////////////////////////////////////////////////////////////

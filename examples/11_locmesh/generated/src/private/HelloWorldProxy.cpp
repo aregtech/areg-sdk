@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     09.12.2022  22:31:34 GMT+01:00
+ * Generated at     10.12.2022  04:36:32 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/private/HelloWorldProxy.hpp
@@ -138,9 +138,9 @@ unsigned int HelloWorldProxy::requestHelloWorld( IENotificationEventConsumer & c
     return mSequenceCount;
 }
     
-void HelloWorldProxy::requestClientShutdown( unsigned int clientID, const String & roleName )
+void HelloWorldProxy::requestShutdownService( unsigned int clientID, const String & roleName )
 {
-    static const NEHelloWorld::eMessageIDs msgId = NEHelloWorld::eMessageIDs::MsgId_requestClientShutdown;
+    static const NEHelloWorld::eMessageIDs msgId = NEHelloWorld::eMessageIDs::MsgId_requestShutdownService;
     EventDataStream args(EventDataStream::eEventData::EventDataInternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << clientID;

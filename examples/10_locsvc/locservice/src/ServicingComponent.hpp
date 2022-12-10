@@ -19,10 +19,7 @@
 //////////////////////////////////////////////////////////////////////////
 // ServicingComponent class declaration
 //////////////////////////////////////////////////////////////////////////
-/**
- * \brief   A demo of servicing component with requests, response and broadcasts.
- *          As well, it demonstrates use of start / shutdown of service, and manual invalidating of attribute.
- **/
+//! \brief   A demo of servicing component with requests, response and broadcasts.
 class ServicingComponent    : public    Component
                             , protected HelloWorldStub
 {
@@ -80,12 +77,12 @@ protected:
 
     /**
      * \brief   Request call.
-     *          Sent by client to notify the shutdown. This removes client from the list. This request has no response.
+     *          Sent by client to request to shutdown service and the application. This request has no response.
      * \param   clientID    The ID of client that requests to shutdown. The ID is given by service when first time client requests to output message.
      * \param   roleName    Service client component role name
      * \note    Has no response
      **/
-    virtual void requestClientShutdown( unsigned int clientID, const String & roleName ) override;
+    virtual void requestShutdownService( unsigned int clientID, const String & roleName ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

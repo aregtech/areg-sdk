@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     09.12.2022  21:14:14 GMT+01:00
+ * Generated at     10.12.2022  04:35:54 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/HelloWorldStub.hpp
@@ -113,7 +113,7 @@ void HelloWorldStub::errorRequest( unsigned int msgId, bool msgCancel )
  * Request errors
  ************************************************************************/
     case NEHelloWorld::eMessageIDs::MsgId_requestHelloWorld:
-    case NEHelloWorld::eMessageIDs::MsgId_requestClientShutdown:
+    case NEHelloWorld::eMessageIDs::MsgId_requestShutdownService:
         listenerId = static_cast<msg_id>(NEHelloWorld::getResponseId(static_cast< NEHelloWorld::eMessageIDs>(msgId)));
         result = msgCancel ? NEService::eResultType::RequestCanceled : NEService::eResultType::RequestError;
         break;
@@ -197,14 +197,14 @@ void HelloWorldStub::processRequestEvent( ServiceRequestEvent & eventElem )
             }
             break;
 
-        case NEHelloWorld::eMessageIDs::MsgId_requestClientShutdown:
+        case NEHelloWorld::eMessageIDs::MsgId_requestShutdownService:
             if ( true )
             {
                 unsigned int    clientID;
                 String          roleName;
                 stream >> clientID;
                 stream >> roleName;
-                requestClientShutdown( clientID, roleName );
+                requestShutdownService( clientID, roleName );
             }
             break;
 

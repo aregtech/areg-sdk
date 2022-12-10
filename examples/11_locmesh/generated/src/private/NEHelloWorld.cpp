@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     09.12.2022  22:31:34 GMT+01:00
+ * Generated at     10.12.2022  04:36:32 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/NEHelloWorld.hpp
@@ -32,7 +32,7 @@ const NEService::SInterfaceData & NEHelloWorld::getInterfaceData( void )
     static constexpr unsigned int _RequestList[]
     {
           static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_requestHelloWorld        ) // requestHelloWorld( const String & roleName )
-        , static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_requestClientShutdown    ) // requestClientShutdown( unsigned int clientID, const String & roleName )
+        , static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_requestShutdownService   ) // requestShutdownService( unsigned int clientID, const String & roleName )
     };
 
     /************************************************************************
@@ -55,7 +55,7 @@ const NEService::SInterfaceData & NEHelloWorld::getInterfaceData( void )
     static constexpr unsigned int _RequestToResponseMap[] 
     {
           static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_responseHelloWorld       ) // requestHelloWorld( const String & roleName )
-        , static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_NotProcessed             ) // requestClientShutdown( unsigned int clientID, const String & roleName )
+        , static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_NotProcessed             ) // requestShutdownService( unsigned int clientID, const String & roleName )
     };
 
     /************************************************************************

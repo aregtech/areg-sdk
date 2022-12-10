@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     09.12.2022  22:31:34 GMT+01:00
+ * Generated at     10.12.2022  04:36:32 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/private/HelloWorldProxy.hpp
@@ -159,12 +159,12 @@ public:
 
     /**
      * \brief   Request call.
-     *          Sent by client to notify the shutdown. This removes client from the list. This request has no response.
+     *          Sent by client to request to shutdown service and the application. This request has no response.
      * \param   clientID    The ID of client that requests to shutdown. The ID is given by service when first time client requests to output message.
      * \param   roleName    Service client component role name
      * \see     Has no Response.
      **/
-    void requestClientShutdown( unsigned int clientID, const String & roleName );
+    void requestShutdownService( unsigned int clientID, const String & roleName );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations.
