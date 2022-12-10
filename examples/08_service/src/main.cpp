@@ -45,7 +45,7 @@ BEGIN_MODEL(_modelName)
 // end of model description
 END_MODEL(_modelName)
 
-DEF_TRACE_SCOPE(main_main);
+DEF_TRACE_SCOPE(examples_08_service_main);
 //! A Demo of loading and starting an empty service with no functionalities
 int main()
 {
@@ -59,12 +59,12 @@ int main()
     {
         unsigned int timeout{ NECommon::WAIT_5_SECONDS };
 
-        TRACE_SCOPE(main_main);
+        TRACE_SCOPE(examples_08_service_main);
         TRACE_DBG("The application has been initialized, loading model [ %s ]", _modelName);
         ASSERT( Application::findModel( _modelName ).isValid( ) );
 
         Application::loadModel(_modelName);
-        std::cout << "Service moder is loaded. Waiting maximum for " << timeout << " ms to unload model." << std::endl;
+        std::cout << "Service model is loaded. Waiting maximum for " << timeout << " ms to unload model." << std::endl;
         Application::waitAppQuit( timeout );    // wait for quit signal to complete application.
         Application::unloadModel(_modelName);   // stop and unload components
         

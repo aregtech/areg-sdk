@@ -36,7 +36,6 @@ ServicingComponent::ServicingComponent(ComponentThread & masterThread, const cha
     , mTimer    ( self(), roleName )
     , mCount    ( 0 )
 {
-
 }
 
 void ServicingComponent::startupServiceInterface(Component & holder)
@@ -45,10 +44,9 @@ void ServicingComponent::startupServiceInterface(Component & holder)
     TRACE_INFO("The service [ %s ] of component [ %s ] has been started", StubBase::getAddress().getServiceName().getString(), holder.getRoleName().getString());
 
     StubBase::startupServiceInterface(holder);
-
     mTimer.startTimer(TIMER_TIMEOUT, TIMER_EVENTS);
 
-    printf("Local servicing started, waits [ %d ] ms to exit application...\n", TIMER_TIMEOUT * TIMER_EVENTS);
+    printf("Local servicing started, waits for [ %d ] ms to stop and exit application...\n", TIMER_TIMEOUT * TIMER_EVENTS);
 }
 
 void ServicingComponent::shutdownServiceIntrface(Component & holder)
@@ -59,7 +57,7 @@ void ServicingComponent::shutdownServiceIntrface(Component & holder)
     mTimer.stopTimer();
     StubBase::shutdownServiceIntrface(holder);
 
-    printf("Local servicing stopped...\n");
+    std::cout << "Local servicing stopped..." << std::endl;
 }
 
 void ServicingComponent::processTimer(Timer & timer)
@@ -78,16 +76,15 @@ void ServicingComponent::processTimer(Timer & timer)
                 , mCount
                 , (TIMER_EVENTS - mCount));
 
-    if (TIMER_EVENTS > mCount)
+    if (mTimer.isActive())
     {
-    	ASSERT(mTimer.isActive());
-        printf("Hello from [ %s ] service!\n", getRoleName().getString());
+    	ASSERT(TIMER_EVENTS > mCount);
+        printf( "Hello from Service [ %s ]!\n", getRoleName( ).getString());
     }
     else
     {
-        ASSERT(mTimer.isActive() == false);
-
-        printf("Service [ %s ] says goodbye...\n", getRoleName().getString());
+        std::cout << "Goodbye Service!" << std::endl;
+        ASSERT(mCount == TIMER_EVENTS);
 
         TRACE_INFO("The timer is not active anymore, signaling quit event");
         Application::signalAppQuit();

@@ -19,18 +19,14 @@
 
 #include "areg/component/Timer.hpp"
 
-//////////////////////////////////////////////////////////////////////////
-// ServicingComponent class declaration
-//////////////////////////////////////////////////////////////////////////
+//! \brief  A client component to call request, and process response and broadcast.
+//!         The reuqests are triggered on each timer timeout.
 class ServiceClient : public    Component
                     , protected HelloWorldClientBase
                     , private   IETimerConsumer
 {
 private:
-    /**
-     * \brief   Timeout to wait before sending message
-     **/
-    static const unsigned int    TIMEOUT_VALUE       /*= 237*/;
+    static constexpr unsigned int   TIMEOUT_VALUE   { 237 };    //!< A timeout to trigger request
 
 //////////////////////////////////////////////////////////////////////////
 // Static methods
@@ -63,34 +59,9 @@ protected:
      **/
     ServiceClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~ServiceClient(void) = default;
 
 protected:
-
-    /**
-     * \brief   Triggered, when ConnectedClients attribute is updated. The function contains
-     *          attribute value and validation flag. When notification is enabled,
-     *          the method should be overwritten in derived class.
-     *          Attributes ConnectedClients description:
-     *          The list of connected clients. Updated each time when new client requests to output Hello World message.
-     * \param   ConnectedClients    The value of ConnectedClients attribute.
-     * \param   state               The data validation flag.
-     **/
-    virtual void onConnectedClientsUpdate( const NEHelloWorld::ConnectionList & ConnectedClients, NEService::eDataStateType state ) override;
-
-        /**
-     * \brief   Triggered, when RemainOutput attribute is updated. The function contains
-     *          attribute value and validation flag. When notification is enabled,
-     *          the method should be overwritten in derived class.
-     *          Attributes RemainOutput description:
-     *          Remaining number of outputs to print Hello World.
-     * \param   RemainOutput    The value of RemainOutput attribute.
-     * \param   state           The data validation flag.
-     **/
-    virtual void onRemainOutputUpdate( short RemainOutput, NEService::eDataStateType state ) override;
 
     /**
      * \brief   Response callback.
@@ -104,41 +75,24 @@ protected:
 
     /**
      * \brief   Server broadcast.
-     *          Broadcast to notify all clients about connection
+     *          Triggered to notify that  reached the maximum number of requests.
      *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
-     * \param   clientList  List of currently active clients.
+     * \param   maxNumber   The maximum number of reqeusts.
      **/
-    virtual void broadcastHelloClients( const NEHelloWorld::ConnectionList & clientList ) override;
+    virtual void broadcastReachedMaximum( int maxNumber ) override;
 
-    /**
-     * \brief   Server broadcast.
-     *          Triggered when the service is unavailable.
-     *          Overwrite, if need to handle Broadcast call of server object.
-     *          This call will be automatically triggered, on every appropriate request call
-     **/
-    virtual void broadcastServiceUnavailable( void ) override;
-
-    /************************************************************************/
+/************************************************************************/
 // IEProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered by Proxy, when gets service connected event.
-     *          Make client initializations in this function. No request
-     *          will be processed until this function is not called for
-     *          client object. Also set listeners here if client is interested
-     *          to receive update notifications.
+     *          Make client initializations in this function.
      * \param   isConnected     The flag, indicating whether service is connected
-     *                          or disconnected. Make cleanups and stop sending
-     *                          requests or assigning for notification if
-     *                          this flag is false. No event to Stub target will
-     *                          be sent, until no service connected event is
-     *                          received.
+     *                          or disconnected.
      * \param   proxy           The Service Interface Proxy object, which is
      *                          notifying service connection.
-     * \return  Return true if this service connect notification was relevant to client object,
-     *          i.e. if passed Proxy address is equal to the Proxy object that client has.
-     *          If Proxy objects are not equal, it should return false;
+     * \return  Return true if this service connect notification was relevant to client object
      **/
     virtual bool serviceConnected( bool isConnected, ProxyBase & proxy ) override;
 
@@ -148,8 +102,6 @@ protected:
 
     /**
      * \brief   Triggered when Timer is expired.
-     *          The passed Timer parameter is indicating object, which has been expired.
-     *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
     virtual void processTimer( Timer & timer ) override;
@@ -158,7 +110,10 @@ protected:
 // hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline ServiceClient & self( void );
+    inline ServiceClient & self( void )
+    {
+        return (*this);
+    }
 
 //////////////////////////////////////////////////////////////////////////
 // member variables
@@ -173,8 +128,3 @@ private:
     ServiceClient( void ) = delete;
     DECLARE_NOCOPY_NOMOVE( ServiceClient );
 };
-
-inline ServiceClient & ServiceClient::self( void )
-{
-    return (*this);
-}

@@ -10,9 +10,8 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "ServicingComponent.hpp"
-
-#include "ServiceClient.hpp"
+#include "areg/component/Component.hpp"
+#include "locsvcmesh/src/ServiceClient.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ClientComponent class declaration
@@ -59,7 +58,10 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 
-    inline ClientComponent & self( void );
+    inline ClientComponent & self( void )
+    {
+        return (*this);
+    }
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -75,11 +77,3 @@ private:
     ClientComponent( void ) = delete;
     DECLARE_NOCOPY_NOMOVE( ClientComponent );
 };
-
-//////////////////////////////////////////////////////////////////////////
-// ClientComponent inline methods
-//////////////////////////////////////////////////////////////////////////
-inline ClientComponent & ClientComponent::self( void )
-{
-    return (*this);
-}

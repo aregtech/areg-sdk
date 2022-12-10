@@ -13,15 +13,9 @@
 #include "areg/trace/GETrace.h"
 
 DEF_TRACE_SCOPE(examples_10_locservice_ServiceClient_serviceConnected);
-DEF_TRACE_SCOPE(examples_10_locservice_ServiceClient_onConnectedClientsUpdate);
-DEF_TRACE_SCOPE(examples_10_locservice_ServiceClient_onRemainOutputUpdate);
-DEF_TRACE_SCOPE(examples_10_locservice_ServiceClient_broadcastHelloClients);
-DEF_TRACE_SCOPE(examples_10_locservice_ServiceClient_broadcastServiceUnavailable);
+DEF_TRACE_SCOPE(examples_10_locservice_ServiceClient_broadcastReachedMaximum);
 DEF_TRACE_SCOPE(examples_10_locservice_ServiceClient_responseHelloWorld);
 DEF_TRACE_SCOPE(examples_10_locservice_ServiceClient_processTimer);
-
-const unsigned int  ServiceClient::TIMEOUT_VALUE    = 237;
-
 
 Component * ServiceClient::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
 {
@@ -41,7 +35,6 @@ ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, Component
     , mTimer                (static_cast<IETimerConsumer &>(self()), entry.mRoleName)
     , mID                   ( 0 )
 {
-
 }
 
 bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
@@ -57,8 +50,7 @@ bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
     if (isConnected)
     {
         // dynamic subscribe on messages.
-        notifyOnRemainOutputUpdate(true);
-        notifyOnBroadcastServiceUnavailable(true);
+        notifyOnBroadcastReachedMaximum(true);
         mTimer.startTimer(ServiceClient::TIMEOUT_VALUE);
     }
     else
@@ -71,43 +63,18 @@ bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
     return result;
 }
 
-void ServiceClient::onConnectedClientsUpdate(const NEHelloWorld::ConnectionList & ConnectedClients, NEService::eDataStateType state)
-{
-    TRACE_SCOPE(examples_10_locservice_ServiceClient_onConnectedClientsUpdate);
-    TRACE_DBG("Active client list is updated. There are [ %d ] clients, data is [ %s ]", ConnectedClients.getSize(), NEService::getString(state));
-}
-
-void ServiceClient::onRemainOutputUpdate(short RemainOutput, NEService::eDataStateType state)
-{
-    TRACE_SCOPE(examples_10_locservice_ServiceClient_onRemainOutputUpdate);
-    TRACE_DBG("Remain greeting outputs [ %d ], data is [ %s ]", RemainOutput, NEService::getString(state));
-}
-
 void ServiceClient::responseHelloWorld(const NEHelloWorld::sConnectedClient & clientInfo)
 {
     TRACE_SCOPE(examples_10_locservice_ServiceClient_responseHelloWorld);
     TRACE_DBG("Greetings from [ %s ] output on console, client ID [ %d ]", clientInfo.ccName.getString(), clientInfo.ccID);
     ASSERT(clientInfo.ccName == getRoleName());
     mID = clientInfo.ccID;
-
-    if (isNotificationAssigned(NEHelloWorld::eMessageIDs::MsgId_broadcastHelloClients) == false)
-    {
-        // If it is not subscribed on message, make subscription, which is cleaned when disconnect service.
-        notifyOnBroadcastHelloClients(true);
-        notifyOnRemainOutputUpdate(true);
-    }
 }
 
-void ServiceClient::broadcastHelloClients(const NEHelloWorld::ConnectionList & clientList)
+void ServiceClient::broadcastReachedMaximum( int maxNumber )
 {
-    TRACE_SCOPE(examples_10_locservice_ServiceClient_broadcastHelloClients);
-    TRACE_DBG("[ %d ] clients use service [ %s ]", clientList.getSize(), getServiceName().getString());
-}
-
-void ServiceClient::broadcastServiceUnavailable(void)
-{
-    TRACE_SCOPE(examples_10_locservice_ServiceClient_broadcastServiceUnavailable);
-    TRACE_WARN("Service notify reached message output maximum, starting shutdown procedure");
+    TRACE_SCOPE(examples_10_locservice_ServiceClient_broadcastReachedMaximum );
+    TRACE_WARN("Service notify reached maximum number of requests [ %d ], starting shutdown procedure", maxNumber );
     requestClientShutdown(mID, getRoleName());
 }
 

@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  13:08:11 GMT+02:00
+ * Generated at     09.12.2022  22:31:34 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/HelloWorldClientBase.hpp
@@ -120,84 +120,6 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
 
-/************************************************************************
- * Attribute ConnectedClients functions
- ************************************************************************/
-    /**
-     * \brief   Returns true if value of ConnectedClients attribute is valid.
-     *          If Update Notification is disabled, this method will return false.
-     **/
-    inline bool isConnectedClientsValid( void ) const;
-    /**
-     * \brief   Returns the value of ConnectedClients attribute.
-     *          To get valid value, the Update Notification should be enabled.
-     *          Attribute ConnectedClients description:
-     *          The list of connected clients. Updated each time when new client requests to output Hello World message.
-     * \param   state   On returns, contains the validation flag of attribute data.
-     *                  Check validation flag before use attribute value.
-     * \see     isConnectedClientsValid, notifyConnectedClientsUpdate, onConnectedClientsUpdate
-     **/
-    inline const NEHelloWorld::ConnectionList & getConnectedClients( NEService::eDataStateType & state ) const;
-    /**
-     * \brief   Call to enable or disable receiving notifications on ConnectedClients attribute update.
-     *          Once notification is enabled and the data is updated,
-     *          the getConnectedClients method will return valid data
-     *          Attribute ConnectedClients description:
-     *          The list of connected clients. Updated each time when new client requests to output Hello World message.
-     * \param   notify  If true, notification will be enable. If false, notification is disabled
-     * \see     isConnectedClientsValid, getConnectedClients, onConnectedClientsUpdate
-     **/
-    inline void notifyOnConnectedClientsUpdate( bool notify = true );
-    /**
-     * \brief   Triggered, when ConnectedClients attribute is updated. The function contains
-     *          attribute value and validation flag. When notification is enabled,
-     *          the method should be overwritten in derived class.
-     *          Attributes ConnectedClients description:
-     *          The list of connected clients. Updated each time when new client requests to output Hello World message.
-     * \param   ConnectedClients    The value of ConnectedClients attribute.
-     * \param   state               The data validation flag.
-     **/
-    virtual void onConnectedClientsUpdate( const NEHelloWorld::ConnectionList & ConnectedClients, NEService::eDataStateType state );
-
-/************************************************************************
- * Attribute RemainOutput functions
- ************************************************************************/
-    /**
-     * \brief   Returns true if value of RemainOutput attribute is valid.
-     *          If Update Notification is disabled, this method will return false.
-     **/
-    inline bool isRemainOutputValid( void ) const;
-    /**
-     * \brief   Returns the value of RemainOutput attribute.
-     *          To get valid value, the Update Notification should be enabled.
-     *          Attribute RemainOutput description:
-     *          Remaining number of outputs to print Hello World.
-     * \param   state   On returns, contains the validation flag of attribute data.
-     *                  Check validation flag before use attribute value.
-     * \see     isRemainOutputValid, notifyRemainOutputUpdate, onRemainOutputUpdate
-     **/
-    inline short getRemainOutput( NEService::eDataStateType & state ) const;
-    /**
-     * \brief   Call to enable or disable receiving notifications on RemainOutput attribute update.
-     *          Once notification is enabled and the data is updated,
-     *          the getRemainOutput method will return valid data
-     *          Attribute RemainOutput description:
-     *          Remaining number of outputs to print Hello World.
-     * \param   notify  If true, notification will be enable. If false, notification is disabled
-     * \see     isRemainOutputValid, getRemainOutput, onRemainOutputUpdate
-     **/
-    inline void notifyOnRemainOutputUpdate( bool notify = true );
-    /**
-     * \brief   Triggered, when RemainOutput attribute is updated. The function contains
-     *          attribute value and validation flag. When notification is enabled,
-     *          the method should be overwritten in derived class.
-     *          Attributes RemainOutput description:
-     *          Remaining number of outputs to print Hello World.
-     * \param   RemainOutput    The value of RemainOutput attribute.
-     * \param   state           The data validation flag.
-     **/
-    virtual void onRemainOutputUpdate( short RemainOutput, NEService::eDataStateType state );
-
 //////////////////////////////////////////////////////////////////////////
 // HelloWorld Interface Requests / Responses / Broadcasts
 //////////////////////////////////////////////////////////////////////////
@@ -258,41 +180,23 @@ public:
     inline void notifyOnResponseHelloWorld( bool notify = true );
 
 /************************************************************************
- * Broadcast HelloClients
+ * Broadcast ReachedMaximum
  ************************************************************************/
     /**
      * \brief   Server broadcast.
-     *          Broadcast to notify all clients about connection
+     *          Triggered to notify that  reached the maximum number of requests.
      *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
-     * \param   clientList  List of currently active clients.
+     * \param   maxNumber   The maximum number of reqeusts.
      **/
-    virtual void broadcastHelloClients( const NEHelloWorld::ConnectionList & clientList );
+    virtual void broadcastReachedMaximum( int maxNumber );
     /**
-     * \brief   Call to enable or disable receiving notifications on HelloClients broadcast call.
+     * \brief   Call to enable or disable receiving notifications on ReachedMaximum broadcast call.
      *          This function is triggered, when client object is interested only on response result
      *          without triggering request call.
      * \param   notify  If true, notification will be enable. If false, notification is disabled
      **/
-    inline void notifyOnBroadcastHelloClients( bool notify = true );
-
-/************************************************************************
- * Broadcast ServiceUnavailable
- ************************************************************************/
-    /**
-     * \brief   Server broadcast.
-     *          Triggered when the service is unavailable.
-     *          Overwrite, if need to handle Broadcast call of server object.
-     *          This call will be automatically triggered, on every appropriate request call
-     **/
-    virtual void broadcastServiceUnavailable( void );
-    /**
-     * \brief   Call to enable or disable receiving notifications on ServiceUnavailable broadcast call.
-     *          This function is triggered, when client object is interested only on response result
-     *          without triggering request call.
-     * \param   notify  If true, notification will be enable. If false, notification is disabled
-     **/
-    inline void notifyOnBroadcastServiceUnavailable( bool notify = true );
+    inline void notifyOnBroadcastReachedMaximum( bool notify = true );
 
 //////////////////////////////////////////////////////////////////////////
 // End Service Interface operations / attributes and overrides declaration
@@ -489,42 +393,6 @@ inline const Version & HelloWorldClientBase::getServiceVersion( void ) const
 }
 
 /************************************************************************
- * Attribute inline functions
- ************************************************************************/
-
-inline bool HelloWorldClientBase::isConnectedClientsValid( void ) const
-{
-    ASSERT(mProxy != nullptr);
-   return mProxy->isConnectedClientsValid( );
-}
-inline const NEHelloWorld::ConnectionList & HelloWorldClientBase::getConnectedClients( NEService::eDataStateType & state ) const
-{
-    ASSERT(mProxy != nullptr);
-    return mProxy->getConnectedClients( state );
-}
-
-inline void HelloWorldClientBase::notifyOnConnectedClientsUpdate( bool notify /* = true */ )
-{
-    HelloWorldClientBase::notifyOn( NEHelloWorld::eMessageIDs::MsgId_ConnectedClients, notify, false );
-}
-
-inline bool HelloWorldClientBase::isRemainOutputValid( void ) const
-{
-    ASSERT(mProxy != nullptr);
-   return mProxy->isRemainOutputValid( );
-}
-inline short HelloWorldClientBase::getRemainOutput( NEService::eDataStateType & state ) const
-{
-    ASSERT(mProxy != nullptr);
-    return mProxy->getRemainOutput( state );
-}
-
-inline void HelloWorldClientBase::notifyOnRemainOutputUpdate( bool notify /* = true */ )
-{
-    HelloWorldClientBase::notifyOn( NEHelloWorld::eMessageIDs::MsgId_RemainOutput, notify, false );
-}
-
-/************************************************************************
  * Request calls
  ************************************************************************/
 
@@ -553,14 +421,9 @@ inline void HelloWorldClientBase::notifyOnResponseHelloWorld( bool notify /* = t
  * Broadcast notifications
  ************************************************************************/
 
-inline void HelloWorldClientBase::notifyOnBroadcastHelloClients( bool notify /* = true */ )
+inline void HelloWorldClientBase::notifyOnBroadcastReachedMaximum( bool notify /* = true */ )
 {
-    HelloWorldClientBase::notifyOn(NEHelloWorld::eMessageIDs::MsgId_broadcastHelloClients, notify, false);
-}
-
-inline void HelloWorldClientBase::notifyOnBroadcastServiceUnavailable( bool notify /* = true */ )
-{
-    HelloWorldClientBase::notifyOn(NEHelloWorld::eMessageIDs::MsgId_broadcastServiceUnavailable, notify, false);
+    HelloWorldClientBase::notifyOn(NEHelloWorld::eMessageIDs::MsgId_broadcastReachedMaximum, notify, false);
 }
 
 inline const HelloWorldProxy * HelloWorldClientBase::getProxy( void ) const

@@ -30,7 +30,7 @@ DEF_TRACE_SCOPE(examples_08_service_ServicingComponent_shutdownServiceIntrface);
 DEF_TRACE_SCOPE(examples_08_service_ServicingComponent_processTimer);
 
 ServicingComponent::ServicingComponent(ComponentThread & masterThread, const char * const roleName, NEMemory::uAlign OPTIONAL data)
-    : Component ( masterThread, roleName)
+    : Component ( masterThread, roleName )
     , StubBase  ( self(), NEService::getEmptyInterface() )
 
     , mTimer    ( self(), "ServicingTimer" )
@@ -53,7 +53,7 @@ void ServicingComponent::shutdownServiceIntrface(Component & holder)
 {
     TRACE_SCOPE(examples_08_service_ServicingComponent_shutdownServiceIntrface);
     TRACE_WARN("The service [ %s ] of component [ %s ] is shutting down", StubBase::getAddress().getServiceName().getString(), holder.getRoleName().getString());
-    
+
     mTimer.stopTimer();
     StubBase::shutdownServiceIntrface(holder);
 
@@ -66,7 +66,7 @@ void ServicingComponent::processTimer(Timer & timer)
     TRACE_DBG("The timer [ %s ] has expired", timer.getName().getString());
 
     ASSERT(&timer == &mTimer);
-    
+
     ++ mCount; // increase timer count.
     ASSERT(mCount <= TIMER_EVENTS);
 
@@ -78,6 +78,7 @@ void ServicingComponent::processTimer(Timer & timer)
 
     if (mTimer.isActive())
     {
+    	ASSERT(TIMER_EVENTS > mCount);
         std::cout << "Hello Service!" << std::endl;
     }
     else

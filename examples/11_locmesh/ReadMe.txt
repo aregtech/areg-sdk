@@ -5,6 +5,7 @@
 This project demonstrates execution of multiple instances of the same 
 service and it is an extension of the project 10_locsvc. Every service 
 instance must have a unique name and be instantiated in different threads.
+The services as well are presented as a member variable in the component.
 
 The project consist of 2 sub-projects:
     1. generated  (11_generated)    -- generated code.
