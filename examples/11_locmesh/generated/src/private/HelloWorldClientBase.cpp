@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     09.12.2022  22:31:34 GMT+01:00
+ * Generated at     10.12.2022  04:36:32 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/HelloWorldClientBase.hpp
@@ -33,7 +33,7 @@ namespace NEHelloWorld
     static constexpr FuncRequestFailure failureFunctions[]
     {
           &HelloWorldClientBase::requestHelloWorldFailed
-        , &HelloWorldClientBase::requestClientShutdownFailed
+        , &HelloWorldClientBase::requestShutdownServiceFailed
     };
 }
 
@@ -300,12 +300,12 @@ void HelloWorldClientBase::requestHelloWorldFailed( NEService::eResultType Failu
                     , NEService::getString(FailureReason));
 }
 
-DEF_TRACE_SCOPE(generated_src_HelloWorldClientBase_requestClientShutdownFailed);
-void HelloWorldClientBase::requestClientShutdownFailed( NEService::eResultType FailureReason )
+DEF_TRACE_SCOPE(generated_src_HelloWorldClientBase_requestShutdownServiceFailed);
+void HelloWorldClientBase::requestShutdownServiceFailed( NEService::eResultType FailureReason )
 {
-    TRACE_SCOPE(generated_src_HelloWorldClientBase_requestClientShutdownFailed);
-    TRACE_WARN("The request requestClientShutdown (value = %u) method of proxy [ %s ] client HelloWorldClientBase is failed with reason [ %s ]! Make error handling!"
-                    , static_cast<unsigned int>(NEHelloWorld::eMessageIDs::MsgId_requestClientShutdown)
+    TRACE_SCOPE(generated_src_HelloWorldClientBase_requestShutdownServiceFailed);
+    TRACE_WARN("The request requestShutdownService (value = %u) method of proxy [ %s ] client HelloWorldClientBase is failed with reason [ %s ]! Make error handling!"
+                    , static_cast<unsigned int>(NEHelloWorld::eMessageIDs::MsgId_requestShutdownService)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason));
 }

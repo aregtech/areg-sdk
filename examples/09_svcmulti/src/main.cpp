@@ -101,7 +101,7 @@ int main()
         Application::releaseApplication();      // release and cleanup resources of application.
 
     } while (false);
-    
-    std::cout << "Exit application!" << std::endl;
+
+    std::cout << "Exit application, check the logs for details!" << std::endl;
     return 0;
 }

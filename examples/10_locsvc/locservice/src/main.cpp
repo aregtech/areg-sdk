@@ -16,10 +16,10 @@
 #include "locservice/src/ServicingComponent.hpp"
 #include "locservice/src/ServiceClient.hpp"
 
-#ifdef WINDOWS
+#ifdef _WIN32
     #pragma comment(lib, "areg.lib")
     #pragma comment(lib, "10_generated.lib")
-#endif // WINDOWS
+#endif // _WIN32
 
 constexpr char const _modelName[]   { "TestModel" };            //!< The name of model
 constexpr char const _roleName[]    { "TestServiceComponent" }; //!< Service role name
@@ -104,6 +104,6 @@ int main()
 
     } while (false);
 
-    std::cout << "Exit application!" << std::endl;
+    std::cout << "Exit application, check the logs for details!" << std::endl;
     return 0;
 }

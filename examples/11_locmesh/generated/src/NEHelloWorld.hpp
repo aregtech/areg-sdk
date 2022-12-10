@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     09.12.2022  22:31:34 GMT+01:00
+ * Generated at     10.12.2022  04:36:32 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/NEHelloWorld.hpp
@@ -175,10 +175,10 @@ namespace   NEHelloWorld
          **/
           MsgId_requestHelloWorld         = NEService::REQUEST_ID_FIRST   // void requestHelloWorld( const String & roleName );
         /**
-         * \brief   Request ID: MsgId_requestClientShutdown
-         *          Sent by client to notify the shutdown. This removes client from the list. This request has no response.
+         * \brief   Request ID: MsgId_requestShutdownService
+         *          Sent by client to request to shutdown service and the application. This request has no response.
          **/
-        , MsgId_requestClientShutdown                                       // void requestClientShutdown( unsigned int clientID, const String & roleName );
+        , MsgId_requestShutdownService                                      // void requestShutdownService( unsigned int clientID, const String & roleName );
 
     /************************************************************************
      * Response IDs
@@ -353,8 +353,8 @@ inline const char * NEHelloWorld::getString( NEHelloWorld::eMessageIDs msgId )
     {
     case    NEHelloWorld::eMessageIDs::MsgId_requestHelloWorld:
         return "NEHelloWorld::eMessageIDs::MsgId_requestHelloWorld";
-    case    NEHelloWorld::eMessageIDs::MsgId_requestClientShutdown:
-        return "NEHelloWorld::eMessageIDs::MsgId_requestClientShutdown";
+    case    NEHelloWorld::eMessageIDs::MsgId_requestShutdownService:
+        return "NEHelloWorld::eMessageIDs::MsgId_requestShutdownService";
     case    NEHelloWorld::eMessageIDs::MsgId_responseHelloWorld:
         return "NEHelloWorld::eMessageIDs::MsgId_responseHelloWorld";
     case    NEHelloWorld::eMessageIDs::MsgId_broadcastReachedMaximum:

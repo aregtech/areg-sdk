@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  13:39:07 GMT+02:00
+ * Generated at     10.12.2022  04:48:18 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/private/HelloWorldProxy.hpp
@@ -125,36 +125,6 @@ public:
 /************************************************************************
  * Attributes
  ************************************************************************/
-    /**
-     * \brief   Returns true if value of ConnectedClients attribute is valid.
-     *          If Update Notification is disabled, this method will return false.
-     **/
-    inline bool isConnectedClientsValid( void ) const;
-    /**
-     * \brief   Returns the value of ConnectedClients attribute.
-     *          To get valid value, the Update Notification should be enabled. 
-     *          Attribute ConnectedClients description:
-     *          The list of connected clients. Updated each time when new client requests to output Hello World message.
-     * \param   state   On returns, contains the validation flag of attribute data.
-     *                  Check validation flag before use attribute value.
-     **/
-    inline const NEHelloWorld::ConnectionList & getConnectedClients( NEService::eDataStateType & state ) const;
-
-    /**
-     * \brief   Returns true if value of RemainOutput attribute is valid.
-     *          If Update Notification is disabled, this method will return false.
-     **/
-    inline bool isRemainOutputValid( void ) const;
-    /**
-     * \brief   Returns the value of RemainOutput attribute.
-     *          To get valid value, the Update Notification should be enabled. 
-     *          Attribute RemainOutput description:
-     *          Remaining number of outputs to print Hello World.
-     * \param   state   On returns, contains the validation flag of attribute data.
-     *                  Check validation flag before use attribute value.
-     **/
-    inline short getRemainOutput( NEService::eDataStateType & state ) const;
-
 /************************************************************************
  * Parameters
  ************************************************************************/
@@ -167,12 +137,12 @@ public:
     inline const NEHelloWorld::sConnectedClient & getParamclientInfo( void ) const;
 
     /**
-     * \brief   Returns value of clientList of response call function.
+     * \brief   Returns value of maxNumber of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
-     *          Parameter clientList description:
-     *          List of currently active clients.
+     *          Parameter maxNumber description:
+     *          The maximum number of reqeusts.
      **/
-    inline const NEHelloWorld::ConnectionList & getParamclientList( void ) const;
+    inline int getParammaxNumber( void ) const;
 
 /************************************************************************
  * Requests
@@ -186,15 +156,15 @@ public:
      * \see     responseHelloWorld
      **/
     unsigned int requestHelloWorld( IENotificationEventConsumer & caller, const String & roleName );
-    
+
     /**
      * \brief   Request call.
-     *          Sent by client to notify the shutdown. This removes client from the list. This request has no response.
+     *          Sent by client to request to shutdown service and the application. This request has no response.
      * \param   clientID    The ID of client that requests to shutdown. The ID is given by service when first time client requests to output message.
      * \param   roleName    Service client component role name
      * \see     Has no Response.
      **/
-    void requestClientShutdown( unsigned int clientID, const String & roleName );
+    void requestShutdownService( unsigned int clientID, const String & roleName );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations.
@@ -330,18 +300,6 @@ private:
 /************************************************************************
  * Attribute members
  ************************************************************************/
-    /**
-     * \brief   ConnectedClients attribute value.
-     *          The list of connected clients. Updated each time when new client requests to output Hello World message.
-     **/
-    NEHelloWorld::ConnectionList    mConnectedClients;
-
-    /**
-     * \brief   RemainOutput attribute value.
-     *          Remaining number of outputs to print Hello World.
-     **/
-    short                           mRemainOutput;
-
 /************************************************************************
  * Parameter members
  ************************************************************************/
@@ -352,10 +310,10 @@ private:
     NEHelloWorld::sConnectedClient  mParamclientInfo;
 
     /**
-     * \brief   clientList parameter value.
-     *          List of currently active clients.
+     * \brief   maxNumber parameter value.
+     *          The maximum number of reqeusts.
      **/
-    NEHelloWorld::ConnectionList    mParamclientList;
+    int                             mParammaxNumber;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -441,32 +399,6 @@ inline HelloWorldProxy & HelloWorldProxy::self( void )
 }
 
 /************************************************************************
- * Inline attributes
- ************************************************************************/
-
-inline bool HelloWorldProxy::isConnectedClientsValid( void ) const
-{
-    return (getProxyData().getAttributeState( static_cast<msg_id>(NEHelloWorld::eMessageIDs::MsgId_ConnectedClients) ) == NEService::eDataStateType::DataIsOK);
-}
-
-inline const NEHelloWorld::ConnectionList & HelloWorldProxy::getConnectedClients( NEService::eDataStateType & state ) const
-{
-    state = getProxyData().getAttributeState( static_cast<msg_id>(NEHelloWorld::eMessageIDs::MsgId_ConnectedClients) );
-    return mConnectedClients;
-}
-
-inline bool HelloWorldProxy::isRemainOutputValid( void ) const
-{
-    return (getProxyData().getAttributeState( static_cast<msg_id>(NEHelloWorld::eMessageIDs::MsgId_RemainOutput) ) == NEService::eDataStateType::DataIsOK);
-}
-
-inline short HelloWorldProxy::getRemainOutput( NEService::eDataStateType & state ) const
-{
-    state = getProxyData().getAttributeState( static_cast<msg_id>(NEHelloWorld::eMessageIDs::MsgId_RemainOutput) );
-    return mRemainOutput;
-}
-
-/************************************************************************
  * Inline parameters
  ************************************************************************/
 
@@ -475,9 +407,9 @@ inline const NEHelloWorld::sConnectedClient & HelloWorldProxy::getParamclientInf
     return mParamclientInfo;
 }
 
-inline const NEHelloWorld::ConnectionList & HelloWorldProxy::getParamclientList( void ) const
+inline int HelloWorldProxy::getParammaxNumber( void ) const
 {
-    return mParamclientList;
+    return mParammaxNumber;
 }
 
 #endif   // GENERATED_SRC_PRIVATE_HELLOWORLDPROXY_HPP

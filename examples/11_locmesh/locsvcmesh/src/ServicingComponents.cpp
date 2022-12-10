@@ -18,7 +18,7 @@
 
 
 DEF_TRACE_SCOPE(examples_11_locsvcmesh_HelloWorldService_requestHelloWorld);
-DEF_TRACE_SCOPE(examples_11_locsvcmesh_HelloWorldService_requestClientShutdown);
+DEF_TRACE_SCOPE(examples_11_locsvcmesh_HelloWorldService_requestShutdownService);
 
 // 
 
@@ -74,9 +74,9 @@ void HelloWorldService::requestHelloWorld(const String & roleName)
     }
 }
 
-void HelloWorldService::requestClientShutdown(unsigned int clientID, const String & roleName)
+void HelloWorldService::requestShutdownService(unsigned int clientID, const String & roleName)
 {
-    TRACE_SCOPE(examples_11_locsvcmesh_HelloWorldService_requestClientShutdown);
+    TRACE_SCOPE(examples_11_locsvcmesh_HelloWorldService_requestShutdownService);
     TRACE_DBG("A client [ %s ] with ID [ %u ] notified shutdown.", roleName.getString(), clientID);
 
     if (mIsMain)

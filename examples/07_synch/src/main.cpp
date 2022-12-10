@@ -275,6 +275,6 @@ int main()
     // Stop logging.
     TRACER_STOP_LOGGING();
 
-    std::cout << "Exit application!" << std::endl;
+    std::cout << "Exit application, check the logs for details!" << std::endl;
     return 0;
 }

@@ -89,7 +89,7 @@ protected:
      *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      **/
-    virtual void broadcastServiceUnavailable( void ) override;
+    virtual void broadcastReachedMaximum( int maxNumber ) override;
 
 /************************************************************************/
 // Error handling.
@@ -101,10 +101,10 @@ protected:
     virtual void requestHelloWorldFailed( NEService::eResultType FailureReason ) override;
 
     /**
-     * \brief   Overwrite to handle error of ClientShutdown request call.
+     * \brief   Overwrite to handle error of ShutdownService request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void requestClientShutdownFailed( NEService::eResultType FailureReason ) override;
+    virtual void requestShutdownServiceFailed( NEService::eResultType FailureReason ) override;
 
 /************************************************************************/
 // IEProxyListener Overrides
@@ -145,7 +145,10 @@ protected:
 // hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline ServiceClient & self( void );
+    inline ServiceClient & self( void )
+    {
+        return (*this);
+    }
 
     /**
      * \brief   Generates unique timer name.
@@ -165,8 +168,3 @@ private:
     ServiceClient( void ) = delete;
     DECLARE_NOCOPY_NOMOVE( ServiceClient );
 };
-
-inline ServiceClient & ServiceClient::self( void )
-{
-    return (*this);
-}

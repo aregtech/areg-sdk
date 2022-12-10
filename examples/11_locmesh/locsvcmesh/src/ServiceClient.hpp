@@ -65,10 +65,10 @@ protected:
     virtual void requestHelloWorldFailed( NEService::eResultType FailureReason ) override;
 
     /**
-     * \brief   Overwrite to handle error of ClientShutdown request call.
+     * \brief   Overwrite to handle error of ShutdownService request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void requestClientShutdownFailed( NEService::eResultType FailureReason ) override;
+    virtual void requestShutdownServiceFailed( NEService::eResultType FailureReason ) override;
 
 /************************************************************************/
 // IEProxyListener Overrides

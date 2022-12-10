@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  13:39:07 GMT+02:00
+ * Generated at     10.12.2022  04:48:18 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/NEHelloWorld.hpp
@@ -25,7 +25,6 @@
 // Dependency includes
 //////////////////////////////////////////////////////////////////////////
 #include "areg/base/String.hpp"
-#include "areg/base/TELinkedList.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Mandatory includes
@@ -158,12 +157,6 @@ namespace   NEHelloWorld
          String          ccName;
     };
 
-    /**
-     * \brief   The list of connected clients.
-     *          NEHelloWorld::ConnectionList
-     **/
-     typedef    TELinkedList< sConnectedClient >   ConnectionList;
-
 /************************************************************************
  * Service Message IDs
  ************************************************************************/
@@ -180,12 +173,12 @@ namespace   NEHelloWorld
          * \brief   Request ID: MsgId_requestHelloWorld
          *          Request to print hello world
          **/
-          MsgId_requestHelloWorld             = NEService::REQUEST_ID_FIRST   // void requestHelloWorld( const String & roleName );
+          MsgId_requestHelloWorld         = NEService::REQUEST_ID_FIRST   // void requestHelloWorld( const String & roleName );
         /**
-         * \brief   Request ID: MsgId_requestClientShutdown
-         *          Sent by client to notify the shutdown. This removes client from the list. This request has no response.
+         * \brief   Request ID: MsgId_requestShutdownService
+         *          Sent by client to request to shutdown service and the application. This request has no response.
          **/
-        , MsgId_requestClientShutdown                                           // void requestClientShutdown( unsigned int clientID, const String & roleName );
+        , MsgId_requestShutdownService                                      // void requestShutdownService( unsigned int clientID, const String & roleName );
 
     /************************************************************************
      * Response IDs
@@ -194,34 +187,19 @@ namespace   NEHelloWorld
          * \brief   Response ID: MsgId_responseHelloWorld
          *          The response to hello world request.
          **/
-        , MsgId_responseHelloWorld            = NEService::RESPONSE_ID_FIRST  // void responseHelloWorld( const NEHelloWorld::sConnectedClient & clientInfo );
+        , MsgId_responseHelloWorld        = NEService::RESPONSE_ID_FIRST  // void responseHelloWorld( const NEHelloWorld::sConnectedClient & clientInfo );
     /************************************************************************
      * Broadcast IDs
      ************************************************************************/
         /**
-         * \brief   Broadcast ID: MsgId_broadcastHelloClients
-         *          Broadcast to notify all clients about connection
+         * \brief   Broadcast ID: MsgId_broadcastReachedMaximum
+         *          Triggered to notify that  reached the maximum number of requests.
          **/
-        , MsgId_broadcastHelloClients                                           // void broadcastHelloClients( const NEHelloWorld::ConnectionList & clientList );
-        /**
-         * \brief   Broadcast ID: MsgId_broadcastServiceUnavailable
-         *          Triggered when the service is unavailable.
-         **/
-        , MsgId_broadcastServiceUnavailable                                     // void broadcastServiceUnavailable( void );
+        , MsgId_broadcastReachedMaximum                                     // void broadcastReachedMaximum( int maxNumber );
 
     /************************************************************************
      * Attributes IDs
      ************************************************************************/
-        /**
-         * \brief   Attribute ID: MsgId_ConnectedClients
-         *          The list of connected clients. Updated each time when new client requests to output Hello World message.
-         **/
-        , MsgId_ConnectedClients              = NEService::ATTRIBUTE_ID_FIRST // NEHelloWorld::ConnectionList mConnectedClients;
-        /**
-         * \brief   Attribute ID: MsgId_RemainOutput
-         *          Remaining number of outputs to print Hello World.
-         **/
-        , MsgId_RemainOutput                                                    // short mRemainOutput;
 
     /************************************************************************
      * Reserved constant IDs
@@ -229,11 +207,11 @@ namespace   NEHelloWorld
         /**
          * \brief   ID of empty function
          **/
-        , MsgId_NotProcessed                  = NEService::INVALID_MESSAGE_ID
+        , MsgId_NotProcessed              = NEService::INVALID_MESSAGE_ID
         /**
          * \brief   ID of invalid call
          **/
-        , MsgId_Invalid                       = NEService::RESPONSE_ID_NONE
+        , MsgId_Invalid                   = NEService::RESPONSE_ID_NONE
 
     };
     /**
@@ -375,18 +353,12 @@ inline const char * NEHelloWorld::getString( NEHelloWorld::eMessageIDs msgId )
     {
     case    NEHelloWorld::eMessageIDs::MsgId_requestHelloWorld:
         return "NEHelloWorld::eMessageIDs::MsgId_requestHelloWorld";
-    case    NEHelloWorld::eMessageIDs::MsgId_requestClientShutdown:
-        return "NEHelloWorld::eMessageIDs::MsgId_requestClientShutdown";
+    case    NEHelloWorld::eMessageIDs::MsgId_requestShutdownService:
+        return "NEHelloWorld::eMessageIDs::MsgId_requestShutdownService";
     case    NEHelloWorld::eMessageIDs::MsgId_responseHelloWorld:
         return "NEHelloWorld::eMessageIDs::MsgId_responseHelloWorld";
-    case    NEHelloWorld::eMessageIDs::MsgId_broadcastHelloClients:
-        return "NEHelloWorld::eMessageIDs::MsgId_broadcastHelloClients";
-    case    NEHelloWorld::eMessageIDs::MsgId_broadcastServiceUnavailable:
-        return "NEHelloWorld::eMessageIDs::MsgId_broadcastServiceUnavailable";
-    case    NEHelloWorld::eMessageIDs::MsgId_ConnectedClients:
-        return "NEHelloWorld::eMessageIDs::MsgId_ConnectedClients";
-    case    NEHelloWorld::eMessageIDs::MsgId_RemainOutput:
-        return "NEHelloWorld::eMessageIDs::MsgId_RemainOutput";
+    case    NEHelloWorld::eMessageIDs::MsgId_broadcastReachedMaximum:
+        return "NEHelloWorld::eMessageIDs::MsgId_broadcastReachedMaximum";
 
     case NEHelloWorld::eMessageIDs::MsgId_NotProcessed:
         return "NEHelloWorld::eMessageIDs::MsgId_NotProcessed";

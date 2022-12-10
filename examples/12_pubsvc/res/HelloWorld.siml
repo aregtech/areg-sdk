@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <ServiceInterface FormatVersion="1.0.0">
-    <Overview ID="1" Name="HelloWorld" Version="1.0.1" isRemote="true">
+    <Overview ID="1" Name="HelloWorld" Version="1.0.2" isRemote="true">
         <Description>Simple Service Interface to demonstrate working features of AREG SDK.</Description>
     </Overview>
     <DataTypeList>
@@ -17,20 +17,7 @@
                 </Field>
             </FieldList>
         </DataType>
-        <DataType ID="5" Name="ConnectionList" Type="DefinedType">
-            <Description>The list of connected clients.</Description>
-            <Container>LinkedList</Container>
-            <BaseTypeValue>sConnectedClient</BaseTypeValue>
-        </DataType>
     </DataTypeList>
-    <AttributeList>
-        <Attribute DataType="ConnectionList" ID="6" Name="ConnectedClients" Notify="OnChange">
-            <Description>The list of connected clients. Updated each time when new client requests to output Hello World message.</Description>
-        </Attribute>
-        <Attribute DataType="int16" ID="21" Name="RemainOutput" Notify="OnChange">
-            <Description>Remaining number of outputs to print Hello World.</Description>
-        </Attribute>
-    </AttributeList>
     <MethodList>
         <Method ID="7" MethodType="request" Name="HelloWorld" Response="HelloWorld">
             <Description>Request to print hello world</Description>
@@ -48,8 +35,8 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="14" MethodType="request" Name="ClientShutdown">
-            <Description>Sent by client to notify the shutdown. This removes client from the list. This request has no response.</Description>
+        <Method ID="14" MethodType="request" Name="ShutdownService">
+            <Description>Sent by client to request to shutdown service and the application. This request has no response.</Description>
             <ParamList>
                 <Parameter DataType="uint32" ID="16" Name="clientID">
                     <Description>The ID of client that requests to shutdown. The ID is given by service when first time client requests to output message.</Description>
@@ -59,16 +46,13 @@
                 </Parameter>
             </ParamList>
         </Method>
-        <Method ID="12" MethodType="broadcast" Name="HelloClients">
-            <Description>Broadcast to notify all clients about connection</Description>
+        <Method ID="15" MethodType="broadcast" Name="ReachedMaximum">
+            <Description>Triggered to notify that  reached the maximum number of requests.</Description>
             <ParamList>
-                <Parameter DataType="ConnectionList" ID="13" Name="clientList">
-                    <Description>List of currently active clients.</Description>
+                <Parameter DataType="int32" ID="19" Name="maxNumber">
+                    <Description>The maximum number of reqeusts.</Description>
                 </Parameter>
             </ParamList>
-        </Method>
-        <Method ID="15" MethodType="broadcast" Name="ServiceUnavailable">
-            <Description>Triggered when the service is unavailable.</Description>
         </Method>
     </MethodList>
     <ConstantList>

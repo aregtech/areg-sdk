@@ -75,7 +75,7 @@ void ServiceClient::broadcastReachedMaximum( int maxNumber )
 {
     TRACE_SCOPE(examples_10_locservice_ServiceClient_broadcastReachedMaximum );
     TRACE_WARN("Service notify reached maximum number of requests [ %d ], starting shutdown procedure", maxNumber );
-    requestClientShutdown(mID, getRoleName());
+    requestShutdownService(mID, getRoleName());
 }
 
 void ServiceClient::processTimer(Timer & timer)

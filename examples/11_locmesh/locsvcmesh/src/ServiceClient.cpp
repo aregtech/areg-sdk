@@ -18,7 +18,7 @@ DEF_TRACE_SCOPE(examples_11_locsvcmesh_ServiceClient_serviceConnected);
 DEF_TRACE_SCOPE(examples_11_locsvcmesh_ServiceClient_broadcastReachedMaximum);
 DEF_TRACE_SCOPE(examples_11_locsvcmesh_ServiceClient_responseHelloWorld);
 DEF_TRACE_SCOPE(examples_11_locsvcmesh_ServiceClient_requestHelloWorldFailed);
-DEF_TRACE_SCOPE(examples_11_locsvcmesh_ServiceClient_requestClientShutdownFailed);
+DEF_TRACE_SCOPE(examples_11_locsvcmesh_ServiceClient_requestShutdownServiceFailed);
 DEF_TRACE_SCOPE(examples_11_locsvcmesh_ServiceClient_processTimer);
 DEF_TRACE_SCOPE(examples_11_locsvcmesh_ServiceClient_ServiceClient);
 
@@ -79,7 +79,7 @@ void ServiceClient::broadcastReachedMaximum( int maxNumber )
 {
     TRACE_SCOPE(examples_11_locsvcmesh_ServiceClient_broadcastReachedMaximum);
     TRACE_WARN("Service notify reached message output maximum, starting shutdown procedure");
-    requestClientShutdown(mID, mTimer.getName());
+    requestShutdownService(mID, mTimer.getName());
 }
 
 void ServiceClient::requestHelloWorldFailed(NEService::eResultType FailureReason)
@@ -88,9 +88,9 @@ void ServiceClient::requestHelloWorldFailed(NEService::eResultType FailureReason
     TRACE_ERR("Request to output greetings failed with reason [ %s ]", NEService::getString(FailureReason));
 }
 
-void ServiceClient::requestClientShutdownFailed(NEService::eResultType FailureReason)
+void ServiceClient::requestShutdownServiceFailed(NEService::eResultType FailureReason)
 {
-    TRACE_SCOPE(examples_11_locsvcmesh_ServiceClient_requestClientShutdownFailed);
+    TRACE_SCOPE(examples_11_locsvcmesh_ServiceClient_requestShutdownServiceFailed);
     TRACE_ERR("Request to notify client shutdown failed with reason [ %s ]", NEService::getString(FailureReason));
 }
 
@@ -107,7 +107,7 @@ inline String ServiceClient::timerName( Component & owner ) const
 {
     ASSERT( getProxy( ) != nullptr );
     String result = "";
-    result.append(getProxy()->getProxyAddress().getRoleName( ) )
+    result.append( getServiceRole( ) )
           .append(NECommon::DEFAULT_SPECIAL_CHAR)
           .append(getServiceName());
 

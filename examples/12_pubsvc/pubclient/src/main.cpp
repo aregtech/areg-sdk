@@ -90,7 +90,6 @@ int main()
 
     } while (false);
 
-    printf("Completed testing remote servicing client, check the logs...\n");
-
-	return 0;
+    std::cout << "Exit application, check the logs for details!" << std::endl;
+    return 0;
 }

@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     09.12.2022  21:14:14 GMT+01:00
+ * Generated at     10.12.2022  04:35:54 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/HelloWorldClientBase.hpp
@@ -143,21 +143,21 @@ public:
     virtual void requestHelloWorldFailed( NEService::eResultType FailureReason );
 
 /************************************************************************
- * Request ClientShutdown
+ * Request ShutdownService
  ************************************************************************/
     /**
      * \brief   Request call.
-     *          Sent by client to notify the shutdown. This removes client from the list. This request has no response.
+     *          Sent by client to request to shutdown service and the application. This request has no response.
      * \param   clientID    The ID of client that requests to shutdown. The ID is given by service when first time client requests to output message.
      * \param   roleName    Service client component role name
      * \see     Has no response
      **/
-    inline void requestClientShutdown( unsigned int clientID, const String & roleName );
+    inline void requestShutdownService( unsigned int clientID, const String & roleName );
     /**
-     * \brief   Overwrite to handle error of ClientShutdown request call.
+     * \brief   Overwrite to handle error of ShutdownService request call.
      * \param   FailureReason   The failure reason value of request call.
      **/
-    virtual void requestClientShutdownFailed( NEService::eResultType FailureReason );
+    virtual void requestShutdownServiceFailed( NEService::eResultType FailureReason );
 
 /************************************************************************
  * Response HelloWorld
@@ -402,10 +402,10 @@ inline unsigned int HelloWorldClientBase::requestHelloWorld( const String & role
     return mProxy->requestHelloWorld( static_cast<IENotificationEventConsumer &>(self()), roleName );
 }
 
-inline void HelloWorldClientBase::requestClientShutdown( unsigned int clientID, const String & roleName )
+inline void HelloWorldClientBase::requestShutdownService( unsigned int clientID, const String & roleName )
 {
     ASSERT(mProxy != nullptr);
-    mProxy->requestClientShutdown( clientID, roleName );
+    mProxy->requestShutdownService( clientID, roleName );
 }
 
 /************************************************************************
