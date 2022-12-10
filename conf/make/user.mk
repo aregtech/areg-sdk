@@ -52,10 +52,11 @@ Platform :=
 OpSystem :=
 
 ifeq ($(Platform),)
-Platform := $(shell uname -p)
+	Platform := $(shell uname -p)
 endif
+
 ifeq ($(OpSystem),)
-OpSystem := $(shell uname -s)
+	OpSystem := $(shell uname -s)
 endif
 
 # ###########################################################################

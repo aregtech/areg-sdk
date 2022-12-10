@@ -22,9 +22,8 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
 
-#include "locsvcmesh/src/MainComponent.hpp"
-#include "locsvcmesh/src/SecondaryComponent.hpp"
 #include "locsvcmesh/src/ClientComponent.hpp"
+#include "locsvcmesh/src/ServicingComponents.hpp"
 
 #ifdef WINDOWS
     #pragma comment(lib, "areg.lib")
@@ -46,15 +45,15 @@ constexpr char const _mainServiceName[] { "MainService" };  //!< Main component 
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "Test_ServiceThread", NECommon::WATCHDOG_IGNORE)
+    BEGIN_REGISTER_THREAD( "ServiceThread", NECommon::WATCHDOG_IGNORE)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( _mainServiceName, MainComponent )
+        BEGIN_REGISTER_COMPONENT( _mainServiceName, ControllerComponent )
             // register HelloWorld service implementation.
             REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
         // end of component description
         END_REGISTER_COMPONENT( _mainServiceName )
     // end of thread description
-    END_REGISTER_THREAD( "Test_ServiceThread" )
+    END_REGISTER_THREAD( "ServiceThread" )
 
     //////////////////////////////////////////////////////////////////////////
     //
@@ -62,39 +61,39 @@ BEGIN_MODEL(_modelName)
     //
     //////////////////////////////////////////////////////////////////////////
 
-    BEGIN_REGISTER_THREAD( "Test_SecondaryThread", NECommon::WATCHDOG_IGNORE)
+    BEGIN_REGISTER_THREAD( "SecondaryThread", NECommon::WATCHDOG_IGNORE)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( "Test_SecondaryComponent", SecondaryComponent )
+        BEGIN_REGISTER_COMPONENT( "SecondaryComponent", SecondaryComponent )
             // register HelloWorld service implementation and the dependencies.
             REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
             REGISTER_DEPENDENCY(_mainServiceName)
-            REGISTER_DEPENDENCY("Test_SecondaryComponent")
+            REGISTER_DEPENDENCY("SecondaryComponent")
         // end of component description
-        END_REGISTER_COMPONENT( "Test_SecondaryComponent" )
+        END_REGISTER_COMPONENT( "SecondaryComponent" )
 
-    END_REGISTER_THREAD("Test_SecondaryThread")
+    END_REGISTER_THREAD("SecondaryThread")
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "Test_MixedThread", NECommon::WATCHDOG_IGNORE)
+    BEGIN_REGISTER_THREAD( "MixedThread", NECommon::WATCHDOG_IGNORE)
 
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT( "Test_ThirdComponent", SecondaryComponent )
+        BEGIN_REGISTER_COMPONENT( "ThirdComponent", SecondaryComponent )
             // register HelloWorld service implementation and the dependencies.
             REGISTER_IMPLEMENT_SERVICE( NEHelloWorld::ServiceName, NEHelloWorld::InterfaceVersion )
             REGISTER_DEPENDENCY( _mainServiceName )
-            REGISTER_DEPENDENCY( "Test_SecondaryComponent")
+            REGISTER_DEPENDENCY( "SecondaryComponent")
         // end of component description
-        END_REGISTER_COMPONENT( "Test_ThirdComponent" )
+        END_REGISTER_COMPONENT( "ThirdComponent" )
 
-        BEGIN_REGISTER_COMPONENT("Test_ClientComponent", ClientComponent)
+        BEGIN_REGISTER_COMPONENT("ClientComponent", ClientComponent)
             // register HelloWorld service dependencies.
             REGISTER_DEPENDENCY( _mainServiceName )
-            REGISTER_DEPENDENCY( "Test_SecondaryComponent")
-            REGISTER_DEPENDENCY( "Test_ThirdComponent" )
-        END_REGISTER_COMPONENT("Test_ClientComponent")
+            REGISTER_DEPENDENCY( "SecondaryComponent")
+            REGISTER_DEPENDENCY( "ThirdComponent" )
+        END_REGISTER_COMPONENT("ClientComponent")
 
     // end of thread description
-    END_REGISTER_THREAD( "Test_MixedThread" )
+    END_REGISTER_THREAD( "MixedThread" )
 
 // end of model description
 END_MODEL(_modelName)
@@ -102,7 +101,7 @@ END_MODEL(_modelName)
 //////////////////////////////////////////////////////////////////////////
 // main method.
 //////////////////////////////////////////////////////////////////////////
-DEF_TRACE_SCOPE(example_11_locsvcmesh_main_main);
+DEF_TRACE_SCOPE(example_11_locsvcmesh_main);
 /**
  * \brief   The main method enables logging, service manager and timer.
  *          it loads and unloads the services, releases application.
@@ -112,34 +111,33 @@ int main()
     printf("Testing multiple local servicing components running in different threads...\n");
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START( nullptr );
-    // Initialize application, enable logging, servicing, timer and watchdog.
-    Application::initApplication(true, true, false, true, true, nullptr, nullptr );
+    Application::initApplication( true, true, false, true, true, nullptr, nullptr );
 
     do
     {
-        TRACE_SCOPE(example_11_locsvcmesh_main_main);
+        TRACE_SCOPE( example_11_locsvcmesh_main );
         TRACE_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
-        NEMemory::uAlign isMain = {true};
-        ComponentLoader::getInstance().setComponentData(_mainServiceName, isMain);
+        ComponentLoader::getInstance().setComponentData(_mainServiceName, NEMemory::uAlign{true} );
 
         // load model to initialize components
         Application::loadModel(_modelName);
-
         TRACE_DBG("Servicing model is loaded");
-
         // wait until Application quit signal is set.
         Application::waitAppQuit(NECommon::WAIT_INFINITE);
-
         // stop and unload components
         Application::unloadModel(_modelName);
+
+        std::cout
+            << (Application::findModel( _modelName ).getAliveDuration( ) / NECommon::DURATION_1_MILLI)
+            << " ms passed. Model is unloaded, releasing resources to exit application ..."
+            << std::endl;
 
         // release and cleanup resources of application.
         Application::releaseApplication();
 
     } while (false);
 
-    printf("Completed testing multiple local servicing components, check the logs...\n");
-
-	return 0;
+    std::cout << "Exit application!" << std::endl;
+    return 0;
 }

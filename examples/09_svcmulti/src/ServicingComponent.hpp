@@ -19,12 +19,7 @@
 
 #include "areg/component/Timer.hpp"
 
-//////////////////////////////////////////////////////////////////////////
-// ServicingComponent class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   A demo of simple servicing component with timer without component servicing (request) methods.
- **/
+//! \brief   A demo of simple servicing component with timer without component servicing (request) methods.
 class ServicingComponent    : public    Component
                             , protected StubBase
                             , protected IETimerConsumer
@@ -33,8 +28,8 @@ class ServicingComponent    : public    Component
 // Constants
 //////////////////////////////////////////////////////////////////////////
 private:
-    static constexpr unsigned int   TIMER_TIMEOUT   { NECommon::TIMEOUT_100_MS };   //!< Timer timeout in milliseconds
-    static constexpr unsigned int   TIMER_EVENTS    { 50 };                         //!< Fired timer count.
+    static const unsigned int   TIMER_TIMEOUT   { NECommon::TIMEOUT_100_MS };   //!< Timer timeout in milliseconds
+    static const int            TIMER_EVENTS    { 30 };   					    //!< Fired timer count.
 
 //////////////////////////////////////////////////////////////////////////
 // Static methods
@@ -55,11 +50,8 @@ public:
      **/
     static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry );
 
-//////////////////////////////////////////////////////////////////////////
-// Constructor / destructor
-//////////////////////////////////////////////////////////////////////////
 protected:
-    
+
     /**
      * \brief   Instantiates the component object.
      * \param   masterThread    The instance of component owner thread.
@@ -68,9 +60,6 @@ protected:
      **/
     ServicingComponent(ComponentThread & masterThread, const char * const roleName, NEMemory::uAlign OPTIONAL data);
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~ServicingComponent(void) = default;
 
 /************************************************************************/
@@ -79,18 +68,13 @@ protected:
 
     /**
      * \brief   This function is triggered by Component when starts up.
-     *          Overwrite this method and set appropriate request and
-     *          attribute update notification event listeners here
-     * \param   holder  The holder component of service interface of Stub,
-     *                  which started up.
+     * \param   holder  The holder component of service interface of Stub.
      **/
     virtual void startupServiceInterface( Component & holder ) override;
 
     /**
      * \brief   This function is triggered by Component when shuts down.
-     *          Overwrite this method to remove listeners and stub cleanup
-     * \param   holder  The holder component of service interface of Stub,
-     *                  which shuts down.
+     * \param   holder  The holder component of service interface of Stub.
      **/
     virtual void shutdownServiceIntrface ( Component & holder ) override;
 
@@ -100,8 +84,6 @@ protected:
 
     /**
      * \brief   Triggered when Timer is expired.
-     *          The passed Timer parameter is indicating object, which has been expired.
-     *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
     virtual void processTimer( Timer & timer ) override;
@@ -111,37 +93,20 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 protected:
 /************************************************************************/
-// StubBase overrides. Public pure virtual methods 
+// StubBase overrides. Public pure virtual methods
 /************************************************************************/
 
     /**
-     * \brief   Sends update notification message to all clients. 
-     *          This method can be called manually to send update 
-     *          notification message after updating attribute value.
-     *
-     *          Overwrite to implement method
-     *
-     * \param   msgId   The attribute message ID to notify clients.
+     * \brief   Sends update notification message to all clients.
      **/
-    virtual void sendNotification( unsigned int msgId ) override
+    virtual void sendNotification( unsigned int /*msgId*/ ) override
     {
     }
 
     /**
      * \brief   Sends error message to clients.
-     *          If message ID is a request, it should send result NEService::RequestError or NEService::RequestCanceled, depending on msgCancel flag.
-     *          If message ID is a response, it should send result NEService::Invalid.
-     *          If message ID is an attribute, it should send result NEService::ResultDataInvalid
-     *          and invalidate attribute data value.
-     *
-     *          Overwrite to implement method
-     *
-     * \param   msgId       The message ID to send error message
-     * \param   msgCancel   Indicates whether the request is canceled or should respond with error.
-     *                      This parameter has sense only for request IDs.
-     *                      It is ignored for response and attributes IDs.
      **/
-    virtual void errorRequest( unsigned int msgId, bool msgCancel ) override
+    virtual void errorRequest( unsigned int /*msgId*/, bool /*msgCancel*/ ) override
     {
     }
 
@@ -151,30 +116,27 @@ protected:
 
     /**
      * \brief   Triggered to process service request event.
-     *          Overwrite method to process every service request event.
-     * \param   eventElem   Service Request Event object, contains request
-     *                      call ID and parameters.
      **/
-    virtual void processRequestEvent( ServiceRequestEvent & eventElem ) override
+    virtual void processRequestEvent( ServiceRequestEvent & /*eventElem*/ ) override
     {
     }
 
     /**
      * \brief   Triggered to process attribute update notification event.
-     *          Override method to process request to get attribute value and
-     *          process notification request of attribute update.
-     * \param   eventElem   Service Request Event object, contains attribute ID.
      **/
-    virtual void processAttributeEvent( ServiceRequestEvent & eventElem ) override
+    virtual void processAttributeEvent( ServiceRequestEvent & /*eventElem*/ ) override
     {
     }
 
 private:
-    Timer           mTimer; //!< The timer to run in component thread.
-    unsigned int    mCount; //!< The timer event count.
+    Timer   mTimer; //!< The timer to run in component thread.
+    int     mCount; //!< The timer event count.
 
 private:
-    inline ServicingComponent & self( void );
+    inline ServicingComponent & self( void )
+    {
+        return (*this);
+    }
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -182,9 +144,3 @@ private:
     ServicingComponent( void ) = delete;
     DECLARE_NOCOPY_NOMOVE( ServicingComponent );
 };
-
-//////////////////////////////////////////////////////////////////////////
-// ServicingComponent inline methods
-//////////////////////////////////////////////////////////////////////////
-inline ServicingComponent & ServicingComponent::self( void )
-{   return (*this);     }

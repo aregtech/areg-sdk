@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  12:57:45 GMT+02:00
+ * Generated at     09.12.2022  21:14:14 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/private/HelloWorldProxy.hpp
@@ -74,14 +74,12 @@ HelloWorldProxy::HelloWorldProxy( const String & roleName, DispatcherThread * ow
 /************************************************************************
  * Attributes
  ************************************************************************/
-    , mConnectedClients   (  )
-    , mRemainOutput       (  )
 
 /************************************************************************
  * Parameters
  ************************************************************************/
     , mParamclientInfo    (  )
-    , mParamclientList    (  )
+    , mParammaxNumber     (  )
 {
 }
 
@@ -196,24 +194,13 @@ void HelloWorldProxy::updateData( HelloWorldResponseEvent & eventElem, NEHelloWo
     /************************************************************************
      * Update Broadcast parameters
      ************************************************************************/
-    case NEHelloWorld::eMessageIDs::MsgId_broadcastHelloClients:
-        stream >> mParamclientList;
-        break;
-
-    case NEHelloWorld::eMessageIDs::MsgId_broadcastServiceUnavailable:
+    case NEHelloWorld::eMessageIDs::MsgId_broadcastReachedMaximum:
+        stream >> mParammaxNumber;
         break;
 
     /************************************************************************
      * Update Attribute values
      ************************************************************************/
-    case NEHelloWorld::eMessageIDs::MsgId_ConnectedClients:
-        stream >> mConnectedClients;
-        break;
-
-    case NEHelloWorld::eMessageIDs::MsgId_RemainOutput:
-        stream >> mRemainOutput;
-        break;
-
     default:
         {
             TRACE_SCOPE(generated_src_private_HelloWorldProxy_updateData);

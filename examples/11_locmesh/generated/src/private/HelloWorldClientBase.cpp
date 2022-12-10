@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  13:08:11 GMT+02:00
+ * Generated at     09.12.2022  22:31:34 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/HelloWorldClientBase.hpp
@@ -181,38 +181,6 @@ void HelloWorldClientBase::processNotificationEvent( NotificationEvent & eventEl
 
     case NEService::eResultType::DataOK:            // fall through
     case NEService::eResultType::DataInvalid:
-        {
-            NEService::eDataStateType dataState;
-            switch (msgId)
-            {
-        /************************************************************************
-         * Trigger attribute update processing
-         ************************************************************************/
-            case NEHelloWorld::eMessageIDs::MsgId_ConnectedClients:
-                {
-                    const NEHelloWorld::ConnectionList & ConnectedClients = mProxy->getConnectedClients(dataState);
-                    onConnectedClientsUpdate(ConnectedClients, dataState);
-                }
-                break;
-
-            case NEHelloWorld::eMessageIDs::MsgId_RemainOutput:
-                {
-                    short RemainOutput = mProxy->getRemainOutput(dataState);
-                    onRemainOutputUpdate(RemainOutput, dataState);
-                }
-                break;
-
-            default:
-                {
-                    TRACE_SCOPE(generated_src_HelloWorldClientBase_processNotificationEvent);
-                    TRACE_ERR("Client object HelloWorldClientBase of proxy [ %s ] received unexpected Attribute update notification message ID [ %d ]."
-                                , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
-                                , msgId);
-                    ASSERT(false);
-                }
-                break;
-            }
-        }
         break;
 
     case NEService::eResultType::RequestOK:
@@ -232,16 +200,10 @@ void HelloWorldClientBase::processNotificationEvent( NotificationEvent & eventEl
         /************************************************************************
          * Trigger broadcast processing
          ************************************************************************/
-            case NEHelloWorld::eMessageIDs::MsgId_broadcastHelloClients:
+            case NEHelloWorld::eMessageIDs::MsgId_broadcastReachedMaximum:
                 {
-                    const NEHelloWorld::ConnectionList & clientList = mProxy->getParamclientList();
-                    broadcastHelloClients( clientList );
-                }
-                break;
-
-            case NEHelloWorld::eMessageIDs::MsgId_broadcastServiceUnavailable:
-                {
-                    broadcastServiceUnavailable(  );
+                    int maxNumber = mProxy->getParammaxNumber();
+                    broadcastReachedMaximum( maxNumber );
                 }
                 break;
 
@@ -324,24 +286,6 @@ void HelloWorldClientBase::requestFailed( NEHelloWorld::eMessageIDs FailureMsgId
  * Attribute notifications
  ************************************************************************/
 
-DEF_TRACE_SCOPE(generated_src_HelloWorldClientBase_onConnectedClientsUpdate);
-void HelloWorldClientBase::onConnectedClientsUpdate( const NEHelloWorld::ConnectionList & /* ConnectedClients */, NEService::eDataStateType /* state */ )
-{
-    TRACE_SCOPE(generated_src_HelloWorldClientBase_onConnectedClientsUpdate);
-    TRACE_WARN("The attribute ConnectedClients (value = %u) update method of proxy [ %s ] client HelloWorldClientBase is not implemented!"
-                    , static_cast<unsigned int>(NEHelloWorld::eMessageIDs::MsgId_ConnectedClients)
-                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
-}
-
-DEF_TRACE_SCOPE(generated_src_HelloWorldClientBase_onRemainOutputUpdate);
-void HelloWorldClientBase::onRemainOutputUpdate( short /* RemainOutput */, NEService::eDataStateType /* state */ )
-{
-    TRACE_SCOPE(generated_src_HelloWorldClientBase_onRemainOutputUpdate);
-    TRACE_WARN("The attribute RemainOutput (value = %u) update method of proxy [ %s ] client HelloWorldClientBase is not implemented!"
-                    , static_cast<unsigned int>(NEHelloWorld::eMessageIDs::MsgId_RemainOutput)
-                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
-}
-
 /************************************************************************
  * Request failure / Response and Broadcast notifications
  ************************************************************************/
@@ -375,21 +319,12 @@ void HelloWorldClientBase::responseHelloWorld( const NEHelloWorld::sConnectedCli
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 
-DEF_TRACE_SCOPE(generated_src_HelloWorldClientBase_broadcastHelloClients);
-void HelloWorldClientBase::broadcastHelloClients( const NEHelloWorld::ConnectionList & /* clientList */ )
+DEF_TRACE_SCOPE(generated_src_HelloWorldClientBase_broadcastReachedMaximum);
+void HelloWorldClientBase::broadcastReachedMaximum( int /* maxNumber */ )
 {
-    TRACE_SCOPE(generated_src_HelloWorldClientBase_broadcastHelloClients);
-    TRACE_WARN("The broadcast broadcastHelloClients (value = %u) method of proxy [ %s ] client HelloWorldClientBase is not implemented!"
-                    , static_cast<unsigned int>(NEHelloWorld::eMessageIDs::MsgId_broadcastHelloClients)
-                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
-}
-
-DEF_TRACE_SCOPE(generated_src_HelloWorldClientBase_broadcastServiceUnavailable);
-void HelloWorldClientBase::broadcastServiceUnavailable( void )
-{
-    TRACE_SCOPE(generated_src_HelloWorldClientBase_broadcastServiceUnavailable);
-    TRACE_WARN("The broadcast broadcastServiceUnavailable (value = %u) method of proxy [ %s ] client HelloWorldClientBase is not implemented!"
-                    , static_cast<unsigned int>(NEHelloWorld::eMessageIDs::MsgId_broadcastServiceUnavailable)
+    TRACE_SCOPE(generated_src_HelloWorldClientBase_broadcastReachedMaximum);
+    TRACE_WARN("The broadcast broadcastReachedMaximum (value = %u) method of proxy [ %s ] client HelloWorldClientBase is not implemented!"
+                    , static_cast<unsigned int>(NEHelloWorld::eMessageIDs::MsgId_broadcastReachedMaximum)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 

@@ -68,22 +68,19 @@ END_MODEL(_modelName)
 //////////////////////////////////////////////////////////////////////////
 // main method.
 //////////////////////////////////////////////////////////////////////////
-DEF_TRACE_SCOPE(main_main);
-/**
- * \brief   The main method enables logging, service manager and timer.
- *          it loads and unloads the services, releases application.
- **/
+DEF_TRACE_SCOPE(examples_10_locsvc_main);
+//! \brief   A Demo to demonstrate simple request, response and broadcast.
 int main()
 {
-    printf("Testing simple local servicing components running as a server and as a client...\n");
+    std::cout << "A Demo to demonstrate simple request, response and broadcast ..." << std::endl;
+
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START( nullptr );
-    // Initialize application, enable logging, servicing, timer and watchdog.
-    Application::initApplication(true, true, false, true, true, nullptr, nullptr );
+    Application::initApplication( true, true, false, true, true, nullptr, nullptr );
 
     do 
     {
-        TRACE_SCOPE(main_main);
+        TRACE_SCOPE( examples_10_locsvc_main );
         TRACE_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         // load model to initialize components
@@ -97,12 +94,16 @@ int main()
         // stop and unload components
         Application::unloadModel(_modelName);
 
+        std::cout
+            << (Application::findModel( _modelName ).getAliveDuration( ) / NECommon::DURATION_1_MILLI)
+            << " ms passed. Model is unloaded, releasing resources to exit application ..."
+            << std::endl;
+
         // release and cleanup resources of application.
         Application::releaseApplication();
 
     } while (false);
 
-    printf("Completed testing simple local servicing components...\n");
-
-	return 0;
+    std::cout << "Exit application!" << std::endl;
+    return 0;
 }

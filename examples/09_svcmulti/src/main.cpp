@@ -19,18 +19,10 @@
 #include "areg/trace/GETrace.h"
 #include "src/ServicingComponent.hpp"
 
-#ifdef WINDOWS
+#ifdef  _WIN32
+    // link with areg library, valid only for MSVC
     #pragma comment(lib, "areg.lib")
-#endif // WINDOWS
-
-/**
- * \brief   This file demonstrates simple initialization of servicing local component
- *          used for local multi-threading communication. And how to duplicate same
- *          implemented service in the system. The duplication should not happen in the
- *          same thread, rather in different threads with different role names.
- *          The servicing component does not contain any servicing method, it uses
- *          timer to run and exit application after certain time.
- **/
+#endif // _WIN32
 
 constexpr char const _modelName[] { "TestModel" };  //!< The name of model
 
@@ -38,7 +30,7 @@ constexpr char const _modelName[] { "TestModel" };  //!< The name of model
 //
 // The following design will instantiate twice the same implementation
 // of component, but running in different thread and having different
-// role name. Note, no need to make changes in the code.
+// role names. Note, no need to make changes in the code.
 //
 //////////////////////////////////////////////////////////////////////////
 
@@ -80,45 +72,36 @@ BEGIN_MODEL(_modelName)
 // end of model description
 END_MODEL(_modelName)
 
-//////////////////////////////////////////////////////////////////////////
-// main method.
-//////////////////////////////////////////////////////////////////////////
-DEF_TRACE_SCOPE( examples_09_svcmulti_main_main);
-/**
- * \brief   The main method enables logging, service manager and timer.
- *          it loads and unloads the services, releases application.
- **/
+DEF_TRACE_SCOPE( examples_09_svcmulti_main);
+//! A Demo of loading and starting an multiple instances of the same service with no functionalities
 int main()
 {
-    printf("Testing multiple empty servicing components in multiple threads...\n");
+    std::cout << "A Demo of loading and starting an multiple instances of the same service with no functionalities ..." << std::endl;
 
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START( nullptr );
-    // Initialize application, enable logging, servicing, timer and watchdog.
     Application::initApplication(true, true, false, true, true, nullptr, nullptr );
 
     do 
     {
-        TRACE_SCOPE(examples_09_svcmulti_main_main);
+        TRACE_SCOPE(examples_09_svcmulti_main);
         TRACE_DBG("The application has been initialized, loading model [ %s ]", _modelName);
+        ASSERT( Application::findModel( _modelName ).isValid( ) );
 
-        // load model to initialize components
         Application::loadModel(_modelName);
+        std::cout << "Service model is loaded. Waiting to quit application signal." << std::endl;
+        Application::waitAppQuit( NECommon::WAIT_INFINITE ); // wait for quit signal to complete application.
+        Application::unloadModel(_modelName);                // stop and unload components
+        
+        std::cout
+            << (Application::findModel( _modelName ).getAliveDuration( ) / NECommon::DURATION_1_MILLI)
+            << " ms passed. Model is unloaded, releasing resources to exit application ..."
+            << std::endl;
 
-        TRACE_DBG("Servicing model is loaded");
-
-        // wait until 'gExit' event is signaled
-        Application::waitAppQuit(NECommon::WAIT_INFINITE);
-
-        // stop and unload components
-        Application::unloadModel(_modelName);
-
-        // release and cleanup resources of application.
-        Application::releaseApplication();
+        Application::releaseApplication();      // release and cleanup resources of application.
 
     } while (false);
-
-    printf("Completed testing multiple empty servicing components, check logs...\n");
-
-	return 0;
+    
+    std::cout << "Exit application!" << std::endl;
+    return 0;
 }

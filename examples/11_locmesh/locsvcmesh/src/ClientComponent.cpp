@@ -27,5 +27,4 @@ ClientComponent::ClientComponent(const NERegistry::ComponentEntry & entry, Compo
     , mClientSecondary  ( entry.mDependencyServices[1].mRoleName, static_cast<Component &>(self()) )
     , mClientThird      ( entry.mDependencyServices[2].mRoleName, static_cast<Component &>(self()) )
 {
-
 }

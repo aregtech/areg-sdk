@@ -36,18 +36,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="locsvcmesh\src\MainComponent.cpp" />
-    <ClCompile Include="locsvcmesh\src\SecondaryComponent.cpp" />
     <ClCompile Include="locsvcmesh\src\ServiceClient.cpp" />
-    <ClCompile Include="locsvcmesh\src\ServicingComponent.cpp" />
+    <ClCompile Include="locsvcmesh\src\ServicingComponents.cpp" />
     <ClCompile Include="locsvcmesh\src\main.cpp" />
     <ClCompile Include="locsvcmesh\src\ClientComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="locsvcmesh\src\MainComponent.hpp" />
-    <ClInclude Include="locsvcmesh\src\SecondaryComponent.hpp" />
     <ClInclude Include="locsvcmesh\src\ServiceClient.hpp" />
-    <ClInclude Include="locsvcmesh\src\ServicingComponent.hpp" />
+    <ClInclude Include="locsvcmesh\src\ServicingComponents.hpp" />
     <ClInclude Include="locsvcmesh\src\ClientComponent.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
