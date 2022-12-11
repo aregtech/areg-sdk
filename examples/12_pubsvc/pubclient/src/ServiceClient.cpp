@@ -11,18 +11,12 @@
  ************************************************************************/
 #include "pubclient/src/ServiceClient.hpp"
 #include "areg/trace/GETrace.h"
-#include "areg/component/ComponentThread.hpp"
 #include "areg/appbase/Application.hpp"
 
 DEF_TRACE_SCOPE(examples_12_pubclient_ServiceClient_serviceConnected);
 DEF_TRACE_SCOPE(examples_12_pubclient_ServiceClient_broadcastReachedMaximum);
 DEF_TRACE_SCOPE(examples_12_pubclient_ServiceClient_responseHelloWorld);
-DEF_TRACE_SCOPE(examples_12_pubclient_ServiceClient_requestHelloWorldFailed);
-DEF_TRACE_SCOPE(examples_12_pubclient_ServiceClient_requestShutdownServiceFailed);
 DEF_TRACE_SCOPE(examples_12_pubclient_ServiceClient_processTimer);
-DEF_TRACE_SCOPE(examples_12_pubclient_ServiceClient_ServiceClient);
-
-const unsigned int  ServiceClient::TIMEOUT_VALUE    = 491;
 
 Component * ServiceClient::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
 {
@@ -34,23 +28,14 @@ void ServiceClient::DeleteComponent(Component & compObject, const NERegistry::Co
     delete (&compObject);
 }
 
-
 ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component             ( owner, entry.mRoleName )
-    , HelloWorldClientBase  ( entry.mDependencyServices[0].mRoleName.getString(), owner )
+    : Component             ( owner, NEUtilities::generateName(entry.mRoleName) )
+    , HelloWorldClientBase  ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )
     , IETimerConsumer       ( )
 
-    , mTimer                ( static_cast<IETimerConsumer &>(self()), timerName( static_cast<Component &>(self()) ).getString() )
+    , mTimer                (static_cast<IETimerConsumer &>(self()), entry.mRoleName)
     , mID                   ( 0 )
 {
-    TRACE_SCOPE(examples_12_pubclient_ServiceClient_ServiceClient);
-    TRACE_DBG("Client: roleName [ %s ] of service [ %s ] owner [ %s ] in thread [ %s ] has timer [ %s ]"
-                    , entry.mDependencyServices[0].mRoleName.getString()
-                    , getServiceName().getString()
-                    , getRoleName().getString()
-                    , owner.getName().getString()
-                    , mTimer.getName().getString());
-    TRACE_DBG("Proxy: [ %s ]", ProxyAddress::convAddressToPath(getProxy()->getProxyAddress()).getString());
 }
 
 bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
@@ -58,8 +43,9 @@ bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
     TRACE_SCOPE(examples_12_pubclient_ServiceClient_serviceConnected);
     bool result = HelloWorldClientBase::serviceConnected(isConnected, proxy);
 
-    TRACE_DBG("Proxy [ %s ] is [ %s ]"
-                , ProxyAddress::convAddressToPath(proxy.getProxyAddress()).getString()
+    TRACE_DBG("Client [ %s ] of [ %s ] service is [ %s ]"
+                , proxy.getProxyAddress().getRoleName().getString()
+                , proxy.getProxyAddress().getServiceName().getString()
                 , isConnected ? "connected" : "disconnected");
 
     // subscribe when service connected and un-subscribe when disconnected.
@@ -70,8 +56,8 @@ bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
     }
     else
     {
-        TRACE_WARN("Shutting down application!");
         mTimer.stopTimer();
+        TRACE_WARN("Shutting down application!");
         Application::signalAppQuit();
     }
 
@@ -81,23 +67,16 @@ bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
 void ServiceClient::responseHelloWorld(const NEHelloWorld::sConnectedClient & clientInfo)
 {
     TRACE_SCOPE(examples_12_pubclient_ServiceClient_responseHelloWorld);
-    TRACE_DBG("Service [ %s ]: Made output of [ %s ], client ID [ %d ]", getServiceRole().getString(), clientInfo.ccName.getString(), clientInfo.ccID);
-    ASSERT(clientInfo.ccName == mTimer.getName());
-
-    if ( mID == 0)
-    {
-        TRACE_DBG("Registering ID [ %d ] for service client [ %s ]", clientInfo.ccID, mTimer.getName().getString());
-        mID = clientInfo.ccID;
-    }
+    TRACE_DBG("Greetings from [ %s ] output on console, client ID [ %d ]", clientInfo.ccName.getString(), clientInfo.ccID);
+    ASSERT(clientInfo.ccName == getRoleName());
+    mID = clientInfo.ccID;
 }
 
 void ServiceClient::broadcastReachedMaximum( int maxNumber )
 {
     TRACE_SCOPE(examples_12_pubclient_ServiceClient_broadcastReachedMaximum);
-    TRACE_WARN("Service reached message output maximum, starting shutdown procedure");
-    TRACE_INFO("Sending request to shutdown service for client [ %s ] with ID [ %d ]", mTimer.getName().getString(), mID);
-
-    requestShutdownService(mID, mTimer.getName());
+    TRACE_WARN("Service notify reached maximum number of requests [ %d ], starting shutdown procedure", maxNumber );
+    requestShutdownService(mID, getRoleName());
     mID = 0;
 }
 
@@ -107,33 +86,5 @@ void ServiceClient::processTimer(Timer & timer)
     ASSERT(&timer == &mTimer);
 
     TRACE_DBG("Timer [ %s ] expired, send request to output message.", timer.getName().getString());
-    std::cout << "Call request to run on remote service" << std::endl;
-
-    requestHelloWorld(timer.getName());
-}
-
-void ServiceClient::requestHelloWorldFailed(NEService::eResultType FailureReason)
-{
-    // make error handling here.
-    TRACE_SCOPE(examples_12_pubclient_ServiceClient_requestHelloWorldFailed);
-    TRACE_ERR("Request to output greetings failed with reason [ %s ]", NEService::getString(FailureReason));
-    std::cerr << "There was a problem running request, error: " << NEService::getString( FailureReason ) << std::endl;
-}
-
-void ServiceClient::requestShutdownServiceFailed(NEService::eResultType FailureReason)
-{
-    // make error handling here.
-    TRACE_SCOPE(examples_12_pubclient_ServiceClient_requestShutdownServiceFailed);
-    TRACE_ERR("Request to notify client shutdown failed with reason [ %s ]", NEService::getString(FailureReason));
-    std::cerr << "There was a problem running request, error: " << NEService::getString( FailureReason ) << std::endl;
-}
-
-inline String ServiceClient::timerName( Component & owner ) const
-{
-    String result = "";
-    result.append(getServiceRole())
-          .append(NECommon::DEFAULT_SPECIAL_CHAR)
-          .append(getServiceName());
-
-    return result;
+    requestHelloWorld(getRoleName());
 }

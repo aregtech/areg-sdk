@@ -36,12 +36,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="locsvcmesh\src\ServiceHelloWorld.cpp" />
     <ClCompile Include="locsvcmesh\src\ServiceClient.cpp" />
     <ClCompile Include="locsvcmesh\src\ServicingComponents.cpp" />
     <ClCompile Include="locsvcmesh\src\main.cpp" />
     <ClCompile Include="locsvcmesh\src\ClientComponent.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="locsvcmesh\src\ServiceHelloWorld.hpp" />
     <ClInclude Include="locsvcmesh\src\ServiceClient.hpp" />
     <ClInclude Include="locsvcmesh\src\ServicingComponents.hpp" />
     <ClInclude Include="locsvcmesh\src\ClientComponent.hpp" />

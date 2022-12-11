@@ -233,6 +233,11 @@ public:
     inline const StubAddress & getAddress( void ) const;
 
     /**
+     * \brief   Returns the role name of the implemented service interface.
+     **/
+    inline const String & getServiceRole( void ) const;
+
+    /**
      * \brief   Returns the name of the implemented service.
      **/
     inline const String & getServiceName( void ) const;
@@ -799,6 +804,11 @@ inline StubBase & StubBase::self( void )
 inline const StubAddress& StubBase::getAddress(void) const
 {
     return mAddress;
+}
+
+inline const String & StubBase::getServiceRole( void ) const
+{
+    return mAddress.getRoleName( );
 }
 
 inline const String& StubBase::getServiceName(void) const

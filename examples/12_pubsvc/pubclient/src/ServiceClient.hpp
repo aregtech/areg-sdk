@@ -19,25 +19,18 @@
 
 #include "areg/component/Timer.hpp"
 
-//////////////////////////////////////////////////////////////////////////
-// ServicingComponent class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   A demo of simple service client to trigger request calls and subscribe on event.
- **/
+//! \brief  A client component to call request, and process response and broadcast.
+//!         The reuqests are triggered on each timer timeout.
 class ServiceClient : public    Component
                     , protected HelloWorldClientBase
                     , private   IETimerConsumer
 {
+private:
+    static constexpr unsigned int   TIMEOUT_VALUE   { 100 };    //!< A timeout to trigger request
+
 //////////////////////////////////////////////////////////////////////////
 // Static methods
 //////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   Timeout to wait before sending message
-     **/
-    static const unsigned int    TIMEOUT_VALUE       /*= 237*/;
-
 public:
     /**
      * \brief   Called by system to instantiate the component.
@@ -57,7 +50,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-public:
+protected:
 
     /**
      * \brief   Instantiates the component object.
@@ -66,9 +59,6 @@ public:
      **/
     ServiceClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
 
-    /**
-     * \brief   Destructor
-     **/
     virtual ~ServiceClient(void) = default;
 
 protected:
@@ -85,58 +75,32 @@ protected:
 
     /**
      * \brief   Server broadcast.
-     *          Triggered when the service is unavailable.
+     *          Triggered to notify that  reached the maximum number of requests.
      *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
+     * \param   maxNumber   The maximum number of reqeusts.
      **/
     virtual void broadcastReachedMaximum( int maxNumber ) override;
-
-/************************************************************************/
-// Error handling.
-/************************************************************************/
-    /**
-     * \brief   Overwrite to handle error of HelloWorld request call.
-     * \param   FailureReason   The failure reason value of request call.
-     **/
-    virtual void requestHelloWorldFailed( NEService::eResultType FailureReason ) override;
-
-    /**
-     * \brief   Overwrite to handle error of ShutdownService request call.
-     * \param   FailureReason   The failure reason value of request call.
-     **/
-    virtual void requestShutdownServiceFailed( NEService::eResultType FailureReason ) override;
 
 /************************************************************************/
 // IEProxyListener Overrides
 /************************************************************************/
     /**
      * \brief   Triggered by Proxy, when gets service connected event.
-     *          Make client initializations in this function. No request
-     *          will be processed until this function is not called for
-     *          client object. Also set listeners here if client is interested
-     *          to receive update notifications.
+     *          Make client initializations in this function.
      * \param   isConnected     The flag, indicating whether service is connected
-     *                          or disconnected. Make cleanups and stop sending
-     *                          requests or assigning for notification if
-     *                          this flag is false. No event to Stub target will
-     *                          be sent, until no service connected event is
-     *                          received.
+     *                          or disconnected.
      * \param   proxy           The Service Interface Proxy object, which is
      *                          notifying service connection.
-     * \return  Return true if this service connect notification was relevant to client object,
-     *          i.e. if passed Proxy address is equal to the Proxy object that client has.
-     *          If Proxy objects are not equal, it should return false;
+     * \return  Return true if this service connect notification was relevant to client object
      **/
     virtual bool serviceConnected( bool isConnected, ProxyBase & proxy ) override;
 
 /************************************************************************/
 // IETimerConsumer interface overrides.
 /************************************************************************/
-
     /**
      * \brief   Triggered when Timer is expired.
-     *          The passed Timer parameter is indicating object, which has been expired.
-     *          Overwrite method to receive messages.
      * \param   timer   The timer object that is expired.
      **/
     virtual void processTimer( Timer & timer ) override;
@@ -149,11 +113,6 @@ private:
     {
         return (*this);
     }
-
-    /**
-     * \brief   Generates unique timer name.
-     **/
-    inline String timerName( Component & owner ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // member variables
