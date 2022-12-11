@@ -41,6 +41,7 @@
             <PreprocessorDefinitions Condition="'$(ConfigShortName)'=='Debug'">$(ProjectCommonDefines);_DEBUG;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
             <PreprocessorDefinitions Condition="'$(ConfigShortName)'=='Release'">$(ProjectCommonDefines);NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 			<LanguageStandard>stdcpp17</LanguageStandard>
+            <ExceptionHandling>Sync</ExceptionHandling>
         </ClCompile>
         <Link>
             <ImportLibrary>$(OutLibDir)\$(TargetName).lib</ImportLibrary>
