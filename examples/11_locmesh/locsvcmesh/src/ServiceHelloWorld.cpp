@@ -60,13 +60,13 @@ void ServiceHelloWorld::requestHelloWorld( const String & roleName )
         TRACE_INFO( "Reached maximum to output messages, this should trigger the shutdown procedure." );
         if ( mIsMain )
         {
-            TRACE_WARN( "The controller component [ %s ] broadcasts message to shutdown application", getRoleName( ).getString( ) );
+            TRACE_WARN( "The controller component [ %s ] broadcasts message to shutdown application", getServiceRole( ).getString( ) );
             broadcastReachedMaximum( NEHelloWorld::MaxMessages );
         }
     }
     else
     {
-        TRACE_WARN( "The service [  %s ] still wait [ %d ] requests to print Hello World.", getRoleName( ).getString( ), mRemainRequest );
+        TRACE_WARN( "The service [  %s ] still wait [ %d ] requests to print Hello World.", getServiceRole( ).getString( ), mRemainRequest );
     }
 }
 
