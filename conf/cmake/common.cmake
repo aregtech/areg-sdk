@@ -1,3 +1,11 @@
+if(BuildConfig MATCHES "Release")
+    set(CMAKE_BUILD_TYPE Release)
+    add_definitions(-DNDEBUG)
+else()
+    set(CMAKE_BUILD_TYPE Debug)
+    add_definitions(-DDEBUG)
+endif()
+
 # Identify the OS
 if(APPLE)
     set(OpSystem "macOS")
@@ -13,23 +21,15 @@ if(NOT ${CMAKE_SIZEOF_VOID_P} MATCHES "8")
     set(Platform "x86")
 endif()
 
-if(CMAKE_BUILD_TYPE MATCHES "Release")
-    set(CMAKE_BUILD_TYPE "Release")
-    add_definitions(-DNDEBUG)
-else()
-    set(CMAKE_BUILD_TYPE "Debug")
-    add_definitions(-DDEBUG)
-endif()
-
 # The toolset
 set(Toolset "${CMAKE_CXX_COMPILER_ID}")
 
 # Relative path of the output folder for the builds
-set(ProjBuildPath "build/${CrossCompile}${Toolset}/${OpSystem}-${Platform}-${Config}")
+string(TOLOWER "${UserDefOutput}/build/${CrossCompile}${Toolset}/${OpSystem}-${Platform}-${CMAKE_BUILD_TYPE}" ProjBuildPath)
 # The absolute path for builds
-set(ProjOutputDir "${AregBuildRoot}/${UserDefOutput}/${ProjBuildPath}")
+set(ProjOutputDir "${AregBuildRoot}/${ProjBuildPath}")
 
-message(STATUS ">>> Build for \'${CMAKE_SYSTEM_NAME}\' with compiler \'${CMAKE_CXX_COMPILER}\', ID \'${CMAKE_CXX_COMPILER_ID}\'")
+message(STATUS ">>> \'${CMAKE_BUILD_TYPE}\' build for \'${CMAKE_SYSTEM_NAME}\' platform with compiler \'${CMAKE_CXX_COMPILER}\', ID \'${CMAKE_CXX_COMPILER_ID}\'")
 message(STATUS ">>> Build output folder \'${ProjOutputDir}\'")
 
 # The absolute path for generated files

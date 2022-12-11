@@ -4,7 +4,7 @@
 
 # Set the compiler here. Possible settings: "gcc", "g++", "cl", "clang++-13"
 # Can set compiler full path.
-set(CMAKE_CXX_COMPILER "gcc")
+set(CMAKE_CXX_COMPILER "g++")
 set(CMAKE_C_COMPILER "gcc")
 
 # Set the AREG library type to compile.
@@ -13,8 +13,8 @@ set(areg "shared")
 
 # Set build configuration here.
 # Set "Debug" for debug and "Release" for release build
-# set(Config "Debug")
-set(Config "Release")
+# set(BuildConfig "Debug")
+set(BuildConfig "Release")
 
 # Set bitless here
 set(Bitness "64")
