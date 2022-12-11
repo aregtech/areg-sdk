@@ -1,7 +1,7 @@
 #pragma once
 
 /************************************************************************
- * \file        ServicingComponent.hpp
+ * \file        locsvcmesh/src/ServicingComponent.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
@@ -12,82 +12,9 @@
  * Include files.
  ************************************************************************/
 
-#include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "generated/src/HelloWorldStub.hpp"
-
+#include "locsvcmesh/src/ServiceHelloWorld.hpp"
 #include "locsvcmesh/src/ServiceClient.hpp"
-
-//////////////////////////////////////////////////////////////////////////
-// ControllerComponent class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   A demo of simple service with requests, response and broadcast.
- *          It demonstrates the use:
- *              a. Request with connected response;
- *              b. Request without response;
- *              c. Broadcasts with a parameter;
- **/
-class HelloWorldService : protected HelloWorldStub
-{
-    //!< The type of list of connected clients.
-    using ClientList = TELinkedList<NEHelloWorld::sConnectedClient>;
-
-//////////////////////////////////////////////////////////////////////////
-// Constructor / destructor
-//////////////////////////////////////////////////////////////////////////
-public:
-
-    /**
-     * \brief   Instantiates the component object.
-     * \param   masterComp  The master / owner component of the service.
-     * \param   isMain      The flag indicating whether it is a main controller
-     *                      that can trigger application shutdown or not.
-     **/
-    HelloWorldService( Component & masterComp, bool isMain );
-
-    /**
-     * \brief   Destructor.
-     **/
-    virtual ~HelloWorldService(void) = default;
-
-//////////////////////////////////////////////////////////////////////////
-// HelloWorld Interface Requests
-//////////////////////////////////////////////////////////////////////////
-protected:
-
-    /**
-     * \brief   Request call.
-     *          Request to print hello world
-     * \param   roleName    The role name of client component that requested to print hello world
-     * \see     responseHelloWorld
-     **/
-    virtual void requestHelloWorld( const String & roleName ) override;
-
-    /**
-     * \brief   Request call.
-     *          Sent by client to request to shutdown service and the application. This request has no response.
-     * \param   clientID    The ID of client that requests to shutdown. The ID is given by service when first time client requests to output message.
-     * \param   roleName    Service client component role name
-     * \note    Has no response
-     **/
-    virtual void requestShutdownService( unsigned int clientID, const String & roleName ) override;
-
-//////////////////////////////////////////////////////////////////////////
-// Member variables
-//////////////////////////////////////////////////////////////////////////
-private:
-    const bool      mIsMain;        //!< Flag, indicating whether it is a main controller service or not.
-    unsigned int    mGnerateID;     //!< The client ID generator
-    ClientList      mClientList;    //!< The list of connected clients.
-    signed short    mRemainRequest; //!< The maximum number of processing requests.
-
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls
-//////////////////////////////////////////////////////////////////////////
-    HelloWorldService( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( HelloWorldService );
-};
 
 //////////////////////////////////////////////////////////////////////////
 // ControllerComponent class declaration
@@ -135,7 +62,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
-    HelloWorldService   mService;
+    ServiceHelloWorld   mService;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -191,7 +118,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
-    HelloWorldService   mService;           //!< The service included in the component
+    ServiceHelloWorld   mService;           //!< The service included in the component
     ServiceClient       mClientMain;        //!< Service client of main component
     ServiceClient       mClientSecondary;   //!< Service client of secondary component.
 

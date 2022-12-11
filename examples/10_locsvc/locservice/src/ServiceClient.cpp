@@ -47,17 +47,15 @@ bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
                 , proxy.getProxyAddress().getServiceName().getString()
                 , isConnected ? "connected" : "disconnected");
 
+    // subscribe when service connected and un-subscribe when disconnected.
+    notifyOnBroadcastReachedMaximum(isConnected);
     if (isConnected)
     {
-        // dynamic subscribe on messages.
-        notifyOnBroadcastReachedMaximum(true);
         mTimer.startTimer(ServiceClient::TIMEOUT_VALUE);
     }
     else
     {
         mTimer.stopTimer();
-        // clear all subscriptions.
-        clearAllNotifications();
     }
 
     return result;
@@ -76,6 +74,7 @@ void ServiceClient::broadcastReachedMaximum( int maxNumber )
     TRACE_SCOPE(examples_10_locservice_ServiceClient_broadcastReachedMaximum );
     TRACE_WARN("Service notify reached maximum number of requests [ %d ], starting shutdown procedure", maxNumber );
     requestShutdownService(mID, getRoleName());
+    mID = 0;
 }
 
 void ServiceClient::processTimer(Timer & timer)

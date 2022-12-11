@@ -18,6 +18,7 @@
 //============================================================================
 
 #include "areg/base/GEGlobal.h"
+
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"

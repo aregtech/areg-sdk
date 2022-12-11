@@ -228,6 +228,11 @@ public:
     ComponentThread & getComponentThread( void ) const;
 
     /**
+     * \brief   Returns the role name of the service interface implementation provider.
+     **/
+    inline const String & getRoleName( void ) const;
+
+    /**
      * \brief   Returns the address of Stub object.
      **/
     inline const StubAddress & getAddress( void ) const;
@@ -794,6 +799,11 @@ inline StubBase::Listener& StubBase::Listener::operator = ( StubBase::Listener &
 inline StubBase & StubBase::self( void )
 {
     return (*this);
+}
+
+inline const String & StubBase::getRoleName( void ) const
+{
+    return mAddress.getRoleName( );
 }
 
 inline const StubAddress& StubBase::getAddress(void) const

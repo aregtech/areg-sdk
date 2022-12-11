@@ -25,7 +25,7 @@ class ServiceClient : protected HelloWorldClientBase
                     , private   IETimerConsumer
 {
     //!< Timeout to wait before sending message
-    static constexpr unsigned int   TIMEOUT_VALUE   { 237 };
+    static constexpr unsigned int   TIMEOUT_VALUE   { 100 };
 
 public:
 
@@ -58,17 +58,6 @@ protected:
      **/
     virtual void broadcastReachedMaximum( int maxNumber ) override;
 
-    /**
-     * \brief   Overwrite to handle error of HelloWorld request call.
-     * \param   FailureReason   The failure reason value of request call.
-     **/
-    virtual void requestHelloWorldFailed( NEService::eResultType FailureReason ) override;
-
-    /**
-     * \brief   Overwrite to handle error of ShutdownService request call.
-     * \param   FailureReason   The failure reason value of request call.
-     **/
-    virtual void requestShutdownServiceFailed( NEService::eResultType FailureReason ) override;
 
 /************************************************************************/
 // IEProxyListener Overrides

@@ -26,7 +26,7 @@ class ServiceClient : public    Component
                     , private   IETimerConsumer
 {
 private:
-    static constexpr unsigned int   TIMEOUT_VALUE   { 237 };    //!< A timeout to trigger request
+    static constexpr unsigned int   TIMEOUT_VALUE   { 100 };    //!< A timeout to trigger request
 
 //////////////////////////////////////////////////////////////////////////
 // Static methods
@@ -99,7 +99,6 @@ protected:
 /************************************************************************/
 // IETimerConsumer interface overrides.
 /************************************************************************/
-
     /**
      * \brief   Triggered when Timer is expired.
      * \param   timer   The timer object that is expired.
