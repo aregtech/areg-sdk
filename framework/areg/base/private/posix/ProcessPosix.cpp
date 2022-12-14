@@ -44,7 +44,11 @@ void Process::_osInitilize( void )
     if ( (file == nullptr) || (::fgets( buffer, File::MAXIMUM_PATH, file ) == nullptr))
     {
         sprintf( path, "/proc/%lu/exe", mProcessId );
-        readlink( path, buffer, File::MAXIMUM_PATH );
+        ssize_t len = readlink( path, buffer, File::MAXIMUM_PATH );
+        if ((len > 0) && (len < File::MAXIMUM_PATH))
+        {
+            buffer[len] = '\0';
+        }
     }
 
     if (file != nullptr)
