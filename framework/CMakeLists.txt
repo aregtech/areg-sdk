@@ -38,3 +38,18 @@ set_target_properties(${EXE}
     CXX_STANDARD ${aregCXXStandard}
     CXX_STANDARD_REQUIRED ON
     )
+
+# GTest setup
+enable_testing()
+
+add_executable(
+    demo_test
+    ${AREG_BASE}/tests/DemoTest.cpp
+)
+target_link_libraries(
+    demo_test
+    GTest::gtest_main
+)
+
+include(GoogleTest)
+gtest_discover_tests(demo_test)
