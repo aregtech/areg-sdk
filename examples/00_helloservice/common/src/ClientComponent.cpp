@@ -20,8 +20,8 @@ void ClientComponent::DeleteComponent(Component & compObject, const NERegistry::
 }
 
 ClientComponent::ClientComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component             ( owner, entry.mRoleName )
-    , HelloServiceClientBase  ( entry.mDependencyServices[0].mRoleName.getString(), owner )
+    : Component             ( entry, owner )
+    , HelloServiceClientBase( entry.mDependencyServices[0].mRoleName.getString(), owner )
 {
 }
 

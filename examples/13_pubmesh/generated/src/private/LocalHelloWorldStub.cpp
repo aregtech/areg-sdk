@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  13:59:46 GMT+02:00
+ * Generated at     18.12.2022  15:17:30 GMT+01:00
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
  *
  * \file            generated/src/LocalHelloWorldStub.hpp
@@ -34,12 +34,6 @@
 LocalHelloWorldStub::LocalHelloWorldStub( Component & masterComp )
     : StubBase    ( masterComp, NELocalHelloWorld::getInterfaceData() )
 
-    , mConnectedClients       (  )
-    , mConnectedClientsState  ( NEService::eDataStateType::DataIsUnavailable )
-    
-    , mRemainOutput           (  )
-    , mRemainOutputState      ( NEService::eDataStateType::DataIsUnavailable )
-    
 {
 }
 
@@ -87,32 +81,11 @@ ResponseEvent * LocalHelloWorldStub::createResponseEvent( const ProxyAddress & p
 DEF_TRACE_SCOPE(generated_src_LocalHelloWorldStub_sendNotification);
 void LocalHelloWorldStub::sendNotification( unsigned int msgId )
 {
-    EventDataStream args(EventDataStream::eEventData::EventDataInternal);
-    IEOutStream & stream = args.getStreamForWrite();
-
-    switch ( static_cast<NELocalHelloWorld::eMessageIDs>(msgId) )
-    {
-    case NELocalHelloWorld::eMessageIDs::MsgId_ConnectedClients:
-        mConnectedClientsState = NEService::eDataStateType::DataIsOK;
-        stream << mConnectedClients;
-        sendUpdateEvent(msgId, args, NEService::eResultType::DataOK);
-        break;
-
-    case NELocalHelloWorld::eMessageIDs::MsgId_RemainOutput:
-        mRemainOutputState = NEService::eDataStateType::DataIsOK;
-        stream << mRemainOutput;
-        sendUpdateEvent(msgId, args, NEService::eResultType::DataOK);
-        break;
-
-    default:
-        {
-            TRACE_SCOPE(generated_src_LocalHelloWorldStub_sendNotification);
-            TRACE_ERR("Unexpected attribute ID [ %d ] requested to send by Stub [ %s ].", msgId, StubAddress::convAddressToPath(mAddress).getString());
-            ASSERT(false);
-        }
-        break; // do nothing
-    }
+    TRACE_SCOPE(generated_src_LocalHelloWorldStub_sendNotification);
+    TRACE_ERR("The Service Interface has no attribute. Unexpected attribute ID [ %d ] requested to send by Stub [ %s ].", msgId, StubAddress::convAddressToPath(mAddress).getString());
+    ASSERT(false);
 }
+
 
 DEF_TRACE_SCOPE(generated_src_LocalHelloWorldStub_errorRequest);
 void LocalHelloWorldStub::errorRequest( unsigned int msgId, bool msgCancel )
@@ -125,16 +98,6 @@ void LocalHelloWorldStub::errorRequest( unsigned int msgId, bool msgCancel )
 /************************************************************************
  * Attribute errors
  ************************************************************************/
-    case NELocalHelloWorld::eMessageIDs::MsgId_ConnectedClients:
-        mConnectedClientsState = NEService::eDataStateType::DataIsInvalid;
-        result = NEService::eResultType::DataInvalid;
-        break;
-
-    case NELocalHelloWorld::eMessageIDs::MsgId_RemainOutput:
-        mRemainOutputState = NEService::eDataStateType::DataIsInvalid;
-        result = NEService::eResultType::DataInvalid;
-        break;
-
 /************************************************************************
  * Response errors
  ************************************************************************/
@@ -178,24 +141,6 @@ void LocalHelloWorldStub::errorRequest( unsigned int msgId, bool msgCancel )
  * Set attributes and send notifications
  ************************************************************************/
 
-void LocalHelloWorldStub::setConnectedClients( const NELocalHelloWorld::ConnectionList & newValue )
-{
-    if ( (mConnectedClientsState != NEService::eDataStateType::DataIsOK) || (mConnectedClients != newValue) )
-    {
-        mConnectedClients = newValue;
-        sendNotification( static_cast<msg_id>(NELocalHelloWorld::eMessageIDs::MsgId_ConnectedClients) );
-    }
-}
-
-void LocalHelloWorldStub::setRemainOutput( const short & newValue )
-{
-    if ( (mRemainOutputState != NEService::eDataStateType::DataIsOK) || (mRemainOutput != newValue) )
-    {
-        mRemainOutput = newValue;
-        sendNotification( static_cast<msg_id>(NELocalHelloWorld::eMessageIDs::MsgId_RemainOutput) );
-    }
-}
-
 /************************************************************************
  * Send responses
  ************************************************************************/
@@ -228,12 +173,11 @@ void LocalHelloWorldStub::processRequestEvent( ServiceRequestEvent & eventElem )
         msg_id reqId = static_cast<msg_id>(reqEvent->getRequestId());
         const IEInStream & stream  = static_cast<const LocalHelloWorldRequestEvent *>(reqEvent)->getData().getReadStream();
         StubBase::Listener listener( reqId, 0, reqEvent->getEventSource() );
-        NELocalHelloWorld::eMessageIDs respId = NELocalHelloWorld::getResponseId(static_cast<NELocalHelloWorld::eMessageIDs>(reqId));
 
         switch ( static_cast<NELocalHelloWorld::eMessageIDs>(reqId) )
         {
         case NELocalHelloWorld::eMessageIDs::MsgId_requestHelloWorld:
-            if ( canExecuteRequest(listener, static_cast<msg_id>(respId), reqEvent->getSequenceNumber()) )
+            if ( true )
             {
                 String  roleName;
                 stream >> roleName;
@@ -283,42 +227,14 @@ void LocalHelloWorldStub::processAttributeEvent( ServiceRequestEvent & eventElem
 #else   // _DEBUG
             addNotificationListener( static_cast<msg_id>(updId), eventElem.getEventSource() );
 #endif  // _DEBUG
-            EventDataStream args(EventDataStream::eEventData::EventDataInternal);
-            NEService::eResultType validUpdate = NEService::eResultType::DataOK;
-            IEOutStream & stream               = args.getStreamForWrite();
-
-            switch (updId)
-            {
-            case NELocalHelloWorld::eMessageIDs::MsgId_ConnectedClients:
-                if ( mConnectedClientsState == NEService::eDataStateType::DataIsOK )
-                    stream << mConnectedClients;
-                else
-                    validUpdate = NEService::eResultType::DataInvalid;
-                break;
-
-            case NELocalHelloWorld::eMessageIDs::MsgId_RemainOutput:
-                if ( mRemainOutputState == NEService::eDataStateType::DataIsOK )
-                    stream << mRemainOutput;
-                else
-                    validUpdate = NEService::eResultType::DataInvalid;
-                break;
-
-            default:
 #ifdef  _DEBUG
-                if ( NEService::isResponseId(static_cast<msg_id>(updId)) == false )
-                {
-                    TRACE_SCOPE(generated_src_LocalHelloWorldStub_processAttributeEvent);
-                    TRACE_ERR("Unexpected notification request of attribute ID [ %d ] received in Stub [ %s ]!", updId, StubAddress::convAddressToPath(getAddress()).getString());
-                    ASSERT(false);
-                }
-#endif // _DEBUG
-                validUpdate = NEService::eResultType::DataInvalid;
-                updId       = NELocalHelloWorld::eMessageIDs::MsgId_NotProcessed;
-                break;
+            if ( NEService::isResponseId(static_cast<msg_id>(updId)) == false )
+            {
+                TRACE_SCOPE(generated_src_LocalHelloWorldStub_processAttributeEvent);
+                TRACE_ERR("Unexpected notification request of attribute ID [ %d ] received in Stub [ %s ]!", updId, StubAddress::convAddressToPath(getAddress()).getString());
+                ASSERT(false);
             }
-
-            if (updId != NELocalHelloWorld::eMessageIDs::MsgId_NotProcessed)
-                sendUpdateEvent( static_cast<msg_id>(updId), args, validUpdate );
+#endif // _DEBUG
         }
     }
 }

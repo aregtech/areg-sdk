@@ -21,7 +21,7 @@ void ClientComponent::DeleteComponent(Component & compObject, const NERegistry::
 }
 
 ClientComponent::ClientComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component         (owner, entry.mRoleName)
+    : Component         ( entry, owner )
 
     , mClientMain       ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )
     , mClientSecondary  ( entry.mDependencyServices[1].mRoleName, static_cast<Component &>(self()) )

@@ -54,7 +54,7 @@ Component * DirectChatService::CreateComponent( const NERegistry::ComponentEntry
 {
     PageChat * page = reinterpret_cast<PageChat *>(entry.getComponentData().alignClsPtr.mElement);
     ASSERT( page != nullptr );
-    return ( page != nullptr ? new DirectChatService(owner, entry, static_cast<ChatPrticipantHandler &>(*page) ) : nullptr);
+    return ( page != nullptr ? new DirectChatService(entry, owner, static_cast<ChatPrticipantHandler &>(*page) ) : nullptr);
 }
 
 void DirectChatService::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry )
@@ -62,17 +62,13 @@ void DirectChatService::DeleteComponent( Component & compObject, const NERegistr
     delete (&compObject);
 }
 
-DirectChatService::DirectChatService( ComponentThread & masterThread, const NERegistry::ComponentEntry & entry, ChatPrticipantHandler & handlerParticipant )
-    : Component           ( masterThread, entry.mRoleName)
+DirectChatService::DirectChatService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread, ChatPrticipantHandler & handlerParticipant )
+    : Component           ( entry, ownerThread )
     , DirectMessagerStub  ( static_cast<Component &>(self()) )
 
     , mPaticipantsHandler   ( handlerParticipant )
     , mListClients          ( )
     , mChatParticipant      ( static_cast<Component &>(self()), entry.mRoleName, handlerParticipant )
-{
-}
-
-DirectChatService::~DirectChatService( void )
 {
 }
 

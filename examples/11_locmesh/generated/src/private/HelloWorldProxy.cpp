@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     10.12.2022  04:36:32 GMT+01:00
+ * Generated at     18.12.2022  09:29:45 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/private/HelloWorldProxy.hpp
@@ -78,7 +78,8 @@ HelloWorldProxy::HelloWorldProxy( const String & roleName, DispatcherThread * ow
 /************************************************************************
  * Parameters
  ************************************************************************/
-    , mParamclientInfo    (  )
+    , mParamclientName    (  )
+    , mParamclientId      (  )
     , mParammaxNumber     (  )
 {
 }
@@ -188,7 +189,8 @@ void HelloWorldProxy::updateData( HelloWorldResponseEvent & eventElem, NEHelloWo
      * Update Response parameters
      ************************************************************************/
     case NEHelloWorld::eMessageIDs::MsgId_responseHelloWorld:
-        stream >> mParamclientInfo;
+        stream >> mParamclientName;
+        stream >> mParamclientId;
         break;
 
     /************************************************************************

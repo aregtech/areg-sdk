@@ -45,7 +45,7 @@ protected:
     virtual void shutdownComponent( ComponentThread & comThread );
 
 private:
-    ChatParticipantService( ComponentThread & masterThread, const NERegistry::ComponentEntry & entry, ChatPrticipantHandler & handlerParticipants );
+    ChatParticipantService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread, ChatPrticipantHandler & handlerParticipants );
     virtual ~ChatParticipantService( void );
 
 //////////////////////////////////////////////////////////////////////////

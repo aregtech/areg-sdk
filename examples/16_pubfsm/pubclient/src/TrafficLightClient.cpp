@@ -31,7 +31,7 @@ void TrafficLightClient::DeleteComponent(Component & compObject, const NERegistr
 }
 
 TrafficLightClient::TrafficLightClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component                     (owner, entry.mRoleName)
+    : Component                     ( entry, owner )
     , TrafficControllerClientBase   (entry.mDependencyServices[0].mRoleName)
     , mIsEastWest                   (entry.getComponentData().alignBool.mElement)
 {

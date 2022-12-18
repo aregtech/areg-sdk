@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  13:59:46 GMT+02:00
+ * Generated at     18.12.2022  15:17:30 GMT+01:00
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
  *
  * \file            generated/src/LocalHelloWorldClientBase.hpp
@@ -40,9 +40,7 @@ class DispatcherThread;
  *              Client base object. This object should be inherited
  *              and overrides should be implemented.
  *
- *              Simple Service Interface to demonstrate working features of AREG SDK.
- *              This interface serves only local components and can be duplicated in other processes.
- *              		
+ *              A Local Service Interface to demonstrate working features of AREG SDK.
  **/
 class LocalHelloWorldClientBase  : public IEProxyListener
 {
@@ -51,31 +49,38 @@ class LocalHelloWorldClientBase  : public IEProxyListener
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initialize LocalHelloWorld Service Interface client object.
-     *          Specifies used service and owner thread.
-     * \param   roleName    The role name assigned to LocalHelloWorld servicing component object.
-     * \param   ownerThread The name of component owner thread to dispatch messages.
-     *                      If nullptr, all messages are dispatched in current component thread.
+     * \brief   Initialize LocalHelloWorld Service client object by specifying the
+     *          dependency of service by role name and the client owner thread name.
+     * \param   roleName    The dependent service LocalHelloWorld role name.
+     * \param   ownerThread The name of client owner thread. If empty, assign current thread.
      **/
     LocalHelloWorldClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
 
     /**
-     * \brief   Initialize LocalHelloWorld Service Interface client object.
-     *          Specifies used service and owner thread.
-     * \param   roleName    The role name assigned to LocalHelloWorld servicing component object.
-     * \param   ownerThread The instance of component owner thread to dispatch messages.
+     * \brief   Initialize LocalHelloWorld Service client object by specifying the
+     *          dependency of service by role name and the client owner thread.
+     * \param   roleName    The dependent service LocalHelloWorld role name.
+     * \param   ownerThread The instance of client owner thread.
      **/
     LocalHelloWorldClientBase( const String & roleName, DispatcherThread & ownerThread );
 
     /**
-     * \brief   Initialize LocalHelloWorld Service Interface client object.
-     *          Specifies used service and owner component.
-     * \param   roleName    The role name assigned to LocalHelloWorld servicing component object.
-     * \param   owner       The instance of client owner component. The component object should be already initialized.
-     * \note    When this constructor is used, it is important that the Component object is already initialized.
-     *          and the component thread is set.
+     * \brief   Initialize LocalHelloWorld Service client object by specifying the
+     *          dependency of service by role name and the client owner component.
+     * \param   roleName    The dependent service LocalHelloWorld role name.
+     * \param   owner       The instance of client owner component.
+     * \note    It is important that the Component object is already initialized.
      **/
     LocalHelloWorldClientBase( const String & roleName, Component & owner );
+    
+    /**
+     * \brief   Initialize LocalHelloWorld Service client object by specifying the
+     *          dependency of service by registered dependency entry and the owner component object.
+     * \param   dependency  The instance of registered service LocalHelloWorld dependency entry.
+     * \param   owner       The instance of client owner component.
+     * \note    It is important that the Component object is already initialized.
+     **/
+    LocalHelloWorldClientBase( const NERegistry::DependencyEntry & dependency, Component & owner );
 
     /**
      * \brief   Destructor.
@@ -122,84 +127,6 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
 
-/************************************************************************
- * Attribute ConnectedClients functions
- ************************************************************************/
-    /**
-     * \brief   Returns true if value of ConnectedClients attribute is valid.
-     *          If Update Notification is disabled, this method will return false.
-     **/
-    inline bool isConnectedClientsValid( void ) const;
-    /**
-     * \brief   Returns the value of ConnectedClients attribute.
-     *          To get valid value, the Update Notification should be enabled.
-     *          Attribute ConnectedClients description:
-     *          The list of connected clients. Updated each time when new client requests to output Hello World message.
-     * \param   state   On returns, contains the validation flag of attribute data.
-     *                  Check validation flag before use attribute value.
-     * \see     isConnectedClientsValid, notifyConnectedClientsUpdate, onConnectedClientsUpdate
-     **/
-    inline const NELocalHelloWorld::ConnectionList & getConnectedClients( NEService::eDataStateType & state ) const;
-    /**
-     * \brief   Call to enable or disable receiving notifications on ConnectedClients attribute update.
-     *          Once notification is enabled and the data is updated,
-     *          the getConnectedClients method will return valid data
-     *          Attribute ConnectedClients description:
-     *          The list of connected clients. Updated each time when new client requests to output Hello World message.
-     * \param   notify  If true, notification will be enable. If false, notification is disabled
-     * \see     isConnectedClientsValid, getConnectedClients, onConnectedClientsUpdate
-     **/
-    inline void notifyOnConnectedClientsUpdate( bool notify = true );
-    /**
-     * \brief   Triggered, when ConnectedClients attribute is updated. The function contains
-     *          attribute value and validation flag. When notification is enabled,
-     *          the method should be overwritten in derived class.
-     *          Attributes ConnectedClients description:
-     *          The list of connected clients. Updated each time when new client requests to output Hello World message.
-     * \param   ConnectedClients    The value of ConnectedClients attribute.
-     * \param   state               The data validation flag.
-     **/
-    virtual void onConnectedClientsUpdate( const NELocalHelloWorld::ConnectionList & ConnectedClients, NEService::eDataStateType state );
-
-/************************************************************************
- * Attribute RemainOutput functions
- ************************************************************************/
-    /**
-     * \brief   Returns true if value of RemainOutput attribute is valid.
-     *          If Update Notification is disabled, this method will return false.
-     **/
-    inline bool isRemainOutputValid( void ) const;
-    /**
-     * \brief   Returns the value of RemainOutput attribute.
-     *          To get valid value, the Update Notification should be enabled.
-     *          Attribute RemainOutput description:
-     *          Remaining number of outputs to print Hello World.
-     * \param   state   On returns, contains the validation flag of attribute data.
-     *                  Check validation flag before use attribute value.
-     * \see     isRemainOutputValid, notifyRemainOutputUpdate, onRemainOutputUpdate
-     **/
-    inline short getRemainOutput( NEService::eDataStateType & state ) const;
-    /**
-     * \brief   Call to enable or disable receiving notifications on RemainOutput attribute update.
-     *          Once notification is enabled and the data is updated,
-     *          the getRemainOutput method will return valid data
-     *          Attribute RemainOutput description:
-     *          Remaining number of outputs to print Hello World.
-     * \param   notify  If true, notification will be enable. If false, notification is disabled
-     * \see     isRemainOutputValid, getRemainOutput, onRemainOutputUpdate
-     **/
-    inline void notifyOnRemainOutputUpdate( bool notify = true );
-    /**
-     * \brief   Triggered, when RemainOutput attribute is updated. The function contains
-     *          attribute value and validation flag. When notification is enabled,
-     *          the method should be overwritten in derived class.
-     *          Attributes RemainOutput description:
-     *          Remaining number of outputs to print Hello World.
-     * \param   RemainOutput    The value of RemainOutput attribute.
-     * \param   state           The data validation flag.
-     **/
-    virtual void onRemainOutputUpdate( short RemainOutput, NEService::eDataStateType state );
-
 //////////////////////////////////////////////////////////////////////////
 // LocalHelloWorld Interface Requests / Responses / Broadcasts
 //////////////////////////////////////////////////////////////////////////
@@ -212,10 +139,9 @@ public:
      * \brief   Request call.
      *          Request to print hello world
      * \param   roleName    The role name of client component that requested to print hello world
-     * \return  The sequence count number of call
-     * \see     responseHelloWorld
+     * \see     Has no response
      **/
-    inline unsigned int requestHelloWorld( const String & roleName );
+    inline void requestHelloWorld( const String & roleName );
     /**
      * \brief   Overwrite to handle error of HelloWorld request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -231,7 +157,7 @@ public:
      *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientInfo  The client information set by servicing component. If empty or invalid ID, the message output failed.
-     * \see     requestHelloWorld
+     * \note    No request is associated.
      **/
     virtual void responseHelloWorld( const NELocalHelloWorld::sConnectedClient & clientInfo );
     /**
@@ -437,49 +363,13 @@ inline const Version & LocalHelloWorldClientBase::getServiceVersion( void ) cons
 }
 
 /************************************************************************
- * Attribute inline functions
- ************************************************************************/
-
-inline bool LocalHelloWorldClientBase::isConnectedClientsValid( void ) const
-{
-    ASSERT(mProxy != nullptr);
-   return mProxy->isConnectedClientsValid( );
-}
-inline const NELocalHelloWorld::ConnectionList & LocalHelloWorldClientBase::getConnectedClients( NEService::eDataStateType & state ) const
-{
-    ASSERT(mProxy != nullptr);
-    return mProxy->getConnectedClients( state );
-}
-
-inline void LocalHelloWorldClientBase::notifyOnConnectedClientsUpdate( bool notify /* = true */ )
-{
-    LocalHelloWorldClientBase::notifyOn( NELocalHelloWorld::eMessageIDs::MsgId_ConnectedClients, notify, false );
-}
-
-inline bool LocalHelloWorldClientBase::isRemainOutputValid( void ) const
-{
-    ASSERT(mProxy != nullptr);
-   return mProxy->isRemainOutputValid( );
-}
-inline short LocalHelloWorldClientBase::getRemainOutput( NEService::eDataStateType & state ) const
-{
-    ASSERT(mProxy != nullptr);
-    return mProxy->getRemainOutput( state );
-}
-
-inline void LocalHelloWorldClientBase::notifyOnRemainOutputUpdate( bool notify /* = true */ )
-{
-    LocalHelloWorldClientBase::notifyOn( NELocalHelloWorld::eMessageIDs::MsgId_RemainOutput, notify, false );
-}
-
-/************************************************************************
  * Request calls
  ************************************************************************/
 
-inline unsigned int LocalHelloWorldClientBase::requestHelloWorld( const String & roleName )
+inline void LocalHelloWorldClientBase::requestHelloWorld( const String & roleName )
 {
     ASSERT(mProxy != nullptr);
-    return mProxy->requestHelloWorld( static_cast<IENotificationEventConsumer &>(self()), roleName );
+    mProxy->requestHelloWorld( roleName );
 }
 
 /************************************************************************

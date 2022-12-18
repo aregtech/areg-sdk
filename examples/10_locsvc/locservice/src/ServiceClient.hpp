@@ -64,14 +64,9 @@ protected:
 protected:
 
     /**
-     * \brief   Response callback.
-     *          The response to hello world request.
-     *          Overwrite, if need to handle Response call of server object.
-     *          This call will be automatically triggered, on every appropriate request call
-     * \param   clientInfo  The client information set by servicing component. If empty or invalid ID, the message output failed.
-     * \see     requestHelloWorld
+     * \brief   The response to hello world request.
      **/
-    virtual void responseHelloWorld( const NEHelloWorld::sConnectedClient & clientInfo ) override;
+    virtual void responseHelloWorld( void );
 
     /**
      * \brief   Server broadcast.
@@ -118,7 +113,6 @@ private:
 // member variables
 //////////////////////////////////////////////////////////////////////////
     Timer           mTimer; //!< The timer to trigger to send request to output message
-    unsigned int    mID;    //!< The ID given by service.
 
 //////////////////////////////////////////////////////////////////////////
 // forbidden calls

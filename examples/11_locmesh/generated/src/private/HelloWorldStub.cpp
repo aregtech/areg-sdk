@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     10.12.2022  04:36:32 GMT+01:00
+ * Generated at     18.12.2022  09:29:45 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/HelloWorldStub.hpp
@@ -147,12 +147,13 @@ void HelloWorldStub::errorRequest( unsigned int msgId, bool msgCancel )
  * Send responses
  ************************************************************************/
 
-void HelloWorldStub::responseHelloWorld( const NEHelloWorld::sConnectedClient & clientInfo )
+void HelloWorldStub::responseHelloWorld( const String & clientName, unsigned int clientId )
 {
     static const NEHelloWorld::eMessageIDs msgId = NEHelloWorld::eMessageIDs::MsgId_responseHelloWorld;
     EventDataStream args(EventDataStream::eEventData::EventDataInternal);
     IEOutStream & stream = args.getStreamForWrite();
-    stream << clientInfo;
+    stream << clientName;
+    stream << clientId;
     sendResponseEvent( static_cast<msg_id>(msgId), args );
 }
 

@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  13:59:49 GMT+02:00
+ * Generated at     18.12.2022  15:17:33 GMT+01:00
  *                  Create by AREG SDK code generator tool from source SystemShutdown.
  *
  * \file            generated/src/private/SystemShutdownProxy.hpp
@@ -38,9 +38,7 @@ class SystemShutdownResponseEvent;
  *              to each client running in the thread instance.
  *
  *              Simple Service Interface to demonstrate working features of AREG SDK.
- *              This service demonstrates the usage in combination with other services.
- *              It also can be used by any other object that has interest in system shutdown state.
- *              System run and shutdown service.
+ *              This service demonstrates the usage of attribute.
  **/
 class SystemShutdownProxy   : public ProxyBase
 {
@@ -137,7 +135,7 @@ public:
      * \brief   Returns the value of ServiceState attribute.
      *          To get valid value, the Update Notification should be enabled. 
      *          Attribute ServiceState description:
-     *          Describes the current state of service.
+     *          Describes the system availability state
      * \param   state   On returns, contains the validation flag of attribute data.
      *                  Check validation flag before use attribute value.
      **/
@@ -149,6 +147,13 @@ public:
 /************************************************************************
  * Requests
  ************************************************************************/
+    /**
+     * \brief   Request call.
+     *          The request to shutdown the system.
+     * \see     Has no Response.
+     **/
+    void requestSystemShutdown( void );
+
 //////////////////////////////////////////////////////////////////////////
 // Operations.
 //////////////////////////////////////////////////////////////////////////
@@ -285,7 +290,7 @@ private:
  ************************************************************************/
     /**
      * \brief   ServiceState attribute value.
-     *          Describes the current state of service.
+     *          Describes the system availability state
      **/
     NESystemShutdown::eServiceState mServiceState;
 

@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  13:59:46 GMT+02:00
+ * Generated at     18.12.2022  15:17:30 GMT+01:00
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
  *
  * \file            generated/src/private/LocalHelloWorldEvents.hpp

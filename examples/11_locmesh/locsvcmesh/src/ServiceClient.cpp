@@ -65,12 +65,12 @@ bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
     }
 }
 
-void ServiceClient::responseHelloWorld(const NEHelloWorld::sConnectedClient & clientInfo)
+void ServiceClient::responseHelloWorld( const String & clientName, unsigned int clientId )
 {
     TRACE_SCOPE(examples_11_locsvcmesh_ServiceClient_responseHelloWorld);
-    TRACE_DBG("Service [ %s ]: Made output of [ %s ], client ID [ %d ]", getServiceRole().getString(), clientInfo.ccName.getString(), clientInfo.ccID);
-    ASSERT(clientInfo.ccName == mTimer.getName());
-    mID = clientInfo.ccID;
+    TRACE_DBG("Service [ %s ]: Made output of [ %s ], client ID [ %d ]", getServiceRole().getString(), clientName.getString(), clientId);
+    ASSERT(clientName == mTimer.getName());
+    mID = clientId;
 }
 
 void ServiceClient::broadcastReachedMaximum( int maxNumber )

@@ -34,11 +34,11 @@ BEGIN_MODEL(_modelName)
     // define console service thread.
     BEGIN_REGISTER_THREAD( "ConsoleServiceThread", NECommon::WATCHDOG_IGNORE)
         // Define the console service
-        BEGIN_REGISTER_COMPONENT( "ConsoleService", ConsoleService)
+        BEGIN_REGISTER_COMPONENT( ConsoleService::SERVICE_NAME, ConsoleService)
             // register dummy 'empty service'.
             REGISTER_IMPLEMENT_SERVICE( NEService::EmptyServiceName, NEService::EmptyServiceVersion )
         // end of component description
-        END_REGISTER_COMPONENT( "ConsoleService" )
+        END_REGISTER_COMPONENT( ConsoleService::SERVICE_NAME )
     // end of thread description
     END_REGISTER_THREAD( "ConsoleServiceThread" )
 

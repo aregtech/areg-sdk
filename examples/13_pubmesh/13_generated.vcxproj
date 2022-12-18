@@ -20,6 +20,40 @@
   <PropertyGroup>
     <OutDir>$(OutLibDir)\</OutDir>
   </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="generated\src\private\LocalHelloWorldClientBase.cpp" />
+    <ClCompile Include="generated\src\private\LocalHelloWorldEvents.cpp" />
+    <ClCompile Include="generated\src\private\LocalHelloWorldProxy.cpp" />
+    <ClCompile Include="generated\src\private\LocalHelloWorldStub.cpp" />
+    <ClCompile Include="generated\src\private\NELocalHelloWorld.cpp" />
+    <ClCompile Include="generated\src\private\NEPublicHelloWorld.cpp" />
+    <ClCompile Include="generated\src\private\NESystemShutdown.cpp" />
+    <ClCompile Include="generated\src\private\PublicHelloWorldClientBase.cpp" />
+    <ClCompile Include="generated\src\private\PublicHelloWorldEvents.cpp" />
+    <ClCompile Include="generated\src\private\PublicHelloWorldProxy.cpp" />
+    <ClCompile Include="generated\src\private\PublicHelloWorldStub.cpp" />
+    <ClCompile Include="generated\src\private\SystemShutdownClientBase.cpp" />
+    <ClCompile Include="generated\src\private\SystemShutdownEvents.cpp" />
+    <ClCompile Include="generated\src\private\SystemShutdownProxy.cpp" />
+    <ClCompile Include="generated\src\private\SystemShutdownStub.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="generated\src\LocalHelloWorldClientBase.hpp" />
+    <ClInclude Include="generated\src\LocalHelloWorldStub.hpp" />
+    <ClInclude Include="generated\src\NELocalHelloWorld.hpp" />
+    <ClInclude Include="generated\src\NEPublicHelloWorld.hpp" />
+    <ClInclude Include="generated\src\NESystemShutdown.hpp" />
+    <ClInclude Include="generated\src\private\LocalHelloWorldEvents.hpp" />
+    <ClInclude Include="generated\src\private\LocalHelloWorldProxy.hpp" />
+    <ClInclude Include="generated\src\private\PublicHelloWorldEvents.hpp" />
+    <ClInclude Include="generated\src\private\PublicHelloWorldProxy.hpp" />
+    <ClInclude Include="generated\src\private\SystemShutdownEvents.hpp" />
+    <ClInclude Include="generated\src\private\SystemShutdownProxy.hpp" />
+    <ClInclude Include="generated\src\PublicHelloWorldClientBase.hpp" />
+    <ClInclude Include="generated\src\PublicHelloWorldStub.hpp" />
+    <ClInclude Include="generated\src\SystemShutdownClientBase.hpp" />
+    <ClInclude Include="generated\src\SystemShutdownStub.hpp" />
+  </ItemGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
     <ClCompile>
       <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -38,53 +72,6 @@
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="generated\src\private\LocalHelloWorldClientBase.cpp" />
-    <ClCompile Include="generated\src\private\LocalHelloWorldEvents.cpp" />
-    <ClCompile Include="generated\src\private\LocalHelloWorldProxy.cpp" />
-    <ClCompile Include="generated\src\private\LocalHelloWorldStub.cpp" />
-    <ClCompile Include="generated\src\private\MainRemoteServiceClient.cpp" />
-    <ClCompile Include="generated\src\private\MainServicingComponent.cpp" />
-    <ClCompile Include="generated\src\private\NELocalHelloWorld.cpp" />
-    <ClCompile Include="generated\src\private\LocalServicingComponent.cpp" />
-    <ClCompile Include="generated\src\private\NERemoteRegistry.cpp" />
-    <ClCompile Include="generated\src\private\NESystemShutdown.cpp" />
-    <ClCompile Include="generated\src\private\RemoteRegistryClientBase.cpp" />
-    <ClCompile Include="generated\src\private\RemoteRegistryEvents.cpp" />
-    <ClCompile Include="generated\src\private\RemoteRegistryProxy.cpp" />
-    <ClCompile Include="generated\src\private\RemoteRegistryStub.cpp" />
-    <ClCompile Include="generated\src\private\RemoteServicingComponent.cpp" />
-    <ClCompile Include="generated\src\private\LocalServiceClient.cpp" />
-    <ClCompile Include="generated\src\private\RemoteServiceClient.cpp" />
-    <ClCompile Include="generated\src\private\SystemShutdownClientBase.cpp" />
-    <ClCompile Include="generated\src\private\SystemShutdownEvents.cpp" />
-    <ClCompile Include="generated\src\private\SystemShutdownProxy.cpp" />
-    <ClCompile Include="generated\src\private\SystemShutdownStub.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="generated\src\NECommon.hpp" />
-    <ClInclude Include="generated\src\LocalHelloWorldClientBase.hpp" />
-    <ClInclude Include="generated\src\LocalHelloWorldStub.hpp" />
-    <ClInclude Include="generated\src\MainRemoteServiceClient.hpp" />
-    <ClInclude Include="generated\src\MainServicingComponent.hpp" />
-    <ClInclude Include="generated\src\NELocalHelloWorld.hpp" />
-    <ClInclude Include="generated\src\NERemoteRegistry.hpp" />
-    <ClInclude Include="generated\src\NESystemShutdown.hpp" />
-    <ClInclude Include="generated\src\private\LocalHelloWorldEvents.hpp" />
-    <ClInclude Include="generated\src\private\LocalHelloWorldProxy.hpp" />
-    <ClInclude Include="generated\src\LocalServicingComponent.hpp" />
-    <ClInclude Include="generated\src\private\RemoteRegistryEvents.hpp" />
-    <ClInclude Include="generated\src\private\RemoteRegistryProxy.hpp" />
-    <ClInclude Include="generated\src\private\SystemShutdownEvents.hpp" />
-    <ClInclude Include="generated\src\private\SystemShutdownProxy.hpp" />
-    <ClInclude Include="generated\src\RemoteRegistryClientBase.hpp" />
-    <ClInclude Include="generated\src\RemoteRegistryStub.hpp" />
-    <ClInclude Include="generated\src\RemoteServicingComponent.hpp" />
-    <ClInclude Include="generated\src\LocalServiceClient.hpp" />
-    <ClInclude Include="generated\src\RemoteServiceClient.hpp" />
-    <ClInclude Include="generated\src\SystemShutdownClientBase.hpp" />
-    <ClInclude Include="generated\src\SystemShutdownStub.hpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

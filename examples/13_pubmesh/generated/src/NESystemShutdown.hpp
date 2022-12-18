@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  13:59:49 GMT+02:00
+ * Generated at     18.12.2022  15:17:33 GMT+01:00
  *                  Create by AREG SDK code generator tool from source SystemShutdown.
  *
  * \file            generated/src/NESystemShutdown.hpp
@@ -30,6 +30,7 @@
 //////////////////////////////////////////////////////////////////////////
 #include "areg/base/IEIOStream.hpp"
 #include "areg/base/Version.hpp"
+#include "areg//component/NERegistry.hpp"
 #include "areg/component/NEService.hpp"
 
 #include <utility>
@@ -47,9 +48,7 @@
  *          types and structures message IDs, global static methods.
  *
  *          Simple Service Interface to demonstrate working features of AREG SDK.
- *          This service demonstrates the usage in combination with other services.
- *          It also can be used by any other object that has interest in system shutdown state.
- *          System run and shutdown service.
+ *          This service demonstrates the usage of attribute.
  *
  **/
 namespace   NESystemShutdown
@@ -69,12 +68,6 @@ namespace   NESystemShutdown
      **/
     const       Version InterfaceVersion{ 1, 0, 0 };
 
-    /**
-     * \brief   The waiting timeout in milliseconds before shutting down application.
-     *          NESystemShutdown::ShutdownWaitTimeout
-     **/
-    constexpr unsigned int    ShutdownWaitTimeout = 100;
-
 /************************************************************************/
 // Service Interface data types
 /************************************************************************/
@@ -87,21 +80,13 @@ namespace   NESystemShutdown
     enum class eServiceState
     {
         /**
-         * \brief   The service is invalid, not ready to receive messages.
+         * \brief   Service shutdown state.
          **/
-          ServiceInvalid
+          ServiceShutdown = 0
         /**
          * \brief   Service is active, ready to communicate
          **/
-        , ServiceReady
-        /**
-         * \brief   Service is unavailable
-         **/
-        , ServiceUnavailable
-        /**
-         * \brief   Service shutting down.
-         **/
-        , ServiceShutdown
+        , ServiceReady    = 1
     };
     /**
      * \brief   Returns string value of NESystemShutdown::eServiceState
@@ -120,6 +105,11 @@ namespace   NESystemShutdown
     /************************************************************************
      * Request IDs
      ************************************************************************/
+        /**
+         * \brief   Request ID: MsgId_requestSystemShutdown
+         *          The request to shutdown the system.
+         **/
+          MsgId_requestSystemShutdown = NEService::REQUEST_ID_FIRST   // void requestSystemShutdown( void );
 
     /************************************************************************
      * Response IDs
@@ -127,25 +117,15 @@ namespace   NESystemShutdown
     /************************************************************************
      * Broadcast IDs
      ************************************************************************/
-        /**
-         * \brief   Broadcast ID: MsgId_broadcastServiceUnavailable
-         *          Sent to notify the service unavailable state. All clients should be unregistered to start the shutdown procedure.
-         **/
-          MsgId_broadcastServiceUnavailable   = NEService::RESPONSE_ID_FIRST  // void broadcastServiceUnavailable( void );
-        /**
-         * \brief   Broadcast ID: MsgId_broadcastServiceShutdown
-         *          Notifies the system is shutting down so that application should disconnect and close.
-         **/
-        , MsgId_broadcastServiceShutdown                                        // void broadcastServiceShutdown( void );
 
     /************************************************************************
      * Attributes IDs
      ************************************************************************/
         /**
          * \brief   Attribute ID: MsgId_ServiceState
-         *          Describes the current state of service.
+         *          Describes the system availability state
          **/
-        , MsgId_ServiceState                  = NEService::ATTRIBUTE_ID_FIRST // NESystemShutdown::eServiceState mServiceState;
+        , MsgId_ServiceState          = NEService::ATTRIBUTE_ID_FIRST // NESystemShutdown::eServiceState mServiceState;
 
     /************************************************************************
      * Reserved constant IDs
@@ -153,11 +133,11 @@ namespace   NESystemShutdown
         /**
          * \brief   ID of empty function
          **/
-        , MsgId_NotProcessed                  = NEService::INVALID_MESSAGE_ID
+        , MsgId_NotProcessed          = NEService::INVALID_MESSAGE_ID
         /**
          * \brief   ID of invalid call
          **/
-        , MsgId_Invalid                       = NEService::RESPONSE_ID_NONE
+        , MsgId_Invalid               = NEService::RESPONSE_ID_NONE
 
     };
     /**
@@ -207,14 +187,10 @@ inline const char * NESystemShutdown::getString( NESystemShutdown::eServiceState
 {
     switch ( enumValue )
     {
-    case    NESystemShutdown::eServiceState::ServiceInvalid:
-        return "NESystemShutdown::eServiceState::ServiceInvalid";
-    case    NESystemShutdown::eServiceState::ServiceReady:
-        return "NESystemShutdown::eServiceState::ServiceReady";
-    case    NESystemShutdown::eServiceState::ServiceUnavailable:
-        return "NESystemShutdown::eServiceState::ServiceUnavailable";
     case    NESystemShutdown::eServiceState::ServiceShutdown:
         return "NESystemShutdown::eServiceState::ServiceShutdown";
+    case    NESystemShutdown::eServiceState::ServiceReady:
+        return "NESystemShutdown::eServiceState::ServiceReady";
     default:
         ASSERT(false);
         return "ERROR: Unexpected NESystemShutdown::eServiceState value!";
@@ -228,10 +204,8 @@ inline const char * NESystemShutdown::getString( NESystemShutdown::eMessageIDs m
 {
     switch ( msgId )
     {
-    case    NESystemShutdown::eMessageIDs::MsgId_broadcastServiceUnavailable:
-        return "NESystemShutdown::eMessageIDs::MsgId_broadcastServiceUnavailable";
-    case    NESystemShutdown::eMessageIDs::MsgId_broadcastServiceShutdown:
-        return "NESystemShutdown::eMessageIDs::MsgId_broadcastServiceShutdown";
+    case    NESystemShutdown::eMessageIDs::MsgId_requestSystemShutdown:
+        return "NESystemShutdown::eMessageIDs::MsgId_requestSystemShutdown";
     case    NESystemShutdown::eMessageIDs::MsgId_ServiceState:
         return "NESystemShutdown::eMessageIDs::MsgId_ServiceState";
 

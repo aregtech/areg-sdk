@@ -33,7 +33,7 @@ public:
     inline void SetOwnerData(const String & nickName, uint32_t cookie );
 
 private:
-    DirectConnectionService( ComponentThread & masterThread, const char * const roleName, NEMemory::uAlign data );
+    DirectConnectionService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread, NEMemory::uAlign data );
     virtual ~DirectConnectionService( void );
 
 //////////////////////////////////////////////////////////////////////////
