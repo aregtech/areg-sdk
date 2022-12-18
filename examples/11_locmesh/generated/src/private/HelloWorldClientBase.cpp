@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     10.12.2022  04:36:32 GMT+01:00
+ * Generated at     18.12.2022  09:29:45 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/HelloWorldClientBase.hpp
@@ -192,8 +192,9 @@ void HelloWorldClientBase::processNotificationEvent( NotificationEvent & eventEl
          ************************************************************************/
             case NEHelloWorld::eMessageIDs::MsgId_responseHelloWorld:
                 {
-                    const NEHelloWorld::sConnectedClient & clientInfo = mProxy->getParamclientInfo();
-                    responseHelloWorld( clientInfo );
+                    const String & clientName = mProxy->getParamclientName();
+                    unsigned int clientId = mProxy->getParamclientId();
+                    responseHelloWorld( clientName, clientId );
                 }
                 break;
 
@@ -311,7 +312,7 @@ void HelloWorldClientBase::requestShutdownServiceFailed( NEService::eResultType 
 }
 
 DEF_TRACE_SCOPE(generated_src_HelloWorldClientBase_responseHelloWorld);
-void HelloWorldClientBase::responseHelloWorld( const NEHelloWorld::sConnectedClient & /* clientInfo */ )
+void HelloWorldClientBase::responseHelloWorld( const String & /* clientName */, unsigned int /* clientId */ )
 {
     TRACE_SCOPE(generated_src_HelloWorldClientBase_responseHelloWorld);
     TRACE_WARN("The response responseHelloWorld (value = %u) method of proxy [ %s ] client HelloWorldClientBase is not implemented!"

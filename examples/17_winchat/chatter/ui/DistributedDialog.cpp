@@ -18,7 +18,7 @@
 #include "chatter/ui/PageChat.hpp"
 #include "chatter/NEDistributedApp.hpp"
 #include "chatter/services/NetworkSetup.hpp"
-#include "chatter/services/ConnectionServicing.hpp"
+#include "chatter/services/ConnectionService.hpp"
 #include "generated/NECommon.hpp"
 #include "generated/NEConnectionManager.hpp"
 #include "areg/appbase/Application.hpp"

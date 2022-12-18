@@ -36,11 +36,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="pubclients\src\LocalServiceComponent.cpp" />
     <ClCompile Include="pubclients\src\main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="pubclients\src\LocalServiceComponent.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

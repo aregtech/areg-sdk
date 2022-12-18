@@ -76,10 +76,10 @@ public:
      * \brief   Initialization constructor.
      *          Creates Component Info object by passing the Master Thread
      *          of Component (Component Thread) and the role name of Component.
-     * \param   masterThread    The Master Thread of Component (Component Thread)
-     * \param   roleName        The Role Name of component, must not be empty
+     * \param   ownerThread The Master Thread of Component (Component Thread)
+     * \param   roleName    The Role Name of component, must not be empty
      **/
-    ComponentInfo( ComponentThread & masterThread, const String & roleName );
+    ComponentInfo( ComponentThread & ownerThread, const String & roleName );
 
     /**
      * \brief   Destructor

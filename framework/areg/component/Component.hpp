@@ -153,28 +153,25 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief	Constructor. If master thread is specified, all events and functions
-     *          will be triggered within specified thread context.
-     * \param	masterThread	The reference to master thread object
-     *                          to dispatch and trigger functions.
-     * \param	roleName	    Role Name of component, which should be
-     *                          unique within one process.
+     * \brief	Instantiates the component object and dispatches the events in the specified thread.
+     * \param	roleName	Unique role name of the component.
+     * \param	ownerThread The instance of the thread, which owns the component.
      **/
-    Component( ComponentThread & masterThread, const String & roleName );
+    Component( const String & roleName, ComponentThread & ownerThread );
+
     /**
-     * \brief   MUST be instantiated in Component Thread!!!
+     * \brief	Instantiates the component object and dispatches the events in the specified thread.
+     * \param	regEntry	The registry entry object with the role name of the component.
+     * \param	ownerThread The instance of the thread, which owns the component.
      **/
+    Component( const NERegistry::ComponentEntry & regEntry, ComponentThread & ownerThread );
+
     /**
-     * \brief	Constructor. It assumes that the current thread is a master thread.
-     *          Do not initialize manually component in worker threads.
-     * \param	roleName	    Role Name of component, which should be
-     *                          unique within one process.
+     * \brief	Instantiates the component object and dispatches the events in the current thread.
+     * \param	roleName	Unique role name of the component.
      **/
     explicit Component( const String & roleName );
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~Component( void );
 
 //////////////////////////////////////////////////////////////////////////
@@ -237,11 +234,11 @@ public:
      *                          Should be unique within system.
      * \param   consumer        Worker Thread consumer object, which
      *                          start and stop functions will be triggered.
-     * \param   masterThread    The component thread, which owns worker thread,
+     * \param   ownerThread     The component thread, which owns worker thread,
      * \param   watchdogTimeout The watchdog timeout in milliseconds.
      * \return	Pointer to created worker thread object.
      **/
-    WorkerThread * createWorkerThread( const String & threadName, IEWorkerThreadConsumer & consumer, ComponentThread & masterThread, uint32_t watchdogTimeout );
+    WorkerThread * createWorkerThread( const String & threadName, IEWorkerThreadConsumer & consumer, ComponentThread & ownerThread, uint32_t watchdogTimeout );
 
     /**
      * \brief	Stops and deletes worker thread by given name
@@ -299,21 +296,11 @@ public:
     inline const ListServers & getServiceList( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
-// Protected members.
+// Hidden members
 //////////////////////////////////////////////////////////////////////////
-protected:
+private:
 /************************************************************************/
-// Protected methods
-/************************************************************************/
-
-    /**
-     * \brief   Returns component information object.
-     **/
-    inline const ComponentInfo & getComponentInfo( void ) const;
-
-protected:
-/************************************************************************/
-// Protected member variables
+// Hidden member variables
 /************************************************************************/
 
     /**
@@ -322,15 +309,11 @@ protected:
      **/
     ComponentInfo         mComponentInfo;
 
-private:
     /**
      * \brief   The calculated number of component.
      **/
     unsigned int        mMagicNum;
 
-//////////////////////////////////////////////////////////////////////////
-// Private Hidden members
-//////////////////////////////////////////////////////////////////////////
 private:
 /************************************************************************/
 // Private methods
@@ -400,11 +383,6 @@ inline DispatcherThread * Component::findEventConsumer( const RuntimeClassID& wh
 inline const String & Component::getRoleName( void ) const
 {
     return mComponentInfo.getRoleName();
-}
-
-inline const ComponentInfo& Component::getComponentInfo( void ) const
-{
-    return mComponentInfo;
 }
 
 inline const ComponentAddress& Component::getAddress( void ) const

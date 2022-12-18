@@ -28,12 +28,11 @@ void ServiceClient::DeleteComponent(Component & compObject, const NERegistry::Co
 }
 
 ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component             ( owner, entry.mRoleName)
+    : Component             ( entry, owner )
     , HelloWorldClientBase  ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )
     , IETimerConsumer       ( )
 
     , mTimer                (static_cast<IETimerConsumer &>(self()), entry.mRoleName)
-    , mID                   ( 0 )
 {
 }
 
@@ -61,20 +60,17 @@ bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
     return result;
 }
 
-void ServiceClient::responseHelloWorld(const NEHelloWorld::sConnectedClient & clientInfo)
+void ServiceClient::responseHelloWorld( void )
 {
     TRACE_SCOPE(examples_10_locservice_ServiceClient_responseHelloWorld);
-    TRACE_DBG("Greetings from [ %s ] output on console, client ID [ %d ]", clientInfo.ccName.getString(), clientInfo.ccID);
-    ASSERT(clientInfo.ccName == getRoleName());
-    mID = clientInfo.ccID;
+    TRACE_DBG("Received response on request to print greetings from the client");
 }
 
 void ServiceClient::broadcastReachedMaximum( int maxNumber )
 {
     TRACE_SCOPE(examples_10_locservice_ServiceClient_broadcastReachedMaximum );
     TRACE_WARN("Service notify reached maximum number of requests [ %d ], starting shutdown procedure", maxNumber );
-    requestShutdownService(mID, getRoleName());
-    mID = 0;
+    requestShutdownService( );
 }
 
 void ServiceClient::processTimer(Timer & timer)

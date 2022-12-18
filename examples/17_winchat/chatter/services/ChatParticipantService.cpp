@@ -11,7 +11,7 @@ Component * ChatParticipantService::CreateComponent( const NERegistry::Component
 {
     PageChat * page = reinterpret_cast<PageChat *>(entry.getComponentData( ).alignClsPtr.mElement);
     ASSERT( page != nullptr );
-    return (page != nullptr ? new ChatParticipantService( owner, entry, static_cast<ChatPrticipantHandler &>(*page) ) : nullptr);
+    return (page != nullptr ? new ChatParticipantService( entry, owner, static_cast<ChatPrticipantHandler &>(*page) ) : nullptr);
 }
 
 void ChatParticipantService::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry )
@@ -38,8 +38,8 @@ NERegistry::Model ChatParticipantService::GetModel( const NEDirectMessager::sPar
     return model;
 }
 
-ChatParticipantService::ChatParticipantService( ComponentThread & masterThread, const NERegistry::ComponentEntry & entry, ChatPrticipantHandler & handlerParticipants )
-    : Component       ( masterThread, entry.mRoleName )
+ChatParticipantService::ChatParticipantService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread, ChatPrticipantHandler & handlerParticipants )
+    : Component         ( entry, ownerThread )
 
     , mChatParticipant  ( static_cast<Component &>(self()), entry.mDependencyServices[0].mRoleName, handlerParticipants )
 {

@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     10.12.2022  04:36:32 GMT+01:00
+ * Generated at     18.12.2022  09:29:45 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/HelloWorldClientBase.hpp
@@ -167,10 +167,11 @@ public:
      *          The response to hello world request.
      *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
-     * \param   clientInfo  The client information set by servicing component. If empty or invalid ID, the message output failed.
+     * \param   clientName  The name of connected client that requested to output message.
+     * \param   clientId    Thegiven ID of the client that requested to output message.
      * \see     requestHelloWorld
      **/
-    virtual void responseHelloWorld( const NEHelloWorld::sConnectedClient & clientInfo );
+    virtual void responseHelloWorld( const String & clientName, unsigned int clientId );
     /**
      * \brief   Call to enable or disable receiving notifications on HelloWorld response call.
      *          This function is triggered, when client object is interested only on response result

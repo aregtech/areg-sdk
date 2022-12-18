@@ -8,7 +8,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     10.12.2022  04:35:54 GMT+01:00
+ * Generated at     18.12.2022  09:29:18 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/private/HelloWorldEvents.hpp

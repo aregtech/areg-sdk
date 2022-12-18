@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  13:59:49 GMT+02:00
+ * Generated at     18.12.2022  15:17:33 GMT+01:00
  *                  Create by AREG SDK code generator tool from source SystemShutdown.
  *
  * \file            generated/src/SystemShutdownClientBase.hpp
@@ -30,9 +30,10 @@ namespace NESystemShutdown
      * \brief   Initialize request failure function pointers to make error handling
      **/
     typedef void (SystemShutdownClientBase::* FuncRequestFailure) ( NEService::eResultType );
-#ifdef  _DEBUG
-    static FuncRequestFailure failureFunctions = nullptr;
-#endif  // _DEBUG
+    static constexpr FuncRequestFailure failureFunctions[]
+    {
+        &SystemShutdownClientBase::requestSystemShutdownFailed
+    };
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -67,6 +68,15 @@ SystemShutdownClientBase::SystemShutdownClientBase( const String & roleName, Com
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
     , mProxy            ( SystemShutdownProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), owner.getMasterThread()) )
+{
+}
+
+SystemShutdownClientBase::SystemShutdownClientBase( const NERegistry::DependencyEntry & dependency, Component & owner )
+    : IEProxyListener   ( )
+
+    , mIsConnected      ( false )
+    , mCurrSequenceNr   ( 0 )
+    , mProxy            ( SystemShutdownProxy::createProxy(dependency.mRoleName, static_cast<IEProxyListener &>(self()), owner.getMasterThread()) )
 {
 }
 
@@ -206,39 +216,7 @@ void SystemShutdownClientBase::processNotificationEvent( NotificationEvent & eve
         }
         break;
 
-    case NEService::eResultType::RequestOK:
-        {
-            switch (msgId)
-            {
-        /************************************************************************
-         * Trigger response processing
-         ************************************************************************/
-        /************************************************************************
-         * Trigger broadcast processing
-         ************************************************************************/
-            case NESystemShutdown::eMessageIDs::MsgId_broadcastServiceUnavailable:
-                {
-                    broadcastServiceUnavailable(  );
-                }
-                break;
-
-            case NESystemShutdown::eMessageIDs::MsgId_broadcastServiceShutdown:
-                {
-                    broadcastServiceShutdown(  );
-                }
-                break;
-
-            default:
-                {
-                    TRACE_SCOPE(generated_src_SystemShutdownClientBase_processNotificationEvent);
-                    TRACE_ERR("Client object SystemShutdownClientBase of proxy [ %s ] received unexpected Response message ID [ %d ]."
-                                , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
-                                , msgId);
-                    ASSERT(false);
-                }
-                break;
-            }
-        }        
+    case NEService::eResultType::RequestOK:        
         break;
 
     default:
@@ -290,8 +268,17 @@ void SystemShutdownClientBase::requestFailed( NESystemShutdown::eMessageIDs Fail
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason) );
 
-    ASSERT(NESystemShutdown::failureFunctions == nullptr);
-    invalidRequest( FailureMsgId );
+    unsigned int index = static_cast<msg_id>(NESystemShutdown::eMessageIDs::MsgId_Invalid);
+    index = static_cast<msg_id>( NEService::isResponseId(static_cast<unsigned int>(FailureMsgId)) ? NESystemShutdown::getRequestId(FailureMsgId) : FailureMsgId);
+    index = NEService::isRequestId(index)  ? GET_REQ_INDEX(index) : static_cast<msg_id>(NESystemShutdown::eMessageIDs::MsgId_Invalid);
+    if ( index != static_cast<msg_id>(NESystemShutdown::eMessageIDs::MsgId_Invalid) && (index < NESystemShutdown::getInterfaceData().idRequestCount) )
+    {
+        (this->*NESystemShutdown::failureFunctions[index])( FailureReason );
+    }
+    else
+    {
+        invalidRequest( FailureMsgId );
+    }
 }
 
 /************************************************************************
@@ -311,22 +298,14 @@ void SystemShutdownClientBase::onServiceStateUpdate( NESystemShutdown::eServiceS
  * Request failure / Response and Broadcast notifications
  ************************************************************************/
 
-DEF_TRACE_SCOPE(generated_src_SystemShutdownClientBase_broadcastServiceUnavailable);
-void SystemShutdownClientBase::broadcastServiceUnavailable( void )
+DEF_TRACE_SCOPE(generated_src_SystemShutdownClientBase_requestSystemShutdownFailed);
+void SystemShutdownClientBase::requestSystemShutdownFailed( NEService::eResultType FailureReason )
 {
-    TRACE_SCOPE(generated_src_SystemShutdownClientBase_broadcastServiceUnavailable);
-    TRACE_WARN("The broadcast broadcastServiceUnavailable (value = %u) method of proxy [ %s ] client SystemShutdownClientBase is not implemented!"
-                    , static_cast<unsigned int>(NESystemShutdown::eMessageIDs::MsgId_broadcastServiceUnavailable)
-                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
-}
-
-DEF_TRACE_SCOPE(generated_src_SystemShutdownClientBase_broadcastServiceShutdown);
-void SystemShutdownClientBase::broadcastServiceShutdown( void )
-{
-    TRACE_SCOPE(generated_src_SystemShutdownClientBase_broadcastServiceShutdown);
-    TRACE_WARN("The broadcast broadcastServiceShutdown (value = %u) method of proxy [ %s ] client SystemShutdownClientBase is not implemented!"
-                    , static_cast<unsigned int>(NESystemShutdown::eMessageIDs::MsgId_broadcastServiceShutdown)
-                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
+    TRACE_SCOPE(generated_src_SystemShutdownClientBase_requestSystemShutdownFailed);
+    TRACE_WARN("The request requestSystemShutdown (value = %u) method of proxy [ %s ] client SystemShutdownClientBase is failed with reason [ %s ]! Make error handling!"
+                    , static_cast<unsigned int>(NESystemShutdown::eMessageIDs::MsgId_requestSystemShutdown)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
+                    , NEService::getString(FailureReason));
 }
 
 //////////////////////////////////////////////////////////////////////////

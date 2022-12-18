@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     10.12.2022  04:35:54 GMT+01:00
+ * Generated at     18.12.2022  09:29:18 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/private/HelloWorldProxy.hpp
@@ -78,8 +78,7 @@ HelloWorldProxy::HelloWorldProxy( const String & roleName, DispatcherThread * ow
 /************************************************************************
  * Parameters
  ************************************************************************/
-    , mParamclientInfo    (  )
-    , mParammaxNumber     (  )
+    , mParammaxNumber (  )
 {
 }
 
@@ -138,14 +137,10 @@ unsigned int HelloWorldProxy::requestHelloWorld( IENotificationEventConsumer & c
     return mSequenceCount;
 }
     
-void HelloWorldProxy::requestShutdownService( unsigned int clientID, const String & roleName )
+void HelloWorldProxy::requestShutdownService( void )
 {
     static const NEHelloWorld::eMessageIDs msgId = NEHelloWorld::eMessageIDs::MsgId_requestShutdownService;
-    EventDataStream args(EventDataStream::eEventData::EventDataInternal);
-    IEOutStream & stream = args.getStreamForWrite();
-    stream << clientID;
-    stream << roleName;
-    sendRequestEvent( static_cast<unsigned int>(msgId), args, nullptr );
+    sendRequestEvent( static_cast<unsigned int>(msgId), EventDataStream::EmptyData, nullptr );
 }
 /************************************************************************
  * Event processing.
@@ -188,7 +183,6 @@ void HelloWorldProxy::updateData( HelloWorldResponseEvent & eventElem, NEHelloWo
      * Update Response parameters
      ************************************************************************/
     case NEHelloWorld::eMessageIDs::MsgId_responseHelloWorld:
-        stream >> mParamclientInfo;
         break;
 
     /************************************************************************

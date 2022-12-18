@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     10.12.2022  04:35:54 GMT+01:00
+ * Generated at     18.12.2022  09:29:18 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/HelloWorldStub.hpp
@@ -89,11 +89,9 @@ public:
     /**
      * \brief   Request call.
      *          Sent by client to request to shutdown service and the application. This request has no response.
-     * \param   clientID    The ID of client that requests to shutdown. The ID is given by service when first time client requests to output message.
-     * \param   roleName    Service client component role name
      * \note    Has no response
      **/
-    virtual void requestShutdownService( unsigned int clientID, const String & roleName ) = 0;
+    virtual void requestShutdownService( void ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // HelloWorld Interface Responses
@@ -103,10 +101,9 @@ public:
     /**
      * \brief   Response call.
      *          The response to hello world request.
-     * \param   clientInfo  The client information set by servicing component. If empty or invalid ID, the message output failed.
      * \see     requestHelloWorld
      **/
-    virtual void responseHelloWorld( const NEHelloWorld::sConnectedClient & clientInfo );
+    virtual void responseHelloWorld( void );
 
 //////////////////////////////////////////////////////////////////////////
 // HelloWorld Interface Broadcasts

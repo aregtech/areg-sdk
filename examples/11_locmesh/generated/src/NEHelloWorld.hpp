@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     10.12.2022  04:36:32 GMT+01:00
+ * Generated at     18.12.2022  09:29:45 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/NEHelloWorld.hpp
@@ -78,85 +78,6 @@ namespace   NEHelloWorld
 /************************************************************************/
 
 
-    /**
-     * \brief   The dummy structure describing connected client.
-     *          Every field of structure should have default constructor.
-     *          NEHelloWorld::sConnectedClient
-     **/
-    struct sConnectedClient
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Constructor/ destructor
-    ///////////////////////////////////////////////////////////////////////////
-
-        /**
-         * \brief   Default constructor. Every field of structure should have default constructor.
-         **/
-        inline sConnectedClient( void );
-
-        /**
-         * \brief   Initialize sConnectedClient data by setting parameters.
-         **/
-        inline sConnectedClient( const unsigned int & _ccID, const String & _ccName );
-
-        /**
-         * \brief   Copies data from given source. Every filed of structure should have copy constructor.
-         * \param   src     The source of NEHelloWorld::sConnectedClient structure to copy data.
-         **/
-        inline sConnectedClient( const NEHelloWorld::sConnectedClient & src );
-
-        /**
-         * \brief   Moves data from given source. Every filed of structure should have move constructor.
-         * \param   src     The source of NEHelloWorld::sConnectedClient structure to move data.
-         **/
-        inline sConnectedClient( NEHelloWorld::sConnectedClient && src ) noexcept;
-
-        /**
-         * \brief   Default destructor.
-         **/
-        ~sConnectedClient( void ) = default;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Basic operators
-    ///////////////////////////////////////////////////////////////////////////
-
-        /**
-         * \brief   Copies data from given source. Every field of structure should have copy constructor.
-         * \param   src     The source of sConnectedClient structure to copy data.
-         **/
-        inline NEHelloWorld::sConnectedClient & operator = ( const NEHelloWorld::sConnectedClient & src );
-
-        /**
-         * \brief   Moves data from given source. Every field of structure should have move constructor.
-         * \param   src     The source of sConnectedClient structure to move data.
-         **/
-        inline NEHelloWorld::sConnectedClient & operator = ( NEHelloWorld::sConnectedClient && src ) noexcept;
-
-        /**
-         * \brief   Checks equality and returns true if 2 instances of sConnectedClient are equal
-         * \param   other   The instance of sConnectedClient to compare
-         **/ 
-        inline bool operator == ( const NEHelloWorld::sConnectedClient & other ) const;
-
-        /**
-         * \brief   Checks inequality and returns true if 2 instances of sConnectedClient are not equal
-         * \param   other   The instance of sConnectedClient to compare
-         **/ 
-        inline bool operator != ( const NEHelloWorld::sConnectedClient & other ) const;
-    //////////////////////////////////////////////////////////////////////////
-    // sConnectedClient fields
-    ///////////////////////////////////////////////////////////////////////////
-
-        /**
-         * \brief   The ID of client, given by servicing component
-         **/
-         unsigned int    ccID    /* = 0 */;
-        /**
-         * \brief   The role name of client component. Parameter received by client.
-         **/
-         String          ccName;
-    };
-
 /************************************************************************
  * Service Message IDs
  ************************************************************************/
@@ -187,7 +108,7 @@ namespace   NEHelloWorld
          * \brief   Response ID: MsgId_responseHelloWorld
          *          The response to hello world request.
          **/
-        , MsgId_responseHelloWorld        = NEService::RESPONSE_ID_FIRST  // void responseHelloWorld( const NEHelloWorld::sConnectedClient & clientInfo );
+        , MsgId_responseHelloWorld        = NEService::RESPONSE_ID_FIRST  // void responseHelloWorld( const String & clientName, unsigned int clientId );
     /************************************************************************
      * Broadcast IDs
      ************************************************************************/
@@ -248,101 +169,6 @@ namespace   NEHelloWorld
  ************************************************************************/
 
 IMPLEMENT_STREAMABLE( NEHelloWorld::eMessageIDs );
-
-/************************************************************************
- * NEHelloWorld::sConnectedClient strcuture inline implementation
- ************************************************************************/
-/**
- * Every field of structure should have default constructor.
- **/
-inline NEHelloWorld::sConnectedClient::sConnectedClient( void )
-    : ccID    ( 0 )
-    , ccName  (  )
-{   /* do nothing */    }
-
-inline NEHelloWorld::sConnectedClient::sConnectedClient( const unsigned int & _ccID, const String & _ccName )
-    : ccID    ( _ccID )
-    , ccName  ( _ccName )
-{   /* do nothing */    }
-
-inline NEHelloWorld::sConnectedClient::sConnectedClient( const NEHelloWorld::sConnectedClient & src )
-    : ccID    ( src.ccID )
-    , ccName  ( src.ccName )
-{   /* do nothing */    }
-
-inline NEHelloWorld::sConnectedClient::sConnectedClient( NEHelloWorld::sConnectedClient && src ) noexcept
-    : ccID    ( std::move(src.ccID) )
-    , ccName  ( std::move(src.ccName) )
-{   /* do nothing */    }
-
-inline NEHelloWorld::sConnectedClient & NEHelloWorld::sConnectedClient::operator = ( const NEHelloWorld::sConnectedClient & src )
-{
-    if ( static_cast<const NEHelloWorld::sConnectedClient *>(this) != &src )
-    {
-            this->ccID    = src.ccID;
-            this->ccName  = src.ccName;
-    }
-
-    return (*this);
-}
-
-inline NEHelloWorld::sConnectedClient & NEHelloWorld::sConnectedClient::operator = ( NEHelloWorld::sConnectedClient && src ) noexcept
-{
-    if ( static_cast<const NEHelloWorld::sConnectedClient *>(this) != &src )
-    {
-            this->ccID    = std::move(src.ccID);
-            this->ccName  = std::move(src.ccName);
-    }
-    return (*this);
-}
-
-inline bool NEHelloWorld::sConnectedClient::operator == ( const NEHelloWorld::sConnectedClient & other ) const
-{
-    if ( static_cast<const NEHelloWorld::sConnectedClient *>(this) != &other )
-    {
-        return (
-                   (this->ccID    == other.ccID)
-                && (this->ccName  == other.ccName)
-                );
-    }
-    else
-    {
-        return true;
-    }
-}
-
-inline bool NEHelloWorld::sConnectedClient::operator != ( const NEHelloWorld::sConnectedClient & other ) const
-{
-    if ( static_cast<const NEHelloWorld::sConnectedClient *>(this) != &other )
-    {
-        return (
-                   (this->ccID    != other.ccID)
-                || (this->ccName  != other.ccName)
-                );
-    }
-    else
-    {
-        return false;
-    }
-}
-
-
-/**
- * Encode and decode NEHelloWorld::sConnectedClient structure
- **/
-inline const IEInStream & operator >> ( const IEInStream & stream, NEHelloWorld::sConnectedClient & input )
-{
-    stream >> input.ccID;
-    stream >> input.ccName;
-    return stream;
-}
-
-inline IEOutStream & operator << ( IEOutStream & stream, const NEHelloWorld::sConnectedClient & output )
-{
-    stream << output.ccID;
-    stream << output.ccName;
-    return stream;
-}
 
 /**
  * Returns string value of NEHelloWorld::eMessageIDs

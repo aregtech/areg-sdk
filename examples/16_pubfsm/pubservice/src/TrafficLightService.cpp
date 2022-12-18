@@ -40,7 +40,7 @@ void TrafficLightService::DeleteComponent(Component & compObject, const NERegist
 }
 
 TrafficLightService::TrafficLightService(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component                     ( owner, entry.mRoleName )
+    : Component                     ( entry, owner )
     , PowerManagerStub              ( static_cast<Component &>(self()) )
     , TrafficControllerStub         ( static_cast<Component &>(self()) )
     , IETrafficLightActionHandler   ( )

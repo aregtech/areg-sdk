@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  13:59:49 GMT+02:00
+ * Generated at     18.12.2022  15:17:33 GMT+01:00
  *                  Create by AREG SDK code generator tool from source SystemShutdown.
  *
  * \file            generated/src/NESystemShutdown.hpp
@@ -29,46 +29,36 @@ const NEService::SInterfaceData & NESystemShutdown::getInterfaceData( void )
     /************************************************************************
      * The list of requests
      ************************************************************************/
-    constexpr unsigned int * _RequestList   { nullptr }; /* There are no requests. Set Invalid message ID */
+    static constexpr unsigned int _RequestList[]
+    {
+          static_cast<unsigned int>( NESystemShutdown::eMessageIDs::MsgId_requestSystemShutdown  ) // requestSystemShutdown( void )
+    };
 
     /************************************************************************
      * The list of responses and broadcasts
      ************************************************************************/
-    static constexpr unsigned int _ResponseList[]
-    {
-          static_cast<unsigned int>( NESystemShutdown::eMessageIDs::MsgId_broadcastServiceUnavailable  ) // broadcastServiceUnavailable( void )
-        , static_cast<unsigned int>( NESystemShutdown::eMessageIDs::MsgId_broadcastServiceShutdown     ) // broadcastServiceShutdown( void )
-    };
+    constexpr unsigned int * _ResponseList  { nullptr }; /* There are no responses. Set Invalid message ID */
 
     /************************************************************************
      * The list of attributes
      ************************************************************************/
     static constexpr unsigned int _AttributeList[]
     {
-          static_cast<unsigned int>( NESystemShutdown::eMessageIDs::MsgId_ServiceState                 ) // NESystemShutdown::eServiceState mServiceState;
+          static_cast<unsigned int>( NESystemShutdown::eMessageIDs::MsgId_ServiceState           ) // NESystemShutdown::eServiceState mServiceState;
     };
 
     /************************************************************************
      * The map of requests and responses
      ************************************************************************/
-    constexpr unsigned int * _RequestToResponseMap  { nullptr }; // The request list is empty
+    static constexpr unsigned int _RequestToResponseMap[] 
+    {
+          static_cast<unsigned int>( NESystemShutdown::eMessageIDs::MsgId_NotProcessed           ) // requestSystemShutdown( void )
+    };
 
     /************************************************************************
      * Initialization of parameter entry validation map in responses and in broadcasts
      ************************************************************************/
-    static constexpr unsigned int _ResponseParamStateMap[]
-    {
-    /************************************************************************
-     * Responses
-     ************************************************************************/
-
-    /************************************************************************
-     * Broadcasts
-     ************************************************************************/
-        0, // void broadcastServiceUnavailable( void )
-        0, // void broadcastServiceShutdown( void )
-
-    };
+    constexpr unsigned int * _ResponseParamStateMap { nullptr }; // EMPTY RESPONSE AND BROADCAST LIST
 
     /************************************************************************
      * SystemShutdown Service Interface data
@@ -78,8 +68,8 @@ const NEService::SInterfaceData & NESystemShutdown::getInterfaceData( void )
           NESystemShutdown::ServiceName
         , NESystemShutdown::InterfaceVersion
         , NEService::eServiceType::ServicePublic
+        , 1
         , 0
-        , 2
         , 1
         , _RequestList
         , _ResponseList
@@ -96,9 +86,16 @@ NESystemShutdown::eMessageIDs NESystemShutdown::getResponseId( NESystemShutdown:
     return NESystemShutdown::eMessageIDs::MsgId_Invalid;
 }
 
-NESystemShutdown::eMessageIDs NESystemShutdown::getRequestId( NESystemShutdown::eMessageIDs /* respId */ )
+NESystemShutdown::eMessageIDs NESystemShutdown::getRequestId( NESystemShutdown::eMessageIDs respId )
 {
-    return NESystemShutdown::eMessageIDs::MsgId_Invalid;
+    const NEService::SInterfaceData & sid = NESystemShutdown::getInterfaceData();
+    NESystemShutdown::eMessageIDs result = NESystemShutdown::eMessageIDs::MsgId_Invalid;
+    for ( unsigned int i = 0; (result == NESystemShutdown::eMessageIDs::MsgId_Invalid) && (i < sid.idRequestCount); ++ i )
+    {
+        result = sid.idRequestToResponseMap[i] == static_cast<msg_id>(respId) ? static_cast<NESystemShutdown::eMessageIDs>(sid.idRequestList[i]) : NESystemShutdown::eMessageIDs::MsgId_Invalid;
+    }
+
+    return result;
 }
 
 //////////////////////////////////////////////////////////////////////////

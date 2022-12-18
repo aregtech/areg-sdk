@@ -24,7 +24,7 @@ void PatientService::DeleteComponent(Component & compObject, const NERegistry::C
 }
 
 PatientService::PatientService( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-    : Component             ( owner, entry.mRoleName )
+    : Component             ( entry, owner )
     , PatientInformationStub( static_cast<Component &>(self()) )
 
     , mWorkerConsumer       ( PatientService::PatienServiceConsumerName.data(), static_cast<PatientInformationStub &>(self()) )

@@ -45,10 +45,11 @@ protected:
      *          The response to hello world request.
      *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
-     * \param   clientInfo  The client information set by servicing component. If empty or invalid ID, the message output failed.
+     * \param   clientName  The name of connected client that requested to output message.
+     * \param   clientId    Thegiven ID of the client that requested to output message.
      * \see     requestHelloWorld
      **/
-    virtual void responseHelloWorld( const NEHelloWorld::sConnectedClient & clientInfo ) override;
+    virtual void responseHelloWorld( const String & clientName, unsigned int clientId ) override;
 
     /**
      * \brief   Server broadcast.

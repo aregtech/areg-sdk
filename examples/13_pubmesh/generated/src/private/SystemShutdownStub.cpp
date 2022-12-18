@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  13:59:49 GMT+02:00
+ * Generated at     18.12.2022  15:17:33 GMT+01:00
  *                  Create by AREG SDK code generator tool from source SystemShutdown.
  *
  * \file            generated/src/SystemShutdownStub.hpp
@@ -137,14 +137,14 @@ void SystemShutdownStub::errorRequest( unsigned int msgId, bool msgCancel )
 /************************************************************************
  * Broadcast errors
  ************************************************************************/
-    case NESystemShutdown::eMessageIDs::MsgId_broadcastServiceUnavailable:
-    case NESystemShutdown::eMessageIDs::MsgId_broadcastServiceShutdown:
-        result = NEService::eResultType::DataInvalid;
-        break;
-
 /************************************************************************
  * Request errors
  ************************************************************************/
+    case NESystemShutdown::eMessageIDs::MsgId_requestSystemShutdown:
+        listenerId = static_cast<msg_id>(NESystemShutdown::getResponseId(static_cast< NESystemShutdown::eMessageIDs>(msgId)));
+        result = msgCancel ? NEService::eResultType::RequestCanceled : NEService::eResultType::RequestError;
+        break;
+
     default:
         OUTPUT_ERR("Unexpected message ID [ %d ] received!", msgId);
         ASSERT(false);
@@ -187,18 +187,6 @@ void SystemShutdownStub::setServiceState( const NESystemShutdown::eServiceState 
  * Send Broadcast
  ************************************************************************/
 
-void SystemShutdownStub::broadcastServiceUnavailable( void )
-{
-    static const NESystemShutdown::eMessageIDs msgId = NESystemShutdown::eMessageIDs::MsgId_broadcastServiceUnavailable;
-    sendResponseEvent( static_cast<msg_id>(msgId), EventDataStream::EmptyData );
-}
-
-void SystemShutdownStub::broadcastServiceShutdown( void )
-{
-    static const NESystemShutdown::eMessageIDs msgId = NESystemShutdown::eMessageIDs::MsgId_broadcastServiceShutdown;
-    sendResponseEvent( static_cast<msg_id>(msgId), EventDataStream::EmptyData );
-}
-
 /************************************************************************
  * Process messages
  ************************************************************************/
@@ -214,9 +202,23 @@ void SystemShutdownStub::processRequestEvent( ServiceRequestEvent & eventElem )
         msg_id reqId = static_cast<msg_id>(reqEvent->getRequestId());
         StubBase::Listener listener( reqId, 0, reqEvent->getEventSource() );
 
-    TRACE_SCOPE(generated_src_SystemShutdownStub_processRequestEvent);
-    TRACE_ERR("The service SystemShutdown has no request. Unexpected request ID [ %d ] to process in Stub [ %s ]!", reqId, StubAddress::convAddressToPath(mAddress).getString());
-    ASSERT(false);
+        switch ( static_cast<NESystemShutdown::eMessageIDs>(reqId) )
+        {
+        case NESystemShutdown::eMessageIDs::MsgId_requestSystemShutdown:
+            if ( true )
+            {
+                requestSystemShutdown(  );
+            }
+            break;
+
+        default:
+            {
+                TRACE_SCOPE(generated_src_SystemShutdownStub_processRequestEvent);
+                TRACE_ERR("Unexpected request ID [ %d ] to process in Stub [ %s ]!", reqId, StubAddress::convAddressToPath(mAddress).getString());
+                ASSERT(false);
+            }
+            break;
+        }
     }
 
     cancelCurrentRequest();
