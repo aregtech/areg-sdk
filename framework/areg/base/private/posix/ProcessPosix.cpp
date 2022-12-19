@@ -39,7 +39,7 @@ void Process::_osInitilize( void )
     ::memset( buffer, 0, File::MAXIMUM_PATH );
     ::memset( path, 0, 256 );
 
-    sprintf( path, "/proc/%lu/cmdLine", mProcessId );
+    sprintf( path, "/proc/%lu/cmdline", mProcessId );
     FILE * file = ::fopen( path, "r" );
     if ( (file == nullptr) || (::fgets( buffer, File::MAXIMUM_PATH, file ) == nullptr))
     {

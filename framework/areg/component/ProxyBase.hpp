@@ -445,6 +445,16 @@ public:
      **/
     static RemoteResponseEvent * createRequestFailureEvent(const ProxyAddress & target, unsigned int msgId, NEService::eResultType errCode, unsigned int seqNr);
 
+    static inline void lockProxyResource( void )
+    {
+        ProxyBase::_mapRegisteredProxies.lock();
+    }
+
+    static inline void unlockProxyResource( void )
+    {
+        ProxyBase::_mapRegisteredProxies.unlock();
+    }
+
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase class, Constructor / Destructor.
 //////////////////////////////////////////////////////////////////////////
