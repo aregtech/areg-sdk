@@ -44,7 +44,7 @@ enable_testing()
 
 add_executable(
     demo_test
-    ${AREG_BASE}/tests/DemoTest.cpp
+    ${AREG_BASE}/tests/units/DemoTest.cpp
 )
 target_link_libraries(
     demo_test
