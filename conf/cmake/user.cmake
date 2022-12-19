@@ -13,8 +13,8 @@ set(areg "shared")
 
 # Set build configuration here.
 # Set "Debug" for debug and "Release" for release build
-# set(BuildConfig "Debug")
-set(BuildConfig "Release")
+set(BuildConfig "Debug")
+# set(BuildConfig "Release")
 
 # Set bitless here
 set(Bitness "64")

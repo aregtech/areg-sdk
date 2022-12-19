@@ -8,7 +8,7 @@ unset(13_SRC3)
 # Project names
 set(gen_projName 13_generated)
 set(common_projName 13_common)
-set(projName1 13_pubclient)
+set(projName1 13_pubclients)
 set(projName2 13_pubservice)
 set(projName3 13_pubsvcmesh)
 

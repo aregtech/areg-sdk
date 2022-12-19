@@ -110,6 +110,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
 
     case Event::eEventType::EventRemoteServiceResponse:
         {
+            ProxyBase::lockProxyResource();
             ProxyAddress addrProxy;
             stream >> addrProxy;
             if ( comChannel.getCookie() == addrProxy.getCookie() )
@@ -129,6 +130,8 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
                 }
                 result = static_cast<StreamableEvent *>(eventResponse);
             }
+
+            ProxyBase::unlockProxyResource();
         }
         break;
 

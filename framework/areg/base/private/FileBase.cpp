@@ -106,7 +106,7 @@ inline int _readLine(const FileBase & file, ClassType & outValue)
             {
                 readLength = NEString::removeChar<CharType>(static_cast<CharType>('\r'), buffer, static_cast<NEString::CharCount>(readLength), true);
                 const CharType * str = NEString::getLine<CharType>( buffer, static_cast<NEString::CharCount>(readLength), &context );
-                length   = context != nullptr ? MACRO_ELEM_COUNT(buffer, context) + 1 : readLength;
+                length   = context != nullptr ? MACRO_ELEM_COUNT(buffer, context) : readLength;
                 outValue+= str;
                 result  += length;
                 int newPos  = static_cast<int>( (result * sizeof(CharType)) + oldPos );
