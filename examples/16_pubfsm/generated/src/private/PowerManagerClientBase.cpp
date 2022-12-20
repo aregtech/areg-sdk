@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:47:34 GMT+02:00
+ * Generated at     20.12.2022  16:19:58 GMT+01:00
  *                  Create by AREG SDK code generator tool from source PowerManager.
  *
  * \file            generated/src/PowerManagerClientBase.hpp
@@ -71,6 +71,15 @@ PowerManagerClientBase::PowerManagerClientBase( const String & roleName, Compone
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
     , mProxy            ( PowerManagerProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), owner.getMasterThread()) )
+{
+}
+
+PowerManagerClientBase::PowerManagerClientBase( const NERegistry::DependencyEntry & dependency, Component & owner )
+    : IEProxyListener   ( )
+
+    , mIsConnected      ( false )
+    , mCurrSequenceNr   ( 0 )
+    , mProxy            ( PowerManagerProxy::createProxy(dependency.mRoleName, static_cast<IEProxyListener &>(self()), owner.getMasterThread()) )
 {
 }
 

@@ -77,18 +77,23 @@ void EventConsumerList::removeAllConsumers( void )
 // ImplEventConsumerMap class, methods
 //////////////////////////////////////////////////////////////////////////
 #if defined(DEBUG) && defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_DEBUG)
+
 void ImplEventConsumerMap::implCleanResource( RuntimeClassID & Key, EventConsumerList * Resource )
 {
     OUTPUT_DBG("Resource [ %s ]: Removing all consumers and deleting resource at address [ %p ]", Key.getName().getString(), Resource);
     ASSERT(Resource != nullptr);
     Resource->removeAllConsumers();
     delete Resource;
+    Resource = nullptr;
 }
 
-#else
+#else   // !(defined(DEBUG) && defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_DEBUG))
+
 void ImplEventConsumerMap::implCleanResource( RuntimeClassID & /*Key*/, EventConsumerList * Resource )
 {
     Resource->removeAllConsumers();
     delete Resource;
+    Resource = nullptr;
 }
-#endif
+
+#endif  // defined(DEBUG) && defined(OUTPUT_DEBUG_LEVEL) && (OUTPUT_DEBUG_LEVEL >= OUTPUT_DEBUG_LEVEL_DEBUG)

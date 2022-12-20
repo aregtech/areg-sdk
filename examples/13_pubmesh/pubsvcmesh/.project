@@ -3,8 +3,9 @@
 	<name>13_pubsvcmesh</name>
 	<comment></comment>
 	<projects>
-		<project>areg</project>
+		<project>13_common</project>
 		<project>13_generated</project>
+		<project>areg</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:48:18 GMT+02:00
+ * Generated at     20.12.2022  16:20:32 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWatchdog.
  *
  * \file            generated/src/private/HelloWatchdogProxy.hpp
@@ -53,7 +53,7 @@ HelloWatchdogProxy * HelloWatchdogProxy::createProxy( const String & roleName, I
                                                                       , NEHelloWatchdog::getInterfaceData()
                                                                       , connectListener
                                                                       , &HelloWatchdogProxy::_createProxy
-                                                                      , ownerThread) );
+                                                                      , ownerThread).get() );
 }
 
 HelloWatchdogProxy * HelloWatchdogProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
@@ -62,7 +62,7 @@ HelloWatchdogProxy * HelloWatchdogProxy::createProxy( const String & roleName, I
                                                                       , NEHelloWatchdog::getInterfaceData()
                                                                       , connectListener
                                                                       , &HelloWatchdogProxy::_createProxy
-                                                                      , ownerThread) );
+                                                                      , ownerThread).get() );
 }
 
 //////////////////////////////////////////////////////////////////////////

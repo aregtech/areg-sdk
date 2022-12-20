@@ -136,7 +136,7 @@ public:
 // EventConsumerMap class declaration
 //////////////////////////////////////////////////////////////////////////
 
-class ImplEventConsumerMap	: public TEResourceMapImpl<RuntimeClassID, EventConsumerList>
+class ImplEventConsumerMap	: public TEResourceMapImpl<RuntimeClassID, EventConsumerList *>
 {
 public:
     /**
@@ -154,7 +154,7 @@ public:
  *          It is used in Dispatcher, when a Consumer is registered for Event.
  *          For use, see implementation of EventDispatcherBase class
  **/
-using EventConsumerMap  = TELockRuntimeResourceMap<EventConsumerList, ImplEventConsumerMap>;
+using EventConsumerMap  = TELockRuntimeResourceMap<EventConsumerList *, ImplEventConsumerMap>;
 
 //////////////////////////////////////////////////////////////////////////
 // Inline functions implementation

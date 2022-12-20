@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:47:56 GMT+02:00
+ * Generated at     20.12.2022  16:20:16 GMT+01:00
  *                  Create by AREG SDK code generator tool from source CentralMessager.
  *
  * \file            generated/NECentralMessager.hpp
@@ -33,6 +33,7 @@
 //////////////////////////////////////////////////////////////////////////
 #include "areg/base/IEIOStream.hpp"
 #include "areg/base/Version.hpp"
+#include "areg//component/NERegistry.hpp"
 #include "areg/component/NEService.hpp"
 
 #include <utility>

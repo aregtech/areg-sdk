@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     18.12.2022  15:17:32 GMT+01:00
+ * Generated at     20.12.2022  16:19:17 GMT+01:00
  *                  Create by AREG SDK code generator tool from source PublicHelloWorld.
  *
  * \file            generated/src/private/PublicHelloWorldProxy.hpp
@@ -53,7 +53,7 @@ PublicHelloWorldProxy * PublicHelloWorldProxy::createProxy( const String & roleN
                                                                       , NEPublicHelloWorld::getInterfaceData()
                                                                       , connectListener
                                                                       , &PublicHelloWorldProxy::_createProxy
-                                                                      , ownerThread) );
+                                                                      , ownerThread).get() );
 }
 
 PublicHelloWorldProxy * PublicHelloWorldProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
@@ -62,7 +62,7 @@ PublicHelloWorldProxy * PublicHelloWorldProxy::createProxy( const String & roleN
                                                                       , NEPublicHelloWorld::getInterfaceData()
                                                                       , connectListener
                                                                       , &PublicHelloWorldProxy::_createProxy
-                                                                      , ownerThread) );
+                                                                      , ownerThread).get() );
 }
 
 //////////////////////////////////////////////////////////////////////////

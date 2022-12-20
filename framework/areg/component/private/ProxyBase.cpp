@@ -165,35 +165,41 @@ ProxyBase::ServiceAvailableEvent::ServiceAvailableEvent( IENotificationEventCons
 //////////////////////////////////////////////////////////////////////////
 // ProxyBase class, static methods
 //////////////////////////////////////////////////////////////////////////
-ProxyBase * ProxyBase::findOrCreateProxy( const String & roleName
-                                        , const NEService::SInterfaceData & serviceIfData
-                                        , IEProxyListener & connect
-                                        , FuncCreateProxy funcCreate
-                                        , const String & ownerThread /*= String::EmptyString*/)
+std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const String & roleName
+                                                       , const NEService::SInterfaceData & serviceIfData
+                                                       , IEProxyListener & connect
+                                                       , FuncCreateProxy funcCreate
+                                                       , const String & ownerThread /*= String::EmptyString*/)
 {
     return ProxyBase::findOrCreateProxy(roleName, serviceIfData, connect, funcCreate, DispatcherThread::getDispatcherThread(ownerThread) );
 }
 
-ProxyBase * ProxyBase::findOrCreateProxy( const String & roleName
-                                        , const NEService::SInterfaceData & serviceIfData
-                                        , IEProxyListener & connect
-                                        , FuncCreateProxy funcCreate
-                                        , DispatcherThread & ownerThread )
+std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const String & roleName
+                                                       , const NEService::SInterfaceData & serviceIfData
+                                                       , IEProxyListener & connect
+                                                       , FuncCreateProxy funcCreate
+                                                       , DispatcherThread & ownerThread )
 {
     TRACE_SCOPE(areg_component_ProxyBase_findOrCreateProxy);
 
-    ProxyBase*   proxy = nullptr;
+    std::shared_ptr<ProxyBase> proxy{ nullptr };
     if (ownerThread.isValid())
     {
         ProxyAddress Key(serviceIfData, roleName, ownerThread.getName() );
         proxy = _mapRegisteredProxies.findResourceObject(Key);
-        if (proxy == nullptr)
+        if (proxy.get() == nullptr )
         {
             TRACE_DBG("No proxy [ %s ] found, creating one in thread [ %u ]", ProxyAddress::convAddressToPath(Key).getString(), ownerThread.getId());
-            proxy = funcCreate(roleName, &ownerThread);
+            std::shared_ptr<ProxyBase> newProxy{ funcCreate( roleName, &ownerThread ) };
+            if ( newProxy.get() != nullptr )
+            {
+                proxy.swap( newProxy );
+                _mapRegisteredProxies.registerResourceObject( proxy->mProxyAddress, proxy );
+                _mapThreadProxies.registerResourceObject( proxy->mDispatcherThread.getName( ), proxy );
+            }
         }
 
-        if (proxy != nullptr)
+        if (proxy.get() != nullptr)
         {
             if (proxy->mListConnect.addIfUnique(&connect))
             {
@@ -226,13 +232,13 @@ ProxyBase * ProxyBase::findOrCreateProxy( const String & roleName
 }
 
 
-int ProxyBase::findThreadProxies(DispatcherThread & ownerThread, TEArrayList<ProxyBase *> & OUT threadProxyList )
+int ProxyBase::findThreadProxies(DispatcherThread & ownerThread, TEArrayList<std::shared_ptr<ProxyBase>> & OUT threadProxyList )
 {
     ThreadProxyList * proxyList = ProxyBase::_mapThreadProxies.findResource(ownerThread.getName());
     int result = proxyList != nullptr ? proxyList->getSize() : 0;
     if ( result > 0 )
     {
-        threadProxyList = static_cast<const TEArrayList<ProxyBase *> &>(*proxyList);
+        threadProxyList = static_cast<const TEArrayList<std::shared_ptr<ProxyBase>> &>(*proxyList);
     }
 
     return result;
@@ -243,16 +249,11 @@ RemoteResponseEvent * ProxyBase::createRequestFailureEvent(const ProxyAddress & 
     TRACE_SCOPE(areg_component_ProxyBase_createRequestFailureEvent);
 
     RemoteResponseEvent * result = nullptr;
-
-    ProxyBase::_mapRegisteredProxies.lock();
-
-    ProxyBase * proxy = ProxyBase::findProxyByAddress(target);
-    if (proxy != nullptr)
+    std::shared_ptr<ProxyBase> proxy = ProxyBase::findProxyByAddress(target);
+    if (proxy.get() != nullptr)
     {
         result = proxy->createRemoteRequestFailedEvent(target, msgId, errCode, seqNr);
     }
-
-    ProxyBase::_mapRegisteredProxies.unlock();
 
     return result;
 }
@@ -270,24 +271,16 @@ ProxyBase::ProxyBase(const String & roleName, const NEService::SInterfaceData & 
     , mSequenceCount    ( 0 )
     , mListenerList     ( static_cast<int>(serviceIfData.idAttributeCount + serviceIfData.idResponseCount) )
     , mListConnect      (   )
+    , mProxyInstCount   ( 0 )
+
     , mIsConnected      ( false )
     , mIsStopped        ( false )
 
     , mProxyData        ( serviceIfData )
 
     , mDispatcherThread ( (ownerThread != nullptr) && (ownerThread->isValid()) ? *ownerThread : DispatcherThread::getDispatcherThread( mProxyAddress.getThread()) )
-
-    , mProxyInstCount   ( 0 )
 {
     ASSERT(mDispatcherThread.isValid());
-    _mapRegisteredProxies.registerResourceObject(mProxyAddress, this);
-    _mapThreadProxies.registerResourceObject(mDispatcherThread.getName(), this);
-}
-
-ProxyBase::~ProxyBase( void )
-{
-    _mapRegisteredProxies.unregisterResourceObject(mProxyAddress);
-    _mapThreadProxies.unregisterResourceObject(mDispatcherThread.getName(), this, true);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -318,7 +311,9 @@ void ProxyBase::freeProxy( IEProxyListener & connect )
                   , NEService::SEQUENCE_NUMBER_NOTIFY
                   , static_cast<IENotificationEventConsumer *>(&connect));
 
-    if (mProxyInstCount == 1)
+    std::shared_ptr<ProxyBase> proxy = ProxyBase::findProxyByAddress( mProxyAddress );
+
+    if ((proxy.use_count() == 1) || (mProxyInstCount == 1))
     {
         OUTPUT_WARN("The proxy [ %s ] instance count is zero, going to delete object at address [ %p]"
                         , ProxyAddress::convAddressToPath(getProxyAddress()).getString()
@@ -338,7 +333,9 @@ void ProxyBase::freeProxy( IEProxyListener & connect )
         mIsStopped   = true;
 
         mProxyInstCount = 0;
-        delete this;
+        _mapRegisteredProxies.unregisterResourceObject( mProxyAddress );
+        _mapThreadProxies.unregisterResourceObject( mDispatcherThread.getName( ), proxy, true );
+        proxy.reset( );
     }
     else if ( mProxyInstCount > 0 )
     {
@@ -567,7 +564,7 @@ void ProxyBase::processGenericEvent( Event& eventElem )
     }
 }
 
-ProxyBase* ProxyBase::findProxyByAddress( const ProxyAddress& proxyAddress )
+std::shared_ptr<ProxyBase> ProxyBase::findProxyByAddress( const ProxyAddress& proxyAddress )
 {
     return _mapRegisteredProxies.findResourceObject(proxyAddress);
 }

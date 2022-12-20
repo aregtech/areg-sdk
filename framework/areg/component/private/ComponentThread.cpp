@@ -205,11 +205,11 @@ void ComponentThread::terminateSelf(void)
         component->terminateSelf();
     }
 
-    TEArrayList<ProxyBase*> proxyList;
+    TEArrayList<std::shared_ptr<ProxyBase>> proxyList;
     ProxyBase::findThreadProxies(self(), proxyList);
     for (uint32_t i = 0; i < proxyList.getSize(); ++i)
     {
-        ProxyBase* proxy = proxyList[i];
+        std::shared_ptr<ProxyBase> proxy = proxyList[i];
         ASSERT(proxy != nullptr);
         proxy->terminateSelf();
     }
@@ -221,11 +221,11 @@ void ComponentThread::terminateSelf(void)
 
 inline void ComponentThread::_shutdownProxies(void)
 {
-    TEArrayList<ProxyBase*> proxyList;
+    TEArrayList<std::shared_ptr<ProxyBase>> proxyList;
     ProxyBase::findThreadProxies(self(), proxyList);
     for (uint32_t i = 0; i < proxyList.getSize(); ++i)
     {
-        ProxyBase* proxy = proxyList.getAt(i);
+        std::shared_ptr<ProxyBase> proxy = proxyList[i];
         ASSERT(proxy != nullptr);
         proxy->stopProxy();
     }

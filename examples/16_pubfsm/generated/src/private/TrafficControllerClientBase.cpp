@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:47:36 GMT+02:00
+ * Generated at     20.12.2022  16:20:00 GMT+01:00
  *                  Create by AREG SDK code generator tool from source TrafficController.
  *
  * \file            generated/src/TrafficControllerClientBase.hpp
@@ -67,6 +67,15 @@ TrafficControllerClientBase::TrafficControllerClientBase( const String & roleNam
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
     , mProxy            ( TrafficControllerProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), owner.getMasterThread()) )
+{
+}
+
+TrafficControllerClientBase::TrafficControllerClientBase( const NERegistry::DependencyEntry & dependency, Component & owner )
+    : IEProxyListener   ( )
+
+    , mIsConnected      ( false )
+    , mCurrSequenceNr   ( 0 )
+    , mProxy            ( TrafficControllerProxy::createProxy(dependency.mRoleName, static_cast<IEProxyListener &>(self()), owner.getMasterThread()) )
 {
 }
 

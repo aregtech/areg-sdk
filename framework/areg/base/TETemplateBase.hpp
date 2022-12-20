@@ -78,7 +78,7 @@ public:
      * \param	List        The list of resource objects.
      * \param   Resource    The resource object to add to the list.
      **/
-    inline void implAddResource( ResourceList & List, RESOURCE_OBJECT * Resource )
+    inline void implAddResource( ResourceList & List, RESOURCE_OBJECT Resource )
     {   }
 
     /**
@@ -86,7 +86,7 @@ public:
      * \param	List        The list of resource objects.
      * \param   Resource    The resource object to remove from the list.
      **/
-    inline bool implRemoveResource( ResourceList & List, RESOURCE_OBJECT * Resource )
+    inline bool implRemoveResource( ResourceList & List, RESOURCE_OBJECT Resource )
     {
         return false;
     }

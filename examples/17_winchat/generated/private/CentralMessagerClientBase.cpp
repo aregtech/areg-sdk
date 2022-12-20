@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:47:56 GMT+02:00
+ * Generated at     20.12.2022  16:20:16 GMT+01:00
  *                  Create by AREG SDK code generator tool from source CentralMessager.
  *
  * \file            generated/CentralMessagerClientBase.hpp
@@ -69,6 +69,15 @@ CentralMessagerClientBase::CentralMessagerClientBase( const String & roleName, C
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
     , mProxy            ( CentralMessagerProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), owner.getMasterThread()) )
+{
+}
+
+CentralMessagerClientBase::CentralMessagerClientBase( const NERegistry::DependencyEntry & dependency, Component & owner )
+    : IEProxyListener   ( )
+
+    , mIsConnected      ( false )
+    , mCurrSequenceNr   ( 0 )
+    , mProxy            ( CentralMessagerProxy::createProxy(dependency.mRoleName, static_cast<IEProxyListener &>(self()), owner.getMasterThread()) )
 {
 }
 

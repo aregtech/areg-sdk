@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     07.10.2022  01:35:30 GMT+02:00
+ * Generated at     20.12.2022  16:21:03 GMT+01:00
  *                  Create by AREG SDK code generator tool from source LargeData.
  *
  * \file            generated/src/private/LargeDataProxy.hpp
@@ -53,7 +53,7 @@ LargeDataProxy * LargeDataProxy::createProxy( const String & roleName, IEProxyLi
                                                                       , NELargeData::getInterfaceData()
                                                                       , connectListener
                                                                       , &LargeDataProxy::_createProxy
-                                                                      , ownerThread) );
+                                                                      , ownerThread).get() );
 }
 
 LargeDataProxy * LargeDataProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
@@ -62,7 +62,7 @@ LargeDataProxy * LargeDataProxy::createProxy( const String & roleName, IEProxyLi
                                                                       , NELargeData::getInterfaceData()
                                                                       , connectListener
                                                                       , &LargeDataProxy::_createProxy
-                                                                      , ownerThread) );
+                                                                      , ownerThread).get() );
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -109,7 +109,7 @@ class SynchLockAndWaitIX
      *          and the resource objects are WaitAndLock objects in the list. The WaitAndLock
      *          objects in the entire map are not unique, but should be unique in the list.
      **/
-    using SynchResourceMapIX = TELockResourceListMap<IEWaitableBaseIX *, SynchLockAndWaitIX, ListLockAndWait, MapLockAndWait, ImplResourceListMap>;
+    using SynchResourceMapIX = TELockResourceListMap<IEWaitableBaseIX *, SynchLockAndWaitIX *, ListLockAndWait, MapLockAndWait, ImplResourceListMap>;
 
 //////////////////////////////////////////////////////////////////////////
 // The resource map for timer.
@@ -121,12 +121,12 @@ class SynchLockAndWaitIX
     /**
      * \brief   Helper object for resource map basic method implementations
      **/
-    using ImplWaitIDResource= TEResourceMapImpl<id_type, SynchLockAndWaitIX>;
+    using ImplWaitIDResource= TEResourceMapImpl<id_type, SynchLockAndWaitIX *>;
     /**
      * \brief   Resource map of waitable where the keys are id_type (thread ID) and the values are
      *          LockAndWait objects. It is used in the timer.
      **/
-    using MapWaitIDResource = TELockResourceMap<id_type, SynchLockAndWaitIX, MapWaitID, ImplWaitIDResource>;
+    using MapWaitIDResource = TELockResourceMap<id_type, SynchLockAndWaitIX *, MapWaitID, ImplWaitIDResource>;
 
 //////////////////////////////////////////////////////////////////////////
 // Friend classes

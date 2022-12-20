@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:48:00 GMT+02:00
+ * Generated at     20.12.2022  16:20:20 GMT+01:00
  *                  Create by AREG SDK code generator tool from source DirectMessager.
  *
  * \file            generated/DirectMessagerClientBase.hpp
@@ -49,31 +49,38 @@ class DirectMessagerClientBase  : public IEProxyListener
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initialize DirectMessager Service Interface client object.
-     *          Specifies used service and owner thread.
-     * \param   roleName    The role name assigned to DirectMessager servicing component object.
-     * \param   ownerThread The name of component owner thread to dispatch messages.
-     *                      If nullptr, all messages are dispatched in current component thread.
+     * \brief   Initialize DirectMessager Service client object by specifying the
+     *          dependency of service by role name and the client owner thread name.
+     * \param   roleName    The dependent service DirectMessager role name.
+     * \param   ownerThread The name of client owner thread. If empty, assign current thread.
      **/
     DirectMessagerClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
 
     /**
-     * \brief   Initialize DirectMessager Service Interface client object.
-     *          Specifies used service and owner thread.
-     * \param   roleName    The role name assigned to DirectMessager servicing component object.
-     * \param   ownerThread The instance of component owner thread to dispatch messages.
+     * \brief   Initialize DirectMessager Service client object by specifying the
+     *          dependency of service by role name and the client owner thread.
+     * \param   roleName    The dependent service DirectMessager role name.
+     * \param   ownerThread The instance of client owner thread.
      **/
     DirectMessagerClientBase( const String & roleName, DispatcherThread & ownerThread );
 
     /**
-     * \brief   Initialize DirectMessager Service Interface client object.
-     *          Specifies used service and owner component.
-     * \param   roleName    The role name assigned to DirectMessager servicing component object.
-     * \param   owner       The instance of client owner component. The component object should be already initialized.
-     * \note    When this constructor is used, it is important that the Component object is already initialized.
-     *          and the component thread is set.
+     * \brief   Initialize DirectMessager Service client object by specifying the
+     *          dependency of service by role name and the client owner component.
+     * \param   roleName    The dependent service DirectMessager role name.
+     * \param   owner       The instance of client owner component.
+     * \note    It is important that the Component object is already initialized.
      **/
     DirectMessagerClientBase( const String & roleName, Component & owner );
+    
+    /**
+     * \brief   Initialize DirectMessager Service client object by specifying the
+     *          dependency of service by registered dependency entry and the owner component object.
+     * \param   dependency  The instance of registered service DirectMessager dependency entry.
+     * \param   owner       The instance of client owner component.
+     * \note    It is important that the Component object is already initialized.
+     **/
+    DirectMessagerClientBase( const NERegistry::DependencyEntry & dependency, Component & owner );
 
     /**
      * \brief   Destructor.

@@ -73,7 +73,7 @@
  **/
 template < typename RESOURCE_KEY
          , typename RESOURCE_OBJECT
-         , class HashMap = TEHashMap<RESOURCE_KEY, RESOURCE_OBJECT *>
+         , class HashMap = TEHashMap<RESOURCE_KEY, RESOURCE_OBJECT>
          , class Deleter = TEResourceMapImpl<RESOURCE_KEY, RESOURCE_OBJECT>>
 class TEResourceMap     : protected HashMap
                         , protected Deleter
@@ -145,7 +145,7 @@ public:
      * \param	Resource	The pointer to Resource object, which should remain
      *                      valid until it is unregistered.
      **/
-    inline void registerResourceObject( const RESOURCE_KEY & Key, RESOURCE_OBJECT * Resource );
+    inline void registerResourceObject( const RESOURCE_KEY & Key, RESOURCE_OBJECT Resource );
 
     /**
      * \brief	Unregisters resource from the resource list of the map.
@@ -153,7 +153,7 @@ public:
      * \return	If succeeded, returns pointer to unregistered resource.
      *          Otherwise, returns nullptr.
      **/
-    inline RESOURCE_OBJECT * unregisterResourceObject(const RESOURCE_KEY & Key);
+    inline RESOURCE_OBJECT unregisterResourceObject(const RESOURCE_KEY & Key);
 
     /**
      * \brief	Search Resource object in Resource Map by the given unique Key
@@ -162,18 +162,18 @@ public:
      * \return	Returns valid pointer to the resource object if found a resource
      *          registered with the unique key. Otherwise, returns nullptr.
      **/
-    inline RESOURCE_OBJECT * findResourceObject( const RESOURCE_KEY & Key ) const;
+    inline RESOURCE_OBJECT findResourceObject( const RESOURCE_KEY & Key ) const;
 
     /**
      * \brief	Removes given Resource object from Resource Map and returns true 
      *          if operation succeeded. The function searches every entry in the map
      *          to find and remove the object from the map. To remove resource
      *          faster, unregister the resource with the unique key.
-     * \param	resource	The resource object to lookup and remove.
+     * \param	Resource	The resource object to lookup and remove.
      * \return	If found and removed any such resource, returns true.
      *          Otherwise returns false.
      **/
-    inline bool removeResourceObject( RESOURCE_OBJECT * resource );
+    inline bool removeResourceObject( RESOURCE_OBJECT Resource );
 
     /**
      * \brief	Removes all registered resources one-by-one.
@@ -184,34 +184,34 @@ public:
 
     /**
      * \brief   Removes first element of Resource map and returns true if successfully removed.
-     *          On output out_FirstElement contains Resource Key and Object pair.
-     * \param   out_FirstElement    On output, this will contain Key and Object pair 
+     *          On output firstElement contains Resource Key and Object pair.
+     * \param   firstElement [out]  On output, this will contain Key and Object pair 
      *                              of first element in resource map.
      * \return  Returns true if successfully removed first element.
      **/
-    inline bool removeResourceFirstElement( std::pair<RESOURCE_KEY, RESOURCE_OBJECT *> & OUT out_FirstElement );
+    inline bool removeResourceFirstElement( std::pair<RESOURCE_KEY, RESOURCE_OBJECT> & OUT firstElement );
 
     /**
      * \brief   Returns resource object of first object and the associated unique key in the map.
-     * \param   out_FirstKey    On output, this parameter contains a resource valid key
+     * \param   firstKey [out]  On output, this parameter contains a resource valid key
      *                          if the resource is not empty.
      * \return  Returns pointer of stored Resource Object.
      **/
-    inline RESOURCE_OBJECT* resourceFirstKey( RESOURCE_KEY & OUT out_FirstKey ) const;
+    inline RESOURCE_OBJECT resourceFirstKey( RESOURCE_KEY & OUT firstKey ) const;
 
     /**
      * \brief	Returns resource object of next element stored after specified unique Key.
-     *          On input, the parameter 'in_out_NextKey' should be valid resource key.
+     *          On input, the parameter 'nextKey' should be valid resource key.
      *          On output, this parameter points to the next element in the resource map.
      *          To get first element key, call resourceFirstKey() method. Check return value
      *          to know whether there are more elements in the map or not.
      * 
-     * \param	in_out_NextKey  On input, this Key should be valid and point to the valid resource. 
-     *                          On output, this parameter contain the key of the next element in the map.
+     * \param	nextKey [in, out]   On input, this Key should be valid and point to the valid resource. 
+     *                              On output, this parameter contain the key of the next element in the map.
      * \return	Returns valid pointer to the next registered resource object. Returns nullptr if
      *          reached end of the resource map.
      **/
-    inline RESOURCE_OBJECT * resourceNextKey( RESOURCE_KEY & in_out_NextKey ) const;
+    inline RESOURCE_OBJECT resourceNextKey( RESOURCE_KEY & IN OUT nextKey ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations
@@ -223,9 +223,9 @@ protected:
      *          resource being unregistered. Override this function if any additional
      *          work should be performed after unregistering resource.
      * \param	Key	        The Key value of resource
-     * \param	resource	Pointer to resource object
+     * \param	Resource	Pointer to resource object
      **/
-    inline void cleanResourceEntry( RESOURCE_KEY & Key, RESOURCE_OBJECT * resource );
+    inline void cleanResourceEntry( RESOURCE_KEY & Key, RESOURCE_OBJECT Resource );
 
 //////////////////////////////////////////////////////////////////////////
 // Member Variables
@@ -359,28 +359,28 @@ TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::TEResourceMap( I
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::registerResourceObject(const RESOURCE_KEY & Key, RESOURCE_OBJECT * resource)
+inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::registerResourceObject(const RESOURCE_KEY & Key, RESOURCE_OBJECT Resource)
 {
     Lock lock(mSynchObj);
-    HashMap::setAt(Key, resource);
+    HashMap::setAt(Key, Resource);
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline RESOURCE_OBJECT * TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::unregisterResourceObject(const RESOURCE_KEY & Key)
+inline RESOURCE_OBJECT TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::unregisterResourceObject(const RESOURCE_KEY & Key)
 {
     Lock lock(mSynchObj);
 
-    RESOURCE_OBJECT* result = nullptr;
+    RESOURCE_OBJECT result{ nullptr };
     HashMap::removeAt(Key, result);
     return result;
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline RESOURCE_OBJECT* TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::findResourceObject(const RESOURCE_KEY & Key) const
+inline RESOURCE_OBJECT TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::findResourceObject(const RESOURCE_KEY & Key) const
 {
     Lock lock(mSynchObj);
 
-    RESOURCE_OBJECT* result = nullptr;
+    RESOURCE_OBJECT result{ nullptr };
     HashMap::find(Key, result);
     return result;
 }
@@ -425,14 +425,14 @@ inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::isEm
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::removeResourceObject( RESOURCE_OBJECT * resource )
+inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::removeResourceObject( RESOURCE_OBJECT Resource )
 {
     Lock lock(mSynchObj);
 
-    bool result = false;
+    bool result{ false };
     for ( auto pos = HashMap::firstPosition(); pos != nullptr; pos = HashMap::nextPosition(pos))
     {
-        if ( resource == HashMap::valueAtPosition(pos) )
+        if ( Resource == HashMap::valueAtPosition(pos) )
         {
             HashMap::removePosition(pos);
             result = true;
@@ -451,7 +451,7 @@ inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::remo
     for ( auto pos = HashMap::firstPosition(); HashMap::isValidPosition(pos); pos = HashMap::nextPosition(pos))
     {
         RESOURCE_KEY Key;
-        RESOURCE_OBJECT* Value;
+        RESOURCE_OBJECT Value{ nullptr };
         HashMap::getAtPosition(pos, Key, Value);
         cleanResourceEntry(Key, Value);
     }
@@ -460,52 +460,52 @@ inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::remo
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::removeResourceFirstElement(std::pair<RESOURCE_KEY, RESOURCE_OBJECT *> & OUT out_FirstElement )
+inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::removeResourceFirstElement(std::pair<RESOURCE_KEY, RESOURCE_OBJECT> & OUT firstElement )
 {
     Lock lock(mSynchObj);
-    bool result = false;
+    bool result{ false };
     typename HashMap::MAPPOS pos  = HashMap::firstPosition();
     if (HashMap::isValidPosition(pos))
     {
         result = true;
-        HashMap::removePosition(pos, out_FirstElement.first, out_FirstElement.second);
+        HashMap::removePosition(pos, firstElement.first, firstElement.second);
     }
 
     return result;
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline RESOURCE_OBJECT* TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::resourceFirstKey( RESOURCE_KEY & OUT out_FirstKey ) const
+inline RESOURCE_OBJECT TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::resourceFirstKey( RESOURCE_KEY & OUT firstKey ) const
 {
     Lock lock(mSynchObj);
 
-    RESOURCE_OBJECT * result = nullptr;
+    RESOURCE_OBJECT result{ nullptr };
     typename HashMap::MAPPOS pos = HashMap::firstPosition();
     if (HashMap::isValidPosition(pos))
     {
-        HashMap::getAtPosition(pos, out_FirstKey, result);
+        HashMap::getAtPosition(pos, firstKey, result);
     }
 
     return result;
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline RESOURCE_OBJECT* TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::resourceNextKey( RESOURCE_KEY & in_out_NextKey ) const
+inline RESOURCE_OBJECT TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::resourceNextKey( RESOURCE_KEY & IN OUT nextKey ) const
 {
     Lock lock(mSynchObj);
 
-    RESOURCE_OBJECT * result = nullptr;
-    typename HashMap::MAPPOS pos = HashMap::find(in_out_NextKey);
+    RESOURCE_OBJECT result{ nullptr };
+    typename HashMap::MAPPOS pos = HashMap::find( nextKey );
     if (HashMap::isValidPosition(pos))
     {
-        HashMap::nextEntry(pos, in_out_NextKey, result);
+        HashMap::nextEntry(pos, nextKey, result);
     }
 
     return result;
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::cleanResourceEntry( RESOURCE_KEY & Key, RESOURCE_OBJECT * Resource )
+inline void TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::cleanResourceEntry( RESOURCE_KEY & Key, RESOURCE_OBJECT Resource )
 {
     Deleter::implCleanResource(Key, Resource);
 }

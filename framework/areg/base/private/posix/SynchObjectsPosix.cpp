@@ -100,7 +100,7 @@ bool Mutex::_osUnlockMutex( void )
 
 void SynchEvent::_osCreateEvent( bool initLock )
 {
-    mSynchObject    = static_cast<void *>( DEBUG_NEW WaitableEventIX(initLock == false, mAutoReset, "POSIX_Event") );
+    mSynchObject    = static_cast<void *>( DEBUG_NEW WaitableEventIX(!initLock, mAutoReset, "POSIX_Event") );
 }
 
 bool SynchEvent::_osUnlockEvent( void * eventHandle )

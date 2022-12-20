@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:47:56 GMT+02:00
+ * Generated at     20.12.2022  16:20:16 GMT+01:00
  *                  Create by AREG SDK code generator tool from source CentralMessager.
  *
  * \file            generated/private/CentralMessagerProxy.hpp
@@ -53,7 +53,7 @@ CentralMessagerProxy * CentralMessagerProxy::createProxy( const String & roleNam
                                                                       , NECentralMessager::getInterfaceData()
                                                                       , connectListener
                                                                       , &CentralMessagerProxy::_createProxy
-                                                                      , ownerThread) );
+                                                                      , ownerThread).get() );
 }
 
 CentralMessagerProxy * CentralMessagerProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
@@ -62,7 +62,7 @@ CentralMessagerProxy * CentralMessagerProxy::createProxy( const String & roleNam
                                                                       , NECentralMessager::getInterfaceData()
                                                                       , connectListener
                                                                       , &CentralMessagerProxy::_createProxy
-                                                                      , ownerThread) );
+                                                                      , ownerThread).get() );
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:47:59 GMT+02:00
+ * Generated at     20.12.2022  16:20:18 GMT+01:00
  *                  Create by AREG SDK code generator tool from source DirectConnection.
  *
  * \file            generated/private/DirectConnectionProxy.hpp
@@ -44,6 +44,8 @@ class DirectConnectionResponseEvent;
  **/
 class DirectConnectionProxy   : public ProxyBase
 {
+    friend class DirectConnectionClientBase;
+    
 private:
     //////////////////////////////////////////////////////////////////////////
     // DirectConnectionProxy::DirectConnectionServiceAvailableEvent class declaration
@@ -82,7 +84,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // DirectConnectionProxy predefined constants and static members.
 //////////////////////////////////////////////////////////////////////////
-public:
+protected:
     /**
      * \brief   Returns existing or creates new proxy object if it is not existing
      *          in the current thread scope.
@@ -191,7 +193,7 @@ public:
      * \see     responseConnectoinSetup
      **/
     unsigned int requestConnectoinSetup( IENotificationEventConsumer & caller, const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
-    
+
     /**
      * \brief   Request call.
      *          The request to add a participant in the direct chat-room.
@@ -202,7 +204,7 @@ public:
      * \see     responseAddParticipant
      **/
     unsigned int requestAddParticipant( IENotificationEventConsumer & caller, const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
-    
+
     /**
      * \brief   Request call.
      *          Request to remove initiator from chat-room
@@ -213,7 +215,7 @@ public:
      * \see     responseRemoveParticipant
      **/
     unsigned int requestRemoveParticipant( IENotificationEventConsumer & caller, const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
-    
+
     /**
      * \brief   Request call.
      *          Request to close chat-room. There is no response expected.
