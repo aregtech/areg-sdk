@@ -44,7 +44,7 @@ public:
      * \param	Key	        The Key value of resource
      * \param	Resource	Pointer to resource object
      **/
-    inline void implCleanResource( RESOURCE_KEY & /*Key*/, RESOURCE_OBJECT * /*Resource*/ )
+    inline void implCleanResource( RESOURCE_KEY & /*Key*/, RESOURCE_OBJECT /*Resource*/ )
     {   }
 };
 
