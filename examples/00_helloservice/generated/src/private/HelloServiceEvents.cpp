@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     20.10.2021  21:36:19 GMT+02:00 
+ * Generated at     20.12.2022  16:24:46 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloService.
  *
  * \file            generated/src/private/HelloServiceEvents.hpp
@@ -17,8 +17,8 @@
 /************************************************************************
  * Include files
  ************************************************************************/
- #include "generated/src/private/HelloServiceEvents.hpp"
- 
+#include "generated/src/private/HelloServiceEvents.hpp"
+
 //////////////////////////////////////////////////////////////////////////
 // HelloServiceRequestEvent class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ HelloServiceRequestEvent::HelloServiceRequestEvent( const EventDataStream & args
 HelloServiceRequestEvent::HelloServiceRequestEvent( const IEInStream & stream )
     : RemoteRequestEvent( stream )
 {
-}    
+}
 
 //////////////////////////////////////////////////////////////////////////
 // HelloServiceNotifyRequestEvent class implementation
@@ -72,7 +72,7 @@ HelloServiceNotifyRequestEvent::HelloServiceNotifyRequestEvent( const ProxyAddre
 HelloServiceNotifyRequestEvent::HelloServiceNotifyRequestEvent( const IEInStream & stream )
     : RemoteNotifyRequestEvent( stream )
 {
-}    
+}
 
 //////////////////////////////////////////////////////////////////////////
 // HelloServiceResponseEvent class implementation
@@ -106,7 +106,7 @@ HelloServiceResponseEvent::HelloServiceResponseEvent( const ProxyAddress & proxy
 HelloServiceResponseEvent::HelloServiceResponseEvent( const IEInStream & stream )
     : RemoteResponseEvent( stream )
 {
-}    
+}
 
 //////////////////////////////////////////////////////////////////////////
 // HelloServiceResponseEvent class, Methods

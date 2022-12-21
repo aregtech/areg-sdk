@@ -627,23 +627,23 @@ private:
      * \brief   Thread resource mapping by thread ID.
      *          The unique thread ID is set when thread is created
      **/
-    using   MapThreadID             = TEIdMap< Thread* >;
-    using   ImplThreadIDResource    = TEResourceMapImpl<id_type, Thread>;
-    using   MapThreadIDResource     = TELockResourceMap<id_type, Thread, MapThreadID,ImplThreadIDResource>;
+    using   MapThreadID             = TEIdMap<Thread *>;
+    using   ImplThreadIDResource    = TEResourceMapImpl<id_type, Thread *>;
+    using   MapThreadIDResource     = TELockResourceMap<id_type, Thread *, MapThreadID,ImplThreadIDResource>;
     /**
      * \brief   Thread resource mapping by thread handle. 
      *          The unique thread handle can be used to access thread object.
      **/
-    using   MapThreadPoiters        = TEPointerMap< Thread* >;
-    using   ImplThreadHandleResource= TEResourceMapImpl< void *, Thread >;
-    using   MapThreadHandleResource = TELockResourceMap< void *, Thread, MapThreadPoiters,ImplThreadHandleResource >;
+    using   MapThreadPoiters        = TEPointerMap<Thread *>;
+    using   ImplThreadHandleResource= TEResourceMapImpl< void *, Thread *>;
+    using   MapThreadHandleResource = TELockResourceMap< void *, Thread *, MapThreadPoiters,ImplThreadHandleResource >;
     /**
      * \brief   Thread resource mapping by thread name. 
      *          The unique thread name can be used to access thread object.
      **/
     using   MapThreadName           = TEStringMap<Thread *>;
-    using   ImplThreadNameResource  = TEResourceMapImpl<String, Thread>;
-    using   MapThreadNameResource   = TELockResourceMap<String, Thread, MapThreadName, ImplThreadNameResource>;
+    using   ImplThreadNameResource  = TEResourceMapImpl<String, Thread *>;
+    using   MapThreadNameResource   = TELockResourceMap<String, Thread *, MapThreadName, ImplThreadNameResource>;
 
 /************************************************************************/
 // Resource controlling and mapping variables

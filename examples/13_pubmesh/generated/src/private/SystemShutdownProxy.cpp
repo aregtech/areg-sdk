@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     18.12.2022  15:17:33 GMT+01:00
+ * Generated at     20.12.2022  16:19:19 GMT+01:00
  *                  Create by AREG SDK code generator tool from source SystemShutdown.
  *
  * \file            generated/src/private/SystemShutdownProxy.hpp
@@ -53,7 +53,7 @@ SystemShutdownProxy * SystemShutdownProxy::createProxy( const String & roleName,
                                                                       , NESystemShutdown::getInterfaceData()
                                                                       , connectListener
                                                                       , &SystemShutdownProxy::_createProxy
-                                                                      , ownerThread) );
+                                                                      , ownerThread).get() );
 }
 
 SystemShutdownProxy * SystemShutdownProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
@@ -62,7 +62,7 @@ SystemShutdownProxy * SystemShutdownProxy::createProxy( const String & roleName,
                                                                       , NESystemShutdown::getInterfaceData()
                                                                       , connectListener
                                                                       , &SystemShutdownProxy::_createProxy
-                                                                      , ownerThread) );
+                                                                      , ownerThread).get() );
 }
 
 //////////////////////////////////////////////////////////////////////////

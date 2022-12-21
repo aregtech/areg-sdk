@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     18.12.2022  09:29:45 GMT+01:00
+ * Generated at     20.12.2022  16:18:51 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/HelloWorldClientBase.hpp
@@ -69,6 +69,15 @@ HelloWorldClientBase::HelloWorldClientBase( const String & roleName, Component &
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
     , mProxy            ( HelloWorldProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), owner.getMasterThread()) )
+{
+}
+
+HelloWorldClientBase::HelloWorldClientBase( const NERegistry::DependencyEntry & dependency, Component & owner )
+    : IEProxyListener   ( )
+
+    , mIsConnected      ( false )
+    , mCurrSequenceNr   ( 0 )
+    , mProxy            ( HelloWorldProxy::createProxy(dependency.mRoleName, static_cast<IEProxyListener &>(self()), owner.getMasterThread()) )
 {
 }
 

@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:47:36 GMT+02:00
+ * Generated at     20.12.2022  16:20:00 GMT+01:00
  *                  Create by AREG SDK code generator tool from source TrafficController.
  *
  * \file            generated/src/private/TrafficControllerProxy.hpp
@@ -41,6 +41,8 @@ class TrafficControllerResponseEvent;
  **/
 class TrafficControllerProxy   : public ProxyBase
 {
+    friend class TrafficControllerClientBase;
+    
 private:
     //////////////////////////////////////////////////////////////////////////
     // TrafficControllerProxy::TrafficControllerServiceAvailableEvent class declaration
@@ -79,7 +81,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // TrafficControllerProxy predefined constants and static members.
 //////////////////////////////////////////////////////////////////////////
-public:
+protected:
     /**
      * \brief   Returns existing or creates new proxy object if it is not existing
      *          in the current thread scope.

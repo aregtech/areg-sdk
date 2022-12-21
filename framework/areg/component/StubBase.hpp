@@ -189,15 +189,15 @@ protected:
     //////////////////////////////////////////////////////////////////////////
     // StubBase resource tracking
     //////////////////////////////////////////////////////////////////////////
-    using MapStub           = TEHashMap<StubAddress, StubBase*>;
+    using MapStub           = TEHashMap<StubAddress, StubBase *>;
     /**
      * \brief   Stub resource helper definition.
      **/
-    using ImplStubResource  = TEResourceMapImpl<StubAddress, StubBase>;
+    using ImplStubResource  = TEResourceMapImpl<StubAddress, StubBase *>;
     /**
      * \brief   Resource Map definition.
      **/
-    using MapStubResource   = TELockResourceMap<StubAddress, StubBase, MapStub, ImplStubResource>;
+    using MapStubResource   = TELockResourceMap<StubAddress, StubBase *, MapStub, ImplStubResource>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

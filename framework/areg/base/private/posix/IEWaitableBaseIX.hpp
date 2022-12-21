@@ -24,6 +24,7 @@
 #if defined(_POSIX) || defined(POSIX)
 
 #include "areg/base/private/posix/MutexIX.hpp"
+#include <pthread.h>
 
 //////////////////////////////////////////////////////////////////////////
 // SynchWaitable class declaration

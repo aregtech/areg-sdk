@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:47:34 GMT+02:00
+ * Generated at     20.12.2022  16:19:58 GMT+01:00
  *                  Create by AREG SDK code generator tool from source PowerManager.
  *
  * \file            generated/src/private/PowerManagerProxy.hpp
@@ -41,6 +41,8 @@ class PowerManagerResponseEvent;
  **/
 class PowerManagerProxy   : public ProxyBase
 {
+    friend class PowerManagerClientBase;
+    
 private:
     //////////////////////////////////////////////////////////////////////////
     // PowerManagerProxy::PowerManagerServiceAvailableEvent class declaration
@@ -79,7 +81,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // PowerManagerProxy predefined constants and static members.
 //////////////////////////////////////////////////////////////////////////
-public:
+protected:
     /**
      * \brief   Returns existing or creates new proxy object if it is not existing
      *          in the current thread scope.
@@ -178,7 +180,7 @@ public:
      * \see     responseStartTrafficLight
      **/
     unsigned int requestStartTrafficLight( IENotificationEventConsumer & caller );
-    
+
     /**
      * \brief   Request call.
      *          Call to stop the traffic lights and put them in initialization state.
@@ -187,7 +189,7 @@ public:
      * \see     responseStopTrafficLight
      **/
     unsigned int requestStopTrafficLight( IENotificationEventConsumer & caller );
-    
+
 //////////////////////////////////////////////////////////////////////////
 // Operations.
 //////////////////////////////////////////////////////////////////////////
