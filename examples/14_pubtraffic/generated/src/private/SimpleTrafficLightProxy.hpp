@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:45:32 GMT+02:00
+ * Generated at     20.12.2022  16:19:32 GMT+01:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficLight.
  *
  * \file            generated/src/private/SimpleTrafficLightProxy.hpp
@@ -41,6 +41,8 @@ class SimpleTrafficLightResponseEvent;
  **/
 class SimpleTrafficLightProxy   : public ProxyBase
 {
+    friend class SimpleTrafficLightClientBase;
+    
 private:
     //////////////////////////////////////////////////////////////////////////
     // SimpleTrafficLightProxy::SimpleTrafficLightServiceAvailableEvent class declaration
@@ -79,7 +81,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // SimpleTrafficLightProxy predefined constants and static members.
 //////////////////////////////////////////////////////////////////////////
-public:
+protected:
     /**
      * \brief   Returns existing or creates new proxy object if it is not existing
      *          in the current thread scope.

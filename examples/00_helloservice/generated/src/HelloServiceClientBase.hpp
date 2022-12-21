@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/src/HelloServiceClientBase.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_SRC_HELLOSERVICECLIENTBASE_HPP
+#define  GENERATED_SRC_HELLOSERVICECLIENTBASE_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     20.10.2021  21:36:19 GMT+02:00 
+ * Generated at     20.12.2022  16:24:46 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloService.
  *
  * \file            generated/src/HelloServiceClientBase.hpp
@@ -48,31 +49,38 @@ class HelloServiceClientBase  : public IEProxyListener
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initialize HelloService Service Interface client object. 
-     *          Specifies used service and owner thread.
-     * \param   roleName    The role name assigned to HelloService servicing component object.
-     * \param   ownerThread The name of component owner thread to dispatch messages.
-     *                      If nullptr, all messages are dispatched in current component thread.
+     * \brief   Initialize HelloService Service client object by specifying the
+     *          dependency of service by role name and the client owner thread name.
+     * \param   roleName    The dependent service HelloService role name.
+     * \param   ownerThread The name of client owner thread. If empty, assign current thread.
      **/
-    HelloServiceClientBase( const char* roleName, const char * ownerThread = nullptr );
+    HelloServiceClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
 
     /**
-     * \brief   Initialize HelloService Service Interface client object.
-     *          Specifies used service and owner thread.
-     * \param   roleName    The role name assigned to HelloService servicing component object.
-     * \param   ownerThread The instance of component owner thread to dispatch messages.
+     * \brief   Initialize HelloService Service client object by specifying the
+     *          dependency of service by role name and the client owner thread.
+     * \param   roleName    The dependent service HelloService role name.
+     * \param   ownerThread The instance of client owner thread.
      **/
-    HelloServiceClientBase( const char* roleName, DispatcherThread & ownerThread );
+    HelloServiceClientBase( const String & roleName, DispatcherThread & ownerThread );
 
     /**
-     * \brief   Initialize HelloService Service Interface client object.
-     *          Specifies used service and owner component.
-     * \param   roleName    The role name assigned to HelloService servicing component object.
-     * \param   owner       The instance of client owner component. The component object should be already initialized.
-     * \note    When this constructor is used, it is important that the Component object is already initialized.
-     *          and the component thread is set.
+     * \brief   Initialize HelloService Service client object by specifying the
+     *          dependency of service by role name and the client owner component.
+     * \param   roleName    The dependent service HelloService role name.
+     * \param   owner       The instance of client owner component.
+     * \note    It is important that the Component object is already initialized.
      **/
-    HelloServiceClientBase( const char* roleName, Component & owner );
+    HelloServiceClientBase( const String & roleName, Component & owner );
+    
+    /**
+     * \brief   Initialize HelloService Service client object by specifying the
+     *          dependency of service by registered dependency entry and the owner component object.
+     * \param   dependency  The instance of registered service HelloService dependency entry.
+     * \param   owner       The instance of client owner component.
+     * \note    It is important that the Component object is already initialized.
+     **/
+    HelloServiceClientBase( const NERegistry::DependencyEntry & dependency, Component & owner );
 
     /**
      * \brief   Destructor.
@@ -99,12 +107,12 @@ public:
      * \brief   Returns true if client object has got connection with servicing component
      **/
     inline bool isConnected( void ) const;
-    
+
     /**
      * \brief   Returns the name of used service.
      **/
     inline const String & getServiceName( void ) const;
-    
+
     /**
      * \brief   Returns the version of used service.
      **/
@@ -140,14 +148,14 @@ public:
      * \param   FailureReason   The failure reason value of request call.
      **/
     virtual void requestHelloServiceFailed( NEService::eResultType FailureReason );
-    
+
 /************************************************************************
  * Response HelloService
  ************************************************************************/
     /**
      * \brief   Response callback.
      *          The response indicating success status to output greeting
-     *          Overwrite, if need to handle Response call of server object. 
+     *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
      * \param   success Flag, indicates the success of output.
      * \see     requestHelloService
@@ -201,16 +209,16 @@ protected:
      * \param   InvalidReqId    The ID of invalid request
      **/
     virtual void invalidRequest( NEHelloService::eMessageIDs InvalidReqId );
-    
+
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
 
     /**
      * \brief   Call to recreate Proxy for the client. This call will remove and unregister all existing notifications
-     *          and the client will not receive pending update or response notifications. 
+     *          and the client will not receive pending update or response notifications.
      *          The client first will receive disconnect message, then again connect.
-     *          Reset update notifications manually in connect if need.          
+     *          Reset update notifications manually in connect if need.
      *          This function call can be used when the client instance should be registered and run in new thread.
      *
      * \return  Returns true if Proxy was created with success.
@@ -222,7 +230,7 @@ protected:
      *         The function can return nullptr if Proxy was not instantiated yet.
      **/
     DispatcherThread * getDispatcherThread( void );
-     
+
     /**
      * \brief   Returns the current sequence number
      **/
@@ -232,7 +240,7 @@ protected:
      * \brief  Returns instance of proxy object.
      */
     inline const HelloServiceProxy * getProxy( void ) const;
-      
+
     /**
      * \brief Returns target service component role name.
      **/
@@ -268,7 +276,7 @@ private:
      * \param   eventElem   Notification Event object to process
      **/
     virtual void processNotificationEvent( NotificationEvent & eventElem ) override;
-    
+
 /************************************************************************/
 // HelloServiceClientBase hidden methods
 /************************************************************************/
@@ -276,12 +284,12 @@ private:
     /**
      * \brief   Enables / Disables notification flags on appropriate message call.
      * \param   msgId   The ID of message to enable / disable notification
-     * \param   notify  If true, the notification is enabled. 
+     * \param   notify  If true, the notification is enabled.
      *                  If false, the notification is disabled.
      * \param   always  Flag, indicating whether should notify always or not.
      *                  if 'notify' parameter is true and the notification is already
      *                  assigned, then if parameter 'always' is true, it will trigger
-     *                  notification immediately after call. 
+     *                  notification immediately after call.
      **/
     void notifyOn( NEHelloService::eMessageIDs msgId, bool notify, bool always = false );
     /**
@@ -301,7 +309,6 @@ private:
     /**
      * \brief   Returns reference of HelloServiceClientBase object
      **/
-
     inline HelloServiceClientBase & self( void );
 
 //////////////////////////////////////////////////////////////////////////
@@ -349,7 +356,7 @@ inline const String & HelloServiceClientBase::getServiceName( void ) const
     ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getServiceName();
 }
-    
+
 inline const Version & HelloServiceClientBase::getServiceVersion( void ) const
 {
     ASSERT(mProxy != nullptr);
@@ -385,6 +392,8 @@ inline const String & HelloServiceClientBase::getServiceRole( void ) const
     ASSERT(mProxy != nullptr);
     return mProxy->getProxyAddress().getRoleName();
 }
+
+#endif   // GENERATED_SRC_HELLOSERVICECLIENTBASE_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/HelloServiceClientBase.hpp file

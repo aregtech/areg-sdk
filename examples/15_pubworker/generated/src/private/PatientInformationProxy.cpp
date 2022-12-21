@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:46:19 GMT+02:00
+ * Generated at     20.12.2022  16:19:45 GMT+01:00
  *                  Create by AREG SDK code generator tool from source PatientInformation.
  *
  * \file            generated/src/private/PatientInformationProxy.hpp
@@ -53,7 +53,7 @@ PatientInformationProxy * PatientInformationProxy::createProxy( const String & r
                                                                       , NEPatientInformation::getInterfaceData()
                                                                       , connectListener
                                                                       , &PatientInformationProxy::_createProxy
-                                                                      , ownerThread) );
+                                                                      , ownerThread).get() );
 }
 
 PatientInformationProxy * PatientInformationProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
@@ -62,7 +62,7 @@ PatientInformationProxy * PatientInformationProxy::createProxy( const String & r
                                                                       , NEPatientInformation::getInterfaceData()
                                                                       , connectListener
                                                                       , &PatientInformationProxy::_createProxy
-                                                                      , ownerThread) );
+                                                                      , ownerThread).get() );
 }
 
 //////////////////////////////////////////////////////////////////////////

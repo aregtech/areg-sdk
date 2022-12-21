@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:48:00 GMT+02:00
+ * Generated at     20.12.2022  16:20:20 GMT+01:00
  *                  Create by AREG SDK code generator tool from source DirectMessager.
  *
  * \file            generated/NEDirectMessager.hpp
@@ -33,6 +33,7 @@
 //////////////////////////////////////////////////////////////////////////
 #include "areg/base/IEIOStream.hpp"
 #include "areg/base/Version.hpp"
+#include "areg//component/NERegistry.hpp"
 #include "areg/component/NEService.hpp"
 
 #include <utility>

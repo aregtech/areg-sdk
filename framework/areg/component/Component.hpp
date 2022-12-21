@@ -60,7 +60,7 @@ class AREG_API Component   : public    RuntimeObject
 // Predefined types. Fol local use
 //////////////////////////////////////////////////////////////////////////
     //!< The basic operations of resource-map.
-    using ImplComponentResource = TEResourceMapImpl<unsigned int, Component>;
+    using ImplComponentResource = TEResourceMapImpl<unsigned int, Component *>;
     /**
      * \brief   The integer hash-map to store components where the keys are the calculated number of the component.
      * \tparam  Component           The saved values are Component objects
@@ -74,7 +74,7 @@ class AREG_API Component   : public    RuntimeObject
      * \tparam  MapComponentContainer   The hash-map object to store containers.
      * \tparam  ImplComponentResource   The implementation of basic resource+map operations.
      **/
-    using MapComponentResource  = TELockResourceMap<unsigned int, Component, MapComponentContainer, ImplComponentResource>;
+    using MapComponentResource  = TELockResourceMap<unsigned int, Component *, MapComponentContainer, ImplComponentResource>;
 //////////////////////////////////////////////////////////////////////////
 // Declare as runtime object
 //////////////////////////////////////////////////////////////////////////

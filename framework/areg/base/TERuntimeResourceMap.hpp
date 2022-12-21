@@ -34,7 +34,7 @@
 /************************************************************************
  * Hierarchies and list of declared classes
  ************************************************************************/
-// TEHashMap<RuntimeClassID, RUNTIME_DELEGATE *>
+// TEHashMap<RuntimeClassID, RUNTIME_DELEGATE>
     template <typename RUNTIME_DELEGATE> class TERuntimeHashMap;
         // TEResourceMap<RuntimeClassID, RUNTIME_DELEGATE, TERuntimeHashMap<RUNTIME_DELEGATE>>
             template <class RUNTIME_DELEGATE, class Deleter> class TERuntimeResourceMap;
@@ -52,7 +52,7 @@
  * \tparam  RUNTIME_DELEGATE    The type of runtime object to store in runtime resource map.
  **/
 template <typename RUNTIME_DELEGATE>
-class TERuntimeHashMap : public TEHashMap<RuntimeClassID, RUNTIME_DELEGATE *>
+class TERuntimeHashMap : public TEHashMap<RuntimeClassID, RUNTIME_DELEGATE>
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

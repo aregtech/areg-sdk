@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:47:58 GMT+02:00
+ * Generated at     20.12.2022  16:20:17 GMT+01:00
  *                  Create by AREG SDK code generator tool from source ConnectionManager.
  *
  * \file            generated/private/ConnectionManagerProxy.hpp
@@ -41,6 +41,8 @@ class ConnectionManagerResponseEvent;
  **/
 class ConnectionManagerProxy   : public ProxyBase
 {
+    friend class ConnectionManagerClientBase;
+    
 private:
     //////////////////////////////////////////////////////////////////////////
     // ConnectionManagerProxy::ConnectionManagerServiceAvailableEvent class declaration
@@ -79,7 +81,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // ConnectionManagerProxy predefined constants and static members.
 //////////////////////////////////////////////////////////////////////////
-public:
+protected:
     /**
      * \brief   Returns existing or creates new proxy object if it is not existing
      *          in the current thread scope.
@@ -236,7 +238,7 @@ public:
      * \see     responseConnect
      **/
     unsigned int requestConnect( IENotificationEventConsumer & caller, const String & nickName, const DateTime & dateTime );
-    
+
     /**
      * \brief   Request call.
      *          Request to register direct connection service.
@@ -249,7 +251,7 @@ public:
      * \see     responseRegisterConnection
      **/
     unsigned int requestRegisterConnection( IENotificationEventConsumer & caller, const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister );
-    
+
     /**
      * \brief   Request call.
      *          Request to disconnect.

@@ -64,8 +64,8 @@ private:
      **/
     static constexpr std::string_view TIMER_THREAD_NAME { "_AREG_TIMER_THREAD_NAME_" };
 
-    using MapTimerResource  = TEHashMap<TIMERHANDLE, Timer*>;
-    using TimerResource     = TELockResourceMap<TIMERHANDLE, Timer, MapTimerResource>;
+    using MapTimerResource  = TEHashMap<TIMERHANDLE, Timer *>;
+    using TimerResource     = TELockResourceMap<TIMERHANDLE, Timer *, MapTimerResource>;
 
 //////////////////////////////////////////////////////////////////////////
 // Static members

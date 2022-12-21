@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     20.10.2021  21:36:19 GMT+02:00 
+ * Generated at     20.12.2022  16:24:46 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloService.
  *
  * \file            generated/src/NEHelloService.hpp
@@ -29,7 +29,7 @@ const NEService::SInterfaceData & NEHelloService::getInterfaceData( void )
     /************************************************************************
      * The list of requests
      ************************************************************************/
-    static constexpr unsigned int _RequestList[] 
+    static constexpr unsigned int _RequestList[]
     {
           static_cast<unsigned int>( NEHelloService::eMessageIDs::MsgId_requestHelloService   ) // requestHelloService( const String & client )
     };
@@ -37,7 +37,7 @@ const NEService::SInterfaceData & NEHelloService::getInterfaceData( void )
     /************************************************************************
      * The list of responses and broadcasts
      ************************************************************************/
-    static constexpr unsigned int _ResponseList[] 
+    static constexpr unsigned int _ResponseList[]
     {
           static_cast<unsigned int>( NEHelloService::eMessageIDs::MsgId_responseHelloService  ) // responseHelloService( bool success )
     };
@@ -70,7 +70,7 @@ const NEService::SInterfaceData & NEHelloService::getInterfaceData( void )
      ************************************************************************/
 
     };
-    
+
     /************************************************************************
      * HelloService Service Interface data
      ************************************************************************/
@@ -92,7 +92,7 @@ const NEService::SInterfaceData & NEHelloService::getInterfaceData( void )
     return _InterfaceData;
 }
 
-NEHelloService::eMessageIDs NEHelloService::getResponseId( NEHelloService::eMessageIDs reqId )
+NEHelloService::eMessageIDs NEHelloService::getResponseId( NEHelloService::eMessageIDs reqId)
 {
     const NEService::SInterfaceData & sid = NEHelloService::getInterfaceData();
     msg_id index = GET_REQ_INDEX(reqId);
@@ -108,7 +108,7 @@ NEHelloService::eMessageIDs NEHelloService::getRequestId( NEHelloService::eMessa
     {
         result = sid.idRequestToResponseMap[i] == static_cast<msg_id>(respId) ? static_cast<NEHelloService::eMessageIDs>(sid.idRequestList[i]) : NEHelloService::eMessageIDs::MsgId_Invalid;
     }
-    
+
     return result;
 }
 
