@@ -335,7 +335,6 @@ void ProxyBase::freeProxy( IEProxyListener & connect )
         mProxyInstCount = 0;
         _mapRegisteredProxies.unregisterResourceObject( mProxyAddress );
         _mapThreadProxies.unregisterResourceObject( mDispatcherThread.getName( ), proxy, true );
-        proxy.reset( );
     }
     else if ( mProxyInstCount > 0 )
     {
@@ -672,6 +671,6 @@ void ProxyBase::stopProxy(void)
 
         mStubAddress = StubAddress::getInvalidStubAddress();
         mProxyData.resetStates();
-        mProxyAddress.setChannel(Channel::getInvalidChannel());
+        // mProxyAddress.setChannel(Channel::getInvalidChannel());
     }
 }
