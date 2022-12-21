@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     10.12.2022  04:36:32 GMT+01:00
+ * Generated at     20.12.2022  16:18:51 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/private/HelloWorldProxy.hpp
@@ -41,6 +41,8 @@ class HelloWorldResponseEvent;
  **/
 class HelloWorldProxy   : public ProxyBase
 {
+    friend class HelloWorldClientBase;
+    
 private:
     //////////////////////////////////////////////////////////////////////////
     // HelloWorldProxy::HelloWorldServiceAvailableEvent class declaration
@@ -79,7 +81,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // HelloWorldProxy predefined constants and static members.
 //////////////////////////////////////////////////////////////////////////
-public:
+protected:
     /**
      * \brief   Returns existing or creates new proxy object if it is not existing
      *          in the current thread scope.
@@ -129,12 +131,20 @@ public:
  * Parameters
  ************************************************************************/
     /**
-     * \brief   Returns value of clientInfo of response call function.
+     * \brief   Returns value of clientName of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
-     *          Parameter clientInfo description:
-     *          The client information set by servicing component. If empty or invalid ID, the message output failed.
+     *          Parameter clientName description:
+     *          The name of connected client that requested to output message.
      **/
-    inline const NEHelloWorld::sConnectedClient & getParamclientInfo( void ) const;
+    inline const String & getParamclientName( void ) const;
+
+    /**
+     * \brief   Returns value of clientId of response call function.
+     *          The parameter is validated and set when Proxy is getting response call.
+     *          Parameter clientId description:
+     *          Thegiven ID of the client that requested to output message.
+     **/
+    inline unsigned int getParamclientId( void ) const;
 
     /**
      * \brief   Returns value of maxNumber of response call function.
@@ -285,16 +295,22 @@ private:
  * Parameter members
  ************************************************************************/
     /**
-     * \brief   clientInfo parameter value.
-     *          The client information set by servicing component. If empty or invalid ID, the message output failed.
+     * \brief   clientName parameter value.
+     *          The name of connected client that requested to output message.
      **/
-    NEHelloWorld::sConnectedClient  mParamclientInfo;
+    String          mParamclientName;
+
+    /**
+     * \brief   clientId parameter value.
+     *          Thegiven ID of the client that requested to output message.
+     **/
+    unsigned int    mParamclientId;
 
     /**
      * \brief   maxNumber parameter value.
      *          The maximum number of reqeusts.
      **/
-    int                             mParammaxNumber;
+    int             mParammaxNumber;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -383,9 +399,14 @@ inline HelloWorldProxy & HelloWorldProxy::self( void )
  * Inline parameters
  ************************************************************************/
 
-inline const NEHelloWorld::sConnectedClient & HelloWorldProxy::getParamclientInfo( void ) const
+inline const String & HelloWorldProxy::getParamclientName( void ) const
 {
-    return mParamclientInfo;
+    return mParamclientName;
+}
+
+inline unsigned int HelloWorldProxy::getParamclientId( void ) const
+{
+    return mParamclientId;
 }
 
 inline int HelloWorldProxy::getParammaxNumber( void ) const

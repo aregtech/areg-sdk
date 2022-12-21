@@ -26,7 +26,7 @@ DirectConnectionService * DirectConnectionService::mService = nullptr;
 Component * DirectConnectionService::CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
 {
     TRACE_SCOPE( distrbutedapp_DirectConnectionService_CreateComponent );
-    return new DirectConnectionService( owner, entry.mRoleName.getBuffer(), entry.getComponentData() );
+    return new DirectConnectionService( entry, owner, entry.getComponentData() );
 }
 
 void DirectConnectionService::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry )
@@ -63,12 +63,12 @@ NERegistry::Model DirectConnectionService::GetModel( const String & nickName, ui
     return model;
 }
 
-DirectConnectionService::DirectConnectionService( ComponentThread & masterThread, const char * const roleName, NEMemory::uAlign data )
-    : Component               ( masterThread, roleName )
-    , DirectConnectionStub    ( static_cast<Component &>(self()) )
+DirectConnectionService::DirectConnectionService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread, NEMemory::uAlign data )
+    : Component             ( entry, ownerThread )
+    , DirectConnectionStub  ( static_cast<Component &>(self()) )
 
-    , mNickName                 ( reinterpret_cast<PageConnections *>(data.alignClsPtr.mElement)->GetRegisteredName() )
-    , mCookie                   ( reinterpret_cast<PageConnections *>(data.alignClsPtr.mElement)->GetRegisteredCookie() )
+    , mNickName             ( reinterpret_cast<PageConnections *>(data.alignClsPtr.mElement)->GetRegisteredName() )
+    , mCookie               ( reinterpret_cast<PageConnections *>(data.alignClsPtr.mElement)->GetRegisteredCookie() )
 {
     DirectConnectionService::mService = this;
 }

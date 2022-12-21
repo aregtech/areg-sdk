@@ -31,9 +31,8 @@ void ServicingComponent::DeleteComponent(Component & compObject, const NERegistr
 }
 
 ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component     ( owner, entry.mRoleName)
+    : Component     ( entry, owner )
     , HelloWorldStub( static_cast<Component &>(self()) )
-    , mGnerateID    ( 0 )
     , mClientList   ( )
     , mRemainRequest( NEHelloWorld::MaxMessages )
 {
@@ -43,6 +42,7 @@ void ServicingComponent::requestHelloWorld(const String & roleName)
 {
     TRACE_SCOPE(examples_12_pubservice_ServicingComponent_requestHelloWorld);
 
+    NEHelloWorld::sConnectedClient theClient;
     ClientList::LISTPOS pos = mClientList.firstPosition();
     for ( ; mClientList.isValidPosition(pos); pos = mClientList.nextPosition(pos))
     {
@@ -50,18 +50,16 @@ void ServicingComponent::requestHelloWorld(const String & roleName)
         if (roleName == client.ccName)
         {
             TRACE_DBG("Found connected client [ %s ] with ID [ %u ] in the list.", client.ccName.getString(), client.ccID);
+            theClient = client;
             break;
         }
     }
 
     if ( mClientList.isInvalidPosition(pos))
     {
-        responseHelloWorld( NEHelloWorld::sConnectedClient{ ++mGnerateID, roleName} );
-        TRACE_INFO( "The new client component [ %s ] with ID [ %u ] sent a request", roleName.getString( ), mGnerateID );
-    }
-    else
-    {
-        responseHelloWorld( mClientList.valueAtPosition( pos ) );
+        theClient = NEHelloWorld::sConnectedClient( NEUtilities::generateUniqueId(), roleName );
+        mClientList.pushFirst( theClient );
+        TRACE_INFO( "The new client component [ %s ] with ID [ %u ] sent a request", roleName.getString( ), theClient.ccID );
     }
 
     std::cout
@@ -71,6 +69,7 @@ void ServicingComponent::requestHelloWorld(const String & roleName)
         << --mRemainRequest
         << " ]" << std::endl;
 
+    responseHelloWorld( theClient );
     if ( mRemainRequest == 0 )
     {
         TRACE_INFO( "Reached maximum to output messages, this should trigger the shutdown procedure." );

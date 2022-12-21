@@ -109,12 +109,22 @@ ComponentThread& Component::_getCurrentComponentThread( void )
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor 
 //////////////////////////////////////////////////////////////////////////
-Component::Component( ComponentThread & masterThread, const String & roleName)
-    : RuntimeObject           ( )
+Component::Component( const String & roleName, ComponentThread & ownerThread )
+    : RuntimeObject ( )
 
-    , mComponentInfo    (masterThread, roleName)
-    , mMagicNum         ( Component::_magicNumber(self()) )
-    , mServerList       ( )
+    , mComponentInfo( ownerThread, roleName )
+    , mMagicNum     ( Component::_magicNumber(self()) )
+    , mServerList   ( )
+{
+    _mapComponentResource.registerResourceObject(mMagicNum, this);
+}
+
+Component::Component( const NERegistry::ComponentEntry & regEntry, ComponentThread & ownerThread )
+    : RuntimeObject ( )
+
+    , mComponentInfo( ownerThread, regEntry.mRoleName)
+    , mMagicNum     ( Component::_magicNumber(self()) )
+    , mServerList   ( )
 {
     _mapComponentResource.registerResourceObject(mMagicNum, this);
 }
@@ -138,7 +148,7 @@ Component::~Component( void )
 //////////////////////////////////////////////////////////////////////////
 // Methods
 //////////////////////////////////////////////////////////////////////////
-WorkerThread* Component::createWorkerThread( const String & threadName, IEWorkerThreadConsumer& consumer, ComponentThread & /* masterThread */, uint32_t watchdogTimeout)
+WorkerThread* Component::createWorkerThread( const String & threadName, IEWorkerThreadConsumer& consumer, ComponentThread & /* ownerThread */, uint32_t watchdogTimeout)
 {
     WorkerThread* workThread = mComponentInfo.findWorkerThread(threadName);
     if (workThread == nullptr)

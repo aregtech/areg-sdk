@@ -57,7 +57,7 @@ private:
      * \brief   The Hash Map object to save information of threads
      *          saved in specified Component Info object.
      **/
-    using _WorkerThreadMap  = TEMap<ThreadAddress, WorkerThread*>;
+    using _WorkerThreadMap  = TEMap<ThreadAddress, WorkerThread *>;
 
     /**
      * \brief   Resource mapping object type. 
@@ -65,7 +65,7 @@ private:
      *          As a value, it saves pointers of Worker Thread object
      *          As a Hash Map used ComponentInfo::_WorkerThreadMap object
      **/
-    using MapWorkerThread   = TELockResourceMap<ThreadAddress, WorkerThread, _WorkerThreadMap, TEResourceMapImpl<ThreadAddress, WorkerThread>>;
+    using MapWorkerThread   = TELockResourceMap<ThreadAddress, WorkerThread *, _WorkerThreadMap, TEResourceMapImpl<ThreadAddress, WorkerThread>>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -76,10 +76,10 @@ public:
      * \brief   Initialization constructor.
      *          Creates Component Info object by passing the Master Thread
      *          of Component (Component Thread) and the role name of Component.
-     * \param   masterThread    The Master Thread of Component (Component Thread)
-     * \param   roleName        The Role Name of component, must not be empty
+     * \param   ownerThread The Master Thread of Component (Component Thread)
+     * \param   roleName    The Role Name of component, must not be empty
      **/
-    ComponentInfo( ComponentThread & masterThread, const String & roleName );
+    ComponentInfo( ComponentThread & ownerThread, const String & roleName );
 
     /**
      * \brief   Destructor

@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  13:59:46 GMT+02:00
+ * Generated at     20.12.2022  16:19:16 GMT+01:00
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
  *
  * \file            generated/src/NELocalHelloWorld.hpp
@@ -45,18 +45,14 @@ const NEService::SInterfaceData & NELocalHelloWorld::getInterfaceData( void )
     /************************************************************************
      * The list of attributes
      ************************************************************************/
-    static constexpr unsigned int _AttributeList[]
-    {
-          static_cast<unsigned int>( NELocalHelloWorld::eMessageIDs::MsgId_ConnectedClients    ) // NELocalHelloWorld::ConnectionList mConnectedClients;
-        , static_cast<unsigned int>( NELocalHelloWorld::eMessageIDs::MsgId_RemainOutput        ) // short mRemainOutput;
-    };
+    constexpr unsigned int * _AttributeList { nullptr };    /* There are no attributes. Set Invalid message ID */
 
     /************************************************************************
      * The map of requests and responses
      ************************************************************************/
     static constexpr unsigned int _RequestToResponseMap[] 
     {
-          static_cast<unsigned int>( NELocalHelloWorld::eMessageIDs::MsgId_responseHelloWorld  ) // requestHelloWorld( const String & roleName )
+          static_cast<unsigned int>( NELocalHelloWorld::eMessageIDs::MsgId_NotProcessed        ) // requestHelloWorld( const String & roleName )
     };
 
     /************************************************************************
@@ -85,7 +81,7 @@ const NEService::SInterfaceData & NELocalHelloWorld::getInterfaceData( void )
         , NEService::eServiceType::ServiceLocal
         , 1
         , 1
-        , 2
+        , 0
         , _RequestList
         , _ResponseList
         , _AttributeList

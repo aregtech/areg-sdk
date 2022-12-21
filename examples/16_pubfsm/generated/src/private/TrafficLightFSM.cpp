@@ -471,7 +471,7 @@ inline void TrafficLightFSM::leaveState( const TrafficLightFSM::eState curState,
 /**
  * Call to initialize State Machine. Initialize before calling any trigger.
  **/
-void TrafficLightFSM::initFSM( DispatcherThread * masterThread /*= nullptr*/ )
+void TrafficLightFSM::initFSM( DispatcherThread * ownerThread /*= nullptr*/ )
 {
     TRACE_SCOPE(generated_src_private_TrafficLightFSM_initFSM);
     if (mState != TrafficLightFSM::UNDEFINED)
@@ -480,7 +480,7 @@ void TrafficLightFSM::initFSM( DispatcherThread * masterThread /*= nullptr*/ )
         ASSERT(false);
     }
 
-    mMasterThread   = masterThread != nullptr ? masterThread : &(DispatcherThread::getCurrentDispatcherThread( ));
+    mMasterThread   = ownerThread != nullptr ? ownerThread : &(DispatcherThread::getCurrentDispatcherThread( ));
     NETrafficLightFSM::FsmEvent::addListener( static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(self()), *mMasterThread );
     
     mCurrentStates[UNDEFINED]                 = TrafficLightFSM::UNDEFINED;

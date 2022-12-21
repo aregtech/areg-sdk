@@ -17,7 +17,7 @@
 
 Component * ServicingComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
 {
-    return DEBUG_NEW ServicingComponent(owner, entry.mRoleName.getString(), entry.getComponentData());
+    return DEBUG_NEW ServicingComponent( entry, owner, entry.getComponentData());
 }
 
 void ServicingComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
@@ -29,11 +29,11 @@ DEF_TRACE_SCOPE(examples_09_svcmulti_ServicingComponent_startupServiceInterface)
 DEF_TRACE_SCOPE(examples_09_svcmulti_ServicingComponent_shutdownServiceIntrface);
 DEF_TRACE_SCOPE(examples_09_svcmulti_ServicingComponent_processTimer);
 
-ServicingComponent::ServicingComponent(ComponentThread & masterThread, const char * const roleName, NEMemory::uAlign OPTIONAL data)
-    : Component ( masterThread, roleName )
+ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread, NEMemory::uAlign OPT data)
+    : Component ( entry, ownerThread )
     , StubBase  ( self(), NEService::getEmptyInterface() )
 
-    , mTimer    ( self(), roleName )
+    , mTimer    ( self(), entry.mRoleName )
     , mCount    ( 0 )
 {
 }

@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  13:59:46 GMT+02:00
+ * Generated at     20.12.2022  16:19:16 GMT+01:00
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
  *
  * \file            generated/src/LocalHelloWorldStub.hpp
@@ -35,9 +35,7 @@
  *              Instantiated per every server component, which differ by
  *              role name of component.
  *
- *              Simple Service Interface to demonstrate working features of AREG SDK.
- *              This interface serves only local components and can be duplicated in other processes.
- *              		
+ *              A Local Service Interface to demonstrate working features of AREG SDK.
  **/
 class LocalHelloWorldStub   : protected  StubBase
 {
@@ -75,74 +73,6 @@ public:
 // LocalHelloWorld Interface Attributes
 //////////////////////////////////////////////////////////////////////////
  public:
-/************************************************************************
- * Attribute ConnectedClients functions
- ************************************************************************/
-
-    /**
-     * \brief   Returns true if ConnectedClients attribute is valid
-     **/
-    inline bool isConnectedClientsValid( void ) const;
-    /**
-     * \brief   Invalidates ConnectedClients attribute and
-     *          sends error update notification message to clients.
-     **/
-    inline void invalidateConnectedClients( void );
-    /**
-     * \brief   Force to send ConnectedClients attribute notification message to all clients.
-     *          The method can be called when the attribute is updated not via set-method.
-     **/
-     inline void notifyConnectedClientsUpdated( void );
-    /**
-     * \brief   Set ConnectedClients attribute value and send notification event to all clients.
-     *          The notification is sent only when value is updated or validated.
-     * \param   newValue    New value of ConnectedClients attribute to set.
-     *                      The ConnectedClients attribute description:
-     *                      The list of connected clients. Updated each time when new client requests to output Hello World message.
-     **/
-    virtual void setConnectedClients( const NELocalHelloWorld::ConnectionList & newValue );
-    /**
-     * \brief   Returns the value of ConnectedClients attribute.
-     *          The ConnectedClients attribute description:
-     *          The list of connected clients. Updated each time when new client requests to output Hello World message.
-     **/
-    inline const NELocalHelloWorld::ConnectionList & getConnectedClients( void ) const;
-    inline NELocalHelloWorld::ConnectionList & getConnectedClients( void );
-
-/************************************************************************
- * Attribute RemainOutput functions
- ************************************************************************/
-
-    /**
-     * \brief   Returns true if RemainOutput attribute is valid
-     **/
-    inline bool isRemainOutputValid( void ) const;
-    /**
-     * \brief   Invalidates RemainOutput attribute and
-     *          sends error update notification message to clients.
-     **/
-    inline void invalidateRemainOutput( void );
-    /**
-     * \brief   Force to send RemainOutput attribute notification message to all clients.
-     *          The method can be called when the attribute is updated not via set-method.
-     **/
-     inline void notifyRemainOutputUpdated( void );
-    /**
-     * \brief   Set RemainOutput attribute value and send notification event to all clients.
-     *          The notification is sent only when value is updated or validated.
-     * \param   newValue    New value of RemainOutput attribute to set.
-     *                      The RemainOutput attribute description:
-     *                      Remaining number of outputs to print Hello World.
-     **/
-    virtual void setRemainOutput( const short & newValue );
-    /**
-     * \brief   Returns the value of RemainOutput attribute.
-     *          The RemainOutput attribute description:
-     *          Remaining number of outputs to print Hello World.
-     **/
-    inline const short & getRemainOutput( void ) const;
-    inline short & getRemainOutput( void );
-
 //////////////////////////////////////////////////////////////////////////
 // LocalHelloWorld Interface Requests
 //////////////////////////////////////////////////////////////////////////
@@ -152,7 +82,7 @@ public:
      * \brief   Request call.
      *          Request to print hello world
      * \param   roleName    The role name of client component that requested to print hello world
-     * \see     responseHelloWorld
+     * \note    Has no response
      **/
     virtual void requestHelloWorld( const String & roleName ) = 0;
 
@@ -165,7 +95,7 @@ public:
      * \brief   Response call.
      *          The response to hello world request.
      * \param   clientInfo  The client information set by servicing component. If empty or invalid ID, the message output failed.
-     * \see     requestHelloWorld
+     * \note    This response has no connected request, it will be never triggered
      **/
     virtual void responseHelloWorld( const NELocalHelloWorld::sConnectedClient & clientInfo );
 
@@ -284,26 +214,6 @@ private:
  * Attributes
  ************************************************************************/
 
-    /**
-     * \brief   Attribute ConnectedClients
-     *          The list of connected clients. Updated each time when new client requests to output Hello World message.
-     **/
-    NELocalHelloWorld::ConnectionList   mConnectedClients;
-    /**
-     * \brief   Attribute ConnectedClients data validation state.
-     **/
-    NEService::eDataStateType           mConnectedClientsState;
-
-    /**
-     * \brief   Attribute RemainOutput
-     *          Remaining number of outputs to print Hello World.
-     **/
-    short                               mRemainOutput;
-    /**
-     * \brief   Attribute RemainOutput data validation state.
-     **/
-    NEService::eDataStateType           mRemainOutputState;
-
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
@@ -319,64 +229,6 @@ private:
 inline LocalHelloWorldStub & LocalHelloWorldStub::self( void )
 {
     return (*this);
-}
-
-/************************************************************************
- * \brief   ConnectedClients attribute functions
- ************************************************************************/
- 
-inline bool LocalHelloWorldStub::isConnectedClientsValid( void ) const
-{
-    return (mConnectedClientsState  == NEService::eDataStateType::DataIsOK);
-}
-
-inline void LocalHelloWorldStub::invalidateConnectedClients( void )
-{
-    errorRequest( static_cast<msg_id>(NELocalHelloWorld::eMessageIDs::MsgId_ConnectedClients), false );
-}
-
-inline void LocalHelloWorldStub::notifyConnectedClientsUpdated( void )
-{
-    sendNotification( static_cast<msg_id>(NELocalHelloWorld::eMessageIDs::MsgId_ConnectedClients) );
-}
-
-inline const NELocalHelloWorld::ConnectionList & LocalHelloWorldStub::getConnectedClients( void ) const
-{
-    return mConnectedClients;
-}
-
-inline NELocalHelloWorld::ConnectionList & LocalHelloWorldStub::getConnectedClients( void )
-{
-    return mConnectedClients;
-}
-
-/************************************************************************
- * \brief   RemainOutput attribute functions
- ************************************************************************/
- 
-inline bool LocalHelloWorldStub::isRemainOutputValid( void ) const
-{
-    return (mRemainOutputState  == NEService::eDataStateType::DataIsOK);
-}
-
-inline void LocalHelloWorldStub::invalidateRemainOutput( void )
-{
-    errorRequest( static_cast<msg_id>(NELocalHelloWorld::eMessageIDs::MsgId_RemainOutput), false );
-}
-
-inline void LocalHelloWorldStub::notifyRemainOutputUpdated( void )
-{
-    sendNotification( static_cast<msg_id>(NELocalHelloWorld::eMessageIDs::MsgId_RemainOutput) );
-}
-
-inline const short & LocalHelloWorldStub::getRemainOutput( void ) const
-{
-    return mRemainOutput;
-}
-
-inline short & LocalHelloWorldStub::getRemainOutput( void )
-{
-    return mRemainOutput;
 }
 
 //////////////////////////////////////////////////////////////////////////

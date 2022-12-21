@@ -15,7 +15,7 @@ void ServiceComponent::DeleteComponent(Component & compObject, const NERegistry:
 }
 
 ServiceComponent::ServiceComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component         ( owner, entry.mRoleName)
+    : Component         ( entry, owner )
     , HelloServiceStub  ( static_cast<Component &>(self()) )
 {
 }

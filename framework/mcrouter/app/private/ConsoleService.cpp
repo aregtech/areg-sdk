@@ -55,7 +55,7 @@ ConsoleService::DataRate::DataRate(uint32_t sizeBytes)
 //////////////////////////////////////////////////////////////////////////
 Component * ConsoleService::CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
 {
-    return DEBUG_NEW ConsoleService( owner, entry.mRoleName.getString( ), entry.getComponentData( ) );
+    return DEBUG_NEW ConsoleService( entry, owner, entry.getComponentData( ) );
 }
 
 void ConsoleService::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry )
@@ -66,8 +66,8 @@ void ConsoleService::DeleteComponent( Component & compObject, const NERegistry::
 //////////////////////////////////////////////////////////////////////////
 // ConsoleService class implementation
 //////////////////////////////////////////////////////////////////////////
-ConsoleService::ConsoleService( ComponentThread & masterThread, const char * const roleName, NEMemory::uAlign OPTIONAL data )
-    : Component         ( masterThread, roleName )
+ConsoleService::ConsoleService( const NERegistry::ComponentEntry & entry, ComponentThread & owner, NEMemory::uAlign OPT data )
+    : Component         ( entry, owner )
     , StubBase          ( self( ), NEService::getEmptyInterface( ) )
     , IETimerConsumer   ( )
 

@@ -36,7 +36,7 @@ void ServicingComponent::DeleteComponent(Component & compObject, const NERegistr
 }
 
 ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component         ( owner, entry.mRoleName)
+    : Component         ( entry, owner )
     , LargeDataStub     ( static_cast<Component &>(self()) )
     , IETimerConsumer   ( )
     , IEOptionConsumer  ( )

@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:45:34 GMT+02:00
+ * Generated at     20.12.2022  16:19:34 GMT+01:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficSwitch.
  *
  * \file            generated/src/private/SimpleTrafficSwitchProxy.hpp
@@ -42,6 +42,8 @@ class SimpleTrafficSwitchResponseEvent;
  **/
 class SimpleTrafficSwitchProxy   : public ProxyBase
 {
+    friend class SimpleTrafficSwitchClientBase;
+    
 private:
     //////////////////////////////////////////////////////////////////////////
     // SimpleTrafficSwitchProxy::SimpleTrafficSwitchServiceAvailableEvent class declaration
@@ -80,7 +82,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // SimpleTrafficSwitchProxy predefined constants and static members.
 //////////////////////////////////////////////////////////////////////////
-public:
+protected:
     /**
      * \brief   Returns existing or creates new proxy object if it is not existing
      *          in the current thread scope.

@@ -23,7 +23,7 @@ void TrafficLightClient::DeleteComponent(Component & compObject, const NERegistr
 }
 
 TrafficLightClient::TrafficLightClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component                     ( owner, entry.mRoleName )
+    : Component                     ( entry, owner )
     , SimpleTrafficLightClientBase  ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )
 
     , mTrafficDirection             ( static_cast<NECommon::eTrafficDirection>(entry.getComponentData().alignInt.mElement) )

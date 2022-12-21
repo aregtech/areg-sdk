@@ -130,7 +130,7 @@ protected:
 // Hidden constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 private:
-    ConnectionManager( ComponentThread & masterThread, const char * const roleName, NEMemory::uAlign data );
+    ConnectionManager( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread, NEMemory::uAlign data );
     virtual ~ConnectionManager( void );
 
 //////////////////////////////////////////////////////////////////////////

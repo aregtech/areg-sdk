@@ -64,6 +64,10 @@ class ConsoleService: public    Component
         std::pair<float, std::string>   mRate;
     };
 
+public:
+    //!< The console service role name
+    static constexpr std::string_view   SERVICE_NAME    { "ConcoleService" };
+
 //////////////////////////////////////////////////////////////////////////
 // Static methods
 //////////////////////////////////////////////////////////////////////////
@@ -97,11 +101,11 @@ protected:
 
     /**
      * \brief   Instantiates the component object.
-     * \param   masterThread    The instance of component owner thread.
-     * \param   roleName        The role name of component, given in the system.
-     * \param   data            The optional component data set in system. Can be empty / no data.
+     * \param   ownerThread The instance of component owner thread.
+     * \param   roleName    The role name of component, given in the system.
+     * \param   data        The optional component data set in system. Can be empty / no data.
      **/
-    ConsoleService( ComponentThread & masterThread, const char * const roleName, NEMemory::uAlign OPTIONAL data );
+    ConsoleService( const NERegistry::ComponentEntry & entry, ComponentThread & owner, NEMemory::uAlign OPT data );
 
     /**
      * \brief   Destructor.

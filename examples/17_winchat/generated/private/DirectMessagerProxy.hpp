@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:48:00 GMT+02:00
+ * Generated at     20.12.2022  16:20:20 GMT+01:00
  *                  Create by AREG SDK code generator tool from source DirectMessager.
  *
  * \file            generated/private/DirectMessagerProxy.hpp
@@ -41,6 +41,8 @@ class DirectMessagerResponseEvent;
  **/
 class DirectMessagerProxy   : public ProxyBase
 {
+    friend class DirectMessagerClientBase;
+    
 private:
     //////////////////////////////////////////////////////////////////////////
     // DirectMessagerProxy::DirectMessagerServiceAvailableEvent class declaration
@@ -79,7 +81,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // DirectMessagerProxy predefined constants and static members.
 //////////////////////////////////////////////////////////////////////////
-public:
+protected:
     /**
      * \brief   Returns existing or creates new proxy object if it is not existing
      *          in the current thread scope.
@@ -236,7 +238,7 @@ public:
      * \see     responseChatJoin
      **/
     unsigned int requestChatJoin( IENotificationEventConsumer & caller, const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect );
-    
+
     /**
      * \brief   Request call.
      *          Request to send a message, has no response

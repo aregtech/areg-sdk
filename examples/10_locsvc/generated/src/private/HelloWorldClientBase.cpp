@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     10.12.2022  04:35:54 GMT+01:00
+ * Generated at     20.12.2022  16:18:37 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/HelloWorldClientBase.hpp
@@ -69,6 +69,15 @@ HelloWorldClientBase::HelloWorldClientBase( const String & roleName, Component &
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
     , mProxy            ( HelloWorldProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), owner.getMasterThread()) )
+{
+}
+
+HelloWorldClientBase::HelloWorldClientBase( const NERegistry::DependencyEntry & dependency, Component & owner )
+    : IEProxyListener   ( )
+
+    , mIsConnected      ( false )
+    , mCurrSequenceNr   ( 0 )
+    , mProxy            ( HelloWorldProxy::createProxy(dependency.mRoleName, static_cast<IEProxyListener &>(self()), owner.getMasterThread()) )
 {
 }
 
@@ -192,8 +201,7 @@ void HelloWorldClientBase::processNotificationEvent( NotificationEvent & eventEl
          ************************************************************************/
             case NEHelloWorld::eMessageIDs::MsgId_responseHelloWorld:
                 {
-                    const NEHelloWorld::sConnectedClient & clientInfo = mProxy->getParamclientInfo();
-                    responseHelloWorld( clientInfo );
+                    responseHelloWorld(  );
                 }
                 break;
 
@@ -311,7 +319,7 @@ void HelloWorldClientBase::requestShutdownServiceFailed( NEService::eResultType 
 }
 
 DEF_TRACE_SCOPE(generated_src_HelloWorldClientBase_responseHelloWorld);
-void HelloWorldClientBase::responseHelloWorld( const NEHelloWorld::sConnectedClient & /* clientInfo */ )
+void HelloWorldClientBase::responseHelloWorld( void )
 {
     TRACE_SCOPE(generated_src_HelloWorldClientBase_responseHelloWorld);
     TRACE_WARN("The response responseHelloWorld (value = %u) method of proxy [ %s ] client HelloWorldClientBase is not implemented!"

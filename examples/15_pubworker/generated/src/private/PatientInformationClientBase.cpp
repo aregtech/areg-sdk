@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:46:19 GMT+02:00
+ * Generated at     20.12.2022  16:19:45 GMT+01:00
  *                  Create by AREG SDK code generator tool from source PatientInformation.
  *
  * \file            generated/src/PatientInformationClientBase.hpp
@@ -67,6 +67,15 @@ PatientInformationClientBase::PatientInformationClientBase( const String & roleN
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
     , mProxy            ( PatientInformationProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), owner.getMasterThread()) )
+{
+}
+
+PatientInformationClientBase::PatientInformationClientBase( const NERegistry::DependencyEntry & dependency, Component & owner )
+    : IEProxyListener   ( )
+
+    , mIsConnected      ( false )
+    , mCurrSequenceNr   ( 0 )
+    , mProxy            ( PatientInformationProxy::createProxy(dependency.mRoleName, static_cast<IEProxyListener &>(self()), owner.getMasterThread()) )
 {
 }
 

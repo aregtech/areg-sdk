@@ -29,7 +29,7 @@ void ServiceClient::DeleteComponent(Component & compObject, const NERegistry::Co
 }
 
 ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
-    : Component             ( owner, NEUtilities::generateName(entry.mRoleName) )
+    : Component             ( NEUtilities::generateName(entry.mRoleName), owner )
     , HelloWorldClientBase  ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self()) )
     , IETimerConsumer       ( )
 

@@ -30,7 +30,7 @@ void ControllerComponent::DeleteComponent( Component & compObject, const NERegis
 }
 
 ControllerComponent::ControllerComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-    : Component ( owner, entry.mRoleName )
+    : Component ( entry, owner )
     , mService  ( static_cast<Component &>(self( )), entry.getComponentData( ).alignBool.mElement )
 {
 }
@@ -50,7 +50,7 @@ void SecondaryComponent::DeleteComponent( Component & compObject, const NERegist
 }
 
 SecondaryComponent::SecondaryComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
-    : Component         ( owner, entry.mRoleName )
+    : Component         ( entry, owner )
     , mService          ( static_cast<Component &>(self( )), entry.getComponentData( ).alignBool.mElement )
     , mClientMain       ( entry.mDependencyServices[0].mRoleName, static_cast<Component &>(self( )) )
     , mClientSecondary  ( entry.mDependencyServices[1].mRoleName, static_cast<Component &>(self( )) )

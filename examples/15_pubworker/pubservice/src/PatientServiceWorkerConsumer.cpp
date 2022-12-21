@@ -31,7 +31,7 @@ PatientServiceWorkerConsumer::PatientServiceWorkerConsumer(const char * consumer
 {
 }
 
-void PatientServiceWorkerConsumer::registerEventConsumers(WorkerThread & workThread, ComponentThread & masterThread)
+void PatientServiceWorkerConsumer::registerEventConsumers(WorkerThread & workThread, ComponentThread & masterThread )
 {
     bool quitApp = false;
 

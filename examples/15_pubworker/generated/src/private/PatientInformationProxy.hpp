@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:46:19 GMT+02:00
+ * Generated at     20.12.2022  16:19:45 GMT+01:00
  *                  Create by AREG SDK code generator tool from source PatientInformation.
  *
  * \file            generated/src/private/PatientInformationProxy.hpp
@@ -41,6 +41,8 @@ class PatientInformationResponseEvent;
  **/
 class PatientInformationProxy   : public ProxyBase
 {
+    friend class PatientInformationClientBase;
+    
 private:
     //////////////////////////////////////////////////////////////////////////
     // PatientInformationProxy::PatientInformationServiceAvailableEvent class declaration
@@ -79,7 +81,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // PatientInformationProxy predefined constants and static members.
 //////////////////////////////////////////////////////////////////////////
-public:
+protected:
     /**
      * \brief   Returns existing or creates new proxy object if it is not existing
      *          in the current thread scope.

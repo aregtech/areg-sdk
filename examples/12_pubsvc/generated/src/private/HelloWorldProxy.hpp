@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     10.12.2022  04:48:18 GMT+01:00
+ * Generated at     20.12.2022  16:19:04 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/private/HelloWorldProxy.hpp
@@ -41,6 +41,8 @@ class HelloWorldResponseEvent;
  **/
 class HelloWorldProxy   : public ProxyBase
 {
+    friend class HelloWorldClientBase;
+    
 private:
     //////////////////////////////////////////////////////////////////////////
     // HelloWorldProxy::HelloWorldServiceAvailableEvent class declaration
@@ -79,7 +81,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // HelloWorldProxy predefined constants and static members.
 //////////////////////////////////////////////////////////////////////////
-public:
+protected:
     /**
      * \brief   Returns existing or creates new proxy object if it is not existing
      *          in the current thread scope.

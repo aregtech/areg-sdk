@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     15.08.2022  01:31:05 GMT+02:00
+ * Generated at     20.12.2022  16:20:51 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWatchdog.
  *
  * \file            generated/src/HelloWatchdogClientBase.hpp
@@ -50,31 +50,38 @@ class HelloWatchdogClientBase  : public IEProxyListener
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initialize HelloWatchdog Service Interface client object.
-     *          Specifies used service and owner thread.
-     * \param   roleName    The role name assigned to HelloWatchdog servicing component object.
-     * \param   ownerThread The name of component owner thread to dispatch messages.
-     *                      If nullptr, all messages are dispatched in current component thread.
+     * \brief   Initialize HelloWatchdog Service client object by specifying the
+     *          dependency of service by role name and the client owner thread name.
+     * \param   roleName    The dependent service HelloWatchdog role name.
+     * \param   ownerThread The name of client owner thread. If empty, assign current thread.
      **/
     HelloWatchdogClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
 
     /**
-     * \brief   Initialize HelloWatchdog Service Interface client object.
-     *          Specifies used service and owner thread.
-     * \param   roleName    The role name assigned to HelloWatchdog servicing component object.
-     * \param   ownerThread The instance of component owner thread to dispatch messages.
+     * \brief   Initialize HelloWatchdog Service client object by specifying the
+     *          dependency of service by role name and the client owner thread.
+     * \param   roleName    The dependent service HelloWatchdog role name.
+     * \param   ownerThread The instance of client owner thread.
      **/
     HelloWatchdogClientBase( const String & roleName, DispatcherThread & ownerThread );
 
     /**
-     * \brief   Initialize HelloWatchdog Service Interface client object.
-     *          Specifies used service and owner component.
-     * \param   roleName    The role name assigned to HelloWatchdog servicing component object.
-     * \param   owner       The instance of client owner component. The component object should be already initialized.
-     * \note    When this constructor is used, it is important that the Component object is already initialized.
-     *          and the component thread is set.
+     * \brief   Initialize HelloWatchdog Service client object by specifying the
+     *          dependency of service by role name and the client owner component.
+     * \param   roleName    The dependent service HelloWatchdog role name.
+     * \param   owner       The instance of client owner component.
+     * \note    It is important that the Component object is already initialized.
      **/
     HelloWatchdogClientBase( const String & roleName, Component & owner );
+    
+    /**
+     * \brief   Initialize HelloWatchdog Service client object by specifying the
+     *          dependency of service by registered dependency entry and the owner component object.
+     * \param   dependency  The instance of registered service HelloWatchdog dependency entry.
+     * \param   owner       The instance of client owner component.
+     * \note    It is important that the Component object is already initialized.
+     **/
+    HelloWatchdogClientBase( const NERegistry::DependencyEntry & dependency, Component & owner );
 
     /**
      * \brief   Destructor.

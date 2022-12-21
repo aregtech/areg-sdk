@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:48:00 GMT+02:00
+ * Generated at     20.12.2022  16:20:20 GMT+01:00
  *                  Create by AREG SDK code generator tool from source DirectMessager.
  *
  * \file            generated/private/DirectMessagerProxy.hpp
@@ -53,7 +53,7 @@ DirectMessagerProxy * DirectMessagerProxy::createProxy( const String & roleName,
                                                                       , NEDirectMessager::getInterfaceData()
                                                                       , connectListener
                                                                       , &DirectMessagerProxy::_createProxy
-                                                                      , ownerThread) );
+                                                                      , ownerThread).get() );
 }
 
 DirectMessagerProxy * DirectMessagerProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
@@ -62,7 +62,7 @@ DirectMessagerProxy * DirectMessagerProxy::createProxy( const String & roleName,
                                                                       , NEDirectMessager::getInterfaceData()
                                                                       , connectListener
                                                                       , &DirectMessagerProxy::_createProxy
-                                                                      , ownerThread) );
+                                                                      , ownerThread).get() );
 }
 
 //////////////////////////////////////////////////////////////////////////

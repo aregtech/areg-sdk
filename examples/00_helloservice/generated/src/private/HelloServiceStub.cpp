@@ -2,9 +2,9 @@
 // Begin generate generated/src/private/HelloServiceStub.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     20.10.2021  21:36:19 GMT+02:00 
+ * Generated at     20.12.2022  16:24:46 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloService.
  *
  * \file            generated/src/HelloServiceStub.hpp
@@ -20,7 +20,8 @@
 #include "generated/src/private/HelloServiceEvents.hpp"
 
 #include "areg/component/ServiceResponseEvent.hpp"
-#include "areg/base/Thread.hpp"
+#include "areg/component/Component.hpp"
+#include "areg/component/ComponentThread.hpp"
 #include "areg/trace/GETrace.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -32,7 +33,7 @@
 //////////////////////////////////////////////////////////////////////////
 HelloServiceStub::HelloServiceStub( Component & masterComp )
     : StubBase    ( masterComp, NEHelloService::getInterfaceData() )
-    
+
 {
 }
 
@@ -53,9 +54,9 @@ DEF_TRACE_SCOPE(generated_src_HelloServiceStub_startupServiceInterface);
 void HelloServiceStub::startupServiceInterface( Component & holder )
 {
     TRACE_SCOPE(generated_src_HelloServiceStub_startupServiceInterface);
-    
-    HelloServiceRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
-    HelloServiceNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
+
+    HelloServiceRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
+    HelloServiceNotifyRequestEvent::addListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
     StubBase::startupServiceInterface( holder );
 
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] has been started and is available ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
@@ -66,9 +67,9 @@ void HelloServiceStub::shutdownServiceIntrface( Component & holder )
 {
     TRACE_SCOPE(generated_src_HelloServiceStub_shutdownServiceIntrface);
     TRACE_DBG("The Stub Service [ %s ] of component with role name [ %s ] is shutting down and not available anymore ...", mAddress.getServiceName().getString(), mAddress.getRoleName().getString());
-    
-    HelloServiceRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
-    HelloServiceNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), Thread::getCurrentThreadName() );
+
+    HelloServiceRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
+    HelloServiceNotifyRequestEvent::removeListener( static_cast<IEEventConsumer &>(self()), holder.getMasterThread() );
     StubBase::shutdownServiceIntrface( holder );
 }
 
@@ -101,7 +102,7 @@ void HelloServiceStub::errorRequest( unsigned int msgId, bool msgCancel )
 {
     NEService::eResultType result = NEService::eResultType::NotProcessed;
     msg_id listenerId = msgId;
-    
+
     switch ( static_cast<NEHelloService::eMessageIDs>(msgId) )
     {
 /************************************************************************
@@ -130,7 +131,7 @@ void HelloServiceStub::errorRequest( unsigned int msgId, bool msgCancel )
         ASSERT(false);
         break;
     }
-    
+
     StubBase::StubListenerList listeners;
     if ( findListeners(listenerId, listeners) > 0 )
     {
@@ -190,11 +191,11 @@ void HelloServiceStub::processRequestEvent( ServiceRequestEvent & eventElem )
             if ( canExecuteRequest(listener, static_cast<msg_id>(respId), reqEvent->getSequenceNumber()) )
             {
                 String  client;
-                stream >> client;                
+                stream >> client;
                 requestHelloService( client );
             }
             break;
-            
+
         default:
             {
                 TRACE_SCOPE(generated_src_HelloServiceStub_processRequestEvent);

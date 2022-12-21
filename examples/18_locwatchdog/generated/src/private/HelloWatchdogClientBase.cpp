@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:48:18 GMT+02:00
+ * Generated at     20.12.2022  16:20:32 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWatchdog.
  *
  * \file            generated/src/HelloWatchdogClientBase.hpp
@@ -68,6 +68,15 @@ HelloWatchdogClientBase::HelloWatchdogClientBase( const String & roleName, Compo
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
     , mProxy            ( HelloWatchdogProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), owner.getMasterThread()) )
+{
+}
+
+HelloWatchdogClientBase::HelloWatchdogClientBase( const NERegistry::DependencyEntry & dependency, Component & owner )
+    : IEProxyListener   ( )
+
+    , mIsConnected      ( false )
+    , mCurrSequenceNr   ( 0 )
+    , mProxy            ( HelloWatchdogProxy::createProxy(dependency.mRoleName, static_cast<IEProxyListener &>(self()), owner.getMasterThread()) )
 {
 }
 

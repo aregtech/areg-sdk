@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  13:59:49 GMT+02:00
+ * Generated at     20.12.2022  16:19:19 GMT+01:00
  *                  Create by AREG SDK code generator tool from source SystemShutdown.
  *
  * \file            generated/src/SystemShutdownStub.hpp
@@ -36,9 +36,7 @@
  *              role name of component.
  *
  *              Simple Service Interface to demonstrate working features of AREG SDK.
- *              This service demonstrates the usage in combination with other services.
- *              It also can be used by any other object that has interest in system shutdown state.
- *              System run and shutdown service.
+ *              This service demonstrates the usage of attribute.
  **/
 class SystemShutdownStub   : protected  StubBase
 {
@@ -99,13 +97,13 @@ public:
      *          The notification is sent only when value is updated or validated.
      * \param   newValue    New value of ServiceState attribute to set.
      *                      The ServiceState attribute description:
-     *                      Describes the current state of service.
+     *                      Describes the system availability state
      **/
     virtual void setServiceState( const NESystemShutdown::eServiceState & newValue );
     /**
      * \brief   Returns the value of ServiceState attribute.
      *          The ServiceState attribute description:
-     *          Describes the current state of service.
+     *          Describes the system availability state
      **/
     inline const NESystemShutdown::eServiceState & getServiceState( void ) const;
     inline NESystemShutdown::eServiceState & getServiceState( void );
@@ -114,6 +112,13 @@ public:
 // SystemShutdown Interface Requests
 //////////////////////////////////////////////////////////////////////////
 public:
+
+    /**
+     * \brief   Request call.
+     *          The request to shutdown the system.
+     * \note    Has no response
+     **/
+    virtual void requestSystemShutdown( void ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // SystemShutdown Interface Responses
@@ -124,18 +129,6 @@ public:
 // SystemShutdown Interface Broadcasts
 //////////////////////////////////////////////////////////////////////////
 public:
-
-    /**
-     * \brief   Broadcast call.
-     *          Sent to notify the service unavailable state. All clients should be unregistered to start the shutdown procedure.
-     **/
-    virtual void broadcastServiceUnavailable( void );
-
-    /**
-     * \brief   Broadcast call.
-     *          Notifies the system is shutting down so that application should disconnect and close.
-     **/
-    virtual void broadcastServiceShutdown( void );
 
 //////////////////////////////////////////////////////////////////////////
 // End Service Interface operations / attributes and overrides declaration
@@ -267,7 +260,7 @@ private:
 
     /**
      * \brief   Attribute ServiceState
-     *          Describes the current state of service.
+     *          Describes the system availability state
      **/
     NESystemShutdown::eServiceState mServiceState;
     /**

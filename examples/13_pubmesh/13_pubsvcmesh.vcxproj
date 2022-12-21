@@ -36,13 +36,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="pubsvcmesh\src\LocalServiceComponent.cpp" />
     <ClCompile Include="pubsvcmesh\src\main.cpp" />
-    <ClCompile Include="pubsvcmesh\src\RemoteServiceComponent.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="pubsvcmesh\src\LocalServiceComponent.hpp" />
-    <ClInclude Include="pubsvcmesh\src\RemoteServiceComponent.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
