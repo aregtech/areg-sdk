@@ -12,6 +12,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: make
+    # checkout sources
+    - name: checkout
+      uses: actions/checkout@v2
+    
+    # run make
+    - name: run make
       run: make
