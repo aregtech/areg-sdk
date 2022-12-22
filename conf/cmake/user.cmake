@@ -4,8 +4,8 @@
 
 # Set the compiler here. Possible settings: "gcc", "g++", "cl", "clang++-13"
 # Can set compiler full path.
-set(CMAKE_CXX_COMPILER "cl")
-set(CMAKE_C_COMPILER "cl")
+set(CMAKE_CXX_COMPILER "g++")
+set(CMAKE_C_COMPILER "gcc")
 # CPP standard for the project
 set(CMAKE_CXX_STANDARD 17)
 
