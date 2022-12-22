@@ -34,30 +34,17 @@
             <Description>The light state of east-west traffic.</Description>
         </Attribute>
     </AttributeList>
-    <MethodList>
-        <Method ID="16" MethodType="broadcast" Name="LightChanged">
-            <Description>Triggered when the light state of traffic is changed.</Description>
-            <ParamList>
-                <Parameter DataType="eTrafficLight" ID="17" Name="SouthNorth">
-                    <Description>The light state of south-north traffic.</Description>
-                </Parameter>
-                <Parameter DataType="eTrafficLight" ID="18" Name="EastWest">
-                    <Description>The light state of east-west traffic.</Description>
-                </Parameter>
-            </ParamList>
-        </Method>
-    </MethodList>
     <ConstantList>
         <Constant DataType="uint32" ID="10" Name="TimeoutRed">
-            <Value>10000</Value>
+            <Value>3000</Value>
             <Description>The red light timeout in milliseconds.</Description>
         </Constant>
         <Constant DataType="uint32" ID="11" Name="TimeoutYellow">
-            <Value>4000</Value>
+            <Value>1000</Value>
             <Description>The yellow light timeout in milliseconds.</Description>
         </Constant>
         <Constant DataType="uint32" ID="13" Name="TimeoutGreen">
-            <Value>10000</Value>
+            <Value>3000</Value>
             <Description>The green light timeout in milliseconds.</Description>
         </Constant>
     </ConstantList>

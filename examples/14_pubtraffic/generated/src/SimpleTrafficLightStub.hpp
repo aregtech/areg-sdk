@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     20.12.2022  16:19:32 GMT+01:00
+ * Generated at     23.12.2022  00:41:05 GMT+01:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficLight.
  *
  * \file            generated/src/SimpleTrafficLightStub.hpp
@@ -155,14 +155,6 @@ public:
 // SimpleTrafficLight Interface Broadcasts
 //////////////////////////////////////////////////////////////////////////
 public:
-
-    /**
-     * \brief   Broadcast call.
-     *          Triggered when the light state of traffic is changed.
-     * \param   SouthNorth  The light state of south-north traffic.
-     * \param   EastWest    The light state of east-west traffic.
-     **/
-    virtual void broadcastLightChanged( NESimpleTrafficLight::eTrafficLight SouthNorth, NESimpleTrafficLight::eTrafficLight EastWest );
 
 //////////////////////////////////////////////////////////////////////////
 // End Service Interface operations / attributes and overrides declaration

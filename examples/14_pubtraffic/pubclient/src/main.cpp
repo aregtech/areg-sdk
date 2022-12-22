@@ -16,6 +16,7 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/appbase/Application.hpp"
+#include "areg/appbase/Console.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
 #include "areg/base/NEUtilities.hpp"
@@ -23,82 +24,73 @@
 #include "generated/src/NECommon.hpp"
 #include "pubclient/src/TrafficLightClient.hpp"
 
-#ifdef WINDOWS
+#ifdef WIN32
     #pragma comment(lib, "areg.lib")
     #pragma comment(lib, "14_generated.lib")
-#endif // WINDOWS
+#endif // WIN32
 
-#ifdef _WINDOWS
-    #define MACRO_SCANF(fmt, data, len)     scanf_s(fmt, data, len)
-#else   // _POSIX
-    #define MACRO_SCANF(fmt, data, len)     scanf(fmt, data)
-#endif  // _WINDOWS
-
-constexpr char const _modelName[] { "TheModel" };
-
-//////////////////////////////////////////////////////////////////////////
-// main method.
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   The main method does not start the logging, enables service manager and timer.
- *          it loads and unloads the services, releases application.
- **/
+//! A demo of dynamic model and client with data update subsription.
 int main()
 {
+    constexpr char const _modelName[]{ "TheModel" };
+
     NECommon::eTrafficDirection trafficDirection = NECommon::eTrafficDirection::DirectionUnknown;
+    std::string_view directions[]
+    {
+          {"sn"}
+        , {"ew"}
+        , {"quit"}
+    };
 
     String roleName( NECommon::SimpleLightClientNamePrefix);
     char name[128];
-    char buffer[32];
+
+    Console & console = Console::getInstance( );
+    console.enableConsoleInput( true );
+    console.outputTxt( { 0, 0 }, "A demo of dynamic model and client with data update subsription..." );
 
     // At first, determine which traffic direction should be set.
     // This is used to react on the right attribute.
-    printf("...........................................\n\n");
-    printf("Please select which traffic direction to output:\n");
-    printf("\t1. Type \'sn\' for South-North direction or input 1\n");
-    printf("\t2. Type \'ew\' for East-West direction or input 2\n");
-    printf("...........................................\n");
-    printf("Type the choice: ");
+    console.outputTxt( { 0, 1 }, "................................................" );
+    console.outputTxt( { 0, 2 }, "Please select which traffic direction to output:" );
+    console.outputTxt( { 0, 3 }, "\t1. Type \'sn\' for South-North direction      " );
+    console.outputTxt( { 0, 4 }, "\t2. Type \'ew\' for East-West direction        " );
+    console.outputTxt( { 0, 5 }, "\t3. Type \'quit\' to quit.                     " );
+    console.outputTxt( { 0, 6 }, "................................................" );
+    console.outputTxt( { 0, 7 }, "Type the choice: " );
+    console.waitForInput( [&]( const String cmd ) -> bool
+        {
+            bool result{ false };
+            if ( cmd.compare( directions[0], false ) == NEMath::eCompare::Equal )
+            {
+                trafficDirection = NECommon::eTrafficDirection::DirectionSouthNorth;
+                roleName += "SouthNorth";
+                roleName = NEUtilities::generateName( roleName, name, 128 );
+                result = true;
+                console.outputTxt( { 0, 8 }, "Selected direction is South - North" );
+            }
+            else if ( cmd.compare( directions[1], false ) == NEMath::eCompare::Equal )
+            {
+                trafficDirection = NECommon::eTrafficDirection::DirectionEastWest;
+                roleName += "EastWest";
+                roleName = NEUtilities::generateName( roleName, name, 128 );
+                result = true;
+                console.outputTxt( { 0, 8 }, "Selected direction is East - West" );
+            }
+            else if ( cmd.compare( directions[2], false ) == NEMath::eCompare::Equal )
+            {
+                result = true; // do not set the direction, just stop input
+            }
 
-    if ( MACRO_SCANF("%31s", buffer, 32) != 1 )
-    {
-        // should never happen, but returned code from scanf must be checked
-        printf("\nERROR!!! Invalid Choice. Quit the example application ...\n");
+            return result;
+        } );
 
-        // wrong option, quit application.
-        return 0;
-    }
+    if ( trafficDirection == NECommon::eTrafficDirection::DirectionUnknown )
+        return 0; // quit
 
-    // Check whether the right option is selected.
-    if ( (NEString::compareFastIgnoreCase(buffer, "sn") == NEMath::eCompare::Equal) || 
-         (NEString::compareFast(buffer, "1") == NEMath::eCompare::Equal) )
-    {
-        trafficDirection = NECommon::eTrafficDirection::DirectionSouthNorth;
-        roleName += "SouthNorth";
-        roleName = NEUtilities::generateName(roleName, name, 128);
-        printf("\nSelected Choice: South-North traffic.\n");
-    }
-    else if ( (NEString::compareFastIgnoreCase(buffer, "ew") == NEMath::eCompare::Equal) || 
-              (NEString::compareFast(buffer, "2") == NEMath::eCompare::Equal) )
-    {
-        trafficDirection = NECommon::eTrafficDirection::DirectionEastWest;
-        roleName += "EastWest";
-        roleName = NEUtilities::generateName(roleName, name, 128);
-        printf("\nSelected Choice: East-West traffic.\n");
-    }
-    else
-    {
-        printf("\nSelected Choice: Unexpected...\n");
-        printf("Quit the job ...\n");
+    console.moveToLine( 10 );
 
-        // wrong option, quit application.
-        return 0;
-    }
-
-    printf("\n...........................................\n");
-
-    // Initialize application, enable logging, servicing, routing, timer and watchdog.
-    // Use default settings.
+    // Initialize application, use default settings: enable logging, servicing, routing, timer and watchdog.
     Application::initApplication( );
 
     // Create model manually during run-time.

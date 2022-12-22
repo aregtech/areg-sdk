@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     20.12.2022  16:19:32 GMT+01:00
+ * Generated at     23.12.2022  00:41:05 GMT+01:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficLight.
  *
  * \file            generated/src/NESimpleTrafficLight.hpp
@@ -71,19 +71,19 @@ namespace   NESimpleTrafficLight
      * \brief   The red light timeout in milliseconds.
      *          NESimpleTrafficLight::TimeoutRed
      **/
-    constexpr unsigned int    TimeoutRed          = 10000;
+    constexpr unsigned int    TimeoutRed          = 3000;
 
     /**
      * \brief   The yellow light timeout in milliseconds.
      *          NESimpleTrafficLight::TimeoutYellow
      **/
-    constexpr unsigned int    TimeoutYellow       = 4000;
+    constexpr unsigned int    TimeoutYellow       = 1000;
 
     /**
      * \brief   The green light timeout in milliseconds.
      *          NESimpleTrafficLight::TimeoutGreen
      **/
-    constexpr unsigned int    TimeoutGreen        = 10000;
+    constexpr unsigned int    TimeoutGreen        = 3000;
 
 /************************************************************************/
 // Service Interface data types
@@ -137,11 +137,6 @@ namespace   NESimpleTrafficLight
     /************************************************************************
      * Broadcast IDs
      ************************************************************************/
-        /**
-         * \brief   Broadcast ID: MsgId_broadcastLightChanged
-         *          Triggered when the light state of traffic is changed.
-         **/
-          MsgId_broadcastLightChanged = NEService::RESPONSE_ID_FIRST  // void broadcastLightChanged( NESimpleTrafficLight::eTrafficLight SouthNorth, NESimpleTrafficLight::eTrafficLight EastWest );
 
     /************************************************************************
      * Attributes IDs
@@ -150,12 +145,12 @@ namespace   NESimpleTrafficLight
          * \brief   Attribute ID: MsgId_SouthNorth
          *          The light state of south-north traffic.
          **/
-        , MsgId_SouthNorth            = NEService::ATTRIBUTE_ID_FIRST // NESimpleTrafficLight::eTrafficLight mSouthNorth;
+          MsgId_SouthNorth    = NEService::ATTRIBUTE_ID_FIRST // NESimpleTrafficLight::eTrafficLight mSouthNorth;
         /**
          * \brief   Attribute ID: MsgId_EastWest
          *          The light state of east-west traffic.
          **/
-        , MsgId_EastWest                                                // NESimpleTrafficLight::eTrafficLight mEastWest;
+        , MsgId_EastWest                                        // NESimpleTrafficLight::eTrafficLight mEastWest;
 
     /************************************************************************
      * Reserved constant IDs
@@ -163,11 +158,11 @@ namespace   NESimpleTrafficLight
         /**
          * \brief   ID of empty function
          **/
-        , MsgId_NotProcessed          = NEService::INVALID_MESSAGE_ID
+        , MsgId_NotProcessed  = NEService::INVALID_MESSAGE_ID
         /**
          * \brief   ID of invalid call
          **/
-        , MsgId_Invalid               = NEService::RESPONSE_ID_NONE
+        , MsgId_Invalid       = NEService::RESPONSE_ID_NONE
 
     };
     /**
@@ -238,8 +233,6 @@ inline const char * NESimpleTrafficLight::getString( NESimpleTrafficLight::eMess
 {
     switch ( msgId )
     {
-    case    NESimpleTrafficLight::eMessageIDs::MsgId_broadcastLightChanged:
-        return "NESimpleTrafficLight::eMessageIDs::MsgId_broadcastLightChanged";
     case    NESimpleTrafficLight::eMessageIDs::MsgId_SouthNorth:
         return "NESimpleTrafficLight::eMessageIDs::MsgId_SouthNorth";
     case    NESimpleTrafficLight::eMessageIDs::MsgId_EastWest:

@@ -15,10 +15,27 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="generated\src\NECommon.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated\src\private\SimpleTrafficLightEvents.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated\src\private\SimpleTrafficLightProxy.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated\src\NESimpleTrafficLight.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated\src\SimpleTrafficLightClientBase.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated\src\SimpleTrafficLightStub.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="generated\src\private\NESimpleTrafficLight.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="generated\src\private\NESimpleTrafficSwitch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="generated\src\private\SimpleTrafficLightClientBase.cpp">
@@ -33,52 +50,5 @@
     <ClCompile Include="generated\src\private\SimpleTrafficLightStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\SimpleTrafficSwitchClientBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="generated\src\private\SimpleTrafficSwitchEvents.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="generated\src\private\SimpleTrafficSwitchProxy.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="generated\src\private\SimpleTrafficSwitchStub.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="generated\src\private\SimpleTrafficLightEvents.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\src\private\SimpleTrafficLightProxy.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\src\private\SimpleTrafficSwitchEvents.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\src\private\SimpleTrafficSwitchProxy.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\src\NESimpleTrafficLight.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\src\NESimpleTrafficSwitch.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\src\SimpleTrafficLightClientBase.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\src\SimpleTrafficLightStub.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\src\SimpleTrafficSwitchClientBase.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\src\SimpleTrafficSwitchStub.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\src\NECommon.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

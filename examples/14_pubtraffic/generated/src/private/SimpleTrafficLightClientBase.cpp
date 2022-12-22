@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     20.12.2022  16:19:32 GMT+01:00
+ * Generated at     23.12.2022  00:41:05 GMT+01:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficLight.
  *
  * \file            generated/src/SimpleTrafficLightClientBase.hpp
@@ -222,35 +222,7 @@ void SimpleTrafficLightClientBase::processNotificationEvent( NotificationEvent &
         }
         break;
 
-    case NEService::eResultType::RequestOK:
-        {
-            switch (msgId)
-            {
-        /************************************************************************
-         * Trigger response processing
-         ************************************************************************/
-        /************************************************************************
-         * Trigger broadcast processing
-         ************************************************************************/
-            case NESimpleTrafficLight::eMessageIDs::MsgId_broadcastLightChanged:
-                {
-                    NESimpleTrafficLight::eTrafficLight SouthNorth = mProxy->getParamSouthNorth();
-                    NESimpleTrafficLight::eTrafficLight EastWest = mProxy->getParamEastWest();
-                    broadcastLightChanged( SouthNorth, EastWest );
-                }
-                break;
-
-            default:
-                {
-                    TRACE_SCOPE(generated_src_SimpleTrafficLightClientBase_processNotificationEvent);
-                    TRACE_ERR("Client object SimpleTrafficLightClientBase of proxy [ %s ] received unexpected Response message ID [ %d ]."
-                                , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
-                                , msgId);
-                    ASSERT(false);
-                }
-                break;
-            }
-        }        
+    case NEService::eResultType::RequestOK:        
         break;
 
     default:
@@ -331,15 +303,6 @@ void SimpleTrafficLightClientBase::onEastWestUpdate( NESimpleTrafficLight::eTraf
 /************************************************************************
  * Request failure / Response and Broadcast notifications
  ************************************************************************/
-
-DEF_TRACE_SCOPE(generated_src_SimpleTrafficLightClientBase_broadcastLightChanged);
-void SimpleTrafficLightClientBase::broadcastLightChanged( NESimpleTrafficLight::eTrafficLight /* SouthNorth */, NESimpleTrafficLight::eTrafficLight /* EastWest */ )
-{
-    TRACE_SCOPE(generated_src_SimpleTrafficLightClientBase_broadcastLightChanged);
-    TRACE_WARN("The broadcast broadcastLightChanged (value = %u) method of proxy [ %s ] client SimpleTrafficLightClientBase is not implemented!"
-                    , static_cast<unsigned int>(NESimpleTrafficLight::eMessageIDs::MsgId_broadcastLightChanged)
-                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
-}
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/private/SimpleTrafficLightClientBase.cpp file

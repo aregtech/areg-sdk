@@ -17,9 +17,7 @@
 
 #include "generated/src/NECommon.hpp"
 
-/**
- * \brief   The simple traffic light service client.
- **/
+//! The simple service client, which receives data update notifications.
 class TrafficLightClient    : public    Component
                             , protected SimpleTrafficLightClientBase
 {
@@ -70,21 +68,12 @@ protected:
 /************************************************************************/
     /**
      * \brief   Triggered by Proxy, when gets service connected event.
-     *          Make client initializations in this function. No request
-     *          will be processed until this function is not called for
-     *          client object. Also set listeners here if client is interested
-     *          to receive update notifications.
+     *          Make client initializations in this function.
      * \param   isConnected     The flag, indicating whether service is connected
-     *                          or disconnected. Make cleanups and stop sending
-     *                          requests or assigning for notification if
-     *                          this flag is false. No event to Stub target will
-     *                          be sent, until no service connected event is
-     *                          received.
+     *                          or disconnected.
      * \param   proxy           The Service Interface Proxy object, which is
      *                          notifying service connection.
-     * \return  Return true if this service connect notification was relevant to client object,
-     *          i.e. if passed Proxy address is equal to the Proxy object that client has.
-     *          If Proxy objects are not equal, it should return false;
+     * \return  Return true if this service connect notification was relevant to client object
      **/
     virtual bool serviceConnected( bool isConnected, ProxyBase & proxy ) override;
 
@@ -110,16 +99,6 @@ protected:
      **/
     virtual void onEastWestUpdate( NESimpleTrafficLight::eTrafficLight EastWest, NEService::eDataStateType state ) override;
 
-    /**
-     * \brief   Server broadcast.
-     *          Triggered when the light state of traffic is changed.
-     *          Overwrite, if need to handle Broadcast call of server object. 
-     *          This call will be automatically triggered, on every appropriate request call
-     * \param   SouthNorth  The light state of south-north traffic.
-     * \param   EastWest    The light state of east-west traffic.
-     **/
-    virtual void broadcastLightChanged( NESimpleTrafficLight::eTrafficLight SouthNorth, NESimpleTrafficLight::eTrafficLight EastWest ) override;
-
 //////////////////////////////////////////////////////////////////////////
 // Hidden members.
 //////////////////////////////////////////////////////////////////////////
@@ -128,7 +107,10 @@ private:
     /**
      * \brief   Returns instance of TrafficLightClient.
      **/
-    inline TrafficLightClient & self(void);
+    inline TrafficLightClient & self( void )
+    {
+        return (*this);
+    }
 
     /**
      * \brief   Makes message outputs on console.
@@ -141,12 +123,3 @@ private:
      **/
     NECommon::eTrafficDirection  mTrafficDirection;
 };
-
-//////////////////////////////////////////////////////////////////////////
-// Inline methods
-//////////////////////////////////////////////////////////////////////////
-
-inline TrafficLightClient & TrafficLightClient::self(void)
-{
-    return (*this);
-}

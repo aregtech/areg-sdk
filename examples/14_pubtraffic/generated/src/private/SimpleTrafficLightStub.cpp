@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     20.12.2022  16:19:32 GMT+01:00
+ * Generated at     23.12.2022  00:41:05 GMT+01:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficLight.
  *
  * \file            generated/src/SimpleTrafficLightStub.hpp
@@ -151,10 +151,6 @@ void SimpleTrafficLightStub::errorRequest( unsigned int msgId, bool msgCancel )
 /************************************************************************
  * Broadcast errors
  ************************************************************************/
-    case NESimpleTrafficLight::eMessageIDs::MsgId_broadcastLightChanged:
-        result = NEService::eResultType::DataInvalid;
-        break;
-
 /************************************************************************
  * Request errors
  ************************************************************************/
@@ -208,16 +204,6 @@ void SimpleTrafficLightStub::setEastWest( const NESimpleTrafficLight::eTrafficLi
 /************************************************************************
  * Send Broadcast
  ************************************************************************/
-
-void SimpleTrafficLightStub::broadcastLightChanged( NESimpleTrafficLight::eTrafficLight SouthNorth, NESimpleTrafficLight::eTrafficLight EastWest )
-{
-    static const NESimpleTrafficLight::eMessageIDs msgId = NESimpleTrafficLight::eMessageIDs::MsgId_broadcastLightChanged;
-    EventDataStream args(EventDataStream::eEventData::EventDataExternal);
-    IEOutStream & stream = args.getStreamForWrite();
-    stream << SouthNorth;
-    stream << EastWest;
-    sendResponseEvent( static_cast<msg_id>(msgId), args );
-}
 
 /************************************************************************
  * Process messages
