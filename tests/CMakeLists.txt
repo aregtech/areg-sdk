@@ -1,0 +1,1 @@
+include("${AREG_UNIT_TEST_BASE}/CMakeLists.txt")

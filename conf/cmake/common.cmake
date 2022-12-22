@@ -64,9 +64,6 @@ else()
     set(AREG_BINARY "static")
 endif()
 
-# CPP standard for the project
-set(aregCXXStandard "17")
-
 add_definitions(-DUNICODE)
 
 # Checking Compiler for adding corresponded tweaks and flags
