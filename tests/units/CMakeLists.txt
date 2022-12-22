@@ -1,6 +1,6 @@
 add_executable(
     demo_test
-    ${UNIT_TEST_BASE}/DemoTest.cpp
+    ${AREG_UNIT_TEST_BASE}/DemoTest.cpp
 )
 target_link_libraries(
     demo_test
