@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  13:59:46 GMT+02:00
+ * Generated at     20.12.2022  16:19:16 GMT+01:00
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
  *
  * \file            generated/src/private/LocalHelloWorldProxy.hpp
@@ -53,7 +53,7 @@ LocalHelloWorldProxy * LocalHelloWorldProxy::createProxy( const String & roleNam
                                                                       , NELocalHelloWorld::getInterfaceData()
                                                                       , connectListener
                                                                       , &LocalHelloWorldProxy::_createProxy
-                                                                      , ownerThread) );
+                                                                      , ownerThread).get() );
 }
 
 LocalHelloWorldProxy * LocalHelloWorldProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
@@ -62,7 +62,7 @@ LocalHelloWorldProxy * LocalHelloWorldProxy::createProxy( const String & roleNam
                                                                       , NELocalHelloWorld::getInterfaceData()
                                                                       , connectListener
                                                                       , &LocalHelloWorldProxy::_createProxy
-                                                                      , ownerThread) );
+                                                                      , ownerThread).get() );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -74,8 +74,6 @@ LocalHelloWorldProxy::LocalHelloWorldProxy( const String & roleName, DispatcherT
 /************************************************************************
  * Attributes
  ************************************************************************/
-    , mConnectedClients   (  )
-    , mRemainOutput       (  )
 
 /************************************************************************
  * Parameters
@@ -129,16 +127,14 @@ void LocalHelloWorldProxy::unregisterServiceListeners( void )
  * Requests.
  ************************************************************************/
 
-unsigned int LocalHelloWorldProxy::requestHelloWorld( IENotificationEventConsumer & caller, const String & roleName )
+void LocalHelloWorldProxy::requestHelloWorld( const String & roleName )
 {
     static const NELocalHelloWorld::eMessageIDs msgId = NELocalHelloWorld::eMessageIDs::MsgId_requestHelloWorld;
     EventDataStream args(EventDataStream::eEventData::EventDataInternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << roleName;
-    sendRequestEvent( static_cast<unsigned int>(msgId), args, &caller );
-    return mSequenceCount;
+    sendRequestEvent( static_cast<unsigned int>(msgId), args, nullptr );
 }
-    
 /************************************************************************
  * Event processing.
  ************************************************************************/
@@ -189,14 +185,6 @@ void LocalHelloWorldProxy::updateData( LocalHelloWorldResponseEvent & eventElem,
     /************************************************************************
      * Update Attribute values
      ************************************************************************/
-    case NELocalHelloWorld::eMessageIDs::MsgId_ConnectedClients:
-        stream >> mConnectedClients;
-        break;
-
-    case NELocalHelloWorld::eMessageIDs::MsgId_RemainOutput:
-        stream >> mRemainOutput;
-        break;
-
     default:
         {
             TRACE_SCOPE(generated_src_private_LocalHelloWorldProxy_updateData);

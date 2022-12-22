@@ -15,21 +15,15 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="pubsvcmain\src\main.cpp">
+    <ClCompile Include="pubservice\src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pubsvcmain\src\MainServiceComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="pubsvcmain\src\LocalServiceComponent.cpp">
+    <ClCompile Include="pubservice\src\PublicServiceComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pubsvcmain\src\MainServiceComponent.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="pubsvcmain\src\LocalServiceComponent.hpp">
+    <ClInclude Include="pubservice\src\PublicServiceComponent.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -42,7 +42,7 @@
     <ClInclude Include="chatter\services\ConnectionList.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="chatter\services\ConnectionServicing.hpp">
+    <ClInclude Include="chatter\services\ConnectionService.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="chatter\services\DirectChatService.hpp">
@@ -104,7 +104,7 @@
     <ClCompile Include="chatter\services\ConnectionList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="chatter\services\ConnectionServicing.cpp">
+    <ClCompile Include="chatter\services\ConnectionService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="chatter\services\DirectChatService.cpp">

@@ -42,7 +42,7 @@ ConnectionManager *   ConnectionManager::sService   = nullptr;
 Component * ConnectionManager::CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
 {
     TRACE_SCOPE( centralapp_ConnectionManager_CreateComponent );
-    return new ConnectionManager( owner, entry.mRoleName.getString(), entry.getComponentData() );
+    return new ConnectionManager( entry, owner, entry.getComponentData() );
 }
 
 void ConnectionManager::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry )
@@ -56,13 +56,13 @@ ConnectionManager * ConnectionManager::getService( void )
     return ConnectionManager::sService;
 }
 
-ConnectionManager::ConnectionManager( ComponentThread & masterThread, const char * const roleName, NEMemory::uAlign data )
-    : Component               ( masterThread, roleName )
-    , ConnectionManagerStub   ( static_cast<Component &>(self()) )
-    , CentralMessagerStub     ( static_cast<Component &>(self()) )
+ConnectionManager::ConnectionManager( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread, NEMemory::uAlign data )
+    : Component             ( entry, ownerThread )
+    , ConnectionManagerStub ( static_cast<Component &>(self()) )
+    , CentralMessagerStub   ( static_cast<Component &>(self()) )
 
-    , mWnd                      ( data.alignInt64.mElement )
-    , mCookies                  ( NEConnectionManager::InvalidCookie )
+    , mWnd                  ( data.alignInt64.mElement )
+    , mCookies              ( NEConnectionManager::InvalidCookie )
 {
     ConnectionManager::sService   = this;
 }

@@ -116,8 +116,8 @@ protected:
 // Hidden constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 private:
-    DirectChatService( ComponentThread & masterThread, const NERegistry::ComponentEntry & entry, ChatPrticipantHandler & handlerParticipant );
-    virtual ~DirectChatService( void );
+    DirectChatService( const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread, ChatPrticipantHandler & handlerParticipant );
+    virtual ~DirectChatService( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

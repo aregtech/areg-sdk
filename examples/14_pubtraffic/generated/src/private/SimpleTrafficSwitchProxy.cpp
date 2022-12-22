@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:45:34 GMT+02:00
+ * Generated at     20.12.2022  16:19:34 GMT+01:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficSwitch.
  *
  * \file            generated/src/private/SimpleTrafficSwitchProxy.hpp
@@ -53,7 +53,7 @@ SimpleTrafficSwitchProxy * SimpleTrafficSwitchProxy::createProxy( const String &
                                                                       , NESimpleTrafficSwitch::getInterfaceData()
                                                                       , connectListener
                                                                       , &SimpleTrafficSwitchProxy::_createProxy
-                                                                      , ownerThread) );
+                                                                      , ownerThread).get() );
 }
 
 SimpleTrafficSwitchProxy * SimpleTrafficSwitchProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
@@ -62,7 +62,7 @@ SimpleTrafficSwitchProxy * SimpleTrafficSwitchProxy::createProxy( const String &
                                                                       , NESimpleTrafficSwitch::getInterfaceData()
                                                                       , connectListener
                                                                       , &SimpleTrafficSwitchProxy::_createProxy
-                                                                      , ownerThread) );
+                                                                      , ownerThread).get() );
 }
 
 //////////////////////////////////////////////////////////////////////////

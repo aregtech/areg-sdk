@@ -69,11 +69,11 @@ private:
     //!< Scope hash map
     using MapTraceScope     = TEHashMap<unsigned int, TraceScope *>;
     //!< Scope resource map helper
-    using ImplTraceScope    = TEResourceMapImpl<unsigned int, TraceScope>;
+    using ImplTraceScope    = TEResourceMapImpl<unsigned int, TraceScope *>;
     /**
      * \brief   Resource map, container of all logging scopes
      **/
-    class TraceScopeMap   : public TELockResourceMap<unsigned int, TraceScope, MapTraceScope, ImplTraceScope>
+    class TraceScopeMap   : public TELockResourceMap<unsigned int, TraceScope *, MapTraceScope, ImplTraceScope>
     {
     //////////////////////////////////////////////////////////////////////////
     // TraceScopeMap friend classes

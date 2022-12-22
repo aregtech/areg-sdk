@@ -3,21 +3,6 @@
     <Overview ID="1" Name="HelloWorld" Version="1.0.1">
         <Description>Simple Service Interface to demonstrate working features of AREG SDK.</Description>
     </Overview>
-    <DataTypeList>
-        <DataType ID="2" Name="sConnectedClient" Type="Structure">
-            <Description>The dummy structure describing connected client.</Description>
-            <FieldList>
-                <Field DataType="uint32" ID="3" Name="ccID">
-                    <Value IsDefault="true">0</Value>
-                    <Description>The ID of client, given by servicing component</Description>
-                </Field>
-                <Field DataType="String" ID="4" Name="ccName">
-                    <Value IsDefault="true"/>
-                    <Description>The role name of client component. Parameter received by client.</Description>
-                </Field>
-            </FieldList>
-        </DataType>
-    </DataTypeList>
     <MethodList>
         <Method ID="7" MethodType="request" Name="HelloWorld" Response="HelloWorld">
             <Description>Request to print hello world</Description>
@@ -30,8 +15,11 @@
         <Method ID="10" MethodType="response" Name="HelloWorld">
             <Description>The response to hello world request.</Description>
             <ParamList>
-                <Parameter DataType="sConnectedClient" ID="11" Name="clientInfo">
-                    <Description>The client information set by servicing component. If empty or invalid ID, the message output failed.</Description>
+                <Parameter DataType="String" ID="11" Name="clientName">
+                    <Description>The name of connected client that requested to output message.</Description>
+                </Parameter>
+                <Parameter DataType="uint32" ID="20" Name="clientId">
+                    <Description>Thegiven ID of the client that requested to output message.</Description>
                 </Parameter>
             </ParamList>
         </Method>

@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     10.12.2022  04:35:54 GMT+01:00
+ * Generated at     20.12.2022  16:18:37 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/private/HelloWorldProxy.hpp
@@ -41,6 +41,8 @@ class HelloWorldResponseEvent;
  **/
 class HelloWorldProxy   : public ProxyBase
 {
+    friend class HelloWorldClientBase;
+    
 private:
     //////////////////////////////////////////////////////////////////////////
     // HelloWorldProxy::HelloWorldServiceAvailableEvent class declaration
@@ -79,7 +81,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // HelloWorldProxy predefined constants and static members.
 //////////////////////////////////////////////////////////////////////////
-public:
+protected:
     /**
      * \brief   Returns existing or creates new proxy object if it is not existing
      *          in the current thread scope.
@@ -129,14 +131,6 @@ public:
  * Parameters
  ************************************************************************/
     /**
-     * \brief   Returns value of clientInfo of response call function.
-     *          The parameter is validated and set when Proxy is getting response call.
-     *          Parameter clientInfo description:
-     *          The client information set by servicing component. If empty or invalid ID, the message output failed.
-     **/
-    inline const NEHelloWorld::sConnectedClient & getParamclientInfo( void ) const;
-
-    /**
      * \brief   Returns value of maxNumber of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
      *          Parameter maxNumber description:
@@ -160,11 +154,9 @@ public:
     /**
      * \brief   Request call.
      *          Sent by client to request to shutdown service and the application. This request has no response.
-     * \param   clientID    The ID of client that requests to shutdown. The ID is given by service when first time client requests to output message.
-     * \param   roleName    Service client component role name
      * \see     Has no Response.
      **/
-    void requestShutdownService( unsigned int clientID, const String & roleName );
+    void requestShutdownService( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations.
@@ -285,16 +277,10 @@ private:
  * Parameter members
  ************************************************************************/
     /**
-     * \brief   clientInfo parameter value.
-     *          The client information set by servicing component. If empty or invalid ID, the message output failed.
-     **/
-    NEHelloWorld::sConnectedClient  mParamclientInfo;
-
-    /**
      * \brief   maxNumber parameter value.
      *          The maximum number of reqeusts.
      **/
-    int                             mParammaxNumber;
+    int mParammaxNumber;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -382,11 +368,6 @@ inline HelloWorldProxy & HelloWorldProxy::self( void )
 /************************************************************************
  * Inline parameters
  ************************************************************************/
-
-inline const NEHelloWorld::sConnectedClient & HelloWorldProxy::getParamclientInfo( void ) const
-{
-    return mParamclientInfo;
-}
 
 inline int HelloWorldProxy::getParammaxNumber( void ) const
 {

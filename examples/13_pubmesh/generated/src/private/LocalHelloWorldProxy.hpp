@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  13:59:46 GMT+02:00
+ * Generated at     20.12.2022  16:19:16 GMT+01:00
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
  *
  * \file            generated/src/private/LocalHelloWorldProxy.hpp
@@ -37,12 +37,12 @@ class LocalHelloWorldResponseEvent;
  *              Used to communicate with stub object and sending notifications
  *              to each client running in the thread instance.
  *
- *              Simple Service Interface to demonstrate working features of AREG SDK.
- *              This interface serves only local components and can be duplicated in other processes.
- *              		
+ *              A Local Service Interface to demonstrate working features of AREG SDK.
  **/
 class LocalHelloWorldProxy   : public ProxyBase
 {
+    friend class LocalHelloWorldClientBase;
+    
 private:
     //////////////////////////////////////////////////////////////////////////
     // LocalHelloWorldProxy::LocalHelloWorldServiceAvailableEvent class declaration
@@ -81,7 +81,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // LocalHelloWorldProxy predefined constants and static members.
 //////////////////////////////////////////////////////////////////////////
-public:
+protected:
     /**
      * \brief   Returns existing or creates new proxy object if it is not existing
      *          in the current thread scope.
@@ -127,36 +127,6 @@ public:
 /************************************************************************
  * Attributes
  ************************************************************************/
-    /**
-     * \brief   Returns true if value of ConnectedClients attribute is valid.
-     *          If Update Notification is disabled, this method will return false.
-     **/
-    inline bool isConnectedClientsValid( void ) const;
-    /**
-     * \brief   Returns the value of ConnectedClients attribute.
-     *          To get valid value, the Update Notification should be enabled. 
-     *          Attribute ConnectedClients description:
-     *          The list of connected clients. Updated each time when new client requests to output Hello World message.
-     * \param   state   On returns, contains the validation flag of attribute data.
-     *                  Check validation flag before use attribute value.
-     **/
-    inline const NELocalHelloWorld::ConnectionList & getConnectedClients( NEService::eDataStateType & state ) const;
-
-    /**
-     * \brief   Returns true if value of RemainOutput attribute is valid.
-     *          If Update Notification is disabled, this method will return false.
-     **/
-    inline bool isRemainOutputValid( void ) const;
-    /**
-     * \brief   Returns the value of RemainOutput attribute.
-     *          To get valid value, the Update Notification should be enabled. 
-     *          Attribute RemainOutput description:
-     *          Remaining number of outputs to print Hello World.
-     * \param   state   On returns, contains the validation flag of attribute data.
-     *                  Check validation flag before use attribute value.
-     **/
-    inline short getRemainOutput( NEService::eDataStateType & state ) const;
-
 /************************************************************************
  * Parameters
  ************************************************************************/
@@ -174,12 +144,10 @@ public:
     /**
      * \brief   Request call.
      *          Request to print hello world
-     * \param   caller      The reference of caller object to get response.
      * \param   roleName    The role name of client component that requested to print hello world
-     * \return  The sequence count number of call
-     * \see     responseHelloWorld
+     * \see     Has no Response.
      **/
-    unsigned int requestHelloWorld( IENotificationEventConsumer & caller, const String & roleName );
+    void requestHelloWorld( const String & roleName );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations.
@@ -296,18 +264,6 @@ private:
 /************************************************************************
  * Attribute members
  ************************************************************************/
-    /**
-     * \brief   ConnectedClients attribute value.
-     *          The list of connected clients. Updated each time when new client requests to output Hello World message.
-     **/
-    NELocalHelloWorld::ConnectionList   mConnectedClients;
-
-    /**
-     * \brief   RemainOutput attribute value.
-     *          Remaining number of outputs to print Hello World.
-     **/
-    short                               mRemainOutput;
-
 /************************************************************************
  * Parameter members
  ************************************************************************/
@@ -398,32 +354,6 @@ inline void LocalHelloWorldProxy::clearAllNotifications( IENotificationEventCons
 inline LocalHelloWorldProxy & LocalHelloWorldProxy::self( void )
 {
     return (*this);
-}
-
-/************************************************************************
- * Inline attributes
- ************************************************************************/
-
-inline bool LocalHelloWorldProxy::isConnectedClientsValid( void ) const
-{
-    return (getProxyData().getAttributeState( static_cast<msg_id>(NELocalHelloWorld::eMessageIDs::MsgId_ConnectedClients) ) == NEService::eDataStateType::DataIsOK);
-}
-
-inline const NELocalHelloWorld::ConnectionList & LocalHelloWorldProxy::getConnectedClients( NEService::eDataStateType & state ) const
-{
-    state = getProxyData().getAttributeState( static_cast<msg_id>(NELocalHelloWorld::eMessageIDs::MsgId_ConnectedClients) );
-    return mConnectedClients;
-}
-
-inline bool LocalHelloWorldProxy::isRemainOutputValid( void ) const
-{
-    return (getProxyData().getAttributeState( static_cast<msg_id>(NELocalHelloWorld::eMessageIDs::MsgId_RemainOutput) ) == NEService::eDataStateType::DataIsOK);
-}
-
-inline short LocalHelloWorldProxy::getRemainOutput( NEService::eDataStateType & state ) const
-{
-    state = getProxyData().getAttributeState( static_cast<msg_id>(NELocalHelloWorld::eMessageIDs::MsgId_RemainOutput) );
-    return mRemainOutput;
 }
 
 /************************************************************************

@@ -30,34 +30,25 @@
     <ClCompile Include="generated\src\private\NELocalHelloWorld.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\LocalServicingComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="generated\src\private\RemoteServicingComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="generated\src\private\LocalServiceClient.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="generated\src\private\RemoteServiceClient.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="generated\src\private\NERemoteRegistry.cpp">
+    <ClCompile Include="generated\src\private\NEPublicHelloWorld.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="generated\src\private\NESystemShutdown.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\RemoteRegistryClientBase.cpp">
+    <ClCompile Include="generated\src\private\PublicHelloWorldClientBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\RemoteRegistryEvents.cpp">
+    <ClCompile Include="generated\src\private\PublicHelloWorldEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\RemoteRegistryProxy.cpp">
+    <ClCompile Include="generated\src\private\PublicHelloWorldProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\RemoteRegistryStub.cpp">
+    <ClCompile Include="generated\src\private\PublicHelloWorldStub.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="generated\src\private\SystemShutdownClientBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="generated\src\private\SystemShutdownEvents.cpp">
@@ -69,17 +60,26 @@
     <ClCompile Include="generated\src\private\SystemShutdownStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\MainServicingComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="generated\src\private\MainRemoteServiceClient.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="generated\src\private\SystemShutdownClientBase.cpp">
-      <Filter>Header Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="generated\src\private\LocalHelloWorldEvents.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated\src\private\LocalHelloWorldProxy.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated\src\private\PublicHelloWorldEvents.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated\src\private\PublicHelloWorldProxy.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated\src\private\SystemShutdownEvents.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generated\src\private\SystemShutdownProxy.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="generated\src\LocalHelloWorldClientBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -89,61 +89,22 @@
     <ClInclude Include="generated\src\NELocalHelloWorld.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\private\LocalHelloWorldEvents.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\src\private\LocalHelloWorldProxy.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\src\LocalServicingComponent.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\src\RemoteServicingComponent.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\src\LocalServiceClient.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\src\RemoteServiceClient.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\src\NECommon.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\src\private\RemoteRegistryEvents.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\src\private\RemoteRegistryProxy.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\src\private\SystemShutdownEvents.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\src\private\SystemShutdownProxy.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\src\NERemoteRegistry.hpp">
+    <ClInclude Include="generated\src\NEPublicHelloWorld.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="generated\src\NESystemShutdown.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\RemoteRegistryClientBase.hpp">
+    <ClInclude Include="generated\src\PublicHelloWorldClientBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\RemoteRegistryStub.hpp">
+    <ClInclude Include="generated\src\PublicHelloWorldStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="generated\src\SystemShutdownClientBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="generated\src\SystemShutdownStub.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\src\MainServicingComponent.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\src\MainRemoteServiceClient.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

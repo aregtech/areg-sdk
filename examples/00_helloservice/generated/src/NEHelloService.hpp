@@ -1,12 +1,13 @@
 //////////////////////////////////////////////////////////////////////////
 // Begin generate generated/src/NEHelloService.hpp file
 //////////////////////////////////////////////////////////////////////////
-#pragma once
+#ifndef  GENERATED_SRC_NEHELLOSERVICE_HPP
+#define  GENERATED_SRC_NEHELLOSERVICE_HPP
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     20.10.2021  21:36:19 GMT+02:00 
+ * Generated at     20.12.2022  16:24:46 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloService.
  *
  * \file            generated/src/NEHelloService.hpp
@@ -30,6 +31,7 @@
 //////////////////////////////////////////////////////////////////////////
 #include "areg/base/IEIOStream.hpp"
 #include "areg/base/Version.hpp"
+#include "areg//component/NERegistry.hpp"
 #include "areg/component/NEService.hpp"
 
 #include <utility>
@@ -43,7 +45,7 @@
 //////////////////////////////////////////////////////////////////////////
 /**
  *
- * \brief   HelloService Service Interface defined constants, 
+ * \brief   HelloService Service Interface defined constants,
  *          types and structures message IDs, global static methods.
  *
  *          The hello world application
@@ -56,15 +58,15 @@ namespace   NEHelloService
 // Service Interface constants
 /************************************************************************/
     /**
-     * \brief   Service Interface Name
+     * \brief   Service Interface Name.
      *          NEHelloService::ServiceName
      **/
-    constexpr char        ServiceName[]       { "HelloService" };
+    constexpr   char    ServiceName[]   { "HelloService" };
     /**
-     * \brief   Implemented Version
+     * \brief   Implemented Version.
      *          NEHelloService::InterfaceVersion
      **/
-    const Version         InterfaceVersion    = "1.0.0";
+    const       Version InterfaceVersion{ 1, 0, 0 };
 
 /************************************************************************/
 // Service Interface data types
@@ -87,8 +89,8 @@ namespace   NEHelloService
          * \brief   Request ID: MsgId_requestHelloService
          *          The request to output greeting.
          **/
-          MsgId_requestHelloService   = NEService::REQUEST_ID_FIRST     // void requestHelloService( const String & client );
-     
+          MsgId_requestHelloService   = NEService::REQUEST_ID_FIRST   // void requestHelloService( const String & client );
+
     /************************************************************************
      * Response IDs
      ************************************************************************/
@@ -96,37 +98,37 @@ namespace   NEHelloService
          * \brief   Response ID: MsgId_responseHelloService
          *          The response indicating success status to output greeting
          **/
-        , MsgId_responseHelloService  = NEService::RESPONSE_ID_FIRST    // void responseHelloService( bool success );     
+        , MsgId_responseHelloService  = NEService::RESPONSE_ID_FIRST  // void responseHelloService( bool success );
     /************************************************************************
      * Broadcast IDs
      ************************************************************************/
-     
+
     /************************************************************************
      * Attributes IDs
      ************************************************************************/
-     
+
     /************************************************************************
      * Reserved constant IDs
      ************************************************************************/
         /**
          * \brief   ID of empty function
          **/
-        , MsgId_NotProcessed          = NEService::INVALID_MESSAGE_ID  
+        , MsgId_NotProcessed          = NEService::INVALID_MESSAGE_ID
         /**
          * \brief   ID of invalid call
          **/
-        , MsgId_Invalid               = NEService::RESPONSE_ID_NONE    
-     
+        , MsgId_Invalid               = NEService::RESPONSE_ID_NONE
+
     };
     /**
      * \brief   Returns string value of NEHelloService::eMessageIDs
      **/
     inline const char * getString( NEHelloService::eMessageIDs msgId );
-     
+
 /************************************************************************
  * Service Interface standard functions and variables
  ************************************************************************/
- 
+
     /**
      * \brief   Creates and returns Service Interface Data
      **/
@@ -167,7 +169,6 @@ inline const char * NEHelloService::getString( NEHelloService::eMessageIDs msgId
 
     case NEHelloService::eMessageIDs::MsgId_NotProcessed:
         return "NEHelloService::eMessageIDs::MsgId_NotProcessed";
-        
     case NEHelloService::eMessageIDs::MsgId_Invalid:
         return "NEHelloService::eMessageIDs::MsgId_Invalid";
     default:
@@ -179,6 +180,8 @@ inline const char * NEHelloService::getString( NEHelloService::eMessageIDs msgId
 //////////////////////////////////////////////////////////////////////////
 // NEHelloService namespace declaration End
 //////////////////////////////////////////////////////////////////////////
+
+#endif  // GENERATED_SRC_NEHELLOSERVICE_HPP
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/NEHelloService.hpp file

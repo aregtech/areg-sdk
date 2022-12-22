@@ -110,9 +110,9 @@ public:
 
     /**
      * \brief   Initialize State Machine. Call before calling any trigger.
-     * \param   masterThread    The pointer of master thread to process internal events and timers.
+     * \param   ownerThread The pointer of master thread to process internal events and timers.
      **/
-    void initFSM( DispatcherThread * masterThread = nullptr );
+    void initFSM( DispatcherThread * ownerThread = nullptr );
 
     /**
      * \brief   Release State Machine. Call when complete working with FSM.

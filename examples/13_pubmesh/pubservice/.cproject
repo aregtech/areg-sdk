@@ -47,11 +47,13 @@
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.base.164343449" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.base">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.link.option.libs.1780161244" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" value="13_generated"/>
+									<listOptionValue builtIn="false" value="13_common"/>
 									<listOptionValue builtIn="false" value="areg"/>
 									<listOptionValue builtIn="false" value="rt"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.link.option.paths.1005702450" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" useByScannerDiscovery="false" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/13_generated/Debug}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/13_common/Debug}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/areg/Debug}&quot;"/>
 								</option>
 								<option id="gnu.cpp.link.option.pthread.1772420039" name="Support for pthread (-pthread)" superClass="gnu.cpp.link.option.pthread" useByScannerDiscovery="false" value="true" valueType="boolean"/>
@@ -134,11 +136,13 @@
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.base.544639925" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.base">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.link.option.libs.523973022" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" useByScannerDiscovery="false" valueType="libs">
 									<listOptionValue builtIn="false" value="13_generated"/>
+									<listOptionValue builtIn="false" value="13_common"/>
 									<listOptionValue builtIn="false" value="areg"/>
 									<listOptionValue builtIn="false" value="rt"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.link.option.paths.1834693559" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" useByScannerDiscovery="false" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/13_generated/Release}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/13_common/Release}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/areg/Release}&quot;"/>
 								</option>
 								<option id="gnu.cpp.link.option.pthread.1493770087" name="Support for pthread (-pthread)" superClass="gnu.cpp.link.option.pthread" useByScannerDiscovery="false" value="true" valueType="boolean"/>

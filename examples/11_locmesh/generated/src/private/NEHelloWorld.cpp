@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     10.12.2022  04:36:32 GMT+01:00
+ * Generated at     20.12.2022  16:18:51 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/NEHelloWorld.hpp
@@ -40,7 +40,7 @@ const NEService::SInterfaceData & NEHelloWorld::getInterfaceData( void )
      ************************************************************************/
     static constexpr unsigned int _ResponseList[]
     {
-          static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_responseHelloWorld       ) // responseHelloWorld( const NEHelloWorld::sConnectedClient & clientInfo )
+          static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_responseHelloWorld       ) // responseHelloWorld( const String & clientName, unsigned int clientId )
         , static_cast<unsigned int>( NEHelloWorld::eMessageIDs::MsgId_broadcastReachedMaximum  ) // broadcastReachedMaximum( int maxNumber )
     };
 
@@ -66,7 +66,7 @@ const NEService::SInterfaceData & NEHelloWorld::getInterfaceData( void )
     /************************************************************************
      * Responses
      ************************************************************************/
-        1, // void responseHelloWorld( const NEHelloWorld::sConnectedClient & clientInfo )
+        2, // void responseHelloWorld( const String & clientName, unsigned int clientId )
 
     /************************************************************************
      * Broadcasts

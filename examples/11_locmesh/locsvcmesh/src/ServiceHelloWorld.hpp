@@ -19,7 +19,7 @@
 class ServiceHelloWorld : protected HelloWorldStub
 {
     //!< The type of list of connected clients.
-    using ClientList = TELinkedList<NEHelloWorld::sConnectedClient>;
+    using ClientList = TEMap<String, unsigned int>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
@@ -66,7 +66,6 @@ protected:
     //////////////////////////////////////////////////////////////////////////
 private:
     const bool      mIsMain;        //!< Flag, indicating whether it is a main controller service or not.
-    unsigned int    mGnerateID;     //!< The client ID generator
     ClientList      mClientList;    //!< The list of connected clients.
     signed short    mRemainRequest; //!< The maximum number of processing requests.
 

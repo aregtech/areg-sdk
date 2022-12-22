@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     07.10.2022  01:35:30 GMT+02:00
+ * Generated at     20.12.2022  16:21:03 GMT+01:00
  *                  Create by AREG SDK code generator tool from source LargeData.
  *
  * \file            generated/src/private/LargeDataProxy.hpp
@@ -43,6 +43,8 @@ class LargeDataResponseEvent;
  **/
 class LargeDataProxy   : public ProxyBase
 {
+    friend class LargeDataClientBase;
+    
 private:
     //////////////////////////////////////////////////////////////////////////
     // LargeDataProxy::LargeDataServiceAvailableEvent class declaration
@@ -81,7 +83,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // LargeDataProxy predefined constants and static members.
 //////////////////////////////////////////////////////////////////////////
-public:
+protected:
     /**
      * \brief   Returns existing or creates new proxy object if it is not existing
      *          in the current thread scope.

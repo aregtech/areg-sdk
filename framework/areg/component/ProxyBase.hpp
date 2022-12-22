@@ -34,6 +34,8 @@
 #include "areg/component/NEService.hpp"
 #include "areg/component/StubAddress.hpp"
 
+#include <atomic>
+#include <memory>
 
 /************************************************************************
  * Dependencies
@@ -223,11 +225,11 @@ private:
     /**
      * \brief   Proxy hash map
      **/
-    using MapProxy          = TEHashMap<ProxyAddress, ProxyBase *>;
+    using MapProxy          = TEHashMap<ProxyAddress, std::shared_ptr<ProxyBase>>;
     /**
      * \brief   Proxy resource map helper.
      **/
-    using ImplProxyResource = TEResourceMapImpl<ProxyAddress, ProxyBase>;
+    using ImplProxyResource = TEResourceMapImpl<ProxyAddress, std::shared_ptr<ProxyBase>>;
 
     /**
      * \brief   ProxyBase::MapProxyResource
@@ -236,7 +238,7 @@ private:
      * \tparam  ProxyBase     The Values are pointers of Proxy object.
      * \tparam  ProxyMap      The type of Hash Mapping object used as container
      **/
-    using MapProxyResource  = TELockResourceMap<ProxyAddress, ProxyBase, MapProxy, ImplProxyResource>;
+    using MapProxyResource  = TELockResourceMap<ProxyAddress, std::shared_ptr<ProxyBase>, MapProxy, ImplProxyResource>;
 
     //////////////////////////////////////////////////////////////////////////
     // ProxyBase::ThreadProxyList internal class declaration
@@ -244,7 +246,7 @@ private:
     /************************************************************************
      * \brief   The list of proxies. Used to save in Map List.
      ************************************************************************/
-    using ThreadProxyList   = TEArrayList<ProxyBase *>;
+    using ThreadProxyList   = TEArrayList<std::shared_ptr<ProxyBase>>;
 
     //////////////////////////////////////////////////////////////////////////
     // ProxyBase::ImplThreadProxyMap internal class declaration
@@ -252,7 +254,7 @@ private:
     /**
      * \brief   The helper class used in the map of lists..
      **/
-    class ImplThreadProxyMap    : public TEResourceListMapImpl<String, ProxyBase, ThreadProxyList>
+    class ImplThreadProxyMap    : public TEResourceListMapImpl<String, std::shared_ptr<ProxyBase>, ThreadProxyList>
     {
     public:
         /**
@@ -271,7 +273,7 @@ private:
          * \param	List        The list of proxy objects.
          * \param   Resource    The proxy object to add to the list.
          **/
-        inline void implAddResource( ThreadProxyList & List, ProxyBase * Resource )
+        inline void implAddResource( ThreadProxyList & List, std::shared_ptr<ProxyBase> Resource )
         {
             if ( Resource != nullptr )
             {
@@ -284,7 +286,7 @@ private:
          * \param	List        The list of proxy objects.
          * \param   Resource    The proxy object to remove from the list.
          **/
-        inline bool implRemoveResource( ThreadProxyList & List, ProxyBase * Resource )
+        inline bool implRemoveResource( ThreadProxyList & List, std::shared_ptr<ProxyBase> Resource )
         {
             return (Resource != nullptr ? List.removeElem( Resource, 0 ) : false);
         }
@@ -300,7 +302,7 @@ private:
      * \brief   ProxyBase::MapThreadProxyList
      *          The Map of the lits, where the key is a string and values are list of proxies.
      **/
-    using MapThreadProxyList= TELockResourceListMap<String, ProxyBase, ThreadProxyList, MapThreadProxy, ImplThreadProxyMap>;
+    using MapThreadProxyList= TELockResourceListMap<String, std::shared_ptr<ProxyBase>, ThreadProxyList, MapThreadProxy, ImplThreadProxyMap>;
 
 protected:
     //////////////////////////////////////////////////////////////////////////
@@ -385,11 +387,11 @@ public:
      *                      If nullptr, it searches Proxy instance in current thread.
      * \return  Returns pointer to Proxy object.
      **/
-    static ProxyBase * findOrCreateProxy( const String & roleName
-                                        , const NEService::SInterfaceData & serviceIfData
-                                         , IEProxyListener & connect
-                                         , FuncCreateProxy funcCreate
-                                         , const String & ownerThread = String::EmptyString );
+    static std::shared_ptr<ProxyBase> findOrCreateProxy( const String & roleName
+                                                       , const NEService::SInterfaceData & serviceIfData
+                                                       , IEProxyListener & connect
+                                                       , FuncCreateProxy funcCreate
+                                                       , const String & ownerThread = String::EmptyString );
 
     /**
      * \brief   Finds already existing proxy object or creates new one.
@@ -410,11 +412,11 @@ public:
      * \param   ownerThread The instance of owner thread where the messages are dispatched.
      * \return  Returns pointer to Proxy object.
      **/
-    static ProxyBase * findOrCreateProxy( const String & roleName
-                                        , const NEService::SInterfaceData & serviceIfData
-                                        , IEProxyListener & connect
-                                        , FuncCreateProxy funcCreate
-                                        , DispatcherThread & ownerThread );
+    static std::shared_ptr<ProxyBase> findOrCreateProxy( const String & roleName
+                                                       , const NEService::SInterfaceData & serviceIfData
+                                                       , IEProxyListener & connect
+                                                       , FuncCreateProxy funcCreate
+                                                       , DispatcherThread & ownerThread );
 
     /**
      * \brief   Lookup in registries for instantiated proxy object and
@@ -422,7 +424,7 @@ public:
      * \param   proxyAddress    The Address of Proxy object.
      * \return  Returns pointer to Proxy object.
      **/
-    static ProxyBase * findProxyByAddress( const ProxyAddress & proxyAddress );
+    static std::shared_ptr<ProxyBase> findProxyByAddress( const ProxyAddress & proxyAddress );
 
     /**
      * \brief   Searches all created proxies in the specified thread. On output, the 
@@ -432,7 +434,7 @@ public:
      * \param   threadProxyList On output, which contains list of proxies created in specified thread.
      * \return  Returns number of proxies added to the list.
      **/
-    static int findThreadProxies( DispatcherThread & ownerThread, TEArrayList<ProxyBase *> & OUT threadProxyList );
+    static int findThreadProxies( DispatcherThread & ownerThread, TEArrayList<std::shared_ptr<ProxyBase>> & OUT threadProxyList );
 
     /**
      * \brief   Creates the request failure event to send to remote proxy. This may happen when either the request of client
@@ -460,10 +462,11 @@ protected:
      **/
     ProxyBase( const String & roleName, const NEService::SInterfaceData & serviceIfData, DispatcherThread * ownerThread = nullptr );
 
+public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~ProxyBase( void );
+    virtual ~ProxyBase( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Public Operations
@@ -926,6 +929,15 @@ protected:
      **/
     ProxyConnectList        mListConnect;
 
+    /**
+     * \brief   Proxy instance reference counter.
+     *          On every request to start Proxy, this counter will
+     *          increase value. On request to free Proxy, it will
+     *          decrease value. And when reaches zero, will delete
+     *          Proxy object.
+     **/
+    std::atomic_uint32_t    mProxyInstCount;
+
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
@@ -954,15 +966,6 @@ protected:
      * \brief   The Proxy dispatcher thread object
      **/
     DispatcherThread &      mDispatcherThread;
-
-    /**
-     * \brief   Proxy instance reference counter. 
-     *          On every request to start Proxy, this counter will 
-     *          increase value. On request to free Proxy, it will
-     *          decrease value. And when reaches zero, will delete
-     *          Proxy object.
-     **/
-    unsigned int            mProxyInstCount;
 
 private:
 #if defined(_MSC_VER) && (_MSC_VER > 1200)

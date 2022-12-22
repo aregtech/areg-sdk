@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  13:59:46 GMT+02:00
+ * Generated at     20.12.2022  16:19:16 GMT+01:00
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
  *
  * \file            generated/src/LocalHelloWorldClientBase.hpp
@@ -68,6 +68,15 @@ LocalHelloWorldClientBase::LocalHelloWorldClientBase( const String & roleName, C
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
     , mProxy            ( LocalHelloWorldProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), owner.getMasterThread()) )
+{
+}
+
+LocalHelloWorldClientBase::LocalHelloWorldClientBase( const NERegistry::DependencyEntry & dependency, Component & owner )
+    : IEProxyListener   ( )
+
+    , mIsConnected      ( false )
+    , mCurrSequenceNr   ( 0 )
+    , mProxy            ( LocalHelloWorldProxy::createProxy(dependency.mRoleName, static_cast<IEProxyListener &>(self()), owner.getMasterThread()) )
 {
 }
 
@@ -180,38 +189,6 @@ void LocalHelloWorldClientBase::processNotificationEvent( NotificationEvent & ev
 
     case NEService::eResultType::DataOK:            // fall through
     case NEService::eResultType::DataInvalid:
-        {
-            NEService::eDataStateType dataState;
-            switch (msgId)
-            {
-        /************************************************************************
-         * Trigger attribute update processing
-         ************************************************************************/
-            case NELocalHelloWorld::eMessageIDs::MsgId_ConnectedClients:
-                {
-                    const NELocalHelloWorld::ConnectionList & ConnectedClients = mProxy->getConnectedClients(dataState);
-                    onConnectedClientsUpdate(ConnectedClients, dataState);
-                }
-                break;
-
-            case NELocalHelloWorld::eMessageIDs::MsgId_RemainOutput:
-                {
-                    short RemainOutput = mProxy->getRemainOutput(dataState);
-                    onRemainOutputUpdate(RemainOutput, dataState);
-                }
-                break;
-
-            default:
-                {
-                    TRACE_SCOPE(generated_src_LocalHelloWorldClientBase_processNotificationEvent);
-                    TRACE_ERR("Client object LocalHelloWorldClientBase of proxy [ %s ] received unexpected Attribute update notification message ID [ %d ]."
-                                , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
-                                , msgId);
-                    ASSERT(false);
-                }
-                break;
-            }
-        }
         break;
 
     case NEService::eResultType::RequestOK:
@@ -309,24 +286,6 @@ void LocalHelloWorldClientBase::requestFailed( NELocalHelloWorld::eMessageIDs Fa
 /************************************************************************
  * Attribute notifications
  ************************************************************************/
-
-DEF_TRACE_SCOPE(generated_src_LocalHelloWorldClientBase_onConnectedClientsUpdate);
-void LocalHelloWorldClientBase::onConnectedClientsUpdate( const NELocalHelloWorld::ConnectionList & /* ConnectedClients */, NEService::eDataStateType /* state */ )
-{
-    TRACE_SCOPE(generated_src_LocalHelloWorldClientBase_onConnectedClientsUpdate);
-    TRACE_WARN("The attribute ConnectedClients (value = %u) update method of proxy [ %s ] client LocalHelloWorldClientBase is not implemented!"
-                    , static_cast<unsigned int>(NELocalHelloWorld::eMessageIDs::MsgId_ConnectedClients)
-                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
-}
-
-DEF_TRACE_SCOPE(generated_src_LocalHelloWorldClientBase_onRemainOutputUpdate);
-void LocalHelloWorldClientBase::onRemainOutputUpdate( short /* RemainOutput */, NEService::eDataStateType /* state */ )
-{
-    TRACE_SCOPE(generated_src_LocalHelloWorldClientBase_onRemainOutputUpdate);
-    TRACE_WARN("The attribute RemainOutput (value = %u) update method of proxy [ %s ] client LocalHelloWorldClientBase is not implemented!"
-                    , static_cast<unsigned int>(NELocalHelloWorld::eMessageIDs::MsgId_RemainOutput)
-                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
-}
 
 /************************************************************************
  * Request failure / Response and Broadcast notifications

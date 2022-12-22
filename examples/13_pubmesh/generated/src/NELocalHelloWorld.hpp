@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  13:59:46 GMT+02:00
+ * Generated at     20.12.2022  16:19:16 GMT+01:00
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
  *
  * \file            generated/src/NELocalHelloWorld.hpp
@@ -25,13 +25,13 @@
 // Dependency includes
 //////////////////////////////////////////////////////////////////////////
 #include "areg/base/String.hpp"
-#include "areg/base/TELinkedList.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Mandatory includes
 //////////////////////////////////////////////////////////////////////////
 #include "areg/base/IEIOStream.hpp"
 #include "areg/base/Version.hpp"
+#include "areg//component/NERegistry.hpp"
 #include "areg/component/NEService.hpp"
 
 #include <utility>
@@ -48,9 +48,7 @@
  * \brief   LocalHelloWorld Service Interface defined constants,
  *          types and structures message IDs, global static methods.
  *
- *          Simple Service Interface to demonstrate working features of AREG SDK.
- *          This interface serves only local components and can be duplicated in other processes.
- *          		
+ *          A Local Service Interface to demonstrate working features of AREG SDK.
  *
  **/
 namespace   NELocalHelloWorld
@@ -69,12 +67,6 @@ namespace   NELocalHelloWorld
      *          NELocalHelloWorld::InterfaceVersion
      **/
     const       Version InterfaceVersion{ 1, 0, 0 };
-
-    /**
-     * \brief   The maximum number of messages to output.
-     *          NELocalHelloWorld::MaxMessages
-     **/
-    constexpr short           MaxMessages         = 37;
 
 /************************************************************************/
 // Service Interface data types
@@ -160,12 +152,6 @@ namespace   NELocalHelloWorld
          String          ccName;
     };
 
-    /**
-     * \brief   The list of connected clients.
-     *          NELocalHelloWorld::ConnectionList
-     **/
-     typedef    TELinkedList< sConnectedClient >   ConnectionList;
-
 /************************************************************************
  * Service Message IDs
  ************************************************************************/
@@ -199,16 +185,6 @@ namespace   NELocalHelloWorld
     /************************************************************************
      * Attributes IDs
      ************************************************************************/
-        /**
-         * \brief   Attribute ID: MsgId_ConnectedClients
-         *          The list of connected clients. Updated each time when new client requests to output Hello World message.
-         **/
-        , MsgId_ConnectedClients      = NEService::ATTRIBUTE_ID_FIRST // NELocalHelloWorld::ConnectionList mConnectedClients;
-        /**
-         * \brief   Attribute ID: MsgId_RemainOutput
-         *          Remaining number of outputs to print Hello World.
-         **/
-        , MsgId_RemainOutput                                            // short mRemainOutput;
 
     /************************************************************************
      * Reserved constant IDs
@@ -364,10 +340,6 @@ inline const char * NELocalHelloWorld::getString( NELocalHelloWorld::eMessageIDs
         return "NELocalHelloWorld::eMessageIDs::MsgId_requestHelloWorld";
     case    NELocalHelloWorld::eMessageIDs::MsgId_responseHelloWorld:
         return "NELocalHelloWorld::eMessageIDs::MsgId_responseHelloWorld";
-    case    NELocalHelloWorld::eMessageIDs::MsgId_ConnectedClients:
-        return "NELocalHelloWorld::eMessageIDs::MsgId_ConnectedClients";
-    case    NELocalHelloWorld::eMessageIDs::MsgId_RemainOutput:
-        return "NELocalHelloWorld::eMessageIDs::MsgId_RemainOutput";
 
     case NELocalHelloWorld::eMessageIDs::MsgId_NotProcessed:
         return "NELocalHelloWorld::eMessageIDs::MsgId_NotProcessed";

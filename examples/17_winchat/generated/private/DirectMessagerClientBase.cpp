@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:48:00 GMT+02:00
+ * Generated at     20.12.2022  16:20:20 GMT+01:00
  *                  Create by AREG SDK code generator tool from source DirectMessager.
  *
  * \file            generated/DirectMessagerClientBase.hpp
@@ -71,6 +71,15 @@ DirectMessagerClientBase::DirectMessagerClientBase( const String & roleName, Com
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
     , mProxy            ( DirectMessagerProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), owner.getMasterThread()) )
+{
+}
+
+DirectMessagerClientBase::DirectMessagerClientBase( const NERegistry::DependencyEntry & dependency, Component & owner )
+    : IEProxyListener   ( )
+
+    , mIsConnected      ( false )
+    , mCurrSequenceNr   ( 0 )
+    , mProxy            ( DirectMessagerProxy::createProxy(dependency.mRoleName, static_cast<IEProxyListener &>(self()), owner.getMasterThread()) )
 {
 }
 

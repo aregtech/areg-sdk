@@ -54,11 +54,11 @@ protected:
 
     /**
      * \brief   Instantiates the component object.
-     * \param   masterThread    The instance of component owner thread.
-     * \param   roleName        The role name of component, given in the system.
-     * \param   data            The optional component data set in system. Can be empty / no data.
+     * \param   ownerThread The instance of component owner thread.
+     * \param   roleName    The role name of component, given in the system.
+     * \param   data        The optional component data set in system. Can be empty / no data.
      **/
-    ServicingComponent(ComponentThread & masterThread, const char * const roleName, NEMemory::uAlign OPTIONAL data);
+    ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread, NEMemory::uAlign OPT data);
 
     virtual ~ServicingComponent(void) = default;
 

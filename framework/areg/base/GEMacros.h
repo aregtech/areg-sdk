@@ -32,9 +32,9 @@
     #define OUT
 #endif  // !OUT
 
-#ifndef OPTIONAL
-    #define OPTIONAL
-#endif  // !OPTIONAL
+#ifndef OPT
+    #define OPT
+#endif  // !OPT
 
 #ifndef IGNORE_PARAM
     #define IGNORE_PARAM        nullptr

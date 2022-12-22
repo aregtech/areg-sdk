@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     10.12.2022  04:35:54 GMT+01:00
+ * Generated at     20.12.2022  16:18:37 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/HelloWorldClientBase.hpp
@@ -49,31 +49,38 @@ class HelloWorldClientBase  : public IEProxyListener
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initialize HelloWorld Service Interface client object.
-     *          Specifies used service and owner thread.
-     * \param   roleName    The role name assigned to HelloWorld servicing component object.
-     * \param   ownerThread The name of component owner thread to dispatch messages.
-     *                      If nullptr, all messages are dispatched in current component thread.
+     * \brief   Initialize HelloWorld Service client object by specifying the
+     *          dependency of service by role name and the client owner thread name.
+     * \param   roleName    The dependent service HelloWorld role name.
+     * \param   ownerThread The name of client owner thread. If empty, assign current thread.
      **/
     HelloWorldClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
 
     /**
-     * \brief   Initialize HelloWorld Service Interface client object.
-     *          Specifies used service and owner thread.
-     * \param   roleName    The role name assigned to HelloWorld servicing component object.
-     * \param   ownerThread The instance of component owner thread to dispatch messages.
+     * \brief   Initialize HelloWorld Service client object by specifying the
+     *          dependency of service by role name and the client owner thread.
+     * \param   roleName    The dependent service HelloWorld role name.
+     * \param   ownerThread The instance of client owner thread.
      **/
     HelloWorldClientBase( const String & roleName, DispatcherThread & ownerThread );
 
     /**
-     * \brief   Initialize HelloWorld Service Interface client object.
-     *          Specifies used service and owner component.
-     * \param   roleName    The role name assigned to HelloWorld servicing component object.
-     * \param   owner       The instance of client owner component. The component object should be already initialized.
-     * \note    When this constructor is used, it is important that the Component object is already initialized.
-     *          and the component thread is set.
+     * \brief   Initialize HelloWorld Service client object by specifying the
+     *          dependency of service by role name and the client owner component.
+     * \param   roleName    The dependent service HelloWorld role name.
+     * \param   owner       The instance of client owner component.
+     * \note    It is important that the Component object is already initialized.
      **/
     HelloWorldClientBase( const String & roleName, Component & owner );
+    
+    /**
+     * \brief   Initialize HelloWorld Service client object by specifying the
+     *          dependency of service by registered dependency entry and the owner component object.
+     * \param   dependency  The instance of registered service HelloWorld dependency entry.
+     * \param   owner       The instance of client owner component.
+     * \note    It is important that the Component object is already initialized.
+     **/
+    HelloWorldClientBase( const NERegistry::DependencyEntry & dependency, Component & owner );
 
     /**
      * \brief   Destructor.
@@ -148,11 +155,9 @@ public:
     /**
      * \brief   Request call.
      *          Sent by client to request to shutdown service and the application. This request has no response.
-     * \param   clientID    The ID of client that requests to shutdown. The ID is given by service when first time client requests to output message.
-     * \param   roleName    Service client component role name
      * \see     Has no response
      **/
-    inline void requestShutdownService( unsigned int clientID, const String & roleName );
+    inline void requestShutdownService( void );
     /**
      * \brief   Overwrite to handle error of ShutdownService request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -167,10 +172,9 @@ public:
      *          The response to hello world request.
      *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
-     * \param   clientInfo  The client information set by servicing component. If empty or invalid ID, the message output failed.
      * \see     requestHelloWorld
      **/
-    virtual void responseHelloWorld( const NEHelloWorld::sConnectedClient & clientInfo );
+    virtual void responseHelloWorld( void );
     /**
      * \brief   Call to enable or disable receiving notifications on HelloWorld response call.
      *          This function is triggered, when client object is interested only on response result
@@ -402,10 +406,10 @@ inline unsigned int HelloWorldClientBase::requestHelloWorld( const String & role
     return mProxy->requestHelloWorld( static_cast<IENotificationEventConsumer &>(self()), roleName );
 }
 
-inline void HelloWorldClientBase::requestShutdownService( unsigned int clientID, const String & roleName )
+inline void HelloWorldClientBase::requestShutdownService( void )
 {
     ASSERT(mProxy != nullptr);
-    mProxy->requestShutdownService( clientID, roleName );
+    mProxy->requestShutdownService(  );
 }
 
 /************************************************************************

@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>13_pubsvcmain</name>
+	<name>13_pubservice</name>
 	<comment></comment>
 	<projects>
-		<project>areg</project>
+		<project>13_common</project>
 		<project>13_generated</project>
+		<project>areg</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

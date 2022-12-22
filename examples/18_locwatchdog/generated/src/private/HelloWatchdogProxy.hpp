@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:48:18 GMT+02:00
+ * Generated at     20.12.2022  16:20:32 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWatchdog.
  *
  * \file            generated/src/private/HelloWatchdogProxy.hpp
@@ -42,6 +42,8 @@ class HelloWatchdogResponseEvent;
  **/
 class HelloWatchdogProxy   : public ProxyBase
 {
+    friend class HelloWatchdogClientBase;
+    
 private:
     //////////////////////////////////////////////////////////////////////////
     // HelloWatchdogProxy::HelloWatchdogServiceAvailableEvent class declaration
@@ -80,7 +82,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // HelloWatchdogProxy predefined constants and static members.
 //////////////////////////////////////////////////////////////////////////
-public:
+protected:
     /**
      * \brief   Returns existing or creates new proxy object if it is not existing
      *          in the current thread scope.
@@ -164,7 +166,7 @@ public:
      * \see     responseStartSleep
      **/
     unsigned int requestStartSleep( IENotificationEventConsumer & caller, unsigned int timeoutSleep );
-    
+
 //////////////////////////////////////////////////////////////////////////
 // Operations.
 //////////////////////////////////////////////////////////////////////////

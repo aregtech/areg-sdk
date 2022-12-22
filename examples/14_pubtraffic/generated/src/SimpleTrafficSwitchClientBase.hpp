@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:45:34 GMT+02:00
+ * Generated at     20.12.2022  16:19:34 GMT+01:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficSwitch.
  *
  * \file            generated/src/SimpleTrafficSwitchClientBase.hpp
@@ -50,31 +50,38 @@ class SimpleTrafficSwitchClientBase  : public IEProxyListener
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Initialize SimpleTrafficSwitch Service Interface client object.
-     *          Specifies used service and owner thread.
-     * \param   roleName    The role name assigned to SimpleTrafficSwitch servicing component object.
-     * \param   ownerThread The name of component owner thread to dispatch messages.
-     *                      If nullptr, all messages are dispatched in current component thread.
+     * \brief   Initialize SimpleTrafficSwitch Service client object by specifying the
+     *          dependency of service by role name and the client owner thread name.
+     * \param   roleName    The dependent service SimpleTrafficSwitch role name.
+     * \param   ownerThread The name of client owner thread. If empty, assign current thread.
      **/
     SimpleTrafficSwitchClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
 
     /**
-     * \brief   Initialize SimpleTrafficSwitch Service Interface client object.
-     *          Specifies used service and owner thread.
-     * \param   roleName    The role name assigned to SimpleTrafficSwitch servicing component object.
-     * \param   ownerThread The instance of component owner thread to dispatch messages.
+     * \brief   Initialize SimpleTrafficSwitch Service client object by specifying the
+     *          dependency of service by role name and the client owner thread.
+     * \param   roleName    The dependent service SimpleTrafficSwitch role name.
+     * \param   ownerThread The instance of client owner thread.
      **/
     SimpleTrafficSwitchClientBase( const String & roleName, DispatcherThread & ownerThread );
 
     /**
-     * \brief   Initialize SimpleTrafficSwitch Service Interface client object.
-     *          Specifies used service and owner component.
-     * \param   roleName    The role name assigned to SimpleTrafficSwitch servicing component object.
-     * \param   owner       The instance of client owner component. The component object should be already initialized.
-     * \note    When this constructor is used, it is important that the Component object is already initialized.
-     *          and the component thread is set.
+     * \brief   Initialize SimpleTrafficSwitch Service client object by specifying the
+     *          dependency of service by role name and the client owner component.
+     * \param   roleName    The dependent service SimpleTrafficSwitch role name.
+     * \param   owner       The instance of client owner component.
+     * \note    It is important that the Component object is already initialized.
      **/
     SimpleTrafficSwitchClientBase( const String & roleName, Component & owner );
+    
+    /**
+     * \brief   Initialize SimpleTrafficSwitch Service client object by specifying the
+     *          dependency of service by registered dependency entry and the owner component object.
+     * \param   dependency  The instance of registered service SimpleTrafficSwitch dependency entry.
+     * \param   owner       The instance of client owner component.
+     * \note    It is important that the Component object is already initialized.
+     **/
+    SimpleTrafficSwitchClientBase( const NERegistry::DependencyEntry & dependency, Component & owner );
 
     /**
      * \brief   Destructor.

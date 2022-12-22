@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  02:45:32 GMT+02:00
+ * Generated at     20.12.2022  16:19:32 GMT+01:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficLight.
  *
  * \file            generated/src/SimpleTrafficLightClientBase.hpp
@@ -67,6 +67,15 @@ SimpleTrafficLightClientBase::SimpleTrafficLightClientBase( const String & roleN
     , mIsConnected      ( false )
     , mCurrSequenceNr   ( 0 )
     , mProxy            ( SimpleTrafficLightProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), owner.getMasterThread()) )
+{
+}
+
+SimpleTrafficLightClientBase::SimpleTrafficLightClientBase( const NERegistry::DependencyEntry & dependency, Component & owner )
+    : IEProxyListener   ( )
+
+    , mIsConnected      ( false )
+    , mCurrSequenceNr   ( 0 )
+    , mProxy            ( SimpleTrafficLightProxy::createProxy(dependency.mRoleName, static_cast<IEProxyListener &>(self()), owner.getMasterThread()) )
 {
 }
 

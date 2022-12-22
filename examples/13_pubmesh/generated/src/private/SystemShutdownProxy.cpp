@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     13.08.2022  13:59:49 GMT+02:00
+ * Generated at     20.12.2022  16:19:19 GMT+01:00
  *                  Create by AREG SDK code generator tool from source SystemShutdown.
  *
  * \file            generated/src/private/SystemShutdownProxy.hpp
@@ -53,7 +53,7 @@ SystemShutdownProxy * SystemShutdownProxy::createProxy( const String & roleName,
                                                                       , NESystemShutdown::getInterfaceData()
                                                                       , connectListener
                                                                       , &SystemShutdownProxy::_createProxy
-                                                                      , ownerThread) );
+                                                                      , ownerThread).get() );
 }
 
 SystemShutdownProxy * SystemShutdownProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
@@ -62,7 +62,7 @@ SystemShutdownProxy * SystemShutdownProxy::createProxy( const String & roleName,
                                                                       , NESystemShutdown::getInterfaceData()
                                                                       , connectListener
                                                                       , &SystemShutdownProxy::_createProxy
-                                                                      , ownerThread) );
+                                                                      , ownerThread).get() );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -137,6 +137,11 @@ void SystemShutdownProxy::unregisterServiceListeners( void )
  * Requests.
  ************************************************************************/
 
+void SystemShutdownProxy::requestSystemShutdown( void )
+{
+    static const NESystemShutdown::eMessageIDs msgId = NESystemShutdown::eMessageIDs::MsgId_requestSystemShutdown;
+    sendRequestEvent( static_cast<unsigned int>(msgId), EventDataStream::EmptyData, nullptr );
+}
 /************************************************************************
  * Event processing.
  ************************************************************************/
@@ -180,12 +185,6 @@ void SystemShutdownProxy::updateData( SystemShutdownResponseEvent & eventElem, N
     /************************************************************************
      * Update Broadcast parameters
      ************************************************************************/
-    case NESystemShutdown::eMessageIDs::MsgId_broadcastServiceUnavailable:
-        break;
-
-    case NESystemShutdown::eMessageIDs::MsgId_broadcastServiceShutdown:
-        break;
-
     /************************************************************************
      * Update Attribute values
      ************************************************************************/

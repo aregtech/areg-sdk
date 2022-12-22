@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2021
+ * (c) copyright    2022
  *
- * Generated at     20.10.2021  21:36:19 GMT+02:00 
+ * Generated at     20.12.2022  16:24:46 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloService.
  *
  * \file            generated/src/private/HelloServiceProxy.hpp
@@ -53,7 +53,7 @@ HelloServiceProxy * HelloServiceProxy::createProxy( const String & roleName, IEP
                                                                       , NEHelloService::getInterfaceData()
                                                                       , connectListener
                                                                       , &HelloServiceProxy::_createProxy
-                                                                      , ownerThread) );
+                                                                      , ownerThread).get() );
 }
 
 HelloServiceProxy * HelloServiceProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
@@ -62,7 +62,7 @@ HelloServiceProxy * HelloServiceProxy::createProxy( const String & roleName, IEP
                                                                       , NEHelloService::getInterfaceData()
                                                                       , connectListener
                                                                       , &HelloServiceProxy::_createProxy
-                                                                      , ownerThread) );
+                                                                      , ownerThread).get() );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -136,7 +136,7 @@ void HelloServiceProxy::unregisterServiceListeners( void )
 /************************************************************************
  * Requests.
  ************************************************************************/
- 
+
 unsigned int HelloServiceProxy::requestHelloService( IENotificationEventConsumer & caller, const String & client )
 {
     static const NEHelloService::eMessageIDs msgId = NEHelloService::eMessageIDs::MsgId_requestHelloService;
@@ -150,7 +150,7 @@ unsigned int HelloServiceProxy::requestHelloService( IENotificationEventConsumer
 /************************************************************************
  * Event processing.
  ************************************************************************/
- 
+
 /************************************************************************
  * IEProxyEventConsumer interface overrides.
  ************************************************************************/
@@ -208,8 +208,8 @@ void HelloServiceProxy::updateData( HelloServiceResponseEvent & eventElem, NEHel
         break;
     }
 }
- 
-void HelloServiceProxy::processResponse( HelloServiceResponseEvent & evenElem )
+
+    void HelloServiceProxy::processResponse( HelloServiceResponseEvent & evenElem )
 {
     NEHelloService::eMessageIDs respId  = static_cast<NEHelloService::eMessageIDs>(evenElem.getResponseId());
     NEService::eResultType resultType  = evenElem.getResult();
@@ -235,8 +235,8 @@ void HelloServiceProxy::processResponse( HelloServiceResponseEvent & evenElem )
         {
             respId  = static_cast<NEHelloService::eMessageIDs>( mProxyData.getResponseId(static_cast<msg_id>(respId)) );
         }
-        
-        setStates   = respId != NEHelloService::eMessageIDs::MsgId_NotProcessed;            
+
+        setStates   = respId != NEHelloService::eMessageIDs::MsgId_NotProcessed;
         break;
 
     case NEService::eResultType::RequestOK:     // fall through
@@ -253,16 +253,15 @@ void HelloServiceProxy::processResponse( HelloServiceResponseEvent & evenElem )
     {
         updateData(evenElem, respId);
     }
-       
+
     if (setStates == true)
     {
         setState(static_cast<msg_id>(respId), dataValid ? NEService::eDataStateType::DataIsOK : NEService::eDataStateType::DataIsInvalid);
     }
-    
+
     notifyListeners(static_cast<msg_id>(respId), resultType, evenElem.getSequenceNumber());
 }
 
 //////////////////////////////////////////////////////////////////////////
 // End generate generated/src/private/HelloServiceProxy.cpp file
 //////////////////////////////////////////////////////////////////////////
- 

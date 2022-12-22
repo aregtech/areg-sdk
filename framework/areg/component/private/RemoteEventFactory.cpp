@@ -114,7 +114,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
             stream >> addrProxy;
             if ( comChannel.getCookie() == addrProxy.getCookie() )
                 addrProxy.setCookie( NEService::COOKIE_LOCAL );
-            ProxyBase * proxy = ProxyBase::findProxyByAddress(addrProxy);
+            std::shared_ptr<ProxyBase> proxy = ProxyBase::findProxyByAddress(addrProxy);
             if ( proxy != nullptr )
             {
                 stream.moveToBegin();
@@ -127,6 +127,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
                     TRACE_DBG("Created Event::eEventType::EventRemoteServiceResponse for target proxy [ %s ]."
                                 , ProxyAddress::convAddressToPath(eventResponse->getTargetProxy()).getString());
                 }
+
                 result = static_cast<StreamableEvent *>(eventResponse);
             }
         }

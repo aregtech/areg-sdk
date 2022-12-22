@@ -21,7 +21,6 @@ DEF_TRACE_SCOPE( examples_11_locsvcmesh_ServiceHelloWorld_requestShutdownService
 ServiceHelloWorld::ServiceHelloWorld( Component & masterComp, bool isMain )
     : HelloWorldStub( masterComp )
     , mIsMain( isMain )
-    , mGnerateID( 0 )
     , mClientList( )
     , mRemainRequest( NEHelloWorld::MaxMessages )
 {
@@ -30,30 +29,17 @@ ServiceHelloWorld::ServiceHelloWorld( Component & masterComp, bool isMain )
 void ServiceHelloWorld::requestHelloWorld( const String & roleName )
 {
     TRACE_SCOPE( examples_11_locsvcmesh_ServiceHelloWorld_requestHelloWorld );
-
-    ClientList::LISTPOS pos = mClientList.firstPosition( );
-    for ( ; mClientList.isValidPosition( pos ); pos = mClientList.nextPosition( pos ) )
+    unsigned int clientId = 0;
+    if ( mClientList.find( roleName, clientId ) == false )
     {
-        const NEHelloWorld::sConnectedClient & client = mClientList.valueAtPosition( pos );
-        if ( roleName == client.ccName )
-        {
-            TRACE_DBG( "Found connected client [ %s ] with ID [ %u ] in the list.", client.ccName.getString( ), client.ccID );
-            break;
-        }
+        clientId = NEUtilities::generateUniqueId( );
+        mClientList.setAt( roleName, clientId );
     }
 
-    if ( mClientList.isInvalidPosition( pos ) )
-    {
-        responseHelloWorld( NEHelloWorld::sConnectedClient{ ++mGnerateID, roleName } );
-        TRACE_INFO( "The new client component [ %s ] with ID [ %u ] sent a request", roleName.getString( ), mGnerateID );
-    }
-    else
-    {
-        responseHelloWorld( mClientList.valueAtPosition( pos ) );
-    }
+    // use printf() because of multithreading environment
+    printf( "\"Hello client [ %s ]!\", remain to process [ %d ]\n", roleName.getString( ), -- mRemainRequest );
 
-    // User printf, it is thread safe
-    printf( "\"Hello client [ %s ]!\", remain to process [ %d ]\n", roleName.getString( ), --mRemainRequest );
+    responseHelloWorld( roleName, clientId );
 
     if ( mRemainRequest == 0 )
     {
