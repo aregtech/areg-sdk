@@ -18,10 +18,6 @@ set CLASSPATH=%CLASSPATH%;%AREG_SDK_ROOT%\tools;%AREG_SDK_ROOT%\tools\codegen.ja
 java com.aregtech.CMFMain --root=%PROJECT_ROOT% --doc=res\SimpleTrafficLight.siml --target=%CODE_GEN%
 
 @echo ......................................................
-@echo Generating class of SimpleTrafficSwitch Service Interface in folder %CODE_GEN% .....
-java com.aregtech.CMFMain --root=%PROJECT_ROOT% --doc=res\SimpleTrafficSwitch.siml --target=%CODE_GEN%
-
-@echo ......................................................
 echo:
 echo End of code generating
 

@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     20.12.2022  16:19:32 GMT+01:00
+ * Generated at     23.12.2022  00:41:05 GMT+01:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficLight.
  *
  * \file            generated/src/private/SimpleTrafficLightProxy.hpp
@@ -74,14 +74,12 @@ SimpleTrafficLightProxy::SimpleTrafficLightProxy( const String & roleName, Dispa
 /************************************************************************
  * Attributes
  ************************************************************************/
-    , mSouthNorth         (  )
-    , mEastWest           (  )
+    , mSouthNorth (  )
+    , mEastWest   (  )
 
 /************************************************************************
  * Parameters
  ************************************************************************/
-    , mParamSouthNorth    (  )
-    , mParamEastWest      (  )
 {
 }
 
@@ -183,11 +181,6 @@ void SimpleTrafficLightProxy::updateData( SimpleTrafficLightResponseEvent & even
     /************************************************************************
      * Update Broadcast parameters
      ************************************************************************/
-    case NESimpleTrafficLight::eMessageIDs::MsgId_broadcastLightChanged:
-        stream >> mParamSouthNorth;
-        stream >> mParamEastWest;
-        break;
-
     /************************************************************************
      * Update Attribute values
      ************************************************************************/

@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     20.12.2022  16:19:32 GMT+01:00
+ * Generated at     23.12.2022  00:41:05 GMT+01:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficLight.
  *
  * \file            generated/src/private/SimpleTrafficLightProxy.hpp
@@ -160,22 +160,6 @@ public:
 /************************************************************************
  * Parameters
  ************************************************************************/
-    /**
-     * \brief   Returns value of SouthNorth of response call function.
-     *          The parameter is validated and set when Proxy is getting response call.
-     *          Parameter SouthNorth description:
-     *          The light state of south-north traffic.
-     **/
-    inline NESimpleTrafficLight::eTrafficLight getParamSouthNorth( void ) const;
-
-    /**
-     * \brief   Returns value of EastWest of response call function.
-     *          The parameter is validated and set when Proxy is getting response call.
-     *          Parameter EastWest description:
-     *          The light state of east-west traffic.
-     **/
-    inline NESimpleTrafficLight::eTrafficLight getParamEastWest( void ) const;
-
 /************************************************************************
  * Requests
  ************************************************************************/
@@ -328,18 +312,6 @@ private:
 /************************************************************************
  * Parameter members
  ************************************************************************/
-    /**
-     * \brief   SouthNorth parameter value.
-     *          The light state of south-north traffic.
-     **/
-    NESimpleTrafficLight::eTrafficLight mParamSouthNorth;
-
-    /**
-     * \brief   EastWest parameter value.
-     *          The light state of east-west traffic.
-     **/
-    NESimpleTrafficLight::eTrafficLight mParamEastWest;
-
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
@@ -447,20 +419,6 @@ inline NESimpleTrafficLight::eTrafficLight SimpleTrafficLightProxy::getEastWest(
 {
     state = getProxyData().getAttributeState( static_cast<msg_id>(NESimpleTrafficLight::eMessageIDs::MsgId_EastWest) );
     return mEastWest;
-}
-
-/************************************************************************
- * Inline parameters
- ************************************************************************/
-
-inline NESimpleTrafficLight::eTrafficLight SimpleTrafficLightProxy::getParamSouthNorth( void ) const
-{
-    return mParamSouthNorth;
-}
-
-inline NESimpleTrafficLight::eTrafficLight SimpleTrafficLightProxy::getParamEastWest( void ) const
-{
-    return mParamEastWest;
 }
 
 #endif   // GENERATED_SRC_PRIVATE_SIMPLETRAFFICLIGHTPROXY_HPP

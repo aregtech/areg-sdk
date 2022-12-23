@@ -49,7 +49,9 @@ class AREG_API Console
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   The type of callback function to set to check the user command.
+     * \brief   The callback function to validate the input.
+     *          Used when waits the user input on console.
+     *          If returns true, stops waiting. If returns false, continues waiting.
      **/
     using CallBack = std::function<bool(const String &)>;
 

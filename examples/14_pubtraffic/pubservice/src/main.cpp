@@ -17,6 +17,7 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/appbase/Application.hpp"
+#include "areg/appbase/Console.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
 
@@ -47,7 +48,6 @@ BEGIN_MODEL(_modelName)
         BEGIN_REGISTER_COMPONENT( NECommon::SimpleLightControllerName, TrafficLightService )
             // register SimpleTrafficLight and SimpleTrafficSwitch service implementation.
             REGISTER_IMPLEMENT_SERVICE( NESimpleTrafficLight::ServiceName, NESimpleTrafficLight::InterfaceVersion )
-            REGISTER_IMPLEMENT_SERVICE( NESimpleTrafficSwitch::ServiceName, NESimpleTrafficSwitch::InterfaceVersion )
         // end of component description
         END_REGISTER_COMPONENT( NECommon::SimpleLightControllerName )
     // end of thread description
@@ -59,10 +59,7 @@ END_MODEL(_modelName)
 //////////////////////////////////////////////////////////////////////////
 // main method.
 //////////////////////////////////////////////////////////////////////////
-/**
- * \brief   The main method does not start the logging, enables service manager and timer.
- *          it loads and unloads the services, releases application.
- **/
+//! A demo of a service to send data update notification (PubSub feature).
 int main()
 {
     // Initialize application, enable servicing, routing, timer and watchdog.
@@ -78,7 +75,18 @@ int main()
     ASSERT(thread != nullptr );
     ASSERT(thread->isInstanceOfRuntimeClass("DispatcherThread"));
 
-    bool doLoop         = true;
+    bool doLoop = true;
+    Console & console = Console::getInstance( );
+    console.enableConsoleInput( true );
+
+    std::string_view commands[]
+    {
+          { "quit"  }
+        , { "stop"  }
+        , { "start" }
+    };
+
+    console.outputTxt( { 0, 0 }, "A demo of a service to send data update notification (PubSub feature)...." );
 
     do 
     {
@@ -86,48 +94,36 @@ int main()
         //      - 'start'   to switch ON traffic light and start changing states.
         //      - 'stop'    to stop changing states and set traffic light OFF.
         //      - 'quit' or 'q' to quit application(s). This will also send signal to stop clients.
-        char command[32]    = {0};
+        console.outputTxt( { 0, 2 }, "============================================" );
+        console.outputTxt( { 0, 3 }, "- Type \"start\" to start the traffic light." );
+        console.outputTxt( { 0, 4 }, "- Type \"stop\"  to stop the traffic light." );
+        console.outputTxt( { 0, 5 }, "- Type \"quit\"  to quit the traffic light." );
+        console.outputTxt( { 0, 6 }, "Type command: " );
+        console.refreshScreen( );
+        console.waitForInput( [&]( const String & cmd ) -> bool
+            {
+                if ( cmd.compare( commands[0], false ) == NEMath::eCompare::Equal )
+                {
+                    // It is 'quit' --> quit application(s).
+                    DispatcherThread * dispatcher = static_cast<DispatcherThread *>(thread);
+                    TrafficSwitchEvent::sendEvent( TrafficSwitchData( false ), *dispatcher );
+                    doLoop = false; // quit the loop
+                }
+                else if ( cmd.compare( commands[1], false ) == NEMath::eCompare::Equal )
+                {
+                    // It is 'stop' --> stop the traffic light.
+                    DispatcherThread * dispatcher = static_cast<DispatcherThread *>(thread);
+                    TrafficSwitchEvent::sendEvent( TrafficSwitchData( false ), *dispatcher );
+                }
+                else if ( cmd.compare( commands[2], false ) == NEMath::eCompare::Equal )
+                {
+                    // It is 'start' --> start the traffic light.
+                    DispatcherThread * dispatcher = static_cast<DispatcherThread *>(thread);
+                    TrafficSwitchEvent::sendEvent( TrafficSwitchData( true ), *dispatcher );
+                }
 
-        printf("\n===============================\n");
-        printf("- Type \"start\" to start traffic light.\n");
-        printf("- Type \"stop\" to stop the traffic light.\n");
-        printf("- Type \"quit\" (or \'q\') to stop application.\n");
-        printf("Type command: ");
-
-        if ( MACRO_SCANF("%31s", command, 32) != 1)
-        {
-            // should never happen, but returned code from scanf must be checked
-            printf("\nERROR: Invalid Choice, Quit example application ...\n");
-
-            // wrong option, quit application.
-            break;
-        }
-
-
-        if ( NEString::compareFastIgnoreCase<char, char>("start", command) == NEMath::eCompare::Equal)
-        {
-            // It is 'start' --> start the traffic light.
-            DispatcherThread * dispatcher = static_cast<DispatcherThread *>(thread);
-            TrafficSwitchEvent::sendEvent( TrafficSwitchData(true), *dispatcher);
-        }
-        else if ( NEString::compareFastIgnoreCase<char, char>("stop", command) == NEMath::eCompare::Equal)
-        {
-            // It is 'stop' --> stop the traffic light.
-            DispatcherThread * dispatcher = static_cast<DispatcherThread *>(thread);
-            TrafficSwitchEvent::sendEvent( TrafficSwitchData(false), *dispatcher);
-        }
-        else if ( (NEString::compareFastIgnoreCase<char, char>("quit", command) == NEMath::eCompare::Equal) || 
-                  (NEString::compareFastIgnoreCase<char, char>("q", command) == NEMath::eCompare::Equal) )
-        {
-            // It is 'quit' --> quit application(s).
-            DispatcherThread * dispatcher = static_cast<DispatcherThread *>(thread);
-            TrafficSwitchEvent::sendEvent( TrafficSwitchData(false), *dispatcher);
-            doLoop = false; // quit the loop
-        }
-        else
-        {
-            printf("Unrecognized command!\n");
-        }
+                return true;
+            });
 
         Thread::switchThread();
 

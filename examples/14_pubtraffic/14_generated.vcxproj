@@ -39,29 +39,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="generated\src\NECommon.hpp" />
+    <ClInclude Include="generated\src\NESimpleTrafficLight.hpp" />
+    <ClInclude Include="generated\src\private\SimpleTrafficLightEvents.hpp" />
+    <ClInclude Include="generated\src\private\SimpleTrafficLightProxy.hpp" />
+    <ClInclude Include="generated\src\SimpleTrafficLightClientBase.hpp" />
+    <ClInclude Include="generated\src\SimpleTrafficLightStub.hpp" />
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="generated\src\private\NESimpleTrafficLight.cpp" />
-    <ClCompile Include="generated\src\private\NESimpleTrafficSwitch.cpp" />
     <ClCompile Include="generated\src\private\SimpleTrafficLightClientBase.cpp" />
     <ClCompile Include="generated\src\private\SimpleTrafficLightEvents.cpp" />
     <ClCompile Include="generated\src\private\SimpleTrafficLightProxy.cpp" />
     <ClCompile Include="generated\src\private\SimpleTrafficLightStub.cpp" />
-    <ClCompile Include="generated\src\private\SimpleTrafficSwitchClientBase.cpp" />
-    <ClCompile Include="generated\src\private\SimpleTrafficSwitchEvents.cpp" />
-    <ClCompile Include="generated\src\private\SimpleTrafficSwitchProxy.cpp" />
-    <ClCompile Include="generated\src\private\SimpleTrafficSwitchStub.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="generated\src\NECommon.hpp" />
-    <ClInclude Include="generated\src\NESimpleTrafficLight.hpp" />
-    <ClInclude Include="generated\src\NESimpleTrafficSwitch.hpp" />
-    <ClInclude Include="generated\src\private\SimpleTrafficLightEvents.hpp" />
-    <ClInclude Include="generated\src\private\SimpleTrafficLightProxy.hpp" />
-    <ClInclude Include="generated\src\private\SimpleTrafficSwitchEvents.hpp" />
-    <ClInclude Include="generated\src\private\SimpleTrafficSwitchProxy.hpp" />
-    <ClInclude Include="generated\src\SimpleTrafficLightClientBase.hpp" />
-    <ClInclude Include="generated\src\SimpleTrafficLightStub.hpp" />
-    <ClInclude Include="generated\src\SimpleTrafficSwitchClientBase.hpp" />
-    <ClInclude Include="generated\src\SimpleTrafficSwitchStub.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

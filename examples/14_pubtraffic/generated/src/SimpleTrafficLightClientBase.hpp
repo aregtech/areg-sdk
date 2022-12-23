@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     20.12.2022  16:19:32 GMT+01:00
+ * Generated at     23.12.2022  00:41:05 GMT+01:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficLight.
  *
  * \file            generated/src/SimpleTrafficLightClientBase.hpp
@@ -209,26 +209,6 @@ public:
 // SimpleTrafficLight Interface Requests / Responses / Broadcasts
 //////////////////////////////////////////////////////////////////////////
 public:
-
-/************************************************************************
- * Broadcast LightChanged
- ************************************************************************/
-    /**
-     * \brief   Server broadcast.
-     *          Triggered when the light state of traffic is changed.
-     *          Overwrite, if need to handle Broadcast call of server object.
-     *          This call will be automatically triggered, on every appropriate request call
-     * \param   SouthNorth  The light state of south-north traffic.
-     * \param   EastWest    The light state of east-west traffic.
-     **/
-    virtual void broadcastLightChanged( NESimpleTrafficLight::eTrafficLight SouthNorth, NESimpleTrafficLight::eTrafficLight EastWest );
-    /**
-     * \brief   Call to enable or disable receiving notifications on LightChanged broadcast call.
-     *          This function is triggered, when client object is interested only on response result
-     *          without triggering request call.
-     * \param   notify  If true, notification will be enable. If false, notification is disabled
-     **/
-    inline void notifyOnBroadcastLightChanged( bool notify = true );
 
 //////////////////////////////////////////////////////////////////////////
 // End Service Interface operations / attributes and overrides declaration
@@ -458,15 +438,6 @@ inline NESimpleTrafficLight::eTrafficLight SimpleTrafficLightClientBase::getEast
 inline void SimpleTrafficLightClientBase::notifyOnEastWestUpdate( bool notify /* = true */ )
 {
     SimpleTrafficLightClientBase::notifyOn( NESimpleTrafficLight::eMessageIDs::MsgId_EastWest, notify, false );
-}
-
-/************************************************************************
- * Broadcast notifications
- ************************************************************************/
-
-inline void SimpleTrafficLightClientBase::notifyOnBroadcastLightChanged( bool notify /* = true */ )
-{
-    SimpleTrafficLightClientBase::notifyOn(NESimpleTrafficLight::eMessageIDs::MsgId_broadcastLightChanged, notify, false);
 }
 
 inline const SimpleTrafficLightProxy * SimpleTrafficLightClientBase::getProxy( void ) const

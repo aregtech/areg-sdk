@@ -15,40 +15,25 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
 #include "generated/src/SimpleTrafficLightStub.hpp"
-#include "generated/src/SimpleTrafficSwitchStub.hpp"
 #include "areg/component/IETimerConsumer.hpp"
 #include "areg/component/TEEvent.hpp"
 
 #include "areg/component/Timer.hpp"
 
-/**
- * \brief   The traffic light switching event data
- **/
+//! \brief  The traffic light switching event data.
 class TrafficSwitchData
 {
 public:
-//////////////////////////////////////////////////////////////////////////
-// Constructors, destructor.
-//////////////////////////////////////////////////////////////////////////
-    inline TrafficSwitchData( bool switchOn = true );
+    inline TrafficSwitchData( bool switchOn = true )
+        : mSwitchOn( switchOn )
+    {
+    }
 
-    inline TrafficSwitchData( const TrafficSwitchData & src );
-
-    inline ~TrafficSwitchData( void );
-    
-//////////////////////////////////////////////////////////////////////////
-// operators and attributes.
-//////////////////////////////////////////////////////////////////////////
-
-    /**
-     * \brief   Assigns data from sources.
-     **/
-    inline const TrafficSwitchData & operator = (const TrafficSwitchData & src );
-    
-    /**
-     * \brief   Returns the data value.
-     **/
-    inline bool getData( void ) const;
+    //! \brief  Returns the data value.
+    inline bool getData( void ) const
+    {
+        return mSwitchOn;
+    }
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -60,16 +45,11 @@ private:
 // declaration of custom event.
 DECLARE_EVENT(TrafficSwitchData, TrafficSwitchEvent, IETrafficSwitchConsumer);
 
-/**
- * \brief   Traffic light public and local services.
- *          The local service is invisible outside of process and sets ON / OFF state of lights.
- *          The public service broadcasts the light states.
- **/
-class TrafficLightService    : public    Component
-                                , public    SimpleTrafficLightStub
-                                , public    SimpleTrafficSwitchStub
-                                , protected IETimerConsumer
-                                , protected IETrafficSwitchConsumer
+//! \brief  Traffic light public service to demonstrate subscription on data update.
+class TrafficLightService   : public    Component
+                            , protected SimpleTrafficLightStub
+                            , protected IETimerConsumer
+                            , protected IETrafficSwitchConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Statics and constants.
@@ -113,14 +93,6 @@ private:
 protected:
 
     /**
-     * \brief   Request call.
-     *          Sets the traffic light ON or OFF.
-     * \param   switchOn    If true, the traffic light is switched ON. Otherwise, it is OFF.
-     * \note    Has no response
-     **/
-    virtual void requestSwitchLight( bool switchOn ) override;
-
-    /**
      * \brief  Override operation. Implement this function to receive events and make processing
      * \param  data    The data, which was passed as an event.
      **/
@@ -157,46 +129,17 @@ protected:
 // Hidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline TrafficLightService & self( void );
+    inline TrafficLightService & self( void )
+    {
+        return (*this);
+    }
 
-    Timer   mTimer;
+    Timer   mTimer; //! The timer to switch lights
 
-    NESimpleTrafficLight::eTrafficLight mPrevState;
+    NESimpleTrafficLight::eTrafficLight mPrevState; //! Previous state for yellow light switch
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
+    TrafficLightService( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( TrafficLightService );
 };
-
-//////////////////////////////////////////////////////////////////////////
-// inline methods
-//////////////////////////////////////////////////////////////////////////
-
-inline TrafficLightService & TrafficLightService::self( void )
-{
-    return (*this);
-}
-
-inline TrafficSwitchData::TrafficSwitchData( bool switchOn /*= true*/ )
-    : mSwitchOn ( switchOn )
-{
-}
-
-inline TrafficSwitchData::TrafficSwitchData( const TrafficSwitchData & src )
-    : mSwitchOn ( src.mSwitchOn )
-{
-}
-
-inline TrafficSwitchData::~TrafficSwitchData( void )
-{
-}
-
-inline const TrafficSwitchData & TrafficSwitchData::operator = (const TrafficSwitchData & src )
-{
-    mSwitchOn   = src.mSwitchOn;
-    return (*this);
-}
-
-inline bool TrafficSwitchData::getData( void ) const
-{
-    return mSwitchOn;
-}

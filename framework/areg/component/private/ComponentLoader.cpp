@@ -406,7 +406,7 @@ bool ComponentLoader::loadModel( const String & modelName /*= String::EmptyStrin
     }
     else
     {
-        loadAllModels( );
+        result = loadAllModels( );
     }
 
     OUTPUT_DBG("Model [ %s ] loaded with [ %s ].", modelName.isEmpty() ? "ALL" : modelName.getString(), result ? "SUCCESS" : "ERROR");    

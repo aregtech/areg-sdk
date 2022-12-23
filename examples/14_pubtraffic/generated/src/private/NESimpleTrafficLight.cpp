@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2022
  *
- * Generated at     20.12.2022  16:19:32 GMT+01:00
+ * Generated at     23.12.2022  00:41:05 GMT+01:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficLight.
  *
  * \file            generated/src/NESimpleTrafficLight.hpp
@@ -34,18 +34,15 @@ const NEService::SInterfaceData & NESimpleTrafficLight::getInterfaceData( void )
     /************************************************************************
      * The list of responses and broadcasts
      ************************************************************************/
-    static constexpr unsigned int _ResponseList[]
-    {
-          static_cast<unsigned int>( NESimpleTrafficLight::eMessageIDs::MsgId_broadcastLightChanged  ) // broadcastLightChanged( NESimpleTrafficLight::eTrafficLight SouthNorth, NESimpleTrafficLight::eTrafficLight EastWest )
-    };
+    constexpr unsigned int * _ResponseList  { nullptr }; /* There are no responses. Set Invalid message ID */
 
     /************************************************************************
      * The list of attributes
      ************************************************************************/
     static constexpr unsigned int _AttributeList[]
     {
-          static_cast<unsigned int>( NESimpleTrafficLight::eMessageIDs::MsgId_SouthNorth             ) // NESimpleTrafficLight::eTrafficLight mSouthNorth;
-        , static_cast<unsigned int>( NESimpleTrafficLight::eMessageIDs::MsgId_EastWest               ) // NESimpleTrafficLight::eTrafficLight mEastWest;
+          static_cast<unsigned int>( NESimpleTrafficLight::eMessageIDs::MsgId_SouthNorth  ) // NESimpleTrafficLight::eTrafficLight mSouthNorth;
+        , static_cast<unsigned int>( NESimpleTrafficLight::eMessageIDs::MsgId_EastWest    ) // NESimpleTrafficLight::eTrafficLight mEastWest;
     };
 
     /************************************************************************
@@ -56,18 +53,7 @@ const NEService::SInterfaceData & NESimpleTrafficLight::getInterfaceData( void )
     /************************************************************************
      * Initialization of parameter entry validation map in responses and in broadcasts
      ************************************************************************/
-    static constexpr unsigned int _ResponseParamStateMap[]
-    {
-    /************************************************************************
-     * Responses
-     ************************************************************************/
-
-    /************************************************************************
-     * Broadcasts
-     ************************************************************************/
-        2, // void broadcastLightChanged( NESimpleTrafficLight::eTrafficLight SouthNorth, NESimpleTrafficLight::eTrafficLight EastWest )
-
-    };
+    constexpr unsigned int * _ResponseParamStateMap { nullptr }; // EMPTY RESPONSE AND BROADCAST LIST
 
     /************************************************************************
      * SimpleTrafficLight Service Interface data
@@ -78,7 +64,7 @@ const NEService::SInterfaceData & NESimpleTrafficLight::getInterfaceData( void )
         , NESimpleTrafficLight::InterfaceVersion
         , NEService::eServiceType::ServicePublic
         , 0
-        , 1
+        , 0
         , 2
         , _RequestList
         , _ResponseList
