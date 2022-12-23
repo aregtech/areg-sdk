@@ -167,17 +167,10 @@ $ cmake -B ./build
 # Step 3: Compile sources by calling: cmake --build ./build [-j [concurrent jobs]]
 $ cmake --build ./build -j8
  ```
-> 💡 AREG SDK uses [googletest](https://github.com/google/googletest) as a submodule, which is compiled with `cmake` and is not used when compile with the other tools. Call the exact script to clone `googletest`.
-
-If already have AREG SDK sources or want to update `googletest` call following command:<br />
+> 💡 The Unit Tests of AREG SDK need [googletest](https://github.com/google/googletest), which is set as a submodule and compiled only with `cmake` tool. Use the mentioned `git` command to clone the submodule. If already have AREG SDK sources and only need to clone `googletest` submodule, call:<br />
 ```bash
 $ cd areg-sdk
 $ git submodule update --init
-```
-
-Or call to make manual update without local configuration:
-```bash
-$ git submodule -q foreach git pull -q origin master
 ```
 
 #### Build with `make`
@@ -196,13 +189,13 @@ $ make
 
 Open _Terminal_ or preferred IDE to clone source codes like this:
 ```bash
-$ git clone https://github.com/aregtech/areg-sdk.git
+$ git clone --recurse-submodules https://github.com/aregtech/areg-sdk.git
 $ cd areg-sdk
 ```
 Depending on IDE or preferences make one of following:
 
 1. Open `areg-sdk.sln` file in [MSVS](https://visualstudio.microsoft.com/) (2019 or higher) and compile solution.
-2. Open `areg-sdk` folder in [MSVC](https://visualstudio.microsoft.com/) (2019 or higher), select `CMakeLists.txt` in `areg-sdk` root, configure and build.
+2. Open `areg-sdk` folder in [MSVS](https://visualstudio.microsoft.com/) (2019 or higher), select `CMakeLists.txt` in `areg-sdk` root, configure and build.
 3. Open `areg-sdk` folder in [VS Code](https://code.visualstudio.com/), select `CMakeLists.txt` in `areg-sdk` root, configure and build.
 4. Open [Eclipse](https://www.eclipse.org/ide/), import all projects from `areg-sdk` root, select projects and build.
 
