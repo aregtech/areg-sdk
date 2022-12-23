@@ -155,8 +155,8 @@ After compilation, normally binaries are located in `<areg-sdk>/product/build/<c
 
 To build with [cmake](https://cmake.org/), open _Terminal_ in your `projects` folder and take the steps:
 ```bash
-# Step 1: Get sources from GitHub
-$ git clone https://github.com/aregtech/areg-sdk.git
+# Step 1: Get sources from GitHub including submodules
+$ git clone --recurse-submodules https://github.com/aregtech/areg-sdk.git
 $ cd areg-sdk
 
 # Step 2: Initialize cache and build configuration in folder './build' folder.
@@ -167,13 +167,25 @@ $ cmake -B ./build
 # Step 3: Compile sources by calling: cmake --build ./build [-j [concurrent jobs]]
 $ cmake --build ./build -j8
  ```
+> 💡 AREG SDK uses [googletest](https://github.com/google/googletest) as a submodule, which is compiled with `cmake` and is not used when compile with the other tools. Call the exact script to clone `googletest`.
+
+If already have AREG SDK sources or want to update `googletest` call following command:<br />
+```bash
+$ cd areg-sdk
+$ git submodule update --init
+```
+
+Or call to make manual update without local configuration:
+```bash
+$ git submodule -q foreach git pull -q origin master
+```
 
 #### Build with `make`
 
 To build with [make](https://www.gnu.org/software/make/), open _Terminal_ in your `projects` folder and take the steps:
 ```bash
 # Step 1: Get sources from GitHub
-$ git clone https://github.com/aregtech/areg-sdk.git
+$ git clone --recurse-submodules https://github.com/aregtech/areg-sdk.git
 $ cd areg-sdk
 
 # Step 2: Compile sources by calling: make [all] [framework] [examples]
