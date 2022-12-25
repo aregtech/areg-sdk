@@ -36,9 +36,9 @@ endif()
 if(BUILD_TESTS)
     set(GOOGLE_TEST_BASE "${AREG_THIRDPARTY}/googletest")
     if(EXISTS "${GOOGLE_TEST_BASE}/CMakeLists.txt")
+        enable_testing()
         include_directories(thirdparty/googletest)
         include_directories(tests)
-        include_directories(tests/units)
 
         add_subdirectory(thirdparty/googletest)
 

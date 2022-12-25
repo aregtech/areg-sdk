@@ -6,13 +6,15 @@ else()
     add_definitions(-DDEBUG)
 endif()
 
+set(CXX_STANDARD ${AREG_CXX_STANDARD})
+
 # Identify the OS
 if(APPLE)
     set(OpSystem "macOS")
 elseif(UNIX)
-    set(OpSystem "linux")
+    set(OpSystem "Linux")
 else()
-    set(OpSystem "windows")
+    set(OpSystem "Windows")
 endif()
 
 # Determining bitness by size of void pointer
@@ -79,7 +81,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     endif()
 
     # Clang compile options
-    list(APPEND CompileOptions -pthread -Wall -c -std=c++17 -fmessage-length=0 -MMD -stdlib=libc++ ${UserDefines})
+    list(APPEND CompileOptions -pthread -Wall -c -fmessage-length=0 -stdlib=libc++ ${UserDefines})
 
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 
@@ -93,7 +95,7 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     endif()
 
     # GNU compile options
-    list(APPEND CompileOptions -pthread -Wall -c -std=c++17 -fmessage-length=0 -MMD ${UserDefines})
+    list(APPEND CompileOptions -pthread -Wall -c -fmessage-length=0 -MMD ${UserDefines})
 
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 

@@ -6,8 +6,8 @@
 # Can set compiler full path.
 set(CMAKE_CXX_COMPILER "g++")
 set(CMAKE_C_COMPILER "gcc")
-# CPP standard for the project
-set(CMAKE_CXX_STANDARD 17)
+# CPP standard for the projects
+set(AREG_CXX_STANDARD 17)
 
 # Set the AREG library type to compile.
 # Set "static" for static and "shared" for shared library
