@@ -9,8 +9,8 @@
 # usage ......: addTestEx( <test name> <source file> <test command line>) 
 # ---------------------------------------------------------------------------
 function(addTestEx testName testSource cmdLine)
-	addExecutableEx(${testName} "${testSource}" "GTest::gtest_main")
-	gtest_discover_tests(${testName})
+    addExecutableEx(${testName} "${testSource}" "GTest::gtest_main")
+    gtest_discover_tests(${testName})
 endfunction(addTestEx testName testSource)
 
 # ---------------------------------------------------------------------------
@@ -24,7 +24,7 @@ endfunction(addTestEx testName testSource)
 # usage ......: addTestCmd( <test name> <test command line>) 
 # ---------------------------------------------------------------------------
 function(addTestCmd testName cmdLine)
-	addTestEx(${testName} "${AREG_UNIT_TEST_BASE}/${testName}" "${cmdLine}")
+    addTestEx(${testName} "${AREG_UNIT_TEST_BASE}/${testName}" "${cmdLine}")
 endfunction(addTestCmd testName cmdLine)
 
 # ---------------------------------------------------------------------------
@@ -37,7 +37,7 @@ endfunction(addTestCmd testName cmdLine)
 # usage ......: addTestCmd( <test name> <test command line>) 
 # ---------------------------------------------------------------------------
 function(addTest testName)
-	addTestEx(${testName} "${AREG_UNIT_TEST_BASE}/${testName}" "")
+    addTestEx(${testName} "${AREG_UNIT_TEST_BASE}/${testName}" "")
 endfunction(addTest testName)
 
 # Check whether the google test sources exist.
@@ -54,6 +54,6 @@ if(EXISTS "${GOOGLE_TEST_BASE}/CMakeLists.txt")
     set(AREG_UNIT_TEST_BASE "${AREG_TESTS}/units")
     include(${AREG_UNIT_TEST_BASE}/CMakeLists.txt)
 else()
-	message(SEND_ERROR "Please clone the submodules using command\n
-	'$ git clone --recurse-submodules https://github.com/aregtech/areg-sdk.git'")
+    message(SEND_ERROR "Please clone the submodules using command\n
+    '$ git clone --recurse-submodules https://github.com/aregtech/areg-sdk.git'")
 endif()

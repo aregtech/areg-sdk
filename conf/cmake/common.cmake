@@ -15,7 +15,7 @@ endif()
 # Determining bitness by size of void pointer
 # 8 bytes ==> x64 and 4 bytes ==> x86
 if(NOT ${CMAKE_SIZEOF_VOID_P} MATCHES "8")
-    set(Platform "x86")
+    set(AREG_PLATFORM "x86")
 endif()
 
 # -----------------------------------------------------
@@ -24,11 +24,11 @@ endif()
 # The toolset
 set(AREG_TOOLCHAIN "${CMAKE_CXX_COMPILER_ID}")
 # Relative path of the output folder for the builds
-string(TOLOWER "${UserDefOutput}/build/${AREG_TOOLCHAIN}/${AREG_OS}-${Platform}-${CMAKE_BUILD_TYPE}" AREG_PRODUCT_PATH)
+string(TOLOWER "${AREG_USER_DEF_OUTPUT_DIR}/build/${AREG_TOOLCHAIN}/${AREG_OS}-${AREG_PLATFORM}-${CMAKE_BUILD_TYPE}" AREG_PRODUCT_PATH)
 # The absolute path for builds
-set(AREG_OUTPUT_DIR "${AregBuildRoot}/${AREG_PRODUCT_PATH}")
+set(AREG_OUTPUT_DIR "${AREG_BUILD_ROOT}/${AREG_PRODUCT_PATH}")
 # The absolute path for generated files
-set(AREG_GENERATE_DIR "${AregBuildRoot}/${UserDefOutput}/generate")
+set(AREG_GENERATE_DIR "${AREG_BUILD_ROOT}/${AREG_USER_DEF_OUTPUT_DIR}/generate")
 # The absolute path for obj files.
 set(AREG_OUTPUT_OBJ "${AREG_OUTPUT_DIR}/obj")
 # The absolute path for static libraries
@@ -36,7 +36,7 @@ set(AREG_OUTPUT_LIB "${AREG_OUTPUT_DIR}/lib")
 # The absolute path for all executables and shared libraries
 set(AREG_OUTPUT_BIN "${AREG_OUTPUT_DIR}/bin")
 # Project inclues
-set(AREG_INCLUDES "-I${AREG_BASE} -I${AREG_GENERATE_DIR} -I${UserDefIncludes}")
+set(AREG_INCLUDES "-I${AREG_BASE} -I${AREG_GENERATE_DIR} -I${AREG_USER_DEF_INCLUDES}")
 
 # The development environment -- POSIX or Win32 API
 set(AREG_DEVELOP_ENV)
@@ -68,9 +68,9 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     endif()
 
     # Clang compile options
-    list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -stdlib=libc++ ${UserDefines})
+    list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -stdlib=libc++ ${AREG_USER_DEFINES})
     # Linker flags (-l is not necessary)
-    list(APPEND AREG_LDFLAGS c++ m ncurses pthread rt)
+    list(APPEND AREG_LDFLAGS c++ m ncurses pthread rt "${AREG_USER_DEF_LIBS}")
 
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 
@@ -85,9 +85,13 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     endif()
 
     # GNU compile options
-    list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -MMD -std=c++17 ${UserDefines})
+    if (${AREG_OS} MATCHES "Window")
+        list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -MMD -std=gnu++17 ${AREG_USER_DEFINES})
+    else()
+        list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -MMD -std=c++17 ${AREG_USER_DEFINES})
+    endif()
     # Linker flags (-l is not necessary)
-    list(APPEND AREG_LDFLAGS stdc++ m ncurses pthread rt)
+    list(APPEND AREG_LDFLAGS stdc++ m ncurses pthread rt "${AREG_USER_DEF_LIBS}")
 
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 
@@ -100,9 +104,9 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     endif()
 
     # MS Visual C++ compile options
-    list(APPEND AREG_COMPILER_OPTIONS -std=c++17)
+    list(APPEND AREG_COMPILER_OPTIONS)
     # Linker flags (-l is not necessary)
-    list(APPEND AREG_LDFLAGS advapi32 psapi shell32 ws2_32)
+    list(APPEND AREG_LDFLAGS advapi32 psapi shell32 ws2_32 "${AREG_USER_DEF_LIBS}")
 
 else()
 
@@ -119,14 +123,14 @@ else()
     endif()
 
     # Compile options
-    list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -MMD -std=c++17 ${UserDefines})
+    list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -MMD -std=c++17 ${AREG_USER_DEFINES})
     # Linker flags (-l is not necessary)
-    list(APPEND AREG_LDFLAGS stdc++ m ncurses pthread rt)
+    list(APPEND AREG_LDFLAGS stdc++ m ncurses pthread rt "${AREG_USER_DEF_LIBS}")
 
 endif()
 
 # flags for bitness
-if(Platform MATCHES "x86_64" AND NOT AREG_DEVELOP_ENV MATCHES "Windows")
+if(${AREG_PLATFORM} MATCHES "x86_64" AND NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
     if(Bitness MATCHES "32")
         list(APPEND AREG_COMPILER_OPTIONS -m32)
     else()
@@ -134,16 +138,19 @@ if(Platform MATCHES "x86_64" AND NOT AREG_DEVELOP_ENV MATCHES "Windows")
     endif()
 endif()
 
+# Setting output directories
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${AREG_OUTPUT_LIB})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${AREG_OUTPUT_BIN})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${AREG_OUTPUT_BIN})
+
 # Adding compile options
 add_compile_options(${AREG_COMPILER_OPTIONS})
 
 # Adding areg/product directory for clean-up
 set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${AREG_OUTPUT_DIR})
 
-# Setting output directories
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${AREG_OUTPUT_LIB})
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${AREG_OUTPUT_BIN})
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${AREG_OUTPUT_BIN})
+# Adding library search paths
+link_directories(BEFORE "${AREG_OUTPUT_BIN} ${AREG_OUTPUT_LIB} ${AREG_USER_DEF_LIB_PATHS}")
 
 # Only for Linux
 if(UNIX AND NOT APPLE)

@@ -8,16 +8,16 @@
 # ---------------------------------------------------------------------------
 function(setAppOptions item library_list)
 
-	if(AREG_BINARY MATCHES "shared")
-		target_compile_definitions(${item} PRIVATE IMP_AREG_DLL)
-	else()
-		target_compile_definitions(${item} PRIVATE IMP_AREG_LIB)
-	endif()
+    if(AREG_BINARY MATCHES "shared")
+        target_compile_definitions(${item} PRIVATE IMP_AREG_DLL)
+    else()
+        target_compile_definitions(${item} PRIVATE IMP_AREG_LIB)
+    endif()
 
     # Linking flags
-	target_link_libraries(${item} areg ${library_list} ${AREG_LDFLAGS})
+    target_link_libraries(${item} areg ${library_list} ${AREG_LDFLAGS})
    
-	# Adjusting CPP standard for target
+    # Adjusting CPP standard for target
     set_target_properties(${item} PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON )
     set_property(TARGET ${item} PROPERTY RUNTIME_OUTPUT_DIRECTORY ${AREG_OUTPUT_BIN})
 endfunction(setAppOptions item library_list)
@@ -31,7 +31,7 @@ endfunction(setAppOptions item library_list)
 # ---------------------------------------------------------------------------
 function(addExecutableEx target_name target_source_list library_list)
     add_executable(${target_name} ${target_source_list})
-	setAppOptions(${target_name} "${library_list}")
+    setAppOptions(${target_name} "${library_list}")
 endfunction(addExecutableEx target_name target_source_list library_list)
 
 # ---------------------------------------------------------------------------
@@ -56,17 +56,20 @@ function(setStaticLibOptions item library_list)
     target_compile_definitions(${item} PRIVATE _LIB)
 
     # Setting libxxx properties (static or shared)
-	if(AREG_BINARY MATCHES "shared")
-		target_compile_definitions(${item} PRIVATE IMP_AREG_DLL)
-	else()
-		target_compile_definitions(${item} PRIVATE IMP_AREG_LIB)
-	endif()
+    if(AREG_BINARY MATCHES "shared")
+        target_compile_definitions(${item} PRIVATE IMP_AREG_DLL)
+    else()
+        target_compile_definitions(${item} PRIVATE IMP_AREG_LIB)
+    endif()
+
+    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
+        target_compile_options(${item} PRIVATE "-Bstatic")
+    endif()
 
     target_compile_definitions(${item} PRIVATE _LIB)
-    target_compile_options(${item} PRIVATE "-Bstatic")
-	target_link_libraries(${item} areg ${library_list} ${AREG_LDFLAGS})
+    target_link_libraries(${item} areg ${library_list} ${AREG_LDFLAGS})
 
-	# Adjusting CPP standard for target
+    # Adjusting CPP standard for target
     set_target_properties(${item} PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON )
     set_property(TARGET ${item} PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${AREG_OUTPUT_LIB})
 
@@ -103,21 +106,24 @@ endfunction(addStaticLib target_name target_source_list)
 function(setSharedLibOptions item library_list)
 
     if(AREG_BINARY MATCHES "shared")
-		target_compile_definitions(${item} PRIVATE IMP_AREG_DLL)
-		target_compile_options(${item} PRIVATE ${AREG_SHARED_LIB_FLAGS})
-	else()
-		target_compile_definitions(${item} PRIVATE IMP_AREG_LIB)
-	endif()
+        target_compile_definitions(${item} PRIVATE IMP_AREG_DLL)
+        target_compile_options(${item} PRIVATE ${AREG_SHARED_LIB_FLAGS})
+    else()
+        target_compile_definitions(${item} PRIVATE IMP_AREG_LIB)
+    endif()
 
     if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         target_compile_options(${item} PRIVATE -fPIC)
     endif()
 
-    target_compile_definitions(${item} PRIVATE _USRDLL)
-    target_compile_options(${item} PRIVATE "-Bdynamic")
-	target_link_libraries(${item} areg ${library_list} ${AREG_LDFLAGS})
+    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
+        target_compile_options(${item} PRIVATE "-Bdynamic")
+    endif()
 
-	# Adjusting CPP standard for target
+    target_compile_definitions(${item} PRIVATE _USRDLL)
+    target_link_libraries(${item} areg ${library_list} ${AREG_LDFLAGS})
+
+    # Adjusting CPP standard for target
     set_target_properties(${item} PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON )
     set_property(TARGET ${item} PROPERTY LIBRARY_OUTPUT_DIRECTORY ${AREG_OUTPUT_BIN})
 

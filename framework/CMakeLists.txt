@@ -10,7 +10,9 @@ if(AREG_BINARY MATCHES "shared")
     # Shared Library
     add_library(areg SHARED ${areg_SRC})
     target_compile_definitions(areg PRIVATE EXP_AREG_DLL _USRDLL)
-    target_compile_options(areg PRIVATE "-Bdynamic")
+    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
+        target_compile_options(areg PRIVATE "-Bdynamic")
+    endif()
     set_property(TARGET areg PROPERTY LIBRARY_OUTPUT_DIRECTORY ${AREG_OUTPUT_BIN})
 
 else()
@@ -18,7 +20,9 @@ else()
     # Static Library
     add_library(areg STATIC ${areg_SRC})
     target_compile_definitions(areg PRIVATE EXP_AREG_LIB _LIB)
-    target_compile_options(areg PRIVATE "-Bstatic")
+    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
+        target_compile_options(areg PRIVATE "-Bstatic")
+    endif()
     set_property(TARGET areg PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${AREG_OUTPUT_LIB})
 
 endif()

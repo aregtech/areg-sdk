@@ -14,7 +14,7 @@ set(CMAKE_CXX_COMPILER  "${AREG_CXX_COMPILER}")
 set(CMAKE_C_COMPILER    "${AREG_C_COMPILER}")
 set(CMAKE_BUILD_TYPE    ${AREG_BUILD_TYPE})
 set(CMAKE_BUILD_TYPE    ${AREG_BUILD_TYPE} CACHE STRING "Configuration Type" FORCE)
-set(CMAKE_CXX_STANDARD  ${AREG_CXX_STANDARD})
+set(CXX_STANDARD        ${AREG_CXX_STANDARD})
 
 # Project's properties
 set(PROJECT_NAME "areg-sdk")
@@ -24,7 +24,6 @@ project(${PROJECT_NAME} VERSION ${PROJECT_VERSION} LANGUAGES C CXX)
 include(${AREG_CMAKE_CONFIG_DIR}/common.cmake)
 include(${AREG_CMAKE_CONFIG_DIR}/functions.cmake)
 
-link_directories(BEFORE "${AREG_OUTPUT_BIN} ${AREG_OUTPUT_LIB}")
 include_directories(${AREG_BASE})
 include_directories(${AREG_THIRDPARTY})
 include(${AREG_BASE}/CMakeLists.txt)

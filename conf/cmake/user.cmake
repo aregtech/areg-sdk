@@ -72,23 +72,23 @@ endif()
 set(Bitness "64")
 
 # Specify CPU platform here
-set(Platform "x86_64")
+set(AREG_PLATFORM "x86_64")
 
 # Set the areg-sdk build root folder to output files.
-set(AregBuildRoot "${AREG_SDK_ROOT}")
+set(AREG_BUILD_ROOT "${AREG_SDK_ROOT}")
 
 # Set user or project specific defines here or keep empty.
 # By default it is compile with enabled logging --> "-DENABLE_TRACES"
-set(UserDefines "-DENABLE_TRACES")
+set(AREG_USER_DEFINES "-DENABLE_TRACES=1")
 
 # Set user specific includes here or keep empty
-set(UserDefIncludes)
+set(AREG_USER_DEF_INCLUDES)
 
 # Set user specific library paths here or keep empty
-set(UserDefLibPaths)
+set(AREG_USER_DEF_LIB_PATHS)
 
 # Set user specific library list here or keep empty
-set(UserDefLibs)
+set(AREG_USER_DEF_LIBS)
 
 # Set user specific root folder here
-set(UserDefOutput "product")
+set(AREG_USER_DEF_OUTPUT_DIR "product")
