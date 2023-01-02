@@ -2,39 +2,26 @@
 # The google test settings
 
 # ---------------------------------------------------------------------------
-# Description : Compiles test source file and adds the specified test to be
-#               discovered and run by CTest by passing the command line.
-#               The command line of the test can be empty.
+# Description : Compiles test source file and adds the specified unit test
+#               to be discovered and run by CTest.
 # Function ...: addTestEx
-# usage ......: addTestEx( <test name> <source file> <test command line>) 
+# usage ......: addTestEx( <test name> <source file>) 
 # ---------------------------------------------------------------------------
-function(addTestEx testName testSource cmdLine)
+function(addTestEx testName testSource)
     addExecutableEx(${testName} "${testSource}" "GTest::gtest_main")
     gtest_discover_tests(${testName})
 endfunction(addTestEx testName testSource)
 
 # ---------------------------------------------------------------------------
-# Description : Compiles test source file equal to the test name. The path is
-#               is relative to the 'units' folder and must not contain path
-#               selparator symbol like '/'. It adds the test to be
-#               discovered and run by CTest by passing the command line.
-#               The command line of the test can be empty.
+# Description : Compiles test source file, which is same as a test executable.
+#               The source file location is in 'units' folder and must not
+#               path separator symbol like '/'. The created executable has
+#               same name with the extension of executable. This means that
+#               if the source file is 'my_test.cpp', the generated executable
+#               will have name 'my_test.cpp.exe' or 'my_test.cpp.out' for Linux.
 #               Use 'addTestEx' function if source file is not in 'units' folder.
 # Function ...: addTestCmd
-# usage ......: addTestCmd( <test name> <test command line>) 
-# ---------------------------------------------------------------------------
-function(addTestCmd testName cmdLine)
-    addTestEx(${testName} "${AREG_UNIT_TEST_BASE}/${testName}" "${cmdLine}")
-endfunction(addTestCmd testName cmdLine)
-
-# ---------------------------------------------------------------------------
-# Description : Compiles test source file equal to the test name. The path is
-#               is relative to the 'units' folder and must not contain path
-#               selparator symbol like '/'. It adds the test to be
-#               discovered and run by CTest by using default command line.
-#               Use 'addTestEx' function if source file is not in 'units' folder.
-# Function ...: addTestCmd
-# usage ......: addTestCmd( <test name> <test command line>) 
+# usage ......: addTestCmd( <test name> )
 # ---------------------------------------------------------------------------
 function(addTest testName)
     addTestEx(${testName} "${AREG_UNIT_TEST_BASE}/${testName}" "")
@@ -43,6 +30,7 @@ endfunction(addTest testName)
 # Check whether the google test sources exist.
 set(GOOGLE_TEST_BASE "${AREG_THIRDPARTY}/googletest")
 if(EXISTS "${GOOGLE_TEST_BASE}/CMakeLists.txt")
+    set(AREG_UNIT_TEST_BASE "${AREG_TESTS}/units")
     enable_testing()
     include_directories(${GOOGLE_TEST_BASE})
     include_directories(${AREG_TESTS})
@@ -51,7 +39,6 @@ if(EXISTS "${GOOGLE_TEST_BASE}/CMakeLists.txt")
 
     # For Windows: Prevent overriding the parent project's compiler/linker settings
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-    set(AREG_UNIT_TEST_BASE "${AREG_TESTS}/units")
     include(${AREG_UNIT_TEST_BASE}/CMakeLists.txt)
 else()
     message(SEND_ERROR "Please clone the submodules using command\n
