@@ -30,14 +30,14 @@ endif()
 # by specifying AREG_CXX_COMPILER and AREG_C_COMPILER
 if (NOT DEFINED AREG_CXX_COMPILER OR AREG_CXX_COMPILER STREQUAL "")
     # Possible settings: "gcc", "g++", "cl", "clang++-13"
-    set(AREG_CXX_COMPILER "clang++-13")
+    set(AREG_CXX_COMPILER "g++")
 else()
     message(STATUS ">>> User selected C++ compiler ${AREG_CXX_COMPILER}")
 endif()
 
 if (NOT DEFINED AREG_C_COMPILER OR AREG_C_COMPILER STREQUAL "")
     # Possible settings: "gcc", "cl", "clang-13"
-    set(AREG_C_COMPILER "clang-13")
+    set(AREG_C_COMPILER "gcc")
 else()
     message(STATUS ">>> User selected C compiler ${AREG_C_COMPILER}")
 endif()
