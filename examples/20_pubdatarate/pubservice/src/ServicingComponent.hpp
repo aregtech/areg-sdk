@@ -48,10 +48,88 @@ DECLARE_EVENT(OptionData, EventOption, IEOptionConsumer);
  **/
 class ServicingComponent    : public    Component
                             , protected LargeDataStub
-                            , protected IETimerConsumer
-                            , protected IEOptionConsumer
                             , protected IEThreadConsumer
 {
+    friend class OptionConsumer;
+    friend class TimerConsumer;
+
+//////////////////////////////////////////////////////////////////////////
+// Internal classes
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// ServicingComponent::OptionConsumer class declaration
+//////////////////////////////////////////////////////////////////////////
+    //!< OptionConsumer class to receive options changed events
+    class OptionConsumer    : public    IEOptionConsumer
+    {
+    public:
+        OptionConsumer( ServicingComponent & service )
+            : IEOptionConsumer  ( )
+            , mService          ( service )
+            {
+            }
+
+        virtual ~OptionConsumer( void ) = default;
+
+    private:
+    /************************************************************************/
+    // IEOptionConsumer interface overrides
+    /************************************************************************/
+
+        /**
+         * \brief   Triggered when option event is fired.
+         * \param   data    The option data.
+         **/
+        virtual void processEvent(const OptionData& data) override;
+
+    private:
+        ServicingComponent &    mService;   //!< The service, which handles the options
+
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calss
+    //////////////////////////////////////////////////////////////////////////
+        OptionConsumer( void ) = delete;
+        DECLARE_NOCOPY_NOMOVE(OptionConsumer);
+    };
+
+//////////////////////////////////////////////////////////////////////////
+// ServicingComponent::TimerConsumer class declaration
+//////////////////////////////////////////////////////////////////////////
+    //!< The timer consumer object
+    class TimerConsumer : public    IETimerConsumer
+    {
+    public:
+        TimerConsumer( ServicingComponent & service )
+            : IETimerConsumer   ( )
+            , mService          ( service )
+            {
+            }
+
+        virtual ~TimerConsumer( void ) = default;
+
+    private:
+    /************************************************************************/
+    // IETimerConsumer interface overrides.
+    /************************************************************************/
+
+        /**
+         * \brief   Triggered when Timer is expired. 
+         *          The passed Timer parameter is indicating object, which has been expired.
+         *          Overwrite method to receive messages.
+         * \param   timer   The timer object that is expired.
+         **/
+        virtual void processTimer( Timer & timer ) override;
+
+    private:
+        ServicingComponent &    mService;   //!< The service, which handles the options
+
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calss
+    //////////////////////////////////////////////////////////////////////////
+        TimerConsumer( void ) = delete;
+        DECLARE_NOCOPY_NOMOVE(TimerConsumer);
+    };
+
 //////////////////////////////////////////////////////////////////////////
 // Internal constants and static members
 //////////////////////////////////////////////////////////////////////////
@@ -82,18 +160,19 @@ class ServicingComponent    : public    Component
     //!< Message to output as application title / headline
     static constexpr std::string_view   MSG_APP_TITLE   { "Application to test data rate, service part..." };
 
+    //!< The message to output network communication rate.
     static constexpr std::string_view   MSG_COMM_RATE   { "Network communication: sent [ % 4.02f ] %s / sec, receive [ % 4.02f ] %s / sec." };
 
-    //!< Message to output data rate information
+    //!< The message to output data rate information
     static constexpr std::string_view   MSG_DATA_RATE   { "Data rate: sent [ % 4.02f ] %s / sec." };
 
-    //!< Message to output item rate information
+    //!< The message to output item rate information
     static constexpr std::string_view   MSG_ITEM_RATE   { "Block rate: sent [ %u ] items / sec, each [ % 4.02f ] %s. Sleep [ %u ] times, ignored [ %u ] times." };
 
-    //!< Message to output as application option input
+    //!< The message to output as application option input
     static constexpr std::string_view   MSG_INPUT_OPTION{ "Input options. Or type \'-q\' to quit application, or type \'-h\' to read help: " };
 
-    //!< Message to output as an error.
+    //!< The message to output as an error.
     static constexpr std::string_view   MSG_INVALID_CMD { "Invalid command or value, type \'-h\' or \'--help\' for commands." };
 
     //!< The option command input thread.
@@ -175,28 +254,6 @@ protected:
     virtual void clientConnected( const ProxyAddress & client, bool isConnected ) override;
 
 /************************************************************************/
-// IETimerConsumer interface overrides.
-/************************************************************************/
-
-    /**
-     * \brief   Triggered when Timer is expired. 
-     *          The passed Timer parameter is indicating object, which has been expired.
-     *          Overwrite method to receive messages.
-     * \param   timer   The timer object that is expired.
-     **/
-    virtual void processTimer( Timer & timer ) override;
-
-/************************************************************************/
-// IEThreadConsumer interface overrides
-/************************************************************************/
-
-    /**
-     * \brief   Triggered when option event is fired.
-     * \param   data    The option data.
-     **/
-    virtual void processEvent(const OptionData& data) override;
-    
-/************************************************************************/
 // IEThreadConsumer interface overrides
 /************************************************************************/
 
@@ -208,6 +265,21 @@ protected:
      *          createThread() method should be called again.
      **/
     virtual void onThreadRuns( void ) override;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden methods
+//////////////////////////////////////////////////////////////////////////
+private:
+
+    /**
+     * \brief   Triggered when option event is fired.
+     **/
+    void onOptionEvent( const OptionData& data );
+
+    /**
+     * \brief   Triggered when Timer is expired. 
+     **/
+    void onTimerExpired( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -242,7 +314,11 @@ private:
     uint32_t                    mDidSleep;
     //!< Number of blocks that ignored sleep.
     uint32_t                    mIgnoreSleep;
-    //! The synchronization item.
+    //!< The object to receive option data change event
+    OptionConsumer              mOptionConsumer;
+    //!< The object to receive timer expired event
+    TimerConsumer               mTimerConsumer;    
+    //!< The synchronization item.
     CriticalSection             mLock;
 
 //////////////////////////////////////////////////////////////////////////

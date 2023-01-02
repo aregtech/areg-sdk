@@ -15,6 +15,8 @@
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/base/String.hpp"
 
+#include <iostream>
+
 #ifdef  _WIN32
     // link with areg library, valid only for MSVC
     #pragma comment(lib, "areg.lib")

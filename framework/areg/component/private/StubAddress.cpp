@@ -31,12 +31,6 @@ namespace
 /************************************************************************/
 
     /**
-     * \brief   The invalid service interface name (invalid stub name)
-     *          None of service interfaces should contain this name.
-     **/
-    constexpr std::string_view  INVALID_STUB_NAME   { "INVALID_STUB" };
-
-    /**
      * \brief   Extension to add to Stub path.
      **/
     constexpr std::string_view  EXTENTION_STUB      { "stub" };

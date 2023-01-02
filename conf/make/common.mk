@@ -11,9 +11,9 @@ AREG_STATIC_LIB =
 include $(MAKEFILE_CONFIG_DIR)/user.mk
 
 ifeq ($(areg), static)
-AREG_BINARY = static
+    AREG_BINARY = static
 else
-AREG_BINARY = shared
+    AREG_BINARY = shared
 endif
 
 CXXFLAGS := -g -pthread -std=c++17
@@ -21,51 +21,51 @@ LDFLAGS  := -lm -lstdc++ -lrt -lncurses -pthread
 
 #TODO fix the warnings reported by clang first
 ifeq ($(findstring clang,$(Toolset)),clang)
-CXXFLAGS += -Werror $(UserDefines) -stdlib=libc++
+    CXXFLAGS += -Werror $(UserDefines) -stdlib=libc++
 else
-CXXFLAGS += -Wall -Werror $(UserDefines)
+    CXXFLAGS += -Wall -Werror $(UserDefines)
 endif
 
 ifeq ($(Config), Release)
-# optimixation with O2?
-CXXFLAGS += -O2 -DNDEBUG
+    # optimixation with O2?
+    CXXFLAGS += -O2 -DNDEBUG
 else
-CXXFLAGS += -DDEBUG
+    CXXFLAGS += -DDEBUG
 endif
 
 # only native compilers on x86_64 can support bitness?
 ifeq ($(Platform), x86_64)
-ifeq ($(CrossCompile), )
-ifeq ($(Bitness), 32)
-CXXFLAGS += -m32
-else ifeq ($(Bitness), 64)
-CXXFLAGS += -m64
-endif
-endif
+    ifeq ($(CrossCompile), )
+        ifeq ($(Bitness), 32)
+            CXXFLAGS += -m32
+        else ifeq ($(Bitness), 64)
+            CXXFLAGS += -m64
+        endif
+    endif
 endif
 
 ifeq ($(AREG_OS), windows)
-CXXFLAGS     += -DWINDOWS
-OBJ_EXT      := obj
-AREG_BIN_EXT := .exe
-AREG_LIB_PREFIX :=
-AREG_STATIC_LIB := .lib
-ifeq ($(AREG_BINARY), shared)
-	AREG_LIB_EXT := .dll
+    CXXFLAGS     += -DWINDOWS
+    OBJ_EXT      := obj
+    AREG_BIN_EXT := .exe
+    AREG_LIB_PREFIX :=
+    AREG_STATIC_LIB := .lib
+    ifeq ($(AREG_BINARY), shared)
+    	AREG_LIB_EXT := .dll
+    else
+    	AREG_LIB_EXT := .lib
+    endif
 else
-	AREG_LIB_EXT := .lib
-endif
-else
-CXXFLAGS     += -DPOSIX
-OBJ_EXT      := o
-AREG_BIN_EXT := .out
-AREG_LIB_PREFIX := lib
-AREG_STATIC_LIB := .a
-ifeq ($(AREG_BINARY), shared)
-	AREG_LIB_EXT := .so
-else
-	AREG_LIB_EXT := .a
-endif
+    CXXFLAGS     += -DPOSIX
+    OBJ_EXT      := o
+    AREG_BIN_EXT := .out
+    AREG_LIB_PREFIX := lib
+    AREG_STATIC_LIB := .a
+    ifeq ($(AREG_BINARY), shared)
+    	AREG_LIB_EXT := .so
+    else
+    	AREG_LIB_EXT := .a
+    endif
 endif
 
 define AREG_HELP_MSG

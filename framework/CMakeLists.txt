@@ -1,38 +1,40 @@
+
+# ###########################################################################
+# User sepcific settings
+# ###########################################################################
 include("${AREG_BASE}/areg/CMakeLists.txt")
 include("${AREG_BASE}/mcrouter/CMakeLists.txt")
 
-# Adding  source files to a single executable.
-set(EXE mcrouter${AREG_BIN_EXT})
-add_executable(${EXE} ${mcrouter_SRC})
-
+# build areg library
 if(AREG_BINARY MATCHES "shared")
     # Shared Library
     add_library(areg SHARED ${areg_SRC})
-    target_compile_definitions(areg PRIVATE EXP_AREG_DLL)
-    target_compile_definitions(${EXE} PRIVATE IMP_AREG_DLL)
-    target_compile_definitions(areg PRIVATE _USRDLL)
-    target_link_libraries(areg ${LDFLAGS})
-
-    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        target_compile_options(areg PRIVATE -fPIC)
-        target_compile_options(${EXE} PRIVATE -fPIC)
-    endif()
+    target_compile_definitions(areg PRIVATE EXP_AREG_DLL _USRDLL)
+    target_compile_options(areg PRIVATE "-Bdynamic")
+    set_property(TARGET areg PROPERTY LIBRARY_OUTPUT_DIRECTORY ${AREG_OUTPUT_BIN})
 
 else()
+
     # Static Library
     add_library(areg STATIC ${areg_SRC})
-    target_compile_definitions(areg PRIVATE EXP_AREG_LIB)
-    target_compile_definitions(${EXE} PRIVATE IMP_AREG_LIB)
+    target_compile_definitions(areg PRIVATE EXP_AREG_LIB _LIB)
+    target_compile_options(areg PRIVATE "-Bstatic")
+    set_property(TARGET areg PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${AREG_OUTPUT_LIB})
+
 endif()
 
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(areg PRIVATE -fPIC)
+endif()
+
+target_link_libraries(areg PRIVATE ${AREG_LDFLAGS})
 # Library configs
-set_property(TARGET areg PROPERTY CXX_STANDARD ${AREG_CXX_STANDARD})
+set_target_properties(areg PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON )
 
-# Setting linker flags and properties
-target_link_libraries(${EXE} areg ${LDFLAGS})
+# build mcrouter executable
+addExecutable(mcrouter "${mcrouter_SRC}")
 
-set_target_properties(${EXE}
-    PROPERTIES
-    CXX_STANDARD ${AREG_CXX_STANDARD}
-    CXX_STANDARD_REQUIRED ON
-    )
+# copying log and router init files to 'bin/config'
+file(MAKE_DIRECTORY ${AREG_OUTPUT_BIN}/config)
+file(COPY ${AREG_BASE}/areg/resources/log.init DESTINATION ${AREG_OUTPUT_BIN}/config)
+file(COPY ${AREG_BASE}/areg/resources/router.init DESTINATION ${AREG_OUTPUT_BIN}/config)

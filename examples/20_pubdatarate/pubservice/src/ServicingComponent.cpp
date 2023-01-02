@@ -20,10 +20,35 @@
 
 DEF_TRACE_SCOPE(examples_20_pubservice_ServicingComponent_startupServiceInterface);
 DEF_TRACE_SCOPE(examples_20_pubservice_ServicingComponent_shutdownServiceIntrface);
-DEF_TRACE_SCOPE(examples_20_pubservice_ServicingComponent_processEvent);
+DEF_TRACE_SCOPE(examples_20_pubservice_ServicingComponent_onOptionEvent);
 DEF_TRACE_SCOPE(examples_20_pubservice_ServicingComponent_onThreadRuns);
 DEF_TRACE_SCOPE(examples_20_pubservice_ServicingComponent__runInputThread);
 DEF_TRACE_SCOPE(examples_20_pubservice_ServicingComponent__runImageThread);
+
+//////////////////////////////////////////////////////////////////////////
+// ServicingComponent::OptionConsumer class implementation
+//////////////////////////////////////////////////////////////////////////
+
+void ServicingComponent::OptionConsumer::processEvent(const OptionData& data)
+{
+    mService.onOptionEvent( data );
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ServicingComponent::TimerConsumer class implementation
+//////////////////////////////////////////////////////////////////////////
+
+void ServicingComponent::TimerConsumer::processTimer( Timer & timer )
+{
+    if (&timer == &mService.mTimer)
+    {
+        mService.onTimerExpired();
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ServicingComponent class implementation
+//////////////////////////////////////////////////////////////////////////
 
 Component * ServicingComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
 {
@@ -38,13 +63,11 @@ void ServicingComponent::DeleteComponent(Component & compObject, const NERegistr
 ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
     : Component         ( entry, owner )
     , LargeDataStub     ( static_cast<Component &>(self()) )
-    , IETimerConsumer   ( )
-    , IEOptionConsumer  ( )
     , IEThreadConsumer  ( )
 
     , mBitmap           ( )
     , mBlockList        ( )
-    , mTimer            ( static_cast<IETimerConsumer &>(self()) , TIMER_NAME )
+    , mTimer            ( static_cast<IETimerConsumer &>(mTimerConsumer) , TIMER_NAME )
     , mInputThread      ( static_cast<IEThreadConsumer &>(self()), THREAD_WAITINPUT )
     , mImageThread      ( static_cast<IEThreadConsumer &>(self()), THREAD_GENERATE )
     , mOptions          ( )
@@ -56,6 +79,8 @@ ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry,
     , mItemRate         ( 0 )
     , mDidSleep         ( 0 )
     , mIgnoreSleep      ( 0 )
+    , mOptionConsumer   ( self() )
+    , mTimerConsumer    ( self() )
     , mLock             ( )
 {
     mOptions.mWidth     = NEUtilities::IMAGE_WIDTH;
@@ -132,7 +157,7 @@ void ServicingComponent::clientConnected(const ProxyAddress& client, bool isConn
     _printInfo();
 }
 
-void ServicingComponent::processTimer(Timer& timer)
+void ServicingComponent::onTimerExpired( void )
 {
     mLock.lock(NECommon::WAIT_INFINITE);
 
@@ -166,9 +191,9 @@ void ServicingComponent::processTimer(Timer& timer)
     console.refreshScreen();
 }
 
-void ServicingComponent::processEvent(const OptionData& data)
+void ServicingComponent::onOptionEvent(const OptionData& data)
 {
-    TRACE_SCOPE(examples_20_pubservice_ServicingComponent_processEvent);
+    TRACE_SCOPE(examples_20_pubservice_ServicingComponent_onOptionEvent);
     
     if (data.hasError())
     {
@@ -285,7 +310,7 @@ void ServicingComponent::_runInputThread(void)
         OptionData newData;
         newData.parseCommand(cmd);
         cmdQuit = newData.hasQuit();
-        EventOption::sendEvent(newData, static_cast<IEOptionConsumer&>(self()), getComponentThread());
+        EventOption::sendEvent(newData, static_cast<IEOptionConsumer&>(mOptionConsumer), getComponentThread());
 
         TRACE_DBG("Have go the option command [ %s ]", cmd.getString());
     }

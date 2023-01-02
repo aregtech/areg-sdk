@@ -19,15 +19,15 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/ipc/IERemoteService.hpp"
 #include "areg/component/DispatcherThread.hpp"
-#include "areg/ipc/IERemoteServiceHandler.hpp"
 #include "areg/component/IERemoteEventConsumer.hpp"
 #include "areg/component/IETimerConsumer.hpp"
+#include "areg/ipc/IERemoteService.hpp"
+#include "areg/ipc/IERemoteServiceHandler.hpp"
 
 #include "areg/ipc/private/ClientReceiveThread.hpp"
-#include "areg/ipc/private/ClientServiceEvent.hpp"
 #include "areg/ipc/private/ClientSendThread.hpp"
+#include "areg/ipc/private/ClientServiceEvent.hpp"
 #include "areg/ipc/private/ClientConnection.hpp"
 #include "areg/ipc/NERemoteService.hpp"
 #include "areg/component/Channel.hpp"
@@ -52,10 +52,108 @@ class DispatcherThread;
 class ClientService : public    IERemoteService
                     , private   DispatcherThread
                     , private   IERemoteServiceHandler
-                    , private   IEClientServiceEventConsumer
                     , private   IERemoteEventConsumer
-                    , private   IETimerConsumer
 {
+//////////////////////////////////////////////////////////////////////////
+// Internal friend classes
+//////////////////////////////////////////////////////////////////////////
+    friend class ClientServiceEventConsumer;
+    friend class TimerConsumer;
+
+//////////////////////////////////////////////////////////////////////////
+// Internal objects
+//////////////////////////////////////////////////////////////////////////
+private:
+    //////////////////////////////////////////////////////////////////////////
+    // ClientService::ClientServiceEventConsumer class declaration
+    //////////////////////////////////////////////////////////////////////////
+    /**
+     * \brief   The internal class to dispatch custom events
+     **/
+    class AREG_API ClientServiceEventConsumer   : public    IEClientServiceEventConsumer
+    {
+    public:
+        /**
+         * \brief   Constructs and initializes a Event consumer object
+         * \param   service     The instance of the connection service client.
+         **/
+        ClientServiceEventConsumer(ClientService & service );
+
+        virtual ~ClientServiceEventConsumer( void ) = default;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Hidden calls
+    //////////////////////////////////////////////////////////////////////////
+    private:
+    /************************************************************************/
+    // IEClientServiceEventConsumer interface overrides.
+    /************************************************************************/
+        /**
+         * \brief   Automatically triggered when event is dispatched by registered
+         *          worker / component thread.
+         * \param   data    The data object passed in event. It should have at least
+         *                  default constructor and assigning operator.
+         *                  This object is not used for IPC.
+         **/
+        virtual void processEvent( const ClientServiceEventData & data ) override;
+    
+    //////////////////////////////////////////////////////////////////////////
+    // Member variables
+    //////////////////////////////////////////////////////////////////////////
+        ClientService &     mService; //!< The instance of connection client service
+
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls
+    //////////////////////////////////////////////////////////////////////////
+        ClientServiceEventConsumer( void ) = delete;
+        DECLARE_NOCOPY_NOMOVE( ClientServiceEventConsumer );
+    };
+
+    //////////////////////////////////////////////////////////////////////////
+    // ClientService::TimerConsumer class declaration
+    //////////////////////////////////////////////////////////////////////////
+    /**
+     * \brief   The timer consumer 
+     **/
+    class AREG_API TimerConsumer    : public    IETimerConsumer
+    {
+    public:
+        /**
+         * \brief   Constructs and initializes a Timer consumer object
+         * \param   service     The instance of the connection service client.
+         **/
+        TimerConsumer( ClientService & service );
+
+        virtual ~TimerConsumer( void ) = default;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Hidden calls
+    //////////////////////////////////////////////////////////////////////////
+    private:
+    /************************************************************************/
+    // IETimerConsumer interface overrides.
+    /************************************************************************/
+
+        /**
+         * \brief   Triggered when Timer is expired.
+         *          The passed Timer parameter is indicating object, which has been expired.
+         *          Overwrite method to receive messages.
+         * \param   timer   The timer object that is expired.
+         **/
+        virtual void processTimer( Timer & timer ) override;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Member variables
+    //////////////////////////////////////////////////////////////////////////
+        ClientService &     mService; //!< The instance of connection client service
+
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls
+    //////////////////////////////////////////////////////////////////////////
+        TimerConsumer( void ) = delete;
+        DECLARE_NOCOPY_NOMOVE( TimerConsumer );
+    };
+
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants
 //////////////////////////////////////////////////////////////////////////
@@ -69,13 +167,13 @@ private:
      * \brief   ClientService::eConnectionState
      *          Defines connection state values
      **/
-    typedef enum class E_ConnectionState
+    enum class eConnectionState
     {
           ConnectionStopped     //!< The connection is stopped, i.e. not connected.
         , ConnectionStarting    //!< The connection is initiated, but the status is not known.
         , ConnectionStarted     //!< The connection is established and accepted by server.
         , ConnectionStopping    //!< The connection is stopping, because of manual request.
-    } eConnectionState;
+    };
 
     /**
      * \brief   Returns the string value of ClientService::eConnectionState type
@@ -222,32 +320,42 @@ public:
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
-protected:
-
-/************************************************************************/
-// IETimerConsumer interface overrides.
-/************************************************************************/
+private:
 
     /**
      * \brief   Triggered when Timer is expired.
-     *          The passed Timer parameter is indicating object, which has been expired.
-     *          Overwrite method to receive messages.
-     * \param   timer   The timer object that is expired.
      **/
-    virtual void processTimer( Timer & timer ) override;
+    void onTimerExpired( void );
 
-/************************************************************************/
-// TEEventConsumer<DATA_CLASS, DATA_CLASS_TYPE> interface overrides.
-/************************************************************************/
     /**
-     * \brief   Automatically triggered when event is dispatched by registered
-     *          worker / component thread.
-     * \param   data    The data object passed in event. It should have at least
-     *                  default constructor and assigning operator.
-     *                  This object is not used for IPC.
+     * \brief   Called when receive event when need to start remote service client connection. 
      **/
-    virtual void processEvent( const ClientServiceEventData & data ) override;
+    void onServiceConnectionStart( void );
 
+    /**
+     * \brief   Called when receive event when need to stop remote service client connection. 
+     **/
+    void onServiceConnectionStop( void );
+
+    /**
+     * \brief   Called when receive event when remote service client connection is started. 
+     **/
+    void onServiceConnectionStarted( void );
+
+    /**
+     * \brief   Called when receive event when remote service client connection is stopped. 
+     **/
+    void onServiceConnectionStopped( void );
+
+    /**
+     * \brief   Called when receive event when remote service client connection is lost. 
+     **/
+    void onServiceConnectionLost( void );
+
+//////////////////////////////////////////////////////////////////////////
+// Overrides
+//////////////////////////////////////////////////////////////////////////
+private:
 /************************************************************************/
 // IERemoteServiceHandler interface overrides
 /************************************************************************/
@@ -373,6 +481,22 @@ private:
      **/
     inline ClientService & self( void );
 
+    /**
+     * \brief   Call when the dispatcher should start listening the events. 
+     **/
+    inline void startEventListener( void );
+    
+    /**
+     * \brief   Call when the dispatcher should stop listening the events. 
+     **/
+    inline void stopEventListener( void );
+
+    /**
+     * \brief   Call to send the event to process.
+     * \param   cmd     The command to send and process. 
+     */
+    inline void sendCommand(ClientServiceEventData::eClientServiceCommands cmd);
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -414,6 +538,14 @@ private:
      **/
     eConnectionState            mConnectionState;
     /**
+     * \brief   The Client Service event consumer
+     **/
+    ClientServiceEventConsumer  mEventConsumer;
+    /**
+     * \brief   The Client Service event consumer
+     **/
+    TimerConsumer               mTimerConsumer;
+    /**
      * \brief   Data access synchronization object
      **/
     mutable ResourceLock        mLock;
@@ -429,6 +561,21 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // ClientService class inline methods implementation
 //////////////////////////////////////////////////////////////////////////
+
+inline void ClientService::startEventListener( void )
+{
+    ClientServiceEvent::addListener( static_cast<IEClientServiceEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self()) );
+}
+
+inline void ClientService::stopEventListener(void)
+{
+    ClientServiceEvent::removeListener( static_cast<IEClientServiceEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self()) );
+}
+
+inline void ClientService::sendCommand(ClientServiceEventData::eClientServiceCommands cmd)
+{
+    ClientServiceEvent::sendEvent( ClientServiceEventData(cmd), static_cast<IEClientServiceEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self()) );
+}
 
 inline ClientService & ClientService::self( void )
 {

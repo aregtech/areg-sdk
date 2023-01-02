@@ -33,7 +33,13 @@
 
 DEF_TRACE_SCOPE(areg_ipc_private_ClientService_startRemotingService);
 DEF_TRACE_SCOPE(areg_ipc_private_ClientService_stopRemotingService);
-DEF_TRACE_SCOPE(areg_ipc_private_ClientService_processEvent);
+
+DEF_TRACE_SCOPE(areg_ipc_private_ClientService_onServiceConnectionStart);
+DEF_TRACE_SCOPE(areg_ipc_private_ClientService_onServiceConnectionStop);
+DEF_TRACE_SCOPE(areg_ipc_private_ClientService_onServiceConnectionStarted);
+DEF_TRACE_SCOPE(areg_ipc_private_ClientService_onServiceConnectionStopped);
+DEF_TRACE_SCOPE(areg_ipc_private_ClientService_onServiceConnectionLost);
+
 DEF_TRACE_SCOPE(areg_ipc_private_ClientService__startConnection);
 DEF_TRACE_SCOPE(areg_ipc_private_ClientService__stopConnection);
 DEF_TRACE_SCOPE(areg_ipc_private_ClientService__cancelConnection);
@@ -51,23 +57,85 @@ DEF_TRACE_SCOPE(areg_ipc_private_ClientService_unregisterService);
 DEF_TRACE_SCOPE(areg_ipc_private_ClientService_registerServiceClient);
 DEF_TRACE_SCOPE(areg_ipc_private_ClientService_unregisterServiceClient);
 
+//////////////////////////////////////////////////////////////////////////
+// ClientService::ClientServiceEventConsumer class implementation
+//////////////////////////////////////////////////////////////////////////
+
+ClientService::ClientServiceEventConsumer::ClientServiceEventConsumer( ClientService & service )
+    : IEClientServiceEventConsumer  ( )
+    , mService                      ( service )
+{
+}
+
+void ClientService::ClientServiceEventConsumer::processEvent( const ClientServiceEventData & data )
+{
+    switch ( data.getCommand() )
+    {
+    case ClientServiceEventData::eClientServiceCommands::CMD_StartService:
+        mService.onServiceConnectionStart();
+        break;
+
+    case ClientServiceEventData::eClientServiceCommands::CMD_StopService:
+        mService.onServiceConnectionStop();
+        break;
+
+    case ClientServiceEventData::eClientServiceCommands::CMD_ServiceStarted:
+        mService.onServiceConnectionStarted();
+        break;
+
+    case ClientServiceEventData::eClientServiceCommands::CMD_ServiceStopped:
+        mService.onServiceConnectionStopped();
+        break;
+
+    case ClientServiceEventData::eClientServiceCommands::CMD_ServiceLost:
+        mService.onServiceConnectionLost();
+        break;
+
+    default:
+        ASSERT(false);
+        break;
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ClientService::TimerConsumer class implementation
+//////////////////////////////////////////////////////////////////////////
+
+ClientService::TimerConsumer::TimerConsumer( ClientService & service )
+    : IETimerConsumer   ( )
+    , mService          ( service )
+{
+}
+
+void ClientService::TimerConsumer::processTimer( Timer & timer )
+{
+    if (&timer == &mService.mTimerConnect)
+    {
+        mService.onTimerExpired( );
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ClientService class implementation
+//////////////////////////////////////////////////////////////////////////
+
 ClientService::ClientService( IERemoteServiceConsumer & serviceConsumer )
     : IERemoteService               ( )
     , DispatcherThread              ( NEConnection::CLIENT_DISPATCH_MESSAGE_THREAD.data() )
     , IERemoteServiceHandler        ( )
-    , IEClientServiceEventConsumer  ( )
     , IERemoteEventConsumer         ( )
-    , IETimerConsumer               ( )
 
     , mClientConnection ( )
     , mServiceConsumer  ( serviceConsumer )
-    , mTimerConnect     ( static_cast<IETimerConsumer &>(self()), NEConnection::CLIENT_CONNECT_TIMER_NAME )
+    , mTimerConnect     ( static_cast<IETimerConsumer &>(mTimerConsumer), NEConnection::CLIENT_CONNECT_TIMER_NAME )
     , mThreadReceive    ( static_cast<IERemoteServiceHandler &>(self()), mClientConnection )
     , mThreadSend       ( static_cast<IERemoteServiceHandler &>(self()), mClientConnection )
     , mIsServiceEnabled ( NEConnection::DEFAULT_REMOVE_SERVICE_ENABLED )    // TODO: by default, should be false and read out from configuration file.
     , mConfigFile       ( "" )
     , mChannel          ( )
     , mConnectionState  ( eConnectionState::ConnectionStopped )
+    , mEventConsumer    ( self() )
+    , mTimerConsumer    ( self() )
     , mLock             ( )
 {
 }
@@ -142,9 +210,7 @@ void ClientService::stopRemoteServicing(void)
     TRACE_DBG( "Stopping remote servicing client connection, current state is [ %s ]", isRunning() ? "RUNNING" : "NOT RUNNING" );
     if ( isRunning() )
     {
-        ClientServiceEvent::sendEvent( ClientServiceEventData(ClientServiceEventData::eClientServiceCommands::CMD_StopService)
-                                     , static_cast<IEClientServiceEventConsumer &>(self())
-                                     , static_cast<DispatcherThread &>(self()) );
+        sendCommand(ClientServiceEventData::eClientServiceCommands::CMD_StopService);
         DispatcherThread::triggerExitEvent();
         completionWait(NECommon::WAIT_INFINITE);
         destroyThread( NECommon::DO_NOT_WAIT );
@@ -243,115 +309,102 @@ void ClientService::unregisterServiceClient(const ProxyAddress & proxyService)
     }
 }
 
-void ClientService::processTimer(Timer & timer)
+void ClientService::onTimerExpired( void )
 {
-    if ( &timer == &mTimerConnect )
-        _startConnection();
+    _startConnection();
 }
 
-void ClientService::processEvent( const ClientServiceEventData & data )
+void ClientService::onServiceConnectionStart(void)
 {
-    TRACE_SCOPE(areg_ipc_private_ClientService_processEvent);
+    TRACE_SCOPE(areg_ipc_private_ClientService_onServiceConnectionStart);
+    TRACE_DBG("Starting remove servicing");;
 
-    ClientServiceEventData::eClientServiceCommands cmdService = data.getCommand();
-    TRACE_DBG("Client service is executing command [ %s ]", ClientServiceEventData::getString(cmdService));
+    mChannel.setCookie( NEService::COOKIE_LOCAL );
+    mChannel.setSource( NEService::SOURCE_UNKNOWN );
+    mChannel.setTarget( NEService::TARGET_UNKNOWN );
+    _startConnection();
+}
 
-    switch ( cmdService )
+void ClientService::onServiceConnectionStop(void)
+{
+    TRACE_SCOPE(areg_ipc_private_ClientService_onServiceConnectionStop);
+    TRACE_DBG("Stopping remote servicing");
+
+    _setConnectionState(ClientService::eConnectionState::ConnectionStopping);
+    Channel channel = mChannel;
+    mChannel.setCookie( NEService::COOKIE_UNKNOWN );
+    mChannel.setSource( NEService::SOURCE_UNKNOWN );
+    mChannel.setTarget( NEService::TARGET_UNKNOWN );
+
+    _stopConnection();
+
+    mThreadReceive.completionWait( NECommon::WAIT_INFINITE );
+    mThreadSend.completionWait( NECommon::WAIT_INFINITE );
+
+    mClientConnection.closeSocket();
+    mServiceConsumer.remoteServiceStopped( channel );
+
+    mThreadReceive.destroyThread( NECommon::DO_NOT_WAIT );
+    mThreadSend.destroyThread( NECommon::DO_NOT_WAIT );
+}
+
+void ClientService::onServiceConnectionStarted(void)
+{
+    TRACE_SCOPE(areg_ipc_private_ClientService_onServiceConnectionStarted);
+    ASSERT(_isStarted());
+    if ( mClientConnection.getCookie() != NEService::COOKIE_LOCAL )
     {
-    case ClientServiceEventData::eClientServiceCommands::CMD_StartService:
-        {
-            TRACE_DBG("Starting remove servicing");;
-            mChannel.setCookie( NEService::COOKIE_LOCAL );
-            mChannel.setSource( NEService::SOURCE_UNKNOWN );
-            mChannel.setTarget( NEService::TARGET_UNKNOWN );
-            _startConnection();
-        }
-        break;
-
-    case ClientServiceEventData::eClientServiceCommands::CMD_StopService:
-        {
-            TRACE_DBG("Stopping remote servicing");
-            _setConnectionState(ClientService::eConnectionState::ConnectionStopping);
-            Channel channel = mChannel;
-            mChannel.setCookie( NEService::COOKIE_UNKNOWN );
-            mChannel.setSource( NEService::SOURCE_UNKNOWN );
-            mChannel.setTarget( NEService::TARGET_UNKNOWN );
-
-            _stopConnection();
-
-            mThreadReceive.completionWait( NECommon::WAIT_INFINITE );
-            mThreadSend.completionWait( NECommon::WAIT_INFINITE );
-
-            mClientConnection.closeSocket();
-            mServiceConsumer.remoteServiceStopped( channel );
-
-            mThreadReceive.destroyThread( NECommon::DO_NOT_WAIT );
-            mThreadSend.destroyThread( NECommon::DO_NOT_WAIT );
-        }
-        break;
-
-    case ClientServiceEventData::eClientServiceCommands::CMD_ServiceStarted:
-        {
-            ASSERT(_isStarted());
-            if ( mClientConnection.getCookie() != NEService::COOKIE_LOCAL )
-            {
-                TRACE_DBG("Client service succeeded to start, client cookie is [ 0x%X ]", static_cast<unsigned int>(mClientConnection.getCookie()));
-                _setConnectionState(ClientService::eConnectionState::ConnectionStarted);
-                mChannel.setCookie( mClientConnection.getCookie() );
-                mChannel.setSource( getCurrentThreadId() );
-                mChannel.setTarget( NEService::TARGET_LOCAL );
-                mServiceConsumer.remoteServiceStarted(mChannel);
-            }
-        }
-        break;
-
-    case ClientServiceEventData::eClientServiceCommands::CMD_ServiceStopped:
-        {
-            TRACE_DBG("Client service is stopped. Resetting cookie");
-            _setConnectionState(ClientService::eConnectionState::ConnectionStopping);
-            Channel channel = mChannel;
-            mChannel.setCookie( NEService::COOKIE_UNKNOWN );
-            mChannel.setSource( NEService::SOURCE_UNKNOWN );
-            mChannel.setTarget( NEService::TARGET_UNKNOWN );
-            // _stopConnection();
-            _cancelConnection();
-
-            mThreadReceive.completionWait( NECommon::WAIT_INFINITE );
-            mThreadSend.completionWait( NECommon::WAIT_INFINITE );
-            mServiceConsumer.remoteServiceStopped( channel );
-        }
-        break;
-
-    case ClientServiceEventData::eClientServiceCommands::CMD_ServiceLost:
-    {
-        TRACE_WARN("Client service is lost connection. Resetting cookie and trying to restart, current connection state [ %s ]"
-                    , ClientService::getString(_getConnectionState()));
-        Channel channel = mChannel;
-        mChannel.setCookie( NEService::COOKIE_UNKNOWN );
-        mChannel.setSource( NEService::SOURCE_UNKNOWN );
-        mChannel.setTarget( NEService::TARGET_UNKNOWN );
-        _cancelConnection();
-
-        mThreadReceive.completionWait( NECommon::WAIT_INFINITE );
-        mThreadSend.completionWait( NECommon::WAIT_INFINITE );
-        mServiceConsumer.remoteServiceStopped( channel );
-
-        if (Application::isServicingReady() && (_getConnectionState() == ClientService::eConnectionState::ConnectionStarted))
-        {
-            TRACE_DBG("Restarting lost connection with remote service");
-            _setConnectionState(ClientService::eConnectionState::ConnectionStarting);
-            _startConnection();
-        }
-        else
-        {
-            TRACE_WARN("Ignoring lost connection event, either servicing state is not allowed, or application is closing.");
-        }
+        TRACE_DBG("Client service succeeded to start, client cookie is [ 0x%X ]", static_cast<unsigned int>(mClientConnection.getCookie()));
+        _setConnectionState(ClientService::eConnectionState::ConnectionStarted);
+        mChannel.setCookie( mClientConnection.getCookie() );
+        mChannel.setSource( getCurrentThreadId() );
+        mChannel.setTarget( NEService::TARGET_LOCAL );
+        mServiceConsumer.remoteServiceStarted(mChannel);
     }
-    break;
+}
 
-    default:
-        ASSERT(false);
-        break;
+void ClientService::onServiceConnectionStopped(void)
+{
+    TRACE_SCOPE(areg_ipc_private_ClientService_onServiceConnectionStopped);
+    TRACE_DBG("Client service is stopped. Resetting cookie");
+
+    _setConnectionState(ClientService::eConnectionState::ConnectionStopping);
+    Channel channel = mChannel;
+    mChannel.setCookie( NEService::COOKIE_UNKNOWN );
+    mChannel.setSource( NEService::SOURCE_UNKNOWN );
+    mChannel.setTarget( NEService::TARGET_UNKNOWN );
+    // _stopConnection();
+    _cancelConnection();
+
+    mThreadReceive.completionWait( NECommon::WAIT_INFINITE );
+    mThreadSend.completionWait( NECommon::WAIT_INFINITE );
+    mServiceConsumer.remoteServiceStopped( channel );
+}
+
+void ClientService::onServiceConnectionLost(void)
+{
+    TRACE_SCOPE(areg_ipc_private_ClientService_onServiceConnectionLost);
+    TRACE_WARN("Client service is lost connection. Resetting cookie and trying to restart, current connection state [ %s ]"
+                , ClientService::getString(_getConnectionState()));
+    Channel channel = mChannel;
+    mChannel.setCookie( NEService::COOKIE_UNKNOWN );
+    mChannel.setSource( NEService::SOURCE_UNKNOWN );
+    mChannel.setTarget( NEService::TARGET_UNKNOWN );
+    _cancelConnection();
+
+    mThreadReceive.completionWait( NECommon::WAIT_INFINITE );
+    mThreadSend.completionWait( NECommon::WAIT_INFINITE );
+    mServiceConsumer.remoteServiceStopped( channel );
+
+    if (Application::isServicingReady() && (_getConnectionState() == ClientService::eConnectionState::ConnectionStarted))
+    {
+        TRACE_DBG("Restarting lost connection with remote service");
+        _setConnectionState(ClientService::eConnectionState::ConnectionStarting);
+        _startConnection();
+    }
+    else
+    {
+        TRACE_WARN("Ignoring lost connection event, either servicing state is not allowed, or application is closing.");
     }
 }
 
@@ -464,9 +517,7 @@ void ClientService::failedSendMessage(const RemoteMessage & msgFailed)
                 eventError->deliverEvent();
             }
 
-            ClientServiceEvent::sendEvent( ClientServiceEventData(ClientServiceEventData::eClientServiceCommands::CMD_ServiceLost)
-                                         , static_cast<IEClientServiceEventConsumer &>(self())
-                                         , static_cast<DispatcherThread &>(self()) );
+            sendCommand(ClientServiceEventData::eClientServiceCommands::CMD_ServiceLost);
         }
         else
         {
@@ -487,9 +538,7 @@ void ClientService::failedReceiveMessage(SOCKETHANDLE whichSource)
     {
         if ( whichSource == mClientConnection.getSocketHandle() )
         {
-            ClientServiceEvent::sendEvent( ClientServiceEventData(ClientServiceEventData::eClientServiceCommands::CMD_ServiceLost)
-                                         , static_cast<IEClientServiceEventConsumer &>(self())
-                                         , static_cast<DispatcherThread &>(self()) );
+            sendCommand(ClientServiceEventData::eClientServiceCommands::CMD_ServiceLost);
         }
     }
     else
@@ -560,15 +609,11 @@ void ClientService::processReceivedMessage( const RemoteMessage & msgReceived, c
                     Lock lock(mLock);
                     ASSERT(cookie == msgReceived.getTarget());
                     mClientConnection.setCookie(cookie);
-                    ClientServiceEvent::sendEvent( ClientServiceEventData(ClientServiceEventData::eClientServiceCommands::CMD_ServiceStarted)
-                                                 , static_cast<IEClientServiceEventConsumer &>(self())
-                                                 , static_cast<DispatcherThread &>(self()) );
+                    sendCommand(ClientServiceEventData::eClientServiceCommands::CMD_ServiceStarted);
                 }
                 else if ( (static_cast<unsigned int>(connection) & static_cast<unsigned int>(NEService::eServiceConnection::ServiceConnected)) == 0 )
                 {
-                    ClientServiceEvent::sendEvent( ClientServiceEventData(ClientServiceEventData::eClientServiceCommands::CMD_ServiceStopped)
-                                                 , static_cast<IEClientServiceEventConsumer &>(self())
-                                                 , static_cast<DispatcherThread &>(self()) );
+                    sendCommand(ClientServiceEventData::eClientServiceCommands::CMD_ServiceStopped);
                 }
                 else
                 {
@@ -789,16 +834,14 @@ void ClientService::processRemoteResponseEvent(RemoteResponseEvent & responseEve
 bool ClientService::runDispatcher(void)
 {
     TRACE_SCOPE(areg_ipc_private_ClientService_runDispatcher);
-    ClientServiceEvent::addListener( static_cast<IEClientServiceEventConsumer &>(self()), static_cast<DispatcherThread &>(self()) );
-    ClientServiceEvent::sendEvent( ClientServiceEventData(ClientServiceEventData::eClientServiceCommands::CMD_StartService)
-                                 , static_cast<IEClientServiceEventConsumer &>(self())
-                                 , static_cast<DispatcherThread &>(self()) );
+    startEventListener();
+    sendCommand(ClientServiceEventData::eClientServiceCommands::CMD_StartService);
 
     _setConnectionState(ClientService::eConnectionState::ConnectionStarting);
     bool result = DispatcherThread::runDispatcher();
     _setConnectionState(ClientService::eConnectionState::ConnectionStopped);
 
-    ClientServiceEvent::removeListener( static_cast<IEClientServiceEventConsumer &>(self()), static_cast<DispatcherThread &>(self()) );
+    stopEventListener();
 
     return result;
 }

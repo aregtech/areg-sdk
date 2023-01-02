@@ -19,15 +19,15 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/ipc/IERemoteService.hpp"
-#include "areg/component/IETimerConsumer.hpp"
 #include "areg/component/DispatcherThread.hpp"
+#include "areg/component/IETimerConsumer.hpp"
+#include "areg/ipc/IERemoteService.hpp"
 #include "areg/ipc/IERemoteServiceConsumer.hpp"
-#include "mcrouter/tcp/private/ServerServiceEvent.hpp"
 #include "areg/ipc/IERemoteServiceHandler.hpp"
 #include "mcrouter/tcp/private/IEServerConnectionHandler.hpp"
 
 #include "mcrouter/tcp/private/ServerReceiveThread.hpp"
+#include "mcrouter/tcp/private/ServerServiceEvent.hpp"
 #include "mcrouter/tcp/private/ServerSendThread.hpp"
 #include "mcrouter/tcp/private/ServerConnection.hpp"
 #include "mcrouter/tcp/private/ServiceRegistry.hpp"
@@ -54,9 +54,93 @@ class ServerService : public    IERemoteService
                     , private   IEServerConnectionHandler
                     , private   IERemoteServiceConsumer
                     , private   IERemoteServiceHandler
-                    , private   IEServerServiceEventConsumer
-                    , private   IETimerConsumer
 {
+    friend class ServerServiceEventConsumer;
+    friend class TimerConsumer;
+//////////////////////////////////////////////////////////////////////////
+// Internal objects
+//////////////////////////////////////////////////////////////////////////
+    
+//////////////////////////////////////////////////////////////////////////
+// ServerService::ServerServiceEventConsumer class declaration
+//////////////////////////////////////////////////////////////////////////
+    class ServerServiceEventConsumer : public  IEServerServiceEventConsumer
+    {
+    public:
+        //!< Initializes the the server service consumer object
+        ServerServiceEventConsumer( ServerService & service );
+
+        virtual ~ServerServiceEventConsumer( void ) = default;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Hidden methods
+    //////////////////////////////////////////////////////////////////////////
+    private:
+
+    /************************************************************************/
+    // IEServerServiceEventConsumer interface overrides.
+    /************************************************************************/
+        /**
+         * \brief   Automatically triggered when event is dispatched by registered
+         *          worker / component thread.
+         * \param   data    The data object passed in event. It should have at least
+         *                  default constructor and assigning operator.
+         *                  This object is not used for IPC.
+         **/
+        virtual void processEvent( const ServerServiceEventData & data ) override;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Hidden variables
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        ServerService & mService;   //!< The instance of server service object.
+
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        ServerServiceEventConsumer( void ) = delete;
+        DECLARE_NOCOPY_NOMOVE( ServerServiceEventConsumer );
+    };
+
+//////////////////////////////////////////////////////////////////////////
+// ServerService::TimerConsumer class declaration
+//////////////////////////////////////////////////////////////////////////
+    //!< The timer consumer object used by server service
+    class TimerConsumer : public IETimerConsumer
+    {
+    public:
+        TimerConsumer( ServerService & service );
+
+        virtual ~TimerConsumer( void ) = default;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Hidden methods
+    //////////////////////////////////////////////////////////////////////////
+    private:
+    /************************************************************************/
+    // IETimerConsumer interface overrides.
+    /************************************************************************/
+        /**
+         * \brief   Triggered when Timer is expired. 
+         * \param   timer   The timer object that is expired.
+         **/
+        virtual void processTimer( Timer & timer ) override;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Hidden variables
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        ServerService & mService;   //!< The instance of server service object
+
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        TimerConsumer( void ) = delete;
+        DECLARE_NOCOPY_NOMOVE( TimerConsumer );
+    };
+
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants
 //////////////////////////////////////////////////////////////////////////
@@ -264,30 +348,6 @@ protected:
     virtual void connectionFailure( void ) override;
 
 /************************************************************************/
-// IETimerConsumer interface overrides.
-/************************************************************************/
-
-    /**
-     * \brief   Triggered when Timer is expired. 
-     *          The passed Timer parameter is indicating object, which has been expired.
-     *          Overwrite method to receive messages.
-     * \param   timer   The timer object that is expired.
-     **/
-    virtual void processTimer( Timer & timer ) override;
-
-/************************************************************************/
-// TEEventConsumer<DATA_CLASS, DATA_CLASS_TYPE> interface overrides.
-/************************************************************************/
-    /**
-     * \brief   Automatically triggered when event is dispatched by registered
-     *          worker / component thread.
-     * \param   data    The data object passed in event. It should have at least
-     *                  default constructor and assigning operator.
-     *                  This object is not used for IPC.
-     **/
-    virtual void processEvent( const ServerServiceEventData & data ) override;
-
-/************************************************************************/
 // IERemoteServiceConsumer
 /************************************************************************/
 
@@ -441,24 +501,83 @@ private:
     void stopConnection( void );
 
     /**
+     * \brief   Called when need to start the network server connection service. 
+     **/
+    void onServiceStart( void );
+
+    /**
+     * \brief   Called when need to stop the network server connection service. 
+     **/
+    void onServiceStop( void );
+
+    /**
+     * \brief   Called when need to restart the network server connection service. 
+     **/
+    void onServiceRestart( void );
+
+    /**
+     * \brief   Called when received a commuication message to dispatch and process.
+     * \param   msgReceived     The received the communication message. 
+     **/
+    void onServiceMessageReceived(const RemoteMessage & msgReceived);
+
+    /**
+     * \brief   Called when need to send a commuication message.
+     * \param   msgReceived     The received the communication message. 
+     **/
+    void onServiceMessageSend(const RemoteMessage & msgSend);
+
+    /**
+     * \brief   Triggered when Timer is expired. 
+     **/
+    void onTimerExpired( void );
+
+    /**
      * \brief   Returns instance of object. For internal use only.
      **/
     inline ServerService & self( void );
+
+    /**
+     * \brief   Call when the dispatcher should start listening the events. 
+     **/
+    inline void startEventListener( void );
+    
+    /**
+     * \brief   Call when the dispatcher should stop listening the events. 
+     **/
+    inline void stopEventListener( void );
+
+    /**
+     * \brief   Call to send the event to process.
+     * \param   cmd     The command to send and process.
+     * \return  Returns true if successeded to send the command.
+     **/
+    inline bool sendCommand(ServerServiceEventData::eServerServiceCommands cmd);
+
+    /**
+     * \brief   Call to send the event to process.
+     * \param   cmd     The command to send and process.
+     * \param   msg     The message to forward.
+     * \return  Returns true if successeded to send the command.
+     **/
+    inline bool sendCommunicationMessage(ServerServiceEventData::eServerServiceCommands cmd, const RemoteMessage & msg);
 
 //////////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////////
 private:
-    ServerConnection    mServerConnection;      //!< The instance of server connection object.
-    Timer               mTimerConnect;          //!< The timer object to trigger in case if failed to create server socket.
-    ServerSendThread    mThreadSend;            //!< The thread to send messages to clients
-    ServerReceiveThread mThreadReceive;         //!< The thread to receive messages from clients
-    ServiceRegistry     mServiceRegistry;       //!< The service registry map to track stub-proxy connections
-    bool                mIsServiceEnabled;      //!< The flag indicating whether the server servicing is enabled or not.
-    String              mConfigFile;            //!< The full path of connection configuration file.
-    StringArray         mWhiteList;             //!< The list of enabled fixed client hosts.
-    StringArray         mBlackList;             //!< The list of disabled fixes client hosts.
-    mutable ResourceLock    mLock;              //!< The synchronization object to be accessed from different threads.
+    ServerConnection            mServerConnection;  //!< The instance of server connection object.
+    Timer                       mTimerConnect;      //!< The timer object to trigger in case if failed to create server socket.
+    ServerSendThread            mThreadSend;        //!< The thread to send messages to clients
+    ServerReceiveThread         mThreadReceive;     //!< The thread to receive messages from clients
+    ServiceRegistry             mServiceRegistry;   //!< The service registry map to track stub-proxy connections
+    bool                        mIsServiceEnabled;  //!< The flag indicating whether the server servicing is enabled or not.
+    String                      mConfigFile;        //!< The full path of connection configuration file.
+    StringArray                 mWhiteList;         //!< The list of enabled fixed client hosts.
+    StringArray                 mBlackList;         //!< The list of disabled fixes client hosts.
+    ServerServiceEventConsumer  mEventConsumer;     //!< The custom event consumer object
+    TimerConsumer               mTimerConsumer;     //!< The timer consumer object
+    mutable ResourceLock        mLock;              //!< The synchronization object to be accessed from different threads.
 
 //////////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -474,6 +593,26 @@ private:
 inline ServerService & ServerService::self( void )
 {
     return (*this);
+}
+
+inline void ServerService::startEventListener(void)
+{
+    ServerServiceEvent::addListener( static_cast<IEServerServiceEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self()) );
+}
+
+inline void ServerService::stopEventListener(void)
+{
+    ServerServiceEvent::removeListener( static_cast<IEServerServiceEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self()) );
+}
+
+inline bool ServerService::sendCommand(ServerServiceEventData::eServerServiceCommands cmd)
+{
+    return ServerServiceEvent::sendEvent( ServerServiceEventData(cmd), static_cast<IEServerServiceEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self()) );
+}
+
+inline bool ServerService::sendCommunicationMessage(ServerServiceEventData::eServerServiceCommands cmd, const RemoteMessage & msg)
+{
+    return ServerServiceEvent::sendEvent( ServerServiceEventData(cmd, msg), static_cast<IEServerServiceEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self()) );
 }
 
 inline bool ServerService::isAddressInWhiteList(const NESocket::SocketAddress & addrClient) const

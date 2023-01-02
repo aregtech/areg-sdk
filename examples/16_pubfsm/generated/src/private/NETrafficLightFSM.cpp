@@ -39,7 +39,7 @@ namespace NETrafficLightFSM
     {
     	switch ( eventValue )
       	{
-      	CASE_MAKE_STRING(NETrafficLightFSM::EVENT_StartTrafficLight);
+      	CASE_MAKE_STRING(NETrafficLightFSM::eFsmEventValue::EVENT_StartTrafficLight);
       
 		CASE_DEFAULT("ERR: Unexpected NETrafficLightFSM::eFsmEventValue event value!");
       	}
