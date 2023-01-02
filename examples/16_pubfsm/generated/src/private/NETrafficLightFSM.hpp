@@ -51,11 +51,11 @@ namespace NETrafficLightFSM
      * \brief   NETrafficLightFSM::eFsmEventValue
      *          TrafficLight State Machine available Event IDs
      **/
-    typedef  enum E_FsmEventValue
+    enum class eFsmEventValue
     {
         EVENT_StartTrafficLight /** DESCRIPTION MISSED **/
 
-    } eFsmEventValue;
+    };
    
     /**
      * \brief   Returns human readable string of NETrafficLightFSM::eFsmEventValue event values

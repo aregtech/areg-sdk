@@ -48,9 +48,88 @@ DECLARE_EVENT(TrafficSwitchData, TrafficSwitchEvent, IETrafficSwitchConsumer);
 //! \brief  Traffic light public service to demonstrate subscription on data update.
 class TrafficLightService   : public    Component
                             , protected SimpleTrafficLightStub
-                            , protected IETimerConsumer
-                            , protected IETrafficSwitchConsumer
 {
+    friend class TrafficSwitchConsumer;
+    friend class TimerConsumer;
+
+//////////////////////////////////////////////////////////////////////////
+// Internal classes.
+//////////////////////////////////////////////////////////////////////////
+private:
+    //////////////////////////////////////////////////////////////////////////
+    // TrafficLightService::TrafficSwitchConsumer class declaration
+    //////////////////////////////////////////////////////////////////////////
+    //!< TrafficSwitchEvent consumer object declared as a private internal class
+    class TrafficSwitchConsumer : public IETrafficSwitchConsumer
+    {
+    public:
+        inline TrafficSwitchConsumer( TrafficLightService & service )
+            : IETrafficSwitchConsumer   ( )
+            , mService                  ( service )
+            {
+            }
+
+        virtual ~TrafficSwitchConsumer( void ) = default;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Hidden methods.
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        /**
+         * \brief  Override operation. Implement this function to receive events and make processing
+         * \param  data    The data, which was passed as an event.
+         **/
+        virtual void processEvent( const TrafficSwitchData & data ) override;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Hidden variables.
+    //////////////////////////////////////////////////////////////////////////
+        TrafficLightService &   mService;   //!< the instance of traffic lisght service
+
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls.
+    //////////////////////////////////////////////////////////////////////////
+        TrafficSwitchConsumer( void ) = delete;
+        DECLARE_NOCOPY_NOMOVE(TrafficSwitchConsumer);
+    };
+
+    //////////////////////////////////////////////////////////////////////////
+    // TrafficLightService::TimerConsumer class declaration
+    //////////////////////////////////////////////////////////////////////////
+    //!< Traffic Light timer consumer object
+    class TimerConsumer : public    IETimerConsumer
+    {
+    public:
+        TimerConsumer( TrafficLightService & service )
+            : IETimerConsumer   ( )
+            , mService          ( service )
+            {
+            }
+
+        virtual ~TimerConsumer( void ) = default;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Hidden methods.
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        /**
+         * \brief   Automatically triggered when event is dispatched by thread.
+         * \param   data    The Timer Event Data object containing Timer object.
+         **/
+        virtual void processTimer( Timer & timer ) override;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Hidden variables.
+    //////////////////////////////////////////////////////////////////////////
+        TrafficLightService &   mService;   //!< the instance of traffic lisght service
+
+    //////////////////////////////////////////////////////////////////////////
+    // Forbidden calls.
+    //////////////////////////////////////////////////////////////////////////
+        TimerConsumer( void ) = delete;
+        DECLARE_NOCOPY_NOMOVE(TimerConsumer);
+    };
+
 //////////////////////////////////////////////////////////////////////////
 // Statics and constants.
 //////////////////////////////////////////////////////////////////////////
@@ -92,18 +171,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 protected:
 
-    /**
-     * \brief  Override operation. Implement this function to receive events and make processing
-     * \param  data    The data, which was passed as an event.
-     **/
-    virtual void processEvent( const TrafficSwitchData & data ) override;
-
-    /**
-     * \brief   Automatically triggered when event is dispatched by thread.
-     * \param   data    The Timer Event Data object containing Timer object.
-     **/
-    virtual void processTimer( Timer & timer ) override;
-
 /************************************************************************/
 // StubBase overrides. Triggered by Component on startup.
 /************************************************************************/
@@ -129,14 +196,33 @@ protected:
 // Hidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
+    //!< Called when receive event that the traffic light is switched on.
+    void onTrafficLightSwitchedOn( void );
+
+    //!< Called when receive event that the traffic light is switched off.
+    void onTrafficLightSwitchedOff( void );
+
+    //!< Automatically triggered when event is dispatched by thread.
+    void onTimerExpired( void );
+
     inline TrafficLightService & self( void )
     {
         return (*this);
     }
 
-    Timer   mTimer; //! The timer to switch lights
+//////////////////////////////////////////////////////////////////////////
+// Member variables.
+//////////////////////////////////////////////////////////////////////////
+private:
 
-    NESimpleTrafficLight::eTrafficLight mPrevState; //! Previous state for yellow light switch
+    Timer                               mTimer;         //!< The timer to switch lights
+
+    NESimpleTrafficLight::eTrafficLight mPrevState;     //!< Previous state for yellow light switch
+
+    TrafficSwitchConsumer               mEventConsumer; //!< The event consumer object.
+
+    TimerConsumer                       mTimerConsumer; //!< The timer consumer object.
+    
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////

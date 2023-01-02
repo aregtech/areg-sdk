@@ -2076,7 +2076,6 @@ TEString<CharType>& TEString<CharType>::moveTo(NEString::CharPos startPos, int m
     }
     else if (moveTo > 0)
     {
-        uint32_t length = static_cast<uint32_t>(mData.length());
         mData.insert(startPos, moveTo, '@');
     }
 

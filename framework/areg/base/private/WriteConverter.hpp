@@ -198,14 +198,8 @@ public:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Reference of a writable streaming object
-     **/
-    IEOutStream &      mWriteStream;
-    /**
-     * \brief   Reference of cursor position object in writable stream.
-     **/
-    IECursorPosition & mWritePosition;
+    IEOutStream &      mWriteStream;    //!< Reference of a writable streaming object
+    // IECursorPosition & mWritePosition;  //!< Reference of cursor position object in writable stream.
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden methods

@@ -66,7 +66,7 @@ protected:
     /**
      * \brief   The response to hello world request.
      **/
-    virtual void responseHelloWorld( void );
+    virtual void responseHelloWorld( void ) override;
 
     /**
      * \brief   Server broadcast.

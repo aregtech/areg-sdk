@@ -29,9 +29,8 @@
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-WriteConverter::WriteConverter( IEOutStream & writeStream, IECursorPosition & writePosition )
+WriteConverter::WriteConverter( IEOutStream & writeStream, IECursorPosition & /*writePosition*/ )
     : mWriteStream  (writeStream)
-    , mWritePosition(writePosition)
 {
 }
 

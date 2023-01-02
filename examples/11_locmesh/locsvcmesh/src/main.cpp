@@ -117,7 +117,9 @@ int main()
         TRACE_SCOPE( example_11_locsvcmesh_main );
         TRACE_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
-        ComponentLoader::getInstance().setComponentData(_mainServiceName, NEMemory::uAlign{true} );
+        NEMemory::uAlign data;
+        data.alignBool.mElement = true;
+        ComponentLoader::getInstance().setComponentData(_mainServiceName, data );
 
         // load model to initialize components
         Application::loadModel(_modelName);

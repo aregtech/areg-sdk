@@ -37,31 +37,31 @@ using namespace NETrafficLightFSM;
 //////////////////////////////////////////////////////////////////////////
 
 #define  INFO_PROCESSED(curr, next)         \
-    TRACE_DBG("FSM < %s >: The trigger < %s > was processed to switch from state < %s > ==> to state < %s >.", mInstanceName, nameTrigger, getString(curr), getString(next))
+    TRACE_DBG("FSM < %s >: The trigger < %s > was processed to switch from state < %s > ==> to state < %s >.", mFsmName.getString(), nameTrigger, getString(curr), getString(next))
 
 #define  INFO_PROCESSED_SAME(state)          \
-    TRACE_DBG("FSM < %s >: The trigger < %s > was processed in state < %s >.", mInstanceName, nameTrigger, getString(state))
+    TRACE_DBG("FSM < %s >: The trigger < %s > was processed in state < %s >.", mFsmName.getString(), nameTrigger, getString(state))
 
 #define  INFO_NOT_PROCESSED                  \
-    TRACE_DBG("FSM < %s >: The trigger < %s > was not processed in state < %s >.", mInstanceName, nameTrigger, getString(mState))
+    TRACE_DBG("FSM < %s >: The trigger < %s > was not processed in state < %s >.", mFsmName.getString(), nameTrigger, getString(mState))
 
 #define  INFO_ACTION_SWITCH(actionName)      \
-    TRACE_DBG("FSM < %s >: Processing action < %s > on trigger < %s >.", mInstanceName, (actionName), nameTrigger)
+    TRACE_DBG("FSM < %s >: Processing action < %s > on trigger < %s >.", mFsmName.getString(), (actionName), nameTrigger)
 
 #define  INFO_ACTION_ENTER(actionName)       \
-    TRACE_DBG("FSM < %s >: Processing action < %s > entering state < %s >.", mInstanceName, (actionName), getString(nextState))
+    TRACE_DBG("FSM < %s >: Processing action < %s > entering state < %s >.", mFsmName.getString(), (actionName), getString(nextState))
 
 #define  INFO_ACTION_EXIT(actionName)        \
-    TRACE_DBG("FSM < %s >: Processing action < %s > exiting state < %s >.", mInstanceName, (actionName), getString(curState))
+    TRACE_DBG("FSM < %s >: Processing action < %s > exiting state < %s >.", mFsmName.getString(), (actionName), getString(curState))
 
 #define  INFO_ENTER_STATE(enterState)        \
-    TRACE_DBG("FSM < %s >: Entering state ==> < %s >.", mInstanceName, getString(enterState))
+    TRACE_DBG("FSM < %s >: Entering state ==> < %s >.", mFsmName.getString(), getString(enterState))
 
 #define  INFO_EXIT_STATE(exitState)          \
-    TRACE_DBG("FSM < %s >: Leaving state: < %s >.", mInstanceName, getString(exitState))
+    TRACE_DBG("FSM < %s >: Leaving state: < %s >.", mFsmName.getString(), getString(exitState))
 
 #define  INFO_GO_STATE(fromState, toState)  \
-     TRACE_DBG("FSM < %s >: Switched state: < %s > ==> < %s >.", mInstanceName, getString(fromState), getString(toState))
+     TRACE_DBG("FSM < %s >: Switched state: < %s > ==> < %s >.", mFsmName.getString(), getString(fromState), getString(toState))
 
 #define  START_PROCESSING( triggerName )                        \
     bool    isProcessed = false;                                \
@@ -91,96 +91,143 @@ DEF_TRACE_SCOPE(generated_src_private_TrafficLightFSM_enterState);
 DEF_TRACE_SCOPE(generated_src_private_TrafficLightFSM_leaveState);
 
 ////////////////////////////////////////////////////////////////////////////////
-// TrafficLightFSM Class Implementation 
+// TrafficLightFSM::TrafficLightEventConsumer class implementation
 ////////////////////////////////////////////////////////////////////////////////
+
+TrafficLightFSM::TrafficLightEventConsumer::TrafficLightEventConsumer( TrafficLightFSM & fsm )
+    : NETrafficLightFSM::IEFsmEventConsumer ( )
+    , mFsm  ( fsm )
+{
+}
+
+/**
+ * \brief   Called to process events
+ **/
+/* --------------------------------------------------------------------- */
+DEF_TRACE_SCOPE(generated_src_private_TrafficLightFSM_TrafficLightEventConsumer_processEvent);
+/* --------------------------------------------------------------------- */
+void TrafficLightFSM::TrafficLightEventConsumer::processEvent( const NETrafficLightFSM::FsmEventData & data )
+{
+    TRACE_SCOPE(generated_src_private_TrafficLightFSM_TrafficLightEventConsumer_processEvent);
+    if ( mFsm.isOperable() )
+    {
+        TRACE_DBG("Processing event < %s >.", NETrafficLightFSM::getString(data.mEventValue));
+       
+        switch ( data.mEventValue )
+        {
+        case NETrafficLightFSM::eFsmEventValue::EVENT_StartTrafficLight:
+            mFsm.onEventStartTrafficLight();
+            break;
+
+        default:
+            TRACE_ERR("Unknown Event was requested to be processed!");
+            ASSERT(false);
+            break;   // do nothing
+        }
+    }
+    else
+    {
+        TRACE_WARN("Ignoring event < %s >, the state machine < %s > is not initialized.", NETrafficLightFSM::getString(data.mEventValue), mFsm.mFsmName.getString());
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// TrafficLightFSM::TimerConsumer class implementation 
+////////////////////////////////////////////////////////////////////////////////
+
+TrafficLightFSM::TrafficLightTimerConsumer::TrafficLightTimerConsumer( TrafficLightFSM & fsm )
+    : IETimerConsumer   ( )
+    , mFsm              ( fsm )
+{
+}
+
+/**
+ * Called to process expired timers
+ **/
+/* --------------------------------------------------------------------- */
+DEF_TRACE_SCOPE(generated_src_private_TrafficLightFSM_TrafficLightTimerConsumer_processTimer);
+/* --------------------------------------------------------------------- */
+void TrafficLightFSM::TrafficLightTimerConsumer::processTimer( Timer & timer )
+{
+    TRACE_SCOPE(generated_src_private_TrafficLightFSM_TrafficLightTimerConsumer_processTimer);
+    TRACE_DBG("Processing Timer < %s >.", timer.getName().getString());
+    
+    do
+    {
+        if (timer.isStopped() == false)
+        {
+            if ( &timer == &mFsm.mTimerRed )
+            {
+                mFsm.onTimerRed( );
+                break;
+            }
+            if ( &timer == &mFsm.mTimerYellowRed )
+            {
+                mFsm.onTimerYellowRed( );
+                break;
+            }
+            if ( &timer == &mFsm.mTimerGreen )
+            {
+                mFsm.onTimerGreen( );
+                break;
+            }
+            if ( &timer == &mFsm.mTimerYellowGreen )
+            {
+                mFsm.onTimerYellowGreen( );
+                break;
+            }
+            if ( &timer == &mFsm.mTimerPedestrianWalk )
+            {
+                mFsm.onTimerPedestrianWalk( );
+                break;
+            }
+            if ( &timer == &mFsm.mTimerVehicleWait )
+            {
+                mFsm.onTimerVehicleWait( );
+                break;
+            }
+
+            TRACE_ERR("Unknown timer was requested to be processed, none of existing timer has matched!");
+            ASSERT(false);
+        }
+        else
+        {
+            TRACE_WARN("The timer [ %s ] is already stopped, ignoring processing timer.", timer.getName().getString());
+        }
+        
+    } while (false);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // TrafficLightFSM predefined static members 
 ////////////////////////////////////////////////////////////////////////////////
 
-/**
- * Parent state array
- **/
-const TrafficLightFSM::eState  TrafficLightFSM::sParrentStates[] =  
-{
-    /* UNDEFINED                 */   TrafficLightFSM::UNDEFINED
-
-    /* TRAFIC_LIGHT_OFF          */ , TrafficLightFSM::UNDEFINED
-    /* TRAFFIC_LIGHT_ON          */ , TrafficLightFSM::UNDEFINED
-    /* TRAFFIC_LIGHT_INITIALIZE  */ , TrafficLightFSM::TRAFFIC_LIGHT_ON
-    /* TRAFFIC_LIGHT_FUNCTION    */ , TrafficLightFSM::TRAFFIC_LIGHT_ON
-    /* TRAFFIC_LIGHT_YELLOW      */ , TrafficLightFSM::TRAFFIC_LIGHT_FUNCTION
-    /* TRAFFIC_LIGHT_RED         */ , TrafficLightFSM::TRAFFIC_LIGHT_FUNCTION
-    /* TRAFFIC_LIGHT_VEHICLE_RED */ , TrafficLightFSM::TRAFFIC_LIGHT_RED
-    /* OPPOSIT_PEDESTRIAN_GREEN  */ , TrafficLightFSM::TRAFFIC_LIGHT_RED
-    /* TRAFFIC_LIGHT_GREEN       */ , TrafficLightFSM::TRAFFIC_LIGHT_FUNCTION
-    /* TRAFFIC_PEDESTRIAN_GREEN  */ , TrafficLightFSM::TRAFFIC_LIGHT_GREEN
-    /* TRAFFIC_VEHICLE_GREEN     */ , TrafficLightFSM::TRAFFIC_LIGHT_GREEN
-    /* TRAFFIC_LIGHT_START       */ , TrafficLightFSM::TRAFFIC_LIGHT_FUNCTION   
-};
-
-/**
- * Direct child array
- **/
-const TrafficLightFSM::eState  TrafficLightFSM::sChildStates[] = 
-{
-    /* UNDEFINED                    */     TrafficLightFSM::UNDEFINED
-
-    /* TRAFIC_LIGHT_OFF             */   , TrafficLightFSM::UNDEFINED
-    /* TRAFFIC_LIGHT_ON             */   , TrafficLightFSM::TRAFFIC_LIGHT_INITIALIZE
-    /* TRAFFIC_LIGHT_INITIALIZE     */   , TrafficLightFSM::UNDEFINED
-    /* TRAFFIC_LIGHT_FUNCTION       */   , TrafficLightFSM::TRAFFIC_LIGHT_START
-    /* TRAFFIC_LIGHT_YELLOW         */   , TrafficLightFSM::UNDEFINED
-    /* TRAFFIC_LIGHT_RED            */   , TrafficLightFSM::TRAFFIC_LIGHT_VEHICLE_RED
-    /* TRAFFIC_LIGHT_VEHICLE_RED    */   , TrafficLightFSM::UNDEFINED
-    /* OPPOSIT_PEDESTRIAN_GREEN     */   , TrafficLightFSM::UNDEFINED
-    /* TRAFFIC_LIGHT_GREEN          */   , TrafficLightFSM::TRAFFIC_PEDESTRIAN_GREEN
-    /* TRAFFIC_PEDESTRIAN_GREEN     */   , TrafficLightFSM::UNDEFINED
-    /* TRAFFIC_VEHICLE_GREEN        */   , TrafficLightFSM::UNDEFINED
-    /* TRAFFIC_LIGHT_START          */   , TrafficLightFSM::UNDEFINED
-};
-
 ////////////////////////////////////////////////////////////////////////////////
 // TrafficLightFSM Class constructor / destructor 
 ////////////////////////////////////////////////////////////////////////////////
 TrafficLightFSM::TrafficLightFSM( IETrafficLightActionHandler & actionHandler, const char* const instanceName /* = NETrafficLightFSM::InstanceDefaultName */ )
-    : IETimerConsumer( )
-    , NETrafficLightFSM::IEFsmEventConsumer( )
-    , mActionHandler  ( actionHandler )
+    : mActionHandler  ( actionHandler )
     
-    , mTimerRed( static_cast< IETimerConsumer &>(self()) , "TrafficLightFsm::Red" )
-    , mTimerYellowRed( static_cast< IETimerConsumer &>(self()) , "TrafficLightFsm::YellowRed" )
-    , mTimerGreen( static_cast< IETimerConsumer &>(self()) , "TrafficLightFsm::Green" )
-    , mTimerYellowGreen( static_cast< IETimerConsumer &>(self()) , "TrafficLightFsm::YellowGreen" )
-    , mTimerPedestrianWalk( static_cast< IETimerConsumer &>(self()) , "TrafficLightFsm::PedestrianWalk" )
-    , mTimerVehicleWait( static_cast< IETimerConsumer &>(self()) , "TrafficLightFsm::VehicleWait" )
+    , mTimerRed( static_cast< IETimerConsumer &>(mTimerConsumer), "TrafficLightFsm::Red" )
+    , mTimerYellowRed( static_cast< IETimerConsumer &>(mTimerConsumer), "TrafficLightFsm::YellowRed" )
+    , mTimerGreen( static_cast< IETimerConsumer &>(mTimerConsumer), "TrafficLightFsm::Green" )
+    , mTimerYellowGreen( static_cast< IETimerConsumer &>(mTimerConsumer), "TrafficLightFsm::YellowGreen" )
+    , mTimerPedestrianWalk( static_cast< IETimerConsumer &>(mTimerConsumer), "TrafficLightFsm::PedestrianWalk" )
+    , mTimerVehicleWait( static_cast< IETimerConsumer &>(mTimerConsumer), "TrafficLightFsm::VehicleWait" )
     
 
     , mFsmName      ( String("TrafficLightFSM:") + (instanceName != nullptr ? instanceName : "") )
-    , mInstanceName ( mFsmName.getString() )
     , mMasterThread ( nullptr )
     , mProcessing   ( false )
-    , mState        ( TrafficLightFSM::UNDEFINED )    
+    , mState        ( TrafficLightFSM::eState::UNDEFINED )
+    , mEventConsumer( self() )
+    , mTimerConsumer( self() )
 {
-    mCurrentStates[UNDEFINED]                 = TrafficLightFSM::UNDEFINED;
-   
-    mCurrentStates[TRAFIC_LIGHT_OFF]          = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[TRAFFIC_LIGHT_ON]          = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[TRAFFIC_LIGHT_INITIALIZE]  = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[TRAFFIC_LIGHT_FUNCTION]    = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[TRAFFIC_LIGHT_YELLOW]      = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[TRAFFIC_LIGHT_RED]         = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[TRAFFIC_LIGHT_VEHICLE_RED] = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[OPPOSIT_PEDESTRIAN_GREEN]  = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[TRAFFIC_LIGHT_GREEN]       = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[TRAFFIC_PEDESTRIAN_GREEN]  = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[TRAFFIC_VEHICLE_GREEN]     = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[TRAFFIC_LIGHT_START]       = TrafficLightFSM::UNDEFINED;
 }
 
 TrafficLightFSM::~TrafficLightFSM( void )
 {
-    NETrafficLightFSM::FsmEvent::removeListener( static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(self()) );
+    NETrafficLightFSM::FsmEvent::removeListener( static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(mEventConsumer) );
 }
 
 /**
@@ -189,16 +236,16 @@ TrafficLightFSM::~TrafficLightFSM( void )
 inline bool TrafficLightFSM::startProcessing( const char* const triggerName )
 {
     bool result = false;
-    if (mState == TrafficLightFSM::UNDEFINED)
+    if (mState == TrafficLightFSM::eState::UNDEFINED)
     {
         TRACE_SCOPE(generated_src_private_TrafficLightFSM_startProcessing);
-        TRACE_ERR("FSM < %s >: The State Machine is not initialized to call trigger < %s >!", mInstanceName, triggerName);
+        TRACE_ERR("FSM < %s >: The State Machine is not initialized to call trigger < %s >!", mFsmName.getString(), triggerName);
         ASSERT(false);
     }
     else if (mProcessing == true)
     {
         TRACE_SCOPE(generated_src_private_TrafficLightFSM_startProcessing);
-        TRACE_ERR("FSM < %s >: Invalid trigger < %s > call during processing action!", mInstanceName, triggerName);
+        TRACE_ERR("FSM < %s >: Invalid trigger < %s > call during processing action!", mFsmName.getString(), triggerName);
         ASSERT(false);
     }
     else
@@ -222,12 +269,15 @@ inline void TrafficLightFSM::endProcessing( void )
  **/
 inline void TrafficLightFSM::updateStateTree( const TrafficLightFSM::eState whichState, const TrafficLightFSM::eState curState )
 {
-    ASSERT(curState   != TrafficLightFSM::STATE_SIZE);
+    ASSERT(curState   != TrafficLightFSM::eState::STATE_SIZE);
 
     TrafficLightFSM::eState parent = sParrentStates[static_cast<int>(whichState)];
-    if (parent != TrafficLightFSM::UNDEFINED)
+    if (parent != TrafficLightFSM::eState::UNDEFINED)
+    {
         updateStateTree(parent, curState);
-    mCurrentStates[whichState] = curState;
+    }
+
+    mCurrentStates[static_cast<int>(whichState)] = curState;
 }
 
 /**
@@ -235,14 +285,15 @@ inline void TrafficLightFSM::updateStateTree( const TrafficLightFSM::eState whic
  **/
 inline bool TrafficLightFSM::isInParentTree( TrafficLightFSM::eState whichState, const TrafficLightFSM::eState checkState )
 {
-    ASSERT(checkState != TrafficLightFSM::UNDEFINED && checkState != TrafficLightFSM::STATE_SIZE);
+    ASSERT(checkState != TrafficLightFSM::eState::UNDEFINED && checkState != TrafficLightFSM::eState::STATE_SIZE);
 
     bool result = whichState == checkState;
     if (result == false)
     {
         whichState  = sParrentStates[static_cast<int>(whichState)];
-        result      = whichState != TrafficLightFSM::UNDEFINED ? isInParentTree(whichState, checkState) : false;
+        result      = whichState != TrafficLightFSM::eState::UNDEFINED ? isInParentTree(whichState, checkState) : false;
     }
+
     return result;
 }
 
@@ -258,28 +309,28 @@ inline void TrafficLightFSM::enterState( const TrafficLightFSM::eState curState,
 
         switch (nextState)
         {
-        case TrafficLightFSM::TRAFIC_LIGHT_OFF:
+        case TrafficLightFSM::eState::TRAFIC_LIGHT_OFF:
             INFO_ACTION_ENTER("actionPowerOff");
             mActionHandler.actionPowerOff();
             break;
 
-        case TrafficLightFSM::TRAFFIC_LIGHT_ON:
+        case TrafficLightFSM::eState::TRAFFIC_LIGHT_ON:
             break;
 
-        case TrafficLightFSM::TRAFFIC_LIGHT_INITIALIZE:
+        case TrafficLightFSM::eState::TRAFFIC_LIGHT_INITIALIZE:
             INFO_ACTION_ENTER("actionPowerOn");
             mActionHandler.actionPowerOn();
             break;
 
-        case TrafficLightFSM::TRAFFIC_LIGHT_FUNCTION:
+        case TrafficLightFSM::eState::TRAFFIC_LIGHT_FUNCTION:
             break;
 
-        case TrafficLightFSM::TRAFFIC_LIGHT_YELLOW:
+        case TrafficLightFSM::eState::TRAFFIC_LIGHT_YELLOW:
             INFO_ACTION_ENTER("actionVehicleYellow");
             mActionHandler.actionVehicleYellow();
             break;
 
-        case TrafficLightFSM::TRAFFIC_LIGHT_RED:
+        case TrafficLightFSM::eState::TRAFFIC_LIGHT_RED:
             if (mTimerRed.isActive() == false)
             {
                 TRACE_DBG("Starting non active timer Red with 10000 ms of timeout and 1 numbers of repeats."); 
@@ -293,7 +344,7 @@ inline void TrafficLightFSM::enterState( const TrafficLightFSM::eState curState,
             mActionHandler.actionVehicleRed();
             break;
 
-        case TrafficLightFSM::TRAFFIC_LIGHT_VEHICLE_RED:
+        case TrafficLightFSM::eState::TRAFFIC_LIGHT_VEHICLE_RED:
             if (mTimerVehicleWait.isActive() == false)
             {
                 TRACE_DBG("Starting non active timer VehicleWait with 1000 ms of timeout and 1 numbers of repeats."); 
@@ -303,6 +354,7 @@ inline void TrafficLightFSM::enterState( const TrafficLightFSM::eState curState,
             {
                 TRACE_WARN("Ignoring start active timer VehicleWait with 1000 ms of timeout and 1 numbers of repeats."); 
             }
+
             if (mTimerPedestrianWalk.isActive() == false)
             {
                 TRACE_DBG("Starting non active timer PedestrianWalk with 5000 ms of timeout and 1 numbers of repeats."); 
@@ -312,16 +364,17 @@ inline void TrafficLightFSM::enterState( const TrafficLightFSM::eState curState,
             {
                 TRACE_WARN("Ignoring start active timer PedestrianWalk with 5000 ms of timeout and 1 numbers of repeats."); 
             }
+
             INFO_ACTION_ENTER("actionPedestrianGreen");
             mActionHandler.actionPedestrianGreen(true);
             break;
 
-        case TrafficLightFSM::OPPOSIT_PEDESTRIAN_GREEN:
+        case TrafficLightFSM::eState::OPPOSIT_PEDESTRIAN_GREEN:
             INFO_ACTION_ENTER("actionVehicleGreen");
             mActionHandler.actionVehicleGreen(true);
             break;
 
-        case TrafficLightFSM::TRAFFIC_LIGHT_GREEN:
+        case TrafficLightFSM::eState::TRAFFIC_LIGHT_GREEN:
             if (mTimerGreen.isActive() == false)
             {
                 TRACE_DBG("Starting non active timer Green with 10000 ms of timeout and 1 numbers of repeats."); 
@@ -333,7 +386,7 @@ inline void TrafficLightFSM::enterState( const TrafficLightFSM::eState curState,
             }
             break;
 
-        case TrafficLightFSM::TRAFFIC_PEDESTRIAN_GREEN:
+        case TrafficLightFSM::eState::TRAFFIC_PEDESTRIAN_GREEN:
             if (mTimerVehicleWait.isActive() == false)
             {
                 TRACE_DBG("Starting non active timer VehicleWait with 1000 ms of timeout and 1 numbers of repeats."); 
@@ -343,6 +396,7 @@ inline void TrafficLightFSM::enterState( const TrafficLightFSM::eState curState,
             {
                 TRACE_WARN("Ignoring start active timer VehicleWait with 1000 ms of timeout and 1 numbers of repeats."); 
             }
+
             if (mTimerPedestrianWalk.isActive() == false)
             {
                 TRACE_DBG("Starting non active timer PedestrianWalk with 5000 ms of timeout and 1 numbers of repeats."); 
@@ -352,34 +406,35 @@ inline void TrafficLightFSM::enterState( const TrafficLightFSM::eState curState,
             {
                 TRACE_WARN("Ignoring start active timer PedestrianWalk with 5000 ms of timeout and 1 numbers of repeats."); 
             }
+
             INFO_ACTION_ENTER("actionPedestrianGreen");
             mActionHandler.actionPedestrianGreen(false);
             break;
 
-        case TrafficLightFSM::TRAFFIC_VEHICLE_GREEN:
+        case TrafficLightFSM::eState::TRAFFIC_VEHICLE_GREEN:
             INFO_ACTION_ENTER("actionVehicleGreen");
             mActionHandler.actionVehicleGreen(false);
             break;
 
-        case TrafficLightFSM::TRAFFIC_LIGHT_START:
-            sendEvent(NETrafficLightFSM::EVENT_StartTrafficLight);
+        case TrafficLightFSM::eState::TRAFFIC_LIGHT_START:
+            sendEvent(NETrafficLightFSM::eFsmEventValue::EVENT_StartTrafficLight);
             break;
 
-        case TrafficLightFSM::UNDEFINED:  // fall through
-        case TrafficLightFSM::STATE_SIZE: // fall through
+        case TrafficLightFSM::eState::UNDEFINED:  // fall through
+        case TrafficLightFSM::eState::STATE_SIZE: // fall through
         default:
-            TRACE_ERR("FSM < %s >: Unexpected State Machine State!", mInstanceName);
+            TRACE_ERR("FSM < %s >: Unexpected State Machine State!", mFsmName.getString());
             ASSERT(false);
         }
 
         TrafficLightFSM::eState child = sChildStates[static_cast<int>(nextState)];
-        if (child != TrafficLightFSM::UNDEFINED)
+        if (child != TrafficLightFSM::eState::UNDEFINED)
         {
             enterState(curState, child, nameTrigger);
         }
         else
         {
-            updateStateTree(curState,  TrafficLightFSM::UNDEFINED);
+            updateStateTree(curState,  TrafficLightFSM::eState::UNDEFINED);
             updateStateTree(nextState, nextState);
 
             INFO_GO_STATE(mState, nextState);
@@ -399,43 +454,49 @@ inline void TrafficLightFSM::leaveState( const TrafficLightFSM::eState curState,
         TRACE_SCOPE(generated_src_private_TrafficLightFSM_leaveState);
         switch (curState)
         {
-        case TrafficLightFSM::TRAFIC_LIGHT_OFF:
+        case TrafficLightFSM::eState::TRAFIC_LIGHT_OFF:
             break;
 
-        case TrafficLightFSM::TRAFFIC_LIGHT_ON:
+        case TrafficLightFSM::eState::TRAFFIC_LIGHT_ON:
             break;
 
-        case TrafficLightFSM::TRAFFIC_LIGHT_INITIALIZE:
+        case TrafficLightFSM::eState::TRAFFIC_LIGHT_INITIALIZE:
             break;
 
-        case TrafficLightFSM::TRAFFIC_LIGHT_FUNCTION:
+        case TrafficLightFSM::eState::TRAFFIC_LIGHT_FUNCTION:
             TRACE_DBG("Stopping timer Red, which current status is [ %s ].", mTimerRed.isActive() == true ? "ACTIVE" : "NOT ACTIVE");
             mTimerRed.stopTimer( );
+            
             TRACE_DBG("Stopping timer YellowRed, which current status is [ %s ].", mTimerYellowRed.isActive() == true ? "ACTIVE" : "NOT ACTIVE");
             mTimerYellowRed.stopTimer( );
+            
             TRACE_DBG("Stopping timer Green, which current status is [ %s ].", mTimerGreen.isActive() == true ? "ACTIVE" : "NOT ACTIVE");
             mTimerGreen.stopTimer( );
+
             TRACE_DBG("Stopping timer YellowGreen, which current status is [ %s ].", mTimerYellowGreen.isActive() == true ? "ACTIVE" : "NOT ACTIVE");
             mTimerYellowGreen.stopTimer( );
+            
             break;
 
-        case TrafficLightFSM::TRAFFIC_LIGHT_YELLOW:
+        case TrafficLightFSM::eState::TRAFFIC_LIGHT_YELLOW:
             break;
 
-        case TrafficLightFSM::TRAFFIC_LIGHT_RED:
+        case TrafficLightFSM::eState::TRAFFIC_LIGHT_RED:
             TRACE_DBG("Stopping timer PedestrianWalk, which current status is [ %s ].", mTimerPedestrianWalk.isActive() == true ? "ACTIVE" : "NOT ACTIVE");
             mTimerPedestrianWalk.stopTimer( );
+            
             TRACE_DBG("Stopping timer VehicleWait, which current status is [ %s ].", mTimerVehicleWait.isActive() == true ? "ACTIVE" : "NOT ACTIVE");
             mTimerVehicleWait.stopTimer( );
+            
             break;
 
-        case TrafficLightFSM::TRAFFIC_LIGHT_VEHICLE_RED:
+        case TrafficLightFSM::eState::TRAFFIC_LIGHT_VEHICLE_RED:
             break;
 
-        case TrafficLightFSM::OPPOSIT_PEDESTRIAN_GREEN:
+        case TrafficLightFSM::eState::OPPOSIT_PEDESTRIAN_GREEN:
             break;
 
-        case TrafficLightFSM::TRAFFIC_LIGHT_GREEN:
+        case TrafficLightFSM::eState::TRAFFIC_LIGHT_GREEN:
             TRACE_DBG("Stopping timer PedestrianWalk, which current status is [ %s ].", mTimerPedestrianWalk.isActive() == true ? "ACTIVE" : "NOT ACTIVE");
             mTimerPedestrianWalk.stopTimer( );
             TRACE_DBG("Stopping timer VehicleWait, which current status is [ %s ].", mTimerVehicleWait.isActive() == true ? "ACTIVE" : "NOT ACTIVE");
@@ -444,27 +505,29 @@ inline void TrafficLightFSM::leaveState( const TrafficLightFSM::eState curState,
             mActionHandler.actionPedestrianRed();
             break;
 
-        case TrafficLightFSM::TRAFFIC_PEDESTRIAN_GREEN:
+        case TrafficLightFSM::eState::TRAFFIC_PEDESTRIAN_GREEN:
             break;
 
-        case TrafficLightFSM::TRAFFIC_VEHICLE_GREEN:
+        case TrafficLightFSM::eState::TRAFFIC_VEHICLE_GREEN:
             break;
 
-        case TrafficLightFSM::TRAFFIC_LIGHT_START:
+        case TrafficLightFSM::eState::TRAFFIC_LIGHT_START:
             break;
 
-        case    TrafficLightFSM::UNDEFINED:  // fall through
-        case    TrafficLightFSM::STATE_SIZE: // fall through
+        case    TrafficLightFSM::eState::UNDEFINED:  // fall through
+        case    TrafficLightFSM::eState::STATE_SIZE: // fall through
         default:
-            TRACE_ERR("FSM < %s >: Unexpected State Machine State!", mInstanceName);
+            TRACE_ERR("FSM < %s >: Unexpected State Machine State!", mFsmName.getString());
             ASSERT(false);
         }
 
         INFO_EXIT_STATE(curState);
 
         TrafficLightFSM::eState parent   = sParrentStates[static_cast<int>(curState)];
-        if (parent != TrafficLightFSM::UNDEFINED && isInParentTree(nextState, parent) == false)
+        if (parent != TrafficLightFSM::eState::UNDEFINED && isInParentTree(nextState, parent) == false)
+        {
             leaveState(parent, nextState, nameTrigger);
+        }
     }
 }
 
@@ -474,31 +537,31 @@ inline void TrafficLightFSM::leaveState( const TrafficLightFSM::eState curState,
 void TrafficLightFSM::initFSM( DispatcherThread * ownerThread /*= nullptr*/ )
 {
     TRACE_SCOPE(generated_src_private_TrafficLightFSM_initFSM);
-    if (mState != TrafficLightFSM::UNDEFINED)
+    if (mState != TrafficLightFSM::eState::UNDEFINED)
     {
-        TRACE_ERR("FSM < %s >: The initialization of state machine must be done on startup only!", mInstanceName);
+        TRACE_ERR("FSM < %s >: The initialization of state machine must be done on startup only!", mFsmName.getString());
         ASSERT(false);
     }
 
     mMasterThread   = ownerThread != nullptr ? ownerThread : &(DispatcherThread::getCurrentDispatcherThread( ));
-    NETrafficLightFSM::FsmEvent::addListener( static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(self()), *mMasterThread );
+    NETrafficLightFSM::FsmEvent::addListener( static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(mEventConsumer), *mMasterThread );
     
-    mCurrentStates[UNDEFINED]                 = TrafficLightFSM::UNDEFINED;
+    mCurrentStates[static_cast<int>(eState::UNDEFINED)] = TrafficLightFSM::eState::UNDEFINED;
    
-    mCurrentStates[TRAFIC_LIGHT_OFF]          = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[TRAFFIC_LIGHT_ON]          = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[TRAFFIC_LIGHT_INITIALIZE]  = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[TRAFFIC_LIGHT_FUNCTION]    = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[TRAFFIC_LIGHT_YELLOW]      = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[TRAFFIC_LIGHT_RED]         = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[TRAFFIC_LIGHT_VEHICLE_RED] = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[OPPOSIT_PEDESTRIAN_GREEN]  = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[TRAFFIC_LIGHT_GREEN]       = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[TRAFFIC_PEDESTRIAN_GREEN]  = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[TRAFFIC_VEHICLE_GREEN]     = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[TRAFFIC_LIGHT_START]       = TrafficLightFSM::UNDEFINED;
+    mCurrentStates[static_cast<int>(eState::TRAFIC_LIGHT_OFF)]          = TrafficLightFSM::eState::UNDEFINED;
+    mCurrentStates[static_cast<int>(eState::TRAFFIC_LIGHT_ON)]          = TrafficLightFSM::eState::UNDEFINED;
+    mCurrentStates[static_cast<int>(eState::TRAFFIC_LIGHT_INITIALIZE)]  = TrafficLightFSM::eState::UNDEFINED;
+    mCurrentStates[static_cast<int>(eState::TRAFFIC_LIGHT_FUNCTION)]    = TrafficLightFSM::eState::UNDEFINED;
+    mCurrentStates[static_cast<int>(eState::TRAFFIC_LIGHT_YELLOW)]      = TrafficLightFSM::eState::UNDEFINED;
+    mCurrentStates[static_cast<int>(eState::TRAFFIC_LIGHT_RED)]         = TrafficLightFSM::eState::UNDEFINED;
+    mCurrentStates[static_cast<int>(eState::TRAFFIC_LIGHT_VEHICLE_RED)] = TrafficLightFSM::eState::UNDEFINED;
+    mCurrentStates[static_cast<int>(eState::OPPOSIT_PEDESTRIAN_GREEN)]  = TrafficLightFSM::eState::UNDEFINED;
+    mCurrentStates[static_cast<int>(eState::TRAFFIC_LIGHT_GREEN)]       = TrafficLightFSM::eState::UNDEFINED;
+    mCurrentStates[static_cast<int>(eState::TRAFFIC_PEDESTRIAN_GREEN)]  = TrafficLightFSM::eState::UNDEFINED;
+    mCurrentStates[static_cast<int>(eState::TRAFFIC_VEHICLE_GREEN)]     = TrafficLightFSM::eState::UNDEFINED;
+    mCurrentStates[static_cast<int>(eState::TRAFFIC_LIGHT_START)]       = TrafficLightFSM::eState::UNDEFINED;
 
-    enterState(TrafficLightFSM::UNDEFINED, TrafficLightFSM::TRAFIC_LIGHT_OFF, "initFSM");
+    enterState(TrafficLightFSM::eState::UNDEFINED, TrafficLightFSM::eState::TRAFIC_LIGHT_OFF, "initFSM");
 }
 
 /**
@@ -507,14 +570,18 @@ void TrafficLightFSM::initFSM( DispatcherThread * ownerThread /*= nullptr*/ )
 void TrafficLightFSM::releaseFSM( void )
 {
     TRACE_SCOPE(generated_src_private_TrafficLightFSM_releaseFSM);
-    TRACE_DBG("Releasing < %s > State Machine. Initialize before calling triggers.", mInstanceName != nullptr ? mInstanceName : "");
+    TRACE_DBG("Releasing < %s > State Machine. Initialize before calling triggers.", mFsmName.getString());
 
     if ( mMasterThread != nullptr )
-        NETrafficLightFSM::FsmEvent::removeListener( static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(self()), *mMasterThread );
+    {
+        NETrafficLightFSM::FsmEvent::removeListener( static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(mEventConsumer), *mMasterThread );
+    }
     else
-        NETrafficLightFSM::FsmEvent::removeListener( static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(self()) );
- 
-    mState          = TrafficLightFSM::UNDEFINED;
+    {
+        NETrafficLightFSM::FsmEvent::removeListener( static_cast<NETrafficLightFSM::IEFsmEventConsumer &>(mEventConsumer) );
+    }
+
+    mState          = TrafficLightFSM::eState::UNDEFINED;
     mMasterThread   = nullptr;
 
     mTimerRed.stopTimer( );
@@ -524,20 +591,20 @@ void TrafficLightFSM::releaseFSM( void )
     mTimerPedestrianWalk.stopTimer( );
     mTimerVehicleWait.stopTimer( );
 
-    mCurrentStates[UNDEFINED]                 = TrafficLightFSM::UNDEFINED;
+    mCurrentStates[static_cast<int>(eState::UNDEFINED)] = TrafficLightFSM::eState::UNDEFINED;
    
-    mCurrentStates[TRAFIC_LIGHT_OFF]          = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[TRAFFIC_LIGHT_ON]          = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[TRAFFIC_LIGHT_INITIALIZE]  = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[TRAFFIC_LIGHT_FUNCTION]    = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[TRAFFIC_LIGHT_YELLOW]      = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[TRAFFIC_LIGHT_RED]         = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[TRAFFIC_LIGHT_VEHICLE_RED] = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[OPPOSIT_PEDESTRIAN_GREEN]  = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[TRAFFIC_LIGHT_GREEN]       = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[TRAFFIC_PEDESTRIAN_GREEN]  = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[TRAFFIC_VEHICLE_GREEN]     = TrafficLightFSM::UNDEFINED;
-    mCurrentStates[TRAFFIC_LIGHT_START]       = TrafficLightFSM::UNDEFINED;
+    mCurrentStates[static_cast<int>(eState::TRAFIC_LIGHT_OFF)]          = TrafficLightFSM::eState::UNDEFINED;
+    mCurrentStates[static_cast<int>(eState::TRAFFIC_LIGHT_ON)]          = TrafficLightFSM::eState::UNDEFINED;
+    mCurrentStates[static_cast<int>(eState::TRAFFIC_LIGHT_INITIALIZE)]  = TrafficLightFSM::eState::UNDEFINED;
+    mCurrentStates[static_cast<int>(eState::TRAFFIC_LIGHT_FUNCTION)]    = TrafficLightFSM::eState::UNDEFINED;
+    mCurrentStates[static_cast<int>(eState::TRAFFIC_LIGHT_YELLOW)]      = TrafficLightFSM::eState::UNDEFINED;
+    mCurrentStates[static_cast<int>(eState::TRAFFIC_LIGHT_RED)]         = TrafficLightFSM::eState::UNDEFINED;
+    mCurrentStates[static_cast<int>(eState::TRAFFIC_LIGHT_VEHICLE_RED)] = TrafficLightFSM::eState::UNDEFINED;
+    mCurrentStates[static_cast<int>(eState::OPPOSIT_PEDESTRIAN_GREEN)]  = TrafficLightFSM::eState::UNDEFINED;
+    mCurrentStates[static_cast<int>(eState::TRAFFIC_LIGHT_GREEN)]       = TrafficLightFSM::eState::UNDEFINED;
+    mCurrentStates[static_cast<int>(eState::TRAFFIC_PEDESTRIAN_GREEN)]  = TrafficLightFSM::eState::UNDEFINED;
+    mCurrentStates[static_cast<int>(eState::TRAFFIC_VEHICLE_GREEN)]     = TrafficLightFSM::eState::UNDEFINED;
+    mCurrentStates[static_cast<int>(eState::TRAFFIC_LIGHT_START)]       = TrafficLightFSM::eState::UNDEFINED;
 }
 
 
@@ -552,12 +619,12 @@ bool TrafficLightFSM::powerOff( void )
     TRACE_SCOPE(generated_src_private_TrafficLightFSM_powerOff);
     START_PROCESSING( "powerOff" );
 
-    if ( isInParentTree(mState, TrafficLightFSM::TRAFFIC_LIGHT_ON) == true )
+    if ( isInParentTree(mState, TrafficLightFSM::eState::TRAFFIC_LIGHT_ON) == true )
     {
-        TrafficLightFSM::eState next  = TrafficLightFSM::TRAFIC_LIGHT_OFF;
+        TrafficLightFSM::eState next  = TrafficLightFSM::eState::TRAFIC_LIGHT_OFF;
         TrafficLightFSM::eState curr  = mState;
         leaveState(curr, next, nameTrigger);
-        enterState(curr, next, nameTrigger);  
+        enterState(curr, next, nameTrigger);
         INFO_PROCESSED( curr, next );
 
         break;
@@ -577,9 +644,9 @@ bool TrafficLightFSM::powerOn( void )
     TRACE_SCOPE(generated_src_private_TrafficLightFSM_powerOn);
     START_PROCESSING( "powerOn" );
 
-    if ( mState == TrafficLightFSM::TRAFIC_LIGHT_OFF )
+    if ( mState == TrafficLightFSM::eState::TRAFIC_LIGHT_OFF )
     {
-        TrafficLightFSM::eState next  = TrafficLightFSM::TRAFFIC_LIGHT_ON;
+        TrafficLightFSM::eState next  = TrafficLightFSM::eState::TRAFFIC_LIGHT_ON;
         TrafficLightFSM::eState curr  = mState;
         leaveState(curr, next, nameTrigger);
         enterState(curr, next, nameTrigger);  
@@ -602,20 +669,22 @@ bool TrafficLightFSM::startTrafficControl( void )
     TRACE_SCOPE(generated_src_private_TrafficLightFSM_startTrafficControl);
     START_PROCESSING( "startTrafficControl" );
 
-    if ( mState == TrafficLightFSM::TRAFFIC_LIGHT_INITIALIZE )
+    if ( mState == TrafficLightFSM::eState::TRAFFIC_LIGHT_INITIALIZE )
     {
-        TrafficLightFSM::eState next  = TrafficLightFSM::TRAFFIC_LIGHT_FUNCTION;
+        TrafficLightFSM::eState next  = TrafficLightFSM::eState::TRAFFIC_LIGHT_FUNCTION;
         TrafficLightFSM::eState curr  = mState;
         leaveState(curr, next, nameTrigger);
-            if (mTimerYellowGreen.isActive() == false)
-            {
-                TRACE_DBG("Starting non active timer YellowGreen with 3000 ms of timeout and 1 numbers of repeats."); 
-                mTimerYellowGreen.startTimer(3000, 1);
-            }
-            else
-            {
-                TRACE_WARN("Ignoring start active timer YellowGreen with 3000 ms of timeout and 1 numbers of repeats."); 
-            }
+
+        if (mTimerYellowGreen.isActive() == false)
+        {
+            TRACE_DBG("Starting non active timer YellowGreen with 3000 ms of timeout and 1 numbers of repeats."); 
+            mTimerYellowGreen.startTimer(3000, 1);
+        }
+        else
+        {
+            TRACE_WARN("Ignoring start active timer YellowGreen with 3000 ms of timeout and 1 numbers of repeats."); 
+        }
+
         enterState(curr, next, nameTrigger);  
         INFO_PROCESSED( curr, next );
 
@@ -636,9 +705,9 @@ bool TrafficLightFSM::stopTrafficControl( void )
     TRACE_SCOPE(generated_src_private_TrafficLightFSM_stopTrafficControl);
     START_PROCESSING( "stopTrafficControl" );
 
-    if ( isInParentTree(mState, TrafficLightFSM::TRAFFIC_LIGHT_FUNCTION) == true )
+    if ( isInParentTree(mState, TrafficLightFSM::eState::TRAFFIC_LIGHT_FUNCTION) == true )
     {
-        TrafficLightFSM::eState next  = TrafficLightFSM::TRAFFIC_LIGHT_INITIALIZE;
+        TrafficLightFSM::eState next  = TrafficLightFSM::eState::TRAFFIC_LIGHT_INITIALIZE;
         TrafficLightFSM::eState curr  = mState;
         leaveState(curr, next, nameTrigger);
         enterState(curr, next, nameTrigger);  
@@ -648,37 +717,6 @@ bool TrafficLightFSM::stopTrafficControl( void )
     }
 
     END_PROCESSING( );
-}
-
-/**
- * \brief   Called to process events
- **/
-/* --------------------------------------------------------------------- */
-DEF_TRACE_SCOPE(generated_src_private_TrafficLightFSM_processEvent);
-/* --------------------------------------------------------------------- */
-void TrafficLightFSM::processEvent( const NETrafficLightFSM::FsmEventData & data )
-{
-    TRACE_SCOPE(generated_src_private_TrafficLightFSM_processEvent);
-    if ( mState != TrafficLightFSM::UNDEFINED )
-    {
-        TRACE_DBG("Processing event < %s >.", NETrafficLightFSM::getString(data.mEventValue));
-       
-        switch ( data.mEventValue )
-        {
-        case NETrafficLightFSM::EVENT_StartTrafficLight:
-            onEventStartTrafficLight();
-            break;
-
-        default:
-            TRACE_ERR("Unknown Event was requested to be processed!");
-            ASSERT(false);
-            break;   // do nothing
-        }
-    }
-    else
-    {
-        TRACE_WARN("Ignoring event < %s >, the state machine < %s > is not initialized.", NETrafficLightFSM::getString(data.mEventValue), mInstanceName != nullptr ? mInstanceName : "");
-    }
 }
 
 
@@ -693,9 +731,9 @@ bool TrafficLightFSM::onEventStartTrafficLight( void )
     TRACE_SCOPE(generated_src_private_TrafficLightFSM_onEventStartTrafficLight);
     START_PROCESSING("Event_StartTrafficLight");
 
-    if ( mState == TrafficLightFSM::TRAFFIC_LIGHT_START )
+    if ( mState == TrafficLightFSM::eState::TRAFFIC_LIGHT_START )
     {
-        TrafficLightFSM::eState next  = TrafficLightFSM::TRAFFIC_LIGHT_YELLOW;
+        TrafficLightFSM::eState next  = TrafficLightFSM::eState::TRAFFIC_LIGHT_YELLOW;
         TrafficLightFSM::eState curr  = mState;
         leaveState(curr, next, nameTrigger);
         enterState(curr, next, nameTrigger);  
@@ -705,64 +743,6 @@ bool TrafficLightFSM::onEventStartTrafficLight( void )
     }
 
     END_PROCESSING();
-}
-
-
-/**
- * Called to process expired timers
- **/
-/* --------------------------------------------------------------------- */
-DEF_TRACE_SCOPE(generated_src_private_TrafficLightFSM_ProcessTimer);
-/* --------------------------------------------------------------------- */
-void TrafficLightFSM::processTimer( Timer & timer )
-{
-    TRACE_SCOPE(generated_src_private_TrafficLightFSM_ProcessTimer);    
-    TRACE_DBG("Processing Timer < %s >.", timer.getName().getString());
-    
-    do
-    {
-        if (timer.isStopped() == false)
-        {
-            if ( &timer == &mTimerRed )
-            {
-                onTimerRed( );
-                break;
-            }
-            if ( &timer == &mTimerYellowRed )
-            {
-                onTimerYellowRed( );
-                break;
-            }
-            if ( &timer == &mTimerGreen )
-            {
-                onTimerGreen( );
-                break;
-            }
-            if ( &timer == &mTimerYellowGreen )
-            {
-                onTimerYellowGreen( );
-                break;
-            }
-            if ( &timer == &mTimerPedestrianWalk )
-            {
-                onTimerPedestrianWalk( );
-                break;
-            }
-            if ( &timer == &mTimerVehicleWait )
-            {
-                onTimerVehicleWait( );
-                break;
-            }
-
-            TRACE_ERR("Unknown timer was requested to be processed, none of existing timer has matched!");
-            ASSERT(false);
-        }
-        else
-        {
-            TRACE_WARN("The timer [ %s ] is already stopped, ignoring processing timer.", timer.getName().getString());
-        }
-        
-    } while (false);
 }
 
 /**
@@ -776,20 +756,22 @@ bool TrafficLightFSM::onTimerRed( void )
     TRACE_SCOPE(generated_src_private_TrafficLightFSM_onTimerRed);
     START_PROCESSING("Timer_Red");
 
-    if (isInParentTree(mState, TrafficLightFSM::TRAFFIC_LIGHT_RED) == true)
+    if (isInParentTree(mState, TrafficLightFSM::eState::TRAFFIC_LIGHT_RED))
     {
-        TrafficLightFSM::eState next  = TrafficLightFSM::TRAFFIC_LIGHT_YELLOW;
+        TrafficLightFSM::eState next  = TrafficLightFSM::eState::TRAFFIC_LIGHT_YELLOW;
         TrafficLightFSM::eState curr  = mState;
         leaveState(curr, next, nameTrigger);
-            if (mTimerYellowGreen.isActive() == false)
-            {
-                TRACE_DBG("Starting non active timer YellowGreen with 3000 ms of timeout and 1 numbers of repeats."); 
-                mTimerYellowGreen.startTimer(3000, 1);
-            }
-            else
-            {
-                TRACE_WARN("Ignoring start active timer YellowGreen with 3000 ms of timeout and 1 numbers of repeats."); 
-            }
+
+        if (mTimerYellowGreen.isActive() == false)
+        {
+            TRACE_DBG("Starting non active timer YellowGreen with 3000 ms of timeout and 1 numbers of repeats."); 
+            mTimerYellowGreen.startTimer(3000, 1);
+        }
+        else
+        {
+            TRACE_WARN("Ignoring start active timer YellowGreen with 3000 ms of timeout and 1 numbers of repeats."); 
+        }
+
         enterState(curr, next, nameTrigger);  
         INFO_PROCESSED(curr, next);
 
@@ -810,9 +792,9 @@ bool TrafficLightFSM::onTimerYellowRed( void )
     TRACE_SCOPE(generated_src_private_TrafficLightFSM_onTimerYellowRed);
     START_PROCESSING("Timer_YellowRed");
 
-    if ( mState == TrafficLightFSM::TRAFFIC_LIGHT_YELLOW )
+    if ( mState == TrafficLightFSM::eState::TRAFFIC_LIGHT_YELLOW )
     {
-        TrafficLightFSM::eState next  = TrafficLightFSM::TRAFFIC_LIGHT_RED;
+        TrafficLightFSM::eState next  = TrafficLightFSM::eState::TRAFFIC_LIGHT_RED;
         TrafficLightFSM::eState curr  = mState;
         leaveState(curr, next, nameTrigger);
         enterState(curr, next, nameTrigger);  
@@ -835,9 +817,9 @@ bool TrafficLightFSM::onTimerGreen( void )
     TRACE_SCOPE(generated_src_private_TrafficLightFSM_onTimerGreen);
     START_PROCESSING("Timer_Green");
 
-    if (isInParentTree(mState, TrafficLightFSM::TRAFFIC_LIGHT_GREEN) == true)
+    if (isInParentTree(mState, TrafficLightFSM::eState::TRAFFIC_LIGHT_GREEN) == true)
     {
-        TrafficLightFSM::eState next  = TrafficLightFSM::TRAFFIC_LIGHT_YELLOW;
+        TrafficLightFSM::eState next  = TrafficLightFSM::eState::TRAFFIC_LIGHT_YELLOW;
         TrafficLightFSM::eState curr  = mState;
         leaveState(curr, next, nameTrigger);
             if (mTimerYellowRed.isActive() == false)
@@ -869,9 +851,9 @@ bool TrafficLightFSM::onTimerYellowGreen( void )
     TRACE_SCOPE(generated_src_private_TrafficLightFSM_onTimerYellowGreen);
     START_PROCESSING("Timer_YellowGreen");
 
-    if ( mState == TrafficLightFSM::TRAFFIC_LIGHT_YELLOW )
+    if ( mState == TrafficLightFSM::eState::TRAFFIC_LIGHT_YELLOW )
     {
-        TrafficLightFSM::eState next  = TrafficLightFSM::TRAFFIC_LIGHT_GREEN;
+        TrafficLightFSM::eState next  = TrafficLightFSM::eState::TRAFFIC_LIGHT_GREEN;
         TrafficLightFSM::eState curr  = mState;
         leaveState(curr, next, nameTrigger);
         enterState(curr, next, nameTrigger);  
@@ -894,7 +876,7 @@ bool TrafficLightFSM::onTimerPedestrianWalk( void )
     TRACE_SCOPE(generated_src_private_TrafficLightFSM_onTimerPedestrianWalk);
     START_PROCESSING("Timer_PedestrianWalk");
 
-    if (isInParentTree(mState, TrafficLightFSM::TRAFFIC_LIGHT_GREEN) == true)
+    if (isInParentTree(mState, TrafficLightFSM::eState::TRAFFIC_LIGHT_GREEN) == true)
     {
         INFO_ACTION_SWITCH("actionPedestrianRed");
         mActionHandler.actionPedestrianRed();
@@ -903,7 +885,7 @@ bool TrafficLightFSM::onTimerPedestrianWalk( void )
         break;
     }
 
-    if (isInParentTree(mState, TrafficLightFSM::TRAFFIC_LIGHT_RED) == true)
+    if (isInParentTree(mState, TrafficLightFSM::eState::TRAFFIC_LIGHT_RED) == true)
     {
         INFO_ACTION_SWITCH("actionPedestrianRed");
         mActionHandler.actionPedestrianRed();
@@ -926,9 +908,9 @@ bool TrafficLightFSM::onTimerVehicleWait( void )
     TRACE_SCOPE(generated_src_private_TrafficLightFSM_onTimerVehicleWait);
     START_PROCESSING("Timer_VehicleWait");
 
-    if ( mState == TrafficLightFSM::TRAFFIC_LIGHT_VEHICLE_RED )
+    if ( mState == TrafficLightFSM::eState::TRAFFIC_LIGHT_VEHICLE_RED )
     {
-        TrafficLightFSM::eState next  = TrafficLightFSM::OPPOSIT_PEDESTRIAN_GREEN;
+        TrafficLightFSM::eState next  = TrafficLightFSM::eState::OPPOSIT_PEDESTRIAN_GREEN;
         TrafficLightFSM::eState curr  = mState;
         leaveState(curr, next, nameTrigger);
         enterState(curr, next, nameTrigger);  
@@ -937,9 +919,9 @@ bool TrafficLightFSM::onTimerVehicleWait( void )
         break;
     }
 
-    if ( mState == TrafficLightFSM::TRAFFIC_PEDESTRIAN_GREEN )
+    if ( mState == TrafficLightFSM::eState::TRAFFIC_PEDESTRIAN_GREEN )
     {
-        TrafficLightFSM::eState next  = TrafficLightFSM::TRAFFIC_VEHICLE_GREEN;
+        TrafficLightFSM::eState next  = TrafficLightFSM::eState::TRAFFIC_VEHICLE_GREEN;
         TrafficLightFSM::eState curr  = mState;
         leaveState(curr, next, nameTrigger);
         enterState(curr, next, nameTrigger);  
