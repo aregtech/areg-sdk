@@ -79,10 +79,12 @@ jobs:
         run: echo "PATH=C:\cygwin64;C:\cygwin64\bin;%SYSTEMROOT%\system32" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
          
       - name: Configure CMake
+        shell: cmd
         run: |
           cmake -B ${{github.workspace}}/build -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_BUILD_ALL:BOOL=ON
     
       - name: Build with cmake
+        shell: cmd
         # Build your program with the given configuration
         run: cmake --build ${{github.workspace}}/build
 
