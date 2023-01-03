@@ -40,6 +40,7 @@ jobs:
           - { name: windows-msvc-static,   os: windows-latest, lib: static, family: msvc,   cxx: cl,         cc: cl}
 
     steps:
+
       - name: Checkout AREG engine (AREG SDK) source codes and dependencies
         uses: actions/checkout@v3
         with:
@@ -85,7 +86,6 @@ jobs:
     
       - name: Build with CMake
         working-directory: ${{github.workspace}}
-        shell: powershell
         # Build your program with the given configuration
         run: cmake --build ./build -j8
 
