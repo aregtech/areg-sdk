@@ -71,7 +71,8 @@ jobs:
             flexdll,^
             gcc-g++,^
             make,^
-            ninja
+            ninja,^
+            ncurses
 
       - name: set PATH environment variable
         if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
