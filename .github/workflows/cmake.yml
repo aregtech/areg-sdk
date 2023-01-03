@@ -29,9 +29,9 @@ jobs:
             # compile AREG engine as a static library with GNU g++ / gcc on Ubuntu Linux
           - { name: linux-gnu-static,      os: ubuntu-latest,  lib: static, family: gnu,    cxx: g++        }
             # compile AREG engine as a shared library with clang on Ubuntu Linux
-          - { name: linux-clang-shared,    os: ubuntu-latest,  lib: shared, family: clang,  cxx: clang++-13 }
+          - { name: linux-clang-shared,    os: ubuntu-latest,  lib: shared, family: clang,  cxx: clang++-13 lld-13 }
             # compile AREG engine as a static library with clang on Ubuntu Linux
-          - { name: linux-clang-static,    os: ubuntu-latest,  lib: static, family: clang,  cxx: clang++-13 }
+          - { name: linux-clang-static,    os: ubuntu-latest,  lib: static, family: clang,  cxx: clang++-13 lld-13 }
             # compile AREG engine as a shared with CYGWIN g++ / gcc on Windows
           - { name: windows-cygwin-shared, os: windows-latest, lib: shared, family: cygwin, cxx: g++        }
             # compile AREG engine as a static with CYGWIN g++ / gcc on Windows
@@ -41,9 +41,6 @@ jobs:
             # compile AREG engine as a static with MSVC on Windows
           - { name: windows-msvc-static,   os: windows-latest, lib: static, family: msvc,   cxx: cl         }
 
-    env:
-      CTEST_OUTPUT_ON_FAILURE: 1
-
     steps:
       - name: Checkout sources
         uses: actions/checkout@v3
@@ -51,7 +48,7 @@ jobs:
           submodules: recursive
 
       - name: Install compilers on Linux
-        if: matrix.config.os == 'ubuntu-latest' && matrix.config.family == 'clang'
+        if: matrix.config.os == 'ubuntu-latest'
         run: |
              sudo apt-get update
              sudo apt-get install ${{matrix.config.cxx}} -y
@@ -83,7 +80,7 @@ jobs:
          
       - name: Configure CMake
         run: |
-          cmake -B ${{github.workspace}}/build -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_BUILD_ALL:BOOL=ON -DAREG_OUTPUT_DIR=${{github.workspace}}/product
+          cmake -B ${{github.workspace}}/build -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_BUILD_ALL:BOOL=ON
     
       - name: Build with cmake
         # Build your program with the given configuration
