@@ -83,10 +83,10 @@ jobs:
         working-directory: ${{github.workspace}}
         shell: powershell
         run: |
-          cmake -B ./build                                      \
-                -DAREG_COMPILER_FAMILY=${{matrix.config.family}}\
-                -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}}           \
-                -DAREG_BINARY=${{matrix.config.lib}}            \
+          cmake -B ./build                                       \
+                -DAREG_COMPILER_FAMILY=${{matrix.config.family}} \
+                -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}}            \
+                -DAREG_BINARY=${{matrix.config.lib}}             \
                 -DAREG_BUILD_ALL:BOOL=ON
     
       - name: Build with cmake on Windows
@@ -100,10 +100,10 @@ jobs:
         if: matrix.config.os == 'ubuntu-latest'
         working-directory: ${{github.workspace}}
         run: |
-          cmake -B ./build                                      \
-                -DAREG_COMPILER_FAMILY=${{matrix.config.family}}\
-                -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}}           \
-                -DAREG_BINARY=${{matrix.config.lib}}            \
+          cmake -B ./build                                       \
+                -DAREG_COMPILER_FAMILY=${{matrix.config.family}} \
+                -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}}            \
+                -DAREG_BINARY=${{matrix.config.lib}}             \
                 -DAREG_BUILD_ALL:BOOL=ON
     
       - name: Build with cmake on Linux
