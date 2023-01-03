@@ -71,7 +71,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     endif()
 
     # Clang compile options
-    list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -stdlib=libc++ ${AREG_USER_DEFINES})
+    list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -stdlib=libstdc++ ${AREG_USER_DEFINES})
     # Linker flags (-l is not necessary)
     list(APPEND AREG_LDFLAGS c++ m ncurses pthread rt "${AREG_USER_DEF_LIBS}")
 
