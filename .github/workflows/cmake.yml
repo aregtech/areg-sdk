@@ -2,7 +2,7 @@ name: CMake
 
 on:
   push:
-    branches: [ experiment/clang-workflow ]
+    branches: [ master ]
   pull_request:
     branches: [ master ]
 
