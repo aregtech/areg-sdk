@@ -20,8 +20,8 @@ endfunction(addTestEx testName testSource)
 #               if the source file is 'my_test.cpp', the generated executable
 #               will have name 'my_test.cpp.exe' or 'my_test.cpp.out' for Linux.
 #               Use 'addTestEx' function if source file is not in 'units' folder.
-# Function ...: addTestCmd
-# usage ......: addTestCmd( <test name> )
+# Function ...: addTest
+# usage ......: addTest( <test name> )
 # ---------------------------------------------------------------------------
 function(addTest testName)
     addTestEx(${testName} "${AREG_UNIT_TEST_BASE}/${testName}" "")
