@@ -1,8 +1,8 @@
 name: CMake
 
 on:
-  push:
-  pull_request:
+  push:         # Keep empty to run on each branch when push the code
+  pull_request: # Set to master to run only when merge with master branch
     branches: [ master ]
 
 env:
@@ -17,10 +17,11 @@ jobs:
   build-tests:
     name: ${{matrix.config.name}}
     runs-on: ${{matrix.config.os}}
+
     strategy:
       fail-fast: false
       matrix:
-        config:
+        config: # Create matrix with combinations
             # compile AREG engine as a shared library with GNU g++ / gcc on Ubuntu Linux
           - { name: linux-gnu-shared,     os: ubuntu-latest,   lib: shared, family: gnu,    cxx: g++,        cc: gcc}
             # compile AREG engine as a static library with GNU g++ / gcc on Ubuntu Linux
@@ -39,13 +40,14 @@ jobs:
           - { name: windows-msvc-static,   os: windows-latest, lib: static, family: msvc,   cxx: cl,         cc: cl}
 
     steps:
-      - name: Checkout sources
+      - name: Checkout AREG engine (AREG SDK) source codes and dependencies
         uses: actions/checkout@v3
         with:
           submodules: recursive
 
-      - name: Install compilers on Linux
+      - name: Update compilers on Linux
         if: matrix.config.os == 'ubuntu-latest'
+        # Update compilers, set C/C++ compilers
         run: |
              sudo apt-get update
              sudo apt-get install ${{matrix.config.cxx}} -y
@@ -72,7 +74,7 @@ jobs:
             ncurses,^
             libncurses-devel
 
-      - name: set PATH environment variable
+      - name: set Windows PATH environment variable
         if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
         run: echo "PATH=C:\cygwin64;C:\cygwin64\bin;C:\cygwin64\lib;%SYSTEMROOT%\system32;%PATH%" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
          
@@ -81,7 +83,11 @@ jobs:
         working-directory: ${{github.workspace}}
         shell: powershell
         run: |
-          cmake -B ./build -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_BUILD_ALL:BOOL=ON
+          cmake -B ./build                                      \
+                -DAREG_COMPILER_FAMILY=${{matrix.config.family}}\
+                -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}}           \
+                -DAREG_BINARY=${{matrix.config.lib}}            \
+                -DAREG_BUILD_ALL:BOOL=ON
     
       - name: Build with cmake on Windows
         if: matrix.config.os == 'windows-latest'
@@ -94,7 +100,11 @@ jobs:
         if: matrix.config.os == 'ubuntu-latest'
         working-directory: ${{github.workspace}}
         run: |
-          cmake -B ./build -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_BUILD_ALL:BOOL=ON
+          cmake -B ./build                                      \
+                -DAREG_COMPILER_FAMILY=${{matrix.config.family}}\
+                -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}}           \
+                -DAREG_BINARY=${{matrix.config.lib}}            \
+                -DAREG_BUILD_ALL:BOOL=ON
     
       - name: Build with cmake on Linux
         if: matrix.config.os == 'ubuntu-latest'
