@@ -1,33 +1,94 @@
 name: CMake
 
 on:
-  push:
-    branches: [ master ]
-  pull_request:
+  push:         # Keep empty to run on each branch when push the code
+  pull_request: # Set to master to run only when merge with master branch
     branches: [ master ]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: Debug
+  BUILD_TYPE: Release
+
+# The CMake configure and build commands are platform agnostic and should work equally well on Windows or Linux.
+# You can convert this to a matrix build if you need cross-platform coverage.
+# See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
 
 jobs:
-  build:
-    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
-    # You can convert this to a matrix build if you need cross-platform coverage.
-    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
-    runs-on: ubuntu-latest
+  build-tests:
+    name: ${{matrix.config.name}}
+    runs-on: ${{matrix.config.os}}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config: # Create matrix with combinations
+            # compile AREG engine as a shared library with GNU g++ / gcc on Ubuntu Linux
+          - { name: linux-gnu-shared,     os: ubuntu-latest,   lib: shared, family: gnu,    cxx: g++,        cc: gcc}
+            # compile AREG engine as a static library with GNU g++ / gcc on Ubuntu Linux
+          - { name: linux-gnu-static,      os: ubuntu-latest,  lib: static, family: gnu,    cxx: g++,        cc: gcc}
+            # compile AREG engine as a shared library with clang on Ubuntu Linux
+          - { name: linux-clang-shared,    os: ubuntu-latest,  lib: shared, family: clang,  cxx: clang++-13, cc: clang-13 }
+            # compile AREG engine as a static library with clang on Ubuntu Linux
+          - { name: linux-clang-static,    os: ubuntu-latest,  lib: static, family: clang,  cxx: clang++-13, cc: clang-13}
+            # compile AREG engine as a shared with CYGWIN g++ / gcc on Windows
+          - { name: windows-cygwin-shared, os: windows-latest, lib: shared, family: cygwin, cxx: g++,        cc: gcc}
+            # compile AREG engine as a static with CYGWIN g++ / gcc on Windows
+          - { name: windows-cygwin-static, os: windows-latest, lib: static, family: cygwin, cxx: g++,        cc: gcc}
+            # compile AREG engine as a shared with MSVC on Windows
+          - { name: windows-msvc-shared,   os: windows-latest, lib: shared, family: msvc,   cxx: cl,         cc: cl}
+            # compile AREG engine as a static with MSVC on Windows
+          - { name: windows-msvc-static,   os: windows-latest, lib: static, family: msvc,   cxx: cl,         cc: cl}
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-      with:
-         submodules: recursive
-         
-    - name: Configure CMake
-      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
-    - name: Build
-      # Build your program with the given configuration
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      - name: Checkout AREG engine (AREG SDK) source codes and dependencies
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Update compilers on Linux
+        if: matrix.config.os == 'ubuntu-latest'
+        # Update compilers, set C/C++ compilers
+        run: |
+             sudo apt-get update
+             sudo apt-get install ${{matrix.config.cxx}} -y
+             export CC=/usr/bin/${{matrix.config.cc}} CXX=/usr/bin/${{matrix.config.cxx}}
+
+      - name: Fetch cygwin installer on Windows
+        if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
+        shell: powershell
+        run: Invoke-WebRequest https://cygwin.com/setup-x86_64.exe -OutFile C:\setup.exe
+
+      - name: Install cygwin on Windows
+        if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
+        shell: cmd
+        run: |
+            c:\setup.exe -qgnO -s http://mirrors.kernel.org/sourceware/cygwin/ -l C:\cygwin-packages\ -P ^
+            automake,^
+            cmake,^
+            dos2unix,^
+            extra-cmake-modules,^
+            flexdll,^
+            gcc-g++,^
+            make,^
+            ninja,^
+            ncurses,^
+            libncurses-devel
+
+      - name: set Windows PATH environment variable
+        if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
+        run: echo "PATH=C:\cygwin64;C:\cygwin64\bin;C:\cygwin64\lib;%SYSTEMROOT%\system32;%PATH%" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+         
+      - name: Configure CMake
+        working-directory: ${{github.workspace}}
+        run: |
+          cmake -B ./build -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_BUILD_ALL:BOOL=ON
+    
+      - name: Build with CMake
+        working-directory: ${{github.workspace}}
+        # Build your program with the given configuration
+        run: cmake --build ./build -j8
+
+      - name: Run Unit Tests
+        working-directory: ${{github.workspace}}
+        run: ctest --test-dir ./build --output-on-failure --output-junit test_results.xml

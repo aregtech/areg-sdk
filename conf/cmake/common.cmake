@@ -8,8 +8,11 @@ if(APPLE)
     set(AREG_OS "macOS")
 elseif(UNIX)
     set(AREG_OS "Linux")
-else()
+elseif(WIN32)
     set(AREG_OS "Windows")
+else()
+    message(WARNING ">>> Unrecognized Operating System, set default Linux to try to compile")
+    set(AREG_OS "Linux")
 endif()
 
 # Determining bitness by size of void pointer
@@ -22,11 +25,18 @@ endif()
 # areg specific internal variable settings
 # -----------------------------------------------------
 # The toolset
-set(AREG_TOOLCHAIN "${CMAKE_CXX_COMPILER_ID}")
+if (CYGWIN)
+    set(AREG_TOOLCHAIN "CYGWIN")
+else()
+    set(AREG_TOOLCHAIN "${CMAKE_CXX_COMPILER_ID}")
+endif()
 # Relative path of the output folder for the builds
-string(TOLOWER "${AREG_USER_DEF_OUTPUT_DIR}/build/${AREG_TOOLCHAIN}/${AREG_OS}-${AREG_PLATFORM}-${CMAKE_BUILD_TYPE}" AREG_PRODUCT_PATH)
+set(AREG_PRODUCT_PATH "${AREG_USER_DEF_OUTPUT_DIR}/build/${AREG_TOOLCHAIN}/${AREG_OS}-${AREG_PLATFORM}-${CMAKE_BUILD_TYPE}")
+string(TOLOWER "${AREG_PRODUCT_PATH}" AREG_PRODUCT_PATH)
 # The absolute path for builds
-set(AREG_OUTPUT_DIR "${AREG_BUILD_ROOT}/${AREG_PRODUCT_PATH}")
+if (NOT DEFINED AREG_OUTPUT_DIR OR AREG_OUTPUT_DIR STREQUAL "")
+    set(AREG_OUTPUT_DIR "${AREG_BUILD_ROOT}/${AREG_PRODUCT_PATH}")
+endif()
 # The absolute path for generated files
 set(AREG_GENERATE_DIR "${AREG_BUILD_ROOT}/${AREG_USER_DEF_OUTPUT_DIR}/generate")
 # The absolute path for obj files.
@@ -68,7 +78,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     endif()
 
     # Clang compile options
-    list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -stdlib=libc++ ${AREG_USER_DEFINES})
+    list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -stdlib=libstdc++ ${AREG_USER_DEFINES})
     # Linker flags (-l is not necessary)
     list(APPEND AREG_LDFLAGS c++ m ncurses pthread rt "${AREG_USER_DEF_LIBS}")
 
@@ -85,7 +95,7 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     endif()
 
     # GNU compile options
-    if (${AREG_OS} MATCHES "Window")
+    if (CYGWIN)
         list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -MMD -std=gnu++17 ${AREG_USER_DEFINES})
     else()
         list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -MMD -std=c++17 ${AREG_USER_DEFINES})
@@ -153,10 +163,14 @@ set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${AREG_OUTPUT_DIR}
 link_directories(BEFORE "${AREG_OUTPUT_BIN} ${AREG_OUTPUT_LIB} ${AREG_USER_DEF_LIB_PATHS}")
 
 # Only for Linux
-if(UNIX AND NOT APPLE)
+if(UNIX AND NOT CYGWIN)
     set(CMAKE_EXECUTABLE_SUFFIX ".out")
 endif()
 
-message(STATUS ">>> \'${CMAKE_BUILD_TYPE}\' build for \'${CMAKE_SYSTEM_NAME}\' platform with compiler \'${CMAKE_CXX_COMPILER}\', ID \'${CMAKE_CXX_COMPILER_ID}\'")
-message(STATUS ">>> Build binary output folder \'${AREG_OUTPUT_BIN}\'")
-message(STATUS ">>> Build library output folder \'${AREG_OUTPUT_LIB}\'")
+message(STATUS "-------------------- Status Report Begin --------------------")
+message(STATUS ">>> Build executables are with extension \'${CMAKE_EXECUTABLE_SUFFIX}\'")
+message(STATUS ">>> Build for \'${CMAKE_SYSTEM_NAME}\' platform with compiler \'${CMAKE_CXX_COMPILER}\', ID \'${CMAKE_CXX_COMPILER_ID}\', and build type \'${CMAKE_BUILD_TYPE}\'")
+message(STATUS ">>> Binary output folder \'${AREG_OUTPUT_BIN}\'")
+message(STATUS ">>> Library output folder \'${AREG_OUTPUT_LIB}\'")
+message(STATUS ">>> Build examples is '${AREG_BUILD_EXAMPLES}\', build tests is \'${AREG_BUILD_TESTS}\'")
+message(STATUS "-------------------- Status Report End ----------------------")
