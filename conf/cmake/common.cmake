@@ -24,9 +24,12 @@ endif()
 # The toolset
 set(AREG_TOOLCHAIN "${CMAKE_CXX_COMPILER_ID}")
 # Relative path of the output folder for the builds
-string(TOLOWER "${AREG_USER_DEF_OUTPUT_DIR}/build/${AREG_TOOLCHAIN}/${AREG_OS}-${AREG_PLATFORM}-${CMAKE_BUILD_TYPE}" AREG_PRODUCT_PATH)
+set(AREG_PRODUCT_PATH "${AREG_USER_DEF_OUTPUT_DIR}/build/${AREG_TOOLCHAIN}/${AREG_OS}-${AREG_PLATFORM}-${CMAKE_BUILD_TYPE}")
+string(TOLOWER "${AREG_PRODUCT_PATH}" AREG_PRODUCT_PATH)
 # The absolute path for builds
-set(AREG_OUTPUT_DIR "${AREG_BUILD_ROOT}/${AREG_PRODUCT_PATH}")
+if (NOT DEFINED AREG_OUTPUT_DIR OR AREG_OUTPUT_DIR STREQUAL "")
+    set(AREG_OUTPUT_DIR "${AREG_BUILD_ROOT}/${AREG_PRODUCT_PATH}")
+endif()
 # The absolute path for generated files
 set(AREG_GENERATE_DIR "${AREG_BUILD_ROOT}/${AREG_USER_DEF_OUTPUT_DIR}/generate")
 # The absolute path for obj files.
@@ -157,6 +160,7 @@ if(UNIX AND NOT APPLE)
     set(CMAKE_EXECUTABLE_SUFFIX ".out")
 endif()
 
-message(STATUS ">>> \'${CMAKE_BUILD_TYPE}\' build for \'${CMAKE_SYSTEM_NAME}\' platform with compiler \'${CMAKE_CXX_COMPILER}\', ID \'${CMAKE_CXX_COMPILER_ID}\'")
+message(STATUS ">>> Build for \'${CMAKE_SYSTEM_NAME}\' platform with compiler \'${CMAKE_CXX_COMPILER}\', ID \'${CMAKE_CXX_COMPILER_ID}\', and build type \'${CMAKE_BUILD_TYPE}\'")
 message(STATUS ">>> Build binary output folder \'${AREG_OUTPUT_BIN}\'")
 message(STATUS ">>> Build library output folder \'${AREG_OUTPUT_LIB}\'")
+message(STATUS ">>> Build examples is '${AREG_BUILD_EXAMPLES}\', build tests is \'${AREG_BUILD_TESTS}\'")

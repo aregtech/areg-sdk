@@ -2,17 +2,43 @@
 # User sepcific settings
 # ###########################################################################
 
-# ###########################################################################
+# ---------------------------------------------------------------------------
 # Pass the compiler options in command line or use the defaults:
 #   1. AREG_CXX_COMPILER    -- C++ compiler, full or relative path
 #   2. AREG_C_COMPILER      -- C compiler, full or relative path
-#   2. AREG_BUILD_TYPE      -- build configurations ('Debug' or 'Release')
-#   3. AREG_BINARY          -- AREG engine binary type ('shared' or 'static')
+#   3. AREG_BUILD_TYPE      -- build configurations ('Debug' or 'Release')
+#   4. AREG_BINARY          -- AREG engine binary type ('shared' or 'static')
+#   5. AREG_BUILD_TESTS     -- Build AREG engine unit tests
+#   6. AREG_BUILD_EXAMPLES  -- Build AREG engine examples
+#   7. AREG_COMPILER_FAMILY -- Simple way to set AREG_CXX_COMPILER and AREG_C_COMPILER compilers
+#   8. AREG_BUILD_ALL       -- Bulds the framework, examples and tests.
+#   9. AREG_OUTPUT_DIR      -- The output directory of build binaries
+#
+# The default values are:
+#   1. AREG_CXX_COMPILER    := g++      (possible values: g++, clang++-13, cl)
+#   2. AREG_C_COMPILER      := gcc      (possible values: gcc, clang-13, cl)
+#   3. AREG_BUILD_TYPE      := Release  (possible values: Release, Debug
+#   4. AREG_BINARY          := shared   (possible values: shared, static)
+#   5. AREG_BUILD_TESTS     := ON       (possible values: ON, OFF)
+#   6. AREG_BUILD_EXAMPLES  := ON       (possible values: ON, OFF)
+#   7. AREG_COMPILER_FAMILY := <empty>  (possible values: gnu, cygwin, clang, msvc)
+#   8. AREG_BUILD_ALL       := ON       (possible values: ON, OFF)
+#   9. AREG_OUTPUT_DIR      := <path>   (possible values: valid path where creates 'bin' and 'lib' subfolders)
+#
+# Hint:
+#   AREG_COMPILER_FAMILY is a simple and short way to specify the compiler.
+#       - The value 'gnu' will set g++ and gcc compilers for C++ and C.
+#       - The value 'cygwin' will set g++ and gcc compilers for C++ and C.
+#       - The value 'clang' will set clang++-13 and clang-13 compilers for C++ and C.
+#       - The value 'msvc' will set Microsoft Visual C++ compiler for C++ and C.
+#
+# Example:
+# $ cmake -B build -DAREG_COMPILER_FAMILY=clang -DAREG_BINARY=Release -DAREG_BUILD_TESTS:BOOL=ON -DAREG_BUILD_EXAMPLES:BOOL=PFF
 # 
 # NOTE: if in command line specify AREG_CXX_COMPILER, the AREG_C_COMPILER
 #       must be specified as well. The both options must be specified
 #       either together or none should be specified to use defaults.
-# ###########################################################################
+# ---------------------------------------------------------------------------
 
 # If any compiler is set, both C and C++ should be specified.
 # Otherwise, either none should exist or outputs error
@@ -42,6 +68,28 @@ else()
     message(STATUS ">>> User selected C compiler ${AREG_C_COMPILER}")
 endif()
 
+# Check and set the simple and shortest way to set the compiler
+if (DEFINED AREG_COMPILER_FAMILY)
+    message(STATUS ">>> User selected C/C++ compiler family ${AREG_COMPILER_FAMILY}")
+    if (${AREG_COMPILER_FAMILY} MATCHES "gnu")
+        set(AREG_CXX_COMPILER "g++")
+        set(AREG_C_COMPILER   "gcc")
+    elseif (${AREG_COMPILER_FAMILY} MATCHES "cygwin")
+        set(AREG_CXX_COMPILER "g++")
+        set(AREG_C_COMPILER   "gcc")
+    elseif(${AREG_COMPILER_FAMILY} MATCHES "clang")
+        set(AREG_CXX_COMPILER "clang++-13")
+        set(AREG_C_COMPILER   "clang-13")
+    elseif(${AREG_COMPILER_FAMILY} MATCHES "msvc")
+        set(AREG_CXX_COMPILER "cl")
+        set(AREG_C_COMPILER   "cl")
+    elseif(NOT ${AREG_COMPILER_FAMILY} MATCHES "")
+        message(WARNING ">>> Unrecognized compiler family ${AREG_COMPILER_FAMILY}, supported value are: \'gnu\', \'clang\', \'cygwin\', \'msvc\', setting default GNU compilers")
+        set(AREG_CXX_COMPILER "g++")
+        set(AREG_C_COMPILER   "gcc")
+    endif()
+endif()
+
 # Set build configuration here.
 # Set the build configuration either automatically or manually in command line by specifying AREG_BUILD_TYPE
 if (NOT DEFINED AREG_BUILD_TYPE OR AREG_BUILD_TYPE STREQUAL "")
@@ -60,12 +108,24 @@ endif()
 # CPP standard for the projects
 set(AREG_CXX_STANDARD 17)
 
-if(${AREG_BUILD_TYPE} MATCHES "Debug")
+# Build tests. By default it is enabled. To disable, set OFF
+if (NOT DEFINED AREG_BUILD_TESTS OR AREG_BUILD_TESTS)
     option(AREG_BUILD_TESTS    "Build unit tests" ON)
+else()
+    option(AREG_BUILD_TESTS    "Build unit tests" OFF)
+endif()
+
+# Build examples. By default it is enabled. To disable, set OFF
+if (NOT DEFINED AREG_BUILD_EXAMPLES OR AREG_BUILD_EXAMPLES)
     option(AREG_BUILD_EXAMPLES "Build examples"   ON)
 else()
-    option(AREG_BUILD_TESTS    "Build unit tests" ON)
-    option(AREG_BUILD_EXAMPLES "Build examples"   ON)
+    option(AREG_BUILD_EXAMPLES "Build examples"   OFF)
+endif()
+
+# Check and set the builds projects. If ON, force to compile examples and tests
+if (DEFINED AREG_BUILD_ALL)
+    option(AREG_BUILD_TESTS    "Build unit tests" ${AREG_BUILD_ALL})
+    option(AREG_BUILD_EXAMPLES "Build examples"   ${AREG_BUILD_ALL})
 endif()
 
 # Set bitless here
