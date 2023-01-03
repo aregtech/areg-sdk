@@ -51,7 +51,7 @@ jobs:
           submodules: recursive
 
       - name: Install compilers on Linux
-        if: runner.os == 'Linux'
+        if: matrix.config.os == 'ubuntu-latest' && matrix.config.family == 'clang'
         run: |
              sudo apt-get update
              sudo apt-get install ${{matrix.config.cxx}} -y
