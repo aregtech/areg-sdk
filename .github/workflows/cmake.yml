@@ -77,19 +77,19 @@ jobs:
 
       - name: set PATH environment variable
         if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
-        run: echo "PATH=C:\cygwin64;C:\cygwin64\bin;C:\cygwin64\lib;%SYSTEMROOT%\system32" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        run: echo "PATH=C:\cygwin64;C:\cygwin64\bin;C:\cygwin64\lib;%SYSTEMROOT%\system32;%PATH%" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
          
       - name: Configure CMake on Windows
         if: matrix.config.os == 'windows-latest'
         working-directory: ${{github.workspace}}
-        shell: cmd
+        shell: powershell
         run: |
           cmake -B ./build -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_BUILD_ALL:BOOL=ON
     
       - name: Build with cmake on Windows
         if: matrix.config.os == 'windows-latest'
         working-directory: ${{github.workspace}}
-        shell: cmd
+        shell: powershell
         # Build your program with the given configuration
         run: cmake --build ./build -j 8
 
