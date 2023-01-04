@@ -888,7 +888,7 @@ void ServerService::processReceivedMessage(const RemoteMessage & msgReceived, co
         else if ( (source == cookie) && (msgId != NEService::eFuncIdRange::ServiceRouterConnect) )
         {
             TRACE_DBG("Going to process received message [ 0x%X ]", static_cast<uint32_t>(msgId));
-            sendCommand(ServerServiceEventData::eServerServiceCommands::CMD_ServiceReceivedMsg);
+            sendCommunicationMessage( ServerServiceEventData::eServerServiceCommands::CMD_ServiceReceivedMsg, msgReceived );
         }
         else if ( (source == NEService::SOURCE_UNKNOWN) && (msgId == NEService::eFuncIdRange::ServiceRouterConnect) )
         {

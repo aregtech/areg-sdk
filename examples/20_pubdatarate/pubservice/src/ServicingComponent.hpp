@@ -114,8 +114,6 @@ class ServicingComponent    : public    Component
 
         /**
          * \brief   Triggered when Timer is expired. 
-         *          The passed Timer parameter is indicating object, which has been expired.
-         *          Overwrite method to receive messages.
          * \param   timer   The timer object that is expired.
          **/
         virtual void processTimer( Timer & timer ) override;

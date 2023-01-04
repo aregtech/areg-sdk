@@ -302,8 +302,10 @@ public:
      * \brief   By given unique Session ID, prepares response to send.
      * \param   sessionId   The Session ID returned by calling
      *                      UnblockCurrentRequest()
+     * \return  Return true if specified session exist in the list.
+     *          Otherwise, return false.
      **/
-    virtual void prepareResponse(SessionID sessionId);
+    virtual bool prepareResponse(SessionID sessionId);
 
     /**
      * \brief   Triggered when proxy client either connected or disconnected to stub.

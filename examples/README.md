@@ -44,6 +44,7 @@ Below is the list of examples:
 18. [18_locwatchdog](./18_locwatchdog) -- multithreading application to demonstrate watchdog feature with local service.
 19. [19_pubwatchdog](./19_pubwatchdog) -- multiprocessing (**IPC**) application to demonstrate watchdog feature with local service.
 20. [20_pubdatarate](./20_pubdatarate) -- multiprocessing (**IPC**) application to demonstrate the network communication data rate.
+21. [21_pubunblock](./21_pubunblock) -- multiprocessing (**IPC**) application to demonstrate the request manual unblock to process more requests while they are pending.
 
 The list will be updated. We recommend periodically checking the list.
 

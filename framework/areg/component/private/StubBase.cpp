@@ -110,13 +110,17 @@ SessionID StubBase::unblockCurrentRequest( void )
     return result;
 }
 
-void StubBase::prepareResponse( SessionID sessionId )
+bool StubBase::prepareResponse( SessionID sessionId )
 {
+    bool result{ false };
     StubBase::Listener listener;
     if (mMapSessions.removeAt(sessionId, listener))
     {
         mListListener.pushFirst(listener);
+        result = true;
     }
+
+    return result;
 }
 
 void StubBase::prepareRequest( Listener & listener, unsigned int seqNr, unsigned int responseId )

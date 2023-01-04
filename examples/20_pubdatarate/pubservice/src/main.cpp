@@ -14,7 +14,7 @@
 
 #include "pubservice/src/ServicingComponent.hpp"
 
-#ifdef WINDOWS
+#ifdef WIN32
     #pragma comment(lib, "areg.lib")
     #pragma comment(lib, "20_generated.lib")
 #endif // WINDOWS
@@ -26,13 +26,12 @@
 //////////////////////////////////////////////////////////////////////////
 
 constexpr char const _modelName[]  { "ServiceModel" };   //!< The name of model
-constexpr uint32_t _watchdogTimeout{ 0 };
 
 // Describe mode, set model name
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestServiceThread", _watchdogTimeout)
+    BEGIN_REGISTER_THREAD( "TestServiceThread", NECommon::WATCHDOG_IGNORE )
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
         BEGIN_REGISTER_COMPONENT(NELargeData::ServiceRoleName, ServicingComponent)
             // register HelloWorld service implementation.
@@ -48,7 +47,7 @@ END_MODEL(_modelName)
 //////////////////////////////////////////////////////////////////////////
 // main method.
 //////////////////////////////////////////////////////////////////////////
-DEF_TRACE_SCOPE(example_19_pubservice_main_main);
+DEF_TRACE_SCOPE(example_20_pubservice_main_main);
 /**
  * \brief   The main method enables logging, service manager and timer.
  *          it loads and unloads the services, releases application.
@@ -65,7 +64,7 @@ int main()
 
     do
     {
-        TRACE_SCOPE(example_19_pubservice_main_main);
+        TRACE_SCOPE(example_20_pubservice_main_main);
         TRACE_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         // load model to initialize components

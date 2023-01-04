@@ -42,3 +42,6 @@ addExecutable(mcrouter "${mcrouter_SRC}")
 file(MAKE_DIRECTORY ${AREG_OUTPUT_BIN}/config)
 file(COPY ${AREG_BASE}/areg/resources/log.init DESTINATION ${AREG_OUTPUT_BIN}/config)
 file(COPY ${AREG_BASE}/areg/resources/router.init DESTINATION ${AREG_OUTPUT_BIN}/config)
+
+# add_custom_command(TARGET areg POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${AREG_BASE}/areg/resources/log.ini ${AREG_OUTPUT_BIN}/config/log.ini)
+# add_custom_command(TARGET areg POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${AREG_BASE}/areg/resources/router.ini ${AREG_OUTPUT_BIN}/config/router.ini)

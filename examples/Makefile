@@ -26,6 +26,7 @@ include $(AREG_EXAMPLES)/16_pubfsm/Makefile
 include $(AREG_EXAMPLES)/18_locwatchdog/Makefile
 include $(AREG_EXAMPLES)/19_pubwatchdog/Makefile
 include $(AREG_EXAMPLES)/20_pubdatarate/Makefile
+include $(AREG_EXAMPLES)/21_pubunblock/Makefile
 
 examples:               \
     00_helloservice     \
@@ -47,6 +48,7 @@ examples:               \
     16_pubfsm           \
     18_locwatchdog      \
     19_pubwatchdog      \
-    20_pubdatarate
+    20_pubdatarate      \
+    21_pubunblock
 
 .PHONY: examples

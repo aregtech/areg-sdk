@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+  </ImportGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{EB228067-EA4D-452C-91FC-91DB3B445C31}</ProjectGuid>
+    <ProjectName>21_generated</ProjectName>
+    <RootNamespace>21_generated</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <OutDir>$(OutLibDir)\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
+    <ClCompile>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
+    <ClCompile>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="generated\src\private\HelloUnblockClientBase.cpp" />
+    <ClCompile Include="generated\src\private\HelloUnblockEvents.cpp" />
+    <ClCompile Include="generated\src\private\HelloUnblockProxy.cpp" />
+    <ClCompile Include="generated\src\private\HelloUnblockStub.cpp" />
+    <ClCompile Include="generated\src\private\NEHelloUnblock.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="generated\src\HelloUnblockClientBase.hpp" />
+    <ClInclude Include="generated\src\HelloUnblockStub.hpp" />
+    <ClInclude Include="generated\src\NEHelloUnblock.hpp" />
+    <ClInclude Include="generated\src\private\HelloUnblockEvents.hpp" />
+    <ClInclude Include="generated\src\private\HelloUnblockProxy.hpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

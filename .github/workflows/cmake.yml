@@ -82,7 +82,7 @@ jobs:
       - name: Configure CMake
         working-directory: ${{github.workspace}}
         run: |
-          cmake -B ./build -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_BUILD_ALL:BOOL=ON
+          cmake -B ./build -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_BUILD_ALL:BOOL=ON -DCMAKE_BUILD_TYPE==${{env.BUILD_TYPE}}
     
       - name: Build with CMake
         working-directory: ${{github.workspace}}
