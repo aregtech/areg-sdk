@@ -101,7 +101,7 @@ elseif (CMAKE_COMPILER_IS_GNUCXX)
         list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -MMD -std=c++17 ${AREG_USER_DEFINES})
     endif()
     # Linker flags (-l is not necessary)
-    list(APPEND AREG_LDFLAGS libstdc++ m ncurses pthread rt ${AREG_USER_DEF_LIBS})
+    list(APPEND AREG_LDFLAGS stdc++ m ncurses pthread rt ${AREG_USER_DEF_LIBS})
 
 elseif (MSVC)
 
