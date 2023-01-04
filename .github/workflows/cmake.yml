@@ -2,6 +2,17 @@ name: CMake
 
 on:
   push:         # Keep empty to run on each branch when push the code
+    paths:
+      - '.github/workflows/cmake.yml'
+      - '**CMakeLists.txt'
+      - '!.github/workflows/c-cpp.yml'
+      - '!.github/workflows/msbuild.yml'
+      - '!**Makefile'
+      - '!**Readme'
+      - '!**.md'
+      - '!**.sln'
+      - '!**.vcxproj'
+      - '!**.vcxproj.filter'
   pull_request: # Set to master to run only when merge with master branch
     branches: [ master ]
 
