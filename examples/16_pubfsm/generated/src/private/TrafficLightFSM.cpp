@@ -111,11 +111,11 @@ void TrafficLightFSM::TrafficLightEventConsumer::processEvent( const NETrafficLi
     TRACE_SCOPE(generated_src_private_TrafficLightFSM_TrafficLightEventConsumer_processEvent);
     if ( mFsm.isOperable() )
     {
-        TRACE_DBG("Processing event < %s >.", NETrafficLightFSM::getString(data.mEventValue));
+        TRACE_DBG("Processing event < %s >.", NETrafficLightFSM::getString(data.mData));
        
-        switch ( data.mEventValue )
+        switch ( data.mData )
         {
-        case NETrafficLightFSM::eFsmEventValue::EVENT_StartTrafficLight:
+        case NETrafficLightFSM::eFsmEventData::EVENT_StartTrafficLight:
             mFsm.onEventStartTrafficLight();
             break;
 
@@ -127,7 +127,7 @@ void TrafficLightFSM::TrafficLightEventConsumer::processEvent( const NETrafficLi
     }
     else
     {
-        TRACE_WARN("Ignoring event < %s >, the state machine < %s > is not initialized.", NETrafficLightFSM::getString(data.mEventValue), mFsm.mFsmName.getString());
+        TRACE_WARN("Ignoring event < %s >, the state machine < %s > is not initialized.", NETrafficLightFSM::getString(data.mData), mFsm.mFsmName.getString());
     }
 }
 
@@ -205,7 +205,7 @@ void TrafficLightFSM::TrafficLightTimerConsumer::processTimer( Timer & timer )
 ////////////////////////////////////////////////////////////////////////////////
 // TrafficLightFSM Class constructor / destructor 
 ////////////////////////////////////////////////////////////////////////////////
-TrafficLightFSM::TrafficLightFSM( IETrafficLightActionHandler & actionHandler, const char* const instanceName /* = NETrafficLightFSM::InstanceDefaultName */ )
+TrafficLightFSM::TrafficLightFSM( IETrafficLightActionHandler & actionHandler, const std::string_view & instanceName /* = NETrafficLightFSM::InstanceDefaultName */ )
     : mActionHandler  ( actionHandler )
     
     , mTimerRed( static_cast< IETimerConsumer &>(mTimerConsumer), "TrafficLightFsm::Red" )
@@ -216,7 +216,7 @@ TrafficLightFSM::TrafficLightFSM( IETrafficLightActionHandler & actionHandler, c
     , mTimerVehicleWait( static_cast< IETimerConsumer &>(mTimerConsumer), "TrafficLightFsm::VehicleWait" )
     
 
-    , mFsmName      ( String("TrafficLightFSM:") + (instanceName != nullptr ? instanceName : "") )
+    , mFsmName      ( String("TrafficLightFSM:") + instanceName )
     , mMasterThread ( nullptr )
     , mProcessing   ( false )
     , mState        ( TrafficLightFSM::eState::UNDEFINED )
@@ -417,7 +417,7 @@ inline void TrafficLightFSM::enterState( const TrafficLightFSM::eState curState,
             break;
 
         case TrafficLightFSM::eState::TRAFFIC_LIGHT_START:
-            sendEvent(NETrafficLightFSM::eFsmEventValue::EVENT_StartTrafficLight);
+            sendEvent(NETrafficLightFSM::eFsmEventData::EVENT_StartTrafficLight);
             break;
 
         case TrafficLightFSM::eState::UNDEFINED:  // fall through

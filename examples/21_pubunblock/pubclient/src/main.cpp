@@ -3,41 +3,47 @@
 // Author      : Artak Avetyan
 // Version     :
 // Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
-// Description : The application provides network discoverable Public service,
-//               which predefined methods are called from remote clients.
+// Description : The application contains a Public service client software
+//               component. It receives connected notification and starts 
+//               calling remote method of the Public service. To make periodic
+//               calls, it uses a timer.
 //============================================================================
 
 #include "areg/base/GEGlobal.h"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
+#include "areg/base/NEUtilities.hpp"
 #include "areg/trace/GETrace.h"
 
-#include "pubservice/src/ServicingComponent.hpp"
 
-#ifdef WIN32
-    #pragma comment(lib, "areg.lib")
-    #pragma comment(lib, "20_generated.lib")
+#include "pubclient/src/ServiceClient.hpp"
+
+#ifdef WINDOWS
+    #pragma comment(lib, "areg")
+    #pragma comment(lib, "21_generated.lib")
 #endif // WINDOWS
 
-//////////////////////////////////////////////////////////////////////////
-//
-// The following design will instantiate servicing component.
-//
-//////////////////////////////////////////////////////////////////////////
+constexpr char const _modelName[]{ "UnblockRequest" };  //!< The name of model
+constexpr char const _serviceName[]{ "UnblockRequestService" }; //!< The name of the service
+const String     _serviceClient  = NEUtilities::generateName("ServiceClient"); //!< Generated name of service client component
 
-constexpr char const _modelName[]  { "ServiceModel" };   //!< The name of model
+//////////////////////////////////////////////////////////////////////////
+//
+// The following design instantiates large data servicing client.
+//
+//////////////////////////////////////////////////////////////////////////
 
 // Describe mode, set model name
 BEGIN_MODEL(_modelName)
 
     // define component thread
-    BEGIN_REGISTER_THREAD( "TestServiceThread", NECommon::WATCHDOG_IGNORE )
+    BEGIN_REGISTER_THREAD( "TestServiceThread", NECommon::WATCHDOG_IGNORE)
         // define component, set role name. This will trigger default 'create' and 'delete' methods of component
-        BEGIN_REGISTER_COMPONENT(NELargeData::ServiceRoleName, ServicingComponent)
-            // register HelloWorld service implementation.
-            REGISTER_IMPLEMENT_SERVICE( NELargeData::ServiceName, NELargeData::InterfaceVersion )
+        BEGIN_REGISTER_COMPONENT( _serviceClient, ServiceClient )
+            // register service dependency
+            REGISTER_DEPENDENCY( _serviceName )
         // end of component description
-        END_REGISTER_COMPONENT(NELargeData::ServiceRoleName)
+        END_REGISTER_COMPONENT( _serviceClient )
     // end of thread description
     END_REGISTER_THREAD( "TestServiceThread" )
 
@@ -47,15 +53,14 @@ END_MODEL(_modelName)
 //////////////////////////////////////////////////////////////////////////
 // main method.
 //////////////////////////////////////////////////////////////////////////
-DEF_TRACE_SCOPE(example_20_pubservice_main_main);
+DEF_TRACE_SCOPE(example_21_pubunblock_pubclient_main_main);
 /**
  * \brief   The main method enables logging, service manager and timer.
  *          it loads and unloads the services, releases application.
  **/
 int main()
 {
-    printf("Testing large data servicing, run as a ultra-small Server...\n");
-
+    printf("Testing unblock service client...\n");
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START( nullptr );
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
@@ -64,7 +69,7 @@ int main()
 
     do
     {
-        TRACE_SCOPE(example_20_pubservice_main_main);
+        TRACE_SCOPE( example_21_pubunblock_pubclient_main_main );
         TRACE_DBG("The application has been initialized, loading model [ %s ]", _modelName);
 
         // load model to initialize components
@@ -83,7 +88,7 @@ int main()
 
     } while (false);
 
-    printf("Completed testing large data servicing component. Check the logs...\n");
+    printf("Completed testing unblock request service client, check the logs...\n");
 
 	return 0;
 }
