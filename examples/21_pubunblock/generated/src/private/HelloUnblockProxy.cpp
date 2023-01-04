@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     04.01.2023  02:29:13 GMT+01:00
+ * Generated at     04.01.2023  11:00:36 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloUnblock.
  *
  * \file            generated/src/private/HelloUnblockProxy.hpp
@@ -139,6 +139,13 @@ void HelloUnblockProxy::unregisterServiceListeners( void )
  * Requests.
  ************************************************************************/
 
+unsigned int HelloUnblockProxy::requestIdentifier( IENotificationEventConsumer & caller )
+{
+    static const NEHelloUnblock::eMessageIDs msgId = NEHelloUnblock::eMessageIDs::MsgId_requestIdentifier;
+    sendRequestEvent( static_cast<unsigned int>(msgId), EventDataStream::EmptyData, &caller );
+    return mSequenceCount;
+}
+    
 unsigned int HelloUnblockProxy::requestHelloUblock( IENotificationEventConsumer & caller, unsigned int clientId, unsigned int seqNr )
 {
     static const NEHelloUnblock::eMessageIDs msgId = NEHelloUnblock::eMessageIDs::MsgId_requestHelloUblock;
@@ -147,13 +154,6 @@ unsigned int HelloUnblockProxy::requestHelloUblock( IENotificationEventConsumer 
     stream << clientId;
     stream << seqNr;
     sendRequestEvent( static_cast<unsigned int>(msgId), args, &caller );
-    return mSequenceCount;
-}
-    
-unsigned int HelloUnblockProxy::requestIdentifier( IENotificationEventConsumer & caller )
-{
-    static const NEHelloUnblock::eMessageIDs msgId = NEHelloUnblock::eMessageIDs::MsgId_requestIdentifier;
-    sendRequestEvent( static_cast<unsigned int>(msgId), EventDataStream::EmptyData, &caller );
     return mSequenceCount;
 }
     
@@ -197,13 +197,13 @@ void HelloUnblockProxy::updateData( HelloUnblockResponseEvent & eventElem, NEHel
     /************************************************************************
      * Update Response parameters
      ************************************************************************/
+    case NEHelloUnblock::eMessageIDs::MsgId_responseIdentifier:
+        stream >> mParamclientId;
+        break;
+
     case NEHelloUnblock::eMessageIDs::MsgId_responseHelloUnblock:
         stream >> mParamclientId;
         stream >> mParamseqNr;
-        break;
-
-    case NEHelloUnblock::eMessageIDs::MsgId_responseIdentifier:
-        stream >> mParamclientId;
         break;
 
     /************************************************************************

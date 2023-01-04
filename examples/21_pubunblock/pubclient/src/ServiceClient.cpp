@@ -19,6 +19,7 @@
 DEF_TRACE_SCOPE( examples_21_pubservice_ServiceClient_serviceConnected );
 DEF_TRACE_SCOPE( examples_21_pubservice_ServiceClient_responseIdentifier );
 DEF_TRACE_SCOPE( examples_21_pubservice_ServiceClient_responseHelloUnblock );
+DEF_TRACE_SCOPE( examples_21_pubservice_ServiceClient_requestHelloUblockFailed );
 DEF_TRACE_SCOPE( examples_21_pubservice_ServiceClient_onHelloServiceStateUpdate );
 DEF_TRACE_SCOPE( examples_21_pubservice_ServiceClient_processTimer );
 
@@ -47,12 +48,17 @@ ServiceClient::ServiceClient( const NERegistry::ComponentEntry & entry, Componen
 bool ServiceClient::serviceConnected( bool isConnected, ProxyBase & proxy )
 {
     TRACE_SCOPE( examples_21_pubservice_ServiceClient_serviceConnected );
-    bool result = HelloUnblockClientBase::serviceConnected( isConnected, proxy );
-    notifyOnHelloServiceStateUpdate( isConnected );
-    if ( isConnected == false )
+    bool result{ false };
+    if ( HelloUnblockClientBase::serviceConnected( isConnected, proxy ) )
     {
-        mTimer.stopTimer( );
-        Application::signalAppQuit( );
+        result = true;
+        mClientId = NEHelloUnblock::InvalidId;
+        notifyOnHelloServiceStateUpdate( isConnected );
+        if ( isConnected == false )
+        {
+            mTimer.stopTimer( );
+            Application::signalAppQuit( );
+        }
     }
 
     return result;
@@ -95,6 +101,14 @@ void ServiceClient::responseHelloUnblock( unsigned int clientId, unsigned int se
               << " Pending = " << mSequenceList.getSize() << std::endl;
 }
 
+void ServiceClient::requestHelloUblockFailed( NEService::eResultType FailureReason )
+{
+    TRACE_SCOPE( examples_21_pubservice_ServiceClient_requestHelloUblockFailed );
+    TRACE_WARN( "The reuqest HelloUnblock failed with reason [ %s ]", NEService::getString( FailureReason ) );
+    // Make sure it does not fail with reason 'request is busy'
+    ASSERT( FailureReason != NEService::eResultType::RequestBusy );
+}
+
 void ServiceClient::onHelloServiceStateUpdate( NEHelloUnblock::eServiceState HelloServiceState, NEService::eDataStateType state )
 {
     TRACE_SCOPE( examples_21_pubservice_ServiceClient_onHelloServiceStateUpdate );
@@ -104,8 +118,12 @@ void ServiceClient::onHelloServiceStateUpdate( NEHelloUnblock::eServiceState Hel
     {
         if ( HelloServiceState == NEHelloUnblock::eServiceState::ServiceActive )
         {
-            requestIdentifier( );
-            TRACE_DBG( "Service is active, requesting ID" );
+            if ( mClientId == NEHelloUnblock::InvalidId )
+            {
+                // send the request only if client has no valid ID
+                requestIdentifier( );
+                TRACE_DBG( "Service is active, requesting ID" );
+            }
         }
         else if ( HelloServiceState == NEHelloUnblock::eServiceState::ServiceShutdown )
         {

@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     04.01.2023  02:29:13 GMT+01:00
+ * Generated at     04.01.2023  11:00:36 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloUnblock.
  *
  * \file            generated/src/NEHelloUnblock.hpp
@@ -76,7 +76,7 @@ namespace   NEHelloUnblock
      * \brief   The maximum number of messages to output.
      *          NEHelloUnblock::MaxMessages
      **/
-    constexpr short           MaxMessages         = 50;
+    constexpr short           MaxMessages         = 100;
 
     /**
      * \brief   The timeout in milliseconds where the client send a request
@@ -138,29 +138,29 @@ namespace   NEHelloUnblock
      * Request IDs
      ************************************************************************/
         /**
-         * \brief   Request ID: MsgId_requestHelloUblock
-         *          Request to print hello world
-         **/
-          MsgId_requestHelloUblock    = NEService::REQUEST_ID_FIRST   // void requestHelloUblock( unsigned int clientId, unsigned int seqNr );
-        /**
          * \brief   Request ID: MsgId_requestIdentifier
          *          Request to assign an ID to the client used to to call unblock request.
          **/
-        , MsgId_requestIdentifier                                       // void requestIdentifier( void );
+          MsgId_requestIdentifier     = NEService::REQUEST_ID_FIRST   // void requestIdentifier( void );
+        /**
+         * \brief   Request ID: MsgId_requestHelloUblock
+         *          Request to print hello world
+         **/
+        , MsgId_requestHelloUblock                                      // void requestHelloUblock( unsigned int clientId, unsigned int seqNr );
 
     /************************************************************************
      * Response IDs
      ************************************************************************/
         /**
-         * \brief   Response ID: MsgId_responseHelloUnblock
-         *          The response to hello world request.
-         **/
-        , MsgId_responseHelloUnblock  = NEService::RESPONSE_ID_FIRST  // void responseHelloUnblock( unsigned int clientId, unsigned int seqNr );
-        /**
          * \brief   Response ID: MsgId_responseIdentifier
          *          Sent to set ID for client.
          **/
-        , MsgId_responseIdentifier                                      // void responseIdentifier( unsigned int clientId );
+        , MsgId_responseIdentifier    = NEService::RESPONSE_ID_FIRST  // void responseIdentifier( unsigned int clientId );
+        /**
+         * \brief   Response ID: MsgId_responseHelloUnblock
+         *          The response to hello world request.
+         **/
+        , MsgId_responseHelloUnblock                                    // void responseHelloUnblock( unsigned int clientId, unsigned int seqNr );
     /************************************************************************
      * Broadcast IDs
      ************************************************************************/
@@ -253,14 +253,14 @@ inline const char * NEHelloUnblock::getString( NEHelloUnblock::eMessageIDs msgId
 {
     switch ( msgId )
     {
-    case    NEHelloUnblock::eMessageIDs::MsgId_requestHelloUblock:
-        return "NEHelloUnblock::eMessageIDs::MsgId_requestHelloUblock";
     case    NEHelloUnblock::eMessageIDs::MsgId_requestIdentifier:
         return "NEHelloUnblock::eMessageIDs::MsgId_requestIdentifier";
-    case    NEHelloUnblock::eMessageIDs::MsgId_responseHelloUnblock:
-        return "NEHelloUnblock::eMessageIDs::MsgId_responseHelloUnblock";
+    case    NEHelloUnblock::eMessageIDs::MsgId_requestHelloUblock:
+        return "NEHelloUnblock::eMessageIDs::MsgId_requestHelloUblock";
     case    NEHelloUnblock::eMessageIDs::MsgId_responseIdentifier:
         return "NEHelloUnblock::eMessageIDs::MsgId_responseIdentifier";
+    case    NEHelloUnblock::eMessageIDs::MsgId_responseHelloUnblock:
+        return "NEHelloUnblock::eMessageIDs::MsgId_responseHelloUnblock";
     case    NEHelloUnblock::eMessageIDs::MsgId_HelloServiceState:
         return "NEHelloUnblock::eMessageIDs::MsgId_HelloServiceState";
 

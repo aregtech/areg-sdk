@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     04.01.2023  02:29:13 GMT+01:00
+ * Generated at     04.01.2023  11:00:36 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloUnblock.
  *
  * \file            generated/src/HelloUnblockStub.hpp
@@ -134,8 +134,8 @@ void HelloUnblockStub::errorRequest( unsigned int msgId, bool msgCancel )
 /************************************************************************
  * Response errors
  ************************************************************************/
-    case NEHelloUnblock::eMessageIDs::MsgId_responseHelloUnblock:
     case NEHelloUnblock::eMessageIDs::MsgId_responseIdentifier:
+    case NEHelloUnblock::eMessageIDs::MsgId_responseHelloUnblock:
 /************************************************************************
  * Broadcast errors
  ************************************************************************/
@@ -145,8 +145,8 @@ void HelloUnblockStub::errorRequest( unsigned int msgId, bool msgCancel )
 /************************************************************************
  * Request errors
  ************************************************************************/
-    case NEHelloUnblock::eMessageIDs::MsgId_requestHelloUblock:
     case NEHelloUnblock::eMessageIDs::MsgId_requestIdentifier:
+    case NEHelloUnblock::eMessageIDs::MsgId_requestHelloUblock:
         listenerId = static_cast<msg_id>(NEHelloUnblock::getResponseId(static_cast< NEHelloUnblock::eMessageIDs>(msgId)));
         result = msgCancel ? NEService::eResultType::RequestCanceled : NEService::eResultType::RequestError;
         break;
@@ -189,6 +189,15 @@ void HelloUnblockStub::setHelloServiceState( const NEHelloUnblock::eServiceState
  * Send responses
  ************************************************************************/
 
+void HelloUnblockStub::responseIdentifier( unsigned int clientId )
+{
+    static const NEHelloUnblock::eMessageIDs msgId = NEHelloUnblock::eMessageIDs::MsgId_responseIdentifier;
+    EventDataStream args(EventDataStream::eEventData::EventDataExternal);
+    IEOutStream & stream = args.getStreamForWrite();
+    stream << clientId;
+    sendResponseEvent( static_cast<msg_id>(msgId), args );
+}
+
 void HelloUnblockStub::responseHelloUnblock( unsigned int clientId, unsigned int seqNr )
 {
     static const NEHelloUnblock::eMessageIDs msgId = NEHelloUnblock::eMessageIDs::MsgId_responseHelloUnblock;
@@ -196,15 +205,6 @@ void HelloUnblockStub::responseHelloUnblock( unsigned int clientId, unsigned int
     IEOutStream & stream = args.getStreamForWrite();
     stream << clientId;
     stream << seqNr;
-    sendResponseEvent( static_cast<msg_id>(msgId), args );
-}
-
-void HelloUnblockStub::responseIdentifier( unsigned int clientId )
-{
-    static const NEHelloUnblock::eMessageIDs msgId = NEHelloUnblock::eMessageIDs::MsgId_responseIdentifier;
-    EventDataStream args(EventDataStream::eEventData::EventDataExternal);
-    IEOutStream & stream = args.getStreamForWrite();
-    stream << clientId;
     sendResponseEvent( static_cast<msg_id>(msgId), args );
 }
 
@@ -231,6 +231,13 @@ void HelloUnblockStub::processRequestEvent( ServiceRequestEvent & eventElem )
 
         switch ( static_cast<NEHelloUnblock::eMessageIDs>(reqId) )
         {
+        case NEHelloUnblock::eMessageIDs::MsgId_requestIdentifier:
+            if ( canExecuteRequest(listener, static_cast<msg_id>(respId), reqEvent->getSequenceNumber()) )
+            {
+                requestIdentifier(  );
+            }
+            break;
+
         case NEHelloUnblock::eMessageIDs::MsgId_requestHelloUblock:
             if ( canExecuteRequest(listener, static_cast<msg_id>(respId), reqEvent->getSequenceNumber()) )
             {
@@ -239,13 +246,6 @@ void HelloUnblockStub::processRequestEvent( ServiceRequestEvent & eventElem )
                 stream >> clientId;
                 stream >> seqNr;
                 requestHelloUblock( clientId, seqNr );
-            }
-            break;
-
-        case NEHelloUnblock::eMessageIDs::MsgId_requestIdentifier:
-            if ( canExecuteRequest(listener, static_cast<msg_id>(respId), reqEvent->getSequenceNumber()) )
-            {
-                requestIdentifier(  );
             }
             break;
 

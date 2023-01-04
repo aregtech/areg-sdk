@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     04.01.2023  02:29:13 GMT+01:00
+ * Generated at     04.01.2023  11:00:36 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloUnblock.
  *
  * \file            generated/src/private/HelloUnblockProxy.hpp
@@ -154,7 +154,7 @@ public:
      * \brief   Returns value of clientId of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
      *          Parameter clientId description:
-     *          The ID of the client to send the response. Never is 0.
+     *          Generated ID for the client used when send requst to unblock.
      **/
     inline unsigned int getParamclientId( void ) const;
 
@@ -172,6 +172,15 @@ public:
  ************************************************************************/
     /**
      * \brief   Request call.
+     *          Request to assign an ID to the client used to to call unblock request.
+     * \param   caller  The reference of caller object to get response.
+     * \return  The sequence count number of call
+     * \see     responseIdentifier
+     **/
+    unsigned int requestIdentifier( IENotificationEventConsumer & caller );
+
+    /**
+     * \brief   Request call.
      *          Request to print hello world
      * \param   caller      The reference of caller object to get response.
      * \param   clientId    The given ID of the client. Should be 0 if unknown
@@ -181,15 +190,6 @@ public:
      * \see     responseHelloUnblock
      **/
     unsigned int requestHelloUblock( IENotificationEventConsumer & caller, unsigned int clientId, unsigned int seqNr );
-
-    /**
-     * \brief   Request call.
-     *          Request to assign an ID to the client used to to call unblock request.
-     * \param   caller  The reference of caller object to get response.
-     * \return  The sequence count number of call
-     * \see     responseIdentifier
-     **/
-    unsigned int requestIdentifier( IENotificationEventConsumer & caller );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations.
@@ -336,7 +336,7 @@ private:
  ************************************************************************/
     /**
      * \brief   clientId parameter value.
-     *          The ID of the client to send the response. Never is 0.
+     *          Generated ID for the client used when send requst to unblock.
      **/
     unsigned int                    mParamclientId;
 

@@ -19,10 +19,20 @@
 #include "areg/base/TEStack.hpp"
 #include "areg/component/Timer.hpp"
 
+/**
+ * \brief   This service client sends a request every 200 ms (NEHelloUnblock::ClientTimeot).
+ *          Since the service responses with the timeout 500 ms, if do not manually
+ *          unblock the request it will fail with reason 'the request is busy'
+ *          (NEService::eResultType::RequestBusy).
+ *          This client demonstrate that all requests are processed and sent to the client.
+ *          Start multiple instances of the client to make sure that all clients properly
+ *          recieve requests.
+ **/
 class ServiceClient : public    Component
                     , private   HelloUnblockClientBase
                     , private   IETimerConsumer
 {
+    //!< The list of generated sequence IDs to check the request.
     using SequenceList = TENolockStack<uint32_t>;
 
 //////////////////////////////////////////////////////////////////////////
@@ -95,6 +105,17 @@ protected:
      * \see     requestHelloUblock
      **/
     virtual void responseHelloUnblock( unsigned int clientId, unsigned int seqNr ) override;
+
+    /**
+     * \brief   This method is triggered if requestHelloUblock call failes.
+     *          It may happen if the request is busy and not completed.
+     *          Since the request is manually unblocked on service side,
+     *          we override this method to make sure that it never fails
+     *          with reason NEService::eResultType::RequestBusy, which happens
+     *          if the request is still pending.
+     * \param   FailureReason   The failure reason value of request call.
+     **/
+    virtual void requestHelloUblockFailed( NEService::eResultType FailureReason ) override;
 
     /**
      * \brief   Triggered, when HelloServiceState attribute is updated. The function contains

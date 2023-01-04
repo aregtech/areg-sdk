@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     04.01.2023  02:29:13 GMT+01:00
+ * Generated at     04.01.2023  11:00:36 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloUnblock.
  *
  * \file            generated/src/HelloUnblockClientBase.hpp
@@ -32,8 +32,8 @@ namespace NEHelloUnblock
     typedef void (HelloUnblockClientBase::* FuncRequestFailure) ( NEService::eResultType );
     static constexpr FuncRequestFailure failureFunctions[]
     {
-          &HelloUnblockClientBase::requestHelloUblockFailed
-        , &HelloUnblockClientBase::requestIdentifierFailed
+          &HelloUnblockClientBase::requestIdentifierFailed
+        , &HelloUnblockClientBase::requestHelloUblockFailed
     };
 }
 
@@ -224,18 +224,18 @@ void HelloUnblockClientBase::processNotificationEvent( NotificationEvent & event
         /************************************************************************
          * Trigger response processing
          ************************************************************************/
+            case NEHelloUnblock::eMessageIDs::MsgId_responseIdentifier:
+                {
+                    unsigned int clientId = mProxy->getParamclientId();
+                    responseIdentifier( clientId );
+                }
+                break;
+
             case NEHelloUnblock::eMessageIDs::MsgId_responseHelloUnblock:
                 {
                     unsigned int clientId = mProxy->getParamclientId();
                     unsigned int seqNr = mProxy->getParamseqNr();
                     responseHelloUnblock( clientId, seqNr );
-                }
-                break;
-
-            case NEHelloUnblock::eMessageIDs::MsgId_responseIdentifier:
-                {
-                    unsigned int clientId = mProxy->getParamclientId();
-                    responseIdentifier( clientId );
                 }
                 break;
 
@@ -334,16 +334,6 @@ void HelloUnblockClientBase::onHelloServiceStateUpdate( NEHelloUnblock::eService
  * Request failure / Response and Broadcast notifications
  ************************************************************************/
 
-DEF_TRACE_SCOPE(generated_src_HelloUnblockClientBase_requestHelloUblockFailed);
-void HelloUnblockClientBase::requestHelloUblockFailed( NEService::eResultType FailureReason )
-{
-    TRACE_SCOPE(generated_src_HelloUnblockClientBase_requestHelloUblockFailed);
-    TRACE_WARN("The request requestHelloUblock (value = %u) method of proxy [ %s ] client HelloUnblockClientBase is failed with reason [ %s ]! Make error handling!"
-                    , static_cast<unsigned int>(NEHelloUnblock::eMessageIDs::MsgId_requestHelloUblock)
-                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
-                    , NEService::getString(FailureReason));
-}
-
 DEF_TRACE_SCOPE(generated_src_HelloUnblockClientBase_requestIdentifierFailed);
 void HelloUnblockClientBase::requestIdentifierFailed( NEService::eResultType FailureReason )
 {
@@ -354,13 +344,14 @@ void HelloUnblockClientBase::requestIdentifierFailed( NEService::eResultType Fai
                     , NEService::getString(FailureReason));
 }
 
-DEF_TRACE_SCOPE(generated_src_HelloUnblockClientBase_responseHelloUnblock);
-void HelloUnblockClientBase::responseHelloUnblock( unsigned int /* clientId */, unsigned int /* seqNr */ )
+DEF_TRACE_SCOPE(generated_src_HelloUnblockClientBase_requestHelloUblockFailed);
+void HelloUnblockClientBase::requestHelloUblockFailed( NEService::eResultType FailureReason )
 {
-    TRACE_SCOPE(generated_src_HelloUnblockClientBase_responseHelloUnblock);
-    TRACE_WARN("The response responseHelloUnblock (value = %u) method of proxy [ %s ] client HelloUnblockClientBase is not implemented!"
-                    , static_cast<unsigned int>(NEHelloUnblock::eMessageIDs::MsgId_responseHelloUnblock)
-                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
+    TRACE_SCOPE(generated_src_HelloUnblockClientBase_requestHelloUblockFailed);
+    TRACE_WARN("The request requestHelloUblock (value = %u) method of proxy [ %s ] client HelloUnblockClientBase is failed with reason [ %s ]! Make error handling!"
+                    , static_cast<unsigned int>(NEHelloUnblock::eMessageIDs::MsgId_requestHelloUblock)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
+                    , NEService::getString(FailureReason));
 }
 
 DEF_TRACE_SCOPE(generated_src_HelloUnblockClientBase_responseIdentifier);
@@ -369,6 +360,15 @@ void HelloUnblockClientBase::responseIdentifier( unsigned int /* clientId */ )
     TRACE_SCOPE(generated_src_HelloUnblockClientBase_responseIdentifier);
     TRACE_WARN("The response responseIdentifier (value = %u) method of proxy [ %s ] client HelloUnblockClientBase is not implemented!"
                     , static_cast<unsigned int>(NEHelloUnblock::eMessageIDs::MsgId_responseIdentifier)
+                    , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
+}
+
+DEF_TRACE_SCOPE(generated_src_HelloUnblockClientBase_responseHelloUnblock);
+void HelloUnblockClientBase::responseHelloUnblock( unsigned int /* clientId */, unsigned int /* seqNr */ )
+{
+    TRACE_SCOPE(generated_src_HelloUnblockClientBase_responseHelloUnblock);
+    TRACE_WARN("The response responseHelloUnblock (value = %u) method of proxy [ %s ] client HelloUnblockClientBase is not implemented!"
+                    , static_cast<unsigned int>(NEHelloUnblock::eMessageIDs::MsgId_responseHelloUnblock)
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString());
 }
 

@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     04.01.2023  02:29:13 GMT+01:00
+ * Generated at     04.01.2023  11:00:36 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloUnblock.
  *
  * \file            generated/src/HelloUnblockClientBase.hpp
@@ -177,6 +177,22 @@ public:
 public:
 
 /************************************************************************
+ * Request Identifier
+ ************************************************************************/
+    /**
+     * \brief   Request call.
+     *          Request to assign an ID to the client used to to call unblock request.
+     * \return  The sequence count number of call
+     * \see     responseIdentifier
+     **/
+    inline unsigned int requestIdentifier( void );
+    /**
+     * \brief   Overwrite to handle error of Identifier request call.
+     * \param   FailureReason   The failure reason value of request call.
+     **/
+    virtual void requestIdentifierFailed( NEService::eResultType FailureReason );
+
+/************************************************************************
  * Request HelloUblock
  ************************************************************************/
     /**
@@ -196,20 +212,24 @@ public:
     virtual void requestHelloUblockFailed( NEService::eResultType FailureReason );
 
 /************************************************************************
- * Request Identifier
+ * Response Identifier
  ************************************************************************/
     /**
-     * \brief   Request call.
-     *          Request to assign an ID to the client used to to call unblock request.
-     * \return  The sequence count number of call
-     * \see     responseIdentifier
+     * \brief   Response callback.
+     *          Sent to set ID for client.
+     *          Overwrite, if need to handle Response call of server object.
+     *          This call will be automatically triggered, on every appropriate request call
+     * \param   clientId    Generated ID for the client used when send requst to unblock.
+     * \see     requestIdentifier
      **/
-    inline unsigned int requestIdentifier( void );
+    virtual void responseIdentifier( unsigned int clientId );
     /**
-     * \brief   Overwrite to handle error of Identifier request call.
-     * \param   FailureReason   The failure reason value of request call.
+     * \brief   Call to enable or disable receiving notifications on Identifier response call.
+     *          This function is triggered, when client object is interested only on response result
+     *          without triggering request call.
+     * \param   notify  If true, notification will be enable. If false, notification is disabled
      **/
-    virtual void requestIdentifierFailed( NEService::eResultType FailureReason );
+    inline void notifyOnResponseIdentifier( bool notify = true );
 
 /************************************************************************
  * Response HelloUnblock
@@ -232,26 +252,6 @@ public:
      * \param   notify  If true, notification will be enable. If false, notification is disabled
      **/
     inline void notifyOnResponseHelloUnblock( bool notify = true );
-
-/************************************************************************
- * Response Identifier
- ************************************************************************/
-    /**
-     * \brief   Response callback.
-     *          Sent to set ID for client.
-     *          Overwrite, if need to handle Response call of server object.
-     *          This call will be automatically triggered, on every appropriate request call
-     * \param   clientId    Generated ID for the client used when send requst to unblock.
-     * \see     requestIdentifier
-     **/
-    virtual void responseIdentifier( unsigned int clientId );
-    /**
-     * \brief   Call to enable or disable receiving notifications on Identifier response call.
-     *          This function is triggered, when client object is interested only on response result
-     *          without triggering request call.
-     * \param   notify  If true, notification will be enable. If false, notification is disabled
-     **/
-    inline void notifyOnResponseIdentifier( bool notify = true );
 
 //////////////////////////////////////////////////////////////////////////
 // End Service Interface operations / attributes and overrides declaration
@@ -471,30 +471,30 @@ inline void HelloUnblockClientBase::notifyOnHelloServiceStateUpdate( bool notify
  * Request calls
  ************************************************************************/
 
-inline unsigned int HelloUnblockClientBase::requestHelloUblock( unsigned int clientId, unsigned int seqNr )
-{
-    ASSERT(mProxy != nullptr);
-    return mProxy->requestHelloUblock( static_cast<IENotificationEventConsumer &>(self()), clientId, seqNr );
-}
-
 inline unsigned int HelloUnblockClientBase::requestIdentifier( void )
 {
     ASSERT(mProxy != nullptr);
     return mProxy->requestIdentifier( static_cast<IENotificationEventConsumer &>(self()) );
 }
 
+inline unsigned int HelloUnblockClientBase::requestHelloUblock( unsigned int clientId, unsigned int seqNr )
+{
+    ASSERT(mProxy != nullptr);
+    return mProxy->requestHelloUblock( static_cast<IENotificationEventConsumer &>(self()), clientId, seqNr );
+}
+
 /************************************************************************
  * Response notifications
  ************************************************************************/
 
-inline void HelloUnblockClientBase::notifyOnResponseHelloUnblock( bool notify /* = true */ )
-{
-    HelloUnblockClientBase::notifyOn(NEHelloUnblock::eMessageIDs::MsgId_responseHelloUnblock, notify, false);
-}
-
 inline void HelloUnblockClientBase::notifyOnResponseIdentifier( bool notify /* = true */ )
 {
     HelloUnblockClientBase::notifyOn(NEHelloUnblock::eMessageIDs::MsgId_responseIdentifier, notify, false);
+}
+
+inline void HelloUnblockClientBase::notifyOnResponseHelloUnblock( bool notify /* = true */ )
+{
+    HelloUnblockClientBase::notifyOn(NEHelloUnblock::eMessageIDs::MsgId_responseHelloUnblock, notify, false);
 }
 
 inline const HelloUnblockProxy * HelloUnblockClientBase::getProxy( void ) const

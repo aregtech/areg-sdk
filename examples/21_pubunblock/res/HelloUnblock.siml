@@ -71,7 +71,7 @@ the cilent can check that all sequences exist.</Description>
     </MethodList>
     <ConstantList>
         <Constant DataType="int16" ID="18" Name="MaxMessages">
-            <Value>50</Value>
+            <Value>100</Value>
             <Description>The maximum number of messages to output.</Description>
         </Constant>
         <Constant DataType="uint32" ID="28" Name="ClientTimeot">
