@@ -80,9 +80,9 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # Clang compile options
     list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -stdlib=libstdc++ ${AREG_USER_DEFINES})
     # Linker flags (-l is not necessary)
-    list(APPEND AREG_LDFLAGS c++ m ncurses pthread rt "${AREG_USER_DEF_LIBS}")
+    list(APPEND AREG_LDFLAGS c++ m ncurses pthread rt ${AREG_USER_DEF_LIBS})
 
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+elseif (CMAKE_COMPILER_IS_GNUCXX)
 
     # POSIX API
     add_definitions(-DPOSIX)
@@ -101,14 +101,15 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -MMD -std=c++17 ${AREG_USER_DEFINES})
     endif()
     # Linker flags (-l is not necessary)
-    list(APPEND AREG_LDFLAGS stdc++ m ncurses pthread rt "${AREG_USER_DEF_LIBS}")
+    list(APPEND AREG_LDFLAGS libstdc++ m ncurses pthread rt ${AREG_USER_DEF_LIBS})
 
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+elseif (MSVC)
 
     # Visual Studio C++
     # Windows / Win32 API
     add_definitions(-DWINDOWS)
     set(AREG_DEVELOP_ENV "Win32")
+
     if(NOT CMAKE_BUILD_TYPE MATCHES "Release")
         list(APPEND AREG_COMPILER_OPTIONS -Od -RTC1 -c)
     endif()
@@ -116,11 +117,11 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # MS Visual C++ compile options
     list(APPEND AREG_COMPILER_OPTIONS)
     # Linker flags (-l is not necessary)
-    list(APPEND AREG_LDFLAGS advapi32 psapi shell32 ws2_32 "${AREG_USER_DEF_LIBS}")
+    list(APPEND AREG_LDFLAGS advapi32 psapi shell32 ws2_32 ${AREG_USER_DEF_LIBS})
 
 else()
 
-    message(WARNING "Unsupported compiler type. The result is unpredictable, by default use GNU compiler settings and POSIX API")
+    message(WARNING ">>> Unsupported compiler type. The result is unpredictable, by default use GNU compiler settings and POSIX API")
     add_definitions(-DPOSIX)
     # POSIX API
     add_definitions(-DPOSIX)
@@ -173,4 +174,6 @@ message(STATUS ">>> Build for \'${CMAKE_SYSTEM_NAME}\' platform with compiler \'
 message(STATUS ">>> Binary output folder \'${AREG_OUTPUT_BIN}\'")
 message(STATUS ">>> Library output folder \'${AREG_OUTPUT_LIB}\'")
 message(STATUS ">>> Build examples is '${AREG_BUILD_EXAMPLES}\', build tests is \'${AREG_BUILD_TESTS}\'")
+message(STATUS ">>> Compiler options: ${AREG_COMPILER_OPTIONS}")
+message(STATUS ">>> Linker flags: ${AREG_LDFLAGS}") 
 message(STATUS "-------------------- Status Report End ----------------------")

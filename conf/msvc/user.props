@@ -72,7 +72,7 @@
         <ProjectTestDirName>examples</ProjectTestDirName>
         <!-- ****************************************************************************************************************************** -->
         <!-- Folder to output the build. Path is created as $(ProjectProductDirName)\$(DirBuild). Change to use other name.                 -->
-        <DirBuild>build\$(PlatformToolset)\$(Platform)</DirBuild>
+        <DirBuild>build\$(PlatformToolset)</DirBuild>
         <!-- ****************************************************************************************************************************** -->
         <!-- Compiled binaries folder name. Path is crated as $(ProjectProductDirName)\$(DirBuild)\$(Configuration)\$(DirBin).              -->
         <DirBin>bin</DirBin>
@@ -88,19 +88,19 @@
 
         <!-- ****************************************************************************************************************************** -->
         <!-- Path of Project Outputs Folder. Change path if using other.                                                                    -->
-        <ProjectOutputDir>$(ProjectRootDir)$(ProjectProductDirName)\$(DirBuild)</ProjectOutputDir>
+        <ProjectOutputDir>$(ProjectRootDir)$(ProjectProductDirName)\$(DirBuild)\$(OS)-$(Platform)-$(Configuration)</ProjectOutputDir>
         <!-- ****************************************************************************************************************************** -->
         <!-- Path of Project Generated Files Folder. Change path if using other.                                                            -->
         <ProjectGeneratedDir>$(ProjectRootDir)$(ProjectProductDirName)\$(DirGen)</ProjectGeneratedDir>
         <!-- ****************************************************************************************************************************** -->
         <!-- Path of Project Binaries Folder. Change path if using other.                                                                   -->
-        <ProjectBinDir>$(ProjectOutputDir)\$(Configuration)\$(DirBin)</ProjectBinDir>
+        <ProjectBinDir>$(ProjectOutputDir)\$(DirBin)</ProjectBinDir>
         <!-- ****************************************************************************************************************************** -->
         <!-- Path of Project Libraries Folder. Change path if using other.                                                                  -->
-        <ProjectLibDir>$(ProjectOutputDir)\$(Configuration)\$(DirLib)</ProjectLibDir>
+        <ProjectLibDir>$(ProjectOutputDir)\$(DirLib)</ProjectLibDir>
         <!-- ****************************************************************************************************************************** -->
         <!-- Path of Project Object files Folder. Change path if using other.                                                               -->
-        <ProjectObjectDir>$(ProjectOutputDir)\$(Configuration)\$(DirObj)\$(ProjectName)</ProjectObjectDir>
+        <ProjectObjectDir>$(ProjectOutputDir)\$(DirObj)\$(ProjectName)</ProjectObjectDir>
         <!-- ****************************************************************************************************************************** -->
         <!-- The path of project development folder. Change this name if using other name.                                                  -->
         <ProjectDevDir>$(ProjectRootDir)framework</ProjectDevDir>
