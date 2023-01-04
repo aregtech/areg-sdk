@@ -15,6 +15,6 @@ DEPS = $(20_pubservice_OBJS:%.o=%.d)
 -include $(DEPS)
 
 $(AREG_OUTPUT_BIN)/$(20_pubservice_TARGET_BIN): $(areg_TARGET_PATH) $(AREG_OUTPUT_LIB)/$(20_generated_TARGET_BIN) $(20_pubservice_OBJS)
-    @echo "Linking $@ ..."
-    @mkdir -p $(dir $@)
-    $(AREG_TOOLCHAIN) $(CXXFLAGS) $(20_pubdatarate_CXXFLAGS) $(20_pubservice_OBJS) $(20_pubdatarate_LDFLAGS) -o $@
+	@echo "Linking $@ ..."
+	@mkdir -p $(dir $@)
+	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(20_pubdatarate_CXXFLAGS) $(20_pubservice_OBJS) $(20_pubdatarate_LDFLAGS) -o $@
