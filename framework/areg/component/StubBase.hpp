@@ -613,6 +613,15 @@ protected:
     void sendUpdateEvent(unsigned int msgId, const EventDataStream & data, NEService::eResultType result) const;
 
     /**
+     * \brief   Send once the data update notification event to the specified target.
+     * \param   target  The target to send the event.
+     * \param   msgId   The message ID to send to the target object.
+     * \param   data    The data to send to the target. Can be Invalid buffer
+     * \param   result  The result of data update to send to the target object.
+     **/
+    void sendUpdateNotificationOnce( const ProxyAddress & target, unsigned int msgId, const EventDataStream & data, NEService::eResultType result ) const;
+
+    /**
      * \brief   Sends response event to proxy. The list of proxy listeners is selected by message ID.
      * \param   respId  The ID of response to send to proxy objects
      * \param   data    The buffer of serialized data to send to proxy (should be serialized arguments of response call)

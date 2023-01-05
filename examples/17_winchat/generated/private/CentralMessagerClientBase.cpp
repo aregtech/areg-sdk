@@ -2,9 +2,9 @@
 // Begin generate generated/private/CentralMessagerClientBase.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2022
+ * (c) copyright    2023
  *
- * Generated at     20.12.2022  16:20:16 GMT+01:00
+ * Generated at     05.01.2023  11:10:01 GMT+01:00
  *                  Create by AREG SDK code generator tool from source CentralMessager.
  *
  * \file            generated/CentralMessagerClientBase.hpp

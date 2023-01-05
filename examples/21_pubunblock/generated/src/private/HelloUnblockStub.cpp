@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     04.01.2023  11:00:36 GMT+01:00
+ * Generated at     05.01.2023  11:10:56 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloUnblock.
  *
  * \file            generated/src/HelloUnblockStub.hpp
@@ -274,22 +274,23 @@ void HelloUnblockStub::processAttributeEvent( ServiceRequestEvent & eventElem )
     else
     {
         NEHelloUnblock::eMessageIDs updId  = static_cast<NEHelloUnblock::eMessageIDs>(eventElem.getRequestId());
+        const ProxyAddress & source = eventElem.getEventSource( );
         if (reqType == NEService::eRequestType::StopNotify)
         {
-            removeNotificationListener( static_cast<msg_id>(updId), eventElem.getEventSource() );
+            removeNotificationListener( static_cast<msg_id>(updId), source );
         }
         else if (reqType == NEService::eRequestType::StartNotify)
         {
 #ifdef  _DEBUG
-            if (addNotificationListener( static_cast<msg_id>(updId), eventElem.getEventSource() ) == false )
+            if (addNotificationListener( static_cast<msg_id>(updId), source ) == false )
             {
                 TRACE_SCOPE(generated_src_HelloUnblockStub_processAttributeEvent);
                 TRACE_WARN("The notification request of message ID [ %s ] of sources [ %s ] is already registered. Ignoring start notification registration request."
                             , NEHelloUnblock::getString(updId)
-                            , ProxyAddress::convAddressToPath(eventElem.getEventSource()).getString());
+                            , ProxyAddress::convAddressToPath(source).getString());
             }
 #else   // _DEBUG
-            addNotificationListener( static_cast<msg_id>(updId), eventElem.getEventSource() );
+            addNotificationListener( static_cast<msg_id>(updId), source );
 #endif  // _DEBUG
             EventDataStream args(EventDataStream::eEventData::EventDataExternal);
             NEService::eResultType validUpdate = NEService::eResultType::DataOK;
@@ -319,7 +320,9 @@ void HelloUnblockStub::processAttributeEvent( ServiceRequestEvent & eventElem )
             }
 
             if (updId != NEHelloUnblock::eMessageIDs::MsgId_NotProcessed)
-                sendUpdateEvent( static_cast<msg_id>(updId), args, validUpdate );
+            {
+                sendUpdateNotificationOnce( source, static_cast<msg_id>(updId), args, validUpdate );
+            }
         }
     }
 }

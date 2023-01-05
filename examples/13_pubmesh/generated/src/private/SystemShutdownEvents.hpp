@@ -6,9 +6,9 @@
 #define  GENERATED_SRC_PRIVATE_SYSTEMSHUTDOWNEVENTS_HPP
 
 /************************************************************************
- * (c) copyright    2022
+ * (c) copyright    2023
  *
- * Generated at     20.12.2022  16:19:19 GMT+01:00
+ * Generated at     05.01.2023  11:08:55 GMT+01:00
  *                  Create by AREG SDK code generator tool from source SystemShutdown.
  *
  * \file            generated/src/private/SystemShutdownEvents.hpp

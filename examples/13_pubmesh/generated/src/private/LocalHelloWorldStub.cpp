@@ -2,9 +2,9 @@
 // Begin generate generated/src/private/LocalHelloWorldStub.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2022
+ * (c) copyright    2023
  *
- * Generated at     20.12.2022  16:19:16 GMT+01:00
+ * Generated at     05.01.2023  11:08:52 GMT+01:00
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
  *
  * \file            generated/src/LocalHelloWorldStub.hpp
@@ -210,22 +210,23 @@ void LocalHelloWorldStub::processAttributeEvent( ServiceRequestEvent & eventElem
     else
     {
         NELocalHelloWorld::eMessageIDs updId  = static_cast<NELocalHelloWorld::eMessageIDs>(eventElem.getRequestId());
+        const ProxyAddress & source = eventElem.getEventSource( );
         if (reqType == NEService::eRequestType::StopNotify)
         {
-            removeNotificationListener( static_cast<msg_id>(updId), eventElem.getEventSource() );
+            removeNotificationListener( static_cast<msg_id>(updId), source );
         }
         else if (reqType == NEService::eRequestType::StartNotify)
         {
 #ifdef  _DEBUG
-            if (addNotificationListener( static_cast<msg_id>(updId), eventElem.getEventSource() ) == false )
+            if (addNotificationListener( static_cast<msg_id>(updId), source ) == false )
             {
                 TRACE_SCOPE(generated_src_LocalHelloWorldStub_processAttributeEvent);
                 TRACE_WARN("The notification request of message ID [ %s ] of sources [ %s ] is already registered. Ignoring start notification registration request."
                             , NELocalHelloWorld::getString(updId)
-                            , ProxyAddress::convAddressToPath(eventElem.getEventSource()).getString());
+                            , ProxyAddress::convAddressToPath(source).getString());
             }
 #else   // _DEBUG
-            addNotificationListener( static_cast<msg_id>(updId), eventElem.getEventSource() );
+            addNotificationListener( static_cast<msg_id>(updId), source );
 #endif  // _DEBUG
 #ifdef  _DEBUG
             if ( NEService::isResponseId(static_cast<msg_id>(updId)) == false )
