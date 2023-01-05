@@ -20,8 +20,11 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - name: checkout sources
-      uses: actions/checkout@v3
+
+      - name: Checkout AREG engine (AREG SDK) source codes and dependencies
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
 
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
