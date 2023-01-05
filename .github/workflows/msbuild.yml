@@ -1,0 +1,52 @@
+name: MSBuild
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  # Path to the solution file relative to the root of the project.
+  SOLUTION_FILE_PATH: .
+
+  # Configuration type to build.
+  # You can convert this to a build matrix if you need coverage of multiple configuration types.
+  # https://docs.github.com/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+  BUILD_CONFIGURATION: Release
+
+permissions:
+  contents: read
+
+jobs:
+  build-tests:
+    name: ${{matrix.config.name}}
+    runs-on: windows-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config: # Create matrix with combinations
+          # Compile for 32-bit platform
+          - {name: MSBuild-platform-Win32, platform: Win32}
+          # Compile for 32-bit platform
+          - {name: MSBuild-platform-x64, platform: x64}
+
+    steps:
+    - name: Checkout AREG enging (AREG SDK) source codes and submodules
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Restore NuGet packages
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run: nuget restore ${{env.SOLUTION_FILE_PATH}}
+
+    - name: Build areg-sdk solution.
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      # Add additional options to the MSBuild command line here (like platform or verbosity level).
+      # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
+      run: msbuild /m /property:Configuration=${{env.BUILD_CONFIGURATION}} /property:Platform=${{matrix.config.platform}} ${{env.SOLUTION_FILE_PATH}} 
