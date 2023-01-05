@@ -326,6 +326,7 @@ void StubBase::sendUpdateEvent( unsigned int msgId, const EventDataStream & data
             sendUpdateNotification(listeners, *eventElem);
             eventElem->destroy();
         }
+    ResponseEvent * eventElem = createResponseEvent( proxy, msgId, result, data );
     }
 }
 
