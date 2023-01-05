@@ -118,12 +118,10 @@ void ServiceClient::onHelloServiceStateUpdate( NEHelloUnblock::eServiceState Hel
     {
         if ( HelloServiceState == NEHelloUnblock::eServiceState::ServiceActive )
         {
-            if ( mClientId == NEHelloUnblock::InvalidId )
-            {
-                // send the request only if client has no valid ID
-                requestIdentifier( );
-                TRACE_DBG( "Service is active, requesting ID" );
-            }
+            ASSERT( mClientId == NEHelloUnblock::InvalidId );
+            // send the request only if client has no valid ID
+            requestIdentifier( );
+            TRACE_DBG( "Service is active, requesting ID" );
         }
         else if ( HelloServiceState == NEHelloUnblock::eServiceState::ServiceShutdown )
         {

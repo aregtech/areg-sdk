@@ -233,8 +233,10 @@ void StubBase::sendUpdateNotification( const StubListenerList & whichListeners, 
     {
         const StubBase::Listener& listener = whichListeners[pos];
         ServiceResponseEvent* eventResp = masterEvent.cloneForTarget(listener.mProxy);
-        if (eventResp != nullptr)
-            sendServiceResponse(*eventResp);
+        if ( eventResp != nullptr )
+        {
+            sendServiceResponse( *eventResp );
+        }
     }
 }
 
@@ -326,7 +328,15 @@ void StubBase::sendUpdateEvent( unsigned int msgId, const EventDataStream & data
             sendUpdateNotification(listeners, *eventElem);
             eventElem->destroy();
         }
-    ResponseEvent * eventElem = createResponseEvent( proxy, msgId, result, data );
+    }
+}
+
+void StubBase::sendUpdateNotificationOnce( const ProxyAddress & target, unsigned int msgId, const EventDataStream & data, NEService::eResultType result ) const
+{
+    ResponseEvent * eventElem = createResponseEvent( target, msgId, result, data );
+    if ( eventElem != nullptr )
+    {
+        sendServiceResponse( *eventElem );
     }
 }
 

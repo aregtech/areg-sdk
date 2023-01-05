@@ -2,9 +2,9 @@
 // Begin generate generated/src/private/HelloWatchdogStub.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2022
+ * (c) copyright    2023
  *
- * Generated at     20.12.2022  16:20:51 GMT+01:00
+ * Generated at     05.01.2023  11:10:31 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWatchdog.
  *
  * \file            generated/src/HelloWatchdogStub.hpp
@@ -269,22 +269,23 @@ void HelloWatchdogStub::processAttributeEvent( ServiceRequestEvent & eventElem )
     else
     {
         NEHelloWatchdog::eMessageIDs updId  = static_cast<NEHelloWatchdog::eMessageIDs>(eventElem.getRequestId());
+        const ProxyAddress & source = eventElem.getEventSource( );
         if (reqType == NEService::eRequestType::StopNotify)
         {
-            removeNotificationListener( static_cast<msg_id>(updId), eventElem.getEventSource() );
+            removeNotificationListener( static_cast<msg_id>(updId), source );
         }
         else if (reqType == NEService::eRequestType::StartNotify)
         {
 #ifdef  _DEBUG
-            if (addNotificationListener( static_cast<msg_id>(updId), eventElem.getEventSource() ) == false )
+            if (addNotificationListener( static_cast<msg_id>(updId), source ) == false )
             {
                 TRACE_SCOPE(generated_src_HelloWatchdogStub_processAttributeEvent);
                 TRACE_WARN("The notification request of message ID [ %s ] of sources [ %s ] is already registered. Ignoring start notification registration request."
                             , NEHelloWatchdog::getString(updId)
-                            , ProxyAddress::convAddressToPath(eventElem.getEventSource()).getString());
+                            , ProxyAddress::convAddressToPath(source).getString());
             }
 #else   // _DEBUG
-            addNotificationListener( static_cast<msg_id>(updId), eventElem.getEventSource() );
+            addNotificationListener( static_cast<msg_id>(updId), source );
 #endif  // _DEBUG
             EventDataStream args(EventDataStream::eEventData::EventDataExternal);
             NEService::eResultType validUpdate = NEService::eResultType::DataOK;
@@ -314,7 +315,9 @@ void HelloWatchdogStub::processAttributeEvent( ServiceRequestEvent & eventElem )
             }
 
             if (updId != NEHelloWatchdog::eMessageIDs::MsgId_NotProcessed)
-                sendUpdateEvent( static_cast<msg_id>(updId), args, validUpdate );
+            {
+                sendUpdateNotificationOnce( source, static_cast<msg_id>(updId), args, validUpdate );
+            }
         }
     }
 }

@@ -2,9 +2,9 @@
 // Begin generate generated/src/private/HelloWorldClientBase.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2022
+ * (c) copyright    2023
  *
- * Generated at     20.12.2022  16:18:37 GMT+01:00
+ * Generated at     05.01.2023  11:07:38 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/HelloWorldClientBase.hpp

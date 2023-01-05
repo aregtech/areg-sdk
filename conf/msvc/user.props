@@ -31,6 +31,8 @@
         <!-- Third-Party source folder. Change if it differs or solution file is moved to other folder.                                     -->
         <!-- ****************************************************************************************************************************** -->
         <ThirdSources>$(ProjectRootDir)thirdparty</ThirdSources>
+        <ThirdIncludes>$(ProjectRootDir)thirdparty</ThirdIncludes>
+        <ThirdPreprocessorDefines></ThirdPreprocessorDefines>
 
         <!-- ****************************************************************************************************************************** -->
         <!-- Advanced settings change                                                                                                       -->
@@ -176,6 +178,14 @@
 
         <BuildMacro Include="ThirdSources">
             <Value>$(ThirdSources)</Value>
+        </BuildMacro>
+
+        <BuildMacro Include="ThirdIncludes">
+            <Value>$(ThirdIncludes)</Value>
+        </BuildMacro>
+
+        <BuildMacro Include="ThirdPreprocessorDefines">
+            <Value>$(ThirdPreprocessorDefines)</Value>
         </BuildMacro>
 
         <BuildMacro Include="UserPreprocessorDefines">

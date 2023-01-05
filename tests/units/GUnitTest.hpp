@@ -18,11 +18,17 @@
     !defined(IMPORT_STATIC_SYMBOLS) && \
     !defined(_IMPORT_STATIC_SYMBOLS)
 
-    #error  "You should import AREG library either as shared or static library"
+    #error  "You should import AREG engine either as shared or static library"
 
 #endif // wrong imports
 
 #include "areg/base/GEGlobal.h"
 #include "googletest/googletest/include/gtest/gtest.h"
+
+#ifdef _WIN32
+    #pragma comment(lib, "gtest.lib")
+    #pragma comment(lib, "gtest_main.lib")
+    #pragma comment(lib, "areg.lib")
+#endif // _WIN32
 
 #endif // !AREG_TESTS_UNITS_GUNITTESTS_HPP
