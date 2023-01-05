@@ -363,7 +363,7 @@ We look for help and welcome to join the project:
 * When create a pull request, please understand that reviewing and testing takes time, and we as well pay attention on coding style.
 * If you look for invoiced commercial support or trainings, or if your project has possibility commercially support AREG SDK, please contact info[at]aregtech[dot]com. 
 
-Did we help your project? Have you learned something new? Have we inspired you for new great ideas? Then we ask not to be indifferent and [![star AREG SDK](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=star%20AREG%20SDK)](https://github.com/aregtech/areg-sdk/). This small thank inspires contributors and help us to expand our community. Please also share the project with your network at [![Twitter](https://img.shields.io/twitter/url?label=Twitter&style=social&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk) and other social media platforms.
+Did we help your project? Have you learned something new? Have we inspired you for new great ideas? Then we ask not to be indifferent and [![star AREG SDK](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=star%20AREG%20SDK)](https://github.com/aregtech/areg-sdk/). This small thank inspires contributors and help us to expand our community.
 
 <div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
@@ -371,7 +371,19 @@ Did we help your project? Have you learned something new? Have we inspired you f
 
 **Follow us**<br />
 [![Follow us on twitter](https://img.shields.io/twitter/follow/aregtech.svg?style=social)](https://twitter.com/intent/follow?screen_name=aregtech) 
-[![Follow us on LinkedIn](https://img.shields.io/badge/LinkedIn-Aregtech-blue?style=flat&logo=linkedin&logoColor=b0c0c0&labelColor=363D44)](https://www.linkedin.com/company/aregtech) [![Join the chat at https://gitter.im/areg-sdk/community](https://badges.gitter.im/areg-sdk/community.svg)](https://gitter.im/areg-sdk/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Follow us on LinkedIn](https://img.shields.io/badge/LinkedIn-Aregtech-blue?style=flat&logo=linkedin&logoColor=b0c0c0&labelColor=363D44)](https://www.linkedin.com/company/aregtech)
+[![Join the chat at https://gitter.im/areg-sdk/community](https://badges.gitter.im/areg-sdk/community.svg)](https://gitter.im/areg-sdk/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+---
+
+**Share**<br />
+Please share the project link with your network in social media platforms.
+
+![Reddit](https://img.shields.io/twitter/url?label=reddit&logo=reddit&style=social&url=https%3A%2F%2Freddit.com%2Fsubmit%3Furl%3Dhttps%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk%26title%3DWow) 
+![Twitter](https://img.shields.io/twitter/url?label=twitter&style=social&url=https%3A%2F%2Ftwitter.com%2Fintent%2Ftweet%3Ftext%3DWow%3A%26url%3Dhttps%253A%252F%252Fgithub.com%252Faregtech%252Fareg-sdk) 
+![LinkedIn](https://img.shields.io/twitter/url?label=LinkedIn&logo=LinkedIn&style=social&url=https%3A%2F%2Fwww.linkedin.com%2FshareArticle%3Furl%3Dhttps%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk%26title%3DWow) 
+![Facebook](https://img.shields.io/twitter/url?label=facebook&logo=facebook&style=social&url=https%3A%2F%2Fwww.facebook.com%2Fsharer%2Fsharer.php%3Fu%3Dhttps%253A%252F%252Fgithub.com%252Faregtech%252Fareg-sdk%26amp%3Bsrc%3Dsdkpreparse) 
+![Telegram](https://img.shields.io/twitter/url?label=Telegram&logo=Telegram&style=social&url=https%3A%2F%2Ftelegram.me%2Fshare%2Furl%3Furl%3Dhttps%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk%26text%3DWow)
 
 ---
 
