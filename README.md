@@ -249,7 +249,7 @@ AREG SDK can be used in a very large scope of multithreading and multiprocessing
 
 #### Distributed solution
 
-<details><summary> Click to show / hide <code>distributed solution</code>.</summary><br/>
+<details open><summary> Click to show / hide <code>distributed solution</code>.</summary><br/>
 
 AREG SDK is a solution of distributed services that can run on any node of the network and because of automations and transparent communication interact as if the components are located in one process. To distribute services in the processes and define relationships, developers create _model_ to load during runtime.
 
@@ -299,7 +299,7 @@ The services are started when load model by calling function `Application::loadM
 
 #### Driverless devices
 
-<details><summary> Click to show / hide <code>driverless devices</code>.</summary><br/>
+<details open><summary> Click to show / hide <code>driverless devices</code>.</summary><br/>
 
 Normally, the devices are supplied with the drivers to install in the system and with the header files to integrate in the application(s). The drivers often run in Kernel mode and the crash of the driver crashes the entire system. Driver development requires a special technique, which is different for each operating system, and it is hard to debug. 
 <br /><a href="/docs/img/driver-solution.png"><img src="/docs/img/driver-solution.png" alt="Kkernel-mode driver solution" style="width:70%;height:70%"/></a><br />
@@ -310,7 +310,7 @@ In contrast to drivers, the service development does not differ from user mode a
 
 #### Real-time solutions
 
-<details><summary> Click to show / hide <code>real-time solutions</code>.</summary><br/>
+<details open><summary> Click to show / hide <code>real-time solutions</code>.</summary><br/>
 
 When a remote method of the service interface is called, the engine of AREG SDK automatically generates and delivers messages to the target and automatically invokes the exact methods of the exact target objects. This makes communication real-time with ultra-low networking latency. Such solutions are highly required to develop time-sensitive applications for automotive, flock of drones, medtech, real-time manufacturing, real-time monitoring and other projects.
 <br /><a href="/docs/img/areg-sdk-features.png"><img src="/docs/img/areg-sdk-features.png" alt="AREG SDK and multicast features" style="width:70%;height:70%"/></a><br />
@@ -318,14 +318,14 @@ When a remote method of the service interface is called, the engine of AREG SDK 
 
 #### Digital twin
 
-<details><summary> Click to show / hide <code>digital twin</code>.</summary><br/>
+<details open><summary> Click to show / hide <code>digital twin</code>.</summary><br/>
 
 Often, the digital twin applications use client-server architecture, where the middleware server collects the data of external devices and the UI application virtualizes them. In such solutions, devices interact either through server or UI client applications. The event-driven and the service-oriented architecture, and the real-time communication of AREG framework is a good solution to develop digital twin applications to virtualize, monitor and control external devices, and immediately react to environment or device state change in real-time mode. External devices may also communicate without additional layers, which is an important factor for emergency, security and safety cases.
 </details>
 
 #### Simulation and tests
 
-<details><summary> Click to show / hide <code>simulation and tests</code>.</summary></br>
+<details open><summary> Click to show / hide <code>simulation and tests</code>.</summary></br>
 
 When hardware provisioning to all employees is impossible, testing and checking unexpected phenomena of rapidly changing software in a simulated environment is the most rational solution. If unit tests are for testing a small portion of code and the tests may contain bugs, the simulation is used by developers and testers to check functionality and stability of the system. Simulations are portable and accessible to everyone, help to optimize solutions and avoid unnecessary risks. Projects using simulations are better prepared for remote work and easier to outsource.
 <br /><a href="/docs/img/software-layers.png"><img src="/docs/img/software-layers.png" alt="Software application 4 layers" style="width:70%;height:70%"/></a><br />
