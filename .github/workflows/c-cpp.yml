@@ -3,20 +3,8 @@ name: C/C++ CI
 on:
   push:
     branches: [ master ]
-    paths:
-      - '!.github/workflows/cmake.yml'
-      - '!.github/workflows/msbuild.yml'
-      - '!**CMakeLists.txt'
-      - '!**.txt'
-      - '!**.md'
-      - '!**.sln'
-      - '!**.vcxproj'
-      - '!**.vcxproj.filter'
   pull_request:
     branches: [ master ]
-    paths:
-      - '!**Readme'
-      - '!**md'
   
 jobs:
   build:
