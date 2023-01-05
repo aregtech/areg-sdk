@@ -30,8 +30,8 @@
         <!-- ****************************************************************************************************************************** -->
         <!-- Third-Party source folder. Change if it differs or solution file is moved to other folder.                                     -->
         <!-- ****************************************************************************************************************************** -->
-        <ThirdSources>$(ProjectRootDir)thirdparty</ThirdSources>
-        <ThirdIncludes>$(ProjectRootDir)thirdparty</ThirdIncludes>
+        <ThirdpartyDir>$(ProjectRootDir)thirdparty</ThirdpartyDir>
+        <ThirdIncludes>$(ThirdpartyDir)</ThirdIncludes>
         <ThirdPreprocessorDefines></ThirdPreprocessorDefines>
 
         <!-- ****************************************************************************************************************************** -->
@@ -176,8 +176,8 @@
             <Value>$(ProjectRootDir)</Value>
         </BuildMacro>
 
-        <BuildMacro Include="ThirdSources">
-            <Value>$(ThirdSources)</Value>
+        <BuildMacro Include="ThirdpartyDir">
+            <Value>$(ThirdpartyDir)</Value>
         </BuildMacro>
 
         <BuildMacro Include="ThirdIncludes">
