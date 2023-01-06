@@ -186,6 +186,4 @@ message(STATUS ">>> Build for \'${CMAKE_SYSTEM_NAME}\' platform with compiler \'
 message(STATUS ">>> Binary output folder \'${AREG_OUTPUT_BIN}\'")
 message(STATUS ">>> Library output folder \'${AREG_OUTPUT_LIB}\'")
 message(STATUS ">>> Build examples is '${AREG_BUILD_EXAMPLES}\', build tests is \'${AREG_BUILD_TESTS}\'")
-message(STATUS ">>> Compiler options: ${AREG_COMPILER_OPTIONS}")
-message(STATUS ">>> Linker flags: ${AREG_LDFLAGS}") 
 message(STATUS "-------------------- Status Report End ----------------------")
