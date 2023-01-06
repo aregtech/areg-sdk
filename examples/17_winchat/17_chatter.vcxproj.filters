@@ -156,4 +156,10 @@
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="chatter\res\CMakeLists.txt" />
+    <Text Include="chatter\services\CMakeLists.txt" />
+    <Text Include="chatter\ui\CMakeLists.txt" />
+    <Text Include="chatter\CMakeLists.txt" />
+  </ItemGroup>
 </Project>

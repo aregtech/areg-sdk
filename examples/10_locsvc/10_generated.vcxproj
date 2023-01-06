@@ -52,6 +52,13 @@
     <ClInclude Include="generated\src\private\HelloWorldEvents.hpp" />
     <ClInclude Include="generated\src\private\HelloWorldProxy.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="generated\CMakeLists.txt" />
+    <Text Include="generated\src\private\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\HelloWorld.siml" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

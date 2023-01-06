@@ -26,6 +26,10 @@
     <ClInclude Include="common\src\ClientComponent.hpp" />
     <ClInclude Include="common\src\ServiceComponent.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="onethread\CMakeLists.txt" />
+    <Text Include="onethread\src\CMakeLists.txt" />
+  </ItemGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
     <ClCompile>
       <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>

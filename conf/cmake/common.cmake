@@ -56,7 +56,8 @@ set(AREG_LDFLAGS)
 set(AREG_COMPILER_OPTIONS)
 
 # Adding common definition
-add_definitions(-DUNICODE)
+add_definitions(-DUNICODE -D_UNICODE)
+remove_definitions(-D_MBCS -DMBCS)
 
 if(CMAKE_BUILD_TYPE MATCHES Release)
     add_definitions(-DNDEBUG)
@@ -107,13 +108,16 @@ elseif (MSVC)
 
     # Visual Studio C++
     # Windows / Win32 API
-    add_definitions(-DWINDOWS)
     set(AREG_DEVELOP_ENV "Win32")
+    add_definitions(-DWINDOWS -D_WINDOWS -DWIN32 -D_WIN32)
+    if (${AREG_PLATFORM} MATCHES "x86_64")
+        add_definitions(-DWIN64 -D_WIN64)
+    endif()
 
     if(NOT CMAKE_BUILD_TYPE MATCHES "Release")
         list(APPEND AREG_COMPILER_OPTIONS -Od -RTC1 -c)
     endif()
-
+        
     # MS Visual C++ compile options
     list(APPEND AREG_COMPILER_OPTIONS)
     # Linker flags (-l is not necessary)

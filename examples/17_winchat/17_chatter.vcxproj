@@ -109,6 +109,12 @@
   <ItemGroup>
     <None Include="chatter\res\chatter.rc2" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="chatter\CMakeLists.txt" />
+    <Text Include="chatter\res\CMakeLists.txt" />
+    <Text Include="chatter\services\CMakeLists.txt" />
+    <Text Include="chatter\ui\CMakeLists.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

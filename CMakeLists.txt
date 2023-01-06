@@ -19,7 +19,7 @@ set(CXX_STANDARD        ${AREG_CXX_STANDARD})
 # Project's properties
 set(PROJECT_NAME "areg-sdk")
 set(PROJECT_VERSION "1.5.0")
-project(${PROJECT_NAME} VERSION ${PROJECT_VERSION} LANGUAGES C CXX)
+project(${PROJECT_NAME} VERSION ${PROJECT_VERSION} LANGUAGES C CXX RC)
 
 include(${AREG_CMAKE_CONFIG_DIR}/common.cmake)
 include(${AREG_CMAKE_CONFIG_DIR}/functions.cmake)

@@ -85,6 +85,12 @@
   <ItemGroup>
     <None Include="register\res\register.rc2" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="register\CMakeLists.txt" />
+    <Text Include="register\res\CMakeLists.txt" />
+    <Text Include="register\services\CMakeLists.txt" />
+    <Text Include="register\ui\CMakeLists.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

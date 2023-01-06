@@ -12,6 +12,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mcrouter", "framework\mcrou
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FD549A95-E734-4E26-A5B2-2330FC310C8D}"
 	ProjectSection(SolutionItems) = preProject
+		CMakeLists.txt = CMakeLists.txt
 		CONTRIBUTING.md = CONTRIBUTING.md
 		LICENSE.txt = LICENSE.txt
 		README.md = README.md
@@ -81,12 +82,12 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{07BFF46A-D4BC-4FAD-9727-D959755BFBAC}"
 	ProjectSection(SolutionItems) = preProject
 		examples\CMakeLists.txt = examples\CMakeLists.txt
-		examples\Makefile = examples\Makefile
 		examples\README.md = examples\README.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "00_helloservice", "00_helloservice", "{2DF9C20F-08BB-475B-8901-C1A64D88BA8A}"
 	ProjectSection(SolutionItems) = preProject
+		examples\00_helloservice\CMakeLists.txt = examples\00_helloservice\CMakeLists.txt
 		examples\00_helloservice\ReadMe.txt = examples\00_helloservice\ReadMe.txt
 	EndProjectSection
 EndProject
@@ -170,6 +171,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "09_svcmulti", "examples\09_
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "10_locsvc", "10_locsvc", "{F99F67DA-37F9-46DD-A416-64C930758DE5}"
 	ProjectSection(SolutionItems) = preProject
+		examples\10_locsvc\CMakeLists.txt = examples\10_locsvc\CMakeLists.txt
 		examples\10_locsvc\ReadMe.txt = examples\10_locsvc\ReadMe.txt
 	EndProjectSection
 EndProject
@@ -190,6 +192,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "10_locservice", "examples\1
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "11_locmesh", "11_locmesh", "{35133FDA-2CD3-4BAD-9C54-145DC4DC787A}"
 	ProjectSection(SolutionItems) = preProject
+		examples\11_locmesh\CMakeLists.txt = examples\11_locmesh\CMakeLists.txt
 		examples\11_locmesh\ReadMe.txt = examples\11_locmesh\ReadMe.txt
 	EndProjectSection
 EndProject
@@ -210,6 +213,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "11_locmesh", "examples\11_l
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "12_pubsvc", "12_pubsvc", "{13F637CA-7D9B-4218-8B55-D415897B8DE0}"
 	ProjectSection(SolutionItems) = preProject
+		examples\12_pubsvc\CMakeLists.txt = examples\12_pubsvc\CMakeLists.txt
 		examples\12_pubsvc\ReadMe.txt = examples\12_pubsvc\ReadMe.txt
 	EndProjectSection
 EndProject
@@ -353,6 +357,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "16_pubservice", "examples\1
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "17_winchat", "17_winchat", "{503FAC02-04F9-466D-B783-4608413BDFBA}"
 	ProjectSection(SolutionItems) = preProject
+		examples\17_winchat\CMakeLists.txt = examples\17_winchat\CMakeLists.txt
 		examples\17_winchat\ReadMe.txt = examples\17_winchat\ReadMe.txt
 	EndProjectSection
 EndProject

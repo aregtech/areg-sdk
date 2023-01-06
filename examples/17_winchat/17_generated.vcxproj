@@ -85,6 +85,10 @@
     <ClCompile Include="generated\private\NEDirectConnection.cpp" />
     <ClCompile Include="generated\private\NEDirectMessager.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="generated\CMakeLists.txt" />
+    <Text Include="generated\private\CMakeLists.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
