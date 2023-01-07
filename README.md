@@ -7,7 +7,7 @@
 ![Stars](https://img.shields.io/github/stars/aregtech/areg-sdk?style=social)
 ![Fork](https://img.shields.io/github/forks/aregtech/areg-sdk?style=social)
 ![Watchers](https://img.shields.io/github/watchers/aregtech/areg-sdk?style=social)
-<br/>1 `star` == 1 `thank you`. By starring the project you thank the work of distributors.
+<br/>1 `star` == 1 `thank you`. By starring the project you thank the contributors for work.
 
 <!--  The latest development sources are in [20220701-candidate](https://github.com/aregtech/areg-sdk/tree/20220701-candidate) branch. Please check the [build status](https://github.com/aregtech/areg-sdk/actions) before cloning it. -->
 
