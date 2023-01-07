@@ -55,14 +55,14 @@ endif()
 # Set the C++ and C compiler type either automatically or manual in command line
 # by specifying AREG_CXX_COMPILER and AREG_C_COMPILER
 if (NOT DEFINED AREG_CXX_COMPILER OR AREG_CXX_COMPILER STREQUAL "")
-    # Possible settings: "gcc", "g++", "cl", "clang++-13"
+    # Possible settings: "gcc", "g++", "cl", "clang++"
     set(AREG_CXX_COMPILER "g++")
 else()
     message(STATUS ">>> User selected C++ compiler ${AREG_CXX_COMPILER}")
 endif()
 
 if (NOT DEFINED AREG_C_COMPILER OR AREG_C_COMPILER STREQUAL "")
-    # Possible settings: "gcc", "cl", "clang-13"
+    # Possible settings: "gcc", "cl", "clang"
     set(AREG_C_COMPILER "gcc")
 else()
     message(STATUS ">>> User selected C compiler ${AREG_C_COMPILER}")
@@ -78,8 +78,8 @@ if (DEFINED AREG_COMPILER_FAMILY)
         set(AREG_CXX_COMPILER "g++")
         set(AREG_C_COMPILER   "gcc")
     elseif(${AREG_COMPILER_FAMILY} MATCHES "clang")
-        set(AREG_CXX_COMPILER "clang++-13")
-        set(AREG_C_COMPILER   "clang-13")
+        set(AREG_CXX_COMPILER "clang++")
+        set(AREG_C_COMPILER   "clang")
     elseif(${AREG_COMPILER_FAMILY} MATCHES "msvc")
         set(AREG_CXX_COMPILER "cl")
         set(AREG_C_COMPILER   "cl")
