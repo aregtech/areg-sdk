@@ -42,3 +42,4 @@ examples/*/*/*/.gitignore
 examples/*/*/*/.settings
 examples/*/*/*/Debug
 examples/*/*/*/Release
+CMakeSettings.json

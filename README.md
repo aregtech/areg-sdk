@@ -1,9 +1,13 @@
 <h1 align="center" style="display: block; font-size: 2.5em; font-weight: bold; margin-block-start: 1em; margin-block-end: 1em;">
-<a name="logo" href="https://www.aregtech.com"><img align="center" src="/docs/img/areg-sdk-1280x360px-logo.png" alt="AREG SDK Home" style="width:100%;height:100%"/></a>
+<a name="logo" href="https://www.aregtech.com"><img align="center" src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-sdk-1280x360px-logo.png" alt="AREG SDK Home" style="width:100%;height:100%"/></a>
   <br /><br /><strong>AREG SDK</strong>
 </h1>
 
 ![Latest release](https://img.shields.io/github/v/release/aregtech/areg-sdk?label=%20%F0%9F%93%A3%20Latest%20release&style=flat&logoColor=b0c0c0&labelColor=363D44)
+![Stars](https://img.shields.io/github/stars/aregtech/areg-sdk?style=social)
+![Fork](https://img.shields.io/github/forks/aregtech/areg-sdk?style=social)
+![Watchers](https://img.shields.io/github/watchers/aregtech/areg-sdk?style=social)
+<br/>1 `star` == 1 `thank you`. By starring the project you thank the work of distributors.
 
 <!--  The latest development sources are in [20220701-candidate](https://github.com/aregtech/areg-sdk/tree/20220701-candidate) branch. Please check the [build status](https://github.com/aregtech/areg-sdk/actions) before cloning it. -->
 
@@ -34,34 +38,37 @@
 ---
 
 ## Table of contents[![](./docs/img/pin.svg)](#table-of-contents)
-1. [Motivation](#motivation)
-2. [More than embedded](#more-than-embedded)
-3. [Composition](#composition)
-4. [Roadmap](#roadmap)
-5. [Software build](#software-build)
-   - [Build with `cmake`](#build-with-cmake)
-   - [Build with `make`](#build-with-make)
-   - [Build with IDE](#build-with-ide)
-6. [Software integration](#software-integration)
-   - [Multicast router](#multicast-router)
-   - [Logging service](#logging-service)
-   - [Development](#development)
-7. [Use cases and benefits](#use-cases-and-benefits)
-   - [Distributes solutions](#distributed-solution)
-   - [Driverless devices](#driverless-devices)
-   - [Real-time solutions](#real-time-solutions)
-   - [Digital twin](#digital-twin)
-   - [Simulation and tests](#simulation-and-tests)
-8. [Examples](#examples)
-9. [Licensing](#licensing)
-10. [Call for action](#call-for-action)
+- [Project Status](#project-status)
+- [Introduction](#introduction)
+- [Table of contents](#table-of-contents)
+- [Motivation](#motivation)
+- [More than embedded](#more-than-embedded)
+- [Composition](#composition)
+- [Roadmap](#roadmap)
+- [Software build](#software-build)
+    - [Build with `cmake`](#build-with-cmake)
+    - [Build with `make`](#build-with-make)
+    - [Build with IDE](#build-with-ide)
+- [Software integration](#software-integration)
+    - [Multicast router](#multicast-router)
+    - [Logging service](#logging-service)
+    - [Development](#development)
+- [Use cases and benefits](#use-cases-and-benefits)
+    - [Distributed solution](#distributed-solution)
+    - [Driverless devices](#driverless-devices)
+    - [Real-time solutions](#real-time-solutions)
+    - [Digital twin](#digital-twin)
+    - [Simulation and tests](#simulation-and-tests)
+- [Examples](#examples)
+- [Licensing](#licensing)
+- [Call for action](#call-for-action)
 
 ---
 
 ## Motivation[![](./docs/img/pin.svg)](#motivation)
 
 Traditionally, devices act as connected clients to stream data to the cloud or fog servers for further processing.
-<br /><br /><a href="/docs/img/mist-network.png"><img src="/docs/img/mist-network.png" alt="IoT-to-Cloud (Nebula) network" style="width:70%;height:70%"/></a><br /><br />
+<br /><br /><a href="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/mist-network.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/mist-network.png" alt="IoT-to-Cloud (Nebula) network" style="width:70%;height:70%"/></a><br /><br />
 Since data is generated and collected at the edge of the network (**mist network**), it makes sense to change the role of connected Things and provide network-accessible (_Public_) services directly on devices. This extends _Cloud_ to the extreme edge and it is a good foothold for robust solutions such as:
 * _Increase data privacy_, which is an important factor for sensitive data.
 * _Decrease data streaming_, which is a fundamental condition to optimize network communication.
@@ -74,7 +81,7 @@ Since data is generated and collected at the edge of the network (**mist network
 ## More than embedded[![](./docs/img/pin.svg)](#more-than-embedded)
 
 When we were designing AREG SDK, the guiding principle was to provide a homogeneous solution for Multithreading, Multiprocessing and Internet communication wrapped in services appropriately having _Local_, _Public_ and _Internet_ categories. These services are neither processes nor tasks managed by the operating system, they are software components with a predefined interface, in which methods are invoked remotely.
-<br /><a href="docs/img/areg-services.png"><img src="docs/img/areg-services.png" alt="AREG SDK distributed services" style="width:70%;height:70%"/></a><br />
+<br /><a href="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-services.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-services.png" alt="AREG SDK distributed services" style="width:70%;height:70%"/></a><br />
 > 💡 In current version, the AREG communication engine supports _Local_ (multithreading) and _Public_ (multiprocessing) service categories. The _Internet_ (web) service category is in development pipeline.
 
 The AREG engine forms a fault-tolerant system and does not require process startup priority. It automatically discovers services, automates communications, enables distributed service programming, and helps developers to focus on application business logic as if they would program a single process application with one thread where methods of objects are event-driven. The engine guarantees that:
@@ -302,9 +309,9 @@ The services are started when load model by calling function `Application::loadM
 <details open><summary> Click to show / hide <code>driverless devices</code>.</summary><br/>
 
 Normally, the devices are supplied with the drivers to install in the system and with the header files to integrate in the application(s). The drivers often run in Kernel mode and the crash of the driver crashes the entire system. Driver development requires a special technique, which is different for each operating system, and it is hard to debug. 
-<br /><a href="/docs/img/driver-solution.png"><img src="/docs/img/driver-solution.png" alt="Kkernel-mode driver solution" style="width:70%;height:70%"/></a><br />
+<br /><a href="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/driver-solution.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/driver-solution.png" alt="Kkernel-mode driver solution" style="width:70%;height:70%"/></a><br />
 Our proposal is to deliver driverless service-enabled devices, where device-specific services are described in the interface prototype documents. 
-<br /><a href="/docs/img/driverless-solution.png"><img src="/docs/img/driverless-solution.png" alt="AREG SDK driverless solution" style="width:70%;height:70%"/></a><br />
+<br /><a href="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/driverless-solution.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/driverless-solution.png" alt="AREG SDK driverless solution" style="width:70%;height:70%"/></a><br />
 In contrast to drivers, the service development does not differ from user mode application development, it is faster to develop, easily serves multiple applications (_service clients_), contains fewer risks and the code generator helps to generate client object from service interface document.
 </details>
 
@@ -313,7 +320,7 @@ In contrast to drivers, the service development does not differ from user mode a
 <details open><summary> Click to show / hide <code>real-time solutions</code>.</summary><br/>
 
 When a remote method of the service interface is called, the engine of AREG SDK automatically generates and delivers messages to the target and automatically invokes the exact methods of the exact target objects. This makes communication real-time with ultra-low networking latency. Such solutions are highly required to develop time-sensitive applications for automotive, flock of drones, medtech, real-time manufacturing, real-time monitoring and other projects.
-<br /><a href="/docs/img/areg-sdk-features.png"><img src="/docs/img/areg-sdk-features.png" alt="AREG SDK and multicast features" style="width:70%;height:70%"/></a><br />
+<br /><a href="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-sdk-features.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-sdk-features.png" alt="AREG SDK and multicast features" style="width:70%;height:70%"/></a><br />
 </details>
 
 #### Digital twin
@@ -328,7 +335,7 @@ Often, the digital twin applications use client-server architecture, where the m
 <details open><summary> Click to show / hide <code>simulation and tests</code>.</summary></br>
 
 When hardware provisioning to all employees is impossible, testing and checking unexpected phenomena of rapidly changing software in a simulated environment is the most rational solution. If unit tests are for testing a small portion of code and the tests may contain bugs, the simulation is used by developers and testers to check functionality and stability of the system. Simulations are portable and accessible to everyone, help to optimize solutions and avoid unnecessary risks. Projects using simulations are better prepared for remote work and easier to outsource.
-<br /><a href="/docs/img/software-layers.png"><img src="/docs/img/software-layers.png" alt="Software application 4 layers" style="width:70%;height:70%"/></a><br />
+<br /><a href="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/software-layers.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/software-layers.png" alt="Software application 4 layers" style="width:70%;height:70%"/></a><br />
 The software components in applications normally are split into Data, Controller, Business and the optional Presentation layers. Distributed and service-oriented solution of AREG framework can ease system testing in a simulated environment, where the Simulation application provides an implementation of Data layer services, so that the rest of the application can be tested without any change.
 
 The same technique of simulating data can be used to create API-driven test automations.
