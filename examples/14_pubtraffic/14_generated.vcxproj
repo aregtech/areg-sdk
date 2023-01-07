@@ -53,6 +53,10 @@
     <ClCompile Include="generated\src\private\SimpleTrafficLightProxy.cpp" />
     <ClCompile Include="generated\src\private\SimpleTrafficLightStub.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="generated\CMakeLists.txt" />
+    <Text Include="generated\src\private\CMakeLists.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

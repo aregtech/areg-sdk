@@ -73,6 +73,14 @@
     <None Include="mcrouter\resources\mcrouter_uninstall.bat" />
     <None Include="mcrouter\resources\mcrouter_post_build.bat" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="CMakeLists.txt" />
+    <Text Include="mcrouter\app\private\CMakeLists.txt" />
+    <Text Include="mcrouter\app\private\posix\CMakeLists.txt" />
+    <Text Include="mcrouter\app\private\win32\CMakeLists.txt" />
+    <Text Include="mcrouter\CMakeLists.txt" />
+    <Text Include="mcrouter\tcp\private\CMakeLists.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

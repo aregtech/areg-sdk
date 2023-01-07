@@ -52,6 +52,13 @@
     <ClInclude Include="generated\src\private\LargeDataEvents.hpp" />
     <ClInclude Include="generated\src\private\LargeDataProxy.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="generated\CMakeLists.txt" />
+    <Text Include="generated\src\private\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\LargeData.siml" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

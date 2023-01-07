@@ -54,6 +54,15 @@
     <ClInclude Include="generated\src\SystemShutdownClientBase.hpp" />
     <ClInclude Include="generated\src\SystemShutdownStub.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="generated\CMakeLists.txt" />
+    <Text Include="generated\src\private\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\LocalHelloWorld.siml" />
+    <None Include="res\PublicHelloWorld.siml" />
+    <None Include="res\SystemShutdown.siml" />
+  </ItemGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
     <ClCompile>
       <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>

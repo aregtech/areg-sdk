@@ -13,7 +13,7 @@ class PageBrokerSetup : public CPropertyPage
 
 public:
 	PageBrokerSetup();
-	virtual ~PageBrokerSetup();
+	virtual ~PageBrokerSetup() = default;
 
 public:
     void ServiceConnected( bool isConnected );

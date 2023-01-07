@@ -47,8 +47,12 @@
     <ClInclude Include="generated\src\NEHelloService.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\NECommon.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="generated\CMakeLists.txt" />
+    <Text Include="generated\src\private\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\HelloService.siml" />
   </ItemGroup>
 </Project>

@@ -31,8 +31,11 @@
 
 void IESynchObject::_osDestroySynchObject( void )
 {
-    CloseHandle( static_cast<HANDLE>(mSynchObject) );
-    mSynchObject = nullptr;
+    if ( mSynchObject != nullptr )
+    {
+        CloseHandle( static_cast<HANDLE>(mSynchObject) );
+        mSynchObject = nullptr;
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -145,6 +148,7 @@ void CriticalSection::_osCreateCriticalSection( void )
 
 void CriticalSection::_osReleaseCriticalSection( void )
 {
+    LeaveCriticalSection( reinterpret_cast<LPCRITICAL_SECTION>(mSynchObject) );
     DeleteCriticalSection( reinterpret_cast<LPCRITICAL_SECTION>(mSynchObject) );
     delete[] reinterpret_cast<unsigned char *>(mSynchObject);
     mSynchObject = nullptr;

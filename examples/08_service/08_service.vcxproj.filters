@@ -24,6 +24,8 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
+    <Text Include="CMakeLists.txt" />
+    <Text Include="src\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ServicingComponent.hpp">

@@ -52,6 +52,13 @@
     <ClInclude Include="generated\src\private\HelloUnblockEvents.hpp" />
     <ClInclude Include="generated\src\private\HelloUnblockProxy.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="generated\CMakeLists.txt" />
+    <Text Include="generated\src\private\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\HelloUnblock.siml" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
