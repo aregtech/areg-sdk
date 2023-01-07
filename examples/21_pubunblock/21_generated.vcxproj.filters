@@ -48,4 +48,11 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="generated\CMakeLists.txt" />
+    <Text Include="generated\src\private\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\HelloUnblock.siml" />
+  </ItemGroup>
 </Project>

@@ -30,6 +30,7 @@ endfunction(addTest testName)
 # Check whether the google test sources exist.
 set(GOOGLE_TEST_BASE "${AREG_THIRDPARTY}/googletest")
 if(EXISTS "${GOOGLE_TEST_BASE}/CMakeLists.txt")
+
     set(AREG_UNIT_TEST_BASE "${AREG_TESTS}/units")
     enable_testing()
     include_directories(${GOOGLE_TEST_BASE})
@@ -40,7 +41,10 @@ if(EXISTS "${GOOGLE_TEST_BASE}/CMakeLists.txt")
     # For Windows: Prevent overriding the parent project's compiler/linker settings
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
     include(${AREG_UNIT_TEST_BASE}/CMakeLists.txt)
+
 else()
+
     message(SEND_ERROR "Please clone the submodules using command\n
     '$ git clone --recurse-submodules https://github.com/aregtech/areg-sdk.git'")
+
 endif()

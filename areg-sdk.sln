@@ -240,6 +240,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "12_pubservice", "examples\1
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "13_pubmesh", "13_pubmesh", "{BB26B4E2-9A39-4CD5-8BE0-A14BA7BE2D5D}"
 	ProjectSection(SolutionItems) = preProject
+		examples\13_pubmesh\CMakeLists.txt = examples\13_pubmesh\CMakeLists.txt
 		examples\13_pubmesh\ReadMe.txt = examples\13_pubmesh\ReadMe.txt
 	EndProjectSection
 EndProject
@@ -248,7 +249,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{08364AF0-D40
 		examples\13_pubmesh\res\generate.bat = examples\13_pubmesh\res\generate.bat
 		examples\13_pubmesh\res\generate.sh = examples\13_pubmesh\res\generate.sh
 		examples\13_pubmesh\res\LocalHelloWorld.siml = examples\13_pubmesh\res\LocalHelloWorld.siml
-		examples\13_pubmesh\res\RemoteRegistry.siml = examples\13_pubmesh\res\RemoteRegistry.siml
+		examples\13_pubmesh\res\PublicHelloWorld.siml = examples\13_pubmesh\res\PublicHelloWorld.siml
 		examples\13_pubmesh\res\SystemShutdown.siml = examples\13_pubmesh\res\SystemShutdown.siml
 	EndProjectSection
 EndProject
@@ -277,6 +278,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "13_pubservice", "examples\1
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "14_pubtraffic", "14_pubtraffic", "{5EB605B1-44A1-4C33-B5BA-23AFEA531487}"
 	ProjectSection(SolutionItems) = preProject
+		examples\14_pubtraffic\CMakeLists.txt = examples\14_pubtraffic\CMakeLists.txt
 		examples\14_pubtraffic\ReadMe.txt = examples\14_pubtraffic\ReadMe.txt
 	EndProjectSection
 EndProject
@@ -285,7 +287,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{0AC9ECDD-CCF
 		examples\14_pubtraffic\res\generate.bat = examples\14_pubtraffic\res\generate.bat
 		examples\14_pubtraffic\res\generate.sh = examples\14_pubtraffic\res\generate.sh
 		examples\14_pubtraffic\res\SimpleTrafficLight.siml = examples\14_pubtraffic\res\SimpleTrafficLight.siml
-		examples\14_pubtraffic\res\SimpleTrafficSwitch.siml = examples\14_pubtraffic\res\SimpleTrafficSwitch.siml
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "14_generated", "examples\14_pubtraffic\14_generated.vcxproj", "{5B38C49F-3C26-43CD-B457-75806BFE69EC}"
@@ -304,6 +305,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "14_pubservice", "examples\1
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "15_pubworker", "15_pubworker", "{5EE61717-AD86-46E4-B4D0-5AA9280B0E09}"
 	ProjectSection(SolutionItems) = preProject
+		examples\15_pubworker\CMakeLists.txt = examples\15_pubworker\CMakeLists.txt
 		examples\15_pubworker\ReadMe.txt = examples\15_pubworker\ReadMe.txt
 	EndProjectSection
 EndProject
@@ -330,6 +332,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "15_pubservice", "examples\1
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "16_pubfsm", "16_pubfsm", "{7955A5EE-8C1E-4BE2-BE4F-55839EDC4E3C}"
 	ProjectSection(SolutionItems) = preProject
+		examples\16_pubfsm\CMakeLists.txt = examples\16_pubfsm\CMakeLists.txt
 		examples\16_pubfsm\ReadMe.txt = examples\16_pubfsm\ReadMe.txt
 	EndProjectSection
 EndProject
@@ -387,6 +390,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "17_register", "examples\17_
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "18_locwatchdog", "18_locwatchdog", "{83821483-D719-475B-88E3-F548C267E3AB}"
 	ProjectSection(SolutionItems) = preProject
+		examples\18_locwatchdog\CMakeLists.txt = examples\18_locwatchdog\CMakeLists.txt
 		examples\18_locwatchdog\ReadMe.txt = examples\18_locwatchdog\ReadMe.txt
 	EndProjectSection
 EndProject
@@ -400,6 +404,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "18_locservice", "examples\1
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "19_pubwatchdog", "19_pubwatchdog", "{E5D433F5-DBA3-45D5-8A7A-32A10566AA8E}"
 	ProjectSection(SolutionItems) = preProject
+		examples\19_pubwatchdog\CMakeLists.txt = examples\19_pubwatchdog\CMakeLists.txt
 		examples\19_pubwatchdog\ReadMe.txt = examples\19_pubwatchdog\ReadMe.txt
 	EndProjectSection
 EndProject
@@ -419,6 +424,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "19_pubservice", "examples\1
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "20_pubdatarate", "20_pubdatarate", "{840A1C6C-5940-4464-AF58-DBA24484C64F}"
 	ProjectSection(SolutionItems) = preProject
+		examples\20_pubdatarate\CMakeLists.txt = examples\20_pubdatarate\CMakeLists.txt
 		examples\20_pubdatarate\ReadMe.txt = examples\20_pubdatarate\ReadMe.txt
 	EndProjectSection
 EndProject
@@ -466,6 +472,10 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "13_common", "examples\13_pubmesh\13_common.vcxproj", "{5372A6CE-25DA-4E7D-9EC5-8F99A74BF4E7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "21_pubunblock", "21_pubunblock", "{967610F9-FBB0-4793-9E76-F500C4167FCE}"
+	ProjectSection(SolutionItems) = preProject
+		examples\21_pubunblock\CMakeLists.txt = examples\21_pubunblock\CMakeLists.txt
+		examples\21_pubunblock\ReadMe.txt = examples\21_pubunblock\ReadMe.txt
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "21_generated", "examples\21_pubunblock\21_generated.vcxproj", "{EB228067-EA4D-452C-91FC-91DB3B445C31}"
 EndProject
@@ -482,6 +492,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "21_pubservice", "examples\2
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{93F005FC-C82E-41C7-AD15-C2F7C8287BFF}"
+	ProjectSection(SolutionItems) = preProject
+		tests\CMakeLists.txt = tests\CMakeLists.txt
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "googletest", "googletest", "{4CD64072-ECEB-47D9-8384-C1CF2E6193DC}"
 EndProject
@@ -492,6 +505,13 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gtest_main", "thirdparty\gtest_main.vcxproj", "{11927EA9-1F1B-497D-8251-0C1EC93A770E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "areg-unit-tests", "tests\areg-unit-tests.vcxproj", "{E8BD18E5-EF07-42A0-BB98-461F3D9BCDE1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{C485A89F-A149-4893-A023-253593403974}"
+	ProjectSection(SolutionItems) = preProject
+		examples\21_pubunblock\res\generate.bat = examples\21_pubunblock\res\generate.bat
+		examples\21_pubunblock\res\generate.sh = examples\21_pubunblock\res\generate.sh
+		examples\21_pubunblock\res\HelloUnblock.siml = examples\21_pubunblock\res\HelloUnblock.siml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1027,6 +1047,7 @@ Global
 		{BB5D8C31-A4F1-4962-8181-668103FDDE22} = {4CD64072-ECEB-47D9-8384-C1CF2E6193DC}
 		{11927EA9-1F1B-497D-8251-0C1EC93A770E} = {4CD64072-ECEB-47D9-8384-C1CF2E6193DC}
 		{E8BD18E5-EF07-42A0-BB98-461F3D9BCDE1} = {48E60088-F431-4FFB-A170-31DAF8EC2DC8}
+		{C485A89F-A149-4893-A023-253593403974} = {967610F9-FBB0-4793-9E76-F500C4167FCE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1034084F-74DD-4B33-86E3-D8038C748F48}

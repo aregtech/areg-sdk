@@ -51,4 +51,8 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="generated\CMakeLists.txt" />
+    <Text Include="generated\src\private\CMakeLists.txt" />
+  </ItemGroup>
 </Project>

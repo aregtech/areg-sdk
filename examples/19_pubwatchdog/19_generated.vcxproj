@@ -53,6 +53,13 @@
     <ClInclude Include="generated\src\private\HelloWatchdogEvents.hpp" />
     <ClInclude Include="generated\src\private\HelloWatchdogProxy.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="res\HelloWatchdog.siml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="generated\CMakeLists.txt" />
+    <Text Include="generated\src\private\CMakeLists.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

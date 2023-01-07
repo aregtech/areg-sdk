@@ -34,6 +34,13 @@
     <ClInclude Include="generated\src\private\HelloWatchdogEvents.hpp" />
     <ClInclude Include="generated\src\private\HelloWatchdogProxy.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="generated\CMakeLists.txt" />
+    <Text Include="generated\src\private\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\HelloWatchdog.siml" />
+  </ItemGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
     <ClCompile>
       <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>

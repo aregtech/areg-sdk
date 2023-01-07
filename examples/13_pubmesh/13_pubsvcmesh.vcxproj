@@ -38,6 +38,10 @@
   <ItemGroup>
     <ClCompile Include="pubsvcmesh\src\main.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="pubsvcmesh\CMakeLists.txt" />
+    <Text Include="pubsvcmesh\src\CMakeLists.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

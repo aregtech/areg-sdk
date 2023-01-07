@@ -39,7 +39,9 @@
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="CMakeLists.txt" />
     <Text Include="ReadMe.txt" />
+    <Text Include="src\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="config\log.init" />

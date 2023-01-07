@@ -151,4 +151,10 @@
     <Text Include="generated\CMakeLists.txt" />
     <Text Include="generated\private\CMakeLists.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="res\CentralMessager.siml" />
+    <None Include="res\ConnectionManager.siml" />
+    <None Include="res\DirectConnection.siml" />
+    <None Include="res\DirectMessager.siml" />
+  </ItemGroup>
 </Project>
