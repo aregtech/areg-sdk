@@ -31,7 +31,7 @@ namespace NEMulticastRouterSettings
      * \brief   NEMulticastRouterSettings::eRouterState
      *          Describes the multi-cast router state.
      **/
-    typedef enum class E_RouterState
+    enum class eRouterState
     {
           RouterStopped     //!< Router is stopped.
         , RouterStarting    //!< Router is in starting process.
@@ -40,18 +40,18 @@ namespace NEMulticastRouterSettings
         , RouterContinuing  //!< Router was paused and in continuing state.
         , RouterPausing     //!< Router is in pausing state.
         , RouterPaused      //!< Router is paused.
-    } eRouterState;
+    };
 
     /**
      * \brief   Returns the human readable string of NEMulticastRouterSettings::eRouterState value
      **/
-    inline const char * const GetString( const NEMulticastRouterSettings::eRouterState & RouterState );
+    inline const char * const getString( NEMulticastRouterSettings::eRouterState RouterState );
 
     /**
      * \brief   NEMulticastRouterSettings::eServiceCommand
      *          Message routing service commands.
      **/
-    typedef enum class E_ServiceCommand
+    enum class eServiceCommand
     {
           CMD_Undefined     //!< Command is undefined
         , CMD_Install       //!< Command is to install (register) service in the system
@@ -59,7 +59,7 @@ namespace NEMulticastRouterSettings
         , CMD_Service       //!< Command is to execute process as a system service (in background)
         , CMD_Console       //!< Command is to execute process as console application.
         , CMD_Verbose       //!< Command is to display the data rate when execute process as console application.
-    } eServiceCommand;
+    };
 
     /**
      * \brief   Converts and returns string value of NEMulticastRouterSettings::eServiceCommand type.
@@ -164,7 +164,7 @@ namespace NEMulticastRouterSettings
 // NEMulticastRouterSettings namespace inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline const char * const NEMulticastRouterSettings::GetString( const NEMulticastRouterSettings::eRouterState & RouterState )
+inline const char * const NEMulticastRouterSettings::getString( NEMulticastRouterSettings::eRouterState RouterState )
 {
     switch ( RouterState )
     {
