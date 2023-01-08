@@ -93,12 +93,17 @@ void ServiceClient::responseHelloUnblock( unsigned int clientId, unsigned int se
     String timestamp( DateTime::getNow( ).formatTime( ) );
 
     ASSERT( mClientId == clientId );
-    ASSERT( savedNr == seqNr );
 
     std::cout << "<<< Response at [ " << timestamp << " ]:"
               << " Client = " << clientId
               << " Sequence Nr = " << seqNr 
               << " Pending = " << mSequenceList.getSize() << std::endl;
+
+    if (savedNr != seqNr)
+    {
+        ASSERT( false );
+        std::cerr << "No matching of sequence number! Saved = " << savedNr << ", in response = " << seqNr << std::endl;
+    }
 }
 
 void ServiceClient::requestHelloUblockFailed( NEService::eResultType FailureReason )
