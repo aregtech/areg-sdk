@@ -129,10 +129,10 @@ if (DEFINED AREG_BUILD_ALL)
 endif()
 
 # Set bitless here
-set(Bitness "64")
+set(AREG_BITNESS "64")
 
 # Specify CPU platform here
-set(AREG_PLATFORM "x86_64")
+set(AREG_PROCESSOR "x86_64")
 
 # Set the areg-sdk build root folder to output files.
 set(AREG_BUILD_ROOT "${AREG_SDK_ROOT}")
