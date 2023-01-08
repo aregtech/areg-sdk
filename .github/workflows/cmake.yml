@@ -27,9 +27,9 @@ jobs:
             # compile AREG engine as a static library with GNU g++ / gcc on Ubuntu Linux
           - { name: linux-gnu-static,      os: ubuntu-latest,  lib: static, family: gnu,    cxx: g++,        cc: gcc}
             # compile AREG engine as a shared library with clang on Ubuntu Linux
-          - { name: linux-clang-shared,    os: ubuntu-latest,  lib: shared, family: clang,  cxx: clang++-13, cc: clang-13 }
+          - { name: linux-clang-shared,    os: ubuntu-latest,  lib: shared, family: clang,  cxx: clang++,    cc: clang}
             # compile AREG engine as a static library with clang on Ubuntu Linux
-          - { name: linux-clang-static,    os: ubuntu-latest,  lib: static, family: clang,  cxx: clang++-13, cc: clang-13}
+          - { name: linux-clang-static,    os: ubuntu-latest,  lib: static, family: clang,  cxx: clang++,    cc: clang}
             # compile AREG engine as a shared with CYGWIN g++ / gcc on Windows
           - { name: windows-cygwin-shared, os: windows-latest, lib: shared, family: cygwin, cxx: g++,        cc: gcc}
             # compile AREG engine as a static with CYGWIN g++ / gcc on Windows
