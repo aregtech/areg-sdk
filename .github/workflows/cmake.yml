@@ -51,7 +51,6 @@ jobs:
         # Update compilers, set C/C++ compilers
         run: |
              sudo apt-get update
-             sudo apt-get install ${{matrix.config.cxx}} -y
              export CC=/usr/bin/${{matrix.config.cc}} CXX=/usr/bin/${{matrix.config.cxx}}
 
       - name: Fetch cygwin installer on Windows
