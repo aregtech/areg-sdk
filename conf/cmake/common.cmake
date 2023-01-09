@@ -17,6 +17,7 @@ endif()
 # -----------------------------------------------------
 # The toolchain
 if (CYGWIN)
+    message(STATUS ">>> The Cmake Compiler ID is ${CMAKE_CXX_COMPILER_ID}, set CYGWIN")
     set(AREG_TOOLCHAIN "CYGWIN")
 else()
     set(AREG_TOOLCHAIN "${CMAKE_CXX_COMPILER_ID}")
@@ -65,7 +66,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # Linker flags (-l is not necessary)
     list(APPEND AREG_LDFLAGS c++ m ncurses pthread rt ${AREG_USER_DEF_LIBS})
 
-elseif (CMAKE_COMPILER_IS_GNUCXX)
+elseif (CMAKE_COMPILER_IS_GNUCXX )
 
     # POSIX API
     add_definitions(-DPOSIX)
