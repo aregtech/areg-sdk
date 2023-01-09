@@ -29,8 +29,6 @@
 // Global functions, Begin
 //////////////////////////////////////////////////////////////////////////
 
-void _posixServiceMain( int argc, char ** argv );
-
 int main(int argc, char* argv[], char* envp[])
 {
     int result      = 0;
@@ -51,13 +49,12 @@ int main(int argc, char* argv[], char* envp[])
         router.serviceUninstall();
         break;
 
-    case NEMulticastRouterSettings::eServiceCommand::CMD_Console:
-        ::_posixServiceMain(argc, argv);
-        router.serviceStop();
-        break;
-
     case NEMulticastRouterSettings::eServiceCommand::CMD_Service:
-        // result = ::StartServiceCtrlDispatcher(_serviceTable) ? 0 : -1;
+    case NEMulticastRouterSettings::eServiceCommand::CMD_Console:
+        router.setState(NEMulticastRouterSettings::eRouterState::RouterStarting);
+        router.serviceMain( static_cast<int>(argc), argv);
+        router.setState( NEMulticastRouterSettings::eRouterState::RouterStopped );
+        router.serviceStop();
         break;
 
     default:
@@ -66,14 +63,6 @@ int main(int argc, char* argv[], char* envp[])
     }
 
     return result;
-}
-
-void _posixServiceMain( int argc, char ** argv )
-{
-    MulticastRouter & router = MulticastRouter::getInstance();
-    router.setState(NEMulticastRouterSettings::eRouterState::RouterStarting);
-    router.serviceMain( static_cast<int>(argc), argv);
-    router.setState( NEMulticastRouterSettings::eRouterState::RouterStopped );
 }
 
 //////////////////////////////////////////////////////////////////////////

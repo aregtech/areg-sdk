@@ -282,7 +282,9 @@ void MulticastRouter::serviceUninstall(void)
 bool MulticastRouter::setState( NEMulticastRouterSettings::eRouterState newState )
 {
     TRACE_SCOPE( mcrouter_app_MulticastRouter_setState );
-    TRACE_DBG( "Changing Service Router state. Old state [ %s ], new state [ %s ]", NEMulticastRouterSettings::GetString( mRouterState ), NEMulticastRouterSettings::GetString( newState ) );
+    TRACE_DBG( "Changing Service Router state. Old state [ %s ], new state [ %s ]"
+                , NEMulticastRouterSettings::getString( mRouterState )
+                , NEMulticastRouterSettings::getString( newState ) );
 
     return _osSetState( newState );
 }

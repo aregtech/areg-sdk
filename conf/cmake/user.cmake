@@ -42,13 +42,9 @@
 
 # If any compiler is set, both C and C++ should be specified.
 # Otherwise, either none should exist or outputs error
-if (DEFINED AREG_CXX_COMPILER AND NOT DEFINED AREG_C_COMPILER)
+if ((DEFINED AREG_CXX_COMPILER AND NOT DEFINED AREG_C_COMPILER) OR (DEFINED AREG_C_COMPILER AND NOT DEFINED AREG_CXX_COMPILER))
     message(FATAL_ERROR "You should specify both AREG_CXX_COMPILER and AREG_C_COMPILER variables in command line")
 endif()
-if (DEFINED AREG_C_COMPILER AND NOT DEFINED AREG_CXX_COMPILER)
-    message(FATAL_ERROR "You should specify both AREG_CXX_COMPILER and AREG_C_COMPILER variables in command line")
-endif()
-
 
 # Check the compiler option.
 # Set the compiler here. Can set compiler full path.
