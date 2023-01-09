@@ -56,7 +56,7 @@ namespace NETrace
     } eLogPriority;
 
     /**
-     * \brief   NETrace::GetString
+     * \brief   NETrace::getString
      *          Converts NETrace::eLogPriority values to readable string values
      **/
     inline const char * getString( NETrace::eLogPriority prio );
