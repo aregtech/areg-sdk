@@ -61,7 +61,7 @@
     - [Simulation and tests](#simulation-and-tests)
 - [Examples](#examples)
 - [Licensing](#licensing)
-- [Call for action](#call-for-action)
+- [Call to action](#call-to-action)
 
 ---
 
@@ -361,7 +361,7 @@ AREG SDK is under free open source [_Apache License Version 2.0_](./LICENSE.txt)
 
 ---
 
-## Call for action[![](./docs/img/pin.svg)](#call-for-action)
+## Call to action[![](./docs/img/pin.svg)](#call-to-action)
 
 We look for help and welcome to join the project:
 * See the list of [open issues](https://github.com/aregtech/areg-sdk/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) where we look for help.
