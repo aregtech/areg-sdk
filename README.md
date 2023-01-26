@@ -3,10 +3,10 @@
   <br /><br /><strong>AREG SDK</strong>
 </h1>
 
-![Latest release](https://img.shields.io/github/v/release/aregtech/areg-sdk?label=%20%F0%9F%93%A3%20Latest%20release&style=flat&logoColor=b0c0c0&labelColor=363D44)
-![Stars](https://img.shields.io/github/stars/aregtech/areg-sdk?style=social)
-![Fork](https://img.shields.io/github/forks/aregtech/areg-sdk?style=social)
-![Watchers](https://img.shields.io/github/watchers/aregtech/areg-sdk?style=social)
+[![Latest release](https://img.shields.io/github/v/release/aregtech/areg-sdk?label=Latest%20release&style=social)](https://github.com/aregtech/areg-sdk/releases/tag/v1.0.0)
+[![Stars](https://img.shields.io/github/stars/aregtech/areg-sdk?style=social)](https://github.com/aregtech/areg-sdk/stargazers)
+[![Fork](https://img.shields.io/github/forks/aregtech/areg-sdk?style=social)](https://github.com/aregtech/areg-sdk/network/members)
+[![Watchers](https://img.shields.io/github/watchers/aregtech/areg-sdk?style=social)](https://github.com/aregtech/areg-sdk/watchers)
 <br/>1 `star` == 1 `thank you`. By starring the project you thank the contributors for work.
 
 <!--  The latest development sources are in [20220701-candidate](https://github.com/aregtech/areg-sdk/tree/20220701-candidate) branch. Please check the [build status](https://github.com/aregtech/areg-sdk/actions) before cloning it. -->
@@ -14,13 +14,13 @@
 ---
 
 <!-- markdownlint-disable -->
-## Project Status[![](./docs/img/pin.svg)](#project-status)
+## Project Status[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#project-status)
 <table class="no-border">
   <tr>
     <td><a href="https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml" alt="CMake"><img src="https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml/badge.svg" alt="CMake build"/></a></td>
     <td><a href="https://github.com/aregtech/areg-sdk/actions/workflows/c-cpp.yml" alt="C/C++"><img src="https://github.com/aregtech/areg-sdk/actions/workflows/c-cpp.yml/badge.svg" alt="C/C++ Make"/></a></td>
     <td><a href="https://github.com/aregtech/areg-sdk/actions/workflows/msbuild.yml" alt="MS Build"><img src="https://github.com/aregtech/areg-sdk/actions/workflows/msbuild.yml/badge.svg" alt="MS Build"/></a></td>
-    <td><a href="https://github.com/aregtech/areg-sdk/actions/workflows/codeql-analysis.yml" alt="CodeQL"><img src="https://github.com/aregtech/areg-sdk/actions/workflows/codeql-analysis.yml/badge.svg" atl="CodeQL"/></a></td>
+    <td><a href="https://github.com/aregtech/areg-sdk/actions/workflows/codeql-analysis.yml" alt="CodeQL"><img src="https://github.com/aregtech/areg-sdk/actions/workflows/codeql-analysis.yml/badge.svg" alt="CodeQL"/></a></td>
   </tr>
   <tr>
     <td><img src="https://img.shields.io/badge/Solution-C++17-blue.svg?style=flat&logo=c%2B%2B&logoColor=b0c0c0&labelColor=363D44" alt="C++ solution"/></td>
@@ -31,13 +31,13 @@
 
 ---
 
-## Introduction[![](./docs/img/pin.svg)](#introduction)
+## Introduction[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#introduction)
 
 **AREG SDK** is an interface-centric real-time asynchronous communication engine to enable distributed- and [mist-](https://csrc.nist.gov/publications/detail/sp/500-325/final)computing, where connected Things interact and provide services as if they act like thin distributed servers. The communication engine of AREG SDK is based on Object Remote Procedure Call (**ORPC**) protocol.
 
 ---
 
-## Table of contents[![](./docs/img/pin.svg)](#table-of-contents)
+## Table of contents[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#table-of-contents)
 - [Project Status](#project-status)
 - [Introduction](#introduction)
 - [Table of contents](#table-of-contents)
@@ -65,7 +65,7 @@
 
 ---
 
-## Motivation[![](./docs/img/pin.svg)](#motivation)
+## Motivation[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#motivation)
 
 Traditionally, devices act as connected clients to stream data to the cloud or fog servers for further processing.
 <br /><br /><a href="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/mist-network.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/mist-network.png" alt="IoT-to-Cloud (Nebula) network" style="width:70%;height:70%"/></a><br /><br />
@@ -78,7 +78,7 @@ Since data is generated and collected at the edge of the network (**mist network
 
 ---
 
-## More than embedded[![](./docs/img/pin.svg)](#more-than-embedded)
+## More than embedded[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#more-than-embedded)
 
 When we were designing AREG SDK, the guiding principle was to provide a homogeneous solution for Multithreading, Multiprocessing and Internet communication wrapped in services appropriately having _Local_, _Public_ and _Internet_ categories. These services are neither processes nor tasks managed by the operating system, they are software components with a predefined interface, in which methods are invoked remotely.
 <br /><a href="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-services.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-services.png" alt="AREG SDK distributed services" style="width:70%;height:70%"/></a><br />
@@ -93,7 +93,7 @@ The AREG engine forms a fault-tolerant system and does not require process start
 
 ---
 
-## Composition[![](./docs/img/pin.svg)](#composition)
+## Composition[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#composition)
 
 Currently AREG SDK consists of:
 1. [Multicast router (_mcrouter_)](./framework/mcrouter/) for IPC that runs either as a service managed by the OS or as a console application.
@@ -108,7 +108,7 @@ The network communication model of AREG framework is based on _multicast router_
 
 ---
 
-## Roadmap[![](./docs/img/pin.svg)](#roadmap)
+## Roadmap[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#roadmap)
  The aim of AREG SDK is a lightweight self-sufficient system, which consist of an intelligent framework and multiple tools that help developers to create complex **Desktop**, **Embedded** and/or **IoT edge** applications in shorter time (_reduce development and testing time 50-30%_). 
 - **Planned framework features:**
   * Multi-channel and multi-protocol communication.
@@ -123,9 +123,9 @@ The network communication model of AREG framework is based on _multicast router_
 
 ---
 
-## Software build[![](./docs/img/pin.svg)](#software-build)
+## Software build[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#software-build)
 
-> 💡 Chek the [Wiki page](https://github.com/aregtech/areg-sdk/wiki) of _AREG SDK_ for mode details. We change the content and add more details.
+> 💡 Check the [Wiki page](https://github.com/aregtech/areg-sdk/wiki) of _AREG SDK_ for mode details. We change the content and add more details.
 
 The source codes of AREG framework and examples support following platform, CPU and compilers:
 <table>
@@ -213,7 +213,7 @@ Depending on IDE or preferences make one of following:
 
 ---
 
-## Software integration[![](./docs/img/pin.svg)](#software-integration)
+## Software integration[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#software-integration)
 
 #### Multicast router
 
@@ -248,7 +248,7 @@ The development guidance and step-by-step example to create a simple service-ena
 
 ---
 
-## Use cases and benefits[![](./docs/img/pin.svg)](#use-cases-and-benefits)
+## Use cases and benefits[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#use-cases-and-benefits)
 
 AREG SDK can be used in a very large scope of multithreading and multiprocessing application development.
 
@@ -309,7 +309,7 @@ The services are started when load model by calling function `Application::loadM
 <details open><summary> Click to show / hide <code>driverless devices</code>.</summary><br/>
 
 Normally, the devices are supplied with the drivers to install in the system and with the header files to integrate in the application(s). The drivers often run in Kernel mode and the crash of the driver crashes the entire system. Driver development requires a special technique, which is different for each operating system, and it is hard to debug. 
-<br /><a href="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/driver-solution.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/driver-solution.png" alt="Kkernel-mode driver solution" style="width:70%;height:70%"/></a><br />
+<br /><a href="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/driver-solution.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/driver-solution.png" alt="kernel-mode driver solution" style="width:70%;height:70%"/></a><br />
 Our proposal is to deliver driverless service-enabled devices, where device-specific services are described in the interface prototype documents. 
 <br /><a href="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/driverless-solution.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/driverless-solution.png" alt="AREG SDK driverless solution" style="width:70%;height:70%"/></a><br />
 In contrast to drivers, the service development does not differ from user mode application development, it is faster to develop, easily serves multiple applications (_service clients_), contains fewer risks and the code generator helps to generate client object from service interface document.
@@ -345,7 +345,7 @@ The same technique of simulating data can be used to create API-driven test auto
 
 ---
 
-## Examples[![](./docs/img/pin.svg)](#examples)
+## Examples[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#examples)
 
 There are various [examples](./examples/) to demonstrate features of the AREG SDK. The examples are listed in the [examples/README.md](./examples/README.md) document.
 
@@ -361,30 +361,27 @@ AREG SDK is under free open source [_Apache License Version 2.0_](./LICENSE.txt)
 
 ---
 
-## Call to action[![](./docs/img/pin.svg)](#call-to-action)
+## Call to action[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#call-to-action)
 
 We look for help and welcome to join the project:
-* See the list of [open issues](https://github.com/aregtech/areg-sdk/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) where we look for help.
-* If you need new features, please open [new issue](https://github.com/aregtech/areg-sdk/issues) or start [new discussion](https://github.com/aregtech/areg-sdk/discussions).
-* Please submit your pull requests in the [candidate branch](https://github.com/aregtech/areg-sdk/tree/20220701-candidate), which is our branch with latest sources.
+* See the list of [open issues](https://github.com/aregtech/areg-sdk/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) where we look for help. If you need new features, please open [new issue](https://github.com/aregtech/areg-sdk/issues) or start [new discussion](https://github.com/aregtech/areg-sdk/discussions).
 * When create a pull request, please understand that reviewing and testing takes time, and we as well pay attention on coding style.
 * If you look for invoiced commercial support or trainings, or if your project has possibility commercially support AREG SDK, please contact info[at]aregtech[dot]com. 
 
-Did we help your project? Have you learned something new? Have we inspired you for new great ideas? Then we ask not to be indifferent and [![star AREG SDK](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=star%20AREG%20SDK)](https://github.com/aregtech/areg-sdk/). This small thank inspires contributors and help us to expand our community.
+Did we help your project? Have you learned something new? Did we inspired you for new great ideas? Then we ask not to be indifferent and [![star AREG SDK](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=star%20AREG%20SDK)](https://github.com/aregtech/areg-sdk/). This small thank inspires contributors and help us to expand our community.
 
 <div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
 ---
 
-**Follow us**<br />
+**Follow us** at<br />
 [![Follow us on twitter](https://img.shields.io/twitter/follow/aregtech.svg?style=social)](https://twitter.com/intent/follow?screen_name=aregtech) 
 [![Follow us on LinkedIn](https://img.shields.io/badge/LinkedIn-Aregtech-blue?style=flat&logo=linkedin&logoColor=b0c0c0&labelColor=363D44)](https://www.linkedin.com/company/aregtech)
 [![Join the chat at https://gitter.im/areg-sdk/community](https://badges.gitter.im/areg-sdk/community.svg)](https://gitter.im/areg-sdk/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ---
 
-**Share**<br />
-Please share the project link with your network in social media platforms.
+**Share** the project link with your network in social media.
 
 ![Reddit](https://img.shields.io/twitter/url?label=reddit&logo=reddit&style=social&url=https%3A%2F%2Freddit.com%2Fsubmit%3Furl%3Dhttps%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk%26title%3DWow) 
 ![Twitter](https://img.shields.io/twitter/url?label=twitter&style=social&url=https%3A%2F%2Ftwitter.com%2Fintent%2Ftweet%3Ftext%3DWow%3A%26url%3Dhttps%253A%252F%252Fgithub.com%252Faregtech%252Fareg-sdk) 
