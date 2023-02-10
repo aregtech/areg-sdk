@@ -7,7 +7,6 @@
 [![Stars](https://img.shields.io/github/stars/aregtech/areg-sdk?style=social)](https://github.com/aregtech/areg-sdk/stargazers)
 [![Fork](https://img.shields.io/github/forks/aregtech/areg-sdk?style=social)](https://github.com/aregtech/areg-sdk/network/members)
 [![Watchers](https://img.shields.io/github/watchers/aregtech/areg-sdk?style=social)](https://github.com/aregtech/areg-sdk/watchers)
-<br/>1 `star` == 1 `thank you`. By starring the project you thank the contributors for work.
 
 <!--  The latest development sources are in [20220701-candidate](https://github.com/aregtech/areg-sdk/tree/20220701-candidate) branch. Please check the [build status](https://github.com/aregtech/areg-sdk/actions) before cloning it. -->
 
@@ -33,7 +32,7 @@
 
 ## Introduction[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#introduction)
 
-**AREG SDK** is an interface-centric real-time asynchronous communication engine to enable distributed- and [mist-](https://csrc.nist.gov/publications/detail/sp/500-325/final)computing, where connected Things interact and provide services as if they act like thin distributed servers. The communication engine of AREG SDK is based on Object Remote Procedure Call (**ORPC**) protocol.
+**AREG** (_Automated Real-time Event Grid_) is a lightweight communication engine, which forms a grid of services in the IoT [fog- and mist-network](https://csrc.nist.gov/publications/detail/sp/500-325/final), automates the transmission of data and information, provides efficient and transparent real-time communication between multiple connected devices and software nodes, so that the connected Things interact like a thin distributed servers and clients, and have all features of client-server and publish-subscriber network models.
 
 ---
 
@@ -383,12 +382,14 @@ Did we help your project? Have you learned something new? Did we inspired you fo
 
 **Share** the project link with your network in social media.
 
-![Reddit](https://img.shields.io/twitter/url?label=reddit&logo=reddit&style=social&url=https%3A%2F%2Freddit.com%2Fsubmit%3Furl%3Dhttps%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk%26title%3DWow) 
-![Twitter](https://img.shields.io/twitter/url?label=twitter&style=social&url=https%3A%2F%2Ftwitter.com%2Fintent%2Ftweet%3Ftext%3DWow%3A%26url%3Dhttps%253A%252F%252Fgithub.com%252Faregtech%252Fareg-sdk) 
-![LinkedIn](https://img.shields.io/twitter/url?label=LinkedIn&logo=LinkedIn&style=social&url=https%3A%2F%2Fwww.linkedin.com%2FshareArticle%3Furl%3Dhttps%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk%26title%3DWow) 
-![Facebook](https://img.shields.io/twitter/url?label=facebook&logo=facebook&style=social&url=https%3A%2F%2Fwww.facebook.com%2Fsharer%2Fsharer.php%3Fu%3Dhttps%253A%252F%252Fgithub.com%252Faregtech%252Fareg-sdk%26amp%3Bsrc%3Dsdkpreparse) 
-![Telegram](https://img.shields.io/twitter/url?label=Telegram&logo=Telegram&style=social&url=https%3A%2F%2Ftelegram.me%2Fshare%2Furl%3Furl%3Dhttps%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk%26text%3DWow)
-
+<a href="https://www.reddit.com/submit?url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk&title=Awesome%20communcation%20engine!" alt="Share on Reddit"><img src="https://img.shields.io/twitter/url?label=Reddit&logo=Reddit&style=social&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk" alt="Reddit"/></a>&nbsp;
+<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A//github.com/aregtech/areg-sdk" alt="Share on LinkedIn"><img src="https://img.shields.io/twitter/url?label=LinkedIn&logo=LinkedIn&style=social&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk" alt="LinkedIn"/></a>&nbsp;
+<a href="https://twitter.com/intent/tweet?text=%23AREG%20%23realtime%20communication%20engine%20for%20%23embedded%20and%20%23IoT%0A%0Ahttps%3A//github.com/aregtech/areg-sdk" alt="Shared on Twitter"><img alt="Twitter" src="https://img.shields.io/twitter/url?label=Twitter&logo=Twitter&style=social&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk"/></a>&nbsp;
+<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A//github.com/aregtech/areg-sdk" alt="Share on Facebook"><img alt="Facebook" src="https://img.shields.io/twitter/url?label=Facebook&logo=Facebook&style=social&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk"/></a>&nbsp;
+<a href="https://t.me/share/url?text=Awesome%20communication%20engine!&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk" alt="Share on Telegram"><img alt="Telegram" src="https://img.shields.io/twitter/url?label=Telegram&logo=Telegram&style=social&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk"/></a>&nbsp;
+<a href="https://wa.me/?text=Awesome%20communication%20engine!%5Cn%20https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk" alt="Share on Whatsapp"><img alt="Whatsapp" src="https://img.shields.io/twitter/url?label=Whatsapp&logo=Whatsapp&style=social&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk"/></a>&nbsp;
+<a href="mailto:?subject=Awesome%20communication%20engine&body=Checkout%20this%20awesome%20communication%20engine%3A%0Ahttps%3A//github.com/aregtech/areg-sdk%0A" alt="Mail to friend"><img alt="GMail" src="https://img.shields.io/twitter/url?label=GMail&logo=GMail&style=social&url=https%3A%2F%2Fgithub.com%2Faregtech%2Fareg-sdk"/></a>
+<br/>
 ---
 
 ![Viewers](https://gpvc.arturio.dev/aregtech)
