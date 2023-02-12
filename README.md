@@ -32,15 +32,13 @@
 
 ## Introduction[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#introduction)
 
-**AREG** (_Automated Real-time Event Grid_) is a lightweight communication engine, which forms a grid of services in the IoT [fog- and mist-network](https://csrc.nist.gov/publications/detail/sp/500-325/final), automates the transmission of data and information, provides efficient and transparent real-time communication between multiple connected devices and software nodes, so that the connected Things interact like a thin distributed servers and clients, and have all features of client-server and publish-subscriber network models.
+**AREG** (_Automated Real-time Event Grid_) is an interface-centric lightweight communication engine, which forms a grid of services in the IoT [fog- and mist-network](https://csrc.nist.gov/publications/detail/sp/500-325/final), automates the transmission of data and information, provides efficient and transparent real-time communication between multiple connected devices and software nodes, so that the connected Things interact like a thin distributed servers and clients, and have all features of client-server and publish-subscriber network models.
 
 ---
 
 ## Table of contents[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#table-of-contents)
-- [Project Status](#project-status)
-- [Introduction](#introduction)
-- [Table of contents](#table-of-contents)
 - [Motivation](#motivation)
+- [Interface-centricity](#interface-centricity)
 - [More than embedded](#more-than-embedded)
 - [Composition](#composition)
 - [Roadmap](#roadmap)
@@ -59,7 +57,7 @@
     - [Digital twin](#digital-twin)
     - [Simulation and tests](#simulation-and-tests)
 - [Examples](#examples)
-- [Licensing](#licensing)
+- [License](#license)
 - [Call to action](#call-to-action)
 
 ---
@@ -72,6 +70,17 @@ Since data is generated and collected at the edge of the network (**mist network
 * _Increase data privacy_, which is an important factor for sensitive data.
 * _Decrease data streaming_, which is a fundamental condition to optimize network communication.
 * _Autonomous, intelligent and self-aware devices_ with services directly in the environment of data origin.
+
+<div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
+
+---
+
+## Interface-centricity[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#interface-centricity)
+
+_Object Remote Procedure Call_ (**ORPC**) is a concept of remote procedure call whose target is an interface on an object. ORCP is a technique of constructing meshed network of distributed services (or _grid of services_), where applications provide reusable services and the programmable (logical) client objects request method execution of a programmable (logical) server object without having to understand where the server object is running in the network.
+<br /><a href="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/interface-centric.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/interface-centric.png" alt="Service oriented and interface-centric" style="width:70%;height:70%"/></a><br />
+
+Applications using ORPC communication are interface-centric and use objects of predefined interfaces, similar to _object-oriented programming_. It is possible to instantiate multiple instances of the same object and the system is able to handle them in a transparent manner so that a message is dispatched to call the exact function of the exact object. There is no protocol restriction, although the communication must be bi-directional to have the possibility of sending messages to all connected nodes in the network. The programmable server objects are called _service providers_ and the programmable clients are called _service consumers_.
 
 <div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
@@ -99,9 +108,9 @@ Currently AREG SDK consists of:
 2. [AREG framework (or engine)](./framework/areg/) is a (shared or static) library to link with every application.
 3. [Code generator tool](./tools/) to create client and server base objects from a service prototype document.
 
-The network communication model of AREG framework is based on _multicast router_ and service architecture is _interface-centric_, which in combination of both enable to comprise all features of _action-centric_ architecture (Client-Server / Request-Reply model) and _data-centric_ architecture (Publisher-Subscriber / PubSub model).
+The network communication model of AREG framework is based on _multicast router_ and _interface-centric_ services, which in combination of both enable to comprise all features of _action-centric_ architecture (Client-Server / Request-Reply model) and _data-centric_ architecture (Publisher-Subscriber / PubSub model).
 
-> 💡 The [examples](./examples) of _AREG SDK_ contain multiple projects to demonstrate the features and fault tolerant behavior of AREG communication engine.
+> 💡 The [examples](./examples) of _AREG SDK_ are to demonstrate the features and fault tolerant behavior of AREG communication engine.
 
 <div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
@@ -352,7 +361,7 @@ There are various [examples](./examples/) to demonstrate features of the AREG SD
 
 ---
 
-## Licensing[![](./docs/img/pin.svg)](#licensing)
+## License[![](./docs/img/pin.svg)](#license)
  
 AREG SDK is under free open source [_Apache License Version 2.0_](./LICENSE.txt). However, AREG SDK can be commercially licensed, which includes the commercial support, full rights to create and distribute software without open source license obligations. For commercial license, support or additional information, please visit [Aregtech](https://www.aregtech.com/) website or contact _info[at]aregtech[dot]com_.
 
