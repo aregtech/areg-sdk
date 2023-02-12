@@ -116,7 +116,6 @@ elseif (MSVC)
 else()
 
     message(WARNING ">>> Unsupported compiler type. The result is unpredictable, by default use GNU compiler settings and POSIX API")
-    add_definitions(-DPOSIX)
     # POSIX API
     add_definitions(-DPOSIX)
     set(AREG_DEVELOP_ENV "Posix")

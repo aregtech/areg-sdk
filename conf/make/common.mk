@@ -1,88 +1,209 @@
-# aliases
-AREG_OUTPUT_OBJ = $(ProjObjDir)
-AREG_OUTPUT_LIB = $(ProjLibDir)
-AREG_OUTPUT_BIN = $(ProjBinDir)
-AREG_INCLUDES   = $(ProjIncludes)
-AREG_TOOLCHAIN  = $(CrossCompile)$(Toolset)
-AREG_AR         = $(CrossCompile)ar
-AREG_OS         = $(OpSystem)
-AREG_STATIC_LIB =
+# ###########################################################################
+#               PROJECT VARIABLES
+# Change these variables only if indeed there is a need.
+# ###########################################################################
 
-include $(MAKEFILE_CONFIG_DIR)/user.mk
+AREG_TOOLCHAIN := $(AREG_CXX_COMPILER)
 
-ifeq ($(areg), static)
-    AREG_BINARY = static
+AREG_DEVELOP_ENV        :=
+AREG_LDFLAGS            :=
+AREG_COMPILER_OPTIONS   :=
+AREG_DEFINITIONS        := $(AREG_USER_DEFINES) -DUNICODE -D_UNICODE
+ifeq ($(AREG_BUILD_TYPE), Release)
+    AREG_DEFINITIONS    += -DNDEBUG
 else
-    AREG_BINARY = shared
+    AREG_DEFINITIONS    += -DDEBUG
 endif
 
-CXXFLAGS := -g -pthread -std=c++17
-LDFLAGS  := -lm -lstdc++ -lrt -lncurses -pthread
+ifeq ($(AREG_CXX_COMPILER_ID), Clang)
 
-#TODO fix the warnings reported by clang first
-ifeq ($(findstring clang,$(Toolset)),clang)
-    CXXFLAGS += -Werror $(UserDefines) -stdlib=libc++
-else
-    CXXFLAGS += -Wall -Werror $(UserDefines)
-endif
+    AREG_DEFINITIONS        += -DPOSIX
+    AREG_DEVELOP_ENV        := Posix
 
-ifeq ($(Config), Release)
-    # optimixation with O2?
-    CXXFLAGS += -O2 -DNDEBUG
-else
-    CXXFLAGS += -DDEBUG
-endif
-
-# only native compilers on x86_64 can support bitness?
-ifeq ($(Platform), x86_64)
-    ifeq ($(CrossCompile), )
-        ifeq ($(Bitness), 32)
-            CXXFLAGS += -m32
-        else ifeq ($(Bitness), 64)
-            CXXFLAGS += -m64
-        endif
-    endif
-endif
-
-ifeq ($(AREG_OS), windows)
-    CXXFLAGS     += -DWINDOWS
-    OBJ_EXT      := obj
-    AREG_BIN_EXT := .exe
-    AREG_LIB_PREFIX :=
-    AREG_STATIC_LIB := .lib
-    ifeq ($(AREG_BINARY), shared)
-    	AREG_LIB_EXT := .dll
+    ifeq ($(AREG_BUILD_TYPE), Release)
+        AREG_COMPILER_OPTIONS   += -O2
     else
-    	AREG_LIB_EXT := .lib
+        AREG_COMPILER_OPTIONS  += -O0 -g3
     endif
-else
-    CXXFLAGS     += -DPOSIX
-    OBJ_EXT      := o
-    AREG_BIN_EXT := .out
-    AREG_LIB_PREFIX := lib
+
+    ifeq ($(AREG_BITNESS), 32)
+        AREG_COMPILER_OPTIONS   += -m32
+    else
+        AREG_COMPILER_OPTIONS   += -m64
+    endif
+
+    AREG_COMPILER_OPTIONS   += -Werror -g -pthread -c -fmessage-length=0 -MMD $(AREG_DEFINITIONS) -stdlib=libstdc++
+    AREG_LDFLAGS            += -lc++ -lm -lncurses -lpthread -lrt $(AREG_USER_DEF_LIBS)
+
+    OBJ_EXT         := o
+    AREG_BIN_EXT    := .out
     AREG_STATIC_LIB := .a
+    AREG_LIB_PREFIX := lib
     ifeq ($(AREG_BINARY), shared)
     	AREG_LIB_EXT := .so
     else
     	AREG_LIB_EXT := .a
     endif
+
+else ifeq ($(AREG_CXX_COMPILER_ID), GNU)
+
+    AREG_DEFINITIONS        += -DPOSIX
+    AREG_DEVELOP_ENV        := Posix
+    AREG_COMPILER_OPTIONS   := -g -pthread -Wall -Werror -MMD -fmessage-length=0 -fPIC
+
+    ifeq ($(AREG_BUILD_TYPE), Release)
+        AREG_COMPILER_OPTIONS   += -O2
+    else
+        AREG_COMPILER_OPTIONS   += -O0 -g3
+    endif
+
+    ifeq ($(AREG_BITNESS), 32)
+        AREG_COMPILER_OPTIONS   += -m32
+    else
+        AREG_COMPILER_OPTIONS   += -m64
+    endif
+
+    AREG_COMPILER_OPTIONS   += $(AREG_DEFINITIONS)
+    AREG_LDFLAGS            += -lm -lstdc++ -lrt -lncurses -pthread $(AREG_USER_DEF_LIBS)
+
+    ifeq ($(AREG_OS), Cygwin)
+
+        AREG_COMPILER_OPTIONS   += -std=gnu++17
+        OBJ_EXT         := o
+        AREG_BIN_EXT    := .exe
+        AREG_STATIC_LIB := .lib
+        AREG_LIB_PREFIX :=
+        ifeq ($(AREG_BINARY), shared)
+    	    AREG_LIB_EXT := .dll
+        else
+    	    AREG_LIB_EXT := .lib
+        endif
+
+    else
+        AREG_COMPILER_OPTIONS   += -std=c++17
+
+        OBJ_EXT         := o
+        AREG_BIN_EXT    := .out
+        AREG_STATIC_LIB := .a
+        AREG_LIB_PREFIX := lib
+        ifeq ($(AREG_BINARY), shared)
+    	    AREG_LIB_EXT := .so
+        else
+    	    AREG_LIB_EXT := .a
+        endif
+
+    endif
+
+else ifeq ($(AREG_CXX_COMPILER_ID), MSVC)
+
+    AREG_DEVELOP_ENV    := Win32
+    AREG_DEFINITIONS    += -DWINDOWS -D_WINDOWS -DWIN32 -D_WIN32
+
+    ifeq ($(AREG_BUILD_TYPE), Debug)
+        AREG_COMPILER_OPTIONS    += -Od -RTC1 -c
+    endif
+
+    ifeq ($(AREG_BITNESS), 64)
+        AREG_DEFINITIONS    += $(AREG_DEFINITIONS) -DWIN64 -D_WIN64
+    endif
+
+    AREG_COMPILER_OPTIONS   += -std=c++17
+    AREG_LDFLAGS        += -ladvapi32 -lpsapi -lshell32 -lws2_32 $(AREG_USER_DEF_LIBS)
+
+    OBJ_EXT         := obj
+    AREG_BIN_EXT    := .exe
+    AREG_STATIC_LIB := .lib
+    AREG_LIB_PREFIX :=
+    ifeq ($(AREG_BINARY), shared)
+    	AREG_LIB_EXT := .dll
+    else
+    	AREG_LIB_EXT := .lib
+    endif
+
+else
+
+    $(warning >>> Unsupported compiler type. The result is unpredictable, by default use GNU compiler settings and POSIX API)
+    AREG_DEFINITIONS    += -DPOSIX
+    AREG_DEVELOP_ENV    := Posix
+
+    ifeq ($(AREG_BUILD_TYPE), Release)
+        AREG_COMPILER_OPTIONS   += -O2
+    else
+        AREG_COMPILER_OPTIONS   += -O0 -g3
+    endif
+
+    ifeq ($(AREG_BITNESS MATCHES), 32)
+        AREG_COMPILER_OPTIONS   += -m32
+    else
+        AREG_COMPILER_OPTIONS   += -m64
+    endif
+
+    AREG_COMPILER_OPTIONS   += -pthread -Wall -c -fmessage-length=0 -MMD -std=c++17
+    AREG_LDFLAGS            += -lstdc++ -lm -lncurses -lpthread -lrt
+    AREG_LDFLAGS            += $(AREG_USER_DEF_LIBS)
+
+    OBJ_EXT         := o
+    AREG_BIN_EXT    := .out
+    AREG_STATIC_LIB := .a
+    AREG_LIB_PREFIX := lib
+    ifeq ($(AREG_BINARY), shared)
+    	AREG_LIB_EXT := .so
+    else
+    	AREG_LIB_EXT := .a
+    endif
+
 endif
 
+# The source code build relative path
+ProjBuildPath   := $(shell echo build/$(AREG_CXX_COMPILER)/$(AREG_OS)-$(AREG_PLATFORM)-$(AREG_BUILD_TYPE) | tr '[:upper:]' '[:lower:]')
+
+# The project output directory
+ProjOutputDir   := $(AREG_BUILD_ROOT)/$(AREG_USER_DEF_OUTPUT_DIR)/$(ProjBuildPath)
+# The project generated files directory
+ProjGendDir     := $(AREG_BUILD_ROOT)/$(AREG_USER_DEF_OUTPUT_DIR)/generate
+# The common object directory, projects can have their own sub-directories
+ProjObjDir      := $(ProjOutputDir)/obj
+
+# The project static library directory
+ProjLibDir      := $(ProjOutputDir)/lib
+# The project binary output directory
+ProjBinDir      := $(ProjOutputDir)/bin
+
+# The project include directories
+ProjIncludes    := 
+ProjIncludes    += -I$(AREG_BASE)
+ProjIncludes    += -I$(ProjGendDir)
+ProjIncludes    += -I$(AREG_USER_DEF_INCLUDES)
+
+# aliases
+AREG_OUTPUT_OBJ = $(ProjObjDir)
+AREG_OUTPUT_LIB = $(ProjLibDir)
+AREG_OUTPUT_BIN = $(ProjBinDir)
+AREG_INCLUDES   = $(ProjIncludes)
+AREG_AR         = ar
+
+CXXFLAGS    += $(AREG_COMPILER_OPTIONS)
+LDFLAGS     += $(AREG_LDFLAGS)
+
+$(info Builds applications in the folder $(AREG_OUTPUT_BIN))
+$(info Generated files are in $(ProjGendDir))
+$(info Builds $(AREG_BINARY) communication engine)
+
 define AREG_HELP_MSG
-Usage: make [target] [areg=<static|shared>] [Config=<Release|Debug>] [Toolset=<toolset>] [CrossCompile=<cross-toolchain>] ...
+# Usage: make [target] [AREG_BINARY=<static|shared>] [AREG_BUILD_TYPE=<Release|Debug>] [AREG_CXX_COMPILER=<compiler>] [CrossCompile=<cross-toolchain>] ...
+Usage: make [target] [AREG_BINARY=<static|shared>] [AREG_BUILD_TYPE=<Release|Debug>] [AREG_CXX_COMPILER=<compiler>]
     target:
         all:            Build all the project. This is the default target.
-        framework:      Build areg framework including areg library and mcrouter.
+        framework:      Build framework, which including areg library and mcrouter.
         examples:       Build areg library and examples.
         clean:          Clean build directory
         help:           Show this help message
 
     options:
-        areg:           Areg library type (shared or static). Default is shared.
-        Config:         Release or Debug build.
-        Toolset:        compiler to use, current supported ones is g++/gcc/clang. Default is g++.
-        CrossCompile:   Cross compiler prefix. I.e: use arm-linux-gnueabihf- for arm32
-        Bitness:        bitness of the target binary, supported for x86_64's compilers only for now.
+        AREG_BINARY:        areg library type (shared or static). Default is shared.
+        AREG_BUILD_TYPE:    Release or Debug build.
+        AREG_CXX_COMPILER:  compiler to use, current supported ones is g++/gcc/clang. Default is g++.
+        AREG_BITNESS:       bitness of the target binary, supported for x86_64's compilers only for now.
 
     More options can be set directly in conf/make/user.mk
 endef
@@ -105,7 +226,7 @@ endef
 
 # clean targets
 clean:
-	rm -rf $(AregBuildRoot)/$(UserDefOutput)
+	rm -rf $(AREG_BUILD_ROOT)/$(AREG_USER_DEF_OUTPUT_DIR)
 clean_build:
 	rm -rf $(ProjOutputDir)
 clean_gen:
