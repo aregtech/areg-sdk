@@ -44,14 +44,28 @@ $(info Selected compiler family '$(AREG_COMPILER_FAMILY)')
 		AREG_CXX_COMPILER_ID:= GNU
 		AREG_CXX_COMPILER	:= g++
 	endif
-endif
 
-# Modify the 'AREG_CXX_COMPILER' to change compiler
-ifeq ($(AREG_CXX_COMPILER),)
+else ifneq ($(AREG_CXX_COMPILER),)
+
+	ifeq ($(AREG_CXX_COMPILER),g++)
+		AREG_CXX_COMPILER_ID:= GNU
+	else ifeq ($(AREG_CXX_COMPILER),gcc)
+		AREG_CXX_COMPILER_ID:= GNU
+	else ifeq ($(AREG_CXX_COMPILER),clang)
+		AREG_CXX_COMPILER_ID:= Clang
+	else ifeq ($(AREG_CXX_COMPILER),clang++)
+		AREG_CXX_COMPILER_ID:= Clang
+	endif
+
+else
+	# Modify the 'AREG_CXX_COMPILER' to change compiler
+	
 	AREG_CXX_COMPILER	 = g++
 	AREG_CXX_COMPILER_ID = GNU
-    # AREG_CXX_COMPILER	 = clang++
+    
+	# AREG_CXX_COMPILER	 = clang++
 	# AREG_COMPILER_FAMILY:= Clang
+
 endif
 
 
