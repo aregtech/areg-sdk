@@ -3,8 +3,6 @@
 # Change these variables only if indeed there is a need.
 # ###########################################################################
 
-AREG_TOOLCHAIN := $(AREG_CXX_COMPILER)
-
 AREG_DEVELOP_ENV        :=
 AREG_LDFLAGS            :=
 AREG_COMPILER_OPTIONS   :=
@@ -32,8 +30,8 @@ ifeq ($(AREG_CXX_COMPILER_ID), Clang)
         AREG_COMPILER_OPTIONS   += -m64
     endif
 
-    AREG_COMPILER_OPTIONS   += -Werror -g -pthread -c -fmessage-length=0 -MMD $(AREG_DEFINITIONS) -stdlib=libstdc++
-    AREG_LDFLAGS            += -lc++ -lm -lncurses -lpthread -lrt $(AREG_USER_DEF_LIBS)
+    AREG_COMPILER_OPTIONS   += -g -pthread -std=c++17 -Werror -Wall -fmessage-length=0 $(AREG_DEFINITIONS) -stdlib=libstdc++
+    AREG_LDFLAGS            += -lm -lstdc++ -lrt -lncurses -pthread $(AREG_USER_DEF_LIBS)
 
     OBJ_EXT         := o
     AREG_BIN_EXT    := .out
@@ -92,32 +90,6 @@ else ifeq ($(AREG_CXX_COMPILER_ID), GNU)
     	    AREG_LIB_EXT := .a
         endif
 
-    endif
-
-else ifeq ($(AREG_CXX_COMPILER_ID), MSVC)
-
-    AREG_DEVELOP_ENV    := Win32
-    AREG_DEFINITIONS    += -DWINDOWS -D_WINDOWS -DWIN32 -D_WIN32
-
-    ifeq ($(AREG_BUILD_TYPE), Debug)
-        AREG_COMPILER_OPTIONS    += -Od -RTC1 -c
-    endif
-
-    ifeq ($(AREG_BITNESS), 64)
-        AREG_DEFINITIONS    += $(AREG_DEFINITIONS) -DWIN64 -D_WIN64
-    endif
-
-    AREG_COMPILER_OPTIONS   += -std=c++17
-    AREG_LDFLAGS        += -ladvapi32 -lpsapi -lshell32 -lws2_32 $(AREG_USER_DEF_LIBS)
-
-    OBJ_EXT         := obj
-    AREG_BIN_EXT    := .exe
-    AREG_STATIC_LIB := .lib
-    AREG_LIB_PREFIX :=
-    ifeq ($(AREG_BINARY), shared)
-    	AREG_LIB_EXT := .dll
-    else
-    	AREG_LIB_EXT := .lib
     endif
 
 else
@@ -181,6 +153,8 @@ AREG_OUTPUT_LIB = $(ProjLibDir)
 AREG_OUTPUT_BIN = $(ProjBinDir)
 AREG_INCLUDES   = $(ProjIncludes)
 AREG_AR         = ar
+AREG_TOOLCHAIN  = $(AREG_CXX_COMPILER)
+
 
 CXXFLAGS    += $(AREG_COMPILER_OPTIONS)
 LDFLAGS     += $(AREG_LDFLAGS)

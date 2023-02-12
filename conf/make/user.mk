@@ -48,9 +48,9 @@ endif
 
 # Modify the 'AREG_CXX_COMPILER' to change compiler
 ifeq ($(AREG_CXX_COMPILER),)
-	AREG_CXX_COMPILER	:= g++
-	AREG_CXX_COMPILER_ID:= GNU
-    # AREG_CXX_COMPILER	:= clang++
+	AREG_CXX_COMPILER	 = g++
+	AREG_CXX_COMPILER_ID = GNU
+    # AREG_CXX_COMPILER	 = clang++
 	# AREG_COMPILER_FAMILY:= Clang
 endif
 
@@ -61,17 +61,17 @@ endif
 
 # Target settings. Modify AREG_BINARY to compile target areg framewor library
 # either as a "static" or a "shared" library
-# AREG_BINARY := static
-AREG_BINARY := shared
+AREG_BINARY := static
+# AREG_BINARY := shared
 
 # Modify the 'AREG_BUILD_TYPE' to change the "Release" or "Debug" build configuration
 AREG_BUILD_TYPE := Debug
 # AREG_BUILD_TYPE := Release
 
-AREG_OUTPUT_DIR :=
-AREG_OS 		:= $(DETECTED_OS)
-AREG_PLATFORM 	:= $(DETECTED_PROCESSOR)
-AREG_BITNESS	:= $(DETECTED_BITNESS)
+AREG_OUTPUT_DIR	=
+AREG_OS 		= $(DETECTED_OS)
+AREG_PLATFORM 	= $(DETECTED_PROCESSOR)
+AREG_BITNESS	= $(DETECTED_BITNESS)
 
 # ###########################################################################
 #           AERG SDK globals

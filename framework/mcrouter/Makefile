@@ -16,7 +16,7 @@ mcrouter_LDFLAGS  := -lncurses
 mcrouter_CXXFLAGS :=
 ifeq ($(AREG_BINARY), shared)
 	mcrouter_CXXFLAGS += -DIMP_AREG_DLL
-	mcrouter_LDFLAGS  += -Wl,-rpath=$(AREG_OUTPUT_BIN) -L $(AREG_OUTPUT_BIN) -lareg
+	mcrouter_LDFLAGS  += -Wl,-rpath=$(AREG_OUTPUT_BIN) -L$(AREG_OUTPUT_BIN) -lareg
 else
 	mcrouter_CXXFLAGS += -DIMP_AREG_LIB
 	mcrouter_LDFLAGS  += -L $(AREG_OUTPUT_LIB) -Wl,-Bstatic -lareg -Wl,-Bdynamic
