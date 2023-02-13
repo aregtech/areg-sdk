@@ -112,9 +112,9 @@ Currently AREG SDK consists of:
 2. [AREG framework (or engine)](./framework/areg/) is a (shared or static) library to link with every application.
 3. [Code generator tool](./tools/) to create client and server base objects from a service prototype document.
 
-The network communication model of AREG framework is based on _multicast router_ and _interface-centric_ services, which in combination of both enable to comprise all features of _action-centric_ architecture (Client-Server / Request-Reply model) and _data-centric_ architecture (Publisher-Subscriber / PubSub model).
+AREG engine is based on _multicast routing_ network model and _interface-centric_ service concepts, which in combination comprise features of _action-centric_ (Client-Server / Request-Reply model) and _data-centric_ (Publish-Subscriber / PubSub model) architectures.
 
-> 💡 The [examples](./examples) of _AREG SDK_ are to demonstrate the features and fault tolerant behavior of AREG communication engine.
+> 💡 The [examples](./examples) demonstrate the features and fault tolerant behavior of AREG communication engine.
 
 <div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
