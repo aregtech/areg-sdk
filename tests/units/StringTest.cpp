@@ -3,7 +3,7 @@
 
 TEST(StringTest, makeInt32)
 {
-    char *test = "52";
+    const char *test = "52";
     int32_t result_int32 = 52;
     EXPECT_EQ(String::makeInt32(test), result_int32);
     EXPECT_EQ(typeid(String::makeInt32(test)), typeid(result_int32));
@@ -38,4 +38,16 @@ TEST(StringTest, getSubstring)
     
     result = String::getSubstring(next, " ", &next);
     EXPECT_EQ(result, "0123");
+}
+
+TEST(StringTest, makeUInt32)
+{
+    const char *test = "52";
+    uint32_t result_uint32 = 52;
+    EXPECT_EQ(String::makeUInt32(test), result_uint32);
+    EXPECT_EQ(typeid(String::makeUInt32(test)), typeid(result_uint32));
+    
+    uint16_t result_uint16 = 52;
+    EXPECT_EQ(String::makeUInt32(test), result_uint16);
+    EXPECT_NE(typeid(String::makeUInt32(test)), typeid(result_uint16));
 }
