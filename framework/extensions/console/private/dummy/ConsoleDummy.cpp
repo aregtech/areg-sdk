@@ -44,13 +44,10 @@ namespace
 {
     //!< Clear the screen.
     constexpr std::string_view  CMD_CLEAR_SCREEN{ "\x1B[2J\x1B[1;1f" };
-    //!< Scroll cursor back.
-    constexpr std::string_view  CMD_SCROLL_BACK { "\x1B[3J" };
     //!< Clear line.
     constexpr std::string_view  CMD_CLEAR_LINE  { "\x1B[2K" };
-    //!< Reset.
-    constexpr std::string_view  CMD_RESET       { "\x1B[0m" };
 
+    //!< Enables the ASCII control sequence for applications compiled with Win32 API.
     void _enableAsciiControlSequence(void)
     {
 
@@ -93,38 +90,40 @@ bool Console::_osSetup(void)
 {
     _enableAsciiControlSequence();
     mIsReady = true;
-    printf(CMD_CLEAR_SCREEN.data());
+    printf("%s", CMD_CLEAR_SCREEN.data());
+    ::fflush(stdout);
     return mIsReady;
 }
 
 void Console::_osRelease(void)
 {
     mIsReady = false;
-    printf(CMD_CLEAR_SCREEN.data());
+    printf("%s", CMD_CLEAR_SCREEN.data());
+    ::fflush(stdout);
 }
 
 void Console::_osOutputText(Console::Coord pos, const String& text) const
 {
     Lock lock(mLock);
-    printf("\x1B[%d;%df%s%s", pos.posY, pos.posX, CMD_CLEAR_LINE.data(), text.getString());
+    printf("\x1B[%d;%dH%s%s", pos.posY, pos.posX, CMD_CLEAR_LINE.data(), text.getString());
 }
 
 void Console::_osOutputText(Console::Coord pos, const std::string_view& text) const
 {
     Lock lock(mLock);
-    printf("\x1B[%d;%df%s%s", pos.posY, pos.posX, CMD_CLEAR_LINE.data(), text.data());
+    printf("\x1B[%d;%dH%s%s", pos.posY, pos.posX, CMD_CLEAR_LINE.data(), text.data());
 }
 
 void Console::_osOutputText(const String& text) const
 {
     Lock lock(mLock);
-    printf(text.getString());
+    printf("%s", text.getString());
 }
 
 void Console::_osOutputText(const std::string_view& text) const
 {
     Lock lock(mLock);
-    printf(text.data());
+    printf("%s", text.data());
 }
 
 Console::Coord Console::_osGetCursorPosition(void) const
@@ -157,7 +156,7 @@ Console::Coord Console::_osGetCursorPosition(void) const
 void Console::_osSetCursorCurPosition(Console::Coord pos) const
 {
     Lock lock(mLock);
-    printf("\x1B[%d;%df", pos.posY, pos.posX);
+    printf("\x1B[%d;%dH", pos.posY, pos.posX);
 }
 
 void Console::_osWaitInput(char* buffer, uint32_t size) const
@@ -167,12 +166,14 @@ void Console::_osWaitInput(char* buffer, uint32_t size) const
 
 void Console::_osRefreshScreen(void) const
 {
+    Lock lock(mLock);
+    ::fflush(stdout);
 }
 
 void Console::_osClearLine( void ) const
 {
     Lock lock(mLock);
-    printf(CMD_CLEAR_LINE.data());
+    printf("%s", CMD_CLEAR_LINE.data());
 }
 
 bool Console::_osReadInputList(const char* format, va_list varList) const

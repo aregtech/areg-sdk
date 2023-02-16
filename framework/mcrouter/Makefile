@@ -12,14 +12,14 @@ mcrouter_OBJS :=
 include $(mcrouter_BASE)/app/private/Makefile
 include $(mcrouter_BASE)/tcp/private/Makefile
 
-mcrouter_LDFLAGS  := -lncurses
+mcrouter_LDFLAGS  :=
 mcrouter_CXXFLAGS :=
 ifeq ($(AREG_BINARY), shared)
 	mcrouter_CXXFLAGS += -DIMP_AREG_DLL
-	mcrouter_LDFLAGS  += -Wl,-rpath=$(AREG_OUTPUT_BIN) -L$(AREG_OUTPUT_BIN) -lareg
+	mcrouter_LDFLAGS  += -Wl,-rpath=$(AREG_OUTPUT_BIN) -L$(AREG_OUTPUT_BIN) -lareg $(AREG_EXTENSIONS_LIBS)
 else
 	mcrouter_CXXFLAGS += -DIMP_AREG_LIB
-	mcrouter_LDFLAGS  += -L $(AREG_OUTPUT_LIB) -Wl,-Bstatic -lareg -Wl,-Bdynamic
+	mcrouter_LDFLAGS  += -L$(AREG_OUTPUT_LIB) -Wl,-Bstatic -lareg $(AREG_EXTENSIONS_LIBS) -Wl,-Bdynamic
 endif
 
 mcrouter_TARGET_BIN := $(mcrouter_PROJECT_NAME)$(AREG_BIN_EXT)

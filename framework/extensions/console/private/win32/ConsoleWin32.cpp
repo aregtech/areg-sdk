@@ -177,6 +177,10 @@ void Console::_osWaitInput(char* buffer, uint32_t size) const
 
 void Console::_osRefreshScreen(void) const
 {
+    Lock lock(mLock);
+
+    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    FlushConsoleInputBuffer(hStdOut);
 }
 
 void Console::_osClearLine( void ) const

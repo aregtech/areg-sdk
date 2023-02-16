@@ -386,6 +386,7 @@ void Wait::_osInitTimer(void)
 
 void Wait::_osReleaseTimer(void)
 {
+    ASSERT(mTimer != nullptr);
     ::CancelWaitableTimer( mTimer );
     ::CloseHandle( mTimer );
     mTimer = nullptr;
