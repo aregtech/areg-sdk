@@ -17,15 +17,16 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/appbase/Application.hpp"
-#include "areg/appbase/Console.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
+#include "extensions/console/Console.hpp"
 
 #include "generated/src/NECommon.hpp"
 #include "pubservice/src/TrafficLightService.hpp"
 
 #ifdef WINDOWS
     #pragma comment(lib, "areg.lib")
+    #pragma comment(lib, "areg-extensions.lib")
     #pragma comment(lib, "14_generated.lib")
 #endif // WINDOWS
 

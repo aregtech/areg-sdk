@@ -29,6 +29,8 @@ set(AREG_DEVELOP_ENV)
 set(AREG_LDFLAGS)
 # The compiler options
 set(AREG_COMPILER_OPTIONS)
+#set areg extensions library dependencies
+set(AREG_EXTENSIONS_LIBS)
 
 # Adding common definition
 add_definitions(-DUNICODE -D_UNICODE)
@@ -64,7 +66,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # Clang compile options
     list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -stdlib=libstdc++ ${AREG_USER_DEFINES})
     # Linker flags (-l is not necessary)
-    list(APPEND AREG_LDFLAGS c++ m ncurses pthread rt ${AREG_USER_DEF_LIBS})
+    list(APPEND AREG_LDFLAGS c++ m pthread rt ${AREG_USER_DEF_LIBS})
 
 elseif (CMAKE_COMPILER_IS_GNUCXX )
 
@@ -91,7 +93,7 @@ elseif (CMAKE_COMPILER_IS_GNUCXX )
         list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -MMD -std=c++17 ${AREG_USER_DEFINES})
     endif()
     # Linker flags (-l is not necessary)
-    list(APPEND AREG_LDFLAGS stdc++ m ncurses pthread rt ${AREG_USER_DEF_LIBS})
+    list(APPEND AREG_LDFLAGS stdc++ m pthread rt ${AREG_USER_DEF_LIBS})
 
 elseif (MSVC)
 
@@ -135,9 +137,20 @@ else()
     # Compile options
     list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -MMD -std=c++17 ${AREG_USER_DEFINES})
     # Linker flags (-l is not necessary)
-    list(APPEND AREG_LDFLAGS stdc++ m ncurses pthread rt "${AREG_USER_DEF_LIBS}")
+    list(APPEND AREG_LDFLAGS stdc++ m pthread rt "${AREG_USER_DEF_LIBS}")
 
 endif()
+
+list(APPEND AREG_EXTENSIONS_LIBS areg-extensions)
+if (AREG_ENABLE_EXT)
+    add_definitions(-DAREG_EXTENSIONS=1)
+    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
+        list(APPEND AREG_EXTENSIONS_LIBS ncurses)
+    endif()
+else()
+    add_definitions(-DAREG_EXTENSIONS=0)
+endif(AREG_ENABLE_EXT)
+
 
 # -------------------------------------------------------
 # Setup product paths
@@ -200,5 +213,5 @@ message(STATUS ">>> Build executables are with extension \'${CMAKE_EXECUTABLE_SU
 message(STATUS ">>> Build for \'${CMAKE_SYSTEM_NAME}\' ${AREG_BITNESS}-bit platform ${AREG_PROCESSOR} with compiler \'${CMAKE_CXX_COMPILER}\', ID \'${AREG_TOOLCHAIN}\', and build type \'${CMAKE_BUILD_TYPE}\'")
 message(STATUS ">>> Binary output folder \'${AREG_OUTPUT_BIN}\'")
 message(STATUS ">>> Library output folder \'${AREG_OUTPUT_LIB}\'")
-message(STATUS ">>> Build examples is '${AREG_BUILD_EXAMPLES}\', build tests is \'${AREG_BUILD_TESTS}\'")
+message(STATUS ">>> Build examples is '${AREG_BUILD_EXAMPLES}\', build tests is \'${AREG_BUILD_TESTS}\', AREG Extensions is ${AREG_ENABLE_EXT}")
 message(STATUS "-------------------- Status Report End ----------------------")

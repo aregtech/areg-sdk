@@ -20,7 +20,7 @@
 
 #include "areg/component/ComponentThread.hpp"
 #include "areg/appbase/Application.hpp"
-#include "areg/appbase/Console.hpp"
+#include "extensions/console/Console.hpp"
 
 #include "mcrouter/app/MulticastRouter.hpp"
 #include "mcrouter/app/NEMulticastRouterSettings.hpp"
@@ -129,14 +129,14 @@ inline void ConsoleService::_outputDataRate(uint32_t bytesSend, uint32_t bytesRe
 {
     Console& console = Console::getInstance();
 
-    Console::Coord oldPos = console.getCursorCurPosition();
+    console.saveCursorPosition();
     ConsoleService::DataRate rateSend(bytesSend);
     ConsoleService::DataRate rateRecv(bytesRecv);
 
     console.outputMsg(NEMulticastRouterSettings::COORD_SEND_RATE, NEMulticastRouterSettings::FORMAT_SEND_DATA.data(), rateSend.mRate.first, rateSend.mRate.second.c_str());
     console.outputMsg(NEMulticastRouterSettings::COORD_RECV_RATE, NEMulticastRouterSettings::FORMAT_RECV_DATA.data(), rateRecv.mRate.first, rateRecv.mRate.second.c_str());
 
-    console.setCursorCurPosition(oldPos);
+    console.restoreCursorPosition();
     console.refreshScreen();
 }
 

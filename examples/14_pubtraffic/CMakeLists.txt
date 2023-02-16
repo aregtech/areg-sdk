@@ -14,9 +14,11 @@ include(${14_pubtraffic_BASE}/generated/CMakeLists.txt)
 include(${14_pubtraffic_BASE}/pubclient/CMakeLists.txt)
 include(${14_pubtraffic_BASE}/pubservice/CMakeLists.txt)
 
+list(APPEND 14_lib_list ${gen_projName} ${AREG_EXTENSIONS_LIBS})
+
 addStaticLib(${gen_projName} "${14_generated_SRC}")
-addExecutableEx(${projName1} "${14_SRC1}" "${gen_projName}")
-addExecutableEx(${projName2} "${14_SRC2}" "${gen_projName}")
+addExecutableEx(${projName1} "${14_SRC1}" "${14_lib_list}")
+addExecutableEx(${projName2} "${14_SRC2}" "${14_lib_list}")
 
 target_include_directories(${gen_projName} BEFORE PRIVATE ${14_pubtraffic_BASE})
 target_include_directories(${projName1} BEFORE PRIVATE ${14_pubtraffic_BASE})
