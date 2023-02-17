@@ -38,7 +38,8 @@
   <ItemGroup>
     <ClCompile Include="extensions\console\private\Console.cpp" />
     <ClCompile Include="extensions\console\private\dummy\ConsoleDummy.cpp" />
-    <ClCompile Include="extensions\console\private\posix\ConsolePosix.cpp" />
+    <ClCompile Include="extensions\console\private\ncurses\ConsoleNcurses.cpp" />
+    <ClCompile Include="extensions\console\private\ansi\ConsoleAnsi.cpp" />
     <ClCompile Include="extensions\console\private\win32\ConsoleWin32.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -48,6 +49,9 @@
   <ItemGroup>
     <Text Include="extensions\CMakeLists.txt" />
     <Text Include="extensions\console\private\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="extensions\Readme.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

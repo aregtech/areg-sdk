@@ -1069,6 +1069,7 @@
     <None Include="areg\resources\router.init">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="areg\Readme.md" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="areg\resources\areg.rc">

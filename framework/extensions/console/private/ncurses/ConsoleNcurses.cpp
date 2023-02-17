@@ -7,11 +7,12 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
- * \file        extensions/console/private/proxy/Console.cpp
+ * \file        extensions/console/private/ncurses/ConsoleNcurses.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       AREG Platform, Basic OS specific console implementation.
- *              POSIX specific implementation.
+ * \brief       AREG Platform, OS specific console implementation
+ *              based on ncurses API. Works with POSIX supported OS.
+ * 
  ************************************************************************/
 
  /************************************************************************
@@ -43,7 +44,6 @@ bool Console::_osSetup(void)
             clear();
             cbreak();
             mIsReady = true;
-            // raw();
         }
     }
 

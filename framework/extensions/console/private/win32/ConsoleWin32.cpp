@@ -12,7 +12,8 @@
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
  * \brief       AREG Platform, Basic OS specific console implementation.
- *              Windows specific implementation
+ *              Windows specific implementation based on Win32 API.
+ * 
  ************************************************************************/
 
  /************************************************************************

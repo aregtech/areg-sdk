@@ -7,11 +7,11 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
- * \file        extensions/console/private/win32/Console.cpp
+ * \file        extensions/console/private/posix/ConsolePosix.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       AREG Platform, Basic OS specific console implementation.
- *              Windows specific implementation
+ * \brief       AREG Platform, Basic OS specific console implementation
+ *              based on standard ANSI C API, which can be used under any OS.
  ************************************************************************/
 
  /************************************************************************
