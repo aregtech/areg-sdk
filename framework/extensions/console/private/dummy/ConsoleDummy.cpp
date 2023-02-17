@@ -161,7 +161,11 @@ void Console::_osSetCursorCurPosition(Console::Coord pos) const
 
 void Console::_osWaitInput(char* buffer, uint32_t size) const
 {
-    static_cast<void>(SCAN_S("%s", buffer, size));
+    int result = SCAN_S("%s", buffer, size);
+    if ((result < 0) && (buffer != nullptr)
+    {
+        *buffer = '\0';
+    }
 }
 
 void Console::_osRefreshScreen(void) const
