@@ -13,6 +13,7 @@
 #   7. AREG_COMPILER_FAMILY -- Simple way to set AREG_CXX_COMPILER and AREG_C_COMPILER compilers
 #   8. AREG_BUILD_ALL       -- Bulds the framework, examples and tests.
 #   9. AREG_OUTPUT_DIR      -- The output directory of build binaries
+#  10. AREG_ENABLE_EXT      -- Enables or disables the extensions, which might require additional libraries.
 #
 # The default values are:
 #   1. AREG_CXX_COMPILER    := g++      (possible values: g++, clang++-13, cl)
@@ -24,6 +25,7 @@
 #   7. AREG_COMPILER_FAMILY := <empty>  (possible values: gnu, cygwin, clang, msvc)
 #   8. AREG_BUILD_ALL       := ON       (possible values: ON, OFF)
 #   9. AREG_OUTPUT_DIR      := <path>   (possible values: valid path where creates 'bin' and 'lib' subfolders)
+#  10. AREG_ENABLE_EXT      := ON       (possible values: ON, OFF)
 #
 # Hint:
 #   AREG_COMPILER_FAMILY is a simple and short way to specify the compiler.
@@ -101,28 +103,33 @@ if (NOT DEFINED AREG_BINARY OR AREG_BINARY STREQUAL "")
     set(AREG_BINARY "shared")
 endif()
 
-# CPP standard for the projects
-set(AREG_CXX_STANDARD 17)
-
 # Build tests. By default it is enabled. To disable, set OFF
 if (NOT DEFINED AREG_BUILD_TESTS OR AREG_BUILD_TESTS)
-    option(AREG_BUILD_TESTS    "Build unit tests" ON)
+    option(AREG_BUILD_TESTS     "Build unit tests" ON)
 else()
-    option(AREG_BUILD_TESTS    "Build unit tests" OFF)
+    option(AREG_BUILD_TESTS     "Build unit tests" OFF)
 endif()
 
 # Build examples. By default it is enabled. To disable, set OFF
 if (NOT DEFINED AREG_BUILD_EXAMPLES OR AREG_BUILD_EXAMPLES)
-    option(AREG_BUILD_EXAMPLES "Build examples"   ON)
+    option(AREG_BUILD_EXAMPLES  "Build examples"   ON)
 else()
-    option(AREG_BUILD_EXAMPLES "Build examples"   OFF)
+    option(AREG_BUILD_EXAMPLES  "Build examples"   OFF)
 endif()
 
 # Check and set the builds projects. If ON, force to compile examples and tests
 if (DEFINED AREG_BUILD_ALL)
-    option(AREG_BUILD_TESTS    "Build unit tests" ${AREG_BUILD_ALL})
-    option(AREG_BUILD_EXAMPLES "Build examples"   ${AREG_BUILD_ALL})
+    option(AREG_BUILD_TESTS     "Build unit tests" ${AREG_BUILD_ALL})
+    option(AREG_BUILD_EXAMPLES  "Build examples"   ${AREG_BUILD_ALL})
 endif()
+
+# Set AREG extensions enable or disable flag to compiler additional optional features.
+if (NOT DEFINED AREG_ENABLE_EXT)
+    option(AREG_ENABLE_EXT      "Enable extensions" OFF)
+endif()
+
+# CPP standard for the projects
+set(AREG_CXX_STANDARD 17)
 
 # Set bitless here
 set(AREG_BITNESS "64")

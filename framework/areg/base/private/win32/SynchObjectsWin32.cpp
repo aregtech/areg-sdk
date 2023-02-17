@@ -19,7 +19,7 @@
 #include "areg/base/NEMemory.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/base/private/win32/SpinLockWin32.hpp"
-#include <windows.h>
+#include <Windows.h>
 
 //////////////////////////////////////////////////////////////////////////
 // IESynchObject class implementation
@@ -386,6 +386,7 @@ void Wait::_osInitTimer(void)
 
 void Wait::_osReleaseTimer(void)
 {
+    ASSERT(mTimer != nullptr);
     ::CancelWaitableTimer( mTimer );
     ::CloseHandle( mTimer );
     mTimer = nullptr;

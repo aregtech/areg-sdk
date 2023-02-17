@@ -22,7 +22,7 @@
 #include "areg/component/private/Watchdog.hpp"
 #include "areg/base/NEUtilities.hpp"
 
-#include <windows.h>
+#include <Windows.h>
 
 
  //////////////////////////////////////////////////////////////////////////

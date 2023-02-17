@@ -21,7 +21,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/trace/GETrace.h"
 
-#include "areg/appbase/Console.hpp"
+#include "extensions/console/Console.hpp"
 
 #include <string_view>
 
@@ -144,19 +144,19 @@ namespace NEMulticastRouterSettings
     /**
      * \brief   Coordinate to start to display send data rate message.
      **/
-    constexpr Console::Coord    COORD_SEND_RATE{ 0, 0 };
+    constexpr Console::Coord    COORD_SEND_RATE{ 0, 1 };
     /**
      * \brief   Coordinate to start to display receive data rate message.
      **/
-    constexpr Console::Coord    COORD_RECV_RATE{ 0, 1 };
+    constexpr Console::Coord    COORD_RECV_RATE{ 0, 2 };
     /**
      * \brief   Coordinate to start to display user input message.
      **/
-    constexpr Console::Coord    COORD_USER_INPUT{ 0, 2 };
+    constexpr Console::Coord    COORD_USER_INPUT{ 0, 3 };
     /**
      * \brief   Coordinate to start to display error message.
      **/
-    constexpr Console::Coord    COORD_ERROR_MSG{ 0, 3 };
+    constexpr Console::Coord    COORD_ERROR_MSG{ 0, 4 };
 
 } // namespace NEMulticastRouterSettings
 

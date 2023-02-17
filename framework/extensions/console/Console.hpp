@@ -1,5 +1,5 @@
-#ifndef AREG_APPBASE_CONSOLE_HPP
-#define AREG_APPBASE_CONSOLE_HPP
+#ifndef AREG_EXTENSIONS_CONSOLE_CONSOLE_HPP
+#define AREG_EXTENSIONS_CONSOLE_CONSOLE_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,16 +9,16 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
- * \file        areg/appbase/Console.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \file        extensions/console/Console.hpp
+ * \ingroup     AREG Asynchronous Event-Driven Communication Framework, extensions
  * \author      Artak Avetyan
- * \brief       AREG Platform, Basic OS specific console implementation.
+ * \brief       Console extension.
  ************************************************************************/
 
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "extensions/Extensions.hpp"
 
 #include "areg/base/String.hpp"
 #include "areg/base/SynchObjects.hpp"
@@ -42,7 +42,7 @@
  *          environment where one thread is waiting for the user input and
  *          the other thread outputs messages on the desired position.
  **/
-class AREG_API Console
+class Console
 {
 //////////////////////////////////////////////////////////////////////////
 // Types and constants
@@ -176,10 +176,16 @@ public:
     void outputMsg(Console::Coord pos, const char* format, ...) const;
 
     /**
-     * \brief   Outputs the formated text message with arguments at the given coordinate.
+     * \brief   Outputs the formated text message at the current cursor position.
      * \param   format  The text format with arguments to output the message.
      **/
-    void printTxt(const String& text) const;
+    inline void printStr(const String& text) const;
+    inline void printTxt(const std::string_view& text) const;
+
+    /**
+     * \brief   Outputs the formated text message with arguments at the current cursor position.
+     * \param   format  The text format with arguments to output the message.
+     **/
     void printMsg(const char* format, ...) const;
 
     /**
@@ -200,6 +206,26 @@ public:
      * \param   line    The line to move cursor. The first line starts with index 0.
      */
     inline void moveToLine(int16_t line) const;
+
+    /**
+     * \brief   Saves the cursor current position in memory.
+     **/
+    inline void saveCursorPosition(void) const;
+
+    /**
+     * \brief   Restores previousely saved in memory cursor position.
+     **/
+    inline void restoreCursorPosition(void) const;
+
+    /**
+     * \brief   Moves cursor one line up from current position.
+     **/
+    inline void moveCursorOneLineUp(void) const;
+
+    /**
+     * \brief   Moves cursor one line down from current position.
+     **/
+    inline void moveCursorOneLineDown(void) const;
 
     /**
      * \brief   Clears the line starting from the cursor current position until the end of the line. 
@@ -250,6 +276,7 @@ private:
     void _osOutputText(Console::Coord pos, const String& text) const;
     void _osOutputText(Console::Coord pos, const std::string_view& text) const;
     void _osOutputText(const String& text) const;
+    void _osOutputText(const std::string_view& text) const;
 
     /**
      * \brief   Returns the current position of the cursor on the console.
@@ -290,6 +317,26 @@ private:
      * \return  Upon successful completion, these functions return true. Otherwise, returns false.
      **/
     bool _osReadInputList(const char* format, va_list varList) const;
+
+    /**
+     * \brief   OS specific implementation to save the cursor current position in memory.
+     **/
+    void _osSaveCursorPosition(void) const;
+
+    /**
+     * \brief   OS specific implementation to restore previousely saved in memory cursor position.
+     **/
+    void _osRestoreCursorPosition(void) const;
+
+    /**
+     * \brief   OS specific implementation to move cursor one line up from current position.
+     **/
+    void _osMoveCursorOneLineUp(void) const;
+
+    /**
+     * \brief   OS specific implementation to move cursor one line down from current position.
+     **/
+    void _osMoveCursorOneLineDown(void) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -351,7 +398,12 @@ inline void Console::outputTxt( Console::Coord pos, const std::string_view & tex
     _osOutputText( pos, text );
 }
 
-inline void Console::printTxt(const String& text) const
+inline void Console::printStr(const String& text) const
+{
+    _osOutputText(text);
+}
+
+inline void Console::printTxt(const std::string_view& text) const
 {
     _osOutputText(text);
 }
@@ -371,6 +423,26 @@ inline void Console::moveToLine(int16_t line) const
     setCursorCurPosition(Coord{ 0, line });
 }
 
+inline void Console::saveCursorPosition(void) const
+{
+    _osSaveCursorPosition();
+}
+
+inline void Console::restoreCursorPosition(void) const
+{
+    _osRestoreCursorPosition();
+}
+
+inline void Console::moveCursorOneLineUp(void) const
+{
+    _osMoveCursorOneLineUp();
+}
+
+inline void Console::moveCursorOneLineDown(void) const
+{
+    _osMoveCursorOneLineDown();
+}
+
 inline const String & Console::getUserInput( void ) const
 {
     return mUsrInput;
@@ -388,10 +460,10 @@ inline void Console::clearCurrentLine( void ) const
 
 inline void Console::clearLine(Console::Coord pos) const
 {
-    Console::Coord oldPos = getCursorCurPosition();
+    saveCursorPosition();
     setCursorCurPosition(pos);
     clearCurrentLine();
-    setCursorCurPosition(oldPos);
+    restoreCursorPosition();
 }
 
-#endif  // AREG_APPBASE_CONSOLE_HPP
+#endif  // AREG_EXTENSIONS_CONSOLE_CONSOLE_HPP

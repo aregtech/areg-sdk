@@ -80,6 +80,7 @@
     <None Include="mcrouter\resources\small.ico">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="mcrouter\Readme.md" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mcrouter\app\private\MulticastRouter.cpp">

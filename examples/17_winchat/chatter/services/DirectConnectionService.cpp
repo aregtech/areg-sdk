@@ -9,7 +9,7 @@
 #include "chatter/NEDistributedApp.hpp"
 #include "areg/trace/GETrace.h"
 
-#include <windows.h>
+#include <Windows.h>
 
 DEF_TRACE_SCOPE( distrbutedapp_DirectConnectionService_CreateComponent );
 DEF_TRACE_SCOPE( distrbutedapp_DirectConnectionService_DeleteComponent );

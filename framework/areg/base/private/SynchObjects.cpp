@@ -316,6 +316,5 @@ Wait::Wait(void)
 
 Wait::~Wait(void)
 {
-    ASSERT( mTimer != nullptr );
     _osReleaseTimer();
 }

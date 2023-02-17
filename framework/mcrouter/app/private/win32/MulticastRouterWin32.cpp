@@ -17,6 +17,7 @@
 #ifdef WINDOWS
 
 #pragma comment(lib, "areg.lib")
+#pragma comment(lib, "areg-extensions.lib")
 #pragma comment(lib, "advapi32.lib")
 #pragma comment(lib, "kernel32.lib")
 
@@ -30,7 +31,7 @@
 #ifndef WIN32_LEAN_AND_MEAN
     #define WIN32_LEAN_AND_MEAN
 #endif  // WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#include <Windows.h>
 #include <tchar.h>
 
 #include <shellapi.h>

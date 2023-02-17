@@ -21,7 +21,7 @@
 #include "areg/base/String.hpp"
 #include "areg/base/NEMemory.hpp"
 
-#include <windows.h>
+#include <Windows.h>
 
 namespace NEUtilities {
 

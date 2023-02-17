@@ -1,0 +1,7 @@
+# Content
+
+This folder contains the extensions of ARE engine. The extensions may require additional libraries and resources, which are considered additional and optional features, that are not included in the AREG standard engine. The extensions are compiled as `areg-extensions` static library to link with projects that may use them. To compiler project with the extensions, define `AREG_ENABLE_EXT=1`. Otherwise, ignore or specify `AREG_ENABLE_EXT=0`. If specify `AREG_ENABLE_EXT=0`, the project is compiled as a static library, which can be linked, but no guarantee that the features of extensions will be available or will work as it is initially designed and in some cases, the objects may contain `dummy` implementation just to support the API.
+
+This project contains following folders:
+
+* [console](./console)      -- The console extension to output messages on the certain positions and manipulate the cursor positions. For Linux platform it can be compiled with `ncurses` library to have better manipulation of cursors. For Windows platform it can be compiled with `Win32 API` to have better manipulation of cursor. If `AREG_ENABLE_EXT=0` is set, the implementation is based on ANSI C API and ANSI escape code sequences. The behaviour may differ in multithreading environment when simultaneously wait for user input and query the cursor position. Be careful to query position. Instead, try saving and restoring cursor position.

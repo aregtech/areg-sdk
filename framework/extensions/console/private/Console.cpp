@@ -7,16 +7,16 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
- * \file        mcrouter/app/private/Console.cpp
+ * \file        extensions/console/private/Console.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       AREG Platform, Multi-cast routing, OS specific console.
+ * \brief       AREG Console extension.
  ************************************************************************/
 
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/appbase/Console.hpp"
+#include "extensions/console/Console.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Console class implementations.

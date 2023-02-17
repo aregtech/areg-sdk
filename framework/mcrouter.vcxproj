@@ -67,6 +67,7 @@
     <ResourceCompile Include="mcrouter\resources\mcrouter.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="mcrouter\Readme.md" />
     <None Include="mcrouter\resources\mcrouter.ico" />
     <None Include="mcrouter\resources\small.ico" />
     <None Include="mcrouter\resources\mcrouter_install.bat" />

@@ -68,6 +68,12 @@ else
 
 endif
 
+ifndef $(AREG_ENABLE_EXT)
+	AREG_ENABLE_EXT	:= 0
+else ifeq ($(AREG_ENABLE_EXT),)
+	AREG_ENABLE_EXT	:= 0
+endif
+
 
 # ###########################################################################
 # Settings

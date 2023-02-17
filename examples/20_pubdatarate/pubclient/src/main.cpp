@@ -20,8 +20,11 @@
 #include "pubclient/src/ServiceClient.hpp"
 
 #ifdef WINDOWS
-    #pragma comment(lib, "areg")
+
+    #pragma comment(lib, "areg.lib")
+    #pragma comment(lib, "areg-extensions.lib")
     #pragma comment(lib, "20_generated.lib")
+
 #endif // WINDOWS
 
 constexpr char const _modelName[]= { "DataRate" };  //!< The name of model

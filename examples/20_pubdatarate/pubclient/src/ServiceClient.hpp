@@ -17,8 +17,9 @@
 #include "generated/src/LargeDataClientBase.hpp"
 #include "areg/component/IETimerConsumer.hpp"
 
-#include "areg/appbase/Console.hpp"
 #include "areg/component/Timer.hpp"
+#include "extensions/console/Console.hpp"
+
 #include "common/NELargeData.hpp"
 #include "common/SimpleBitmap.hpp"
 
@@ -37,10 +38,10 @@ class ServiceClient : public    Component
 private:
 
     //!< The coordinates to output client application title / headline.
-    static constexpr Console::Coord     COORD_TITLE     { 0, 0 };
+    static constexpr Console::Coord     COORD_TITLE     { 1, 2 };
 
     //!< Coordinates to output data rate information of large data client.
-    static constexpr Console::Coord     COORD_DATA_RATE { 0, 1 };
+    static constexpr Console::Coord     COORD_DATA_RATE { 1, 3 };
 
     //!< File name to save bitmap image.
     static constexpr std::string_view   FILE_NAME       { ".\\SimpleImage.bmp" };

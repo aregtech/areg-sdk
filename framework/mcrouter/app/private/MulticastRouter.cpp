@@ -9,7 +9,6 @@
 #include "mcrouter/app/private/ConsoleService.hpp"
 
 #include "areg/appbase/Application.hpp"
-#include "areg/appbase/Console.hpp"
 #include "areg/appbase/NEApplication.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/NEUtilities.hpp"
@@ -17,6 +16,14 @@
 #include "areg/base/String.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
+
+#include "extensions/console/Console.hpp"
+
+#ifdef _WINDOWS
+    #define MACRO_SCANF(fmt, data, len)     scanf_s(fmt, data, len)
+#else   // _POSIX
+    #define MACRO_SCANF(fmt, data, len)     scanf(fmt, data)
+#endif  // _WINDOWS
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -160,6 +167,8 @@ void MulticastRouter::serviceMain( int argc, char ** argv )
 
         if ( mServiceCmd == NEMulticastRouterSettings::eServiceCommand::CMD_Console )
         {
+#if 1
+
             Console& console = Console::getInstance();
 
             if (mRunVerbose)
@@ -182,11 +191,28 @@ void MulticastRouter::serviceMain( int argc, char ** argv )
                 console.waitForInput(callback);
             }
 
-            Console::Coord pos = console.getCursorCurPosition();
-            pos.posY += 1;
-            pos.posX = 0;
-            console.outputTxt(pos, NEMulticastRouterSettings::FORMAT_QUIT_APP);
+            console.moveCursorOneLineDown();
+            console.printTxt(NEMulticastRouterSettings::FORMAT_QUIT_APP);
             console.uninitialize();
+
+#else   // !_AREG_EXT
+
+            printf("Type \'quit\' or \'q\' to quit message router ...: ");
+            const char quit = static_cast<int>('q');
+            char cmd[8] = { 0 };
+            int charRead = 0;
+
+            do
+            {
+                if (MACRO_SCANF("%4s", cmd, 8) != 1)
+                {
+                    printf("\nERROR: Unexpected choice of command, quit application ...\n");
+                }
+
+            } while ((NEString::makeAsciiLower<char>(*cmd) != quit) && (charRead > 0));
+
+#endif  // !_AREG_EXT
+
             Application::signalAppQuit();
         }
 

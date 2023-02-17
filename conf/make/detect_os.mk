@@ -29,7 +29,7 @@ ifeq ($(DETECTED_PROCESSOR),AMD64)
 	DETECTED_PROCESSOR	:= x86_64
 else ifeq ($(UNAME_P),x86_64)
 	DETECTED_PROCESSOR	:= x86_64
-else ifeq($(UNAME_P),aarch64)
+else ifeq ($(UNAME_P),aarch64)
 	DETECTED_PROCESSOR	:= aarch64
 else ifneq ($(filter %86,$(UNAME_P)),)
 	DETECTED_PROCESSOR	:= x86

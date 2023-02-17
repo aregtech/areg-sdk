@@ -31,7 +31,7 @@ ifeq ($(AREG_CXX_COMPILER_ID), Clang)
     endif
 
     AREG_COMPILER_OPTIONS   += -g -pthread -std=c++17 -Werror -Wall -fmessage-length=0 $(AREG_DEFINITIONS) -stdlib=libstdc++
-    AREG_LDFLAGS            += -lm -lstdc++ -lrt -lncurses -pthread $(AREG_USER_DEF_LIBS)
+    AREG_LDFLAGS            += -lm -lstdc++ -lrt -pthread $(AREG_USER_DEF_LIBS)
 
     OBJ_EXT         := o
     AREG_BIN_EXT    := .out
@@ -62,7 +62,7 @@ else ifeq ($(AREG_CXX_COMPILER_ID), GNU)
     endif
 
     AREG_COMPILER_OPTIONS   += $(AREG_DEFINITIONS)
-    AREG_LDFLAGS            += -lm -lstdc++ -lrt -lncurses -pthread $(AREG_USER_DEF_LIBS)
+    AREG_LDFLAGS            += -lm -lstdc++ -lrt -pthread $(AREG_USER_DEF_LIBS)
 
     ifeq ($(AREG_OS), Cygwin)
 
@@ -111,7 +111,7 @@ else
     endif
 
     AREG_COMPILER_OPTIONS   += -pthread -Wall -c -fmessage-length=0 -MMD -std=c++17
-    AREG_LDFLAGS            += -lstdc++ -lm -lncurses -lpthread -lrt
+    AREG_LDFLAGS            += -lstdc++ -lm -lpthread -lrt
     AREG_LDFLAGS            += $(AREG_USER_DEF_LIBS)
 
     OBJ_EXT         := o
@@ -154,6 +154,16 @@ AREG_OUTPUT_BIN = $(ProjBinDir)
 AREG_INCLUDES   = $(ProjIncludes)
 AREG_AR         = ar
 AREG_TOOLCHAIN  = $(AREG_CXX_COMPILER)
+
+AREG_EXTENSIONS_LIBS    :=
+ifneq ($(AREG_ENABLE_EXT),0)
+$(info Compile AREG with enabled extensions)
+
+	AREG_COMPILER_OPTIONS   += -DENABLE_AREG_EXTENSIONS
+	AREG_EXTENSIONS_LIBS    := -L$(AREG_OUTPUT_LIB) -lareg-extensions -lncurses
+else
+	AREG_EXTENSIONS_LIBS    := -L$(AREG_OUTPUT_LIB) -lareg-extensions
+endif
 
 
 CXXFLAGS    += $(AREG_COMPILER_OPTIONS)

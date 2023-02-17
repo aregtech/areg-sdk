@@ -12,9 +12,9 @@
 
 #include "pubservice/src/ServicingComponent.hpp"
 #include "areg/appbase/Application.hpp"
-#include "areg/appbase/Console.hpp"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/trace/GETrace.h"
+#include "extensions/console/Console.hpp"
 
 #include <chrono>
 
@@ -181,13 +181,13 @@ void ServicingComponent::onTimerExpired( void )
     mLock.unlock( );
 
     Console & console = Console::getInstance( );
-    Console::Coord oldPos = console.getCursorCurPosition( );
+    console.saveCursorPosition( );
 
     console.outputMsg( COORD_COMM_RATE, MSG_COMM_RATE.data( ), sendRate.first, sendRate.second.data( ), rcvRate.first, rcvRate.second.data( ) );
     console.outputMsg( COORD_DATA_RATE, MSG_DATA_RATE.data( ), dataRate.first, dataRate.second.data( ) );
     console.outputMsg( COORD_ITEM_RATE, MSG_ITEM_RATE.data( ), rateItem, itemRate.first, itemRate.second.data( ), didSleep, ignoreSleep );
 
-    console.setCursorCurPosition(oldPos);
+    console.restoreCursorPosition( );
     console.refreshScreen();
 }
 
@@ -198,10 +198,11 @@ void ServicingComponent::onOptionEvent(const OptionData& data)
     if (data.hasError())
     {
         TRACE_WARN("Error input of command");
+        Console& console = Console::getInstance();
 
-        Console::Coord oldPos = Console::getInstance().getCursorCurPosition();
-        Console::getInstance().outputTxt(COORD_ERROR_INFO, MSG_INVALID_CMD);
-        Console::getInstance().setCursorCurPosition(oldPos);
+        console.saveCursorPosition();
+        console.outputTxt(COORD_ERROR_INFO, MSG_INVALID_CMD);
+        console.restoreCursorPosition();
     }
     else if (data.hasQuit())
     {
@@ -387,7 +388,7 @@ uint64_t ServicingComponent::_getBlockImageTime(void) const
 void ServicingComponent::_printInfo(void) const
 {
     Console& console = Console::getInstance();
-    Console::Coord curPos = console.getCursorCurPosition();
+    console.saveCursorPosition();
     console.setCursorCurPosition(COORD_OPT_INFO);
 
     uint32_t bytesPerBlock  = mOptions.bytesPerBlock();
@@ -409,18 +410,18 @@ void ServicingComponent::_printInfo(void) const
     console.printMsg("\tTime per Block ..: % 8.02f %s.\n", static_cast<float>(timeRate.first), timeRate.second.data());
     console.printMsg("\tBlock Size ......: % 8.02f %s.\n", static_cast<float>(blockSize.first), blockSize.second.data());
     console.printMsg("\tBlock Rate ......: % 8u blocks / sec.\n", static_cast<uint32_t>(blockRate));
-    console.printMsg("\tData Rate .......: % 7.02f %s / sec.\n", static_cast<float>(dataRate.first), dataRate.second.data());
+    console.printMsg("\tData Rate .......: % 8.02f %s / sec.\n", static_cast<float>(dataRate.first), dataRate.second.data());
     console.printMsg("\tConnected client : % 8d clients.\n", mClients);
     console.printTxt("---------------------------------------\n");
 
-    console.setCursorCurPosition(curPos);
+    console.restoreCursorPosition();
     console.refreshScreen();
 }
 
 void ServicingComponent::_printHelp(void) const
 {
     Console& console = Console::getInstance();
-    Console::Coord curPos = console.getCursorCurPosition();
+    console.saveCursorPosition();
     console.setCursorCurPosition(COORD_OPT_INFO);
 
     console.printTxt("---------------------------------------\n");
@@ -437,7 +438,7 @@ void ServicingComponent::_printHelp(void) const
     console.printMsg("-q         or --quit .............: Stop service and quit application.\n");
     console.printTxt("---------------------------------------\n");
 
-    console.setCursorCurPosition(curPos);
+    console.restoreCursorPosition();
     console.refreshScreen();
 }
 
