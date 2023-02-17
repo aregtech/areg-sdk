@@ -162,7 +162,7 @@ void Console::_osSetCursorCurPosition(Console::Coord pos) const
 void Console::_osWaitInput(char* buffer, uint32_t size) const
 {
     int result = SCAN_S("%s", buffer, size);
-    if ((result < 0) && (buffer != nullptr)
+    if ((result < 0) && (buffer != nullptr))
     {
         *buffer = '\0';
     }
