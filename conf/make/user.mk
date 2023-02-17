@@ -12,6 +12,7 @@
 # AREG_BUILD_TYPE	-- 'Debug' or 'Release'. Parameters are either passed in the command line or extracted. The default is 'Release'
 # AREG_PLATFORM		-- x86, x86_64, arm, etc. Parameters are either passed in the command line or extracted. The default is current system
 # AREG_OS      		-- Windows, Linux, Darvin, etc. Parameters are either passed in the command line, or extracted. The default is current system
+# AREG_ENABLE_EXT	-- Enabled or disable AREG extensions, which may create additional library dependencies
 #
 # The following is a list of preprocessor directives, depending on the settings above:
 #   1. -DDEBUG or -DNDEBUG, depending whether AREG_BUILD_TYPE name is "Debug" or not, default is -DNDEBUG ("Release")

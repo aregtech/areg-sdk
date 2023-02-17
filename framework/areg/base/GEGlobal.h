@@ -58,18 +58,15 @@
 #include "areg/base/GESwitches.h"
 #include "areg/base/GEMacros.h"
 
-#ifdef ENABLE_AREG_EXTENSIONS
-    // AREG extensions enable global flag.
-    #ifdef AREG_EXTENSIONS
-        #undef  AREG_EXTENSIONS
-    #endif // AREG_EXTENSIONS
-    #define AREG_EXTENSIONS     1
+#ifndef AREG_EXTENSIONS
+    #ifdef ENABLE_AREG_EXTENSIONS
+        // AREG extensions enable global flag.
+        #define AREG_EXTENSIONS     1
+    #else   // !ENABLE_AREG_EXTENSIONS
+        // If not directly defined, disable AREG extensions
+        #define AREG_EXTENSIONS     0
+    #endif // ENABLE_AREG_EXTENSIONS
 #endif // ENABLE_AREG_EXTENSIONS
-
-#if !defined(AREG_EXTENSIONS)
-    // If not directly defined, disable AREG extensions
-    #define AREG_EXTENSIONS     0
-#endif // !AREG_EXTENSIONS
 
 
 #ifdef _DEBUG

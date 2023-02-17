@@ -65,7 +65,10 @@
         <UserDefLibs Condition="'$(ConfigShortName)'=='Debug'"></UserDefLibs>
         <UserDefLibs Condition="'$(ConfigShortName)'=='Release'"></UserDefLibs>
 
-
+        <!-- ****************************************************************************************************************************** -->
+        <!-- External compiler option                                                                                                       -->
+        <ExternalCompilerOptions></ExternalCompilerOptions>
+        
         <!-- ****************************************************************************************************************************** -->
         <!-- ****************************************************************************************************************************** -->
         <!-- The name of project Output folder. Change this name if using other name.                                                       -->
@@ -189,6 +192,10 @@
             <Value>$(ThirdPreprocessorDefines)</Value>
         </BuildMacro>
 
+        <BuildMacro Include="ExternalCompilerOptions">
+            <Value>$(ExternalCompilerOptions)</Value>
+        </BuildMacro>
+      
         <BuildMacro Include="UserPreprocessorDefines">
             <Value>$(UserPreprocessorDefines)</Value>
         </BuildMacro>

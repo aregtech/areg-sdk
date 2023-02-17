@@ -21,7 +21,7 @@
             $(ProjectPreprocessorDefines);$(UserPreprocessorDefines);$(ThirdPreprocessorDefines);WINDOWS;_WINDOWS;WIN32;_WIN32;
         </ProjectCommonDefines>
         <ProjectCommonDefines Condition="'$(Platform)'=='x64'"  >
-            $(ProjectPreprocessorDefines);$(UserPreprocessorDefines);$(ThirdPreprocessorDefines);WINDOWS;_WINDOWS;WIN32;_WIN32;WIN64;_WIN64
+            $(ProjectPreprocessorDefines);$(UserPreprocessorDefines);$(ThirdPreprocessorDefines);$(ExternalCompilerOptions);WINDOWS;_WINDOWS;WIN32;_WIN32;WIN64;_WIN64
         </ProjectCommonDefines>
     </PropertyGroup>
     <PropertyGroup>
