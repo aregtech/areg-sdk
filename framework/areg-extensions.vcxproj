@@ -37,14 +37,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="extensions\console\private\Console.cpp" />
-    <ClCompile Include="extensions\console\private\dummy\ConsoleDummy.cpp" />
-    <ClCompile Include="extensions\console\private\ncurses\ConsoleNcurses.cpp" />
     <ClCompile Include="extensions\console\private\ansi\ConsoleAnsi.cpp" />
+    <ClCompile Include="extensions\console\private\ncurses\ConsoleNcurses.cpp" />
     <ClCompile Include="extensions\console\private\win32\ConsoleWin32.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="extensions\console\Console.hpp" />
     <ClInclude Include="extensions\Extensions.hpp" />
+    <ClInclude Include="extensions\console\Console.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="extensions\CMakeLists.txt" />
