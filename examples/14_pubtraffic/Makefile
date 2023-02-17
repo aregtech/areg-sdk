@@ -2,7 +2,7 @@
 14_pubtraffic_OUTPUT_OBJ := $(AREG_OUTPUT_OBJ)/14_pubtraffic
 
 14_pubtraffic_CXXFLAGS   = -I$(14_pubtraffic_BASE) $(examples_CXXFLAGS)
-14_pubtraffic_LDFLAGS    = -Wl,-Bstatic -l$(14_generated_PROJECT_NAME) $(AREG_EXTENSIONS_LIBS) -Wl,-Bdynamic $(examples_LDFLAGS)
+14_pubtraffic_LDFLAGS    = -Wl,-Bstatic -L $(AREG_OUTPUT_LIB) -l$(14_generated_PROJECT_NAME) -Wl,-Bdynamic $(examples_LDFLAGS) $(AREG_EXTENSIONS_LIBS)
 
 # 'generated' have to be first
 include $(14_pubtraffic_BASE)/generated/Makefile

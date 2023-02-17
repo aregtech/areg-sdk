@@ -2,7 +2,7 @@
 20_pubdatarate_OUTPUT_OBJ := $(AREG_OUTPUT_OBJ)/20_pubdatarate
 
 20_pubdatarate_CXXFLAGS   = -I$(20_pubdatarate_BASE) $(examples_CXXFLAGS)
-20_pubdatarate_LDFLAGS    = -Wl,-Bstatic -l$(20_generated_PROJECT_NAME) $(AREG_EXTENSIONS_LIBS) -Wl,-Bdynamic $(examples_LDFLAGS)
+20_pubdatarate_LDFLAGS    = -Wl,-Bstatic -L $(AREG_OUTPUT_LIB) -l$(20_generated_PROJECT_NAME) -Wl,-Bdynamic $(examples_LDFLAGS) $(AREG_EXTENSIONS_LIBS)
 
 # 'generated' have to be first
 include $(20_pubdatarate_BASE)/generated/Makefile

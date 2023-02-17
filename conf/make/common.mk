@@ -111,8 +111,7 @@ else
     endif
 
     AREG_COMPILER_OPTIONS   += -pthread -Wall -c -fmessage-length=0 -MMD -std=c++17
-    AREG_LDFLAGS            += -lstdc++ -lm -lpthread -lrt
-    AREG_LDFLAGS            += $(AREG_USER_DEF_LIBS)
+    AREG_LDFLAGS            += -lstdc++ -lm -lpthread -lrt $(AREG_USER_DEF_LIBS)
 
     OBJ_EXT         := o
     AREG_BIN_EXT    := .out
@@ -160,9 +159,9 @@ ifneq ($(AREG_ENABLE_EXT),0)
 $(info Compile AREG with enabled extensions)
 
 	AREG_COMPILER_OPTIONS   += -DENABLE_AREG_EXTENSIONS
-	AREG_EXTENSIONS_LIBS    := -L$(AREG_OUTPUT_LIB) -lareg-extensions -lncurses
+	AREG_EXTENSIONS_LIBS    := -L $(AREG_OUTPUT_LIB) -lareg-extensions -lncurses
 else
-	AREG_EXTENSIONS_LIBS    := -L$(AREG_OUTPUT_LIB) -lareg-extensions
+	AREG_EXTENSIONS_LIBS    := -L $(AREG_OUTPUT_LIB) -lareg-extensions
 endif
 
 
