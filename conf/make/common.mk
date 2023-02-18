@@ -159,7 +159,10 @@ ifneq ($(AREG_ENABLE_EXT),0)
 $(info Compile AREG with enabled extensions)
 
 	AREG_COMPILER_OPTIONS   += -DENABLE_AREG_EXTENSIONS
-	AREG_EXTENSIONS_LIBS    := -L $(AREG_OUTPUT_LIB) -lareg-extensions -lncurses -ltinfo
+	AREG_EXTENSIONS_LIBS    := -L $(AREG_OUTPUT_LIB) -lareg-extensions -lncurses
+    ifneq ($(AREG_OS), Cygwin)
+        AREG_EXTENSIONS_LIBS+= -ltinfo
+    endif
 else
 	AREG_EXTENSIONS_LIBS    := -L $(AREG_OUTPUT_LIB) -lareg-extensions
 endif
