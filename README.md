@@ -79,7 +79,7 @@ Since data is generated and collected at the edge of the network (**mist network
 
 ## Interface-centricity[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#interface-centricity)
 
-_Object Remote Procedure Call_ (**ORPC**) is a concept of remote procedure call whose target is an interface on an object. ORCP is a technique of constructing meshed network of distributed services (or _grid of services_), where applications provide reusable services and the programmable (logical) client objects request method execution of a programmable (logical) server object without having to understand where the server object is running in the network.
+_Object Remote Procedure Call_ (**ORPC**) is a concept of remote procedure call whose target is an interface on an object. ORPC is a technique of constructing meshed network of distributed services (or _grid of services_), where applications provide reusable services and the programmable (logical) client objects request method execution of a programmable (logical) server object without having to understand where the server object is running in the network.
 
 <div align="center"><a href="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/interface-centric.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/interface-centric.png" alt="Service oriented and interface-centric" style="width:50%;height:50%"/></a></div>
 
