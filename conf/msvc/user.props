@@ -64,10 +64,6 @@
         <!-- <UserDefLibs Condition="'$(ConfigShortName)'=='Debug'">"C:\Tools\Visual Leak Detector\lib\Win32"</UserDefLibs>                 -->
         <UserDefLibs Condition="'$(ConfigShortName)'=='Debug'"></UserDefLibs>
         <UserDefLibs Condition="'$(ConfigShortName)'=='Release'"></UserDefLibs>
-
-        <!-- ****************************************************************************************************************************** -->
-        <!-- External compiler option                                                                                                       -->
-        <ExternalCompilerOptions></ExternalCompilerOptions>
         
         <!-- ****************************************************************************************************************************** -->
         <!-- ****************************************************************************************************************************** -->
@@ -192,10 +188,6 @@
             <Value>$(ThirdPreprocessorDefines)</Value>
         </BuildMacro>
 
-        <BuildMacro Include="ExternalCompilerOptions">
-            <Value>$(ExternalCompilerOptions)</Value>
-        </BuildMacro>
-      
         <BuildMacro Include="UserPreprocessorDefines">
             <Value>$(UserPreprocessorDefines)</Value>
         </BuildMacro>
