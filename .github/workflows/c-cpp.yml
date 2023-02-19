@@ -84,4 +84,4 @@ jobs:
       - name: Build with selected compiler
         working-directory: ${{github.workspace}}
         # Build your program with the given configuration
-        run: make AREG_CXX_COMPILER=${{matrix.config.cc}} AREG_BUILD_TYPE=${{env.BUILD_TYPE}} AREG_BINARY=${{matrix.config.lib}} AREG_ENABLE_EXT=${{matrix.config.extend}} all -j10
+        run: make AREG_COMPILER=${{matrix.config.cc}} AREG_BUILD_TYPE=${{env.BUILD_TYPE}} AREG_BINARY=${{matrix.config.lib}} AREG_ENABLE_EXT=${{matrix.config.extend}} all -j10

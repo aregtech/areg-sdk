@@ -1,10 +1,9 @@
 ifeq ($(AREG_BINARY), shared)
     examples_CXXFLAGS += -DIMP_AREG_DLL
-    examples_LDFLAGS  += -Wl,-rpath=$(AREG_OUTPUT_BIN) -L $(AREG_OUTPUT_BIN) -lareg $(LDFLAGS)
 else
     examples_CXXFLAGS += -DIMP_AREG_LIB
-    examples_LDFLAGS  += -L $(AREG_OUTPUT_LIB) -Wl,-Bstatic -lareg -Wl,-Bdynamic $(LDFLAGS)
 endif
+examples_LDFLAGS  += $(AREG_LIB_INCLUDES) -lareg $(LDFLAGS)
 
 include $(AREG_EXAMPLES)/00_helloservice/Makefile
 include $(AREG_EXAMPLES)/01_hello/Makefile

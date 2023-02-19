@@ -2,7 +2,7 @@
 21_pubunblock_OUTPUT_OBJ := $(AREG_OUTPUT_OBJ)/21_pubunblock
 
 21_pubunblock_CXXFLAGS   = -I$(21_pubunblock_BASE) $(examples_CXXFLAGS)
-21_pubunblock_LDFLAGS    = -L $(AREG_OUTPUT_LIB) -Wl,-Bstatic -l$(21_generated_PROJECT_NAME) -Wl,-Bdynamic $(examples_LDFLAGS)
+21_pubunblock_LDFLAGS    = $(AREG_LIB_INCLUDES) -l$(21_generated_PROJECT_NAME) -lareg $(LDFLAGS)
 
 # 'generated' have to be first
 include $(21_pubunblock_BASE)/generated/Makefile

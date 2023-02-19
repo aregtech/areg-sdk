@@ -8,7 +8,7 @@
 # These parameters already should be set either from command line or by extracting from other params
 # 
 # MakefileRoot  	-- indicates the path of the root Makefile, should be extracted from $(abspath $(lastword $(MAKEFILE_LIST)))
-# AREG_CXX_COMPILER	-- gcc, g++, clang++13, etc., the default is g++
+# AREG_COMPILER		-- gcc, g++, clang++, etc., the default is g++
 # AREG_BUILD_TYPE	-- 'Debug' or 'Release'. Parameters are either passed in the command line or extracted. The default is 'Release'
 # AREG_PLATFORM		-- x86, x86_64, arm, etc. Parameters are either passed in the command line or extracted. The default is current system
 # AREG_OS      		-- Windows, Linux, Darvin, etc. Parameters are either passed in the command line, or extracted. The default is current system
@@ -28,6 +28,7 @@
 
 AREG_CXX_COMPILER_ID:=
 AREG_CXX_COMPILER   :=
+AREG_C_COMPILER		:=
 
 ifneq ($(AREG_COMPILER_FAMILY),)
 $(info Selected compiler family '$(AREG_COMPILER_FAMILY)')
@@ -35,39 +36,61 @@ $(info Selected compiler family '$(AREG_COMPILER_FAMILY)')
 	ifeq ($(AREG_COMPILER_FAMILY), gnu)
 		AREG_CXX_COMPILER_ID:= GNU
 		AREG_CXX_COMPILER	:= g++
+		AREG_C_COMPILER		:= gcc
 	else ifeq ($(AREG_COMPILER_FAMILY), cygwin)
 		AREG_CXX_COMPILER_ID:= GNU
 		AREG_CXX_COMPILER	:= g++
+		AREG_C_COMPILER		:= gcc
 	else ifeq ($(AREG_COMPILER_FAMILY), clang)
 		AREG_CXX_COMPILER_ID:= Clang
 		AREG_CXX_COMPILER	:= clang++
+		AREG_C_COMPILER		:= clang
 	else
 		AREG_CXX_COMPILER_ID:= GNU
 		AREG_CXX_COMPILER	:= g++
+		AREG_C_COMPILER		:= gcc
 	endif
 
-else ifneq ($(AREG_CXX_COMPILER),)
+else ifneq ($(AREG_COMPILER),)
 
-	ifeq ($(AREG_CXX_COMPILER),g++)
+	ifeq ($(AREG_COMPILER),g++)
 		AREG_CXX_COMPILER_ID:= GNU
-	else ifeq ($(AREG_CXX_COMPILER),gcc)
+		AREG_CXX_COMPILER	:= $(AREG_COMPILER)
+		AREG_C_COMPILER		:= gcc
+	else ifeq ($(AREG_COMPILER),gcc)
 		AREG_CXX_COMPILER_ID:= GNU
-	else ifeq ($(AREG_CXX_COMPILER),clang)
+		AREG_CXX_COMPILER	:= $(AREG_COMPILER)
+		AREG_C_COMPILER		:= gcc
+	else ifeq ($(AREG_COMPILER),clang)
 		AREG_CXX_COMPILER_ID:= Clang
-	else ifeq ($(AREG_CXX_COMPILER),clang++)
+		AREG_CXX_COMPILER	:= $(AREG_COMPILER)
+		AREG_C_COMPILER		:= clang
+	else ifeq ($(AREG_COMPILER),clang++)
 		AREG_CXX_COMPILER_ID:= Clang
+		AREG_CXX_COMPILER	:= $(AREG_COMPILER)
+		AREG_C_COMPILER		:= clang
+	else
+		AREG_CXX_COMPILER_ID:= Unknown
+		AREG_CXX_COMPILER	:= $(AREG_COMPILER)
+		AREG_C_COMPILER		:= $(AREG_COMPILER)
 	endif
 
 else
 	# Modify the 'AREG_CXX_COMPILER' to change compiler
 	
-	AREG_CXX_COMPILER	 = g++
-	AREG_CXX_COMPILER_ID = GNU
+	AREG_CXX_COMPILER	:= g++
+	AREG_C_COMPILER		:= gcc
+	AREG_CXX_COMPILER_ID:= GNU
     
-	# AREG_CXX_COMPILER	 = clang++
+	# AREG_CXX_COMPILER	:= clang++
+	# AREG_C_COMPILER	:= clang
 	# AREG_COMPILER_FAMILY:= Clang
 
 endif
+
+CXX := $(AREG_CXX_COMPILER)
+CC	:= $(AREG_C_COMPILER)
+$(info >>> Selected compilers: CXX = $(CXX), CC = $(CC))
 
 ifndef $(AREG_ENABLE_EXT)
 	AREG_ENABLE_EXT	:= 0

@@ -16,11 +16,11 @@ mcrouter_LDFLAGS  :=
 mcrouter_CXXFLAGS :=
 ifeq ($(AREG_BINARY), shared)
 	mcrouter_CXXFLAGS += -DIMP_AREG_DLL
-	mcrouter_LDFLAGS  += -Wl,-rpath=$(AREG_OUTPUT_BIN) -L$(AREG_OUTPUT_BIN) -lareg
 else
 	mcrouter_CXXFLAGS += -DIMP_AREG_LIB
-	mcrouter_LDFLAGS  += -L$(AREG_OUTPUT_LIB) -Wl,-Bstatic -lareg -Wl,-Bdynamic
 endif
+
+mcrouter_LDFLAGS  += $(AREG_LIB_INCLUDES) -lareg-extensions -lareg $(LDFLAGS) $(AREG_EXTENSIONS_LIBS)
 
 mcrouter_TARGET_BIN := $(mcrouter_PROJECT_NAME)$(AREG_BIN_EXT)
 

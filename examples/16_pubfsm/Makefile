@@ -2,7 +2,7 @@
 16_pubfsm_OUTPUT_OBJ := $(AREG_OUTPUT_OBJ)/16_pubfsm
 
 16_pubfsm_CXXFLAGS   = -I$(16_pubfsm_BASE) $(examples_CXXFLAGS)
-16_pubfsm_LDFLAGS    = -L $(AREG_OUTPUT_LIB) -Wl,-Bstatic -l$(16_generated_PROJECT_NAME) -Wl,-Bdynamic $(examples_LDFLAGS)
+16_pubfsm_LDFLAGS    = $(AREG_LIB_INCLUDES) -l$(16_generated_PROJECT_NAME) -lareg $(LDFLAGS)
 
 # 'generated' have to be first
 include $(16_pubfsm_BASE)/generated/Makefile
