@@ -36,6 +36,9 @@
 ---
 
 ## Table of contents[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#table-of-contents)
+- [Project Status](#project-status)
+- [Introduction](#introduction)
+- [Table of contents](#table-of-contents)
 - [Motivation](#motivation)
 - [Interface-centricity](#interface-centricity)
 - [More than embedded](#more-than-embedded)
@@ -109,12 +112,31 @@ AREG forms a fault-tolerant system that automatically discovers and automates co
 
 ## Composition[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#composition)
 
-The major modules of AREG SDK are:
-1. [Multicast router (_mcrouter_)](https://github.com/aregtech/areg-sdk/tree/master/framework/mcrouter/) is a console application or OS-managed service that routes message.
-2. [AREG engine](https://github.com/aregtech/areg-sdk/tree/master/framework/areg/) is a library to link with every application.
-3. [Code generator](https://github.com/aregtech/areg-sdk/tree/master/tools/) is a tool that creates service provider / consumer objects from interface documents.
+Currently AREG SDK consists of:
+1. [AREG framework (or engine)](./framework/areg/) is a (shared or static) _areg_ library to link with every application.
+2. [AREG extended library](./framework/extensions/) is a static _areg-extensions_ library, which contains optional extended objects. 
+3. [Multicast router (or router)](./framework/mcrouter/) is a standalone _mcrouter_ CLI application or service to form the network.
+4. [Code generator tool](./tools/) is the folder with tools like code generator.
+5. [Examples](./examples/) is the folder with large list of applications to demonstrate the multithreading and multiprocessing features.
+6. [Tests](./tests) is a folder with Unit Tests and later with Benchmark Tests.
+7. [Thirdparty](./thirdparty) is a folder of OSS sobmudels required by AREG SDK. Currently, it contains [googletest](https://github.com/google/googletest) to create unit tests.
 
-> 💡 The multiple [examples](https://github.com/aregtech/areg-sdk/tree/master/examples/) demonstrate the features and fault tolerant behavior of AREG communication engine.
+> 💡 The [GUI tool](https://github.com/aregtech/areg-sdk-tools) to design service interface is in development state. It is planned to integrate in SDK when it is ready.
+
+<div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
+
+---
+
+## Roadmap[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#roadmap)
+ The aim of AREG SDK is a lightweight self-sufficient system, which consist of an intelligent framework and multiple tools that help developers to create complex **Desktop**, **Embedded** and/or **IoT edge** applications in shorter time (_reduce development and testing time 50-30%_). 
+- **Planned framework features:**
+  * Multi-channel and multi-protocol communication.
+  * Logging service (separate process) to collect logs in the network.
+  * _Internet_ (web) category service.
+- **Planned tools:**
+  * Service interface designer.
+  * Interactive log viewer.
+  * Service testing and Data simulation tool.
 
 <div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
@@ -122,35 +144,42 @@ The major modules of AREG SDK are:
 
 ## Software build[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#software-build)
 
-> 💡 Check the [Wiki page](https://github.com/aregtech/areg-sdk/wiki) of _AREG SDK_. We change the content and add more details.
+> 💡 Check the [Wiki page](https://github.com/aregtech/areg-sdk/wiki) of _AREG SDK_ for mode details. We change the content and add more details.
 
 The source codes of AREG framework and examples support following platform, CPU and compilers:
 <table>
   <tr>
-    <td nowrap><strong>Platforms</strong></td><td><i>Linux</i> (list of <a href="https://github.com/aregtech/areg-sdk/blob/master/docs/POSIX.md#posix-api" alt="POSX API">POSIX API</a>), <i>Cygwin</i>, <i>Windows</i>.</td>
+    <td nowrap><strong>OS</strong></td>
+    <td><i>Linux</i> (list of <a href="./docs/POSIX.md#posix-api" alt="POSX API">POSIX API</a>), <i>Windows 8</i> and higher.</td>
   </tr>
   <tr>
     <td nowrap><strong>CPU</strong></td><td><i>x86</i>, <i>x86_64</i>, <i>arm</i> and <i>aarch64</i>.</td>
   </tr>
   <tr>
-    <td nowrap><strong>Compilers</strong></td><td><i>GCC</i>, <i>Clang</i>, <i>MSVC</i> and <i>Cygwin gcc</i>.</td>
+    <td nowrap><strong>Compilers</strong></td>
+    <td><i>GCC</i>, <i>g++</i>, <i>clang</i>, <i>MSVC</i> and <i>cygwin CC</i>.</td>
   </tr>
 </table>
 
-The tools to compile sources:
-| Tool | Solution | Platforms | API | Quick actions to compile |
-| --- | --- | --- | --- | --- |
-| `cmake` | `CMakeLists.txt` | **Linux, Cygwin, Windows** | _POSIX_, _Win32_ | &nbsp;&nbsp; - Build with `cmake`.<br /> &nbsp;&nbsp; - Build in _VSCode_;<br /> &nbsp;&nbsp; - Build in _MSVS_. |
-| `make` | `Makefile` | **Linux, Cygwin**| _POSIX_ | &nbsp;&nbsp; - Build with `make`. |
-| `msbuild` | `areg-sdk.sln` | **Windows** | _Win32_ | &nbsp;&nbsp; - Build with `msbuild`.<br />&nbsp;&nbsp; - Open and build in _MSVS_. |
-
-To customize the build, the tools accept parameters. For information on available options, refer to the [Wiki pages](https://github.com/aregtech/areg-sdk/wiki). By default, after build the binaries are in `<areg-sdk>/product/build/<family>-<compiler>/<platform>-<bitness>-<cpu>-<build type>/bin` folder (for example, `areg-sdk/product/build/gnu-gcc/linux-64-x86_64-release/bin`).
+The tools to use to compile sources:
+| Solution | Platforms | API | Quick actions to compile |
+| --- | --- | --- | --- |
+| `CMakeLists.txt` | **Linux, Windows** | _POSIX_, _Win32_ | Make one of these actions:<br /> &nbsp;&nbsp; - Call `cmake` in _command line_.<br /> &nbsp;&nbsp; - Configure and build in _Visual Studio Code_;<br /> &nbsp;&nbsp; - Configure and build in _Microsoft Visual Studio_. |
+| `Makefile` | **Linux**| _POSIX_ | Call `make` in _command line_. |
+| `areg-sdk.sln` | **Windows** | _Win32_ | Open and build in _Microsoft Visual Studio_. |
+| `.project` | **Linux, Windows** | _POSIX_ | Import and build projects in _Eclipse_. |
 
 > 💡 The other POSIX-compliant OS and compilers are not tested yet.<br />
+> 💡 Make user specific changes (like switch compiler or output folder) only in appropriate `user` files:<br />
+> - For `cmake`, make changes in [conf/cmake/user.cmake](./conf/cmake/user.cmake) file.<br />
+> - For `make`, make changes in [conf/make/user.mk](./conf/make/user.mk) file.
+> - For `MSBuild`, make changes in [conf/msvc/user.props](./conf/msvc/user.props) file.
 
-### Clone sources
+After compilation, normally binaries are located in `<areg-sdk>/product/build/<compiler-platform-path>/bin` folder. Details on how to change compiler, load and compile sources for various targets are described in [HOWTO](./docs/HOWTO.md) document. The next are quick overviews.
 
-To get AREG SDK source codes and dependent modules, open _Terminal_ in your `projects` folder and clone:
+#### Build with `cmake`
+
+To build with [cmake](https://cmake.org/), open _Terminal_ in your `projects` folder and take the steps:
 ```bash
 # This clones the source codes of AREG SDK and dependent module
 $ git clone --recurse-submodules https://github.com/aregtech/areg-sdk.git
