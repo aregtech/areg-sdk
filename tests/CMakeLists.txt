@@ -9,7 +9,7 @@
 # ---------------------------------------------------------------------------
 function(addTestEx testName testSource)
     addExecutableEx(${testName} "${testSource}" "GTest::gtest_main")
-    gtest_discover_tests(${testName})
+    gtest_discover_tests(${testName} DISCOVERY_TIMEOUT 60)
 endfunction(addTestEx testName testSource)
 
 # ---------------------------------------------------------------------------

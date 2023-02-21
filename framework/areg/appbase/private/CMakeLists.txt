@@ -1,7 +1,6 @@
 list(APPEND areg_SRC 
     ${areg_BASE}/appbase/private/Application.cpp
 	${areg_BASE}/appbase/private/configure.cpp
-	${areg_BASE}/appbase/private/Console.cpp
     ${areg_BASE}/appbase/private/NEApplication.cpp 
 )
 

@@ -7,21 +7,28 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2022 Aregtech UG. All rights reserved.
- * \file        areg/appbase/private/Console.cpp
+ * \file        extensions/console/private/ncurses/ConsoleNcurses.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       AREG Platform, Basic OS specific console implementation.
- *              POSIX specific implementation.
+ * \brief       AREG Platform, OS specific console implementation
+ *              based on ncurses API. Works with POSIX supported OS.
+ * 
  ************************************************************************/
 
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/appbase/Console.hpp"
+#include "extensions/console/Console.hpp"
 
-#ifdef _POSIX
+#if defined(POSIX) && (defined(_AREG_EXT) && (_AREG_EXT != 0))
 
 #include <ncurses.h>
+
+namespace
+{
+    Console::Coord  _cursorPos{ -1, -1 };
+    bool            _isSaved{ false };
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Console POSIX specific implementation
@@ -37,7 +44,6 @@ bool Console::_osSetup(void)
             clear();
             cbreak();
             mIsReady = true;
-            // raw();
         }
     }
 
@@ -95,6 +101,17 @@ void Console::_osOutputText(const String& text) const
     }
 }
 
+void Console::_osOutputText(const std::string_view& text) const
+{
+    Lock lock(mLock);
+
+    if (mContext != 0)
+    {
+        ASSERT(mIsReady);
+        waddstr(reinterpret_cast<WINDOW*>(mContext), text.data());
+    }
+}
+
 Console::Coord Console::_osGetCursorPosition(void) const
 {
     Lock lock(mLock);
@@ -119,6 +136,7 @@ void Console::_osSetCursorCurPosition(Console::Coord pos) const
     if (mContext != 0)
     {
         wmove(reinterpret_cast<WINDOW*>(mContext), pos.posY, pos.posX);
+        wrefresh(reinterpret_cast<WINDOW*>(mContext));
     }
 }
 
@@ -155,4 +173,41 @@ bool Console::_osReadInputList(const char* format, va_list varList) const
     return (mContext != 0 ? vw_scanw(reinterpret_cast<WINDOW *>(mContext), format, varList) >= 0 : false);
 }
 
-#endif  // POSIX
+void Console::_osSaveCursorPosition(void) const
+{
+    Lock lock(mLock);
+    _cursorPos = _osGetCursorPosition();
+    _isSaved = true;
+}
+
+void Console::_osRestoreCursorPosition(void) const
+{
+    Lock lock(mLock);
+
+    if (_isSaved)
+    {
+        if (mContext != 0)
+        {
+            wmove(reinterpret_cast<WINDOW*>(mContext), _cursorPos.posY, _cursorPos.posX);
+            wrefresh(reinterpret_cast<WINDOW*>(mContext));
+        }
+
+        _isSaved = false;
+    }
+}
+
+void Console::_osMoveCursorOneLineUp(void) const
+{
+    Lock lock(mLock);
+    Console::Coord pos = _osGetCursorPosition();
+    mvcur(pos.posY, pos.posX, pos.posY - 1, 1);
+}
+
+void Console::_osMoveCursorOneLineDown(void) const
+{
+    Lock lock(mLock);
+    Console::Coord pos = _osGetCursorPosition();
+    mvcur(pos.posY, pos.posX, pos.posY + 1, 1);
+}
+
+#endif  // defined(POSIX) && (defined(_AREG_EXT) && (_AREG_EXT != 0))

@@ -14,10 +14,12 @@ include(${20_pubdatarate_BASE}/generated/CMakeLists.txt)
 include(${20_pubdatarate_BASE}/pubclient/CMakeLists.txt)
 include(${20_pubdatarate_BASE}/pubservice/CMakeLists.txt)
 
+list(APPEND 20_lib_list ${gen_projName} ${AREG_EXTENSIONS_LIBS})
+
 # Setting up appropriate flags
 addStaticLib(${gen_projName} "${20_generated_SRC}")
-addExecutableEx(${projName1} "${20_SRC1}" "${gen_projName}")
-addExecutableEx(${projName2} "${20_SRC2}" "${gen_projName}")
+addExecutableEx(${projName1} "${20_SRC1}" "${20_lib_list}")
+addExecutableEx(${projName2} "${20_SRC2}" "${20_lib_list}")
 
 target_include_directories(${gen_projName} BEFORE PRIVATE ${20_pubdatarate_BASE})
 target_include_directories(${projName1} BEFORE PRIVATE ${20_pubdatarate_BASE})

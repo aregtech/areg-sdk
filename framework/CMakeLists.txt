@@ -3,6 +3,7 @@
 # User sepcific settings
 # ###########################################################################
 include("${AREG_BASE}/areg/CMakeLists.txt")
+include("${AREG_BASE}/extensions/CMakeLists.txt")
 include("${AREG_BASE}/mcrouter/CMakeLists.txt")
 
 # build areg library
@@ -15,7 +16,7 @@ if(AREG_BINARY MATCHES "shared")
     endif()
     set_property(TARGET areg PROPERTY LIBRARY_OUTPUT_DIRECTORY ${AREG_OUTPUT_BIN})
 
-else()
+else(AREG_BINARY MATCHES "shared")
 
     # Static Library
     add_library(areg STATIC ${areg_SRC})
@@ -35,8 +36,11 @@ target_link_libraries(areg PRIVATE ${AREG_LDFLAGS})
 # Library configs
 set_target_properties(areg PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON )
 
+# build areg extensions static library
+addStaticLib(areg-extensions "${extensions_SRC}")
+
 # build mcrouter executable
-addExecutable(mcrouter "${mcrouter_SRC}")
+addExecutableEx(mcrouter "${mcrouter_SRC}" "${AREG_EXTENSIONS_LIBS}")
 
 # copying log and router init files to 'bin/config'
 file(MAKE_DIRECTORY ${AREG_OUTPUT_BIN}/config)

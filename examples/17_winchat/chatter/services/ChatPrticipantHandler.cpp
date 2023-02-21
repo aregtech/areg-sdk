@@ -4,7 +4,7 @@
  ************************************************************************/
 
 #include "chatter/services/ChatPrticipantHandler.hpp"
-#include <windows.h>
+#include <Windows.h>
 
 //////////////////////////////////////////////////////////////////////////
 // ChatPrticipantHandler class implementation

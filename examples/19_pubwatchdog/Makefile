@@ -2,7 +2,7 @@
 19_pubwatchdog_OUTPUT_OBJ := $(AREG_OUTPUT_OBJ)/19_pubwatchdog
 
 19_pubwatchdog_CXXFLAGS   = -I$(19_pubwatchdog_BASE) $(examples_CXXFLAGS)
-19_pubwatchdog_LDFLAGS    = -L $(AREG_OUTPUT_LIB) -Wl,-Bstatic -l$(19_generated_PROJECT_NAME) -Wl,-Bdynamic $(examples_LDFLAGS)
+19_pubwatchdog_LDFLAGS    = $(AREG_LIB_INCLUDES) -l$(19_generated_PROJECT_NAME) -lareg $(LDFLAGS)
 
 # 'generated' have to be first
 include $(19_pubwatchdog_BASE)/generated/Makefile

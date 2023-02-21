@@ -2,7 +2,7 @@
 18_locwatchdog_OUTPUT_OBJ := $(AREG_OUTPUT_OBJ)/18_locwatchdog
 
 18_locwatchdog_CXXFLAGS   = -I$(18_locwatchdog_BASE) $(examples_CXXFLAGS)
-18_locwatchdog_LDFLAGS    = -L $(AREG_OUTPUT_LIB) -Wl,-Bstatic -l$(18_generated_PROJECT_NAME) -Wl,-Bdynamic $(examples_LDFLAGS)
+18_locwatchdog_LDFLAGS    = $(AREG_LIB_INCLUDES) -l$(18_generated_PROJECT_NAME) -lareg $(LDFLAGS)
 
 # 'generated' have to be first
 include $(18_locwatchdog_BASE)/generated/Makefile

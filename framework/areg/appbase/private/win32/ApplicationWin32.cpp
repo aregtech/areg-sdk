@@ -9,7 +9,7 @@
 
 #ifdef _WINDOWS
 
-#include <windows.h>
+#include <Windows.h>
 
 void Application::_osSetupHandlers( void )
 {

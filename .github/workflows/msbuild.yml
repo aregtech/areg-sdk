@@ -27,10 +27,14 @@ jobs:
       fail-fast: false
       matrix:
         config: # Create matrix with combinations
-          # Compile for 32-bit platform
-          - {name: MSBuild-platform-Win32, platform: Win32}
-          # Compile for 32-bit platform
-          - {name: MSBuild-platform-x64, platform: x64}
+          # Compile for 32-bit platform, enabled AREG extensions
+          - {name: MSBuild-Win32-ext,   platform: Win32,  extend: 1}
+          # Compile for 32-bit platform, disable AREG extensions
+          - {name: MSBuild-Win32-noext, platform: Win32,  extend: 0}
+          # Compile for 32-bit platform, enabled AREG extensions
+          - {name: MSBuild-x64-ext,     platform: x64,    extend: 1}
+          # Compile for 32-bit platform, disable AREG extensions
+          - {name: MSBuild-x64-noext,   platform: x64,    extend: 0}
 
     steps:
     - name: Checkout AREG enging (AREG SDK) source codes and submodules
@@ -49,4 +53,4 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
-      run: msbuild /m /property:Configuration=${{env.BUILD_CONFIGURATION}} /property:Platform=${{matrix.config.platform}} ${{env.SOLUTION_FILE_PATH}} 
+      run: msbuild /m /property:Configuration=${{env.BUILD_CONFIGURATION}} /property:Platform=${{matrix.config.platform}} /p:AdditionalDefines="AREG_EXTENSIONS=${{matrix.config.extend}}" ${{env.SOLUTION_FILE_PATH}}

@@ -403,6 +403,48 @@
     #define MACRO_OFFSETOF(Cls, mem )           static_cast<uint32_t>((size_t)&(((Cls *)0)->mem))
 #endif // !MACRO_OFFSETOF
 
+//!< MACRO to make strings.
+#ifndef MACRO_MAKE_STRING
+    #ifdef MS_VISUAL_CPP
+        //!< This macro makes a message string
+        #define MACRO_MAKE_STRING(x)        #x
+        //!< This macro converts a value to a string
+        #define MACRO_CONV_STRING(x)        MACRO_MAKE_STRING(x)
+    #else   // MS_VISUAL_CPP
+        #define MACRO_MAKE_STRING(x)
+        #define MACRO_CONV_STRING(x)
+    #endif  // MS_VISUAL_CPP
+#endif // !MACRO_MAKE_STRING
+
+//!< This macro makes a message
+#ifndef MACRO_MAKE_MESSAGE
+    #ifdef MS_VISUAL_CPP
+        #define MACRO_MAKE_MESSAGE(x)       ">>> " MACRO_MAKE_STRING(x)
+    #else   // MS_VISUAL_CPP
+        #define MACRO_MAKE_MESSAGE(msg)
+    #endif  // MS_VISUAL_CPP
+#endif // !MACRO_MAKE_MESSAGE
+
+//!< This macro creates and outputs compile time message
+#ifndef MACRO_COMPILER_MESSAGE
+    #ifdef MS_VISUAL_CPP
+        #define MACRO_COMPILER_MESSAGE(msg) __pragma(message(MACRO_MAKE_MESSAGE(msg)))
+    #else   // MS_VISUAL_CPP
+        #define MACRO_COMPILER_MESSAGE(msg)
+    #endif  // MS_VISUAL_CPP
+#endif // !MACRO_COMPILER_MESSAGE
+
+//!< This macro creates and outputs compile time message with prefix "TODO" and the message,
+//! followed with the file name and the line number to prompt.
+#ifndef MACRO_TODO
+    #ifdef MS_VISUAL_CPP
+        #define MACRO_TODO(msg)             __pragma(message(">>> TODO :: " MACRO_MAKE_STRING(msg) ": here --> " __FILE__":"MACRO_CONV_STRING(__LINE__)))
+    #else   // MS_VISUAL_CPP
+        #define MACRO_TODO(msg)
+    #endif  // MS_VISUAL_CPP
+#endif // !MACRO_TODO
+
+
 /**
  * \brief   Defined assertion macro.
  *          Valid only for Debug versions

@@ -20,7 +20,7 @@
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/Containers.hpp"
 
-#include <windows.h>
+#include <Windows.h>
 
 #if _MSC_VER
     #pragma warning(disable: 4091)
