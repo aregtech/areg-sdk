@@ -32,7 +32,7 @@
 
 ## Introduction[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#introduction)
 
-**AREG** (_Automated Real-time Event Grid_) is an interface-centric lightweight communication engine, which forms a grid of services in the IoT [fog- and mist-network](https://csrc.nist.gov/publications/detail/sp/500-325/final), automates the transmission of data and information, provides efficient and transparent real-time communication between multiple connected devices and software nodes, so that the connected Things interact like thin distributed servers and clients, and have all features of client-server and publish-subscriber network models.
+**AREG** (_Automated Real-time Event Grid_) is a lightweight cross-platform interface-centric communication engine to form a grid of services in the IoT [fog- and mist-network](https://csrc.nist.gov/publications/detail/sp/500-325/final), automate real-time data transmission between multiple connected devices and software nodes, which interact like thin distributed servers and clients having features of client-server and publish-subscriber models.
 
 ---
 
@@ -45,6 +45,7 @@
 - [Software build](#software-build)
     - [Build with `cmake`](#build-with-cmake)
     - [Build with `make`](#build-with-make)
+    - [Build with `msbuild`](#build-with-msbuild)
     - [Build with IDE](#build-with-ide)
 - [Software integration](#software-integration)
     - [Multicast router](#multicast-router)
@@ -187,11 +188,16 @@ $ cmake -B ./build
 # Step 3: Compile sources by calling: cmake --build ./build [-j [concurrent jobs]]
 $ cmake --build ./build -j8
  ```
-> 💡 The Unit Tests of AREG SDK need [googletest](https://github.com/google/googletest), which is set as a submodule and compiled only with `cmake` tool. Use the mentioned `git` command to clone the submodule. If already have AREG SDK sources and only need to clone `googletest` submodule, call:<br />
+The Unit Tests of AREG SDK need [googletest](https://github.com/google/googletest), which is a submodule only with `cmake` and `msbuild`. If you already have AREG SDK sources or need to update `googletest` submodule, call following:<br />
 ```bash
 $ cd areg-sdk
+# If you cloned AREG SDK and need to load submodules
 $ git submodule update --init
+# If you need to pull all changes of submodules
+$ git submodule update --remote
 ```
+
+> 💡 You can compile 
 
 #### Build with `make`
 
