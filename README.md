@@ -84,7 +84,7 @@ _Object Remote Procedure Call_ (**ORPC**) is a concept of remote procedure call 
 
 <div align="center"><a href="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/interface-centric.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/interface-centric.png" alt="Service oriented and interface-centric" style="width:50%;height:50%"/></a></div>
 
-Applications using ORPC communication are interface-centric and use objects of predefined interfaces, similar to _object-oriented programming_. It is possible to instantiate multiple instances of the same object and the system is able to handle them in a transparent manner so that a message is dispatched to call the exact function of the exact object. There is no protocol restriction, although the communication must be bi-directional to have the possibility of sending messages to all connected nodes in the network. The programmable server objects are called _service providers_ and the programmable clients are called _service consumers_.
+Applications using ORPC communication are interface-centric and use objects of predefined interfaces, similar to _object-oriented programming_. It is possible to instantiate multiple instances of the same object and the system is able to handle them in a transparent manner. There is no protocol restriction, although the communication must be bi-directional to have the possibility of sending messages to all connected nodes in the network. The programmable server objects are called _service providers_ and the programmable clients are called _service consumers_.
 
 <div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
@@ -92,10 +92,10 @@ Applications using ORPC communication are interface-centric and use objects of p
 
 ## More than embedded[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#more-than-embedded)
 
-When we were designing AREG SDK, the guiding principle was to provide a homogeneous solution for Multithreading, Multiprocessing and Internet communication wrapped in services appropriately having _Local_, _Public_ and _Internet_ categories. These services are neither processes nor tasks managed by the operating system, they are software components with a predefined interface, in which methods are invoked remotely.
+When AREG engine was designed, the guiding principle was to provide a homogeneous solution for Multithreading, Multiprocessing and Internet communications wrapped in services appropriately having _Local_, _Public_ and _Internet_ categories. These services are neither processes nor tasks managed by the operating system, they are software components with a predefined interface, in which methods are invoked remotely.
 <div align="center"><a href="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-services.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-services.png" alt="AREG SDK distributed services" style="width:70%;height:70%"/></a></div>
 
-> 💡 In current version, the AREG communication engine supports _Local_ (multithreading) and _Public_ (multiprocessing) service categories. The _Internet_ (web) service category is in development pipeline.
+> 💡 Currently AREG communication engine supports _Local_ (multithreading) and _Public_ (multiprocessing) service categories.
 
 The AREG engine forms a fault-tolerant system and does not require process startup priority. It automatically discovers services, automates communications, enables distributed service programming, and helps developers to focus on application business logic as if they would program a single process application with one thread where methods of objects are event-driven. The engine guarantees that:
 * The crash of one application does not cause the crash of the system.
@@ -115,17 +115,17 @@ Currently AREG SDK consists of:
 
 AREG engine is based on _multicast routing_ network model and _interface-centric_ service concepts, which in combination comprise features of _action-centric_ (Client-Server / Request-Reply model) and _data-centric_ (Publish-Subscriber / PubSub model) architectures.
 
-> 💡 The [examples](./examples) demonstrate the features and fault tolerant behavior of AREG communication engine.
+> 💡 The multiple [examples](./examples) demonstrate the features and fault tolerant behavior of AREG communication engine.
 
 <div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
 ---
 
 ## Roadmap[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#roadmap)
- The aim of AREG SDK is a lightweight self-sufficient system, which consist of an intelligent framework and multiple tools that help developers to create complex **Desktop**, **Embedded** and/or **IoT edge** applications in shorter time (_reduce development and testing time 50-30%_). 
+ The aim of AREG SDK is a lightweight self-sufficient development and testing system to help developers to create complex **Desktop**, **Embedded** and/or **IoT edge** applications in shorter time (_reduce development and testing time 50-30%_). 
 - **Planned framework features:**
   * Multi-channel and multi-protocol communication.
-  * Logging service (separate process) to collect logs in the network.
+  * Logging service to collect logs in the network.
   * _Internet_ (web) category service.
 - **Planned tools:**
   * Service interface designer.
@@ -138,39 +138,35 @@ AREG engine is based on _multicast routing_ network model and _interface-centric
 
 ## Software build[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#software-build)
 
-> 💡 Check the [Wiki page](https://github.com/aregtech/areg-sdk/wiki) of _AREG SDK_ for mode details. We change the content and add more details.
+> 💡 Check the [Wiki page](https://github.com/aregtech/areg-sdk/wiki) of _AREG SDK_. We change the content and add more details.
 
 The source codes of AREG framework and examples support following platform, CPU and compilers:
 <table>
   <tr>
-    <td nowrap><strong>OS</strong></td>
-    <td><i>Linux</i> (list of <a href="./docs/POSIX.md#posix-api" alt="POSX API">POSIX API</a>), <i>Windows 8</i> and higher.</td>
+    <td nowrap><strong>Platforms</strong></td><td><i>Linux</i> (list of <a href="./docs/POSIX.md#posix-api" alt="POSX API">POSIX API</a>), <i>Cygwin</i>, <i>Windows</i>.</td>
   </tr>
   <tr>
-    <td nowrap><strong>CPU</strong></td>
-    <td><i>x86</i>, <i>x86_64</i>, <i>arm</i> and <i>aarch64</i>.</td>
+    <td nowrap><strong>CPU</strong></td><td><i>x86</i>, <i>x86_64</i>, <i>arm</i> and <i>aarch64</i>.</td>
   </tr>
   <tr>
-    <td nowrap><strong>Compilers</strong></td>
-    <td><i>GCC</i>, <i>g++</i>, <i>clang</i>, <i>MSVC</i> and <i>cygwin CC</i>.</td>
+    <td nowrap><strong>Compilers</strong></td><td><i>GCC</i>, <i>Clang</i>, <i>MSVC</i> and <i>Cygwin CC</i>.</td>
   </tr>
 </table>
 
 The tools to use to compile sources:
-| Solution | Platforms | API | Quick actions to compile |
-| --- | --- | --- | --- |
-| `CMakeLists.txt` | **Linux, Windows** | _POSIX_, _Win32_ | Make one of these actions:<br /> &nbsp;&nbsp; - Call `cmake` in _command line_.<br /> &nbsp;&nbsp; - Configure and build in _Visual Studio Code_;<br /> &nbsp;&nbsp; - Configure and build in _Microsoft Visual Studio_. |
-| `Makefile` | **Linux**| _POSIX_ | Call `make` in _command line_. |
-| `areg-sdk.sln` | **Windows** | _Win32_ | Open and build in _Microsoft Visual Studio_. |
-| `.project` | **Linux, Windows** | _POSIX_ | Import and build projects in _Eclipse_. |
+| Tool | Solution | Platforms | API | Quick actions to compile |
+| --- | --- | --- | --- | --- |
+| `cmake` | `CMakeLists.txt` | **Linux, Cygwin, Windows** | _POSIX_, _Win32_ | &nbsp;&nbsp; - Call `cmake` in _command line_.<br /> &nbsp;&nbsp; - Configure and build in _Visual Studio Code_;<br /> &nbsp;&nbsp; - Configure and build in _Microsoft Visual Studio_. |
+| `make` | `Makefile` | **Linux, Cygwin**| _POSIX_ | &nbsp;&nbsp; - Call `make` in _command line_. |
+| `msbuild` | `areg-sdk.sln` | **Windows** | _Win32_ | &nbsp;&nbsp; - Call `msbuild` in _command line_.<br />&nbsp;&nbsp; - Open and build in _Microsoft Visual Studio_. |
 
 > 💡 The other POSIX-compliant OS and compilers are not tested yet.<br />
-> 💡 Make user specific changes (like switch compiler or output folder) only in appropriate `user` files:<br />
+> 💡 Each tool accepts from command line parameters to make custom builds. The other user specific changes should be done in appropriate `user` files:<br />
 > - For `cmake`, make changes in [conf/cmake/user.cmake](./conf/cmake/user.cmake) file.<br />
 > - For `make`, make changes in [conf/make/user.mk](./conf/make/user.mk) file.
 > - For `MSBuild`, make changes in [conf/msvc/user.props](./conf/msvc/user.props) file.
 
-After compilation, normally binaries are located in `<areg-sdk>/product/build/<compiler-platform-path>/bin` folder. Details on how to change compiler, load and compile sources for various targets are described in [HOWTO](./docs/HOWTO.md) document. The next are quick overviews.
+By default, the compiled binaries are located in `<areg-sdk>/product/build/<compiler><os-platform-build_type>/bin` folder. The details of changing compiler options are described in [Wiki pages](https://github.com/aregtech/areg-sdk/wiki). The next are quick overviews.
 
 #### Build with `cmake`
 
