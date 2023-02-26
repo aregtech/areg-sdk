@@ -9,6 +9,9 @@ AREG_COMPILER_OPTIONS   :=
 AREG_INCLUDES           :=
 AREG_LIB_INCLUDES       :=
 AREG_DEFINITIONS        := $(AREG_USER_DEFINES) -DUNICODE -D_UNICODE
+AREG_AR                 := ar
+AREG_TOOLCHAIN          = $(CXX)
+
 
 ifeq ($(AREG_BUILD_TYPE), Release)
     AREG_DEFINITIONS    += -DNDEBUG
@@ -16,7 +19,7 @@ else
     AREG_DEFINITIONS    += -DDEBUG
 endif
 
-ifeq ($(AREG_CXX_COMPILER_ID), Clang)
+ifeq ($(AREG_COMPILER_ID), Clang)
 
     AREG_DEFINITIONS        += -DPOSIX
     AREG_DEVELOP_ENV        := Posix
@@ -34,7 +37,7 @@ ifeq ($(AREG_CXX_COMPILER_ID), Clang)
     endif
 
     AREG_COMPILER_OPTIONS   += -g -pthread -std=c++17 -Werror -Wall -fmessage-length=0 $(AREG_DEFINITIONS) -stdlib=libstdc++
-    AREG_LDFLAGS            += -lm -lstdc++ -lrt -pthread $(AREG_USER_DEF_LIBS)
+    AREG_LDFLAGS            += -lm -lstdc++ -lrt -pthread
 
     OBJ_EXT         := o
     AREG_BIN_EXT    := .out
@@ -46,7 +49,7 @@ ifeq ($(AREG_CXX_COMPILER_ID), Clang)
     	AREG_LIB_EXT := .a
     endif
 
-else ifeq ($(AREG_CXX_COMPILER_ID), GNU)
+else ifeq ($(AREG_COMPILER_ID), GNU)
 
     AREG_DEFINITIONS        += -DPOSIX
     AREG_DEVELOP_ENV        := Posix
@@ -65,7 +68,7 @@ else ifeq ($(AREG_CXX_COMPILER_ID), GNU)
     endif
 
     AREG_COMPILER_OPTIONS   += $(AREG_DEFINITIONS)
-    AREG_LDFLAGS            += -lm -lstdc++ -lrt -pthread $(AREG_USER_DEF_LIBS)
+    AREG_LDFLAGS            += -lm -lstdc++ -lrt -pthread
 
     ifeq ($(AREG_OS), Cygwin)
 
@@ -114,7 +117,7 @@ else
     endif
 
     AREG_COMPILER_OPTIONS   += -pthread -Wall -fmessage-length=0 -std=c++17
-    AREG_LDFLAGS            += -lstdc++ -lm -lpthread -lrt $(AREG_USER_DEF_LIBS)
+    AREG_LDFLAGS            += -lstdc++ -lm -lpthread -lrt
 
     OBJ_EXT         := o
     AREG_BIN_EXT    := .out
@@ -129,33 +132,25 @@ else
 endif
 
 # The source code build relative path
-ProjBuildPath   := $(shell echo build/$(AREG_CXX_COMPILER)/$(AREG_OS)-$(AREG_PLATFORM)-$(AREG_BUILD_TYPE) | tr '[:upper:]' '[:lower:]')
+AREG_PRODUCT_PATH   := $(shell echo $(AREG_USER_PRODUCTS)/build/$(AREG_COMPILER_FAMILY)-$(AREG_TOOLCHAIN)/$(AREG_OS)-$(AREG_BITNESS)-$(AREG_PLATFORM)-$(AREG_BUILD_TYPE) | tr '[:upper:]' '[:lower:]')
 
-# The project output directory
-ProjOutputDir   := $(AREG_BUILD_ROOT)/$(AREG_USER_DEF_OUTPUT_DIR)/$(ProjBuildPath)
-# The project generated files directory
-ProjGendDir     := $(AREG_BUILD_ROOT)/$(AREG_USER_DEF_OUTPUT_DIR)/generate
-# The common object directory, projects can have their own sub-directories
-ProjObjDir      := $(ProjOutputDir)/obj
+# If 'AREG_OUTPUT_DIR' is not set, build and set the default path.
+AREG_OUTPUT_DIR := $(if $(AREG_OUTPUT_DIR),$(AREG_OUTPUT_DIR),$(AREG_BUILD_ROOT)/$(AREG_PRODUCT_PATH))
 
-# The project static library directory
-ProjLibDir      := $(ProjOutputDir)/lib
-# The project binary output directory
-ProjBinDir      := $(ProjOutputDir)/bin
+# If 'AREG_OUTPUT_LIB' is not set, build and set the default path.
+AREG_OUTPUT_LIB := $(if $(AREG_OUTPUT_LIB),$(AREG_OUTPUT_LIB),$(AREG_OUTPUT_DIR)/lib)
+
+# If 'AREG_OUTPUT_BIN' is not set, build and set the default path.
+AREG_OUTPUT_BIN := $(if $(AREG_OUTPUT_BIN),$(AREG_OUTPUT_BIN),$(AREG_OUTPUT_DIR)/bin)
+
+# The absolute path for compiled object files.
+AREG_OUTPUT_OBJ := $(AREG_OUTPUT_DIR)/obj
+
+# The absolute path for generated files
+AREG_GENERATE_DIR   := $(AREG_BUILD_ROOT)/$(AREG_USER_PRODUCTS)/generate
 
 # The project include directories
-ProjIncludes    := 
-ProjIncludes    += -I$(AREG_BASE)
-ProjIncludes    += -I$(ProjGendDir)
-ProjIncludes    += -I$(AREG_USER_DEF_INCLUDES)
-
-# aliases
-AREG_OUTPUT_OBJ = $(ProjObjDir)
-AREG_OUTPUT_LIB = $(ProjLibDir)
-AREG_OUTPUT_BIN = $(ProjBinDir)
-AREG_INCLUDES   = $(ProjIncludes)
-AREG_AR         = ar
-AREG_TOOLCHAIN  = $(CXX)
+AREG_INCLUDES   := -I$(AREG_BASE) -I$(AREG_GENERATE_DIR)
 
 ifeq ($(AREG_BINARY),shared)
     AREG_LIB_INCLUDES = -L $(AREG_OUTPUT_BIN) -L $(AREG_OUTPUT_LIB)
@@ -177,9 +172,9 @@ endif
 CXXFLAGS    += $(AREG_COMPILER_OPTIONS)
 LDFLAGS     += $(AREG_LDFLAGS)
 
-$(info Builds applications in the folder $(AREG_OUTPUT_BIN))
-$(info Generated files are in $(ProjGendDir))
-$(info Builds $(AREG_BINARY) communication engine)
+$(info >>> Builds applications in the folder $(AREG_OUTPUT_BIN))
+$(info >>> Generated files are in $(AREG_GENERATE_DIR))
+$(info >>> Builds $(AREG_BINARY) communication engine)
 
 define AREG_HELP_MSG
 # Usage: make [target] [AREG_BINARY=<static|shared>] [AREG_BUILD_TYPE=<Release|Debug>] [AREG_CXX_COMPILER=<compiler>] [CrossCompile=<cross-toolchain>] ...
@@ -218,10 +213,10 @@ endef
 
 # clean targets
 clean:
-	rm -rf $(AREG_BUILD_ROOT)/$(AREG_USER_DEF_OUTPUT_DIR)
+	rm -rf $(AREG_BUILD_ROOT)/$(AREG_USER_PRODUCTS)
 clean_build:
-	rm -rf $(ProjOutputDir)
+	rm -rf $(AREG_OUTPUT_DIR)
 clean_gen:
-	rm -rf $(ProjGendDir)
+	rm -rf $(AREG_GENERATE_DIR)
 
 .PHONY: clean clean_build clean_gen help

@@ -26,53 +26,67 @@
 # Toolchain
 # ###########################################################################
 
-AREG_CXX_COMPILER_ID:=
+AREG_COMPILER_ID	:=
 AREG_CXX_COMPILER   :=
 AREG_C_COMPILER		:=
 
-ifneq ($(AREG_COMPILER_FAMILY),)
+ifneq ($(strip $(AREG_COMPILER_FAMILY)),)
 $(info Selected compiler family '$(AREG_COMPILER_FAMILY)')
 
 	ifeq ($(AREG_COMPILER_FAMILY), gnu)
-		AREG_CXX_COMPILER_ID:= GNU
+		AREG_COMPILER_ID	:= GNU
 		AREG_CXX_COMPILER	:= g++
 		AREG_C_COMPILER		:= gcc
 	else ifeq ($(AREG_COMPILER_FAMILY), cygwin)
-		AREG_CXX_COMPILER_ID:= GNU
+		AREG_COMPILER_ID	:= GNU
 		AREG_CXX_COMPILER	:= g++
 		AREG_C_COMPILER		:= gcc
 	else ifeq ($(AREG_COMPILER_FAMILY), clang)
-		AREG_CXX_COMPILER_ID:= Clang
+		AREG_COMPILER_ID	:= Clang
 		AREG_CXX_COMPILER	:= clang++
 		AREG_C_COMPILER		:= clang
 	else
-		AREG_CXX_COMPILER_ID:= GNU
+		AREG_COMPILER_ID	:= GNU
 		AREG_CXX_COMPILER	:= g++
 		AREG_C_COMPILER		:= gcc
 	endif
 
-else ifneq ($(AREG_COMPILER),)
+else ifneq ($(strip $(AREG_COMPILER)),)
 
 	ifeq ($(AREG_COMPILER),g++)
-		AREG_CXX_COMPILER_ID:= GNU
+		AREG_COMPILER_ID	:= GNU
 		AREG_CXX_COMPILER	:= $(AREG_COMPILER)
 		AREG_C_COMPILER		:= gcc
+		AREG_COMPILER_FAMILY:= gnu
+		ifeq ($(DETECTED_OS),Cygwin)
+			AREG_COMPILER_FAMILY:= cygwin
+		else
+			AREG_COMPILER_FAMILY:= gnu
+		endif
 	else ifeq ($(AREG_COMPILER),gcc)
-		AREG_CXX_COMPILER_ID:= GNU
+		AREG_COMPILER_ID	:= GNU
 		AREG_CXX_COMPILER	:= $(AREG_COMPILER)
 		AREG_C_COMPILER		:= gcc
+		ifeq ($(DETECTED_OS),Cygwin)
+			AREG_COMPILER_FAMILY:= cygwin
+		else
+			AREG_COMPILER_FAMILY:= gnu
+		endif
 	else ifeq ($(AREG_COMPILER),clang)
-		AREG_CXX_COMPILER_ID:= Clang
+		AREG_COMPILER_ID	:= Clang
 		AREG_CXX_COMPILER	:= $(AREG_COMPILER)
 		AREG_C_COMPILER		:= clang
+		AREG_COMPILER_FAMILY:= clang
 	else ifeq ($(AREG_COMPILER),clang++)
-		AREG_CXX_COMPILER_ID:= Clang
+		AREG_COMPILER_ID	:= Clang
 		AREG_CXX_COMPILER	:= $(AREG_COMPILER)
 		AREG_C_COMPILER		:= clang
+		AREG_COMPILER_FAMILY:= clang
 	else
-		AREG_CXX_COMPILER_ID:= Unknown
+		AREG_COMPILER_ID	:= Unknown
 		AREG_CXX_COMPILER	:= $(AREG_COMPILER)
 		AREG_C_COMPILER		:= $(AREG_COMPILER)
+		AREG_COMPILER_FAMILY:= Unknown
 	endif
 
 else
@@ -80,8 +94,9 @@ else
 	
 	AREG_CXX_COMPILER	:= g++
 	AREG_C_COMPILER		:= gcc
-	AREG_CXX_COMPILER_ID:= GNU
-    
+	AREG_COMPILER_ID	:= GNU
+	AREG_COMPILER_FAMILY:= gnu
+
 	# AREG_CXX_COMPILER	:= clang++
 	# AREG_C_COMPILER	:= clang
 	# AREG_COMPILER_FAMILY:= Clang
@@ -92,12 +107,9 @@ CXX := $(AREG_CXX_COMPILER)
 CC	:= $(AREG_C_COMPILER)
 $(info >>> Selected compilers: CXX = $(CXX), CC = $(CC))
 
-ifndef $(AREG_ENABLE_EXT)
-	AREG_ENABLE_EXT	:= 0
-else ifeq ($(AREG_ENABLE_EXT),)
-	AREG_ENABLE_EXT	:= 0
-endif
-
+# if AREG_ENABLE_EXT for extensions is set, use the value.
+# Otherwise, disable extensions by setting 0
+AREG_ENABLE_EXT := $(if $(AREG_ENABLE_EXT),$(AREG_ENABLE_EXT),0)
 
 # ###########################################################################
 # Settings
@@ -112,7 +124,6 @@ AREG_BINARY := static
 AREG_BUILD_TYPE := Debug
 # AREG_BUILD_TYPE := Release
 
-AREG_OUTPUT_DIR	=
 AREG_OS 		= $(DETECTED_OS)
 AREG_PLATFORM 	= $(DETECTED_PROCESSOR)
 AREG_BITNESS	= $(DETECTED_BITNESS)
@@ -133,16 +144,7 @@ AREG_BUILD_ROOT 	:= $(AREG_SDK_ROOT)
 
 # User can set specific preprocessor define symbols.
 # The 'ENABLE_TRACES' enables logs in the binaries.
-AREG_USER_DEFINES		:= -DENABLE_TRACES
-
-# User can set specific include paths, must be prefixed with '-I' if used
-AREG_USER_DEF_INCLUDES	:= 
-
-# User can set the specific library paths to search libraries
-AREG_USER_DEF_LIB_PATHS	:= 
-
-# User can set specific libraries to link.
-AREG_USER_DEF_LIBS     	:= 
+AREG_USER_DEFINES	:= -DENABLE_TRACES
 
 # User output folder
-AREG_USER_DEF_OUTPUT_DIR:= product
+AREG_USER_PRODUCTS	:= product

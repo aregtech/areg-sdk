@@ -2,6 +2,34 @@
 # Common settings for all projects
 # ###########################################################################
 
+set(AREG_COMPILER_SHORT "unknown")
+set(TEMP_POS)
+
+string(FIND "${CMAKE_CXX_COMPILER}" "clang++" TEMP_POS REVERSE)
+if (${TEMP_POS} GREATER -1)
+    set(AREG_COMPILER_SHORT "clang++")
+else()
+    string(FIND "${CMAKE_CXX_COMPILER}" "clang" TEMP_POS REVERSE)
+    if (${TEMP_POS} GREATER -1)
+        set(AREG_COMPILER_SHORT "clang")
+    else()
+        string(FIND "${CMAKE_CXX_COMPILER}" "g++" TEMP_POS REVERSE)
+        if (${TEMP_POS} GREATER -1)
+            set(AREG_COMPILER_SHORT "g++")
+        else()
+            string(FIND "${CMAKE_CXX_COMPILER}" "gcc" TEMP_POS REVERSE)
+            if (${TEMP_POS} GREATER -1)
+                set(AREG_COMPILER_SHORT "gcc")
+            else()
+                string(FIND "${CMAKE_CXX_COMPILER}" "cl" TEMP_POS REVERSE)
+                if (${TEMP_POS} GREATER -1)
+                    set(AREG_COMPILER_SHORT "cl")
+                endif()
+            endif()
+        endif()
+    endif()
+endif()
+
 # Identify the OS
 set(AREG_OS ${CMAKE_SYSTEM_NAME})
 set(AREG_PROCESSOR ${CMAKE_SYSTEM_PROCESSOR})
@@ -16,12 +44,7 @@ endif()
 # areg specific internal variable settings
 # -----------------------------------------------------
 # The toolchain
-if (CYGWIN)
-    message(STATUS ">>> The Cmake Compiler ID is ${CMAKE_CXX_COMPILER_ID}, set CYGWIN")
-    set(AREG_TOOLCHAIN "CYGWIN")
-else()
-    set(AREG_TOOLCHAIN "${CMAKE_CXX_COMPILER_ID}")
-endif()
+set(AREG_TOOLCHAIN "${CMAKE_CXX_COMPILER}")
 
 # The development environment -- POSIX or Win32 API
 set(AREG_DEVELOP_ENV)
@@ -47,6 +70,8 @@ endif()
 # Checking Compiler for adding corresponded tweaks and flags
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
+    message(STATUS ">>> Preparing compiler settings for `clang`")
+
     # POSIX API
     add_definitions(-DPOSIX)
     set(AREG_DEVELOP_ENV "Posix")
@@ -66,9 +91,11 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     # Clang compile options
     list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -stdlib=libstdc++ ${AREG_USER_DEFINES})
     # Linker flags (-l is not necessary)
-    list(APPEND AREG_LDFLAGS c++ m pthread rt ${AREG_USER_DEF_LIBS})
+    list(APPEND AREG_LDFLAGS stdc++ m pthread rt)
 
 elseif (CMAKE_COMPILER_IS_GNUCXX )
+
+    message(STATUS ">>> Preparing compiler settings for `GNU`")
 
     # POSIX API
     add_definitions(-DPOSIX)
@@ -88,14 +115,17 @@ elseif (CMAKE_COMPILER_IS_GNUCXX )
 
     # GNU compile options
     if (CYGWIN)
+        message(STATUS ">>> CYGWIN is detected")
         list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -MMD -std=gnu++17 ${AREG_USER_DEFINES})
     else()
         list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -MMD -std=c++17 ${AREG_USER_DEFINES})
     endif()
     # Linker flags (-l is not necessary)
-    list(APPEND AREG_LDFLAGS stdc++ m pthread rt ${AREG_USER_DEF_LIBS})
+    list(APPEND AREG_LDFLAGS stdc++ m pthread rt)
 
 elseif (MSVC)
+
+    message(STATUS ">>> Preparing compiler settings for `MSVC`")
 
     # Visual Studio C++
     # Windows / Win32 API
@@ -113,7 +143,7 @@ elseif (MSVC)
     # MS Visual C++ compile options
     list(APPEND AREG_COMPILER_OPTIONS)
     # Linker flags (-l is not necessary)
-    list(APPEND AREG_LDFLAGS advapi32 psapi shell32 ws2_32 ${AREG_USER_DEF_LIBS})
+    list(APPEND AREG_LDFLAGS advapi32 psapi shell32 ws2_32)
 
 else()
 
@@ -137,7 +167,7 @@ else()
     # Compile options
     list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -MMD -std=c++17 ${AREG_USER_DEFINES})
     # Linker flags (-l is not necessary)
-    list(APPEND AREG_LDFLAGS stdc++ m pthread rt "${AREG_USER_DEF_LIBS}")
+    list(APPEND AREG_LDFLAGS stdc++ m pthread rt)
 
 endif()
 
@@ -157,29 +187,32 @@ endif(AREG_ENABLE_EXT)
 # -------------------------------------------------------
 
 # Relative path of the output folder for the builds
-set(AREG_PRODUCT_PATH)
-if (NOT "${AREG_TOOLCHAIN}" STREQUAL "${CMAKE_CXX_COMPILER_ID}")
-    set(AREG_PRODUCT_PATH "${AREG_USER_DEF_OUTPUT_DIR}/build/${AREG_TOOLCHAIN}-${CMAKE_CXX_COMPILER_ID}/${AREG_OS}-${AREG_BITNESS}-${AREG_PROCESSOR}-${CMAKE_BUILD_TYPE}")
-else()
-    set(AREG_PRODUCT_PATH "${AREG_USER_DEF_OUTPUT_DIR}/build/${AREG_TOOLCHAIN}/${AREG_OS}-${AREG_BITNESS}-${AREG_PROCESSOR}-${CMAKE_BUILD_TYPE}")
-endif()
+set(AREG_PRODUCT_PATH "${AREG_USER_PRODUCTS}/build/${AREG_COMPILER_FAMILY}-${AREG_COMPILER_SHORT}/${AREG_OS}-${AREG_BITNESS}-${AREG_PROCESSOR}-${CMAKE_BUILD_TYPE}")
 string(TOLOWER "${AREG_PRODUCT_PATH}" AREG_PRODUCT_PATH)
-# The absolute path for builds
+
+# The output directory
 if (NOT DEFINED AREG_OUTPUT_DIR OR AREG_OUTPUT_DIR STREQUAL "")
+    # The absolute path of 'AREG_OUTPUT_DIR' for builds if it is not set.
     set(AREG_OUTPUT_DIR "${AREG_BUILD_ROOT}/${AREG_PRODUCT_PATH}")
 endif()
 
-# The absolute path for generated files
-set(AREG_GENERATE_DIR "${AREG_BUILD_ROOT}/${AREG_USER_DEF_OUTPUT_DIR}/generate")
-# The absolute path for obj files.
-set(AREG_OUTPUT_OBJ "${AREG_OUTPUT_DIR}/obj")
-# The absolute path for static libraries
-set(AREG_OUTPUT_LIB "${AREG_OUTPUT_DIR}/lib")
-# The absolute path for all executables and shared libraries
-set(AREG_OUTPUT_BIN "${AREG_OUTPUT_DIR}/bin")
+# The directory to output static libraries
+if (NOT DEFINED AREG_OUTPUT_LIB OR AREG_OUTPUT_LIB STREQUAL "")
+    # set absolute path to AREG_OUTPUT_LIB if it is not manually set
+    set(AREG_OUTPUT_LIB "${AREG_OUTPUT_DIR}/lib")
+endif()
 
-# Project inclues
-set(AREG_INCLUDES "-I${AREG_BASE} -I${AREG_GENERATE_DIR} -I${AREG_USER_DEF_INCLUDES}")
+# The directory to output shared libraries and executables
+if (NOT DEFINED AREG_OUTPUT_BIN OR AREG_OUTPUT_BIN STREQUAL "")
+    # set absolute path to AREG_OUTPUT_BIN if it is not manually set
+    set(AREG_OUTPUT_BIN "${AREG_OUTPUT_DIR}/bin")
+endif()
+
+# The absolute path for compiled object files.
+set(AREG_OUTPUT_OBJ "${AREG_OUTPUT_DIR}/obj")
+
+# The absolute path for generated files
+set(AREG_GENERATE_DIR "${AREG_BUILD_ROOT}/${AREG_USER_PRODUCTS}/generate")
 
 # Setting output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${AREG_OUTPUT_BIN})
@@ -200,8 +233,11 @@ add_compile_options(${AREG_COMPILER_OPTIONS})
 # Adding areg/product directory for clean-up
 set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${AREG_OUTPUT_DIR})
 
+# Add include search paths
+include_directories(BEFORE "${AREG_BASE} ${AREG_GENERATE_DIR}")
+
 # Adding library search paths
-link_directories(BEFORE "${AREG_OUTPUT_BIN} ${AREG_OUTPUT_LIB} ${AREG_USER_DEF_LIB_PATHS}")
+link_directories(BEFORE "${AREG_OUTPUT_BIN} ${AREG_OUTPUT_LIB}")
 
 # Only for Linux
 if(UNIX AND NOT CYGWIN)
@@ -209,9 +245,8 @@ if(UNIX AND NOT CYGWIN)
 endif()
 
 message(STATUS "-------------------- Status Report Begin --------------------")
-message(STATUS ">>> Build executables are with extension \'${CMAKE_EXECUTABLE_SUFFIX}\'")
-message(STATUS ">>> Build for \'${CMAKE_SYSTEM_NAME}\' ${AREG_BITNESS}-bit platform ${AREG_PROCESSOR} with compiler \'${CMAKE_CXX_COMPILER}\', ID \'${AREG_TOOLCHAIN}\', and build type \'${CMAKE_BUILD_TYPE}\'")
-message(STATUS ">>> Binary output folder \'${AREG_OUTPUT_BIN}\'")
+message(STATUS ">>> Build for \'${CMAKE_SYSTEM_NAME}\' ${AREG_BITNESS}-bit platform ${AREG_PROCESSOR} with compiler \'${CMAKE_CXX_COMPILER}\', ID \'${AREG_COMPILER_FAMILY}\', and build type \'${CMAKE_BUILD_TYPE}\'")
+message(STATUS ">>> Binary output folder \'${AREG_OUTPUT_BIN}\', executable extensions \'${CMAKE_EXECUTABLE_SUFFIX}\'")
 message(STATUS ">>> Library output folder \'${AREG_OUTPUT_LIB}\'")
 message(STATUS ">>> Build examples is '${AREG_BUILD_EXAMPLES}\', build tests is \'${AREG_BUILD_TESTS}\', AREG Extensions is ${AREG_ENABLE_EXT}")
 message(STATUS "-------------------- Status Report End ----------------------")
