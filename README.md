@@ -40,7 +40,6 @@
 - [Interface-centricity](#interface-centricity)
 - [More than embedded](#more-than-embedded)
 - [Composition](#composition)
-- [Roadmap](#roadmap)
 - [Software build](#software-build)
     - [Clone sources](#clone-sources)
     - [Build with `cmake`](#build-with-cmake)
@@ -51,6 +50,7 @@
     - [Integrate for development](#integrate-for-development)
     - [Configure multicast router](#configure-multicast-router)
     - [Configure logging](#configure-logging)
+- [Roadmap](#roadmap)
 - [Use cases and benefits](#use-cases-and-benefits)
     - [Distributed solution](#distributed-solution)
     - [Driverless devices](#driverless-devices)
@@ -115,22 +115,6 @@ The major modules of AREG SDK are:
 3. [Code generator](./tools/) is a tool, which out of interface documents generates service provider and consumer objects.
 
 > 💡 The multiple [examples](./examples) demonstrate the features and fault tolerant behavior of AREG communication engine.
-
-<div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
-
----
-
-## Roadmap[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#roadmap)
-
-The aim of the AREG SDK is a lightweight, self-sufficient development and testing system to help developers to create complex **Desktop**, **Embedded**, and **IoT edge** applications in a shorter amount of time (_30-50% faster_). 
-- **Planned features of the framework:**
-  * Multi-channel and multi-protocol communication.
-  * Logging service to collect logs in the network.
-  * _Internet_ (web) category services.
-- **Planned tools:**
-  * Service interface designer.
-  * Interactive log viewer.
-  * Service testing and Data simulation tool.
 
 <div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
@@ -279,6 +263,22 @@ scope.my_app.ignore_this_group_* = NOTSET ;        # disable logs of certain sco
 > 💡 To enable all logs of all applications, use `scope.*  = DEBUG | SCOPE ;` .<br />
 > 💡 Currently logging is possible only in the file.
 
+
+<div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
+
+---
+
+## Roadmap[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#roadmap)
+
+The aim of the AREG SDK is a lightweight, self-sufficient development and testing system to help developers to create complex **Desktop**, **Embedded**, and **IoT edge** applications in a shorter amount of time (_30-50% faster_). 
+- **Planned features of the framework:**
+  * Multi-channel and multi-protocol communication.
+  * Logging service to collect logs in the network.
+  * _Internet_ (web) category services.
+- **Planned tools:**
+  * Service interface designer.
+  * Interactive log viewer.
+  * Service testing and Data simulation tool.
 
 <div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
