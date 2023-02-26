@@ -31,7 +31,7 @@
 
 ## Introduction[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#introduction)
 
-**AREG** (_Automated Real-time Event Grid_) is a powerful and lightweight cross-platform communication engine designed to facilitate seamless data transmission in IoT [fog- and mist-network](https://csrc.nist.gov/publications/detail/sp/500-325/final). AREG creates a grid of services using interface-centric approach, allowing multiple connected devices and software nodes to operate like thin distributed servers and clients. It automates real-time data transmission, utilizing both Client-Server and Publish-Subscriber models to ensure efficient and reliable communication between connected software nodes. 
+**AREG** (_Automated Real-time Event Grid_) is a powerful and lightweight cross-platform communication engine designed to facilitate seamless data transmission in IoT [fog- and mist-network](https://csrc.nist.gov/publications/detail/sp/500-325/final). AREG creates a grid of services using interface-centric approach, allowing multiple connected devices and software nodes to operate like thin distributed servers and clients. It automates real-time data transmission, utilizing both Client-Server and Publish-Subscribe models to ensure efficient and reliable communication between connected software nodes. 
 
 ---
 
