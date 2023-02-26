@@ -164,7 +164,7 @@ For custom build, tools accept command line parameters. The details of options a
 
 > 💡 The other POSIX-compliant OS and compilers are not tested yet.<br />
 
-### Clone codes
+### Clone sources
 
 To get AREG SDK source codes and dependent modules, open _Terminal_ in your `projects` folder and clone:
 ```bash
