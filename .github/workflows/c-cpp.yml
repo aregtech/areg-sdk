@@ -76,12 +76,14 @@ jobs:
         if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
         run: echo "PATH=C:\cygwin64;C:\cygwin64\bin;C:\cygwin64\lib;%SYSTEMROOT%\system32;%PATH%" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
              
-      - name: Build with selected compiler family
+      - name: Build with selected compiler family and enabled exnensions
+        if: matrix.extend == '1'
         working-directory: ${{github.workspace}}
         # Build your program with the given configuration
         run: make AREG_COMPILER_FAMILY=${{matrix.config.family}} AREG_BUILD_TYPE=${{env.BUILD_TYPE}} AREG_BINARY=${{matrix.config.lib}} AREG_ENABLE_EXT=${{matrix.config.extend}} all -j10
 
-      - name: Build with selected compiler
+      - name: Build with selected compiler and disabled extensions
+        if: matrix.extend == '0'
         working-directory: ${{github.workspace}}
         # Build your program with the given configuration
         run: make AREG_COMPILER=${{matrix.config.cc}} AREG_BUILD_TYPE=${{env.BUILD_TYPE}} AREG_BINARY=${{matrix.config.lib}} AREG_ENABLE_EXT=${{matrix.config.extend}} all -j10

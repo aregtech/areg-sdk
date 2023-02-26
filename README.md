@@ -8,7 +8,6 @@
 [![Fork](https://img.shields.io/github/forks/aregtech/areg-sdk?style=social)](https://github.com/aregtech/areg-sdk/network/members)
 [![Watchers](https://img.shields.io/github/watchers/aregtech/areg-sdk?style=social)](https://github.com/aregtech/areg-sdk/watchers)
 
-<!--  The latest development sources are in [20220701-candidate](https://github.com/aregtech/areg-sdk/tree/20220701-candidate) branch. Please check the [build status](https://github.com/aregtech/areg-sdk/actions) before cloning it. -->
 
 ---
 
@@ -32,7 +31,7 @@
 
 ## Introduction[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#introduction)
 
-**AREG** (_Automated Real-time Event Grid_) is a lightweight, cross-platform interface-centric communication engine to form a grid of services in the IoT [fog- and mist-network](https://csrc.nist.gov/publications/detail/sp/500-325/final). It automates real-time data transmission between multiple connected devices and software nodes, which operate like thin distributed servers and clients with characteristics of client-server and publish-subscriber models.
+**AREG** (_Automated Real-time Event Grid_) is a powerful and lightweight cross-platform communication engine designed to facilitate seamless data transmission in IoT [fog- and mist-network](https://csrc.nist.gov/publications/detail/sp/500-325/final). AREG creates a grid of services using interface-centric approach, allowing multiple connected devices and software nodes to operate like thin distributed servers and clients. It automates real-time data transmission, utilizing both client-server and publish-subscriber models to ensure efficient and reliable communication between connected software nodes. 
 
 ---
 
@@ -246,15 +245,15 @@ Other parameters like AREG library type, compiler, build type, etc., are describ
 An example to configure and compile codes with `cmake`:
 ```bash
 # Step 1: configure, make appropriate settings
-$ cmake -B ./build -DAREG_COMPILER=clang++ -DAREG_BINARY=static -DAREG_BUILD_TYPE=Debug -DAREG_ENABLE_EXT:BOOL=ON AREG_OUTPUT_BIN=~/product/areg-sdk
+$ cmake -B ./build -DAREG_COMPILER=clang++ -DAREG_BINARY=static -DAREG_BUILD_TYPE=Debug -DAREG_ENABLE_EXT:BOOL=ON AREG_OUTPUT_BIN="~/product/areg-sdk/"
 
 # Step 2: build applications
 $ cmake --build -j8
 ```
 
-In this example
+In this scenario, the source codes are set up to build using `clang++`. The AREG engine is created as a static library with enabled extensions (may require additional dependencies). All applications are built in Debug mode, and the resulting binaries are stored in the `~/product/areg-sdk/` directory.
 
-All codes of AREG engine are relevant to the `areg-sdk/framework`. If a project is developed on top of _ARED SDK_, include `areg-sdk/framework` folder in the include paths of the project. The development guidance and step-by-step example to create a simple service-enabled application are described in [DEVELOP](./docs/DEVELOP.md). See [_Hello Service!_](./docs/DEVELOP.md#hello-service) as an example to create a service.
+The additoinal development guidance and step-by-step example to create a simple service-enabled application are described in [DEVELOP](./docs/DEVELOP.md). See [_Hello Service!_](./docs/DEVELOP.md#hello-service) as an example to create a service.
 
 ### Configure multicast router
 

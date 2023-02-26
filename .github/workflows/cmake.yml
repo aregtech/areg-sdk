@@ -86,10 +86,17 @@ jobs:
         if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
         run: echo "PATH=C:\cygwin64;C:\cygwin64\bin;C:\cygwin64\lib;%SYSTEMROOT%\system32;%PATH%" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
          
-      - name: Configure CMake
+      - name: Configure CMake with enabled extended feature and selected compiler family
+        if: matrix.extend == 'ON'
         working-directory: ${{github.workspace}}
         run: |
           cmake -B ./build -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_BUILD_ALL:BOOL=ON -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_ENABLE_EXT:BOOL=${{matrix.config.extend}}
+    
+      - name: Configure CMake for disabled extended feature and selected compiler
+        if: matrix.extend == 'OFF'
+        working-directory: ${{github.workspace}}
+        run: |
+          cmake -B ./build -DAREG_COMPILER=${{matrix.config.cc}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_BUILD_ALL:BOOL=ON -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_ENABLE_EXT:BOOL=${{matrix.config.extend}}
     
       - name: Build with CMake
         working-directory: ${{github.workspace}}
