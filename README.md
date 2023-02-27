@@ -84,7 +84,7 @@ As data is generated and collected at the edge of the network (**mist network**)
 
 <div align="center"><a href="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/interface-centric.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/interface-centric.png" alt="Service oriented and interface-centric" style="width:50%;height:50%"/></a></div>
 
-ORPC concept is interface-centric, similar to object-oriented programming, and allows multiple instances of the same object to be instantiated and handled transparently. There are no protocol restrictions, although the bi-directional communication is required to send messages to all connected nodes. The programmable server objects are called _service providers_, and the programmable clients are called _service consumers_. This approach enables AREG to combine the features of _action-centric_ (Client-Server / Request-Reply) and _data-centric_ (Publish-Subscribe / PubSub) architectures.
+ORPC concept is interface-centric, similar to object-oriented programming, and allows multiple instances of the same object to be instantiated and handled transparently. There are no protocol restrictions, although the bi-directional communication is required to send messages to all connected nodes. The programmable server objects are called _service providers_, and the programmable clients are called _service consumers_. This approach enables AREG to combine the features of _action-centric_ (Client-Server / Request-Reply) and _data-centric_ (Publish-Subscribe / PubSub) models.
 
 <div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
@@ -140,9 +140,9 @@ The source codes of AREG framework and examples support following platform, CPU 
 The tools to compile sources:
 | Tool | Solution | Platforms | API | Quick actions to compile |
 | --- | --- | --- | --- | --- |
-| `cmake` | `CMakeLists.txt` | **Linux, Cygwin, Windows** | _POSIX_, _Win32_ | &nbsp;&nbsp; - Call `cmake` in the _command line_.<br /> &nbsp;&nbsp; - Configure and build in _Visual Studio Code_;<br /> &nbsp;&nbsp; - Configure and build in _Microsoft Visual Studio_. |
+| `cmake` | `CMakeLists.txt` | **Linux, Cygwin, Windows** | _POSIX_, _Win32_ | &nbsp;&nbsp; - Call `cmake` in the _command line_.<br /> &nbsp;&nbsp; - Configure and build in _VSCode_;<br /> &nbsp;&nbsp; - Configure and build in _MSVS_. |
 | `make` | `Makefile` | **Linux, Cygwin**| _POSIX_ | &nbsp;&nbsp; - Call `make` in the _command line_. |
-| `msbuild` | `areg-sdk.sln` | **Windows** | _Win32_ | &nbsp;&nbsp; - Call `msbuild` in the _command line_.<br />&nbsp;&nbsp; - Open and build in _Microsoft Visual Studio_. |
+| `msbuild` | `areg-sdk.sln` | **Windows** | _Win32_ | &nbsp;&nbsp; - Call `msbuild` in the _command line_.<br />&nbsp;&nbsp; - Open and build in _MSVS_. |
 
 To customize the build, the tools accept parameters. For information on available options, refer to the [Wiki pages](https://github.com/aregtech/areg-sdk/wiki). By default, after build the binaries are in `<areg-sdk>/product/build/<family>-<compiler>/<platform>-<bitness>-<cpu>-<build type>/bin` folder (for example, `areg-sdk/product/build/gnu-gcc/linux-64-x86_64-release/bin`).
 
