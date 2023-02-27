@@ -92,16 +92,16 @@ ORPC concept is interface-centric, similar to object-oriented programming, and a
 
 ## More than embedded[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#more-than-embedded)
 
-AREG is designed to provide a homogeneous solution for multithreading, multiprocessing, and internet communications through categorized services (_Local_, _Public_, and _Internet_). These services are software components with predefined interfaces that allow for remote method invocation, rather than processes or tasks managed by the OS.
+AREG is designed to provide a homogeneous solution for multithreading, multiprocessing, and internet communications through categorized services (_Local_, _Public_, and _Internet_). These services are software components with predefined interfaces, which methods are invoked remotely.
 
 <div align="center"><a href="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-services.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-services.png" alt="AREG SDK distributed services" style="width:70%;height:70%"/></a></div>
 
 > 💡 Currently AREG communication engine supports _Local_ (multithreading) and _Public_ (multiprocessing) service categories.
 
-AREG forms a fault-tolerant system that automatically discovers and automates communications between services, allowing developers to focus on application logic development. The system ensures that:
-* the crash of one application does not affect the entire system;
-* the clients automatically receive service availability notifications;
-* the requests, responses, and notifications are invoked in their own thread context.
+AREG forms a fault-tolerant system that automatically discovers and automates communications between services, allowing developers to focus on application logic development. The system ensures:
+* The crash of one application does not affect the entire system.
+* The clients automatically receive service availability notifications.
+* The requests, responses, and notifications are invoked in their own thread context.
 
 <div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
@@ -110,9 +110,9 @@ AREG forms a fault-tolerant system that automatically discovers and automates co
 ## Composition[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#composition)
 
 The major modules of AREG SDK are:
-1. [Multicast router (_mcrouter_)](./framework/mcrouter/) is a process, which runs as a console application or service managed by the OS to route messages.
-2. [AREG framework (or engine)](./framework/areg/) is a library to link with every application.
-3. [Code generator](./tools/) is a tool, which out of interface documents generates service provider and consumer objects.
+1. [Multicast router (_mcrouter_)](./framework/mcrouter/) is a console application or OS-managed service that routes message.
+2. [AREG engine](./framework/areg/) is a library to link with every application.
+3. [Code generator](./tools/) is a tool that creates service provider / consumer objects from interface documents.
 
 > 💡 The multiple [examples](./examples) demonstrate the features and fault tolerant behavior of AREG communication engine.
 
@@ -144,7 +144,7 @@ The tools to compile sources:
 | `make` | `Makefile` | **Linux, Cygwin**| _POSIX_ | &nbsp;&nbsp; - Call `make` in the _command line_. |
 | `msbuild` | `areg-sdk.sln` | **Windows** | _Win32_ | &nbsp;&nbsp; - Call `msbuild` in the _command line_.<br />&nbsp;&nbsp; - Open and build in _Microsoft Visual Studio_. |
 
-For custom build, tools accept command line parameters. The details of options are described in [Wiki pages](https://github.com/aregtech/areg-sdk/wiki). By default, after build the binaries are in `<areg-sdk>/product/build/<family>-<compiler>/<platform>-<bitness>-<cpu>-<build type>/bin` folder (for example, `areg-sdk/product/build/cygwin-gnu/cygwin-64-x86_64-release/bin`).
+To customize the build, the tools accept parameters. For information on available options, refer to the [Wiki pages](https://github.com/aregtech/areg-sdk/wiki). By default, after build the binaries are in `<areg-sdk>/product/build/<family>-<compiler>/<platform>-<bitness>-<cpu>-<build type>/bin` folder (for example, `areg-sdk/product/build/gnu-gcc/linux-64-x86_64-release/bin`).
 
 > 💡 The other POSIX-compliant OS and compilers are not tested yet.<br />
 
@@ -168,11 +168,11 @@ $ git submodule update --init
 $ git submodule update --remote
 ```
 
-Once you have cloned all sources, you can build applications using `cmake`, `make`, `msbuild` command line tools.
+After cloning sources, use `cmake`, `make`, or `msbuild` tools to build applications. You should as well have C++17 GNU, Clang, Cygwin, or MSVC compiler installed on your machine.
 
 ### Build with `cmake`
 
-Firstly, [clone the sources](#clone-sources) properly. To build with [cmake](https://cmake.org/), default GCC compiler and default options, open _Terminal_ in `areg-sdk` folder and take the steps:
+Firstly, [clone the sources](#clone-sources) properly. To build with [cmake](https://cmake.org/), using default (`g++`) compiler and options, open _Terminal_ in `areg-sdk` folder and take the steps:
 ```bash
 # Step 1: Initialize cache and build configuration in folder './build' folder.
 #         Default options: g++ compiler, release build, enabled examples and unit tests
@@ -184,7 +184,7 @@ $ cmake --build ./build -j8
 
 ### Build with `make`
 
-Firstly, [clone the sources](#clone-sources) properly. To build with [make](https://www.gnu.org/software/make/), default GCC compiler and default options, open _Terminal_ in `areg-sdk` folder and take the steps:
+Firstly, [clone the sources](#clone-sources) properly. To build with [make](https://www.gnu.org/software/make/), using default (`g++`) compiler and options, open _Terminal_ in `areg-sdk` folder and take the steps:
 ```bash
 # Compile sources with default options: g++ compiler, release build, enabled examples and unit tests
 $ make -j8
@@ -192,7 +192,7 @@ $ make -j8
 
 ### Build with `msbuild`
 
-Firstly, [clone the sources](#clone-sources) properly. To build with [MSBuild](https://visualstudio.microsoft.com/downloads/), default MSVC compiler and default options, open _Terminal_ in `areg-sdk` folder and take the steps:
+Firstly, [clone the sources](#clone-sources) properly. To build with [MSBuild](https://visualstudio.microsoft.com/downloads/), using MSVC default options, open _Terminal_ in `areg-sdk` folder and take the steps:
 ```bash
 # Compile sources with default options: msvc compiler, debug build, enabled examples and unit tests
 $ MSBuild .
@@ -200,12 +200,10 @@ $ MSBuild .
 
 ### Build with IDE
 
-Firstly, [clone the sources](#clone-sources) properly. Here we consider how to build the sources with [Microsoft Visual Studio](https://visualstudio.microsoft.com/) and [Visual Studio Code](https://code.visualstudio.com/).
+Firstly, [clone the sources](#clone-sources) properly. Here we consider builds with [Microsoft Visual Studio](https://visualstudio.microsoft.com/) and [Visual Studio Code](https://code.visualstudio.com/).
 
 1. Open [`areg-sdk.sln`](./areg-sdk.sln) solution file in _Microsoft Visual Studio_ and build the solution with MSVC.
-2. Open `areg-sdk` folder in _Visual Studio Code_ ==> select [`CMakeLists.txt`](./CMakeLists.txt) in _Explorer_ ==> mouse right click ==> select _Configure All Projects_ ==> wait until configuration succeeded to complete ==> mouse right click on `CMakeLists.txt` ==> select _Build All Projects_ to build the sources with GCC compiler.
-
-> 💡 To compile with Visual Source Code, you should have cmake and GCC (for example, install [Cygwin](https://www.cygwin.com/) for that).
+2. Open `areg-sdk` folder in _Visual Studio Code_ ==> select [`CMakeLists.txt`](./CMakeLists.txt) in _Explorer_ ==> mouse right click ==> select _Configure All Projects_ ==> wait until configuration succeeds ==> mouse right click on `CMakeLists.txt` ==> select _Build All Projects_ to build the sources with default (`g++`) compiler and options.
 
 <div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
@@ -217,11 +215,11 @@ Firstly, [clone the sources](#clone-sources) properly. Here we consider how to b
 
 ### Integrate for development
 
-Firstly, [clone the sources](#clone-sources) properly. To output compiled binaries in desired location, set these parameters if compile with `cmake` or `make`:
+Firstly, [clone the sources](#clone-sources) properly. To output compiled binaries in desired location, set these parameters when compile with `cmake` or `make`:
 - **AREG_OUTPUT_BIN** -- Change the default output folder of compiled shared libraries and executables.
 - **AREG_OUTPUT_LIB** -- Change the default output folder of compiled static libraries.
 
-Other parameters like AREG library type, compiler, build type, etc., are described in the appropriate `user` configuration files:
+Other parameters like compiler, library type, build type, etc., are described in the appropriate `user` configuration files:
 - For builds with `cmake`, in the [conf/cmake/user.cmake](./conf/cmake/user.cmake) file.
 - For builds with `make`, in the [conf/make/user.mk](./conf/make/user.mk) file.
 - For builds with `MSBuild`, in the [conf/msvc/user.props](./conf/msvc/user.props) file.
@@ -246,7 +244,7 @@ Configure [_router.init_](./framework/areg/resources/router.init) file to set th
 connection.address.tcpip    = 127.0.0.1	# the address of mcrouter host
 connection.port.tcpip       = 8181      # the connection port of mcrouter
 ```
-The multicast router is required only for multiprocessing applications, the `mcrouter` plays no role. The `mcrouter` is required to form a network and can run on any hardware node with GPOS.
+The multicast router is required only for multiprocessing applications and can be ignored in case of multithrading. It forms a network and requires GPOS.
 
 ### Configure logging
 
@@ -287,8 +285,6 @@ The aim of the AREG SDK is a lightweight, self-sufficient development and testin
 ## Use cases and benefits[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#use-cases-and-benefits)
 
 AREG SDK can be used in a very large scope of multithreading and multiprocessing application development.
-
-> 💡 Expand each section to see the details.
 
 ### Distributed solution
 
@@ -407,12 +403,13 @@ AREG SDK is under free open source [_Apache License Version 2.0_](./LICENSE.txt)
 
 ## Call to action[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#call-to-action)
 
-We look for help and welcome to join the project:
-* See the list of [open issues](https://github.com/aregtech/areg-sdk/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) where we look for help. If you need new features, please open a [new issue](https://github.com/aregtech/areg-sdk/issues) or start a [new discussion](https://github.com/aregtech/areg-sdk/discussions).
-* When creating a pull request, please understand that reviewing and testing takes time, and we as well pay attention to coding style.
-* If you look for invoiced commercial support or training, or if your project has the possibility to commercially support AREG SDK, please contact info[at]aregtech[dot]com. 
+Join our project and provide assistance by:
+* Checking out the list of [open issues](https://github.com/aregtech/areg-sdk/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) where we need help.
+* If you need new features, please open a [new issue](https://github.com/aregtech/areg-sdk/issues) or start a [discussion](https://github.com/aregtech/areg-sdk/discussions).
+* hen creating a pull request, kindly consider the time it takes for reviewing and testing, and maintain proper coding style.
+* If you require invoiced commercial support or training, or if you wish to support AREG SDK commercially, kindly contact us at info[at]aregtech[dot]com. 
 
-Did we help your project? Have you learned something new? Did we inspire you for new great ideas? Then we ask not to be indifferent and [![star AREG SDK](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=star%20AREG%20SDK)](https://github.com/aregtech/areg-sdk/). This small “thank you” inspires contributors and helps us to expand our community.
+If AREG SDK has helped your project or inspired you with new ideas, please don't forget to [![star AREG SDK](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=star%20AREG%20SDK)](https://github.com/aregtech/areg-sdk/) this repository. This gesture of appreciation encourages contributors and helps us grow our community.
 
 <div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
