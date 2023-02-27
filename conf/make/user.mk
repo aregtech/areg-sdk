@@ -41,7 +41,7 @@ $(info Selected compiler family '$(AREG_COMPILER_FAMILY)')
 		AREG_COMPILER_ID	:= GNU
 		AREG_CXX_COMPILER	:= g++
 		AREG_C_COMPILER		:= gcc
-	else ifeq ($(AREG_COMPILER_FAMILY), clang)
+	else ifeq ($(AREG_COMPILER_FAMILY), llvm)
 		AREG_COMPILER_ID	:= Clang
 		AREG_CXX_COMPILER	:= clang++
 		AREG_C_COMPILER		:= clang
@@ -60,28 +60,25 @@ else ifneq ($(strip $(AREG_COMPILER)),)
 		AREG_COMPILER_FAMILY:= gnu
 		ifeq ($(DETECTED_OS),Cygwin)
 			AREG_COMPILER_FAMILY:= cygwin
-		else
-			AREG_COMPILER_FAMILY:= gnu
 		endif
 	else ifeq ($(AREG_COMPILER),gcc)
 		AREG_COMPILER_ID	:= GNU
 		AREG_CXX_COMPILER	:= $(AREG_COMPILER)
 		AREG_C_COMPILER		:= gcc
+		AREG_COMPILER_FAMILY:= gnu
 		ifeq ($(DETECTED_OS),Cygwin)
 			AREG_COMPILER_FAMILY:= cygwin
-		else
-			AREG_COMPILER_FAMILY:= gnu
 		endif
 	else ifeq ($(AREG_COMPILER),clang)
 		AREG_COMPILER_ID	:= Clang
 		AREG_CXX_COMPILER	:= $(AREG_COMPILER)
 		AREG_C_COMPILER		:= clang
-		AREG_COMPILER_FAMILY:= clang
+		AREG_COMPILER_FAMILY:= llvm
 	else ifeq ($(AREG_COMPILER),clang++)
 		AREG_COMPILER_ID	:= Clang
 		AREG_CXX_COMPILER	:= $(AREG_COMPILER)
 		AREG_C_COMPILER		:= clang
-		AREG_COMPILER_FAMILY:= clang
+		AREG_COMPILER_FAMILY:= llvm
 	else
 		AREG_COMPILER_ID	:= Unknown
 		AREG_CXX_COMPILER	:= $(AREG_COMPILER)
@@ -99,7 +96,7 @@ else
 
 	# AREG_CXX_COMPILER	:= clang++
 	# AREG_C_COMPILER	:= clang
-	# AREG_COMPILER_FAMILY:= Clang
+	# AREG_COMPILER_FAMILY:= llvm
 
 endif
 

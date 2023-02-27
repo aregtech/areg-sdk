@@ -29,11 +29,11 @@ jobs:
             # compile AREG engine as a shared library with GNU g++ / gcc on Ubuntu Linux, disable AREG extensions
           - { name: linux-gnu-shared-noext, os: ubuntu-latest,  lib: shared,  family: gnu,    cxx: g++,     cc: gcc,    extend: OFF}
             # compile AREG engine as a shared library with clang on Ubuntu Linux, enable AREG extensions
-          - { name: linux-clang-shared-ext, os: ubuntu-latest,  lib: shared,  family: clang,  cxx: clang++, cc: clang,  extend: ON}
+          - { name: linux-clang-shared-ext, os: ubuntu-latest,  lib: shared,  family: llvm,  cxx: clang++, cc: clang,  extend: ON}
             # compile AREG engine as a static library with clang on Ubuntu Linux, enable AREG extensions
-          - { name: linux-clang-static-ext, os: ubuntu-latest,  lib: static,  family: clang,  cxx: clang++, cc: clang,  extend: ON}
+          - { name: linux-clang-static-ext, os: ubuntu-latest,  lib: static,  family: llvm,  cxx: clang++, cc: clang,  extend: ON}
             # compile AREG engine as a shared library with clang on Ubuntu Linux, disable AREG extensions
-          - { name: linux-clang-shared-noext,os: ubuntu-latest, lib: shared,  family: clang,  cxx: clang++, cc: clang,  extend: OFF}
+          - { name: linux-clang-shared-noext,os: ubuntu-latest, lib: shared,  family: llvm,  cxx: clang++, cc: clang,  extend: OFF}
             # compile AREG engine as a shared with CYGWIN g++ / gcc on Windows, enable AREG extensions
           - { name: win-cygwin-shared-ext,  os: windows-latest, lib: shared,  family: cygwin, cxx: g++,     cc: gcc,    extend: ON}
             # compile AREG engine as a static with CYGWIN g++ / gcc on Windows, enable AREG extensions

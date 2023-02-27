@@ -37,7 +37,7 @@ jobs:
           - {name: MSBuild-x64-noext,   platform: x64,    extend: 0}
 
     steps:
-    - name: Checkout AREG enging (AREG SDK) source codes and submodules
+    - name: Checkout AREG engine (AREG SDK) source codes and submodules
       uses: actions/checkout@v3
       with:
         submodules: recursive

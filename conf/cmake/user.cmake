@@ -1,23 +1,23 @@
 # ###########################################################################
-# User sepcific settings
+# User specific settings
 # ###########################################################################
 
 # ---------------------------------------------------------------------------
 # Pass the compiler options in command line or use the defaults:
-#   1. AREG_COMPILER_FAMILY -- Simple way to set AREG_CXX_COMPILER and AREG_C_COMPILER compilers
+#   1. AREG_COMPILER_FAMILY -- Simple way to set CMAKE_CXX_COMPILER and CMAKE_C_COMPILER compilers
 #   2. AREG_COMPILER        -- Specifies one compiler to set for CXX and CC compilers
 #   3. AREG_BINARY          -- AREG engine binary type ('shared' or 'static')
 #   4. AREG_BUILD_TYPE      -- build configurations ('Debug' or 'Release')
 #   5. AREG_BUILD_TESTS     -- Build AREG engine unit tests
 #   6. AREG_BUILD_EXAMPLES  -- Build AREG engine examples
-#   7. AREG_BUILD_ALL       -- Bulds the framework, examples and tests.
+#   7. AREG_BUILD_ALL       -- Builds the framework, examples and tests.
 #   8. AREG_ENABLE_EXT      -- Enables or disables the extensions, which might require additional libraries.
 #   9. AREG_OUTPUT_DIR      -- The output directory of build binaries
 #  10. AREG_OUTPUT_BIN      -- Set the path to folder to output compiled shared libraries and executables.
 #  11. AREG_OUTPUT_LIB      -- Set the path to folder to output compiled static libraries
 #
 # The default values are:
-#   1. AREG_COMPILER_FAMILY := gnu      (possible values: gnu, cygwin, clang, msvc)
+#   1. AREG_COMPILER_FAMILY := gnu      (possible values: gnu, cygwin, llvm, msvc)
 #   2. AREG_COMPILER        := g++      (possible values: g++, gcc, clang++, clang, cl)
 #   3. AREG_BINARY          := shared   (possible values: shared, static)
 #   4. AREG_BUILD_TYPE      := Release  (possible values: Release, Debug
@@ -25,19 +25,19 @@
 #   6. AREG_BUILD_EXAMPLES  := ON       (possible values: ON, OFF)
 #   7. AREG_BUILD_ALL       := ON       (possible values: ON, OFF)
 #   8. AREG_ENABLE_EXT      := ON       (possible values: ON, OFF)
-#   9. AREG_OUTPUT_DIR      := <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release      (possible alues: any full path)
-#  10. AREG_OUTPUT_BIN      := <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release/bin  (possible alues: any full path)
-#  11. AREG_OUTPUT_LIB      := <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release/lib  (possible alues: any full path)
+#   9. AREG_OUTPUT_DIR      := <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release      (possible values: any full path)
+#  10. AREG_OUTPUT_BIN      := <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release/bin  (possible values: any full path)
+#  11. AREG_OUTPUT_LIB      := <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release/lib  (possible values: any full path)
 #
 # Hint:
 #   AREG_COMPILER_FAMILY is a simple and short way to specify the compiler.
 #       - The value 'gnu' will set g++ and gcc compilers for C++ and C.
 #       - The value 'cygwin' will set g++ and gcc compilers for C++ and C.
-#       - The value 'clang' will set clang++-13 and clang-13 compilers for C++ and C.
+#       - The value 'llvm' will set clang++ and clang compilers for C++ and C.
 #       - The value 'msvc' will set Microsoft Visual C++ compiler for C++ and C.
 #
 # Example:
-# $ cmake -B build -DAREG_COMPILER_FAMILY=clang -DAREG_BINARY=Release -DAREG_BUILD_TESTS:BOOL=ON -DAREG_BUILD_EXAMPLES:BOOL=PFF
+# $ cmake -B build -DAREG_COMPILER_FAMILY=clang -DAREG_BINARY=Release -DAREG_BUILD_TESTS:BOOL=ON -DAREG_BUILD_EXAMPLES:BOOL=OFF
 # 
 # NOTE: if in command line specify AREG_CXX_COMPILER, the AREG_C_COMPILER
 #       must be specified as well. The both options must be specified
@@ -60,14 +60,14 @@ if (DEFINED AREG_COMPILER_FAMILY AND NOT ${AREG_COMPILER_FAMILY} STREQUAL "")
     elseif (${AREG_COMPILER_FAMILY} STREQUAL "cygwin")
         set(AREG_CXX_COMPILER "g++")
         set(AREG_C_COMPILER   "gcc")
-    elseif(${AREG_COMPILER_FAMILY} STREQUAL "clang")
+    elseif(${AREG_COMPILER_FAMILY} STREQUAL "llvm")
         set(AREG_CXX_COMPILER "clang++")
         set(AREG_C_COMPILER   "clang")
     elseif(${AREG_COMPILER_FAMILY} STREQUAL "msvc")
         set(AREG_CXX_COMPILER "cl")
         set(AREG_C_COMPILER   "cl")
     else()
-        message(WARNING ">>> Unrecognized compiler family ${AREG_COMPILER_FAMILY}, supported: \'gnu\', \'clang\', \'cygwin\', \'msvc\', set for \'gnu\'")
+        message(WARNING ">>> Unrecognized compiler family ${AREG_COMPILER_FAMILY}, supported: \'gnu\', \'llvm\', \'cygwin\', \'msvc\', set for \'gnu\'")
         set(AREG_CXX_COMPILER       "g++")
         set(AREG_C_COMPILER         "gcc")
     endif()
@@ -99,7 +99,7 @@ elseif(DEFINED AREG_COMPILER AND NOT AREG_COMPILER STREQUAL "")
             set(AREG_C_COMPILER     "clang")
         endif()
 
-        set(AREG_COMPILER_FAMILY    "clang")
+        set(AREG_COMPILER_FAMILY    "llvm")
 
     elseif (${AREG_COMPILER} STREQUAL "cl")
         set(AREG_COMPILER_FAMILY    "msvc")
@@ -110,13 +110,13 @@ elseif(DEFINED AREG_COMPILER AND NOT AREG_COMPILER STREQUAL "")
 
 else()
 
-    # Possible values: "gnu", "clang", "msvc", "cygwin"
+    # Possible values: "gnu", "llvm", "msvc", "cygwin"
     set(AREG_COMPILER_FAMILY    "gnu")
     
     set(AREG_CXX_COMPILER       "g++")
     set(AREG_C_COMPILER         "gcc")
 
-    message(STATUS ">>> Compile using default setings: Compiler family = \'${AREG_COMPILER_FAMILY}\', CXX compiler = \'${AREG_CXX_COMPILER}\', CC compiler = \'${AREG_C_COMPILER}\'")
+    message(STATUS ">>> Compile using default settings: Compiler family = \'${AREG_COMPILER_FAMILY}\', CXX compiler = \'${AREG_CXX_COMPILER}\', CC compiler = \'${AREG_C_COMPILER}\'")
 
 endif()
 
@@ -129,7 +129,7 @@ if (NOT DEFINED AREG_BUILD_TYPE OR AREG_BUILD_TYPE STREQUAL "")
 endif()
 
 # Set the AREG binary library type to compile.
-# Set the library type either anutmatically or manually in command line
+# Set the library type either automatically or manually in command line
 if (NOT DEFINED AREG_BINARY OR AREG_BINARY STREQUAL "")
     # Set "static" for static and "shared" for shared library
     set(AREG_BINARY "shared")
@@ -163,7 +163,7 @@ endif()
 # CPP standard for the projects
 set(AREG_CXX_STANDARD 17)
 
-# Set bitless here
+# Set bitness here
 set(AREG_BITNESS "64")
 
 # Specify CPU platform here

@@ -25,11 +25,11 @@ jobs:
             # compile AREG engine as a shared library with GNU g++ / gcc on Ubuntu Linux, disable AREG extensions
           - { name: linux-gnu-shared-noext, os: ubuntu-latest,  lib: shared,  family: gnu,    cxx: g++,     cc: gcc,    extend: 0}
             # compile AREG engine as a shared library with clang on Ubuntu Linux, enable AREG extensions
-          - { name: linux-clang-shared-ext, os: ubuntu-latest,  lib: shared,  family: clang,  cxx: clang++, cc: clang,  extend: 1}
+          - { name: linux-clang-shared-ext, os: ubuntu-latest,  lib: shared,  family: llvm,  cxx: clang++, cc: clang,  extend: 1}
             # compile AREG engine as a static library with clang on Ubuntu Linux, enable AREG extensions
-          - { name: linux-clang-static-ext, os: ubuntu-latest,  lib: static,  family: clang,  cxx: clang++, cc: clang,  extend: 1}
+          - { name: linux-clang-static-ext, os: ubuntu-latest,  lib: static,  family: llvm,  cxx: clang++, cc: clang,  extend: 1}
             # compile AREG engine as a shared library with clang on Ubuntu Linux, disable AREG extensions
-          - { name: linux-clang-shared-noext,os: ubuntu-latest, lib: shared,  family: clang,  cxx: clang++, cc: clang,  extend: 0}
+          - { name: linux-clang-shared-noext,os: ubuntu-latest, lib: shared,  family: llvm,  cxx: clang++, cc: clang,  extend: 0}
             # compile AREG engine as a shared with CYGWIN g++ / gcc on Windows, enable AREG extensions
           - { name: win-cygwin-shared-ext,  os: windows-latest, lib: shared,  family: cygwin, cxx: g++,     cc: gcc,    extend: 1}
             # compile AREG engine as a static with CYGWIN g++ / gcc on Windows, enable AREG extensions
@@ -76,7 +76,7 @@ jobs:
         if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
         run: echo "PATH=C:\cygwin64;C:\cygwin64\bin;C:\cygwin64\lib;%SYSTEMROOT%\system32;%PATH%" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
              
-      - name: Build with selected compiler family and enabled exnensions
+      - name: Build with selected compiler family and enabled extensions
         if: matrix.extend == '1'
         working-directory: ${{github.workspace}}
         # Build your program with the given configuration
