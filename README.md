@@ -133,7 +133,7 @@ The source codes of AREG framework and examples support following platform, CPU 
     <td nowrap><strong>CPU</strong></td><td><i>x86</i>, <i>x86_64</i>, <i>arm</i> and <i>aarch64</i>.</td>
   </tr>
   <tr>
-    <td nowrap><strong>Compilers</strong></td><td><i>GCC</i>, <i>Clang</i>, <i>MSVC</i> and <i>Cygwin CC</i>.</td>
+    <td nowrap><strong>Compilers</strong></td><td><i>GCC</i>, <i>Clang</i>, <i>MSVC</i> and <i>Cygwin gcc</i>.</td>
   </tr>
 </table>
 
@@ -215,11 +215,19 @@ Firstly, [clone the sources](#clone-sources) properly. Here we consider builds w
 
 ### Integrate for development
 
-Firstly, [clone the sources](#clone-sources) properly. To output compiled binaries in desired location, set these parameters when compile with `cmake` or `make`:
-- **AREG_OUTPUT_BIN** -- Change the default output folder of compiled shared libraries and executables.
-- **AREG_OUTPUT_LIB** -- Change the default output folder of compiled static libraries.
+Firstly, [clone the sources](#clone-sources) properly. Use following parameters to make compilation changes:
+1. To output compiled binaries in desired location, set these parameters when compile with `cmake` or `make`:
+   - **AREG_OUTPUT_BIN** -- Change the default output folder of compiled shared libraries and executables.
+   - **AREG_OUTPUT_LIB** -- Change the default output folder of compiled static libraries.
+2. To use various compilers by specifying compiler family or a cenrtain compiler:
+   - **AREG_COMPILER_FAMILY** -- Set compilers by specifying _gnu_, _llvm_, _cygwin_ or _msvc_.
+   - **AREG_COMPILER**        -- Set compiler by specifying _g++_, _gcc_, _clang++_, _clang_ or _cl_.
+3. To specify AREG library, use of extended objects and build type:
+   - **AREG_BINARY**     -- Set AREG library type by specifying _shared_ or _static_.
+   - **AREG_BUILD_TYPE** -- Set the build type by specifying _Debug_ or _Release_.
+   - **AREG_ENABLE_EXT** -- Set the flag to indicate the build of a special library with extended features.
 
-Other parameters like compiler, library type, build type, etc., are described in the appropriate `user` configuration files:
+More details of parameters for each tool are described in the appropriate `user` configuration files:
 - For builds with `cmake`, in the [conf/cmake/user.cmake](./conf/cmake/user.cmake) file.
 - For builds with `make`, in the [conf/make/user.mk](./conf/make/user.mk) file.
 - For builds with `MSBuild`, in the [conf/msvc/user.props](./conf/msvc/user.props) file.
@@ -235,7 +243,7 @@ $ cmake --build -j8
 
 In this scenario, the source codes are set up to build using `clang++`. The AREG engine is created as a static library with enabled extensions (may require additional dependencies). All applications are built in Debug mode, and the resulting binaries are stored in the `~/product/areg-sdk/` directory.
 
-The additoinal development guidance and step-by-step example to create a simple service-enabled application are described in [DEVELOP](./docs/DEVELOP.md). See [_Hello Service!_](./docs/DEVELOP.md#hello-service) as an example to create a service.
+The additional development guidance and step-by-step example to create a simple service-enabled application are described in [DEVELOP](./docs/DEVELOP.md). See [_Hello Service!_](./docs/DEVELOP.md#hello-service) as an example to create a service.
 
 ### Configure multicast router
 
@@ -244,7 +252,7 @@ Configure [_router.init_](./framework/areg/resources/router.init) file to set th
 connection.address.tcpip    = 127.0.0.1	# the address of mcrouter host
 connection.port.tcpip       = 8181      # the connection port of mcrouter
 ```
-The multicast router is required only for multiprocessing applications and can be ignored in case of multithrading. It forms a network and requires GPOS.
+The multicast router is required only for multiprocessing applications and can be ignored in case of multithreading. It forms a network and requires GPOS.
 
 ### Configure logging
 
@@ -292,26 +300,44 @@ AREG SDK can be used in a very large scope of multithreading and multiprocessing
 
 The AREG SDK is a distributed services solution that enables components to interact seamlessly across nodes on the network, appearing as if they are located within a single process. To define relationships and distribute services across processes, developers create runtime loadable models.
 
-The following is a demonstration of a static _model_ to start and stop services:
+The following is a demonstration of 2 _models_ defined in 2 different processes, where one _model_ defines **service provider** and the second is at the same time is a **service consumer** (client) and a **service provider**. For simplicity, let's name them `service.cpp` and `mixed.cpp`.
+
+A: _model of service provider component in **service.cpp**_:
 ```cpp
-// Defines static model with 2 services
+// This model provides the service in service.cpp file
 BEGIN_MODEL("MyModel")
 
   BEGIN_REGISTER_THREAD( "Thread1" )
     BEGIN_REGISTER_COMPONENT( "SystemShutdown", SystemShutdownService )
+      // Provides service "SystemShutdown", which is an implementation of NESystemShutdown::ServiceName interface
       REGISTER_IMPLEMENT_SERVICE( NESystemShutdown::ServiceName, NESystemShutdown::InterfaceVersion )
     END_REGISTER_COMPONENT( "SystemShutdown" )
   END_REGISTER_THREAD( "Thread1" )
 
-  BEGIN_REGISTER_THREAD( "Thread2" )
+END_MODEL("MyModel")
+```
+
+B: _model of service consumer and service provider (mixed) component in **mixed.cpp**_:
+```cpp
+// This model consumes the service in mixed.cpp file.
+BEGIN_MODEL("MyModel")
+
+  BEGIN_REGISTER_THREAD( "Thread1" )
     BEGIN_REGISTER_COMPONENT( "RemoteRegistry", RemoteRegistryService )
+      // Provides service "RemoteRegistry", which is an implementation of NERemoteRegistry::ServiceName interface
+      // and it has dependency of "SystemShutdown" (i.e. is a consumer / client)
       REGISTER_IMPLEMENT_SERVICE( NERemoteRegistry::ServiceName, NERemoteRegistry::InterfaceVersion )
       REGISTER_DEPENDENCY("SystemShutdown")
     END_REGISTER_COMPONENT( "RemoteRegistry" )
-  END_REGISTER_THREAD( "Thread2" )
+  END_REGISTER_THREAD( "Thread1" )
 
 END_MODEL("MyModel")
+```
+After declaration of services, each project can load them in the `main()` method and load them as it is shown in the next example.
 
+C: _common code_ for **service.cpp** and **mixed.cpp** files:
+```cpp
+// main() method to load model and start services.
 int main()
 {
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
@@ -329,11 +355,15 @@ int main()
     return 0;
 }
 ```
-This example uses MACRO to create a model `"MyModel"` with two services:
-1. Service with the _role_ `"SystemShutdown"` is registered in the thread `"Thread1"` and provides an interface with name `NESystemShutdown::ServiceName`.
-2.  Service with the _role_ `"RemoteRegistry"` is registered in the thread `"Thread2"`, provides an interface with name `NERemoteRegistry::ServiceName` and has dependency (i.e. _is a client_) of service with _role_ `"SystemShutdown"`.
 
-The services are started when load model by calling function `Application::loadModel("MyModel")`, and stopped when call `Application::unloadModel("MyModel")`. During model definition, two services can either be registered in the same thread or distributed across two processes. Regardless of the approach, the physical location of service components remains transparent, providing architectures with greater flexibility to distribute computing power. An example of developing a service and a client in one and multiple processes is in [**Hello Service!**](./docs/DEVELOP.md#hello-service) project described in the development guide.
+In these codes:
+1. In the file **service.cpp** the service with the _role_ `"SystemShutdown"` is registered, which is an implementation of interface `NESystemShutdown::ServiceName`.
+2.  In the file **mixed.cpp** the service with the _role_ `"RemoteRegistry"` is registered, which is an implementation of interface `NERemoteRegistry::ServiceName` and it requires the `"SystemShutdown"` service.
+3. The function `int main()` is identical in both files. It initializes resources, loads model and waits for the completion to unloads model and releases resources.
+
+After declaring these models, the developer creates an object `SystemShutdownService`, which is a service `"SystemShutdown"` **provider**, and an object `RemoteRegistryService`, which is a service `"RemoteRegistry"` **provider** and service `"SystemShutdown"` **consumer** (client) at the same time. There is no need for additional changes, because the services are automatically discovered when `mcrouter` starts. With this technique, the projects easily develop multiprocessing applications where provided services can be distributed and accessed remotely by consumers within the network formed by `mcrouter`.
+
+An example of developing a service provider and consumer in one and multiple processes is in [**Hello Service!**](./docs/DEVELOP.md#hello-service) project described in the development guide. As well see multiple [examples](./examples) of multiprocessing and multithreading applications.
 </details>
 
 ### Driverless devices
@@ -364,7 +394,7 @@ AREG engine automatically generates and delivers messages to the target and invo
 
 <details open><summary> Click to show / hide <code>digital twin</code>.</summary><br/>
 
-AREG framework's event-driven and service-oriented architecture, coupled with real-time communication, offers a robust solution for digital twin applications. This framework allows for virtualization, monitoring, and control of external devices, while also enabling immediate reaction to changes in the environment or device state. AREG's approach eliminates the need for additional communication layers, making it an ideal solution for emergency, security, and safety applications.
+AREG framework's event-driven and service-oriented architecture, coupled with real-time communication, offers a robust solution for digital twin applications. This framework allows for visualization, monitoring, and control of external devices, while also enabling immediate reaction to changes in the environment or device state. AREG's approach eliminates the need for additional communication layers, making it an ideal solution for emergency, security, and safety applications.
 
 </details>
 
