@@ -8,7 +8,8 @@
 # usage ......: addTestEx( <test name> <source file>) 
 # ---------------------------------------------------------------------------
 function(addTestEx testName testSource)
-    addExecutableEx(${testName} "${testSource}" "GTest::gtest_main")
+    list(APPEND google_test_libs "GTest::gtest_main" "GTest::gtest")
+    addExecutableEx(${testName} "${testSource}" "${google_test_libs}")
     gtest_discover_tests(${testName} DISCOVERY_TIMEOUT 60)
 endfunction(addTestEx testName testSource)
 

@@ -7,12 +7,15 @@
 # ###########################################################################
 # These parameters already should be set either from command line or by extracting from other params
 # 
-# MakefileRoot  	-- indicates the path of the root Makefile, should be extracted from $(abspath $(lastword $(MAKEFILE_LIST)))
-# AREG_COMPILER		-- gcc, g++, clang++, etc., the default is g++
-# AREG_BUILD_TYPE	-- 'Debug' or 'Release'. Parameters are either passed in the command line or extracted. The default is 'Release'
-# AREG_PLATFORM		-- x86, x86_64, arm, etc. Parameters are either passed in the command line or extracted. The default is current system
-# AREG_OS      		-- Windows, Linux, Darvin, etc. Parameters are either passed in the command line, or extracted. The default is current system
-# AREG_ENABLE_EXT	-- Enabled or disable AREG extensions, which may create additional library dependencies
+# MakefileRoot  		-- indicates the path of the root Makefile, should be extracted from $(abspath $(lastword $(MAKEFILE_LIST)))
+# AREG_COMPILER_FAMILY	-- simple way to set CXX and CC compilers. Possible values: gnu for g++/gcc, llvm for clang++/clang and cygwin to compile with GNU g++/gcc compilers under Windows.
+# AREG_COMPILER			-- Set the CXX and CC compilers. Possible values: gcc, g++, clang++ and clang. If C++ compiler is set, it will guess the CC compiler. The defaults are g++ / gcc compilers
+# AREG_OS      			-- 'Windows' or 'Linux' OS. The default is current system.
+# AREG_PLATFORM			-- Sets the CPU platform. Possible values: x86, x86_64, arm and aarch64. The default is current system
+# AREG_BITNESS			-- Bitness of binaries. Possible values: 32 or 64. The default is current system
+# AREG_BINARY			-- The binary type of AREG library. Possible values: 'shared' or 'static'. The default is 'shared'.
+# AREG_BUILD_TYPE		-- 'Debug' or 'Release' build types of codes. The default is 'Release'. The default is 'Release'
+# AREG_ENABLE_EXT		-- Enabled or disable AREG extensions, which may create additional library dependencies. By default is OFF.
 #
 # The following is a list of preprocessor directives, depending on the settings above:
 #   1. -DDEBUG or -DNDEBUG, depending whether AREG_BUILD_TYPE name is "Debug" or not, default is -DNDEBUG ("Release")
@@ -26,53 +29,70 @@
 # Toolchain
 # ###########################################################################
 
-AREG_CXX_COMPILER_ID:=
+AREG_COMPILER_ID	:=
 AREG_CXX_COMPILER   :=
 AREG_C_COMPILER		:=
 
-ifneq ($(AREG_COMPILER_FAMILY),)
+AREG_COMPILER_FAMILY:= $(if $(AREG_COMPILER_FAMILY),$(AREG_COMPILER_FAMILY),)
+AREG_COMPILER		:= $(if $(AREG_COMPILER),$(AREG_COMPILER),)
+AREG_OS 			:= $(if $(AREG_OS),$(AREG_OS),$(DETECTED_OS))
+AREG_PLATFORM		:= $(if $(AREG_PLATFORM),$(AREG_PLATFORM),$(DETECTED_PROCESSOR))
+AREG_BITNESS		:= $(if $(AREG_BITNESS),$(AREG_BITNESS),$(DETECTED_BITNESS))
+
+ifneq ($(strip $(AREG_COMPILER_FAMILY)),)
 $(info Selected compiler family '$(AREG_COMPILER_FAMILY)')
 
 	ifeq ($(AREG_COMPILER_FAMILY), gnu)
-		AREG_CXX_COMPILER_ID:= GNU
+		AREG_COMPILER_ID	:= GNU
 		AREG_CXX_COMPILER	:= g++
 		AREG_C_COMPILER		:= gcc
 	else ifeq ($(AREG_COMPILER_FAMILY), cygwin)
-		AREG_CXX_COMPILER_ID:= GNU
+		AREG_COMPILER_ID	:= GNU
 		AREG_CXX_COMPILER	:= g++
 		AREG_C_COMPILER		:= gcc
-	else ifeq ($(AREG_COMPILER_FAMILY), clang)
-		AREG_CXX_COMPILER_ID:= Clang
+	else ifeq ($(AREG_COMPILER_FAMILY), llvm)
+		AREG_COMPILER_ID	:= Clang
 		AREG_CXX_COMPILER	:= clang++
 		AREG_C_COMPILER		:= clang
 	else
-		AREG_CXX_COMPILER_ID:= GNU
+		AREG_COMPILER_ID	:= GNU
 		AREG_CXX_COMPILER	:= g++
 		AREG_C_COMPILER		:= gcc
 	endif
 
-else ifneq ($(AREG_COMPILER),)
+else ifneq ($(strip $(AREG_COMPILER)),)
 
 	ifeq ($(AREG_COMPILER),g++)
-		AREG_CXX_COMPILER_ID:= GNU
+		AREG_COMPILER_ID	:= GNU
 		AREG_CXX_COMPILER	:= $(AREG_COMPILER)
 		AREG_C_COMPILER		:= gcc
+		AREG_COMPILER_FAMILY:= gnu
+		ifeq ($(DETECTED_OS),Cygwin)
+			AREG_COMPILER_FAMILY:= cygwin
+		endif
 	else ifeq ($(AREG_COMPILER),gcc)
-		AREG_CXX_COMPILER_ID:= GNU
+		AREG_COMPILER_ID	:= GNU
 		AREG_CXX_COMPILER	:= $(AREG_COMPILER)
 		AREG_C_COMPILER		:= gcc
-	else ifeq ($(AREG_COMPILER),clang)
-		AREG_CXX_COMPILER_ID:= Clang
-		AREG_CXX_COMPILER	:= $(AREG_COMPILER)
-		AREG_C_COMPILER		:= clang
+		AREG_COMPILER_FAMILY:= gnu
+		ifeq ($(DETECTED_OS),Cygwin)
+			AREG_COMPILER_FAMILY:= cygwin
+		endif
 	else ifeq ($(AREG_COMPILER),clang++)
-		AREG_CXX_COMPILER_ID:= Clang
+		AREG_COMPILER_ID	:= Clang
 		AREG_CXX_COMPILER	:= $(AREG_COMPILER)
 		AREG_C_COMPILER		:= clang
+		AREG_COMPILER_FAMILY:= llvm
+	else ifeq ($(AREG_COMPILER),clang)
+		AREG_COMPILER_ID	:= Clang
+		AREG_CXX_COMPILER	:= $(AREG_COMPILER)
+		AREG_C_COMPILER		:= clang
+		AREG_COMPILER_FAMILY:= llvm
 	else
-		AREG_CXX_COMPILER_ID:= Unknown
+		AREG_COMPILER_ID	:= Unknown
 		AREG_CXX_COMPILER	:= $(AREG_COMPILER)
 		AREG_C_COMPILER		:= $(AREG_COMPILER)
+		AREG_COMPILER_FAMILY:= Unknown
 	endif
 
 else
@@ -80,11 +100,12 @@ else
 	
 	AREG_CXX_COMPILER	:= g++
 	AREG_C_COMPILER		:= gcc
-	AREG_CXX_COMPILER_ID:= GNU
-    
+	AREG_COMPILER_ID	:= GNU
+	AREG_COMPILER_FAMILY:= gnu
+
 	# AREG_CXX_COMPILER	:= clang++
 	# AREG_C_COMPILER	:= clang
-	# AREG_COMPILER_FAMILY:= Clang
+	# AREG_COMPILER_FAMILY:= llvm
 
 endif
 
@@ -92,30 +113,23 @@ CXX := $(AREG_CXX_COMPILER)
 CC	:= $(AREG_C_COMPILER)
 $(info >>> Selected compilers: CXX = $(CXX), CC = $(CC))
 
-ifndef $(AREG_ENABLE_EXT)
-	AREG_ENABLE_EXT	:= 0
-else ifeq ($(AREG_ENABLE_EXT),)
-	AREG_ENABLE_EXT	:= 0
-endif
-
+# if AREG_ENABLE_EXT for extensions is set, use the value.
+# Otherwise, disable extensions by setting 0
+AREG_ENABLE_EXT := $(if $(AREG_ENABLE_EXT),$(AREG_ENABLE_EXT),0)
 
 # ###########################################################################
 # Settings
 # ###########################################################################
 
-# Target settings. Modify AREG_BINARY to compile target areg framewor library
+# Target settings. Modify AREG_BINARY to compile target areg framework library
 # either as a "static" or a "shared" library
-AREG_BINARY := static
-# AREG_BINARY := shared
+# AREG_BINARY := static
+AREG_BINARY := $(if $(AREG_BINARY),$(AREG_BINARY),shared)
 
 # Modify the 'AREG_BUILD_TYPE' to change the "Release" or "Debug" build configuration
-AREG_BUILD_TYPE := Debug
-# AREG_BUILD_TYPE := Release
+# AREG_BUILD_TYPE := Debug
+AREG_BUILD_TYPE := $(if $(AREG_BUILD_TYPE),$(AREG_BUILD_TYPE),Release)
 
-AREG_OUTPUT_DIR	=
-AREG_OS 		= $(DETECTED_OS)
-AREG_PLATFORM 	= $(DETECTED_PROCESSOR)
-AREG_BITNESS	= $(DETECTED_BITNESS)
 
 # ###########################################################################
 #           AERG SDK globals
@@ -133,16 +147,7 @@ AREG_BUILD_ROOT 	:= $(AREG_SDK_ROOT)
 
 # User can set specific preprocessor define symbols.
 # The 'ENABLE_TRACES' enables logs in the binaries.
-AREG_USER_DEFINES		:= -DENABLE_TRACES
-
-# User can set specific include paths, must be prefixed with '-I' if used
-AREG_USER_DEF_INCLUDES	:= 
-
-# User can set the specific library paths to search libraries
-AREG_USER_DEF_LIB_PATHS	:= 
-
-# User can set specific libraries to link.
-AREG_USER_DEF_LIBS     	:= 
+AREG_USER_DEFINES	:= -DENABLE_TRACES
 
 # User output folder
-AREG_USER_DEF_OUTPUT_DIR:= product
+AREG_USER_PRODUCTS	:= product

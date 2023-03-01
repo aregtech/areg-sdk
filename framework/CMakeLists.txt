@@ -32,7 +32,9 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(areg PRIVATE -fPIC)
 endif()
 
+# Linker options
 target_link_libraries(areg PRIVATE ${AREG_LDFLAGS})
+
 # Library configs
 set_target_properties(areg PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON )
 
