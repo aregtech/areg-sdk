@@ -96,7 +96,7 @@ AREG is designed to provide a homogeneous solution for multithreading, multiproc
 
 <div align="center"><a href="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-services.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-services.png" alt="AREG SDK distributed services" style="width:70%;height:70%"/></a></div>
 
-> 💡 Currently AREG communication engine supports _Local_ (multithreading) and _Public_ (multiprocessing) service categories.
+> 💡 Currently AREG engine supports _Local_ (multithreading) and _Public_ (multiprocessing) service categories.
 
 AREG forms a fault-tolerant system that automatically discovers and automates communications between services, allowing developers to focus on application logic development. The system ensures:
 * The crash of one application does not affect the entire system.
@@ -215,17 +215,17 @@ Firstly, [clone the sources](#clone-sources) properly. Here we consider builds w
 
 ### Integrate for development
 
-Firstly, [clone the sources](#clone-sources) properly. Use following parameters to make compilation changes:
-1. To output compiled binaries in desired location, set these parameters when compile with `cmake` or `make`:
-   - **AREG_OUTPUT_BIN** -- Change the default output folder of compiled shared libraries and executables.
-   - **AREG_OUTPUT_LIB** -- Change the default output folder of compiled static libraries.
-2. To use various compilers by specifying compiler family or a cenrtain compiler:
-   - **AREG_COMPILER_FAMILY** -- Set compilers by specifying _gnu_, _llvm_, _cygwin_ or _msvc_.
-   - **AREG_COMPILER**        -- Set compiler by specifying _g++_, _gcc_, _clang++_, _clang_ or _cl_.
-3. To specify AREG library, use of extended objects and build type:
-   - **AREG_BINARY**     -- Set AREG library type by specifying _shared_ or _static_.
-   - **AREG_BUILD_TYPE** -- Set the build type by specifying _Debug_ or _Release_.
-   - **AREG_ENABLE_EXT** -- Set the flag to indicate the build of a special library with extended features.
+Firstly, [clone the sources](#clone-sources) properly. Use following parameters to change compilation default settings:
+
+| Parameter | Description, possible values |
+| --- | --- |
+| **AREG_OUTPUT_BIN** | Change the default output folder of compiled shared libraries and executables. |
+| **AREG_OUTPUT_LIB** | Change the default output folder of compiled static libraries. |
+| **AREG_COMPILER_FAMILY** | Set compilers by specifying _gnu_, _llvm_, _cygwin_ or _msvc_. |
+| **AREG_COMPILER** | Set compiler by specifying _g++_, _gcc_, _clang++_, _clang_ or _cl_. |
+| **AREG_BINARY** | Set AREG library type by specifying _shared_ or _static_. |
+| **AREG_BUILD_TYPE** | Set the build type by specifying _Debug_ or _Release_. |
+| **AREG_ENABLE_EXT** | Set the flag to indicate the build of a special library with extended features. |
 
 More details of parameters for each tool are described in the appropriate `user` configuration files:
 - For builds with `cmake`, in the [conf/cmake/user.cmake](./conf/cmake/user.cmake) file.
@@ -309,7 +309,7 @@ BEGIN_MODEL("MyModel")
 
   BEGIN_REGISTER_THREAD( "Thread1" )
     BEGIN_REGISTER_COMPONENT( "SystemShutdown", SystemShutdownService )
-      // Provides service "SystemShutdown", which is an implementation of NESystemShutdown::ServiceName interface
+      // Provide service "SystemShutdown", which implements NESystemShutdown::ServiceName interface
       REGISTER_IMPLEMENT_SERVICE( NESystemShutdown::ServiceName, NESystemShutdown::InterfaceVersion )
     END_REGISTER_COMPONENT( "SystemShutdown" )
   END_REGISTER_THREAD( "Thread1" )
@@ -324,7 +324,7 @@ BEGIN_MODEL("MyModel")
 
   BEGIN_REGISTER_THREAD( "Thread1" )
     BEGIN_REGISTER_COMPONENT( "RemoteRegistry", RemoteRegistryService )
-      // Provides service "RemoteRegistry", which is an implementation of NERemoteRegistry::ServiceName interface
+      // Provide service "RemoteRegistry", which implements NERemoteRegistry::ServiceName interface
       // and it has dependency of "SystemShutdown" (i.e. is a consumer / client)
       REGISTER_IMPLEMENT_SERVICE( NERemoteRegistry::ServiceName, NERemoteRegistry::InterfaceVersion )
       REGISTER_DEPENDENCY("SystemShutdown")
@@ -340,8 +340,7 @@ C: _common code_ for **service.cpp** and **mixed.cpp** files:
 // main() method to load model and start services.
 int main()
 {
-    // Initialize application, enable logging, servicing, routing, timer and watchdog.
-    // Use default settings.
+    // Initialize using default settings: logging, routing, timer and watchdog.
     Application::initApplication( );
     // load model to start service components
     Application::loadModel("MyModel");
@@ -357,13 +356,13 @@ int main()
 ```
 
 In these codes:
-1. In the file **service.cpp** the service with the _role_ `"SystemShutdown"` is registered, which is an implementation of interface `NESystemShutdown::ServiceName`.
-2.  In the file **mixed.cpp** the service with the _role_ `"RemoteRegistry"` is registered, which is an implementation of interface `NERemoteRegistry::ServiceName` and it requires the `"SystemShutdown"` service.
-3. The function `int main()` is identical in both files. It initializes resources, loads model and waits for the completion to unloads model and releases resources.
+1. **service.cpp** contains model to register service `"SystemShutdown"` that implements interface `NESystemShutdown::ServiceName`.
+2.  **mixed.cpp** contains model to register service `"RemoteRegistry"` that implements interface `NERemoteRegistry::ServiceName` and consumes (requires) service `"SystemShutdown"`.
+3. `int main()` is identical in both files. It initializes resources, loads model and waits for the completion.
 
-After declaring these models, the developer creates an object `SystemShutdownService`, which is a service `"SystemShutdown"` **provider**, and an object `RemoteRegistryService`, which is a service `"RemoteRegistry"` **provider** and service `"SystemShutdown"` **consumer** (client) at the same time. There is no need for additional changes, because the services are automatically discovered when `mcrouter` starts. With this technique, the projects easily develop multiprocessing applications where provided services can be distributed and accessed remotely by consumers within the network formed by `mcrouter`.
+The developers should create `SystemShutdownService` and `RemoteRegistryService` objects that implement the business logic of _request_ methods of provided and and _response_ methods of used service interfaces. When these processes start, the services are automatically discovered via `mcrouter`. With this technique, the projects easily develop multiprocessing applications where provided services can be distributed and accessed remotely within the network formed by `mcrouter`.
 
-An example of developing a service provider and consumer in one and multiple processes is in [**Hello Service!**](./docs/DEVELOP.md#hello-service) project described in the development guide. As well see multiple [examples](./examples) of multiprocessing and multithreading applications.
+An example of developing a service provider and consumer in one and multiple processes is in [**Hello Service!**](./docs/DEVELOP.md#hello-service) described in the development guide. As well there are multiple [examples](./examples) of multiprocessing and multithreading applications.
 </details>
 
 ### Driverless devices
