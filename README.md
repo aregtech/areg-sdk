@@ -179,7 +179,7 @@ Firstly, [clone the sources](#clone-sources) properly. To build with [cmake](htt
 $ cmake -B ./build
 
 # Step 2: Compile sources.
-$ cmake --build ./build -j8
+$ cmake --build ./build -j 8
  ```
 
 ### Build with `make`
@@ -187,7 +187,7 @@ $ cmake --build ./build -j8
 Firstly, [clone the sources](#clone-sources) properly. To build with [make](https://www.gnu.org/software/make/), using default (`g++`) compiler and options, open _Terminal_ in `areg-sdk` folder and take the steps:
 ```bash
 # Compile sources with default options: g++ compiler, release build, enabled examples and unit tests
-$ make -j8
+$ make -j 8
 ```
 
 ### Build with `msbuild`
@@ -203,7 +203,7 @@ $ MSBuild .
 Firstly, [clone the sources](#clone-sources) properly. Here we consider builds with [Microsoft Visual Studio](https://visualstudio.microsoft.com/) and [Visual Studio Code](https://code.visualstudio.com/).
 
 1. Open [`areg-sdk.sln`](./areg-sdk.sln) solution file in _Microsoft Visual Studio_ and build the solution with MSVC.
-2. Open `areg-sdk` folder in _Visual Studio Code_ ==> select [`CMakeLists.txt`](./CMakeLists.txt) in _Explorer_ ==> mouse right click ==> select _Configure All Projects_ ==> wait until configuration succeeds ==> mouse right click on `CMakeLists.txt` ==> select _Build All Projects_ to build the sources with default (`g++`) compiler and options.
+2. Open `areg-sdk` folder in **Visual Studio Code** => select [**CMakeLists.txt**](./CMakeLists.txt) in **Explorer** => mouse right click => click on **Configure All Projects** in menu => wait for completion => mouse right click on **CMakeLists.txt** => click on **Build All Projects** to build the sources with default (`g++`) compiler and default options.
 
 <div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
@@ -238,7 +238,7 @@ An example to configure and compile codes with `cmake`:
 $ cmake -B ./build -DAREG_COMPILER=clang++ -DAREG_BINARY=static -DAREG_BUILD_TYPE=Debug -DAREG_ENABLE_EXT:BOOL=ON AREG_OUTPUT_BIN="~/product/areg-sdk/"
 
 # Step 2: build applications
-$ cmake --build -j8
+$ cmake --build -j 8
 ```
 
 In this scenario, the source codes are set up to build using `clang++`. The AREG engine is created as a static library with enabled extensions (may require additional dependencies). All applications are built in Debug mode, and the resulting binaries are stored in the `~/product/areg-sdk/` directory.
