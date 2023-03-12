@@ -326,30 +326,222 @@ In this example:
 
 ### Model
 
-The AREG engine uses a service-oriented **model** to structure relationships between threads and provided/consumed services. There are two types of models: static (_predefined_) and dynamic (_at runtime_), and an application can have multiple models. When a model is defined, developers can load all or specific models at runtime to automatically instantiate threads, components, and services in the application. Each thread must have at least one component, and each component must have at least one service provider or service consumer object. Components can extend or contain (_delegate_) service provider/consumer objects, and the model should list the provided and consumed services.
+The AREG engine employs a service-oriented architecture to organize the relationships between threads, service providers and service consumers, and these are defined in a **model**. There are two types of models: _static_, which are predefined, and dynamic, which are created at runtime. An application can have multiple models, and developers can load specific models at runtime to automatically create threads, components, and services.
 
-When a model is no longer needed, it can be unloaded, and the system will stop all threads and shutdown all services registered in that model. This tutorial provides examples of applications that load and unload predefined models, demonstrating how models define the architecture and relationship of components, and how services can be distributed for optimal computing power. The examples show service providers and consumers running in the same thread, in separate threads, and in separate processes. In case of separate processes, the service is _Public_ and can be accessed by any service consumer registered in the same network via `mcrouter`.
-
-> 💡 Note that example applications with models can be found in the [00_helloservice](../examples/00_helloservice/) directory.
+Each thread must have at least one component, and each component must have at least one service provider or service consumer object. Components can extend or contain service provider/consumer objects, and the model should list the provided and consumed services. When a model is no longer needed, it can be unloaded, and the system will stop all threads and shut down all services registered in that model.
 
 To declare _static models_ in an application, follow these guidelines:
 
-- Each application must have at least one model with a unique name within the application.
-- To declare a model, use the **BEGIN_MODEL** and **END_MODEL** macro, and specify the unique name of the model.
-- Each model must have at least one thread with a unique name within the application.
-- To declare a thread, use the **BEGIN_REGISTER_THREAD** and **END_REGISTER_THREAD** macro and specify the unique name of the thread. You can also specify a _watchdog timeout_ in the **BEGIN_REGISTER_THREAD** macro.
-- Each thread must have at least one component with a unique name (known as _role name_). 
+- Each application must have at least one model with a unique name.
+- To declare a model, use the **BEGIN_MODEL** and **END_MODEL** macro and specify the name of the model.
+- Each model must have at least one thread with a unique name.
+- To declare a thread, use the **BEGIN_REGISTER_THREAD** and **END_REGISTER_THREAD** macro and specify the name of the thread. You can also specify a _watchdog timeout_ in the **BEGIN_REGISTER_THREAD** macro.
+- Each thread must have at least one component with a unique name (known as _Role Name_). 
     - If the component provides or consumes only _Local_ services, the component name should be unique within the application.
-    - If the component provides or consumes at least one _Public_ service, the component should have unique name within the entire network.
-- To declare a component, use the **BEGIN_REGISTER_COMPONENT** and **END_REGISTER_COMPONENT** macro, specify the name of the component (_Role Name_), and additionally in **BEGIN_REGISTER_COMPONENT** macro specify the name of the component object, which is bind with that _Role Name_.
+    - If the component provides or consumes at least one _Public_ service, the component should have a unique name within the entire network.
+- To declare a component, use the **BEGIN_REGISTER_COMPONENT** and **END_REGISTER_COMPONENT** macro, specify the component _Role Name_, and in the **BEGIN_REGISTER_COMPONENT** macro, specify the name of the component object that is bound to that _Role_.
 - Each component must have at least one provided or consumed service interface.
-- To declare a provided service, use the **REGISTER_IMPLEMENT_SERVICE** macro and specify the name of the implemented _Service Interface_.
-    - A component can provide multiple service interfaces, and all names should be unique within the same component.
-    - The same provided service interface can be repeated within a model, but should be unique within the same thread.
-- To declare a consumed service, use the **REGISTER_DEPENDENCY** macro and specify the _Role Name_ of the dependent component.
-    - A component can have multiple consumers of the same service interface, and the dependency only needs to be declared once.
-    - A component can provide and consume the same service interface.
+- To declare a _Service Provider_, use the **REGISTER_IMPLEMENT_SERVICE** macro and specify the name of the implemented _Service Interface_.
+    - A component can provide multiple Service _Interfaces_, and all should be unique within the same component.
+    - The same _Service Interface_ can be used multiple times, but should be unique within one thread.
+- To declare a _Service Consumer_, use the **REGISTER_DEPENDENCY** macro and specify the _Role Name_ of the dependent component.
+    - A component can have multiple consumers of the same Service Interface, and the dependency only needs to be declared once.
+    - A component can provide and consume the same Service Interface.
 
-> 💡 Note that provided services are registered by _Service Interface Name_, while consumed services are accessed by component _Role Name_. This is because the same service interface can have multiple implementations, but the service consumer should know which service object it is using.
+> 💡 Note that provided services are identified by their _Service Interface Name_. On the other hand, when accessing used services, the consumer uses the _Role Name_ of the component. This is necessary because a single _Service Interface_ can have multiple implementations, and the consumer needs to reference the specific component by its unique name, which is the _Role Name_ of the service provider component.
+
+The source codes of the examples can be found in the  [00_helloservice](../examples/00_helloservice/) directory. All example projects use the same [ServiceComponent](../examples/00_helloservice/common/src/ServiceComponent.hpp) and [ClientComponent](../examples/00_helloservice/common/src/ClientComponent.hpp) objects.
+
+> 💡 **IMPORTANT:** All example projects must be linked with **areg library** (_shared_ or _static_).
 
 ### Project [`onethread`](../examples/00_helloservice/onethread/)
+
+> 💡 The sources of the example are available in the [this file](../examples/00_helloservice/onethread/src/main.cpp).
+
+In this example, we define a _model_ where both service provider and consumer are running in the same thread of the same process. The service is automatically started when the model is loaded. Create `onethread` project, create `main.cpp` file, copy and paste following code, compile and run:
+```cpp
+// onethread/src/main.cpp
+
+#include "areg/base/GEGlobal.h"
+#include "areg/appbase/Application.hpp"
+#include "areg/component/ComponentLoader.hpp"
+
+#include "common/src/ServiceComponent.hpp"
+#include "common/src/ClientComponent.hpp"
+
+// Define the model and describe components
+BEGIN_MODEL("ServiceModel")
+
+    BEGIN_REGISTER_THREAD( "Thread1", NECommon::WATCHDOG_IGNORE )
+        // register service provider component
+        BEGIN_REGISTER_COMPONENT("ServiceComponent", ServiceComponent )
+            REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
+        END_REGISTER_COMPONENT( "ServiceComponent" )
+        
+        // register service consumer component
+        BEGIN_REGISTER_COMPONENT( "ServiceClient", ClientComponent )
+            REGISTER_DEPENDENCY( "ServiceComponent" )
+        END_REGISTER_COMPONENT( "ServiceClient" )
+    END_REGISTER_THREAD( "Thread1" )
+
+END_MODEL("ServiceModel")
+
+int main( void )
+{
+    constexpr char const model[]{ "ServiceModel" };
+    
+    Application::initApplication( );  // initialize internals
+    Application::loadModel(model);    // load model, initialize components
+    Application::waitAppQuit();       // wait to receive quit signal
+    Application::unloadModel(model);  // stop and unload components
+    Application::releaseApplication();// release resources
+
+    return 0;
+}
+```
+
+### Project [`twothreads`](../examples/00_helloservice/twothreads/)
+
+> 💡 The sources of the example are available in the [this file](../examples/00_helloservice/twothreads/src/main.cpp).
+
+In this example, we define a _model_ where both service provider and consumer are running in the separate threads of the same process. The service is automatically started when the model is loaded.  Create `onethread` project, create `main.cpp` file, copy and paste following code, compile and run:
+```cpp
+// twothreads/src/main.cpp
+
+#include "areg/base/GEGlobal.h"
+#include "areg/appbase/Application.hpp"
+#include "areg/component/ComponentLoader.hpp"
+
+#include "common/src/ServiceComponent.hpp"
+#include "common/src/ClientComponent.hpp"
+
+// Define the model and describe components
+BEGIN_MODEL("ServiceModel")
+    BEGIN_REGISTER_THREAD( "Thread1", NECommon::WATCHDOG_IGNORE )
+        // register service provider component
+        BEGIN_REGISTER_COMPONENT( "ServiceComponent", ServiceComponent )
+            REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
+        END_REGISTER_COMPONENT( "ServiceComponent" )
+    END_REGISTER_THREAD( "Thread1" )
+
+    BEGIN_REGISTER_THREAD( "Thread2", NECommon::WATCHDOG_IGNORE )
+        // register service consumer component
+        BEGIN_REGISTER_COMPONENT( "ServiceClient", ClientComponent )
+            REGISTER_DEPENDENCY( "ServiceComponent" )
+        END_REGISTER_COMPONENT( "ServiceClient" )
+    END_REGISTER_THREAD( "Thread2" )
+
+END_MODEL("ServiceModel")
+
+int main( void )
+{
+    constexpr char const model[]{ "ServiceModel" };
+    
+    Application::initApplication( );  // initialize internals
+    Application::loadModel(model);    // load model, initialize components
+    Application::waitAppQuit();       // wait to receive quit signal
+    Application::unloadModel(model);  // stop and unload components
+    Application::releaseApplication();// release resources
+
+    return 0;
+}
+```
+
+### Project [`multiprocess`](../examples/00_helloservice/multiprocess/)
+
+In this example, we define a _model_ where service provider and service consumer are running in the separate processes. The services provider and consumer automatically started when the model is loaded. For each process (application) we need to create separate project.
+
+#### [`serviceproc`](../examples/00_helloservice/multiprocess/serviceproc/) service provider application
+
+> 💡 The sources of the example are available in the [this file](../examples/00_helloservice/multiprocess/serviceproc/src/main.cpp).
+
+Since this application only provides the service, we define a model and register the service provider component. Create `serviceproc` project, create `main.cpp` file, copy and paste following code, and compile:
+```cpp
+// multiprocess/serviceproc/src/main.cpp
+
+#include "areg/base/GEGlobal.h"
+#include "areg/appbase/Application.hpp"
+#include "areg/component/ComponentLoader.hpp"
+
+#include "common/src/ServiceComponent.hpp"
+
+// Define the model and describe service provide component
+BEGIN_MODEL("ServiceModel")
+
+    BEGIN_REGISTER_THREAD( "aThread", NECommon::WATCHDOG_IGNORE )
+        BEGIN_REGISTER_COMPONENT( "ServiceComponent", ServiceComponent )
+            REGISTER_IMPLEMENT_SERVICE( NEHelloService::ServiceName, NEHelloService::InterfaceVersion )
+        END_REGISTER_COMPONENT( "ServiceComponent" )
+    END_REGISTER_THREAD( "aThread" )
+
+END_MODEL("ServiceModel")
+
+int main( void )
+{
+    constexpr char const model[]{ "ServiceModel" };
+    
+    Application::initApplication( );  // initialize internals
+    Application::loadModel(model);    // load model, initialize components
+    Application::waitAppQuit();       // wait to receive quit signal
+    Application::unloadModel(model);  // stop and unload components
+    Application::releaseApplication();// release resources
+
+    return 0;
+}
+```
+
+#### [`clientproc`](../examples/00_helloservice/multiprocess/clientproc/) service consumer application
+
+> 💡 The sources of the example are available in the [this file](../examples/00_helloservice/multiprocess/clientproc/src/main.cpp).
+
+Since this application only consumes the service, we define a model and register the service consumer component. Create `clientproc` project, create `main.cpp` file, copy and paste following code, and compile:
+```cpp
+// multiprocess/clientproc/src/main.cpp
+
+#include "areg/base/GEGlobal.h"
+#include "areg/base/NEUtilities.hpp"
+#include "areg/base/String.hpp"
+#include "areg/appbase/Application.hpp"
+#include "areg/component/ComponentLoader.hpp"
+
+#include "common/src/ClientComponent.hpp"
+
+// Generate unique names to run multiple service consumer instances.
+const String _client(NEUtilities::generateName("ServiceClient"));
+
+// Define the model and describe service consumer component
+BEGIN_MODEL("ServiceModel")
+
+    BEGIN_REGISTER_THREAD( "aThread", NECommon::WATCHDOG_IGNORE )
+        BEGIN_REGISTER_COMPONENT( _client, ClientComponent )
+            REGISTER_DEPENDENCY( "ServiceComponent" )
+        END_REGISTER_COMPONENT( _client )
+    END_REGISTER_THREAD( "aThread" )
+
+END_MODEL("ServiceModel")
+
+int main( void )
+{
+    constexpr char const model[]{ "ServiceModel" };
+    
+    Application::initApplication( );  // initialize internals
+    Application::loadModel(model);    // load model, initialize components
+    Application::waitAppQuit();       // wait to receive quit signal
+    Application::unloadModel(model);  // stop and unload components
+    Application::releaseApplication();// release resources
+
+    return 0;
+}
+```
+
+#### Test `multiprocess`
+
+After successfully compiling **serviceproc** and **clientproc**, you can now start and establish communication between the processes. To begin, start [**mcrouter**](../framework/mcrouter/) locally, then start **serviceproc** and **clientproc**. Keep in mind that:
+
+- The order in which the processes are started is not important.
+- Only one instance of **serviceproc** should be started, as we have created a fixed-name _Public_ service.
+- Multiple instances of **clientproc** can be started simultaneously, as we generate a unique name for each service consumer.
+- If you configure [_router.init_](../framework/mcrouter/resources/router.init) properly and specify the _IP address_ of **mcrouter**, these processes can also run on remote machines.
+- Even if **serviceproc** and **clientproc** are compiled for different platforms, they can still communicate by establishing a remote connection with **mcrouter**.
+
+By following these guidelines, you can easily and effectively develop multithreading and multiprocessing applications while ensuring seamless communication between them. It is possible to create multiple services and distribute them throughout the network, allowing connected Things to serve as lightweight service providers and consumers. Computing power can be easily distributed among processes and machines, and applications can be developed for multiple platforms, even mix the platforms. Creating simulation applications is also simplified by focusing on the Service Interface API. Additionally, you have the flexibility to decide whether to provide services as _Local_ or _Public_.

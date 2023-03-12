@@ -3,13 +3,10 @@
  * \brief   Runs service in the process.
  **/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/NEUtilities.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
 
 #include "common/src/ServiceComponent.hpp"
-
-#include <string>
 
 // Use these options if compile for Windows with MSVC
 // It links with areg library (dynamic or static) and generated static library
