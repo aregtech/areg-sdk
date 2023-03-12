@@ -16,7 +16,7 @@ This document is a developer guide and describes how to develop a service enable
     - [Structures](#structures)
     - [Enumerations](#enumerations)
     - [Imported types](#imported-types)
-    - [Defined containers](#defined-containers)
+    - [Containers](#containers)
 - [Attributes](#attributes)
 - [Requests, responses and broadcasts](#requests-responses-and-broadcasts)
     - [Requests](#requests)
@@ -28,65 +28,68 @@ This document is a developer guide and describes how to develop a service enable
 - [Generated codes](#generated-codes)
 - [Modeling and service initialization](#modeling-and-service-initialization)
 - [Hello Service!](#hello-service)
-- [Service Interface](#service-interface)
-- [Generate codes](#generate-codes)
-- [Develop the service provider](#develop-the-service-provider)
-- [Develop the service client](#develop-the-service-client)
-- [Create and load model](#create-and-load-model)
-    - [Model with single thread](#model-with-single-thread)
-    - [Model with multiple threads](#model-with-multiple-threads)
-    - [Model of separate processes](#model-of-separate-processes)
-- [Make the build](#make-the-build)
+    - [Service Interface](#service-interface)
+    - [Generate codes](#generate-codes)
+    - [Develop the service provider](#develop-the-service-provider)
+    - [Develop the service client](#develop-the-service-client)
+    - [Create and load model](#create-and-load-model)
+        - [Model with single thread](#model-with-single-thread)
+        - [Model with multiple threads](#model-with-multiple-threads)
+        - [Model of separate processes](#model-of-separate-processes)
+    - [Make the build](#make-the-build)
 - [Testing](#testing)
 - [Contact us!](#contact-us)
+
+---
 
 ## File structure
 
 Brief description of AREG SDK file structure:
-1. The framework of AREG SDK is in the [framework/areg](../framework/areg) directory.
-2. All high level subdirectories in [framework/areg](../framework/areg) contain classes that can be used by developers.
-3. All subdirectories named `private` contain code implementations and class declarations that are for internal use and not designed to be used outside of AREG framework.
-4. The multicast router of AREG SDK is in the [framework/mcrouter](../framework/mcrouter) directory.
-5. The examples to demonstrate AREG SDK features are in the [examples](../examples) directory.
-6. The tools to use are declared in the [tools](../tools) directory.
-7. The configuration files to customize compilation are in [conf](../conf) directory.
-8. The documentation is in the [docs](../docs) directory.
+1. The framework of AREG SDK is in the [framework/areg](../framework/areg/) directory.
+2. High level subdirectories in [framework/areg](../framework/areg/) have developer-usable classes.
+3. All `private` subdirectories in framework contain code for internal use only.
+4. The [framework/mcrouter](../framework/mcrouter/) directory is multicast router implementation.
+5. The [framework/extensions](../framework/extensions/) directory has extended objects that may need extra libraries.
+6. The [examples](../examples/) directory contains demonstration of AREG engine features.
+7. The [tests](../tests/] directory contains _Unit Tests_ and later will contain benchmark tests.
+8. The [tools](../tools/) directory contains programs like design (in progress) and code generator.
+9. The [conf](../conf) directory contains build configuration with `cmake`, `make` and `msbuild`.
+10. The [docs](../docs) directory contains documentation.
+11. The detailed documentations are in [Wiki](https://github.com/aregtech/areg-sdk/wiki) (in progress).
 
-Some more information about file structure is in [this](./readme.md) document.
+---
 
 ## Service interface prototype
 
-AREG SDK is an interface-centric real-time communication engine where connected Things provide services, so that they act as ultra-small servers and automatically form a network of distributed services. The service providers (servers) and service clients are software components, whose physical location, discovery and connection are transparent, automated and fully handled by the AREG framework. The services provide data and process requests. The service clients receive responses as a reply on requests, and can dynamically subscribe and unsubscribe on service data. The data, request and responses are defined as service interface (service API), which can be defined in XML format _service interface_ prototype document, and has following sections:
+The AREG (_Automated Real-time Event Grid_) is an interface-centric real-time communication engine that enables connected Things to act as ultra-small servers and form a distributed network of services. The AREG engine handles the physical location, discovery, and connection of service providers and clients, making communication automatic and transparent. Services process requests and provide data, while clients receive responses and may dynamically subscribe and unsubscribe to data. The service interface (service API) is defined in an XML prototype document, which includes following sections:
 1. The service interface overview.
 2. The service specific data types.
-3. The service specific data is called _service attributes_.
-4. The service specific methods, which consists of _requests_, _responses_ and _broadcasts_.
+3. The service specific data called _service attributes_.
+4. The service specific methods called _requests_, _responses_ and _broadcasts_.
 5. The service specific constants.
-6. The includes required to develop the service.
+6. Additional includes required by service interface.
 
-The service interfaces defined in prototype XML document is used to generate servicing base objects, which developers can extend to implement service specific functionalities. An example of the _service interface_ prototype with sections is described in the [Sample.siml](./Sample.siml) file.
+The interface prototype XML document is used by _code generator_ to create base objects to extend and implement service business logic. The [Sample.siml](./Sample.siml) file provides an example of the service interface prototype.
 
-> 💡 The Service Interface design GUI tool is in development state and will be available in next releases as a free-ware.
+> 💡 The Service Interface design GUI tool is in development state.
 
 ### Public and Local services
 
-The following example defines a _Public_ (used for IPC) interface defined for _Sample_ service.
+The following example defines a _Public_ (used for IPC) interface:
 ```xml
 <Overview ID="1" Name="Sample" Version="1.0.0" isRemote="true">
-    <Description>This is an example of defining service interface.</Description>
+    <Description>This is an example of service interface definition.</Description>
 </Overview>
 ```
-The `<Overview>` section contains service interface name, interface version and the flag, indicating whether the interface is _Public_ or _Local_. If the `isRemote` attribute is `true` (`isRemote="true"`) it is a _Public_ service interface, visible and accessible in the network, and can be used by any node in the network. Otherwise, it is _Local_ and not visible in the network. The _Local_ services are used to protect sensitive data and enable multithreading asynchronous communication in the application. The _Public_ services are used for multiprocessing communication and they enable connected Things to act as ultra-small servers.
-
-> 💡 If an API of the _Local_ service interface is called outside of the process, the system ignores the call and responds with error code to the caller. Only _Public_ interfaces are accessed for _IPC_ and can be called from any client software component in the network.
+The `<Overview>` section contains service interface name, version and the flag `isRemote` that indicates interface accessibility (_Public_ or _Local_). The value `isRemote="true"` means the interface is public and is accessible by any component within the network. The value `isRemote="false" means the service is for multithreading communication and is not accessible outside of process. Any attempt to call an API of _Local_ service is ignored by the system.
 
 ### Data types
 
-Every service interface can have specific data types. When a new data type is defined, it can be used to declare any variables, service data (attributes) and parameters of methods. New data types are listed in the section `<DataTypeList>`. All data types should be streamable. It is possible to import external data types in the service interface and there should be `operator >>`or `operator <<` implemented for the imported types to serialize data in the [IEIOStream](../framework/areg/base/IEIOStream.hpp).
+Service interfaces may include specific data types to declare variables, service data (attributes), and method parameters. The `<DataTypeList>` section lists service specific data types, which must be streamable. External types can be imported, and the `operator >>` or `operator <<` should be able to serialize / deserialize data in the [IEIOStream](../framework/areg/base/IEIOStream.hpp).
 
 #### Structures
 
-In the `<DataTypeList>` section of the service interface XML document can be declared a structure. The `DataType` tag indicates type `Structure` and the name of the structure followed by the list of structure fields. Each field refers to another predefined or new defined `DataType` and has a name. The field of structure may have default value, which is specified in the `<Value>` entry (`<Value IsDefault="true">0</Value>`). Each type of the field must have _assigning operator_, _comparing operator_, and _default and copy constructor_ if the type is an object. The field must be possible explicitly to convert to `unsigned int` and must be possible to serialize in the [IEIOStream](../framework/areg/base/IEIOStream.hpp). There is no need manually to implement operators if the type of the fields are primitives, predefined objects or types defined in the documents. Only imported types may need to have manually implemented operators.
+The structures are declared in `<DataTypeList>` section using the `<DataType>` tag and attribute `Type="Structure"`. Each field refers to a predefined type (including defined in interface) and must be possible to set default value, assign, compare, copy, and serialize / deserialize in the [IEIOStream](../framework/areg/base/IEIOStream.hpp) object.
 
 *An example of declaring structure with fields and default values:*
 ```xml
@@ -108,11 +111,10 @@ In the `<DataTypeList>` section of the service interface XML document can be dec
     </FieldList>
 </DataType>
 ```
-In this example, the structure `SomeStruct` has 3 fields with default values to set.
 
 #### Enumerations
 
-In the `<DataTypeList>` section of the service interface XML document can be declared an enumeration. The `DataType` tag indicates type `Enumerate` and the name of the enumeration followed by the list of fields. Each field may have `Value`. The enumerations are automatically streamable.
+The enumerations are declared in `<DataTypeList>` section using the `<DataType>` tag and attribute `Type="Enumerate"`. Each field may have a value. The enumerations are automatically streamable.
 
 *An example of declaring enumeration with fields and values:*
 ```xml
@@ -135,11 +137,10 @@ In the `<DataTypeList>` section of the service interface XML document can be dec
     </FieldList>
 </DataType>
 ```
-In this example, the enumeration `SomeEnum` has 4 fields, where the first 2 fields have values.
 
  #### Imported types
 
-In the `<DataTypeList>` section of the service interface XML document can import external types. The `DataType` tag indicates type `Imported` and the name of the new type followed by _Namespace_ (if there is a need) and the relative path to the header file where the imported type is declared. The imported types must be possible to serialize in the [IEIOStream](../framework/areg/base/IEIOStream.hpp), they should have assigning and comparing operators, default and copy constructors.
+The imported types are declared in `<DataTypeList>` section using `<DataType>` tag and attribute `Type="Imported"`. The imported types may have _Namespace_ and relative path to the header file where the type is declared. The imported types must be possible to set default value, assign, compare, copy, and serialize / deserialize in the [IEIOStream](../framework/areg/base/IEIOStream.hpp) object.
 
 *An example of imported type:*
  ```xml
@@ -149,13 +150,12 @@ In the `<DataTypeList>` section of the service interface XML document can import
     <Location>areg/base/NEMemory.hpp</Location>
 </DataType>
 ```
-The example imports type `NEMemory::uAlign`, which is declared in `areg/base/NEMemory.hpp` header file and it is streamable.
 
-#### Defined containers
+#### Containers
 
-In the `<DataTypeList>` section of the service interface XML document can be declared new types of standard containers. The `DataType` tag indicates type `DefinedType` and the name of the new type. The `Container` tag specifies the type, the `BaseTypeValue` specifies the type of values and in case of _maps_ the `BaseTypeKey` specifies the type of keys. All types must be possible to `stream` in the [IEIOStream](../framework/areg/base/IEIOStream.hpp).
+The containers (defined types) are declared in `<DataTypeList>` section using `<DataType>` tag and attribute `Type="DefinedType"`. The `<Container>` tag specifies the type of container, the `<BaseTypeValue>` specifies the type of values and in case of _maps_ the `<BaseTypeKey>` specifies the type of keys. All types must be possible to `stream` in the [IEIOStream](../framework/areg/base/IEIOStream.hpp).
 
-*An example of defining new type of array:*
+*An example of defining new type of array of uint32 values:*
 ```xml
 <DataType ID="12" Name="SomeArray" Type="DefinedType">
     <Description>Defines new type of array</Description>
@@ -163,9 +163,8 @@ In the `<DataTypeList>` section of the service interface XML document can be dec
     <BaseTypeValue>uint32</BaseTypeValue>
 </DataType>
 ```
-In this example, the values of the array have type `unsigned int`, which is streamable.
 
-*An example of defining new type of linked list:*
+*An example of defining new type of linked list of strings:*
 ```xml
 <DataType ID="13" Name="SomeList" Type="DefinedType">
     <Description>New type of linked list.</Description>
@@ -173,9 +172,8 @@ In this example, the values of the array have type `unsigned int`, which is stre
     <BaseTypeValue>String</BaseTypeValue>
 </DataType>
 ```
-In this example, the values of the linked list have type `String`, which is streamable.
 
-*An example of defining new type of hash map:*
+*An example of defining new type of hash map, which keys are strings and values have type `SomeStruct`:*
 ```xml
 <DataType ID="14" Name="SomeMap" Type="DefinedType">
     <Description>This example defines hash-map where key is exported and value is new data type.</Description>
@@ -184,14 +182,14 @@ In this example, the values of the linked list have type `String`, which is stre
     <BaseTypeKey>String</BaseTypeKey>
 </DataType>
 ```
-In this example, the values of the hash-map have type `SomeStruct` and the key is type `String`. Both types are streamable. The type `SomeStruct` declared in this Service Interface XML document is automatically declared as streamable, has assigning and compare operators, and has default and copy constructor.
+
+---
 
 ### Attributes
 
-_Attributes_ in services are data, which is similar to Publisher-Subscriber (PubSub / data centric solution). The clients may dynamically subscribe and unsubscribe on data updates and get notifications. The attributes are listed in the section `<AttributeList>`. The type of attribute must be possible to serialize in the [IEIOStream](../framework/areg/base/IEIOStream.hpp).
+_Attributes_ in services, similar to a PubSub solution, are data to exchange with service consumers(clients). Clients can dynamically subscribe or unsubscribe to receive notifications on data updates. The attributes are listed under the `<AttributeList>` section and must be serializable in the [IEIOStream](../framework/areg/base/IEIOStream.hpp) object.
 
-> 💡 The data of an `Attribute` is always available for the clients. As soon as the client subscribes to the attribute data, it receives at least one notification with the current cached value and a flag of validation state. If data was not cached or invalidated, the first notification may indicate _invalid data_ state, then shortly receive a second notification directly from the server indicating the actual value and data state.<br>
-> 💡 It is important to check the data state to make correct reaction. The attribute update callback has semantic `void onAttributeNameUpdate( const DataType & AttributeName, NEService::eDataStateType state )`, where _AttributeName_ is the name and _DataType_ is the type of the attribute. The attribute data is valid only if the `state` parameter is `NEService::eDataStateType::DataIsOK`. In all other cases it should be either ignored or the error should be handled.<br>
+Clients always can access to the data of an attribute. When a client subscribes to an attribute, it receives a notification with the cached value and a validation flag. If the data has not been cached or it is invalid, the first notification may indicate _invalid_ state, followed shortly by a second notification from the server with the actual value and data state. It is important to check the data state to make correct reactions.
 
 *An example of declaring attribute to notify only on value change:*
 ```xml
@@ -199,7 +197,6 @@ _Attributes_ in services are data, which is similar to Publisher-Subscriber (Pub
     <Description>An attribute to notify subscribers only when value is changed.</Description>
 </Attribute>
 ```
-In this example the attribute `SomeAttr1` has type `SomeEnum` and it is designed to notify only if the value is changed.
 
 *An example of declaring attribute to notify when value set:*
 ```xml
@@ -207,18 +204,20 @@ In this example the attribute `SomeAttr1` has type `SomeEnum` and it is designed
     <Description>Another attribute to notify subscribers any time when value is set (maybe not changed).</Description>
 </Attribute>
 ```
-In this example the attribute `SomeAttr2` has type `SomeSruct` and it is designed to notify each time when value is set.
 
-The difference of _OnChange_ and _Always_ notifications is that in one case the notification is sent when value is changed, i.e. **it is compares stored and new values, and notifies if values are not equal**, and on second case the notification is sent whenever value is set, i.e. **it does not compare stored and new values, and notifies immediately when value is set**.
+If the notification type of an _Attribute_ is `OnChange`, the value is forwarded to subscribed clients only if new value is not equal or the validation state has been changed. In case of `Always`, the value is forwarded each time the data is set.
 
 ### Requests, responses and broadcasts
-_Requests_ and _Responses_ in services are methods, which is similar to Request-Reply (action centric solution). The clients send requests to process on server component and as a reply receive response. In addition, there are _Broadcasts_, which act as methods and have the logic of PubSub, where clients dynamically subscribe to the event to receive a _Broadcast_. The _Broadcasts_ act as events, are triggered as callbacks that can deliver multiple data as parameters. _Requests_, _Responses_ and _Broadcasts_ are defined in the `<MethodList>` section of service interface XML document.
+
+_Requests_ and _Responses_ in the services are methods that act like _Request-Reply_ (actions-centric) solution, where clients send requests as actions to process on a server and the server replies with a response. There are as well _Broadcast_ methods, which act like following the logic of PubSub (data-centric), where clients can dynamically subscribe and unsubscribe to a _Broadcast_ event. All of these methods are defined in the `<MethodList>` section of the service interface XML document.
+
+> 💡 In the service interface XML document the request, response and the broadcast may have same name.
+
+> 💡 It is recommended that all parameter names in responses and broadcasts have unique names. If a parameter name is not unique, it must have the same type in all methods. For instance, if a broadcast and a response have a parameter named `success` and has type `bool`, that parameter with the same name can exist in other responses and broadcast, but as well must have type `bool` and nothing else.
 
 #### Requests
-The _Requests_ are called by clients to execute on the service provider (server) side. The requests may have parameters. The requests may have a linked response. If a request has a response, then the processing request is blocked until service replies with the linked response. It is possible manually to unblock the request, but then the response must be manually prepared to reply. Multiple requests can be linked with the same response. The request may have no response and in this case it is always unblocked and can be called one after another.
 
-> 💡 When developers implement service provider (server) they extend the generated `Stub` object and implement request calls, which are declared in a base `Stub` class as _pure virtual functions_.<br>
-> 💡 If request fails (for example, it is in busy state), the client receives failure notification. For proper error handling, the clients should override and implement failure callbacks of all used requests. The error code is passed as a parameter in request failure callback. If request failure happens and the developer does not override the failure callback, automatically an error message is logged.
+Requests are actions executed on the service provider (server) side when called by service consumers (clients). Requests may have no or one linked response sent by service provider as a reply to request. If a request has a response, the processing request is blocked until the service provider replies with the linked response. It is possible to manually unblock the request, but then the response must also be manually prepared for a reply. An example of manually unblocked request can be seen in [this example](../examples/21_pubunblock/). Multiple requests can be linked with the same response. If a request has no response, it is always unblocked and can be called one after another. If a request is busy and blocked, and a client triggers the same request, it is immediately replied with a request failure indicating the reason of failure (in this example _reuqest is busy_). All parameters of the request must be serializable.
 
 *An example to demonstrate a request with no parameter linked with a response:*
 ```xml
@@ -229,7 +228,6 @@ The _Requests_ are called by clients to execute on the service provider (server)
     <Description/>
 </Method>
 ```
-In this example, the request `SomeRequest1` has no parameter and it is linked with the response `SomeResponse1`. The request is blocking and it is unblocked when response `SomeResponse1` is called, so that the next call of `SomeRequest1` can be processed. In the generated C++ code, the request has semantic `void requestSomeRequest1()`.
 
 *An example to demonstrate a request with multiple parameters linked with a response:*
 ```xml
@@ -251,7 +249,6 @@ In this example, the request `SomeRequest1` has no parameter and it is linked wi
     </ParamList>
 </Method>
 ```
-In this example, the request `SomeRequest2` has 3 parameters, where the last parameter `param3` has default value, and the request is linked with response `SomeResponse` with 1 parameter. The request is blocking and it is unblocked when response `SomeResponse` is called, so the next call of `SomeRequest1` can be processed. In the generated C++ code, the request has semantic `void requestSomeRequest2(int param1, const NESample::SomeStruct & param2, NESample::SomeEnum param3 = NESample::SomeEnum::Nothing)`.
 
 *An example to demonstrate 2 different requests linked with the same response:*
 ```xml
@@ -280,20 +277,16 @@ In this example, the request `SomeRequest2` has 3 parameters, where the last par
 </Method>
 ```
 
-In this example, 2 different requests `SomeRequest2` and `SomeRequest3` are linked with response `SomeResponse`. Here one request does not block the other while it is processing (i.e. in a _busy_ state). For example, when `SomeRequest2` is called and it is in _busy_ state, the `SomeRequest3` can be also called, and when servicing component replies with the response `SomeResponse`, it automatically unblocks both requests, because both requests are linked with the same response. In other words, the call of response unblocks all linked requests in a _busy_ state. In the generated C++ code, the request `SomeRequest2` has semantic `void requestSomeRequest2(int param1, const NESample::SomeStruct & param2, NESample::SomeEnum param3 = NESample::SomeEnum::Nothing)`, and the request `SomeRequest3` has semantic `void requestSomeRequest3(const NEMemory::uAlign & param)`.
-
 *An example to demonstrate a request with no response:*
 ```xml
 <Method ID="27" MethodType="request" Name="StandAlone">
     <Description>A request with no response.</Description>
 </Method>
 ```
-In this example, the request `StandAlone` has no response. It means when a request is processed, the service provider can continue receiving further calls of the request `StandAlone`. In the generated C++ code, the request `StandAlone` has semantic `void requestStandAlone()`.
 
 #### Responses
-The _Responses_ are replies to request calls sent from service providers (servers) to the clients. Each response is linked at least with one request. If a response has no request, it is ignored and never triggered. When a response is called on the service provider side, it is automatically triggered on the client as a callback. Any client can manually subscribe and unsubscribe on the response without calling a request. This normally happens if a client is interested only in the reply to a certain request. For example, when the client is interested in the result of a certain action and not interested which component triggered the action.
 
-> 💡 The responses are virtual callbacks triggered by system when appropriate reply received from service provider (server). The developers need to extend the generated `ClientBase` object and implement those responses, which request is called or is manually subscribed. For example, if a client does not call the request `SomeRequest1` and is not manually subscribed on the response `SomeResponse1`, the response `SomeResponse1` is never triggered for that client, so that there is no need to override the default implementation in `ClientBase` class. Otherwise, the client should implement the response.
+Responses are replies to requests sent by service providers (servers) to service consumers (clients). Each response is linked to at least one request, and if a response has no request, it is ignored and never triggered. When the server calls a response, it is automatically triggered on the client side as a callback. As well, clients can manually subscribe and unsubscribe from the response without calling a request, particularly if they are interested in the result of an action and not concerned about which component triggered the action. 
 
 *An example to demonstrate declaration of the responses.*
 ```xml
@@ -307,16 +300,14 @@ The _Responses_ are replies to request calls sent from service providers (server
     </ParamList>
 </Method>
 ```
-In this example, the responses are linked with the requests (see chapter [Requests](#requests)), where the response `SomeResponse1` is connected with one request and the response `SomeResponse` is linked with 2 requests. The semantic of the response `SomeResponse1` is `void responseSomeResponse1()` and the semantic of response `SomeResponse` is `void responseSomeResponse(bool succeeded)`.
 
-> 💡 When request is processing, it is in _busy_ state and it is blocked. The call of response automatically unblocks all linked requests. It is very important to send the response after processing request(s). Otherwise, while the request is _busy_ and any client calls the same request, the system generates a _request busy_ response message and delivers it to the client. So that, if the response of a request is not called, the request is processed only once (for first call), where all other calls are rejected by the system.<br>
-> 💡 If a request does not have linked response, it is never blocked and it is never in _busy_ state.<br>
-> 💡 Clients can dynamically subscribe to a certain response without calling linked request. In this case, each time the service provider replies with a response message, it is called not only on the request caller side, but also on the subscribed client side.
+The [_Request_](#requests) chapter contains examples of requests linked to responses. It's crucial that the server calls the response after executing the request, or else the request will not be released and the system will not trigger the next call of the request. It is important to note that a response must not be called within the request method, but it can be called at any time while the request is pending. Since the AREG system is asynchronous, the time between when the server request is triggered, processed, and replied to with a response is uncertain.
 
 #### Broadcasts
-The _Broadcasts_ are special service methods to fire an event and pass several data at the same time. Broadcasts have no linked request and act like events fired by service provider, which may deliver multiple data. During runtime the clients need manually to subscribe for the broadcast to receive.
 
-> 💡 Unlike _Attribute_, the _Broadcast_ data is available only during call. It means that if a client subscribes to the broadcast, it receives notification only when the service provider calls broadcast. In case of _Attribute_, the client receives first cached data, then the actual data, even if it was not changed.
+_Broadcasts_ are a type of special service method used to fire an event and pass multiple data simultaneously. Broadcasts have no linked methods and act as events fired by the service provider (server). The service consumers (clients) need to manually subscribe to the broadcast during runtime to receive the data. 
+
+Broadcast data is only available during the call and is not stored (cached) beyond that point. This means that if a client subscribes to a broadcast, it will only receive a notification when the server calls the broadcast. On the other hand, in the case of an attribute, the client receives the cached data initially, followed by the actual data, even if it has not changed.
 
 *An example to demonstrate declaration of the broadcast with parameters:*
 ```xml
@@ -332,25 +323,20 @@ The _Broadcasts_ are special service methods to fire an event and pass several d
     </ParamList>
 </Method>
 ```
-In this example, the broadcast `SomeBroadcast` has 4 parameters to deliver together subscribed clients. The semantic of this broadcast is `void broadcastSomeBroadcast(NESample::SomeEnum value1, const NEMemory::uAlign & value2, const NESample::SomeStruct & value3, NESample::SomeArray value4)`.
-
-> 💡 In the service interface XML document the request, response and the broadcast may have same name.<br>
-> 💡 It is recommended that at all **parameter** names at least in _responses_ and _broadcasts_ have unique names. If any parameter name is not unique, then it must have the same type in all methods. For example, if a broadcast and a response have a parameter named `success`, that parameter should be of the same type, and if `success` in the response has type `bool`, it should not be declared in the broadcast as `int`.
 
 ### Constants
-The Service Interface XML document may have specific constants listed in `<ConstantList>` section. The constants are used to share read-only value between clients and the service provider.
+The Service Interface XML document may have constants listed in `<ConstantList>` section. The constants are used to share read-only value between service provider and clients. For example, a timeout value.
 
 *An example to demonstrate declaration of a constant:*
 ```xml
-<Constant DataType="uint16" ID="35" Name="SomeConst">
+<Constant DataType="uint16" ID="35" Name="SomeTimeout">
     <Value>100</Value>
     <Description>Define a constant if need.</Description>
 </Constant>
 ```
-In this example, it is declared a constant named `SomeConst` having type `unsigned short` and value `100`. This value is shared between the service provider and clients.
 
 ### Includes
-The Service Interface XML document may have a special include in the code. For example, a service may include a special header file with the implementation of algorithms. The includes are listed in the `<IncludeList>` section.
+The Service Interface XML document may have additional includes. For example, a separate _DataType_ document, to share between multiple services or a header file to share between service provider and service consumers. The includes are listed in the `<IncludeList>` section.
 
 *An example to demonstrate declaration of includes:*
 ```xml
@@ -360,31 +346,31 @@ The Service Interface XML document may have a special include in the code. For e
     </Location>
 </IncludeList>
 ```
-In this example, after generating code, the header file `areg/base/NEMath.hpp` is included for service providers and service client codes.
+
+---
 
 ## Code generator
-To avoid tedious jobs and minimize mistakes when coding, AREG SDK provides a code-generator located in the [tools](../tools/) folder to generate base objects using definitions in the Service Interface XML document. The generated files must not be modified. Instead, they should be extended to implement all necessary functions. Normally, the service providers implement _Request_ methods and the service clients implement _Response_, _Broadcast_ and _Attribute update_ notification methods by need. Edit and run [generate.sh](../tools/generate.sh) or [generate.bat](../tools/generate.bat) file to generate source code or run `codegen.jar` from command line.
 
-> 💡 Before running scripts in `generate.sh` and `generate.bat` files, set correct `AREG_SDK_ROOT` folder path.
+The AREG SDK offers a code-generator located in the [_tools_](../tools/) folder to simplify coding and reduce errors. This tool generates base objects using definitions from the Service Interface XML document. It is important to note that the generated files should not be modified, but rather extended to implement required override functions. Typically, service providers will implement _Request_ methods and make decisions when to call responses, broadcasts or set attribute data, while service clients will implement used _Response_, _Broadcast_, and _Attribute_ update notification methods as needed, and make decisions when to send request and subscribe to events. To generate source code, edit and run the "generate.sh" or "generate.bat" file, or run "codegen.jar" from the command line.
 
-Before calling code generator, make sure that there is Java installed on the machine and the `codegen.jar` is included in the `CLASSPATH`. 
-- The `--root` option of the code generator is the root of the development project.
-- The `--doc` option of the code generator is the relative to --root path of the service interface XML document to generate code.
-- The `--target` option of the code generator is the path relative to `--root` to output generated files.
+> 💡 To avoid unnecessary code and improve performance, service consumers should only override the responses, broadcasts, and update notifications that they actually use. Any unneeded overrides will never be called. For instance, if a service has two attributes named `One` and `Two`, and a client is only subscribed to updates for `One`, there is no need to override the update of `Two` since it will never be received.
+
+> 💡 Before running `generate.sh` or `generate.bat` scripts, set correct `AREG_SDK_ROOT` folder path.
+
+The code-generator requires [Java](https://www.java.com/) installed on machine. The code-generator requires following parameters:
+- `--root` option is the path to development project and all paths are relative to the _root_.
+- `--doc` option is the relative path to the service interface XML document to generate code.
+- `--target` option is the relative path to output generated files.
 
 *Examples of running code generator from command line:*
-```bash
-$ java -jar codegen.jar --root=~/projects/my_project --target=src/generated/ --doc=interface/MyService.siml
-```
-You may as well explicitly specify the full path of `codegen.jar`
 ```bash
 $ java -jar ~/projects/areg-sdk/codegen.jar --root=~/projects/my_project --target=src/generated/ --doc=interface/MyService.siml
 ```
 
-*An example of [generate.bat](../examples/12_pubsvc/res/generate.bat) file:*
+*An example of [generate.bat](../examples/12_pubsvc/res/generate.bat) file in AREG SDK:*
 ```bat
 :: set the AREG_SDK_ROOT directory here
-set AREG_SDK_ROOT=E:\Projects\aregtech\areg-sdk
+set AREG_SDK_ROOT=C:\Projects\aregtech\areg-sdk
 :: .bat file directory
 set BATCH_ROOT=%~dp0
 :: In case of examples, one level up.
@@ -397,23 +383,26 @@ set CLASSPATH=%CLASSPATH%;%AREG_SDK_ROOT%\tools;%AREG_SDK_ROOT%\tools\codegen.ja
 @echo Generating class of HelloService Service Interface in folder %CODE_GEN% .....
 java com.aregtech.CMFMain --root=%PROJECT_ROOT% --doc=res\HelloService.siml --target=%CODE_GEN%
 ```
+---
 
 ## Generated codes
 
-The code generator creates sources to extend and implement service providers (_server_) and service clients, as well it creates namespace with shared common data required by generated classes and internal classes required by the SDK. To develop a service provider (server), the developers can extend classes ending with `Stub`. To develop service clients, developers can extend classes ending with `ClientBase`. Shared data and types are defined in the generated namespace starting with `NE`. The files generated in `private` subdirectory should not be used, because all objects and files in `private` subdirectories are for internal use. The generated files should not be modified.
+The code generator simplifies development by creating sources for both service providers (servers) and service consumers (clients). It also generates a namespace with prefix `NE` for shared common data. To create a server, developers extend classes ending with `Stub`, while clients extend classes ending with `ClientBase`. It is important to note that the files generated in the `private` subdirectory should not be modified and used, since they are for internal use only.
 
 *An example of folder structure of generated codes:*
-<br><a href="./img/generated-sources.png"><img src="./img/generated-sources.png" alt="File structure after generating codes"/></a><br>
+<br><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/generated-sources.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/generated-sources.png" alt="File structure after generating codes"/></a><br>
 
-> 💡 Since the codes are generated for both service providers and the service client, and these objects may be located in different projects, it is recommended compile generate codes as a separate _static library_ to link with service provider and client projects.
+> 💡 In case of multiprocessing applications, it is recommended to include generated codes in a separate _static library_ to link with service provider and service consumer applications.
+
+---
 
 ## Modeling and service initialization
 
-After generating codes, the developer can implement the business logic of the service provider and the service client. The objects must be a part of the `Component`, which runs in a _component thread_. This extended `Component` object can either extend service provider / client base class or can aggregate separately implemented provider and client objects. In other words, the `Component` should be the holder of the service provider or service client to be able to dispatch events.
+Once codes are generated, the developer can incorporate the business logic for the service provider (_server_) and service consumer (_client_). These objects must be a part of the _Component_, running on a dedicated thread. The _Component_ object can either extend the server and/or client base class or aggregate separately implemented service provider and consumer objects. Essentially, the _Component_ should hold the service provider and/or service client to dispatch events effectively.
 
-After implementing the servicing components, developers can define a _model_, which is a hierarchical design of threads, components, provided and dependent services. Such fixed modeling is a _static model_. The _model_ is used to load to instantiate objects and start services. During runtime the developer can dynamically modify a _model_ before it is loaded or can load multiple models.
+Once the servicing components are implemented, developers can create a hierarchical _model_ consisting of threads, components, provided and consumed services. This model is static and used to instantiate objects and start services. However, developers can modify the model dynamically before it is loaded.
 
-An example of a _dynamic model_ is in the [14_pubtraffic](../examples/14_pubtraffic/) project. 
+> 💡 An example of a _dynamic model_ is in the [14_pubtraffic](../examples/14_pubtraffic/) project. 
 
 *An example of defining and loading static model:*
 ```cpp
@@ -462,13 +451,11 @@ int main()
 
 ```
 
-In this example, create a _model_ with name `"ServiceModel"`, load it in `main()` function when call `Application::loadModel("ServiceModel")`, and unload when call `Application::unloadModel("ServiceModel")` to stop services and release objects.
+This example creates a _model_ named `"ServiceModel"`, which is loaded in `int main()` function when call `Application::loadModel("ServiceModel")`, and unload when call `Application::unloadModel("ServiceModel")` to stop services and release objects.
 
-The example [10_locsvc](../examples/10_locsvc/) and higher contain implementations of _Local_ and _Public_ services and the clients. Browse [examples](../examples/) to learn more. All these examples have declarations of models.
+The example [10_locsvc](../examples/10_locsvc/) and higher contain creation of models of creating _Local_ and/or _Public_ services. Browse examples for more practical overview.
 
-> 💡 The difference of _Local_ and _Public_ services:
-> - The _Local_ services are used for multithreading communication and cannot be accessed outside of the process.
-> - The _Public_ services are used for multithreading and multiprocessing (**IPC**) communication and can be accessed by any process in the network.
+---
 
 ## Hello Service!
 
