@@ -1,4 +1,4 @@
-# Hello Service
+﻿# Hello Service
 ```
 This file is part of AREG SDK
 Copyright (c) 2021-2023, Aregtech
@@ -8,7 +8,7 @@ Website: https://www.aregtech.com
 
 This document is an practical example of creating applications with distributed services.
 
-> ?? The source codes of this example you can find in [00_helloservice](../examples/00_helloservice/) directory.
+> 💡 The source codes of this example you can find in [00_helloservice](../examples/00_helloservice/) directory.
 
 This tutorial provides a step-by-step guide for creating service-enabled applications using the AREG SDK. To make it easy, we recommend creating a new directory inside the AREG SDK's [examples](../examples] directory and naming it `helloservice`. This will serve as the root directory for your training projects and will be the working directory for the three sample projects included in this tutorial.
 
@@ -93,7 +93,7 @@ In this example, in the section _*MethodList_ we defined methods **HelloService*
 
 ### Generate codes
 
-> ?? To ensure that the code generator runs successfully on your machine, it is essential to have [Java](https://java.com/) installed.
+> 💡 To ensure that the code generator runs successfully on your machine, it is essential to have [Java](https://java.com/) installed.
 
 To generate base files for the `HelloService` service, follow these steps:
 1. Open the command line terminal in the `helloservice` directory.
@@ -115,7 +115,7 @@ To develop the service provider (_server_) for the `HelloService` and share it w
 1. Open previously created `helloservice/common/src` directory.
 2. Create a new file called `ServiceComponent.hpp`.
 
-> ?? The declaration of the service provider object `ServiceComponent` can be found in the file [ServiceComponent.hpp](../examples/00_helloservice/common/src/ServiceComponent.hpp).
+> 💡 The declaration of the service provider object `ServiceComponent` can be found in the file [ServiceComponent.hpp](../examples/00_helloservice/common/src/ServiceComponent.hpp).
 ```cpp
  // common/src/ServiceComponent.hpp
 #pragma once
@@ -153,7 +153,7 @@ private:
 ```
 3. Create a new file called `ServiceComponent.cpp`.
 4. Copy and paste the following code into the `ServiceComponent.cpp` file, and save it:
-> ?? The implementation of the service provider object `ServiceComponent` can be found in the file [ServiceComponent.cpp](../examples/00_helloservice/common/src/ServiceComponent.cpp).
+> 💡 The implementation of the service provider object `ServiceComponent` can be found in the file [ServiceComponent.cpp](../examples/00_helloservice/common/src/ServiceComponent.cpp).
 
 ```cpp
  // common/src/ServiceComponent.cpp
@@ -198,7 +198,7 @@ To develop the service consumer (_client_) for the `HelloService` and share it w
 
 1. Open previously created `helloservice/common/src` directory.
 2. Create a new file called `ClientComponent.hpp`.
-> ?? The declaration of the service provider object `ClientComponent` can be found in the file [ClientComponent.hpp](../examples/00_helloservice/common/src/ClientComponent.hpp).
+> 💡 The declaration of the service provider object `ClientComponent` can be found in the file [ClientComponent.hpp](../examples/00_helloservice/common/src/ClientComponent.hpp).
 
 ```cpp
 // common/src/ClientComponent.hpp
@@ -244,7 +244,7 @@ private:
 ```
 3. Create a new file called `ClientComponent.cpp`.
 5. Copy and paste the following code into the `ClientComponent.cpp` file, and save it:
-> ?? The implementation of the service provider object `ClientComponent` can be found in the file [ClientComponent.cpp](../examples/00_helloservice/common/src/ClientComponent.cpp).
+> 💡 The implementation of the service provider object `ClientComponent` can be found in the file [ClientComponent.cpp](../examples/00_helloservice/common/src/ClientComponent.cpp).
 ```cpp
 // common/src/ClientComponent.cpp
 #include "common/src/ClientComponent.hpp"
@@ -330,7 +330,7 @@ The AREG engine uses a service-oriented **model** to structure relationships bet
 
 When a model is no longer needed, it can be unloaded, and the system will stop all threads and shutdown all services registered in that model. This tutorial provides examples of applications that load and unload predefined models, demonstrating how models define the architecture and relationship of components, and how services can be distributed for optimal computing power. The examples show service providers and consumers running in the same thread, in separate threads, and in separate processes. In case of separate processes, the service is _Public_ and can be accessed by any service consumer registered in the same network via `mcrouter`.
 
-> ?? Note that example applications with models can be found in the [00_helloservice](../examples/00_helloservice/) directory.
+> 💡 Note that example applications with models can be found in the [00_helloservice](../examples/00_helloservice/) directory.
 
 To declare _static models_ in an application, follow these guidelines:
 
@@ -350,6 +350,6 @@ To declare _static models_ in an application, follow these guidelines:
     - A component can have multiple consumers of the same service interface, and the dependency only needs to be declared once.
     - A component can provide and consume the same service interface.
 
-> ?? Note that provided services are registered by _Service Interface Name_, while consumed services are accessed by component _Role Name_. This is because the same service interface can have multiple implementations, but the service consumer should know which service object it is using.
+> 💡 Note that provided services are registered by _Service Interface Name_, while consumed services are accessed by component _Role Name_. This is because the same service interface can have multiple implementations, but the service consumer should know which service object it is using.
 
 ### Project [`onethread`](../examples/00_helloservice/onethread/)
