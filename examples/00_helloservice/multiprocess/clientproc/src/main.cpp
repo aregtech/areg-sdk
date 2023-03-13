@@ -5,12 +5,11 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/base/NEUtilities.hpp"
+#include "areg/base/String.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
 
 #include "common/src/ClientComponent.hpp"
-
-#include <string>
 
 // Use these options if compile for Windows with MSVC
 // It links with areg library (dynamic or static) and generated static library
@@ -22,13 +21,13 @@
 //!< The name of model
 constexpr char const _modelName[]{ "ServiceModel" };
 //!< Client component name. Let's generate the name for client service, we'll use it later.
-const std::string   _client(NEUtilities::generateName("ServiceClient").getString());
+const String _client(NEUtilities::generateName("ServiceClient"));
 
 // Describe model, register the service consumer (client)
 BEGIN_MODEL(_modelName)
 
     BEGIN_REGISTER_THREAD( "Thread1", NECommon::WATCHDOG_IGNORE)
-        BEGIN_REGISTER_COMPONENT( _client.c_str(), ClientComponent )
+        BEGIN_REGISTER_COMPONENT( _client, ClientComponent )
             REGISTER_DEPENDENCY( "ServiceComponent" ) /* reference to the service*/
         END_REGISTER_COMPONENT( _client )
     END_REGISTER_THREAD( "Thread1" )

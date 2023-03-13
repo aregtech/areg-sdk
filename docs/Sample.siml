@@ -113,7 +113,7 @@
         </Method>
     </MethodList>
     <ConstantList>
-        <Constant DataType="uint16" ID="35" Name="SomeConst">
+        <Constant DataType="uint16" ID="35" Name="SomeTimeout">
             <Value>100</Value>
             <Description>define a constant if need.</Description>
         </Constant>

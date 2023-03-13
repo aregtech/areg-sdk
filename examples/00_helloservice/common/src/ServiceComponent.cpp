@@ -4,6 +4,8 @@
  **/
 #include "common/src/ServiceComponent.hpp"
 
+#include <iostream>
+
 Component * ServiceComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
 {
     return DEBUG_NEW ServiceComponent(entry, owner);
@@ -23,7 +25,7 @@ ServiceComponent::ServiceComponent(const NERegistry::ComponentEntry & entry, Com
 void ServiceComponent::requestHelloService(const String & client)
 {
     // output message
-    printf("\'Hello Service!\' from %s\n", client.getString());
+    std::cout << "\'Hello Service!\' from " << client << std::endl;
 
     // reply to unblock the request
     responseHelloService(true);
