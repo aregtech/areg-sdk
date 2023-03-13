@@ -1,4 +1,5 @@
-﻿# Hello Service
+﻿# Hello Service!
+
 ```
 This file is part of AREG SDK
 Copyright (c) 2021-2023, Aregtech
@@ -10,7 +11,7 @@ This document is an practical example of creating applications with distributed 
 
 > 💡 The source codes of this example you can find in [00_helloservice](../examples/00_helloservice/) directory.
 
-This tutorial provides a step-by-step guide for creating service-enabled applications using the AREG SDK. To make it easy, we recommend creating a new directory inside the AREG SDK's [examples](../examples] directory and naming it `helloservice`. This will serve as the root directory for your training projects and will be the working directory for the three sample projects included in this tutorial.
+This tutorial provides a step-by-step guide for creating service-enabled applications using the AREG SDK. To make it easy, we recommend creating a new directory inside the AREG SDK's [examples](../examples) directory and naming it `helloservice`. This will serve as the root directory for your training projects and will be the working directory for the three sample projects included in this tutorial.
 
 All three sample projects use the same service provider (server) and service consumer (client), located in the `common/src` subdirectory. The projects are designed to illustrate different ways of running the service provider and client:
 
@@ -36,14 +37,14 @@ Features demonstrated in these examples:
 * In _project #3_, multiple clients can start and the starting order plays no role, because service discovery is automated.
 
 When creating a service provider and service consumer, it is important to keep in mind the following notes:
-1. The **Component** serves as the holder of the servicing objects (service provider and/or service consumer).
-1. The **Component** can provide multiple services, multiple consumers or be a mixture of service providers and clients.
-1. The same service provider can be instantiated multiple times, but instances should run in different threads.
-1. The services differ by service _interface name_ and/or a _role name_, and the consumers refer to the service by _role name_ in the _model_.
-1. Instances of the service provider and its consumer can be in the same thread.
-1. The role names of the _Local_ services are unique within the same process, and the role names of the _Public_ services are unique within the same network.
-1. Service consumers know the availability of the service via the notification callback `void serviceConnected(bool isConnected, ProxyBase& proxy)`, where `isConnected` parameter indicates the connection status.
-1. Service providers know the consumer connection via the notification callback `void clientConnected(const ProxyAddress& client, bool isConnected)`, where `isConnected` parameter indicates the connection status.
+1. The **Component** is the holder of the servicing objects (service provider and/or service consumer).
+2. The **Component** can provide and consume multiple services, and can be a mixture of service providers and consumers.
+3. The same service provider can be instantiated multiple times, but instances should run in different threads or processes, ans must differ by _Role Name_.
+4. The consumers refer to the services _Role Name_, because same implementation of the service can be instantiated multiple times.
+5. Instances of the service provider and its consumer can be in the same thread.
+6. The _Role Names_ of the _Local_ services are unique within the same process, and the _Role Names_ of the _Public_ services are unique within the same network.
+7. Service consumers know the availability of the service via the notification callback `void serviceConnected(bool isConnected, ProxyBase& proxy)`, where `isConnected` parameter indicates the connection status.
+8. Service providers know a new consumer connection via the notification callback `void clientConnected(const ProxyAddress& client, bool isConnected)`, where `isConnected` parameter indicates the connection status.
 
 ---
 
@@ -52,7 +53,7 @@ When creating a service provider and service consumer, it is important to keep i
 The purpose of this topic is to demonstrate how to implement service providers and consumers, which can be split and merged across different processes and threads to distribute computing power. It is important to note that in the examples here, all projects use the same service provider and consumer objects, with variations in the **models** declared and used in the **main.cpp** files.
 
 * The generated codes will be located in the `generated/src` subdirectory of `helloservice`, which will be created by the **code generator**.
-* The declaration and implementation of the common service consumer (**server**) and service provider (**client**) will be located in the `common/src` subdirectory of `helloservice`, which should be created manually.
+* The declaration and implementation of the common service provider (**server**) and service consumer (**client**) will be located in the `common/src` subdirectory of `helloservice`, and are included in each project build.
 * The definition of the **Service Interface** document is located in `res` subdirectory of `helloservice`, which should be create manually.
 
 To start, in the `helloservice` please create `common/src` and `res` subdirectories
@@ -60,7 +61,7 @@ To start, in the `helloservice` please create `common/src` and `res` subdirector
 ### Service Interface
 
 To create a multithreading and multiprocessing project with distributed services, follow these simple steps for creating a `HelloService` interface file:
-1. In the created `helloservice/res' directory, create a new file called `HelloService.siml`.
+1. In the created `helloservice/res` directory, create a new file called `HelloService.siml`.
 2. Copy and paste the following XML code into the `HelloService.siml` file and save it:
 ```xml
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
@@ -89,7 +90,7 @@ To create a multithreading and multiprocessing project with distributed services
 </ServiceInterface>
 ```
 
-In this example, in the section _*MethodList_ we defined methods **HelloService** request and its response **HelloService**, which are linked.
+In this example, the declared _Service Interface_ is _Public_ (`isRemote="true"`) and the section _MethodList_ has **HelloService** request and its linked response **HelloService**.
 
 ### Generate codes
 
@@ -105,7 +106,7 @@ java -jar ../../tools/codegen.jar --root=./ --doc=res/HelloService.siml --target
 This will run the `codegen.jar` and generate service provider and service consumer base files for the `HelloService` located in the `generated/src` subdirectory inside `helloservice`, and you will get the following generated codes:
 * The generated service provider base classes end with `Stub`. In our case, it is `HelloServiceStub`.
 * The generated service consumer base classes end with `ClientBase`. In our case, it is `HelloServiceClassBase`.
-* The `Stub objects are extended to override and implement _requests_ of service provider.
+* The `Stub` objects are extended to override and implement _requests_ of service provider.
 * The `ClientBase` objects are extended to override and implement used _responses_, _broadcasts_ and _data update notifications_ of service consumers. For better error handling, developers should as well override and implement the _request failed_ methods of used requests.
 
 ### Develop the service provider
@@ -139,14 +140,14 @@ public:
 
 protected:
     // override the pure virtual method in HelloServiceStub
-    virtual void requestHelloService( const String & client ) override;
+    void requestHelloService( const String & client ) override;
 
 private:
-    ServiceComponent & self( void )
+    ServiceComponent & self( void ) // to escape compiler warnings
     {   return (*this); }
 
 private:
-    // disable default, copy constructor and assignment operator
+    // disable default and copy constructor, and assignment operator
     ServiceComponent( void ) = delete;
     DECLARE_NOCOPY_NOMOVE( ServiceComponent );
 };
@@ -179,7 +180,7 @@ ServiceComponent::ServiceComponent(const NERegistry::ComponentEntry & entry, Com
 
 void ServiceComponent::requestHelloService(const String & client)
 {
-    std::cout << "\'Hello Service!\' from " << client.getString() << std::endl; // output message
+    std::cout << "\'Hello Service!\' from " << client << std::endl; // output message
     responseHelloService(true); // reply to unblock the request
 }
 ```
@@ -188,7 +189,7 @@ In this example:
 
 * The **ServiceComponent** class is an instance of both **Component** and **HelloServiceStub** objects.
 * The constructor and destructor are both protected, ensuring that they cannot be used outside of class.
-* The service provider has static **CreateComponent** and **DeleteComponent** methods for creating and deleting instances of the service provider.
+* The service provider has static **CreateComponent** and **DeleteComponent** methods to create and delete the object.
 * The service provider overrides and implements the pure virtual method **requestHelloService** inherited from **HelloServiceStub**.
 * The **requestHelloService** method replies with **responseHelloService** to the service consumer and unblocks the request for the next call.
 
@@ -224,20 +225,20 @@ public:
 protected:
 
     // Override to get connection notification.
-    virtual bool serviceConnected( bool isConnected, ProxyBase & proxy ) override;
+    bool serviceConnected( bool isConnected, ProxyBase & proxy ) override;
 
-    // Overrides of response of HelloServiceClientBase.
-    virtual void responseHelloService( bool success ) override;
+    // Override of response.
+    void responseHelloService( bool success ) override;
 
-    // Overrides of request failure of HelloServiceClientBase.
-    virtual void requestHelloServiceFailed( NEService::eResultType FailureReason ) override;
+    // Override of request failure for error handling.
+    void requestHelloServiceFailed( NEService::eResultType FailureReason ) override;
 
 private:
-    ClientComponent & self( void )
+    ClientComponent & self( void ) // to escape compiler warnings
     {   return (*this); }
 
 private:
-    // disable default, copy constructor and assignment operator
+    // disable default and copy constructor, and assignment operator
     ClientComponent( void ) = delete;
     DECLARE_NOCOPY_NOMOVE( ClientComponent );
 };
@@ -318,9 +319,9 @@ In this example:
 
 * The **ClientComponent** class is an instance of both **Component** and **HelloServiceClientBase** objects.
 * The constructor and destructor are both protected, ensuring that they cannot be used outside of class.
-* The service consumer has static **CreateComponent** and **DeleteComponent** methods for creating and deleting instances of the components.
+* The service consumer has static **CreateComponent** and **DeleteComponent** methods to create and delete the object.
 * The service consumer object overrides **serviceConnected** method to get service available notification triggered by the system.
-* The **requestHelloService** is called within **serviceConnected** method immediately when received _service available_ system notification.
+* The **requestHelloService** is called within **serviceConnected** method immediately when notified _service available_.
 * The service consumer overrides the **responseHelloService** virtual methods inherited from **HelloServiceClientBase** to react on the reply from service, where it outputs the result and signals to quit the application.
 * The service consumer overrides the **requestHelloServiceFailed** virtual methods inherited from **HelloServiceClientBase** to react on request failure and make better error handling.
 
@@ -338,7 +339,7 @@ To declare _static models_ in an application, follow these guidelines:
 - To declare a thread, use the **BEGIN_REGISTER_THREAD** and **END_REGISTER_THREAD** macro and specify the name of the thread. You can also specify a _watchdog timeout_ in the **BEGIN_REGISTER_THREAD** macro.
 - Each thread must have at least one component with a unique name (known as _Role Name_). 
     - If the component provides or consumes only _Local_ services, the component name should be unique within the application.
-    - If the component provides or consumes at least one _Public_ service, the component should have a unique name within the entire network.
+    - If the component provides or consumes at least one _Public_ service, the component should have a unique name within the network.
 - To declare a component, use the **BEGIN_REGISTER_COMPONENT** and **END_REGISTER_COMPONENT** macro, specify the component _Role Name_, and in the **BEGIN_REGISTER_COMPONENT** macro, specify the name of the component object that is bound to that _Role_.
 - Each component must have at least one provided or consumed service interface.
 - To declare a _Service Provider_, use the **REGISTER_IMPLEMENT_SERVICE** macro and specify the name of the implemented _Service Interface_.
@@ -346,9 +347,9 @@ To declare _static models_ in an application, follow these guidelines:
     - The same _Service Interface_ can be used multiple times, but should be unique within one thread.
 - To declare a _Service Consumer_, use the **REGISTER_DEPENDENCY** macro and specify the _Role Name_ of the dependent component.
     - A component can have multiple consumers of the same Service Interface, and the dependency only needs to be declared once.
-    - A component can provide and consume the same Service Interface.
+    - A component can provide and consume the same _Service Interface_.
 
-> 💡 Note that provided services are identified by their _Service Interface Name_. On the other hand, when accessing used services, the consumer uses the _Role Name_ of the component. This is necessary because a single _Service Interface_ can have multiple implementations, and the consumer needs to reference the specific component by its unique name, which is the _Role Name_ of the service provider component.
+> 💡 Note that provided services are identified by their _Service Interface Name_. On the other hand, when accessing services, the consumer uses the _Role Name_ of the component. This is necessary because a single _Service Interface_ can have multiple implementations, and the consumer needs to refer the specific component by its unique name, which is the _Role Name_ of the service provider component.
 
 The source codes of the examples can be found in the  [00_helloservice](../examples/00_helloservice/) directory. All example projects use the same [ServiceComponent](../examples/00_helloservice/common/src/ServiceComponent.hpp) and [ClientComponent](../examples/00_helloservice/common/src/ClientComponent.hpp) objects.
 
@@ -358,7 +359,7 @@ The source codes of the examples can be found in the  [00_helloservice](../examp
 
 > 💡 The sources of the example are available in the [this file](../examples/00_helloservice/onethread/src/main.cpp).
 
-In this example, we define a _model_ where both service provider and consumer are running in the same thread of the same process. The service is automatically started when the model is loaded. Create `onethread` project, create `main.cpp` file, copy and paste following code, compile and run:
+In this example, we define a _model_ where both service provider and consumer run in the same thread of the same process. The service is automatically started when the model is loaded. Create `onethread` project, create `main.cpp` file, copy and paste following code to compile and run:
 ```cpp
 // onethread/src/main.cpp
 
@@ -404,7 +405,7 @@ int main( void )
 
 > 💡 The sources of the example are available in the [this file](../examples/00_helloservice/twothreads/src/main.cpp).
 
-In this example, we define a _model_ where both service provider and consumer are running in the separate threads of the same process. The service is automatically started when the model is loaded.  Create `onethread` project, create `main.cpp` file, copy and paste following code, compile and run:
+In this example, we define a _model_ where both service provider and consumer run in the separate threads of the same process. The service is automatically started when the model is loaded.  Create `twothreads` project, create `main.cpp` file, copy and paste following code to compile and run:
 ```cpp
 // twothreads/src/main.cpp
 
@@ -449,7 +450,7 @@ int main( void )
 
 ### Project [`multiprocess`](../examples/00_helloservice/multiprocess/)
 
-In this example, we define a _model_ where service provider and service consumer are running in the separate processes. The services provider and consumer automatically started when the model is loaded. For each process (application) we need to create separate project.
+In this example, we define a _model_ where service provider and service consumer are running in the separate processes. The service provider and consumer automatically started when the model is loaded. For each process (application) we need to create separate project.
 
 #### [`serviceproc`](../examples/00_helloservice/multiprocess/serviceproc/) service provider application
 

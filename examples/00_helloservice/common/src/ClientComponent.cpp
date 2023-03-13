@@ -9,6 +9,8 @@
 #include "areg/component/ComponentThread.hpp"
 #include "areg/appbase/Application.hpp"
 
+#include <iostream>
+
 Component * ClientComponent::CreateComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner)
 {
     return DEBUG_NEW ClientComponent(entry, owner);
@@ -52,7 +54,7 @@ bool ClientComponent::serviceConnected(bool isConnected, ProxyBase & proxy)
 
 void ClientComponent::responseHelloService( bool success )
 {
-    printf("%s to output message.\n", success ? "succeeded" : "failed");
+    std::cout << (success ? "Succeeded" : "Failed") << " to output message." << std::endl;
 
     // Sleep for no reason! Do not do this in a real application.
     // It is done to give a chance to see an output message on the console.
@@ -66,7 +68,9 @@ void ClientComponent::responseHelloService( bool success )
 void ClientComponent::requestHelloServiceFailed(NEService::eResultType FailureReason)
 {
     // make error handling here.
-    printf("Failed to execute request, retry again.\n");
+    std::cerr << "Failed to execute request, retry again." << std::endl;
+
+    // Try again, if connected
     if (isConnected())
     {
         // the service is still connected, and can resend the request.
