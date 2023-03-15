@@ -110,11 +110,11 @@ AREG forms a fault-tolerant system that automatically discovers and automates co
 ## Composition[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#composition)
 
 The major modules of AREG SDK are:
-1. [Multicast router (_mcrouter_)](https://github.com/aregtech/areg-sdk/blob/master/framework/mcrouter/) is a console application or OS-managed service that routes message.
-2. [AREG engine](https://github.com/aregtech/areg-sdk/blob/master/framework/areg/) is a library to link with every application.
-3. [Code generator](https://github.com/aregtech/areg-sdk/blob/master/tools/) is a tool that creates service provider / consumer objects from interface documents.
+1. [Multicast router (_mcrouter_)](https://github.com/aregtech/areg-sdk/tree/master/framework/mcrouter/) is a console application or OS-managed service that routes message.
+2. [AREG engine](https://github.com/aregtech/areg-sdk/tree/master/framework/areg/) is a library to link with every application.
+3. [Code generator](https://github.com/aregtech/areg-sdk/tree/master/tools/) is a tool that creates service provider / consumer objects from interface documents.
 
-> 💡 The multiple [examples](https://github.com/aregtech/areg-sdk/blob/master/examples/) demonstrate the features and fault tolerant behavior of AREG communication engine.
+> 💡 The multiple [examples](https://github.com/aregtech/areg-sdk/tree/master/examples/) demonstrate the features and fault tolerant behavior of AREG communication engine.
 
 <div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
@@ -353,7 +353,7 @@ In these codes:
 
 The developers should create `SystemShutdownService` and `RemoteRegistryService` objects that implement the business logic of _request_ methods of provided and _response_ methods of used service interfaces. When these processes start, the services are automatically discovered via `mcrouter`. With this technique, the projects easily develop multiprocessing applications where provided services can be distributed and accessed remotely within the network formed by `mcrouter`.
 
-An example of developing a service provider and consumer in one and multiple processes is in [**Hello Service!**](https://github.com/aregtech/areg-sdk/blob/master/docs/HelloService.md) guide. As well there are multiple [examples](https://github.com/aregtech/areg-sdk/blob/master/examples/) of multiprocessing and multithreading applications.
+An example of developing a service provider and consumer in one and multiple processes is in [**Hello Service!**](https://github.com/aregtech/areg-sdk/blob/master/docs/HelloService.md) guide. As well there are multiple [examples](https://github.com/aregtech/areg-sdk/tree/master/examples/) of multiprocessing and multithreading applications.
 </details>
 
 ### Driverless devices
@@ -407,7 +407,7 @@ The same technique of simulating data can be used to create API-driven test auto
 
 ## Examples[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#examples)
 
-There are various [examples](https://github.com/aregtech/areg-sdk/blob/master/examples/) to demonstrate features of the AREG SDK. The examples are listed in the [examples/README.md](https://github.com/aregtech/areg-sdk/blob/master/examples/README.md) document.
+There are various [examples](https://github.com/aregtech/areg-sdk/tree/master/examples/) to demonstrate features of the AREG SDK. The examples are listed in the [examples/README.md](https://github.com/aregtech/areg-sdk/blob/master/examples/README.md) document.
 
 <div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
