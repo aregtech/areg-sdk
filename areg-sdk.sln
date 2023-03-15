@@ -31,13 +31,13 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{1D3709F1-9915-4CEA-A9F6-4D3FDFD79965}"
 	ProjectSection(SolutionItems) = preProject
 		docs\DEVELOP.md = docs\DEVELOP.md
-		docs\HelloService.siml = docs\HelloService.siml
 		docs\HelloService.md = docs\HelloService.md
+		docs\HelloService.siml = docs\HelloService.siml
 		docs\HOWTO.md = docs\HOWTO.md
 		docs\POSIX.md = docs\POSIX.md
 		docs\README.md = docs\README.md
 		docs\Sample.siml = docs\Sample.siml
-		ServiceInterface.md = ServiceInterface.md
+		docs\ServiceInterface.md = docs\ServiceInterface.md
 		docs\WIN32.md = docs\WIN32.md
 	EndProjectSection
 EndProject
