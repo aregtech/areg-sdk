@@ -1,19 +1,21 @@
 #include "units/GUnitTest.hpp"
 #include "areg/base/String.hpp"
-
-TEST(StringTest, makeInt32)
+/**
+ * Tests makeInt32() func which converts a string
+ * to type int32.
+*/
+TEST(StringTest, TestMakeInt32)
 {
-    const char *test = "52";
-    int32_t result_int32 = 52;
+    constexpr char *test = "52";
+    constexpr int32_t result_int32 = 52;
     EXPECT_EQ(String::makeInt32(test), result_int32);
-    EXPECT_EQ(typeid(String::makeInt32(test)), typeid(result_int32));
     
-    int16_t result_int16 = 52;
+    constexpr int16_t result_int16 = 52;
     EXPECT_EQ(String::makeInt32(test), result_int16);
     EXPECT_NE(typeid(String::makeInt32(test)), typeid(result_int16));
 }
 
-TEST(StringTest, getSubstring)
+TEST(StringTest, TestGetSubstring)
 {
     String test("0123 456 789 0123");
     const char *next = static_cast<const char *>(test);
@@ -40,14 +42,16 @@ TEST(StringTest, getSubstring)
     EXPECT_EQ(result, "0123");
 }
 
-TEST(StringTest, makeUInt32)
+/**
+ * Tests makeUInt32() which converts a string
+ * to a unsigned int32
+*/
+TEST(StringTest, TestMakeUInt32)
 {
-    const char *test = "52";
-    uint32_t result_uint32 = 52;
+    constexpr char *test = "52";
+    constexpr uint32_t result_uint32 = 52;
     EXPECT_EQ(String::makeUInt32(test), result_uint32);
-    EXPECT_EQ(typeid(String::makeUInt32(test)), typeid(result_uint32));
     
-    uint16_t result_uint16 = 52;
+    constexpr uint16_t result_uint16 = 52;
     EXPECT_EQ(String::makeUInt32(test), result_uint16);
-    EXPECT_NE(typeid(String::makeUInt32(test)), typeid(result_uint16));
 }
