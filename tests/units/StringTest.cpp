@@ -55,3 +55,31 @@ TEST(StringTest, TestMakeUInt32)
     constexpr uint16_t result_uint16 = 52;
     EXPECT_EQ(String::makeUInt32(test), result_uint16);
 }
+
+/**
+ * Tests makeInt64() which converts a string
+ * to a int64
+*/
+TEST(StringTest, TestMakeInt64)
+{
+    constexpr char *test = "52";
+    constexpr int64_t result_int64 = 52;
+    EXPECT_EQ(String::makeInt64(test), result_int64);
+    
+    constexpr int16_t result_int16 = 52;
+    EXPECT_EQ(String::makeInt64(test), result_int16);
+}
+
+/**
+ * Tests makeUInt64() which converts a string
+ * to a unsigned int64
+*/
+TEST(StringTest, TestMakeUInt64)
+{
+    constexpr char *test = "52";
+    constexpr uint64_t result_uint64 = 52;
+    EXPECT_EQ(String::makeInt64(test), result_uint64);
+    
+    constexpr uint16_t result_uint16 = 52;
+    EXPECT_EQ(String::makeInt64(test), result_uint16);
+}
