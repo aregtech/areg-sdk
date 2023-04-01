@@ -7,21 +7,29 @@ Website: https://www.aregtech.com
 ```
 The AREG SDK contains various examples to demonstrate features of the engine and framework. 
 
-> 💡 To run _Public_ services of examples based on IPC, make sure the process [_mcrouter_](./../framework/mcrouter/), which is part of AREG engine, has started. Otherewise, the services are not visible in the network.
+> 💡 The examples labeled as **IPC** (Inter-Process Communication) involve _Public_ services and require the use of [_mcrouter_](https://github.com/aregtech/areg-sdk/tree/master/framework/mcrouter/) to function properly. To test IPC applications, please ensure that `mcrouter` is running. Applications not marked as **IPC** only involve _Local_ services and do not require the use of `mcrouter`.
 
-To compile examples, call one of these from command line:
+To compile examples, firstly, you need to build _areg_ library and _mcrouter_. The examples can be built with `cmake`, `make` and `msbuild`.
 
-```shell
-# Compile areg-sdk sources and examples. The option 'all' is optional
-$ make all
-```
-If `areg` library is already compiled, call
-```shell
-# Compile only examples
-$ make examples
+_Example of quick build using `cmake`:_
+```bash
+$ cmake -B ./build
+$ cmake --build build -j 8
 ```
 
-Below is the list of examples:
+_Example of quick build using `make`:_
+```bash
+$ make all -j 8
+```
+
+_Example of quick build using `msbuild`:_
+```bash
+> msbuild .
+```
+
+You may as well use special parameters to compile only examples (make sure that `areg` library and `mcrouter` are already built). See detailed description of build using different tools in AREG SDK [Wiki](https://github.com/aregtech/areg-sdk/wiki/02.-Software-build) page.
+
+**Below is the list of examples:**
 
 0.  [00_helloservice](./00_helloservice) -- multithreading and multiprocessing applications used as an example in [developer guide](./../docs/DEVELOP.md).
 1.  [01_hello](./01_hello/) -- multithreading console application to output "Hello World" message.
