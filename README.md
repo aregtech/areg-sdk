@@ -153,19 +153,19 @@ To customize the build, the tools accept parameters. For information on availabl
 To get AREG SDK source codes and dependent modules, open _Terminal_ in your `projects` folder and clone:
 ```bash
 # This clones the source codes of AREG SDK and dependent module
-$ git clone --recurse-submodules https://github.com/aregtech/areg-sdk.git
-$ cd areg-sdk
+git clone --recurse-submodules https://github.com/aregtech/areg-sdk.git
+cd areg-sdk
 ```
 
 If you already have AREG SDK sources and only need to load or update submodules to latest versions, take the steps:
 ```bash
-$ cd areg-sdk
+cd areg-sdk
 
 # Step 1: If you cloned AREG SDK and need to load submodules
-$ git submodule update --init
+git submodule update --init
 
 # Step 2: If you need to pull all latest source of submodules
-$ git submodule update --remote
+git submodule update --remote
 ```
 
 After cloning sources, use `cmake`, `make`, or `msbuild` tools to build applications. You should as well have C++17 GNU, Clang, Cygwin, or MSVC compiler installed on your machine.
@@ -176,10 +176,10 @@ Firstly, [clone the sources](#clone-sources) properly. To build with [cmake](htt
 ```bash
 # Step 1: Initialize cache and build configuration in folder './build' folder.
 #         Default options: g++ compiler, release build, enabled examples and unit tests
-$ cmake -B ./build
+cmake -B ./build
 
 # Step 2: Compile sources.
-$ cmake --build ./build -j 8
+cmake --build ./build -j 8
  ```
 
 ### Build with `make`
@@ -187,7 +187,7 @@ $ cmake --build ./build -j 8
 Firstly, [clone the sources](#clone-sources) properly. To build with [make](https://www.gnu.org/software/make/), using default (`g++`) compiler and options, open _Terminal_ in `areg-sdk` folder and take the steps:
 ```bash
 # Compile sources with default options: g++ compiler, release build, enabled examples and unit tests
-$ make -j 8
+make -j 8
 ```
 
 ### Build with `msbuild`
@@ -195,7 +195,7 @@ $ make -j 8
 Firstly, [clone the sources](#clone-sources) properly. To build with [MSBuild](https://visualstudio.microsoft.com/downloads/), using MSVC default options, open _Terminal_ in `areg-sdk` folder and take the steps:
 ```bash
 # Compile sources with default options: msvc compiler, debug build, enabled examples and unit tests
-$ MSBuild .
+MSBuild .
 ```
 
 ### Build with IDE
@@ -235,10 +235,10 @@ More details of parameters for each tool are described in the appropriate `user`
 An example to configure and compile codes with `cmake`:
 ```bash
 # Step 1: configure, make appropriate settings
-$ cmake -B ./build -DAREG_COMPILER=clang++ -DAREG_BINARY=static -DAREG_BUILD_TYPE=Debug -DAREG_ENABLE_EXT:BOOL=ON AREG_OUTPUT_BIN="~/product/areg-sdk/"
+cmake -B ./build -DAREG_COMPILER=clang++ -DAREG_BINARY=static -DAREG_BUILD_TYPE=Debug -DAREG_ENABLE_EXT:BOOL=ON AREG_OUTPUT_BIN="~/product/areg-sdk/"
 
 # Step 2: build applications
-$ cmake --build -j 8
+cmake --build -j 8
 ```
 
 In this scenario, the source codes are set up to build using `clang++`. The AREG engine is created as a static library with enabled extensions (may require additional dependencies). All applications are built in Debug mode, and the resulting binaries are stored in the `~/product/areg-sdk/` directory.
