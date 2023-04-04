@@ -528,8 +528,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wiki", "wiki", "{D2A3A8BC-F
 		docs\wiki\01.-Clone-source-codes.md = docs\wiki\01.-Clone-source-codes.md
 		docs\wiki\02.-Software-build.md = docs\wiki\02.-Software-build.md
 		docs\wiki\03.-Preprocessor-define-symbols.md = docs\wiki\03.-Preprocessor-define-symbols.md
-		docs\wiki\04-Compile-in-Windows-Subsystem-for-Linux-(WSL).md = docs\wiki\04-Compile-in-Windows-Subsystem-for-Linux-(WSL).md
-		docs\wiki\05-Logging.md = docs\wiki\05-Logging.md
+		docs\wiki\04.-Compile-in-Windows-Subsystem-for-Linux-(WSL).md = docs\wiki\04.-Compile-in-Windows-Subsystem-for-Linux-(WSL).md
+		docs\wiki\05.-AREG-Engine-Logging-System.md = docs\wiki\05.-AREG-Engine-Logging-System.md
 		docs\wiki\Home.md = docs\wiki\Home.md
 		docs\wiki\_Sidebar.md = docs\wiki\_Sidebar.md
 	EndProjectSection
