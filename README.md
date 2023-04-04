@@ -162,7 +162,7 @@ If you already have AREG SDK sources and only need to load or update submodules 
 cd areg-sdk
 
 # Step 1: If you cloned AREG SDK and need to load submodules
-git submodule update --init
+git submodule update --init --recursive
 
 # Step 2: If you need to pull all latest source of submodules
 git submodule update --remote
