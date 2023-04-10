@@ -13,17 +13,18 @@ This document is a developer guide and describes how to develop a service enable
 ## File structure
 
 Brief description of AREG SDK file structure:
-1. The framework of AREG SDK is in the [framework/areg](https://github.com/aregtech/areg-sdk/tree/master/framework/areg/) directory.
-2. High level subdirectories in [framework/areg](https://github.com/aregtech/areg-sdk/tree/master/framework/areg/) have developer-usable classes.
-3. All `private` subdirectories in framework contain code for internal use only.
-4. The [framework/mcrouter](https://github.com/aregtech/areg-sdk/tree/master/framework/mcrouter/) directory is multicast router implementation.
-5. The [framework/extensions](https://github.com/aregtech/areg-sdk/tree/master/framework/extensions/) directory has extended objects that may need extra libraries.
-6. The [examples](https://github.com/aregtech/areg-sdk/tree/master/examples/) directory contains demonstration of AREG engine features.
-7. The [tests](https://github.com/aregtech/areg-sdk/tree/master/tests/) directory contains _Unit Tests_ and later will contain benchmark tests.
-8. The [tools](https://github.com/aregtech/areg-sdk/tree/master/tools/) directory contains programs like design (in progress) and code generator.
-9. The [conf](https://github.com/aregtech/areg-sdk/tree/master/conf/) directory contains build configuration with `cmake`, `make` and `msbuild`.
-10. The [docs](https://github.com/aregtech/areg-sdk/tree/master/docs/) directory contains documentation.
-11. The detailed documentations are in [Wiki](https://github.com/aregtech/areg-sdk/wiki) (in progress).
+1. The [framework/areg](https://github.com/aregtech/areg-sdk/tree/master/framework/areg/) directory contains _AREG engine_ (`areg` library).
+2. The high level subdirectories of [framework/areg](https://github.com/aregtech/areg-sdk/tree/master/framework/areg/) contain declarations of classes, structures and types that can be used by developers to create an application.
+3. All objects in `private` subdirectories contain codes for internal use and should not be used  by developers.
+4. The [framework/mcrouter](https://github.com/aregtech/areg-sdk/tree/master/framework/mcrouter/) directory contains implementation of Multicast Router (or _mcrouter_).
+5. The [framework/extensions](https://github.com/aregtech/areg-sdk/tree/master/framework/extensions/) directory contains extended objects of _AREG framework_ and may require extra library dependency (configurable).
+6. The [thirdparty](https://github.com/aregtech/areg-sdk/tree/master/thirdparty) directory contains third-party modules that SDK has dependencies.
+7 The [examples](https://github.com/aregtech/areg-sdk/tree/master/examples/) directory contains working examples to demonstrate _AREG_ features.
+8. The [tests](https://github.com/aregtech/areg-sdk/tree/master/tests/) directory contains _Unit Tests_ (planned to have benchmark tests).
+9. The [tools](https://github.com/aregtech/areg-sdk/tree/master/tools/) directory contains code generator (planed to have design tools).
+10. The [conf](https://github.com/aregtech/areg-sdk/tree/master/conf/) directory contains build configuration with `cmake`, `make` and `msbuild` tools.
+11. The [docs](https://github.com/aregtech/areg-sdk/tree/master/docs/) directory contains documentation.
+12. The detailed documentations are in [Wiki](https://github.com/aregtech/areg-sdk/wiki).
 
 ---
 
@@ -43,13 +44,27 @@ For a comprehensive guide on the definition and creation of a Service Interface,
 
 > 💡 More testing examples are listed in the [examples](https://github.com/aregtech/areg-sdk/tree/master/examples/) directory.
 
-1. Firstly, compile all projects using [`cmake`](https://github.com/aregtech/areg-sdk/wiki/02.-Software-build#build-with-cmake-cmakeliststxt),  compile all projects, including example, call `make all` in command line.
-2. To compile example projects, call `make examples` in the command line.
-3. All compiled files are located in `<areg-sdk>/product/build/<compiler-platform-path>/bin` folder.
-4. If running an application with a _Public_ service (**IPC** projects), start `mcrouter`.
-5. There is no need to start the _mcrouter_ if testing an application with no _Public_ service.
-6. All compiled files are in the `bin` folder, switch there to start applications.
-7. Some applications may create logs in the `logs` folder of binary location. Open to analyze logs.
+Firstly, [build](https://github.com/aregtech/areg-sdk/wiki/02.-Software-build) all projects using [`cmake`](https://github.com/aregtech/areg-sdk/wiki/02.-Software-build#build-with-cmake-cmakeliststxt), [`make`](https://github.com/aregtech/areg-sdk/wiki/02.-Software-build#build-with-make-makefile) or [`MSBuild`](https://github.com/aregtech/areg-sdk/wiki/02.-Software-build#build-with-msbuild-areg-sdksln).
+
+_Example of quick build using `cmake`:_
+```bash
+$ cmake -B ./build
+$ cmake --build build -j 8
+```
+
+_Example of quick build using `make`:_
+```bash
+$ make all -j 8
+```
+
+_Example of quick build using `msbuild`:_
+```bash
+> msbuild .
+```
+
+All compiled binaries are located in `<areg-sdk>/product/build/<compiler-platform-path>/bin` directory.
+
+If the [listed example](https://github.com/aregtech/areg-sdk/blob/master/examples/README.md) is marked as an **IPC** (inter-process communication), the application contains a _Public_ services and requires start of `mcrouter`. Otherwise, the application contains _Local_ service and can run without `mcrouter` as a multithreading application. Some applications may create logs in the `logs` subdirectory to analyze.
 
 ---
 

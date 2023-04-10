@@ -2,7 +2,7 @@
 
 This folder contains the source codes of Multicast Router (`mcrouter`) used to create a network of connected Things and contains following folders:
 
-* [app](./app)              -- The source codes to start application. Under Windows OS it may start as consolde application or system service.
+* [app](./app)              -- The source codes to start application. Under Windows OS it may start as console application or system service.
 * [resource](./resource)    -- The folder with resource files of `mcrouter`
 * [tcp](./tcp)              -- The folder with source codes of TCP/IP connection of `mcrouter`.
 

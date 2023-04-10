@@ -523,6 +523,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{C485A89F-A14
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "areg-extensions", "framework\areg-extensions.vcxproj", "{A3E5EE71-6F14-43FD-A80F-C7791FD64E9E}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wiki", "wiki", "{D2A3A8BC-F3AC-499C-AE2C-19AC78F5EAFB}"
+	ProjectSection(SolutionItems) = preProject
+		docs\wiki\01.-Clone-source-codes.md = docs\wiki\01.-Clone-source-codes.md
+		docs\wiki\02.-Software-build.md = docs\wiki\02.-Software-build.md
+		docs\wiki\03.-Preprocessor-define-symbols.md = docs\wiki\03.-Preprocessor-define-symbols.md
+		docs\wiki\04.-Compile-in-Windows-Subsystem-for-Linux-(WSL).md = docs\wiki\04.-Compile-in-Windows-Subsystem-for-Linux-(WSL).md
+		docs\wiki\05.-AREG-Engine-Logging-System.md = docs\wiki\05.-AREG-Engine-Logging-System.md
+		docs\wiki\Home.md = docs\wiki\Home.md
+		docs\wiki\_Sidebar.md = docs\wiki\_Sidebar.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -1066,6 +1077,7 @@ Global
 		{11927EA9-1F1B-497D-8251-0C1EC93A770E} = {4CD64072-ECEB-47D9-8384-C1CF2E6193DC}
 		{E8BD18E5-EF07-42A0-BB98-461F3D9BCDE1} = {48E60088-F431-4FFB-A170-31DAF8EC2DC8}
 		{C485A89F-A149-4893-A023-253593403974} = {967610F9-FBB0-4793-9E76-F500C4167FCE}
+		{D2A3A8BC-F3AC-499C-AE2C-19AC78F5EAFB} = {1D3709F1-9915-4CEA-A9F6-4D3FDFD79965}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1034084F-74DD-4B33-86E3-D8038C748F48}
