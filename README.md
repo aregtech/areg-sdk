@@ -31,14 +31,12 @@
 
 ## Introduction[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#introduction)
 
-**AREG** (_Automated Real-time Event Grid_) is a powerful and lightweight cross-platform communication engine designed to facilitate seamless data transmission in IoT [fog- and mist-network](https://csrc.nist.gov/publications/detail/sp/500-325/final). AREG creates a grid of services using interface-centric approach, allowing multiple connected devices and software nodes to operate like thin distributed servers and clients. It automates real-time data transmission, utilizing both Client-Server and Publish-Subscribe models to ensure efficient and reliable communication between connected software nodes. 
+**AREG** (_Automated Real-time Event Grid_) is a powerful and lightweight cross-platform communication engine designed to facilitate seamless data transmission in IoT [fog- and mist-network](https://csrc.nist.gov/publications/detail/sp/500-325/final). AREG creates a grid of services using interface-centric approach, allowing multiple connected devices and software nodes to operate like thin distributed servers and clients. It automates real-time data transmission, utilizing both Client-Server and Publish-Subscribe models to ensure efficient and reliable communication between connected software nodes.
 
 ---
 
 ## Table of contents[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#table-of-contents)
 - [Motivation](#motivation)
-- [Interface-centricity](#interface-centricity)
-- [More than embedded](#more-than-embedded)
 - [Composition](#composition)
 - [Software build](#software-build)
     - [Clone sources](#clone-sources)
@@ -51,6 +49,8 @@
     - [Configure multicast router](#configure-multicast-router)
     - [Configure logging](#configure-logging)
 - [Roadmap](#roadmap)
+- [Interface-centricity](#interface-centricity)
+- [More than embedded](#more-than-embedded)
 - [Use cases and benefits](#use-cases-and-benefits)
     - [Distributed solution](#distributed-solution)
     - [Driverless devices](#driverless-devices)
@@ -73,35 +73,6 @@ As data is generated and collected at the edge of the network (**mist network**)
 * _Increase data privacy_, which is an important factor for sensitive data.
 * _Decrease data streaming_, which is a fundamental condition to optimize network communication.
 * _Autonomous, intelligent and self-aware devices_ with services directly in the environment of data origin.
-
-<div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
-
----
-
-## Interface-centricity[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#interface-centricity)
-
-**ORPC**, or _Object Remote Procedure Call_, is a remote procedure call concept that targets an interface on an object. It enables the construction of a _service mesh_ (or _service grid_), where applications offer reusable services, and programmable client objects request method execution of programmable server objects without needing to know their location in the network.
-
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/interface-centric.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/interface-centric.png" alt="Service oriented and interface-centric" style="width:50%;height:50%"/></a></div>
-
-ORPC concept is interface-centric, similar to object-oriented programming, and allows multiple instances of the same object to be instantiated and handled transparently. There are no protocol restrictions, although the bi-directional communication is required to send messages to all connected nodes. The programmable server objects are called _service providers_, and the programmable clients are called _service consumers_. This approach enables AREG to combine the features of _action-centric_ (Client-Server / Request-Reply) and _data-centric_ (Publish-Subscribe / PubSub) models.
-
-<div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
-
----
-
-## More than embedded[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#more-than-embedded)
-
-AREG is designed to provide a homogeneous solution for multithreading, multiprocessing, and internet communications through categorized services (_Local_, _Public_, and _Internet_). These services are software components with predefined interfaces, which methods are invoked remotely.
-
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-services.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-services.png" alt="AREG SDK distributed services" style="width:70%;height:70%"/></a></div>
-
-> 💡 Currently AREG engine supports _Local_ (multithreading) and _Public_ (multiprocessing) service categories.
-
-AREG forms a fault-tolerant system that automatically discovers and automates communications between services, allowing developers to focus on application logic development. The system ensures:
-* The crash of one application does not affect the entire system.
-* The clients automatically receive service availability notifications.
-* The requests, responses, and notifications are invoked in their own thread context.
 
 <div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
@@ -144,31 +115,34 @@ The tools to compile sources:
 | `make` | `Makefile` | **Linux, Cygwin**| _POSIX_ | &nbsp;&nbsp; - Build with `make`. |
 | `msbuild` | `areg-sdk.sln` | **Windows** | _Win32_ | &nbsp;&nbsp; - Build with `msbuild`.<br />&nbsp;&nbsp; - Open and build in _MSVS_. |
 
-To customize the build, the tools accept parameters. For information on available options, refer to the [Wiki pages](https://github.com/aregtech/areg-sdk/wiki). By default, after build the binaries are in `<areg-sdk>/product/build/<family>-<compiler>/<platform>-<bitness>-<cpu>-<build type>/bin` folder (for example, `areg-sdk/product/build/gnu-gcc/linux-64-x86_64-release/bin`).
+To customize the build, refer to the [Wiki pages](https://github.com/aregtech/areg-sdk/wiki). By default, the binaries are in `<areg-sdk>/product/build/<family>-<compiler>/<platform>-<bitness>-<cpu>-<build type>/bin` folder (for example, `areg-sdk/product/build/gnu-gcc/linux-64-x86_64-release/bin`).
 
 > 💡 The other POSIX-compliant OS and compilers are not tested yet.<br />
 
 ### Clone sources
 
-To get AREG SDK source codes and dependent modules, open _Terminal_ in your `projects` folder and clone:
+To get AREG SDK source codes and dependent modules, open _Terminal_ in your `projects` folder and take these steps:
 ```bash
 # This clones the source codes of AREG SDK and dependent module
 git clone --recurse-submodules https://github.com/aregtech/areg-sdk.git
 cd areg-sdk
 ```
 
-If you already have AREG SDK sources and only need to load or update submodules to latest versions, take the steps:
+If you already have AREG SDK sources and only need to clone the submodules, take these steps:
 ```bash
 cd areg-sdk
-
-# Step 1: If you cloned AREG SDK and need to load submodules
 git submodule update --init --recursive
-
-# Step 2: If you need to pull all latest source of submodules
-git submodule update --remote
 ```
 
-After cloning sources, use `cmake`, `make`, or `msbuild` tools to build applications. You should as well have C++17 GNU, Clang, Cygwin, or MSVC compiler installed on your machine.
+If you have AREG SDK sources and submodules, and only need to update to the latest submodule sources, take these steps:
+```bash
+cd areg-sdk
+git submodule update --remote --recursive
+```
+
+> 💡 Note, after running this Git command your submodule sources may differ from the sources that AREG SDK uses.
+
+To build applications after cloning sources, employ `cmake`, `make`, or `msbuild` tools. Ensure that you have a C++17 GNU, Clang, Cygwin, or MSVC compiler installed on your machine.
 
 ### Build with `cmake`
 
@@ -285,6 +259,35 @@ The aim of the AREG SDK is a lightweight, self-sufficient development and testin
   * Service interface designer.
   * Interactive log viewer.
   * Service testing and Data simulation tool.
+
+<div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
+
+---
+
+## Interface-centricity[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#interface-centricity)
+
+**ORPC**, or _Object Remote Procedure Call_, is a remote procedure call concept that targets an interface on an object. It enables the construction of a _service mesh_ (or _service grid_), where applications offer reusable services, and programmable client objects request method execution of programmable server objects without needing to know their location in the network.
+
+<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/interface-centric.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/interface-centric.png" alt="Service oriented and interface-centric" style="width:50%;height:50%"/></a></div>
+
+ORPC concept is interface-centric, similar to object-oriented programming, and supports transparent handling of multiple instances of the same object. There are no protocol restrictions, although the bi-directional communication is required to send messages to all connected nodes. The programmable server objects are called _service providers_, and the programmable clients are called _service consumers_. This approach enables AREG to combine the features of _action-centric_ (Client-Server / Request-Reply) and _data-centric_ (Publish-Subscribe / PubSub) models.
+
+<div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
+
+---
+
+## More than embedded[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#more-than-embedded)
+
+AREG is designed to provide a homogeneous solution for multithreading, multiprocessing, and internet communications through categorized services (_Local_, _Public_, and _Internet_). These services are software components with predefined interfaces, which methods are invoked remotely.
+
+<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-services.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-services.png" alt="AREG SDK distributed services" style="width:70%;height:70%"/></a></div>
+
+> 💡 Currently AREG engine supports _Local_ (multithreading) and _Public_ (multiprocessing) service categories.
+
+AREG forms a fault-tolerant system that automatically discovers and automates communications between services, allowing developers to focus on application logic development. The system ensures:
+* The crash of one application does not affect the entire system.
+* The clients automatically receive service availability notifications.
+* The requests, responses, and notifications are invoked in their own thread context.
 
 <div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
@@ -429,7 +432,7 @@ Join our project and provide assistance by:
 * hen creating a pull request, kindly consider the time it takes for reviewing and testing, and maintain proper coding style.
 * If you require invoiced commercial support or training, or if you wish to support AREG SDK commercially, kindly contact us at info[at]aregtech[dot]com. 
 
-If AREG SDK has helped your project or inspired you with new ideas, please don't forget to [![star AREG SDK](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=star%20AREG%20SDK)](https://github.com/aregtech/areg-sdk/) this repository. This gesture of appreciation encourages contributors and helps us grow our community.
+⭐ [![star AREG SDK](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=star%20AREG%20SDK)](https://github.com/aregtech/areg-sdk/) ⭐ AREG SDK repository if liked. This gesture of appreciation encourages contributors and helps us grow our community. Contact us for the feedback or new ideas.
 
 <div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
