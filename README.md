@@ -134,7 +134,7 @@ cd areg-sdk
 git submodule update --init --recursive
 ```
 
-If you have AREG SDK sources and submodules, and only need to update to the latest submodule sources, take these steps:
+If you have AREG SDK all sources and only need to update to the latest submodule sources, take these steps:
 ```bash
 cd areg-sdk
 git submodule update --remote --recursive
