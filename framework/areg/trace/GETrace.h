@@ -65,7 +65,7 @@
  *              }
  **/
 
-#if defined(ENABLE_TRACES) || defined(_ENABLE_TRACES)
+#if (defined(ENABLE_TRACES) && (ENABLE_TRACES)) || (defined(_ENABLE_TRACES) || (_ENABLE_TRACES))
 
 //////////////////////////////////////////////////////////////////////////
 // if ENABLE_TRACES is defined and not zero
