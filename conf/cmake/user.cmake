@@ -12,9 +12,10 @@
 #   6. AREG_BUILD_EXAMPLES  -- Build AREG engine examples
 #   7. AREG_BUILD_ALL       -- Builds the framework, examples and tests.
 #   8. AREG_ENABLE_EXT      -- Enables or disables the extensions, which might require additional libraries.
-#   9. AREG_OUTPUT_DIR      -- The output directory of build binaries
-#  10. AREG_OUTPUT_BIN      -- Set the path to folder to output compiled shared libraries and executables.
-#  11. AREG_OUTPUT_LIB      -- Set the path to folder to output compiled static libraries
+#   9. AREG_ENABLE_LOGS     -- Enable or disable compilation with logs.
+#  10. AREG_OUTPUT_DIR      -- The output directory of build binaries
+#  11. AREG_OUTPUT_BIN      -- Set the path to folder to output compiled shared libraries and executables.
+#  12. AREG_OUTPUT_LIB      -- Set the path to folder to output compiled static libraries.
 #
 # The default values are:
 #   1. AREG_COMPILER_FAMILY := gnu      (possible values: gnu, cygwin, llvm, msvc)
@@ -25,6 +26,7 @@
 #   6. AREG_BUILD_EXAMPLES  := ON       (possible values: ON, OFF)
 #   7. AREG_BUILD_ALL       := ON       (possible values: ON, OFF)
 #   8. AREG_ENABLE_EXT      := ON       (possible values: ON, OFF)
+#   9. AREG_ENABLE_LOGS     :=ON        (possible values: ON, OFF)
 #   9. AREG_OUTPUT_DIR      := <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release      (possible values: any full path)
 #  10. AREG_OUTPUT_BIN      := <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release/bin  (possible values: any full path)
 #  11. AREG_OUTPUT_LIB      := <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release/lib  (possible values: any full path)
@@ -160,6 +162,14 @@ if (NOT DEFINED AREG_ENABLE_EXT)
     option(AREG_ENABLE_EXT      "Enable extensions" OFF)
 endif()
 
+# Modify 'AREG_ENABLE_LOGS' to enable or disable compilation with logs.
+# By default, the applications are compiled with logs.
+if (DEFINED AREG_ENABLE_LOGS)
+    option(ENABLE_TRACES    "Compile with logs" ${AREG_ENABLE_LOGS})
+else()
+    option(ENABLE_TRACES    "Compile with logs" ON)
+endif()
+
 # CPP standard for the projects
 set(AREG_CXX_STANDARD 17)
 
@@ -171,10 +181,6 @@ set(AREG_PROCESSOR "x86_64")
 
 # Set the areg-sdk build root folder to output files.
 set(AREG_BUILD_ROOT "${AREG_SDK_ROOT}")
-
-# Set user or project specific defines here or keep empty.
-# By default it is compile with enabled logging --> "-DENABLE_TRACES"
-set(AREG_USER_DEFINES "-DENABLE_TRACES=1")
 
 # Set user specific root folder here
 set(AREG_USER_PRODUCTS "product")
