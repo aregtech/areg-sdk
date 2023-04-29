@@ -44,10 +44,10 @@
 
         <!-- ****************************************************************************************************************************** -->
         <!-- Add user preprocessor defines here for Debug and Release builds to set for all projects. By default there are 2 defines:       -->
-        <!-- ENABLED_TRACES 	    : enable compilation with logging; remove if no logging required.                                       -->
+        <!-- ENABLED_TRACES 	      : enable compilation with logging; remove if no logging required.                                       -->
         <!-- ENABLE_AREG_EXTENSIONS : enable AREG extensions, which contain additional features.                                            -->
         <!-- OUTPUT_DEBUG_LEVEL     : enables log like messages to output on console. The value 0 disables to output any message on console.-->
-        <!-- OUTPUT_DEBUG   	    : set 1 to enable outputs in Output Window; set 0 to disabled outputs.                                  -->
+        <!-- OUTPUT_DEBUG   	      : set 1 to enable outputs in Output Window; set 0 to disabled outputs.                                  -->
         <UserPreprocessorDefines Condition="'$(ConfigShortName)'=='Debug'">ENABLE_TRACES=1;ENABLE_AREG_EXTENSIONS</UserPreprocessorDefines>
         <UserPreprocessorDefines Condition="'$(ConfigShortName)'=='Release'">ENABLE_TRACES=1;ENABLE_AREG_EXTENSIONS</UserPreprocessorDefines>
 
