@@ -16,6 +16,7 @@
 # AREG_BINARY			-- The binary type of AREG library. Possible values: 'shared' or 'static'. The default is 'shared'.
 # AREG_BUILD_TYPE		-- 'Debug' or 'Release' build types of codes. The default is 'Release'. The default is 'Release'
 # AREG_ENABLE_EXT		-- Enabled or disable AREG extensions, which may create additional library dependencies. By default is OFF.
+# AREG_ENABLE_LOGS		-- Enable or disable compilation with logs.
 #
 # The following is a list of preprocessor directives, depending on the settings above:
 #   1. -DDEBUG or -DNDEBUG, depending whether AREG_BUILD_TYPE name is "Debug" or not, default is -DNDEBUG ("Release")
@@ -130,6 +131,9 @@ AREG_BINARY := $(if $(AREG_BINARY),$(AREG_BINARY),shared)
 # AREG_BUILD_TYPE := Debug
 AREG_BUILD_TYPE := $(if $(AREG_BUILD_TYPE),$(AREG_BUILD_TYPE),Release)
 
+# Modify 'AREG_ENABLE_LOGS' to enable or disable compilation with logs.
+# By default, the applications are compiled with logs.
+ENABLE_TRACES := $(if $(AREG_ENABLE_LOGS),$(AREG_ENABLE_LOGS),1)
 
 # ###########################################################################
 #           AERG SDK globals
