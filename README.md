@@ -60,6 +60,7 @@
 - [Examples](#examples)
 - [License](#license)
 - [Call to action](#call-to-action)
+- [Thank you!](#thank-you)
 
 ---
 
@@ -433,6 +434,26 @@ Join our project and provide assistance by:
 * If you require invoiced commercial support or training, or if you wish to support AREG SDK commercially, kindly contact us at info[at]aregtech[dot]com. 
 
 ⭐ [![star AREG SDK](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=star%20AREG%20SDK)](https://github.com/aregtech/areg-sdk/) ⭐ AREG SDK repository if liked. This gesture of appreciation encourages contributors and helps us grow our community. Contact us for the feedback or new ideas.
+
+<div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
+
+---
+
+## Thank you!
+
+Special thanks to all contributors and supporters that starred this repository.
+
+**Our contributors:**
+
+<a href="https://github.com/aregtech/areg-sdk/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=aregtech/areg-sdk" width=50% height=50%/>
+</a>
+
+
+**Our stargazers**:
+
+[![Stargazers repo roster for @aregtech/areg-sdk](https://reporoster.com/stars/aregtech/areg-sdk)](https://github.com/aregtech/areg-sdk/stargazers)
+
 
 <div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
