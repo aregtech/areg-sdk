@@ -17,11 +17,10 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           includeBots: false
-          noCommit: true
+          affiliation: all
+          excludeUsers: gitter-badger
           count: 12
           svgPath: 'contributors.svg'
-          avatarSize: 48
-          userNameHeight: 19
           itemTemplate: >
             <g transform="translate({{ x }}, {{ y }})">
               <a xlink:href="{{{ url }}}" class="contributor-link" target="_blank" rel="nofollow sponsored" title="{{{ name }}}" id="{{{ name }}}">
