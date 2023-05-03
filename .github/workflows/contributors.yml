@@ -29,10 +29,3 @@ jobs:
                 <text x="32" y="74" text-anchor="middle" alignment-baseline="middle" font-size="10">{{{ name }}}</text>
               </a>
             </g>
-
-      - name: Create a PR
-        uses: peter-evans/create-pull-request@v3
-        with:
-          commit-message: Update Contributors
-          title: "[automated] Update Contributors File"
-          token: ${{ secrets.GITHUB_TOKEN }}
