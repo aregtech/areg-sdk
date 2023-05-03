@@ -19,7 +19,7 @@ jobs:
           includeBots: false
           affiliation: all
           excludeUsers: gitter-badger
-          count: 12
+          count: 18
           svgPath: 'contributors.svg'
           itemTemplate: >
             <g transform="translate({{ x }}, {{ y }})">
