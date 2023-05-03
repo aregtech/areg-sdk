@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: Checkout repo
       - uses: actions/checkout@v3
-      
+      # Create contributors
       - name: Create contributors
       - uses: wow-actions/contributors-list@v1.2.0
         with:
@@ -28,7 +28,7 @@ jobs:
                 <text x="32" y="74" text-anchor="middle" alignment-baseline="middle" font-size="10">{{{ name }}}</text>
               </a>
             </g>
-
+      # Create PR
       - name: Create a PR
         uses: peter-evans/create-pull-request@v3
         with:
