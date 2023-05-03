@@ -1,0 +1,44 @@
+name: Generate Contributors
+on:
+  schedule:
+    - cron: '0 1 * * 0' # At 01:00 on Sunday.
+  push:
+    branches:
+      - master
+jobs:
+  contributors:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+      
+      - name: Create contributors
+        uses: wow-actions/contributors-list@v1.2.0
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          truncate: 0
+          userNameHeight: 12
+          includeBots: false
+          affiliation: all
+          excludeUsers: gitter-badger
+          count: 18
+          noCommit: true
+          svgPath: 'contributors.svg'
+          itemTemplate: >
+            <g transform="translate({{ x }}, {{ y }})">
+              <a xlink:href="{{{ url }}}" class="contributor-link" target="_blank" rel="nofollow sponsored" title="{{{ name }}}" id="{{{ name }}}">
+                <image width="{{ width }}" height="{{ height }}" xlink:href="{{{ avatar }}}" />
+                <text x="32" y="74" text-anchor="middle" alignment-baseline="middle" font-size="10">{{{ name }}}</text>
+              </a>
+            </g>
+
+      - name: Create a PR
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: Update Contributors
+          title: "[automated] Update Contributors File"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          labels: automated-pr
+          assignees: aregtech
+          reviewers: aregtech
+          draft: false

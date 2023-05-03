@@ -443,17 +443,13 @@ Join our project and provide assistance by:
 
 Special thanks to all contributors and supporters that starred this repository.
 
-**Our contributors:**
+**Our amazing contributors:**
 
-<a href="https://github.com/aregtech/areg-sdk/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=aregtech/areg-sdk" width=50% height=50%/>
-</a>
+[![Contributors for @aregtech/areg-sdk](https://github.com/aregtech/areg-sdk/blob/master/contributors.svg)](https://github.com/aregtech/areg-sdk/graphs/contributors)
 
+**Our supportive stargazers**:
 
-**Our stargazers**:
-
-[![Stargazers repo roster for @aregtech/areg-sdk](https://reporoster.com/stars/aregtech/areg-sdk)](https://github.com/aregtech/areg-sdk/stargazers)
-
+[![Stargazers for @aregtech/areg-sdk](https://reporoster.com/stars/aregtech/areg-sdk)](https://github.com/aregtech/areg-sdk/stargazers)
 
 <div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
