@@ -9,9 +9,17 @@ jobs:
   contributors:
     runs-on: ubuntu-latest
     steps:
-      - uses: wow-actions/contributors-list@v1
+      - name: Checkout repo
+      - uses: actions/checkout@v3
+      
+      - name: Create contributors
+      - uses: wow-actions/contributors-list@v1.2.0
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          includeBots: false
+          count: 12
+          svgPath: 'contributors.svg'
+          avatarSize: 48
           userNameHeight: 19
           itemTemplate: >
             <g transform="translate({{ x }}, {{ y }})">
@@ -20,3 +28,10 @@ jobs:
                 <text x="32" y="74" text-anchor="middle" alignment-baseline="middle" font-size="10">{{{ name }}}</text>
               </a>
             </g>
+
+      - name: Create a PR
+        uses: peter-evans/create-pull-request@v3
+        with:
+          commit-message: Update Contributors
+          title: "[automated] Update Contributors File"
+          token: ${{ secrets.GITHUB_TOKEN }}
