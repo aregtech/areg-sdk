@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-      - uses: actions/checkout@v3
+        uses: actions/checkout@v3
       
       - name: Create contributors
-      - uses: wow-actions/contributors-list@v1.2.0
+        uses: wow-actions/contributors-list@v1.2.0
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           includeBots: false
