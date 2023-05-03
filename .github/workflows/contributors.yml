@@ -1,4 +1,4 @@
-name: Repository Contributors
+name: Generate Contributors
 on:
   schedule:
     - cron: '0 1 * * 0' # At 01:00 on Sunday.
