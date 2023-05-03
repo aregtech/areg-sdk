@@ -40,5 +40,5 @@ jobs:
           labels: automated-pr
           assignees: aregtech
           reviewers: aregtech
-          projects: 4
+          branch-suffix: autobot
           draft: false
