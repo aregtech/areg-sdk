@@ -17,6 +17,7 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           truncate: 0
+          userNameHeight: 12
           includeBots: false
           affiliation: all
           excludeUsers: gitter-badger
