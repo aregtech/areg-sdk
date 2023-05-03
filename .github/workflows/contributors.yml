@@ -16,6 +16,7 @@ jobs:
         uses: wow-actions/contributors-list@v1.2.0
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          truncate: 0
           includeBots: false
           affiliation: all
           excludeUsers: gitter-badger
@@ -39,4 +40,5 @@ jobs:
           labels: automated-pr
           assignees: aregtech
           reviewers: aregtech
+          projects: 4
           draft: false
