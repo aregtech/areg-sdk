@@ -17,6 +17,7 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           includeBots: false
+          noCommit: true
           count: 12
           svgPath: 'contributors.svg'
           avatarSize: 48
