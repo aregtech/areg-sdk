@@ -207,7 +207,7 @@ MSBuild .
 > 💡 For instructions on how to customize builds with `make` tool, kindly refer to the [Build with MSBuild](https://github.com/aregtech/areg-sdk/wiki/02.-Software-build#build-with-msbuild-areg-sdksln) Wiki page.
 </details>
 
-### Building with an IDE
+### Building with IDE
 
 <details open><summary> Click to show / hide <code>Build with IDE</code>.</summary><br/>
 
@@ -253,11 +253,11 @@ Clone the sources as [described earlier](#clone-sources) and modify the default 
 
 | Parameter | Description | Possible Values |
 | --- | --- | --- |
-| **AREG_COMPILER_FAMILY** | Select the compiler family | _gnu_, _llvm_, _cygwin_, or _msvc_ |
+| **AREG_COMPILER_FAMILY** | Set the compiler family | _gnu_, _llvm_, _cygwin_, or _msvc_ |
 | **AREG_BINARY** | Choose the library type | _shared_ or _static_ |
 | **AREG_BUILD_TYPE** | Choose the build type | _Debug_ or _Release_ |
-| **AREG_ENABLE_EXT** | Enable flag to build the framework with extended features | _0_, _1_ |
-| **AREG_ENABLE_LOGS** | Enable flag to compile applications with logs | _0_, _1_ |
+| **AREG_ENABLE_EXT** | Build the framework with extended features | _0_, _1_ (_false_, _true_) |
+| **AREG_ENABLE_LOGS** | Compile applications with logs | _0_, _1_ (_false_, _true_) |
 
 More used parameters are listed in the appropriate `user` configuration files for each tool, which can be found in the following locations:
 
