@@ -18,9 +18,6 @@
     <ClInclude Include="generated\NECommon.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\private\DirectMessagerStub.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="generated\NEDirectMessager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -31,9 +28,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="generated\NEDirectConnection.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="generated\private\DirectConnectionStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="generated\private\DirectMessagerProxy.hpp">
@@ -148,13 +142,25 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="generated\CMakeLists.txt" />
-    <Text Include="generated\private\CMakeLists.txt" />
+    <Text Include="generated\CMakeLists.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="generated\private\CMakeLists.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\CentralMessager.siml" />
-    <None Include="res\ConnectionManager.siml" />
-    <None Include="res\DirectConnection.siml" />
-    <None Include="res\DirectMessager.siml" />
+    <None Include="res\CentralMessager.siml">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ConnectionManager.siml">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\DirectConnection.siml">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\DirectMessager.siml">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
