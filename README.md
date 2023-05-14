@@ -72,7 +72,7 @@ As data is generated and collected at the edge of the network (**mist network**)
 * _Decrease data streaming_, which is a fundamental condition to optimize network communication.
 * _Autonomous, intelligent and self-aware devices_ with services directly in the environment of data origin.
 
-<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="20%"/></a></div>
+<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="10%"/></a></div>
 
 ---
 
@@ -84,7 +84,7 @@ As data is generated and collected at the edge of the network (**mist network**)
 
 The ORPC concept is interface-centric, similar to object-oriented programming, and supports transparent handling of multiple instances of the same object. There are no protocol restrictions, although the bi-directional communication is required to send messages to all connected nodes. The programmable server objects are called _service providers_, and the programmable clients are called _service consumers_. This approach enables AREG to combine the features of _action-centric_ (Client-Server / Request-Reply) and _data-centric_ (Publish-Subscribe / PubSub) models.
 
-<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="20%"/></a></div>
+<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="10%"/></a></div>
 
 ---
 
@@ -101,7 +101,7 @@ AREG forms a fault-tolerant system that automatically discovers and automates co
 * The clients automatically receive service availability notifications.
 * The requests, responses, and notifications are invoked in their own thread context.
 
-<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="20%"/></a></div>
+<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="10%"/></a></div>
 
 ---
 
@@ -114,7 +114,7 @@ At present, the Automated Real-time Event Grid software development kit (**AREG 
 
 Furthermore, the AREG SDK includes a variety of [examples](https://github.com/aregtech/areg-sdk/tree/master/examples/), which illustrate the robust characteristics and functionality of the AREG communication engine. Additionally, there are various [user interface (UI) tools](https://github.com/aregtech/areg-sdk-tools/) currently in the development stage that aim to simplify and expedite the process of designing services and applications, as well as analyzing and interacting with applications on remote machines.
 
-<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="20%"/></a></div>
+<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="10%"/></a></div>
 
 ---
 
@@ -238,7 +238,7 @@ The *Windows Subsystem for Linux* (**WSL**) allows developers to use Linux appli
 
 </details>
 
-<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="20%"/></a></div>
+<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="10%"/></a></div>
 
 ---
 
@@ -315,7 +315,7 @@ Please refer to the [AREG Engine Logging System](https://github.com/aregtech/are
 
 </details>
 
-<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="20%"/></a></div>
+<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="10%"/></a></div>
 
 ---
 
@@ -335,7 +335,7 @@ And here are the planned tools:
 
 The development of the AREG SDK tools is currently underway in a separate repository called [AREG SDK Tools](https://github.com/aregtech/areg-sdk-tools), which is a part of the larger [AREG SDK project](https://github.com/users/aregtech/projects/4/).
 
-<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="20%"/></a></div>
+<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="10%"/></a></div>
 
 ---
 
@@ -345,7 +345,7 @@ The AREG SDK is a dynamic and flexible tool that offers a vast array of use case
 
 To explore the various use cases of the SDK, including **distributed solutions** for embedded applications, **driverless devices**, **real-time solutions**, **digital twins**, and **simulation and tests**, refer to the [AREG SDK User Cases](https://github.com/aregtech/areg-sdk/blob/master/docs/USECASES.md) documentation.
 
-<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="20%"/></a></div>
+<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="10%"/></a></div>
 
 ---
 
@@ -353,7 +353,7 @@ To explore the various use cases of the SDK, including **distributed solutions**
 
 There are various [examples](https://github.com/aregtech/areg-sdk/tree/master/examples/) to demonstrate features of the AREG SDK. The examples are listed in the [examples/README.md](https://github.com/aregtech/areg-sdk/blob/master/examples/README.md) document.
 
-<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="20%"/></a></div>
+<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="10%"/></a></div>
 
 ---
 
@@ -361,7 +361,7 @@ There are various [examples](https://github.com/aregtech/areg-sdk/tree/master/ex
  
 AREG SDK is under free open source [_Apache License Version 2.0_](https://github.com/aregtech/areg-sdk/blob/master/LICENSE.txt). However, AREG SDK can be commercially licensed, which includes the commercial support, full rights to create and distribute software without open source license obligations. For commercial license, support or additional information, please visit [Aregtech](https://www.aregtech.com/) website or contact _info[at]aregtech[dot]com_.
 
-<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="20%"/></a></div>
+<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="10%"/></a></div>
 
 ---
 
@@ -375,7 +375,7 @@ Join our project and provide assistance by:
 
 ⭐ [![star AREG SDK](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=star%20AREG%20SDK)](https://github.com/aregtech/areg-sdk/) ⭐ AREG SDK repository if liked. This gesture of appreciation encourages contributors and helps us grow our community. Contact us for the feedback or new ideas.
 
-<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="20%"/></a></div>
+<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="10%"/></a></div>
 
 ---
 
@@ -391,7 +391,7 @@ Special thanks to all contributors and supporters that starred this repository.
 
 [![Stargazers for @aregtech/areg-sdk](https://reporoster.com/stars/aregtech/areg-sdk)](https://github.com/aregtech/areg-sdk/stargazers)
 
-<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="20%"/></a></div>
+<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="15%"/></a></div>
 
 ---
 
