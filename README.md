@@ -320,8 +320,6 @@ Please refer to the [AREG Engine Logging System](https://github.com/aregtech/are
 
 ## Roadmap[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#roadmap)
 
-## Roadmap
-
 The goal of the AREG SDK is to provide a lightweight, self-sufficient development and testing system to help developers create complex applications for **Desktop**, **Embedded**, and **IoT edge** devices in a shorter amount of time (_30-50% faster_). 
 
 Here are the planned features of the framework:
