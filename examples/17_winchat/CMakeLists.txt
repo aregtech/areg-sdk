@@ -40,7 +40,7 @@ setAppOptions(${projName1} ${gen_projName})
 add_executable(${projName2} WIN32 ${17_SRC2})
 setAppOptions(${projName2} ${gen_projName})
 
-# Set compile definitions to linke MFC DLL
+# Set compile definitions to link MFC DLL
 target_compile_definitions(${projName1} PRIVATE "${MFC_DEFINES}")
 target_compile_definitions(${projName2} PRIVATE "${MFC_DEFINES}")
 

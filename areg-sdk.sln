@@ -39,6 +39,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{1D3709F1-9
 		docs\Sample.siml = docs\Sample.siml
 		docs\ServiceInterface.md = docs\ServiceInterface.md
 		docs\WIN32.md = docs\WIN32.md
+		docs\USECASES.md = docs\USECASES.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "conf", "conf", "{A9875C78-1248-4693-9310-5C46C73DDCEB}"

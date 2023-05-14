@@ -54,14 +54,12 @@
     <ClInclude Include="generated\private\ConnectionManagerEvents.hpp" />
     <ClInclude Include="generated\private\DirectConnectionEvents.hpp" />
     <ClInclude Include="generated\private\DirectConnectionProxy.hpp" />
-    <ClInclude Include="generated\private\DirectConnectionStub.hpp" />
     <ClInclude Include="generated\NECommon.hpp" />
     <ClInclude Include="generated\NEDirectMessager.hpp" />
     <ClInclude Include="generated\private\CentralMessagerProxy.hpp" />
     <ClInclude Include="generated\private\ConnectionManagerProxy.hpp" />
     <ClInclude Include="generated\private\DirectMessagerEvents.hpp" />
     <ClInclude Include="generated\private\DirectMessagerProxy.hpp" />
-    <ClInclude Include="generated\private\DirectMessagerStub.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="generated\private\CentralMessagerClientBase.cpp" />
