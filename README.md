@@ -256,8 +256,8 @@ Clone the sources as [described earlier](#clone-sources) and modify the default 
 | **AREG_COMPILER_FAMILY** | Set the compiler family | _gnu_, _llvm_, _cygwin_, or _msvc_ |
 | **AREG_BINARY** | Choose the library type | _shared_ or _static_ |
 | **AREG_BUILD_TYPE** | Choose the build type | _Debug_ or _Release_ |
-| **AREG_ENABLE_EXT** | Build the framework with extended features | _0_, _1_ (_false_, _true_) |
-| **AREG_ENABLE_LOGS** | Compile applications with logs | _0_, _1_ (_false_, _true_) |
+| **AREG_ENABLE_EXT** | Build the framework with extended features | _0_ or _1_ (_false_ or _true_) |
+| **AREG_ENABLE_LOGS** | Compile applications with logs | _0_ or _1_ (_false_ or _true_) |
 
 More used parameters are listed in the appropriate `user` configuration files for each tool, which can be found in the following locations:
 
