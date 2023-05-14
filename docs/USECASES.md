@@ -2,7 +2,7 @@
 
 AREG SDK can be used in a very large scope of multithreading and multiprocessing application development.  This document showcases several examples of how the SDK can be utilized to develop intelligent devices.
 
-### Distributed solution
+## Distributed solution[#distributed-solutions]
 
 <details open><summary> Click to show / hide <code>distributed solution</code>.</summary><br/>
 
@@ -64,7 +64,7 @@ The developers should create `SystemShutdownService` and `RemoteRegistryService`
 An example of developing a service provider and consumer in one and multiple processes is in [**Hello Service!**](https://github.com/aregtech/areg-sdk/blob/master/docs/HelloService.md) guide. As well there are multiple [examples](https://github.com/aregtech/areg-sdk/tree/master/examples/) of multiprocessing and multithreading applications.
 </details>
 
-### Driverless devices
+## Driverless devices[#driverless-devices]
 
 <details open><summary> Click to show / hide <code>driverless devices</code>.</summary><br/>
 
@@ -79,7 +79,7 @@ Proposed are driverless service-enabled devices that do not require installation
 The services, described in the interface prototype documents, are faster and easier to develop than drivers, as they do not require special techniques and can be developed like user mode applications. Service development reduces risks and the code generator simplifies client object generation from a service interface document.
 </details>
 
-### Real-time solutions
+## Real-time solutions[#real-time-solutions]
 
 <details open><summary> Click to show / hide <code>real-time solutions</code>.</summary><br/>
 
@@ -88,7 +88,7 @@ AREG engine automatically generates and delivers messages to the target and invo
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-sdk-features.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-sdk-features.png" alt="AREG SDK and multicast features" style="width:70%;height:70%"/></a></div>
 </details>
 
-### Digital twin
+## Digital twins[#digital-twins]
 
 <details open><summary> Click to show / hide <code>digital twin</code>.</summary><br/>
 
@@ -96,7 +96,7 @@ AREG framework's event-driven and service-oriented architecture, coupled with re
 
 </details>
 
-### Simulation and tests
+## Simulation and tests[#simulation-and-tests]
 
 <details open><summary> Click to show / hide <code>simulation and tests</code>.</summary></br>
 

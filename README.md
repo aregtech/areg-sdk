@@ -46,6 +46,7 @@
     - [Build with `make`](#build-with-make)
     - [Build with `msbuild`](#build-with-msbuild)
     - [Build with IDE](#build-with-ide)
+    - [Build with WSL](#build-with-wsl)
 - [Integration](#integration)
     - [Integrate for development](#integrate-for-development)
     - [Configure multicast router](#configure-multicast-router)
@@ -226,6 +227,16 @@ To build the AREG SDK using [Microsoft Visual Studio](https://visualstudio.micro
 3. Right-click on the file and select **Configure All Projects** from the context menu. Wait for the configuration to complete.
 4. Right-click on the file again and select **Build All Projects** to build the sources with the default (`g++`) compiler and default options.
 
+</details>
+
+### Build with WSL
+
+<details open><summary> Click to show / hide <code>Build with WSL</code>.</summary><br/>
+
+The *Windows Subsystem for Linux* (**WSL**) allows developers to use Linux applications directly on Windows machines. This means that developers may clone, compile and use AREG SDK in a popular Linux distributions. To install and update WSL on your Windows 10 machine, clone and compile AREG SDK sources, and run examples, please follow the step-by-step instructions outlined in the [Compile in Windows Subsystem for Linux (WSL)](https://github.com/aregtech/areg-sdk/wiki/04.-Compile-with-Windows-Subsystem-for-Linux-(WSL)) Wiki page.
+
+</details>
+
 <div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
 ---
@@ -235,6 +246,8 @@ To build the AREG SDK using [Microsoft Visual Studio](https://visualstudio.micro
 > 💡 Please refer to the [AREG SDK Wiki pages](https://github.com/aregtech/areg-sdk/wiki) for detailed information about the builds and options.
 
 ### Custom build
+
+<details open><summary> Click to show / hide <code>Custom build</code>.</summary><br/>
 
 Clone the sources as [described earlier](#clone-sources) and modify the default compilation settings using the parameters listed below:
 
@@ -261,32 +274,45 @@ cmake -B ./build -DAREG_COMPILER=clang++ -DAREG_BINARY=static -DAREG_BUILD_TYPE=
 cmake --build -j 8
 ```
 
-For additional guidance and step-by-step examples, refer to the [_Hello Service!_](https://github.com/aregtech/areg-sdk/blob/master/docs/HelloService.md) document, which demonstrates various scenarios of creating service providers and consumers. As well refer to [DEVELOP.md](https://github.com/aregtech/areg-sdk/blob/master/docs/DEVELOP.md) for file structure.
+For additional guidance and step-by-step examples, refer to the [_Hello Service!_](https://github.com/aregtech/areg-sdk/blob/master/docs/HelloService.md) document, which showcases a variety scenarios of creating _Local_ and _Public_ service providers and consumers. In addition, review the file structure guidelines presented in the [DEVELOP.md](https://github.com/aregtech/areg-sdk/blob/master/docs/DEVELOP.md) document.
+</details>
 
 ### Configure multicast router
 
-Configure [_router.init_](https://github.com/aregtech/areg-sdk/blob/master/framework/areg/resources/router.init) file to set the IP-address and the port of _multicast router_ (`mcrouter`):
+<details open><summary> Click to show / hide <code>Configure multicast router</code>.</summary><br/>
+
+To configure the _Multicast Router_, adjust the [_router.init_](https://github.com/aregtech/areg-sdk/blob/master/framework/areg/resources/router.init) file by specifying the IP address and port of the `mcrouter`:
 ```
-connection.address.tcpip    = 127.0.0.1	# the address of mcrouter host
-connection.port.tcpip       = 8181      # the connection port of mcrouter
+connection.address.tcpip    = 127.0.0.1	# IP address of the mcrouter host
+connection.port.tcpip       = 8181      # connection port of the mcrouter
 ```
-The multicast router is required only for multiprocessing applications and can be ignored in case of multithreading. It forms a network and requires GPOS.
+
+Note that the *Multicast Router* is necessary only for applications that provide or consume _Public_ services (multiprocessing applications) and can be ignored for application using only _Local_ services (multithreading applications). The Multicast Router can run on any machine with GPOS (General Purpose Operating System). It establishes a network between connected applications and responsible to route messages between programmable service components.
+</details>
 
 ### Configure logging
 
-Configure [_log.init_](https://github.com/aregtech/areg-sdk/blob/master/framework/areg/resources/log.init) to set scopes, priorities and file name for logging:
-```
-log.file        = %home%/logs/%appname%_%time%.log # create logs in 'log' subfolder of user home 
-scope.mcrouter.*= NOTSET ;                         # disable logs for mcrouter.
+<details open><summary> Click to show / hide <code>Configure logging</code>.</summary><br/>
 
-scope.my_app.*                   = DEBUG | SCOPE ; # enable all logs of my_app
-scope.my_app.ignore_this_scope   = NOTSET ;        # disable logs of certain scopes in my_app
-scope.my_app.ignore_this_group_* = NOTSET ;        # disable logs of certain scope group in my_app
-```
-> 💡 By default, the `router.init` and `log.init` files are located in the `config` subfolder of binaries.<br />
-> 💡 To enable all logs of all applications, use `scope.*  = DEBUG | SCOPE ;` .<br />
-> 💡 Currently logging is possible only in the file.
+Applications built on the AREG framework can be compiled with or without logging. If you choose to compile with logging, you'll need to configure [_log.init_](https://github.com/aregtech/areg-sdk/blob/master/framework/areg/resources/log.init) to set scopes, priorities, and file names for logging. 
 
+Here's an example configuration for the log file:
+```
+log.file        = %home%/logs/%appname%_%time%.log # creates logs in the 'log' subfolder of the user's home directory
+scope.mcrouter.*= NOTSET ;                         # disables logs for mcrouter.
+
+scope.my_app.*                   = DEBUG | SCOPE ; # enables all logs of my_app
+scope.my_app.ignore_this_scope   = NOTSET ;        # disables logs for a certain scope in my_app
+scope.my_app.ignore_this_group_* = NOTSET ;        # disables logs for a certain scope group in my_app
+```
+
+Please refer to the [AREG Engine Logging System](https://github.com/aregtech/areg-sdk/wiki/05.-AREG-Engine-Logging-System) Wiki page for detailed instructions on compiling applications with enabled or disabled logging, start and stopping logs during runtime, as well as programmable creating and using logging scopes and configuring in the `log.init` file. 
+
+> 💡 By default, the `router.init` and `log.init` files are located in the `config` subfolder of binaries.<br/>
+> 💡 To enable logging for all applications, use `scope.*  = DEBUG | SCOPE ;`.
+> 💡 At present, logging is only possible in the file.
+
+</details>
 
 <div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
@@ -294,15 +320,21 @@ scope.my_app.ignore_this_group_* = NOTSET ;        # disable logs of certain sco
 
 ## Roadmap[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#roadmap)
 
-The aim of the AREG SDK is a lightweight, self-sufficient development and testing system to help developers to create complex **Desktop**, **Embedded**, and **IoT edge** applications in a shorter amount of time (_30-50% faster_). 
-- **Planned features of the framework:**
-  * Multi-channel and multi-protocol communication.
-  * Logging service to collect logs in the network.
-  * _Internet_ (web) category services.
-- **Planned tools:**
-  * Service interface designer.
-  * Interactive log viewer.
-  * Service testing and Data simulation tool.
+## Roadmap
+
+The goal of the AREG SDK is to provide a lightweight, self-sufficient development and testing system to help developers create complex applications for **Desktop**, **Embedded**, and **IoT edge** devices in a shorter amount of time (_30-50% faster_). 
+
+Here are the planned features of the framework:
+- Multi-channel and multi-protocol communication.
+- Logging service to collect logs in the network.
+- _Internet_ (web) category services.
+
+And here are the planned tools:
+- Service interface designer.
+- Interactive log viewer.
+- Service testing and data simulation tool.
+
+The development of the AREG SDK tools is currently underway in a separate repository called [AREG SDK Tools](https://github.com/aregtech/areg-sdk-tools), which is a part of the larger [AREG SDK project](https://github.com/users/aregtech/projects/4/).
 
 <div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
@@ -310,7 +342,9 @@ The aim of the AREG SDK is a lightweight, self-sufficient development and testin
 
 ## Use cases and benefits[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#use-cases-and-benefits)
 
-The AREG SDK is a dynamic and flexible tool that offers a vast array of use cases for multithreading and multiprocessing application development. From practical examples to real-world applications, the SDK has proven to be effective and efficient in a variety of scenarios. With its tested capabilities and potential for success, it is a common choice for developers seeking to create intelligent devices. Whether you're developing solutions for embedded or IoT, the AREG SDK is a powerful tool that can help you achieve your goals. To explore the various use cases of the SDK, please refer to the appropriate [AREG SDK User Cases](https://github.com/aregtech/areg-sdk/blob/master/docs/USECASES.md) documentation.
+The AREG SDK is a dynamic and flexible tool that offers a vast array of use cases for multithreading and multiprocessing application development. The SDK has been successfully used in a variety of scenarios, from practical examples to real-world applications. Its proven capabilities and potential for success make it a popular choice for developers seeking to create intelligent devices for embedded and IoT applications. 
+
+To explore the various use cases of the SDK, including **distributed solutions** for embedded applications, **driverless devices**, **real-time solutions**, **digital twins**, and **simulation and tests**, refer to the [AREG SDK User Cases](https://github.com/aregtech/areg-sdk/blob/master/docs/USECASES.md) documentation.
 
 <div align="right">[ <a href="#table-of-contents">↑ to top ↑</a> ]</div>
 
