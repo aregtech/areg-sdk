@@ -32,7 +32,7 @@
 
 ## Introduction[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#introduction)
 
-**AREG** (_Automated Real-time Event Grid_) is a communication engine that enables data transmission in IoT [fog- and mist-network](https://csrc.nist.gov/publications/detail/sp/500-325/final). It is lightweight, automated, featured, and works on different platforms. AREG uses an interface-centric approach to create a grid of services that allows multiple devices and software nodes to operate like distributed servers and clients. By automating real-time data transmission, and using both Client-Server and Publish-Subscribe models, AREG ensures reliable and efficient communication between connected software nodes.
+**AREG** (*Automated Real-time Event Grid*) is a communication engine that enables data transmission in IoT [fog- and mist-network](https://csrc.nist.gov/publications/detail/sp/500-325/final). It is lightweight, automated, featured, and works on different platforms. AREG uses an interface-centric approach to create a grid of services that allows multiple devices and software nodes to operate like distributed servers and clients. By automating real-time data transmission, and using both Client-Server and Publish-Subscribe models, AREG ensures reliable and efficient communication between connected software nodes.
 
 ---
 
@@ -72,7 +72,7 @@ As data is generated and collected at the edge of the network (**mist network**)
 * _Decrease data streaming_, which is a fundamental condition to optimize network communication.
 * _Autonomous, intelligent and self-aware devices_ with services directly in the environment of data origin.
 
-<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="10%"/></a></div>
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
 ---
 
@@ -84,7 +84,7 @@ As data is generated and collected at the edge of the network (**mist network**)
 
 The ORPC concept is interface-centric, similar to object-oriented programming, and supports transparent handling of multiple instances of the same object. There are no protocol restrictions, although the bi-directional communication is required to send messages to all connected nodes. The programmable server objects are called _service providers_, and the programmable clients are called _service consumers_. This approach enables AREG to combine the features of _action-centric_ (Client-Server / Request-Reply) and _data-centric_ (Publish-Subscribe / PubSub) models.
 
-<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="10%"/></a></div>
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
 ---
 
@@ -101,7 +101,7 @@ AREG forms a fault-tolerant system that automatically discovers and automates co
 * The clients automatically receive service availability notifications.
 * The requests, responses, and notifications are invoked in their own thread context.
 
-<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="10%"/></a></div>
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
 ---
 
@@ -109,12 +109,12 @@ AREG forms a fault-tolerant system that automatically discovers and automates co
 
 At present, the Automated Real-time Event Grid software development kit (**AREG SDK**) comprises the following primary modules:
 - [Multicast router (_mcrouter_)](https://github.com/aregtech/areg-sdk/tree/master/framework/mcrouter/): a console application or OS-managed service that facilitates the routing of messages.
-- The [AREG engine](https://github.com/aregtech/areg-sdk/tree/master/framework/areg/): is framework library that enables the development of applications using the AREG SDK.
+- The [AREG engine](https://github.com/aregtech/areg-sdk/tree/master/framework/areg/): is framework library that enables the development of applications using the communication engine.
 - [Code generator](https://github.com/aregtech/areg-sdk/tree/master/tools/): a tool that generates service provider and consumer objects from interface documents.
 
 Furthermore, the AREG SDK includes a variety of [examples](https://github.com/aregtech/areg-sdk/tree/master/examples/), which illustrate the robust characteristics and functionality of the AREG communication engine. Additionally, there are various [user interface (UI) tools](https://github.com/aregtech/areg-sdk-tools/) currently in the development stage that aim to simplify and expedite the process of designing services and applications, as well as analyzing and interacting with applications on remote machines.
 
-<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="10%"/></a></div>
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
 ---
 
@@ -138,17 +138,12 @@ After compilation, the binaries are stored in the `<areg-sdk>/product/build/<fam
 
 <details open><summary> Click to show / hide <code>Clone sources</code>.</summary><br/>
 
-To obtain the AREG SDK source codes and the dependent modules, follow these steps:
-
-1. Open the _Terminal_ in your `projects` directory.
-2. Run the following commands:
+To obtain the AREG SDK source codes and the dependent modules, run the following command in your `projects` directory:
 ```bash
-# This clones the source codes of AREG SDK and dependent module
 git clone --recurse-submodules https://github.com/aregtech/areg-sdk.git
-cd areg-sdk
 ```
 
-Alternatively, to clone only the submodule sources, run the following command in the root directory of the AREG SDK:
+Alternatively, to clone only the submodule sources, run the following command in the AREG SDK root directory:
 ```bash
 git submodule update --init --recursive
 ```
@@ -167,9 +162,9 @@ To build applications after cloning the AREG SDK sources, use the `cmake`, `make
 
 <details open><summary> Click to show / hide <code>Build with cmake</code>.</summary><br/>
 
-To build the AREG SDK using [CMake](https://cmake.org/download/), ensure that you have cloned the sources properly as [described earlier](#clone-sources). Then, open the _Terminal_ in the `areg-sdk` directory and follow these steps:
+To build the AREG and examples using [CMake](https://cmake.org/download/), ensure that you have cloned the sources properly as [described earlier](#clone-sources). Then, open the _Terminal_ in the `areg-sdk` directory and follow these steps:
 
-1. Initialize the cache and build configuration in the `./build` directory with default options, which include using the `g++` compiler, performing a _release_ build, and enabling examples and unit tests:
+1. Initialize the cache and build configuration in the `./build` directory with default options, which include using the *g++* compiler, performing a _release_ build, and enabling examples and unit tests:
 ```bash
 cmake -B ./build
 ```
@@ -186,7 +181,7 @@ cmake --build ./build -j 8
 
 <details open><summary> Click to show / hide <code>Build with cmake</code>.</summary><br/>
 
-To build the AREG SDK using [Make](https://www.gnu.org/software/make/), ensure that you have cloned the sources properly as [described earlier](#clone-sources). Then, open the _Terminal_ in the `areg-sdk` directory and compile sources with _g++_ compiler, _release_ build, enabled examples and unit tests by following this command (justify parallel jobs with `-j` option):
+To build the AREG and examples using [Make](https://www.gnu.org/software/make/), ensure that you have cloned the sources properly as [described earlier](#clone-sources). Then, open the _Terminal_ in the `areg-sdk` directory and compile sources with _g++_ compiler, _release_ build, enabled examples and unit tests by following this command (justify parallel jobs with `-j` option):
 
 ```bash
 make -j 8
@@ -199,7 +194,7 @@ make -j 8
 
 <details open><summary> Click to show / hide <code>Build with msbuild</code>.</summary><br/>
 
-To build the AREG SDK using [MSBuild](https://visualstudio.microsoft.com/downloads/), ensure that you have cloned the sources properly as [described earlier](#clone-sources). Then, open the _Terminal_ in the `areg-sdk` directory and compile sources with _MSVC_ compiler, _release_ build, enabled examples and unit tests by following this step:
+To build the AREG and examples using [MSBuild](https://visualstudio.microsoft.com/downloads/), ensure that you have cloned the sources properly as [described earlier](#clone-sources). Then, open the _Terminal_ in the `areg-sdk` directory and compile sources with _MSVC_ compiler, _release_ build, enabled examples and unit tests by following this step:
 
 ```bash
 MSBuild .
@@ -212,21 +207,21 @@ MSBuild .
 
 <details open><summary> Click to show / hide <code>Build with IDE</code>.</summary><br/>
 
-> 💡 In this chapter, we explain how to build the AREG SDK with Microsoft Visual Studio and Visual Studio Code. The other IDEs currently are not in our focus.
+> 💡 In this chapter, we explain how to build the AREG and examples with *Microsoft Visual Studio* and *Visual Studio Code*. The other IDEs currently are not in our focus.
 
-To build the AREG SDK using [Microsoft Visual Studio](https://visualstudio.microsoft.com/downloads/) or [Visual Studio Code](https://code.visualstudio.com/), ensure that you have cloned the sources properly as [described earlier](#clone-sources) and follow the instructions bellow.
+To build the AREG and examples using [Microsoft Visual Studio](https://visualstudio.microsoft.com/downloads/) or [Visual Studio Code](https://code.visualstudio.com/), ensure that you have cloned the sources properly as [described earlier](#clone-sources) and follow the instructions bellow.
 
-#### Build in Microsoft Visual Studio
+#### Build using Microsoft Visual Studio
 
 1. Open [`areg-sdk.sln`](https://github.com/aregtech/areg-sdk/blob/master/areg-sdk.sln) in *Microsoft Visual Studio*.
 2. Build the solution with *MSVC*.
 
-#### Build in Visual Studio Code
+#### Build using Visual Studio Code
 
 1. Open the `areg-sdk` folder in *Visual Studio Code*.
 2. In the Explorer panel, select [`CMakeLists.txt`](https://github.com/aregtech/areg-sdk/blob/master/CMakeLists.txt).
-3. Right-click on the file and select **Configure All Projects** from the context menu. Wait for the configuration to complete.
-4. Right-click on the file again and select **Build All Projects** to build the sources with the default (`g++`) compiler and default options.
+3. Right-click on the file, select **Configure All Projects** from the context menu and wait for completion.
+4. Right-click on the file again and select **Build All Projects** to build the sources with the default options.
 
 </details>
 
@@ -234,11 +229,11 @@ To build the AREG SDK using [Microsoft Visual Studio](https://visualstudio.micro
 
 <details open><summary> Click to show / hide <code>Build with WSL</code>.</summary><br/>
 
-The *Windows Subsystem for Linux* (**WSL**) allows developers to use Linux applications directly on Windows machines. This means that developers may clone, compile and use AREG SDK in a popular Linux distributions. To install and update WSL on your Windows 10 machine, clone and compile AREG SDK sources, and run examples, please follow the step-by-step instructions outlined in the [Compile in Windows Subsystem for Linux (WSL)](https://github.com/aregtech/areg-sdk/wiki/04.-Compile-with-Windows-Subsystem-for-Linux-(WSL)) Wiki page.
+The *Windows Subsystem for Linux* (**WSL**) allows developers to use Linux applications directly on Windows machines. This means that developers may clone, compile and use AREG engine in a popular Linux distributions. To install and update WSL on your Windows 10 machine, clone and compile AREG SDK sources, and run examples, please follow the step-by-step instructions outlined in the [Compile in Windows Subsystem for Linux (WSL)](https://github.com/aregtech/areg-sdk/wiki/04.-Compile-with-Windows-Subsystem-for-Linux-(WSL)) Wiki page.
 
 </details>
 
-<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="10%"/></a></div>
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
 ---
 
@@ -295,7 +290,7 @@ Note that the *Multicast Router* is necessary only for applications that provide
 
 <details open><summary> Click to show / hide <code>Configure logging</code>.</summary><br/>
 
-Applications built on the AREG framework can be compiled with or without logging. If you choose to compile with logging, you'll need to configure [_log.init_](https://github.com/aregtech/areg-sdk/blob/master/framework/areg/resources/log.init) to set scopes, priorities, and file names for logging. 
+Applications based on the AREG framework can be compiled with or without logging. If you choose to compile with logging, you'll need to configure [_log.init_](https://github.com/aregtech/areg-sdk/blob/master/framework/areg/resources/log.init) to set scopes, priorities, and file names for logging. 
 
 Here's an example configuration for the log file:
 ```
@@ -307,15 +302,15 @@ scope.my_app.ignore_this_scope   = NOTSET ;        # disables logs for a certain
 scope.my_app.ignore_this_group_* = NOTSET ;        # disables logs for a certain scope group in my_app
 ```
 
-Please refer to the [AREG Engine Logging System](https://github.com/aregtech/areg-sdk/wiki/05.-AREG-Engine-Logging-System) Wiki page for detailed instructions on compiling applications with enabled or disabled logging, start and stopping logs during runtime, as well as programmable creating and using logging scopes and configuring in the `log.init` file. 
+Please refer to the [AREG Engine Logging System](https://github.com/aregtech/areg-sdk/wiki/05.-AREG-Engine-Logging-System) Wiki page for detailed instructions on compiling applications with enabled or disabled logging, start and stopping logs during runtime, as well as creating and using logging scopes, and configuring in the `log.init` file. 
 
 > 💡 By default, the `router.init` and `log.init` files are located in the `config` subfolder of binaries.<br/>
-> 💡 To enable logging for all applications, use `scope.*  = DEBUG | SCOPE ;`.
+> 💡 To enable logging for all applications, use `scope.*  = DEBUG | SCOPE ;`.<br/>
 > 💡 At present, logging is only possible in the file.
 
 </details>
 
-<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="10%"/></a></div>
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
 ---
 
@@ -335,25 +330,25 @@ And here are the planned tools:
 
 The development of the AREG SDK tools is currently underway in a separate repository called [AREG SDK Tools](https://github.com/aregtech/areg-sdk-tools), which is a part of the larger [AREG SDK project](https://github.com/users/aregtech/projects/4/).
 
-<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="10%"/></a></div>
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
 ---
 
 ## Use cases and benefits[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#use-cases-and-benefits)
 
-The AREG SDK is a dynamic and flexible tool that offers a vast array of use cases for multithreading and multiprocessing application development. The SDK has been successfully used in a variety of scenarios, from practical examples to real-world applications. Its proven capabilities and potential for success make it a popular choice for developers seeking to create intelligent devices for embedded and IoT applications. 
+The AREG SDK is a dynamic and flexible tool that offers a vast array of use cases for multithreading and multiprocessing application development. The communication engine has been successfully used in a variety of scenarios, from practical examples to real-world applications. Its proven capabilities and potential for success make it a popular choice for developers seeking to create intelligent devices for embedded and IoT applications. 
 
-To explore the various use cases of the SDK, including **distributed solutions** for embedded applications, **driverless devices**, **real-time solutions**, **digital twins**, and **simulation and tests**, refer to the [AREG SDK User Cases](https://github.com/aregtech/areg-sdk/blob/master/docs/USECASES.md) documentation.
+To explore the various use cases of the AREG communication engine, including **distributed solutions** for embedded applications, **driverless devices**, **real-time solutions**, **digital twins**, and **simulation and tests**, refer to the [AREG Engine Use Cases and Benefits](https://github.com/aregtech/areg-sdk/blob/master/docs/USECASES.md) document.
 
-<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="10%"/></a></div>
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
 ---
 
 ## Examples[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#examples)
 
-There are various [examples](https://github.com/aregtech/areg-sdk/tree/master/examples/) to demonstrate features of the AREG SDK. The examples are listed in the [examples/README.md](https://github.com/aregtech/areg-sdk/blob/master/examples/README.md) document.
+There are various [examples](https://github.com/aregtech/areg-sdk/tree/master/examples/) to demonstrate features of the AREG communication engine. The examples are part of SDK and are listed in the [examples/README.md](https://github.com/aregtech/areg-sdk/blob/master/examples/README.md) document.
 
-<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="10%"/></a></div>
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
 ---
 
@@ -361,7 +356,7 @@ There are various [examples](https://github.com/aregtech/areg-sdk/tree/master/ex
  
 AREG SDK is under free open source [_Apache License Version 2.0_](https://github.com/aregtech/areg-sdk/blob/master/LICENSE.txt). However, AREG SDK can be commercially licensed, which includes the commercial support, full rights to create and distribute software without open source license obligations. For commercial license, support or additional information, please visit [Aregtech](https://www.aregtech.com/) website or contact _info[at]aregtech[dot]com_.
 
-<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="10%"/></a></div>
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
 ---
 
@@ -375,7 +370,7 @@ Join our project and provide assistance by:
 
 ⭐ [![star AREG SDK](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=star%20AREG%20SDK)](https://github.com/aregtech/areg-sdk/) ⭐ AREG SDK repository if liked. This gesture of appreciation encourages contributors and helps us grow our community. Contact us for the feedback or new ideas.
 
-<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="10%"/></a></div>
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
 ---
 
