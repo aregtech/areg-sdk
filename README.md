@@ -285,10 +285,10 @@ The best practice to start a project is to review [sample projects](https://gith
 3. Create a _Service Interface_ XML document that describes your service (data types, attributes, methods).
 4. Use the provided [code generator](https://github.com/aregtech/areg-sdk/tree/master/tools) tool to generate base sources for service components.
 5. Configure your project to create a _static_ library from the generated code.
-6. Create a separate project for each application or layer that uses the service and link it with the _static_ library and `areg` library.
+6. Create a separate project for each application or layer and link with the _static_ and `areg` libraries.
 7. Create components that provide the service by extending Stub objects and implementing override methods.
 8. Create components that consume the service by extending Client objects and implementing override methods.
-9. Distribute components in projects, compile  projects and run them, add logs as needed.
+9. Distribute components in projects, compile and run them. Add logs in sources as needed.
   
 For guidance and step-by-step examples, refer to the [_Hello Service!_](https://github.com/aregtech/areg-sdk/blob/master/docs/HelloService.md) document, which showcases various scenarios for creating _Local_ and _Public_ service providers and consumers. In addition, review the file structure guidelines presented in the [DEVELOP.md](https://github.com/aregtech/areg-sdk/blob/master/docs/DEVELOP.md) document.
 
