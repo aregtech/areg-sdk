@@ -280,20 +280,19 @@ The AREG framework offers developers the flexibility to either build their own p
 <details open><summary> Click to show / hide <code>Start a project</code>.</summary><br/>
 
 The best practice to start a project is to review [sample projects](https://github.com/aregtech/areg-sdk/tree/master/examples) provided in this repository. To begin a project, follow these general steps:
-1. Clone the AREG SDK sources to your workspace, as [described earlier](#clone-sources).
-2. Determine the scope of your project and identify the specific services that your components should provide or use.
-3. Create a _Service Interface_ XML document that describes the data types, attributes, and methods provided by your service.
-4. Use the [code generator](https://github.com/aregtech/areg-sdk/tree/master/tools) tool provided in the repository to generate base sources for service components.
-5. Configure your project to create a _static_ library from the generated code, which should be linked with each project that uses or provides the service(s).
-6. Create a separate project for each application or layer that uses the service and link it with the _static_ library.
-7. Create components that provide the service(s) by extending Stub objects and implement override methods.
-8. Create components that consume the service(s) by extending Client objects and implement override methods.
-9. Compile your projects and run them. You may need to add logs to debug your projects.
+1. [Clone](#clone-sources) the AREG SDK sources to your workspace.
+2. Identify the specific services that your components should provide or use.
+3. Create a _Service Interface_ XML document that describes your service (data types, attributes, methods).
+4. Use the provided [code generator](https://github.com/aregtech/areg-sdk/tree/master/tools) tool to generate base sources for service components.
+5. Configure your project to create a _static_ library from the generated code.
+6. Create a separate project for each application or layer that uses the service and link it with the _static_ library and `areg` library.
+7. Create components that provide the service by extending Stub objects and implementing override methods.
+8. Create components that consume the service by extending Client objects and implementing override methods.
+9. Distribute components in projects, compile  projects and run them, add logs as needed.
   
 For guidance and step-by-step examples, refer to the [_Hello Service!_](https://github.com/aregtech/areg-sdk/blob/master/docs/HelloService.md) document, which showcases various scenarios for creating _Local_ and _Public_ service providers and consumers. In addition, review the file structure guidelines presented in the [DEVELOP.md](https://github.com/aregtech/areg-sdk/blob/master/docs/DEVELOP.md) document.
 
-> 💡 The Service Interface design tool with the GUI is currently [under the development](https://github.com/aregtech/areg-sdk-tools) as an open source project. As soon as it is ready, it will be part of this repository. 
-
+> 💡 The Service Interface design tool with a GUI is currently [under development](https://github.com/aregtech/areg-sdk-tools) as an open source project, and will be added to the repository when it's ready.
 </details>
 
 ### Configure multicast router
