@@ -1,12 +1,12 @@
-# AREG SDK use cases and benefits
+# AREG Engine Use Cases and Benefits
 
-AREG SDK can be used in a very large scope of multithreading and multiprocessing application development.  This document showcases several examples of how the SDK can be utilized to develop intelligent devices.
+**AREG** (*Automated Real-time Event Grid*) communication engine can be used in a very large scope of multithreading and multiprocessing application development. This document showcases several examples of how the communication engine can be utilized to develop intelligent devices.
 
 ## Distributed solution
 
 <details open><summary> Click to show / hide <code>distributed solution</code>.</summary><br/>
 
-The AREG SDK is a distributed services solution that enables components to interact seamlessly across nodes on the network, appearing as if they are located within a single process. To define relationships and distribute services across processes, developers create runtime loadable models.
+The AREG communication engine is a distributed services solution that enables components to interact seamlessly across nodes on the network, appearing as if they are located within a single process. To define relationships and distribute services across processes, developers create runtime loadable models.
 
 The following is a demonstration of 2 _models_ defined in 2 different processes, where one _model_ defines **service provider** and the second is at the same time is a **service consumer** (client) and a **service provider**. For simplicity, let's name them `service.cpp` and `mixed.cpp`.
 
