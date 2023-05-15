@@ -331,7 +331,6 @@ Please refer to the [AREG Engine Logging System](https://github.com/aregtech/are
 > 💡 At present, logging is only possible in the file.
 
 </details>
-
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
 ---
@@ -408,7 +407,7 @@ Special thanks to all contributors and supporters that starred this repository.
 
 [![Stargazers for @aregtech/areg-sdk](https://reporoster.com/stars/aregtech/areg-sdk)](https://github.com/aregtech/areg-sdk/stargazers)
 
-<div align="center"><a href="#table-of-contents"><img src="https://github.com/aregtech/areg-sdk/raw/master/docs/img/back-to-top.png" width="15%"/></a></div>
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
 ---
 
