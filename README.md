@@ -122,22 +122,22 @@ Furthermore, the AREG SDK includes a variety of [examples](https://github.com/ar
 
 ## Clone sources[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#clone-sources)
 
-To obtain the AREG SDK source codes and the dependent modules, run the following command in your `projects` folder:
+To obtain the AREG SDK source codes and the dependent modules, run the git-command in your `projects` folder:
 ```bash
 git clone --recurse-submodules https://github.com/aregtech/areg-sdk.git
 ```
 
-Alternatively, to clone only the submodule sources, run the following command in the AREG SDK root folder:
+Alternatively, to clone only the submodule sources, run the git-command in the AREG SDK root folder:
 ```bash
 git submodule update --init --recursive
 ```
 
-To update the AREG SDK to the latest submodule sources, use the following command:
+To update the AREG SDK to the latest submodule sources, use the git-command:
 ```bash
 git submodule update --remote --recursive
 ```
 
-> 💡 Please note that after running this Git command, your submodule sources may differ from the sources that AREG SDK uses.
+> 💡 Please note that after running this git-command, your submodule sources may differ from the sources that AREG SDK uses.
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
