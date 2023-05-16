@@ -41,24 +41,25 @@
 - [Interface-centricity](#interface-centricity)
 - [More than embedded](#more-than-embedded)
 - [Composition](#composition)
+- [Clone sources](#clone-sources)
 - [Software build](#software-build)
-    - [Clone sources](#clone-sources)
-    - [Build with `cmake`](#build-with-cmake)
-    - [Build with `make`](#build-with-make)
-    - [Build with `msbuild`](#build-with-msbuild)
-    - [Build with IDE](#build-with-ide)
-    - [Build with WSL](#build-with-wsl)
-    - [Custom build](#custom-build)
+  - [Build with `cmake`](#build-with-cmake)
+  - [Build with `make`](#build-with-make)
+  - [Build with `msbuild`](#build-with-msbuild)
+  - [Build with WSL](#build-with-wsl)
+  - [Build with IDEs](#build-with-ides)
+    - [Build with Microsoft Visual Studio](#build-with-microsoft-visual-studio)
+    - [Build with Visual Studio Code](#build-with-visual-studio-code)
 - [Integration](#integration)
-    - [Start a project](#start-a-project)
-    - [Configure multicast router](#configure-multicast-router)
-    - [Configure logging](#configure-logging)
+  - [Start a project](#start-a-project)
+  - [Configure multicast router](#configure-multicast-router)
+  - [Configure logging](#configure-logging)
 - [Roadmap](#roadmap)
 - [Use cases and benefits](#use-cases-and-benefits)
 - [Examples](#examples)
 - [License](#license)
 - [Call to action](#call-to-action)
-- [Thank you!](#thank-you)
+- [Thank you all!](#thank-you-all)
 
 ---
 
@@ -119,32 +120,14 @@ Furthermore, the AREG SDK includes a variety of [examples](https://github.com/ar
 
 ---
 
-## Software build[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#software-build)
+## Clone sources[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#clone-sources)
 
-The AREG SDK source code can be compiled on various platforms, CPUs, and compilers, including **GCC**, **Clang**, **Cygwin GCC**, and **MSVC**, as well as **Windows**, **Linux**, and **macOS** platforms and **x86**, **x86_64**, **arm**, and **aarch64** CPUs. For detailed information and instructions, please visit the regularly updated [AREG SDK Wiki pages](https://github.com/aregtech/areg-sdk/wiki).
-
-To compile the sources, the following tools can be used:
-
-| Tool | Solution | Platforms | API | Quick actions to compile |
-| --- | --- | --- | --- | --- |
-| `cmake` | `CMakeLists.txt` | Linux, Cygwin, Windows | POSIX, Win32 | - Build with *cmake*.<br/> - Build in *VSCode*.<br/> - Build in *MSVS*. |
-| `make` | `Makefile` | Linux, Cygwin | POSIX | - Build with *make*. |
-| `msbuild` | `areg-sdk.sln` | Windows | Win32 | - Build with *msbuild*.<br/> - Open and build in *MSVS*. |
-
-After compilation, the binaries are stored in the `<areg-sdk>/product/build/<family>-<compiler>/<platform>-<bitness>-<cpu>-<build type>/bin` folder. For example, if the code is compiled with GNU GCC on a 64-bit Linux system with an x86_64 CPU and in release mode, the binaries will be in the `areg-sdk/product/build/gnu-gcc/linux-64-x86_64-release/bin` folder.
-
-> 💡 Note that other POSIX-compliant operating systems and compilers have not yet been tested. Here is the list of supported [POSIX APIs](https://github.com/aregtech/areg-sdk/blob/master/docs/POSIX.md#posix-api).
-
-### Clone sources
-
-<details open><summary> Click to show / hide <code>Clone sources</code>.</summary><br/>
-
-To obtain the AREG SDK source codes and the dependent modules, run the following command in your `projects` directory:
+To obtain the AREG SDK source codes and the dependent modules, run the following command in your `projects` folder:
 ```bash
 git clone --recurse-submodules https://github.com/aregtech/areg-sdk.git
 ```
 
-Alternatively, to clone only the submodule sources, run the following command in the AREG SDK root directory:
+Alternatively, to clone only the submodule sources, run the following command in the AREG SDK root folder:
 ```bash
 git submodule update --init --recursive
 ```
@@ -156,16 +139,41 @@ git submodule update --remote --recursive
 
 > 💡 Please note that after running this Git command, your submodule sources may differ from the sources that AREG SDK uses.
 
-To build applications after cloning the AREG SDK sources, use the `cmake`, `make`, or `msbuild` tools. Ensure that you have a **C++17** GNU, Clang, Cygwin, or MSVC compiler installed on your machine.
-</details>
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+
+---
+
+## Software build[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#software-build)
+
+The source code of the AREG SDK is implemented using **C++17** and can be compiled on multiple platforms, CPUs, and compilers.
+- **Supported compilers:** GCC, Clang, Cygwin GCC, and MSVC. 
+- **Supported platforms:** Windows, Linux, and macOS. 
+- **Supported CPU:** x86, x86_64, arm, and aarch64. 
+
+For comprehensive information and detailed instructions, please visit the regularly updated [AREG SDK Wiki pages](https://github.com/aregtech/areg-sdk/wiki).
+
+To compile the sources, the following tools can be used:
+
+| Tool | Solution | Platforms | API | Quick actions to compile |
+| --- | --- | --- | --- | --- |
+| `cmake` | `CMakeLists.txt` | Linux, Cygwin, Windows | POSIX, Win32 | - Build with *cmake*.<br/> - Build in *VSCode*.<br/> - Build in *MSVS*. |
+| `make` | `Makefile` | Linux, Cygwin | POSIX | - Build with *make*. |
+| `msbuild` | `areg-sdk.sln` | Windows | Win32 | - Build with *msbuild*.<br/> - Open and build in *MSVS*. |
+
+After compilation, the binaries are stored in the `<areg-sdk>/product/build/<family>-<compiler>/<platform>-<bitness>-<cpu>-<build type>/bin` folder. For example, if the code is compiled with GNU GCC on a 64-bit Linux system with an x86_64 CPU and in release mode, the binaries will be in the `./product/build/gnu-gcc/linux-64-x86_64-release/bin` subfolder of `areg-sdk`.
+
+To obtain comprehensive information regarding **builds and options** for the AREG SDK, we recommend referring to the [Software build](https://github.com/aregtech/areg-sdk/wiki/02.-Software-build) page on the AREG SDK Wiki. In this document, we will provide a brief outline of the compilation process using default options.
+
+
+> 💡 Note that other POSIX-compliant operating systems and compilers have not yet been tested. Here is the list of supported [POSIX APIs](https://github.com/aregtech/areg-sdk/blob/master/docs/POSIX.md#posix-api).
 
 ### Build with `cmake`
 
-<details open><summary> Click to show / hide <code>Build with cmake</code>.</summary><br/>
+<details open><summary title="Click to show/hide details">Click to show / hide <code>Build with cmake</code>.</summary><br/>
 
 To build the AREG and examples using [CMake](https://cmake.org/download/), ensure that you have cloned the sources properly as [described earlier](#clone-sources). Then, open the _Terminal_ in the `areg-sdk` directory and follow these steps:
 
-1. Initialize the cache and build configuration in the `./build` directory with default options, which include using the *g++* compiler, performing a _release_ build, and enabling examples and unit tests:
+1. Initialize the cache and build configuration in the `./build` folder with default options, which include using the *g++* compiler, performing a _release_ build, and enabling examples and unit tests:
 ```bash
 cmake -B ./build
 ```
@@ -180,7 +188,7 @@ cmake --build ./build -j 8
 
 ### Build with `make`
 
-<details open><summary> Click to show / hide <code>Build with cmake</code>.</summary><br/>
+<details open><summary title="Click to show/hide details">Click to show / hide <code>Build with cmake</code>.</summary><br/>
 
 To build the AREG and examples using [Make](https://www.gnu.org/software/make/), ensure that you have cloned the sources properly as [described earlier](#clone-sources). Then, open the _Terminal_ in the `areg-sdk` directory and compile sources with _g++_ compiler, _release_ build, enabled examples and unit tests by following this command (justify parallel jobs with `-j` option):
 
@@ -193,7 +201,7 @@ make -j 8
 
 ### Build with `msbuild`
 
-<details open><summary> Click to show / hide <code>Build with msbuild</code>.</summary><br/>
+<details open><summary title="Click to show/hide details">Click to show / hide <code>Build with msbuild</code>.</summary><br/>
 
 To build the AREG and examples using [MSBuild](https://visualstudio.microsoft.com/downloads/), ensure that you have cloned the sources properly as [described earlier](#clone-sources). Then, open the _Terminal_ in the `areg-sdk` directory and compile sources with _MSVC_ compiler, _release_ build, enabled examples and unit tests by following this step:
 
@@ -204,66 +212,33 @@ MSBuild .
 > 💡 For instructions on how to customize builds with `make` tool, kindly refer to the [Build with MSBuild](https://github.com/aregtech/areg-sdk/wiki/02.-Software-build#build-with-msbuild-areg-sdksln) Wiki page.
 </details>
 
-### Build with IDE
-
-<details open><summary> Click to show / hide <code>Build with IDE</code>.</summary><br/>
-
-> 💡 In this chapter, we explain how to build the AREG and examples with *Microsoft Visual Studio* and *Visual Studio Code*. The other IDEs currently are not in our focus.
-
-To build the AREG and examples using [Microsoft Visual Studio](https://visualstudio.microsoft.com/downloads/) or [Visual Studio Code](https://code.visualstudio.com/), ensure that you have cloned the sources properly as [described earlier](#clone-sources) and follow the instructions bellow.
-
-#### Build using Microsoft Visual Studio
-
-1. Open [`areg-sdk.sln`](https://github.com/aregtech/areg-sdk/blob/master/areg-sdk.sln) in *Microsoft Visual Studio*.
-2. Build the solution with *MSVC*.
-
-#### Build using Visual Studio Code
-
-1. Open the `areg-sdk` folder in *Visual Studio Code*.
-2. In the Explorer panel, select [`CMakeLists.txt`](https://github.com/aregtech/areg-sdk/blob/master/CMakeLists.txt).
-3. Right-click on the file, select **Configure All Projects** from the context menu and wait for completion.
-4. Right-click on the file again and select **Build All Projects** to build the sources with the default options.
-
-</details>
-
 ### Build with WSL
 
-<details open><summary> Click to show / hide <code>Build with WSL</code>.</summary><br/>
+<details open><summary title="Click to show/hide details">Click to show / hide <code>Build with WSL</code>.</summary><br/>
 
 The *Windows Subsystem for Linux* (**WSL**) allows developers to use Linux applications directly on Windows machines. This means that developers may clone, compile and use AREG engine in a popular Linux distributions. To install and update WSL on your Windows 10 machine, clone and compile AREG SDK sources, and run examples, please follow the step-by-step instructions outlined in the [Compile in Windows Subsystem for Linux (WSL)](https://github.com/aregtech/areg-sdk/wiki/04.-Compile-with-Windows-Subsystem-for-Linux-(WSL)) Wiki page.
 
 </details>
 
-### Custom build
+### Build with IDEs
 
-<details open><summary> Click to show / hide <code>Custom build</code>.</summary><br/>
+<details open><summary title="Click to show/hide details">Click to show / hide <code>Build with IDE</code>.</summary><br/>
 
-For comprehensive information regarding **builds and options**, we would like to direct your attention to the regularly-updated [Software build](https://github.com/aregtech/areg-sdk/wiki/02.-Software-build) AREG SDK Wiki Page. In this particular instance, we will briefly outline a few quick options.
+> 💡 In this chapter, we explain how to build the AREG and examples with *Microsoft Visual Studio* and *Visual Studio Code*. The other IDEs currently are not in our focus.
 
-Clone the sources as [described earlier](#clone-sources) and modify the default compilation settings using the parameters listed below:
+To build the AREG and examples using [Microsoft Visual Studio](https://visualstudio.microsoft.com/downloads/) or [Visual Studio Code](https://code.visualstudio.com/), ensure that you have cloned the sources properly as [described earlier](#clone-sources) and follow the instructions bellow.
 
-| Parameter | Description | Possible Values |
-| --- | --- | --- |
-| **AREG_COMPILER_FAMILY** | Set the compiler family | _gnu_, _llvm_, _cygwin_, or _msvc_ |
-| **AREG_BINARY** | Choose the library type | _shared_ or _static_ |
-| **AREG_BUILD_TYPE** | Choose the build type | _Debug_ or _Release_ |
-| **AREG_ENABLE_EXT** | Build the framework with extended features | _0_ or _1_ (_false_ or _true_) |
-| **AREG_ENABLE_LOGS** | Compile applications with logs | _0_ or _1_ (_false_ or _true_) |
+#### Build with Microsoft Visual Studio
 
-More used parameters are listed in the appropriate `user` configuration files for each tool, which can be found in the following locations:
+1. Open [`areg-sdk.sln`](https://github.com/aregtech/areg-sdk/blob/master/areg-sdk.sln) in *Microsoft Visual Studio*.
+2. Build the solution with *MSVC*.
 
-- [conf/cmake/user.cmake](https://github.com/aregtech/areg-sdk/blob/master/conf/cmake/user.cmake) for `cmake`
-- [conf/make/user.mk](https://github.com/aregtech/areg-sdk/blob/master/conf/make/user.mk) for `make`;
-- [conf/msvc/user.props](https://github.com/aregtech/areg-sdk/blob/master/conf/msvc/user.props) for `MSBuild`.
+#### Build with Visual Studio Code
 
-Here is an example of configuring and compiling codes with `cmake` using *clang++* compiler, _debug_ build, AREG framework as a *static library* with *enabled extensions*, and binary output folder in *~/product/areg-sdk/*:
-```bash
-# Step 1: configure, make appropriate settings
-cmake -B ./build -DAREG_COMPILER=clang++ -DAREG_BINARY=static -DAREG_BUILD_TYPE=Debug -DAREG_ENABLE_EXT:BOOL=ON AREG_OUTPUT_BIN="~/product/areg-sdk/"
-
-# Step 2: build applications
-cmake --build -j 8
-```
+1. Open the `areg-sdk` folder in *Visual Studio Code*.
+2. In the Explorer panel, select [`CMakeLists.txt`](https://github.com/aregtech/areg-sdk/blob/master/CMakeLists.txt).
+3. Right-click on the file, select **Configure All Projects** from the context menu and wait for completion.
+4. Right-click on the file again and select **Build All Projects** to build the sources with the default options.
 
 </details>
 
@@ -277,7 +252,7 @@ The AREG framework offers developers the flexibility to either build their own p
 
 ### Start a project
 
-<details open><summary> Click to show / hide <code>Start a project</code>.</summary><br/>
+<details open><summary title="Click to show/hide details">Click to show / hide <code>Start a project</code>.</summary><br/>
 
 The best practice to start a project is to review [sample projects](https://github.com/aregtech/areg-sdk/tree/master/examples) provided in this repository. To begin a project, follow these general steps:
 1. [Clone](#clone-sources) the AREG SDK sources to your workspace.
@@ -297,7 +272,7 @@ For guidance and step-by-step examples, refer to the [_Hello Service!_](https://
 
 ### Configure multicast router
 
-<details open><summary> Click to show / hide <code>Configure multicast router</code>.</summary><br/>
+<details open><summary title="Click to show/hide details">Click to show / hide <code>Configure multicast router</code>.</summary><br/>
 
 To configure the _Multicast Router_, adjust the [_router.init_](https://github.com/aregtech/areg-sdk/blob/master/framework/areg/resources/router.init) file by specifying the IP address and port of the `mcrouter`:
 ```
@@ -310,7 +285,7 @@ Note that the *Multicast Router* is necessary only for applications that provide
 
 ### Configure logging
 
-<details open><summary> Click to show / hide <code>Configure logging</code>.</summary><br/>
+<details open><summary title="Click to show/hide details">Click to show / hide <code>Configure logging</code>.</summary><br/>
 
 Applications based on the AREG framework can be compiled with or without logging. If you choose to compile with logging, you'll need to configure [_log.init_](https://github.com/aregtech/areg-sdk/blob/master/framework/areg/resources/log.init) to set scopes, priorities, and file names for logging. 
 
@@ -395,7 +370,7 @@ Please [![Star AREG SDK](https://img.shields.io/github/stars/aregtech/areg-sdk.s
 
 ---
 
-## Thank you![![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#thank-you)
+## Thank you all!![![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#thank-you)
 
 Special thanks to all contributors and supporters that starred this repository.
 
