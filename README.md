@@ -84,7 +84,7 @@ As data is generated and collected at the edge of the network (**mist network**)
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/interface-centric.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/interface-centric.png" alt="Service oriented and interface-centric" style="width:50%;height:50%"/></a></div>
 
-The ORPC concept is interface-centric, similar to object-oriented programming, and supports transparent handling of multiple instances of the same object. There are no protocol restrictions, although the bi-directional communication is required to send messages to all connected nodes. The programmable server objects are called _service providers_, and the programmable clients are called _service consumers_. This approach enables AREG to combine the features of _action-centric_ (Client-Server / Request-Reply) and _data-centric_ (Publish-Subscribe / PubSub) models.
+The ORPC concept is interface-centric, similar to object-oriented programming, and supports transparent handling of multiple instances of the same object. There are no protocol restrictions, although the bi-directional communication is necessary to send messages to all connected nodes. The programmable server objects are called *Service Providers*, and the programmable clients are called *Service Consumers*. This approach enables AREG to combine the features of _action-centric_ (Client-Server / Request-Reply) and _data-centric_ (Publish-Subscribe / PubSub) models.
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
@@ -92,7 +92,7 @@ The ORPC concept is interface-centric, similar to object-oriented programming, a
 
 ## More than embedded[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#more-than-embedded)
 
-AREG is designed to provide a homogeneous solution for multithreading, multiprocessing, and internet communications through categorized services (_Local_, _Public_, and _Internet_). These services are software components with predefined interfaces, which methods are invoked remotely.
+The *interface-centric* nature of AREG engine provides a distributed solution for embedded application. AREG is designed to provide a homogeneous solution for multithreading, multiprocessing, and internet communications through categorized services (_Local_, _Public_, and _Internet_). These services are software components with predefined interfaces, which methods are invoked remotely.
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-services.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-services.png" alt="AREG SDK distributed services" style="width:70%;height:70%"/></a></div>
 
@@ -145,7 +145,7 @@ git submodule update --remote --recursive
 
 ## Software build[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#software-build)
 
-The source code of the AREG SDK is implemented using **C++17** and can be compiled on multiple platforms, CPUs, and compilers.
+The source codes of the AREG SDK are implemented using **C++17** and can be compiled on multiple platforms, CPUs, and compilers.
 - **Supported compilers:** GCC, Clang, Cygwin GCC, and MSVC. 
 - **Supported platforms:** Windows, Linux, and macOS. 
 - **Supported CPU:** x86, x86_64, arm, and aarch64. 
@@ -171,14 +171,14 @@ To obtain comprehensive information regarding **builds and options** for the ARE
 
 <details open><summary title="Click to show/hide details">Click to show / hide <code>Build with cmake</code>.</summary><br/>
 
-To build the AREG and examples using [CMake](https://cmake.org/download/), ensure that you have cloned the sources properly as [described earlier](#clone-sources). Then, open the _Terminal_ in the `areg-sdk` directory and follow these steps:
+To build the AREG and examples using [CMake](https://cmake.org/download/), ensure that you have cloned the sources properly as [described earlier](#clone-sources). Open the _Terminal_ in the `areg-sdk` directory and follow these steps:
 
-1. Initialize the cache and build configuration in the `./build` folder with default options, which include using the *g++* compiler, performing a _release_ build, and enabling examples and unit tests:
+1. Initialize the cache and build configuration with default options (*g++* compiler, _release_ build, build examples and unit tests):
 ```bash
 cmake -B ./build
 ```
 
-2. Compile the sources using the following command (justify parallel jobs with `-j` option):
+2. Compile the sources, justify parallel jobs with `-j` option:
 ```bash
 cmake --build ./build -j 8
 ```
@@ -190,7 +190,7 @@ cmake --build ./build -j 8
 
 <details open><summary title="Click to show/hide details">Click to show / hide <code>Build with cmake</code>.</summary><br/>
 
-To build the AREG and examples using [Make](https://www.gnu.org/software/make/), ensure that you have cloned the sources properly as [described earlier](#clone-sources). Then, open the _Terminal_ in the `areg-sdk` directory and compile sources with _g++_ compiler, _release_ build, enabled examples and unit tests by following this command (justify parallel jobs with `-j` option):
+To build the AREG and examples using [Make](https://www.gnu.org/software/make/), ensure that you have cloned the sources properly as [described earlier](#clone-sources). Open the _Terminal_ in the `areg-sdk` directory and compile sources with default options (_g++_ compiler, _release_ build, build examples and unit tests), justify parallel jobs with `-j` option:
 
 ```bash
 make -j 8
@@ -203,7 +203,7 @@ make -j 8
 
 <details open><summary title="Click to show/hide details">Click to show / hide <code>Build with msbuild</code>.</summary><br/>
 
-To build the AREG and examples using [MSBuild](https://visualstudio.microsoft.com/downloads/), ensure that you have cloned the sources properly as [described earlier](#clone-sources). Then, open the _Terminal_ in the `areg-sdk` directory and compile sources with _MSVC_ compiler, _release_ build, enabled examples and unit tests by following this step:
+To build the AREG and examples using [MSBuild](https://visualstudio.microsoft.com/downloads/), ensure that you have cloned the sources properly as [described earlier](#clone-sources). Open the _Command Prompt_ in the `areg-sdk` directory and compile sources with default options (_MSVC_ compiler, _release_ build, build examples and unit tests):
 
 ```bash
 MSBuild .
@@ -224,9 +224,9 @@ The *Windows Subsystem for Linux* (**WSL**) allows developers to use Linux appli
 
 <details open><summary title="Click to show/hide details">Click to show / hide <code>Build with IDE</code>.</summary><br/>
 
-> 💡 In this chapter, we explain how to build the AREG and examples with *Microsoft Visual Studio* and *Visual Studio Code*. The other IDEs currently are not in our focus.
+> 💡 This chapter focuses on building AREG and examples using **Microsoft Visual Studio** and **Visual Studio Code**. The other IDEs are currently not in the focus.
 
-To build the AREG and examples using [Microsoft Visual Studio](https://visualstudio.microsoft.com/downloads/) or [Visual Studio Code](https://code.visualstudio.com/), ensure that you have cloned the sources properly as [described earlier](#clone-sources) and follow the instructions bellow.
+To build the AREG and examples using [Microsoft Visual Studio](https://visualstudio.microsoft.com/downloads/) or [Visual Studio Code](https://code.visualstudio.com/), ensure that you have cloned the sources properly as [described earlier](#clone-sources) and follow the instructions.
 
 #### Build with Microsoft Visual Studio
 
@@ -254,20 +254,45 @@ The AREG framework offers developers the flexibility to either build their own p
 
 <details open><summary title="Click to show/hide details">Click to show / hide <code>Start a project</code>.</summary><br/>
 
-The best practice to start a project is to review [sample projects](https://github.com/aregtech/areg-sdk/tree/master/examples) provided in this repository. To begin a project, follow these general steps:
-1. [Clone](#clone-sources) the AREG SDK sources to your workspace.
-2. Identify the specific services that your components should provide or use.
-3. Create a _Service Interface_ XML document that describes your service (data types, attributes, methods).
-4. Use the provided [code generator](https://github.com/aregtech/areg-sdk/tree/master/tools) tool to generate base sources for service components.
-5. Configure your project to create a _static_ library from the generated code.
-6. Create a separate project for each application or layer and link with the _static_ and `areg` libraries.
-7. Create components that provide the service by extending Stub objects and implementing override methods.
-8. Create components that consume the service by extending Client objects and implementing override methods.
-9. Distribute components in projects, compile and run them. Add logs in sources as needed.
-  
-For guidance and step-by-step examples, refer to the [_Hello Service!_](https://github.com/aregtech/areg-sdk/blob/master/docs/HelloService.md) document, which showcases various scenarios for creating _Local_ and _Public_ service providers and consumers. In addition, review the file structure guidelines presented in the [DEVELOP.md](https://github.com/aregtech/areg-sdk/blob/master/docs/DEVELOP.md) document.
+The best practice is to review [sample projects](https://github.com/aregtech/areg-sdk/tree/master/examples) provided in this repository. As a guidance to start a project and step-by-step example, refer to the [_Hello Service!_](https://github.com/aregtech/areg-sdk/blob/master/docs/HelloService.md) document, which showcases various scenarios for creating _Local_ and _Public_ *Service Providers* and *Service Consumers*. In addition, review the file structure guidelines presented in the [DEVELOP.mde](https://github.com/aregtech/areg-sdk/blob/master/docs/DEVELOP.md) document.
 
-> 💡 The Service Interface design tool with a GUI is currently [under development](https://github.com/aregtech/areg-sdk-tools) as an open source project, and will be added to the repository when it's ready.
+To begin a project:
+1. Create a *Service Interface* XML document that describes the service, including data types, attributes, and methods. Then, use the provided [code generator](https://github.com/aregtech/areg-sdk/tree/master/tools) tool to generate base sources for the service components. We recommend including these generated sources in a *static* library to link with each module.
+2. Create projects that provide and/or consume services in AREG, extend the **Stub** or **ClientBase** objects and implement the required overrides. For *Service Providers*, implement all *request* methods. For *Service Consumers*, it may be sufficient to implement relevant overrides for *Responses* and data update *Notifications*.
+3. Define a *model* for your application(s), describe the threads and dependencies between service components. Load the model in the `main()` function. Compile and link projects with the *static* library of generated codes and the `areg` library, which serves as the AREG communication engine.
+
+> 💡 The Service Interface design tool with a GUI is currently [under development](https://github.com/aregtech/areg-sdk-tools) as an open source project, and will be included to the repository when it is ready.
+
+The AREG engine facilitates transparent communication between *Service Providers* and *Service Consumers*, making it flexible and automated. In the case of *Public* services, the *Providers* and *Consumers* can be located on any software node. The AREG SDK introduces the concept of a *model*, which describes the service *Providers* and *Consumers*. The models can be dynamically loaded and unloaded during runtime, allowing for the activation and deactivation of defined services as needed.
+
+Here's a brief example of defining a *model* that is loaded and unloaded during runtime, enabling **multithreading communication** between a *Service Provider* and a *Service Consumer* within the same application:
+```cpp
+BEGIN_MODEL("ServiceModel")
+    BEGIN_REGISTER_THREAD("ProviderThread", NECommon::WATCHDOG_IGNORE)
+        BEGIN_REGISTER_COMPONENT("ServiceProvider", ServiceComponent)
+            REGISTER_IMPLEMENT_SERVICE(NEHelloService::ServiceName, NEHelloService::InterfaceVersion)
+        END_REGISTER_COMPONENT("ServiceProvider")
+    END_REGISTER_THREAD("ProviderThread")
+        
+    BEGIN_REGISTER_THREAD("ConsumerThread", NECommon::WATCHDOG_IGNORE)
+        BEGIN_REGISTER_COMPONENT("ServiceConsumer", ClientComponent)
+            REGISTER_DEPENDENCY("ServiceProvider")
+        END_REGISTER_COMPONENT("ServiceConsumer")
+    END_REGISTER_THREAD("ConsumerThread")
+END_MODEL("ServiceModel")
+
+int main(void)
+{
+    Application::initApplication();
+    Application::loadModel("ServiceModel");
+    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    Application::unloadModel("ServiceModel");
+    Application::releaseApplication();
+    return 0;
+}
+```
+
+For **multiprocessing communication**, the model can be split into two parts. One application loads the model to instantiate the *Service Provider*, while another application loads the model to instantiate the *Service Consumer*. Once the *Service Provider* is instantiated and available, the *Service Consumer* is automatically notified of the service availability and can initiate communication accordingly.
 </details>
 
 ### Configure multicast router

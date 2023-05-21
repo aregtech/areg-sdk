@@ -78,6 +78,10 @@
 
 #endif  // AREG_ENABLE_LOGS
 
+#if !(ENABLE_TRACES)
+    #undef ENABLE_TRACES
+#endif // ENABLE_TRACES
+
 #if (defined(ENABLE_TRACES) && (ENABLE_TRACES))
 
 //////////////////////////////////////////////////////////////////////////
