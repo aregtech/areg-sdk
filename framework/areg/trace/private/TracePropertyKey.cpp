@@ -106,7 +106,7 @@ void TracePropertyKey::setKey(const String & fullKey)
             else
             {
                 mKeyName.substring(mModuleName, len + 1);
-                mModuleData = String::EmptyString.data();
+                mModuleData = String::EmptyString;
             }
 
             if (mModuleName == NELogConfig::SYNTAX_SCOPE_GROUP)
@@ -121,15 +121,15 @@ void TracePropertyKey::setKey(const String & fullKey)
         }
         else
         {
-            mModuleName = String::EmptyString.data();
-            mModuleData = String::EmptyString.data();
+            mModuleName = String::EmptyString;
+            mModuleData = String::EmptyString;
         }
 
         mConfigKey  = mModuleName.isEmpty() ? NELogConfig::eConfigKey::KeyGlobal : NELogConfig::eConfigKey::KeyLocal;
     }
     else
     {
-        mModuleName = String::EmptyString.data();
+        mModuleName = String::EmptyString;
         mConfigKey  = NELogConfig::eConfigKey::KeyUndefined;
     }
 }

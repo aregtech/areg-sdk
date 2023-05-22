@@ -220,6 +220,8 @@ AREG_API_IMPL bool NETrace::isStarted( void )
 {
 #if (defined(ENABLE_TRACES) && (ENABLE_TRACES))
     return TraceManager::isLoggingStarted();
+#else   // !ENABLE_TRACES
+    return true;
 #endif  // ENABLE_TRACES
 }
 

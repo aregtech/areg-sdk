@@ -385,7 +385,7 @@ namespace NELogConfig
     /**
      * \brief   Default value of string, if not set in configuration file
      **/
-    constexpr std::string_view  DEFAULT_STRING_VALUE                { String::EmptyString };
+    constexpr std::string_view  DEFAULT_STRING_VALUE                { NEString::EmptyStringA };
 
     /**
      * \brief   Default delimiter
@@ -430,7 +430,7 @@ namespace NELogConfig
      **/
     constexpr const std::string_view    ValidSyntaxList[ ] = 
             {
-                  String::EmptyString                           //!< eLogConfig::ConfigUnknown
+                  NEString::EmptyStringA                        //!< eLogConfig::ConfigUnknown
                 , NELogConfig::SYNTAX_CMD_LOG_VERSION           //!< eLogConfig::ConfigLogVersion
                 , NELogConfig::SYNTAX_CMD_LOG_FILE              //!< eLogConfig::ConfigLogFile
                 , NELogConfig::SYNTAX_CMD_LOG_REMOTE_HOST       //!< eLogConfig::ConfigLogRemoteHost

@@ -105,7 +105,7 @@ void Application::releaseApplication(void)
 
     WatchdogManager::stopWatchdogManager();
     TimerManager::stopTimerManager();
-    ComponentLoader::unloadComponentModel( String::EmptyString );
+    ComponentLoader::unloadComponentModel();
     ServiceManager::_stopServiceManager(); // the message routing client is automatically stopped.
     NETrace::stopLogging();
 

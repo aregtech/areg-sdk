@@ -169,10 +169,10 @@ String PropertyKey::convToString(void) const
 
 void PropertyKey::setValues(const char * section, const char * property, const char * module /*= nullptr*/, const char * position /*= nullptr*/)
 {
-    mSection    = section != nullptr ? section  : String::EmptyString;
-    mProperty   = property!= nullptr ? property : String::EmptyString;
-    mModule     = module  != nullptr ? module   : String::EmptyString;
-    mPosition   = position!= nullptr ? position : String::EmptyString;
+    mSection    = section != nullptr ? section  : NEString::EmptyStringA;
+    mProperty   = property!= nullptr ? property : NEString::EmptyStringA;
+    mModule     = module  != nullptr ? module   : NEString::EmptyStringA;
+    mPosition   = position!= nullptr ? position : NEString::EmptyStringA;
 }
 
 void PropertyKey::setValues(const String& section, const String& property, const String& module, const String& position)

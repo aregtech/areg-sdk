@@ -136,7 +136,7 @@ String ConnectionConfiguration::_getPropertyValue( NERemoteService::eServiceConn
 
 String ConnectionConfiguration::getConnectionName( NERemoteService::eServiceConnection section /*= NERemoteService::eServiceConnection::ConnectionTcpip */ ) const
 {
-    return _getPropertyValue( section, ConnectionConfiguration::PropertyName, String::EmptyString.data() );
+    return _getPropertyValue( section, ConnectionConfiguration::PropertyName, String::EmptyString );
 }
 
 String ConnectionConfiguration::getConnectionHost( NERemoteService::eServiceConnection section /*= NERemoteService::eServiceConnection::ConnectionTcpip */ ) const

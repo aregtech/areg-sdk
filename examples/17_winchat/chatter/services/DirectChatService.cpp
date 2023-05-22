@@ -145,7 +145,7 @@ void DirectChatService::requestMessageSend( const NEDirectMessager::sParticipant
     if ( chatParticipants.contains(participant, 0) )
     {
         broadcastMessageSent(participant, msgText, timeSent );
-        broadcastMessageTyped( participant, String::EmptyString.data() );
+        broadcastMessageTyped( participant, String::EmptyString );
     }
 }
 
