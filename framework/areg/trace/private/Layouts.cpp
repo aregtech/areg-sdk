@@ -356,7 +356,7 @@ AnyTextLayout::AnyTextLayout(const String & anyMessage)
 
 AnyTextLayout::AnyTextLayout(const char * anyMessage)
     : IELayout      ( NELogConfig::eLayouts::LayoutAnyText )
-    , mTextMessage  ( anyMessage != nullptr ? anyMessage : String::EmptyString )
+    , mTextMessage  ( anyMessage != nullptr ? anyMessage : NEString::EmptyStringA )
 {
 }
 

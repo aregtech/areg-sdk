@@ -105,7 +105,7 @@ void Application::releaseApplication(void)
 
     WatchdogManager::stopWatchdogManager();
     TimerManager::stopTimerManager();
-    ComponentLoader::unloadComponentModel( String::EmptyString );
+    ComponentLoader::unloadComponentModel();
     ServiceManager::_stopServiceManager(); // the message routing client is automatically stopped.
     NETrace::stopLogging();
 
@@ -216,7 +216,11 @@ bool Application::startTracer(const char * configFile /*= nullptr*/, bool force 
     }
     else
     {
+#if (defined(ENABLE_TRACES) && (ENABLE_TRACES))
         OUTPUT_INFO("The tracer is already started, ignoring starting");
+#else   // !ENABLE_TRACES
+        OUTPUT_DBG("The sources are compiled without logging. Ignoring to start logging module.");
+#endif  // ENABLE_TRACES
         result = true;
     }
 

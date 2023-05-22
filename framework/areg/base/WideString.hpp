@@ -59,9 +59,9 @@ class AREG_API WideString : public TEString<wchar_t>
 public:
     /**
      * \brief   WideString::EmptyString
-     *          The empty string.
+     *          The empty wide string.
      **/
-    static constexpr std::wstring_view   EmptyString      { L"" };   //!< Empty WideString
+    static const WideString EmptyString;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor

@@ -369,8 +369,8 @@ void PageMessaging::outputMessage( const String & nickname, const String & messa
 {
     outputMessage( CString(nickname.getString())
                  , CString(message.getString())
-                 , CString( begin.isValid() ? begin.formatTime().getString() : String::EmptyString.data() )
-                 , CString( end.isValid()   ? end.formatTime().getString()   : String::EmptyString.data() )
+                 , CString( begin.isValid() ? begin.formatTime().getString() : String::EmptyString.getString() )
+                 , CString( end.isValid()   ? end.formatTime().getString()   : String::EmptyString.getString() )
                  , cookie );
 }
 

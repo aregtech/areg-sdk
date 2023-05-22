@@ -56,20 +56,20 @@ inline void TracePropertyValue::_setValue( const String & newValue )
 
 
 TracePropertyValue::TracePropertyValue( void )
-    : mValue    ( String::EmptyString.data(), 0 )
+    : mValue    ( String::EmptyString, 0 )
     , mPriority ( static_cast<unsigned int>(NETrace::PrioNotset) )
 {
 }
 
 TracePropertyValue::TracePropertyValue( const char * initValue )
-    : mValue    ( String::EmptyString.data(), 0 )
+    : mValue    ( String::EmptyString, 0 )
     , mPriority ( static_cast<unsigned int>(NETrace::PrioNotset) )
 {
     _setValue(initValue);
 }
 
 TracePropertyValue::TracePropertyValue( const String & initValue )
-    : mValue    ( String::EmptyString.data( ), 0 )
+    : mValue    ( String::EmptyString, 0 )
     , mPriority ( static_cast<unsigned int>(NETrace::PrioNotset) )
 {
     _setValue( initValue.getString() );

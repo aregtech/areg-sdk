@@ -164,11 +164,10 @@ endif()
 
 # Modify 'AREG_ENABLE_LOGS' to enable or disable compilation with logs.
 # By default, the applications are compiled with logs.
-if (DEFINED AREG_ENABLE_LOGS)
-    option(ENABLE_TRACES    "Compile with logs" ${AREG_ENABLE_LOGS})
-else()
-    option(ENABLE_TRACES    "Compile with logs" ON)
+if (NOT DEFINED AREG_ENABLE_LOGS)
+    option(AREG_ENABLE_LOGS "Compile with logs" ON)
 endif()
+option(ENABLE_TRACES "Compile logs flag" ${AREG_ENABLE_LOGS})
 
 # CPP standard for the projects
 set(AREG_CXX_STANDARD 17)

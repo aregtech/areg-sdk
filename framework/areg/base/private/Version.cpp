@@ -110,7 +110,7 @@ Version & Version::convFromString( const String & version )
 
 Version & Version::convFromString( const char * version )
 {
-	return convFromString( String(version != nullptr ? version : String::EmptyString) );
+	return convFromString( String(version != nullptr ? version : NEString::EmptyStringA) );
 }
 
 Version & Version::operator = ( const Version &src )

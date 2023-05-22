@@ -30,7 +30,7 @@
 
 IESynchObjectBaseIX::IESynchObjectBaseIX( NESynchTypesIX::eSynchObject synchType, const char* asciiName /* = nullptr */ )
     : mSynchType    ( synchType )
-    , mSynchName    ( asciiName != nullptr ? asciiName : String::EmptyString )
+    , mSynchName    ( asciiName != nullptr ? asciiName : NEString::EmptyStringA )
 {
 }
 

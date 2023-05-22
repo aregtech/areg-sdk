@@ -61,7 +61,7 @@ public:
      * \brief   String::EmptyString
      *          The empty string.
      **/
-    static constexpr std::string_view   EmptyString      { "" };   //!< Empty String
+    static const String EmptyString;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
