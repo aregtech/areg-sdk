@@ -172,9 +172,12 @@ endif
 CXXFLAGS    += $(AREG_COMPILER_OPTIONS)
 LDFLAGS     += $(AREG_LDFLAGS)
 
-$(info >>> Builds applications in the folder $(AREG_OUTPUT_BIN))
-$(info >>> Generated files are in $(AREG_GENERATE_DIR))
-$(info >>> Builds $(AREG_BINARY) communication engine)
+$(info -------------------- Makefile Status Report Begin --------------------)
+$(info >>> Build for '$(AREG_OS)' '$(AREG_BITNESS)'-bit platform '$(AREG_PLATFORM)' with compiler '$(AREG_CXX_COMPILER)', ID '$(AREG_COMPILER_FAMILY)', and build type '$(AREG_BUILD_TYPE)')
+$(info >>> Binary output folder '$(AREG_OUTPUT_BIN)', executable extensions '$(AREG_BIN_EXT)')
+$(info >>> Generated files are in '$(AREG_GENERATE_DIR)', library output folder '$(AREG_OUTPUT_LIB)')
+$(info >>> Build examples is '$(AREG_BUILD_EXAMPLES)', build tests is '$(AREG_BUILD_TESTS)', AREG Extensions is '$(AREG_ENABLE_EXT)', compile with logs '$(ENABLE_TRACES)')
+$(info "-------------------- Makefile Status Report End ----------------------")
 
 define AREG_HELP_MSG
 # Usage: make [target] [AREG_BINARY=<static|shared>] [AREG_BUILD_TYPE=<Release|Debug>] [AREG_CXX_COMPILER=<compiler>] [CrossCompile=<cross-toolchain>] ...
