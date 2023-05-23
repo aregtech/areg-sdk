@@ -54,7 +54,7 @@ protected:
      * \param   roleName    The dependent service PowerManager role name.
      * \param   ownerThread The name of client owner thread. If empty, assign current thread.
      **/
-    PowerManagerClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
+    PowerManagerClientBase( const String & roleName, const String & ownerThread = String::getEmptyString() );
 
     /**
      * \brief   Initialize PowerManager Service client object by specifying the

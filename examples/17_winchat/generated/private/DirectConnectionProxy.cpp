@@ -56,7 +56,7 @@ DirectConnectionProxy * DirectConnectionProxy::createProxy( const String & roleN
                                                                       , ownerThread).get() );
 }
 
-DirectConnectionProxy * DirectConnectionProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
+DirectConnectionProxy * DirectConnectionProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::getEmptyString()*/ )
 {
     return static_cast<DirectConnectionProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEDirectConnection::getInterfaceData()

@@ -91,7 +91,7 @@ ProxyAddress::ProxyAddress( const String & serviceName
                           , const Version & serviceVersion
                           , NEService::eServiceType serviceType
                           , const String & roleName
-                          , const String & threadName /*= String::EmptyString*/ )
+                          , const String & threadName /*= String::getEmptyString()*/ )
     : ServiceAddress( serviceName, serviceVersion, serviceType, roleName )
     , mThreadName   ( threadName )
     , mChannel      ( )
@@ -102,7 +102,7 @@ ProxyAddress::ProxyAddress( const String & serviceName
         mChannel.setCookie(NEService::COOKIE_LOCAL);
 }
 
-ProxyAddress::ProxyAddress( const ServiceItem & service, const String & roleName, const String & threadName /*= String::EmptyString*/ )
+ProxyAddress::ProxyAddress( const ServiceItem & service, const String & roleName, const String & threadName /*= String::getEmptyString()*/ )
     : ServiceAddress( service, roleName )
     , mThreadName   ( "" )
     , mChannel      ( )
@@ -113,7 +113,7 @@ ProxyAddress::ProxyAddress( const ServiceItem & service, const String & roleName
         mChannel.setCookie(NEService::COOKIE_LOCAL);
 }
 
-ProxyAddress::ProxyAddress(const NEService::SInterfaceData & siData, const String & roleName, const String & threadName /*= String::EmptyString*/)
+ProxyAddress::ProxyAddress(const NEService::SInterfaceData & siData, const String & roleName, const String & threadName /*= String::getEmptyString()*/)
     : ServiceAddress( siData.idServiceName, siData.idVersion, siData.idServiceType, roleName )
     , mThreadName   ( "" )
     , mChannel      ( )

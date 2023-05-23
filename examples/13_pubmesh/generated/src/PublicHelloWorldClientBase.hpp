@@ -58,7 +58,7 @@ protected:
      * \param   roleName    The dependent service PublicHelloWorld role name.
      * \param   ownerThread The name of client owner thread. If empty, assign current thread.
      **/
-    PublicHelloWorldClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
+    PublicHelloWorldClientBase( const String & roleName, const String & ownerThread = String::getEmptyString() );
 
     /**
      * \brief   Initialize PublicHelloWorld Service client object by specifying the

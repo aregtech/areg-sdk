@@ -54,7 +54,7 @@ protected:
      * \param   roleName    The dependent service PatientInformation role name.
      * \param   ownerThread The name of client owner thread. If empty, assign current thread.
      **/
-    PatientInformationClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
+    PatientInformationClientBase( const String & roleName, const String & ownerThread = String::getEmptyString() );
 
     /**
      * \brief   Initialize PatientInformation Service client object by specifying the

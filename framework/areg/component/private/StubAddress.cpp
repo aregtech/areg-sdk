@@ -76,7 +76,7 @@ StubAddress::StubAddress( const String & serviceName
                         , const Version & serviceVersion
                         , NEService::eServiceType serviceType
                         , const String & roleName
-                        , const String & threadName   /*= String::EmptyString*/ )
+                        , const String & threadName   /*= String::getEmptyString()*/ )
     : ServiceAddress( serviceName, serviceVersion, serviceType, roleName )
     , mThreadName   ( )
     , mChannel      ( )
@@ -91,7 +91,7 @@ StubAddress::StubAddress( const String & serviceName
     mMagicNum = StubAddress::_magicNumber(*this);
 }
 
-StubAddress::StubAddress(const ServiceItem & service, const String & roleName, const String & threadName /*= String::EmptyString */)
+StubAddress::StubAddress(const ServiceItem & service, const String & roleName, const String & threadName /*= String::getEmptyString() */)
     : ServiceAddress( service, roleName )
     , mThreadName   ( )
     , mChannel      ( )
@@ -106,7 +106,7 @@ StubAddress::StubAddress(const ServiceItem & service, const String & roleName, c
     mMagicNum = StubAddress::_magicNumber(*this);
 }
 
-StubAddress::StubAddress(const NEService::SInterfaceData & siData, const String & roleName, const String & threadName /*= String::EmptyString */)
+StubAddress::StubAddress(const NEService::SInterfaceData & siData, const String & roleName, const String & threadName /*= String::getEmptyString() */)
     : ServiceAddress( siData.idServiceName, siData.idVersion, siData.idServiceType, roleName )
     , mThreadName   ( )
     , mChannel      ( )

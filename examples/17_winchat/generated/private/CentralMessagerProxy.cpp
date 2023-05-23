@@ -56,7 +56,7 @@ CentralMessagerProxy * CentralMessagerProxy::createProxy( const String & roleNam
                                                                       , ownerThread).get() );
 }
 
-CentralMessagerProxy * CentralMessagerProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
+CentralMessagerProxy * CentralMessagerProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::getEmptyString()*/ )
 {
     return static_cast<CentralMessagerProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NECentralMessager::getInterfaceData()

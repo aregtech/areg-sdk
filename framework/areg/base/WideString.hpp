@@ -58,10 +58,10 @@ class AREG_API WideString : public TEString<wchar_t>
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   WideString::EmptyString
+     * \brief   WideString::getEmptyString()
      *          The empty wide string.
      **/
-    static const WideString EmptyString;
+    static const WideString & getEmptyString( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor

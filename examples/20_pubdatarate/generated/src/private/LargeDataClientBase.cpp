@@ -43,7 +43,7 @@ namespace NELargeData
  * Constructor / Destructor
  ************************************************************************/
 
-LargeDataClientBase::LargeDataClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
+LargeDataClientBase::LargeDataClientBase( const String & roleName, const String & ownerThread /* = String::getEmptyString() */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )

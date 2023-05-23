@@ -162,7 +162,7 @@ public:
      * \return  Returns true if property key is set and either module name is empty (i.e. global visibility)
      *          or equal to the given module name.
      **/
-    bool isModuleKeySet( const String & moduleName = String::EmptyString ) const;
+    bool isModuleKeySet( const String & moduleName = String::getEmptyString() ) const;
 
     /**
      * \brief   Returns the syntax name of the property key.

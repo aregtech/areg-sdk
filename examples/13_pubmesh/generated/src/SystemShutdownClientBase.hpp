@@ -55,7 +55,7 @@ protected:
      * \param   roleName    The dependent service SystemShutdown role name.
      * \param   ownerThread The name of client owner thread. If empty, assign current thread.
      **/
-    SystemShutdownClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
+    SystemShutdownClientBase( const String & roleName, const String & ownerThread = String::getEmptyString() );
 
     /**
      * \brief   Initialize SystemShutdown Service client object by specifying the

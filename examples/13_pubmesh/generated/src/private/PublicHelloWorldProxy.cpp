@@ -56,7 +56,7 @@ PublicHelloWorldProxy * PublicHelloWorldProxy::createProxy( const String & roleN
                                                                       , ownerThread).get() );
 }
 
-PublicHelloWorldProxy * PublicHelloWorldProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
+PublicHelloWorldProxy * PublicHelloWorldProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::getEmptyString()*/ )
 {
     return static_cast<PublicHelloWorldProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEPublicHelloWorld::getInterfaceData()

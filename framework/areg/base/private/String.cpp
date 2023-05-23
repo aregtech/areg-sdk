@@ -144,7 +144,11 @@ namespace
 } // namespace
 
 // the static empty string
-const String String::EmptyString{ "" };
+const String& String::getEmptyString(void)
+{
+    static const String _emptyString{ "" };
+    return _emptyString;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor

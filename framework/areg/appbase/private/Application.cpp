@@ -109,8 +109,8 @@ void Application::releaseApplication(void)
     ServiceManager::_stopServiceManager(); // the message routing client is automatically stopped.
     NETrace::stopLogging();
 
-    theApp.mConfigTracer    = String::EmptyString;
-    theApp.mConfigService   = String::EmptyString;
+    theApp.mConfigTracer    = String::getEmptyString();
+    theApp.mConfigService   = String::getEmptyString();
 
     Application::_setAppState(Application::eAppState::AppStateStopped);
     Application::_osReleaseHandlers();
@@ -216,7 +216,7 @@ bool Application::startTracer(const char * configFile /*= nullptr*/, bool force 
     }
     else
     {
-#if (defined(ENABLE_TRACES) && (ENABLE_TRACES))
+#if ENABLE_TRACES
         OUTPUT_INFO("The tracer is already started, ignoring starting");
 #else   // !ENABLE_TRACES
         OUTPUT_DBG("The sources are compiled without logging. Ignoring to start logging module.");

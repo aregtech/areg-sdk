@@ -44,7 +44,7 @@ namespace NESystemShutdown
  * Constructor / Destructor
  ************************************************************************/
 
-SystemShutdownClientBase::SystemShutdownClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
+SystemShutdownClientBase::SystemShutdownClientBase( const String & roleName, const String & ownerThread /* = String::getEmptyString() */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )

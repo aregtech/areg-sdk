@@ -98,7 +98,7 @@ public:
                , const Version & serviceVersion
                , NEService::eServiceType serviceType
                , const String & roleName
-               , const String & threadName = String::EmptyString );
+               , const String & threadName = String::getEmptyString() );
 
     /**
      * \brief   Initialize Stub address from given service item, role name and holder thread.
@@ -106,7 +106,7 @@ public:
      * \param   roleName        The role name of holder component
      * \param   threadName      Optional thread name of Stub. If nullptr, the current thread where Stub instantiated is set.
      **/
-    StubAddress( const ServiceItem & service, const String & roleName, const String & threadName = String::EmptyString );
+    StubAddress( const ServiceItem & service, const String & roleName, const String & threadName = String::getEmptyString() );
 
     /**
      * \brief   Initialize Stub address from given service data, role name and holder thread.
@@ -114,7 +114,7 @@ public:
      * \param   roleName        The role name of holder component
      * \param   threadName      Optional thread name of Stub. If nullptr, the current thread where Stub instantiated is set.
      **/
-    StubAddress( const NEService::SInterfaceData & siData, const String & roleName, const String & threadName = String::EmptyString );
+    StubAddress( const NEService::SInterfaceData & siData, const String & roleName, const String & threadName = String::getEmptyString() );
 
     /**
      * \brief   Copy constructor.
@@ -428,7 +428,7 @@ inline StubAddress & StubAddress::operator = (const ServiceAddress & addrService
     if ( static_cast<const ServiceAddress *>(this) != &addrService)
     {
         static_cast<ServiceAddress &>(*this) = static_cast<const ServiceAddress &>(addrService);
-        mThreadName = String::EmptyString;
+        mThreadName = String::getEmptyString();
         mChannel    = Channel();
         mMagicNum   = StubAddress::_magicNumber(*this);
     }
@@ -441,7 +441,7 @@ inline StubAddress & StubAddress::operator = ( ServiceAddress && addrService ) n
     if ( static_cast<const ServiceAddress *>(this) != &addrService )
     {
         static_cast<ServiceAddress &>(*this) = static_cast<ServiceAddress &&>(addrService);
-        mThreadName = String::EmptyString;
+        mThreadName = String::getEmptyString();
         mChannel    = Channel( );
         mMagicNum   = StubAddress::_magicNumber( *this );
     }

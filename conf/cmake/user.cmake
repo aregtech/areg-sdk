@@ -26,7 +26,7 @@
 #   6. AREG_BUILD_EXAMPLES  := ON       (possible values: ON, OFF)
 #   7. AREG_BUILD_ALL       := ON       (possible values: ON, OFF)
 #   8. AREG_ENABLE_EXT      := ON       (possible values: ON, OFF)
-#   9. AREG_ENABLE_LOGS     :=ON        (possible values: ON, OFF)
+#   9. AREG_ENABLE_LOGS     := ON        (possible values: ON, OFF)
 #   9. AREG_OUTPUT_DIR      := <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release      (possible values: any full path)
 #  10. AREG_OUTPUT_BIN      := <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release/bin  (possible values: any full path)
 #  11. AREG_OUTPUT_LIB      := <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release/lib  (possible values: any full path)

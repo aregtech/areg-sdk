@@ -79,7 +79,7 @@ public:
      * \param   evetDataType    The type of event data. Either for internal or for external communication
      * \param   name            The name for streaming object. Can be ignored.
      **/
-    explicit EventDataStream( EventDataStream::eEventData evetDataType, const String & name = String::EmptyString );
+    explicit EventDataStream( EventDataStream::eEventData evetDataType, const String & name = String::getEmptyString() );
 
     /**
      * \brief	Constructor. Creates read only event data streaming object containing read only data of shared buffer.

@@ -388,14 +388,14 @@ public:
      *                      models, which are not loaded yet.
      * \return  Returns true if model is loaded with success.
      **/
-    static bool loadComponentModel( const String & modelName = String::EmptyString );
+    static bool loadComponentModel( const String & modelName = String::getEmptyString() );
 
     /**
      * \brief   Call to shutdown and destroy instantiated objects of mode, and make cleanups.
      * \param   modelName   The name of model to unload. If nullptr, it will unloaded
      *                      all previously loaded models.
      **/
-    static void unloadComponentModel( const String & modelName = String::EmptyString );
+    static void unloadComponentModel( const String & modelName = String::getEmptyString() );
 
     /**
      * \brief   This call unloads components of specified mode and remove model
@@ -403,7 +403,7 @@ public:
      * \param   modelName   The name of model to unload and remove. If nullptr, it will unloaded
      *                      all previously loaded models and all models will be removed.
      **/
-    static void removeComponentModel( const String & modelName = String::EmptyString );
+    static void removeComponentModel( const String & modelName = String::getEmptyString() );
 
     /**
      * \brief   Adds new model to the model list. The name of the new model, names of threads and
@@ -517,7 +517,7 @@ protected:
      *                      which are not loaded yet.
      * \return  Returns true if components are loaded with success.
      **/
-    bool loadModel( const String & modelName = String::EmptyString );
+    bool loadModel( const String & modelName = String::getEmptyString() );
 
     /**
      * \brief   Loads specified Model. It will start all registered in Model threads,
@@ -533,7 +533,7 @@ protected:
      *          If modelName is nullptr or empty, it will unload all models.
      * \param   modelName   The name of model to unload. If nullptr, it will unload all models
      **/
-    void unloadModel( const String & modelName = String::EmptyString );
+    void unloadModel( const String & modelName = String::getEmptyString() );
 
     /**
      * \brief   Unloads specified Model, deletes components and stops threads.

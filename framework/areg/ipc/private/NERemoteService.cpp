@@ -18,7 +18,7 @@
 
 AREG_API_IMPL String NERemoteService::getServiceConnectionTypeString(NERemoteService::eServiceConnection connectionType)
 {
-    return String(connectionType == NERemoteService::eServiceConnection::ConnectionTcpip ? NERemoteService::STR_CONNECTION_TYPE_TCPIP : String::EmptyString);
+    return String(connectionType == NERemoteService::eServiceConnection::ConnectionTcpip ? NERemoteService::STR_CONNECTION_TYPE_TCPIP : String::getEmptyString());
 }
 
 AREG_API_IMPL NERemoteService::eServiceConnection NERemoteService::getServiceConnectionType(const String & connectionType, bool caseSensitive /* = true */ )

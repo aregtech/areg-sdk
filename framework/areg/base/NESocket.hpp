@@ -490,7 +490,7 @@ inline unsigned short NESocket::SocketAddress::getHostPort( void ) const
 
 inline void NESocket::SocketAddress::resetAddress( void )
 {
-    mIpAddr = String::EmptyString;
+    mIpAddr = String::getEmptyString();
     mPortNr = NESocket::InvalidPort;
 }
 

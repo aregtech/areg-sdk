@@ -47,7 +47,7 @@ namespace NEPowerManager
  * Constructor / Destructor
  ************************************************************************/
 
-PowerManagerClientBase::PowerManagerClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
+PowerManagerClientBase::PowerManagerClientBase( const String & roleName, const String & ownerThread /* = String::getEmptyString() */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )

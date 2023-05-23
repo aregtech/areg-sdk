@@ -46,7 +46,7 @@ namespace NEPublicHelloWorld
  * Constructor / Destructor
  ************************************************************************/
 
-PublicHelloWorldClientBase::PublicHelloWorldClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
+PublicHelloWorldClientBase::PublicHelloWorldClientBase( const String & roleName, const String & ownerThread /* = String::getEmptyString() */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )

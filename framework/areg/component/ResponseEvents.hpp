@@ -96,7 +96,7 @@ protected:
                  , unsigned int respId
                  , Event::eEventType eventType
                  , unsigned int seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
-                 , const String & name = String::EmptyString );
+                 , const String & name = String::getEmptyString() );
 
     /**
      * \brief	Clones existing information, except target Proxy address to send same message to different Proxies.
@@ -236,7 +236,7 @@ protected:
                       , NEService::eResultType result
                       , unsigned int respId
                       , unsigned int seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
-                      , const String & name = String::EmptyString );
+                      , const String & name = String::getEmptyString() );
 
     /**
      * \brief	Clones existing information, except target Proxy address to send same message to different Proxies.
@@ -315,7 +315,7 @@ protected:
                        , NEService::eResultType result
                        , unsigned int respId
                        , unsigned int seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
-                       , const String & name = String::EmptyString );
+                       , const String & name = String::getEmptyString() );
 
     /**
      * \brief	Clones existing information, except target Proxy address to send same message to different Proxies.

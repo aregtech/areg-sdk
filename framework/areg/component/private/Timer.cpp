@@ -33,7 +33,7 @@ DEF_TRACE_SCOPE(areg_component_Timer_startTimer);
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 Timer::Timer( IETimerConsumer& timerConsumer
-            , const String & timerName  /*= String::EmptyString*/
+            , const String & timerName  /*= String::getEmptyString()*/
             , uint32_t timeoutMs        /*= NECommon::INVALID_TIMEOUT*/
             , int maxQueued             /*= Timer::DEFAULT_MAXIMUM_QUEUE*/)
     : TimerBase         ( TimerBase::eTimerType::TimerTypeNormal, NEUtilities::generateName(timerName), timeoutMs )

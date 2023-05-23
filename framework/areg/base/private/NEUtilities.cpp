@@ -165,7 +165,7 @@ AREG_API_IMPL String NEUtilities::createComponentItemName( const String & compon
     }
     else
     {
-        result    = String::EmptyString;
+        result    = String::getEmptyString();
     }
 
     return result;

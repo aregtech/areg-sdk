@@ -56,7 +56,7 @@ SystemShutdownProxy * SystemShutdownProxy::createProxy( const String & roleName,
                                                                       , ownerThread).get() );
 }
 
-SystemShutdownProxy * SystemShutdownProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
+SystemShutdownProxy * SystemShutdownProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::getEmptyString()*/ )
 {
     return static_cast<SystemShutdownProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NESystemShutdown::getInterfaceData()

@@ -38,7 +38,7 @@ ServiceAddress ServiceAddress::convPathToAddress( const char * pathService, cons
 
 ServiceAddress::ServiceAddress( void )
     : ServiceItem   ( )
-    , mRoleName     ( String::EmptyString, 0 )
+    , mRoleName     ( String::getEmptyString(), 0 )
     , mMagicNum     ( NEMath::CHECKSUM_IGNORE )
 {
 }

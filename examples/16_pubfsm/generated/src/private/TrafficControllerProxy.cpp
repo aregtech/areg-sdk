@@ -56,7 +56,7 @@ TrafficControllerProxy * TrafficControllerProxy::createProxy( const String & rol
                                                                       , ownerThread).get() );
 }
 
-TrafficControllerProxy * TrafficControllerProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
+TrafficControllerProxy * TrafficControllerProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::getEmptyString()*/ )
 {
     return static_cast<TrafficControllerProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NETrafficController::getInterfaceData()

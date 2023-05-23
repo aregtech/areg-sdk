@@ -44,7 +44,7 @@ RequestEvent::RequestEvent( const EventDataStream & args
                           , const StubAddress& toTarget
                           , unsigned int reqId
                           , Event::eEventType eventType
-                          , const String & name /*= String::EmptyString*/ )
+                          , const String & name /*= String::getEmptyString()*/ )
     : ServiceRequestEvent(fromSource, toTarget, reqId, NEService::eRequestType::CallFunction, eventType)
     , mData(reqId, args, name)
 {
@@ -91,7 +91,7 @@ LocalRequestEvent::LocalRequestEvent( const EventDataStream & args
                                     , const ProxyAddress & fromSource
                                     , const StubAddress & toTarget
                                     , unsigned int reqId
-                                    , const String & name /*= String::EmptyString*/ )
+                                    , const String & name /*= String::getEmptyString()*/ )
     : RequestEvent(args, fromSource, toTarget, reqId, Event::eEventType::EventLocalServiceRequest, name)
 {
 }
@@ -122,7 +122,7 @@ RemoteRequestEvent::RemoteRequestEvent( const EventDataStream & args
                                       , const ProxyAddress & fromSource
                                       , const StubAddress & toTarget
                                       , unsigned int reqId
-                                      , const String & name /*= String::EmptyString*/ )
+                                      , const String & name /*= String::getEmptyString()*/ )
     : RequestEvent(args, fromSource, toTarget, reqId, Event::eEventType::EventRemoteServiceRequest, name)
 {
 }

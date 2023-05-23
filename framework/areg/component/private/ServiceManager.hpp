@@ -210,7 +210,7 @@ private:
      *          Otherwise, it returns false.
      * \see     _routingServiceStart
      **/
-    static bool _routingServiceConfigure( const String & configFile = String::EmptyString );
+    static bool _routingServiceConfigure( const String & configFile = String::getEmptyString() );
 
     /**
      * \brief   Call to start the client part of remove Routing Service.
@@ -221,7 +221,7 @@ private:
      * \return  Returns true if succeeded to start router client.
      * \see     _routingServiceConfigure, _routingServiceStop
      **/
-    static bool _routingServiceStart( const String & configFile = String::EmptyString );
+    static bool _routingServiceStart( const String & configFile = String::getEmptyString() );
 
 
     /**

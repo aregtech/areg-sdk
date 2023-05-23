@@ -18,13 +18,13 @@
 
 #include <utility>
 
-Property::Property(const String & keySet, const String & valueSet, const String & comment /*= String::EmptyString */)
+Property::Property(const String & keySet, const String & valueSet, const String & comment /*= String::getEmptyString() */)
     : mComment  ( comment )
     , mProperty ( PropertyKey(keySet), PropertyValue(valueSet) )
 {
 }
 
-Property::Property(const Property::Entry & newProperty, const String & comment /*= String::EmptyString */)
+Property::Property(const Property::Entry & newProperty, const String & comment /*= String::getEmptyString() */)
     : mComment  ( comment )
     , mProperty ( newProperty )
 {
@@ -201,7 +201,7 @@ bool Property::parseProperty(String strProperties)
     }
     else
     {
-        addComment(String::EmptyString);
+        addComment(String::getEmptyString());
     }
 
     return isValid();

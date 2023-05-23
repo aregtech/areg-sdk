@@ -262,7 +262,7 @@ void ConnectionManager::requestSendMessage( const String & nickName, unsigned in
                     , static_cast<const char *>(newMessage)
                     , static_cast<const char *>(dateTime.formatTime()) );
         broadcastSendMessage(connection.nickName, cookie, newMessage, dateTime);
-        broadcastKeyTyping( connection.nickName, cookie, String::EmptyString );
+        broadcastKeyTyping( connection.nickName, cookie, String::getEmptyString() );
 
         HWND hWnd = MAKE_HWND( mWnd );
         NECommon::sMessageData * data = ::IsWindow( hWnd ) ? NECommon::newData( ) : nullptr;

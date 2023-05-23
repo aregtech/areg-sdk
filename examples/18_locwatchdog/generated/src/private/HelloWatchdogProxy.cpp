@@ -56,7 +56,7 @@ HelloWatchdogProxy * HelloWatchdogProxy::createProxy( const String & roleName, I
                                                                       , ownerThread).get() );
 }
 
-HelloWatchdogProxy * HelloWatchdogProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
+HelloWatchdogProxy * HelloWatchdogProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::getEmptyString()*/ )
 {
     return static_cast<HelloWatchdogProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEHelloWatchdog::getInterfaceData()

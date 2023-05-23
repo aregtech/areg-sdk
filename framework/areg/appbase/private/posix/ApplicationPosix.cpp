@@ -118,7 +118,7 @@ bool Application::_osStartRouterService( void )
     {
         constexpr char const argv0[] { "--console" };
         
-        String fileName = String::EmptyString;
+        String fileName = String::getEmptyString();
         fileName.append(Process::getInstance().getPath())
                 .append(File::getPathSeparator())
                 .append(NEApplication::DEFAULT_ROUTER_SERVICE_NAME);
