@@ -39,7 +39,7 @@ const EventDataStream EventDataStream::EmptyData(EventDataStream::eEventData::Ev
 //////////////////////////////////////////////////////////////////////////
 // EventDataStream class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
-EventDataStream::EventDataStream( EventDataStream::eEventData evetDataType, const String & name /*= String::EmptyString*/ )
+EventDataStream::EventDataStream( EventDataStream::eEventData evetDataType, const String & name /*= String::getEmptyString()*/ )
     : IEIOStream    ( )
 
     , mEventDataType(evetDataType)

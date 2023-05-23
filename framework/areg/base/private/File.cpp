@@ -142,7 +142,7 @@ bool File::remove( void )
 
     mFileHandle = File::_osGetInvalidHandle();
     mFileMode   = FileBase::FO_MODE_INVALID;
-    mFileName   = String::EmptyString;
+    mFileName   = String::getEmptyString();
 
     return result;
 }
@@ -235,7 +235,7 @@ String File::getFileNameWithExtension( const char* filePath )
         }
     }
 
-    return (result != nullptr ? String(result) : String::EmptyString);
+    return (result != nullptr ? String(result) : String::getEmptyString());
 }
 
 String File::getFileName( const char* filePath )
@@ -266,7 +266,7 @@ String File::getFileExtension( const char* filePath )
 String File::getFileDirectory(const char* filePath)
 {
     NEString::CharPos pos = NEString::isEmpty<char>(filePath) ? NEString::INVALID_POS : NEString::findLast<char>(File::getPathSeparator(), filePath, NEString::END_POS, nullptr);
-    return (NEString::isPositionValid(pos) ? String(filePath, pos) : String(String::EmptyString));
+    return (NEString::isPositionValid(pos) ? String(filePath, pos) : String(String::getEmptyString()));
 }
 
 bool File::createDirCascaded( const char* dirPath )

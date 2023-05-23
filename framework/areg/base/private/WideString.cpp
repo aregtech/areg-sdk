@@ -144,7 +144,11 @@ namespace
 } // namespace
 
 // the static empty string
-const WideString WideString::EmptyString{ L"" };
+const WideString & WideString::getEmptyString(void)
+{
+    static const WideString _emptyString{ L"" };
+    return _emptyString;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor

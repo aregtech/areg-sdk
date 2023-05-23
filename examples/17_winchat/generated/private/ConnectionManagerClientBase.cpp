@@ -46,7 +46,7 @@ namespace NEConnectionManager
  * Constructor / Destructor
  ************************************************************************/
 
-ConnectionManagerClientBase::ConnectionManagerClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
+ConnectionManagerClientBase::ConnectionManagerClientBase( const String & roleName, const String & ownerThread /* = String::getEmptyString() */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )

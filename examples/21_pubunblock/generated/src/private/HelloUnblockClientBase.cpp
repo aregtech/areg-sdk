@@ -45,7 +45,7 @@ namespace NEHelloUnblock
  * Constructor / Destructor
  ************************************************************************/
 
-HelloUnblockClientBase::HelloUnblockClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
+HelloUnblockClientBase::HelloUnblockClientBase( const String & roleName, const String & ownerThread /* = String::getEmptyString() */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )

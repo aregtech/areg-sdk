@@ -166,7 +166,7 @@ bool FileBuffer::remove( void )
 {
     mSharedBuffer.invalidate();
 
-    mFileName   = String::EmptyString;
+    mFileName   = String::getEmptyString();
     mFileMode   = FileBase::FO_MODE_INVALID;
     mIsOpened   = false;
 

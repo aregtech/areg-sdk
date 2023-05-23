@@ -38,13 +38,13 @@
 #define DECLARE_EVENT_STATIC_REGISTRATION(EventClass)                                                                   \
     public:                                                                                                             \
         /*  Declare static function to add/register event consumer to start processing event.       */                  \
-        static bool addListener(IEEventConsumer& eventConsumer, const String & whichThread = String::EmptyString);      \
+        static bool addListener(IEEventConsumer& eventConsumer, const String & whichThread = String::getEmptyString());      \
         /*  Declare static function to add/register event consumer to start processing event.       */                  \
         static bool addListener(IEEventConsumer& eventConsumer, id_type whichThread);                                   \
         /*  Declare static function to add/register event consumer to start processing event.       */                  \
         static bool addListener(IEEventConsumer& eventConsumer, DispatcherThread & dispThread);                         \
         /*  Declare static function to remove/unregister event consumer to stop processing event.   */                  \
-        static bool removeListener(IEEventConsumer& eventConsumer, const String & whichThread = String::EmptyString);   \
+        static bool removeListener(IEEventConsumer& eventConsumer, const String & whichThread = String::getEmptyString());   \
         /*  Declare static function to remove/unregister event consumer to stop processing event.   */                  \
         static bool removeListener(IEEventConsumer& eventConsumer, id_type whichThread);                                \
         /*  Declare static function to remove/unregister event consumer to stop processing event.   */                  \
@@ -57,7 +57,7 @@
  **/
 #define IMPLEMENT_EVENT_STATIC_REGISTRATION(EventClass)                                                                 \
     /*  Implementation of adding / registering event consumer.                                  */                      \
-    bool EventClass::addListener(IEEventConsumer& eventConsumer, const String & whichThread /*= String::EmptyString*/)  \
+    bool EventClass::addListener(IEEventConsumer& eventConsumer, const String & whichThread /*= String::getEmptyString()*/)  \
     {   return Event::addListener(EventClass::_getClassId(), eventConsumer, whichThread);       }                       \
     /*  Implementation of adding / registering event consumer.                                  */                      \
     bool EventClass::addListener(IEEventConsumer& eventConsumer, id_type whichThread)                                   \
@@ -66,7 +66,7 @@
     bool EventClass::addListener(IEEventConsumer& eventConsumer, DispatcherThread & dispThread)                         \
     {   return Event::addListener(EventClass::_getClassId(), eventConsumer, dispThread);        }                       \
     /*  Implementation of removing / unregistering event consumer.                              */                      \
-    bool EventClass::removeListener(IEEventConsumer& eventConsumer, const String& whichThread/*= String::EmptyString*/) \
+    bool EventClass::removeListener(IEEventConsumer& eventConsumer, const String& whichThread/*= String::getEmptyString()*/) \
     {   return Event::removeListener(EventClass::_getClassId(), eventConsumer, whichThread);    }                       \
     /*  Implementation of removing / unregistering event consumer.                              */                      \
     bool EventClass::removeListener(IEEventConsumer& eventConsumer, id_type whichThread)                                \

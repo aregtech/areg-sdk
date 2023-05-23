@@ -54,7 +54,7 @@ protected:
      * \param   roleName    The dependent service TrafficController role name.
      * \param   ownerThread The name of client owner thread. If empty, assign current thread.
      **/
-    TrafficControllerClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
+    TrafficControllerClientBase( const String & roleName, const String & ownerThread = String::getEmptyString() );
 
     /**
      * \brief   Initialize TrafficController Service client object by specifying the

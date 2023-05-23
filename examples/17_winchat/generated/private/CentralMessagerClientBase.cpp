@@ -45,7 +45,7 @@ namespace NECentralMessager
  * Constructor / Destructor
  ************************************************************************/
 
-CentralMessagerClientBase::CentralMessagerClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
+CentralMessagerClientBase::CentralMessagerClientBase( const String & roleName, const String & ownerThread /* = String::getEmptyString() */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )

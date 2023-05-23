@@ -47,7 +47,7 @@ namespace NEDirectConnection
  * Constructor / Destructor
  ************************************************************************/
 
-DirectConnectionClientBase::DirectConnectionClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
+DirectConnectionClientBase::DirectConnectionClientBase( const String & roleName, const String & ownerThread /* = String::getEmptyString() */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )

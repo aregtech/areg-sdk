@@ -56,7 +56,7 @@ LargeDataProxy * LargeDataProxy::createProxy( const String & roleName, IEProxyLi
                                                                       , ownerThread).get() );
 }
 
-LargeDataProxy * LargeDataProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
+LargeDataProxy * LargeDataProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::getEmptyString()*/ )
 {
     return static_cast<LargeDataProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NELargeData::getInterfaceData()

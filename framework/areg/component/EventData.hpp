@@ -59,7 +59,7 @@ public:
      * \param	name	Optional. Used to name data streaming object.
      *                  Can be nullptr if there is no need to name streaming object.
      **/
-    EventData(unsigned int msgId, EventDataStream::eEventData dataType, const String & name = String::EmptyString);
+    EventData(unsigned int msgId, EventDataStream::eEventData dataType, const String & name = String::getEmptyString());
 
     /**
      * \brief	Constructor.
@@ -71,7 +71,7 @@ public:
      * \param	name	Optional. Used to name data streaming object.
      *                  Can be nullptr if there is no need to name streaming object.
      **/
-    EventData(unsigned int msgId, const EventDataStream & args, const String & name = String::EmptyString);
+    EventData(unsigned int msgId, const EventDataStream & args, const String & name = String::getEmptyString());
 
     /**
      * \brief   Copy constructor.

@@ -26,7 +26,7 @@ PersistenceManager & PersistenceManager::getInstance(void)
 bool PersistenceManager::parseReadable(const char * filePath)
 {
     mMapReadOnly.clear();
-    mFileReadOnly = NEString::isEmpty<char>(filePath) == false ? File::getFileFullPath(filePath) : String(String::EmptyString);
+    mFileReadOnly = NEString::isEmpty<char>(filePath) == false ? File::getFileFullPath(filePath) : String(String::getEmptyString());
     if ( mFileReadOnly.isEmpty() == false )
     {
         File fileConfig( static_cast<const char *>(mFileReadOnly), FileBase::FO_MODE_EXIST | FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_SHARE_READ );
@@ -62,7 +62,7 @@ bool PersistenceManager::parseReadable(const char * filePath)
 bool PersistenceManager::parseWritable(const char * filePath)
 {
     mMapWritable.clear();
-    mFileWritable = NEString::isEmpty<char>(filePath) == false ? File::getFileFullPath(filePath) : String(String::EmptyString);
+    mFileWritable = NEString::isEmpty<char>(filePath) == false ? File::getFileFullPath(filePath) : String(String::getEmptyString());
     if ( mFileReadOnly.isEmpty() == false )
     {
         File fileConfig( static_cast<const char *>(mFileReadOnly), FileBase::FO_MODE_EXIST | FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_SHARE_READ );

@@ -47,7 +47,7 @@ namespace NEDirectMessager
  * Constructor / Destructor
  ************************************************************************/
 
-DirectMessagerClientBase::DirectMessagerClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
+DirectMessagerClientBase::DirectMessagerClientBase( const String & roleName, const String & ownerThread /* = String::getEmptyString() */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )

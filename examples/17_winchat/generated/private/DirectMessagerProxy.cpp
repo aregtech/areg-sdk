@@ -56,7 +56,7 @@ DirectMessagerProxy * DirectMessagerProxy::createProxy( const String & roleName,
                                                                       , ownerThread).get() );
 }
 
-DirectMessagerProxy * DirectMessagerProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
+DirectMessagerProxy * DirectMessagerProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::getEmptyString()*/ )
 {
     return static_cast<DirectMessagerProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEDirectMessager::getInterfaceData()

@@ -54,7 +54,7 @@ protected:
      * \param   roleName    The dependent service DirectMessager role name.
      * \param   ownerThread The name of client owner thread. If empty, assign current thread.
      **/
-    DirectMessagerClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
+    DirectMessagerClientBase( const String & roleName, const String & ownerThread = String::getEmptyString() );
 
     /**
      * \brief   Initialize DirectMessager Service client object by specifying the

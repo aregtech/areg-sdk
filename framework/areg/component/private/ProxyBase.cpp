@@ -169,7 +169,7 @@ std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const String & roleName
                                                        , const NEService::SInterfaceData & serviceIfData
                                                        , IEProxyListener & connect
                                                        , FuncCreateProxy funcCreate
-                                                       , const String & ownerThread /*= String::EmptyString*/)
+                                                       , const String & ownerThread /*= String::getEmptyString()*/)
 {
     return ProxyBase::findOrCreateProxy(roleName, serviceIfData, connect, funcCreate, DispatcherThread::getDispatcherThread(ownerThread) );
 }
@@ -266,7 +266,7 @@ ProxyBase::ProxyBase(const String & roleName, const NEService::SInterfaceData & 
 
     : IEProxyEventConsumer  ( mProxyAddress )
 
-    , mProxyAddress     ( serviceIfData, roleName, (ownerThread != nullptr) && (ownerThread->isValid()) ? ownerThread->getName() : String::EmptyString )
+    , mProxyAddress     ( serviceIfData, roleName, (ownerThread != nullptr) && (ownerThread->isValid()) ? ownerThread->getName() : String::getEmptyString() )
     , mStubAddress      ( StubAddress::getInvalidStubAddress() )
     , mSequenceCount    ( 0 )
     , mListenerList     ( static_cast<int>(serviceIfData.idAttributeCount + serviceIfData.idResponseCount) )

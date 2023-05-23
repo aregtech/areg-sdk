@@ -54,7 +54,7 @@ protected:
      * \param   roleName    The dependent service SimpleTrafficLight role name.
      * \param   ownerThread The name of client owner thread. If empty, assign current thread.
      **/
-    SimpleTrafficLightClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
+    SimpleTrafficLightClientBase( const String & roleName, const String & ownerThread = String::getEmptyString() );
 
     /**
      * \brief   Initialize SimpleTrafficLight Service client object by specifying the

@@ -56,7 +56,7 @@ PatientInformationProxy * PatientInformationProxy::createProxy( const String & r
                                                                       , ownerThread).get() );
 }
 
-PatientInformationProxy * PatientInformationProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
+PatientInformationProxy * PatientInformationProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::getEmptyString()*/ )
 {
     return static_cast<PatientInformationProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEPatientInformation::getInterfaceData()

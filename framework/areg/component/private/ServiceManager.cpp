@@ -170,7 +170,7 @@ void ServiceManager::requestRecreateThread(const ComponentThread& whichThread)
                                   , static_cast<DispatcherThread &>(serviceManager));
 }
 
-bool ServiceManager::_routingServiceConfigure( const String & configFile /*= String::EmptyString*/ )
+bool ServiceManager::_routingServiceConfigure( const String & configFile /*= String::getEmptyString()*/ )
 {
     ServiceManager & serviceManager = ServiceManager::getInstance();
     return ServiceManagerEvent::sendEvent( ServiceManagerEventData::configureConnection(configFile)
@@ -178,7 +178,7 @@ bool ServiceManager::_routingServiceConfigure( const String & configFile /*= Str
                                          , static_cast<DispatcherThread &>(serviceManager));
 }
 
-bool ServiceManager::_routingServiceStart(const String & configFile /*= String::EmptyString */)
+bool ServiceManager::_routingServiceStart(const String & configFile /*= String::getEmptyString() */)
 {
     ServiceManager & serviceManager = ServiceManager::getInstance();
     return ServiceManagerEvent::sendEvent( ServiceManagerEventData::startConnection(configFile)
@@ -517,7 +517,7 @@ void ServiceManager::processEvent( const ServiceManagerEventData & data )
             }
             else if (mConnectService.isRemoteServicingConfigured() == false)
             {
-                mConnectService.configureRemoteServicing(String::EmptyString);
+                mConnectService.configureRemoteServicing(String::getEmptyString());
             }
         }
         break;
@@ -534,7 +534,7 @@ void ServiceManager::processEvent( const ServiceManagerEventData & data )
             }
             else if (mConnectService.isRemoteServicingConfigured() == false)
             {
-                isConfigured = mConnectService.configureRemoteServicing(String::EmptyString);
+                isConfigured = mConnectService.configureRemoteServicing(String::getEmptyString());
             }
             else
             {

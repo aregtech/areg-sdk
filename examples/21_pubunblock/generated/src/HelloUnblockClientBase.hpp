@@ -59,7 +59,7 @@ protected:
      * \param   roleName    The dependent service HelloUnblock role name.
      * \param   ownerThread The name of client owner thread. If empty, assign current thread.
      **/
-    HelloUnblockClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
+    HelloUnblockClientBase( const String & roleName, const String & ownerThread = String::getEmptyString() );
 
     /**
      * \brief   Initialize HelloUnblock Service client object by specifying the

@@ -43,7 +43,7 @@ namespace NEPatientInformation
  * Constructor / Destructor
  ************************************************************************/
 
-PatientInformationClientBase::PatientInformationClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
+PatientInformationClientBase::PatientInformationClientBase( const String & roleName, const String & ownerThread /* = String::getEmptyString() */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )

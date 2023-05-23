@@ -57,7 +57,7 @@ protected:
      * \param   roleName    The dependent service CentralMessager role name.
      * \param   ownerThread The name of client owner thread. If empty, assign current thread.
      **/
-    CentralMessagerClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
+    CentralMessagerClientBase( const String & roleName, const String & ownerThread = String::getEmptyString() );
 
     /**
      * \brief   Initialize CentralMessager Service client object by specifying the

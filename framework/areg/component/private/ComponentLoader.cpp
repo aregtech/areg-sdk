@@ -53,7 +53,7 @@ ComponentLoader & ComponentLoader::getInstance( void )
     return _componentLoader;
 }
 
-bool ComponentLoader::loadComponentModel( const String & modelName /*= String::EmptyString*/ )
+bool ComponentLoader::loadComponentModel( const String & modelName /*= String::getEmptyString()*/ )
 {
     bool result = ComponentLoader::getInstance().loadModel( modelName );
     if ( result == false )
@@ -64,7 +64,7 @@ bool ComponentLoader::loadComponentModel( const String & modelName /*= String::E
     return result;
 }
 
-void ComponentLoader::unloadComponentModel( const String & modelName /*= String::EmptyString*/ )
+void ComponentLoader::unloadComponentModel( const String & modelName /*= String::getEmptyString()*/ )
 {
     ComponentLoader::getInstance( ).unloadModel( modelName );
 }
@@ -249,7 +249,7 @@ bool ComponentLoader::addModelUnique(const NERegistry::Model & newModel)
     return loader.addModel(newModel);
 }
 
-void ComponentLoader::removeComponentModel(const String & modelName /*= String::EmptyString */)
+void ComponentLoader::removeComponentModel(const String & modelName /*= String::getEmptyString() */)
 {
     OUTPUT_WARN("Removing components and model [ %s ]", modelName.isEmpty() ? "ALL MODELS" : modelName.getString());
     ComponentLoader::unloadComponentModel(modelName);
@@ -383,7 +383,7 @@ bool ComponentLoader::loadAllModels( void )
     return result;
 }
 
-bool ComponentLoader::loadModel( const String & modelName /*= String::EmptyString*/ )
+bool ComponentLoader::loadModel( const String & modelName /*= String::getEmptyString()*/ )
 {
     Lock lock(mLock);
     bool result = false;
@@ -471,7 +471,7 @@ bool ComponentLoader::loadModel( NERegistry::Model & whichModel ) const
     return result;
 }
 
-void ComponentLoader::unloadModel( const String & modelName /*= String::EmptyString*/ )
+void ComponentLoader::unloadModel( const String & modelName /*= String::getEmptyString()*/ )
 {
     Lock lock(mLock);
 

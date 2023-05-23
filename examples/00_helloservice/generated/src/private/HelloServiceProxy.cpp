@@ -56,7 +56,7 @@ HelloServiceProxy * HelloServiceProxy::createProxy( const String & roleName, IEP
                                                                       , ownerThread).get() );
 }
 
-HelloServiceProxy * HelloServiceProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
+HelloServiceProxy * HelloServiceProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::getEmptyString()*/ )
 {
     return static_cast<HelloServiceProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEHelloService::getInterfaceData()

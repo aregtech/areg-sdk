@@ -99,7 +99,7 @@ public:
                 , const Version & serviceVersion
                 , NEService::eServiceType serviceType
                 , const String & roleName
-                , const String & threadName = String::EmptyString );
+                , const String & threadName = String::getEmptyString() );
     /**
      * \brief	Creates Proxy address according required connected component role name,
      *          service name and thread address of Proxy.
@@ -107,7 +107,7 @@ public:
      * \param   roleName        Assigned role name of Proxy
      * \param   threadName      The name of thread where Proxy should act. If null, it is processed in current thread.
      **/
-    ProxyAddress( const ServiceItem & service, const String & roleName, const String & threadName = String::EmptyString );
+    ProxyAddress( const ServiceItem & service, const String & roleName, const String & threadName = String::getEmptyString() );
     /**
      * \brief	Creates Proxy address according required connected component role name,
      *          service name and thread address of Proxy.
@@ -115,7 +115,7 @@ public:
      * \param   roleName        Assigned role name of Proxy
      * \param   threadName      The name of thread where Proxy should act. If null, it is processed in current thread.
      **/
-    ProxyAddress( const NEService::SInterfaceData & siData, const String & roleName, const String & threadName = String::EmptyString );
+    ProxyAddress( const NEService::SInterfaceData & siData, const String & roleName, const String & threadName = String::getEmptyString() );
 
     /**
      * \brief   Copy constructor.

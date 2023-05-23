@@ -56,7 +56,7 @@ protected:
      * \param   roleName    The dependent service LargeData role name.
      * \param   ownerThread The name of client owner thread. If empty, assign current thread.
      **/
-    LargeDataClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
+    LargeDataClientBase( const String & roleName, const String & ownerThread = String::getEmptyString() );
 
     /**
      * \brief   Initialize LargeData Service client object by specifying the

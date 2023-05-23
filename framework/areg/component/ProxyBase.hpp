@@ -391,7 +391,7 @@ public:
                                                        , const NEService::SInterfaceData & serviceIfData
                                                        , IEProxyListener & connect
                                                        , FuncCreateProxy funcCreate
-                                                       , const String & ownerThread = String::EmptyString );
+                                                       , const String & ownerThread = String::getEmptyString() );
 
     /**
      * \brief   Finds already existing proxy object or creates new one.

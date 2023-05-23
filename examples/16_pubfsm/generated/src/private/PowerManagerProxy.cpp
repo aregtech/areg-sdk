@@ -56,7 +56,7 @@ PowerManagerProxy * PowerManagerProxy::createProxy( const String & roleName, IEP
                                                                       , ownerThread).get() );
 }
 
-PowerManagerProxy * PowerManagerProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
+PowerManagerProxy * PowerManagerProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::getEmptyString()*/ )
 {
     return static_cast<PowerManagerProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEPowerManager::getInterfaceData()

@@ -43,7 +43,7 @@ namespace NESimpleTrafficLight
  * Constructor / Destructor
  ************************************************************************/
 
-SimpleTrafficLightClientBase::SimpleTrafficLightClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
+SimpleTrafficLightClientBase::SimpleTrafficLightClientBase( const String & roleName, const String & ownerThread /* = String::getEmptyString() */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )

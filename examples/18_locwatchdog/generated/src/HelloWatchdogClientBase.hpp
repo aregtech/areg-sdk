@@ -55,7 +55,7 @@ protected:
      * \param   roleName    The dependent service HelloWatchdog role name.
      * \param   ownerThread The name of client owner thread. If empty, assign current thread.
      **/
-    HelloWatchdogClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
+    HelloWatchdogClientBase( const String & roleName, const String & ownerThread = String::getEmptyString() );
 
     /**
      * \brief   Initialize HelloWatchdog Service client object by specifying the

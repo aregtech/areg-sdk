@@ -78,11 +78,7 @@
 
 #endif  // AREG_ENABLE_LOGS
 
-#if !(ENABLE_TRACES)
-    #undef ENABLE_TRACES
-#endif // ENABLE_TRACES
-
-#if (defined(ENABLE_TRACES) && (ENABLE_TRACES))
+#if ENABLE_TRACES
 
 //////////////////////////////////////////////////////////////////////////
 // if ENABLE_TRACES is defined and not zero
@@ -192,7 +188,7 @@
      **/
     #define GLOBAL_FATAL(...)                           _getGlobalScope().logFatal( __VA_ARGS__ )
 
-#else   // !defined(ENABLE_TRACES)
+#else   // !ENABLE_TRACES
 
 //////////////////////////////////////////////////////////////////////////
 // if TRACE_DEBUG_OUTPUT and TRACE_DEBUG_OUTPUT are not defined or both are zero
@@ -277,6 +273,6 @@
      **/
     #define GLOBAL_FATAL(...)
 
-#endif  // (defined(ENABLE_TRACES)
+#endif  // ENABLE_TRACES
 
 #endif  // AREG_TRACE_GETRACE_H

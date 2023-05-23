@@ -57,7 +57,7 @@ protected:
      * \param   roleName    The dependent service DirectConnection role name.
      * \param   ownerThread The name of client owner thread. If empty, assign current thread.
      **/
-    DirectConnectionClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
+    DirectConnectionClientBase( const String & roleName, const String & ownerThread = String::getEmptyString() );
 
     /**
      * \brief   Initialize DirectConnection Service client object by specifying the

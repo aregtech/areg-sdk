@@ -55,10 +55,10 @@ void Process::_initPaths( const char * fullPath )
 
     if (procPath.empty() == false)
     {
-        mProcessPath = procPath.parent_path().empty() ? String::EmptyString : procPath.parent_path().string();
-        mProcessName = procPath.filename().empty()    ? String::EmptyString : procPath.filename().string();
-        mAppName     = procPath.stem().empty()        ? String::EmptyString : procPath.stem().string();
-        mProcessExt  = procPath.extension().empty()   ? String::EmptyString : procPath.extension().string();
+        mProcessPath = procPath.parent_path().empty() ? String::getEmptyString() : procPath.parent_path().string();
+        mProcessName = procPath.filename().empty()    ? String::getEmptyString() : procPath.filename().string();
+        mAppName     = procPath.stem().empty()        ? String::getEmptyString() : procPath.stem().string();
+        mProcessExt  = procPath.extension().empty()   ? String::getEmptyString() : procPath.extension().string();
     }
 }
 

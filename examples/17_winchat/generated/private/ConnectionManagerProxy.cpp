@@ -56,7 +56,7 @@ ConnectionManagerProxy * ConnectionManagerProxy::createProxy( const String & rol
                                                                       , ownerThread).get() );
 }
 
-ConnectionManagerProxy * ConnectionManagerProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
+ConnectionManagerProxy * ConnectionManagerProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::getEmptyString()*/ )
 {
     return static_cast<ConnectionManagerProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEConnectionManager::getInterfaceData()

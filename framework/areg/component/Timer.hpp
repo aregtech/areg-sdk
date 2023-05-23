@@ -91,7 +91,7 @@ public:
      *                          and play no role.
      **/
     explicit Timer( IETimerConsumer & timerConsumer
-                  , const String & timerName = String::EmptyString
+                  , const String & timerName = String::getEmptyString()
                   , uint32_t timeoutMs       = NECommon::INVALID_TIMEOUT
                   , int maxQueued            = Timer::IGNORE_TIMER_QUEUE );
     /**

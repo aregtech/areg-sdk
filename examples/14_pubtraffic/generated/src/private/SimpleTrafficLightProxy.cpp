@@ -56,7 +56,7 @@ SimpleTrafficLightProxy * SimpleTrafficLightProxy::createProxy( const String & r
                                                                       , ownerThread).get() );
 }
 
-SimpleTrafficLightProxy * SimpleTrafficLightProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
+SimpleTrafficLightProxy * SimpleTrafficLightProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::getEmptyString()*/ )
 {
     return static_cast<SimpleTrafficLightProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NESimpleTrafficLight::getInterfaceData()

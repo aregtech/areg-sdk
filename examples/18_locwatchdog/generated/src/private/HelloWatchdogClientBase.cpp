@@ -44,7 +44,7 @@ namespace NEHelloWatchdog
  * Constructor / Destructor
  ************************************************************************/
 
-HelloWatchdogClientBase::HelloWatchdogClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
+HelloWatchdogClientBase::HelloWatchdogClientBase( const String & roleName, const String & ownerThread /* = String::getEmptyString() */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )

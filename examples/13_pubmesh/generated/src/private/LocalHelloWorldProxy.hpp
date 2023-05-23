@@ -101,7 +101,7 @@ protected:
      *                          If nullptr, current dispatching thread is used to dispatch messages.
      * \return  Returns pointer to instantiated proxy object.
      **/
-    static LocalHelloWorldProxy * createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread = String::EmptyString );
+    static LocalHelloWorldProxy * createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread = String::getEmptyString() );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected

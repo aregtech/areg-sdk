@@ -43,7 +43,7 @@ namespace NETrafficController
  * Constructor / Destructor
  ************************************************************************/
 
-TrafficControllerClientBase::TrafficControllerClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
+TrafficControllerClientBase::TrafficControllerClientBase( const String & roleName, const String & ownerThread /* = String::getEmptyString() */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )

@@ -85,7 +85,7 @@ bool Console::readInputList(const char* format, va_list varList) const
 String Console::readString(void) const
 {
     char buffer[512] { 0 };
-    return String(readInputs("%512s", buffer) ? buffer : String::EmptyString);
+    return String(readInputs("%512s", buffer) ? buffer : String::getEmptyString());
 }
 
 void Console::outputMsg(Console::Coord pos, const char* format, ...) const

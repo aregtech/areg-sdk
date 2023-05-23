@@ -44,7 +44,7 @@ namespace NEHelloService
  * Constructor / Destructor
  ************************************************************************/
 
-HelloServiceClientBase::HelloServiceClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
+HelloServiceClientBase::HelloServiceClientBase( const String & roleName, const String & ownerThread /* = String::getEmptyString() */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )

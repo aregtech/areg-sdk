@@ -56,13 +56,13 @@ public:
      * \param   valueSet    The Value as a string to parse.
      * \param   comment     The optional comment for the property.
      **/
-    Property( const String & keySet, const String & valueSet, const String & comment = String::EmptyString );
+    Property( const String & keySet, const String & valueSet, const String & comment = String::getEmptyString() );
     /**
      * \brief   Initializes Key, value and the comment.
      * \param   newProperty The property as a key and value pair to set.
      * \param   comment     The optional comment for the property.
      **/
-    Property( const Property::Entry & newProperty, const String & comment = String::EmptyString );
+    Property( const Property::Entry & newProperty, const String & comment = String::getEmptyString() );
     /**
      * \brief   Copies data from given source
      * \param   source  The source to copy data

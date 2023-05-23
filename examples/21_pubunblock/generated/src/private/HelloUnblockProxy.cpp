@@ -56,7 +56,7 @@ HelloUnblockProxy * HelloUnblockProxy::createProxy( const String & roleName, IEP
                                                                       , ownerThread).get() );
 }
 
-HelloUnblockProxy * HelloUnblockProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
+HelloUnblockProxy * HelloUnblockProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::getEmptyString()*/ )
 {
     return static_cast<HelloUnblockProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEHelloUnblock::getInterfaceData()
