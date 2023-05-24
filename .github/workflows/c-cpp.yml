@@ -1,7 +1,7 @@
 name: C/C++ CI
 
 on:
-  push:         # Keep empty to run on each branch when push the code
+  push:         # Keep empty to run on each branch when push the code. Otherwise, use branches: [ master ]
   pull_request: # Set to master to run only when merge with master branch
     branches: [ master ]
 
@@ -19,35 +19,35 @@ jobs:
       matrix:
         config: # Create matrix with combinations
             # compile AREG engine as a shared library with GNU g++ / gcc on Ubuntu Linux, enable AREG extensions and logs
-          - { name: linux-gnu-shared-ext,   os: ubuntu-latest,  lib: shared,  family: gnu,    cxx: g++,     cc: gcc,  extend: 1,  logs: 1}
+          - { name: linux-gnu-shared-ext-log,     os: ubuntu-latest,  lib: shared,  family: gnu,    cxx: g++,     cc: gcc,  extend: 1,  logs: 1}
             # compile AREG engine as a shared library with GNU g++ / gcc on Ubuntu Linux, enable AREG extensions and no logs
-          - { name: linux-gnu-shared-ext,   os: ubuntu-latest,  lib: shared,  family: gnu,    cxx: g++,     cc: gcc,  extend: 1,  logs: 1}
+          - { name: linux-gnu-shared-ext-nolog,   os: ubuntu-latest,  lib: shared,  family: gnu,    cxx: g++,     cc: gcc,  extend: 1,  logs: 1}
             # compile AREG engine as a static library with GNU g++ / gcc on Ubuntu Linux, enable AREG extensions and logs
-          - { name: linux-gnu-static-ext,   os: ubuntu-latest,  lib: static,  family: gnu,    cxx: g++,     cc: gcc,  extend: 1,  logs: 1}
+          - { name: linux-gnu-static-ext-log,     os: ubuntu-latest,  lib: static,  family: gnu,    cxx: g++,     cc: gcc,  extend: 1,  logs: 1}
             # compile AREG engine as a shared library with GNU g++ / gcc on Ubuntu Linux, disable AREG extensions and logs
-          - { name: linux-gnu-shared-noext, os: ubuntu-latest,  lib: shared,  family: gnu,    cxx: g++,     cc: gcc,  extend: 0,  logs: 1}
+          - { name: linux-gnu-shared-noext-log,   os: ubuntu-latest,  lib: shared,  family: gnu,    cxx: g++,     cc: gcc,  extend: 0,  logs: 1}
             # compile AREG engine as a shared library with GNU g++ / gcc on Ubuntu Linux, disable AREG extensions and no logs
-          - { name: linux-gnu-shared-noext, os: ubuntu-latest,  lib: shared,  family: gnu,    cxx: g++,     cc: gcc,  extend: 0,  logs: 0}
+          - { name: linux-gnu-shared-noext-nolog, os: ubuntu-latest,  lib: shared,  family: gnu,    cxx: g++,     cc: gcc,  extend: 0,  logs: 0}
             # compile AREG engine as a shared library with clang on Ubuntu Linux, enable AREG extensions and logs
-          - { name: linux-clang-shared-ext, os: ubuntu-latest,  lib: shared,  family: llvm,  cxx: clang++, cc: clang, extend: 1,  logs: 1}
+          - { name: linux-clang-shared-ext-log,   os: ubuntu-latest,  lib: shared,  family: llvm,  cxx: clang++, cc: clang, extend: 1,  logs: 1}
             # compile AREG engine as a shared library with clang on Ubuntu Linux, enable AREG extensions and no logs
-          - { name: linux-clang-shared-ext, os: ubuntu-latest,  lib: shared,  family: llvm,  cxx: clang++, cc: clang, extend: 1,  logs: 0}
+          - { name: linux-clang-shared-ext-nolog, os: ubuntu-latest,  lib: shared,  family: llvm,  cxx: clang++, cc: clang, extend: 1,  logs: 0}
             # compile AREG engine as a static library with clang on Ubuntu Linux, enable AREG extensions and logs
-          - { name: linux-clang-static-ext, os: ubuntu-latest,  lib: static,  family: llvm,  cxx: clang++, cc: clang, extend: 1,  logs: 1}
+          - { name: linux-clang-static-ext-log,   os: ubuntu-latest,  lib: static,  family: llvm,  cxx: clang++, cc: clang, extend: 1,  logs: 1}
             # compile AREG engine as a shared library with clang on Ubuntu Linux, disable AREG extensions and logs
-          - { name: linux-clang-shared-noext,os: ubuntu-latest, lib: shared,  family: llvm,  cxx: clang++, cc: clang, extend: 0,  logs: 1}
+          - { name: linux-clang-shared-noext-log, os: ubuntu-latest, lib: shared,   family: llvm,  cxx: clang++, cc: clang, extend: 0,  logs: 1}
             # compile AREG engine as a shared library with clang on Ubuntu Linux, disable AREG extensions and no logs
-          - { name: linux-clang-shared-noext,os: ubuntu-latest, lib: shared,  family: llvm,  cxx: clang++, cc: clang, extend: 0,  logs: 0}
+          - { name: linux-clang-shared-noext-nolog,os: ubuntu-latest,lib: shared,   family: llvm,  cxx: clang++, cc: clang, extend: 0,  logs: 0}
             # compile AREG engine as a shared with CYGWIN g++ / gcc on Windows, enable AREG extensions and logs
-          - { name: win-cygwin-shared-ext,  os: windows-latest, lib: shared,  family: cygwin, cxx: g++,     cc: gcc,  extend: 1,  logs: 1}
+          - { name: win-cygwin-shared-ext-log,  os: windows-latest, lib: shared,    family: cygwin, cxx: g++,     cc: gcc,  extend: 1,  logs: 1}
             # compile AREG engine as a shared with CYGWIN g++ / gcc on Windows, enable AREG extensions and no logs
-          - { name: win-cygwin-shared-ext,  os: windows-latest, lib: shared,  family: cygwin, cxx: g++,     cc: gcc,  extend: 1,  logs: 0}
+          - { name: win-cygwin-shared-ext-nolog,os: windows-latest, lib: shared,    family: cygwin, cxx: g++,     cc: gcc,  extend: 1,  logs: 0}
             # compile AREG engine as a static with CYGWIN g++ / gcc on Windows, enable AREG extensions and logs
-          - { name: win-cygwin-static-ext,  os: windows-latest, lib: static,  family: cygwin, cxx: g++,     cc: gcc,  extend: 1,  logs: 1}
+          - { name: win-cygwin-static-ext-log,  os: windows-latest, lib: static,    family: cygwin, cxx: g++,     cc: gcc,  extend: 1,  logs: 1}
             # compile AREG engine as a shared with CYGWIN g++ / gcc on Windows, disable AREG extensions and logs
-          - { name: win-cygwin-shared-noext,os: windows-latest, lib: shared,  family: cygwin, cxx: g++,     cc: gcc,  extend: 0,  logs: 1}
+          - { name: win-cygwin-shared-noext-log,os: windows-latest, lib: shared,    family: cygwin, cxx: g++,     cc: gcc,  extend: 0,  logs: 1}
             # compile AREG engine as a shared with CYGWIN g++ / gcc on Windows, disable AREG extensions and no logs
-          - { name: win-cygwin-shared-noext,os: windows-latest, lib: shared,  family: cygwin, cxx: g++,     cc: gcc,  extend: 0,  logs: 0}
+          - { name: win-cygwin-shared-noext-nolog,os: windows-latest,lib: shared,   family: cygwin, cxx: g++,     cc: gcc,  extend: 0,  logs: 0}
 
     steps:
 
