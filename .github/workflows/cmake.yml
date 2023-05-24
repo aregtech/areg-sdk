@@ -22,30 +22,46 @@ jobs:
       fail-fast: false
       matrix:
         config: # Create matrix with combinations
-            # compile AREG engine as a shared library with GNU g++ / gcc on Ubuntu Linux, enable AREG extensions
-          - { name: linux-gnu-shared-ext,   os: ubuntu-latest,  lib: shared,  family: gnu,    cxx: g++,     cc: gcc,    extend: ON}
-            # compile AREG engine as a static library with GNU g++ / gcc on Ubuntu Linux, enable AREG extensions
-          - { name: linux-gnu-static-ext,   os: ubuntu-latest,  lib: static,  family: gnu,    cxx: g++,     cc: gcc,    extend: ON}
-            # compile AREG engine as a shared library with GNU g++ / gcc on Ubuntu Linux, disable AREG extensions
-          - { name: linux-gnu-shared-noext, os: ubuntu-latest,  lib: shared,  family: gnu,    cxx: g++,     cc: gcc,    extend: OFF}
-            # compile AREG engine as a shared library with clang on Ubuntu Linux, enable AREG extensions
-          - { name: linux-clang-shared-ext, os: ubuntu-latest,  lib: shared,  family: llvm,  cxx: clang++, cc: clang,  extend: ON}
-            # compile AREG engine as a static library with clang on Ubuntu Linux, enable AREG extensions
-          - { name: linux-clang-static-ext, os: ubuntu-latest,  lib: static,  family: llvm,  cxx: clang++, cc: clang,  extend: ON}
-            # compile AREG engine as a shared library with clang on Ubuntu Linux, disable AREG extensions
-          - { name: linux-clang-shared-noext,os: ubuntu-latest, lib: shared,  family: llvm,  cxx: clang++, cc: clang,  extend: OFF}
-            # compile AREG engine as a shared with CYGWIN g++ / gcc on Windows, enable AREG extensions
-          - { name: win-cygwin-shared-ext,  os: windows-latest, lib: shared,  family: cygwin, cxx: g++,     cc: gcc,    extend: ON}
-            # compile AREG engine as a static with CYGWIN g++ / gcc on Windows, enable AREG extensions
-          - { name: win-cygwin-static-ext,  os: windows-latest, lib: static,  family: cygwin, cxx: g++,     cc: gcc,    extend: ON}
-            # compile AREG engine as a shared with CYGWIN g++ / gcc on Windows, disable AREG extensions
-          - { name: win-cygwin-shared-noext,os: windows-latest, lib: shared,  family: cygwin, cxx: g++,     cc: gcc,    extend: OFF}
-            # compile AREG engine as a shared with MSVC on Windows, enable AREG extensions
-          - { name: win-msvc-shared-ext,    os: windows-latest, lib: shared,  family: msvc,   cxx: cl,      cc: cl,     extend: ON}
-            # compile AREG engine as a static with MSVC on Windows, enable AREG extensions
-          - { name: win-msvc-static-ext,    os: windows-latest, lib: static, family: msvc,    cxx: cl,      cc: cl,     extend: ON}
-            # compile AREG engine as a shared with MSVC on Windows, enable AREG extensions
-          - { name: win-msvc-shared-noext,  os: windows-latest, lib: shared,  family: msvc,   cxx: cl,      cc: cl,     extend: OFF}
+            # compile AREG engine as a shared library with GNU g++ / gcc on Ubuntu Linux, enable AREG extensions and logs
+          - { name: linux-gnu-shared-ext,   os: ubuntu-latest,  lib: shared,  family: gnu,    cxx: g++,     cc: gcc,    extend: ON,   logs: ON}
+            # compile AREG engine as a shared library with GNU g++ / gcc on Ubuntu Linux, enable AREG extensions and no logs
+          - { name: linux-gnu-shared-ext,   os: ubuntu-latest,  lib: shared,  family: gnu,    cxx: g++,     cc: gcc,    extend: ON,   logs: OFF}
+            # compile AREG engine as a static library with GNU g++ / gcc on Ubuntu Linux, enable AREG extensions and logs
+          - { name: linux-gnu-static-ext,   os: ubuntu-latest,  lib: static,  family: gnu,    cxx: g++,     cc: gcc,    extend: ON,   logs: ON}
+            # compile AREG engine as a shared library with GNU g++ / gcc on Ubuntu Linux, disable AREG extensions and logs
+          - { name: linux-gnu-shared-noext, os: ubuntu-latest,  lib: shared,  family: gnu,    cxx: g++,     cc: gcc,    extend: OFF,  logs: ON}
+            # compile AREG engine as a shared library with GNU g++ / gcc on Ubuntu Linux, disable AREG extensions and no logs
+          - { name: linux-gnu-shared-noext, os: ubuntu-latest,  lib: shared,  family: gnu,    cxx: g++,     cc: gcc,    extend: OFF,  logs: OFF}
+            # compile AREG engine as a shared library with clang on Ubuntu Linux, enable AREG extensions and logs
+          - { name: linux-clang-shared-ext, os: ubuntu-latest,  lib: shared,  family: llvm,   cxx: clang++, cc: clang,  extend: ON,   logs: ON}
+            # compile AREG engine as a shared library with clang on Ubuntu Linux, enable AREG extensions and no logs
+          - { name: linux-clang-shared-ext, os: ubuntu-latest,  lib: shared,  family: llvm,   cxx: clang++, cc: clang,  extend: ON,   logs: OFF}
+            # compile AREG engine as a static library with clang on Ubuntu Linux, enable AREG extensions and logs
+          - { name: linux-clang-static-ext, os: ubuntu-latest,  lib: static,  family: llvm,   cxx: clang++, cc: clang,  extend: ON,   logs: ON}
+            # compile AREG engine as a shared library with clang on Ubuntu Linux, disable AREG extensions and logs
+          - { name: linux-clang-shared-noext,os: ubuntu-latest, lib: shared,  family: llvm,   cxx: clang++, cc: clang,  extend: OFF,  logs: ON}
+            # compile AREG engine as a shared library with clang on Ubuntu Linux, disable AREG extensions and no logs
+          - { name: linux-clang-shared-noext,os: ubuntu-latest, lib: shared,  family: llvm,   cxx: clang++, cc: clang,  extend: OFF,  logs: OFF}
+            # compile AREG engine as a shared with CYGWIN g++ / gcc on Windows, enable AREG extensions and logs
+          - { name: win-cygwin-shared-ext,  os: windows-latest, lib: shared,  family: cygwin, cxx: g++,     cc: gcc,    extend: ON,   logs: ON}
+            # compile AREG engine as a shared with CYGWIN g++ / gcc on Windows, enable AREG extensions and no logs
+          - { name: win-cygwin-shared-ext,  os: windows-latest, lib: shared,  family: cygwin, cxx: g++,     cc: gcc,    extend: ON,   logs: OFF}
+            # compile AREG engine as a static with CYGWIN g++ / gcc on Windows, enable AREG extensions and logs
+          - { name: win-cygwin-static-ext,  os: windows-latest, lib: static,  family: cygwin, cxx: g++,     cc: gcc,    extend: ON,   logs: ON}
+            # compile AREG engine as a shared with CYGWIN g++ / gcc on Windows, disable AREG extensions and logs
+          - { name: win-cygwin-shared-noext,os: windows-latest, lib: shared,  family: cygwin, cxx: g++,     cc: gcc,    extend: OFF,  logs: ON}
+            # compile AREG engine as a shared with CYGWIN g++ / gcc on Windows, disable AREG extensions and no logs
+          - { name: win-cygwin-shared-noext,os: windows-latest, lib: shared,  family: cygwin, cxx: g++,     cc: gcc,    extend: OFF,  logs: OFF}
+            # compile AREG engine as a shared with MSVC on Windows, enable AREG extensions and logs
+          - { name: win-msvc-shared-ext,    os: windows-latest, lib: shared,  family: msvc,   cxx: cl,      cc: cl,     extend: ON,   logs: ON}
+            # compile AREG engine as a shared with MSVC on Windows, enable AREG extensions and no logs
+          - { name: win-msvc-shared-ext,    os: windows-latest, lib: shared,  family: msvc,   cxx: cl,      cc: cl,     extend: ON,   logs: OFF}
+            # compile AREG engine as a static with MSVC on Windows, enable AREG extensions and logs
+          - { name: win-msvc-static-ext,    os: windows-latest, lib: static, family: msvc,    cxx: cl,      cc: cl,     extend: ON,   logs: ON}
+            # compile AREG engine as a shared with MSVC on Windows, enable AREG extensions and logs
+          - { name: win-msvc-shared-noext,  os: windows-latest, lib: shared,  family: msvc,   cxx: cl,      cc: cl,     extend: OFF,  logs: ON}
+            # compile AREG engine as a shared with MSVC on Windows, enable AREG extensions and no logs
+          - { name: win-msvc-shared-noext,  os: windows-latest, lib: shared,  family: msvc,   cxx: cl,      cc: cl,     extend: OFF,  logs: OFF}
 
     steps:
 
@@ -71,14 +87,12 @@ jobs:
         shell: cmd
         run: |
             c:\setup.exe -qgnO -s http://mirrors.kernel.org/sourceware/cygwin/ -l C:\cygwin-packages\ -P ^
-            automake,^
             cmake,^
             dos2unix,^
             extra-cmake-modules,^
             flexdll,^
             gcc-g++,^
             make,^
-            ninja,^
             ncurses,^
             libncurses-devel
 
@@ -90,13 +104,13 @@ jobs:
         if: matrix.config.extend == 'ON'
         working-directory: ${{github.workspace}}
         run: |
-          cmake -B ./build -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_BUILD_ALL:BOOL=ON -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_ENABLE_EXT:BOOL=${{matrix.config.extend}}
+          cmake -B ./build -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_BUILD_ALL:BOOL=ON -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_ENABLE_EXT:BOOL=${{matrix.config.extend}} -DAREG_ENABLE_LOGS:BOOL=${{matrix.config.logs}}
     
       - name: Configure CMake for disabled extended feature and selected compiler
         if: matrix.config.extend == 'OFF'
         working-directory: ${{github.workspace}}
         run: |
-          cmake -B ./build -DAREG_COMPILER=${{matrix.config.cc}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_BUILD_ALL:BOOL=ON -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_ENABLE_EXT:BOOL=${{matrix.config.extend}}
+          cmake -B ./build -DAREG_COMPILER=${{matrix.config.cc}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_BUILD_ALL:BOOL=ON -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_ENABLE_EXT:BOOL=${{matrix.config.extend}} -DAREG_ENABLE_LOGS:BOOL=${{matrix.config.logs}}
     
       - name: Build with CMake
         working-directory: ${{github.workspace}}
