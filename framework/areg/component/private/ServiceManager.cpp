@@ -266,7 +266,7 @@ void ServiceManager::_registerServer( const StubAddress & whichServer )
 
     ClientList clientList;
 
-#ifdef AREG_LOGS
+#if AREG_LOGS
     const ServerInfo & server = mServerList.registerServer(whichServer, clientList);
     TRACE_DBG("Server [ %s ] is registered. Connection status [ %s ], there are [ %d ] waiting clients"
                 , StubAddress::convAddressToPath(server.getAddress()).getString()
