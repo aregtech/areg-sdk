@@ -29,7 +29,7 @@
  *          either with logging, or only with output on Debug output window,
  *          or ignore any logging activity.
  *
- *          ENABLE_TRACES is a global preprocessor definition
+ *          AREG_LOGS is a global preprocessor definition
  *          indicating whether the applications should be compiled with
  *          logging or not. If this is not defined or zero,
  *          logging functionalities will be ignored, unless developer 
@@ -65,23 +65,10 @@
  *              }
  **/
 
-#ifdef AREG_ENABLE_LOGS
-
-    #undef  ENABLE_TRACES
-    #define ENABLE_TRACES       AREG_ENABLE_LOGS
-
-#else   // !AREG_ENABLE_LOGS
-
-    #ifndef ENABLE_TRACES
-        #define ENABLE_TRACES   1
-    #endif // !ENABLE_TRACES
-
-#endif  // AREG_ENABLE_LOGS
-
-#if ENABLE_TRACES
+#if AREG_LOGS
 
 //////////////////////////////////////////////////////////////////////////
-// if ENABLE_TRACES is defined and not zero
+// if AREG_LOGS is defined and not zero
 //////////////////////////////////////////////////////////////////////////
 
     /**
@@ -188,91 +175,91 @@
      **/
     #define GLOBAL_FATAL(...)                           _getGlobalScope().logFatal( __VA_ARGS__ )
 
-#else   // !ENABLE_TRACES
+#else   // !AREG_LOGS
 
 //////////////////////////////////////////////////////////////////////////
 // if TRACE_DEBUG_OUTPUT and TRACE_DEBUG_OUTPUT are not defined or both are zero
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   If ENABLE_TRACES, returns true, makes no effect
+     * \brief   If !AREG_LOGS, returns true, makes no effect
      **/
     #define IS_TRACE_STARTED()                          (true)
 
     /**
-     * \brief   If ENABLE_TRACES, returns true, makes no effect
+     * \brief   If !AREG_LOGS, returns true, makes no effect
      **/
     #define TRACER_START_LOGGING(configFile)            (true)
     /**
-     * \brief   If ENABLE_TRACES, returns true, makes no effect
+     * \brief   If !AREG_LOGS, returns true, makes no effect
      **/
     #define TRACER_FORCE_LOGGING()                      (true)
     /**
-     * \brief   If ENABLE_TRACES, returns true, makes no effect
+     * \brief   If !AREG_LOGS, returns true, makes no effect
      **/
     #define TRACER_CONFIGURE_AND_START(configFile)      (true)
     /**
-     * \brief   If ENABLE_TRACES is zero, does nothing
+     * \brief   If !AREG_LOGS is zero, does nothing
      **/
     #define TRACER_STOP_LOGGING()                       {}
 
     /**
-     * \brief   If ENABLE_TRACES is zero, does nothing, no trace scope is declared.
+     * \brief   If !AREG_LOGS is zero, does nothing, no trace scope is declared.
      **/
     #define DEF_TRACE_SCOPE(scope)
 
     /**
-     * \brief   If ENABLE_TRACES is zero, does nothing, no logging message is created.
+     * \brief   If !AREG_LOGS is zero, does nothing, no logging message is created.
      **/
     #define TRACE_SCOPE(scope)
 
     /**
-     * \brief   If ENABLE_TRACES, does nothing, all parameters are ignored.
+     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
      **/
     #define TRACE_DBG(...)
     /**
-     * \brief   If ENABLE_TRACES, does nothing, all parameters are ignored.
+     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
      **/
     #define TRACE_INFO(...)
     /**
-     * \brief   If ENABLE_TRACES, does nothing, all parameters are ignored.
+     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
      **/
     #define TRACE_WARN(...)
     /**
-     * \brief   If ENABLE_TRACES, does nothing, all parameters are ignored.
+     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
      **/
     #define TRACE_ERR(...)
     /**
-     * \brief   If ENABLE_TRACES, does nothing, all parameters are ignored.
+     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
      **/
     #define TRACE_FATAL(...)
 
     /**
-     * \brief   If ENABLE_TRACES, does nothing, no global scope is initialized.
+     * \brief   If !AREG_LOGS, does nothing, no global scope is initialized.
      **/
     #define GLOBAL_TRACE_SCOPE(scope)
 
     /**
-     * \brief   If ENABLE_TRACES, does nothing, all parameters are ignored.
+     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
      **/
     #define GLOBAL_DBG(...)
     /**
-     * \brief   If ENABLE_TRACES, does nothing, all parameters are ignored.
+     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
      **/
     #define GLOBAL_INFO(...)
     /**
-     * \brief   If ENABLE_TRACES, does nothing, all parameters are ignored.
+     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
      **/
     #define GLOBAL_WARN(...)
     /**
-     * \brief   If ENABLE_TRACES, does nothing, all parameters are ignored.
+     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
      **/
     #define GLOBAL_ERR(...)
     /**
-     * \brief   If ENABLE_TRACES, does nothing, all parameters are ignored.
+     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
      **/
     #define GLOBAL_FATAL(...)
 
-#endif  // ENABLE_TRACES
+#endif  // AREG_LOGS
 
 #endif  // AREG_TRACE_GETRACE_H

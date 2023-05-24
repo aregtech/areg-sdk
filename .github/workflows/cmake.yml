@@ -104,13 +104,13 @@ jobs:
         if: matrix.config.extend == 'ON'
         working-directory: ${{github.workspace}}
         run: |
-          cmake -B ./build -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_BUILD_ALL:BOOL=ON -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_ENABLE_EXT:BOOL=${{matrix.config.extend}} -DAREG_ENABLE_LOGS:BOOL=${{matrix.config.logs}}
+          cmake -B ./build -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_BUILD_ALL:BOOL=ON -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_EXTENSIONS:BOOL=${{matrix.config.extend}} -DAREG_LOGS:BOOL=${{matrix.config.logs}}
     
       - name: Configure CMake for disabled extended feature and selected compiler
         if: matrix.config.extend == 'OFF'
         working-directory: ${{github.workspace}}
         run: |
-          cmake -B ./build -DAREG_COMPILER=${{matrix.config.cc}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_BUILD_ALL:BOOL=ON -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_ENABLE_EXT:BOOL=${{matrix.config.extend}} -DAREG_ENABLE_LOGS:BOOL=${{matrix.config.logs}}
+          cmake -B ./build -DAREG_COMPILER=${{matrix.config.cc}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_BUILD_ALL:BOOL=ON -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_EXTENSIONS:BOOL=${{matrix.config.extend}} -DAREG_LOGS:BOOL=${{matrix.config.logs}}
     
       - name: Build with CMake
         working-directory: ${{github.workspace}}

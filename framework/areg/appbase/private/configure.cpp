@@ -19,7 +19,7 @@
 #ifdef  WIN32
 
     // Enable or disable memory leak detect only for Debug version
-    #ifdef  _DEBUG
+    #ifdef  DEBUG
         #pragma comment(lib, "dbghelp.lib")
     #endif  // _DEBUG
 

@@ -167,7 +167,7 @@ void MulticastRouter::serviceMain( int argc, char ** argv )
 
         if ( mServiceCmd == NEMulticastRouterSettings::eServiceCommand::CMD_Console )
         {
-#if 1
+#if AREG_EXTENSIONS
 
             Console& console = Console::getInstance();
 
@@ -195,7 +195,7 @@ void MulticastRouter::serviceMain( int argc, char ** argv )
             console.printTxt(NEMulticastRouterSettings::FORMAT_QUIT_APP);
             console.uninitialize();
 
-#else   // !_AREG_EXT
+#else   // !AREG_EXTENSIONS
 
             printf("Type \'quit\' or \'q\' to quit message router ...: ");
             const char quit = static_cast<int>('q');
@@ -211,7 +211,7 @@ void MulticastRouter::serviceMain( int argc, char ** argv )
 
             } while ((NEString::makeAsciiLower<char>(*cmd) != quit) && (charRead > 0));
 
-#endif  // !_AREG_EXT
+#endif  // !AREG_EXTENSIONS
 
             Application::signalAppQuit();
         }

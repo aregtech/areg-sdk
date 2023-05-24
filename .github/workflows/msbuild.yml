@@ -60,4 +60,4 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
-      run: msbuild /m /property:Configuration=${{env.BUILD_CONFIGURATION}} /property:Platform=${{matrix.config.platform}} /p:AdditionalDefines="AREG_EXTENSIONS=${{matrix.config.extend}};AREG_ENABLE_LOGS=${{matrix.config.logs}}" ${{env.SOLUTION_FILE_PATH}}
+      run: msbuild /m /property:Configuration=${{env.BUILD_CONFIGURATION}} /property:Platform=${{matrix.config.platform}} /property:AregExtensions=${{matrix.config.extend}} /property:AregLogs=${{matrix.config.logs}} ${{env.SOLUTION_FILE_PATH}}

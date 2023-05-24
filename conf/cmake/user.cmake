@@ -11,8 +11,8 @@
 #   5. AREG_BUILD_TESTS     -- Build AREG engine unit tests
 #   6. AREG_BUILD_EXAMPLES  -- Build AREG engine examples
 #   7. AREG_BUILD_ALL       -- Builds the framework, examples and tests.
-#   8. AREG_ENABLE_EXT      -- Enables or disables the extensions, which might require additional libraries.
-#   9. AREG_ENABLE_LOGS     -- Enable or disable compilation with logs.
+#   8. AREG_EXTENSIONS      -- Enables or disables the extensions, which might require additional libraries.
+#   9. AREG_LOGS            -- Enable or disable compilation with logs.
 #  10. AREG_OUTPUT_DIR      -- The output directory of build binaries
 #  11. AREG_OUTPUT_BIN      -- Set the path to folder to output compiled shared libraries and executables.
 #  12. AREG_OUTPUT_LIB      -- Set the path to folder to output compiled static libraries.
@@ -25,8 +25,8 @@
 #   5. AREG_BUILD_TESTS     := ON       (possible values: ON, OFF)
 #   6. AREG_BUILD_EXAMPLES  := ON       (possible values: ON, OFF)
 #   7. AREG_BUILD_ALL       := ON       (possible values: ON, OFF)
-#   8. AREG_ENABLE_EXT      := ON       (possible values: ON, OFF)
-#   9. AREG_ENABLE_LOGS     := ON        (possible values: ON, OFF)
+#   8. AREG_EXTENSIONS      := ON       (possible values: ON, OFF)
+#   9. AREG_LOGS            := ON       (possible values: ON, OFF)
 #   9. AREG_OUTPUT_DIR      := <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release      (possible values: any full path)
 #  10. AREG_OUTPUT_BIN      := <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release/bin  (possible values: any full path)
 #  11. AREG_OUTPUT_LIB      := <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release/lib  (possible values: any full path)
@@ -158,16 +158,15 @@ if (DEFINED AREG_BUILD_ALL)
 endif()
 
 # Set AREG extensions enable or disable flag to compiler additional optional features.
-if (NOT DEFINED AREG_ENABLE_EXT)
-    option(AREG_ENABLE_EXT      "Enable extensions" OFF)
+if (NOT DEFINED AREG_EXTENSIONS)
+    option(AREG_EXTENSIONS      "Enable extensions" ON)
 endif()
 
-# Modify 'AREG_ENABLE_LOGS' to enable or disable compilation with logs.
+# Modify 'AREG_LOGS' to enable or disable compilation with logs.
 # By default, the applications are compiled with logs.
-if (NOT DEFINED AREG_ENABLE_LOGS)
-    option(AREG_ENABLE_LOGS "Compile with logs" ON)
+if (NOT DEFINED AREG_LOGS)
+    option(AREG_LOGS "Compile with logs" ON)
 endif()
-option(ENABLE_TRACES "Compile logs flag" ${AREG_ENABLE_LOGS})
 
 # CPP standard for the projects
 set(AREG_CXX_STANDARD 17)

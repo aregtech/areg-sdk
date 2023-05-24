@@ -70,13 +70,14 @@ The sources of AREG framework can be compiled as a static or a shared library. B
 To build AREG framework with _POSIX_ API, define **POSIX** (or **_POSIX**) preprocessor directive. 
 
 **Other preprocessor directives used to compile:**
+
 | Directive | Description |
 | --- | --- |
 | **DEBUG** | Compile and build debug configuration. |
 | **NDEBUG** | Compile and build release configuration. |
-| **ENABLE_TRACES** | Compile with enabled logging. |
-| **EXP_AREG_LIB** | Compile and build the AREG framework as a _static_ library. |
-| **EXP_AREG_DLL** | Compile and build the AREG framework as a _shared_ library. |
+| **AREG_LOGS** | Compile sources codes with logs. |
+| **EXP_AREG_LIB** | Build the AREG framework as a _static_ library. |
+| **EXP_AREG_DLL** | Build the AREG framework as a _shared_ library. |
 | **IMP_AREG_LIB** | Link your project with the AREG framework _static_ library. |
 | **IMP_AREG_DLL** | Link a project with the AREG framework _shared_ library. |
 

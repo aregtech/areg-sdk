@@ -19,7 +19,7 @@
   ************************************************************************/
 #include "extensions/console/Console.hpp"
 
-#if (!defined(_AREG_EXT) || (_AREG_EXT == 0))
+#if (!defined(AREG_EXTENSIONS) || !(AREG_EXTENSIONS))
 
 #ifdef WINDOWS
 
@@ -57,7 +57,7 @@ namespace
         // The ASCII control sequence (or ANSI Escape Sequences) may not work properly
         // on Windows system (in particular, it may not work in cmd.exe console, but may
         // work in Power Shell). To make it running properly, there is a need to enable
-        // the seuqence code in following way:
+        // the sequence code in following way:
         // On Windows system this might not work by default and the additional work would require.
         //
         //////////////////////////////////////////////////////////////
@@ -71,8 +71,8 @@ namespace
         //////////////////////////////////////////////////////////////
         // 
         // Once it is enabled, it may display right characters.
-        // Otherwise, it may display errorous characters on Windows console.
-        // Opposit to this, the PowerShell does not require any additional enabling.
+        // Otherwise, it may display errors characters on Windows console.
+        // Opposite to this, the PowerShell does not require any additional enabling.
         // These methods are part of <Windows.h>
         //
         //////////////////////////////////////////////////////////////
@@ -209,4 +209,4 @@ void Console::_osMoveCursorOneLineDown(void) const
     printf("\x1B[1E");
 }
 
-#endif  // defined(WINDOWS) && (defined(_AREG_EXT) && (_AREG_EXT != 0))
+#endif  // (!defined(AREG_EXTENSIONS) || !(AREG_EXTENSIONS))

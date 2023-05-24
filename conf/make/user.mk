@@ -15,8 +15,8 @@
 # AREG_BITNESS			-- Bitness of binaries. Possible values: 32 or 64. The default is current system
 # AREG_BINARY			-- The binary type of AREG library. Possible values: 'shared' or 'static'. The default is 'shared'.
 # AREG_BUILD_TYPE		-- 'Debug' or 'Release' build types of codes. The default is 'Release'. The default is 'Release'
-# AREG_ENABLE_EXT		-- Enabled or disable AREG extensions, which may create additional library dependencies. By default is OFF.
-# AREG_ENABLE_LOGS		-- Enable or disable compilation with logs.
+# AREG_EXTENSIONS		-- Enabled or disable AREG extensions, which may create additional library dependencies. By default is OFF.
+# AREG_LOGS				-- Enable or disable compilation with logs.
 #
 # The following is a list of preprocessor directives, depending on the settings above:
 #   1. -DDEBUG or -DNDEBUG, depending whether AREG_BUILD_TYPE name is "Debug" or not, default is -DNDEBUG ("Release")
@@ -114,10 +114,6 @@ CXX := $(AREG_CXX_COMPILER)
 CC	:= $(AREG_C_COMPILER)
 $(info >>> Selected compilers: CXX = $(CXX), CC = $(CC))
 
-# if AREG_ENABLE_EXT for extensions is set, use the value.
-# Otherwise, disable extensions by setting 0
-AREG_ENABLE_EXT := $(if $(AREG_ENABLE_EXT),$(AREG_ENABLE_EXT),0)
-
 # ###########################################################################
 # Settings
 # ###########################################################################
@@ -131,9 +127,13 @@ AREG_BINARY := $(if $(AREG_BINARY),$(AREG_BINARY),shared)
 # AREG_BUILD_TYPE := Debug
 AREG_BUILD_TYPE := $(if $(AREG_BUILD_TYPE),$(AREG_BUILD_TYPE),Release)
 
-# Modify 'AREG_ENABLE_LOGS' to enable or disable compilation with logs.
+# if AREG_EXTENSIONS for extensions is set, use the value.
+# Otherwise, disable extensions by setting 1
+AREG_EXTENSIONS := $(if $(AREG_EXTENSIONS),$(AREG_EXTENSIONS),1)
+
+# Modify 'AREG_LOGS' to enable or disable compilation with logs.
 # By default, the applications are compiled with logs.
-ENABLE_TRACES := $(if $(AREG_ENABLE_LOGS),$(AREG_ENABLE_LOGS),1)
+AREG_LOGS := $(if $(AREG_LOGS),$(AREG_LOGS),1)
 
 # ###########################################################################
 #           AERG SDK globals
@@ -150,8 +150,7 @@ AREG_BUILD_ROOT 	:= $(AREG_SDK_ROOT)
 # ###########################################################################
 
 # User can set specific preprocessor define symbols.
-# The 'ENABLE_TRACES' enables logs in the binaries.
-AREG_USER_DEFINES	:= -DENABLE_TRACES
+AREG_USER_DEFINES	:= -DAREG_LOGS=$(AREG_LOGS) -DAREG_EXTENSIONS=$(AREG_EXTENSIONS)
 
 # User output folder
 AREG_USER_PRODUCTS	:= product

@@ -266,15 +266,15 @@ void ServiceManager::_registerServer( const StubAddress & whichServer )
 
     ClientList clientList;
 
-#ifdef ENABLE_TRACES
+#ifdef AREG_LOGS
     const ServerInfo & server = mServerList.registerServer(whichServer, clientList);
     TRACE_DBG("Server [ %s ] is registered. Connection status [ %s ], there are [ %d ] waiting clients"
                 , StubAddress::convAddressToPath(server.getAddress()).getString()
                 , NEService::getString(server.getConnectionStatus())
                 , clientList.getSize());
-#else   // !ENABLE_TRACES
+#else   // !AREG_LOGS
     mServerList.registerServer(whichServer, clientList);
-#endif  // !ENABLE_TRACES
+#endif  // !AREG_LOGS
 
     for (ClientList::LISTPOS pos = clientList.firstPosition(); clientList.isValidPosition(pos); pos = clientList.nextPosition(pos))
     {

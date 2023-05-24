@@ -4,7 +4,7 @@
 // Version     :
 // Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
 // Description : This project demonstrates use of logging (tracing). The 
-//               logging requires source code compilation with ENABLE_TRACES
+//               logging requires source code compilation with AREG_LOGS=1
 //               preprocessor directive to enable logging macro. It as well
 //               requires log enabling in the configuration file (by default 
 //               "./config/log.init" file). If there is no configuration file,

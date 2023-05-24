@@ -195,84 +195,84 @@ NETrace::S_LogMessage & NETrace::S_LogMessage::operator = (const NETrace::S_LogM
 
 AREG_API_IMPL bool NETrace::startLogging(const char * fileConfig /*= nullptr */ )
 {
-#if ENABLE_TRACES
+#if AREG_LOGS
     return TraceManager::startLogging(fileConfig);
-#else   // !ENABLE_TRACES
+#else   // !AREG_LOGS
     return true;
-#endif  // ENABLE_TRACES
+#endif  // AREG_LOGS
 }
 
 AREG_API_IMPL void NETrace::stopLogging(void)
 {
-#if ENABLE_TRACES
+#if AREG_LOGS
     TraceManager::stopLogging();
-#endif  // ENABLE_TRACES
+#endif  // AREG_LOGS
 }
 
 AREG_API_IMPL void NETrace::activateScope(TraceScope & traceScope)
 {
-#if ENABLE_TRACES
+#if AREG_LOGS
     TraceManager::activateTraceScope(traceScope);
-#endif  // ENABLE_TRACES
+#endif  // AREG_LOGS
 }
 
 AREG_API_IMPL bool NETrace::isStarted( void )
 {
-#if ENABLE_TRACES
+#if AREG_LOGS
     return TraceManager::isLoggingStarted();
-#else   // !ENABLE_TRACES
+#else   // !AREG_LOGS
     return true;
-#endif  // ENABLE_TRACES
+#endif  // AREG_LOGS
 }
 
 AREG_API_IMPL bool NETrace::isConfigured(void)
 {
-#if ENABLE_TRACES
+#if AREG_LOGS
     return TraceManager::isLoggingEnabled();
-#else   // !ENABLE_TRACES
+#else   // !AREG_LOGS
     return true;
-#endif  // ENABLE_TRACES
+#endif  // AREG_LOGS
 }
 
 AREG_API_IMPL bool NETrace::configureLoging(const char * fileConfig)
 {
-#if ENABLE_TRACES
+#if AREG_LOGS
     return TraceManager::configureLogging(fileConfig);
-#else   // !ENABLE_TRACES
+#else   // !AREG_LOGS
     return true;
-#endif  // ENABLE_TRACES
+#endif  // AREG_LOGS
 }
 
 AREG_API_IMPL bool NETrace::isEnabled(void)
 {
-#if ENABLE_TRACES
+#if AREG_LOGS
     return TraceManager::isLoggingEnabled();
-#else   // !ENABLE_TRACES
+#else   // !AREG_LOGS
     return true;
-#endif  // ENABLE_TRACES
+#endif  // AREG_LOGS
 }
 
 AREG_API_IMPL const String& NETrace::getConfigFile(void)
 {
-#if ENABLE_TRACES
+#if AREG_LOGS
     return TraceManager::getConfigFile();
-#else   // !ENABLE_TRACES
+#else   // !AREG_LOGS
     return String::getEmptyString();
-#endif  // ENABLE_TRACES
+#endif  // AREG_LOGS
 }
 
 AREG_API_IMPL bool NETrace::forceStartLogging(void)
 {
-#if ENABLE_TRACES
+#if AREG_LOGS
     return TraceManager::forceActivateLogging();
-#else   // !ENABLE_TRACES
+#else   // !AREG_LOGS
     return true;
-#endif  // ENABLE_TRACES
+#endif  // AREG_LOGS
 }
 
 AREG_API_IMPL bool NETrace::configAndStart(const char * fileConfig /*= nullptr */)
 {
-#if ENABLE_TRACES
+#if AREG_LOGS
     if (TraceManager::configureLogging(fileConfig))
     {
         TraceManager::forceEnableLogging();
@@ -282,7 +282,7 @@ AREG_API_IMPL bool NETrace::configAndStart(const char * fileConfig /*= nullptr *
     {
         return TraceManager::forceActivateLogging();
     }
-#else   // !ENABLE_TRACES
+#else   // !AREG_LOGS
     return true;
-#endif  // ENABLE_TRACES
+#endif  // AREG_LOGS
 }

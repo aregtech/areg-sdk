@@ -41,7 +41,7 @@ The AREG SDK components utilize several preprocessor defines during the code com
 | **EXP_AREG_DLL** | The define is set when AREG framework is built as a _shared_ library. It is functionally equivalent to **EXPORT_SHARED_SYMBOLS**. |
 | **IMP_AREG_LIB** | The define is set when a module is linked with the _static_ AREG framework library. It is functionally equivalent to **IMPORT_STATIC_SYMBOLS**. |
 | **IMP_AREG_DLL** | The define is set when a module is linked with the _shared_ AREG framework library. It is functionally equivalent to **IMPORT_SHARED_SYMBOLS**. |
-| **ENABLE_TRACES** | The define enables the compilation of log statements within the source codes. |
+| **AREG_LOGS** | The define compiles the source codes with logs. |
 
 The defines are automatically set based on options specified in the [user.props](https://github.com/aregtech/areg-sdk/blob/master/conf/msvc/user.props), [user.cmake](https://github.com/aregtech/areg-sdk/blob/master/conf/cmake/user.cmake), or [user.mk](https://github.com/aregtech/areg-sdk/blob/master/conf/make/user.mk) files when the project is compiled using the appropriate tool.
 
@@ -69,11 +69,11 @@ The configuration for these defines is set when in configuration file like [user
 
 The [EXP_AREG_DLL and EXP_AREG_LIB defines](https://github.com/aregtech/areg-sdk/wiki/03.-Preprocessor-define-symbols#exp_areg_dll-and-exp_areg_lib-defines) and [IMP_AREG_DLL and IMP_AREG_LIB defines](https://github.com/aregtech/areg-sdk/wiki/03.-Preprocessor-define-symbols#imp_areg_dll-and-imp_areg_lib-defines) chapters of the AREG SDK Wiki provide detailed explanation and examples on how to set preprocessor defines during compilation.
 
-### `ENABLE_TRACES` define
+### `AREG_LOGS` define
 
 This preprocessor define determines whether the compilation includes logging functionality. Enabling the define allows applications to log messages during runtime, while disabling it removes logging from the builds and prevents the application from logging messages.
 
-The [ENABLE_TRACES define](https://github.com/aregtech/areg-sdk/wiki/03.-Preprocessor-define-symbols#enable_traces-define) chapter of the AREG SDK Wiki provides detailed explanation and examples on how to compile sources with and without logs.
+The [AREG_LOGS define](https://github.com/aregtech/areg-sdk/wiki/03.-Preprocessor-define-symbols#areg_logs-define) chapter of the AREG SDK Wiki provides detailed explanation and examples on how to compile sources with and without logs.
 
 ---
 

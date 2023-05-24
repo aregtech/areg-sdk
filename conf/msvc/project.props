@@ -15,13 +15,19 @@
     <ImportGroup Label="PropertySheets">
         <Import Project="$(SolutionDir)\conf\msvc\user.props" />
     </ImportGroup>
+    <PropertyGroup>
+        <AdditionExtendedDefines Condition="'$(AregExtensions)'!=''">AREG_EXTENSIONS=$(AregExtensions);$(AdditionExtendedDefines)</AdditionExtendedDefines>
+        <!-- AdditionExtendedDefines Condition="'$(AregExtensions)'=='1'">AREG_EXTENSIONS=1</AdditionExtendedDefines -->
+        <AdditionExtendedDefines Condition="'$(AregLogs)'!=''">AREG_LOGS=$(AregLogs);$(AdditionExtendedDefines)</AdditionExtendedDefines>
+        <!-- AdditionExtendedDefines Condition="'$(AregLogs)'=='1'">AREG_LOGS=1;$(AdditionExtendedDefines)</AdditionExtendedDefines -->
+    </PropertyGroup>
     <PropertyGroup Label="UserMacros">
         <ProjectIncludes>$(SrcInc);$(ProjectSourceDir);$(ProjectDevDir);$(ProjectGeneratedDir);$(ProjectDir);</ProjectIncludes>
         <ProjectCommonDefines Condition="'$(Platform)'=='Win32'">
-          $(ProjectPreprocessorDefines);$(UserPreprocessorDefines);$(ThirdPreprocessorDefines);$(AdditionalDefines);WINDOWS;_WINDOWS;WIN32;_WIN32;
+            $(ProjectPreprocessorDefines);$(UserPreprocessorDefines);$(ThirdPreprocessorDefines);$(AdditionExtendedDefines);WINDOWS;_WINDOWS;WIN32;_WIN32;
         </ProjectCommonDefines>
         <ProjectCommonDefines Condition="'$(Platform)'=='x64'"  >
-          $(ProjectPreprocessorDefines);$(UserPreprocessorDefines);$(ThirdPreprocessorDefines);$(AdditionalDefines);WINDOWS;_WINDOWS;WIN32;_WIN32;WIN64;_WIN64
+            $(ProjectPreprocessorDefines);$(UserPreprocessorDefines);$(ThirdPreprocessorDefines);$(AdditionExtendedDefines);WINDOWS;_WINDOWS;WIN32;_WIN32;WIN64;_WIN64
         </ProjectCommonDefines>
     </PropertyGroup>
     <PropertyGroup>
@@ -60,8 +66,14 @@
         <BuildMacro Include="ProjectCommonDefines">
             <Value>$(ProjectCommonDefines)</Value>
         </BuildMacro>
-      <BuildMacro Include="AdditionalDefines">
-        <Value>$(AdditionalDefines)</Value>
+        <BuildMacro Include="AdditionExtendedDefines">
+            <Value>$(AdditionExtendedDefines)</Value>
+        </BuildMacro>
+        <BuildMacro Include="AregExtensions">
+        <Value>$(AregExtensions)</Value>
+      </BuildMacro>
+      <BuildMacro Include="AregLogs">
+        <Value>$(AregLogs)</Value>
       </BuildMacro>
     </ItemGroup>
 </Project>
