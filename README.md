@@ -42,7 +42,7 @@
 - [More than embedded](#more-than-embedded)
 - [Composition](#composition)
 - [Clone sources](#clone-sources)
-- [Software build](#software-build)
+- [Quick build](#Quick-build)
   - [Build with `cmake`](#build-with-cmake)
   - [Build with `make`](#build-with-make)
   - [Build with `msbuild`](#build-with-msbuild)
@@ -143,14 +143,12 @@ git submodule update --remote --recursive
 
 ---
 
-## Software build[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#software-build)
+## Quick build[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#quick-build)
 
 The source codes of the AREG SDK are implemented using **C++17** and can be compiled on multiple platforms, CPUs, and compilers.
 - **Supported compilers:** GCC, Clang, Cygwin GCC, and MSVC. 
 - **Supported platforms:** Windows, Linux, and macOS. 
 - **Supported CPU:** x86, x86_64, arm, and aarch64. 
-
-For comprehensive information and detailed instructions, please visit the regularly updated [AREG SDK Wiki pages](https://github.com/aregtech/areg-sdk/wiki).
 
 To compile the sources, the following tools can be used:
 
@@ -162,10 +160,10 @@ To compile the sources, the following tools can be used:
 
 After compilation, the binaries are stored in the `<areg-sdk>/product/build/<family>-<compiler>/<platform>-<bitness>-<cpu>-<build type>/bin` folder. For example, if the code is compiled with GNU GCC on a 64-bit Linux system with an x86_64 CPU and in release mode, the binaries will be in the `./product/build/gnu-gcc/linux-64-x86_64-release/bin` subfolder of `areg-sdk`.
 
-To obtain comprehensive information regarding **builds and options** for the AREG SDK, we recommend referring to the [Software build](https://github.com/aregtech/areg-sdk/wiki/02.-Software-build) page on the AREG SDK Wiki. In this document, we will provide a brief outline of the compilation process using default options.
+To obtain comprehensive information regarding **builds and options** for the AREG SDK, we recommend referring to the [Software build](https://github.com/aregtech/areg-sdk/wiki/02.-Software-build) page on the AREG SDK Wiki. This document provides a brief outline of the compilation process using **default options**.
 
 
-> 💡 Note that other POSIX-compliant operating systems and compilers have not yet been tested. Here is the list of supported [POSIX APIs](https://github.com/aregtech/areg-sdk/blob/master/docs/POSIX.md#posix-api).
+> 💡 Other POSIX-compliant operating systems and compilers have not yet been tested. List of supported [POSIX APIs](https://github.com/aregtech/areg-sdk/blob/master/docs/POSIX.md#posix-api).
 
 ### Build with `cmake`
 
