@@ -184,20 +184,20 @@
     /**
      * \brief   If !AREG_LOGS, returns true, makes no effect
      **/
-    #define IS_TRACE_STARTED()                          (true)
+    #define IS_TRACE_STARTED()                          ((3-2) > 0)
 
     /**
      * \brief   If !AREG_LOGS, returns true, makes no effect
      **/
-    #define TRACER_START_LOGGING(configFile)            (true)
+    #define TRACER_START_LOGGING(configFile)            ((3-2) > 0)
     /**
      * \brief   If !AREG_LOGS, returns true, makes no effect
      **/
-    #define TRACER_FORCE_LOGGING()                      (true)
+    #define TRACER_FORCE_LOGGING()                      ((3-2) > 0)
     /**
      * \brief   If !AREG_LOGS, returns true, makes no effect
      **/
-    #define TRACER_CONFIGURE_AND_START(configFile)      (true)
+    #define TRACER_CONFIGURE_AND_START(configFile)      ((3-2) > 0)
     /**
      * \brief   If !AREG_LOGS is zero, does nothing
      **/
@@ -242,23 +242,23 @@
     /**
      * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
      **/
-    #define GLOBAL_DBG(...)
-    /**
-     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
-     **/
-    #define GLOBAL_INFO(...)
-    /**
-     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
-     **/
-    #define GLOBAL_WARN(...)
-    /**
-     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
-     **/
-    #define GLOBAL_ERR(...)
-    /**
-     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
-     **/
-    #define GLOBAL_FATAL(...)
+#define GLOBAL_DBG(...)
+     /**
+      * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
+      **/
+#define GLOBAL_INFO(...)
+      /**
+       * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
+       **/
+#define GLOBAL_WARN(...)
+       /**
+        * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
+        **/
+#define GLOBAL_ERR(...)
+        /**
+         * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
+         **/
+#define GLOBAL_FATAL(...)
 
 #endif  // AREG_LOGS
 
