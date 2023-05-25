@@ -24,10 +24,4 @@
  **/
 #include "areg/base/GEGlobal.h"
 
-#if !defined(AREG_EXTENSIONS) || (AREG_EXTENSIONS == 0)
-    #define _AREG_EXT   0
-#else   // !defined(AREG_EXTENSIONS) || (AREG_EXTENSIONS == 0)
-    #define _AREG_EXT   1
-#endif  // !defined(AREG_EXTENSIONS) || (AREG_EXTENSIONS == 0)
-
 #endif  // AREG_EXTENSIONS_EXTENSIONS_HPP

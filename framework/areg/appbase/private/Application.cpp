@@ -216,11 +216,11 @@ bool Application::startTracer(const char * configFile /*= nullptr*/, bool force 
     }
     else
     {
-#if ENABLE_TRACES
+#if AREG_LOGS
         OUTPUT_INFO("The tracer is already started, ignoring starting");
-#else   // !ENABLE_TRACES
+#else   // !AREG_LOGS
         OUTPUT_DBG("The sources are compiled without logging. Ignoring to start logging module.");
-#endif  // ENABLE_TRACES
+#endif  // AREG_LOGS
         result = true;
     }
 

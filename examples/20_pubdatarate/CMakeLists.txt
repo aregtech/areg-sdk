@@ -14,7 +14,7 @@ include(${20_pubdatarate_BASE}/generated/CMakeLists.txt)
 include(${20_pubdatarate_BASE}/pubclient/CMakeLists.txt)
 include(${20_pubdatarate_BASE}/pubservice/CMakeLists.txt)
 
-list(APPEND 20_lib_list ${gen_projName} ${AREG_EXTENSIONS_LIBS})
+list(APPEND 20_lib_list ${gen_projName})
 
 # Setting up appropriate flags
 addStaticLib(${gen_projName} "${20_generated_SRC}")

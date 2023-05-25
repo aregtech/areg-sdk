@@ -17,7 +17,7 @@ To build _AREG framework_ with _Win32 API_, **WINDOWS** (or **_WINDOWS**) prepro
 **Other preprocessor directives to use to compile:**
 - **DEBUG** to compile the debug version.
 - **NDEBUG** to compile the release version.
-- **ENABLE_TRACES** to compile sources with tracing / logging.
+- **AREG_LOGS** to compile source codes with logs.
 - **EXP_AREG_LIB** to compile the _AREG framework_ as a static library.
 - **EXP_AREG_DLL** to compile the _AREG framework_ as a dynamically linked library.
 - **IMP_AREG_LIB** to link a project with _AREG framework_ static library.

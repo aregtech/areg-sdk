@@ -53,7 +53,7 @@ set(AREG_LDFLAGS)
 # The compiler options
 set(AREG_COMPILER_OPTIONS)
 #set areg extensions library dependencies
-set(AREG_EXTENSIONS_LIBS)
+set(AREG_EXTENDED_LIBS)
 
 # Adding common definition
 add_definitions(-DUNICODE -D_UNICODE)
@@ -171,15 +171,21 @@ else()
 
 endif()
 
-list(APPEND AREG_EXTENSIONS_LIBS areg-extensions)
-if (AREG_ENABLE_EXT)
-    add_definitions(-DAREG_EXTENSIONS=1)
+if (AREG_EXTENDED)
+    add_definitions(-DAREG_EXTENDED=1)
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
-        list(APPEND AREG_EXTENSIONS_LIBS ncurses)
+        list(APPEND AREG_EXTENDED_LIBS ncurses)
     endif()
 else()
-    add_definitions(-DAREG_EXTENSIONS=0)
-endif(AREG_ENABLE_EXT)
+    add_definitions(-DAREG_EXTENDED=0)
+endif()
+
+if (AREG_LOGS)
+    add_definitions(-DAREG_LOGS=1)
+else()
+    add_definitions(-DAREG_LOGS=0)
+endif()
+
 
 
 # -------------------------------------------------------
@@ -248,5 +254,5 @@ message(STATUS "-------------------- CMakeLists Status Report Begin ------------
 message(STATUS ">>> Build for '${CMAKE_SYSTEM_NAME}' '${AREG_BITNESS}'-bit platform '${AREG_PROCESSOR}' with compiler '${CMAKE_CXX_COMPILER}', ID '${AREG_COMPILER_FAMILY}', and build type '${CMAKE_BUILD_TYPE}'")
 message(STATUS ">>> Binary output folder '${AREG_OUTPUT_BIN}', executable extensions '${CMAKE_EXECUTABLE_SUFFIX}'")
 message(STATUS ">>> Generated files are in '${AREG_GENERATE_DIR}', library output folder '${AREG_OUTPUT_LIB}'")
-message(STATUS ">>> Build examples is '${AREG_BUILD_EXAMPLES}', build tests is '${AREG_BUILD_TESTS}', AREG Extensions is '${AREG_ENABLE_EXT}', compile with logs '${ENABLE_TRACES}'")
+message(STATUS ">>> Build examples is '${AREG_BUILD_EXAMPLES}', build tests is '${AREG_BUILD_TESTS}', AREG Extensions is '${AREG_EXTENDED}', compile with logs '${AREG_LOGS}'")
 message(STATUS "-------------------- CMakeLists Status Report End ----------------------")

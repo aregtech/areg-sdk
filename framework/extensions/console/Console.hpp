@@ -213,7 +213,7 @@ public:
     inline void saveCursorPosition(void) const;
 
     /**
-     * \brief   Restores previousely saved in memory cursor position.
+     * \brief   Restores previously saved in memory cursor position.
      **/
     inline void restoreCursorPosition(void) const;
 

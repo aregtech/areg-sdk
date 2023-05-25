@@ -20,7 +20,7 @@ else
 	mcrouter_CXXFLAGS += -DIMP_AREG_LIB
 endif
 
-mcrouter_LDFLAGS  += $(AREG_LIB_INCLUDES) -lareg-extensions -lareg $(LDFLAGS) $(AREG_EXTENSIONS_LIBS)
+mcrouter_LDFLAGS  += $(AREG_LIB_INCLUDES) -lareg-extensions -lareg $(LDFLAGS) $(AREG_EXTENDED_LIBS)
 
 mcrouter_TARGET_BIN := $(mcrouter_PROJECT_NAME)$(AREG_BIN_EXT)
 
@@ -37,4 +37,4 @@ DEPS = $(mcrouter_OBJS:%.o=%.d)
 $(AREG_OUTPUT_BIN)/$(mcrouter_TARGET_BIN): $(areg_TARGET_PATH) $(mcrouter_OBJS)
 	@echo "Linking mcrouter ..."
 	@mkdir -p $(dir $@)
-	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(mcrouter_CXXFLAGS) $(mcrouter_OBJS) -o $@ $(AREG_EXTENSIONS_LIBS) $(mcrouter_LDFLAGS) $(LDFLAGS)
+	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(mcrouter_CXXFLAGS) $(mcrouter_OBJS) -o $@ $(AREG_EXTENDED_LIBS) $(mcrouter_LDFLAGS) $(LDFLAGS)
