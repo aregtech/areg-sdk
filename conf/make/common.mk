@@ -158,23 +158,25 @@ else
     AREG_LIB_INCLUDES = -L $(AREG_OUTPUT_LIB)
 endif
 
-AREG_EXTENSIONS_LIBS    :=
-ifneq ($(AREG_EXTENSIONS),0)
+AREG_EXTENDED_LIBS    :=
+ifneq ($(AREG_EXTENDED),0)
 $(info Compile AREG with enabled extensions)
-	AREG_EXTENSIONS_LIBS    := -lncurses
+	AREG_EXTENDED_LIBS    := -lncurses
     ifneq ($(AREG_OS), Cygwin)
-		AREG_EXTENSIONS_LIBS+= -ltinfo
+		AREG_EXTENDED_LIBS+= -ltinfo
     endif
 endif
 
+# set compiler flags
 CXXFLAGS    += $(AREG_COMPILER_OPTIONS)
-LDFLAGS     += $(AREG_LDFLAGS)
+# set linker flags, include AREG_OUTPUT_BIN to the library search path
+LDFLAGS     += $(AREG_LDFLAGS) -Wl,-R$(AREG_OUTPUT_BIN)
 
 $(info -------------------- Makefile Status Report Begin --------------------)
 $(info >>> Build for '$(AREG_OS)' '$(AREG_BITNESS)'-bit platform '$(AREG_PLATFORM)' with compiler '$(AREG_CXX_COMPILER)', ID '$(AREG_COMPILER_FAMILY)', and build type '$(AREG_BUILD_TYPE)')
 $(info >>> Binary output folder '$(AREG_OUTPUT_BIN)', executable extensions '$(AREG_BIN_EXT)')
 $(info >>> Generated files are in '$(AREG_GENERATE_DIR)', library output folder '$(AREG_OUTPUT_LIB)')
-$(info >>> Build AREG Extensions is '$(AREG_EXTENSIONS)', compile with logs '$(AREG_LOGS)')
+$(info >>> Build AREG Extensions is '$(AREG_EXTENDED)', compile with logs '$(AREG_LOGS)')
 $(info "-------------------- Makefile Status Report End ----------------------")
 
 define AREG_HELP_MSG

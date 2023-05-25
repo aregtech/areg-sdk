@@ -15,7 +15,7 @@ function(setAppOptions item library_list)
     endif()
 
     # Linking flags
-    target_link_libraries(${item} ${library_list} areg ${AREG_LDFLAGS})
+    target_link_libraries(${item} areg-extensions ${library_list} areg ${AREG_EXTENDED_LIBS} ${AREG_LDFLAGS})
    
     # Adjusting CPP standard for target
     set_target_properties(${item} PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON )

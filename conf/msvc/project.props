@@ -16,10 +16,8 @@
         <Import Project="$(SolutionDir)\conf\msvc\user.props" />
     </ImportGroup>
     <PropertyGroup>
-        <AdditionExtendedDefines Condition="'$(AregExtensions)'!=''">AREG_EXTENSIONS=$(AregExtensions);$(AdditionExtendedDefines)</AdditionExtendedDefines>
-        <!-- AdditionExtendedDefines Condition="'$(AregExtensions)'=='1'">AREG_EXTENSIONS=1</AdditionExtendedDefines -->
+        <AdditionExtendedDefines Condition="'$(AregExtended)'!=''">AREG_EXTENDED=$(AregExtended);$(AdditionExtendedDefines)</AdditionExtendedDefines>
         <AdditionExtendedDefines Condition="'$(AregLogs)'!=''">AREG_LOGS=$(AregLogs);$(AdditionExtendedDefines)</AdditionExtendedDefines>
-        <!-- AdditionExtendedDefines Condition="'$(AregLogs)'=='1'">AREG_LOGS=1;$(AdditionExtendedDefines)</AdditionExtendedDefines -->
     </PropertyGroup>
     <PropertyGroup Label="UserMacros">
         <ProjectIncludes>$(SrcInc);$(ProjectSourceDir);$(ProjectDevDir);$(ProjectGeneratedDir);$(ProjectDir);</ProjectIncludes>
@@ -69,8 +67,8 @@
         <BuildMacro Include="AdditionExtendedDefines">
             <Value>$(AdditionExtendedDefines)</Value>
         </BuildMacro>
-        <BuildMacro Include="AregExtensions">
-        <Value>$(AregExtensions)</Value>
+        <BuildMacro Include="AregExtended">
+        <Value>$(AregExtended)</Value>
       </BuildMacro>
       <BuildMacro Include="AregLogs">
         <Value>$(AregLogs)</Value>

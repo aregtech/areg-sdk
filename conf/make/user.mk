@@ -15,7 +15,7 @@
 # AREG_BITNESS			-- Bitness of binaries. Possible values: 32 or 64. The default is current system
 # AREG_BINARY			-- The binary type of AREG library. Possible values: 'shared' or 'static'. The default is 'shared'.
 # AREG_BUILD_TYPE		-- 'Debug' or 'Release' build types of codes. The default is 'Release'. The default is 'Release'
-# AREG_EXTENSIONS		-- Enabled or disable AREG extensions, which may create additional library dependencies. By default is OFF.
+# AREG_EXTENDED			-- Enabled or disable AREG extensions, which may create additional library dependencies. By default is OFF.
 # AREG_LOGS				-- Enable or disable compilation with logs.
 #
 # The following is a list of preprocessor directives, depending on the settings above:
@@ -127,9 +127,9 @@ AREG_BINARY := $(if $(AREG_BINARY),$(AREG_BINARY),shared)
 # AREG_BUILD_TYPE := Debug
 AREG_BUILD_TYPE := $(if $(AREG_BUILD_TYPE),$(AREG_BUILD_TYPE),Release)
 
-# if AREG_EXTENSIONS for extensions is set, use the value.
+# Compile AREG extended features if set 1. By default, it is 0.
 # Otherwise, disable extensions by setting 1
-AREG_EXTENSIONS := $(if $(AREG_EXTENSIONS),$(AREG_EXTENSIONS),1)
+AREG_EXTENDED := $(if $(AREG_EXTENDED),$(AREG_EXTENDED),0)
 
 # Modify 'AREG_LOGS' to enable or disable compilation with logs.
 # By default, the applications are compiled with logs.
@@ -150,7 +150,7 @@ AREG_BUILD_ROOT 	:= $(AREG_SDK_ROOT)
 # ###########################################################################
 
 # User can set specific preprocessor define symbols.
-AREG_USER_DEFINES	:= -DAREG_LOGS=$(AREG_LOGS) -DAREG_EXTENSIONS=$(AREG_EXTENSIONS)
+AREG_USER_DEFINES	:= -DAREG_LOGS=$(AREG_LOGS) -DAREG_EXTENDED=$(AREG_EXTENDED)
 
 # User output folder
 AREG_USER_PRODUCTS	:= product

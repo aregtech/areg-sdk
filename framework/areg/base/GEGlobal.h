@@ -58,12 +58,14 @@
 #include "areg/base/GESwitches.h"
 #include "areg/base/GEMacros.h"
 
-#ifndef AREG_EXTENSIONS
-    #define AREG_EXTENSIONS 1
-#endif  // AREG_EXTENSIONS
+// By default, no AREG extended features.
+#ifndef AREG_EXTENDED
+    #define AREG_EXTENDED   0
+#endif  // AREG_EXTENDED
 
+// By default, compile with logs
 #ifndef AREG_LOGS
-    #define AREG_LOGS    1
+    #define AREG_LOGS       1
 #endif  // AREG_LOGS
 
 #ifdef DEBUG

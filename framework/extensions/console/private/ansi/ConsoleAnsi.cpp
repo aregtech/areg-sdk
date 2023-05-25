@@ -19,7 +19,7 @@
   ************************************************************************/
 #include "extensions/console/Console.hpp"
 
-#if (!defined(AREG_EXTENSIONS) || !(AREG_EXTENSIONS))
+#if !(AREG_EXTENDED)
 
 #ifdef WINDOWS
 
@@ -209,4 +209,4 @@ void Console::_osMoveCursorOneLineDown(void) const
     printf("\x1B[1E");
 }
 
-#endif  // (!defined(AREG_EXTENSIONS) || !(AREG_EXTENSIONS))
+#endif  // !(AREG_EXTENDED)

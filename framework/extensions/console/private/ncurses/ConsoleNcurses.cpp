@@ -20,7 +20,7 @@
   ************************************************************************/
 #include "extensions/console/Console.hpp"
 
-#if defined(POSIX) && (defined(AREG_EXTENSIONS) && (AREG_EXTENSIONS))
+#if defined(POSIX) && (AREG_EXTENDED)
 
 #include <ncurses.h>
 
@@ -210,4 +210,4 @@ void Console::_osMoveCursorOneLineDown(void) const
     mvcur(pos.posY, pos.posX, pos.posY + 1, 1);
 }
 
-#endif  // defined(POSIX) && (defined(AREG_EXTENSIONS) && (AREG_EXTENSIONS))
+#endif  // defined(POSIX) && (AREG_EXTENDED)

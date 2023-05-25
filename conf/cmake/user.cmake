@@ -10,12 +10,11 @@
 #   4. AREG_BUILD_TYPE      -- build configurations ('Debug' or 'Release')
 #   5. AREG_BUILD_TESTS     -- Build AREG engine unit tests
 #   6. AREG_BUILD_EXAMPLES  -- Build AREG engine examples
-#   7. AREG_BUILD_ALL       -- Builds the framework, examples and tests.
-#   8. AREG_EXTENSIONS      -- Enables or disables the extensions, which might require additional libraries.
-#   9. AREG_LOGS            -- Enable or disable compilation with logs.
-#  10. AREG_OUTPUT_DIR      -- The output directory of build binaries
-#  11. AREG_OUTPUT_BIN      -- Set the path to folder to output compiled shared libraries and executables.
-#  12. AREG_OUTPUT_LIB      -- Set the path to folder to output compiled static libraries.
+#   7. AREG_EXTENDED        -- Enables or disables the extensions, which might require additional libraries.
+#   8. AREG_LOGS            -- Enable or disable compilation with logs.
+#   9. AREG_OUTPUT_DIR      -- The output directory of build binaries
+#  10. AREG_OUTPUT_BIN      -- Set the path to folder to output compiled shared libraries and executables.
+#  11. AREG_OUTPUT_LIB      -- Set the path to folder to output compiled static libraries.
 #
 # The default values are:
 #   1. AREG_COMPILER_FAMILY := gnu      (possible values: gnu, cygwin, llvm, msvc)
@@ -24,9 +23,8 @@
 #   4. AREG_BUILD_TYPE      := Release  (possible values: Release, Debug
 #   5. AREG_BUILD_TESTS     := ON       (possible values: ON, OFF)
 #   6. AREG_BUILD_EXAMPLES  := ON       (possible values: ON, OFF)
-#   7. AREG_BUILD_ALL       := ON       (possible values: ON, OFF)
-#   8. AREG_EXTENSIONS      := ON       (possible values: ON, OFF)
-#   9. AREG_LOGS            := ON       (possible values: ON, OFF)
+#   7. AREG_EXTENDED        := OFF      (possible values: ON, OFF)
+#   8. AREG_LOGS            := ON       (possible values: ON, OFF)
 #   9. AREG_OUTPUT_DIR      := <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release      (possible values: any full path)
 #  10. AREG_OUTPUT_BIN      := <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release/bin  (possible values: any full path)
 #  11. AREG_OUTPUT_LIB      := <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release/lib  (possible values: any full path)
@@ -122,48 +120,32 @@ else()
 
 endif()
 
-# Set build configuration here.
-# Set the build configuration either automatically or manually in command line by specifying AREG_BUILD_TYPE
-if (NOT DEFINED AREG_BUILD_TYPE OR AREG_BUILD_TYPE STREQUAL "")
-    # Set "Debug" for debug and "Release" for release build
-    # set(AREG_BUILD_TYPE "Release")
+# Set build configuration. Set "Debug" for debug build, and "Release" for releaes build.
+if (NOT DEFINED AREG_BUILD_TYPE OR NOT ${AREG_BUILD_TYPE} STREQUAL "Debug")
     set(AREG_BUILD_TYPE "Release")
 endif()
 
-# Set the AREG binary library type to compile.
-# Set the library type either automatically or manually in command line
-if (NOT DEFINED AREG_BINARY OR AREG_BINARY STREQUAL "")
-    # Set "static" for static and "shared" for shared library
+# Set the AREG binary library type to compile. Set "shared" if not "static"
+if (NOT DEFINED AREG_BINARY OR NOT ${AREG_BINARY} STREQUAL "static")
     set(AREG_BINARY "shared")
 endif()
 
 # Build tests. By default it is enabled. To disable, set OFF
-if (NOT DEFINED AREG_BUILD_TESTS OR AREG_BUILD_TESTS)
+if (NOT DEFINED AREG_BUILD_TESTS)
     option(AREG_BUILD_TESTS     "Build unit tests" ON)
-else()
-    option(AREG_BUILD_TESTS     "Build unit tests" OFF)
 endif()
 
 # Build examples. By default it is enabled. To disable, set OFF
-if (NOT DEFINED AREG_BUILD_EXAMPLES OR AREG_BUILD_EXAMPLES)
+if (NOT DEFINED AREG_BUILD_EXAMPLES)
     option(AREG_BUILD_EXAMPLES  "Build examples"   ON)
-else()
-    option(AREG_BUILD_EXAMPLES  "Build examples"   OFF)
 endif()
 
-# Check and set the builds projects. If ON, force to compile examples and tests
-if (DEFINED AREG_BUILD_ALL)
-    option(AREG_BUILD_TESTS     "Build unit tests" ${AREG_BUILD_ALL})
-    option(AREG_BUILD_EXAMPLES  "Build examples"   ${AREG_BUILD_ALL})
+# Set AREG extended features enable or disable flag to compiler additional optional features. By default, it is disabled.
+if (NOT DEFINED AREG_EXTENDED)
+    option(AREG_EXTENDED      "Enable extensions" OFF)
 endif()
 
-# Set AREG extensions enable or disable flag to compiler additional optional features.
-if (NOT DEFINED AREG_EXTENSIONS)
-    option(AREG_EXTENSIONS      "Enable extensions" ON)
-endif()
-
-# Modify 'AREG_LOGS' to enable or disable compilation with logs.
-# By default, the applications are compiled with logs.
+# Modify 'AREG_LOGS' to enable or disable compilation with logs. By default, compile with logs
 if (NOT DEFINED AREG_LOGS)
     option(AREG_LOGS "Compile with logs" ON)
 endif()

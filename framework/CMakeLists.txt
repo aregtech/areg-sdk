@@ -42,7 +42,7 @@ set_target_properties(areg PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STAN
 addStaticLib(areg-extensions "${extensions_SRC}")
 
 # build mcrouter executable
-addExecutableEx(mcrouter "${mcrouter_SRC}" "${AREG_EXTENSIONS_LIBS}")
+addExecutable(mcrouter "${mcrouter_SRC}")
 
 # copying log and router init files to 'bin/config'
 file(MAKE_DIRECTORY ${AREG_OUTPUT_BIN}/config)
