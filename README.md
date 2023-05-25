@@ -42,7 +42,7 @@
 - [More than embedded](#more-than-embedded)
 - [Composition](#composition)
 - [Clone sources](#clone-sources)
-- [Quick build](#Quick-build)
+- [Quick build](#quick-build)
   - [Build with `cmake`](#build-with-cmake)
   - [Build with `make`](#build-with-make)
   - [Build with `msbuild`](#build-with-msbuild)
@@ -399,7 +399,7 @@ Special thanks to all contributors and supporters that starred this repository.
 
 **Our amazing contributors**:
 
-[![Contributors for @aregtech/areg-sdk](https://github.com/aregtech/areg-sdk/raw/master/contributors.svg)](https://github.com/aregtech/areg-sdk/graphs/contributors)
+[![Contributors for @aregtech/areg-sdk](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/contributors.svg)](https://github.com/aregtech/areg-sdk/graphs/contributors)
 
 **Our supportive stargazers**:
 

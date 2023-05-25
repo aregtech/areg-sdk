@@ -1,5 +1,0 @@
-if(EXISTS "c:/personal/aregtech/areg-sdk/build/DemoTest.cpp[1]_tests.cmake")
-  include("c:/personal/aregtech/areg-sdk/build/DemoTest.cpp[1]_tests.cmake")
-else()
-  add_test(DemoTest.cpp_NOT_BUILT DemoTest.cpp_NOT_BUILT)
-endif()
