@@ -23,7 +23,7 @@ jobs:
           excludeUsers: gitter-badger
           count: 18
           noCommit: true
-          svgPath: 'contributors.svg'
+          svgPath: '${{github.workspace}}/docs/img/contributors.svg'
           itemTemplate: >
             <g transform="translate({{ x }}, {{ y }})">
               <a xlink:href="{{{ url }}}" class="contributor-link" target="_blank" rel="nofollow sponsored" title="{{{ name }}}" id="{{{ name }}}">
