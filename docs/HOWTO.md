@@ -1,4 +1,4 @@
-
+﻿
 # How To
 ```
 This file is part of AREG SDK
@@ -11,7 +11,7 @@ This document replies to several **howto** questions, which are listed in the _T
 
 ---
 
-## Table of content[![](./docs/img/pin.svg)](#table-of-contents)
+## Table of contents
 
 1. [How to use preprocessor defines](#how-to-use-preprocessor-defines)
 2. [How to build](#how-to-build)
@@ -27,53 +27,27 @@ This document replies to several **howto** questions, which are listed in the _T
 
 ---
 
-## How to use preprocessor defines[![](./img/pin.svg)](#how-to-use-preprocessor-defines)
+## How to use preprocessor defines
 
-The AREG SDK components utilize several preprocessor defines during the code compilation process. Below is a comprehensive list of these defines with brief descriptions. For more details, please visit [Preprocessor-define-symbols](https://github.com/aregtech/areg-sdk/wiki/03.-Preprocessor-define-symbols) Wiki page of AREG SDK.
+The AREG SDK components make use of various preprocessor defines during the code compilation process. These preprocessor defines allow developers to customize the behavior of the SDK according to their specific requirements. The [Preprocessor-define-symbols](https://github.com/aregtech/areg-sdk/wiki/03.-Preprocessor-define-symbols) page in the AREG SDK Wiki provides a comprehensive list of these defines, along with detailed explanations and examples on how to modify them during compilation.
 
-| Preprocessor | Description and Meaning |
-| --- | --- |
-| **POSIX** | The define instructs the compiler to compile the sources using the _POSIX API_. POSIX API is listed in the [POSIX.md](./POSIX.md) file. |
-| **WINDOWS** | The define instructs the compiler to compile the sources using the _WIN32 API_. WIN32 API is listed in the [WIN32.md](./WIN32.md) file. |
-| **DEBUG** | The define is used to specify the *Debug* configuration. |
-| **NDEBUG** | The define is used to specify the *Release* configuration. |
-| **EXP_AREG_LIB** | The define is set when AREG framework is built as a _static_ library. It is functionally equivalent to **EXPORT_STATIC_SYMBOLS**. |
-| **EXP_AREG_DLL** | The define is set when AREG framework is built as a _shared_ library. It is functionally equivalent to **EXPORT_SHARED_SYMBOLS**. |
-| **IMP_AREG_LIB** | The define is set when a module is linked with the _static_ AREG framework library. It is functionally equivalent to **IMPORT_STATIC_SYMBOLS**. |
-| **IMP_AREG_DLL** | The define is set when a module is linked with the _shared_ AREG framework library. It is functionally equivalent to **IMPORT_SHARED_SYMBOLS**. |
-| **AREG_LOGS** | The define compiles the source codes with logs. |
+By modifying the preprocessor defines, developers can enable or disable certain features, configure specific behaviors, or customize the SDK to meet their application's needs. The Wiki page serves as a reference guide, providing a clear understanding of each define and its purpose.
 
-The defines are automatically set based on options specified in the [user.props](https://github.com/aregtech/areg-sdk/blob/master/conf/msvc/user.props), [user.cmake](https://github.com/aregtech/areg-sdk/blob/master/conf/cmake/user.cmake), or [user.mk](https://github.com/aregtech/areg-sdk/blob/master/conf/make/user.mk) files when the project is compiled using the appropriate tool.
+To utilize the preprocessor defines, developers can follow these steps:
 
-Bellow is a quick description of preprocessor defines and settings.
+1. Refer to the [Preprocessor-define-symbols](https://github.com/aregtech/areg-sdk/wiki/03.-Preprocessor-define-symbols) page in the AREG SDK Wiki to familiarize themselves with the available defines and their functionalities.
 
-### `POSIX` and `WINDOWS` defines
+2. Identify the specific preprocessor define(s) that need to be modified for the desired behavior or feature configuration.
 
-The _POSIX_ and _WINDOWS_ defines play a crucial role in determining whether projects are compiled using the _POSIX_ or _Win32_ API. These defines are automatically set based on the build tool and compiler selection. 
+3. Depending on the build system being used (such as CMake, Make, Microsoft Visual Studio, or Visual Studio Code), update the corresponding configuration files or build commands to set the desired values for the preprocessor defines.
 
-For instance, when compile with `cmake` and the compiler family is selected any compiler, except `msvc` (for example compile with option `-DAREG_COMPILER_FAMILY=gnu`), the sources are compiled with the _POSIX API_. On the other hand, if `msvc` is set, the sources will be compiled with the _Win32 API_.
+4. Rebuild the AREG SDK components using the updated preprocessor defines.
 
-The [POSIX define](https://github.com/aregtech/areg-sdk/wiki/03.-Preprocessor-define-symbols#posix-define) and [WINDOWS define](https://github.com/aregtech/areg-sdk/wiki/03.-Preprocessor-define-symbols#windows-define) chapters of AREG SDK Wiki offer detailed explanations and examples to set preprocessor defines during compilation.
+By utilizing the preprocessor defines effectively, developers can tailor the AREG SDK to their specific project requirements and achieve the desired functionality and behavior.
 
-### `DEBUG` and `NDEBUG` defines
+It is recommended to refer to the [Preprocessor-define-symbols](https://github.com/aregtech/areg-sdk/wiki/03.-Preprocessor-define-symbols) page in the AREG SDK Wiki for a comprehensive understanding of each define and its usage in order to leverage the full potential of the SDK.
 
-The _DEBUG_ and _NDEBUG_ defines are responsible for indicating the specific build configuration. You can set specific build configuration either by changing user configuration file like `user.cmake` or `user.mk`, or via the command line option.
-
-The [DEBUG and NDEBUG defines](https://github.com/aregtech/areg-sdk/wiki/03.-Preprocessor-define-symbols#debug-and-ndebug-defines) chapter of AREG SDK Wiki provides detailed explanations and examples on how to set preprocessor defines during compilation.
- 
-### `EXP_AREG_LIB`, `EXP_AREG_DLL`, `IMP_AREG_LIB` and `IMP_AREG_DLL` defines
-
-The **EXP_AREG_LIB**, **EXP_AREG_DLL**, **IMP_AREG_LIB**, and **IMP_AREG_DLL** preprocessor defines serve a specific purpose in determining the configuration of the `areg` library of the AREG Framework and its linkage with an application. These defines help determine whether the `areg` library is compiled as a shared library or a static library, as well as whether the application should be linked with the shared or static version of the "areg" library.
-
-The configuration for these defines is set when in configuration file like [user.cmake](https://github.com/aregtech/areg-sdk/blob/master/conf/cmake/user.cmake) the library type is specified (`set(AREG_BINARY "shared")`). By default, the AREG Framework is compiled as shared library. By selecting the library type, these preprocessor defines are automatically set for AREG Framework and all other applications using the library. The library binary type can be as well selecting via the command line options during compilation.
-
-The [EXP_AREG_DLL and EXP_AREG_LIB defines](https://github.com/aregtech/areg-sdk/wiki/03.-Preprocessor-define-symbols#exp_areg_dll-and-exp_areg_lib-defines) and [IMP_AREG_DLL and IMP_AREG_LIB defines](https://github.com/aregtech/areg-sdk/wiki/03.-Preprocessor-define-symbols#imp_areg_dll-and-imp_areg_lib-defines) chapters of the AREG SDK Wiki provide detailed explanation and examples on how to set preprocessor defines during compilation.
-
-### `AREG_LOGS` define
-
-This preprocessor define determines whether the compilation includes logging functionality. Enabling the define allows applications to log messages during runtime, while disabling it removes logging from the builds and prevents the application from logging messages.
-
-The [AREG_LOGS define](https://github.com/aregtech/areg-sdk/wiki/03.-Preprocessor-define-symbols#areg_logs-define) chapter of the AREG SDK Wiki provides detailed explanation and examples on how to compile sources with and without logs.
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
 ---
 
@@ -83,11 +57,15 @@ The AREG SDK source codes have a minimum requirement of **C++17**. They can be c
 
 The [Software Build](https://github.com/aregtech/areg-sdk/wiki/02.-Software-build) page of AREG SDK Wiki provides a detailed explanation and examples on how to compile sources and build applications using various tools and IDEs.
 
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+
 ---
 
 ## How to create a project or integrate in project
 
 The [Setup a project](https://github.com/aregtech/areg-sdk/wiki/07.-Setup-a-project) page of AREG SDK Wiki provides a detailed explanation and examples on how to create a project based on AREG framework, as well as how to include AREG framework in your build environment.
+
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
 ---
 
@@ -97,6 +75,8 @@ The projects based on AREG SDK can be compiled with or without logs. If a projec
 
 The [AREG Logging System](https://github.com/aregtech/areg-sdk/wiki/05.-AREG-Logging-System) page of AREG SDK Wiki provides a detailed explanation and examples on how to compile source codes with logs, as well as hot to create logging scopes, log messages and configure the logging.
 
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+
 ---
 
 ## How to use multicast router
@@ -104,5 +84,7 @@ The [AREG Logging System](https://github.com/aregtech/areg-sdk/wiki/05.-AREG-Log
 Multicast Router (MCR) is a part of AREG SDK and it is used for inter-process communication (IPC). The multicast router can run as a stand-alone application or as a service managed by operating system. The multicast should be configured and all applications should contain [router.init](https://github.com/aregtech/areg-sdk/blob/master/framework/areg/resources/router.init) configuration file, so that they can connect to router to send and receive messages in real-time mode.
 
 The [Message-Router](https://github.com/aregtech/areg-sdk/wiki/06.-Message-Router) page of the AREG SDK Wiki page provides a detailed explanation and examples on how to configure the message router as well as how to initialize in the applications.
+
+<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
 ---

@@ -47,7 +47,7 @@ namespace
     constexpr std::string_view  CMD_RESET           { "\x1B[0m" };
     //!< The command to save cursor position in memory
     constexpr std::string_view  CMD_SAVE_CURSOR     { "\x1B[s" };
-    //!< The command to restore previousely saved cursor position
+    //!< The command to restore previously saved cursor position
     constexpr std::string_view  CMD_RESTORE_CURSOR  { "\x1B[u" };
     //!< The command to move cursor one line up from current position
     constexpr std::string_view  CMD_ONE_LINE_UP     { "\x1B[1F" };
