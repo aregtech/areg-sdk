@@ -160,7 +160,7 @@ To compile the sources, the following tools can be used:
 
 After compilation, the binaries are stored in the `<areg-sdk>/product/build/<family>-<compiler>/<platform>-<bitness>-<cpu>-<build type>/bin` folder. For example, if the code is compiled with GNU GCC on a 64-bit Linux system with an x86_64 CPU and in release mode, the binaries will be in the `./product/build/gnu-gcc/linux-64-x86_64-release/bin` subfolder of `areg-sdk`.
 
-To obtain comprehensive information regarding **builds and options** for the AREG SDK, we recommend referring to the [Software build](https://github.com/aregtech/areg-sdk/wiki/02.-Software-build) page on the AREG SDK Wiki. This document provides a brief outline of the compilation process using **default options**.
+To obtain comprehensive information regarding **builds and options** for the AREG SDK, we recommend referring to the [Software build](https://github.com/aregtech/areg-sdk/wiki/03.-Software-build) page on the AREG SDK Wiki. This document provides a brief outline of the compilation process using **default options**.
 
 
 > 💡 Other POSIX-compliant operating systems and compilers have not yet been tested. List of supported [POSIX APIs](https://github.com/aregtech/areg-sdk/blob/master/docs/POSIX.md#posix-api).
@@ -181,7 +181,7 @@ cmake -B ./build
 cmake --build ./build -j 8
 ```
 
-> 💡 For instructions on how to customize builds with `cmake` tool, kindly refer to the [Build with CMake](https://github.com/aregtech/areg-sdk/wiki/02.-Software-build#build-with-cmake-cmakeliststxt) Wiki page.
+> 💡 For instructions on how to customize builds with `cmake` tool, kindly refer to the [Build with CMake](https://github.com/aregtech/areg-sdk/wiki/03.-Software-build#build-with-cmake-cmakeliststxt) Wiki page.
  </details>
 
 ### Build with `make`
@@ -194,7 +194,7 @@ To build the AREG and examples using [Make](https://www.gnu.org/software/make/),
 make -j 8
 ```
 
-> 💡 For instructions on how to customize builds with `make` tool, kindly refer to the [Build with Make](https://github.com/aregtech/areg-sdk/wiki/02.-Software-build#build-with-make-makefile) Wiki page.
+> 💡 For instructions on how to customize builds with `make` tool, kindly refer to the [Build with Make](https://github.com/aregtech/areg-sdk/wiki/03.-Software-build#build-with-make-makefile) Wiki page.
 </details>
 
 ### Build with `msbuild`
@@ -207,7 +207,7 @@ To build the AREG and examples using [MSBuild](https://visualstudio.microsoft.co
 MSBuild .
 ```
 
-> 💡 For instructions on how to customize builds with `make` tool, kindly refer to the [Build with MSBuild](https://github.com/aregtech/areg-sdk/wiki/02.-Software-build#build-with-msbuild-areg-sdksln) Wiki page.
+> 💡 For instructions on how to customize builds with `make` tool, kindly refer to the [Build with MSBuild](https://github.com/aregtech/areg-sdk/wiki/03.-Software-build#build-with-msbuild-areg-sdksln) Wiki page.
 </details>
 
 ### Build with WSL

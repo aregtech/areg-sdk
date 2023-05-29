@@ -528,13 +528,15 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wiki", "wiki", "{D2A3A8BC-F3AC-499C-AE2C-19AC78F5EAFB}"
 	ProjectSection(SolutionItems) = preProject
 		docs\wiki\01.-Clone-source-codes.md = docs\wiki\01.-Clone-source-codes.md
-		docs\wiki\02.-Software-build.md = docs\wiki\02.-Software-build.md
-		docs\wiki\03.-Preprocessor-define-symbols.md = docs\wiki\03.-Preprocessor-define-symbols.md
-		docs\wiki\04.-Compile-with-Windows-Subsystem-for-Linux-(WSL).md = docs\wiki\04.-Compile-with-Windows-Subsystem-for-Linux-(WSL).md
+		docs\wiki\02.-Preprocessor-define-symbols.md = docs\wiki\02.-Preprocessor-define-symbols.md
+		docs\wiki\03.-Software-build.md = docs\wiki\03.-Software-build.md
+		docs\wiki\04.-Build-with-Windows-Subsystem-for-Linux-(WSL).md = docs\wiki\04.-Build-with-Windows-Subsystem-for-Linux-(WSL).md
 		docs\wiki\05.-AREG-Logging-System.md = docs\wiki\05.-AREG-Logging-System.md
 		docs\wiki\06.-Message-Router.md = docs\wiki\06.-Message-Router.md
 		docs\wiki\07.-Setup-a-project.md = docs\wiki\07.-Setup-a-project.md
+		docs\wiki\08.-Persistence-Syntax.md = docs\wiki\08.-Persistence-Syntax.md
 		docs\wiki\Home.md = docs\wiki\Home.md
+		docs\wiki\_Footer.md = docs\wiki\_Footer.md
 		docs\wiki\_Sidebar.md = docs\wiki\_Sidebar.md
 	EndProjectSection
 EndProject

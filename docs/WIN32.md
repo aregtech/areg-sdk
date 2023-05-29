@@ -1,26 +1,24 @@
-﻿# Build with Win32 API
-```
+﻿```
 This file is part of AREG SDK
 Copyright (c) Aregtech, 2017-2022
 Contact: info[at]aregtech.com
 Website: https://www.aregtech.com
 ```
 
-This document describes the instruction to compile **AREG SDK** and example source codes under _Windows_ 32- or 64-bit platform using Visual Studio 2019 or higher version.
+# Win32 API
 
-Open **[areg-sdk.sln](./../areg-sdk.sln)** solution file in VS2019 and compile the solution. By default, the _AREG framework_ is compiled as a _dynamically linked library (areg.dll)_, all sources are built in the created `product/build/xxx` subfolder of _areg-sdk_.
+In order to build the AREG framework with the *Win32 API*, it is necessary to define the preprocessor symbol **WINDOWS**. Detailed information regarding the `WINDOWS` preprocessor symbol can be found in the [Preprocessor define symbols](https://github.com/aregtech/areg-sdk/wiki/02.-Preprocessor-define-symbols#windows-define) Wiki page of the AREG SDK. To utilize the Win32 API in the software development process, please consult the [Software build](https://github.com/aregtech/areg-sdk/wiki/03.-Software-build) Wiki page of the AREG SDK.
 
-Before compiling, in the toolbar of Visual Studio IDE select the appropriate _Solution Configuration_ and _Platform Configuration_ of your compiler. _For example_, 64-bit Release builds using Visual Studio 2019 can be done in the following way: in _Solution Configuration_ select _rls_vc142_ and _x64_ in _Solution Platform_. 
+For proper functioning, the AREG SDK relies on the Windows Socket and Win32 API for networking, multithreading and synchronization. In addition to the standard runtime library, if the `AREG_EXTENDED` option is enabled during compilation, it may require minimum version Windows 2000 desktop apps. To illustrate, please consider the following example command sequence:
 
-To build _AREG framework_ with _Win32 API_, **WINDOWS** (or **_WINDOWS**) preprocessor directive must be defined. 
+```batch
+msbuild /m /property:Configuration=Debug /property:Platform=x64 /property:AregExtended=1 ./areg-sdk.sln
+```
 
-**Other preprocessor directives to use to compile:**
-- **DEBUG** to compile the debug version.
-- **NDEBUG** to compile the release version.
-- **AREG_LOGS** to compile source codes with logs.
-- **EXP_AREG_LIB** to compile the _AREG framework_ as a static library.
-- **EXP_AREG_DLL** to compile the _AREG framework_ as a dynamically linked library.
-- **IMP_AREG_LIB** to link a project with _AREG framework_ static library.
-- **IMP_AREG_DLL** to link a project with _AREG framework_ dynamically linked library.
+By executing the above commands, the AREG framework will be built, taking into account the extended functionality, which is available for Windows 2000 and higher.
 
-The [HOWTO.md](./HOWTO.md) document contains description [to select solution configuration and the platform](./HOWTO.md#windows-build) and [to integrate _AREG framework_](./HOWTO.md#how-to-create-a-project-or-integrate-in-project) in the existing or new project.
+**The list of POSIX API functions and macro used in AREG SDK (including multicast message router):**
+
+```
+TODO: Add Win32 API list here.
+```

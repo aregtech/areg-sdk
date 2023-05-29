@@ -44,7 +44,7 @@ For a comprehensive guide on the definition and creation of a Service Interface,
 
 > 💡 More testing examples are listed in the [examples](https://github.com/aregtech/areg-sdk/tree/master/examples/) directory.
 
-Firstly, [build](https://github.com/aregtech/areg-sdk/wiki/02.-Software-build) all projects using [`cmake`](https://github.com/aregtech/areg-sdk/wiki/02.-Software-build#build-with-cmake-cmakeliststxt), [`make`](https://github.com/aregtech/areg-sdk/wiki/02.-Software-build#build-with-make-makefile) or [`MSBuild`](https://github.com/aregtech/areg-sdk/wiki/02.-Software-build#build-with-msbuild-areg-sdksln).
+Firstly, [build](https://github.com/aregtech/areg-sdk/wiki/03.-Software-build) all projects using [`cmake`](https://github.com/aregtech/areg-sdk/wiki/03.-Software-build#build-with-cmake-cmakeliststxt), [`make`](https://github.com/aregtech/areg-sdk/wiki/03.-Software-build#build-with-make-makefile) or [`MSBuild`](https://github.com/aregtech/areg-sdk/wiki/03.-Software-build#build-with-msbuild-areg-sdksln).
 
 _Example of quick build using `cmake`:_
 ```bash

@@ -27,7 +27,7 @@ _Example of quick build using `msbuild`:_
 > msbuild .
 ```
 
-You may as well use special parameters to compile only examples (make sure that `areg` library and `mcrouter` are already built). See detailed description of build using different tools in AREG SDK [Wiki](https://github.com/aregtech/areg-sdk/wiki/02.-Software-build) page.
+You may as well use special parameters to compile only examples (make sure that `areg` library and `mcrouter` are already built). See detailed description of build using different tools in AREG SDK [Wiki](https://github.com/aregtech/areg-sdk/wiki/03.-Software-build) page.
 
 **Below is the list of examples:**
 
