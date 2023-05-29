@@ -29,23 +29,23 @@ This document replies to several **howto** questions, which are listed in the _T
 
 ## How to use preprocessor defines
 
-The AREG SDK components make use of various preprocessor defines during the code compilation process. These preprocessor defines allow developers to customize the behavior of the SDK according to their specific requirements. The [Preprocessor-define-symbols](https://github.com/aregtech/areg-sdk/wiki/03.-Preprocessor-define-symbols) page in the AREG SDK Wiki provides a comprehensive list of these defines, along with detailed explanations and examples on how to modify them during compilation.
+The AREG SDK provides a range of preprocessor defines that developers can utilize during the code compilation process. These defines enable developers to customize the SDK's behavior according to their specific requirements. The [Preprocessor-define-symbols](https://github.com/aregtech/areg-sdk/wiki/02.-Preprocessor-define-symbols) page in the AREG SDK Wiki serves as a comprehensive guide, offering detailed explanations and examples on how to modify these defines during compilation.
 
-By modifying the preprocessor defines, developers can enable or disable certain features, configure specific behaviors, or customize the SDK to meet their application's needs. The Wiki page serves as a reference guide, providing a clear understanding of each define and its purpose.
+By modifying the preprocessor defines, developers can enable or disable features, configure behaviors, and customize the SDK to suit their application's needs. The Wiki page acts as a valuable reference, ensuring a clear understanding of each define's purpose.
 
-To utilize the preprocessor defines, developers can follow these steps:
+To utilize the preprocessor defines effectively, developers can follow these steps:
 
-1. Refer to the [Preprocessor-define-symbols](https://github.com/aregtech/areg-sdk/wiki/03.-Preprocessor-define-symbols) page in the AREG SDK Wiki to familiarize themselves with the available defines and their functionalities.
+1. Refer to the [Preprocessor-define-symbols](https://github.com/aregtech/areg-sdk/wiki/02.-Preprocessor-define-symbols) page in the AREG SDK Wiki to become familiar with the available defines and their functionalities.
 
-2. Identify the specific preprocessor define(s) that need to be modified for the desired behavior or feature configuration.
+2. Identify the specific preprocessor define(s) that require modification to achieve the desired behavior or feature configuration.
 
 3. Depending on the build system being used (such as CMake, Make, Microsoft Visual Studio, or Visual Studio Code), update the corresponding configuration files or build commands to set the desired values for the preprocessor defines.
 
 4. Rebuild the AREG SDK components using the updated preprocessor defines.
 
-By utilizing the preprocessor defines effectively, developers can tailor the AREG SDK to their specific project requirements and achieve the desired functionality and behavior.
+By effectively utilizing the preprocessor defines, developers can tailor the AREG SDK to their project's specific requirements, achieving the desired functionality and behavior.
 
-It is recommended to refer to the [Preprocessor-define-symbols](https://github.com/aregtech/areg-sdk/wiki/03.-Preprocessor-define-symbols) page in the AREG SDK Wiki for a comprehensive understanding of each define and its usage in order to leverage the full potential of the SDK.
+It is highly recommended to refer to the [Preprocessor-define-symbols](https://github.com/aregtech/areg-sdk/wiki/02.-Preprocessor-define-symbols) page in the AREG SDK Wiki for a comprehensive understanding of each define and its usage. This will enable developers to leverage the full potential of the SDK and make the most of its capabilities.
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
@@ -55,7 +55,7 @@ It is recommended to refer to the [Preprocessor-define-symbols](https://github.c
 
 The AREG SDK source codes have a minimum requirement of **C++17**. They can be compiled using tools such as `cmake`, `make`, `cygwin`, or `msbuild`. The codes are compatible with **Windows**, **Linux**, and **macOS** environments, including compilation within **WSL** (_Windows Subsystem for Linux_).
 
-The [Software Build](https://github.com/aregtech/areg-sdk/wiki/02.-Software-build) page of AREG SDK Wiki provides a detailed explanation and examples on how to compile sources and build applications using various tools and IDEs.
+The [Software Build](https://github.com/aregtech/areg-sdk/wiki/03.-Software-build) page of AREG SDK Wiki provides a detailed explanation and examples on how to compile sources and build applications using various tools and IDEs.
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
