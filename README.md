@@ -54,7 +54,7 @@
   - [Start a project](#start-a-project)
   - [Configure multicast router](#configure-multicast-router)
   - [Configure logging](#configure-logging)
-- [Roadmap](#roadmap)
+- [Pipeline](#pipeline)
 - [Use cases and benefits](#use-cases-and-benefits)
 - [Examples](#examples)
 - [License](#license)
@@ -333,7 +333,7 @@ Please refer to the [AREG Engine Logging System](https://github.com/aregtech/are
 
 ---
 
-## Roadmap[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#roadmap)
+## Pipeline[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#pipeline)
 
 The goal of the AREG SDK is to provide a lightweight, self-sufficient development and testing system to help developers create complex applications for **Desktop**, **Embedded**, and **IoT edge** devices in a shorter amount of time (_30-50% faster_). 
 
