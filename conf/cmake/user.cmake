@@ -1,5 +1,6 @@
 # ###########################################################################
 # User specific settings
+# Copyright 2022 - 2023 Aregtech
 # ###########################################################################
 
 # ---------------------------------------------------------------------------
@@ -12,24 +13,28 @@
 #   6. AREG_BUILD_EXAMPLES  -- Build AREG engine examples
 #   7. AREG_EXTENDED        -- Enables or disables the extensions, which might require additional libraries.
 #   8. AREG_LOGS            -- Enable or disable compilation with logs.
-#   9. AREG_OUTPUT_DIR      -- The output directory of build binaries
-#  10. AREG_OUTPUT_BIN      -- Set the path to folder to output compiled shared libraries and executables.
-#  11. AREG_OUTPUT_LIB      -- Set the path to folder to output compiled static libraries.
+#   9. AREG_BUILD_ROOT      -- The root directory for project(s) to build. By default is the root folder of areg-sdk.
+#  10. AREG_OUTPUT_DIR      -- The output directory of build binaries
+#  11. AREG_OUTPUT_BIN      -- Set the path to folder to output compiled shared libraries and executables.
+#  12. AREG_OUTPUT_LIB      -- Set the path to folder to output compiled static libraries.
 #
 # The default values are:
-#   1. AREG_COMPILER_FAMILY := gnu      (possible values: gnu, cygwin, llvm, msvc)
-#   2. AREG_COMPILER        := g++      (possible values: g++, gcc, clang++, clang, cl)
-#   3. AREG_BINARY          := shared   (possible values: shared, static)
-#   4. AREG_BUILD_TYPE      := Release  (possible values: Release, Debug
-#   5. AREG_BUILD_TESTS     := ON       (possible values: ON, OFF)
-#   6. AREG_BUILD_EXAMPLES  := ON       (possible values: ON, OFF)
-#   7. AREG_EXTENDED        := OFF      (possible values: ON, OFF)
-#   8. AREG_LOGS            := ON       (possible values: ON, OFF)
-#   9. AREG_OUTPUT_DIR      := <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release      (possible values: any full path)
-#  10. AREG_OUTPUT_BIN      := <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release/bin  (possible values: any full path)
-#  11. AREG_OUTPUT_LIB      := <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release/lib  (possible values: any full path)
+#   1. AREG_COMPILER_FAMILY = gnu       (possible values: gnu, cygwin, llvm, msvc)
+#   2. AREG_COMPILER        = g++       (possible values: g++, gcc, clang++, clang, cl)
+#   3. AREG_BINARY          = shared    (possible values: shared, static)
+#   4. AREG_BUILD_TYPE      = Release   (possible values: Release, Debug
+#   5. AREG_BUILD_TESTS     = ON        (possible values: ON, OFF)
+#   6. AREG_BUILD_EXAMPLES  = ON        (possible values: ON, OFF)
+#   7. AREG_EXTENDED        = OFF       (possible values: ON, OFF)
+#   8. AREG_LOGS            = ON        (possible values: ON, OFF)
+#   9. AREG_BUILD_ROOT      = <areg-sdk>/product                                                (possible values: any full path)
+#  10. AREG_OUTPUT_DIR      = <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release     (possible values: any full path)
+#  11. AREG_OUTPUT_BIN      = <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release/bin (possible values: any full path)
+#  12. AREG_OUTPUT_LIB      = <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release/lib (possible values: any full path)
 #
-# Hint:
+# Hints:
+#
+#  Hint #1:
 #   AREG_COMPILER_FAMILY is a simple and short way to specify the compiler.
 #       - The value 'gnu' will set g++ and gcc compilers for C++ and C.
 #       - The value 'cygwin' will set g++ and gcc compilers for C++ and C.
@@ -37,11 +42,20 @@
 #       - The value 'msvc' will set Microsoft Visual C++ compiler for C++ and C.
 #
 # Example:
-# $ cmake -B build -DAREG_COMPILER_FAMILY=clang -DAREG_BINARY=Release -DAREG_BUILD_TESTS:BOOL=ON -DAREG_BUILD_EXAMPLES:BOOL=OFF
+# $ cmake -B ./build -DAREG_COMPILER_FAMILY=clang -DAREG_BINARY=Release -DAREG_BUILD_TESTS:BOOL=ON -DAREG_BUILD_EXAMPLES:BOOL=OFF
 # 
 # NOTE: if in command line specify AREG_CXX_COMPILER, the AREG_C_COMPILER
 #       must be specified as well. The both options must be specified
 #       either together or none should be specified to use defaults.
+#
+#  Hint #2:
+#   To integrate the AREG SDK in any other project, it might be enough to specify
+#   the AREG_BUILD_ROOT, which shoule indicate the root path of the project.
+#   In this case, if the areg output paths are not directly pointed, then
+#   they are build relative to the AREG_BUILD_ROOT variable.
+#
+# Example:
+# $ cmake -B ./build -D=AREG_BUILD_ROOT="~/projects/my_project/product"
 # ---------------------------------------------------------------------------
 
 # CPP compiler, possible values: g++, gcc, clang++, clang, cl
@@ -150,6 +164,14 @@ if (NOT DEFINED AREG_LOGS)
     option(AREG_LOGS "Compile with logs" ON)
 endif()
 
+# Set the areg-sdk build root folder to output files.
+if (NOT DEFINED AREG_BUILD_ROOT OR "${AREG_BUILD_ROOT}" STREQUAL "")
+    set(AREG_BUILD_ROOT "${AREG_SDK_ROOT}/product")
+endif()
+
+# The absolute path for generated files
+set(AREG_GENERATE_DIR "${AREG_BUILD_ROOT}/generate")
+
 # CPP standard for the projects
 set(AREG_CXX_STANDARD 17)
 
@@ -158,9 +180,3 @@ set(AREG_BITNESS "64")
 
 # Specify CPU platform here
 set(AREG_PROCESSOR "x86_64")
-
-# Set the areg-sdk build root folder to output files.
-set(AREG_BUILD_ROOT "${AREG_SDK_ROOT}")
-
-# Set user specific root folder here
-set(AREG_USER_PRODUCTS "product")

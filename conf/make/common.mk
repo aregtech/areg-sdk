@@ -132,7 +132,7 @@ else
 endif
 
 # The source code build relative path
-AREG_PRODUCT_PATH   := $(shell echo $(AREG_USER_PRODUCTS)/build/$(AREG_COMPILER_FAMILY)-$(AREG_TOOLCHAIN)/$(AREG_OS)-$(AREG_BITNESS)-$(AREG_PLATFORM)-$(AREG_BUILD_TYPE) | tr '[:upper:]' '[:lower:]')
+AREG_PRODUCT_PATH   := $(shell echo build/$(AREG_COMPILER_FAMILY)-$(AREG_TOOLCHAIN)/$(AREG_OS)-$(AREG_BITNESS)-$(AREG_PLATFORM)-$(AREG_BUILD_TYPE) | tr '[:upper:]' '[:lower:]')
 
 # If 'AREG_OUTPUT_DIR' is not set, build and set the default path.
 AREG_OUTPUT_DIR := $(if $(AREG_OUTPUT_DIR),$(AREG_OUTPUT_DIR),$(AREG_BUILD_ROOT)/$(AREG_PRODUCT_PATH))
@@ -145,9 +145,6 @@ AREG_OUTPUT_BIN := $(if $(AREG_OUTPUT_BIN),$(AREG_OUTPUT_BIN),$(AREG_OUTPUT_DIR)
 
 # The absolute path for compiled object files.
 AREG_OUTPUT_OBJ := $(AREG_OUTPUT_DIR)/obj
-
-# The absolute path for generated files
-AREG_GENERATE_DIR   := $(AREG_BUILD_ROOT)/$(AREG_USER_PRODUCTS)/generate
 
 # The project include directories
 AREG_INCLUDES   := -I$(AREG_BASE) -I$(AREG_GENERATE_DIR)
@@ -216,7 +213,7 @@ endef
 
 # clean targets
 clean:
-	rm -rf $(AREG_BUILD_ROOT)/$(AREG_USER_PRODUCTS)
+	rm -rf $(AREG_BUILD_ROOT)
 clean_build:
 	rm -rf $(AREG_OUTPUT_DIR)
 clean_gen:
