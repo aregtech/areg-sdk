@@ -1,12 +1,12 @@
 # ###########################################################################
-#               Cmake opions of AREG SDK
-# 
+#               CMake opions of AREG SDK
+# Copyright 2022 - 2023 Aregtech
 # ###########################################################################
 
 cmake_minimum_required(VERSION 3.16.0)
 
 # Areg root directory
-set(AREG_SDK_ROOT           "${CMAKE_SOURCE_DIR}")
+set(AREG_SDK_ROOT           "${CMAKE_CURRENT_LIST_DIR}")
 set(AREG_CMAKE_CONFIG_DIR   "${AREG_SDK_ROOT}/conf/cmake")
 set(AREG_BASE               "${AREG_SDK_ROOT}/framework")
 set(AREG_EXAMPLES           "${AREG_SDK_ROOT}/examples")

@@ -192,33 +192,29 @@ endif()
 # Setup product paths
 # -------------------------------------------------------
 
-# Relative path of the output folder for the builds
-set(AREG_PRODUCT_PATH "${AREG_USER_PRODUCTS}/build/${AREG_COMPILER_FAMILY}-${AREG_COMPILER_SHORT}/${AREG_OS}-${AREG_BITNESS}-${AREG_PROCESSOR}-${CMAKE_BUILD_TYPE}")
-string(TOLOWER "${AREG_PRODUCT_PATH}" AREG_PRODUCT_PATH)
-
 # The output directory
-if (NOT DEFINED AREG_OUTPUT_DIR OR AREG_OUTPUT_DIR STREQUAL "")
+if (NOT DEFINED AREG_OUTPUT_DIR OR "${AREG_OUTPUT_DIR}" STREQUAL "")
+    # Relative path of the output folder for the builds
+    set(AREG_PRODUCT_PATH "build/${AREG_COMPILER_FAMILY}-${AREG_COMPILER_SHORT}/${AREG_OS}-${AREG_BITNESS}-${AREG_PROCESSOR}-${CMAKE_BUILD_TYPE}")
+    string(TOLOWER "${AREG_PRODUCT_PATH}" AREG_PRODUCT_PATH)
     # The absolute path of 'AREG_OUTPUT_DIR' for builds if it is not set.
     set(AREG_OUTPUT_DIR "${AREG_BUILD_ROOT}/${AREG_PRODUCT_PATH}")
 endif()
 
 # The directory to output static libraries
-if (NOT DEFINED AREG_OUTPUT_LIB OR AREG_OUTPUT_LIB STREQUAL "")
+if (NOT DEFINED AREG_OUTPUT_LIB OR "${AREG_OUTPUT_LIB}" STREQUAL "")
     # set absolute path to AREG_OUTPUT_LIB if it is not manually set
     set(AREG_OUTPUT_LIB "${AREG_OUTPUT_DIR}/lib")
 endif()
 
 # The directory to output shared libraries and executables
-if (NOT DEFINED AREG_OUTPUT_BIN OR AREG_OUTPUT_BIN STREQUAL "")
+if (NOT DEFINED AREG_OUTPUT_BIN OR "${AREG_OUTPUT_BIN}" STREQUAL "")
     # set absolute path to AREG_OUTPUT_BIN if it is not manually set
     set(AREG_OUTPUT_BIN "${AREG_OUTPUT_DIR}/bin")
 endif()
 
 # The absolute path for compiled object files.
 set(AREG_OUTPUT_OBJ "${AREG_OUTPUT_DIR}/obj")
-
-# The absolute path for generated files
-set(AREG_GENERATE_DIR "${AREG_BUILD_ROOT}/${AREG_USER_PRODUCTS}/generate")
 
 # Setting output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${AREG_OUTPUT_BIN})

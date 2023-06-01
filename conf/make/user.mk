@@ -7,7 +7,7 @@
 # ###########################################################################
 # These parameters already should be set either from command line or by extracting from other params
 # 
-# MakefileRoot  		-- indicates the path of the root Makefile, should be extracted from $(abspath $(lastword $(MAKEFILE_LIST)))
+# AREG_BUILD_ROOT		-- The root directory for project(s) to build. By default it is <areg-sdk>/product.
 # AREG_COMPILER_FAMILY	-- simple way to set CXX and CC compilers. Possible values: gnu for g++/gcc, llvm for clang++/clang and cygwin to compile with GNU g++/gcc compilers under Windows.
 # AREG_COMPILER			-- Set the CXX and CC compilers. Possible values: gcc, g++, clang++ and clang. If C++ compiler is set, it will guess the CC compiler. The defaults are g++ / gcc compilers
 # AREG_OS      			-- 'Windows' or 'Linux' OS. The default is current system.
@@ -141,7 +141,7 @@ AREG_LOGS := $(if $(AREG_LOGS),$(AREG_LOGS),1)
 # ###########################################################################
 
 # AREG SDK root directory without '/'
-AREG_BUILD_ROOT 	:= $(AREG_SDK_ROOT)
+AREG_BUILD_ROOT	:= $(if $(AREG_BUILD_ROOT),$(AREG_BUILD_ROOT),$(AREG_SDK_ROOT)/product)
 
 # ###########################################################################
 #           USER DEFINED VARIABLES
@@ -152,5 +152,5 @@ AREG_BUILD_ROOT 	:= $(AREG_SDK_ROOT)
 # User can set specific preprocessor define symbols.
 AREG_USER_DEFINES	:= -DAREG_LOGS=$(AREG_LOGS) -DAREG_EXTENDED=$(AREG_EXTENDED)
 
-# User output folder
-AREG_USER_PRODUCTS	:= product
+# The absolute path for generated files
+AREG_GENERATE_DIR   := $(AREG_BUILD_ROOT)/generate

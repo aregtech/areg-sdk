@@ -51,9 +51,10 @@
     - [Build with Microsoft Visual Studio](#build-with-microsoft-visual-studio)
     - [Build with Visual Studio Code](#build-with-visual-studio-code)
 - [Integration](#integration)
-  - [Start a project](#start-a-project)
-  - [Configure multicast router](#configure-multicast-router)
-  - [Configure logging](#configure-logging)
+  - [Integration into a Project](#integration-into-a-project)
+  - [Starting a project](#starting-a-project)
+  - [Configuring the Multicast Router](#configuring-the-multicast-router)
+  - [Configuring Logging](#configuring-logging)
 - [Pipeline](#pipeline)
 - [Use cases and benefits](#use-cases-and-benefits)
 - [Examples](#examples)
@@ -246,24 +247,52 @@ To build the AREG and examples using [Microsoft Visual Studio](https://visualstu
 
 ## Integration[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#integration)
 
-The AREG framework offers developers the flexibility to either build their own project on top of it or integrate the framework into an existing project in order to develop separate software layers or components.
+The *AREG SDK* provides developers with the flexibility to either build their own project on top of the *AREG framework* or integrate the framework into an existing project based on their specific project requirements.
 
-### Start a project
+### Integration into a Project
 
-<details open><summary title="Click to show/hide details">Click to show / hide <code>Start a project</code>.</summary><br/>
+<details open><summary title="Click to show/hide details">Click to show / hide <code>Integration into a Project</code>.</summary><br/>
 
-The best practice is to review [sample projects](https://github.com/aregtech/areg-sdk/tree/master/examples) provided in this repository. As a guidance to start a project and step-by-step example, refer to the [_Hello Service!_](https://github.com/aregtech/areg-sdk/blob/master/docs/HelloService.md) document, which showcases various scenarios for creating _Local_ and _Public_ *Service Providers* and *Service Consumers*. In addition, review the file structure guidelines presented in the [DEVELOP.mde](https://github.com/aregtech/areg-sdk/blob/master/docs/DEVELOP.md) document.
+To integrate the `areg-sdk` into your project or start a new project using it, it is recommended to clone or copy the [`areg-sdk-demo`](https://github.com/aregtech/areg-sdk-demo) repository template. When integrating `areg-sdk` into your project structure, you can simply set the `AREG_BUILD_ROOT` option in most cases. Here's an example of integrating `areg-sdk` into your `CMakeLists.txt`:
 
-To begin a project:
-1. Create a *Service Interface* XML document that describes the service, including data types, attributes, and methods. Then, use the provided [code generator](https://github.com/aregtech/areg-sdk/tree/master/tools) tool to generate base sources for the service components. We recommend including these generated sources in a *static* library to link with each module.
-2. Create projects that provide and/or consume services in AREG, extend the **Stub** or **ClientBase** objects and implement the required overrides. For *Service Providers*, implement all *request* methods. For *Service Consumers*, it may be sufficient to implement relevant overrides for *Responses* and data update *Notifications*.
-3. Define a *model* for your application(s), describe the threads and dependencies between service components. Load the model in the `main()` function. Compile and link projects with the *static* library of generated codes and the `areg` library, which serves as the AREG communication engine.
+```cmake
+cmake_minimum_required(VERSION 3.16.0)
 
-> 💡 The Service Interface design tool with a GUI is currently [under development](https://github.com/aregtech/areg-sdk-tools) as an open source project, and will be included to the repository when it is ready.
+set(MY_PROJECT_ROOT     "${CMAKE_SOURCE_DIR}")
+set(AREG_SDK_SOURCES    "${MY_PROJECT_ROOT}/thirdparty/areg-sdk")
+set(AREG_BUILD_ROOT     "${MY_PROJECT_ROOT}/product")
 
-The AREG engine facilitates transparent communication between *Service Providers* and *Service Consumers*, making it flexible and automated. In the case of *Public* services, the *Providers* and *Consumers* can be located on any software node. The AREG SDK introduces the concept of a *model*, which describes the service *Providers* and *Consumers*. The models can be dynamically loaded and unloaded during runtime, allowing for the activation and deactivation of defined services as needed.
+include(${AREG_SDK_SOURCES}/CMakeLists.txt)
+
+project(my_project_name)
+```
+
+Make sure to replace `"${MY_PROJECT_ROOT}"` with the path to your project's root directory, and `"${AREG_SDK_SOURCES}"` with the path to the `areg-sdk` directory within your project. This example demonstrates how to include `areg-sdk` in your build process using CMake.
+
+For more details on integrating the AREG Framework into an existing project or creating a new project, please refer to the [Setup a project](https://github.com/aregtech/areg-sdk/wiki/08.-Setup-a-project) Wiki page of the AREG SDK.
+
+</details>
+
+### Starting a Project
+
+<details open><summary title="Click to show/hide details">Click to show / hide <code>Starting a project</code>.</summary><br/>
+
+To start a project, it is recommended to follow the steps described in the chapter [*Integration into a Project*](#integration-into-a-project) above. It is also beneficial to review the [sample projects](https://github.com/aregtech/areg-sdk/tree/master/examples) provided in the `areg-sdk` repository. For a step-by-step example and guidance on starting a project, refer to the [_Hello Service!_](https://github.com/aregtech/areg-sdk/blob/master/docs/HelloService.md) document, which showcases various scenarios for creating *Local* and *Public* *Service Providers* and *Service Consumers*. Additionally, review the file structure guidelines presented in the [DEVELOP.mde](https://github.com/aregtech/areg-sdk/blob/master/docs/DEVELOP.md) document.
+
+To begin development:
+
+1. Create a *Service Interface* XML document that describes the service, including data types, attributes, and methods. Then, use the provided [code generator](https://github.com/aregtech/areg-sdk/tree/master/tools) tool to generate base sources for the service components. It is recommended to include these generated sources in a *static* library that can be linked with each module.
+
+2. Create projects that provide and/or consume services in AREG by extending the **Stub** or **ClientBase** objects and implementing the necessary overrides. For *Service Providers*, implement all *request* methods. For *Service Consumers*, it may be sufficient to implement relevant overrides for *Responses* and data update *Notifications*.
+
+3. Define a *model* for your application(s) by describing the threads and dependencies between service components. Load the model in the `main()` function. Compile and link the projects with the *static* library of generated code and the `areg` library, which serves as the AREG communication engine.
+
+> 💡 The Service Interface design tool with a GUI is currently under development as an open-source project and will be included in the repository when it is ready.
+
+The AREG engine facilitates transparent communication between *Service Providers* and *Service Consumers*, making it highly flexible and automated. In the case of *Public* services, the *Providers* and *Consumers* can be located on any software node. The AREG SDK introduces the concept of a *model*, which describes the service *Providers* and *Consumers*. These models can be dynamically loaded and unloaded during runtime, allowing for the activation and deactivation of defined services as needed.
 
 Here's a brief example of defining a *model* that is loaded and unloaded during runtime, enabling **multithreading communication** between a *Service Provider* and a *Service Consumer* within the same application:
+
 ```cpp
 BEGIN_MODEL("ServiceModel")
     BEGIN_REGISTER_THREAD("ProviderThread", NECommon::WATCHDOG_IGNORE)
@@ -291,26 +320,31 @@ int main(void)
 ```
 
 For **multiprocessing communication**, the model can be split into two parts. One application loads the model to instantiate the *Service Provider*, while another application loads the model to instantiate the *Service Consumer*. Once the *Service Provider* is instantiated and available, the *Service Consumer* is automatically notified of the service availability and can initiate communication accordingly.
+
 </details>
 
-### Configure multicast router
+### Configuring the Multicast Router
 
-<details open><summary title="Click to show/hide details">Click to show / hide <code>Configure multicast router</code>.</summary><br/>
+<details open><summary title="Click to show/hide details">Click to show / hide <code>Configuring the Multicast Router</code>.</summary><br/>
 
-To configure the _Multicast Router_, adjust the [_router.init_](https://github.com/aregtech/areg-sdk/blob/master/framework/areg/resources/router.init) file by specifying the IP address and port of the `mcrouter`:
+To configure the _Multicast Router_, you need to adjust the [_router.init_](https://github.com/aregtech/areg-sdk/blob/master/framework/areg/resources/router.init) file. Open the file and modify the following properties to specify the IP address and port of the `mcrouter`:
+
 ```
 connection.address.tcpip    = 127.0.0.1	# IP address of the mcrouter host
 connection.port.tcpip       = 8181      # connection port of the mcrouter
 ```
 
-Note that the *Multicast Router* is necessary only for applications that provide or consume _Public_ services (multiprocessing applications) and can be ignored for application using only _Local_ services (multithreading applications). The Multicast Router can run on any machine with GPOS (General Purpose Operating System). It establishes a network between connected applications and responsible to route messages between programmable service components.
+Please note that the *Multicast Router* is only necessary for applications that provide or consume _Public_ services (multiprocessing applications). If your application uses only _Local_ services (multithreading applications), you can ignore the Multicast Router configuration. 
+
+The Multicast Router can run on any machine with a General Purpose Operating System (GPOS). It establishes a network between connected applications and is responsible for routing messages between programmable service components.
+
 </details>
 
-### Configure logging
+### Configuring Logging
 
-<details open><summary title="Click to show/hide details">Click to show / hide <code>Configure logging</code>.</summary><br/>
+<details open><summary title="Click to show/hide details">Click to show / hide <code>Configuring Logging</code>.</summary><br/>
 
-Applications based on the AREG framework can be compiled with or without logging. If you choose to compile with logging, you'll need to configure [_log.init_](https://github.com/aregtech/areg-sdk/blob/master/framework/areg/resources/log.init) to set scopes, priorities, and file names for logging. 
+To configure logging for applications based on the AREG framework, you can compile them with or without logging. If you choose to compile with logging, you'll need to configure the [_log.init_](https://github.com/aregtech/areg-sdk/blob/master/framework/areg/resources/log.init) file to set logging scopes, priorities, and file names.
 
 Here's an example configuration for the log file:
 ```
@@ -322,13 +356,14 @@ scope.my_app.ignore_this_scope   = NOTSET ;        # disables logs for a certain
 scope.my_app.ignore_this_group_* = NOTSET ;        # disables logs for a certain scope group in my_app
 ```
 
-Please refer to the [AREG Engine Logging System](https://github.com/aregtech/areg-sdk/wiki/05.-AREG-Engine-Logging-System) Wiki page for detailed instructions on compiling applications with enabled or disabled logging, start and stopping logs during runtime, as well as creating and using logging scopes, and configuring in the `log.init` file. 
+Please refer to the [AREG Engine Logging System](https://github.com/aregtech/areg-sdk/wiki/05.-AREG-Engine-Logging-System) Wiki page for detailed instructions on compiling applications with enabled or disabled logging, starting and stopping logs during runtime, creating and using logging scopes, and configuring the `log.init` file.
 
-> 💡 By default, the `router.init` and `log.init` files are located in the `config` subfolder of binaries.<br/>
+> 💡 By default, the `router.init` and `log.init` files are located in the `config` subfolder of the binaries.<br/>
 > 💡 To enable logging for all applications, use `scope.*  = DEBUG | SCOPE ;`.<br/>
-> 💡 At present, logging is only possible in the file.
+> 💡 Currently, logging is only possible in the file.
 
 </details>
+
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
 ---
