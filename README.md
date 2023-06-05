@@ -37,6 +37,9 @@
 ---
 
 ## Table of contents[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#table-of-contents)
+- [Project Status](#project-status)
+- [Introduction](#introduction)
+- [Table of contents](#table-of-contents)
 - [Motivation](#motivation)
 - [Interface-centricity](#interface-centricity)
 - [More than embedded](#more-than-embedded)
@@ -52,7 +55,7 @@
     - [Build with Visual Studio Code](#build-with-visual-studio-code)
 - [Integration](#integration)
   - [Integration into a Project](#integration-into-a-project)
-  - [Starting a project](#starting-a-project)
+  - [Starting a Project](#starting-a-project)
   - [Configuring the Multicast Router](#configuring-the-multicast-router)
   - [Configuring Logging](#configuring-logging)
 - [Pipeline](#pipeline)
@@ -215,7 +218,7 @@ MSBuild .
 
 <details open><summary title="Click to show/hide details">Click to show / hide <code>Build with WSL</code>.</summary><br/>
 
-The *Windows Subsystem for Linux* (**WSL**) allows developers to use Linux applications directly on Windows machines. This means that developers may clone, compile and use AREG engine in a popular Linux distributions. To install and update WSL on your Windows 10 machine, clone and compile AREG SDK sources, and run examples, please follow the step-by-step instructions outlined in the [Compile in Windows Subsystem for Linux (WSL)](https://github.com/aregtech/areg-sdk/wiki/04.-Compile-with-Windows-Subsystem-for-Linux-(WSL)) Wiki page.
+The *Windows Subsystem for Linux* (**WSL**) allows developers to use Linux applications directly on Windows machines. This means that developers may clone, compile and use AREG engine in a popular Linux distributions. To install and update WSL on your Windows 10 machine, clone and compile AREG SDK sources, and run examples, please follow the step-by-step instructions outlined in the [Build with Windows Subsystem for Linux (WSL)](https://github.com/aregtech/areg-sdk/wiki/04.-Build-with-Windows-Subsystem-for-Linux-(WSL)) Wiki page.
 
 </details>
 
@@ -356,7 +359,7 @@ scope.my_app.ignore_this_scope   = NOTSET ;        # disables logs for a certain
 scope.my_app.ignore_this_group_* = NOTSET ;        # disables logs for a certain scope group in my_app
 ```
 
-Please refer to the [AREG Engine Logging System](https://github.com/aregtech/areg-sdk/wiki/05.-AREG-Engine-Logging-System) Wiki page for detailed instructions on compiling applications with enabled or disabled logging, starting and stopping logs during runtime, creating and using logging scopes, and configuring the `log.init` file.
+Please refer to the [AREG Logging System](https://github.com/aregtech/areg-sdk/wiki/05.-AREG-Logging-System) Wiki page for detailed instructions on compiling applications with enabled or disabled logging, starting and stopping logs during runtime, creating and using logging scopes, and configuring the `log.init` file.
 
 > 💡 By default, the `router.init` and `log.init` files are located in the `config` subfolder of the binaries.<br/>
 > 💡 To enable logging for all applications, use `scope.*  = DEBUG | SCOPE ;`.<br/>
