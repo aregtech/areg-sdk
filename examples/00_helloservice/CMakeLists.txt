@@ -1,5 +1,3 @@
-set(project_root "${CMAKE_CURRENT_LIST_DIR}")
-
 # Project names
 DECLARE_PROJECT_EX(00_generated     "generated"     "generated")
 DECLARE_PROJECT_EX(00_pubclient     "clientproc"    "multiprocess/clientproc")
@@ -13,9 +11,3 @@ addExecutableEx(${project_clientproc}   "${clientproc_src}"     "${project_gener
 addExecutableEx(${project_serviceproc}  "${serviceproc_src}"    "${project_generated}")
 addExecutableEx(${project_onethread}    "${onethread_src}"      "${project_generated}")
 addExecutableEx(${project_twothreads}   "${twothreads_src}"     "${project_generated}")
-
-target_include_directories(${project_generated}   BEFORE PRIVATE "${project_root}")
-target_include_directories(${project_clientproc}  BEFORE PRIVATE "${project_root}")
-target_include_directories(${project_serviceproc} BEFORE PRIVATE "${project_root}")
-target_include_directories(${project_onethread}   BEFORE PRIVATE "${project_root}")
-target_include_directories(${project_twothreads}  BEFORE PRIVATE "${project_root}")

@@ -30,6 +30,10 @@ endfunction(setAppOptions item library_list)
 # usage ......: addExecutableEx( <name of executable> <list of sources> <list of libraries> ) 
 # ---------------------------------------------------------------------------
 function(addExecutableEx target_name target_source_list library_list)
+    set(exList "${ARGN}")
+    foreach(item IN LISTS exList)
+        list(APPEND library_list "${item}")
+    endforeach()
     add_executable(${target_name} ${target_source_list})
     setAppOptions(${target_name} "${library_list}")
     target_include_directories(${target_name}  BEFORE PRIVATE ${CMAKE_CURRENT_LIST_DIR})    
@@ -84,8 +88,13 @@ endfunction(setStaticLibOptions item library_list)
 # usage ......: addStaticLibEx( <name of static library> <list of sources> <list of libraries> ) 
 # ---------------------------------------------------------------------------
 function(addStaticLibEx target_name target_source_list library_list)
+    set(exList "${ARGN}")
+    foreach(item IN LISTS exList)
+        list(APPEND library_list "${item}")
+    endforeach()
     add_library(${target_name} STATIC ${target_source_list})
     setStaticLibOptions(${target_name} "${library_list}")
+    target_include_directories(${target_name}  BEFORE PRIVATE ${CMAKE_CURRENT_LIST_DIR})    
 endfunction(addStaticLibEx target_name target_source_list library_list)
 
 # ---------------------------------------------------------------------------
@@ -138,8 +147,13 @@ endfunction(setSharedLibOptions item library_list)
 # usage ......: addSharedLibEx( <name of shared library> <list of sources> <list of libraries> ) 
 # ---------------------------------------------------------------------------
 function(addSharedLibEx target_name target_source_list library_list)
+    set(exList "${ARGN}")
+    foreach(item IN LISTS exList)
+        list(APPEND library_list "${item}")
+    endforeach()
     add_library(${target_name} SHARED ${target_source_list})
     setSharedLibOptions(${target_name} "${library_list}")
+    target_include_directories(${target_name}  BEFORE PRIVATE ${CMAKE_CURRENT_LIST_DIR})    
 endfunction(addSharedLibEx target_name target_source_list library_list)
 
 # ---------------------------------------------------------------------------
@@ -265,9 +279,10 @@ endmacro(PROJECT_SOURCES)
 # usage ......: DECLARE_PROJECT( <name of the project> <name of project sub-directory> ) 
 # ---------------------------------------------------------------------------
 macro(DECLARE_PROJECT_EX project_name project_location project_dir)
-    set(pr_name     "project_${project_location}")
-    set(src_name    "${project_location}_src")
-    set(${pr_name} "${project_name}")
+    set(pr_name      "project_${project_location}")
+    set(src_name     "${project_location}_src")
+    set(${pr_name}   "${project_name}")
+    set(project_root "${CMAKE_CURRENT_LIST_DIR}")
 
     PROJECT_SOURCES_EX(${src_name} ${project_dir})
 
