@@ -1,18 +1,15 @@
-# Examples which has similar building structure
-list(APPEND projectList
-    01_hello
-    02_buffer
-    03_file
-    04_trace
-    05_timer
-    06_threads
-    07_synch
-    08_service
-    09_svcmulti
-)
 
 # Examples with specific design must be included one by one.
 include(${AREG_EXAMPLES}/00_helloservice/CMakeLists.txt)
+include(${AREG_EXAMPLES}/01_hello/CMakeLists.txt)
+include(${AREG_EXAMPLES}/02_buffer/CMakeLists.txt)
+include(${AREG_EXAMPLES}/03_file/CMakeLists.txt)
+include(${AREG_EXAMPLES}/04_trace/CMakeLists.txt)
+include(${AREG_EXAMPLES}/05_timer/CMakeLists.txt)
+include(${AREG_EXAMPLES}/06_threads/CMakeLists.txt)
+include(${AREG_EXAMPLES}/07_synch/CMakeLists.txt)
+include(${AREG_EXAMPLES}/08_service/CMakeLists.txt)
+include(${AREG_EXAMPLES}/09_svcmulti/CMakeLists.txt)
 include(${AREG_EXAMPLES}/10_locsvc/CMakeLists.txt)
 include(${AREG_EXAMPLES}/11_locmesh/CMakeLists.txt)
 include(${AREG_EXAMPLES}/12_pubsvc/CMakeLists.txt)
@@ -41,17 +38,3 @@ if (AREG_DEVELOP_ENV MATCHES "Win32")
     endif(MFC_FOUND)
 
 endif()
-
-# Iterating over projectList and extract each source file,
-# to create separate target and executable.
-# Iterating over projectList and extract each source file,
-# to create separate target and executable.
-foreach(item IN LISTS projectList)
-    unset(SRC)
-    INCLUDE_DIR("${item}")
-
-    # Adding target for each example.
-    addExecutable(${item} "${SRC}")
-    target_include_directories(${item} BEFORE PRIVATE "${AREG_EXAMPLES}/${item}")
-
-endforeach()
