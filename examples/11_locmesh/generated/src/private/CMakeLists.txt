@@ -1,7 +1,7 @@
-list(APPEND 11_generated_SRC
-    ${subProjDir}/HelloWorldClientBase.cpp
-    ${subProjDir}/HelloWorldEvents.cpp
-    ${subProjDir}/HelloWorldProxy.cpp
-    ${subProjDir}/HelloWorldStub.cpp
-    ${subProjDir}/NEHelloWorld.cpp
+setSources(project_sources
+    HelloWorldClientBase.cpp
+    HelloWorldEvents.cpp
+    HelloWorldProxy.cpp
+    HelloWorldStub.cpp
+    NEHelloWorld.cpp
 )

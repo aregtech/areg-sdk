@@ -1,3 +1,3 @@
-list(APPEND 13_SRC3
-	${subProjDir}/main.cpp
+ADD_SOURCES(project_sources
+	main.cpp
 )

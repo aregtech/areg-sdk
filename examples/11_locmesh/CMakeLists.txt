@@ -1,19 +1,11 @@
-# SRC lists
-unset(11_generated_SRC)
-unset(11_SRC)
+set(project_root "${CMAKE_CURRENT_LIST_DIR}")
 
 # Project names
-set(gen_projName 11_generated)
-set(projName 11_locmesh)
+DECLARE_PROJECT(11_generated    "generated")
+DECLARE_PROJECT(11_locmesh      "locsvcmesh")
 
-set(11_locmesh_BASE "${AREG_EXAMPLES}/11_locmesh")
+addStaticLib(${project_generated}     "${generated_src}")
+addExecutableEx(${project_locsvcmesh} "${locsvcmesh_src}" "${project_generated}")
 
-# Filling SRCs up
-include(${11_locmesh_BASE}/generated/CMakeLists.txt)
-include(${11_locmesh_BASE}/locsvcmesh/CMakeLists.txt)
-
-addStaticLib(${gen_projName} "${11_generated_SRC}")
-addExecutableEx(${projName} "${11_SRC}" "${gen_projName}")
-
-target_include_directories(${gen_projName} BEFORE PRIVATE ${11_locmesh_BASE})
-target_include_directories(${projName} BEFORE PRIVATE ${11_locmesh_BASE})
+target_include_directories(${project_generated}  BEFORE PRIVATE ${project_root})
+target_include_directories(${project_locsvcmesh} BEFORE PRIVATE ${project_root})

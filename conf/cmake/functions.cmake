@@ -32,6 +32,7 @@ endfunction(setAppOptions item library_list)
 function(addExecutableEx target_name target_source_list library_list)
     add_executable(${target_name} ${target_source_list})
     setAppOptions(${target_name} "${library_list}")
+    target_include_directories(${target_name}  BEFORE PRIVATE ${CMAKE_CURRENT_LIST_DIR})    
 endfunction(addExecutableEx target_name target_source_list library_list)
 
 # ---------------------------------------------------------------------------
@@ -150,3 +151,144 @@ endfunction(addSharedLibEx target_name target_source_list library_list)
 function(addSharedLib target_name target_source_list)
     addSharedLibEx(${target_name} "${target_source_list}" "")
 endfunction(addSharedLib target_name target_source_list)
+
+# ---------------------------------------------------------------------------
+# Description : Sets a list of source files in the given list.
+#               The list should be empty. If it is not, the previous values
+#               will be lost.
+# Function ...: setSources
+# usage ......: setSources( <name of the list> <list of sources> ) 
+# ---------------------------------------------------------------------------
+function(setSources source_list)
+    set(current_dir "${CMAKE_CURRENT_LIST_DIR}")
+    set(temp_list)
+
+    foreach(arg IN LISTS ARGN)
+        if (EXISTS "${arg}")
+            list(APPEND temp_list "${arg}")
+        elseif(EXISTS "${current_dir}/${arg}")
+            list(APPEND temp_list "${current_dir}/${arg}")
+        else()
+            status(WARNING " >>> Do not add item ${arg} to list, it does not exist")
+        endif()
+    endforeach()
+
+    set(${source_list} "${temp_list}" PARENT_SCOPE)
+endfunction(setSources)
+
+# ---------------------------------------------------------------------------
+# Description : This macro adds a list of source files at the end of the existing list.
+#               The list should be declared and exist, the previous values
+#               will not be lost.
+# Function ...: ADD_SOURCES
+# usage ......: ADD_SOURCES( <name of the list> <list of sources> ) 
+# ---------------------------------------------------------------------------
+macro(ADD_SOURCES source_list)
+    
+    if (NOT DEFINED ${source_list})
+        set(${source_list})
+    endif()
+
+    set(current_dir "${CMAKE_CURRENT_LIST_DIR}")
+    set(list_var "${ARGN}")
+
+    foreach(arg IN LISTS list_var)
+        if (EXISTS "${arg}")
+            list(APPEND ${source_list} "${arg}")
+        elseif(EXISTS "${current_dir}/${arg}")
+            list(APPEND ${source_list} "${current_dir}/${arg}")
+        else()
+            message(warning " >>> Do not add item ${arg} to list, it does not exist")
+        endif()
+    endforeach()
+endmacro(ADD_SOURCES)
+
+# ---------------------------------------------------------------------------
+# Description : This macro include the 'CMakeLists.txt' file of specified
+#               sub-directory to include in the build. The name of
+#               sub-directory should not include slash '/' at the
+#               begin and at the end.
+# Function ...: INCLUDE_DIR
+# usage ......: INCLUDE_DIR( <sub-directory path> <list of sources> ) 
+# ---------------------------------------------------------------------------
+macro(INCLUDE_DIR sub_dir)
+    if (NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/${sub_dir}/CMakeLists.txt")
+        message(ERROR " >>> The file \'${CMAKE_CURRENT_LIST_DIR}/${sub_dir}/CMakeLists.txt\' does not exist, cannot include")
+    endif()
+    include("${CMAKE_CURRENT_LIST_DIR}/${sub_dir}/CMakeLists.txt")
+endmacro(INCLUDE_DIR)
+
+# ---------------------------------------------------------------------------
+# Description : This macro include the 'CMakeLists.txt' file of specified
+#               sub-directory, which will append the sources to the 'list_name'.
+# Function ...: PROJECT_SOURCES_EX
+# usage ......: PROJECT_SOURCES_EX( <name of the list> <name of sub-directory> ) 
+# ---------------------------------------------------------------------------
+macro(PROJECT_SOURCES_EX list_name project_dir)
+    set(project_sources)
+
+    INCLUDE_DIR(${project_dir})
+
+    set(${list_name} "${project_sources}")
+    unset(project_sources)
+endmacro(PROJECT_SOURCES_EX)
+
+# ---------------------------------------------------------------------------
+# Description : This macro include the 'CMakeLists.txt' file of specified
+#               sub-directory and append the sources to the  list with name
+#               '${project_name}_src'. For example if the project name is
+#               'my_project', the list of source files to compile will be
+#               'my_project_src'. This macro is simplified version of
+#               the macro PROJECT_SOURCES_EX.
+# Function ...: PROJECT_SOURCES
+# usage ......: PROJECT_SOURCES( <name of the project> ) 
+# ---------------------------------------------------------------------------
+macro(PROJECT_SOURCES project_name)
+    set(src_name    "${project_dir}_src")
+    PROJECT_SOURCES_EX("${src_name}" "${proj_name}")
+    unset(src_name)
+endmacro(PROJECT_SOURCES)
+
+# ---------------------------------------------------------------------------
+# Description : This macro declares a variable named 'project_${project_location}',
+#               which value is the '${project_name}', as well as includes 
+#               in the build the 'CMakeLists.txt' file specified in the
+#               'project_dir' to create a list of sources named '${project_location}_src'.
+#               For example, if the developer want to declare a project
+#               'my_proj', which sources are in the sub-directory 'sources/foo',
+#               where 'foo' is the location of the project, this macro declares 
+#               a variable named 'project_foo', which value
+#               is 'my_proj' and the list of sources to compile, which name is
+#               'foo_src', so that after using this macro, the developer can
+#               use both variables: the 'project_foo' and 'foo_src'.
+# Function ...: DECLARE_PROJECT
+# usage ......: DECLARE_PROJECT( <name of the project> <name of project sub-directory> ) 
+# ---------------------------------------------------------------------------
+macro(DECLARE_PROJECT_EX project_name project_location project_dir)
+    set(pr_name     "project_${project_location}")
+    set(src_name    "${project_location}_src")
+    set(${pr_name} "${project_name}")
+
+    PROJECT_SOURCES_EX(${src_name} ${project_dir})
+
+    unset(pr_name)
+    unset(src_name)
+endmacro(DECLARE_PROJECT_EX)
+
+# ---------------------------------------------------------------------------
+# Description : This macro declares a variable named 'project_${project_dir}',
+#               which value is the '${project_name}', as well as includes 
+#               in the build the 'CMakeLists.txt' file specified in the
+#               'project_dir' to create a list of sources named '${project_dir}_src'.
+#               For example, if the developer want to declare a project
+#               'my_proj', which sources are in the sub-directory 'foo',
+#               This macro declares a variable named 'project_foo', which value
+#               is 'my_proj' and the list of sources to compile, which name is
+#               'foo_src', so that after using this macro, the developer can
+#               use both variables: the 'project_foo' and 'foo_src'.
+# Function ...: DECLARE_PROJECT
+# usage ......: DECLARE_PROJECT( <name of the project> <name of project sub-directory> ) 
+# ---------------------------------------------------------------------------
+macro(DECLARE_PROJECT project_name project_dir)
+    DECLARE_PROJECT_EX(${project_name} ${project_dir} ${project_dir})
+endmacro(DECLARE_PROJECT)

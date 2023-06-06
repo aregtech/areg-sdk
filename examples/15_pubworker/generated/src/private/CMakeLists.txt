@@ -1,7 +1,7 @@
-list(APPEND 15_generated_SRC
-    ${subProjDir}/NEPatientInformation.cpp
-    ${subProjDir}/PatientInformationClientBase.cpp
-    ${subProjDir}/PatientInformationEvents.cpp
-    ${subProjDir}/PatientInformationProxy.cpp
-    ${subProjDir}/PatientInformationStub.cpp
+ADD_SOURCES(project_sources
+    NEPatientInformation.cpp
+    PatientInformationClientBase.cpp
+    PatientInformationEvents.cpp
+    PatientInformationProxy.cpp
+    PatientInformationStub.cpp
 )

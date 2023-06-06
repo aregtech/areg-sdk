@@ -1,7 +1,7 @@
-list(APPEND 12_generated_SRC
-    ${subProjDir}/HelloWorldClientBase.cpp
-    ${subProjDir}/HelloWorldEvents.cpp
-    ${subProjDir}/HelloWorldProxy.cpp
-    ${subProjDir}/HelloWorldStub.cpp
-    ${subProjDir}/NEHelloWorld.cpp
+ADD_SOURCES(project_sources
+    HelloWorldClientBase.cpp
+    HelloWorldEvents.cpp
+    HelloWorldProxy.cpp
+    HelloWorldStub.cpp
+    NEHelloWorld.cpp
 )

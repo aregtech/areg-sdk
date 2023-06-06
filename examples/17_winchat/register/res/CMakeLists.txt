@@ -1,10 +1,10 @@
-list(APPEND 17_RES2
-    ${subProjDir}/res/register.rc
+setSources(register_resources
+    register.rc
 )
 
-list(APPEND 17_SRC2
-    ${subProjDir}/res/resource.h
-    ${subProjDir}/res/stdafx.cpp
-    ${subProjDir}/res/targetver.h
+ADD_SOURCES(project_sources
+    resource.h
+    stdafx.cpp
+    targetver.h
 )
 

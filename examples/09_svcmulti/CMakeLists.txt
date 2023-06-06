@@ -1,1 +1,1 @@
-include(${subProjDir}/CMakeLists.txt)
+INCLUDE_DIR("src")

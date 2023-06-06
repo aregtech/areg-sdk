@@ -1,53 +1,50 @@
-# SRC lists
-unset(17_generated_SRC)
-unset(17_SRC1)
-unset(17_SRC1)
-unset(17_RES1)
-unset(17_RES2)
-
-# Project names
-set(gen_projName 17_generated)
-set(projName1 17_chatter)
-set(projName2 17_register)
-set(17_winchat_BASE "${AREG_EXAMPLES}/17_winchat")
-
-# Filling SRCs up
-include(${17_winchat_BASE}/generated/CMakeLists.txt)
-include(${17_winchat_BASE}/chatter/CMakeLists.txt)
-include(${17_winchat_BASE}/register/CMakeLists.txt)
+set(project_root "${CMAKE_CURRENT_LIST_DIR}")
 
 # Set project to compile with MFC dynamic linked library
 set(CMAKE_MFC_FLAG PRIVATE 2)
 
-# Set resource files to compile with Microsoft RC compiler
-set_source_files_properties(${17_RES1} PROPERTIES LANGUAGE RC)
-set_source_files_properties(${17_RES2} PROPERTIES LANGUAGE RC)
+# ####################################
+# generated project
 
-list(APPEND 17_SRC1 ${17_RES1})
-list(APPEND 17_SRC2 ${17_RES2})
+# 'generated project'
+DECLARE_PROJECT(17_generated    "generated")
+# Setting up appropriate flags
+addStaticLib(${project_generated} "${generated_src}")
 
 # Set MFC DLL and other Windows flags.
 list(APPEND MFC_DEFINES _AFXDLL _BIND_TO_CURRENT_CRT_VERSION _BIND_TO_CURRENT_MFC_VERSION)
 
-# Setting up appropriate flags
-addStaticLib(${gen_projName} "${17_generated_SRC}")
+# ####################################
+# 'chatter' project
 
-# target: 17_chatter, compile for Windows system, set options
-add_executable(${projName1} WIN32 ${17_SRC1})
-setAppOptions(${projName1} ${gen_projName})
+DECLARE_PROJECT(17_chatter      "chatter")
+# Set resource files to compile with Microsoft RC compiler
+set_source_files_properties(${chatter_resources}  PROPERTIES LANGUAGE RC)
+list(APPEND chatter_src "${chatter_resources}")
 
-# target: 17_register, compile for Windows system, set options
-add_executable(${projName2} WIN32 ${17_SRC2})
-setAppOptions(${projName2} ${gen_projName})
-
+# 'chatter' project, compile for Windows system, set options
+add_executable(${project_chatter} WIN32 ${chatter_src})
+setAppOptions(${project_chatter} ${project_generated})
 # Set compile definitions to link MFC DLL
-target_compile_definitions(${projName1} PRIVATE "${MFC_DEFINES}")
-target_compile_definitions(${projName2} PRIVATE "${MFC_DEFINES}")
-
+target_compile_definitions(${project_chatter} PRIVATE "${MFC_DEFINES}")
 # Ensure Windows Subsystem and switch the entry point from main() method to 'wWinMainCRTStartup' implemented in MFC DLL.
-set_property(TARGET ${projName1} APPEND_STRING PROPERTY LINK_FLAGS " /SUBSYSTEM:WINDOWS /ENTRY:\"wWinMainCRTStartup\"")
-set_property(TARGET ${projName2} APPEND_STRING PROPERTY LINK_FLAGS " /SUBSYSTEM:WINDOWS /ENTRY:\"wWinMainCRTStartup\"")
+set_property(TARGET ${project_chatter} APPEND_STRING PROPERTY LINK_FLAGS " /SUBSYSTEM:WINDOWS /ENTRY:\"wWinMainCRTStartup\"")
 
-target_include_directories(${gen_projName} BEFORE PRIVATE ${17_winchat_BASE})
-target_include_directories(${projName1} BEFORE PRIVATE ${17_winchat_BASE})
-target_include_directories(${projName2} BEFORE PRIVATE ${17_winchat_BASE})
+# ####################################
+# 'register' project
+
+DECLARE_PROJECT(17_register     "register")
+# Set resource files to compile with Microsoft RC compiler
+set_source_files_properties(${register_resources} PROPERTIES LANGUAGE RC)
+list(APPEND register_src ${register_resources})
+# 'register' project, compile for Windows system, set options
+add_executable(${project_register} WIN32 ${register_src})
+setAppOptions(${project_register} ${project_generated})
+# Set compile definitions to link MFC DLL
+target_compile_definitions(${project_register} PRIVATE "${MFC_DEFINES}")
+# Ensure Windows Subsystem and switch the entry point from main() method to 'wWinMainCRTStartup' implemented in MFC DLL.
+set_property(TARGET ${project_register} APPEND_STRING PROPERTY LINK_FLAGS " /SUBSYSTEM:WINDOWS /ENTRY:\"wWinMainCRTStartup\"")
+
+target_include_directories(${project_generated} BEFORE PRIVATE ${project_root})
+target_include_directories(${project_chatter}   BEFORE PRIVATE ${project_root})
+target_include_directories(${project_register}  BEFORE PRIVATE ${project_root})

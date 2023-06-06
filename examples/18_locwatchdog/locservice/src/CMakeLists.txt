@@ -1,5 +1,5 @@
-list(APPEND 18_SRC
-    ${subProjDir}/main.cpp
-    ${subProjDir}/ServicingComponent.cpp
-    ${subProjDir}/ServiceClient.cpp
+ADD_SOURCES(project_sources
+    main.cpp
+    ServicingComponent.cpp
+    ServiceClient.cpp
 )

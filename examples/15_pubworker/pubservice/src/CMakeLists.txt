@@ -1,5 +1,5 @@
-list(APPEND 15_SRC2
-    ${subProjDir}/PatientService.cpp
-    ${subProjDir}/PatientServiceWorkerConsumer.cpp
-    ${subProjDir}/main.cpp
+ADD_SOURCES(project_sources
+    PatientService.cpp
+    PatientServiceWorkerConsumer.cpp
+    main.cpp
 )

@@ -48,12 +48,10 @@ endif()
 # to create separate target and executable.
 foreach(item IN LISTS projectList)
     unset(SRC)
-    set(itemDir ${AREG_EXAMPLES}/${item})
-    set(subProjDir ${itemDir}/src)
-    include(${AREG_EXAMPLES}/${item}/CMakeLists.txt)
+    INCLUDE_DIR("${item}")
 
     # Adding target for each example.
     addExecutable(${item} "${SRC}")
-    target_include_directories(${item} BEFORE PRIVATE "${itemDir}")
+    target_include_directories(${item} BEFORE PRIVATE "${AREG_EXAMPLES}/${item}")
 
 endforeach()

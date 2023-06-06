@@ -1,3 +1,3 @@
-list(APPEND 17_SRC2
-    ${subProjDir}/services/ConnectionManager.cpp
+ADD_SOURCES(project_sources
+    ConnectionManager.cpp
 )

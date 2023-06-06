@@ -1,26 +1,15 @@
-# SRC lists
-unset(20_generated_SRC)
-unset(20_SRC1)
-unset(20_SRC2)
+set(project_root "${CMAKE_CURRENT_LIST_DIR}")
 
 # Project names
-set(gen_projName 20_generated)
-set(projName1 20_pubclient)
-set(projName2 20_pubservice)
-
-set(20_pubdatarate_BASE "${AREG_EXAMPLES}/20_pubdatarate")
-
-include(${20_pubdatarate_BASE}/generated/CMakeLists.txt)
-include(${20_pubdatarate_BASE}/pubclient/CMakeLists.txt)
-include(${20_pubdatarate_BASE}/pubservice/CMakeLists.txt)
-
-list(APPEND 20_lib_list ${gen_projName})
+DECLARE_PROJECT(20_generated    "generated")
+DECLARE_PROJECT(20_pubclient    "pubclient")
+DECLARE_PROJECT(20_pubservice   "pubservice")
 
 # Setting up appropriate flags
-addStaticLib(${gen_projName} "${20_generated_SRC}")
-addExecutableEx(${projName1} "${20_SRC1}" "${20_lib_list}")
-addExecutableEx(${projName2} "${20_SRC2}" "${20_lib_list}")
+addStaticLib(${project_generated}     "${generated_src}")
+addExecutableEx(${project_pubclient}  "${pubclient_src}"  "${project_generated}")
+addExecutableEx(${project_pubservice} "${pubservice_src}" "${project_generated}")
 
-target_include_directories(${gen_projName} BEFORE PRIVATE ${20_pubdatarate_BASE})
-target_include_directories(${projName1} BEFORE PRIVATE ${20_pubdatarate_BASE})
-target_include_directories(${projName2} BEFORE PRIVATE ${20_pubdatarate_BASE})
+target_include_directories(${project_generated} BEFORE PRIVATE ${project_root})
+target_include_directories(${project_pubclient} BEFORE PRIVATE ${project_root})
+target_include_directories(${project_pubservice} BEFORE PRIVATE ${project_root})

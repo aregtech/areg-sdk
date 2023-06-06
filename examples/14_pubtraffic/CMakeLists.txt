@@ -1,25 +1,14 @@
-# SRC lists
-unset(14_generated_SRC)
-unset(14_SRC1)
-unset(14_SRC2)
+set(project_root "${CMAKE_CURRENT_LIST_DIR}")
 
 # Project names
-set(gen_projName 14_generated)
-set(projName1 14_pubclient)
-set(projName2 14_pubservice)
+DECLARE_PROJECT(14_generated    "generated")
+DECLARE_PROJECT(14_pubclient    "pubclient")
+DECLARE_PROJECT(14_pubservice   "pubservice")
 
-set(14_pubtraffic_BASE "${AREG_EXAMPLES}/14_pubtraffic")
+addStaticLib(${project_generated}       "${generated_src}")
+addExecutableEx(${project_pubclient}    "${pubclient_src}"  "${project_generated}")
+addExecutableEx(${project_pubservice}   "${pubservice_src}" "${project_generated}")
 
-include(${14_pubtraffic_BASE}/generated/CMakeLists.txt)
-include(${14_pubtraffic_BASE}/pubclient/CMakeLists.txt)
-include(${14_pubtraffic_BASE}/pubservice/CMakeLists.txt)
-
-list(APPEND 14_lib_list ${gen_projName})
-
-addStaticLib(${gen_projName} "${14_generated_SRC}")
-addExecutableEx(${projName1} "${14_SRC1}" "${14_lib_list}")
-addExecutableEx(${projName2} "${14_SRC2}" "${14_lib_list}")
-
-target_include_directories(${gen_projName} BEFORE PRIVATE ${14_pubtraffic_BASE})
-target_include_directories(${projName1} BEFORE PRIVATE ${14_pubtraffic_BASE})
-target_include_directories(${projName2} BEFORE PRIVATE ${14_pubtraffic_BASE})
+target_include_directories(${project_generated}  BEFORE PRIVATE ${project_root})
+target_include_directories(${project_pubclient}  BEFORE PRIVATE ${project_root})
+target_include_directories(${project_pubservice} BEFORE PRIVATE ${project_root})

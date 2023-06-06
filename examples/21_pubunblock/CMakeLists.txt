@@ -1,24 +1,15 @@
-# SRC lists
-unset(21_generated_SRC)
-unset(21_SRC1)
-unset(21_SRC2)
+set(project_root "${CMAKE_CURRENT_LIST_DIR}")
 
 # Project names
-set(gen_projName 21_generated)
-set(projName1 21_pubclient)
-set(projName2 21_pubservice)
-
-set(21_pubunblock_BASE "${AREG_EXAMPLES}/21_pubunblock")
-
-include(${21_pubunblock_BASE}/generated/CMakeLists.txt)
-include(${21_pubunblock_BASE}/pubclient/CMakeLists.txt)
-include(${21_pubunblock_BASE}/pubservice/CMakeLists.txt)
+DECLARE_PROJECT(21_generated    "generated")
+DECLARE_PROJECT(21_pubclient    "pubclient")
+DECLARE_PROJECT(21_pubservice   "pubservice")
 
 # Setting up appropriate flags
-addStaticLib(${gen_projName} "${21_generated_SRC}")
-addExecutableEx(${projName1} "${21_SRC1}" "${gen_projName}")
-addExecutableEx(${projName2} "${21_SRC2}" "${gen_projName}")
+addStaticLib(${project_generated}     "${generated_src}")
+addExecutableEx(${project_pubclient}  "${pubclient_src}"  "${project_generated}")
+addExecutableEx(${project_pubservice} "${pubservice_src}" "${project_generated}")
 
-target_include_directories(${gen_projName} BEFORE PRIVATE ${21_pubunblock_BASE})
-target_include_directories(${projName1} BEFORE PRIVATE ${21_pubunblock_BASE})
-target_include_directories(${projName2} BEFORE PRIVATE ${21_pubunblock_BASE})
+target_include_directories(${project_generated} BEFORE PRIVATE ${project_root})
+target_include_directories(${project_pubclient} BEFORE PRIVATE ${project_root})
+target_include_directories(${project_pubservice} BEFORE PRIVATE ${project_root})

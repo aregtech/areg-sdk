@@ -1,7 +1,7 @@
-list(APPEND 00_generated_SRC
-    ${subProjDir}/HelloServiceClientBase.cpp
-    ${subProjDir}/HelloServiceEvents.cpp
-    ${subProjDir}/HelloServiceProxy.cpp
-    ${subProjDir}/HelloServiceStub.cpp
-    ${subProjDir}/NEHelloService.cpp
+ADD_SOURCES(project_sources
+    HelloServiceClientBase.cpp
+    HelloServiceEvents.cpp
+    HelloServiceProxy.cpp
+    HelloServiceStub.cpp
+    NEHelloService.cpp
 )
