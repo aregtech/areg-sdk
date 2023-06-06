@@ -264,10 +264,10 @@ macro(PROJECT_SOURCES project_name)
 endmacro(PROJECT_SOURCES)
 
 # ---------------------------------------------------------------------------
-# Description : This macro declares a variable named 'project_${project_location}',
+# Description : This macro declares a variable named 'project_${project_alias}',
 #               which value is the '${project_name}', as well as includes 
 #               in the build the 'CMakeLists.txt' file specified in the
-#               'project_dir' to create a list of sources named '${project_location}_src'.
+#               'project_dir' to create a list of sources named '${project_alias}_src'.
 #               For example, if the developer want to declare a project
 #               'my_proj', which sources are in the sub-directory 'sources/foo',
 #               where 'foo' is the location of the project, this macro declares 
@@ -278,23 +278,25 @@ endmacro(PROJECT_SOURCES)
 # Function ...: DECLARE_PROJECT
 # usage ......: DECLARE_PROJECT( <name of the project> <name of project sub-directory> ) 
 # ---------------------------------------------------------------------------
-macro(DECLARE_PROJECT_EX project_name project_location project_dir)
-    set(pr_name      "project_${project_location}")
-    set(src_name     "${project_location}_src")
+macro(DECLARE_PROJECT_EX project_name project_alias project_dir)
+    set(pr_name      "project_${project_alias}")
+    set(src_name     "${project_alias}_src")
     set(${pr_name}   "${project_name}")
     set(project_root "${CMAKE_CURRENT_LIST_DIR}")
 
-    PROJECT_SOURCES_EX(${src_name} ${project_dir})
+    if (NOT ${project_dir} STREQUAL "")
+        PROJECT_SOURCES_EX(${src_name} ${project_dir})
+    endif()
 
     unset(pr_name)
     unset(src_name)
 endmacro(DECLARE_PROJECT_EX)
 
 # ---------------------------------------------------------------------------
-# Description : This macro declares a variable named 'project_${project_dir}',
+# Description : This macro declares a variable named 'project_${project_alias}',
 #               which value is the '${project_name}', as well as includes 
 #               in the build the 'CMakeLists.txt' file specified in the
-#               'project_dir' to create a list of sources named '${project_dir}_src'.
+#               'project_alias' to create a list of sources named '${project_alias}_src'.
 #               For example, if the developer want to declare a project
 #               'my_proj', which sources are in the sub-directory 'foo',
 #               This macro declares a variable named 'project_foo', which value
@@ -304,6 +306,6 @@ endmacro(DECLARE_PROJECT_EX)
 # Function ...: DECLARE_PROJECT
 # usage ......: DECLARE_PROJECT( <name of the project> <name of project sub-directory> ) 
 # ---------------------------------------------------------------------------
-macro(DECLARE_PROJECT project_name project_dir)
-    DECLARE_PROJECT_EX(${project_name} ${project_dir} ${project_dir})
+macro(DECLARE_PROJECT project_name project_alias)
+    DECLARE_PROJECT_EX(${project_name} ${project_alias} ${project_alias})
 endmacro(DECLARE_PROJECT)
