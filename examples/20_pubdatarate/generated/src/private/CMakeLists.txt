@@ -1,7 +1,7 @@
-list(APPEND 20_generated_SRC
-    ${subProjDir}/LargeDataClientBase.cpp
-    ${subProjDir}/LargeDataEvents.cpp
-    ${subProjDir}/LargeDataProxy.cpp
-    ${subProjDir}/LargeDataStub.cpp
-    ${subProjDir}/NELargeData.cpp
+ADD_SOURCES(project_sources
+    LargeDataClientBase.cpp
+    LargeDataEvents.cpp
+    LargeDataProxy.cpp
+    LargeDataStub.cpp
+    NELargeData.cpp
 )

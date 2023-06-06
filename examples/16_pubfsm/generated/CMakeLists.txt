@@ -1,3 +1,1 @@
-set(subProjDir ${16_pubfsm_BASE}/generated/src/private)
-
-include(${subProjDir}/CMakeLists.txt)
+INCLUDE_DIR("src/private")

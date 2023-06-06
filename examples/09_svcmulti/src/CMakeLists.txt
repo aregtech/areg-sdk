@@ -1,4 +1,4 @@
-list(APPEND SRC
-    ${subProjDir}/main.cpp
-    ${subProjDir}/ServicingComponent.cpp
+setSources(SRC
+    main.cpp
+    ServicingComponent.cpp
 )

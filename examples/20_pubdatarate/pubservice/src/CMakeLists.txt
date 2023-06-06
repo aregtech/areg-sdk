@@ -1,5 +1,5 @@
-list(APPEND 20_SRC2
-    ${subProjDir}/ServicingComponent.cpp
-    ${subProjDir}/NEUtilities.cpp
-    ${subProjDir}/main.cpp
+ADD_SOURCES(project_sources
+    ServicingComponent.cpp
+    NEUtilities.cpp
+    main.cpp
 )

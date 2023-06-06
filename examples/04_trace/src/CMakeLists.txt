@@ -1,3 +1,3 @@
-list(APPEND SRC
-    ${subProjDir}/main.cpp
+setSources(SRC
+    main.cpp
 )
