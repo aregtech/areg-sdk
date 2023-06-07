@@ -1,10 +1,14 @@
+# Release Notes
+
+```
 This document contains the release notes of AREG SDK project.
-Copyright © Aregtech UG, 2023
+Copyright © Aregtech UG, 2021 - 2023
 Contact: info[at]aregtech.com
+```
 
----
+## Version 1.5.0
 
-## Version 1.5.0 (-)
+Release date: -
 
 ### New Features
 - Build with CMake
@@ -35,7 +39,9 @@ Contact: info[at]aregtech.com
 
 ---
 
-## Version 1.0.0 (11.11.2021)
+## Version 1.0.0
+
+Release date: 11.11.2021
 
 ### New Features
 - AREG interface-centric framework
