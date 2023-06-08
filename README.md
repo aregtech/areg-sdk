@@ -54,10 +54,10 @@
     - [Build with Microsoft Visual Studio](#build-with-microsoft-visual-studio)
     - [Build with Visual Studio Code](#build-with-visual-studio-code)
 - [Integration](#integration)
-  - [Integration into a Project](#integration-into-a-project)
-  - [Starting a Project](#starting-a-project)
-  - [Configuring the Multicast Router](#configuring-the-multicast-router)
-  - [Configuring Logging](#configuring-logging)
+  - [Start a Project](#start-a-project)
+  - [Create Services](#create-services)
+  - [Configure Multicast Router](#configure-multicast-router)
+  - [Configure Logging](#configure-logging)
 - [Pipeline](#pipeline)
 - [Use cases and benefits](#use-cases-and-benefits)
 - [Examples](#examples)
@@ -324,7 +324,7 @@ These steps will guide you in creating your own services using the AREG SDK.
 
 </details>
 
-### Configuring the Multicast Router
+### Configure Multicast Router
 
 <details open><summary title="Click to show/hide details">Click to show / hide <code>Configuring the Multicast Router</code>.</summary><br/>
 
@@ -341,7 +341,7 @@ The Multicast Router can run on any machine with a General Purpose Operating Sys
 
 </details>
 
-### Configuring Logging
+### Configure Logging
 
 <details open><summary title="Click to show/hide details">Click to show / hide <code>Configuring Logging</code>.</summary><br/>
 
