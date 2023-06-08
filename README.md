@@ -250,53 +250,47 @@ To build the AREG and examples using [Microsoft Visual Studio](https://visualstu
 
 ## Integration[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#integration)
 
-The *AREG SDK* provides developers with the flexibility to either build their own project on top of the *AREG framework* or integrate the framework into an existing project based on their specific project requirements.
+The AREG SDK provides developers with the flexibility to build their own projects using the AREG Framework or integrate the framework into existing projects, based on their specific requirements. For detailed information, please refer to the [Setup a project](https://github.com/aregtech/areg-sdk/wiki/08.-Setup-a-project) Wiki page of the AREG SDK. Here is a brief description to get started with your own project.
 
-### Integration into a Project
+### Start a Project
 
-<details open><summary title="Click to show/hide details">Click to show / hide <code>Integration into a Project</code>.</summary><br/>
+<details open><summary title="Click to show/hide details">Click to show / hide <code>Start a Project</code>.</summary><br/>
 
-To integrate the `areg-sdk` into your project or start a new project using it, it is recommended to clone or copy the [`areg-sdk-demo`](https://github.com/aregtech/areg-sdk-demo) repository template. When integrating `areg-sdk` into your project structure, you can simply set the `AREG_BUILD_ROOT` option in most cases. Here's an example of integrating `areg-sdk` into your `CMakeLists.txt`:
+To start a project using the AREG Framework, follow these steps:
 
-```cmake
-cmake_minimum_required(VERSION 3.16.0)
+1. Access the [`areg-sdk-demo`](https://github.com/aregtech/areg-sdk-demo) repository, which serves as a practical example for creating projects with the AREG Framework.
 
-set(MY_PROJECT_ROOT     "${CMAKE_SOURCE_DIR}")
-set(AREG_SDK_SOURCES    "${MY_PROJECT_ROOT}/thirdparty/areg-sdk")
-set(AREG_BUILD_ROOT     "${MY_PROJECT_ROOT}/product")
+2. In the `areg-sdk-demo` repository, the [`thirdparty`](https://github.com/aregtech/areg-sdk-demo/tree/main/thirdparty) sub-directory contains a submodule named `areg-sdk`, which represents the AREG Framework.
 
-include(${AREG_SDK_SOURCES}/CMakeLists.txt)
+3. The `areg-sdk-demo` repository includes several sample demo projects built on the AREG Framework. You can use these projects as a reference or template to start your own project or integrate the AREG Framework into an existing project.
 
-project(my_project_name)
-```
+4. Customize the [`CMakeLists.txt`](https://github.com/aregtech/areg-sdk-demo/blob/main/CMakeLists.txt) file to match your project's requirements. Adjust variables, such as the file structure, project names, and version information, as needed.
 
-Make sure to replace `"${MY_PROJECT_ROOT}"` with the path to your project's root directory, and `"${AREG_SDK_SOURCES}"` with the path to the `areg-sdk` directory within your project. This example demonstrates how to include `areg-sdk` in your build process using CMake.
-
-For more details on integrating the AREG Framework into an existing project or creating a new project, please refer to the [Setup a project](https://github.com/aregtech/areg-sdk/wiki/08.-Setup-a-project) Wiki page of the AREG SDK.
+By following these steps, you can effectively initiate your project using the AREG Framework.
 
 </details>
 
-### Starting a Project
+### Create Services
 
-<details open><summary title="Click to show/hide details">Click to show / hide <code>Starting a project</code>.</summary><br/>
+<details open><summary title="Click to show/hide details">Click to show / hide <code>Create Services</code>.</summary><br/>
 
-To start a project, it is recommended to follow the steps described in the chapter [*Integration into a Project*](#integration-into-a-project) above. It is also beneficial to review the [sample projects](https://github.com/aregtech/areg-sdk/tree/master/examples) provided in the `areg-sdk` repository. For a step-by-step example and guidance on starting a project, refer to the [_Hello Service!_](https://github.com/aregtech/areg-sdk/blob/master/docs/HelloService.md) document, which showcases various scenarios for creating *Local* and *Public* *Service Providers* and *Service Consumers*. Additionally, review the file structure guidelines presented in the [DEVELOP.mde](https://github.com/aregtech/areg-sdk/blob/master/docs/DEVELOP.md) document.
+To create your own service, we recommend reviewing the step-by-step example and guidance provided in the [_Hello Service!_](https://github.com/aregtech/areg-sdk/blob/master/docs/HelloService.md) document, which demonstrates various scenarios for creating local and public service providers and service consumers. Additionally, refer to the file structure guidelines presented in the [DEVELOP.md](https://github.com/aregtech/areg-sdk/blob/master/docs/DEVELOP.md) document.
+
+Please note that a GUI-based service interface design tool is currently under development as an open-source project and will be included in the repository in the future.
 
 To begin development:
 
-1. Create a *Service Interface* XML document that describes the service, including data types, attributes, and methods. Then, use the provided [code generator](https://github.com/aregtech/areg-sdk/tree/master/tools) tool to generate base sources for the service components. It is recommended to include these generated sources in a *static* library that can be linked with each module.
+1. Create a service interface XML document that describes your service. Use the `codegen.jar` tool provided in the [`tools`](https://github.com/aregtech/areg-sdk/tree/master/tools) subdirectory of the AREG SDK to generate the necessary code and link it as a *static library*.
 
-2. Create projects that provide and/or consume services in AREG by extending the **Stub** or **ClientBase** objects and implementing the necessary overrides. For *Service Providers*, implement all *request* methods. For *Service Consumers*, it may be sufficient to implement relevant overrides for *Responses* and data update *Notifications*.
+2. Extend the **Stub** object(s) to implement the *Service Provider(s)* and extend the **Client Base** object(s) to implement the *Service Consumer(s)*.
 
-3. Define a *model* for your application(s) by describing the threads and dependencies between service components. Load the model in the `main()` function. Compile and link the projects with the *static* library of generated code and the `areg` library, which serves as the AREG communication engine.
+3. Define a model for your application by describing the threads and dependencies between service components. Load the model in the `main()` function. Compile and link the projects with the *static library* of the generated code.
 
-> 💡 The Service Interface design tool with a GUI is currently under development as an open-source project and will be included in the repository when it is ready.
-
-The AREG engine facilitates transparent communication between *Service Providers* and *Service Consumers*, making it highly flexible and automated. In the case of *Public* services, the *Providers* and *Consumers* can be located on any software node. The AREG SDK introduces the concept of a *model*, which describes the service *Providers* and *Consumers*. These models can be dynamically loaded and unloaded during runtime, allowing for the activation and deactivation of defined services as needed.
-
-Here's a brief example of defining a *model* that is loaded and unloaded during runtime, enabling **multithreading communication** between a *Service Provider* and a *Service Consumer* within the same application:
+For multi-threading communication, you can define a model as shown in the example:
 
 ```cpp
+// Example of defining a model for multithreading communication
+
 BEGIN_MODEL("ServiceModel")
     BEGIN_REGISTER_THREAD("ProviderThread", NECommon::WATCHDOG_IGNORE)
         BEGIN_REGISTER_COMPONENT("ServiceProvider", ServiceComponent)
@@ -315,6 +309,8 @@ int main(void)
 {
     Application::initApplication();
     Application::loadModel("ServiceModel");
+
+
     Application::waitAppQuit(NECommon::WAIT_INFINITE);
     Application::unloadModel("ServiceModel");
     Application::releaseApplication();
@@ -322,7 +318,9 @@ int main(void)
 }
 ```
 
-For **multiprocessing communication**, the model can be split into two parts. One application loads the model to instantiate the *Service Provider*, while another application loads the model to instantiate the *Service Consumer*. Once the *Service Provider* is instantiated and available, the *Service Consumer* is automatically notified of the service availability and can initiate communication accordingly.
+For multi-processing communication, please refer to the [_Hello Service!_](https://github.com/aregtech/areg-sdk/blob/master/docs/HelloService.md) document for detailed instructions on splitting the model into two parts.
+
+These steps will guide you in creating your own services using the AREG SDK.
 
 </details>
 
