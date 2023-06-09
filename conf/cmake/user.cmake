@@ -13,7 +13,7 @@
 #   6. AREG_BUILD_EXAMPLES  -- Build AREG engine examples
 #   7. AREG_EXTENDED        -- Enables or disables the extensions, which might require additional libraries.
 #   8. AREG_LOGS            -- Enable or disable compilation with logs.
-#   9. AREG_BUILD_ROOT      -- The root directory for project(s) to build. By default is the root folder of areg-sdk.
+#   9. AREG_BUILD_ROOT      -- The root directory for project(s) to build. By default is the "product" directory of areg-sdk root.
 #  10. AREG_OUTPUT_DIR      -- The output directory of build binaries
 #  11. AREG_OUTPUT_BIN      -- Set the path to folder to output compiled shared libraries and executables.
 #  12. AREG_OUTPUT_LIB      -- Set the path to folder to output compiled static libraries.
