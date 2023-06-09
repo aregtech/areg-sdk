@@ -68,6 +68,14 @@ If the [listed example](https://github.com/aregtech/areg-sdk/blob/master/example
 
 ---
 
+## Creating Your Own Project
+
+The [Setup a Project](https://github.com/aregtech/areg-sdk/wiki/08.-Setup-a-project) Wiki page offers detailed instructions and steps to help you set up your project effectively. It provides comprehensive guidance on how to integrate the AREG SDK sources into your build process and utilize the functionalities of the AREG Framework.
+
+By referring to the [Setup a Project](https://github.com/aregtech/areg-sdk/wiki/08.-Setup-a-project) Wiki page, you will find valuable information on configuring your project, incorporating the AREG SDK, and leveraging the features offered by the AREG Framework to build robust and efficient applications.
+
+---
+
 ## Contact us!
 
 Contact us at info[at]aregtech.com if you need help, training or more information.

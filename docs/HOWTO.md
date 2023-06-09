@@ -63,7 +63,7 @@ The [Software Build](https://github.com/aregtech/areg-sdk/wiki/03.-Software-buil
 
 ## How to create a project or integrate in project
 
-The [Setup a project](https://github.com/aregtech/areg-sdk/wiki/07.-Setup-a-project) page of AREG SDK Wiki provides a detailed explanation and examples on how to create a project based on AREG framework, as well as how to include AREG framework in your build environment.
+The [Setup a project](https://github.com/aregtech/areg-sdk/wiki/08.-Setup-a-project) page of AREG SDK Wiki provides a detailed explanation and examples on how to create a project based on AREG framework, as well as how to include AREG framework in your build environment.
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
