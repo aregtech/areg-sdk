@@ -14,6 +14,7 @@
 # AREG_PLATFORM			-- Sets the CPU platform. Possible values: x86, x86_64, arm and aarch64. The default is current system
 # AREG_BITNESS			-- Bitness of binaries. Possible values: 32 or 64. The default is current system
 # AREG_BINARY			-- The binary type of AREG library. Possible values: 'shared' or 'static'. The default is 'shared'.
+# AREG_BUILD_ROOT		-- The root directory for project(s) to build. By default is the "product" directory of areg-sdk root.
 # AREG_BUILD_TYPE		-- 'Debug' or 'Release' build types of codes. The default is 'Release'. The default is 'Release'
 # AREG_EXTENDED			-- Enabled or disable AREG extensions, which may create additional library dependencies. By default is OFF.
 # AREG_LOGS				-- Enable or disable compilation with logs.
