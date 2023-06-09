@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
 // Description : This project creates an instance of Public services that 
 //               contain a finite state-machine ( FSM ). A local service 
 //               interacts with the user to change the states of FSM, to run 

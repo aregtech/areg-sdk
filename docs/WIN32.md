@@ -1,6 +1,6 @@
 ﻿```
 This file is part of AREG SDK
-Copyright (c) Aregtech, 2017-2022
+Copyright (c) Aregtech, 2017-2023
 Contact: info[at]aregtech.com
 Website: https://www.aregtech.com
 ```
