@@ -1,68 +1,87 @@
 # Information
+
 ```
-This file is part of AREG SDK
-Copyright (c) Aregtech, 2021-2022
+This file is part of the AREG SDK
+Copyright (c) Aregtech, 2021 - 2022
 Contact: info[at]aregtech.com
 Website: https://www.aregtech.com
 ```
 
-This document describes the file system structure of **AREG SDK** and the location of documents.
+This document provides an overview of the file system structure of the **AREG SDK** and the location of various documents.
 
-## The structure of AREG SDK
-```
-areg-sdk  ......... --> the root folder of AREG SDK.
-    |
-    +- conf ....... --> the configurations of Makefile, CMake and MS Visual Studio specific files.
-    |
-    +- docs ....... --> the documents location of AREG SDK.
-    |
-    +- framework .. --> the source codes of AREG framework and Multicast Router.
-    |   |
-    |   +- areg  .. --> the source codes of AREG framework.
-    |   |
-    |   +- mcrouter --> the sources of Multicast Router (MCR).
-    |   |
-    |   +- system . --> the development platform specific common codes.
-    |
-    +- examples  .. --> examples of using AREG framework and services.
-    |
-    +- tools  ..... --> code generator and other tools
-    |
-    +- LICENSE.txt  --> the license. Please read before use or distribute.
-    |
-    +- README.md  . --> the project description ReadMe file.
+## AREG SDK File System Structure
 
 ```
-The classes defined inside each subdirectory of `framework/areg` folder can be used to develop an application, but the classes declared in `private` subdirectory inside each of them are designed for internal use and should not be used by developers.
+areg-sdk  ......... --> The root folder of the AREG SDK.
+    |
+    +- conf ....... --> Configuration files for Makefile, CMake, and MS Visual Studio.
+    |
+    +- docs ....... --> Location of documentation files for the AREG SDK.
+    |
+    +- examples  .. --> Examples demonstrating the usage of the AREG framework and services.
+    |
+    +- framework .. --> Source code of the AREG framework and Multicast Router.
+    |   |
+    |   +- areg  .. --> Source code of the AREG framework.
+    |   |
+    |   +- mcrouter --> Source code of the Multicast Router (MCR).
+    |   |
+    |   +- system . --> Development platform-specific common code.
+    |
+    +- tests  ..... --> Unit tests for the AREG Framework.
+    |
+    +- thirdparty . --> External dependencies.
+    |
+    +- LICENSE.txt  --> License file. Please read before using or distributing.
+    |
+    +- README.md  . --> ReadMe file providing project description.
 
-After compiling using _CMake_, _Make_ or _MS Visual Studio_, the root folder _areg-sdk_ will contain a recoverable _product_ subfolder that contains build binaries.
+```
 
-## The structure of _the document folder_:
+Classes defined within each subdirectory of the `framework/areg` folder can be used to develop applications. However, classes declared in the `private` subdirectory of each of them are intended for internal use and should not be used by developers.
+
+After compiling using CMake, Make, or MS Visual Studio, the root folder `areg-sdk` will contain a recoverable `product` subfolder that contains the built binaries.
+
+## Document Folder Structure:
 
 ```
 docs
   |
-  +- /img ......... --> Folder of images used in documents.
+  +- /img ................ --> Folder containing images used in the documents.
   |
-  +- DEVELOP.md ... --> The developer guide and technical explanations.
+  +- DEVELOP.md .......... --> Developer guide and technical explanations.
   |
-  +- HOWTO.md ..... --> The instructions how to build software.
+  +- HelloService.md ..... --> Explanation of the HelloService.siml Service Interface document.
   |
-  +- README.md .... --> This document file.
+  +- HelloService.siml ... --> Practical example Service Interface document.
   |
-  +- POSIX.md  .... --> The instructions to compile applications in Linux.
+  +- HOWTO.md ............ --> Instructions on how to build the software.
   |
-  +- WIN32.md  .... --> The instructions to compile applications in Windows.
+  +- POSIX.md ............ --> Instructions to compile applications in Linux.
+  |
+  +- README.md ........... --> This document file.
+  |
+  +- Sample.siml ......... --> Sample Service Interface document with structures.
+  |
+  +- ServiceInterface.md . --> Detailed explanation of the Service Interface structure and usage.
+  |
+  +- USECASES.md ......... --> Use cases of the AREG SDK.
+  |
+  +- WIN32.md ............ --> Instructions to compile applications in Windows.
 ```
 
 ## Shortcuts
 
-- The source codes of AREG SDK are located in the [&lt;areg-sdk&gt;/framework](../framework).
-- The sources codes of examples are located in the [&lt;areg-sdk&gt;/examples](../examples).
-- The CMake common and user specific configuration files are in [&lt;areg-sdk&gt;/conf/cmake](../conf/cmake).
-- The Makefile common and user specific configuration files are in [&lt;areg-sdk&gt;/conf/make](../conf/make).
-- The MS Visual Studio common and user specific property files are in [&lt;areg-sdk&gt;/conf/msvc](../conf/msvc).
-- The [developer guide](./DEVELOP.md) gives technical details and help to develop distributed and service enabled application.
-- The document to explain [HOWTO](./HOWTO.md) export projects and make builds.
-- The **POSIX** related configuration, compilation and the list of used API are in [POSIX](./POSIX.md)
-- The **Windows** related configuration, compilation and the list of used API are in [WIN32](./WIN32.md)
+- The source code of the AREG SDK is located in the [`<areg-sdk>/framework`](https://github.com/aregtech/areg-sdk/tree/master/framework) directory.
+- The source code of the examples is located in the [`<areg-sdk>/examples`](https://github.com/aregtech/areg-sdk/tree/master/examples) directory.
+- The common and user-specific CMake configuration files are located in [`<areg-sdk>/conf/cmake`](https://github.com/aregtech/areg-sdk/tree/master/conf/cmake).
+- The common and user-specific Makefile configuration files are located in [`<areg-sdk>/conf/make`](https://github.com/aregtech/areg-sdk/tree/master/conf/make).
+- The common and user-specific property files for MS Visual Studio are located in [`
+
+<areg-sdk>/conf/msvc`](https://github.com/aregtech/areg-sdk/tree/master/conf/msvc).
+- The [**developer guide**](./DEVELOP.md) provides technical details and guidance for developing distributed and service-enabled applications.
+- The [HOWTO](./HOWTO.md) document explains how to export projects and perform builds.
+- The [POSIX](./POSIX.md) document contains POSIX-related configuration, compilation instructions, and a list of used APIs.
+- The [WIN32](./WIN32.md) document contains Windows-related configuration, compilation instructions, and a list of used APIs.
+- The [ServiceInterface](./ServiceInterface.md) document provides an explanation of the Service Interface structure and usage.
+- The [USECASES](./USECASES.md) document presents various use cases of the AREG SDK in real-world scenarios.

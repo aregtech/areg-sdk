@@ -60,8 +60,6 @@ To start, in the `helloservice` please create `common/src` and `res` subdirector
 
 ### Service Interface
 
-> 
-
 To create a multithreading and multiprocessing project with distributed services, follow these simple steps for creating a `HelloService` interface file:
 1. In the created `helloservice/res` directory, create a new file called `HelloService.siml`.
 2. Copy and paste the following XML code into the `HelloService.siml` file and save it:

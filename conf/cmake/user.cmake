@@ -50,7 +50,7 @@
 #
 #  Hint #2:
 #   To integrate the AREG SDK in any other project, it might be enough to specify
-#   the AREG_BUILD_ROOT, which shoule indicate the root path of the project.
+#   the AREG_BUILD_ROOT, which should indicate the root path of the project.
 #   In this case, if the areg output paths are not directly pointed, then
 #   they are build relative to the AREG_BUILD_ROOT variable.
 #
@@ -134,7 +134,7 @@ else()
 
 endif()
 
-# Set build configuration. Set "Debug" for debug build, and "Release" for releaes build.
+# Set build configuration. Set "Debug" for debug build, and "Release" for release build.
 if (NOT DEFINED AREG_BUILD_TYPE OR NOT ${AREG_BUILD_TYPE} STREQUAL "Debug")
     set(AREG_BUILD_TYPE "Release")
 endif()
