@@ -2,7 +2,7 @@
 // Name        : main.cpp
 // Author      : Artak Avetyan
 // Version     :
-// Copyright   : (c) 2021-2022 Aregtech UG.All rights reserved.
+// Copyright   : (c) 2021-2023 Aregtech UG.All rights reserved.
 // Description : This project is marked as 'main' and contains instances of 
 //               the Public service components, where one service 
 //               (ServiceShtodwn) handles the system shutdown logic, so that
