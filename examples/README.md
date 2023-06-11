@@ -64,4 +64,4 @@ Here is a list of examples available in the AREG SDK:
 
 Please note that the list may be updated periodically. We recommend checking the list regularly.
 
-For more details about each project, refer to the _ReadMe.txt_ file of each example project.
+For more details about each project, refer to the _ReadMe.md_ file of each example project.

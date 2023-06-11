@@ -44,7 +44,7 @@
         </ClCompile>
         <Link>
             <ImportLibrary>$(OutLibDir)\$(TargetName).lib</ImportLibrary>
-            <AdditionalLibraryDirectories>$(OutLibDir);$(ThirdDefLibs);$(OutBinDir);$(UserDefBinss);$(ThirdDefBins);%(AdditionalLibraryDirectories);</AdditionalLibraryDirectories>
+            <AdditionalLibraryDirectories>$(OutLibDir);$(OutBinDir);%(AdditionalLibraryDirectories);</AdditionalLibraryDirectories>
         </Link>
         <ResourceCompile>
             <AdditionalIncludeDirectories>$(ProjectIncludes);%(AdditionalIncludeDirectories);</AdditionalIncludeDirectories>

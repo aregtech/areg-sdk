@@ -95,7 +95,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "00_helloservice", "00_helloservice", "{2DF9C20F-08BB-475B-8901-C1A64D88BA8A}"
 	ProjectSection(SolutionItems) = preProject
 		examples\00_helloservice\CMakeLists.txt = examples\00_helloservice\CMakeLists.txt
-		examples\00_helloservice\ReadMe.txt = examples\00_helloservice\ReadMe.txt
+		examples\00_helloservice\ReadMe.md = examples\00_helloservice\ReadMe.md
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "00_generated", "examples\00_helloservice\00_generated.vcxproj", "{92CF6BFF-1A9A-455A-9252-BF6D120C3CC9}"
@@ -179,7 +179,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "10_locsvc", "10_locsvc", "{F99F67DA-37F9-46DD-A416-64C930758DE5}"
 	ProjectSection(SolutionItems) = preProject
 		examples\10_locsvc\CMakeLists.txt = examples\10_locsvc\CMakeLists.txt
-		examples\10_locsvc\ReadMe.txt = examples\10_locsvc\ReadMe.txt
+		examples\10_locsvc\ReadMe.md = examples\10_locsvc\ReadMe.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{B3924215-AD6D-45DA-81D7-FE5D406A677B}"
@@ -200,7 +200,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "11_locmesh", "11_locmesh", "{35133FDA-2CD3-4BAD-9C54-145DC4DC787A}"
 	ProjectSection(SolutionItems) = preProject
 		examples\11_locmesh\CMakeLists.txt = examples\11_locmesh\CMakeLists.txt
-		examples\11_locmesh\ReadMe.txt = examples\11_locmesh\ReadMe.txt
+		examples\11_locmesh\ReadMe.md = examples\11_locmesh\ReadMe.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{FBEE67BE-BFF5-43BB-A9DB-2E8A65734B3D}"
@@ -221,7 +221,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "12_pubsvc", "12_pubsvc", "{13F637CA-7D9B-4218-8B55-D415897B8DE0}"
 	ProjectSection(SolutionItems) = preProject
 		examples\12_pubsvc\CMakeLists.txt = examples\12_pubsvc\CMakeLists.txt
-		examples\12_pubsvc\ReadMe.txt = examples\12_pubsvc\ReadMe.txt
+		examples\12_pubsvc\ReadMe.md = examples\12_pubsvc\ReadMe.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{9235A909-A2F2-4C90-977A-DA514B76BBE5}"
@@ -248,7 +248,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "13_pubmesh", "13_pubmesh", "{BB26B4E2-9A39-4CD5-8BE0-A14BA7BE2D5D}"
 	ProjectSection(SolutionItems) = preProject
 		examples\13_pubmesh\CMakeLists.txt = examples\13_pubmesh\CMakeLists.txt
-		examples\13_pubmesh\ReadMe.txt = examples\13_pubmesh\ReadMe.txt
+		examples\13_pubmesh\ReadMe.md = examples\13_pubmesh\ReadMe.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{08364AF0-D407-4FEC-A759-A4499EE45A59}"
@@ -286,7 +286,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "14_pubtraffic", "14_pubtraffic", "{5EB605B1-44A1-4C33-B5BA-23AFEA531487}"
 	ProjectSection(SolutionItems) = preProject
 		examples\14_pubtraffic\CMakeLists.txt = examples\14_pubtraffic\CMakeLists.txt
-		examples\14_pubtraffic\ReadMe.txt = examples\14_pubtraffic\ReadMe.txt
+		examples\14_pubtraffic\ReadMe.md = examples\14_pubtraffic\ReadMe.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{0AC9ECDD-CCF4-4E61-BAD3-EF379002EDCE}"
@@ -315,7 +315,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "15_pubworker", "15_pubworker", "{5EE61717-AD86-46E4-B4D0-5AA9280B0E09}"
 	ProjectSection(SolutionItems) = preProject
 		examples\15_pubworker\CMakeLists.txt = examples\15_pubworker\CMakeLists.txt
-		examples\15_pubworker\ReadMe.txt = examples\15_pubworker\ReadMe.txt
+		examples\15_pubworker\ReadMe.md = examples\15_pubworker\ReadMe.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{8B53447D-2482-4219-93DA-D33C2F899B71}"
@@ -342,7 +342,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "16_pubfsm", "16_pubfsm", "{7955A5EE-8C1E-4BE2-BE4F-55839EDC4E3C}"
 	ProjectSection(SolutionItems) = preProject
 		examples\16_pubfsm\CMakeLists.txt = examples\16_pubfsm\CMakeLists.txt
-		examples\16_pubfsm\ReadMe.txt = examples\16_pubfsm\ReadMe.txt
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{58982601-1D8A-4F81-A69E-1D148C667937}"
@@ -370,7 +369,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "17_winchat", "17_winchat", "{503FAC02-04F9-466D-B783-4608413BDFBA}"
 	ProjectSection(SolutionItems) = preProject
 		examples\17_winchat\CMakeLists.txt = examples\17_winchat\CMakeLists.txt
-		examples\17_winchat\ReadMe.txt = examples\17_winchat\ReadMe.txt
+		examples\17_winchat\ReadMe.md = examples\17_winchat\ReadMe.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{DF308E31-0D12-4B57-93CE-770B2D538DB1}"
@@ -400,7 +399,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "18_locwatchdog", "18_locwatchdog", "{83821483-D719-475B-88E3-F548C267E3AB}"
 	ProjectSection(SolutionItems) = preProject
 		examples\18_locwatchdog\CMakeLists.txt = examples\18_locwatchdog\CMakeLists.txt
-		examples\18_locwatchdog\ReadMe.txt = examples\18_locwatchdog\ReadMe.txt
+		examples\18_locwatchdog\ReadMe.md = examples\18_locwatchdog\ReadMe.md
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "18_generated", "examples\18_locwatchdog\18_generated.vcxproj", "{38A88D1E-B86C-48E2-9B9E-68F672388734}"
@@ -414,7 +413,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "19_pubwatchdog", "19_pubwatchdog", "{E5D433F5-DBA3-45D5-8A7A-32A10566AA8E}"
 	ProjectSection(SolutionItems) = preProject
 		examples\19_pubwatchdog\CMakeLists.txt = examples\19_pubwatchdog\CMakeLists.txt
-		examples\19_pubwatchdog\ReadMe.txt = examples\19_pubwatchdog\ReadMe.txt
+		examples\19_pubwatchdog\ReadMe.md = examples\19_pubwatchdog\ReadMe.md
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "19_generated", "examples\19_pubwatchdog\19_generated.vcxproj", "{F6570975-AE13-41EB-8465-066A6766C211}"
@@ -434,7 +433,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "20_pubdatarate", "20_pubdatarate", "{840A1C6C-5940-4464-AF58-DBA24484C64F}"
 	ProjectSection(SolutionItems) = preProject
 		examples\20_pubdatarate\CMakeLists.txt = examples\20_pubdatarate\CMakeLists.txt
-		examples\20_pubdatarate\ReadMe.txt = examples\20_pubdatarate\ReadMe.txt
+		examples\20_pubdatarate\ReadMe.md = examples\20_pubdatarate\ReadMe.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "multiprocess", "multiprocess", "{9DFC39D1-06B5-4E91-972D-1749CE02ED7F}"
@@ -485,7 +484,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "21_pubunblock", "21_pubunblock", "{967610F9-FBB0-4793-9E76-F500C4167FCE}"
 	ProjectSection(SolutionItems) = preProject
 		examples\21_pubunblock\CMakeLists.txt = examples\21_pubunblock\CMakeLists.txt
-		examples\21_pubunblock\ReadMe.txt = examples\21_pubunblock\ReadMe.txt
+		examples\21_pubunblock\ReadMe.md = examples\21_pubunblock\ReadMe.md
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "21_generated", "examples\21_pubunblock\21_generated.vcxproj", "{EB228067-EA4D-452C-91FC-91DB3B445C31}"

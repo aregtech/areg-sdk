@@ -73,7 +73,7 @@
         <!-- Set the AREG Framework path.                                                                                                   -->
         <AregFrameworkSources>$(AregSdkRoot)\framework</AregFrameworkSources>
         <!-- Set the path of AREG Framework resources                                                                                       -->
-        <AregFrameworkResources>$(AregFrameworkSources)\resources</AregFrameworkResources>
+        <AregFrameworkResources>$(AregFrameworkSources)\areg\resources</AregFrameworkResources>
         <!-- Set the path of thirdparty software components. Set for all projects.                                                          -->
         <AregThirdpartyDir>$(AregSdkRoot)\thirdparty</AregThirdpartyDir>
         <!-- Set the path of AREG SDK Examples.                                                                                             -->
