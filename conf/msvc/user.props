@@ -86,7 +86,7 @@
         <!-- ****************************************************************************************************************************** -->
 
         <!-- AREG Framework specific includes. The value may change when integrate in other projects.                                       -->
-        <AregCommonIncludes>$(AregFrameworkSources);$(AregGenerateDir);$(AregFrameworkResources)</AregCommonIncludes>
+        <AregCommonIncludes>$(AregFrameworkSources);$(AregGenerateDir);$(AregFrameworkResources);$(AregThirdpartyDir)</AregCommonIncludes>
         <!-- AREG Framework specific library search paths. The value may change when integrate in other projects.                           -->
         <AregCommonLibs>$(AregOutputLib);$(AregOutputBin)</AregCommonLibs>
 
@@ -97,6 +97,11 @@
         <OutBinDir>$(AregOutputBin)</OutBinDir>
         <OutLibDir>$(AregOutputLib)</OutLibDir>
         <OutObjDir>$(AregOutputObj)</OutObjDir>
+
+        <!-- ****************************************************************************************************************************** -->
+        <!-- Google Test directory for Unit Tests. Do not change.                                                                           -->
+        <!-- ****************************************************************************************************************************** -->
+        <GoogleTestDir>$(AregThirdpartyDir)\googletest\googletest</GoogleTestDir>
 
     </PropertyGroup>
 
@@ -137,6 +142,10 @@
         </BuildMacro>
         <BuildMacro Include="OutObjDir">
             <Value>$(OutObjDir)</Value>
+        </BuildMacro>
+
+        <BuildMacro Include="GoogleTestDir">
+            <Value>$(GoogleTestDir)</Value>
         </BuildMacro>
 
     </ItemGroup>
