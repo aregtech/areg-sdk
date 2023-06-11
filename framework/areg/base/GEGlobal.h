@@ -38,10 +38,12 @@
 #define OUTPUT_DEBUG_LEVEL_ALL      OUTPUT_DEBUG_LEVEL_DEBUG
 
 #ifdef DEBUG
-    #ifndef OUTPUT_DEBUG_LEVEL
+    #if !defined(OUTPUT_DEBUG_LEVEL)
         #define OUTPUT_DEBUG_LEVEL      OUTPUT_DEBUG_LEVEL_NONE
+    #elif   (OUTPUT_DEBUG_LEVEL > OUTPUT_DEBUG_LEVEL_ALL)
+        #define OUTPUT_DEBUG_LEVEL      OUTPUT_DEBUG_LEVEL_ALL
     #endif // !OUTPUT_DEBUG_LEVEL
-#else
+#else   // !DEBUG
     #undef  OUTPUT_DEBUG_LEVEL
     #define OUTPUT_DEBUG_LEVEL          OUTPUT_DEBUG_LEVEL_NONE
 #endif // DEBUG
@@ -60,11 +62,13 @@
 
 // By default, no AREG extended features.
 #ifndef AREG_EXTENDED
+    #pragma message("The AREG_EXTENDED is not defined, setting default value 0")
     #define AREG_EXTENDED   0
 #endif  // AREG_EXTENDED
 
 // By default, compile with logs
 #ifndef AREG_LOGS
+    #pragma message("The AREG_LOGS is not defined, setting default value 1")
     #define AREG_LOGS       1
 #endif  // AREG_LOGS
 
@@ -72,7 +76,7 @@
     #if (defined(OUTPUT_DEBUG) && (OUTPUT_DEBUG != 0)) 
         
         #undef  OUTPUT_DEBUG
-        #define OUTPUT_DEBUG
+        #define OUTPUT_DEBUG    1
 
     #else // !(defined(OUTPUT_DEBUG) && (OUTPUT_DEBUG != 0))
 
