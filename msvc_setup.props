@@ -1,0 +1,102 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <ImportGroup Label="PropertySheets" />
+    <!-- ********************************************************************************************************************************** -->
+    <!-- D E S C R I P T I O N ...........                                                                                                  -->
+    <!-- ********************************************************************************************************************************** -->
+    <!-- 1) Copy this file and paste in the solution directory of your own project                                                          -->
+    <!-- 2) Make appropriate changes to adapt to your project's file structure.                                                             -->
+    <!-- 3) In most of the cases you'd probably need to change only these parameters:                                                       -->
+    <!--    a) AregSdkRoot   : set the root directory of AREG SDK project, for example '<my project>\thirdparty\areg-sdk'                   -->
+    <!--    b) AregBuildRoot : set the root folder of the build to output binaries and generate files. For example, '<my project>\product'  -->
+
+    <!-- ********************************************************************************************************************************** -->
+    <!-- User Property                                                                                                                      -->
+    <!-- ********************************************************************************************************************************** -->
+    <PropertyGroup>
+        <_PropertySheetDisplayName>areg_msvc_setup</_PropertySheetDisplayName>
+    </PropertyGroup>
+
+    <!-- ********************************************************************************************************************************** -->
+    <!-- User Macro names and values. Setup locations.                                                                                      -->
+    <!-- ********************************************************************************************************************************** -->
+    <PropertyGroup Label="UserMacros">
+
+        <!-- ****************************************************************************************************************************** -->
+        <!-- Setup the AREG SDK settings                                                                                                    -->
+        <!-- ****************************************************************************************************************************** -->
+
+        <!-- ********************************************************************************************************************************** -->
+        <!-- Set the AREG SDK root directory. By default, it is $(SolutionDir). Change if you integrate in your project.                        -->
+        <!-- ********************************************************************************************************************************** -->
+        <AregSdkRoot>$(SolutionDir)</AregSdkRoot>
+        <!-- ********************************************************************************************************************************** -->
+        <!-- Property to set the root directory for build and generated codes outputs. Change if integrate in your project.                     -->
+        <!-- Example to set the directory: <my project path>\product                                                                            -->
+        <!-- By default, the output is in $(SolutionDir)\product                                                                                -->
+        <!-- ********************************************************************************************************************************** -->
+        <AregBuildRoot></AregBuildRoot>
+        <!-- ********************************************************************************************************************************** -->
+        <!-- Property to set the output directory for binaries. By default, it is relative to $(AregBuildRoot) and depends on compile settings  -->
+        <!-- ********************************************************************************************************************************** -->
+        <AregOutputDir></AregOutputDir>
+        <!-- ********************************************************************************************************************************** -->
+        <!-- Property to set the binary output directory. By default, it is '$(AregOutputDir)\bin'                                              -->
+        <!-- ********************************************************************************************************************************** -->
+        <AregOutputBin></AregOutputBin>
+        <!-- ********************************************************************************************************************************** -->
+        <!-- Property to set the library output directory. By default, it is '$(AregOutputDir)\lib'                                             -->
+        <!-- ********************************************************************************************************************************** -->
+        <AregOutputLib></AregOutputLib>
+
+        <!-- ********************************************************************************************************************************** -->
+        <!-- Property to compile the extended features of AREG SDK. By default, it is not compiled with extended features.                      -->
+        <!-- Set 1 to compile with extended features. Set 0 or ignore setting to compile without extended features.                             -->
+        <!-- ********************************************************************************************************************************** -->
+        <AregExtended></AregExtended>
+        <!-- ********************************************************************************************************************************** -->
+        <!-- Property to compile the source codes with logging. By default, the sources are compiled with logs.                                 -->
+        <!-- Set 0 to compile sources codes without logs. Set 1 or ignore setting to compile with logs.                                         -->
+        <!-- ********************************************************************************************************************************** -->
+        <AregLogs></AregLogs>
+        <!-- Add Build type specific preprocessor defines here for Debug and Release to set for all projects.                               -->
+        <!-- OUTPUT_DEBUG_LEVEL : enables log like messages to output on console. The value 0 disables to output any message on console.    -->
+        <!-- OUTPUT_DEBUG   	: set 1 to enable outputs in Output Window; set 0 to disabled outputs.                                      -->
+        <!-- An example of setting preprocessor defines for Debug build: OUTPUT_DEBUG=1;OUTPUT_DEBUG_LEVEL=3                                -->
+        <AregCommonDefines Condition="'$(Configuration)'=='Debug'"></AregCommonDefines>
+        <AregCommonDefines Condition="'$(Configuration)'=='Release'"></AregCommonDefines>
+
+    </PropertyGroup>
+
+    <!-- ********************************************************************************************************************************** -->
+    <!-- User Macro defines. Do not make changes here!                                                                                      -->
+    <!-- ********************************************************************************************************************************** -->
+    <ItemGroup>
+
+        <BuildMacro Include="AregSdkRoot">
+            <Value>$(AregSdkRoot)</Value>
+        </BuildMacro>
+        <BuildMacro Include="AregBuildRoot">
+            <Value>$(AregBuildRoot)</Value>
+        </BuildMacro>
+        <BuildMacro Include="AregOutputDir">
+            <Value>$(AregOutputDir)</Value>
+        </BuildMacro>
+        <BuildMacro Include="AregOutputBin">
+            <Value>$(AregOutputBin)</Value>
+        </BuildMacro>
+        <BuildMacro Include="AregOutputLib">
+            <Value>$(AregOutputLib)</Value>
+        </BuildMacro>
+        <BuildMacro Include="AregExtended">
+            <Value>$(AregExtended)</Value>
+        </BuildMacro>
+        <BuildMacro Include="AregLogs">
+            <Value>$(AregLogs)</Value>
+        </BuildMacro>
+        <BuildMacro Include="AregCommonDefines">
+            <Value>$(AregCommonDefines)</Value>
+        </BuildMacro>
+
+    </ItemGroup>
+</Project>

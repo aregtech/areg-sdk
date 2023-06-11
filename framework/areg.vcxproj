@@ -1,7 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
+    <Import Project="$(SolutionDir)\msvc_setup.props"/>
+  </ImportGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+    <Import Project="$(AregSdkRoot)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}</ProjectGuid>
@@ -14,7 +17,7 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
+    <Import Project="$(AregSdkRoot)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -24,8 +27,8 @@
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command Condition="Exists($(ProjectScriptDir))">$(ProjectScriptDir)\areg_post_build.bat $(OutDir) $(ConfigShortName) $(ProjectDir) $(ProjectName) $(ProjectResourceDir) $(UserResourceDir)</Command>
-      <Message Condition="Exists($(ProjectScriptDir))">Copy configuration files into the executable directory</Message>
+      <Command Condition="Exists($(AregFrameworkResources))">$(AregFrameworkResources)\areg_post_build.bat $(OutDir) $(AregFrameworkResources)</Command>
+      <Message Condition="Exists($(AregFrameworkResources))">Copy configuration files into the executable directory</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">

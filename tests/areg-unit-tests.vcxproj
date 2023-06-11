@@ -1,7 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
+    <Import Project="$(SolutionDir)\msvc_setup.props"/>
+  </ImportGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+    <Import Project="$(AregSdkRoot)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{E8BD18E5-EF07-42A0-BB98-461F3D9BCDE1}</ProjectGuid>
@@ -14,13 +17,13 @@
     <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
+    <Import Project="$(AregSdkRoot)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
     <ClCompile>
       <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;GTEST_HAS_PTHREAD=0;_HAS_EXCEPTIONS=1;STRICT;IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ThirdpartyDir)\googletest\googletest;$(ThirdpartyDir)\googletest\googletest\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(AregThirdpartyDir)\googletest\googletest;$(AregThirdpartyDir)\googletest\googletest\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -47,13 +50,13 @@
     <ClInclude Include="units\GUnitTest.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="$(SolutionDir)\framework\areg.vcxproj">
+    <ProjectReference Include="$(AregSdkRoot)\framework\areg.vcxproj">
       <Project>{2df8165c-ede2-4f76-8d2c-2ffe82cb6ce5}</Project>
     </ProjectReference>
-    <ProjectReference Include="$(SolutionDir)\thirdparty\gtest.vcxproj">
+    <ProjectReference Include="$(AregSdkRoot)\thirdparty\gtest.vcxproj">
       <Project>{bb5d8c31-a4f1-4962-8181-668103fdde22}</Project>
     </ProjectReference>
-    <ProjectReference Include="$(SolutionDir)\thirdparty\gtest_main.vcxproj">
+    <ProjectReference Include="$(AregSdkRoot)\thirdparty\gtest_main.vcxproj">
       <Project>{11927ea9-1f1b-497d-8251-0c1ec93a770e}</Project>
     </ProjectReference>
   </ItemGroup>

@@ -14,3 +14,25 @@
  *
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
+
+#ifdef  _WINDOWS
+
+    #if     OUTPUT_DEBUG
+        MACRO_COMPILER_MESSAGE("Compiling the sources WITH debug outputs, the output debug level is" OUTPUT_DEBUG_LEVEL)
+    #else   // !OUTPUT_DEBUG
+        MACRO_COMPILER_MESSAGE("Compiling the sources WITHOUT debug outputs")
+    #endif // OUTPUT_DEBUG
+
+    #if     AREG_LOGS
+        MACRO_COMPILER_MESSAGE("Compiling the sources WITH logs")
+    #else   // !AREG_LOGS
+        MACRO_COMPILER_MESSAGE("Compiling the sources WITHOUT logs")
+    #endif // AREG_LOGS
+
+    #if     AREG_EXTENDED
+        MACRO_COMPILER_MESSAGE("Compiling the sources WITH extended features")
+    #else   // !AREG_EXTENDED
+        MACRO_COMPILER_MESSAGE("Compiling the sources WITHOUT extended features")
+    #endif // AREG_EXTENDED
+
+#endif  // _WINDOWS

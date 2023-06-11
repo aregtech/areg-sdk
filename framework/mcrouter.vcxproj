@@ -1,7 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
+    <Import Project="$(SolutionDir)\msvc_setup.props"/>
+  </ImportGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+    <Import Project="$(AregSdkRoot)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{24A4F250-C09B-40BF-A6F2-25BD8ABBED6F}</ProjectGuid>
@@ -14,7 +17,7 @@
     <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(SolutionDir)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
+    <Import Project="$(AregSdkRoot)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ItemDefinitionGroup>
     <ClCompile>

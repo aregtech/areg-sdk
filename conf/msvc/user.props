@@ -9,162 +9,94 @@
     </PropertyGroup>
 
     <!-- ********************************************************************************************************************************** -->
+    <!-- Each Solution should have 'msvc_setup.props' file to set at least the AregSdkRoot property                                         -->
+    <!-- ********************************************************************************************************************************** -->
+    <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
+        <Import Project="$(SolutionDir)\msvc_setup.props"/>
+    </ImportGroup>
+
+    <!-- ********************************************************************************************************************************** -->
     <!-- User Macro names and values. Definition.                                                                                           -->
     <!-- ********************************************************************************************************************************** -->
     <PropertyGroup Label="UserMacros">
 
         <!-- ****************************************************************************************************************************** -->
-        <!-- User Project settings and environment change definitions                                                                       -->
+        <!-- Check property settings. If missed, set defaults.                                                                              -->
         <!-- ****************************************************************************************************************************** -->
 
         <!-- ****************************************************************************************************************************** -->
-        <!-- BASIC    SETTINGS     CHANGE                                                                                                   -->
+        <!-- Check AregSdkRoot settings. If missed, set SolutionDir.                                                                        -->
         <!-- ****************************************************************************************************************************** -->
+        <AregSdkRoot Condition="'$(AregSdkRoot)'==''">$(SolutionDir)</AregSdkRoot>
+        <!-- ****************************************************************************************************************************** -->
+        <!-- Check AregExtended settings. If missed, set 0 (disable extended features)                                                      -->
+        <!-- ****************************************************************************************************************************** -->
+        <AregExtended Condition="'$(AregExtended)'==''">0</AregExtended>
+        <!-- ****************************************************************************************************************************** -->
+        <!-- Check AregLogs settings. If missed, set 1 (enable compilation with logs)                                                       -->
+        <!-- ****************************************************************************************************************************** -->
+        <AregLogs Condition="'$(AregLogs)'==''">1</AregLogs>
+        <!-- ****************************************************************************************************************************** -->
+        <!-- Check AregBuildRoot settings. If missed, set <areg-sdk>/product                                                                -->
+        <!-- ****************************************************************************************************************************** -->
+        <AregBuildRoot Condition="'$(AregBuildRoot)'==''">$(AregSdkRoot)\product</AregBuildRoot>
+        <!-- ****************************************************************************************************************************** -->
+        <!-- Check and set AregOutputDir, AregOutputLib and AregOutputBin.                                                                  -->
+        <!-- ****************************************************************************************************************************** -->
+        <AregProductPath>build\msvc-$(VCCompilerVersion)\$(OS)-$(Platform)-$(Configuration)</AregProductPath>
+        <AregProductPath>$(AregProductPath.ToLower())</AregProductPath>
+        <AregOutputDir Condition="'$(AregOutputDir)'==''">$(AregBuildRoot)\$(AregProductPath)</AregOutputDir>
+        <AregOutputLib Condition="'$(AregOutputLib)'==''">$(AregOutputDir)\lib</AregOutputLib>
+        <AregOutputBin Condition="'$(AregOutputBin)'==''">$(AregOutputDir)\bin</AregOutputBin>
 
         <!-- ****************************************************************************************************************************** -->
-        <!-- The root directory of project. Change your project root directory. Please set backslash at the end!                            -->
+        <!-- Add preprocessor defines here to set for all projects.                                                                         -->
         <!-- ****************************************************************************************************************************** -->
-        <!-- ProjectRootDir>D:\Projects\areg\</ProjectRootDir -->
-        <ProjectRootDir>$(SolutionDir)</ProjectRootDir>
-
-        <!-- ****************************************************************************************************************************** -->
-        <!-- Third-Party source folder. Change if it differs or solution file is moved to other folder.                                     -->
-        <!-- ****************************************************************************************************************************** -->
-        <ThirdpartyDir>$(ProjectRootDir)thirdparty</ThirdpartyDir>
-        <ThirdIncludes>$(ThirdpartyDir)</ThirdIncludes>
-        <ThirdPreprocessorDefines></ThirdPreprocessorDefines>
-
-        <!-- ****************************************************************************************************************************** -->
-        <!-- Advanced settings change                                                                                                       -->
-        <!-- ****************************************************************************************************************************** -->
-
-        <!-- ****************************************************************************************************************************** -->
-        <!-- User Definitions                                                                                                               -->
-        <!-- ****************************************************************************************************************************** -->
-
-        <!-- ****************************************************************************************************************************** -->
-        <!-- Add user preprocessor defines here for Debug and Release builds to set for all projects. By default there are 2 defines:       -->
         <!-- AREG_LOGS 	        : enable compilation with logging; remove if no logging required.                                           -->
         <!-- AREG_EXTENDED      : enable AREG extensions, which contain additional features.                                                -->
-        <!-- OUTPUT_DEBUG_LEVEL : enables log like messages to output on console. The value 0 disables to output any message on console.    -->
-        <!-- OUTPUT_DEBUG   	: set 1 to enable outputs in Output Window; set 0 to disabled outputs.                                      -->
-        <UserPreprocessorDefines Condition="'$(ConfigShortName)'=='Debug'"></UserPreprocessorDefines>
-        <UserPreprocessorDefines Condition="'$(ConfigShortName)'=='Release'"></UserPreprocessorDefines>
+        <AregCommonDefines>AREG_LOGS=$(AregLogs);AREG_EXTENDED=$(AregExtended);$(AregCommonDefines)</AregCommonDefines>
 
         <!-- ****************************************************************************************************************************** -->
-        <!-- User special include folders to apply to all projects and available for Debug and Release versions.                            -->
-        <!-- Example:                                                                                                                       -->
-        <!-- <UserDefIncludes Condition="'$(ConfigShortName)'=='Debug'">"C:\Tools\Visual Leak Detector\include"</UserDefIncludes>           -->
-        <UserDefIncludes Condition="'$(ConfigShortName)'=='Debug'"></UserDefIncludes>
-        <UserDefIncludes Condition="'$(ConfigShortName)'=='Release'"></UserDefIncludes>
+        <!-- Advanced settings do not change or modify.                                                                                     -->
+        <!-- ****************************************************************************************************************************** -->
 
         <!-- ****************************************************************************************************************************** -->
-        <!-- User special library folders to apply to all projects and available for Debug and Release versions.                            -->
-        <!-- Example:                                                                                                                       -->
-        <!-- <UserDefLibs Condition="'$(ConfigShortName)'=='Debug'">"C:\Tools\Visual Leak Detector\lib\Win32"</UserDefLibs>                 -->
-        <UserDefLibs Condition="'$(ConfigShortName)'=='Debug'"></UserDefLibs>
-        <UserDefLibs Condition="'$(ConfigShortName)'=='Release'"></UserDefLibs>
-        
+        <!-- ****************************************************************************************************************************** -->
+        <!-- Check and set other settings.                                                                                                  -->
         <!-- ****************************************************************************************************************************** -->
         <!-- ****************************************************************************************************************************** -->
-        <!-- The name of project Output folder. Change this name if using other name.                                                       -->
-        <ProjectProductDirName>product</ProjectProductDirName>
-        <!-- ****************************************************************************************************************************** -->
-        <!-- The name of folder where test applications are created. Change this name if using other name.                                  -->
-        <ProjectTestDirName>examples</ProjectTestDirName>
-        <!-- ****************************************************************************************************************************** -->
-        <!-- Folder to output the build. Path is created as $(ProjectProductDirName)\$(DirBuild). Change to use other name.                 -->
-        <DirBuild>build\$(PlatformToolset)</DirBuild>
-        <!-- ****************************************************************************************************************************** -->
-        <!-- Compiled binaries folder name. Path is crated as $(ProjectProductDirName)\$(DirBuild)\$(Configuration)\$(DirBin).              -->
-        <DirBin>bin</DirBin>
-        <!-- ****************************************************************************************************************************** -->
-        <!-- Compiled libraries folder name. Path is crated as $(ProjectProductDirName)\$(DirBuild)\$(Configuration)\$(DirLib).             -->
-        <DirLib>lib</DirLib>
-        <!-- ****************************************************************************************************************************** -->
-        <!-- Compiled object files folder name. The path is crated as $(ProjectProductDirName)\$(DirBuild)\$(Configuration)\$(DirObj).      -->
-        <DirObj>obj</DirObj>
-        <!-- ****************************************************************************************************************************** -->
-        <!-- Folder to output by default generated files. Path is crated as $(ProjectProductDirName)\$(DirGen)\. Change to use other name.  -->
-        <DirGen>gen</DirGen>
+
+        <!-- Set output directory for compiled obj files.                                                                                   -->
+        <AregOutputObj Condition="'$(AregOutputObj)'==''">$(AregOutputDir)\obj\$(ProjectName)</AregOutputObj>
+        <!-- Set the directory for generated source files.                                                                                  -->
+        <AregGenerateDir>$(AregBuildRoot)\generate</AregGenerateDir>
+        <!-- Set the AREG Framework path.                                                                                                   -->
+        <AregFrameworkSources>$(AregSdkRoot)\framework</AregFrameworkSources>
+        <!-- Set the path of AREG Framework resources                                                                                       -->
+        <AregFrameworkResources>$(AregFrameworkSources)\resources</AregFrameworkResources>
+        <!-- Set the path of thirdparty software components. Set for all projects.                                                          -->
+        <AregThirdpartyDir>$(AregSdkRoot)\thirdparty</AregThirdpartyDir>
+        <!-- Set the path of AREG SDK Examples.                                                                                             -->
+        <AregExamplesDir>$(AregSdkRoot)\examples</AregExamplesDir>
+        <!-- Set the path of AREG SDK unit tests.                                                                                           -->
+        <AregTestsDir>$(AregSdkRoot)\tests</AregTestsDir>
 
         <!-- ****************************************************************************************************************************** -->
-        <!-- Path of Project Outputs Folder. Change path if using other.                                                                    -->
-        <ProjectOutputDir>$(ProjectRootDir)$(ProjectProductDirName)\$(DirBuild)\$(OS)-$(Platform)-$(Configuration)</ProjectOutputDir>
+        <!-- Common compiler and linker options. Set for all projects.                                                                      -->
         <!-- ****************************************************************************************************************************** -->
-        <!-- Path of Project Generated Files Folder. Change path if using other.                                                            -->
-        <ProjectGeneratedDir>$(ProjectRootDir)$(ProjectProductDirName)\$(DirGen)</ProjectGeneratedDir>
-        <!-- ****************************************************************************************************************************** -->
-        <!-- Path of Project Binaries Folder. Change path if using other.                                                                   -->
-        <ProjectBinDir>$(ProjectOutputDir)\$(DirBin)</ProjectBinDir>
-        <!-- ****************************************************************************************************************************** -->
-        <!-- Path of Project Libraries Folder. Change path if using other.                                                                  -->
-        <ProjectLibDir>$(ProjectOutputDir)\$(DirLib)</ProjectLibDir>
-        <!-- ****************************************************************************************************************************** -->
-        <!-- Path of Project Object files Folder. Change path if using other.                                                               -->
-        <ProjectObjectDir>$(ProjectOutputDir)\$(DirObj)\$(ProjectName)</ProjectObjectDir>
-        <!-- ****************************************************************************************************************************** -->
-        <!-- The path of project development folder. Change this name if using other name.                                                  -->
-        <ProjectDevDir>$(ProjectRootDir)framework</ProjectDevDir>
-        <!-- ****************************************************************************************************************************** -->
-        <!-- Path of Root Folder of tests and examples. Change path if using other.                                                         -->
-        <TestRootDir>$(ProjectRootDir)\$(ProjectTestDirName)</TestRootDir>
-        <!-- ****************************************************************************************************************************** -->
-        <!-- End of advanced settings.                                                                                                      -->
-        <!-- ****************************************************************************************************************************** -->
+
+        <!-- AREG Framework specific includes. The value may change when integrate in other projects.                                       -->
+        <AregCommonIncludes>$(AregFrameworkSources);$(AregGenerateDir);$(AregFrameworkResources)</AregCommonIncludes>
+        <!-- AREG Framework specific library search paths. The value may change when integrate in other projects.                           -->
+        <AregCommonLibs>$(AregOutputLib);$(AregOutputBin)</AregCommonLibs>
 
         <!-- ****************************************************************************************************************************** -->
         <!-- Settings of  output directories. Do not change. Instead, modify project specific paths and/or names.                           -->
         <!-- ****************************************************************************************************************************** -->
 
-        <OutBinDir>$(ProjectBinDir)</OutBinDir>
-        <OutLibDir>$(ProjectLibDir)</OutLibDir>
-        <OutObjDir>$(ProjectObjectDir)</OutObjDir>
-
-        <!-- ****************************************************************************************************************************** -->
-        <!-- End of user specific settings.                                                                                                 -->
-        <!-- ****************************************************************************************************************************** -->
-
-        <!-- ****************************************************************************************************************************** -->
-        <!-- Environment variables                                                                                                          -->
-        <!-- ****************************************************************************************************************************** -->
-        <Param1></Param1>
-        <Param2></Param2>
-        <Param3></Param3>
-        <Param4></Param4>
-        <Param5></Param5>
-
-        <!-- ****************************************************************************************************************************** -->
-        <!-- User Development Macro definitions.                                                                                            -->
-        <!-- ****************************************************************************************************************************** -->
-
-        <!-- ****************************************************************************************************************************** -->
-        <!-- The path of project source folder. Change this name if using other name.                                                       -->
-        <ProjectSourceDir>$(ProjectDevDir)</ProjectSourceDir>
-        <!-- ****************************************************************************************************************************** -->
-        <!-- The path of source include folder. Change this name if using other name.                                                       -->
-        <SrcInc>$(ProjectSourceDir)</SrcInc>
-        <!-- ****************************************************************************************************************************** -->
-        <!-- The path of source implementation folder. Change this name if using other name.                                                -->
-        <SrcImp>$(ProjectSourceDir)</SrcImp>
-        <!-- ****************************************************************************************************************************** -->
-        <!-- The path of source resources folder. Change this name if using other name.                                                     -->
-        <SrcRes>$(ProjectSourceDir)\$(ProjectName)\resources</SrcRes>
-        <!-- ****************************************************************************************************************************** -->
-        <!-- The project specific preprocessor definitions. Change this name if using other name.                                           -->
-        <ProjectPreprocessorDefines>UNICODE;_UNICODE</ProjectPreprocessorDefines>
-        <!-- ****************************************************************************************************************************** -->
-        <!-- The project specific additional include folders. Change this name if using other name.                                         -->
-        <ProjectAdditionalIncludes></ProjectAdditionalIncludes>
-        <!-- ****************************************************************************************************************************** -->
-        <!-- The project specific additional include folders. Change this name if using other name.                                         -->
-        <ProjectAdditionalLibs></ProjectAdditionalLibs>
-        <!-- ****************************************************************************************************************************** -->
-        <!-- The project specific resource folder location. Change this name if using other name.                                           -->
-        <ProjectResourceDir>$(SrcRes)</ProjectResourceDir>
-        <!-- ****************************************************************************************************************************** -->
-        <!-- The project specific script folder location. Change this name if using other name.                                             -->
-        <ProjectScriptDir>$(ProjectResourceDir)</ProjectScriptDir>
+        <OutBinDir>$(AregOutputBin)</OutBinDir>
+        <OutLibDir>$(AregOutputLib)</OutLibDir>
+        <OutObjDir>$(AregOutputObj)</OutObjDir>
 
     </PropertyGroup>
 
@@ -172,67 +104,31 @@
     <!-- User Macro defines. Do not make changes here!                                                                                      -->
     <!-- ********************************************************************************************************************************** -->
     <ItemGroup>
-        <BuildMacro Include="ProjectRootDir">
-            <Value>$(ProjectRootDir)</Value>
+        
+        <BuildMacro Include="AregGenerateDir">
+            <Value>$(AregGenerateDir)</Value>
         </BuildMacro>
-
-        <BuildMacro Include="ThirdpartyDir">
-            <Value>$(ThirdpartyDir)</Value>
+        <BuildMacro Include="AregFrameworkSources">
+            <Value>$(AregFrameworkSources)</Value>
         </BuildMacro>
-
-        <BuildMacro Include="ThirdIncludes">
-            <Value>$(ThirdIncludes)</Value>
+        <BuildMacro Include="AregFrameworkResources">
+            <Value>$(AregFrameworkResources)</Value>
         </BuildMacro>
-
-        <BuildMacro Include="ThirdPreprocessorDefines">
-            <Value>$(ThirdPreprocessorDefines)</Value>
+        <BuildMacro Include="AregThirdpartyDir">
+            <Value>$(AregThirdpartyDir)</Value>
         </BuildMacro>
-
-        <BuildMacro Include="UserPreprocessorDefines">
-            <Value>$(UserPreprocessorDefines)</Value>
+        <BuildMacro Include="AregExamplesDir">
+            <Value>$(AregExamplesDir)</Value>
         </BuildMacro>
-        <BuildMacro Include="UserDefIncludes">
-            <Value>$(UserDefIncludes)</Value>
+        <BuildMacro Include="AregTestsDir">
+            <Value>$(AregTestsDir)</Value>
         </BuildMacro>
-        <BuildMacro Include="UserDefLibs">
-            <Value>$(UserDefLibs)</Value>
+        <BuildMacro Include="AregCommonIncludes">
+            <Value>$(AregCommonIncludes)</Value>
         </BuildMacro>
-
-        <BuildMacro Include="ProjectProductDirName">
-            <Value>$(ProjectProductDirName)</Value>
+        <BuildMacro Include="AregCommonLibs">
+            <Value>$(AregCommonLibs)</Value>
         </BuildMacro>
-        <BuildMacro Include="ProjectTestDirName">
-            <Value>$(ProjectTestDirName)</Value>
-        </BuildMacro>
-        <BuildMacro Include="DirBuild">
-            <Value>$(DirBuild)</Value>
-        </BuildMacro>
-        <BuildMacro Include="DirLib">
-            <Value>$(DirLib)</Value>
-        </BuildMacro>
-        <BuildMacro Include="DirObj">
-            <Value>$(DirObj)</Value>
-        </BuildMacro>
-        <BuildMacro Include="DirGen">
-            <Value>$(DirGen)</Value>
-        </BuildMacro>
-
-        <BuildMacro Include="ProjectOutputDir">
-            <Value>$(ProjectOutputDir)</Value>
-        </BuildMacro>
-        <BuildMacro Include="ProjectGeneratedDir">
-            <Value>$(ProjectGeneratedDir)</Value>
-        </BuildMacro>
-        <BuildMacro Include="ProjectBinDir">
-            <Value>$(ProjectBinDir)</Value>
-        </BuildMacro>
-        <BuildMacro Include="ProjectLibDir">
-            <Value>$(ProjectLibDir)</Value>
-        </BuildMacro>
-        <BuildMacro Include="ProjectObjectDir">
-            <Value>$(ProjectObjectDir)</Value>
-        </BuildMacro>
-
         <BuildMacro Include="OutBinDir">
             <Value>$(OutBinDir)</Value>
         </BuildMacro>
@@ -241,69 +137,6 @@
         </BuildMacro>
         <BuildMacro Include="OutObjDir">
             <Value>$(OutObjDir)</Value>
-        </BuildMacro>
-
-        <BuildMacro Include="ProjectDevDir">
-            <Value>$(ProjectDevDir)</Value>
-        </BuildMacro>
-        <BuildMacro Include="TestRootDir">
-            <Value>$(TestRootDir)</Value>
-        </BuildMacro>
-
-        <!-- ****************************************************************************************************************************** -->
-        <!-- Environment variables                                                                                                          -->
-        <!-- ****************************************************************************************************************************** -->
-        <BuildMacro Include="Param1">
-            <Value>$(Param1)</Value>
-            <EnvironmentVariable>true</EnvironmentVariable>
-        </BuildMacro>
-        <BuildMacro Include="Param2">
-            <Value>$(Param2)</Value>
-            <EnvironmentVariable>true</EnvironmentVariable>
-        </BuildMacro>
-        <BuildMacro Include="Param3">
-            <Value>$(Param3)</Value>
-            <EnvironmentVariable>true</EnvironmentVariable>
-        </BuildMacro>
-        <BuildMacro Include="Param4">
-            <Value>$(Param4)</Value>
-            <EnvironmentVariable>true</EnvironmentVariable>
-        </BuildMacro>
-        <BuildMacro Include="Param5">
-            <Value>$(Param5)</Value>
-            <EnvironmentVariable>true</EnvironmentVariable>
-        </BuildMacro>
-
-        <!-- ****************************************************************************************************************************** -->
-        <!-- User Development Macro definitions.                                                                                            -->
-        <!-- ****************************************************************************************************************************** -->
-
-        <BuildMacro Include="ProjectSourceDir">
-            <Value>$(ProjectSourceDir)</Value>
-        </BuildMacro>
-        <BuildMacro Include="SrcInc">
-            <Value>$(SrcInc)</Value>
-        </BuildMacro>
-        <BuildMacro Include="SrcImp">
-            <Value>$(SrcImp)</Value>
-        </BuildMacro>
-        <BuildMacro Include="SrcRes">
-            <Value>$(SrcRes)</Value>
-        </BuildMacro>
-        <BuildMacro Include="ProjectPreprocessorDefines">
-            <Value>$(ProjectPreprocessorDefines)</Value>
-        </BuildMacro>
-        <BuildMacro Include="ProjectAdditionalIncludes">
-            <Value>$(ProjectAdditionalIncludes)</Value>
-        </BuildMacro>
-        <BuildMacro Include="ProjectAdditionalLibs">
-            <Value>$(ProjectAdditionalLibs)</Value>
-        </BuildMacro>
-        <BuildMacro Include="ProjectResourceDir">
-            <Value>$(ProjectResourceDir)</Value>
-        </BuildMacro>
-        <BuildMacro Include="ProjectScriptDir">
-            <Value>$(ProjectScriptDir)</Value>
         </BuildMacro>
 
     </ItemGroup>
