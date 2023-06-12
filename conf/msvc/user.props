@@ -37,17 +37,18 @@
         <!-- ****************************************************************************************************************************** -->
         <AregLogs Condition="'$(AregLogs)'==''">1</AregLogs>
         <!-- ****************************************************************************************************************************** -->
-        <!-- Check AregBuildRoot settings. If missed, set <areg-sdk>/product                                                                -->
+        <!-- Check AregBuildRoot settings. If missed, by default, it is a 'product' subdirectory relative to 'SolutionDir'.                 -->
         <!-- ****************************************************************************************************************************** -->
-        <AregBuildRoot Condition="'$(AregBuildRoot)'==''">$(AregSdkRoot)\product</AregBuildRoot>
+        <AregBuildRoot Condition="'$(AregBuildRoot)'==''">$(SolutionDir)\product</AregBuildRoot>
         <!-- ****************************************************************************************************************************** -->
-        <!-- Check and set AregOutputDir, AregOutputLib and AregOutputBin.                                                                  -->
+        <!-- Check and set AregOutputDir, AregOutputLib, AregOutputBin and AregOutputObj.                                                   -->
         <!-- ****************************************************************************************************************************** -->
         <AregProductPath>build\msvc-$(VCCompilerVersion)\$(OS)-$(Platform)-$(Configuration)</AregProductPath>
         <AregProductPath>$(AregProductPath.ToLower())</AregProductPath>
         <AregOutputDir Condition="'$(AregOutputDir)'==''">$(AregBuildRoot)\$(AregProductPath)</AregOutputDir>
         <AregOutputLib Condition="'$(AregOutputLib)'==''">$(AregOutputDir)\lib</AregOutputLib>
         <AregOutputBin Condition="'$(AregOutputBin)'==''">$(AregOutputDir)\bin</AregOutputBin>
+        <AregOutputObj Condition="'$(AregOutputObj)'==''">$(AregOutputDir)\obj\$(ProjectName)</AregOutputObj>
 
         <!-- ****************************************************************************************************************************** -->
         <!-- Add preprocessor defines here to set for all projects.                                                                         -->
@@ -66,8 +67,6 @@
         <!-- ****************************************************************************************************************************** -->
         <!-- ****************************************************************************************************************************** -->
 
-        <!-- Set output directory for compiled obj files.                                                                                   -->
-        <AregOutputObj Condition="'$(AregOutputObj)'==''">$(AregOutputDir)\obj\$(ProjectName)</AregOutputObj>
         <!-- Set the directory for generated source files.                                                                                  -->
         <AregGenerateDir>$(AregBuildRoot)\generate</AregGenerateDir>
         <!-- Set the AREG Framework path.                                                                                                   -->

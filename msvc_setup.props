@@ -35,7 +35,7 @@
         <!-- Example to set the directory: <my project path>\product                                                                            -->
         <!-- By default, the output is in $(SolutionDir)\product                                                                                -->
         <!-- ********************************************************************************************************************************** -->
-        <AregBuildRoot></AregBuildRoot>
+        <AregBuildRoot>$(SolutionDir)\product</AregBuildRoot>
         <!-- ********************************************************************************************************************************** -->
         <!-- Property to set the output directory for binaries. By default, it is relative to $(AregBuildRoot) and depends on compile settings  -->
         <!-- ********************************************************************************************************************************** -->
@@ -48,6 +48,10 @@
         <!-- Property to set the library output directory. By default, it is '$(AregOutputDir)\lib'                                             -->
         <!-- ********************************************************************************************************************************** -->
         <AregOutputLib></AregOutputLib>
+        <!-- ********************************************************************************************************************************** -->
+        <!-- Property to set the directory for intermediate object files. By default, it is '$(AregOutputDir)\obj\$(ProjectName)'               -->
+        <!-- ********************************************************************************************************************************** -->
+        <AregOutputObj></AregOutputObj>
 
         <!-- ********************************************************************************************************************************** -->
         <!-- Property to compile the extended features of AREG SDK. By default, it is not compiled with extended features.                      -->
@@ -87,6 +91,9 @@
         </BuildMacro>
         <BuildMacro Include="AregOutputLib">
             <Value>$(AregOutputLib)</Value>
+        </BuildMacro>
+        <BuildMacro Include="AregOutputObj">
+            <Value>$(AregOutputObj)</Value>
         </BuildMacro>
         <BuildMacro Include="AregExtended">
             <Value>$(AregExtended)</Value>

@@ -258,13 +258,18 @@ The AREG SDK provides developers with the flexibility to build their own project
 
 To start a project using the AREG Framework, follow these steps:
 
-1. Access the [`areg-sdk-demo`](https://github.com/aregtech/areg-sdk-demo) repository, which serves as a practical example for creating projects with the AREG Framework.
+1. Access the [`areg-sdk-demo`](https://github.com/aregtech/areg-sdk-demo) repository, which serves as a practical example for creating projects with the AREG Framework. You can use these repository as a reference or template to start your own projects or integrate the AREG Framework into an existing projects.
 
 2. In the `areg-sdk-demo` repository, the [`thirdparty`](https://github.com/aregtech/areg-sdk-demo/tree/main/thirdparty) sub-directory contains a submodule named `areg-sdk`, which represents the AREG Framework.
 
-3. The `areg-sdk-demo` repository includes several sample demo projects built on the AREG Framework. You can use these projects as a reference or template to start your own project or integrate the AREG Framework into an existing project.
+3. The `areg-sdk-demo` repository includes several sample [`demo`](https://github.com/aregtech/areg-sdk-demo/tree/main/demo) projects built on the AREG Framework. Use these projects as a reference or template to start own projects.
 
-4. Customize the [`CMakeLists.txt`](https://github.com/aregtech/areg-sdk-demo/blob/main/CMakeLists.txt) file to match your project's requirements. Adjust variables, such as the file structure, project names, and version information, as needed.
+4. Configure the builds to match your project's requirements. Refer to the [`Step 3: Configure AREG Framework`](https://github.com/aregtech/areg-sdk/wiki/08.-Setup-a-project#step-3-configure-areg-framework) chapter in the [Setup a project](https://github.com/aregtech/areg-sdk/wiki/08.-Setup-a-project) Wiki page of the AREG SDK for detailed customization instructions. Follow the specific instructions based on your chosen build tool:
+   - If using the **CMake** tool, create and configure the [`CMakeLists.txt`](https://github.com/aregtech/areg-sdk-demo/blob/main/CMakeLists.txt) file. Adjust variables and set values as needed.
+
+   - If using **Microsoft Visual Studio** or **MSBuild**, create and configure the [`msvc_setup.props`](https://github.com/aregtech/areg-sdk-demo/blob/main/msvc_setup.props) property file in the same location as the Solution file. Adjust property values as needed.
+
+   Ensure that the variables and values are set according to your project's requirements.
 
 By following these steps, you can effectively initiate your project using the AREG Framework.
 
