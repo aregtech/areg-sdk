@@ -8,7 +8,7 @@ Contact: info[at]aregtech.com
 
 ## Version 1.5.0
 
-Release date: -
+Release date: 15.06.2023
 
 ### New Features
 - Build with CMake
