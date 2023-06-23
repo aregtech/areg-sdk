@@ -49,6 +49,10 @@ docs
   |
   +- /img ................ --> Folder containing images used in the documents.
   |
+  +- /templates .......... --> Folder containing useful templates to create a projects.
+  |
+  +- /wiki ............... --> Submodule to the AREG SDK Wiki pages.
+  |
   +- DEVELOP.md .......... --> Developer guide and technical explanations.
   |
   +- HelloService.md ..... --> Explanation of the HelloService.siml Service Interface document.
@@ -70,18 +74,19 @@ docs
   +- WIN32.md ............ --> Instructions to compile applications in Windows.
 ```
 
+> 💡 Please visit [AREG SDK Wiki](https://github.com/aregtech/areg-sdk/wiki) pages for more detailed documentation, which is periodically updating. Any help to improve the Wiki pages are appreciated very much.
+
 ## Shortcuts
 
 - The source code of the AREG SDK is located in the [`<areg-sdk>/framework`](https://github.com/aregtech/areg-sdk/tree/master/framework) directory.
 - The source code of the examples is located in the [`<areg-sdk>/examples`](https://github.com/aregtech/areg-sdk/tree/master/examples) directory.
 - The common and user-specific CMake configuration files are located in [`<areg-sdk>/conf/cmake`](https://github.com/aregtech/areg-sdk/tree/master/conf/cmake).
 - The common and user-specific Makefile configuration files are located in [`<areg-sdk>/conf/make`](https://github.com/aregtech/areg-sdk/tree/master/conf/make).
-- The common and user-specific property files for MS Visual Studio are located in [`
-
-<areg-sdk>/conf/msvc`](https://github.com/aregtech/areg-sdk/tree/master/conf/msvc).
+- The common and user-specific property files for MS Visual Studio are located in [`<areg-sdk>/conf/msvc`](https://github.com/aregtech/areg-sdk/tree/master/conf/msvc).
 - The [**developer guide**](./DEVELOP.md) provides technical details and guidance for developing distributed and service-enabled applications.
 - The [HOWTO](./HOWTO.md) document explains how to export projects and perform builds.
 - The [POSIX](./POSIX.md) document contains POSIX-related configuration, compilation instructions, and a list of used APIs.
 - The [WIN32](./WIN32.md) document contains Windows-related configuration, compilation instructions, and a list of used APIs.
 - The [ServiceInterface](./ServiceInterface.md) document provides an explanation of the Service Interface structure and usage.
 - The [USECASES](./USECASES.md) document presents various use cases of the AREG SDK in real-world scenarios.
+- The [AREG SDK Wiki](https://github.com/aregtech/areg-sdk/wiki) pages contains detailed documentation of the project.
