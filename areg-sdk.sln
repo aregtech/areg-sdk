@@ -540,6 +540,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wiki", "wiki", "{D2A3A8BC-F
 		docs\wiki\_Sidebar.md = docs\wiki\_Sidebar.md
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logger", "framework\logger.vcxproj", "{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -988,6 +993,14 @@ Global
 		{A3E5EE71-6F14-43FD-A80F-C7791FD64E9E}.Release|Win32.Build.0 = Release|Win32
 		{A3E5EE71-6F14-43FD-A80F-C7791FD64E9E}.Release|x64.ActiveCfg = Release|x64
 		{A3E5EE71-6F14-43FD-A80F-C7791FD64E9E}.Release|x64.Build.0 = Release|x64
+		{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}.Debug|Win32.Build.0 = Debug|Win32
+		{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}.Debug|x64.ActiveCfg = Debug|x64
+		{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}.Debug|x64.Build.0 = Debug|x64
+		{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}.Release|Win32.ActiveCfg = Release|Win32
+		{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}.Release|Win32.Build.0 = Release|Win32
+		{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}.Release|x64.ActiveCfg = Release|x64
+		{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
+    <Import Project="$(SolutionDir)\msvc_setup.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(AregSdkRoot)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+  </ImportGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}</ProjectGuid>
+    <ProjectName>logger</ProjectName>
+    <RootNamespace>logger</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(AregSdkRoot)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
+    <ClCompile>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="logger\app\private\LoggerConsoleService.cpp" />
+    <ClCompile Include="logger\app\private\Logger.cpp" />
+    <ClCompile Include="logger\app\private\NELoggerSettings.cpp" />
+    <ClCompile Include="logger\app\private\posix\LoggerPosix.cpp" />
+    <ClCompile Include="logger\app\private\win32\LoggerWin32.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="logger\app\Logger.hpp" />
+    <ClInclude Include="logger\app\NELoggerSettings.hpp" />
+    <ClInclude Include="logger\app\private\LoggerConsoleService.hpp" />
+    <ClInclude Include="logger\resources\resource.h" />
+    <ClInclude Include="system\GEPlatform.h" />
+    <ClInclude Include="logger\resources\resource.hpp" />
+    <ClInclude Include="logger\resources\targetver.hpp" />
+    <ResourceCompile Include="logger\resources\logger.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="logger\Readme.md" />
+    <None Include="logger\resources\logger.ico" />
+    <None Include="logger\resources\logger.init" />
+    <None Include="logger\resources\small.ico" />
+    <None Include="logger\resources\logger_install.bat" />
+    <None Include="logger\resources\logger_uninstall.bat" />
+    <None Include="logger\resources\logger_post_build.bat" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="CMakeLists.txt" />
+    <Text Include="logger\CMakeLists.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

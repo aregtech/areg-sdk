@@ -1,5 +1,5 @@
-#ifndef AREG_MCROUTER_APP_CONSOLESERVICE_HPP
-#define AREG_MCROUTER_APP_CONSOLESERVICE_HPP
+#ifndef AREG_MCROUTER_APP_ROUTERCONSOLESERVICE_HPP
+#define AREG_MCROUTER_APP_ROUTERCONSOLESERVICE_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,7 +9,7 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        mcrouter/app/private/ConsoleService.hpp
+ * \file        mcrouter/app/private/RouterConsoleService.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
  * \brief       AREG Platform, Multi-cast routing, service that outputs statistics.
@@ -26,14 +26,14 @@
 #include "areg/component/Timer.hpp"
 
 //////////////////////////////////////////////////////////////////////////
-// ConsoleService class declaration
+// RouterConsoleService class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   A service to output statistics..
  **/
-class ConsoleService: public    Component
-                    , protected StubBase
-                    , protected IETimerConsumer
+class RouterConsoleService  : public    Component
+                            , protected StubBase
+                            , protected IETimerConsumer
 {
     //!< Bytes in 1 Kilobyte.
     static constexpr uint32_t           ONE_KILOBYTE    { 1024 };
@@ -66,7 +66,7 @@ class ConsoleService: public    Component
 
 public:
     //!< The console service role name
-    static constexpr std::string_view   SERVICE_NAME    { "ConcoleService" };
+    static constexpr std::string_view   SERVICE_NAME    { "RouterConcoleService" };
 
 //////////////////////////////////////////////////////////////////////////
 // Static methods
@@ -105,12 +105,12 @@ protected:
      * \param   roleName    The role name of component, given in the system.
      * \param   data        The optional component data set in system. Can be empty / no data.
      **/
-    ConsoleService( const NERegistry::ComponentEntry & entry, ComponentThread & owner, NEMemory::uAlign OPT data );
+    RouterConsoleService( const NERegistry::ComponentEntry & entry, ComponentThread & owner, NEMemory::uAlign OPT data );
 
     /**
      * \brief   Destructor.
      **/
-    virtual ~ConsoleService( void ) = default;
+    virtual ~RouterConsoleService( void ) = default;
 
 /************************************************************************/
 // CEStubBase overrides. Triggered by Component on startup.
@@ -205,9 +205,9 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Returns the instance of ConsoleService
+     * \brief   Returns the instance of RouterConsoleService
      **/
-    inline ConsoleService & self( void );
+    inline RouterConsoleService & self( void );
     /**
      * \brief   Called to output sent and received data rate messages.
      **/
@@ -222,16 +222,16 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
-    ConsoleService( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ConsoleService );
+    RouterConsoleService( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( RouterConsoleService );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// ConsoleService inline methods
+// RouterConsoleService inline methods
 //////////////////////////////////////////////////////////////////////////
-inline ConsoleService & ConsoleService::self( void )
+inline RouterConsoleService & RouterConsoleService::self( void )
 {
     return (*this);
 }
 
-#endif  // AREG_MCROUTER_APP_CONSOLESERVICE_HPP
+#endif  // AREG_MCROUTER_APP_ROUTERCONSOLESERVICE_HPP

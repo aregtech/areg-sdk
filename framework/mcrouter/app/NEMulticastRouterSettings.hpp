@@ -20,6 +20,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/trace/GETrace.h"
+#include "areg/appbase/NEApplication.hpp"
 
 #include "extensions/console/Console.hpp"
 
@@ -78,34 +79,19 @@ namespace NEMulticastRouterSettings
      * \brief   The default option to run multicast router as a console application.
      **/
     constexpr eServiceCommand   DEFAULT_OPTION      { eServiceCommand::CMD_Console };
-    /**
-     * \brief   Structure that specifies multicast router process option and related eServiceCommand value
-     **/
-    typedef struct S_ServiceCommand
-    {
-        const std::string_view  optLong;    //!< The long name of the option passed to process.
-        const std::string_view  optShort;   //!< The short name of the option passed to process.
-        const eServiceCommand   option;     //!< The related eServiceCommand value.
-    } sServiceCommand;
 
     /**
      * \brief   List of multicast router string options passed in command line and related eServiceCommand.
      **/
-    constexpr sServiceCommand   ServiceCommands[]   
+    constexpr NEApplication::ServiceCommand<NEMulticastRouterSettings::eServiceCommand>   ServiceCommands[]
     {
-          {"--install"  , "-i", eServiceCommand::CMD_Install}   //!< Command to install service. Valid for Windows OS.
-        , {"--uninstall", "-u", eServiceCommand::CMD_Uninstall} //!< Command to uninstall service. Valid for Windows OS.
-        , {"--service"  , "-s", eServiceCommand::CMD_Service}   //!< Command to run process as a system service process.
-        , {"--console"  , "-c", eServiceCommand::CMD_Console}   //!< Command to run process as a console application.
-        , {"--verbose"  , "-v", eServiceCommand::CMD_Verbose}   //!< Command to display data rate when run as console application.
-        , {""           , ""  , eServiceCommand::CMD_Undefined} //!< Any other command.
+          {"--install"  , "-i", "Install the Multi-cast router service"                     , eServiceCommand::CMD_Install}   //!< Command to install service. Valid for Windows OS.
+        , {"--uninstall", "-u", "Uninstall the Multi-cast router service"                   , eServiceCommand::CMD_Uninstall} //!< Command to uninstall service. Valid for Windows OS.
+        , {"--service"  , "-s", "Run the Multi-cast router process as a system service"     , eServiceCommand::CMD_Service}   //!< Command to run process as a system service process.
+        , {"--console"  , "-c", "Run the Multi-cast router process as a console application", eServiceCommand::CMD_Console}   //!< Command to run process as a console application.
+        , {"--verbose"  , "-v", "Display data rate information on console during run"       , eServiceCommand::CMD_Verbose}   //!< Command to display data rate when run as console application.
+        , {""           , ""  , "End of command list"                                       , eServiceCommand::CMD_Undefined} //!< Any other command.
     };
-
-    /**
-     * \brief   Parses string value and NEMulticastRouterSettings::eServiceCommand
-     *          value of the multicast router service option.
-     **/
-    inline NEMulticastRouterSettings::eServiceCommand parseOption( const char * const option );
 
     /**
      * \brief   The name of main service router thread.
@@ -208,29 +194,6 @@ inline const char * NEMulticastRouterSettings::getString( NEMulticastRouterSetti
         ASSERT( false );
         return "ERR: Unexpected NEMulticastRouterSettings::eServiceCommand value!";
     }
-}
-
-inline NEMulticastRouterSettings::eServiceCommand NEMulticastRouterSettings::parseOption( const char * const option )
-{
-    NEMulticastRouterSettings::eServiceCommand result = NEMulticastRouterSettings::DEFAULT_OPTION;
-
-    if ((option != nullptr) && (*option != NEString::EndOfString))
-    {
-        for ( const sServiceCommand & cmd : NEMulticastRouterSettings::ServiceCommands )
-        {
-            if ( cmd.option == eServiceCommand::CMD_Undefined )
-            {
-                break;
-            }
-            else if ( (cmd.optLong == option) || (cmd.optShort == option) )
-            {
-                result = cmd.option;
-                break;
-            }
-        }
-    }
-
-    return result;
 }
 
 #endif  // AREG_MCROUTER_APP_NEMULTICASTROUTERSETTINGS_HPP
