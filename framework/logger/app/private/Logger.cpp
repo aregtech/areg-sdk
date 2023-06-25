@@ -178,7 +178,7 @@ void Logger::serviceMain( int argc, char ** argv )
                 console.enableConsoleInput(false);
                 Application::loadModel(_modelName);
                 // Blocked until user input
-                Console::CallBack callback(ConsoleService::checkCommand);
+                Console::CallBack callback(LoggerConsoleService::checkCommand);
                 console.waitForInput(callback);
                 Application::unloadModel(_modelName);
             }
