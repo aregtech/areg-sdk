@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
-    <Import Project="$(SolutionDir)\msvc_setup.props"/>
+    <Import Project="$(SolutionDir)\msvc_setup.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="$(AregSdkRoot)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
@@ -37,7 +37,7 @@
     <ClCompile Include="mcrouter\app\private\MulticastRouter.cpp" />
     <ClCompile Include="mcrouter\app\private\NEMulticastRouterSettings.cpp" />
     <ClCompile Include="mcrouter\app\private\posix\MulticastRouterPosix.cpp" />
-    <ClCompile Include="mcrouter\app\private\ConsoleService.cpp" />
+    <ClCompile Include="mcrouter\app\private\RouterConsoleService.cpp" />
     <ClCompile Include="mcrouter\app\private\win32\MulticastRouterWin32.cpp" />
     <ClCompile Include="mcrouter\tcp\private\IEServerConnectionHandler.cpp" />
     <ClCompile Include="mcrouter\tcp\private\ListServiceProxies.cpp" />
@@ -51,7 +51,8 @@
     <ClCompile Include="mcrouter\tcp\private\ServiceStub.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="mcrouter\app\private\ConsoleService.hpp" />
+    <ClInclude Include="mcrouter\app\private\RouterConsoleService.hpp" />
+    <ClInclude Include="mcrouter\resources\resource.h" />
     <ClInclude Include="mcrouter\tcp\private\IEServerConnectionHandler.hpp" />
     <ClInclude Include="mcrouter\tcp\private\ListServiceProxies.hpp" />
     <ClInclude Include="mcrouter\tcp\private\ServerConnection.hpp" />
@@ -80,8 +81,6 @@
   <ItemGroup>
     <Text Include="CMakeLists.txt" />
     <Text Include="mcrouter\app\private\CMakeLists.txt" />
-    <Text Include="mcrouter\app\private\posix\CMakeLists.txt" />
-    <Text Include="mcrouter\app\private\win32\CMakeLists.txt" />
     <Text Include="mcrouter\CMakeLists.txt" />
     <Text Include="mcrouter\tcp\private\CMakeLists.txt" />
   </ItemGroup>

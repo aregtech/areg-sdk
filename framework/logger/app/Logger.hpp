@@ -1,5 +1,5 @@
-#ifndef AREG_MCROUTER_APP_MULTICASTROUTER_HPP
-#define AREG_MCROUTER_APP_MULTICASTROUTER_HPP
+#ifndef AREG_LOGGER_APP_LOGGER_HPP
+#define AREG_LOGGER_APP_LOGGER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,75 +9,67 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        mcrouter/app/MulticastRouter.hpp
+ * \file        logger/app/Logger.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       AREG Platform, Multi-cast routing to run as process or service.
+ * \brief       AREG Platform, logger to run as a console application process or service.
  ************************************************************************/
 
 /************************************************************************
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "mcrouter/app/NEMulticastRouterSettings.hpp"
-#include "mcrouter/tcp/ServerService.hpp"
+#include "logger/app/NELoggerSettings.hpp"
 #include "areg/base/SynchObjects.hpp"
 
 class Console;
 
 //////////////////////////////////////////////////////////////////////////
-// MulticastRouter class declaration
+// Logger class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The message routing service is a separate process, which routs messages
- *          to components. Applications, developed based on AREG SDK,
- *          should connect to message routing service to send and receive IPC messages.
- *          The business logic of message router to know logical relationship
- *          of running components and know where to redirect messages.
- *          Normally, for every connection channel type there should one instance of 
- *          message routing service also called as Multi-casting router (MCR).
+ * \brief   The Logger service is a separate process, which receives
+ *          and collects the log messages from the running applications.
+ *          It may save logs in the file or forward to log viewer application..
  **/
-class MulticastRouter
+class Logger
 {
 //////////////////////////////////////////////////////////////////////////
 // statics
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Returns singleton instance of multi-cast router (MCR).
+     * \brief   Returns singleton instance of the Logger.
      **/
-    static MulticastRouter & getInstance( void );
+    static Logger& getInstance( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Initializes instance of message router service.
+     * \brief   Default constructor and destructor.
      **/
-    MulticastRouter( void );
-    /**
-     * \brief   Destructor.
-     **/
-    ~MulticastRouter( void );
+    Logger( void );
+    ~Logger(void);
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Call to install (register) message router service in the system.
+     * \brief   Call to install (register) logger service in the system.
      * \return  Returns true if registration succeeded.
      **/
     bool serviceInstall( void );
 
     /**
-     * \brief   Call to uninstall (unregister) message router service in the system.
+     * \brief   Call to uninstall (unregister) logger service in the system.
      **/
     void serviceUninstall( void );
 
     /**
-     * \brief   Called from main to start execution of  message router service.
+     * \brief   Called from main to start execution of logger service.
      * \param   argc    The 'argc' parameter passed from 'main', indicates the number of parameters passed to executable.
      * \param   argv    The 'argv' parameter passed from 'main', indicated parameters passed to executable.
      **/
@@ -111,20 +103,20 @@ public:
     inline bool serviceOpen( void );
 
     /**
-     * \brief   Returns current command of message router service.
+     * \brief   Returns current command of the logger service.
      **/
-    inline NEMulticastRouterSettings::eServiceCommand getCurrentCommand( void ) const;
+    inline NELoggerSettings::eServiceCommand getCurrentCommand( void ) const;
 
     /**
-     * \brief   Sets the current command of message router service.
+     * \brief   Sets the current command of the logger service.
      * \param   cmdService  The message router service command to set.
      **/
-    inline void setCurrentCommand( NEMulticastRouterSettings::eServiceCommand cmdService );
+    inline void setCurrentCommand(NELoggerSettings::eServiceCommand cmdService );
 
     /**
-     * \brief   Returns the state of message router service.
+     * \brief   Returns the state of logger service.
      **/
-    inline NEMulticastRouterSettings::eRouterState getState( void ) const;
+    inline NELoggerSettings::eLoggerState getState( void ) const;
 
     /**
      * \brief   Resets default options.
@@ -150,7 +142,7 @@ public:
     /**
      * \brief   Sets the state of message router service.
      **/
-    bool setState( NEMulticastRouterSettings::eRouterState newState );
+    bool setState(NELoggerSettings::eLoggerState newState );
 
     /**
      * \brief   Parses the options and returns true if succeeded.
@@ -166,7 +158,7 @@ private:
     /**
      * \brief   Returns instance of message router service.
      **/
-    inline MulticastRouter & self( void );
+    inline Logger & self( void );
 
     /**
      * \brief   Checks the command typed on console. Relevant only if it runs as a console application.
@@ -180,7 +172,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   OS specific validity check of message router service.
+     * \brief   OS specific validity check of logger service.
      **/
     bool _osIsValid( void ) const;
 
@@ -213,28 +205,24 @@ private:
     /**
      * \brief   OS specific implementation of changing the state of the mcrouter service.
      **/
-    bool _osSetState( NEMulticastRouterSettings::eRouterState newState );
+    bool _osSetState(NELoggerSettings::eLoggerState newState );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   The message router service state.
+     * \brief   The logger service state.
      **/
-    NEMulticastRouterSettings::eRouterState     mRouterState;
+    NELoggerSettings::eLoggerState      mLoggerState;
     /**
-     * \brief   The current command to execute by message router service.
+     * \brief   The current command to execute by logger service.
      **/
-    NEMulticastRouterSettings::eServiceCommand  mServiceCmd;
+    NELoggerSettings::eServiceCommand   mServiceCmd;
     /**
      * \brief   Flag, indicating whether the process should run verbose or not. Valid only if process runs as console application.
      */
     bool            mRunVerbose;
-    /**
-     * \brief   The instance of message router service server to accept connections from applications.
-     **/
-    ServerService   mServiceServer;
     /**
      * \brief   OS specific service handle
      **/
@@ -248,57 +236,57 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( MulticastRouter );
+    DECLARE_NOCOPY_NOMOVE( Logger );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// MulticastRouter class inline methods.
+// Logger class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline NEMulticastRouterSettings::eRouterState MulticastRouter::getState( void ) const
+inline NELoggerSettings::eLoggerState Logger::getState( void ) const
 {
-    return mRouterState;
+    return mLoggerState;
 }
 
-inline bool MulticastRouter::serviceOpen(void)
+inline bool Logger::serviceOpen(void)
 {
     return _osOpenService();
 }
 
-inline NEMulticastRouterSettings::eServiceCommand MulticastRouter::getCurrentCommand(void) const
+inline NELoggerSettings::eServiceCommand Logger::getCurrentCommand(void) const
 {
     return mServiceCmd;
 }
 
-inline void MulticastRouter::setCurrentCommand( NEMulticastRouterSettings::eServiceCommand cmdService)
+inline void Logger::setCurrentCommand( NELoggerSettings::eServiceCommand cmdService)
 {
     mServiceCmd = cmdService;
 }
 
-inline void MulticastRouter::resetDefaultOptions(void)
+inline void Logger::resetDefaultOptions(void)
 {
-    mServiceCmd = NEMulticastRouterSettings::DEFAULT_OPTION;
-    mRunVerbose = NEMulticastRouterSettings::DEFAULT_VERBOSE;
+    mServiceCmd = NELoggerSettings::DEFAULT_OPTION;
+    mRunVerbose = NELoggerSettings::DEFAULT_VERBOSE;
 }
 
-inline uint32_t MulticastRouter::queryDataReceived(void)
+inline uint32_t Logger::queryDataReceived(void)
 {
-    return mServiceServer.queryBytesReceived();
+    return 0; // mServiceServer.queryBytesReceived();
 }
 
-inline uint32_t MulticastRouter::queryDataSent(void)
+inline uint32_t Logger::queryDataSent(void)
 {
-    return mServiceServer.queryBytesSent();
+    return 0; // mServiceServer.queryBytesSent();
 }
 
-inline bool MulticastRouter::isVerbose(void) const
+inline bool Logger::isVerbose(void) const
 {
     return mRunVerbose;
 }
 
-inline MulticastRouter & MulticastRouter::self( void )
+inline Logger & Logger::self( void )
 {
     return (*this);
 }
 
-#endif  // AREG_MCROUTER_APP_MULTICASTROUTER_HPP
+#endif  // AREG_LOGGER_APP_LOGGER_HPP

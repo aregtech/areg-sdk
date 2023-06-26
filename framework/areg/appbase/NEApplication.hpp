@@ -51,19 +51,54 @@ namespace NEApplication
     extern AREG_API wchar_t     ROUTER_SERVICE_NAME_WIDE[];
 
     /**
-     * \brief   ASCII version of trace manager server service name
+     * \brief   ASCII version of service interface logger service name.
+     * "AREG TCP/IP Logs collection Service"
      **/
-    constexpr std::string_view  TRACING_SERVICE_NAME_ASCII      { "AREG Remote Logging Service" };
+    extern AREG_API char        LOGGER_SERVICE_NAME_ASCII[];
 
     /**
-     * \brief   Unicode version of trace manager server service name
+     * \brief   Unicode version of service interface logger service name
+     * L"AREG TCP/IP Log collection Service"
      **/
-    constexpr std::wstring_view TRACING_SERVICE_NAME_WIDE       { L"AREG Remote Logging Service" };
+    extern AREG_API wchar_t     LOGGER_SERVICE_NAME_WIDE[];
 
     /**
      * \brief   The default name of Multicast Router.
      **/
     constexpr std::string_view  DEFAULT_ROUTER_SERVICE_NAME     { "mcrouter" };
+
+    template<class CommandType>
+    struct ServiceCommand
+    {
+        const std::string_view  optLong;    // The long name of the option to process
+        const std::string_view  optShort;   // The short name of the option to process
+        const std::string_view  optDescr;   // The optional description
+        const CommandType       optCommand; // The digital value of the option to process
+    };
+
+    template<class CommandType, CommandType defaultValue>
+    inline CommandType parseOption(const char* const option, const NEApplication::ServiceCommand<CommandType> cmdList[], uint32_t count);
 }
+
+template<class CommandType, CommandType defaultValue>
+inline CommandType NEApplication::parseOption(const char* const option, const NEApplication::ServiceCommand<CommandType> cmdList[], uint32_t count)
+{
+    CommandType result = defaultValue;
+    if ((option != nullptr) && (*option != '\0'))
+    {
+        for (uint32_t i = 0; i < count; ++i)
+        {
+            const NEApplication::ServiceCommand<CommandType>& cmdOpt = cmdList[i];
+            if ((cmdOpt.optLong == option) || (cmdOpt.optShort == option))
+            {
+                result = cmdOpt.optCommand;
+                break;
+            }
+        }
+    }
+
+    return result;
+}
+
 
 #endif // AREG_APPBASE_NEAPPLICATION_HPP

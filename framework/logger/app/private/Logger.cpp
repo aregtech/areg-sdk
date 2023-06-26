@@ -1,12 +1,12 @@
 /************************************************************************
- * \file        mcrouter/app/private/MulticastRouter.cpp
+ * \file        logger/app/private/Logger.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       Router, Multicast Router Service process common part
+ * \brief       Logger common part
  ************************************************************************/
 
-#include "mcrouter/app/MulticastRouter.hpp"
-#include "mcrouter/app/private/RouterConsoleService.hpp"
+#include "logger/app/Logger.hpp"
+#include "logger/app/private/LoggerConsoleService.hpp"
 
 #include "areg/appbase/Application.hpp"
 #include "areg/appbase/NEApplication.hpp"
@@ -33,21 +33,21 @@
 // This model defines a Console Service to run to make data rate outputs.
 // The Console Service runs only in verbose mode.
 
-static String _modelName("MCRouterModel");
+static String _modelName("LoggerModel");
 
 // Describe mode, set model name
 BEGIN_MODEL(_modelName)
 
     // define console service thread.
-    BEGIN_REGISTER_THREAD( "RouterConsoleServiceThread", NECommon::WATCHDOG_IGNORE)
+    BEGIN_REGISTER_THREAD( "LoggerConsoleServiceThread", NECommon::WATCHDOG_IGNORE)
         // Define the console service
-        BEGIN_REGISTER_COMPONENT(RouterConsoleService::SERVICE_NAME, RouterConsoleService)
+        BEGIN_REGISTER_COMPONENT( LoggerConsoleService::SERVICE_NAME, LoggerConsoleService)
             // register dummy 'empty service'.
             REGISTER_IMPLEMENT_SERVICE( NEService::EmptyServiceName, NEService::EmptyServiceVersion )
         // end of component description
-        END_REGISTER_COMPONENT(RouterConsoleService::SERVICE_NAME )
+        END_REGISTER_COMPONENT(LoggerConsoleService::SERVICE_NAME )
     // end of thread description
-    END_REGISTER_THREAD( "RouterConsoleServiceThread" )
+    END_REGISTER_THREAD( "LoggerConsoleServiceThread" )
 
 // end of model description
 END_MODEL(_modelName)
@@ -56,42 +56,42 @@ END_MODEL(_modelName)
 // Traces.
 //////////////////////////////////////////////////////////////////////////
 
-DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceMain);
-DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceStart);
-DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceStop);
-DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_servicePause);
-DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceContinue);
-DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceInstall);
-DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceUninstall);
-DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_setState);
+DEF_TRACE_SCOPE(mcrouter_app_Logger_serviceMain);
+DEF_TRACE_SCOPE(mcrouter_app_Logger_serviceStart);
+DEF_TRACE_SCOPE(mcrouter_app_Logger_serviceStop);
+DEF_TRACE_SCOPE(mcrouter_app_Logger_servicePause);
+DEF_TRACE_SCOPE(mcrouter_app_Logger_serviceContinue);
+DEF_TRACE_SCOPE(mcrouter_app_Logger_serviceInstall);
+DEF_TRACE_SCOPE(mcrouter_app_Logger_serviceUninstall);
+DEF_TRACE_SCOPE(mcrouter_app_Logger_setState);
 
 //////////////////////////////////////////////////////////////////////////
-// MulticastRouter class implementation
+// Logger class implementation
 //////////////////////////////////////////////////////////////////////////
-MulticastRouter & MulticastRouter::getInstance(void)
+Logger & Logger::getInstance(void)
 {
-    static MulticastRouter _messageRouter;
-    return _messageRouter;
+    static Logger _logger;
+    return _logger;
 }
 
-MulticastRouter::MulticastRouter( void )
-    : mRouterState  ( NEMulticastRouterSettings::eRouterState::RouterStopped )
-    , mServiceCmd   ( NEMulticastRouterSettings::eServiceCommand::CMD_Undefined )
+Logger::Logger( void )
+    : mLoggerState  ( NELoggerSettings::eLoggerState::LoggerStopped )
+    , mServiceCmd   ( NELoggerSettings::eServiceCommand::CMD_Undefined )
     , mRunVerbose   ( false )
-    , mServiceServer( )
+    // , mServiceServer( )
     , mSvcHandle    ( nullptr )
     , mSeMHandle    ( nullptr )
 {
 }
 
-MulticastRouter::~MulticastRouter( void )
+Logger::~Logger( void )
 {
     _osFreeResources( );
 }
 
-bool MulticastRouter::parseOptions(int argc, char** argv)
+bool Logger::parseOptions(int argc, char** argv)
 {
-    using ServiceCmd = NEMulticastRouterSettings::eServiceCommand;
+    using ServiceCmd = NELoggerSettings::eServiceCommand;
     bool result{ false };
     
     if (argc > 1)
@@ -106,7 +106,7 @@ bool MulticastRouter::parseOptions(int argc, char** argv)
             const char* opt = argv[i];
             if (opt != nullptr)
             {
-                ServiceCmd cmd = NEApplication::parseOption< ServiceCmd, ServiceCmd::CMD_Undefined>(opt, NEMulticastRouterSettings::ServiceCommands, MACRO_ARRAYLEN(NEMulticastRouterSettings::ServiceCommands));
+                ServiceCmd cmd = NEApplication::parseOption< ServiceCmd, ServiceCmd::CMD_Undefined>(opt, NELoggerSettings::ServiceCommands, MACRO_ARRAYLEN(NELoggerSettings::ServiceCommands));
 
                 if (cmd == ServiceCmd::CMD_Verbose)
                 {
@@ -145,14 +145,14 @@ bool MulticastRouter::parseOptions(int argc, char** argv)
     return result;
 }
 
-void MulticastRouter::serviceMain( int argc, char ** argv )
+void Logger::serviceMain( int argc, char ** argv )
 {
     // Start only tracing and timer manager.
     Application::initApplication(true, true, false, true, false, NEApplication::DEFAULT_TRACING_CONFIG_FILE.data(), nullptr );
 
     do 
     {
-        TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceMain);
+        TRACE_SCOPE(mcrouter_app_Logger_serviceMain);
         TRACE_DBG("Starting service. There are [ %d ] arguments in the list...", argc);
 
 #ifdef  DEBUG
@@ -160,13 +160,13 @@ void MulticastRouter::serviceMain( int argc, char ** argv )
             TRACE_DBG("... Command argument [ %d ]: [ %s ]", i, argv[i]);
 #endif  // DEBUG
 
-        if ( _osRegisterService() || (mServiceCmd == NEMulticastRouterSettings::eServiceCommand::CMD_Console) )
+        if ( _osRegisterService() || (mServiceCmd == NELoggerSettings::eServiceCommand::CMD_Console) )
         {
             TRACE_DBG("Starting service");
             serviceStart();
         }
 
-        if ( mServiceCmd == NEMulticastRouterSettings::eServiceCommand::CMD_Console )
+        if ( mServiceCmd == NELoggerSettings::eServiceCommand::CMD_Console )
         {
 #if AREG_EXTENDED
 
@@ -178,7 +178,7 @@ void MulticastRouter::serviceMain( int argc, char ** argv )
                 console.enableConsoleInput(false);
                 Application::loadModel(_modelName);
                 // Blocked until user input
-                Console::CallBack callback(RouterConsoleService::checkCommand);
+                Console::CallBack callback(LoggerConsoleService::checkCommand);
                 console.waitForInput(callback);
                 Application::unloadModel(_modelName);
             }
@@ -186,14 +186,14 @@ void MulticastRouter::serviceMain( int argc, char ** argv )
             {
                 // No verbose mode.
                 // Set local callback, output message and wait for user input.
-                Console::CallBack callback(MulticastRouter::_checkCommand);
+                Console::CallBack callback(Logger::_checkCommand);
                 console.enableConsoleInput(true);
-                console.outputTxt(Console::Coord{ 0, 0 }, NEMulticastRouterSettings::FORMAT_WAIT_QUIT);
+                console.outputTxt(Console::Coord{ 0, 0 }, NELoggerSettings::FORMAT_WAIT_QUIT);
                 console.waitForInput(callback);
             }
 
             console.moveCursorOneLineDown();
-            console.printTxt(NEMulticastRouterSettings::FORMAT_QUIT_APP);
+            console.printTxt(NELoggerSettings::FORMAT_QUIT_APP);
             console.uninitialize();
 
 #else   // !AREG_EXTENDED
@@ -225,66 +225,71 @@ void MulticastRouter::serviceMain( int argc, char ** argv )
     } while (false);
 }
 
-bool MulticastRouter::serviceStart(void)
+bool Logger::serviceStart(void)
 {
-    TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceStart);
-    TRACE_DBG("Starting service [ %s ]", NEMulticastRouterSettings::SERVICE_NAME_ASCII);
+    TRACE_SCOPE(mcrouter_app_Logger_serviceStart);
+    TRACE_DBG("Starting service [ %s ]", NELoggerSettings::SERVICE_NAME_ASCII);
     bool result = false;
+
+#if 0
     if (  mServiceServer.configureRemoteServicing( NEApplication::DEFAULT_ROUTER_CONFIG_FILE.data() ) && mServiceServer.startRemoteServicing() )
     {
-        result = setState(NEMulticastRouterSettings::eRouterState::RouterRunning);
+        result = setState(NELoggerSettings::eLoggerState::LoggerRunning);
     }
     else
     {
         Application::signalAppQuit();
     }
+#endif
 
     return result;
 }
 
-void MulticastRouter::serviceStop(void)
+void Logger::serviceStop(void)
 {
-    TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceStop);
-    TRACE_WARN("Stopping service [ %s ]", NEMulticastRouterSettings::SERVICE_NAME_ASCII);
-    setState(NEMulticastRouterSettings::eRouterState::RouterStopping);
-    mServiceServer.stopRemoteServicing();
+    TRACE_SCOPE(mcrouter_app_Logger_serviceStop);
+    TRACE_WARN("Stopping service [ %s ]", NELoggerSettings::SERVICE_NAME_ASCII);
+    setState(NELoggerSettings::eLoggerState::LoggerStopping);
+    // mServiceServer.stopRemoteServicing();
     Application::signalAppQuit();
 }
 
-void MulticastRouter::servicePause(void)
+void Logger::servicePause(void)
 {
-    TRACE_SCOPE(mcrouter_app_MulticastRouter_servicePause);
+    TRACE_SCOPE(mcrouter_app_Logger_servicePause);
     TRACE_DBG("Pausing Router service");
 
-    setState( NEMulticastRouterSettings::eRouterState::RouterPausing );
-    mServiceServer.stopRemoteServicing();
-    setState( NEMulticastRouterSettings::eRouterState::RouterPaused );
+    setState( NELoggerSettings::eLoggerState::LoggerPausing );
+    // mServiceServer.stopRemoteServicing();
+    setState( NELoggerSettings::eLoggerState::LoggerPaused );
 }
 
-bool MulticastRouter::serviceContinue(void)
+bool Logger::serviceContinue(void)
 {
-    TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceContinue);
-    TRACE_DBG("Continuing Router service");
+    TRACE_SCOPE(mcrouter_app_Logger_serviceContinue);
+    TRACE_DBG("Continuing Logger service");
 
     bool result = false;
-    setState( NEMulticastRouterSettings::eRouterState::RouterContinuing );
+    setState( NELoggerSettings::eLoggerState::LoggerContinuing );
+#if 0
     if ( mServiceServer.isRemoteServicingConfigured() && mServiceServer.startRemoteServicing() )
     {
         result = true;
-        setState( NEMulticastRouterSettings::eRouterState::RouterRunning );
+        setState( NELoggerSettings::eLoggerState::LoggerRunning );
     }
     else
     {
         TRACE_ERR("Failed to restart remote servicing");
         Application::signalAppQuit();
     }
+#endif
 
     return result;
 }
 
-bool MulticastRouter::serviceInstall(void)
+bool Logger::serviceInstall(void)
 {
-    TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceInstall);
+    TRACE_SCOPE(mcrouter_app_Logger_serviceInstall);
     
     if ( _osOpenService() == false )
     {
@@ -294,9 +299,9 @@ bool MulticastRouter::serviceInstall(void)
     return _osIsValid();
 }
 
-void MulticastRouter::serviceUninstall(void)
+void Logger::serviceUninstall(void)
 {
-    TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceUninstall);
+    TRACE_SCOPE(mcrouter_app_Logger_serviceUninstall);
 
     if ( _osOpenService() )
     {
@@ -306,21 +311,21 @@ void MulticastRouter::serviceUninstall(void)
     _osFreeResources();
 }
 
-bool MulticastRouter::setState( NEMulticastRouterSettings::eRouterState newState )
+bool Logger::setState( NELoggerSettings::eLoggerState newState )
 {
-    TRACE_SCOPE( mcrouter_app_MulticastRouter_setState );
-    TRACE_DBG( "Changing Service Router state. Old state [ %s ], new state [ %s ]"
-                , NEMulticastRouterSettings::getString( mRouterState )
-                , NEMulticastRouterSettings::getString( newState ) );
+    TRACE_SCOPE( mcrouter_app_Logger_setState );
+    TRACE_DBG( "Changing Service Logger state. Old state [ %s ], new state [ %s ]"
+                , NELoggerSettings::getString( mLoggerState )
+                , NELoggerSettings::getString( newState ) );
 
     return _osSetState( newState );
 }
 
-bool MulticastRouter::_checkCommand(const String& cmd)
+bool Logger::_checkCommand(const String& cmd)
 {
     String command(cmd);
     command.makeLower();
-    if ((command == NEMulticastRouterSettings::QUIT_CH) || (command == NEMulticastRouterSettings::QUIT_STR))
+    if ((command == NELoggerSettings::QUIT_CH) || (command == NELoggerSettings::QUIT_STR))
     {
         return true; // interrupt, requested quit
     }
@@ -328,9 +333,9 @@ bool MulticastRouter::_checkCommand(const String& cmd)
     {
         Console& console = Console::getInstance();
 
-        ASSERT(MulticastRouter::getInstance().mRunVerbose == false);
-        console.outputMsg(Console::Coord{ 0, 1 }, NEMulticastRouterSettings::FORMAT_MSG_ERROR.data(), cmd.getString());
-        console.outputTxt(Console::Coord{ 0, 0 }, NEMulticastRouterSettings::FORMAT_WAIT_QUIT);
+        ASSERT(Logger::getInstance().mRunVerbose == false);
+        console.outputMsg(Console::Coord{ 0, 1 }, NELoggerSettings::FORMAT_MSG_ERROR.data(), cmd.getString());
+        console.outputTxt(Console::Coord{ 0, 0 }, NELoggerSettings::FORMAT_WAIT_QUIT);
         console.refreshScreen();
 
         return false;

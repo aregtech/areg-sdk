@@ -60,7 +60,10 @@
     <ClInclude Include="mcrouter\tcp\private\ServiceStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\app\private\ConsoleService.hpp">
+    <ClInclude Include="mcrouter\app\private\RouterConsoleService.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mcrouter\resources\resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -125,7 +128,7 @@
     <ClCompile Include="mcrouter\app\private\win32\MulticastRouterWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\app\private\ConsoleService.cpp">
+    <ClCompile Include="mcrouter\app\private\RouterConsoleService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -138,8 +141,6 @@
     <Text Include="CMakeLists.txt" />
     <Text Include="mcrouter\CMakeLists.txt" />
     <Text Include="mcrouter\app\private\CMakeLists.txt" />
-    <Text Include="mcrouter\app\private\posix\CMakeLists.txt" />
-    <Text Include="mcrouter\app\private\win32\CMakeLists.txt" />
     <Text Include="mcrouter\tcp\private\CMakeLists.txt" />
   </ItemGroup>
 </Project>
