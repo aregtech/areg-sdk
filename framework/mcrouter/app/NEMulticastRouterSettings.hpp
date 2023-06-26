@@ -68,11 +68,11 @@ namespace NEMulticastRouterSettings
     inline const char * getString( NEMulticastRouterSettings::eServiceCommand cmdService );
 
     /**
-     * \brief   The ASCII name of router as a system service.
+     * \brief   The ASCII name of the multicast router as a system service.
      **/
     extern char *               SERVICE_NAME_ASCII  /*= NEApplication::ROUTER_SERVICE_NAME_ASCII*/;
     /**
-     * \brief   The UNICODE name of router as a system service.
+     * \brief   The UNICODE name of the multicast router as a system service.
      **/
     extern wchar_t *            SERVICE_NAME_WIDE   /*= NEApplication::ROUTER_SERVICE_NAME_WIDE*/;
     /**
@@ -85,21 +85,21 @@ namespace NEMulticastRouterSettings
      **/
     constexpr NEApplication::ServiceCommand<NEMulticastRouterSettings::eServiceCommand>   ServiceCommands[]
     {
-          {"--install"  , "-i", "Install the Multi-cast router service"                     , eServiceCommand::CMD_Install}   //!< Command to install service. Valid for Windows OS.
-        , {"--uninstall", "-u", "Uninstall the Multi-cast router service"                   , eServiceCommand::CMD_Uninstall} //!< Command to uninstall service. Valid for Windows OS.
-        , {"--service"  , "-s", "Run the Multi-cast router process as a system service"     , eServiceCommand::CMD_Service}   //!< Command to run process as a system service process.
-        , {"--console"  , "-c", "Run the Multi-cast router process as a console application", eServiceCommand::CMD_Console}   //!< Command to run process as a console application.
-        , {"--verbose"  , "-v", "Display data rate information on console during run"       , eServiceCommand::CMD_Verbose}   //!< Command to display data rate when run as console application.
-        , {""           , ""  , "End of command list"                                       , eServiceCommand::CMD_Undefined} //!< Any other command.
+          {"--install"  , "-i", "Install the Multicast router service"                     , eServiceCommand::CMD_Install}   //!< Command to install service. Valid for Windows OS.
+        , {"--uninstall", "-u", "Uninstall the Multicast router service"                   , eServiceCommand::CMD_Uninstall} //!< Command to uninstall service. Valid for Windows OS.
+        , {"--service"  , "-s", "Run the Multicast router process as a system service"     , eServiceCommand::CMD_Service}   //!< Command to run process as a system service process.
+        , {"--console"  , "-c", "Run the Multicast router process as a console application", eServiceCommand::CMD_Console}   //!< Command to run process as a console application.
+        , {"--verbose"  , "-v", "Display data rate information on console during run"      , eServiceCommand::CMD_Verbose}   //!< Command to display data rate when run as console application.
+        , {""           , ""  , "Use the default command"                                  , eServiceCommand::CMD_Console}   //!< Default command.
     };
 
     /**
-     * \brief   The name of main service router thread.
+     * \brief   The name of main thread in the multicast router.
      **/
     constexpr char      RouterThreadName[]          { "_AREG_SERVICEROUTER_THREAD_" };
 
     /**
-     * \brief   The default option to run multicast router in verbose mode to output send and receive data rate.
+     * \brief   The default option to run the multicast router in verbose mode to output send and receive data rate.
      */
     constexpr bool              DEFAULT_VERBOSE{ true };
     /**
@@ -117,7 +117,7 @@ namespace NEMulticastRouterSettings
     /**
      * \brief   Wait for user input command message format.
      **/
-    constexpr std::string_view  FORMAT_WAIT_QUIT{ "Type \'quit\' or \'q\' to quit message router ...: " };
+    constexpr std::string_view  FORMAT_WAIT_QUIT{ "Type \'quit\' or \'q\' to quit the message router ...: " };
     /**
      * \brief   Message quit application.
      **/

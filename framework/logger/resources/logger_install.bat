@@ -1,4 +1,4 @@
 @echo off
-mcrouter.exe --install
+logger.exe --install
 
 exit

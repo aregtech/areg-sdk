@@ -24,9 +24,6 @@
     <ClInclude Include="logger\resources\targetver.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="logger\resources\resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="logger\app\NELoggerSettings.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -1,4 +1,4 @@
 @echo off
-mcrouter.exe --uninstall
+logger.exe --uninstall
 
 exit

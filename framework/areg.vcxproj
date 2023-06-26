@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
-    <Import Project="$(SolutionDir)\msvc_setup.props"/>
+    <Import Project="$(SolutionDir)\msvc_setup.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="$(AregSdkRoot)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
@@ -27,7 +27,7 @@
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command Condition="Exists($(AregFrameworkResources))">$(AregFrameworkResources)\areg_post_build.bat $(OutDir) $(AregFrameworkResources)</Command>
+      <Command Condition="Exists($(AregFrameworkResources))">$(AregFrameworkResources)\areg_post_build.bat $(AregFrameworkResources) $(OutDir)</Command>
       <Message Condition="Exists($(AregFrameworkResources))">Copy configuration files into the executable directory</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
