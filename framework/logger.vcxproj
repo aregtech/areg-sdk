@@ -26,6 +26,10 @@
     <Link>
       <SubSystem>Console</SubSystem>
     </Link>
+    <PostBuildEvent>
+      <Command>$(AregFrameworkSources)\logger\resources\logger_post_build.bat $(AregFrameworkSources)\logger\resources $(OutDir)</Command>
+      <Message Condition="Exists($(AregFrameworkResources))">Copy logger service installation files to the executable directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
     <ClCompile>
@@ -44,7 +48,6 @@
     <ClInclude Include="logger\app\Logger.hpp" />
     <ClInclude Include="logger\app\NELoggerSettings.hpp" />
     <ClInclude Include="logger\app\private\LoggerConsoleService.hpp" />
-    <ClInclude Include="logger\resources\resource.h" />
     <ClInclude Include="system\GEPlatform.h" />
     <ClInclude Include="logger\resources\resource.hpp" />
     <ClInclude Include="logger\resources\targetver.hpp" />

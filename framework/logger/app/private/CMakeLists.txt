@@ -3,5 +3,5 @@ list(APPEND logger_SRC
     ${logger_BASE}/app/private/LoggerConsoleService.cpp
 	${logger_BASE}/app/private/NELoggerSettings.cpp
     ${logger_BASE}/app/private/posix/LoggerPosix.cpp
-    ${mcrouter_BASE}/app/private/win32/LoggerWin32.cpp
+    ${logger_BASE}/app/private/win32/LoggerWin32.cpp
 )

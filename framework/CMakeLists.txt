@@ -5,6 +5,7 @@
 include("${AREG_BASE}/areg/CMakeLists.txt")
 include("${AREG_BASE}/extensions/CMakeLists.txt")
 include("${AREG_BASE}/mcrouter/CMakeLists.txt")
+include("${AREG_BASE}/logger/CMakeLists.txt")
 
 # build areg library
 if(AREG_BINARY MATCHES "shared")
@@ -35,7 +36,7 @@ endif()
 # Linker options
 target_link_libraries(areg PRIVATE ${AREG_LDFLAGS})
 
-# Library configs
+# Library configuration
 set_target_properties(areg PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON )
 
 # build areg extensions static library
@@ -44,10 +45,23 @@ addStaticLib(areg-extensions "${extensions_SRC}")
 # build mcrouter executable
 addExecutable(mcrouter "${mcrouter_SRC}")
 
+# build logger executable
+addExecutable(logger "${logger_SRC}")
+
 # copying log and router init files to 'bin/config'
 file(MAKE_DIRECTORY ${AREG_OUTPUT_BIN}/config)
 file(COPY ${AREG_BASE}/areg/resources/log.init DESTINATION ${AREG_OUTPUT_BIN}/config)
 file(COPY ${AREG_BASE}/areg/resources/router.init DESTINATION ${AREG_OUTPUT_BIN}/config)
+
+if("${AREG_DEVELOP_ENV}" STREQUAL "Win32")
+    add_custom_command(TARGET mcrouter
+                       POST_BUILD
+                       COMMAND cmd /c "${mcrouter_RESOURCE}/mcrouter_post_build.bat" "${mcrouter_RESOURCE}" "${AREG_OUTPUT_BIN}")
+
+    add_custom_command(TARGET logger
+                       POST_BUILD
+                       COMMAND cmd /c "${logger_RESOURCE}/logger_post_build.bat" "${logger_RESOURCE}" "${AREG_OUTPUT_BIN}")
+endif()
 
 # add_custom_command(TARGET areg POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${AREG_BASE}/areg/resources/log.ini ${AREG_OUTPUT_BIN}/config/log.ini)
 # add_custom_command(TARGET areg POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${AREG_BASE}/areg/resources/router.ini ${AREG_OUTPUT_BIN}/config/router.ini)

@@ -56,14 +56,14 @@ END_MODEL(_modelName)
 // Traces.
 //////////////////////////////////////////////////////////////////////////
 
-DEF_TRACE_SCOPE(mcrouter_app_Logger_serviceMain);
-DEF_TRACE_SCOPE(mcrouter_app_Logger_serviceStart);
-DEF_TRACE_SCOPE(mcrouter_app_Logger_serviceStop);
-DEF_TRACE_SCOPE(mcrouter_app_Logger_servicePause);
-DEF_TRACE_SCOPE(mcrouter_app_Logger_serviceContinue);
-DEF_TRACE_SCOPE(mcrouter_app_Logger_serviceInstall);
-DEF_TRACE_SCOPE(mcrouter_app_Logger_serviceUninstall);
-DEF_TRACE_SCOPE(mcrouter_app_Logger_setState);
+DEF_TRACE_SCOPE(logger_app_logger_serviceMain);
+DEF_TRACE_SCOPE(logger_app_logger_serviceStart);
+DEF_TRACE_SCOPE(logger_app_logger_serviceStop);
+DEF_TRACE_SCOPE(logger_app_logger_servicePause);
+DEF_TRACE_SCOPE(logger_app_logger_serviceContinue);
+DEF_TRACE_SCOPE(logger_app_logger_serviceInstall);
+DEF_TRACE_SCOPE(logger_app_logger_serviceUninstall);
+DEF_TRACE_SCOPE(logger_app_logger_setState);
 
 //////////////////////////////////////////////////////////////////////////
 // Logger class implementation
@@ -152,8 +152,8 @@ void Logger::serviceMain( int argc, char ** argv )
 
     do 
     {
-        TRACE_SCOPE(mcrouter_app_Logger_serviceMain);
-        TRACE_DBG("Starting service. There are [ %d ] arguments in the list...", argc);
+        TRACE_SCOPE(logger_app_logger_serviceMain);
+        TRACE_DBG("Starting logger service. There are [ %d ] arguments in the list...", argc);
 
 #ifdef  DEBUG
         for ( int i = 0; i < argc; ++ i )
@@ -198,7 +198,7 @@ void Logger::serviceMain( int argc, char ** argv )
 
 #else   // !AREG_EXTENDED
 
-            printf("Type \'quit\' or \'q\' to quit message router ...: ");
+            printf("Type \'quit\' or \'q\' to quit the logger ...: ");
             const char quit = static_cast<int>('q');
             char cmd[8] = { 0 };
             int charRead = 0;
@@ -227,7 +227,7 @@ void Logger::serviceMain( int argc, char ** argv )
 
 bool Logger::serviceStart(void)
 {
-    TRACE_SCOPE(mcrouter_app_Logger_serviceStart);
+    TRACE_SCOPE(logger_app_logger_serviceStart);
     TRACE_DBG("Starting service [ %s ]", NELoggerSettings::SERVICE_NAME_ASCII);
     bool result = false;
 
@@ -247,7 +247,7 @@ bool Logger::serviceStart(void)
 
 void Logger::serviceStop(void)
 {
-    TRACE_SCOPE(mcrouter_app_Logger_serviceStop);
+    TRACE_SCOPE(logger_app_logger_serviceStop);
     TRACE_WARN("Stopping service [ %s ]", NELoggerSettings::SERVICE_NAME_ASCII);
     setState(NELoggerSettings::eLoggerState::LoggerStopping);
     // mServiceServer.stopRemoteServicing();
@@ -256,7 +256,7 @@ void Logger::serviceStop(void)
 
 void Logger::servicePause(void)
 {
-    TRACE_SCOPE(mcrouter_app_Logger_servicePause);
+    TRACE_SCOPE(logger_app_logger_servicePause);
     TRACE_DBG("Pausing Router service");
 
     setState( NELoggerSettings::eLoggerState::LoggerPausing );
@@ -266,7 +266,7 @@ void Logger::servicePause(void)
 
 bool Logger::serviceContinue(void)
 {
-    TRACE_SCOPE(mcrouter_app_Logger_serviceContinue);
+    TRACE_SCOPE(logger_app_logger_serviceContinue);
     TRACE_DBG("Continuing Logger service");
 
     bool result = false;
@@ -289,7 +289,7 @@ bool Logger::serviceContinue(void)
 
 bool Logger::serviceInstall(void)
 {
-    TRACE_SCOPE(mcrouter_app_Logger_serviceInstall);
+    TRACE_SCOPE(logger_app_logger_serviceInstall);
     
     if ( _osOpenService() == false )
     {
@@ -301,7 +301,7 @@ bool Logger::serviceInstall(void)
 
 void Logger::serviceUninstall(void)
 {
-    TRACE_SCOPE(mcrouter_app_Logger_serviceUninstall);
+    TRACE_SCOPE(logger_app_logger_serviceUninstall);
 
     if ( _osOpenService() )
     {
@@ -313,7 +313,7 @@ void Logger::serviceUninstall(void)
 
 bool Logger::setState( NELoggerSettings::eLoggerState newState )
 {
-    TRACE_SCOPE( mcrouter_app_Logger_setState );
+    TRACE_SCOPE( logger_app_logger_setState );
     TRACE_DBG( "Changing Service Logger state. Old state [ %s ], new state [ %s ]"
                 , NELoggerSettings::getString( mLoggerState )
                 , NELoggerSettings::getString( newState ) );

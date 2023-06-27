@@ -76,23 +76,23 @@ public:
     void serviceMain( int argc, char ** argv );
 
     /**
-     * \brief   Called to start message router service.
+     * \brief   Called to start logger service.
      * \return  Returns true, if started with success.
      **/
     bool serviceStart( void );
 
     /**
-     * \brief   Called to pause message router service.
+     * \brief   Called to pause logger service.
      **/
     void servicePause( void );
 
     /**
-     * \brief   Called to resume paused message router service.
+     * \brief   Called to resume paused logger  service.
      **/
     bool serviceContinue( void );
 
     /**
-     * \brief   Called to stop message router service.
+     * \brief   Called to stop logger  service.
      **/
     void serviceStop( void );
 
@@ -109,7 +109,7 @@ public:
 
     /**
      * \brief   Sets the current command of the logger service.
-     * \param   cmdService  The message router service command to set.
+     * \param   cmdService  The logger  service command to set.
      **/
     inline void setCurrentCommand(NELoggerSettings::eServiceCommand cmdService );
 
@@ -140,7 +140,7 @@ public:
     inline bool isVerbose( void ) const;
 
     /**
-     * \brief   Sets the state of message router service.
+     * \brief   Sets the state of logger  service.
      **/
     bool setState(NELoggerSettings::eLoggerState newState );
 
@@ -156,7 +156,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Returns instance of message router service.
+     * \brief   Returns instance of the logger service.
      **/
     inline Logger & self( void );
 

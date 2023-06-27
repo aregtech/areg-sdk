@@ -26,6 +26,10 @@
     <Link>
       <SubSystem>Console</SubSystem>
     </Link>
+    <PostBuildEvent>
+      <Command>$(AregFrameworkSources)\mcrouter\resources\mcrouter_post_build.bat $(AregFrameworkSources)\mcrouter\resources $(OutDir)</Command>
+      <Message Condition="Exists($(AregFrameworkResources))">Copy mcrouter service installation files to the executable directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
     <ClCompile>
@@ -52,7 +56,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mcrouter\app\private\RouterConsoleService.hpp" />
-    <ClInclude Include="mcrouter\resources\resource.h" />
     <ClInclude Include="mcrouter\tcp\private\IEServerConnectionHandler.hpp" />
     <ClInclude Include="mcrouter\tcp\private\ListServiceProxies.hpp" />
     <ClInclude Include="mcrouter\tcp\private\ServerConnection.hpp" />
@@ -73,6 +76,7 @@
   <ItemGroup>
     <None Include="mcrouter\Readme.md" />
     <None Include="mcrouter\resources\mcrouter.ico" />
+    <None Include="mcrouter\resources\router.init" />
     <None Include="mcrouter\resources\small.ico" />
     <None Include="mcrouter\resources\mcrouter_install.bat" />
     <None Include="mcrouter\resources\mcrouter_uninstall.bat" />

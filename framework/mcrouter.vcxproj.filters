@@ -63,9 +63,6 @@
     <ClInclude Include="mcrouter\app\private\RouterConsoleService.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\resources\resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="mcrouter\resources\mcrouter.ico">
@@ -84,6 +81,7 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="mcrouter\Readme.md" />
+    <None Include="mcrouter\resources\router.init" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mcrouter\app\private\MulticastRouter.cpp">

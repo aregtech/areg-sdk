@@ -44,7 +44,7 @@ namespace NELoggerSettings
     };
 
     /**
-     * \brief   Returns the human readable string of NELOggerSettings::eLoggerState value
+     * \brief   Returns the human readable string of NELoggerSettings::eLoggerState value
      **/
     inline const char * const getString( NELoggerSettings::eLoggerState LoggerState );
 
@@ -68,20 +68,20 @@ namespace NELoggerSettings
     inline const char * getString( NELoggerSettings::eServiceCommand cmdService );
 
     /**
-     * \brief   The ASCII name of router as a system service.
+     * \brief   The ASCII name of the logger as a system service.
      **/
     extern char *               SERVICE_NAME_ASCII  /*= NEApplication::LOGGER_SERVICE_NAME_ASCII*/;
     /**
-     * \brief   The UNICODE name of router as a system service.
+     * \brief   The UNICODE name of the logger as a system service.
      **/
     extern wchar_t *            SERVICE_NAME_WIDE   /*= NEApplication::LOGGER_SERVICE_NAME_WIDE*/;
     /**
-     * \brief   The default option to run multicast router as a console application.
+     * \brief   The default option to run the logger. Run as a console application.
      **/
     constexpr eServiceCommand   DEFAULT_OPTION      { eServiceCommand::CMD_Console };
 
     /**
-     * \brief   List of multicast router string options passed in command line and related eServiceCommand.
+     * \brief   List of the logger options passed in command line and related eServiceCommand.
      **/
     constexpr NEApplication::ServiceCommand< NELoggerSettings::eServiceCommand> ServiceCommands[]
     {
@@ -90,16 +90,16 @@ namespace NELoggerSettings
         , {"--service"  , "-s", "Start Logger as a system service"          , eServiceCommand::CMD_Service}     //!< Command to run process as a system service process.
         , {"--console"  , "-c", "Start Logger as a console application"     , eServiceCommand::CMD_Console}     //!< Command to run process as a console application.
         , {"--verbose"  , "-v", "Display data rate information on console"  , eServiceCommand::CMD_Verbose}     //!< Command to display data rate when run as console application.
-        , {""           , ""  , "End of command list"                       ,eServiceCommand::CMD_Undefined}    //!< Any other command.
+        , {""           , ""  , "Use default command"                       , eServiceCommand::CMD_Console}     //!< Default command.
     };
 
     /**
-     * \brief   The name of main service router thread.
+     * \brief   The name of main thread in the logger.
      **/
     constexpr char      LoggerThreadName[]          { "_AREG_SERVICELOGGER_THREAD_" };
 
     /**
-     * \brief   The default option to run multicast router in verbose mode to output send and receive data rate.
+     * \brief   The default option to run the logger in verbose mode to output send and receive data rate.
      */
     constexpr bool              DEFAULT_VERBOSE{ true };
     /**
@@ -117,7 +117,7 @@ namespace NELoggerSettings
     /**
      * \brief   Wait for user input command message format.
      **/
-    constexpr std::string_view  FORMAT_WAIT_QUIT{ "Type \'quit\' or \'q\' to quit logger ...: " };
+    constexpr std::string_view  FORMAT_WAIT_QUIT{ "Type \'quit\' or \'q\' to quit the logger ...: " };
     /**
      * \brief   Message quit application.
      **/
@@ -196,4 +196,4 @@ inline const char * NELoggerSettings::getString( NELoggerSettings::eServiceComma
     }
 }
 
-#endif  // AREG_MCROUTER_APP_NEMULTICASTROUTERSETTINGS_HPP
+#endif  // AREG_LOGGER_APP_NELOGGERSETTINGS_HPP
