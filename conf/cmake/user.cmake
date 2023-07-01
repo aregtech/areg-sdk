@@ -23,8 +23,8 @@
 #   2. AREG_COMPILER        = g++       (possible values: g++, gcc, clang++, clang, cl)
 #   3. AREG_BINARY          = shared    (possible values: shared, static)
 #   4. AREG_BUILD_TYPE      = Release   (possible values: Release, Debug
-#   5. AREG_BUILD_TESTS     = ON        (possible values: ON, OFF)
-#   6. AREG_BUILD_EXAMPLES  = ON        (possible values: ON, OFF)
+#   5. AREG_BUILD_TESTS     = OFF       (possible values: ON, OFF)
+#   6. AREG_BUILD_EXAMPLES  = OFF       (possible values: ON, OFF)
 #   7. AREG_EXTENDED        = OFF       (possible values: ON, OFF)
 #   8. AREG_LOGS            = ON        (possible values: ON, OFF)
 #   9. AREG_BUILD_ROOT      = <areg-sdk>/product                                                (possible values: any full path)
@@ -42,7 +42,7 @@
 #       - The value 'msvc' will set Microsoft Visual C++ compiler for C++ and C.
 #
 # Example:
-# $ cmake -B ./build -DAREG_COMPILER_FAMILY=clang -DAREG_BINARY=Release -DAREG_BUILD_TESTS:BOOL=ON -DAREG_BUILD_EXAMPLES:BOOL=OFF
+# $ cmake -B ./build -DAREG_COMPILER_FAMILY=clang -DAREG_BINARY=Release -DAREG_BUILD_TESTS:BOOL=ON -DAREG_BUILD_EXAMPLES:BOOL=ON
 # 
 # NOTE: if in command line specify AREG_CXX_COMPILER, the AREG_C_COMPILER
 #       must be specified as well. The both options must be specified
@@ -144,14 +144,14 @@ if (NOT DEFINED AREG_BINARY OR NOT ${AREG_BINARY} STREQUAL "static")
     set(AREG_BINARY "shared")
 endif()
 
-# Build tests. By default it is enabled. To disable, set OFF
+# Build tests. By default it is disabled. To enable, set ON
 if (NOT DEFINED AREG_BUILD_TESTS)
-    option(AREG_BUILD_TESTS     "Build unit tests" ON)
+    option(AREG_BUILD_TESTS     "Build unit tests" OFF)
 endif()
 
-# Build examples. By default it is enabled. To disable, set OFF
+# Build examples. By default it is disabled. To enable, set ON
 if (NOT DEFINED AREG_BUILD_EXAMPLES)
-    option(AREG_BUILD_EXAMPLES  "Build examples"   ON)
+    option(AREG_BUILD_EXAMPLES  "Build examples"   OFF)
 endif()
 
 # Set AREG extended features enable or disable flag to compiler additional optional features. By default, it is disabled.

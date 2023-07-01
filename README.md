@@ -173,7 +173,7 @@ To obtain comprehensive information regarding **builds and options** for the ARE
 
 <details open><summary title="Click to show/hide details">Click to show / hide <code>Build with cmake</code>.</summary><br/>
 
-To build the AREG and examples using [CMake](https://cmake.org/download/), ensure that you have cloned the sources properly as [described earlier](#clone-sources). Open the _Terminal_ in the `areg-sdk` directory and follow these steps:
+To build the AREG source codes using [CMake](https://cmake.org/download/), ensure that you have cloned the sources properly as [described earlier](#clone-sources). Open the _Terminal_ in the `areg-sdk` directory and follow these steps:
 
 1. Initialize the cache and build configuration with default options (*g++* compiler, _release_ build, build examples and unit tests):
 ```bash
@@ -182,7 +182,12 @@ cmake -B ./build
 
 2. Compile the sources, justify parallel jobs with `-j` option:
 ```bash
-cmake --build ./build -j 8
+cmake --build ./build -j8
+```
+> 💡 By default, the source codes of AREG SDK are compiled with `cmake` tool **without examples and unit tests**. This was done to achieve minimal required build using `cmake`. To include examples and unit tests, the developers need to pass additional compiler parameters when configure as shown in this example:
+```bash
+cmake -B ./build -DAREG_BUILD_EXAMPLES:BOOL=ON -DAREG_BUILD_TESTS:BOOL=ON
+cmake --build ./build -j8
 ```
 
 > 💡 For instructions on how to customize builds with `cmake` tool, kindly refer to the [Build with CMake](https://github.com/aregtech/areg-sdk/wiki/03.-Software-build#build-with-cmake-cmakeliststxt) Wiki page.
