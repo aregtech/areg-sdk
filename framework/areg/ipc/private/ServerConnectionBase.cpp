@@ -14,9 +14,11 @@
  ************************************************************************/
 #include "areg/ipc/ServerConnectionBase.hpp"
 
+#include "areg/component/NEService.hpp"
+
 ServerConnectionBase::ServerConnectionBase( void )
     : mServerSocket         ( )
-    , mCookieGenerator      ( static_cast<ITEM_ID>(NEService::eCookies::CookieFirstValid) )
+    , mCookieGenerator      ( NEService::COOKIE_FIRST )
     , mAcceptedConnections  ( )
     , mCookieToSocket       ( )
     , mSocketToCookie       ( )
@@ -27,7 +29,7 @@ ServerConnectionBase::ServerConnectionBase( void )
 
 ServerConnectionBase::ServerConnectionBase(const String & hostName, unsigned short portNr)
     : mServerSocket         ( hostName, portNr )
-    , mCookieGenerator      ( static_cast<ITEM_ID>(NEService::eCookies::CookieFirstValid) )
+    , mCookieGenerator      ( NEService::COOKIE_FIRST )
     , mAcceptedConnections  ( )
     , mCookieToSocket       ( )
     , mSocketToCookie       ( )
@@ -38,7 +40,7 @@ ServerConnectionBase::ServerConnectionBase(const String & hostName, unsigned sho
 
 ServerConnectionBase::ServerConnectionBase(const NESocket::SocketAddress & serverAddress)
     : mServerSocket         ( serverAddress )
-    , mCookieGenerator      ( static_cast<ITEM_ID>(NEService::eCookies::CookieFirstValid) )
+    , mCookieGenerator      ( NEService::COOKIE_FIRST )
     , mAcceptedConnections  ( )
     , mCookieToSocket       ( )
     , mSocketToCookie       ( )
@@ -66,7 +68,7 @@ void ServerConnectionBase::closeSocket(void)
     mCookieToSocket.clear();
     mSocketToCookie.clear();
     mAcceptedConnections.clear();
-    mCookieGenerator = static_cast<ITEM_ID>(NEService::eCookies::CookieFirstValid);
+    mCookieGenerator = NEService::COOKIE_FIRST;
 
     mServerSocket.closeSocket();
 }
@@ -99,7 +101,7 @@ bool ServerConnectionBase::acceptConnection(SocketAccepted & clientConnection)
                 ASSERT(mSocketToCookie.contains(hSocket) == false);
 
                 ITEM_ID cookie = mCookieGenerator ++;
-                ASSERT(cookie >= static_cast<ITEM_ID>(NEService::eCookies::CookieFirstValid));
+                ASSERT(cookie >= NEService::COOKIE_FIRST);
 
                 mAcceptedConnections.setAt(hSocket, clientConnection);
                 mCookieToSocket.setAt(cookie, hSocket);

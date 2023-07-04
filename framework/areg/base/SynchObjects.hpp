@@ -1040,7 +1040,7 @@ public:
 private:
 
     /**
-     * \brief   OS spceific call to create synchronization timer. 
+     * \brief   OS specific call to create synchronization timer. 
      **/
     void _osCreateTimer( bool isSteady );
 

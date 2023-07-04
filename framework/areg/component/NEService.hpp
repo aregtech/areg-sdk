@@ -22,9 +22,10 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/base/IEIOStream.hpp"
+#include "areg/base/NECommon.hpp"
+#include "areg/base/String.hpp"
 #include "areg/base/TEFixedArray.hpp"
 #include "areg/base/Version.hpp"
-#include "areg/base/String.hpp"
 
 /************************************************************************
  * predefined macro
@@ -227,58 +228,50 @@ namespace NEService
     constexpr unsigned int  SEQUENCE_NUMBER_ANY     { static_cast<unsigned int>(~0) };    /*0xFFFFFFFF*/
 
     /**
-     * \brief   NEService::eCookie
-     *          The list of reserved cookie values
-     **/
-    typedef enum class E_Cookies : ITEM_ID
-    {
-          CookieInvalid     = 0     //!< Invalid cookie value
-        , CookieLocal       = 1     //!< Valid cookie value of local services
-        , CookieRouter      = 2     //!< Valid cookie value of Routing Service
-        , CookieAny         = 255   //!< Any valid cookie
-        , CookieFirstValid  = 256   //!< First valid cookie of any other remote service
-    } eCookies;
-
-    /**
      * \brief   NEService::COOKIE_UNKNOWN
      *          Unknown cookie
      **/
-    constexpr ITEM_ID   COOKIE_UNKNOWN      { static_cast<ITEM_ID>(NEService::eCookies::CookieInvalid) };
+    constexpr ITEM_ID   COOKIE_UNKNOWN              { static_cast<ITEM_ID>(NECommon::eCookies::CookieInvalid) };
     /**
      * \brief   NEService::COOKIE_LOCAL
      *          The indication of local service.
      **/
-    constexpr ITEM_ID   COOKIE_LOCAL        { static_cast<ITEM_ID>(NEService::eCookies::CookieLocal) };
+    constexpr ITEM_ID   COOKIE_LOCAL                { static_cast<ITEM_ID>(NECommon::eCookies::CookieLocal) };
     /**
      * \brief   NEService::COOKIE_ROUTER
      *          Indicates Router cookie
      **/
-    constexpr ITEM_ID   COOKIE_ROUTER       { static_cast<ITEM_ID>(NEService::eCookies::CookieRouter) };
+    constexpr ITEM_ID   COOKIE_ROUTER               { static_cast<ITEM_ID>(NECommon::eCookies::CookieService) };
     /**
      * \brief   NEService::COOKIE_ANY
      *          Indicates any valid cookie
      **/
-    constexpr ITEM_ID   COOKIE_ANY          { static_cast<ITEM_ID>(NEService::eCookies::CookieAny) };
+    constexpr ITEM_ID   COOKIE_ANY                  { static_cast<ITEM_ID>(NECommon::eCookies::CookieAny) };
     /**
      * \brief   NEService::TARGET_UNKNOWN
      *          The unknown target ID
      **/
-    constexpr ITEM_ID   TARGET_UNKNOWN      { static_cast<ITEM_ID>(NEService::eCookies::CookieInvalid) };
+    constexpr ITEM_ID   TARGET_UNKNOWN              { static_cast<ITEM_ID>(NECommon::eCookies::CookieInvalid) };
     /**
      * \brief   NEService::TARGET_LOCAL
      *          The local target ID
      **/
-    constexpr ITEM_ID   TARGET_LOCAL        { static_cast<ITEM_ID>(NEService::eCookies::CookieLocal) };
+    constexpr ITEM_ID   TARGET_LOCAL                { static_cast<ITEM_ID>(NECommon::eCookies::CookieLocal) };
     /**
      * \brief   NEService::SOURCE_UNKNOWN
      *          The unknown source ID
      **/
-    constexpr ITEM_ID   SOURCE_UNKNOWN      { static_cast<ITEM_ID>(NEService::eCookies::CookieInvalid) };
+    constexpr ITEM_ID   SOURCE_UNKNOWN              { static_cast<ITEM_ID>(NECommon::eCookies::CookieInvalid) };
     /**
      * \brief   NEService::SOURCE_UNKNOWN
-     *          The unknown source ID
+     *          The unknown source ID.
      **/
-    constexpr ITEM_ID   SOURCE_LOCAL        { static_cast<ITEM_ID>(NEService::eCookies::CookieLocal) };
+    constexpr ITEM_ID   SOURCE_LOCAL                { static_cast<ITEM_ID>(NECommon::eCookies::CookieLocal) };
+    /**
+     * \brief   NEService::COOKIE_FIRST
+     *          The ID of first valid remote cookie.
+     **/
+    constexpr ITEM_ID   COOKIE_FIRST                { static_cast<ITEM_ID>(NECommon::eCookies::CookieFirstValid) };
 
     /**
      * \brief   NEService::eServiceCalls

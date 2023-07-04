@@ -66,6 +66,7 @@ void TraceManager::sendLogMessage( LogMessage & logData )
 {
     TraceManager & tracer = TraceManager::getInstance();
     logData.setModuleId( tracer.mModuleId );
+    logData.setCookie(tracer.mCookie);
     tracer._sendLogEvent( TraceEventData(TraceEventData::eTraceAction::TraceMessage, logData) );
 }
 
@@ -97,31 +98,6 @@ bool TraceManager::startLogging( const char * configFile /*= nullptr*/, unsigned
     } while (false);
 
     return (canStart ? traceManager.startLoggingThread( waitTimeout ) : traceManager.mIsStarted);
-}
-
-void TraceManager::stopLogging( unsigned int waitTimeout /*= NECommon::WAIT_INFINITE*/ )
-{
-    getInstance().stopLoggingThread(waitTimeout);
-}
-
-void TraceManager::registerTraceScope( TraceScope & scope )
-{
-    getInstance()._registerScope(scope);
-}
-
-void TraceManager::unregisterTraceScope( TraceScope & scope )
-{
-    getInstance()._unregisterScope(scope);
-}
-
-void TraceManager::activateTraceScope( TraceScope & scope )
-{
-    getInstance().activateScope(scope);
-}
-
-bool TraceManager::configureLogging(const char * configFile /*= nullptr */)
-{
-    return TraceManager::getInstance().loadConfiguration(configFile);
 }
 
 bool TraceManager::isLoggingConfigured(void)
@@ -162,9 +138,13 @@ bool TraceManager::forceActivateLogging(void)
     return result;
 }
 
-void TraceManager::forceEnableLogging(void)
+void TraceManager::retryStartLogging(void)
 {
-    TraceManager::getInstance().mLogConfig.getStatus().parseProperty( NELogConfig::DEFAULT_LOG_ENABLE.data() );
+    TraceManager& traceManager = TraceManager::getInstance();
+    if (traceManager.isReady())
+    {
+        traceManager._sendLogEvent(TraceEventData(TraceEventData::eTraceAction::TraceRetryRemoteTcpLog));
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -186,9 +166,11 @@ TraceManager::TraceManager(void)
     , mPropertyList     ( )
 
     , mModuleId         ( Process::getInstance().getId() )
+    , mCookie           ( NETrace::COOKIE_LOCAL )
 
     , mLoggerFile       ( mLogConfig )
     , mLoggerDebug      ( mLogConfig )
+    , mLoggerTcp        ( mLogConfig )
 
     , mLogStarted       ( false, false )
     , mLock             ( )
@@ -470,7 +452,7 @@ bool TraceManager::_isEnabled(void) const
 
 bool TraceManager::isHostValid(void) const
 {
-    return (mLogConfig.getRemoteHost().isValid() || mLogConfig.getRemotePort().isValid());
+    return (mLogConfig.getRemoteTcpHost().isValid() || mLogConfig.getRemoteTcpPort().isValid());
 }
 
 bool TraceManager::isDatabaseValid(void) const
@@ -578,6 +560,15 @@ void TraceManager::processEvent(const TraceEventData & data)
         }
         break;
 
+    case TraceEventData::eTraceAction::TraceRetryRemoteTcpLog:
+        {
+            if (mLoggerTcp.isLoggerOpened() == false)
+            {
+                mCookie = mLoggerTcp.openLogger() ? NETrace::COOKIE_ANY : NETrace::COOKIE_LOCAL;
+            }
+        }
+        break;
+
     default:
         break; // ignore, do nothing
     }
@@ -590,6 +581,7 @@ bool TraceManager::runDispatcher(void)
 
     mLoggerFile.closeLogger();
     mLoggerDebug.closeLogger();
+    mLoggerTcp.closeLogger();
 
     TraceEvent::removeListener(static_cast<IETraceEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));
 
@@ -601,10 +593,22 @@ void TraceManager::traceStartLogs( void )
     if ( _isValid() && _isEnabled() )
     {
         setScopesActivity( true );
-        mLoggerFile.openLogger();
+        if (mLoggerFile.isLoggerOpened() == false)
+        {
+            mLoggerFile.openLogger();
+        }
+
 #if defined(OUTPUT_DEBUG)
-        mLoggerDebug.openLogger();
+        if (mLoggerDebug.isLoggerOpened() == false)
+        {
+            mLoggerDebug.openLogger();
+        }
 #endif // !defined(OUTPUT_DEBUG)
+
+        if (mLoggerTcp.isLoggerOpened() == false)
+        {
+            mCookie = mLoggerTcp.openLogger() ? NETrace::COOKIE_ANY : NETrace::COOKIE_LOCAL;
+        }
 
         mIsStarted = true;
     }
@@ -699,6 +703,7 @@ void TraceManager::traceMessage( const LogMessage & logMessage )
 {
     mLoggerFile.logMessage( static_cast<const NETrace::sLogMessage &>(logMessage) );
     mLoggerDebug.logMessage( static_cast<const NETrace::sLogMessage &>(logMessage) );
+    mLoggerTcp.logMessage(static_cast<const NETrace::sLogMessage&>(logMessage));
 
     if ( hasMoreEvents() == false )
     {

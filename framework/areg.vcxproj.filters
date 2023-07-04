@@ -534,6 +534,9 @@
     <ClCompile Include="areg\component\private\TimerManagerEvent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="areg\trace\private\NetTcpLogger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\windows\GEWindows.h">
@@ -1056,6 +1059,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\TEMap.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\trace\private\NetTcpLogger.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -33,8 +33,8 @@ void LogConfiguration::setDefaultValues( void )
     getLogFile().parseProperty( NELogConfig::DEFAULT_LOG_FILE.data( ) );
 
     getStackSize().clearProperty( );
-    getRemoteHost().clearProperty( );
-    getRemotePort().clearProperty( );
+    getRemoteTcpHost().clearProperty( );
+    getRemoteTcpPort().clearProperty( );
     getDatabaseHost().clearProperty( );
     getDatabaseName().clearProperty( );
     getDatabaseDriver().clearProperty( );
@@ -74,8 +74,8 @@ bool LogConfiguration::updateProperty( const TraceProperty & prop )
         }
         break;
 
-    case NELogConfig::eLogConfig::ConfigLogRemoteHost:      // fall through
-    case NELogConfig::eLogConfig::ConfigLogRemotePort:      // fall through
+    case NELogConfig::eLogConfig::ConfigLogRemoteTcpHost:   // fall through
+    case NELogConfig::eLogConfig::ConfigLogRemoteTcpPort:   // fall through
     case NELogConfig::eLogConfig::ConfigLogDatabaseDriver:  // fall through
     case NELogConfig::eLogConfig::ConfigLogDatabaseHost:    // fall through
     case NELogConfig::eLogConfig::ConfigLogDatabaseUser:    // fall through

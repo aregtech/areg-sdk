@@ -1,5 +1,5 @@
-#ifndef AREG_TRACE_PRIVATE_FILELOGGER_HPP
-#define AREG_TRACE_PRIVATE_FILELOGGER_HPP
+#ifndef AREG_TRACE_PRIVATE_NETTCPLOGGER_HPP
+#define AREG_TRACE_PRIVATE_NETTCPLOGGER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,30 +9,49 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        areg/trace/private/FileLogger.hpp
+ * \file        areg/trace/private/NetTcpLogger.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
- * \brief       AREG Platform, File Logger object to log message into the file
+ * \brief       AREG Platform, TCP/IP Logger object to log message into the
+ *              remote object.
  ************************************************************************/
 
 /************************************************************************
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
+#include "areg/base/IEIOStream.hpp"
+#include "areg/base/IEThreadConsumer.hpp"
 #include "areg/trace/private/LoggerBase.hpp"
 
-#include "areg/base/File.hpp"
+#include "areg/base/SocketClient.hpp"
+#include "areg/base/String.hpp"
+#include "areg/base/Thread.hpp"
 
 //////////////////////////////////////////////////////////////////////////
-// FileLogger class declaration
+// NetTcpLogger class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Message logger to output messages in to the file.
+ * \brief   Message logger to log messages to remote device.
  *          At the moment the output logger supports only ASCII messages
  *          and any Unicode character might output wrong.
  **/
-class FileLogger    : public    LoggerBase
+class NetTcpLogger  : public    LoggerBase
+                    , private   IEThreadConsumer
 {
+//////////////////////////////////////////////////////////////////////////
+// Internal types and constants.
+//////////////////////////////////////////////////////////////////////////
+private:
+    //!< The timeout to retry to establish the TCP/IP connection.
+    static constexpr uint32_t   TIMEOUT_CONNECT_RETRY       { NECommon::TIMEOUT_1_SEC };
+    //<! The retry reconnect thread name.
+    static constexpr std::string_view   THREAD_NAME_RETRY   { "_LOGGER_RETRY_TCP_CONNECT_THREAD_" };
+    //<! The number of messages to queue until logging service is available.
+    static constexpr uint32_t           RING_STACK_MAX_SIZE { 100 };
+    //!< The ring buffer of logging message to queue if logging service is not available.
+    using RingStack = TENolockRingStack<NETrace::sLogMessage *>;
+
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
@@ -46,12 +65,12 @@ public:
      *                          required by logger during initialization (open)
      *                          and when outputs message.
      **/
-    explicit FileLogger( LogConfiguration & tracerConfig );
+    explicit NetTcpLogger(LogConfiguration& tracerConfig);
 
     /**
-     * \brief   Destructor
+     * \brief   Destructor.
      **/
-    virtual ~FileLogger( void )= default;
+    virtual ~NetTcpLogger(void);
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations and attribute
@@ -59,7 +78,7 @@ public:
 public:
 
 /************************************************************************/
-// LoggerBase interface overrides
+// LoggerBase overrides
 /************************************************************************/
 
     /**
@@ -93,21 +112,57 @@ public:
      **/
     virtual bool isLoggerOpened( void ) const override;
 
+
+//////////////////////////////////////////////////////////////////////////
+// Overrides
+//////////////////////////////////////////////////////////////////////////
+protected:
+/************************************************************************/
+// IEThreadConsumer interface overrides
+/************************************************************************/
+
+    /**
+     * \brief   This callback function is called from Thread object, when it is 
+     *          running and fully operable. If thread needs run in loop, the loop 
+     *          should be implemented here. When consumer exits this function, 
+     *          the thread will complete work. To restart thread running, 
+     *          createThread() method should be called again.
+     **/
+    virtual void onThreadRuns( void ) override;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   The log file object
-     **/
-    File              mLogFile;
+    //!< Wrapper of 'this' pointer.
+    inline NetTcpLogger& self(void);
 
 //////////////////////////////////////////////////////////////////////////
-// Hidden / Forbidden calls.
+// Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    FileLogger( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( FileLogger );
+    //!< The TCP/IP client socket to connect to remote host.
+    SocketClient    mSocket;
+    //!< The thread to make retries to reconnect to logging service.
+    Thread          mThreadRetry;
+    //!< The ring stack to queue log messages if the connection setup did not complete yet.
+    RingStack       mRingStack;
+
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls.
+//////////////////////////////////////////////////////////////////////////
+private:
+    NetTcpLogger( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE(NetTcpLogger);
 };
 
-#endif  // AREG_TRACE_PRIVATE_FILELOGGER_HPP
+//////////////////////////////////////////////////////////////////////////
+// NetTcpLogger inline methods.
+//////////////////////////////////////////////////////////////////////////
+
+inline NetTcpLogger& NetTcpLogger::self(void)
+{
+    return (*this);
+}
+
+#endif  // AREG_TRACE_PRIVATE_NETTCPLOGGER_HPP

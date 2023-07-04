@@ -332,7 +332,7 @@ namespace NECommon
 
     /**
      * \brief   NECommon::STR_1_NS_SHORT
-     *          1 nansecond short abbreviation.
+     *          1 nanosecond short abbreviation.
      **/
     constexpr std::string_view  STR_1_NS_SHORT      { "ns" };
 
@@ -376,7 +376,7 @@ namespace NECommon
      * \brief   NECommon::DURATION_DURATION_1_MIN1_SEC
      *          1 minute duration in nanoseconds.
      **/
-    constexpr unsigned int  DURATION_1_MIN          { 60 * DURATION_1_SEC };
+    constexpr uint64_t          DURATION_1_MIN          { 60 * static_cast<uint64_t>(DURATION_1_SEC) };
 
     /**
      * \brief   NECommon::STR_1_MIN_SHORT
@@ -475,6 +475,20 @@ namespace NECommon
      *          Object separator such as channel or version numbers.
      **/
     constexpr char              OBJECT_SEPARATOR                { '.' };
+
+    /**
+     * \brief   NECommon::eCookie
+     *          The list of reserved cookie values
+     **/
+    typedef enum class E_Cookies : ITEM_ID
+    {
+          CookieInvalid     = 0     //!< Invalid cookie value
+        , CookieLocal       = 1     //!< Valid cookie value of local services
+        , CookieService     = 2     //!< Valid cookie value of Routing Service
+        , CookieAny         = 255   //!< Any valid cookie
+        , CookieFirstValid  = 256   //!< First valid cookie of any other remote service
+    } eCookies;
+
 }
 
 #endif  // AREG_BASE_NECOMMON_HPP

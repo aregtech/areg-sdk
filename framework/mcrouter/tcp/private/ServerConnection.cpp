@@ -60,5 +60,5 @@ void ServerConnection::closeAllConnections(void)
     mSocketToCookie.clear();
     mAcceptedConnections.clear();
 
-    mCookieGenerator    = static_cast<ITEM_ID>(NEService::eCookies::CookieFirstValid);
+    mCookieGenerator    = NEService::COOKIE_FIRST;
 }

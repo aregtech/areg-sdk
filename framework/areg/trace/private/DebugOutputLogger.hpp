@@ -29,8 +29,7 @@
 // DebugOutputLogger class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   Message logger in output window, normally used in debugging.
- *          The messages are not saved in the file.
+ * \brief   Message logger in to log message in output window, normally used in debugging.
  *          At the moment the output logger supports only ASCII messages
  *          and any Unicode character might output wrong.
  **/

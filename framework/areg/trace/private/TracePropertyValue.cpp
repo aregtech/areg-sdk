@@ -98,6 +98,11 @@ TracePropertyValue::operator unsigned int ( void ) const
     return static_cast<unsigned int>(mValue.isEmpty( ) == false ? mValue.toUInt32( NEString::eRadix::RadixDecimal ) : NELogConfig::DEFAULT_INTEGER_VALUE);
 }
 
+TracePropertyValue::operator unsigned short(void) const
+{
+    return static_cast<unsigned short>(mValue.isEmpty() == false ? mValue.toUInt32(NEString::eRadix::RadixDecimal) : NELogConfig::DEFAULT_INTEGER_VALUE);
+}
+
 TracePropertyValue::operator bool ( void ) const
 {
     if ( mValue.isEmpty( ) == false )

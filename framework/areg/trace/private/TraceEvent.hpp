@@ -62,6 +62,7 @@ public:
         , TraceThreadUnregistered       //!< Action to notify the logging thread unregistered
         , TraceChangeStack              //!< Action to notify the to change logging stack size
         , TraceProcessModuleId          //!< Action to set process module ID
+        , TraceRetryRemoteTcpLog        //!< Action to take to retry the remote TCP/IP logging.
     } eTraceAction;
 
     /**
@@ -204,6 +205,8 @@ inline const char * TraceEventData::getString( TraceEventData::eTraceAction acti
     CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceThreadRegistered);
     CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceThreadUnregistered);
     CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceChangeStack);
+    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceProcessModuleId);
+    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceRetryRemoteTcpLog);
     CASE_DEFAULT("ERR: Undefined TraceEventData::eTraceAction value!");
     }
 }

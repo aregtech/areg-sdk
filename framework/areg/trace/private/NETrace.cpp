@@ -74,8 +74,9 @@ AREG_API_IMPL NETrace::eLogPriority NETrace::convFromString( const String& strPr
 
 NETrace::S_LogHeader::S_LogHeader( NETrace::eLogType logType /*= NETrace::LogUndefined*/ )
     : logLength     ( sizeof(NETrace::S_LogMessage) )
-    , logType       ( logType )
-    , logModuleId   ( 0 )
+    , logType       ( logType                       )
+    , logModuleId   ( 0                             )
+    , logCookie     ( NETrace::COOKIE_LOCAL         )
 {
 }
 
@@ -83,6 +84,7 @@ NETrace::S_LogHeader::S_LogHeader(const NETrace::S_LogHeader & src)
     : logLength     ( src.logLength     )
     , logType       ( src.logType       )
     , logModuleId   ( src.logModuleId   )
+    , logCookie     ( src.logCookie     )
 {
 }
 
@@ -126,17 +128,9 @@ NETrace::S_LogData::S_LogData(unsigned int scopeId, NETrace::eLogPriority msgPri
     , traceMessagePrio  ( msgPrio                       )
     , traceMessageLen   ( MACRO_MIN( LOG_MESSAGE_BUFFER_SIZE - 1, msgLen) )
 {
-    if ( (traceMessageLen != 0) && (message != nullptr) )
-    {
-        int len = NEMemory::memCopy( traceMessage, NETrace::LOG_MESSAGE_BUFFER_SIZE - 1, message, msgLen );
-        traceMessageLen     = len;
-        traceMessage[len]   = String::EmptyChar;
-    }
-    else
-    {
-        traceMessage[0] = String::EmptyChar;
-        traceMessageLen = 0;
-    }
+    int len = NEMemory::memCopy(traceMessage, NETrace::LOG_MESSAGE_BUFFER_SIZE - 1, message, msgLen);
+    traceMessageLen = len;
+    traceMessage[len] = String::EmptyChar;
 }
 
 NETrace::S_LogData & NETrace::S_LogData::operator = (const NETrace::S_LogData & source )
