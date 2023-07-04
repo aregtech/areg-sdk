@@ -19,11 +19,9 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/trace/private/TraceEvent.hpp"
 
-#include "areg/trace/private/LogConfiguration.hpp"
 #include "areg/base/TEResourceMap.hpp"
 #include "areg/base/Containers.hpp"
 #include "areg/base/Version.hpp"
@@ -34,6 +32,8 @@
 #include "areg/trace/private/TraceProperty.hpp"
 #include "areg/trace/private/FileLogger.hpp"
 #include "areg/trace/private/DebugOutputLogger.hpp"
+#include "areg/trace/private/NetTcpLogger.hpp"
+#include "areg/trace/private/LogConfiguration.hpp"
 
 #include <string_view>
 
@@ -137,11 +137,6 @@ private:
 
 public:
     /**
-     * \brief   Returns singleton instance of trace scope manager
-     **/
-    static TraceManager & getInstance( void );
-
-    /**
      * \brief   Returns the ID of given scope name.
      *          If scope name is nullptr or empty, it returns zero.
      * \param   scopeName   The name of scope. If nullptr or empty,
@@ -161,7 +156,7 @@ public:
      *          full or relative path to configuration file. If passed nullptr,
      *          the default configuration file will be loaded.
      **/
-    static bool configureLogging( const char * configFile = nullptr );
+    inline static bool configureLogging( const char * configFile = nullptr );
 
     /**
      * \brief   Call to initialize and start logging.
@@ -183,20 +178,20 @@ public:
      *          The call will be blocked until either logging thread is not stopped,
      *          or the waiting timeout is not expired.
      **/
-    static void stopLogging( unsigned int waitTimeout = NECommon::WAIT_INFINITE );
+    inline static void stopLogging( unsigned int waitTimeout = NECommon::WAIT_INFINITE );
 
     /**
      * \brief   Registers instance of trace scope object in trace manager.
      *          The trace scope should have unique ID.
      * \param   scope   The instance of trace scope object to register
      **/
-    static void registerTraceScope( TraceScope & scope );
+    inline static void registerTraceScope( TraceScope & scope );
 
     /**
      * \brief   Unregisters instance of trace scope object in trace manager.
      * \param   scope   The instance of trace scope to unregister
      **/
-    static void unregisterTraceScope( TraceScope & scope );
+    inline static void unregisterTraceScope( TraceScope & scope );
 
     /**
      * \brief   Activates trace scope. Finds priority in priority list
@@ -204,12 +199,12 @@ public:
      * \param   scope   The instance of trace scope object to activate
      *                  and set logging priority.
      **/
-    static void activateTraceScope( TraceScope & scope );
+    inline static void activateTraceScope( TraceScope & scope );
 
     /**
      * \brief   Returns true if logging has started
      **/
-    static inline bool isLoggingStarted( void );
+    inline static bool isLoggingStarted( void );
 
     /**
      * \brief   Returns true if logging is configured and ready to start
@@ -237,12 +232,35 @@ public:
     /**
      * \brief   Forces to enable logging.
      **/
-    static void forceEnableLogging( void );
+    inline static void forceEnableLogging( void );
+
+    /**
+     * \brief   This call checks the logging types (file, output window, remote) and if
+     *          didn't start, tries to start. Mainly called when cannot establish
+     *          remote logging connection.
+     **/
+    static void retryStartLogging(void);
+
+    /**
+     * \brief   Returns the cookie ID. If NETrace::COOKIE_LOCAL there is no remote logging.
+     **/
+    inline static ITEM_ID getCookie(void);
+
+    /**
+     * \brief   Sets the cookie ID. If NETrace::COOKIE_LOCAL there is no remote logging.
+     * \param   newCookie   The cookie to set.
+     **/
+    inline static void setCookie(const ITEM_ID& newCookie);
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief   Returns singleton instance of trace scope manager
+     **/
+    static TraceManager& getInstance(void);
+
     /**
      * \brief   Protected default constructor.
      **/
@@ -720,6 +738,10 @@ private:
      **/
     ITEM_ID             mModuleId;
     /**
+     * \brief   The cookie set by logger service, if there is any.
+     **/
+    ITEM_ID             mCookie;
+    /**
      * \brief   The file logger object, to output logs in the file.
      **/
     FileLogger          mLoggerFile;
@@ -727,6 +749,10 @@ private:
      * \brief   The debug output logger to output logs in the output device (window).
      **/
     DebugOutputLogger   mLoggerDebug;
+    /**
+     * \brief   The remote TCP/IP logging service.
+     **/
+    NetTcpLogger        mLoggerTcp;
     /**
      * \brief   An event, indicating that the logging has been started.
      */
@@ -746,6 +772,46 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // TraceManager class inline functions
 //////////////////////////////////////////////////////////////////////////
+
+inline void TraceManager::stopLogging(unsigned int waitTimeout /*= NECommon::WAIT_INFINITE*/)
+{
+    getInstance().stopLoggingThread(waitTimeout);
+}
+
+inline void TraceManager::registerTraceScope(TraceScope& scope)
+{
+    getInstance()._registerScope(scope);
+}
+
+inline void TraceManager::unregisterTraceScope(TraceScope& scope)
+{
+    getInstance()._unregisterScope(scope);
+}
+
+inline void TraceManager::activateTraceScope(TraceScope& scope)
+{
+    getInstance().activateScope(scope);
+}
+
+inline bool TraceManager::configureLogging(const char* configFile /*= nullptr */)
+{
+    return TraceManager::getInstance().loadConfiguration(configFile);
+}
+
+inline ITEM_ID TraceManager::getCookie(void)
+{
+    return TraceManager::getInstance().mCookie;
+}
+
+inline void TraceManager::forceEnableLogging(void)
+{
+    TraceManager::getInstance().mLogConfig.getStatus().parseProperty(NELogConfig::DEFAULT_LOG_ENABLE.data());
+}
+
+inline void TraceManager::setCookie(const ITEM_ID& newCookie)
+{
+    TraceManager::getInstance().mCookie = newCookie;
+}
 
 inline TraceManager & TraceManager::self( void )
 {

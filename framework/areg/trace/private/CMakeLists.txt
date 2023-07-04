@@ -8,6 +8,7 @@ list(APPEND areg_SRC
 	${areg_BASE}/trace/private/Layouts.cpp
 	${areg_BASE}/trace/private/NELogConfig.cpp
 	${areg_BASE}/trace/private/NETrace.cpp
+	${areg_BASE}/trace/private/NetTcpLogger.cpp
 	${areg_BASE}/trace/private/TraceEvent.cpp
 	${areg_BASE}/trace/private/TraceManager.cpp
 	${areg_BASE}/trace/private/TraceMessage.cpp

@@ -47,8 +47,8 @@ namespace NELogConfig
           ConfigUnknown             //!< Configuration property is unknown, should not be used
         , ConfigLogVersion          //!< Configuration property is version information
         , ConfigLogFile             //!< Configuration property is logging file name
-        , ConfigLogRemoteHost       //!< Configuration property is logging service host name or IP-address to connect
-        , ConfigLogRemotePort       //!< Configuration property is logging service port number to connect
+        , ConfigLogRemoteTcpHost    //!< Configuration property is logging service host name or IP-address to establish TCP/IP connection
+        , ConfigLogRemoteTcpPort    //!< Configuration property is logging service port number to establish TCP/IP connection
         , ConfigLogDatabaseDriver   //!< Configuration property is database driver name to initialize
         , ConfigLogDatabaseHost     //!< Configuration property is database host to connect
         , ConfigLogDatabaseUser     //!< Configuration property is database user name to login
@@ -239,11 +239,11 @@ namespace NELogConfig
     /**
      * \brief   The syntax of remote logging service host name command.
      **/
-    constexpr std::string_view  SYNTAX_CMD_LOG_REMOTE_HOST          { "log.remote.host" };
+    constexpr std::string_view  SYNTAX_CMD_LOG_REMOTE_TCP_HOST      { "log.remote.tcp.host" };
     /**
      * \brief   The syntax of remote logging service port number command.
      **/
-    constexpr std::string_view  SYNTAX_CMD_LOG_REMOTE_PORT          { "log.remote.port" };
+    constexpr std::string_view  SYNTAX_CMD_LOG_REMOTE_TCP_PORT      { "log.remote.tcp.port" };
     /**
      * \brief   The syntax of database service command.
      **/
@@ -433,8 +433,8 @@ namespace NELogConfig
                   NEString::EmptyStringA                        //!< eLogConfig::ConfigUnknown
                 , NELogConfig::SYNTAX_CMD_LOG_VERSION           //!< eLogConfig::ConfigLogVersion
                 , NELogConfig::SYNTAX_CMD_LOG_FILE              //!< eLogConfig::ConfigLogFile
-                , NELogConfig::SYNTAX_CMD_LOG_REMOTE_HOST       //!< eLogConfig::ConfigLogRemoteHost
-                , NELogConfig::SYNTAX_CMD_LOG_REMOTE_PORT       //!< eLogConfig::ConfigLogRemotePort
+                , NELogConfig::SYNTAX_CMD_LOG_REMOTE_TCP_HOST   //!< eLogConfig::ConfigLogRemoteTcpHost
+                , NELogConfig::SYNTAX_CMD_LOG_REMOTE_TCP_PORT   //!< eLogConfig::ConfigLogRemoteTcpPort
                 , NELogConfig::SYNTAX_CMD_LOG_DB_DRIVER         //!< eLogConfig::ConfigLogDatabaseDriver
                 , NELogConfig::SYNTAX_CMD_LOG_DB_HOST           //!< eLogConfig::ConfigLogDatabaseHost
                 , NELogConfig::SYNTAX_CMD_LOG_DB_USER           //!< eLogConfig::ConfigLogDatabaseUser
@@ -488,10 +488,10 @@ inline const char * NELogConfig::getString( NELogConfig::eLogConfig logConfig )
         return "NELogConfig::ConfigLogVersion";
     case NELogConfig::eLogConfig::ConfigLogFile:
         return "NELogConfig::ConfigLogFile";
-    case NELogConfig::eLogConfig::ConfigLogRemoteHost:
-        return "NELogConfig::ConfigLogRemoteHost";
-    case NELogConfig::eLogConfig::ConfigLogRemotePort:
-        return "NELogConfig::ConfigLogRemotePort";
+    case NELogConfig::eLogConfig::ConfigLogRemoteTcpHost:
+        return "NELogConfig::ConfigLogRemoteTcpHost";
+    case NELogConfig::eLogConfig::ConfigLogRemoteTcpPort:
+        return "NELogConfig::ConfigLogRemoteTcpPort";
     case NELogConfig::eLogConfig::ConfigLogDatabaseDriver:
         return "NELogConfig::ConfigLogDatabaseDriver";
     case NELogConfig::eLogConfig::ConfigLogDatabaseHost:

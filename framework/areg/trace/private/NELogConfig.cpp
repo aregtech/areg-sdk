@@ -31,13 +31,13 @@ NELogConfig::eLogConfig NELogConfig::convFromString( const char * cmdSyntax )
         {
             result = NELogConfig::eLogConfig::ConfigLogFile;
         }
-        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_REMOTE_HOST.data(), static_cast<int>(SYNTAX_CMD_LOG_REMOTE_HOST.length()), false) == NEMath::eCompare::Equal)
+        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_REMOTE_TCP_HOST.data(), static_cast<int>(SYNTAX_CMD_LOG_REMOTE_TCP_HOST.length()), false) == NEMath::eCompare::Equal)
         {
-            result = NELogConfig::eLogConfig::ConfigLogRemoteHost;
+            result = NELogConfig::eLogConfig::ConfigLogRemoteTcpHost;
         }
-        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_REMOTE_PORT.data(), static_cast<int>(SYNTAX_CMD_LOG_REMOTE_PORT.length()), false) == NEMath::eCompare::Equal)
+        else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_REMOTE_TCP_PORT.data(), static_cast<int>(SYNTAX_CMD_LOG_REMOTE_TCP_PORT.length()), false) == NEMath::eCompare::Equal)
         {
-            result = NELogConfig::eLogConfig::ConfigLogRemotePort;
+            result = NELogConfig::eLogConfig::ConfigLogRemoteTcpPort;
         }
         else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_DB_DRIVER.data(), static_cast<int>(SYNTAX_CMD_LOG_DB_DRIVER.length()), false) == NEMath::eCompare::Equal)
         {
@@ -104,10 +104,10 @@ const std::string_view & NELogConfig::convToString( NELogConfig::eLogConfig logC
         return NELogConfig::SYNTAX_CMD_LOG_VERSION;
     case NELogConfig::eLogConfig::ConfigLogFile:
         return NELogConfig::SYNTAX_CMD_LOG_FILE;
-    case NELogConfig::eLogConfig::ConfigLogRemoteHost:
-        return NELogConfig::SYNTAX_CMD_LOG_REMOTE_HOST;
-    case NELogConfig::eLogConfig::ConfigLogRemotePort:
-        return NELogConfig::SYNTAX_CMD_LOG_REMOTE_PORT;
+    case NELogConfig::eLogConfig::ConfigLogRemoteTcpHost:
+        return NELogConfig::SYNTAX_CMD_LOG_REMOTE_TCP_HOST;
+    case NELogConfig::eLogConfig::ConfigLogRemoteTcpPort:
+        return NELogConfig::SYNTAX_CMD_LOG_REMOTE_TCP_PORT;
     case NELogConfig::eLogConfig::ConfigLogDatabaseDriver:
         return NELogConfig::SYNTAX_CMD_LOG_DB_DRIVER;
     case NELogConfig::eLogConfig::ConfigLogDatabaseHost:

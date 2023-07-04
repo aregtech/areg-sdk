@@ -203,7 +203,7 @@ protected:
 private:
 
     /**
-     * \brief   OS cpecific implementation of creating waitable timer and
+     * \brief   OS specific implementation of creating waitable timer and
      *          returns the handle of created timer.
      **/
     TIMERHANDLE _osCreateWaitableTimer( void );

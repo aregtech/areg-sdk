@@ -178,6 +178,19 @@ public:
     inline void setModuleId( ITEM_ID moduleId );
 
     /**
+     * \brief   Returns the cookie value set by logger service.
+     *          If equal NETrace::COOKIE_LOCAL, the log messages should not be sent to remote host.
+     *          If equal NETrace::COOKIE_ANY, the log message should be queued to wait to complete remote logging service setup.
+     *          If equal or more than NETrace::COOKIE_FIRST_VALID, the log message can be forwarded to remote host.
+     **/
+    inline ITEM_ID getCookie(void) const;
+
+    /**
+     * \brief   Sets the cookie value set by logger service.
+     **/
+    inline void setCookie(const ITEM_ID& newCookie);
+
+    /**
      * \brief   Returns the priority ob message log
      **/
     inline NETrace::eLogPriority getMessagePrio( void ) const;
@@ -277,6 +290,16 @@ inline void LogMessage::setMessagePrio(const NETrace::eLogPriority msgPrio)
 inline const char * LogMessage::getMessage(void) const
 {
     return lmTrace.traceMessage;
+}
+
+inline ITEM_ID LogMessage::getCookie(void) const
+{
+    return lmHeader.logCookie;
+}
+
+inline void LogMessage::setCookie(const ITEM_ID& newCookie)
+{
+    lmHeader.logCookie = newCookie;
 }
 
 inline const IEInStream & operator >> ( const IEInStream & stream, LogMessage & input )

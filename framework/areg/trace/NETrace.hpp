@@ -18,8 +18,9 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/IEIOStream.hpp"
 
+#include "areg/base/IEIOStream.hpp"
+#include "areg/base/NECommon.hpp"
 #include "areg/base/String.hpp"
 
 /************************************************************************
@@ -88,13 +89,28 @@ namespace NETrace
      *          Flag, indicating whether there is any priority set to output message.
      *          The log has priority if one of first 5 bits are set.
      **/
-    constexpr unsigned int  HAS_MESSAGE_PRIORITY    = 0x1F; // 63, bit set 0001 1111
+    constexpr unsigned int  HAS_MESSAGE_PRIORITY    { 0x1F }; // 63, bit set 0001 1111
 
     /**
      * \brief   NETrace::TRACE_SCOPE_ID_NONE
      *          Constant, defines no scope ID. It is used to output message without scope
      **/
-    constexpr unsigned int  TRACE_SCOPE_ID_NONE     = 0;
+    constexpr unsigned int  TRACE_SCOPE_ID_NONE     { 0 };
+
+    /**
+     * \brief   The cookie to indicate that messages are not for remote host.
+     **/
+    constexpr ITEM_ID       COOKIE_LOCAL            { static_cast<ITEM_ID>(NECommon::eCookies::CookieLocal) };
+
+    /**
+     * \brief   The first valid cookie given by logging service.
+     **/
+    constexpr ITEM_ID       COOKIE_FIRST_VALID      { static_cast<ITEM_ID>(NECommon::eCookies::CookieFirstValid) };
+
+    /**
+     * \brief   The cookie to indicate that log can be either local or remote. It happens when the logger service initialization is not completed yet.
+     **/
+    constexpr ITEM_ID       COOKIE_ANY              { static_cast<ITEM_ID>(NECommon::eCookies::CookieAny) };
 
     /**
      * \brief   NETrace::eLogType
@@ -102,51 +118,53 @@ namespace NETrace
      **/
     typedef enum E_LogType : unsigned int
     {
-          LogUndefined  = 0x00  //!< Undefined log message
-        , LogCommand    = 0x96  //!< Log message contains command
-        , LogScopeEnter = 0x97  //!< Enter to scope log message
-        , LogScopeExit  = 0x98  //!< Exit from scope log message
-        , LogMessage    = 0x99  //!< Text log message
+          LogUndefined  =    0  //!< Undefined log message
+        , LogCommand    =    2  //!< Log message contains command
+        , LogScopeList  =    4  //!< The list of scopes
+        , LogScopeEnter =    8  //!< Enter to scope log message
+        , LogScopeExit  =   16  //!< Exit from scope log message
+        , LogMessage    =   32  //!< Text log message
+        , LogRemote     =   64  //!< The remote log
     } eLogType;
 
     /**
      * \brief   The string value of no priority
      **/
-    const String    PRIO_NOTSET_STR     { "NOTSET" };
+    const String  PRIO_NOTSET_STR     { "NOTSET" };
     /**
      * \brief   The string value of scope priority
      **/
-    const String    PRIO_SCOPE_STR      { "SCOPE" };
+    const String  PRIO_SCOPE_STR      { "SCOPE" };
     /**
      * \brief   The string value of fatal error priority
      **/
-    const String    PRIO_FATAL_STR      { "FATAL" };
+    const String  PRIO_FATAL_STR      { "FATAL" };
     /**
      * \brief   The string value of error priority
      **/
-    const String    PRIO_ERROR_STR      { "ERROR" };
+    const String  PRIO_ERROR_STR      { "ERROR" };
     /**
      * \brief   The string value of warning priority
      **/
-    const String    PRIO_WARNING_STR    { "WARNING" };
+    const String  PRIO_WARNING_STR    { "WARNING" };
     /**
      * \brief   The string value of information priority
      **/
-    const String    PRIO_INFO_STR       { "INFO" };
+    const String  PRIO_INFO_STR       { "INFO" };
     /**
      * \brief   The string value of debug priority
      **/
-    const String    PRIO_DEBUG_STR      { "DEBUG" };
+    const String  PRIO_DEBUG_STR      { "DEBUG" };
     /**
      * \brief   No priority string
      **/
-    const String    PRIO_NO_PRIO        { "" };
+    const String  PRIO_NO_PRIO        { "" };
 
     /**
      * \brief   NETrace::LOG_MESSAGE_BUFFER_SIZE
      *          The maximum size of text in log message
      **/
-    constexpr unsigned int      LOG_MESSAGE_BUFFER_SIZE     = 512;
+    constexpr uint32_t          LOG_MESSAGE_BUFFER_SIZE     { 512 };
 
     /**
      * \brief   NETrace::sLogHeader
@@ -172,9 +190,10 @@ namespace NETrace
          **/
         S_LogHeader & operator = ( const NETrace::S_LogHeader & src );
 
-        unsigned int        logLength;      //!< The length in bytes of complete log object
-        NETrace::eLogType   logType;        //!< The type of log message
-        ITEM_ID             logModuleId;    //!< The ID of log module
+        unsigned int        logLength;      //!< The length in bytes of complete log object.
+        NETrace::eLogType   logType;        //!< The type of log message.
+        ITEM_ID             logModuleId;    //!< The ID of log module.
+        ITEM_ID             logCookie;      //!< The cookie set by service.
     } sLogHeader;
 
     /**

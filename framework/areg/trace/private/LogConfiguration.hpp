@@ -148,16 +148,16 @@ public:
     /**
      * \brief   Gets and set property value of remote host name logging settings.
      **/
-    inline const TraceProperty & getRemoteHost( void ) const;
-    inline TraceProperty & getRemoteHost( void );
-    inline void setRemoteHost( const TraceProperty & prop );
+    inline const TraceProperty & getRemoteTcpHost( void ) const;
+    inline TraceProperty & getRemoteTcpHost( void );
+    inline void setRemoteTcpHost( const TraceProperty & prop );
 
     /**
      * \brief   Gets and set property value of remote host port logging settings.
      **/
-    inline const TraceProperty & getRemotePort( void ) const;
-    inline TraceProperty & getRemotePort( void );
-    inline void setRemotePort( const TraceProperty & prop );
+    inline const TraceProperty & getRemoteTcpPort( void ) const;
+    inline TraceProperty & getRemoteTcpPort( void );
+    inline void setRemoteTcpPort( const TraceProperty & prop );
 
     /**
      * \brief   Gets and set property value of database host name logging settings.
@@ -369,34 +369,34 @@ inline void LogConfiguration::setLogFile( const TraceProperty & prop )
     mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogFile)] = prop;
 }
 
-inline const TraceProperty & LogConfiguration::getRemoteHost( void ) const
+inline const TraceProperty & LogConfiguration::getRemoteTcpHost( void ) const
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogRemoteHost)];
+    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpHost)];
 }
 
-inline TraceProperty & LogConfiguration::getRemoteHost( void )
+inline TraceProperty & LogConfiguration::getRemoteTcpHost( void )
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogRemoteHost)];
+    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpHost)];
 }
 
-inline void LogConfiguration::setRemoteHost( const TraceProperty & prop )
+inline void LogConfiguration::setRemoteTcpHost( const TraceProperty & prop )
 {
-    mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogRemoteHost)] = prop;
+    mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpHost)] = prop;
 }
 
-inline const TraceProperty & LogConfiguration::getRemotePort( void ) const
+inline const TraceProperty & LogConfiguration::getRemoteTcpPort( void ) const
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogRemotePort)];
+    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpPort)];
 }
 
-inline TraceProperty & LogConfiguration::getRemotePort( void )
+inline TraceProperty & LogConfiguration::getRemoteTcpPort( void )
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogRemotePort)];
+    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpPort)];
 }
 
-inline void LogConfiguration::setRemotePort( const TraceProperty & prop )
+inline void LogConfiguration::setRemoteTcpPort( const TraceProperty & prop )
 {
-    mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogRemotePort)] = prop;
+    mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpPort)] = prop;
 }
 
 inline const TraceProperty & LogConfiguration::getDatabaseHost( void ) const

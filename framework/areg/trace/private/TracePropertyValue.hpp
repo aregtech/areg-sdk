@@ -137,9 +137,14 @@ public:
     inline explicit operator NETrace::eLogPriority ( void ) const;
 
     /**
-     * \brief   Returns property value as an integer
+     * \brief   Returns property value as an 32-bit unsigned integer
      **/
     explicit operator unsigned int ( void ) const;
+
+    /**
+     * \brief   Returns property value as an 16-bit unsigned integer
+     **/
+    explicit operator unsigned short( void ) const;
 
     /**
      * \brief   Returns property value as a boolean.

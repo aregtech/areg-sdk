@@ -32,10 +32,10 @@ TraceScope::TraceScope( const char * scopeName, NETrace::eLogPriority priority /
     , mScopeId      ( TraceManager::makeScopeId(mScopeName.getString())  )
     , mScopePrio    ( priority )
 {
-    TraceManager::getInstance().registerTraceScope( self() );
+    TraceManager::registerTraceScope( self() );
 }
 
 TraceScope::~TraceScope( void )
 {
-    TraceManager::getInstance().unregisterTraceScope( self() );
+    TraceManager::unregisterTraceScope( self() );
 }
