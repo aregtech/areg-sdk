@@ -37,9 +37,6 @@
 ---
 
 ## Table of contents[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#table-of-contents)
-- [Project Status](#project-status)
-- [Introduction](#introduction)
-- [Table of contents](#table-of-contents)
 - [Motivation](#motivation)
 - [Interface-centricity](#interface-centricity)
 - [More than embedded](#more-than-embedded)
@@ -450,6 +447,10 @@ Special thanks to all contributors and supporters that starred this repository.
 **Our supportive stargazers**:
 
 [![Stargazers for @aregtech/areg-sdk](https://reporoster.com/stars/aregtech/areg-sdk)](https://github.com/aregtech/areg-sdk/stargazers)
+
+Do you like this project? Please [give](https://github.com/aregtech/areg-sdk/stargazers) a ⭐.<br/>
+Do you have idea of found a bug? Please open an [issue](https://github.com/aregtech/areg-sdk/issues) or start a [discussion](https://github.com/aregtech/areg-sdk/discussions).<br/>
+These will help us a lot.
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
