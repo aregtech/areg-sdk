@@ -720,3 +720,17 @@ AREG_API_IMPL bool NESocket::disableReceive(SOCKETHANDLE hSocket)
 
     return (hSocket != NESocket::InvalidSocketHandle ? RETURNED_OK == ::shutdown(hSocket, flag) : false);
 }
+
+AREG_API String NESocket::getHostname(void)
+{
+    String result;
+
+    constexpr size_t length{ 256 };
+    char name[length]{};
+    if (gethostname(name, length) == RETURNED_OK)
+    {
+        result = name;
+    }
+
+    return result;
+}

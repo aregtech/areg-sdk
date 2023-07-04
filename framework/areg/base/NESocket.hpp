@@ -467,6 +467,13 @@ namespace NESocket
      **/
     AREG_API unsigned int pendingRead( SOCKETHANDLE hSocket );
 
+    /**
+     * \brief   NESocket::getHostname
+     *          Returns the host name of the local machine.
+     *          Or returns empty string if failed.
+     **/
+    AREG_API String getHostname(void);
+
 }   // namespace NESocket end
 
 //////////////////////////////////////////////////////////////////////////
