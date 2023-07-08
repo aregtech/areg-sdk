@@ -244,7 +244,7 @@ void ThreadIdLayout::logMessage( const NETrace::sLogMessageData & msgLog, IEOutS
 #ifdef _BIT64
         String::formatString(buffer, 32, "0x%016llX", static_cast<uint64_t>(msgLog.dataThreadId));
 #else   // _BIT32
-        String::formatString(buffer, 32, "0x%08X", static_cast<uint32_t>(msgLog.lmTrace.dataThreadId));
+        String::formatString(buffer, 32, "0x%08X", static_cast<uint32_t>(msgLog.dataThreadId));
 #endif  // _BIT64
 
         stream.write(buffer);
