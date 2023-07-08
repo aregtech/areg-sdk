@@ -70,16 +70,16 @@ void LayoutManager::logMessage(const NETrace::sLogMessage & logMsg, IEOutStream 
 {
     if (isValid())
     {
-        if ( logMsg.lmTrace.traceMessagePrio == NETrace::PrioIgnoreLayout )
+        if ( logMsg.lmTrace.dataMessagePrio == NETrace::PrioIgnoreLayout )
         {
-            stream.write( logMsg.lmTrace.traceMessage );
+            stream.write( logMsg.lmTrace.dataMessage );
         }
         else
         {
             uint32_t size = mLayoutList.getSize();
             for (uint32_t i = 0; i < size; ++i)
             {
-                mLayoutList.getAt(i)->logMessage(logMsg, stream);
+                mLayoutList.getAt(i)->logMessage(logMsg.lmTrace, stream);
             }
         }
     }

@@ -52,23 +52,13 @@ bool DebugOutputLogger::openLogger(void)
             if ( mIsOpened )
             {
                 Process & curProcess = Process::getInstance();
-                NETrace::sLogMessage logMsgHello;
-                NEMemory::zeroElement<NETrace::sLogMessage>(logMsgHello);
-
-                logMsgHello.lmHeader.logLength      = sizeof(NETrace::sLogMessage);
-                logMsgHello.lmHeader.logType        = NETrace::LogMessage;
-                logMsgHello.lmHeader.logModuleId    = 0;
-
-                logMsgHello.lmTrace.traceThreadId   = 0;
-                logMsgHello.lmTrace.traceScopeId    = 0;
-                logMsgHello.lmTrace.traceTimestamp  = DateTime::getNow();
-                logMsgHello.lmTrace.traceMessagePrio= NETrace::PrioIgnoreLayout;
-                String::formatString( logMsgHello.lmTrace.traceMessage
+                NETrace::sLogMessage logMsgHello(NETrace::eMessageType::MsgText, 0, NETrace::eLogPriority::PrioIgnoreLayout, nullptr, 0);
+                String::formatString( logMsgHello.lmTrace.dataMessage
                                     , NETrace::LOG_MESSAGE_BUFFER_SIZE
                                     , LoggerBase::FOMAT_MESSAGE_HELLO.data()
                                     , Process::getString(curProcess.getEnvironment())
                                     , curProcess.getFullPath().getString()
-                                    , curProcess.getId());
+                                    , logMsgHello.lmTrace.dataModuleId);
 
                 logMessage(logMsgHello);
             }
@@ -89,25 +79,14 @@ void DebugOutputLogger::closeLogger(void)
     if ( mIsOpened )
     {
         Process & curProcess = Process::getInstance();
-        NETrace::sLogMessage logMsgHello;
-        NEMemory::zeroElement<NETrace::sLogMessage>(logMsgHello);
-
-        logMsgHello.lmHeader.logLength      = sizeof(NETrace::sLogMessage);
-        logMsgHello.lmHeader.logType        = NETrace::LogMessage;
-        logMsgHello.lmHeader.logModuleId    = 0;
-
-        logMsgHello.lmTrace.traceThreadId   = 0;
-        logMsgHello.lmTrace.traceScopeId    = 0;
-        logMsgHello.lmTrace.traceTimestamp  = DateTime::getNow();
-        logMsgHello.lmTrace.traceMessagePrio= NETrace::PrioIgnoreLayout;
-        String::formatString( logMsgHello.lmTrace.traceMessage
+        NETrace::sLogMessage logMsgGoodbye(NETrace::eMessageType::MsgText, 0, NETrace::eLogPriority::PrioIgnoreLayout, nullptr, 0);
+        String::formatString( logMsgGoodbye.lmTrace.dataMessage
                             , NETrace::LOG_MESSAGE_BUFFER_SIZE
                             , LoggerBase::FORMAT_MESSAGE_BYE.data()
                             , Process::getString(curProcess.getEnvironment())
                             , curProcess.getFullPath().getString()
-                            , curProcess.getId());
-
-        logMessage(logMsgHello);
+                            , logMsgGoodbye.lmTrace.dataModuleId);
+        logMessage(logMsgGoodbye);
     }
 #endif  // !defined(OUTPUT_DEBUG)
 
@@ -119,19 +98,19 @@ void DebugOutputLogger::closeLogger(void)
 
 void DebugOutputLogger::logMessage(const NETrace::sLogMessage & logMessage)
 {
-    if ( mIsOpened )
+    if ( mIsOpened && NETrace::isLogMessage(logMessage.lmHeader) )
     {
-        switch (logMessage.lmHeader.logType)
+        switch (logMessage.lmHeader.hdrLogType)
         {
-        case NETrace::LogMessage:
+        case NETrace::eMessageType::LogMessage:
             getLayoutMessage().logMessage(logMessage, static_cast<IEOutStream &>(*this));
             break;
 
-        case NETrace::LogScopeEnter:
+        case NETrace::eMessageType::LogScopeEnter:
             getLayoutEnterScope().logMessage( logMessage, static_cast<IEOutStream &>(*this) );
             break;
 
-        case NETrace::LogScopeExit:
+        case NETrace::eMessageType::LogScopeExit:
             getLayoutExitScope().logMessage( logMessage, static_cast<IEOutStream &>(*this) );
             break;
 

@@ -244,13 +244,18 @@ public:
     /**
      * \brief   Returns the cookie ID. If NETrace::COOKIE_LOCAL there is no remote logging.
      **/
-    inline static ITEM_ID getCookie(void);
+    inline static const ITEM_ID & getCookie(void);
 
     /**
      * \brief   Sets the cookie ID. If NETrace::COOKIE_LOCAL there is no remote logging.
      * \param   newCookie   The cookie to set.
      **/
     inline static void setCookie(const ITEM_ID& newCookie);
+
+    /**
+     * \brief   Returns the module ID set by the system. Normally, it is the process ID.
+     **/
+    inline static const ITEM_ID & getModuleId(void);
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
@@ -682,7 +687,7 @@ private:
      * \note    Currently only logging in output window and file system works.
      *          There should be slight refactoring to be able to register any logger.
      **/
-    void traceMessage( const LogMessage & logMessage );
+    void dataMessage( const LogMessage & logMessage );
 
     /**
      * \brief   Sets activity flag of every registered scope.
@@ -798,19 +803,24 @@ inline bool TraceManager::configureLogging(const char* configFile /*= nullptr */
     return TraceManager::getInstance().loadConfiguration(configFile);
 }
 
-inline ITEM_ID TraceManager::getCookie(void)
+inline const ITEM_ID & TraceManager::getCookie(void)
 {
     return TraceManager::getInstance().mCookie;
-}
-
-inline void TraceManager::forceEnableLogging(void)
-{
-    TraceManager::getInstance().mLogConfig.getStatus().parseProperty(NELogConfig::DEFAULT_LOG_ENABLE.data());
 }
 
 inline void TraceManager::setCookie(const ITEM_ID& newCookie)
 {
     TraceManager::getInstance().mCookie = newCookie;
+}
+
+inline const ITEM_ID& TraceManager::getModuleId(void)
+{
+    return TraceManager::getInstance().mModuleId;
+}
+
+inline void TraceManager::forceEnableLogging(void)
+{
+    TraceManager::getInstance().mLogConfig.getStatus().parseProperty(NELogConfig::DEFAULT_LOG_ENABLE.data());
 }
 
 inline TraceManager & TraceManager::self( void )

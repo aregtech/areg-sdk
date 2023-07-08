@@ -85,7 +85,7 @@ namespace
     inline int32_t _formatDigit( WideString & result, const wchar_t * format, DigitType number )
     {
         wchar_t buffer[CharCount];
-        buffer[0] = static_cast<wchar_t>(NEString::EndOfString);
+        buffer[0] = WideString::EmptyChar;
 
         int32_t count = -1;
 #ifdef _WIN32
@@ -103,7 +103,7 @@ namespace
         int result = -1;
         if ( buffer != nullptr )
         {
-            *buffer = static_cast<wchar_t>(NEString::EndOfString);
+            *buffer = WideString::EmptyChar;
 #ifdef  WIN32
             result = vswprintf_s( buffer, static_cast<size_t>(count), format, argptr );
 #else   // !WIN32

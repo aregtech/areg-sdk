@@ -143,7 +143,7 @@ public:
      *              -   No such environment variable exists or it is empty.
      *              -   There is a reason that it should not be used 
      *                  (e.g. elevated privileges in Linux).
-     * \param   var   The environment variable to return valur.
+     * \param   var   The environment variable to return value.
      **/
     String getSafeEnvVariable( const char * var ) const;
 

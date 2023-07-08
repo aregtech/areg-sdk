@@ -63,7 +63,7 @@ bool NetTcpLogger::openLogger(void)
         else
         {
             OUTPUT_DBG("Ignore to establish TCP/IP remote connection, no property is set.");
-            result = true;
+            result = false;
         }
     }
     else
@@ -91,9 +91,9 @@ void NetTcpLogger::logMessage(const NETrace::sLogMessage& logMessage)
 {
     if (mSocket.isValid())
     {
-        if (logMessage.lmHeader.logCookie >= NETrace::COOKIE_FIRST_VALID)
+        if (logMessage.lmHeader.hdrCookie >= NETrace::COOKIE_FIRST_VALID)
         {
-            if (mSocket.sendData(reinterpret_cast<const unsigned char*>(&logMessage), logMessage.lmHeader.logLength) == 0)
+            if (mSocket.sendData(reinterpret_cast<const unsigned char*>(&logMessage), sizeof(NETrace::sLogMessage) ) == 0)
             {
                 if (mSocket.isAlive() == false)
                 {
@@ -103,7 +103,7 @@ void NetTcpLogger::logMessage(const NETrace::sLogMessage& logMessage)
                 }
             }
         }
-        else if (logMessage.lmHeader.logCookie == NETrace::COOKIE_ANY)
+        else if (logMessage.lmHeader.hdrCookie == NETrace::COOKIE_ANY)
         {
             NETrace::sLogMessage* log = new NETrace::sLogMessage;
             *log = logMessage;
@@ -122,7 +122,7 @@ void NetTcpLogger::flushLogs(void)
     {
         NETrace::sLogMessage* log = mRingStack.popFirst();
         ASSERT(log != nullptr);
-        mSocket.sendData(reinterpret_cast<const unsigned char*>(log), log->lmHeader.logLength);
+        mSocket.sendData(reinterpret_cast<const unsigned char*>(log), sizeof(NETrace::sLogMessage));
         delete log;
     }
 }

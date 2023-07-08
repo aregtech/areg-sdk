@@ -85,7 +85,7 @@ namespace
     inline int32_t _formatDigit( String & result, const char * format, DigitType number )
     {
         char buffer[CharCount];
-        buffer[0] = static_cast<char>(NEString::EndOfString);
+        buffer[0] = String::EmptyChar;
 
         int32_t count = -1;
 #ifdef _WIN32
@@ -103,7 +103,7 @@ namespace
         int result = -1;
         if ( buffer != nullptr )
         {
-            *buffer = static_cast<char>(NEString::EndOfString);
+            *buffer = String::EmptyChar;
 #ifdef  WIN32
             result = vsprintf_s( buffer, static_cast<size_t>(count), format, argptr );
 #else   // !WIN32

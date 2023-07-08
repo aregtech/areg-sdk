@@ -54,23 +54,13 @@ bool FileLogger::openLogger( void )
                 {
                     
                     Process & curProcess = Process::getInstance();
-                    NETrace::sLogMessage logMsgHello;
-                    NEMemory::zeroElement<NETrace::sLogMessage>( logMsgHello );
-
-                    logMsgHello.lmHeader.logLength      = sizeof(NETrace::sLogMessage);
-                    logMsgHello.lmHeader.logType        = NETrace::LogMessage;
-                    logMsgHello.lmHeader.logModuleId    = 0;
-
-                    logMsgHello.lmTrace.traceThreadId   = 0;
-                    logMsgHello.lmTrace.traceScopeId    = 0;
-                    logMsgHello.lmTrace.traceTimestamp  = static_cast<TIME64>(DateTime::getNow());
-                    logMsgHello.lmTrace.traceMessagePrio= NETrace::PrioIgnoreLayout;
-                    String::formatString( logMsgHello.lmTrace.traceMessage
+                    NETrace::sLogMessage logMsgHello(NETrace::eMessageType::MsgText, 0, NETrace::eLogPriority::PrioIgnoreLayout, nullptr, 0);
+                    String::formatString( logMsgHello.lmTrace.dataMessage
                                         , NETrace::LOG_MESSAGE_BUFFER_SIZE
                                         , LoggerBase::FOMAT_MESSAGE_HELLO.data()
                                         , Process::getString(curProcess.getEnvironment())
                                         , curProcess.getFullPath().getString()
-                                        , curProcess.getId());
+                                        , logMsgHello.lmTrace.dataModuleId);
 
                     logMessage(logMsgHello);
                 }
@@ -94,25 +84,15 @@ void FileLogger::closeLogger(void)
     if ( mLogFile.isOpened() )
     {
         Process & curProcess = Process::getInstance();
-        NETrace::sLogMessage logMsgHello;
-        NEMemory::zeroElement<NETrace::sLogMessage>( logMsgHello );
-
-        logMsgHello.lmHeader.logLength      = sizeof(NETrace::sLogMessage);
-        logMsgHello.lmHeader.logType        = NETrace::LogMessage;
-        logMsgHello.lmHeader.logModuleId    = 0;
-
-        logMsgHello.lmTrace.traceThreadId   = 0;
-        logMsgHello.lmTrace.traceScopeId    = 0;
-        logMsgHello.lmTrace.traceTimestamp  = static_cast<TIME64>(DateTime::getNow());
-        logMsgHello.lmTrace.traceMessagePrio= NETrace::PrioIgnoreLayout;
-        String::formatString( logMsgHello.lmTrace.traceMessage
+        NETrace::sLogMessage logMsgGoodbye(NETrace::eMessageType::MsgText, 0, NETrace::eLogPriority::PrioIgnoreLayout, nullptr, 0);
+        String::formatString(logMsgGoodbye.lmTrace.dataMessage
                             , NETrace::LOG_MESSAGE_BUFFER_SIZE
                             , LoggerBase::FORMAT_MESSAGE_BYE.data()
                             , Process::getString(curProcess.getEnvironment())
                             , curProcess.getFullPath().getString()
-                            , curProcess.getId());
+                            , logMsgGoodbye.lmTrace.dataModuleId);
 
-        logMessage(logMsgHello);
+        logMessage(logMsgGoodbye);
     }
 
     releaseLayouts();
@@ -121,26 +101,22 @@ void FileLogger::closeLogger(void)
 
 void FileLogger::logMessage( const NETrace::sLogMessage & logMessage )
 {
-    if ( mLogFile.isOpened() )
+    if (mLogFile.isOpened() && NETrace::isLogMessage(logMessage.lmHeader))
     {
-        switch (logMessage.lmHeader.logType)
+        switch (logMessage.lmTrace.dataNsgType)
         {
-        case NETrace::LogMessage:
-            getLayoutMessage().logMessage( logMessage, static_cast<IEOutStream &>(mLogFile) );
+        case NETrace::eMessageType::MsgText:
+            getLayoutMessage().logMessage(logMessage, static_cast<IEOutStream&>(mLogFile));
             break;
 
-        case NETrace::LogScopeEnter:
+        case NETrace::eMessageType::MsgScopeEnter:
             getLayoutEnterScope().logMessage( logMessage, static_cast<IEOutStream &>(mLogFile) );
             break;
 
-        case NETrace::LogScopeExit:
+        case NETrace::eMessageType::MsgScopeExit:
             getLayoutExitScope().logMessage( logMessage, static_cast<IEOutStream &>(mLogFile) );
             break;
 
-        case NETrace::LogCommand:
-            break;
-
-        case NETrace::LogUndefined: // fall through
         default:
             ASSERT(false);  // unexpected message to log
             break;
