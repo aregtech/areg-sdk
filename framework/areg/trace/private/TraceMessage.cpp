@@ -22,7 +22,6 @@
 
 #include <stdarg.h>
 
-
 TraceMessage::TraceMessage( const TraceScope & traceScope )
     : mScopeName( traceScope.getScopeName() )
     , mScopeId  ( traceScope.mScopeId       )
@@ -30,7 +29,7 @@ TraceMessage::TraceMessage( const TraceScope & traceScope )
 {
     if ( isScopeEnabled() )
     {
-        LogMessage msg(NETrace::LogScopeEnter, mScopeId, NETrace::PrioScope, mScopeName);
+        LogMessage msg(NETrace::eMessageType::MsgScopeEnter, mScopeId, NETrace::PrioScope, mScopeName);
         TraceManager::sendLogMessage(msg);
     }
 }
@@ -40,7 +39,7 @@ TraceMessage::~TraceMessage( void )
 {
     if ( isScopeEnabled() )
     {
-        LogMessage msg(NETrace::LogScopeExit, mScopeId, NETrace::PrioScope, mScopeName);
+        LogMessage msg(NETrace::eMessageType::MsgScopeEnter, mScopeId, NETrace::PrioScope, mScopeName);
         TraceManager::sendLogMessage(msg);
     }
 }
@@ -118,7 +117,7 @@ void TraceMessage::logTrace( NETrace::eLogPriority logPrio, const char * format,
 
 inline void TraceMessage::_sendLog( unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * format, va_list args )
 {
-    LogMessage logData(NETrace::LogMessage, scopeId, msgPrio, nullptr, 0);
-    logData.lmTrace.traceMessageLen = String::formatStringList( logData.lmTrace.traceMessage, NETrace::LOG_MESSAGE_BUFFER_SIZE, format, args );
+    LogMessage logData(NETrace::MsgText, scopeId, msgPrio, nullptr, 0);
+    logData.lmTrace.dataMessageLen = String::formatStringList( logData.lmTrace.dataMessage, NETrace::LOG_MESSAGE_BUFFER_SIZE, format, args );
     TraceManager::sendLogMessage( logData );
 }

@@ -25,13 +25,14 @@
     #include <winsock2.h>
     #include <ws2tcpip.h>
 #else
+    #include <arpa/inet.h>
+    #include <ctype.h>      // IEEE Std 1003.1-2001
+    #include <netinet/in.h>
+    #include <netdb.h>
     #include <sys/socket.h>
     #include <sys/ioctl.h>
     #include <sys/select.h>
-    #include <netinet/in.h>
-    #include <netdb.h>
-    #include <arpa/inet.h>
-    #include <ctype.h>      // IEEE Std 1003.1-2001
+    #include <unistd.h>
 #endif
 
 #include <utility>
@@ -719,4 +720,18 @@ AREG_API_IMPL bool NESocket::disableReceive(SOCKETHANDLE hSocket)
 #endif // WINDOWS
 
     return (hSocket != NESocket::InvalidSocketHandle ? RETURNED_OK == ::shutdown(hSocket, flag) : false);
+}
+
+AREG_API String NESocket::getHostname(void)
+{
+    String result;
+
+    constexpr size_t length{ 256 };
+    char name[length]{};
+    if (gethostname(name, length) == RETURNED_OK)
+    {
+        result = name;
+    }
+
+    return result;
 }

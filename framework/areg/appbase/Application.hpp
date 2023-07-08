@@ -386,6 +386,16 @@ public:
      **/
     static void queryCommunicationData( unsigned int & OUT sizeSend, unsigned int & OUT sizeReceive );
 
+    /**
+     * \brief   Returns the name of the executable process.
+     **/
+    static String getApplicationName(void);
+
+    /**
+     * \brief   Returns the name of system host.
+     **/
+    static String getMachineName(void);
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
 //////////////////////////////////////////////////////////////////////////

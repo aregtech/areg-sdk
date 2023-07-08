@@ -14,11 +14,114 @@
  *
  ************************************************************************/
 #include "areg/trace/NETrace.hpp"
-#include "areg/trace/private/TraceManager.hpp"
-#include "areg/base/Thread.hpp"
+
+#include "areg/appbase/Application.hpp"
 #include "areg/base/DateTime.hpp"
+#include "areg/base/Process.hpp"
+#include "areg/base/Thread.hpp"
+#include "areg/trace/private/TraceManager.hpp"
 
 #include <string.h>
+
+NETrace::sLogMessageData::sLogMessageData(NETrace::eMessageType msgType /*= NETrace::eMessageType::MsgUndefined*/)
+    : dataNsgType      ( msgType                       )
+    , dataHostId       ( TraceManager::getCookie()     )
+    , dataModuleId     ( TraceManager::getModuleId()   )
+    , dataThreadId     ( Thread::getCurrentThreadId()  )
+    , dataTimestamp    ( DateTime::getNow()            )
+    , dataScopeId      ( NETrace::TRACE_SCOPE_ID_NONE  )
+    , dataMessagePrio  ( NETrace::PrioNotset           )
+    , dataMessageLen   ( 0                             )
+{
+    dataMessage[0] = String::EmptyChar;
+}
+
+NETrace::sLogMessageData::sLogMessageData(const sLogMessageData& source)
+    : dataNsgType      ( source.dataNsgType       )
+    , dataHostId       ( source.dataHostId        )
+    , dataModuleId     ( source.dataModuleId      )
+    , dataThreadId     ( source.dataThreadId      )
+    , dataTimestamp    ( source.dataTimestamp     )
+    , dataScopeId      ( source.dataScopeId       )
+    , dataMessagePrio  ( source.dataMessagePrio   )
+    , dataMessageLen   ( source.dataMessageLen    )
+{
+    int len = NEMemory::memCopy(dataMessage, NETrace::LOG_MESSAGE_BUFFER_SIZE - 1, source.dataMessage, source.dataMessageLen);
+    dataMessage[len] = String::EmptyChar;
+}
+
+NETrace::sLogMessageData::sLogMessageData(NETrace::eMessageType msgType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const char* message, unsigned int msgLen)
+    : dataNsgType      ( msgType                       )
+    , dataHostId       ( TraceManager::getCookie()     )
+    , dataModuleId     ( TraceManager::getModuleId()   )
+    , dataThreadId     ( Thread::getCurrentThreadId()  )
+    , dataTimestamp    ( DateTime::getNow()            )
+    , dataScopeId      ( scopeId                       )
+    , dataMessagePrio  ( msgPrio                       )
+    , dataMessageLen   ( MACRO_MIN(LOG_MESSAGE_BUFFER_SIZE - 1, msgLen) )
+{
+    int len = NEMemory::memCopy(dataMessage, NETrace::LOG_MESSAGE_BUFFER_SIZE - 1, message, msgLen);
+    dataMessageLen = len;
+    dataMessage[len] = String::EmptyChar;
+}
+
+NETrace::sLogMessageData& NETrace::sLogMessageData::operator = (const NETrace::sLogMessageData& source)
+{
+    if (static_cast<NETrace::sLogMessageData*>(this) != &source)
+    {
+        dataNsgType    = source.dataNsgType;
+        dataHostId     = source.dataHostId;
+        dataModuleId   = source.dataModuleId;
+        dataThreadId   = source.dataThreadId;
+        dataTimestamp  = source.dataTimestamp;
+        dataScopeId    = source.dataScopeId;
+        dataMessagePrio= source.dataMessagePrio;
+        dataMessageLen = source.dataMessageLen;
+
+        int len = NEMemory::memCopy(dataMessage, LOG_MESSAGE_BUFFER_SIZE - 1, source.dataMessage, source.dataMessageLen);
+        dataMessageLen = len;
+        dataMessage[len] = String::EmptyChar;
+    }
+
+    return (*this);
+}
+
+NETrace::sLogRequestConnectData::sLogRequestConnectData(void)
+    : dataCommand   ( NETrace::eLogCommands::LogRequestConnect )
+    , dataModuleType( NETrace::eLogModuleType::LogModuleGenerator )
+    , dataHost      { }
+    , dataModule    { }
+{
+    String appName{ Application::getApplicationName() };
+    String hostName{ Application::getMachineName() };
+
+    uint32_t lenHost = NEMemory::memCopy(dataHost, NETrace::LOG_NAMES_SIZE - 1, hostName.getString(), hostName.getLength());
+    uint32_t lenName = NEMemory::memCopy(dataModule, NETrace::LOG_NAMES_SIZE - 1, appName.getString(), appName.getLength());
+    dataHost[lenHost]  = String::EmptyChar;
+    dataModule[lenName]= String::EmptyChar;
+}
+
+NETrace::sLogRequestConnectData::sLogRequestConnectData(const sLogRequestConnectData& src)
+    : dataCommand   (NETrace::eLogCommands::LogRequestConnect)
+    , dataModuleType(src.dataModuleType)
+    , dataHost      ( )
+    , dataModule    ( )
+{
+    NEMemory::memCopy(dataHost, NETrace::LOG_MESSAGE_BUFFER_SIZE, src.dataHost, NETrace::LOG_MESSAGE_BUFFER_SIZE);
+    NEMemory::memCopy(dataModule, NETrace::LOG_MESSAGE_BUFFER_SIZE, src.dataModule, NETrace::LOG_MESSAGE_BUFFER_SIZE);
+}
+
+NETrace::sLogRequestConnectData& NETrace::sLogRequestConnectData::operator = (const NETrace::sLogRequestConnectData& src)
+{
+    if (static_cast<const NETrace::sLogRequestConnectData*>(this) != &src)
+    {
+        dataModuleType  = src.dataModuleType;
+        NEMemory::memCopy(dataHost, NETrace::LOG_MESSAGE_BUFFER_SIZE, src.dataHost, NETrace::LOG_MESSAGE_BUFFER_SIZE);
+        NEMemory::memCopy(dataModule, NETrace::LOG_MESSAGE_BUFFER_SIZE, src.dataModule, NETrace::LOG_MESSAGE_BUFFER_SIZE);
+    }
+
+    return (*this);
+}
 
 AREG_API_IMPL const String& NETrace::convToString( NETrace::eLogPriority prio )
 {
@@ -69,122 +172,6 @@ AREG_API_IMPL NETrace::eLogPriority NETrace::convFromString( const String& strPr
     }
 
     return NETrace::eLogPriority::PrioNotset;
-}
-
-
-NETrace::S_LogHeader::S_LogHeader( NETrace::eLogType logType /*= NETrace::LogUndefined*/ )
-    : logLength     ( sizeof(NETrace::S_LogMessage) )
-    , logType       ( logType                       )
-    , logModuleId   ( 0                             )
-    , logCookie     ( NETrace::COOKIE_LOCAL         )
-{
-}
-
-NETrace::S_LogHeader::S_LogHeader(const NETrace::S_LogHeader & src)
-    : logLength     ( src.logLength     )
-    , logType       ( src.logType       )
-    , logModuleId   ( src.logModuleId   )
-    , logCookie     ( src.logCookie     )
-{
-}
-
-NETrace::S_LogHeader & NETrace::S_LogHeader::operator = (const NETrace::S_LogHeader & src)
-{
-    if ( static_cast<const NETrace::S_LogHeader *>(this) != &src )
-    {
-        logLength   = src.logLength;
-        logType     = src.logType;
-        logModuleId = src.logModuleId;
-    }
-
-    return (*this);
-}
-
-NETrace::S_LogData::S_LogData(void)
-    : traceThreadId     ( Thread::getCurrentThreadId()  )
-    , traceScopeId      ( NETrace::TRACE_SCOPE_ID_NONE  )
-    , traceTimestamp    ( DateTime::getNow()            )
-    , traceMessagePrio  ( NETrace::PrioNotset           )
-    , traceMessageLen   ( 0                             )
-{
-    traceMessage[0] = String::EmptyChar;
-}
-
-NETrace::S_LogData::S_LogData(const S_LogData & source)
-    : traceThreadId     ( source.traceThreadId      )
-    , traceScopeId      ( source.traceScopeId       )
-    , traceTimestamp    ( source.traceTimestamp     )
-    , traceMessagePrio  ( source.traceMessagePrio   )
-    , traceMessageLen   ( source.traceMessageLen    )
-{
-    int len = NEMemory::memCopy( traceMessage, NETrace::LOG_MESSAGE_BUFFER_SIZE - 1, source.traceMessage, source.traceMessageLen );
-    traceMessage[len] = String::EmptyChar;
-}
-
-NETrace::S_LogData::S_LogData(unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message, unsigned int msgLen )
-    : traceThreadId     ( Thread::getCurrentThreadId()  )
-    , traceScopeId      ( scopeId                       )
-    , traceTimestamp    ( DateTime::getNow()            )
-    , traceMessagePrio  ( msgPrio                       )
-    , traceMessageLen   ( MACRO_MIN( LOG_MESSAGE_BUFFER_SIZE - 1, msgLen) )
-{
-    int len = NEMemory::memCopy(traceMessage, NETrace::LOG_MESSAGE_BUFFER_SIZE - 1, message, msgLen);
-    traceMessageLen = len;
-    traceMessage[len] = String::EmptyChar;
-}
-
-NETrace::S_LogData & NETrace::S_LogData::operator = (const NETrace::S_LogData & source )
-{
-    if (static_cast<NETrace::S_LogData *>(this) != &source )
-    {
-        traceThreadId   = source.traceThreadId;
-        traceScopeId    = source.traceScopeId;
-        traceTimestamp  = source.traceTimestamp;
-        traceMessagePrio= source.traceMessagePrio;
-        traceMessageLen = source.traceMessageLen;
-
-        int len = NEMemory::memCopy( traceMessage, LOG_MESSAGE_BUFFER_SIZE - 1, source.traceMessage, source.traceMessageLen );
-        traceMessageLen     = len;
-        traceMessage[len]   = String::EmptyChar;
-    }
-
-    return (*this);
-}
-
-NETrace::S_LogMessage::S_LogMessage(void)
-    : lmHeader  ( NETrace::LogUndefined )
-    , lmTrace   ( )
-{
-}
-
-NETrace::S_LogMessage::S_LogMessage(const NETrace::S_LogMessage & src)
-    : lmHeader  ( src.lmHeader )
-    , lmTrace   ( src.lmTrace )
-{
-}
-
-NETrace::S_LogMessage::S_LogMessage(NETrace::eLogType logType)
-    : lmHeader  ( logType )
-    , lmTrace   ( )
-{
-}
-
-NETrace::S_LogMessage::S_LogMessage(NETrace::eLogType logType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message, unsigned int msgLen )
-    : lmHeader  ( logType )
-    , lmTrace   ( scopeId, msgPrio, message, msgLen )
-{
-}
-
-
-NETrace::S_LogMessage & NETrace::S_LogMessage::operator = (const NETrace::S_LogMessage & src)
-{
-    if ( static_cast<const NETrace::S_LogMessage *>(this) != &src )
-    {
-        lmHeader= src.lmHeader;
-        lmTrace = src.lmTrace;
-    }
-
-    return (*this);
 }
 
 AREG_API_IMPL bool NETrace::startLogging(const char * fileConfig /*= nullptr */ )
@@ -279,4 +266,9 @@ AREG_API_IMPL bool NETrace::configAndStart(const char * fileConfig /*= nullptr *
 #else   // !AREG_LOGS
     return true;
 #endif  // AREG_LOGS
+}
+
+AREG_API_IMPL const ITEM_ID& NETrace::getCookie(void)
+{
+    return TraceManager::getCookie();
 }

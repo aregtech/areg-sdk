@@ -24,17 +24,17 @@
 
 #include <string.h>
 
-LogMessage::LogMessage(NETrace::eLogType logType, const TraceScope & traceScope )
-    : NETrace::sLogMessage( logType, traceScope.getScopeId(), NETrace::PrioScope, traceScope.getScopeName().getString(), traceScope.getScopeName( ).getLength() )
+LogMessage::LogMessage(NETrace::eMessageType msgType, const TraceScope & traceScope )
+    : NETrace::sLogMessage( msgType, traceScope.getScopeId(), NETrace::PrioScope, traceScope.getScopeName().getString(), traceScope.getScopeName( ).getLength() )
 {
-    ASSERT( (logType == NETrace::LogScopeEnter) || (logType == NETrace::LogScopeExit) );
+    ASSERT( (msgType == NETrace::eMessageType::MsgScopeEnter) || (msgType == NETrace::eMessageType::MsgScopeExit) );
 }
 
 void LogMessage::setMessage(const char * message, int msgLen )
 {
     if ( (message != nullptr) && (msgLen > 0) )
     {
-        int len = NEMemory::memCopy( this->lmTrace.traceMessage, NETrace::LOG_MESSAGE_BUFFER_SIZE - 1, message, msgLen);
-        this->lmTrace.traceMessage[len] = String::EmptyChar;
+        int len = NEMemory::memCopy( this->lmTrace.dataMessage, NETrace::LOG_MESSAGE_BUFFER_SIZE - 1, message, msgLen);
+        this->lmTrace.dataMessage[len] = String::EmptyChar;
     }
 }

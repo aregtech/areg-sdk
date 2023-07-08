@@ -84,11 +84,11 @@ public:
 
     /**
      * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message structure, which contains required information for message output
+     * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      * \note    Every layout object should overwrite this message to make layout specific outputs.
      **/
-    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const = 0;
+    virtual void logMessage( const NETrace::sLogMessageData & msgLog, IEOutStream & stream ) const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Attribute
@@ -176,10 +176,10 @@ public:
 
     /**
      * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message structure, which contains required information for message output
+     * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NETrace::sLogMessageData & msgLog, IEOutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -242,10 +242,10 @@ public:
 
     /**
      * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message structure, which contains required information for message output
+     * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NETrace::sLogMessageData& msgLog, IEOutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -308,10 +308,10 @@ public:
 
     /**
      * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message structure, which contains required information for message output
+     * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NETrace::sLogMessageData& msgLog, IEOutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -374,10 +374,10 @@ public:
 
     /**
      * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message structure, which contains required information for message output
+     * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NETrace::sLogMessageData& msgLog, IEOutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -440,10 +440,10 @@ public:
 
     /**
      * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message structure, which contains required information for message output
+     * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NETrace::sLogMessageData& msgLog, IEOutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -506,10 +506,10 @@ public:
 
     /**
      * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message structure, which contains required information for message output
+     * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NETrace::sLogMessageData& msgLog, IEOutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -572,10 +572,10 @@ public:
 
     /**
      * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message structure, which contains required information for message output
+     * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NETrace::sLogMessageData& msgLog, IEOutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -638,10 +638,10 @@ public:
 
     /**
      * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message structure, which contains required information for message output
+     * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NETrace::sLogMessageData & msgLog, IEOutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -704,10 +704,10 @@ public:
 
     /**
      * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message structure, which contains required information for message output
+     * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NETrace::sLogMessageData & msgLog, IEOutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -770,10 +770,10 @@ public:
 
     /**
      * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message structure, which contains required information for message output
+     * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NETrace::sLogMessageData & msgLog, IEOutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -836,10 +836,10 @@ public:
 
     /**
      * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message structure, which contains required information for message output
+     * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NETrace::sLogMessageData & msgLog, IEOutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -914,10 +914,10 @@ public:
 
     /**
      * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message structure, which contains required information for message output
+     * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NETrace::sLogMessageData & msgLog, IEOutStream & stream ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variable

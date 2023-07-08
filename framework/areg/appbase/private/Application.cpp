@@ -15,16 +15,20 @@
  ************************************************************************/
 
 #include "areg/appbase/Application.hpp"
+
+#include "areg/base/File.hpp"
+#include "areg/base/NESocket.hpp"
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/Process.hpp"
-#include "areg/base/File.hpp"
+
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/NERegistry.hpp"
-#include "areg/trace/private/TraceManager.hpp"
 #include "areg/component/private/ServiceManager.hpp"
 #include "areg/component/private/TimerManager.hpp"
 #include "areg/component/private/WatchdogManager.hpp"
+
 #include "areg/trace/NETrace.hpp"
+#include "areg/trace/private/TraceManager.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Constants and types
@@ -481,6 +485,16 @@ bool Application::isServicingReady(void)
 void Application::queryCommunicationData( unsigned int & OUT sizeSend, unsigned int & OUT sizeReceive )
 {
     ServiceManager::queryCommunicationData( sizeSend, sizeReceive );
+}
+
+String Application::getApplicationName(void)
+{
+    return Process::getInstance().getAppName();
+}
+
+String Application::getMachineName(void)
+{
+    return NESocket::getHostname();
 }
 
 bool Application::_setAppState(eAppState newState)

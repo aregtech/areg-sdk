@@ -65,8 +65,6 @@ unsigned int TraceManager::makeScopeId( const char * scopeName )
 void TraceManager::sendLogMessage( LogMessage & logData )
 {
     TraceManager & tracer = TraceManager::getInstance();
-    logData.setModuleId( tracer.mModuleId );
-    logData.setCookie(tracer.mCookie);
     tracer._sendLogEvent( TraceEventData(TraceEventData::eTraceAction::TraceMessage, logData) );
 }
 
@@ -556,7 +554,7 @@ void TraceManager::processEvent(const TraceEventData & data)
 
     case TraceEventData::eTraceAction::TraceMessage:
         {
-            traceMessage( LogMessage(static_cast<const IEInStream &>(stream)) );
+            dataMessage( LogMessage(static_cast<const IEInStream &>(stream)) );
         }
         break;
 
@@ -699,7 +697,7 @@ void TraceManager::onUpdateScopes(SortedStringList & scopeList)
     mMapTraceScope.unlock();
 }
 
-void TraceManager::traceMessage( const LogMessage & logMessage )
+void TraceManager::dataMessage( const LogMessage & logMessage )
 {
     mLoggerFile.logMessage( static_cast<const NETrace::sLogMessage &>(logMessage) );
     mLoggerDebug.logMessage( static_cast<const NETrace::sLogMessage &>(logMessage) );
