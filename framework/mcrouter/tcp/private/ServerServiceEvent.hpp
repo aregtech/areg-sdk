@@ -148,13 +148,13 @@ public:
     /**
      * \brief   Initialize the event object and set the priority to High.
      **/
-    ServerServiceEvent(const ServerServiceEventData& data, IEServerServiceEventConsumer& listener);
+    inline ServerServiceEvent(const ServerServiceEventData& data, IEServerServiceEventConsumer& listener);
 
-    ServerServiceEvent(Event::eEventType eventType, const ServerServiceEventData& data);
+    inline ServerServiceEvent(Event::eEventType eventType, const ServerServiceEventData& data);
 
-    ServerServiceEvent(Event::eEventType eventType, const ServerServiceEventData& data, IEServerServiceEventConsumer& listener);
+    inline ServerServiceEvent(Event::eEventType eventType, const ServerServiceEventData& data, IEServerServiceEventConsumer& listener);
 
-    ServerServiceEvent(const ServerServiceEventData& data);
+    inline ServerServiceEvent(const ServerServiceEventData& data);
 };
 
 //////////////////////////////////////////////////////////////////////////////
