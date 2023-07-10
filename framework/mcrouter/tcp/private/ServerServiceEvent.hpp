@@ -135,27 +135,46 @@ private:
 //!< Declaration of ServerServiceEvent event and IEServerServiceEventConsumer consumer classes
 DECLARE_EVENT(ServerServiceEventData, ServerServiceEventBase, IEServerServiceEventConsumer)
 
+/**
+ * \brief   Extend the ServerServiceEventBase class to change the priority
+ *          of the server command events.
+ **/
 class ServerServiceEvent : public ServerServiceEventBase
 {
+//////////////////////////////////////////////////////////////////////////
+// Constructors.
+//////////////////////////////////////////////////////////////////////////
 public:
+    /**
+     * \brief   Initialize the event object and set the priority to High.
+     **/
     ServerServiceEvent(const ServerServiceEventData& data, IEServerServiceEventConsumer& listener)
         : ServerServiceEventBase(data, listener)
     {
         mEventPrio = Event::eEventPriority::EventPriorityHigh;
     }
 
+    /**
+     * \brief   Initialize the event object and set the priority to High.
+     **/
     ServerServiceEvent(Event::eEventType eventType, const ServerServiceEventData& data)
         : ServerServiceEventBase(eventType, data)
     {
         mEventPrio = Event::eEventPriority::EventPriorityHigh;
     }
 
+    /**
+     * \brief   Initialize the event object and set the priority to High.
+     **/
     ServerServiceEvent(Event::eEventType eventType, const ServerServiceEventData& data, IEServerServiceEventConsumer& listener)
         : ServerServiceEventBase(eventType, data, listener)
     {
         mEventPrio = Event::eEventPriority::EventPriorityHigh;
     }
 
+    /**
+     * \brief   Initialize the event object and set the priority to High.
+     **/
     ServerServiceEvent(const ServerServiceEventData& data)
         : ServerServiceEventBase(data)
     {
