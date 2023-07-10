@@ -133,7 +133,35 @@ private:
 // ServerServiceEvent and IEServerServiceEventConsumer declaration
 //////////////////////////////////////////////////////////////////////////
 //!< Declaration of ServerServiceEvent event and IEServerServiceEventConsumer consumer classes
-DECLARE_EVENT(ServerServiceEventData, ServerServiceEvent, IEServerServiceEventConsumer)
+DECLARE_EVENT(ServerServiceEventData, ServerServiceEventBase, IEServerServiceEventConsumer)
+
+class ServerServiceEvent : public ServerServiceEventBase
+{
+public:
+    ServerServiceEvent(const ServerServiceEventData& data, IEServerServiceEventConsumer& listener)
+        : ServerServiceEventBase(data, listener)
+    {
+        mEventPrio = Event::eEventPriority::EventPriorityHigh;
+    }
+
+    ServerServiceEvent(Event::eEventType eventType, const ServerServiceEventData& data)
+        : ServerServiceEventBase(eventType, data)
+    {
+        mEventPrio = Event::eEventPriority::EventPriorityHigh;
+    }
+
+    ServerServiceEvent(Event::eEventType eventType, const ServerServiceEventData& data, IEServerServiceEventConsumer& listener)
+        : ServerServiceEventBase(eventType, data, listener)
+    {
+        mEventPrio = Event::eEventPriority::EventPriorityHigh;
+    }
+
+    ServerServiceEvent(const ServerServiceEventData& data)
+        : ServerServiceEventBase(data)
+    {
+        mEventPrio = Event::eEventPriority::EventPriorityHigh;
+    }
+};
 
 //////////////////////////////////////////////////////////////////////////////
 // ServerServiceEventData class inline functions implementation

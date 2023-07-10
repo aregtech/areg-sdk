@@ -42,7 +42,6 @@ EventDispatcherBase::EventDispatcherBase(const String & name )
 
 EventDispatcherBase::~EventDispatcherBase( void )
 {
-    removeAllEvents( );
     mHasStarted = false;
 }
 
@@ -74,6 +73,15 @@ void EventDispatcherBase::stopDispatcher( void )
     mExternaEvents.pushEvent(ExitEvent::getExitEvent());
     mHasStarted = false;
     mExternaEvents.unlockQueue();
+    mEventExit.setEvent();
+}
+
+void EventDispatcherBase::exitDispatcher(void)
+{
+    mInternalEvents.removeAllEvents();
+    mExternaEvents.removeAllEvents();
+
+    mHasStarted = false;
     mEventExit.setEvent();
 }
 
@@ -375,7 +383,7 @@ bool EventDispatcherBase::hasRegisteredConsumer( const RuntimeClassID& whichClas
     return mConsumerMap.existResource(whichClass);
 }
 
-void EventDispatcherBase::_clean()
+inline void EventDispatcherBase::_clean()
 {
     mConsumerMap.lock();
 

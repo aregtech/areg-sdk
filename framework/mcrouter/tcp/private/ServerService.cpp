@@ -117,9 +117,9 @@ ServerService::ServerService( void )
     , mBlackList        ( )
     , mEventConsumer    ( self() )
     , mTimerConsumer    ( self() )
+    , mEventSendStop    ( false, false )
     , mLock             ( )
 {
-
 }
 
 bool ServerService::configureRemoteServicing(const String &configFile)
@@ -151,6 +151,7 @@ bool ServerService::startRemoteServicing(void)
     TRACE_SCOPE(mcrouter_tcp_private_ServerService_startRemoteServicing);
 
     Lock lock(mLock);
+
     bool result = true;
     if ( mServerConnection.isValid() == false && isRunning() == false )
     {
@@ -201,10 +202,8 @@ void ServerService::stopRemoteServicing(void)
     if ( isRunning() )
     {
         sendCommand( ServerServiceEventData::eServerServiceCommands::CMD_StopService );
-
+        mEventSendStop.lock();
         DispatcherThread::triggerExitEvent();
-        completionWait(NECommon::WAIT_INFINITE);
-        destroyThread( NECommon::DO_NOT_WAIT );
     }
 }
 
@@ -303,6 +302,7 @@ void ServerService::onServiceStart(void)
 {
     TRACE_SCOPE(mcrouter_tcp_private_ServerService_onServiceStart);
     Lock lock( mLock );
+    mEventSendStop.resetEvent();
     startConnection();
 }
 
@@ -316,10 +316,12 @@ void ServerService::onServiceStop(void)
         stopConnection();
     } while (false);
 
-    mThreadReceive.completionWait( NECommon::WAIT_INFINITE );
-    mThreadSend.completionWait( NECommon::WAIT_INFINITE );
-    mThreadReceive.destroyThread( NECommon::DO_NOT_WAIT );
-    mThreadSend.destroyThread( NECommon::DO_NOT_WAIT );
+    mThreadReceive.completionWait( NECommon::DO_NOT_WAIT);
+    mThreadSend.completionWait( NECommon::DO_NOT_WAIT);
+    mThreadReceive.shutdownThread();
+    mThreadSend.shutdownThread();
+
+    mEventSendStop.setEvent();
 }
 
 void ServerService::onServiceRestart( void )

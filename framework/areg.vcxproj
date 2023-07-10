@@ -110,6 +110,7 @@
     <ClCompile Include="areg\base\private\NEDebug.cpp" />
     <ClCompile Include="areg\base\private\NEMemory.cpp" />
     <ClCompile Include="areg\base\private\NEUtilities.cpp" />
+    <ClCompile Include="areg\component\private\SortedEventStack.cpp" />
     <ClCompile Include="areg\component\private\posix\TimerBasePosix.cpp" />
     <ClCompile Include="areg\component\private\posix\TimerManagerPosix.cpp" />
     <ClCompile Include="areg\component\private\posix\TimerPosix.cpp" />
@@ -246,6 +247,7 @@
     <ClInclude Include="areg\appbase\Application.hpp" />
     <ClInclude Include="areg\appbase\NEApplication.hpp" />
     <ClInclude Include="areg\component\EventData.hpp" />
+    <ClInclude Include="areg\component\private\SortedEventStack.hpp" />
     <ClInclude Include="areg\component\private\TimerManagerBase.hpp" />
     <ClInclude Include="areg\component\private\TimerManagerEvent.hpp" />
     <ClInclude Include="areg\component\private\Watchdog.hpp" />

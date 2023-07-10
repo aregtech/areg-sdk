@@ -537,6 +537,9 @@
     <ClCompile Include="areg\trace\private\NetTcpLogger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="areg\component\private\SortedEventStack.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\windows\GEWindows.h">
@@ -1062,6 +1065,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\trace\private\NetTcpLogger.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\component\private\SortedEventStack.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

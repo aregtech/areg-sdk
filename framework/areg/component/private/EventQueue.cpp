@@ -29,7 +29,7 @@
 //////////////////////////////////////////////////////////////////////////
 // EventQueue class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-EventQueue::EventQueue( IEQueueListener & eventListener, TEStack<Event *> & eventQueue )
+EventQueue::EventQueue( IEQueueListener & eventListener, SortedEventStack & eventQueue )
     : mEventListener(eventListener)
     , mEventQueue   (eventQueue)
 {
@@ -40,129 +40,37 @@ EventQueue::EventQueue( IEQueueListener & eventListener, TEStack<Event *> & even
 //////////////////////////////////////////////////////////////////////////
 void EventQueue::pushEvent( Event& evendElem )
 {
-    mEventListener.signalEvent( mEventQueue.pushLast(&evendElem) );
+    mEventListener.signalEvent( mEventQueue.pushEvent(&evendElem) );
 }
 
 Event* EventQueue::popEvent( void )
 {
-    mEventQueue.lock();
     Event* result{ nullptr };
-    if (mEventQueue.isEmpty() == false)
+    uint32_t size = mEventQueue.popEvent(&result);
+    if (size == 0)
     {
-        result = mEventQueue.popFirst();
-        if (mEventQueue.isEmpty())
-        {
-            mEventListener.signalEvent(0);
-        }
+        mEventListener.signalEvent(0);
     }
-
-    mEventQueue.unlock();
 
     return result;
 }
 
 void EventQueue::removeAllEvents(void)
 {
-    mEventQueue.lock();
-    Event* exitEvent  = static_cast<Event *>(&ExitEvent::getExitEvent());
-    while ( mEventQueue.isEmpty() == false )
-    {
-        Event * eventElem = mEventQueue.popFirst();
-        if ( eventElem != nullptr && eventElem != exitEvent )
-            eventElem->destroy();
-    }
-
-    mEventListener.signalEvent( 0 );
-    mEventQueue.unlock();
+    mEventQueue.deleteAllEvents();
+    mEventListener.signalEvent(0);
 }
 
 void EventQueue::removeEvents( bool keepSpecials /*= false*/ )
 {
-    mEventQueue.lock();
-    bool hasEvents   = removePendingEvents( keepSpecials );
-    mEventListener.signalEvent(hasEvents ? 1 : 0);
-    mEventQueue.unlock();
+    uint32_t remain = mEventQueue.deleteAllLowerPriority(keepSpecials ? Event::eEventPriority::EventPriorityHigh : Event::eEventPriority::EventPriorityCritical);
+    mEventListener.signalEvent(remain);
 }
 
-int EventQueue::removeEvents( const RuntimeClassID & eventClassId )
+void EventQueue::removeEvents( const RuntimeClassID & eventClassId )
 {
-    int removedCount = 0;
-
-    if ( eventClassId != ExitEvent::getExitEvent().getRuntimeClassId() )
-    {
-        mEventQueue.lock();
-        removedCount = mEventQueue.getSize();
-
-        TENolockStack<Event *> tempQueue;        
-        while ( mEventQueue.isEmpty() == false )
-        {
-            Event * elemEvent = mEventQueue.popFirst();
-            if ( elemEvent != nullptr )
-            {
-                if ( elemEvent->getRuntimeClassId() == eventClassId )
-                    elemEvent->destroy();
-                else
-                    tempQueue.pushLast(elemEvent);
-            }
-        }
-        removedCount -= tempQueue.getSize();
-
-        while (tempQueue.isEmpty() == false )
-            mEventQueue.pushLast( tempQueue.popFirst() );
-
-        mEventListener.signalEvent(mEventQueue.getSize());
-        mEventQueue.unlock();
-    }
-
-    return removedCount;
-}
-
-bool EventQueue::removePendingEvents( bool keepSpecials )
-{
-    mEventQueue.lock();
-
-    TENolockStack<Event *> specials;
-    Event* exitEvent  = static_cast<Event *>(&ExitEvent::getExitEvent());
-
-    while (mEventQueue.isEmpty() == false)
-    {
-        Event * eventElem = mEventQueue.popFirst();
-        if (eventElem != nullptr)
-        {
-            ASSERT(exitEvent != nullptr);
-            if (eventElem == exitEvent)
-            {
-                // OUTPUT_DBG("Skip removing exit event!");
-                specials.pushLast(eventElem);
-                eventElem = nullptr;
-            }
-            else if ( keepSpecials )
-            {
-                ServiceResponseEvent* respEvent = RUNTIME_CAST(eventElem, ServiceResponseEvent);
-                if ( respEvent != nullptr)
-                {
-                    unsigned int respId = respEvent->getResponseId();
-                    if ( NEService::isConnectNotifyId(respId) )
-                    {
-                        OUTPUT_DBG("Keep response event with response ID NEService::SI_NOTIFY_CONNECT for target proxy [ %s ]"
-                                        , ProxyAddress::convAddressToPath(respEvent->getTargetProxy()).getString());
-                        specials.pushLast(eventElem);
-                        eventElem = nullptr;
-                    }
-                }
-            }
-        }
-
-        if (eventElem != nullptr)
-            eventElem->destroy();
-    }
-
-    while (specials.isEmpty() == false )
-        mEventQueue.pushLast( specials.popFirst() );
-
-    mEventQueue.unlock();
-
-    return (mEventQueue.isEmpty() == false);
+    uint32_t remain = mEventQueue.deleteAllMatchClass(eventClassId);
+    mEventListener.signalEvent(remain);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -170,15 +78,14 @@ bool EventQueue::removePendingEvents( bool keepSpecials )
 //////////////////////////////////////////////////////////////////////////
 
 ExternalEventQueue::ExternalEventQueue( IEQueueListener & eventListener )
-    : EventQueue( eventListener, static_cast<TEStack<Event *> &>(mStack) )
-    , mStack    ( )
+    : EventQueue( eventListener, mStack )
+    , mStack    ( SortedEventStack::eMessageStackType::MessageStackExternal )
 {
 }
 
 ExternalEventQueue::~ExternalEventQueue(void)
 {
-    removePendingEvents( false );
-    mStack.clear();
+    mStack.deleteAllEvents();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -186,15 +93,14 @@ ExternalEventQueue::~ExternalEventQueue(void)
 //////////////////////////////////////////////////////////////////////////
 
 InternalEventQueue::InternalEventQueue(void)
-    : EventQueue( static_cast<IEQueueListener &>(self()), static_cast<TEStack<Event *> &>(mStack) )
-    , mStack    ( )
+    : EventQueue( static_cast<IEQueueListener &>(self()), mStack )
+    , mStack    ( SortedEventStack::eMessageStackType::MessageStackInternal )
 {
 }
 
 InternalEventQueue::~InternalEventQueue(void)
 {
-    removePendingEvents( false );
-    mStack.clear();
+    mStack.deleteAllEvents();
 }
 
 void InternalEventQueue::signalEvent(uint32_t /* eventCount */)

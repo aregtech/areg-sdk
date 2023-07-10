@@ -43,6 +43,7 @@ list(APPEND areg_SRC
 	${areg_BASE}/component/private/ServiceRequestEvent.cpp
 	${areg_BASE}/component/private/ServiceResponseEvent.cpp
 	${areg_BASE}/component/private/StreamableEvent.cpp
+	${areg_BASE}/component/private/SortedEventStack.cpp
 	${areg_BASE}/component/private/StubAddress.cpp
 	${areg_BASE}/component/private/StubBase.cpp
 	${areg_BASE}/component/private/StubConnectEvent.cpp

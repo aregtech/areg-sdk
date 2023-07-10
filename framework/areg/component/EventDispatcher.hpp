@@ -149,7 +149,7 @@ inline DispatcherThread * EventDispatcher::getDispatcherThread( void ) const
 
 inline bool EventDispatcher::hasMoreEvents( void ) const
 {
-    return (static_cast<const EventQueue &>(mExternaEvents).getSize() > 0);
+    return (mExternaEvents.isEmpty() == false);
 }
 
 #endif  // AREG_COMPONENT_EVENTDISPATCHER_HPP

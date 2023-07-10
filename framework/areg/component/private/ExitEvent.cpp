@@ -22,6 +22,7 @@ IMPLEMENT_RUNTIME_EVENT(ExitEvent, Event)
 ExitEvent::ExitEvent( void )
     : Event   ( Event::eEventType::EventExternal )
 {
+    mEventPrio = Event::eEventPriority::EventPriorityExit;
 }
 
 ExitEvent & ExitEvent::getExitEvent( void )

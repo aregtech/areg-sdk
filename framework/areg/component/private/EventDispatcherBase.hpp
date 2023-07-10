@@ -126,9 +126,8 @@ public:
      * \param   eventClassId    The class ID of external event object.
      *                          All events having specified class ID
      *                          will be removed.
-     * \return  Returns amount of removed events.
      **/
-    inline int removeExternalEventType(const RuntimeClassID & eventClassId);
+    inline void removeExternalEventType(const RuntimeClassID & eventClassId);
 
 /************************************************************************/
 // IEEventDispatcher overrides
@@ -145,7 +144,18 @@ public:
     virtual void stopDispatcher( void ) override;
     
     /**
+     * \brief   Called when dispatcher completed the job and exit.
+     *          The cleanups should be done here.
+     **/
+    virtual void exitDispatcher(void) override;
+
+    /**
      * \brief   Call to queue event object in the event queue of dispatcher.
+     *          The passed event parameter should be allocated in memory and
+     *          should be globally accessed (for example, via new operator).
+     * \param   eventElem           Event object to queue in event stack of dispatcher.
+     * \return  Returns true, if Event was queued. Otherwise, it was not queued
+     *          and the object should be deleted.
      **/
     virtual bool queueEvent( Event & eventElem ) override;
     
@@ -382,9 +392,9 @@ inline void EventDispatcherBase::removeAllEvents(void)
     mExternaEvents.unlockQueue();
 }
 
-inline int EventDispatcherBase::removeExternalEventType( const RuntimeClassID & eventClassId )
+inline void EventDispatcherBase::removeExternalEventType( const RuntimeClassID & eventClassId )
 {
-    return mExternaEvents.removeEvents(eventClassId);
+    mExternaEvents.removeEvents(eventClassId);
 }
 
 inline EventDispatcherBase& EventDispatcherBase::self( void )
