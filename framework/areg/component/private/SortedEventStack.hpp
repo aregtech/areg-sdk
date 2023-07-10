@@ -31,24 +31,30 @@ class RuntimeClassID;
 
 /**
  * \brief   Sorted stack to store events by priority.
+ *          Each time when event is pushed, it checks the priority
+ *          of the event then inserts in stack, so that the events
+ *          are sorted by the priority.
+ *          In the stack the priorities are sorted in the following way:
+ *          | Critical | High | Normal | Low |
+ * 
+ *              -   The "Critical" priority events are placed at the begin to be processed as soon as possible.
+ *                  This priority is reserved for developers.
+ *              -   The "Hight" priority events are placed before normal events, since they have some priorities.
+ *                  For example, the connection events have high priority so that they are processed before normal events.
+ *              -   The "Normal" priority events are usual events, which are processed in FIFO stack.
+ *              -   The "Low" priority events are placed at the end to be processed only when the thread completed all jobs.
+ * 
+ *          The "Exit" events have reserved "Exit" priority. This priority is only for internal use and should not be used
+ *          by other developers. The "Exit" events should be immediately processed and they are not removed from the 
+ *          stack until they are not processed by thread dispatcher.
  **/
 class SortedEventStack  : protected TELockStack<Event *>
 {
 //////////////////////////////////////////////////////////////////////////
-// Internal types and constants
-//////////////////////////////////////////////////////////////////////////
-public:
-    typedef enum E_MessageStackType
-    {
-          MessageStackInternal
-        , MessageStackExternal
-    } eMessageStackType;
-
-//////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
-    explicit SortedEventStack(SortedEventStack::eMessageStackType stackType);
+    SortedEventStack( void ) = default;
 
     ~SortedEventStack(void);
 
@@ -56,53 +62,116 @@ public:
 // Operations
 //////////////////////////////////////////////////////////////////////////
 
+    /**
+     * \brief   Deletes all events from the stack, except "Exit" event if present.
+     **/
     void deleteAllEvents(void);
 
+    /**
+     * \brief   Deletes all events with priorities lower than the specified, except "Exit" event.
+     * \param   eventPrio   The priority to check. Set Event::eEventPriority::EventPriorityIgnore
+     *                      to remove all events. Only "Exit" events are untouched if they are present.
+     * \return  Returns number of elements in the stack. Returns zero if empty.
+     **/
     uint32_t deleteAllLowerPriority(Event::eEventPriority eventPrio);
 
+    /**
+     * \brief   Deletes all events, except those that are with the specified class ID, except "Exit" event.
+     * \param   eventClassId    The class ID of the event to ignore to delete.
+     * \return  Returns number of elements in the stack. Returns zero if empty.
+     **/
     uint32_t deleteAllExceptClass(const RuntimeClassID& eventClassId);
 
+    /**
+     * \brief   Deletes all events with the specified priority, except "Exit" event, which should be processed.
+     * \param   eventPrio   The priority of events to delete.
+     * \return  Returns number of elements in the stack. Returns zero if empty.
+     **/
     uint32_t deleteAllMatchPriority(Event::eEventPriority eventPrio);
 
+    /**
+     * \brief   Deletes all events, which match the specified class ID.
+     * \param   eventClassId    The class ID of the event to delete.
+     * \return  Returns number of elements in the stack. Returns zero if empty.
+     **/
     uint32_t deleteAllMatchClass(const RuntimeClassID& eventClassId);
 
+    /**
+     * \brief   Pushes the event in the stack considering the priority, so that the events
+     *          with the higher priority can be processed earlier.
+     * \param   newEvent    The pointer to the event with the priority.
+     * \return  Returns the number of elements in the stack.
+     **/
     uint32_t pushEvent(Event * newEvent);
 
+    /**
+     * \brief   Pops the event from the FIFO stack.
+     * \param   newEvent    The pointer to the previously allocated event object.
+     * \return  Returns the number of elements in the stack.
+     **/
     uint32_t popEvent(Event** stackEvent);
 
+    /**
+     * \brief   Returns true if the stack is empty.
+     **/
     inline bool isEmpty(void) const;
 
+    /**
+     * \brief   Returns the number of elements in the stack.
+     **/
     inline uint32_t getCount(void) const;
 
-    inline eMessageStackType getStackType(void) const;
-
+    /**
+     * \brief   Locks the stack, so that the all other threads cannot access.
+     * \return  Returns true, if succeeded to lock the stack.
+     **/
     inline bool lockStack(void);
 
+    /**
+     * \brief   Unlocks the stack, so that all other threads cann access.
+     **/
     inline void unlockStack(void);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    inline void _pushAtEnd(Event * newEvent);
+    /**
+     * \brief   Inserts the event at the end of the stack. No priority is considered.
+     *          For example, the events with low priority are inserted at the end of the stack.
+     **/
+    inline void _insertAtEnd(Event * newEvent);
 
-    inline void _pushAfterPrio(Event * newEvent, Event::eEventPriority eventPrio);
+    /**
+     * \brief   Inserts the event object at the end of the event elements list of specified priority.
+     *          The function compares the priority of the events and inserts the element
+     *          at the end of the list with events of the specified priority.
+     *          The search is started at the end.
+     * \param   newEvent    The event object to insert.
+     * \param   eventPrio   The priority of event to search in the stack.
+     **/
+    inline void _insertAfterPrio(Event * newEvent, Event::eEventPriority eventPrio);
 
-    inline void _pushBeforePrio(Event * newEvent, Event::eEventPriority eventPrio);
+    /**
+     * \brief   Inserts the event object before the elements of specified are queued.
+     *          The function compares the priority of the events and inserts the element
+     *          at the position before the events of specified priority start.
+     *          The search is started at the begin.
+     * \param   newEvent    The event object to insert.
+     * \param   eventPrio   The priority of event to search in the stack.
+     **/
+    inline void _insertBeforePrio(Event * newEvent, Event::eEventPriority eventPrio);
 
-    inline void _pushAtBegin(Event * newEvent);
-
-//////////////////////////////////////////////////////////////////////////
-// member variables
-//////////////////////////////////////////////////////////////////////////
-private:
-    const eMessageStackType   mStackType;
+    /**
+     * \brief   Inserts the event element at the very begin of the stack, so that it is
+     *          processed as soon as possible.
+     **/
+    inline void _insertAtBegin(Event * newEvent);
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
-    SortedEventStack(void) = delete;
     DECLARE_NOCOPY_NOMOVE(SortedEventStack);
 };
 
@@ -110,6 +179,10 @@ private:
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
 
+
+//////////////////////////////////////////////////////////////////////////
+// SortedEventStack class inline implementation.
+//////////////////////////////////////////////////////////////////////////
 
 inline bool SortedEventStack::isEmpty(void) const
 {
@@ -120,11 +193,6 @@ inline bool SortedEventStack::isEmpty(void) const
 inline uint32_t SortedEventStack::getCount(void) const
 {
     return static_cast<uint32_t>(mValueList.size());
-}
-
-inline SortedEventStack::eMessageStackType SortedEventStack::getStackType(void) const
-{
-    return mStackType;
 }
 
 inline bool SortedEventStack::lockStack(void)

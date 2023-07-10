@@ -79,7 +79,7 @@ void EventQueue::removeEvents( const RuntimeClassID & eventClassId )
 
 ExternalEventQueue::ExternalEventQueue( IEQueueListener & eventListener )
     : EventQueue( eventListener, mStack )
-    , mStack    ( SortedEventStack::eMessageStackType::MessageStackExternal )
+    , mStack    ( )
 {
 }
 
@@ -94,7 +94,7 @@ ExternalEventQueue::~ExternalEventQueue(void)
 
 InternalEventQueue::InternalEventQueue(void)
     : EventQueue( static_cast<IEQueueListener &>(self()), mStack )
-    , mStack    ( SortedEventStack::eMessageStackType::MessageStackInternal )
+    , mStack    ( )
 {
 }
 

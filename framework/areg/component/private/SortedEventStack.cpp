@@ -21,12 +21,6 @@
 
 #include "areg/component/Event.hpp"
 
-SortedEventStack::SortedEventStack(SortedEventStack::eMessageStackType stackType)
-    : TELockStack<Event*>   ( )
-    , mStackType            ( stackType )
-{
-}
-
 SortedEventStack::~SortedEventStack(void)
 {
     for (auto evt : mValueList)
@@ -147,23 +141,23 @@ uint32_t SortedEventStack::pushEvent(Event * newEvent)
     switch (newEvent->getEventPriority())
     {
     case Event::eEventPriority::EventPriorityLow:
-        _pushAtEnd(newEvent);
+        _insertAtEnd(newEvent);
         break;
 
     case Event::eEventPriority::EventPriorityNormal:
-        _pushAfterPrio(newEvent, Event::eEventPriority::EventPriorityNormal);
+        _insertAfterPrio(newEvent, Event::eEventPriority::EventPriorityNormal);
         break;
 
     case Event::eEventPriority::EventPriorityHigh:
-        _pushBeforePrio(newEvent, Event::eEventPriority::EventPriorityNormal);
+        _insertBeforePrio(newEvent, Event::eEventPriority::EventPriorityNormal);
         break;
 
     case Event::eEventPriority::EventPriorityCritical:
-        _pushBeforePrio(newEvent, Event::eEventPriority::EventPriorityHigh);
+        _insertBeforePrio(newEvent, Event::eEventPriority::EventPriorityHigh);
         break;
 
     case Event::eEventPriority::EventPriorityExit:
-        _pushAtBegin(newEvent);
+        _insertAtBegin(newEvent);
         break;
 
     default:
@@ -192,12 +186,12 @@ uint32_t  SortedEventStack::popEvent(Event** stackEvent)
     return static_cast<uint32_t>(mValueList.size());
 }
 
-inline void SortedEventStack::_pushAtEnd(Event* newEvent)
+inline void SortedEventStack::_insertAtEnd(Event* newEvent)
 {
     mValueList.push_back(newEvent);
 }
 
-inline void SortedEventStack::_pushAfterPrio(Event* newEvent, Event::eEventPriority eventPrio)
+inline void SortedEventStack::_insertAfterPrio(Event* newEvent, Event::eEventPriority eventPrio)
 {
     auto it = mValueList.end();
     if (mValueList.empty() == false)
@@ -218,7 +212,7 @@ inline void SortedEventStack::_pushAfterPrio(Event* newEvent, Event::eEventPrior
     mValueList.insert(it, newEvent);
 }
 
-inline void SortedEventStack::_pushBeforePrio(Event* newEvent, Event::eEventPriority eventPrio)
+inline void SortedEventStack::_insertBeforePrio(Event* newEvent, Event::eEventPriority eventPrio)
 {
     auto it = mValueList.begin();
     if (mValueList.empty() == false)
@@ -233,7 +227,7 @@ inline void SortedEventStack::_pushBeforePrio(Event* newEvent, Event::eEventPrio
     mValueList.insert(it, newEvent);
 }
 
-inline void SortedEventStack::_pushAtBegin(Event* newEvent)
+inline void SortedEventStack::_insertAtBegin(Event* newEvent)
 {
     mValueList.push_front(newEvent);
 }
