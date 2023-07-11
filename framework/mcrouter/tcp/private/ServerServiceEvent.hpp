@@ -133,29 +133,7 @@ private:
 // ServerServiceEvent and IEServerServiceEventConsumer declaration
 //////////////////////////////////////////////////////////////////////////
 //!< Declaration of ServerServiceEvent event and IEServerServiceEventConsumer consumer classes
-DECLARE_EVENT(ServerServiceEventData, ServerServiceEventBase, IEServerServiceEventConsumer)
-
-/**
- * \brief   Extend the ServerServiceEventBase class to change the priority
- *          of the server command events.
- **/
-class ServerServiceEvent : public ServerServiceEventBase
-{
-//////////////////////////////////////////////////////////////////////////
-// Constructors.
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Initialize the event object and set the priority to High.
-     **/
-    inline ServerServiceEvent(const ServerServiceEventData& data, IEServerServiceEventConsumer& listener);
-
-    inline ServerServiceEvent(Event::eEventType eventType, const ServerServiceEventData& data);
-
-    inline ServerServiceEvent(Event::eEventType eventType, const ServerServiceEventData& data, IEServerServiceEventConsumer& listener);
-
-    inline ServerServiceEvent(const ServerServiceEventData& data);
-};
+DECLARE_EVENT(ServerServiceEventData, ServerServiceEvent, IEServerServiceEventConsumer)
 
 //////////////////////////////////////////////////////////////////////////////
 // ServerServiceEventData class inline functions implementation
@@ -188,34 +166,6 @@ inline const char * ServerServiceEventData::getString( ServerServiceEventData::e
     default:
         return "ERR: Unexpected ServerServiceEventData::eServerServiceCommands value!!!";
     }
-}
-
-//////////////////////////////////////////////////////////////////////////////
-// ServerServiceEvent class inline functions implementation
-//////////////////////////////////////////////////////////////////////////////
-
-inline ServerServiceEvent::ServerServiceEvent(const ServerServiceEventData& data, IEServerServiceEventConsumer& listener)
-    : ServerServiceEventBase(data, listener)
-{
-    mEventPrio = Event::eEventPriority::EventPriorityHigh;
-}
-
-inline ServerServiceEvent::ServerServiceEvent(Event::eEventType eventType, const ServerServiceEventData& data)
-    : ServerServiceEventBase(eventType, data)
-{
-    mEventPrio = Event::eEventPriority::EventPriorityHigh;
-}
-
-inline ServerServiceEvent::ServerServiceEvent(Event::eEventType eventType, const ServerServiceEventData& data, IEServerServiceEventConsumer& listener)
-    : ServerServiceEventBase(eventType, data, listener)
-{
-    mEventPrio = Event::eEventPriority::EventPriorityHigh;
-}
-
-inline ServerServiceEvent::ServerServiceEvent(const ServerServiceEventData& data)
-    : ServerServiceEventBase(data)
-{
-    mEventPrio = Event::eEventPriority::EventPriorityHigh;
 }
 
 #endif  // AREG_MCROUTER_TCP_PRIVATE_SERVERSERVICEEVENT_HPP

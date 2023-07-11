@@ -608,12 +608,18 @@ inline void ServerService::stopEventListener(void)
 
 inline bool ServerService::sendCommand(ServerServiceEventData::eServerServiceCommands cmd)
 {
-    return ServerServiceEvent::sendEvent( ServerServiceEventData(cmd), static_cast<IEServerServiceEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self()) );
+    return ServerServiceEvent::sendEvent( ServerServiceEventData(cmd)
+                                        , static_cast<IEServerServiceEventConsumer &>(mEventConsumer)
+                                        , static_cast<DispatcherThread &>(self())
+                                        , Event::eEventPriority::EventPriorityHigh);
 }
 
 inline bool ServerService::sendCommunicationMessage(ServerServiceEventData::eServerServiceCommands cmd, const RemoteMessage & msg)
 {
-    return ServerServiceEvent::sendEvent( ServerServiceEventData(cmd, msg), static_cast<IEServerServiceEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self()) );
+    return ServerServiceEvent::sendEvent( ServerServiceEventData(cmd, msg)
+                                        , static_cast<IEServerServiceEventConsumer &>(mEventConsumer)
+                                        , static_cast<DispatcherThread &>(self())
+                                        , Event::eEventPriority::EventPriorityHigh);
 }
 
 inline bool ServerService::isAddressInWhiteList(const NESocket::SocketAddress & addrClient) const

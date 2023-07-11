@@ -206,6 +206,12 @@ public:
     } eEventPriority;
 
     /**
+     * \brief   Event::DefaultPriority
+     *          The default priority of the events.
+     **/
+    static constexpr eEventPriority DefaultPriority     { eEventPriority::EventPriorityNormal };
+
+    /**
      * \brief   Predefined invalid event object. It has Unknown type with ID 0.
      **/
     static const Event  BAD_EVENT;
@@ -422,6 +428,16 @@ public:
     inline void setEventType( Event::eEventType eventType );
 
     /**
+     * \brief   Returns the priority of the event.
+     **/
+    inline eEventPriority getEventPriority(void) const;
+
+    /**
+     * \brief   Sets new priority of the event.
+     **/
+    inline void setEventPriority(eEventPriority eventPrio);
+
+    /**
      * \brief   Returns pointer of Event Consumer object.
      *          If nullptr, no Event Consumer is set and the Event cannot be processed.
      **/
@@ -486,16 +502,6 @@ public:
      * \brief   Returns true, if event is developer custom to communicate with worker thread or system predefined.
      **/
     inline bool isCustom( void ) const;
-
-    /**
-     * \brief   Returns the priority of the event.
-     **/
-    inline eEventPriority getEventPriority(void) const;
-
-    /**
-     * \brief   Sets new priority of the event.
-     **/
-    inline void setEventPriority(eEventPriority eventPrio);
 
 //////////////////////////////////////////////////////////////////////////
 // Protected members

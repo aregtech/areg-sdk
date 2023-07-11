@@ -91,6 +91,9 @@ private:
      * \brief   The instance of remote message
      **/
     RemoteMessage mRemoteMessage;
+    /**
+     * \brief   The event priority
+     **/
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

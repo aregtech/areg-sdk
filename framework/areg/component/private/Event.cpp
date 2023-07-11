@@ -74,7 +74,7 @@ bool Event::removeListener( const RuntimeClassID & classId, IEEventConsumer & ev
 Event::Event( void )
     : RuntimeObject ( )
     , mEventType    ( Event::eEventType::EventUnknown )
-    , mEventPrio    ( Event::eEventPriority::EventPriorityNormal )
+    , mEventPrio    ( DefaultPriority )
     , mConsumer     ( nullptr )
     , mTargetThread ( nullptr )
 {
@@ -83,7 +83,7 @@ Event::Event( void )
 Event::Event( Event::eEventType eventType )
     : RuntimeObject ( )
     , mEventType    ( eventType )
-    , mEventPrio    ( Event::eEventPriority::EventPriorityNormal )
+    , mEventPrio    ( DefaultPriority )
     , mConsumer     ( nullptr )
     , mTargetThread ( nullptr )
 {
