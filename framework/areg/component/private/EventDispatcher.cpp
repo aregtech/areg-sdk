@@ -65,7 +65,7 @@ void EventDispatcher::onThreadRuns( void )
 
 int EventDispatcher::onThreadExit( void )
 {
-    stopDispatcher( );
+    exitDispatcher( );
     mDispatcherThread   = nullptr;
     return static_cast<int>(IEThreadConsumer::eExitCodes::ExitNormal);
 }

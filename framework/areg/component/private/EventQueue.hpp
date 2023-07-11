@@ -20,7 +20,7 @@
  * Includes
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/TEStack.hpp"
+#include "areg/component/private/SortedEventStack.hpp"
 #include "areg/component/private/IEQueueListener.hpp"
 
 /************************************************************************
@@ -54,7 +54,7 @@ public:
      *                          the Queue is empty.
      * \param   eventQueue      The instance of event queue object, which will keep event elements.
      **/
-    EventQueue( IEQueueListener & eventListener, TEStack<Event *> & eventQueue );
+    EventQueue( IEQueueListener & eventListener, SortedEventStack & messageQueue );
 
     /**
      * \brief   Destructor
@@ -84,11 +84,6 @@ public:
      * \brief   Returns true, if Event Queue is empty.
      **/
     inline bool isEmpty( void ) const;
-
-    /**
-     * \brief   Returns number of pending Events in the Queue.
-     **/
-    inline uint32_t getSize( void ) const;
 
     /**
      * \brief   Pushes new Event in the Queue and notifies Event Listener
@@ -126,31 +121,13 @@ public:
      *          After Events are removed, it will signal Event Listener whether queue is 
      *          empty or not.
      * \param   eventClassId    Runtime class ID of Event object to remove from the Queue.
-     * \return  Returns number of removed Events from the Queue.
      **/
-    int removeEvents( const RuntimeClassID & eventClassId );
+    void removeEvents( const RuntimeClassID & eventClassId );
 
     /**
-     * \brief   Removes all events. Makes event queue empty
+     * \brief   Removes all events. Makes event queue empty and resets the signal.
      **/
-    virtual void removeAllEvents( void );
-
-//////////////////////////////////////////////////////////////////////////
-// Protected methods
-//////////////////////////////////////////////////////////////////////////
-protected:
-    /**
-     * \brief   Removes all Event elements from the Queue and if keepSpecials is true,
-     *          it will not remove special predefined Exit Event (ExitEvent) objects,
-     *          which notify Dispatcher to complete job and exit.
-     *          When Event objects are removed from the Queue, Destroy() method of every
-     *          Event is called to make cleanup.
-     *          The method does not send any signal to Event Listener object.
-     * \param   keepSpecials    If true, it will remove all Event objects from the Queue,
-     *                          except predefined special Exit Event (ExitEvent).
-     *                          Otherwise it will remove all elements.
-     **/
-    bool removePendingEvents( bool keepSpecials );
+    void removeAllEvents( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -164,7 +141,7 @@ private:
     /**
      * \brief   Event queue stack object, which stores event elements
      **/
-    TEStack<Event *> &  mEventQueue;
+    SortedEventStack &  mEventQueue;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden method calls.
@@ -210,14 +187,8 @@ public:
 // members
 //////////////////////////////////////////////////////////////////////////
 private:
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(disable: 4251)
-#endif  // _MSC_VER
     //! The stack to store queued elements.
-    TELockStack<Event*>     mStack;
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
-#endif  // _MSC_VER
+    SortedEventStack    mStack;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden method calls.
@@ -269,14 +240,8 @@ private:
     virtual void signalEvent(uint32_t eventCount ) override;
 
 private:
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(disable: 4251)
-#endif  // _MSC_VER
     //! The stack to store queued elements.
-    TENolockStack<Event*>   mStack;
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
-#endif  // _MSC_VER
+    SortedEventStack   mStack;
 
     inline InternalEventQueue& self(void);
 
@@ -292,22 +257,17 @@ private:
 //////////////////////////////////////////////////////////////////////////
 inline bool EventQueue::lockQueue( void )
 {
-    return mEventQueue.lock();
+    return mEventQueue.lockStack();
 }
 
 inline void EventQueue::unlockQueue( void )
 {
-    mEventQueue.unlock();
+    mEventQueue.unlockStack();
 }
 
 inline bool EventQueue::isEmpty( void ) const
 {
     return mEventQueue.isEmpty();
-}
-
-inline uint32_t EventQueue::getSize( void ) const
-{
-    return mEventQueue.getSize();
 }
 
 #endif  // AREG_COMPONENT_PRIVATE_EVENTQUEUE_HPP

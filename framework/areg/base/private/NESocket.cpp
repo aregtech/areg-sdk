@@ -544,7 +544,7 @@ AREG_API_IMPL SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverS
 
     if ( serverSocket != NESocket::InvalidSocketHandle )
     {
-        fd_set readList;
+        fd_set readList { };
         FD_ZERO(&readList);
         FD_SET( serverSocket, &readList );
         SOCKETHANDLE maxSocket = serverSocket;

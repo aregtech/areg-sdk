@@ -188,7 +188,28 @@ public:
     /**
      * \return Returns string value of Event::eEventType
      **/
-    static inline const char* getString( Event::eEventType eventType );
+    static inline const char* getString(Event::eEventType eventType);
+
+    /**
+     * \brief   Event::eEventPiority
+     *          The priorities of the events.
+     **/
+    typedef enum class E_EventPriority  : unsigned int
+    {
+          EventPriorityUndefined    //!< Undefined priority, should not be used.
+        , EventPriorityLow          //!< The priority of the event is low, should be processed only if there is no event in the queue.
+        , EventPriorityNormal       //!< The priority of the event is normal, should be processed in FIFO principle.
+        , EventPriorityHigh         //!< The priority of the event is high, should be processed before any other events.
+        , EventPriorityCritical     //!< The priority of the event is critical, should be processed nearly immediately.
+        , EventPriorityIgnore       //!< The priority of event should be ignored. Should be set in event.
+        , EventPriorityExit         //!< The highest priority of the event. Should be processed as soon as possible and should not be removed from the stack.
+    } eEventPriority;
+
+    /**
+     * \brief   Event::DefaultPriority
+     *          The default priority of the events.
+     **/
+    static constexpr eEventPriority DefaultPriority     { eEventPriority::EventPriorityNormal };
 
     /**
      * \brief   Predefined invalid event object. It has Unknown type with ID 0.
@@ -407,6 +428,16 @@ public:
     inline void setEventType( Event::eEventType eventType );
 
     /**
+     * \brief   Returns the priority of the event.
+     **/
+    inline eEventPriority getEventPriority(void) const;
+
+    /**
+     * \brief   Sets new priority of the event.
+     **/
+    inline void setEventPriority(eEventPriority eventPrio);
+
+    /**
      * \brief   Returns pointer of Event Consumer object.
      *          If nullptr, no Event Consumer is set and the Event cannot be processed.
      **/
@@ -501,6 +532,10 @@ protected:
      **/
     eEventType          mEventType;
     /**
+     * \brief   The event priority
+     **/
+    eEventPriority      mEventPrio;
+    /**
      * \brief   Event consumer.
      **/
     IEEventConsumer*    mConsumer;
@@ -590,6 +625,16 @@ inline bool Event::isRemote(void) const
 inline bool Event::isCustom( void ) const
 {
     return Event::isCustom( mEventType );
+}
+
+inline Event::eEventPriority Event::getEventPriority(void) const
+{
+    return mEventPrio;
+}
+
+inline void Event::setEventPriority(Event::eEventPriority eventPrio)
+{
+    mEventPrio = eventPrio;
 }
 
 inline const char* Event::getString(Event::eEventType eventType)

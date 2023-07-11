@@ -257,7 +257,7 @@ bool ClientService::registerService( const StubAddress & stubService )
                    , StubAddress::convAddressToPath(stubService).getString()
                    , mClientConnection.getCookie());
 
-        result = _queueSendMessage( NEConnection::createRouterRegisterService(stubService, mClientConnection.getCookie()) );
+        result = _queueSendMessage( NEConnection::createRouterRegisterService(stubService, mClientConnection.getCookie()), Event::eEventPriority::EventPriorityHigh );
     }
     return result;
 }
@@ -273,7 +273,7 @@ void ClientService::unregisterService(const StubAddress & stubService)
                    , StubAddress::convAddressToPath(stubService).getString()
                    , mClientConnection.getCookie());
 
-        _queueSendMessage( NEConnection::createRouterUnregisterService(stubService, mClientConnection.getCookie()) );
+        _queueSendMessage( NEConnection::createRouterUnregisterService(stubService, mClientConnection.getCookie()), Event::eEventPriority::EventPriorityHigh);
     }
 }
 
@@ -288,7 +288,7 @@ bool ClientService::registerServiceClient(const ProxyAddress & proxyService)
                    , ProxyAddress::convAddressToPath(proxyService).getString()
                    , mClientConnection.getCookie());
 
-        result = _queueSendMessage( NEConnection::createRouterRegisterClient(proxyService, mClientConnection.getCookie()) );
+        result = _queueSendMessage( NEConnection::createRouterRegisterClient(proxyService, mClientConnection.getCookie()), Event::eEventPriority::EventPriorityHigh);
     }
 
     return result;
@@ -305,7 +305,7 @@ void ClientService::unregisterServiceClient(const ProxyAddress & proxyService)
                    , ProxyAddress::convAddressToPath(proxyService).getString()
                    , mClientConnection.getCookie());
 
-        _queueSendMessage( NEConnection::createRouterUnregisterClient(proxyService, mClientConnection.getCookie()) );
+        _queueSendMessage( NEConnection::createRouterUnregisterClient(proxyService, mClientConnection.getCookie()), Event::eEventPriority::EventPriorityHigh);
     }
 }
 
@@ -473,7 +473,7 @@ inline void ClientService::_stopConnection(void)
     RemoteMessage msgDisconnect = mClientConnection.getDisconnectMessage();
     if ( msgDisconnect.isValid() )
     {
-        _queueSendMessage(msgDisconnect);
+        _queueSendMessage(msgDisconnect, Event::eEventPriority::EventPriorityHigh);
     }
 
     mClientConnection.setCookie( NEService::COOKIE_UNKNOWN );
@@ -567,7 +567,7 @@ void ClientService::failedProcessMessage( const RemoteMessage & msgUnprocessed )
                 RemoteMessage data;
                 if ( RemoteEventFactory::createStreamFromEvent( data, *eventError, mChannel) )
                 {
-                    _queueSendMessage(data);
+                    _queueSendMessage(data, Event::eEventPriority::EventPriorityNormal);
                 }
             }
         }
@@ -747,7 +747,7 @@ void ClientService::processRemoteRequestEvent( RemoteRequestEvent & requestEvent
                             , data.getSource()
                             , data.getTarget());
 
-            _queueSendMessage(data);
+            _queueSendMessage(data, Event::eEventPriority::EventPriorityNormal);
         }
         else
         {
@@ -783,7 +783,7 @@ void ClientService::processRemoteNotifyRequestEvent( RemoteNotifyRequestEvent & 
                             , static_cast<uint32_t>(data.getSource())
                             , static_cast<uint32_t>(data.getTarget()));
 
-            _queueSendMessage(data);
+            _queueSendMessage(data, Event::eEventPriority::EventPriorityNormal);
         }
         else
         {
@@ -818,7 +818,7 @@ void ClientService::processRemoteResponseEvent(RemoteResponseEvent & responseEve
                             , static_cast<uint32_t>(data.getSource())
                             , static_cast<uint32_t>(data.getTarget()));
 
-            _queueSendMessage(data);
+            _queueSendMessage(data, Event::eEventPriority::EventPriorityNormal);
         }
         else
         {
@@ -856,9 +856,10 @@ bool ClientService::postEvent(Event & eventElem)
     return EventDispatcher::postEvent(eventElem);
 }
 
-inline bool ClientService::_queueSendMessage(const RemoteMessage & data)
+inline bool ClientService::_queueSendMessage(const RemoteMessage & data, Event::eEventPriority eventPrio)
 {
     return SendMessageEvent::sendEvent( SendMessageEventData(data)
                                       , static_cast<IESendMessageEventConsumer &>(mThreadSend)
-                                      , static_cast<DispatcherThread &>(mThreadSend) );
+                                      , static_cast<DispatcherThread &>(mThreadSend)
+                                      , eventPrio);
 }

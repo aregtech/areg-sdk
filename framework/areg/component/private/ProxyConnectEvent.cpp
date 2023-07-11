@@ -35,6 +35,7 @@ ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target, const StubAdd
     , mStubAddress          ( implAddress )
     , mConnectionStatus     ( connectStatus )
 {
+    mEventPrio = Event::eEventPriority::EventPriorityHigh;
 }
 
 ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target, const ProxyConnectEvent & src )
@@ -42,6 +43,7 @@ ProxyConnectEvent::ProxyConnectEvent( const ProxyAddress & target, const ProxyCo
     , mStubAddress          ( src.mStubAddress )
     , mConnectionStatus     ( src.mConnectionStatus )
 {
+    mEventPrio = Event::eEventPriority::EventPriorityHigh;
 }
 
 ProxyConnectEvent::ProxyConnectEvent(const IEInStream & stream)
@@ -50,6 +52,7 @@ ProxyConnectEvent::ProxyConnectEvent(const IEInStream & stream)
     , mConnectionStatus     ( NEService::eServiceConnection::ServiceConnectionUnknown )
 {
      stream >> mConnectionStatus;
+     mEventPrio = Event::eEventPriority::EventPriorityHigh;
 }
 
 const IEInStream & ProxyConnectEvent::readStream(const IEInStream & stream)

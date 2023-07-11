@@ -67,7 +67,7 @@ class ServerService : public    IERemoteService
     class ServerServiceEventConsumer : public  IEServerServiceEventConsumer
     {
     public:
-        //!< Initializes the the server service consumer object
+        //!< Initializes the server service consumer object
         ServerServiceEventConsumer( ServerService & service );
 
         virtual ~ServerServiceEventConsumer( void ) = default;
@@ -516,13 +516,13 @@ private:
     void onServiceRestart( void );
 
     /**
-     * \brief   Called when received a commuication message to dispatch and process.
+     * \brief   Called when received a communication message to dispatch and process.
      * \param   msgReceived     The received the communication message. 
      **/
     void onServiceMessageReceived(const RemoteMessage & msgReceived);
 
     /**
-     * \brief   Called when need to send a commuication message.
+     * \brief   Called when need to send a communication message.
      * \param   msgReceived     The received the communication message. 
      **/
     void onServiceMessageSend(const RemoteMessage & msgSend);
@@ -550,7 +550,7 @@ private:
     /**
      * \brief   Call to send the event to process.
      * \param   cmd     The command to send and process.
-     * \return  Returns true if successeded to send the command.
+     * \return  Returns true if succeeded to send the command.
      **/
     inline bool sendCommand(ServerServiceEventData::eServerServiceCommands cmd);
 
@@ -558,7 +558,7 @@ private:
      * \brief   Call to send the event to process.
      * \param   cmd     The command to send and process.
      * \param   msg     The message to forward.
-     * \return  Returns true if successeded to send the command.
+     * \return  Returns true if succeeded to send the command.
      **/
     inline bool sendCommunicationMessage(ServerServiceEventData::eServerServiceCommands cmd, const RemoteMessage & msg);
 
@@ -576,7 +576,8 @@ private:
     StringArray                 mWhiteList;         //!< The list of enabled fixed client hosts.
     StringArray                 mBlackList;         //!< The list of disabled fixes client hosts.
     ServerServiceEventConsumer  mEventConsumer;     //!< The custom event consumer object
-    TimerConsumer               mTimerConsumer;     //!< The timer consumer object
+    TimerConsumer               mTimerConsumer;     //!< The timer consumer object.
+    SynchEvent                  mEventSendStop;     //!< The event set when cannot send and receive data anymore.
     mutable ResourceLock        mLock;              //!< The synchronization object to be accessed from different threads.
 
 //////////////////////////////////////////////////////////////////////////////
@@ -607,12 +608,18 @@ inline void ServerService::stopEventListener(void)
 
 inline bool ServerService::sendCommand(ServerServiceEventData::eServerServiceCommands cmd)
 {
-    return ServerServiceEvent::sendEvent( ServerServiceEventData(cmd), static_cast<IEServerServiceEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self()) );
+    return ServerServiceEvent::sendEvent( ServerServiceEventData(cmd)
+                                        , static_cast<IEServerServiceEventConsumer &>(mEventConsumer)
+                                        , static_cast<DispatcherThread &>(self())
+                                        , Event::eEventPriority::EventPriorityHigh);
 }
 
 inline bool ServerService::sendCommunicationMessage(ServerServiceEventData::eServerServiceCommands cmd, const RemoteMessage & msg)
 {
-    return ServerServiceEvent::sendEvent( ServerServiceEventData(cmd, msg), static_cast<IEServerServiceEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self()) );
+    return ServerServiceEvent::sendEvent( ServerServiceEventData(cmd, msg)
+                                        , static_cast<IEServerServiceEventConsumer &>(mEventConsumer)
+                                        , static_cast<DispatcherThread &>(self())
+                                        , Event::eEventPriority::EventPriorityHigh);
 }
 
 inline bool ServerService::isAddressInWhiteList(const NESocket::SocketAddress & addrClient) const

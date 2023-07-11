@@ -75,6 +75,12 @@ public:
     virtual void stopDispatcher( void ) = 0;
 
     /**
+     * \brief   Called when dispatcher completed the job and exit.
+     *          The cleanups should be done here.
+     **/
+    virtual void exitDispatcher( void ) = 0;
+
+    /**
      * \brief   Call to queue event object in the event queue of dispatcher.
      *          The passed event parameter should be allocated in memory and
      *          should be globally accessed (for example, via new operator).

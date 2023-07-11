@@ -28,6 +28,7 @@ StubConnectEvent::StubConnectEvent(const StubAddress & stubTarget, NEService::eS
                             , Event::eEventType::EventLocalStubConnect)
     , mConnectionStatus     ( connectStatus )
 {
+    mEventPrio = Event::eEventPriority::EventPriorityHigh;
 }
 
 StubConnectEvent::StubConnectEvent(const ProxyAddress & proxyClient, const StubAddress & stubTarget, NEService::eServiceConnection connectStatus)
@@ -38,6 +39,7 @@ StubConnectEvent::StubConnectEvent(const ProxyAddress & proxyClient, const StubA
                             , Event::eEventType::EventLocalStubConnect)
     , mConnectionStatus     ( connectStatus )
 {
+    mEventPrio = Event::eEventPriority::EventPriorityHigh;
 }
 
 StubConnectEvent::StubConnectEvent( const IEInStream & stream )
@@ -45,6 +47,7 @@ StubConnectEvent::StubConnectEvent( const IEInStream & stream )
     , mConnectionStatus    ( NEService::eServiceConnection::ServiceConnectionUnknown )
 {
     stream >> mConnectionStatus;
+    mEventPrio = Event::eEventPriority::EventPriorityHigh;
 }
 
 const IEInStream & StubConnectEvent::readStream(const IEInStream & stream)

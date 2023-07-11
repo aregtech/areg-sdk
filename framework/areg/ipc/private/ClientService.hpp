@@ -474,8 +474,10 @@ private:
     inline ClientService::eConnectionState _getConnectionState( void ) const;
     /**
      * \brief   Queues the message for sending
+     * \param   data        The data of the message.
+     * \param   eventPrio   The priority of the message to set.
      **/
-    inline bool _queueSendMessage(const RemoteMessage & data);
+    inline bool _queueSendMessage(const RemoteMessage & data, Event::eEventPriority eventPrio);
     /**
      * \brief   Returns instance of client servicing object.
      **/
