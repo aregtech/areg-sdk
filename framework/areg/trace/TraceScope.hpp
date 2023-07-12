@@ -20,6 +20,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/trace/NETrace.hpp"
 #include "areg/base/String.hpp"
+#include "areg/base/IEIOStream.hpp"
 
 //////////////////////////////////////////////////////////////////////////////
 // TraceScope class declaration
@@ -89,6 +90,13 @@ public:
      *          is same as scope ID.
      **/
     inline operator unsigned int ( void ) const;
+
+    /**
+     * \brief   Writes the scope data into the stream.
+     * \param   stream  The stream object to write data.
+     * \param   output  The scope to write into the stream object.
+     **/
+    inline friend IEOutStream & operator << ( IEOutStream & stream, TraceScope & output );
 
 //////////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -206,6 +214,19 @@ namespace std
             return static_cast<unsigned int>(key);
         }
     };
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// inline functions implementation
+//////////////////////////////////////////////////////////////////////////////
+
+inline IEOutStream & operator << ( IEOutStream & stream, TraceScope & output )
+{
+    stream << output.mScopeName;
+    stream << output.mScopeId;
+    stream << output.mScopePrio;
+
+    return stream;
 }
 
 //////////////////////////////////////////////////////////////////////////////

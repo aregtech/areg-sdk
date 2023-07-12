@@ -20,26 +20,26 @@
 #include "areg/trace/private/NetTcpLogger.hpp"
 #include "areg/trace/private/TraceManager.hpp"
 
+#include "areg/base/SharedBuffer.hpp"
 #include "areg/base/SynchObjects.hpp"
 
 NetTcpLogger::NetTcpLogger(LogConfiguration& tracerConfig)
     : LoggerBase        (tracerConfig)
     , IEThreadConsumer  ( )
-    , mSocket           ( )
-    , mThreadRetry      ( static_cast<IEThreadConsumer &>(self()), NetTcpLogger::THREAD_NAME_RETRY)
-    , mRingStack        ( NetTcpLogger::RING_STACK_MAX_SIZE, NECommon::eRingOverlap::ShiftOnOverlap )
-{
-}
 
-NetTcpLogger::~NetTcpLogger(void)
+    , mSocket           ( )
+    , mRingStack        ( NetTcpLogger::RING_STACK_MAX_SIZE, NECommon::eRingOverlap::ShiftOnOverlap )
+    , mConnectionState  ( eConnectionStates::StateInactive )
+    , mRecvThread       ( static_cast<IEThreadConsumer &>(self()), LOG_RECEIVE_THREAD_NAME )
+    , mEventExit        ( true, false )
+    , mLock             ( false )
 {
 }
 
 bool NetTcpLogger::openLogger(void)
 {
+    Lock lock( mLock );
     bool result{ false };
-
-    mThreadRetry.destroyThread(NECommon::DO_NOT_WAIT);
 
     if (mSocket.isValid() == false)
     {
@@ -50,14 +50,17 @@ bool NetTcpLogger::openLogger(void)
         {
             String host(static_cast<const String&>(propTcpHost.getValue()));
             uint16_t port(static_cast<const uint16_t>(propTcpPort.getValue()));
+
             if (mSocket.createSocket(host, port))
             {
-                result  = true;
+                mConnectionState = eConnectionStates::StateConnected;
+                result = true;
+                mRecvThread.createThread( NECommon::WAIT_INFINITE );
             }
             else
             {
-                mSocket.closeSocket();
-                mThreadRetry.createThread(NECommon::WAIT_INFINITE);
+                OUTPUT_WARN( "Failed to establish TCP/IP connection with remote logging service." );
+                closeConnection( );
             }
         }
         else
@@ -76,8 +79,13 @@ bool NetTcpLogger::openLogger(void)
 
 void NetTcpLogger::closeLogger(void)
 {
-    mSocket.closeSocket();
-    mThreadRetry.destroyThread(NECommon::WAIT_INFINITE);
+    Lock lock( mLock );
+
+    mEventExit.setEvent( );
+    _closeConnection( );
+    mRecvThread.destroyThread( NECommon::WAIT_INFINITE );
+    mEventExit.resetEvent( );
+
     while (mRingStack.isEmpty() == false)
     {
         NETrace::sLogMessage * header = mRingStack.popFirst();
@@ -99,7 +107,6 @@ void NetTcpLogger::logMessage(const NETrace::sLogMessage& logMessage)
                 {
                     TraceManager::setCookie(NETrace::COOKIE_LOCAL);
                     mSocket.closeSocket();
-                    mThreadRetry.createThread(NECommon::WAIT_INFINITE);
                 }
             }
         }
@@ -129,13 +136,80 @@ void NetTcpLogger::flushLogs(void)
 
 bool NetTcpLogger::isLoggerOpened(void) const
 {
-    return mSocket.isValid();
+    return (mConnectionState != eConnectionStates::StateInactive);
 }
 
-void NetTcpLogger::onThreadRuns(void)
+bool NetTcpLogger::sendData(const SharedBuffer & data)
 {
-    SynchTimer timer(NetTcpLogger::TIMEOUT_CONNECT_RETRY, false, false, true);
-    timer.setTimer();
-    timer.lock(NECommon::WAIT_INFINITE);
-    TraceManager::retryStartLogging();
+    const int size{ static_cast<int>(data.getSizeUsed()) };
+    return (mSocket.isValid() && (mSocket.sendData(data.getBuffer(), size) == size));
+}
+
+void NetTcpLogger::closeConnection( void )
+{
+    Lock lock( mLock );
+    _closeConnection( );
+}
+
+void NetTcpLogger::setActive( bool isActive )
+{
+    Lock lock( mLock );
+    mConnectionState = eConnectionStates::StateActive;
+}
+
+bool NetTcpLogger::isActive( void ) const
+{
+    Lock lock( mLock );
+    return (mConnectionState == eConnectionStates::StateActive);
+}
+
+inline void NetTcpLogger::_closeConnection( void )
+{
+    mConnectionState = eConnectionStates::StateInactive;
+    mSocket.closeSocket( );
+}
+
+void NetTcpLogger::onThreadRuns( void )
+{
+    Lock checkExit( mEventExit, false );
+    bool lostConnection{ false };
+
+    while ( true )
+    {
+        if ( checkExit.lock(NECommon::DO_NOT_WAIT) == false)
+        {
+            NETrace::sLogHeader logHeader;
+            int sizeReceived = mSocket.receiveData( reinterpret_cast<unsigned char *>(&logHeader), sizeof( NETrace::sLogHeader ) );
+
+            if ( sizeReceived <= 0 )
+            {
+                lostConnection = true;
+                break;
+            }
+            else
+            {
+                SharedBuffer data( logHeader.hdrDataLen + sizeof( logHeader ) );
+                data << logHeader;
+                unsigned char * buffer = data.getBuffer( ) + sizeof( logHeader );
+                if ( mSocket.receiveData( buffer, logHeader.hdrDataLen ) < static_cast<int>(logHeader.hdrDataLen) )
+                {
+                    lostConnection = true;
+                    break;
+                }
+
+                TraceManager::netReceivedData( data );
+            }
+        }
+        else
+        {
+            mEventExit.resetEvent( );
+            break;
+        }
+    };
+
+    if ( lostConnection && isLoggerOpened( ) )
+    {
+        closeConnection( );
+        TraceManager::netConnectionLost( );
+    }
 }

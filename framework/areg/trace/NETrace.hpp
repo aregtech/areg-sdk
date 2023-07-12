@@ -645,7 +645,7 @@ inline NETrace::sLogMessage::sLogMessage(NETrace::eMessageType msgType, unsigned
  * \param   stream  The source of log message data.
  * \param   input   On output this contains structured logging message.
  **/
-inline const IEInStream & operator >> ( const IEInStream & stream, NETrace::sLogMessage& input )
+inline const IEInStream& operator >> (const IEInStream& stream, NETrace::sLogMessage& input)
 {
     stream >> input.lmHeader;
     stream >> input.lmTrace;
@@ -657,10 +657,58 @@ inline const IEInStream & operator >> ( const IEInStream & stream, NETrace::sLog
  * \param   stream  The streaming object to save log message.
  * \param   output  The source of log message to serialize message.
  **/
-inline IEOutStream & operator << ( IEOutStream & stream, const NETrace::sLogMessage& output )
+inline IEOutStream& operator << (IEOutStream& stream, const NETrace::sLogMessage& output)
 {
     stream << output.lmHeader;
     stream << output.lmTrace;
+    return stream;
+}
+
+/**
+ * \brief   Deserializes log message from the stream.
+ * \param   stream  The source of log message data.
+ * \param   input   On output this contains structured logging message.
+ **/
+inline const IEInStream& operator >> (const IEInStream& stream, NETrace::sLogRequestConnect& input)
+{
+    stream >> input.reqConHeader;
+    stream >> input.reqConData;
+    return stream;
+}
+
+/**
+ * \brief   Serializes log message to the stream.
+ * \param   stream  The streaming object to save log message.
+ * \param   output  The source of log message to serialize message.
+ **/
+inline IEOutStream& operator << (IEOutStream& stream, const NETrace::sLogRequestConnect& output)
+{
+    stream << output.reqConHeader;
+    stream << output.reqConData;
+    return stream;
+}
+
+/**
+ * \brief   Deserializes log message from the stream.
+ * \param   stream  The source of log message data.
+ * \param   input   On output this contains structured logging message.
+ **/
+inline const IEInStream& operator >> (const IEInStream& stream, NETrace::sLogRequestDisconnect & input)
+{
+    stream >> input.reqDisconHeader;
+    stream >> input.reqDisconData;
+    return stream;
+}
+
+/**
+ * \brief   Serializes log message to the stream.
+ * \param   stream  The streaming object to save log message.
+ * \param   output  The source of log message to serialize message.
+ **/
+inline IEOutStream& operator << (IEOutStream& stream, const NETrace::sLogRequestDisconnect & output)
+{
+    stream << output.reqDisconHeader;
+    stream << output.reqDisconData;
     return stream;
 }
 
