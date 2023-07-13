@@ -24,10 +24,11 @@
 #include "areg/base/IEThreadConsumer.hpp"
 
 #include "areg/base/IEIOStream.hpp"
-#include "areg/base/SocketClient.hpp"
 #include "areg/base/TERingStack.hpp"
 #include "areg/base/Thread.hpp"
+#include "areg/base/SocketClient.hpp"
 #include "areg/base/String.hpp"
+#include "areg/base/SynchObjects.hpp"
 
 class SharedBuffer;
 
@@ -137,8 +138,14 @@ public:
      **/
     void closeConnection( void );
 
+    /**
+     * \brief   Sets the active state of the TCP logger.
+     **/
     void setActive( bool isActive );
 
+    /**
+     * \brief   Returns true if connection state is not Inactive
+     **/
     bool isActive( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
@@ -183,7 +190,7 @@ private:
     //!< The synchronization event to trigger exit of receive thread.
     SynchEvent          mEventExit;
     //!< Synchronization object.
-    Mutex               mLock;
+    mutable Mutex       mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

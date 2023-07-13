@@ -136,6 +136,7 @@ void NetTcpLogger::flushLogs(void)
 
 bool NetTcpLogger::isLoggerOpened(void) const
 {
+    Lock lock( mLock );
     return (mConnectionState != eConnectionStates::StateInactive);
 }
 
