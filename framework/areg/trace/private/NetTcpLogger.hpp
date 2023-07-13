@@ -20,13 +20,17 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/IEIOStream.hpp"
-#include "areg/base/IEThreadConsumer.hpp"
 #include "areg/trace/private/LoggerBase.hpp"
+#include "areg/base/IEThreadConsumer.hpp"
 
+#include "areg/base/IEIOStream.hpp"
+#include "areg/base/TERingStack.hpp"
+#include "areg/base/Thread.hpp"
 #include "areg/base/SocketClient.hpp"
 #include "areg/base/String.hpp"
-#include "areg/base/Thread.hpp"
+#include "areg/base/SynchObjects.hpp"
+
+class SharedBuffer;
 
 //////////////////////////////////////////////////////////////////////////
 // NetTcpLogger class declaration
@@ -43,14 +47,20 @@ class NetTcpLogger  : public    LoggerBase
 // Internal types and constants.
 //////////////////////////////////////////////////////////////////////////
 private:
-    //!< The timeout to retry to establish the TCP/IP connection.
-    static constexpr uint32_t   TIMEOUT_CONNECT_RETRY       { NECommon::TIMEOUT_1_SEC };
-    //<! The retry reconnect thread name.
-    static constexpr std::string_view   THREAD_NAME_RETRY   { "_LOGGER_RETRY_TCP_CONNECT_THREAD_" };
-    //<! The number of messages to queue until logging service is available.
-    static constexpr uint32_t           RING_STACK_MAX_SIZE { 100 };
     //!< The ring buffer of logging message to queue if logging service is not available.
     using RingStack = TENolockRingStack<NETrace::sLogMessage *>;
+    //!< The state of the TCP logger
+    enum eConnectionStates
+    {
+          StateInactive     = 0 //!< The logger is inactive.
+        , StateConnected    = 1 //!< The logger is connected.
+        , StateActive       = 3 //!< The logger is active and can send-receive message.
+    };
+
+    //!< The number of messages to queue until logging service is available.
+    static constexpr uint32_t           RING_STACK_MAX_SIZE     { 100 };
+    //!< The name of logging thread, which receive messages from logging service.
+    static constexpr std::string_view   LOG_RECEIVE_THREAD_NAME { "_LOG_NET_RECEIVE_THREAD_" };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -70,7 +80,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~NetTcpLogger(void);
+    virtual ~NetTcpLogger(void) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Override operations and attribute
@@ -112,11 +122,36 @@ public:
      **/
     virtual bool isLoggerOpened( void ) const override;
 
+//////////////////////////////////////////////////////////////////////////
+// Operations:
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Sends the specified data over opened TCP/IP connection.
+     * \param   data    The data to send.
+     * \return  Returns true if succeeded to send the data. Otherwise, returns false.
+     **/
+    bool sendData(const SharedBuffer & data);
+
+    /**
+     * \brief   Closes the connection socket. And does not remote the logs from the pending stacks.
+     **/
+    void closeConnection( void );
+
+    /**
+     * \brief   Sets the active state of the TCP logger.
+     **/
+    void setActive( bool isActive );
+
+    /**
+     * \brief   Returns true if connection state is not Inactive
+     **/
+    bool isActive( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
-// Overrides
+// Hidden methods
 //////////////////////////////////////////////////////////////////////////
-protected:
+private:
 /************************************************************************/
 // IEThreadConsumer interface overrides
 /************************************************************************/
@@ -130,10 +165,13 @@ protected:
      **/
     virtual void onThreadRuns( void ) override;
 
-//////////////////////////////////////////////////////////////////////////
-// Member variables
-//////////////////////////////////////////////////////////////////////////
-private:
+/************************************************************************/
+// Internal methods
+/************************************************************************/
+
+    //!< Closes connection
+    void _closeConnection( void );
+
     //!< Wrapper of 'this' pointer.
     inline NetTcpLogger& self(void);
 
@@ -142,11 +180,17 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< The TCP/IP client socket to connect to remote host.
-    SocketClient    mSocket;
-    //!< The thread to make retries to reconnect to logging service.
-    Thread          mThreadRetry;
+    SocketClient        mSocket;
     //!< The ring stack to queue log messages if the connection setup did not complete yet.
-    RingStack       mRingStack;
+    RingStack           mRingStack;
+    //!< The connection states.
+    eConnectionStates   mConnectionState;
+    //!< brief   The data receiver thread.
+    Thread              mRecvThread;
+    //!< The synchronization event to trigger exit of receive thread.
+    SynchEvent          mEventExit;
+    //!< Synchronization object.
+    mutable Mutex       mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

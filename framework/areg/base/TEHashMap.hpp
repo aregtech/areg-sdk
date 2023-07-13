@@ -791,7 +791,7 @@ template < typename KEY, typename VALUE >
 inline typename TEHashMap<KEY, VALUE>::MAPPOS
 TEHashMap<KEY, VALUE>::nextPosition( TEHashMap<KEY, VALUE>::MAPPOS IN atPosition, std::pair<KEY, VALUE> & OUT out_Element) const
 {
-    return nextPosition(atPosition, out_Element.mKey, out_Element.mValue);
+    return nextPosition(atPosition, out_Element.first, out_Element.second);
 }
 
 template < typename KEY, typename VALUE >
@@ -824,7 +824,7 @@ inline void TEHashMap<KEY, VALUE>::getAtPosition(TEHashMap<KEY, VALUE>::MAPPOS I
 template < typename KEY, typename VALUE >
 inline void TEHashMap<KEY, VALUE>::getAtPosition(TEHashMap<KEY, VALUE>::MAPPOS IN atPosition, std::pair<KEY, VALUE> & OUT out_Element) const
 {
-    getAtPosition(atPosition, out_Element.mKey, out_Element.mValue);
+    getAtPosition(atPosition, out_Element.first, out_Element.second);
 }
 
 template < typename KEY, typename VALUE >

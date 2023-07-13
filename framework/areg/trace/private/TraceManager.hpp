@@ -20,6 +20,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/component/DispatcherThread.hpp"
+#include "areg/component/IETimerConsumer.hpp"
 #include "areg/trace/private/TraceEvent.hpp"
 
 #include "areg/base/TEResourceMap.hpp"
@@ -27,6 +28,8 @@
 #include "areg/base/Version.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/SynchObjects.hpp"
+
+#include "areg/component/Timer.hpp"
 
 #include "areg/trace/NETrace.hpp"
 #include "areg/trace/private/TraceProperty.hpp"
@@ -57,6 +60,7 @@ class IELogger;
  **/
 class TraceManager  : private   DispatcherThread
                     , private   IETraceEventConsumer
+                    , private   IETimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants
@@ -70,6 +74,8 @@ private:
     using MapTraceScope     = TEHashMap<unsigned int, TraceScope *>;
     //!< Scope resource map helper
     using ImplTraceScope    = TEResourceMapImpl<unsigned int, TraceScope *>;
+    //!< The trace scope key-value pair.
+    using TraceScopePair    = std::pair<unsigned int, TraceScope *>;
     /**
      * \brief   Resource map, container of all logging scopes
      **/
@@ -123,6 +129,9 @@ private:
 
     //!< Logging activation waiting maximum timeout
     static constexpr unsigned int       LOG_START_WAITING_TIME      { NECommon::WAIT_10_SECONDS };
+
+    //!< Reconnect timeout in milliseconds
+    static constexpr unsigned int       LOG_RECONNECT_TIMEOUT       { NECommon::TIMEOUT_1_SEC * 5 };
 
     //!< Structure of default enabled scopes and priorities.
     typedef struct S_LogEnabling
@@ -217,6 +226,11 @@ public:
     static bool isLoggingEnabled( void );
 
     /**
+     * \brief   Returns true if logging via network is enabled.
+     **/
+    static bool isNetLoggingEnabled(void);
+
+    /**
      * \brief   Returns the logging config file name set in the system.
      **/
     static const String& getConfigFile( void );
@@ -230,16 +244,19 @@ public:
     static bool forceActivateLogging( void );
 
     /**
+     * \brief   Call if connection lost.
+     **/
+    static void netConnectionLost( void );
+
+    /**
+     * \brief   Call if received data from logging service.
+     **/
+    static void netReceivedData( const SharedBuffer & data );
+
+    /**
      * \brief   Forces to enable logging.
      **/
     inline static void forceEnableLogging( void );
-
-    /**
-     * \brief   This call checks the logging types (file, output window, remote) and if
-     *          didn't start, tries to start. Mainly called when cannot establish
-     *          remote logging connection.
-     **/
-    static void retryStartLogging(void);
 
     /**
      * \brief   Returns the cookie ID. If NETrace::COOKIE_LOCAL there is no remote logging.
@@ -276,22 +293,66 @@ private:
      **/
     virtual ~TraceManager( void ) = default;
 
+protected:
 //////////////////////////////////////////////////////////////////////////
-// Attributes and operations
+// Overrides
 //////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   Registers instance of trace scope object in trace manager.
-     *          The trace scope should have unique ID.
-     * \param   scopeRegister   The instance trace scope object to register
-     **/
-    void _registerScope( TraceScope & scopeRegister );
+
+/************************************************************************/
+// IEEventRouter interface overrides
+/************************************************************************/
 
     /**
-     * \brief   Unregisters instance of trace scope object in trace manager.
-     * \param   scopeUnregister The instance of trace scope to unregister
+     * \brief	Posts event and delivers to its target.
+     *          Since the Dispatcher Thread is a Base object for
+     *          Worker and Component threads, it does nothing
+     *          and only destroys event object without processing.
+     *          Override this method or use Worker / Component thread.
+     * \param	eventElem	Event object to post
+     * \return	In this class it always returns true.
      **/
-    void _unregisterScope( TraceScope & scopeUnregister );
+    virtual bool postEvent( Event & eventElem ) override;
+
+/************************************************************************/
+// DispatcherThread overrides
+/************************************************************************/
+
+    /**
+     * \brief	Triggered when dispatcher starts running. 
+     *          In this function runs main dispatching loop.
+     *          Events are picked and dispatched here.
+     *          Override if logic should be changed.
+     * \return	Returns true if Exit Event is signaled.
+     **/
+    virtual bool runDispatcher( void ) override;
+
+/************************************************************************/
+// IETraceEventConsumer interface overrides
+/************************************************************************/
+    virtual void processEvent( const TraceEventData & data ) override;
+
+/************************************************************************/
+// IETimerConsumer interface overrides.
+/************************************************************************/
+
+    /**
+     * \brief   Triggered when Timer is expired. 
+     *          The passed Timer parameter is indicating object, which has been expired.
+     *          Overwrite method to receive messages.
+     * \param   timer   The timer object that is expired.
+     **/
+    virtual void processTimer( Timer & timer ) override;
+
+    /**
+     * \brief   Automatically triggered when event is dispatched by thread.
+     * \param   data    The Timer Event Data object containing Timer object.
+     **/
+    virtual void processEvent( const TimerEventData & data ) override;
+
+private:
+//////////////////////////////////////////////////////////////////////////
+// Attributes
+//////////////////////////////////////////////////////////////////////////
 
     /**
      * \brief   By given unique scope ID it returns instance of
@@ -354,9 +415,26 @@ private:
      **/
     bool _isEnabled( void ) const;
 
+    /**
+     * \brief   Returns true if logging via network is enabled.
+     **/
+    bool _isNetEnabled( void ) const;
+
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
+    /**
+     * \brief   Registers instance of trace scope object in trace manager.
+     *          The trace scope should have unique ID.
+     * \param   scopeRegister   The instance trace scope object to register
+     **/
+    void _registerScope( TraceScope & scopeRegister );
+
+    /**
+     * \brief   Unregisters instance of trace scope object in trace manager.
+     * \param   scopeUnregister The instance of trace scope to unregister
+     **/
+    void _unregisterScope( TraceScope & scopeUnregister );
 
 /************************************************************************/
 // Trace Scope functionalities
@@ -518,47 +596,75 @@ private:
      **/
     inline int removeScopeGroupPriority( const String& scopeGroupName, const String& remPrio );
 
-//////////////////////////////////////////////////////////////////////////
-// Overrides
-//////////////////////////////////////////////////////////////////////////
-
 /************************************************************************/
-// IEEventRouter interface overrides
+// Logging commands
 /************************************************************************/
 
     /**
-     * \brief	Posts event and delivers to its target.
-     *          Since the Dispatcher Thread is a Base object for
-     *          Worker and Component threads, it does nothing
-     *          and only destroys event object without processing.
-     *          Override this method or use Worker / Component thread.
-     * \param	eventElem	Event object to post
-     * \return	In this class it always returns true.
+     * \brief   Configures the logging
      **/
-    virtual bool postEvent( Event & eventElem ) override;
-
-/************************************************************************/
-// DispatcherThread overrides
-/************************************************************************/
+    void _traceConfigure( const SharedBuffer & data );
 
     /**
-     * \brief	Triggered when dispatcher starts running. 
-     *          In this function runs main dispatching loop.
-     *          Events are picked and dispatched here.
-     *          Override if logic should be changed.
-     * \return	Returns true if Exit Event is signaled.
+     * \brief   Log configuration changed
      **/
-    virtual bool runDispatcher( void ) override;
+    void _traceChangeConfig( void );
+
+    /**
+     * \brief   Start the logging.
+     **/
+    void _traceStartLogs( void );
+
+    /**
+     * \brief   Stop logging
+     **/
+    void _traceStopLogs( void );
+
+    /**
+     * \brief   Enables or disables logs.
+     **/
+    void _traceSetEnableLogs( bool logsEnable );
+
+    /**
+     * \brief   Saves log configuration in the file.
+     **/
+    void _traceSaveScopes( void );
+
+    /**
+     * \brief   Logs the message.
+     **/
+    void _traceLogMessage( const SharedBuffer & data );
+
+    /**
+     * \brief   Sends connect request message to the remote logging service.
+     **/
+    void _traceNetConnectService( void );
+
+    /**
+     * \brief   Sends disconnect request message to the remote logging service.
+     **/
+    void _traceNetDisconnectService( void );
+
+    /**
+     * \brief   Sends connection lost event to reconnect again.
+     **/
+    void _traceNetConnectionLost( void );
+
+    /**
+     * \brief   Sends message to register logs at remote logging service.
+     **/
+    void _traceNetRegisterScopes( void );
+
+    /**
+     * \brief   Received data from remote logging service, which should be processed.
+     * \param   data    The data, which first is converted into type NETrace::sLogCommand
+     *                  to figure out the information of 'NETrace::eLogCommands'.
+     **/
+    void _traceNetReceivedData( const SharedBuffer & data );
 
 /************************************************************************/
-// IETraceEventConsumer interface overrides
+// Other hidden methods
 /************************************************************************/
-    virtual void processEvent( const TraceEventData & data ) override;
-
-//////////////////////////////////////////////////////////////////////////
-// Hidden methods
-//////////////////////////////////////////////////////////////////////////
-private:
 
     /**
      * \brief   Returns instance of trace manager.
@@ -566,9 +672,15 @@ private:
     inline TraceManager & self( void );
 
     /**
-     * \brief   Send log event, which contains specified logging event data
+     * \brief   Sends log event with the preferred priority.
+     *          By default, it the priority is Normal.
      **/
-    void _sendLogEvent( const TraceEventData & data );
+    void _sendLogEvent( const TraceEventData & data, Event::eEventPriority eventPrio = Event::eEventPriority::EventPriorityNormal);
+
+    /**
+     * \brief   Tries to reconnect with the remote logging service.
+     **/
+    void _reconnectTcpLogService( void );
 
 /************************************************************************/
 // Logging configuration, start / stop
@@ -758,6 +870,10 @@ private:
      * \brief   The remote TCP/IP logging service.
      **/
     NetTcpLogger        mLoggerTcp;
+    /**
+     * \brief   The timer to reconnect with remote logging service
+     **/
+    Timer               mTimerReconnect;
     /**
      * \brief   An event, indicating that the logging has been started.
      */

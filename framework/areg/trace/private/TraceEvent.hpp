@@ -44,7 +44,8 @@ class AREG_API TraceEventData
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   The list of supported actions for logging
+     * \brief   TraceEventData::eTraceAction
+     *          The list of supported actions for logging.
      **/
     typedef enum class E_TraceAction
     {
@@ -53,16 +54,16 @@ public:
         , TraceChangeConfig             //!< Action to notify to change configuration
         , TraceStartLogs                //!< Action to notify to start logging
         , TraceStopLogs                 //!< Action to notify to stop logging
-        , TraceEnableLogs               //!< Action to notify to enable logging
-        , TraceDisableLogs              //!< Action to notify to stop logging
-        , TraceChangeScopes             //!< Action to notify the scopes have changes
+        , TraceSetEnableLogs            //!< Action to notify to enable logging
+        , TraceSetDisableLogs           //!< Action to notify to stop logging
+        , TraceChangeScopes             //!< Action to notify the scopes have changes. TODO: remove scopes
         , TraceSaveScopes               //!< Action to notify to save scope list
-        , TraceMessage                  //!< Action to output logging message
-        , TraceThreadRegistered         //!< Action to notify the logging thread registered
-        , TraceThreadUnregistered       //!< Action to notify the logging thread unregistered
-        , TraceChangeStack              //!< Action to notify the to change logging stack size
-        , TraceProcessModuleId          //!< Action to set process module ID
-        , TraceRetryRemoteTcpLog        //!< Action to take to retry the remote TCP/IP logging.
+        , TraceLogMessage               //!< Action to output logging message
+        , TraceNetConnectService        //!< Action to take to perform network connection to logging service
+        , TraceNetDisconnectService     //!< Action to take to disconnect from logging service
+        , TraceNetConnectionLost        //!< Action to take when connection lost.
+        , TraceNetRegisterScopes        //!< Action to take to register log scopes.
+        , TraceNetReceivedData          //!< Action to take when received data from remote logging service.
     } eTraceAction;
 
     /**
@@ -197,16 +198,16 @@ inline const char * TraceEventData::getString( TraceEventData::eTraceAction acti
     CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceChangeConfig);
     CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceStartLogs);
     CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceStopLogs);
-    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceEnableLogs);
-    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceDisableLogs);
+    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceSetEnableLogs);
+    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceSetDisableLogs);
     CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceChangeScopes);
     CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceSaveScopes);
-    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceMessage);
-    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceThreadRegistered);
-    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceThreadUnregistered);
-    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceChangeStack);
-    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceProcessModuleId);
-    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceRetryRemoteTcpLog);
+    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceLogMessage);
+    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceNetConnectService);
+    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceNetDisconnectService);
+    CASE_MAKE_STRING( TraceEventData::eTraceAction::TraceNetConnectionLost );
+    CASE_MAKE_STRING( TraceEventData::eTraceAction::TraceNetRegisterScopes );
+    CASE_MAKE_STRING( TraceEventData::eTraceAction::TraceNetReceivedData );
     CASE_DEFAULT("ERR: Undefined TraceEventData::eTraceAction value!");
     }
 }

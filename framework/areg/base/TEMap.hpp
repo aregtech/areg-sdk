@@ -775,7 +775,7 @@ template < typename KEY, typename VALUE >
 inline typename TEMap<KEY, VALUE>::MAPPOS
 TEMap<KEY, VALUE>::nextPosition( TEMap<KEY, VALUE>::MAPPOS IN atPosition, std::pair<KEY, VALUE> & OUT out_Element) const
 {
-    return nextPosition(atPosition, out_Element.mKey, out_Element.mValue);
+    return nextPosition(atPosition, out_Element.first, out_Element.second);
 }
 
 template < typename KEY, typename VALUE >
@@ -808,7 +808,7 @@ inline void TEMap<KEY, VALUE>::getAtPosition(TEMap<KEY, VALUE>::MAPPOS IN atPosi
 template < typename KEY, typename VALUE >
 inline void TEMap<KEY, VALUE>::getAtPosition(TEMap<KEY, VALUE>::MAPPOS IN atPosition, std::pair<KEY, VALUE> & OUT out_Element) const
 {
-    getAtPosition(atPosition, out_Element.mKey, out_Element.mValue);
+    getAtPosition(atPosition, out_Element.first, out_Element.second);
 }
 
 template < typename KEY, typename VALUE >

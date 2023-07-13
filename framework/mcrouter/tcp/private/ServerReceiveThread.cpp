@@ -28,7 +28,7 @@
 DEF_TRACE_SCOPE(areg_ipc_private_ServerReceiveThread_runDispatcher);
 
 ServerReceiveThread::ServerReceiveThread( IEServerConnectionHandler & connectHandler, IERemoteServiceHandler & remoteService, ServerConnection & connection )
-    : DispatcherThread  ( NEConnection::SERVER_RECEIVE_MESSAGE_THREAD.data( ) )
+    : DispatcherThread  ( NEConnection::SERVER_RECEIVE_MESSAGE_THREAD )
     , mRemoteService    ( remoteService )
     , mConnectHandler   ( connectHandler )
     , mConnection       ( connection )

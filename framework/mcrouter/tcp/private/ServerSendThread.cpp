@@ -26,7 +26,7 @@
 DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerSendThread_processEvent);
 
 ServerSendThread::ServerSendThread(IERemoteServiceHandler & remoteService, ServerConnection & connection)
-    : DispatcherThread          ( NEConnection::SERVER_SEND_MESSAGE_THREAD.data() )
+    : DispatcherThread          ( NEConnection::SERVER_SEND_MESSAGE_THREAD )
     , IESendMessageEventConsumer( )
     , mRemoteService            ( remoteService )
     , mConnection               ( connection )
