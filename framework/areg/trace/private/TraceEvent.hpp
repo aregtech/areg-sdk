@@ -207,6 +207,7 @@ inline const char * TraceEventData::getString( TraceEventData::eTraceAction acti
     CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceNetDisconnectService);
     CASE_MAKE_STRING( TraceEventData::eTraceAction::TraceNetConnectionLost );
     CASE_MAKE_STRING( TraceEventData::eTraceAction::TraceNetRegisterScopes );
+    CASE_MAKE_STRING( TraceEventData::eTraceAction::TraceNetReceivedData );
     CASE_DEFAULT("ERR: Undefined TraceEventData::eTraceAction value!");
     }
 }
