@@ -601,6 +601,11 @@ void TraceManager::processTimer( Timer & timer )
     }
 }
 
+void TraceManager::processEvent( const TimerEventData & data )
+{
+    IETimerConsumer::processEvent( data );
+}
+
 bool TraceManager::runDispatcher(void)
 {
     TraceEvent::addListener(static_cast<IETraceEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));

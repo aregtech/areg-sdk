@@ -179,7 +179,7 @@ void NetTcpLogger::onThreadRuns( void )
     {
         if ( checkExit.lock(NECommon::DO_NOT_WAIT) == false)
         {
-            NETrace::sLogHeader logHeader;
+            NETrace::sLogHeader logHeader{ };
             int sizeReceived = mSocket.receiveData( reinterpret_cast<unsigned char *>(&logHeader), sizeof( NETrace::sLogHeader ) );
 
             if ( sizeReceived <= 0 )

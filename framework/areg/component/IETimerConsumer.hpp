@@ -81,10 +81,6 @@ protected:
      **/
     virtual void processTimer( Timer & timer ) = 0;
 
-//////////////////////////////////////////////////////////////////////////
-// Hidden overrides
-//////////////////////////////////////////////////////////////////////////
-private:
 
     /**
      * \brief   Automatically triggered when event is dispatched by thread.
@@ -92,6 +88,10 @@ private:
      **/
     virtual void processEvent( const TimerEventData & data) override;
 
+//////////////////////////////////////////////////////////////////////////
+// Hidden overrides
+//////////////////////////////////////////////////////////////////////////
+private:
     /**
      * \brief	Triggered when dispatcher starts to dispatch Timer Event.
      * \param	eventElem   The instance of TimerEvent. Otherwise, it is ignored.
