@@ -103,7 +103,7 @@ void FileLogger::logMessage( const NETrace::sLogMessage & logMessage )
 {
     if (mLogFile.isOpened() && NETrace::isLogMessage(logMessage.lmHeader))
     {
-        switch (logMessage.lmTrace.dataNsgType)
+        switch (logMessage.lmTrace.dataMsgType)
         {
         case NETrace::eMessageType::MsgText:
             getLayoutMessage().logMessage(logMessage, static_cast<IEOutStream&>(mLogFile));

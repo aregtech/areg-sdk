@@ -29,6 +29,7 @@ NetTcpLogger::NetTcpLogger(LogConfiguration& tracerConfig)
 
     , mSocket           ( )
     , mRingStack        ( NetTcpLogger::RING_STACK_MAX_SIZE, NECommon::eRingOverlap::ShiftOnOverlap )
+    , mHostIpAddr       ( )
     , mConnectionState  ( eConnectionStates::StateInactive )
     , mRecvThread       ( static_cast<IEThreadConsumer &>(self()), LOG_RECEIVE_THREAD_NAME )
     , mEventExit        ( true, false )
@@ -99,18 +100,14 @@ void NetTcpLogger::logMessage(const NETrace::sLogMessage& logMessage)
 {
     if (mSocket.isValid())
     {
-        if (logMessage.lmHeader.hdrCookie >= NETrace::COOKIE_FIRST_VALID)
+        if (logMessage.lmHeader.hdrCookieHost >= NETrace::COOKIE_FIRST_VALID)
         {
             if (mSocket.sendData(reinterpret_cast<const unsigned char*>(&logMessage), sizeof(NETrace::sLogMessage) ) == 0)
             {
-                if (mSocket.isAlive() == false)
-                {
-                    TraceManager::setCookie(NETrace::COOKIE_LOCAL);
-                    mSocket.closeSocket();
-                }
+                TraceManager::netConnectionLost( );
             }
         }
-        else if (logMessage.lmHeader.hdrCookie == NETrace::COOKIE_ANY)
+        else if (logMessage.lmHeader.hdrCookieHost == NETrace::COOKIE_ANY)
         {
             NETrace::sLogMessage* log = new NETrace::sLogMessage;
             *log = logMessage;
@@ -164,9 +161,15 @@ bool NetTcpLogger::isActive( void ) const
     return (mConnectionState == eConnectionStates::StateActive);
 }
 
+void NetTcpLogger::setHostIpAddress( const String & ipAddr )
+{
+    mHostIpAddr = ipAddr;
+}
+
 inline void NetTcpLogger::_closeConnection( void )
 {
     mConnectionState = eConnectionStates::StateInactive;
+    mHostIpAddr      = "";
     mSocket.closeSocket( );
 }
 

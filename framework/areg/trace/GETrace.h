@@ -140,7 +140,12 @@
                                                         {                                               \
                                                             static TraceScope     _##scope(#scope);     \
                                                             static TraceMessage  _messager(_##scope);   \
-                                                            NETrace::activateScope( _##scope );         \
+                                                            static bool isActivated { false };          \
+                                                            if (isActivated == false)                   \
+                                                            {                                           \
+                                                                NETrace::activateScope( _##scope );     \
+                                                                isActivated = true;                     \
+                                                            }                                           \
                                                             return _messager;                           \
                                                         }
 

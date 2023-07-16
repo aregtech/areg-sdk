@@ -718,6 +718,7 @@ void ServiceManager::_stopServiceManagerThread( void )
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::shutdownServiceManager()
                                   , static_cast<IEServiceManagerEventConsumer &>(self())
                                   , static_cast<DispatcherThread &>(self()));
+    Thread::switchThread( );
     completionWait( NECommon::WAIT_INFINITE );
 }
 

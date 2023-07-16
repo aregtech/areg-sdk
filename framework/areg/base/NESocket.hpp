@@ -472,7 +472,7 @@ namespace NESocket
      *          Returns the host name of the local machine.
      *          Or returns empty string if failed.
      **/
-    AREG_API String getHostname(void);
+    AREG_API const String & getHostname(void);
 
 }   // namespace NESocket end
 

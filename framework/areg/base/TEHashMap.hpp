@@ -323,19 +323,23 @@ public:
 
     /**
      * \brief   Adds new entry with the specified key in the hash map if it is not existing.
-     *          If the entry with specified key exists, neither new entry is added, nor the existing is updated.
+     *          If 'updateExisting' parameter is true, it updates the existing key and value.
      *          The method returns pair of value, where it indicates the position of the entry
      *          and the flag, indicating whether it added new entry or not.
-     * \param   Key     The key of the entry in the hash map.
-     * \param   Value   The value of the entry in the hash map.
+     * \param   Key             The key of the entry in the hash map.
+     * \param   Value           The value of the entry in the hash map.
+     * \param   updateExisting  The flag, indicating whether should update the entry with the existing key.
+     *                          If true, updates the existing key and value.
+     *                          If, for example, 2 objects are compared by the name and not by
+     *                          absolute values, setting this parameter true updates the value of the existing entry.
      * \return  Returns a pair of 'MAPPOS' and 'bool' values, where
      *              -   'MAPPOS' indicates the position of the entry in the hash map.
      *              -   'bool' equal to 'true' indicates that new entry is created.
      *                  If this value is 'false' no new entry is created. When new entry is created, the existing
      *                  position values can be invalidated.
      **/
-    inline std::pair<MAPPOS, bool> addIfUnique(const KEY & newKey, const VALUE & newValue);
-    inline std::pair<MAPPOS, bool> addIfUnique(KEY && newKey, VALUE && newValue);
+    inline std::pair<MAPPOS, bool> addIfUnique(const KEY & newKey, const VALUE & newValue, bool updateExisting = false );
+    inline std::pair<MAPPOS, bool> addIfUnique(KEY && newKey, VALUE && newValue, bool updateExisting = false );
 
     /**
      * \brief   Updates existing element specified by the Key and returns the position in the map.
@@ -635,15 +639,29 @@ inline void TEHashMap<KEY, VALUE>::merge(TEHashMap<KEY, VALUE> && source)
 }
 
 template < typename KEY, typename VALUE >
-inline std::pair<typename TEHashMap<KEY, VALUE>::MAPPOS, bool> TEHashMap<KEY, VALUE>::addIfUnique(const KEY& newKey, const VALUE& newValue)
+inline std::pair<typename TEHashMap<KEY, VALUE>::MAPPOS, bool> TEHashMap<KEY, VALUE>::addIfUnique(const KEY& newKey, const VALUE& newValue, bool updateExisting /*= false*/ )
 {
-    return mValueList.insert({ newKey, newValue });
+    std::pair<MAPPOS, bool> result = mValueList.insert({ newKey, newValue });
+    if ( updateExisting && (result.second == false) )
+    {
+        ASSERT( result.first != mValueList.end( ) );
+        result.first->second = newValue;
+    }
+
+    return result;
 }
 
 template < typename KEY, typename VALUE >
-inline std::pair<typename TEHashMap<KEY, VALUE>::MAPPOS, bool> TEHashMap<KEY, VALUE>::addIfUnique( KEY && newKey, VALUE && newValue)
+inline std::pair<typename TEHashMap<KEY, VALUE>::MAPPOS, bool> TEHashMap<KEY, VALUE>::addIfUnique( KEY && newKey, VALUE && newValue, bool updateExisting /*= false*/ )
 {
-    return mValueList.insert(std::make_pair(newKey, newValue));
+    std::pair<MAPPOS, bool> result = mValueList.insert( std::make_pair( newKey, newValue ) );
+    if ( updateExisting && (result.second == false) )
+    {
+        ASSERT( result.first != mValueList.end( ) );
+        result.first->second = std::move(newValue);
+    }
+
+    return result;
 }
 
 template < typename KEY, typename VALUE >

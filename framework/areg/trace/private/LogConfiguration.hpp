@@ -25,6 +25,8 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
+class ScopeController;
+class FileBase;
 
 //////////////////////////////////////////////////////////////////////////
 // LogConfiguration class declaration
@@ -43,7 +45,7 @@ public:
     /**
      * \brief   Protected default constructor.
      **/
-    LogConfiguration( void ) = default;
+    LogConfiguration( ScopeController & scopeController );
 
     /**
      * \brief   Protected destructor.
@@ -51,28 +53,45 @@ public:
     ~LogConfiguration( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
-// Operations and attributes
+// Attributes
 //////////////////////////////////////////////////////////////////////////
 public:
 
     /**
-     * \brief   Sets the logging configuration default values.
+     * \brief   Returns the path of the configuration file.
      **/
-    void setDefaultValues( void );
+    inline const String & getConfigFile( void ) const;
 
     /**
-     * \brief   Updates the property values.
-     * \param   prop    The new property value to set. The property 
-     *                  as well contains information of target log configuration
-     *                  entry to update.
-     * \return  Returns true, if succeed to update.
+     * \brief   Returns true if the logs are configured.
      **/
-    bool updateProperty( const TraceProperty & prop );
+    inline bool isConfigured( void ) const;
 
     /**
-     * \brief   Clear all logging configuration properties
+     * \brief   Returns true if logging is enabled.
      **/
-    inline void clearProperties( void );
+    inline bool isLoggingEnabled( void ) const;
+
+    /**
+     * \brief   Returns true if logging via network is enabled.
+     **/
+    inline bool isNetLoggingEnabled( void ) const;
+
+    /**
+     * \brief   Returns true if logging in the file is enabled.
+     **/
+    inline bool isFileLoggingEnabled( void ) const;
+
+    /**
+     * \brief   Returns true if logging in database is enabled.
+     *          NOTE: The database logging is not implemented yet.
+     **/
+    inline bool isDatabasLoggingEnabled( void ) const;
+
+    /**
+     * \brief   Returns true if logging on debug output window (or console) is enabled.
+     **/
+    inline bool isDebugOutputEnabled( void ) const;
 
     /**
      * \brief   Gets and sets the specified property object.
@@ -139,28 +158,42 @@ public:
     inline void setAppendData( const TraceProperty & prop );
 
     /**
-     * \brief   Gets and set property value of file logging settings.
+     * \brief   Gets and set property value of file logging setting.
      **/
     inline const TraceProperty & getLogFile( void ) const;
     inline TraceProperty & getLogFile( void );
     inline void setLogFile( const TraceProperty & prop );
 
     /**
-     * \brief   Gets and set property value of remote host name logging settings.
+     * \brief   Gets and set property value of remote logging enable setting.
+     **/
+    inline const TraceProperty & getRemoteTcpEnable( void ) const;
+    inline TraceProperty & getRemoteTcpEnable( void );
+    inline void setRemoteTcpEnable( const TraceProperty & prop );
+
+    /**
+     * \brief   Gets and set property value of remote host name logging setting.
      **/
     inline const TraceProperty & getRemoteTcpHost( void ) const;
     inline TraceProperty & getRemoteTcpHost( void );
     inline void setRemoteTcpHost( const TraceProperty & prop );
 
     /**
-     * \brief   Gets and set property value of remote host port logging settings.
+     * \brief   Gets and set property value of remote host port logging setting.
      **/
     inline const TraceProperty & getRemoteTcpPort( void ) const;
     inline TraceProperty & getRemoteTcpPort( void );
     inline void setRemoteTcpPort( const TraceProperty & prop );
 
     /**
-     * \brief   Gets and set property value of database host name logging settings.
+     * \brief   Gets and set property value of database logging enable / disable setting.
+     **/
+    inline const TraceProperty & getDatabaseEnable( void ) const;
+    inline TraceProperty & getDatabaseEnable( void );
+    inline void setDatabaseEnable( const TraceProperty & prop );
+
+    /**
+     * \brief   Gets and set property value of database host name logging setting.
      **/
     inline const TraceProperty & getDatabaseHost( void ) const;
     inline TraceProperty & getDatabaseHost( void );
@@ -195,15 +228,66 @@ public:
     inline void setDatabasePassword( const TraceProperty & prop );
 
 //////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+public:
+
+    /**
+     * \brief   Reads logging configuration from the specified file path
+     *          and activates the logging scopes.
+     * \param   filePath    The relative or absolute path to the log configuration file.
+     * \return  Returns true if logging is configured.
+     **/
+    bool loadConfig( const String & filePath );
+
+    /**
+     * \brief   Reads logging configuration from the specified file
+     *          and activates the logging scopes.
+     * \param   file    The opened file object of the log configuration file.
+     * \return  Returns true if logging is configured.
+     **/
+    bool loadConfig( FileBase & file );
+
+    /**
+     * \brief   Sets the logging configuration default values.
+     **/
+    void setDefaultValues( void );
+
+    /**
+     * \brief   Updates the property values.
+     * \param   prop    The new property value to set. The property 
+     *                  as well contains information of target log configuration
+     *                  entry to update.
+     * \return  Returns true, if succeed to update.
+     **/
+    bool updateProperty( const TraceProperty & prop );
+
+    /**
+     * \brief   Clear all logging configuration properties
+     **/
+    inline void clearProperties( void );
+
+//////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    TraceProperty       mProperties[NELogConfig::LOG_PROPERTY_COUNT];
+    //!< The instance of scope controller to setup scope priorities.
+    ScopeController &   mScopeController;
+
+    //!< The path of the log configuration file.
+    String              mFilePath;
+    
+    //!< Flag, indicating whether the logs are configured or not.
+    bool                mIsConfigured;
+
+    //!< The list of log properties that can be configured.
+    TraceProperty       mProperties[ NELogConfig::LOG_PROPERTY_COUNT ];
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
+    LogConfiguration( void ) = delete;
     DECLARE_NOCOPY_NOMOVE( LogConfiguration );
 };
 
@@ -217,6 +301,45 @@ inline void LogConfiguration::clearProperties( void )
     {
         prop.clearProperty();
     }
+}
+
+inline const String & LogConfiguration::getConfigFile( void ) const
+{
+    return mFilePath;
+}
+
+inline bool LogConfiguration::isConfigured( void ) const
+{
+    return mIsConfigured;
+}
+
+inline bool LogConfiguration::isLoggingEnabled( void ) const
+{
+    const TraceProperty & prop = getStatus( );
+    return (prop.isValid() ? static_cast<bool>(prop.getValue()) : NELogConfig::DEFAULT_LOG_ENABLED);
+}
+
+inline bool LogConfiguration::isNetLoggingEnabled( void ) const
+{
+    const TraceProperty & prop = getRemoteTcpEnable();
+    return (prop.isValid( ) ? static_cast<bool>(prop.getValue( )) : NELogConfig::DEFAULT_REMOTE_ENABLED);
+}
+
+inline bool LogConfiguration::isFileLoggingEnabled( void ) const
+{
+    return getLogFile( ).isValid( );
+}
+
+inline bool LogConfiguration::isDatabasLoggingEnabled( void ) const
+{
+    const TraceProperty & prop = getDatabaseEnable( );
+    return (prop.isValid( ) ? static_cast<bool>(prop.getValue( )) : NELogConfig::DEFAULT_DATABASE_ENABLED);
+}
+
+inline bool LogConfiguration::isDebugOutputEnabled( void ) const
+{
+    const TraceProperty & prop = getDebugOutput( );
+    return (prop.isValid( ) && static_cast<bool>(prop.getValue( )));
 }
 
 inline const TraceProperty & LogConfiguration::getProperty( NELogConfig::eLogConfig whichProperty ) const
@@ -369,19 +492,34 @@ inline void LogConfiguration::setLogFile( const TraceProperty & prop )
     mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogFile)] = prop;
 }
 
+inline const TraceProperty & LogConfiguration::getRemoteTcpEnable( void ) const
+{
+    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpEnable)];
+}
+
+inline TraceProperty & LogConfiguration::getRemoteTcpEnable( void )
+{
+    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpEnable)];
+}
+
+inline void LogConfiguration::setRemoteTcpEnable( const TraceProperty & prop )
+{
+    mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpEnable)] = prop;
+}
+
 inline const TraceProperty & LogConfiguration::getRemoteTcpHost( void ) const
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpHost)];
+    return mProperties[ static_cast<int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpHost) ];
 }
 
 inline TraceProperty & LogConfiguration::getRemoteTcpHost( void )
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpHost)];
+    return mProperties[ static_cast<int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpHost) ];
 }
 
 inline void LogConfiguration::setRemoteTcpHost( const TraceProperty & prop )
 {
-    mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpHost)] = prop;
+    mProperties[ static_cast<int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpHost) ] = prop;
 }
 
 inline const TraceProperty & LogConfiguration::getRemoteTcpPort( void ) const
@@ -399,19 +537,34 @@ inline void LogConfiguration::setRemoteTcpPort( const TraceProperty & prop )
     mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpPort)] = prop;
 }
 
+inline const TraceProperty & LogConfiguration::getDatabaseEnable( void ) const
+{
+    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogDatabaseEnable)];
+}
+
+inline TraceProperty & LogConfiguration::getDatabaseEnable( void )
+{
+    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogDatabaseEnable)];
+}
+
+inline void LogConfiguration::setDatabaseEnable( const TraceProperty & prop )
+{
+    mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogDatabaseEnable)] = prop;
+}
+
 inline const TraceProperty & LogConfiguration::getDatabaseHost( void ) const
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogDatabaseHost)];
+    return mProperties[ static_cast<int>(NELogConfig::eLogConfig::ConfigLogDatabaseHost) ];
 }
 
 inline TraceProperty & LogConfiguration::getDatabaseHost( void )
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogDatabaseHost)];
+    return mProperties[ static_cast<int>(NELogConfig::eLogConfig::ConfigLogDatabaseHost) ];
 }
 
 inline void LogConfiguration::setDatabaseHost( const TraceProperty & prop )
 {
-    mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogDatabaseHost)] = prop;
+    mProperties[ static_cast<int>(NELogConfig::eLogConfig::ConfigLogDatabaseHost) ] = prop;
 }
 
 inline const TraceProperty & LogConfiguration::getDatabaseName( void ) const

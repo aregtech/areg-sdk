@@ -39,7 +39,7 @@ TraceMessage::~TraceMessage( void )
 {
     if ( isScopeEnabled() )
     {
-        LogMessage msg(NETrace::eMessageType::MsgScopeEnter, mScopeId, NETrace::PrioScope, mScopeName);
+        LogMessage msg(NETrace::eMessageType::MsgScopeExit, mScopeId, NETrace::PrioScope, mScopeName);
         TraceManager::sendLogMessage(msg);
     }
 }

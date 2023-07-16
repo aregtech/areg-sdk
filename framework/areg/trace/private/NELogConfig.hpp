@@ -47,13 +47,15 @@ namespace NELogConfig
           ConfigUnknown             //!< Configuration property is unknown, should not be used
         , ConfigLogVersion          //!< Configuration property is version information
         , ConfigLogFile             //!< Configuration property is logging file name
-        , ConfigLogRemoteTcpHost    //!< Configuration property is logging service host name or IP-address to establish TCP/IP connection
-        , ConfigLogRemoteTcpPort    //!< Configuration property is logging service port number to establish TCP/IP connection
-        , ConfigLogDatabaseDriver   //!< Configuration property is database driver name to initialize
-        , ConfigLogDatabaseHost     //!< Configuration property is database host to connect
-        , ConfigLogDatabaseUser     //!< Configuration property is database user name to login
-        , ConfigLogDatabasePwd      //!< Configuration property is database user password to login
-        , ConfigLogDatabaseName     //!< Configuration property is database name to connect
+        , ConfigLogRemoteTcpEnable  //!< Configuration property is remote TCP/IP logging service enabled.
+        , ConfigLogRemoteTcpHost    //!< Configuration property is remote TCP/IP logging service host name or IP-address to establish connection
+        , ConfigLogRemoteTcpPort    //!< Configuration property is remote TCP/IP logging service port number to establish connection
+        , ConfigLogDatabaseEnable   //!< Configuration property is database logging enabled
+        , ConfigLogDatabaseDriver   //!< Configuration property is database logging driver name to initialize
+        , ConfigLogDatabaseHost     //!< Configuration property is database logging host to connect
+        , ConfigLogDatabaseUser     //!< Configuration property is database logging user name to login
+        , ConfigLogDatabasePwd      //!< Configuration property is database logging user password to login
+        , ConfigLogDatabaseName     //!< Configuration property is database logging name to connect
         , ConfigLogDebug            //!< Configuration property is information to print logging message in output debug console
         , ConfigLogAppend           //!< Configuration property is instruction to append message in existing file or create new logging file.
         , ConfigLogStack            //!< Configuration property is information of maximum stack size to hold log data before streaming is initialized
@@ -237,6 +239,10 @@ namespace NELogConfig
      **/
     constexpr std::string_view  SYNTAX_CMD_LOG_REMOTE               { "log.remote" };
     /**
+     * \brief   The syntax of remote logging service host enable.
+     **/
+    constexpr std::string_view  SYNTAX_CMD_LOG_REMOTE_TCP_ENABLE    { "log.remote.tcp.enable" };
+    /**
      * \brief   The syntax of remote logging service host name command.
      **/
     constexpr std::string_view  SYNTAX_CMD_LOG_REMOTE_TCP_HOST      { "log.remote.tcp.host" };
@@ -248,6 +254,10 @@ namespace NELogConfig
      * \brief   The syntax of database service command.
      **/
     constexpr std::string_view  SYNTAX_CMD_LOG_DB                   { "log.db" };
+    /**
+     * \brief   The syntax of database service enabled command.
+     **/
+    constexpr std::string_view  SYNTAX_CMD_LOG_DB_ENABLE            { "log.db.enable" };
     /**
      * \brief   The syntax of database service driver name command.
      **/
@@ -401,9 +411,19 @@ namespace NELogConfig
     constexpr std::string_view  DEFAULT_TIME_FORMAT_OUTPUT          { TIME_FORMAT_ISO8601_OUTPUT };
 
     /**
-     * \brief   Default flag to indicate logging enable / disable status. By default it is disabled.
+     * \brief   Default flag to indicate logging enable / disable status.
      **/
     constexpr bool              DEFAULT_LOG_ENABLED                 { false };
+
+    /**
+     * \brief   Default remote logging enable / disable status.
+     **/
+    constexpr bool              DEFAULT_REMOTE_ENABLED              { DEFAULT_LOG_ENABLED };
+
+    /**
+     * \brief   Default database logging enable / disable status.
+     **/
+    constexpr bool              DEFAULT_DATABASE_ENABLED            { false };
 
     /**
      * \brief   Default host name to connect logging service
@@ -421,9 +441,16 @@ namespace NELogConfig
     constexpr std::string_view  DEFAULT_LOG_FILE_NAME               { "./logs/trace_%time%.log" };
 
     /**
-     * \brief   Symbol, indicating scope group, which start by name before '*' symbol
+     * \brief   Symbol, indicating scope group or all scopes.
+     *          For example, the scope "scope.*" means all scope.
+     *          And the scope "scope.areg_*" means all scopes of that start with "areg_"
      **/
-    constexpr std::string_view  MODULE_SCOPE                        { "*" };
+    constexpr std::string_view  LOG_SCOPES_GRPOUP                   { "*" };
+
+    /**
+     * \brief   Scope indicating AREG framework internal logs.
+     **/
+    constexpr std::string_view  LOG_SCOPES_SELF                     { "areg_*" };
 
     /**
      * \brief   The list of valid syntax lists.
@@ -433,8 +460,10 @@ namespace NELogConfig
                   NEString::EmptyStringA                        //!< eLogConfig::ConfigUnknown
                 , NELogConfig::SYNTAX_CMD_LOG_VERSION           //!< eLogConfig::ConfigLogVersion
                 , NELogConfig::SYNTAX_CMD_LOG_FILE              //!< eLogConfig::ConfigLogFile
+                , NELogConfig::SYNTAX_CMD_LOG_REMOTE_TCP_ENABLE //!< eLogConfig::ConfigLogRemoteTcpEnable
                 , NELogConfig::SYNTAX_CMD_LOG_REMOTE_TCP_HOST   //!< eLogConfig::ConfigLogRemoteTcpHost
                 , NELogConfig::SYNTAX_CMD_LOG_REMOTE_TCP_PORT   //!< eLogConfig::ConfigLogRemoteTcpPort
+                , NELogConfig::SYNTAX_CMD_LOG_DB_ENABLE         //!< eLogConfig::ConfigLogDatabaseEnable
                 , NELogConfig::SYNTAX_CMD_LOG_DB_DRIVER         //!< eLogConfig::ConfigLogDatabaseDriver
                 , NELogConfig::SYNTAX_CMD_LOG_DB_HOST           //!< eLogConfig::ConfigLogDatabaseHost
                 , NELogConfig::SYNTAX_CMD_LOG_DB_USER           //!< eLogConfig::ConfigLogDatabaseUser
@@ -451,28 +480,31 @@ namespace NELogConfig
             };
 
     //!< The default logging version
-    constexpr std::string_view   DEFAULT_LOG_VERSION            { "log.version = 1.0.0" };
+    constexpr std::string_view  DEFAULT_LOG_VERSION             { "log.version = 1.0.0" };
 
     //!< The default logging enabled flag.
-    constexpr std::string_view   DEFAULT_LOG_ENABLE             { "log.enable = true" };
+    constexpr std::string_view  DEFAULT_LOG_ENABLE              { "log.enable = true" };
 
     //!< The default file name to log.
-    constexpr std::string_view   DEFAULT_LOG_FILE               { "log.file = ./logs/trace_%time%.log" };
+    constexpr std::string_view  DEFAULT_LOG_FILE                { "log.file = ./logs/trace_%time%.log" };
 
     //!< The default flag, indicating whether logs are enabled.
-    constexpr std::string_view   DEFAULT_LOG_APPEND             { "log.append = false" };
+    constexpr std::string_view  DEFAULT_LOG_APPEND              { "log.append = false" };
 
     //!< Logging default layout format of logging scope activation. /*%d: [ %c.%t  %x.%z: Enter --> ]%n*/
-    constexpr std::string_view   DEFAULT_LOG_LAYOUT_ENTER       { "log.layout.enter = %d: [ %t  %x.%z: Enter --> ]%n" };
+    constexpr std::string_view  DEFAULT_LOG_LAYOUT_ENTER        { "log.layout.enter = %d: [ %t  %x.%z: Enter --> ]%n" };
 
     //!< Logging default layout format for logging messages.        /*d: [ %c.%t  %p >>> ] %m%n*/
-    constexpr std::string_view   DEFAULT_LOG_LAYOUT_MESSAGE     { "log.layout.message = %d: [ %t  %p >>> ] %m%n" };
+    constexpr std::string_view  DEFAULT_LOG_LAYOUT_MESSAGE      { "log.layout.message = %d: [ %t  %p >>> ] %m%n" };
 
     //!< Logging default layout format of logging scope deactivation./*%d: [ %c.%t  %x.%z: Exit <-- ]%n*/
-    constexpr std::string_view   DEFAULT_LOG_LAYOUT_EXIT        { "log.layout.exit = %d: [ %t  %x.%z: Exit <-- ]%n" };
+    constexpr std::string_view  DEFAULT_LOG_LAYOUT_EXIT         { "log.layout.exit = %d: [ %t  %x.%z: Exit <-- ]%n" };
 
     //!< Default flag enabling output in debugging window or console.
-    constexpr std::string_view   DEFAULT_LOG_LAYOUT_DEBUG       { "log.debug = false" };
+    constexpr std::string_view  DEFAULT_LOG_LAYOUT_DEBUG        { "log.debug = false" };
+
+    //!< Default flag enabling output in remote logging service.
+    constexpr std::string_view  DEFAULT_LOG_REMOTE_TCP_ENABLE   { "log.remote.tcp.enable = false" };
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -488,10 +520,14 @@ inline const char * NELogConfig::getString( NELogConfig::eLogConfig logConfig )
         return "NELogConfig::ConfigLogVersion";
     case NELogConfig::eLogConfig::ConfigLogFile:
         return "NELogConfig::ConfigLogFile";
+    case NELogConfig::eLogConfig::ConfigLogRemoteTcpEnable:
+        return "NELogConfig::ConfigLogRemoteTcpEnable";
     case NELogConfig::eLogConfig::ConfigLogRemoteTcpHost:
         return "NELogConfig::ConfigLogRemoteTcpHost";
     case NELogConfig::eLogConfig::ConfigLogRemoteTcpPort:
         return "NELogConfig::ConfigLogRemoteTcpPort";
+    case NELogConfig::eLogConfig::ConfigLogDatabaseEnable:
+        return "NELogConfig::ConfigLogDatabaseEnable";
     case NELogConfig::eLogConfig::ConfigLogDatabaseDriver:
         return "NELogConfig::ConfigLogDatabaseDriver";
     case NELogConfig::eLogConfig::ConfigLogDatabaseHost:

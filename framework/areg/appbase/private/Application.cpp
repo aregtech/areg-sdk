@@ -487,12 +487,12 @@ void Application::queryCommunicationData( unsigned int & OUT sizeSend, unsigned 
     ServiceManager::queryCommunicationData( sizeSend, sizeReceive );
 }
 
-String Application::getApplicationName(void)
+const String & Application::getApplicationName(void)
 {
     return Process::getInstance().getAppName();
 }
 
-String Application::getMachineName(void)
+const String & Application::getMachineName(void)
 {
     return NESocket::getHostname();
 }

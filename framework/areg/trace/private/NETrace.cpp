@@ -24,7 +24,7 @@
 #include <string.h>
 
 NETrace::sLogMessageData::sLogMessageData(NETrace::eMessageType msgType /*= NETrace::eMessageType::MsgUndefined*/)
-    : dataNsgType      ( msgType                       )
+    : dataMsgType      ( msgType                       )
     , dataHostId       ( TraceManager::getCookie()     )
     , dataModuleId     ( TraceManager::getModuleId()   )
     , dataThreadId     ( Thread::getCurrentThreadId()  )
@@ -37,7 +37,7 @@ NETrace::sLogMessageData::sLogMessageData(NETrace::eMessageType msgType /*= NETr
 }
 
 NETrace::sLogMessageData::sLogMessageData(const sLogMessageData& source)
-    : dataNsgType      ( source.dataNsgType       )
+    : dataMsgType      ( source.dataMsgType       )
     , dataHostId       ( source.dataHostId        )
     , dataModuleId     ( source.dataModuleId      )
     , dataThreadId     ( source.dataThreadId      )
@@ -51,7 +51,7 @@ NETrace::sLogMessageData::sLogMessageData(const sLogMessageData& source)
 }
 
 NETrace::sLogMessageData::sLogMessageData(NETrace::eMessageType msgType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const char* message, unsigned int msgLen)
-    : dataNsgType      ( msgType                       )
+    : dataMsgType      ( msgType                       )
     , dataHostId       ( TraceManager::getCookie()     )
     , dataModuleId     ( TraceManager::getModuleId()   )
     , dataThreadId     ( Thread::getCurrentThreadId()  )
@@ -69,7 +69,7 @@ NETrace::sLogMessageData& NETrace::sLogMessageData::operator = (const NETrace::s
 {
     if (static_cast<NETrace::sLogMessageData*>(this) != &source)
     {
-        dataNsgType    = source.dataNsgType;
+        dataMsgType    = source.dataMsgType;
         dataHostId     = source.dataHostId;
         dataModuleId   = source.dataModuleId;
         dataThreadId   = source.dataThreadId;
@@ -209,7 +209,7 @@ AREG_API_IMPL bool NETrace::isStarted( void )
 AREG_API_IMPL bool NETrace::isConfigured(void)
 {
 #if AREG_LOGS
-    return TraceManager::isLoggingEnabled();
+    return TraceManager::isLoggingConfigured();
 #else   // !AREG_LOGS
     return true;
 #endif  // AREG_LOGS
@@ -239,6 +239,15 @@ AREG_API_IMPL const String& NETrace::getConfigFile(void)
     return TraceManager::getConfigFile();
 #else   // !AREG_LOGS
     return String::getEmptyString();
+#endif  // AREG_LOGS
+}
+
+AREG_API_IMPL unsigned int NETrace::makeScopeId( const char * scopeName )
+{
+#if AREG_LOGS
+    return  NEMath::crc32Calculate( scopeName );
+#else   // !AREG_LOGS
+    return 0;
 #endif  // AREG_LOGS
 }
 

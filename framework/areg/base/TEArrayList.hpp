@@ -256,12 +256,16 @@ public:
 
     /**
      * \brief   The function searches given parameter in the list starting from beginning, 
-     *          if does not find any entry, it adds given parameter to the end and returns true.
-     *          Otherwise, if element exists in the array, it returns false.
+     *          if does not find any entry, it adds given parameter at the end and returns true.
+     *          If parameter 'updateExisting' is true, it updates the existing entry.
      *          The VALUE type should have valid comparing operator.
-     * \param   newElement  New element to add at the end of array.
+     * \param   newElement      New element to add at the end of array.
+     * \param   updateExisting  If true, updates the existing element.
+     *                          If, for example, 2 objects are compared by the name and not by
+     *                          absolute values, setting this parameter true updates the existing entry.
+     * \return  Returns true, if new element added. Otherwise, returns false.
      **/
-    inline bool addIfUnique(const VALUE & newElement);
+    inline bool addIfUnique(const VALUE & newElement, bool updateExisting = false );
 
     /**
      * \brief	Appends entries taken from the given source at the end of the array.
@@ -561,14 +565,19 @@ inline void TEArrayList< VALUE >::add(const VALUE & newElement)
 }
 
 template<typename VALUE >
-inline bool TEArrayList< VALUE >::addIfUnique(const VALUE & newElement)
+inline bool TEArrayList< VALUE >::addIfUnique(const VALUE & newElement, bool updateExisting /*= false*/ )
 {
-    bool result = false;
+    bool result{ false };
 
-    if (std::find(mValueList.begin(), mValueList.end(), newElement) == mValueList.end())
+    ARRAYPOS pos = std::find( mValueList.begin( ), mValueList.end( ), newElement );
+    if ( pos == mValueList.end() )
     {
         mValueList.push_back(newElement);
         result = true;
+    }
+    else if ( updateExisting )
+    {
+        *pos = newElement;
     }
 
     return result;
@@ -671,16 +680,15 @@ inline void TEArrayList< VALUE >::removeAt(uint32_t index, uint32_t elemCount /*
 {
     if (elemCount != 0)
     {
-        elemCount -= 1;
-        ASSERT(isValidIndex(index) && isValidIndex(index + elemCount));
+        ASSERT(isValidIndex(index) && isValidIndex(index + elemCount - 1));
         ARRAYPOS first = getPosition(index);
-        if (elemCount == 0)
+        if (elemCount == 1)
         {
             mValueList.erase(first);
         }
         else
         {
-            ARRAYPOS last = first + elemCount;
+            ARRAYPOS last = first + (elemCount - 1);
             mValueList.erase(first, last);
         }
     }

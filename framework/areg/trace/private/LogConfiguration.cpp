@@ -15,11 +15,83 @@
 
 #include "areg/trace/private/LogConfiguration.hpp"
 
+#include "areg/appbase/NEApplication.hpp"
+#include "areg/base/Containers.hpp"
+#include "areg/base/File.hpp"
+#include "areg/base/Process.hpp"
 #include "areg/trace/private/NELogConfig.hpp"
+#include "areg/trace/private/ScopeController.hpp"
+
+
+namespace
+{
+    String _getDefaultConfigFile( void )
+    {
+        return (Process::getInstance( ).getPath( ) + File::getPathSeparator( ) + NEApplication::DEFAULT_TRACING_CONFIG_FILE);
+    }
+}
 
 //////////////////////////////////////////////////////////////////////////
 // LogConfiguration class implementation
 //////////////////////////////////////////////////////////////////////////
+
+LogConfiguration::LogConfiguration( ScopeController & scopeController )
+    : mScopeController  ( scopeController )
+    , mFilePath         ( )
+    , mIsConfigured     ( false )
+    , mProperties       ( )
+{
+}
+
+bool LogConfiguration::loadConfig( const String & filePath )
+{
+    if ( mIsConfigured == false )
+    {
+        ASSERT( mFilePath.isEmpty( ) );
+        String path = filePath.isEmpty( ) ? _getDefaultConfigFile( ) : filePath;
+        path = File::getFileFullPath( File::normalizePath( path ) );
+        File fileConfig( path, FileBase::FO_MODE_EXIST | FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_SHARE_READ );
+        fileConfig.open( );
+
+        if ( loadConfig( fileConfig ) )
+        {
+            mFilePath = fileConfig.getFileFullPath( );
+        }
+    }
+
+    return mIsConfigured;
+}
+
+bool LogConfiguration::loadConfig( FileBase & file )
+{
+    using ListProperties = TELinkedList<TraceProperty>;
+
+    clearProperties( );
+    if ( file.isOpened( ) )
+    {
+        const String & moduleName = Process::getInstance( ).getAppName( );
+        String line;
+        TraceProperty newProperty;
+        while ( file.readLine( line ) > 0 )
+        {
+            if ( newProperty.parseProperty( line ) )
+            {
+                // add new entry if unique. otherwise, update existing.
+                const TracePropertyKey & Key = newProperty.getKey( );
+                if ( Key.isModuleKeySet( moduleName ) )
+                {
+                    updateProperty( newProperty );
+                }
+
+                newProperty.clearProperty( );
+            }
+        }
+
+        mIsConfigured = true;
+    }
+
+    return mIsConfigured;
+}
 
 void LogConfiguration::setDefaultValues( void )
 {
@@ -31,6 +103,7 @@ void LogConfiguration::setDefaultValues( void )
     getStatus().parseProperty( NELogConfig::DEFAULT_LOG_ENABLE.data( ) );
     getAppendData().parseProperty( NELogConfig::DEFAULT_LOG_APPEND.data( ) );
     getLogFile().parseProperty( NELogConfig::DEFAULT_LOG_FILE.data( ) );
+    getRemoteTcpEnable( ).parseProperty( NELogConfig::DEFAULT_LOG_REMOTE_TCP_ENABLE.data( ) );
 
     getStackSize().clearProperty( );
     getRemoteTcpHost().clearProperty( );
@@ -44,7 +117,7 @@ void LogConfiguration::setDefaultValues( void )
 
 bool LogConfiguration::updateProperty( const TraceProperty & prop )
 {
-    bool result = false;
+    bool result{ true };
     const TracePropertyKey &  Key     = prop.getKey( );
     const NELogConfig::eLogConfig whichConfig = Key.getLogConfig();
     
@@ -53,7 +126,6 @@ bool LogConfiguration::updateProperty( const TraceProperty & prop )
     case NELogConfig::eLogConfig::ConfigLogVersion:
         {
             setVersion( prop );
-            result = true;
         }
         break;
 
@@ -69,13 +141,13 @@ bool LogConfiguration::updateProperty( const TraceProperty & prop )
                     value = NELogConfig::DEFAULT_LOG_FILE_NAME.data( );
                 }
             }
-
-            result = true;
         }
         break;
 
+    case NELogConfig::eLogConfig::ConfigLogRemoteTcpEnable: // fall through
     case NELogConfig::eLogConfig::ConfigLogRemoteTcpHost:   // fall through
     case NELogConfig::eLogConfig::ConfigLogRemoteTcpPort:   // fall through
+    case NELogConfig::eLogConfig::ConfigLogDatabaseEnable:  // fall through
     case NELogConfig::eLogConfig::ConfigLogDatabaseDriver:  // fall through
     case NELogConfig::eLogConfig::ConfigLogDatabaseHost:    // fall through
     case NELogConfig::eLogConfig::ConfigLogDatabaseUser:    // fall through
@@ -93,12 +165,18 @@ bool LogConfiguration::updateProperty( const TraceProperty & prop )
         {
             setProperty(whichConfig, prop);
         }
-        result = true;
     }
     break;
 
-    case NELogConfig::eLogConfig::ConfigScope:              // fall through
+    case NELogConfig::eLogConfig::ConfigScope:
+        {
+            mScopeController.configureScopes( prop );
+        }
+        break;
+
     default:
+        result = false;
+        ASSERT( false );
         break;  // do nothing
     }
     
