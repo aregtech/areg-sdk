@@ -621,8 +621,6 @@ void TraceManager::_traceNetResponseData( const NETrace::sLogCommandData & cmdDa
             uint32_t scopeId{ };
             uint32_t scopePrio{ };
 
-            uint32_t readSize{ 0 };
-
             for ( uint32_t i = 0; i < scopeInfo.dataScopeCount; ++ i )
             {
                 stream >> scopeName;
