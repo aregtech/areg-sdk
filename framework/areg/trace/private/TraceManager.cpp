@@ -151,7 +151,6 @@ TraceManager::TraceManager(void)
     , IETimerConsumer       ( )
 
     , mScopeController  ( )
-    , mScopesActivated  ( false )
 	, mIsStarted		( false )
     , mLogConfig        ( mScopeController )
 
@@ -509,7 +508,6 @@ inline void TraceManager::_traceNetRegisterScopes( void )
             return; // do not send anymore
         }
 
-        bool succeededSend{ true };
         const TraceScopeMap & mapScopes = mScopeController.getScopeList( );
         POS end = mapScopes.invalidPosition( );
         POS pos = mapScopes.firstPosition( );

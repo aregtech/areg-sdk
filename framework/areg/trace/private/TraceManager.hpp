@@ -464,10 +464,6 @@ private:
      **/
     ScopeController     mScopeController;
     /**
-     * \brief   The flag, indicating whether the scopes are activated or not.
-     **/
-    bool                mScopesActivated;
-    /**
      * \brief   The flag, indicating whether logger is started or not
      **/
     bool                mIsStarted;

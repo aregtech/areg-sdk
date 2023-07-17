@@ -64,8 +64,6 @@ bool LogConfiguration::loadConfig( const String & filePath )
 
 bool LogConfiguration::loadConfig( FileBase & file )
 {
-    using ListProperties = TELinkedList<TraceProperty>;
-
     clearProperties( );
     if ( file.isOpened( ) )
     {

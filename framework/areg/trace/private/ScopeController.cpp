@@ -266,8 +266,6 @@ void ScopeController::changeScopeActivityStatus( bool makeActive )
 
 void ScopeController::changeScopeActivityStatus( const String & scopeName, unsigned int scopeId, unsigned int logPrio )
 {
-    bool result{ false };
-
     if ( _isScopeGroup( scopeName ) )
     {
         setScopeGroupPriority( scopeName, logPrio );
