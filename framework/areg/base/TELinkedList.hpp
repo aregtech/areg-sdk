@@ -391,11 +391,16 @@ public:
 
     /**
      * \brief   Adds new entry at the head of linked list if it is not existing.
-     *          If the entry with specified value exists, the entry is not added.
+     *          If parameter 'updateExisting' is true, it updates the existing entry.
      *          The method returns true if new element is added.
+     * \param   newElement      The element to add at the head of linked list.
+     * \param   updateExisting  If true, updates the existing element.
+     *                          If, for example, 2 objects are compared by the name and not by
+     *                          absolute values, setting this parameter true updates the existing entry.
+          * \return  Returns true if inserted new entry at the head of the linked list. Otherwise, returns false.
      **/
-    inline bool pushFirstIfUnique(const VALUE& newElement);
-    inline bool pushFirstIfUnique(VALUE&& newElement);
+    inline bool pushFirstIfUnique(const VALUE& newElement, bool updateExisting = false );
+    inline bool pushFirstIfUnique(VALUE&& newElement, bool updateExisting = false );
 
     /**
      * \brief   Add element to tail of Linked List.
@@ -405,12 +410,18 @@ public:
     inline void pushLast( VALUE && newElement );
 
     /**
-     * \brief   Adds new entry at the tails of linked list if it is not existing.
-     *          If the entry with specified value exists, the entry is not added.
+     * \brief   Adds new entry at the tail of linked list if it is not existing.
+     *          If parameter 'updateExisting' is true, it updates the existing entry.
      *          The method returns true if new element is added.
+     * \param   newElement      The element to add at the tail of linked list.
+     * \param   updateExisting  If true, updates the existing element.
+     *                          If, for example, 2 objects are compared by the name and not by
+     *                          absolute values, by setting this parameter true, you can replace
+     *                          the existing object.
+     * \return  Returns true if inserted new entry at the tail of the linked list. Otherwise, returns false.
      **/
-    inline bool pushLastIfUnique(const VALUE& newElement);
-    inline bool pushLastIfUnique(VALUE&& newElement);
+    inline bool pushLastIfUnique(const VALUE& newElement, bool updateExisting = false );
+    inline bool pushLastIfUnique(VALUE&& newElement, bool updateExisting = false );
 
     /**
      * \brief   Pops the element at the head of linked list and returns the stored value.
@@ -848,26 +859,37 @@ inline void TELinkedList<VALUE>::pushFirst( VALUE && newElement )
 }
 
 template <typename VALUE >
-inline bool TELinkedList<VALUE>::pushFirstIfUnique(const VALUE& newElement)
+inline bool TELinkedList<VALUE>::pushFirstIfUnique(const VALUE& newElement, bool updateExisting /*= false*/ )
 {
     bool result{ false };
-    if (std::find(mValueList.begin(), mValueList.end(), newElement) == mValueList.end())
+
+    auto pos = std::find( mValueList.begin( ), mValueList.end( ), newElement );
+    if ( pos == mValueList.end())
     {
         result = true;
         mValueList.push_front(newElement);
+    }
+    else if (updateExisting )
+    {
+        *pos = newElement;
     }
 
     return result;
 }
 
 template <typename VALUE >
-inline bool TELinkedList<VALUE>::pushFirstIfUnique(VALUE&& newElement)
+inline bool TELinkedList<VALUE>::pushFirstIfUnique(VALUE&& newElement, bool updateExisting /*= false*/ )
 {
     bool result{ false };
-    if (std::find(mValueList.begin(), mValueList.end(), newElement) == mValueList.end())
+    auto pos = std::find( mValueList.begin( ), mValueList.end( ), newElement );
+    if ( pos == mValueList.end())
     {
         result = true;
         mValueList.push_front(std::move(newElement));
+    }
+    else if ( updateExisting )
+    {
+        *pos = newElement;
     }
 
     return result;
@@ -886,26 +908,36 @@ inline void TELinkedList<VALUE>::pushLast(VALUE && newElement)
 }
 
 template <typename VALUE >
-inline bool TELinkedList<VALUE>::pushLastIfUnique(const VALUE& newElement)
+inline bool TELinkedList<VALUE>::pushLastIfUnique(const VALUE& newElement, bool updateExisting /*= false*/ )
 {
     bool result{ false };
-    if (std::find(mValueList.rbegin(), mValueList.rend(), newElement) == mValueList.rend())
+    auto pos = std::find( mValueList.rbegin( ), mValueList.rend( ), newElement );
+    if (pos == mValueList.rend())
     {
         result = true;
         mValueList.push_back(newElement);
+    }
+    else if ( updateExisting )
+    {
+        *pos = newElement;
     }
 
     return result;
 }
 
 template <typename VALUE >
-inline bool TELinkedList<VALUE>::pushLastIfUnique(VALUE&& newElement)
+inline bool TELinkedList<VALUE>::pushLastIfUnique(VALUE&& newElement, bool updateExisting /*= false*/ )
 {
     bool result{ false };
-    if (std::find(mValueList.rbegin(), mValueList.rend(), newElement) == mValueList.rend())
+    auto pos = std::find( mValueList.rbegin( ), mValueList.rend( ), newElement );
+    if (pos == mValueList.rend())
     {
         result = true;
         mValueList.push_back(std::move(newElement));
+    }
+    else if ( updateExisting )
+    {
+        *pos = newElement;
     }
 
     return result;

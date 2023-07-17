@@ -51,12 +51,10 @@ public:
     {
           TraceUndefined                //!< Action is undefined, do nothing
         , TraceConfigure                //!< Action to notify to configure logging
-        , TraceChangeConfig             //!< Action to notify to change configuration
         , TraceStartLogs                //!< Action to notify to start logging
         , TraceStopLogs                 //!< Action to notify to stop logging
         , TraceSetEnableLogs            //!< Action to notify to enable logging
         , TraceSetDisableLogs           //!< Action to notify to stop logging
-        , TraceChangeScopes             //!< Action to notify the scopes have changes. TODO: remove scopes
         , TraceSaveScopes               //!< Action to notify to save scope list
         , TraceLogMessage               //!< Action to output logging message
         , TraceNetConnectService        //!< Action to take to perform network connection to logging service
@@ -195,12 +193,10 @@ inline const char * TraceEventData::getString( TraceEventData::eTraceAction acti
     {
     CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceUndefined);
     CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceConfigure);
-    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceChangeConfig);
     CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceStartLogs);
     CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceStopLogs);
     CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceSetEnableLogs);
     CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceSetDisableLogs);
-    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceChangeScopes);
     CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceSaveScopes);
     CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceLogMessage);
     CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceNetConnectService);

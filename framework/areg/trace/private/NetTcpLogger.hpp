@@ -148,6 +148,12 @@ public:
      **/
     bool isActive( void ) const;
 
+    /**
+     * \brief   Sets the IP-address of the log host sent by remote logging service.
+     * \param   ipAddr      The identified IP-address of the logs host.
+     **/
+    void setHostIpAddress( const String & ipAddr );
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
@@ -183,6 +189,8 @@ private:
     SocketClient        mSocket;
     //!< The ring stack to queue log messages if the connection setup did not complete yet.
     RingStack           mRingStack;
+    //!< The IP-address of the host. This is set by remote logging service.
+    String              mHostIpAddr;
     //!< The connection states.
     eConnectionStates   mConnectionState;
     //!< brief   The data receiver thread.

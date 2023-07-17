@@ -437,14 +437,19 @@ public:
     LISTPOS add(VALUE&& newElement);
 
     /**
-     * \brief   Add uniquely element to the sorted Linked List and returns position of the added element.
+     * \brief   Add uniquely element to the sorted Linked List and returns position of the element.
      *          Before adding, it will check whether the element is unique in the list and search the right
      *          position, depending on sorting algorithm. The element should have all comparing operators.
+     *          If parameter 'updateExisting' is true, it updates the existing entry.
      * \param   newElement   New element to add in Linked List
-     * \return  Returns position of the element in Linked List.
+     * \param   updateExisting  If true, updates the existing element.
+     *                          If, for example, 2 objects are compared by the name and not by
+     *                          absolute values, setting this parameter true updates the existing entry.
+     * \return  Returns a pair where first element indicates the position of the element in the Sorted Linked List
+     *          and the second entry indicates whether the new entry added or not.
      **/
-    LISTPOS addIfUnique(const VALUE& newElement);
-    LISTPOS addIfUnique(VALUE&& newElement);
+    std::pair<LISTPOS, bool> addIfUnique(const VALUE& newElement, bool updateExisting = false );
+    std::pair<LISTPOS, bool> addIfUnique(VALUE&& newElement, bool updateExisting = false );
 
     /**
      * \brief   Pops the element at the head of linked list and returns the stored value.
@@ -966,29 +971,7 @@ typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::add(VALUE
 }
 
 template <typename VALUE >
-typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::addIfUnique(const VALUE& newElement)
-{
-	auto it = mValueList.begin();
-    if (mSorting == NECommon::eSort::SortAscending)
-    {
-        while ((it != mValueList.end()) && (*it < newElement))
-        {
-            ++it;
-        }
-    }
-    else
-    {
-        while ((it != mValueList.end()) && (*it > newElement))
-        {
-            ++it;
-        }
-    }
-
-    return ((*it == mValueList.end()) || (*it != newElement)) ? mValueList.insert(it, newElement) : invalidPosition();
-}
-
-template <typename VALUE >
-typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::addIfUnique(VALUE&& newElement)
+std::pair<typename TESortedLinkedList<VALUE>::LISTPOS, bool> TESortedLinkedList<VALUE>::addIfUnique(const VALUE& newElement, bool updateExisting /*= false*/ )
 {
     auto it = mValueList.begin();
     if (mSorting == NECommon::eSort::SortAscending)
@@ -1006,7 +989,51 @@ typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::addIfUniq
         }
     }
 
-    return ((*it == mValueList.end()) || (*it != newElement)) ? mValueList.insert(it, std::move(newElement)) : invalidPosition();
+    std::pair<LISTPOS, bool> result( std::make_pair(it, false) );
+    if ( (it == mValueList.end()) || (*it != newElement) )
+    {
+        result.first = mValueList.insert( it, newElement );
+        result.second = true;
+    }
+    else if ( updateExisting )
+    {
+        *it = newElement;
+    }
+
+    return result;
+}
+
+template <typename VALUE >
+std::pair<typename TESortedLinkedList<VALUE>::LISTPOS, bool> TESortedLinkedList<VALUE>::addIfUnique(VALUE&& newElement, bool updateExisting /*= false*/ )
+{
+    auto it = mValueList.begin();
+    if (mSorting == NECommon::eSort::SortAscending)
+    {
+        while ((it != mValueList.end()) && (*it < newElement))
+        {
+            ++it;
+        }
+    }
+    else
+    {
+        while ((it != mValueList.end()) && (*it > newElement))
+        {
+            ++it;
+        }
+    }
+
+    std::pair<LISTPOS, bool> result( std::make_pair( it, false ) );
+    if ( (it == mValueList.end( )) || (*it != newElement) )
+    {
+        result.first = mValueList.insert( it, newElement );
+        result.second = true;
+    }
+    else if ( updateExisting )
+    {
+        *it = newElement;
+    }
+
+    return result;
 }
 
 template <typename VALUE >

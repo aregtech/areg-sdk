@@ -158,10 +158,9 @@ log.debug                   = false
 # log.enable.mcrouter       = true
 # log.file.mcrouter         = ./logs/%appname%_%time%.log
 
-connection.port.LastTest[mcrouter]  = localhost
-connection.host.LastTest[mcrouter]  = 8181
-connection.host.LastTest[trace]     = localhost
-connection.port.LastTest[trace]     = 8080
+log.remote.tcp.enable     = true
+log.remote.tcp.port       = 8181
+log.remote.tcp.host       = localhost
 
 # #######################################
 # Application(s) Scopes

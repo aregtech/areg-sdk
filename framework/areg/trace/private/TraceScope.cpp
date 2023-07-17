@@ -29,7 +29,7 @@
 
 TraceScope::TraceScope( const char * scopeName, NETrace::eLogPriority priority /*= NETrace::PrioNotset*/ )
     : mScopeName    ( scopeName != nullptr ? scopeName : "" )
-    , mScopeId      ( TraceManager::makeScopeId(mScopeName.getString())  )
+    , mScopeId      ( NETrace::makeScopeId(mScopeName.getString())  )
     , mScopePrio    ( priority )
 {
     TraceManager::registerTraceScope( self() );

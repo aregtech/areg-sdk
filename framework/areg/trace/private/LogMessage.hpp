@@ -247,7 +247,7 @@ inline const NETrace::sLogMessage & LogMessage::getLogData(void) const
 
 inline NETrace::eMessageType LogMessage::getMessageType(void) const
 {
-    return lmTrace.dataNsgType;
+    return lmTrace.dataMsgType;
 }
 
 inline id_type LogMessage::getThreadId(void) const
@@ -292,12 +292,12 @@ inline const char * LogMessage::getMessage(void) const
 
 inline const ITEM_ID & LogMessage::getCookie(void) const
 {
-    return lmHeader.hdrCookie;
+    return lmHeader.hdrCookieHost;
 }
 
 inline void LogMessage::setCookie(const ITEM_ID & newCookie)
 {
-    lmHeader.hdrCookie = newCookie;
+    lmHeader.hdrCookieHost = newCookie;
 }
 
 #endif  // AREG_TRACE_PRIVATE_LOGMESSAGE_HPP

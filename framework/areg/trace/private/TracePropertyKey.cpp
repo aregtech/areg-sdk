@@ -109,14 +109,9 @@ void TracePropertyKey::setKey(const String & fullKey)
                 mModuleData = String::getEmptyString();
             }
 
-            if (mModuleName == NELogConfig::SYNTAX_SCOPE_GROUP)
-                mModuleName.clear();
-
-            if ( false && mModuleName.isEmpty() == false )
+            if ( mModuleName == NELogConfig::SYNTAX_SCOPE_GROUP )
             {
-                pos = mModuleName.findFirst(NELogConfig::SYNTAX_OBJECT_SEPARATOR, len + 1);
-                if (mModuleName.isValidPosition(pos))
-                    mModuleName.substring(pos);
+                mModuleName.clear( );
             }
         }
         else

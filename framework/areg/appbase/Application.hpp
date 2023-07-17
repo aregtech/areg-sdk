@@ -389,12 +389,12 @@ public:
     /**
      * \brief   Returns the name of the executable process.
      **/
-    static String getApplicationName(void);
+    static const String & getApplicationName(void);
 
     /**
      * \brief   Returns the name of system host.
      **/
-    static String getMachineName(void);
+    static const String & getMachineName(void);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
