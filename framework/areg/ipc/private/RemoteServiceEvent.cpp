@@ -18,23 +18,33 @@
 #include <utility>
 
 SendMessageEventData::SendMessageEventData( const RemoteMessage & remoteMessage )
-    : mRemoteMessage    ( remoteMessage )
+    : mRemoteMessage( remoteMessage )
+    , mStayConnected( true )
+{
+}
+
+SendMessageEventData::SendMessageEventData( bool stayAlive )
+    : mRemoteMessage( )
+    , mStayConnected( stayAlive )
 {
 }
 
 SendMessageEventData::SendMessageEventData( SendMessageEventData && source ) noexcept
-    : mRemoteMessage    ( std::move(source.mRemoteMessage) )
+    : mRemoteMessage( std::move(source.mRemoteMessage) )
+    , mStayConnected( source.mStayConnected )
 {
 }
 
 SendMessageEventData& SendMessageEventData::operator = (const SendMessageEventData& source)
 {
     mRemoteMessage = source.mRemoteMessage;
+    mStayConnected = source.mStayConnected;
     return (*this);
 }
 
 SendMessageEventData & SendMessageEventData::operator = ( SendMessageEventData && source ) noexcept
 {
-    mRemoteMessage  = std::move(source.mRemoteMessage);
+    mRemoteMessage = std::move(source.mRemoteMessage);
+    mStayConnected = source.mStayConnected;
     return (*this);
 }

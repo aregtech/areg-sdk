@@ -44,6 +44,7 @@ public:
         , CMD_ServiceStarted    //!< Sent to notify client service connection is started.
         , CMD_ServiceStopped    //!< Sent to notify client service connection is stopped.
         , CMD_ServiceLost       //!< Sent to notify client service that connection is lost.
+        , CMD_ServiceExit       //!< Sent to exit the remote service.
     } eClientServiceCommands;
 
     /**
@@ -146,6 +147,8 @@ inline const char * ClientServiceEventData::getString( ClientServiceEventData::e
         return "ClientServiceEventData::CMD_ServiceStopped";
     case ClientServiceEventData::eClientServiceCommands::CMD_ServiceLost:
         return "ClientServiceEventData::CMD_ServiceLost";
+    case ClientServiceEventData::eClientServiceCommands::CMD_ServiceExit:
+        return "ClientServiceEventData::CMD_ServiceExit";
     default:
         return "ERR: Undefined ClientServiceEventData::eClientServiceCommands value!!!";
     }

@@ -273,16 +273,30 @@ public:
     void closeConnection(ITEM_ID cookie);
 
     /**
-     * \brief   Sets socket in read-only more, i.e. no send message is possible anymore.
+     * \brief   Sets socket in the read-only mode, i.e. no send message is possible anymore.
+     * \param   clientConnection    The connected client socket to set in read-only mode.
      * \return  Returns true if operation succeeds.
      **/
     inline bool disableSend( const SocketAccepted & clientConnection );
 
     /**
-     * \brief   Sets socket in write-only more, i.e. no receive message is possible anymore.
+     * \brief   Sets socket in the write-only mode, i.e. no receive message is possible anymore.
+     * \param   clientConnection    The connected client socket to set in write-only mode.
      * \return  Returns true if operation succeeds.
      **/
     inline bool disableReceive( const SocketAccepted & clientConnection );
+
+    /**
+     * \brief   Sets all sockets in the read-only mode, i.e. no send message is possible anymore.
+     * \return  Returns true if operation succeeds.
+     **/
+    inline void disableSend( void );
+
+    /**
+     * \brief   Sets all sockets in the write-only more, i.e. no receive message is possible anymore.
+     * \return  Returns true if operation succeeds.
+     **/
+    inline void disableReceive( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -406,6 +420,22 @@ inline bool ServerConnectionBase::disableSend( const SocketAccepted & clientConn
 inline bool ServerConnectionBase::disableReceive( const SocketAccepted & clientConnection )
 {
     return clientConnection.disableReceive();
+}
+
+inline void ServerConnectionBase::disableSend( void )
+{
+    for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.firstPosition( ); mAcceptedConnections.isValidPosition( pos ); pos = mAcceptedConnections.nextPosition( pos ) )
+    {
+        mAcceptedConnections.valueAtPosition( pos ).disableSend( );
+    }
+}
+
+inline void ServerConnectionBase::disableReceive( void )
+{
+    for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.firstPosition( ); mAcceptedConnections.isValidPosition( pos ); pos = mAcceptedConnections.nextPosition( pos ) )
+    {
+        mAcceptedConnections.valueAtPosition( pos ).disableReceive( );
+    }
 }
 
 #endif  // AREG_IPC_SERVERCONNECTIONBASE_HPP

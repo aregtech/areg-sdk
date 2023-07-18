@@ -167,12 +167,14 @@ private:
      * \brief   ClientService::eConnectionState
      *          Defines connection state values
      **/
-    enum class eConnectionState
+    enum class eConnectionState : unsigned short
     {
-          ConnectionStopped     //!< The connection is stopped, i.e. not connected.
-        , ConnectionStarting    //!< The connection is initiated, but the status is not known.
-        , ConnectionStarted     //!< The connection is established and accepted by server.
-        , ConnectionStopping    //!< The connection is stopping, because of manual request.
+          DisconnectState       = 1     //!< 0000 0001, The disconnect state
+        , ConnectionStopped     = 3     //!< 0000 0011, The connection is stopped, i.e. not connected.
+        , ConnectionStopping    = 5     //!< 0000 0101, The connection is stopping, because of manual request.
+        , ConnectState          = 16    //!< 0001 0000, the connect state
+        , ConnectionStarting    = 16    //!< 0011 0000, The connection is initiated, but the status is not known.
+        , ConnectionStarted     = 80    //!< 0101 0000, The connection is established and accepted by server.
     };
 
     /**
@@ -214,6 +216,16 @@ public:
      *          the value after last query.
      **/
     inline uint32_t queryBytesReceived( void );
+
+    /**
+     * \brief   Returns true if the connection status is either connecting or connected.
+     **/
+    inline bool isConnectState( void ) const;
+
+    /**
+     * \brief   Returns true if the connection status is either disconnecting or disconnected.
+     **/
+    inline bool isDisconnectState( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -473,11 +485,23 @@ private:
      **/
     inline ClientService::eConnectionState _getConnectionState( void ) const;
     /**
+     * \brief   Call to send an event with the command to process.
+     * \param   cmd         The command to send and process.
+     * \param   eventPrio   The priority of the event. By default, the priority is normal.
+     */
+    inline void _sendCommand( ClientServiceEventData::eClientServiceCommands cmd, Event::eEventPriority eventPrio = Event::eEventPriority::EventPriorityNormal );
+    /**
      * \brief   Queues the message for sending
      * \param   data        The data of the message.
      * \param   eventPrio   The priority of the message to set.
      **/
-    inline bool _queueSendMessage(const RemoteMessage & data, Event::eEventPriority eventPrio);
+    inline bool _sendMessage(const RemoteMessage & data, Event::eEventPriority eventPrio = Event::eEventPriority::EventPriorityNormal );
+    /**
+     * \brief   Call to send the disconnect event. It disconnects the socket  and exits the thread.
+     * \param   eventPrio   The priority of set to the event.
+     **/
+    inline void _disconnectService( Event::eEventPriority eventPrio );
+
     /**
      * \brief   Returns instance of client servicing object.
      **/
@@ -492,12 +516,6 @@ private:
      * \brief   Call when the dispatcher should stop listening the events. 
      **/
     inline void stopEventListener( void );
-
-    /**
-     * \brief   Call to send the event to process.
-     * \param   cmd     The command to send and process. 
-     */
-    inline void sendCommand(ClientServiceEventData::eClientServiceCommands cmd);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -574,11 +592,6 @@ inline void ClientService::stopEventListener(void)
     ClientServiceEvent::removeListener( static_cast<IEClientServiceEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self()) );
 }
 
-inline void ClientService::sendCommand(ClientServiceEventData::eClientServiceCommands cmd)
-{
-    ClientServiceEvent::sendEvent( ClientServiceEventData(cmd), static_cast<IEClientServiceEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self()) );
-}
-
 inline ClientService & ClientService::self( void )
 {
     return (*this);
@@ -597,6 +610,16 @@ inline uint32_t ClientService::queryBytesSent( void )
 inline uint32_t ClientService::queryBytesReceived( void )
 {
     return mThreadReceive.extractDataReceive();
+}
+
+inline bool ClientService::isConnectState( void ) const
+{
+    return (static_cast<uint16_t>(mConnectionState) & static_cast<uint16_t>(ClientService::eConnectionState::ConnectState));
+}
+
+inline bool ClientService::isDisconnectState( void ) const
+{
+    return (static_cast<uint16_t>(mConnectionState) & static_cast<uint16_t>(ClientService::eConnectionState::DisconnectState));
 }
 
 inline const char * ClientService::getString(ClientService::eConnectionState val)

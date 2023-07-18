@@ -90,11 +90,5 @@ bool ClientConnection::requestDisconnectServer(void)
 
 RemoteMessage ClientConnection::getDisconnectMessage(void) const
 {
-    RemoteMessage result;
-    if (isValid())
-    {
-        result = NEConnection::createDisconnectRequest(getCookie());
-    }
-
-    return result;
+    return (isValid( ) ? NEConnection::createDisconnectRequest( getCookie( ) ) : RemoteMessage( ));
 }

@@ -14,6 +14,7 @@
  ************************************************************************/
 #include "areg/ipc/private/ClientSendThread.hpp"
 
+#include "areg/component/NEService.hpp"
 #include "areg/ipc/NEConnection.hpp"
 #include "areg/ipc/private/ClientConnection.hpp"
 #include "areg/ipc/IERemoteServiceHandler.hpp"
@@ -46,18 +47,33 @@ bool ClientSendThread::runDispatcher(void)
 
 void ClientSendThread::processEvent( const SendMessageEventData & data )
 {
-    const RemoteMessage & msg = data.getRemoteMessage();
-    if ( msg.isValid())
+    if ( data.stayConnected( ) )
     {
-        int sizeSend = mConnection.sendMessage( msg );
-        if ( sizeSend <= 0 )
+        const RemoteMessage & msg = data.getRemoteMessage( );
+        if ( msg.isValid( ) )
         {
-            mRemoteService.failedSendMessage( msg );
+            int sizeSend = mConnection.sendMessage( msg );
+            if ( sizeSend <= 0 )
+            {
+                mRemoteService.failedSendMessage( msg );
+            }
+            else
+            {
+                mBytesSend += static_cast<uint32_t>(sizeSend);
+            }
         }
-        else
+    }
+    else
+    {
+        RemoteMessage msg{ mConnection.getDisconnectMessage( ) };
+        if ( msg.isValid( ) )
         {
-            mBytesSend += static_cast<uint32_t>(sizeSend);
+            mConnection.sendMessage( msg );
         }
+
+        mConnection.setCookie( NEService::COOKIE_UNKNOWN );
+        mConnection.closeSocket( );
+        DispatcherThread::triggerExitEvent( );
     }
 }
 

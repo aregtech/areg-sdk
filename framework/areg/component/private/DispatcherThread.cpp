@@ -228,7 +228,7 @@ bool DispatcherThread::postEvent( Event& eventElem )
 Thread::eCompletionStatus DispatcherThread::destroyThread( unsigned int waitForStopMs /*= NECommon::DO_NOT_WAIT*/ )
 {
     TRACE_SCOPE( areg_component_private_DispatcherThread_destroyThread);
-    TRACE_DBG("Destroying the thread the thread [ %s ] with ID [ %p ]. The current state is [ %s ]"
+    TRACE_DBG("Destroying the thread [ %s ] with ID [ %p ]. The current state is [ %s ]"
                 , getName().getString( )
                 , static_cast<id_type>(getId( ))
                 , isRunning() ? "RUNNING" : "NOT RUNNING" );

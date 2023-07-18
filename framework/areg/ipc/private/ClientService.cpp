@@ -91,6 +91,11 @@ void ClientService::ClientServiceEventConsumer::processEvent( const ClientServic
         mService.onServiceConnectionLost();
         break;
 
+    case ClientServiceEventData::eClientServiceCommands::CMD_ServiceExit:
+        mService.onServiceConnectionStop( );
+        mService.triggerExitEvent( );
+        break;
+
     default:
         ASSERT(false);
         break;
@@ -210,8 +215,7 @@ void ClientService::stopRemoteServicing(void)
     TRACE_DBG( "Stopping remote servicing client connection, current state is [ %s ]", isRunning() ? "RUNNING" : "NOT RUNNING" );
     if ( isRunning() )
     {
-        sendCommand(ClientServiceEventData::eClientServiceCommands::CMD_StopService);
-        DispatcherThread::triggerExitEvent();
+        _sendCommand(ClientServiceEventData::eClientServiceCommands::CMD_ServiceExit, Event::eEventPriority::EventPriorityCritical);
         completionWait(NECommon::WAIT_INFINITE);
         destroyThread( NECommon::DO_NOT_WAIT );
     }
@@ -257,7 +261,7 @@ bool ClientService::registerService( const StubAddress & stubService )
                    , StubAddress::convAddressToPath(stubService).getString()
                    , mClientConnection.getCookie());
 
-        result = _queueSendMessage( NEConnection::createRouterRegisterService(stubService, mClientConnection.getCookie()), Event::eEventPriority::EventPriorityHigh );
+        result = _sendMessage( NEConnection::createRouterRegisterService(stubService, mClientConnection.getCookie()), Event::eEventPriority::EventPriorityHigh );
     }
     return result;
 }
@@ -273,7 +277,7 @@ void ClientService::unregisterService(const StubAddress & stubService)
                    , StubAddress::convAddressToPath(stubService).getString()
                    , mClientConnection.getCookie());
 
-        _queueSendMessage( NEConnection::createRouterUnregisterService(stubService, mClientConnection.getCookie()), Event::eEventPriority::EventPriorityHigh);
+        _sendMessage( NEConnection::createRouterUnregisterService(stubService, mClientConnection.getCookie()), Event::eEventPriority::EventPriorityHigh);
     }
 }
 
@@ -288,7 +292,7 @@ bool ClientService::registerServiceClient(const ProxyAddress & proxyService)
                    , ProxyAddress::convAddressToPath(proxyService).getString()
                    , mClientConnection.getCookie());
 
-        result = _queueSendMessage( NEConnection::createRouterRegisterClient(proxyService, mClientConnection.getCookie()), Event::eEventPriority::EventPriorityHigh);
+        result = _sendMessage( NEConnection::createRouterRegisterClient(proxyService, mClientConnection.getCookie()), Event::eEventPriority::EventPriorityHigh);
     }
 
     return result;
@@ -305,7 +309,7 @@ void ClientService::unregisterServiceClient(const ProxyAddress & proxyService)
                    , ProxyAddress::convAddressToPath(proxyService).getString()
                    , mClientConnection.getCookie());
 
-        _queueSendMessage( NEConnection::createRouterUnregisterClient(proxyService, mClientConnection.getCookie()), Event::eEventPriority::EventPriorityHigh);
+        _sendMessage( NEConnection::createRouterUnregisterClient(proxyService, mClientConnection.getCookie()), Event::eEventPriority::EventPriorityHigh);
     }
 }
 
@@ -373,7 +377,7 @@ void ClientService::onServiceConnectionStopped(void)
     mChannel.setCookie( NEService::COOKIE_UNKNOWN );
     mChannel.setSource( NEService::SOURCE_UNKNOWN );
     mChannel.setTarget( NEService::TARGET_UNKNOWN );
-    // _stopConnection();
+
     _cancelConnection();
 
     mThreadReceive.completionWait( NECommon::WAIT_INFINITE );
@@ -384,7 +388,7 @@ void ClientService::onServiceConnectionStopped(void)
 void ClientService::onServiceConnectionLost(void)
 {
     TRACE_SCOPE(areg_ipc_private_ClientService_onServiceConnectionLost);
-    TRACE_WARN("Client service is lost connection. Resetting cookie and trying to restart, current connection state [ %s ]"
+    TRACE_WARN("Client service lost connection. Resetting cookie and trying to restart, current connection state [ %s ]"
                 , ClientService::getString(_getConnectionState()));
     Channel channel = mChannel;
     mChannel.setCookie( NEService::COOKIE_UNKNOWN );
@@ -396,7 +400,7 @@ void ClientService::onServiceConnectionLost(void)
     mThreadSend.completionWait( NECommon::WAIT_INFINITE );
     mServiceConsumer.remoteServiceStopped( channel );
 
-    if (Application::isServicingReady() && (_getConnectionState() == ClientService::eConnectionState::ConnectionStarted))
+    if (Application::isServicingReady() && isConnectState())
     {
         TRACE_DBG("Restarting lost connection with remote service");
         _setConnectionState(ClientService::eConnectionState::ConnectionStarting);
@@ -465,19 +469,10 @@ inline void ClientService::_stopConnection(void)
     TRACE_WARN("Stopping client service connection");
     mTimerConnect.stopTimer();
 
-    mThreadReceive.removeAllEvents();
     mThreadReceive.triggerExitEvent();
     mClientConnection.disableReceive();
 
-    mThreadSend.removeAllEvents();
-    RemoteMessage msgDisconnect = mClientConnection.getDisconnectMessage();
-    if ( msgDisconnect.isValid() )
-    {
-        _queueSendMessage(msgDisconnect, Event::eEventPriority::EventPriorityHigh);
-    }
-
-    mClientConnection.setCookie( NEService::COOKIE_UNKNOWN );
-    mThreadSend.triggerExitEvent();
+    _disconnectService( Event::eEventPriority::EventPriorityCritical );
 }
 
 inline void ClientService::_cancelConnection(void)
@@ -517,7 +512,7 @@ void ClientService::failedSendMessage(const RemoteMessage & msgFailed)
                 eventError->deliverEvent();
             }
 
-            sendCommand(ClientServiceEventData::eClientServiceCommands::CMD_ServiceLost);
+            _sendCommand(ClientServiceEventData::eClientServiceCommands::CMD_ServiceLost);
         }
         else
         {
@@ -538,7 +533,7 @@ void ClientService::failedReceiveMessage(SOCKETHANDLE whichSource)
     {
         if ( whichSource == mClientConnection.getSocketHandle() )
         {
-            sendCommand(ClientServiceEventData::eClientServiceCommands::CMD_ServiceLost);
+            _sendCommand(ClientServiceEventData::eClientServiceCommands::CMD_ServiceLost);
         }
     }
     else
@@ -567,7 +562,7 @@ void ClientService::failedProcessMessage( const RemoteMessage & msgUnprocessed )
                 RemoteMessage data;
                 if ( RemoteEventFactory::createStreamFromEvent( data, *eventError, mChannel) )
                 {
-                    _queueSendMessage(data, Event::eEventPriority::EventPriorityNormal);
+                    _sendMessage(data);
                 }
             }
         }
@@ -609,11 +604,11 @@ void ClientService::processReceivedMessage( const RemoteMessage & msgReceived, c
                     Lock lock(mLock);
                     ASSERT(cookie == msgReceived.getTarget());
                     mClientConnection.setCookie(cookie);
-                    sendCommand(ClientServiceEventData::eClientServiceCommands::CMD_ServiceStarted);
+                    _sendCommand(ClientServiceEventData::eClientServiceCommands::CMD_ServiceStarted);
                 }
                 else if ( (static_cast<unsigned int>(connection) & static_cast<unsigned int>(NEService::eServiceConnection::ServiceConnected)) == 0 )
                 {
-                    sendCommand(ClientServiceEventData::eClientServiceCommands::CMD_ServiceStopped);
+                    _sendCommand(ClientServiceEventData::eClientServiceCommands::CMD_ServiceLost );
                 }
                 else
                 {
@@ -747,7 +742,7 @@ void ClientService::processRemoteRequestEvent( RemoteRequestEvent & requestEvent
                             , data.getSource()
                             , data.getTarget());
 
-            _queueSendMessage(data, Event::eEventPriority::EventPriorityNormal);
+            _sendMessage(data);
         }
         else
         {
@@ -783,7 +778,7 @@ void ClientService::processRemoteNotifyRequestEvent( RemoteNotifyRequestEvent & 
                             , static_cast<uint32_t>(data.getSource())
                             , static_cast<uint32_t>(data.getTarget()));
 
-            _queueSendMessage(data, Event::eEventPriority::EventPriorityNormal);
+            _sendMessage(data);
         }
         else
         {
@@ -818,7 +813,7 @@ void ClientService::processRemoteResponseEvent(RemoteResponseEvent & responseEve
                             , static_cast<uint32_t>(data.getSource())
                             , static_cast<uint32_t>(data.getTarget()));
 
-            _queueSendMessage(data, Event::eEventPriority::EventPriorityNormal);
+            _sendMessage(data);
         }
         else
         {
@@ -835,7 +830,7 @@ bool ClientService::runDispatcher(void)
 {
     TRACE_SCOPE(areg_ipc_private_ClientService_runDispatcher);
     startEventListener();
-    sendCommand(ClientServiceEventData::eClientServiceCommands::CMD_StartService);
+    _sendCommand(ClientServiceEventData::eClientServiceCommands::CMD_StartService);
 
     _setConnectionState(ClientService::eConnectionState::ConnectionStarting);
     bool result = DispatcherThread::runDispatcher();
@@ -856,10 +851,27 @@ bool ClientService::postEvent(Event & eventElem)
     return EventDispatcher::postEvent(eventElem);
 }
 
-inline bool ClientService::_queueSendMessage(const RemoteMessage & data, Event::eEventPriority eventPrio)
+inline void ClientService::_sendCommand( ClientServiceEventData::eClientServiceCommands cmd
+                                       , Event::eEventPriority eventPrio /*= Event::eEventPriority::EventPriorityNormal*/ )
+{
+    ClientServiceEvent::sendEvent( ClientServiceEventData( cmd )
+                                 , static_cast<IEClientServiceEventConsumer &>(mEventConsumer)
+                                 , static_cast<DispatcherThread &>(self( ))
+                                 , eventPrio );
+}
+
+inline bool ClientService::_sendMessage(const RemoteMessage & data, Event::eEventPriority eventPrio /*= Event::eEventPriority::EventPriorityNormal*/ )
 {
     return SendMessageEvent::sendEvent( SendMessageEventData(data)
                                       , static_cast<IESendMessageEventConsumer &>(mThreadSend)
                                       , static_cast<DispatcherThread &>(mThreadSend)
                                       , eventPrio);
+}
+
+inline void ClientService::_disconnectService( Event::eEventPriority eventPrio )
+{
+    SendMessageEvent::sendEvent( SendMessageEventData( false )
+                               , static_cast<IESendMessageEventConsumer &>(mThreadSend)
+                               , static_cast<DispatcherThread &>(mThreadSend)
+                               , eventPrio );
 }
