@@ -549,10 +549,11 @@ private:
 
     /**
      * \brief   Call to send the event to process.
-     * \param   cmd     The command to send and process.
+     * \param   cmd         The command to send and process.
+     * \param   eventPrio   The priority of the event. By default, it is normal.
      * \return  Returns true if succeeded to send the command.
      **/
-    inline bool sendCommand(ServerServiceEventData::eServerServiceCommands cmd);
+    inline bool sendCommand(ServerServiceEventData::eServerServiceCommands cmd, Event::eEventPriority eventPrio = Event::eEventPriority::EventPriorityNormal);
 
     /**
      * \brief   Call to send the event to process.
@@ -560,7 +561,19 @@ private:
      * \param   msg     The message to forward.
      * \return  Returns true if succeeded to send the command.
      **/
-    inline bool sendCommunicationMessage(ServerServiceEventData::eServerServiceCommands cmd, const RemoteMessage & msg);
+    inline bool sendCommunicationMessage(ServerServiceEventData::eServerServiceCommands cmd, const RemoteMessage & msg, Event::eEventPriority eventPrio = Event::eEventPriority::EventPriorityNormal );
+
+    /**
+     * \brief   Queues the message for sending
+     * \param   data        The data of the message.
+     * \param   eventPrio   The priority of the message to set.
+     **/
+    inline bool _sendMessage(const RemoteMessage & data, Event::eEventPriority eventPrio = Event::eEventPriority::EventPriorityNormal );
+    /**
+     * \brief   Call to send the disconnect event. It disconnects the socket  and exits the thread.
+     * \param   eventPrio   The priority of set to the event.
+     **/
+    inline void _disconnectService( Event::eEventPriority eventPrio );
 
 //////////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -606,20 +619,22 @@ inline void ServerService::stopEventListener(void)
     ServerServiceEvent::removeListener( static_cast<IEServerServiceEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self()) );
 }
 
-inline bool ServerService::sendCommand(ServerServiceEventData::eServerServiceCommands cmd)
+inline bool ServerService::sendCommand(ServerServiceEventData::eServerServiceCommands cmd, Event::eEventPriority eventPrio /*= Event::eEventPriority::EventPriorityNormal*/ )
 {
     return ServerServiceEvent::sendEvent( ServerServiceEventData(cmd)
                                         , static_cast<IEServerServiceEventConsumer &>(mEventConsumer)
                                         , static_cast<DispatcherThread &>(self())
-                                        , Event::eEventPriority::EventPriorityHigh);
+                                        , eventPrio);
 }
 
-inline bool ServerService::sendCommunicationMessage(ServerServiceEventData::eServerServiceCommands cmd, const RemoteMessage & msg)
+inline bool ServerService::sendCommunicationMessage( ServerServiceEventData::eServerServiceCommands cmd
+                                                   , const RemoteMessage & msg
+                                                   , Event::eEventPriority eventPrio /*= Event::eEventPriority::EventPriorityNormal*/ )
 {
     return ServerServiceEvent::sendEvent( ServerServiceEventData(cmd, msg)
                                         , static_cast<IEServerServiceEventConsumer &>(mEventConsumer)
                                         , static_cast<DispatcherThread &>(self())
-                                        , Event::eEventPriority::EventPriorityHigh);
+                                        , eventPrio );
 }
 
 inline bool ServerService::isAddressInWhiteList(const NESocket::SocketAddress & addrClient) const

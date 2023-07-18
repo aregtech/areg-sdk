@@ -107,6 +107,13 @@ private:
      **/
     virtual void processEvent( const SendMessageEventData & data ) override;
 
+    inline void _sendData( const SendMessageEventData & data );
+
+    /**
+     * \brief   Closes connections and triggers exit event.
+     **/
+    inline void _exitConnection( void );
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////

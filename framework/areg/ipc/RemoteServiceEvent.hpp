@@ -46,6 +46,12 @@ public:
     explicit SendMessageEventData( const RemoteMessage & remoteMessage );
 
     /**
+     * \brief   Initializes the event without data to send and with the flag to close and exit connection.
+     * \param   stayAlive   Flag, indicating whether the connection should stay alive or close and exit.
+     **/
+    explicit SendMessageEventData( bool stayAlive );
+
+    /**
      * \brief   Copies remote message data from given source.
      * \param   source  The source, which contains remote message.
      **/
@@ -83,6 +89,11 @@ public:
      **/
     inline const RemoteMessage & getRemoteMessage( void ) const;
 
+    /**
+     * \brief   The send command value.
+     **/
+    inline bool stayConnected( void ) const;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variable
 //////////////////////////////////////////////////////////////////////////
@@ -90,10 +101,11 @@ private:
     /**
      * \brief   The instance of remote message
      **/
-    RemoteMessage mRemoteMessage;
+    RemoteMessage   mRemoteMessage;
     /**
-     * \brief   The event priority
+     * \brief   The send command action
      **/
+    bool            mStayConnected;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -115,6 +127,11 @@ DECLARE_EVENT(SendMessageEventData, SendMessageEvent, IESendMessageEventConsumer
 inline const RemoteMessage & SendMessageEventData::getRemoteMessage( void ) const
 {
     return mRemoteMessage;
+}
+
+inline bool SendMessageEventData::stayConnected( void ) const
+{
+    return mStayConnected;
 }
 
 #endif  // AREG_IPC_REMOTESERVICEEVENT_HPP

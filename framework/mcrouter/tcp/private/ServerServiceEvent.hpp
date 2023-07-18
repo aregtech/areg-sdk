@@ -45,6 +45,7 @@ public:
         , CMD_RestartService        //!< Restart the message router connection service
         , CMD_ServiceSendMsg        //!< Notify to sent messages to connected client
         , CMD_ServiceReceivedMsg    //!< Notify received message from connected client
+        , CMD_ExitService           //!< Notify to stop and exit servicing thread.
     } eServerServiceCommands;
 
     /**
@@ -163,6 +164,8 @@ inline const char * ServerServiceEventData::getString( ServerServiceEventData::e
         return "ServerServiceEventData::CMD_ServiceSendMsg";
     case ServerServiceEventData::eServerServiceCommands::CMD_ServiceReceivedMsg:
         return "ServerServiceEventData::CMD_ServiceReceivedMsg";
+    case ServerServiceEventData::eServerServiceCommands::CMD_ExitService:
+        return "ServerServiceEventData::CMD_ExitService";
     default:
         return "ERR: Unexpected ServerServiceEventData::eServerServiceCommands value!!!";
     }

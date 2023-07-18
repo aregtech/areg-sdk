@@ -23,7 +23,7 @@
 
 #include "areg/trace/GETrace.h"
 
-DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerSendThread_processEvent);
+DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerSendThread__sendData );
 
 ServerSendThread::ServerSendThread(IERemoteServiceHandler & remoteService, ServerConnection & connection)
     : DispatcherThread          ( NEConnection::SERVER_SEND_MESSAGE_THREAD )
@@ -46,7 +46,19 @@ bool ServerSendThread::runDispatcher( void )
 
 void ServerSendThread::processEvent( const SendMessageEventData & data )
 {
-    TRACE_SCOPE(mcrouter_tcp_private_ServerSendThread_processEvent);
+    if ( data.stayConnected( ) )
+    {
+        _sendData( data );
+    }
+    else
+    {
+        _exitConnection( );
+    }
+}
+
+void ServerSendThread::_sendData( const SendMessageEventData & data )
+{
+    TRACE_SCOPE( mcrouter_tcp_private_ServerSendThread__sendData );
     const RemoteMessage & msgSend = data.getRemoteMessage();
     if ( msgSend.isValid() )
     {
@@ -86,6 +98,13 @@ void ServerSendThread::processEvent( const SendMessageEventData & data )
                         , static_cast<id_type>(msgSend.getSource())
                         , static_cast<id_type>(msgSend.getTarget()));
     }
+}
+
+inline void ServerSendThread::_exitConnection( void )
+{
+    mConnection.disableReceive( );
+    mConnection.closeAllConnections( );
+    DispatcherThread::triggerExitEvent( );
 }
 
 bool ServerSendThread::postEvent(Event & eventElem)
