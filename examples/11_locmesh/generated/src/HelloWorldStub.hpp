@@ -117,7 +117,7 @@ public:
     /**
      * \brief   Broadcast call.
      *          Triggered to notify that  reached the maximum number of requests.
-     * \param   maxNumber   The maximum number of reqeusts.
+     * \param   maxNumber   The maximum number of requests.
      **/
     virtual void broadcastReachedMaximum( int maxNumber );
 

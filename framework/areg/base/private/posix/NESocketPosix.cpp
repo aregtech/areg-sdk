@@ -102,8 +102,8 @@ namespace NESocket
                 {
                     TRACE_ERR("FAILED to sent [ %d ] bytes of data, error code is [ %p ], terminating sending", dataLength, static_cast<id_type>(errno));
                     // in all other cases
-                    dataLength = 0;    // break loop
-                    result = -1;   // notify failure
+                    dataLength = 0; // break loop
+                    result = -1;     // notify failure
                 }
             }
         }
@@ -135,15 +135,14 @@ namespace NESocket
             else if (read == 0)
             {
                 TRACE_INFO("No data to read. There are still [ %d ] bytes to wait, breaking loop", dataLength);
-                dataLength = 0;    // break loop. the other side disconnected
-                result = 0;    // no data could read. specified socket is closed
+                dataLength = 0; // break loop. the other side disconnected
             }
             else
             {
                 TRACE_ERR("FAILED to receive [ %d ] bytes of data, error code is [ %p ], terminating receiving", dataLength, static_cast<id_type>(errno));
                 // in all other cases
-                dataLength = 0;    // break loop
-                result = -1;   // notify failure
+                dataLength  = 0;// break loop
+                result = -1;    // notify failure
             }
         }
 

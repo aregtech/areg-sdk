@@ -134,7 +134,7 @@ public:
      * \brief   Returns value of maxNumber of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
      *          Parameter maxNumber description:
-     *          The maximum number of reqeusts.
+     *          The maximum number of requests.
      **/
     inline int getParammaxNumber( void ) const;
 
@@ -278,7 +278,7 @@ private:
  ************************************************************************/
     /**
      * \brief   maxNumber parameter value.
-     *          The maximum number of reqeusts.
+     *          The maximum number of requests.
      **/
     int mParammaxNumber;
 

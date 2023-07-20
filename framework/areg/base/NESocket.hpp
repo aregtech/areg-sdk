@@ -218,7 +218,7 @@ namespace NESocket
      * \brief   NESocket::DEFAULT_SEGMENT_SIZE
      *          The default size of segment when sends or receives data.
      **/
-    constexpr unsigned int              DEFAULT_SEGMENT_SIZE        { 16384 };
+    constexpr unsigned int              DEFAULT_SEGMENT_SIZE        { 1500 };
     /**
      * \brief   NESocket::MAX_SEGMENT_SIZE
      *          The maximum size of segment when sends or receives data.

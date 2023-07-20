@@ -51,15 +51,14 @@ bool ClientReceiveThread::runDispatcher(void)
             if ( sizeReceive <= 0 )
             {
                 msgReceived.invalidate();
-                mRemoteService.failedReceiveMessage( mConnection.getSocketHandle() );
-                pulseExit();
+                mRemoteService.failedReceiveMessage( mConnection.getSocket() );
             }
             else
             {
                 mBytesReceive += static_cast<uint32_t>(sizeReceive);
+                mRemoteService.processReceivedMessage( msgReceived, mConnection.getSocket( ) );
             }
 
-            mRemoteService.processReceivedMessage(msgReceived, mConnection.getAddress(), mConnection.getSocketHandle());
             msgReceived.invalidate();
         }
         else

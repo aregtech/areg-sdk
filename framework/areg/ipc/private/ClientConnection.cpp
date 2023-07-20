@@ -55,7 +55,7 @@ bool ClientConnection::createSocket(void)
 void ClientConnection::closeSocket(void)
 {
     setCookie(NEService::COOKIE_UNKNOWN);
-    return mClientSocket.closeSocket();
+    mClientSocket.closeSocket();
 }
 
 bool ClientConnection::requestConnectServer(void)
