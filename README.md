@@ -448,9 +448,8 @@ Special thanks to all contributors and supporters that starred this repository.
 
 [![Stargazers for @aregtech/areg-sdk](https://reporoster.com/stars/aregtech/areg-sdk)](https://github.com/aregtech/areg-sdk/stargazers)
 
-Do you like this project? Please [give](https://github.com/aregtech/areg-sdk/stargazers) a ⭐<br/>
-Do you have an idea or found a bug? Please open an [issue](https://github.com/aregtech/areg-sdk/issues) or start a [discussion](https://github.com/aregtech/areg-sdk/discussions).<br/>
-These will help us a lot.
+Do you like this project? Please join us or [give](https://github.com/aregtech/areg-sdk/stargazers) a ⭐. This will help to attract more contributors.<br/>
+Do you have an idea or found a bug? Please open an [issue](https://github.com/aregtech/areg-sdk/issues) or start a [discussion](https://github.com/aregtech/areg-sdk/discussions).
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
