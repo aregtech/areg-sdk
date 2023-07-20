@@ -107,7 +107,9 @@ bool ServerReceiveThread::runDispatcher(void)
                         }
                     }
 
+#if AREG_LOGS
                     const NESocket::SocketAddress& addSocket = clientSocket.getAddress();
+#endif // AREG_LOGS
                     int sizeReceived = mConnection.receiveMessage(msgReceived, clientSocket);
                     if (sizeReceived > 0 )
                     {
@@ -118,7 +120,7 @@ bool ServerReceiveThread::runDispatcher(void)
                                     , addSocket.getHostPort());
 
                         mBytesReceive += static_cast<uint32_t>(sizeReceived);
-                        mRemoteService.processReceivedMessage(msgReceived, addSocket, clientSocket.getHandle());
+                        mRemoteService.processReceivedMessage(msgReceived, clientSocket);
                     }
                     else
                     {
@@ -127,7 +129,7 @@ bool ServerReceiveThread::runDispatcher(void)
                                         , addSocket.getHostPort()
                                         , clientSocket.getHandle());
 
-                        mRemoteService.failedReceiveMessage(clientSocket.getHandle());
+                        mRemoteService.failedReceiveMessage(clientSocket);
                     }
 
                     msgReceived.invalidate();

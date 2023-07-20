@@ -122,9 +122,9 @@ public:
     bool isValid( void ) const;
 
     /**
-     * \brief   Returns handle of socket.
+     * \brief   Returns the socket object.
      **/
-    SOCKETHANDLE getSocketHandle( void ) const;
+    Socket & getSocket( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -290,9 +290,9 @@ inline bool ClientConnection::disableReceive( void )
     return mClientSocket.disableReceive();
 }
 
-inline SOCKETHANDLE ClientConnection::getSocketHandle( void ) const
+inline Socket & ClientConnection::getSocket( void )
 {
-    return mClientSocket.getHandle();
+    return mClientSocket;
 }
 
 inline int ClientConnection::sendMessage(const RemoteMessage & in_message) const

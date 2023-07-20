@@ -23,10 +23,8 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-namespace NESocket{
-    class SocketAddress;
-}
 class RemoteMessage;
+class Socket;
 
 //////////////////////////////////////////////////////////////////////////
 // IERemoteServiceHandler interface declaration
@@ -62,14 +60,15 @@ public:
     /**
      * \brief   Triggered, when failed to send message.
      * \param   msgFailed   The message, which failed to send.
+     * \param   whichTarget The target socket to send message.
      **/
-    virtual void failedSendMessage( const RemoteMessage & msgFailed ) = 0;
+    virtual void failedSendMessage( const RemoteMessage & msgFailed, Socket & whichTarget ) = 0;
 
     /**
      * \brief   Triggered, when failed to receive message.
-     * \param   whichSource Indicated the source, which failed.
+     * \param   whichSource Indicates the failed source socket to receive message.
      **/
-    virtual void failedReceiveMessage( SOCKETHANDLE whichSource ) = 0;
+    virtual void failedReceiveMessage( Socket & whichSource ) = 0;
 
     /**
      * \brief   Triggered, when failed to process message, i.e. the target for message processing was not found.
@@ -81,10 +80,9 @@ public:
     /**
      * \brief   Triggered, when need to process received message.
      * \param   msgReceived Received message to process.
-     * \param   addrHost    The address of remote host, which sent message.
-     * \param   whichSource The socket handle, which received message.
+     * \param   whichSource The source socket, which received message.
      **/
-    virtual void processReceivedMessage( const RemoteMessage & msgReceived, const NESocket::SocketAddress & addrHost, SOCKETHANDLE whichSource ) = 0;
+    virtual void processReceivedMessage( const RemoteMessage & msgReceived, Socket & whichSource ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

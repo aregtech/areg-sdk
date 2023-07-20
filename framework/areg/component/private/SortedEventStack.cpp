@@ -28,7 +28,15 @@ SortedEventStack::~SortedEventStack(void)
 
 void SortedEventStack::deleteAllEvents(void)
 {
-    deleteAllLowerPriority(Event::eEventPriority::EventPriorityIgnore);
+    Lock lock( mSynchObject );
+
+    while ( mValueList.empty( ) == false )
+    {
+        Event * evt = mValueList.back( );
+        ASSERT( evt != nullptr );
+        evt->destroy( );
+        mValueList.pop_back( );
+    }
 }
 
 uint32_t SortedEventStack::deleteAllLowerPriority(Event::eEventPriority eventPrio)

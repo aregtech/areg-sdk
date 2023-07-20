@@ -36,10 +36,12 @@ bool ClientSendThread::runDispatcher(void)
     TRACE_SCOPE(areg_ipc_private_ClientSendThread_runDispatcher);
     TRACE_DBG("Starting client service dispatcher thread [ %s ]", getName().getString());
 
+    removeAllEvents( );
     SendMessageEvent::addListener( static_cast<IESendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this));
 
     bool result = DispatcherThread::runDispatcher();
 
+    removeAllEvents( );
     SendMessageEvent::removeListener( static_cast<IESendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this));
     TRACE_DBG("Exiting client service dispatcher thread [ %s ] with result [ %s ]", getName().getString(), result ? "SUCCESS" : "FAILURE");
     return result;
@@ -50,28 +52,21 @@ void ClientSendThread::processEvent( const SendMessageEventData & data )
     if ( data.stayConnected( ) )
     {
         const RemoteMessage & msg = data.getRemoteMessage( );
-        if ( msg.isValid( ) )
+        int sizeSend = mConnection.sendMessage( msg );
+        if ( sizeSend > 0 )
         {
-            int sizeSend = mConnection.sendMessage( msg );
-            if ( sizeSend <= 0 )
-            {
-                mRemoteService.failedSendMessage( msg );
-            }
-            else
-            {
-                mBytesSend += static_cast<uint32_t>(sizeSend);
-            }
+            mBytesSend += static_cast<uint32_t>(sizeSend);
+        }
+        else
+        {
+            mRemoteService.failedSendMessage( msg, mConnection.getSocket( ) );
         }
     }
     else
     {
         RemoteMessage msg{ mConnection.getDisconnectMessage( ) };
-        if ( msg.isValid( ) )
-        {
-            mConnection.sendMessage( msg );
-        }
 
-        mConnection.setCookie( NEService::COOKIE_UNKNOWN );
+        mConnection.sendMessage( msg );
         mConnection.closeSocket( );
         DispatcherThread::triggerExitEvent( );
     }

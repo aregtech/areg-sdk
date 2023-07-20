@@ -82,7 +82,7 @@ void ServerSendThread::_sendData( const SendMessageEventData & data )
                             , static_cast<unsigned int>(msgSend.getTarget())
                             , client.isAlive() ? "IS ALIVE" : "IS NOT ALIVE");
 
-            mRemoteService.failedSendMessage( msgSend );
+            mRemoteService.failedSendMessage( msgSend, client );
         }
         else
         {

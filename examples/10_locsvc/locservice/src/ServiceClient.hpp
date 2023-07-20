@@ -73,7 +73,7 @@ protected:
      *          Triggered to notify that  reached the maximum number of requests.
      *          Overwrite, if need to handle Broadcast call of server object.
      *          This call will be automatically triggered, on every appropriate request call
-     * \param   maxNumber   The maximum number of reqeusts.
+     * \param   maxNumber   The maximum number of requests.
      **/
     virtual void broadcastReachedMaximum( int maxNumber ) override;
 

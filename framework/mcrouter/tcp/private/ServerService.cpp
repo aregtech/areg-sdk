@@ -833,30 +833,37 @@ void ServerService::remoteServiceConnectionLost(const Channel & /* channel */)
 {
 }
 
-void ServerService::failedSendMessage(const RemoteMessage & msgFailed)
+void ServerService::failedSendMessage(const RemoteMessage & msgFailed, Socket & whichTarget )
 {
     TRACE_SCOPE(mcrouter_tcp_private_ServerService_failedSendMessage);
 
-    ITEM_ID cookie = msgFailed.getTarget();
+#ifdef DEBUG
+
+    ITEM_ID cookie = msgFailed.getTarget( );
     SocketAccepted client = mServerConnection.getClientByCookie( cookie );
+    ASSERT( whichTarget.getHandle( ) == client.getHandle( ) );
+
+#endif // DEBUG
+
     TRACE_WARN("Failed to send message to [ %s ] client [ %d ], probably the connection is lost, closing connection"
-                    , client.isValid() ? "VALID" : "INVALID"
-                    , static_cast<int32_t>(client.getHandle()));
-    if (client.isValid())
+                    , whichTarget.isValid() ? "VALID" : "INVALID"
+                    , static_cast<int32_t>(whichTarget.getHandle()));
+
+    if ( whichTarget.isValid())
     {
-        connectionLost(client);
+        connectionLost( static_cast<SocketAccepted &>(whichTarget) );
     }
 }
 
-void ServerService::failedReceiveMessage(SOCKETHANDLE whichSource)
+void ServerService::failedReceiveMessage(Socket & whichSource)
 {
     TRACE_SCOPE(mcrouter_tcp_private_ServerService_failedReceiveMessage);
 
-    SocketAccepted client = mServerConnection.getClientByHandle(whichSource);
+    SocketAccepted client = mServerConnection.getClientByHandle(whichSource.getHandle());
     TRACE_WARN("Failed to receive message from [ %s ] client [ %d ], probably the connection with socket [ %d ] is lost, closing connection"
                         , client.isValid() ? "VALID" : "INVALID"
                         , static_cast<int32_t>(client.getHandle())
-                        , static_cast<int32_t>(whichSource));
+                        , static_cast<int32_t>(whichSource.getHandle()));
 
     if (client.isValid())
     {
@@ -869,12 +876,12 @@ void ServerService::failedProcessMessage(const RemoteMessage & /* msgUnprocessed
 
 }
 
-void ServerService::processReceivedMessage(const RemoteMessage & msgReceived, const NESocket::SocketAddress & addrHost, SOCKETHANDLE whichSource)
+void ServerService::processReceivedMessage(const RemoteMessage & msgReceived, Socket & whichSource)
 {
     TRACE_SCOPE(mcrouter_tcp_private_ServerService_processReceivedMessage);
     if ( msgReceived.isValid() )
     {
-        ITEM_ID cookie = mServerConnection.getCookie(whichSource);
+        ITEM_ID cookie = mServerConnection.getCookie(whichSource.getHandle());
         ITEM_ID source = static_cast<ITEM_ID>(msgReceived.getSource());
         ITEM_ID target = static_cast<ITEM_ID>(msgReceived.getTarget());
         NEService::eFuncIdRange msgId  = static_cast<NEService::eFuncIdRange>( msgReceived.getMessageId() );
@@ -884,8 +891,8 @@ void ServerService::processReceivedMessage(const RemoteMessage & msgReceived, co
                         , static_cast<uint32_t>(msgId)
                         , static_cast<uint32_t>(source)
                         , static_cast<uint32_t>(cookie)
-                        , addrHost.getHostAddress().getString()
-                        , static_cast<int>(addrHost.getHostPort())
+                        , static_cast<const char *>(whichSource.getAddress().getHostAddress())
+                        , static_cast<int>(whichSource.getAddress().getHostPort( ))
                         , static_cast<id_type>(target));
 
         if ( (source > NEService::COOKIE_ROUTER) && NEService::isExecutableId(static_cast<uint32_t>(msgId)) )
@@ -908,7 +915,7 @@ void ServerService::processReceivedMessage(const RemoteMessage & msgReceived, co
                         , NEService::getString( static_cast<NEService::eFuncIdRange>(msgConnect.getMessageId()))
                         , static_cast<uint32_t>(msgConnect.getMessageId())
                         , static_cast<uint32_t>(msgConnect.getTarget())
-                        , static_cast<uint32_t>(whichSource)
+                        , static_cast<uint32_t>(whichSource.getHandle())
                         , msgConnect.getChecksum());
 
             _sendMessage( msgConnect );

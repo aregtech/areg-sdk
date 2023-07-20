@@ -416,14 +416,15 @@ protected:
     /**
      * \brief   Triggered, when failed to send message.
      * \param   msgFailed   The message, which failed to send.
+     * \param   whichTarget The target socket to send message.
      **/
-    virtual void failedSendMessage( const RemoteMessage & msgFailed ) override;
+    virtual void failedSendMessage( const RemoteMessage & msgFailed, Socket & whichTarget ) override;
 
     /**
      * \brief   Triggered, when failed to receive message.
-     * \param   whichSource Indicated the source, which failed.
+     * \param   whichSource Indicates the failed source socket to receive message.
      **/
-    virtual void failedReceiveMessage( SOCKETHANDLE whichSource ) override;
+    virtual void failedReceiveMessage( Socket & whichSource ) override;
 
     /**
      * \brief   Triggered, when failed to process message, i.e. the target for message processing was not found.
@@ -435,10 +436,9 @@ protected:
     /**
      * \brief   Triggered, when need to process received message.
      * \param   msgReceived Received message to process.
-     * \param   addrHost    The address of remote host, which sent message.
-     * \param   whichSource The socket handle, which received message.
+     * \param   whichSource The source socket, which received message.
      **/
-    virtual void processReceivedMessage( const RemoteMessage & msgReceived, const NESocket::SocketAddress & addrHost, SOCKETHANDLE whichSource ) override;
+    virtual void processReceivedMessage( const RemoteMessage & msgReceived, Socket & whichSource ) override;
 
 /************************************************************************/
 // DispatcherThread overrides

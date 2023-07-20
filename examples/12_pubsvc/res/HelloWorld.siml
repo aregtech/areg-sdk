@@ -50,14 +50,14 @@
             <Description>Triggered to notify that  reached the maximum number of requests.</Description>
             <ParamList>
                 <Parameter DataType="int32" ID="19" Name="maxNumber">
-                    <Description>The maximum number of reqeusts.</Description>
+                    <Description>The maximum number of requests.</Description>
                 </Parameter>
             </ParamList>
         </Method>
     </MethodList>
     <ConstantList>
         <Constant DataType="int16" ID="18" Name="MaxMessages">
-            <Value>37</Value>
+            <Value>50</Value>
             <Description>The maximum number of messages to output.</Description>
         </Constant>
     </ConstantList>

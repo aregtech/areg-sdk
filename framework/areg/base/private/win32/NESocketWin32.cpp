@@ -112,8 +112,8 @@ namespace NESocket
                 else
                 {
                     // in all other cases
-                    dataLength = 0;    // break loop
-                    result = -1;   // notify failure
+                    dataLength = 0; // break loop
+                    result = -1;     // notify failure
                 }
             }
         }
@@ -140,8 +140,8 @@ namespace NESocket
             }
             else if (read == 0)
             {
-                dataLength = 0;    // break loop. the other side disconnected
-                result = 0;    // no data could read. specified socket is closed
+                dataLength = 0; // break loop. the other side disconnected
+                result = 0;     // no data could read. specified socket is closed
             }
             else
             {
@@ -154,8 +154,8 @@ namespace NESocket
                 else
                 {
                     // in all other cases
-                    dataLength = 0;    // break loop
-                    result = -1;   // notify failure
+                    dataLength = 0; // break loop
+                    result = -1;    // notify failure
                 }
             }
         }
