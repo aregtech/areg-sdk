@@ -22,9 +22,17 @@
 #include "areg/component/Component.hpp"
 #include "areg/component/private/StubConnectEvent.hpp"
 
+#include "areg/trace/GETrace.h"
+
 //////////////////////////////////////////////////////////////////////////
 // StubBase class implementation
 //////////////////////////////////////////////////////////////////////////
+
+DEF_TRACE_SCOPE( areg_component_StubBase_startupServiceInterface );
+DEF_TRACE_SCOPE( areg_component_StubBase_shutdownServiceIntrface );
+DEF_TRACE_SCOPE( areg_component_StubBase_errorAllRequests );
+DEF_TRACE_SCOPE( areg_component_StubBase_sendBusyRespone );
+DEF_TRACE_SCOPE( areg_component_StubBase_clientConnected );
 
 //////////////////////////////////////////////////////////////////////////
 // StubBase class statics
@@ -262,16 +270,24 @@ StubBase* StubBase::findStubByAddress( const StubAddress& address )
 
 void StubBase::startupServiceInterface( Component&  holder )
 {
+    TRACE_SCOPE( areg_component_StubBase_startupServiceInterface );
+    TRACE_DBG( "Service with role [ %s ] and interface [ %s ] is started", getServiceRole( ).getString( ), getServiceName( ).getString( ) );
+
     StubConnectEvent::addListener( static_cast<IEStubEventConsumer &>(self()), holder.getMasterThread() );
 }
 
 void StubBase::shutdownServiceIntrface( Component & holder )
 {
+    TRACE_SCOPE( areg_component_StubBase_shutdownServiceIntrface );
+    TRACE_INFO( "Service with role [ %s ] and interface [ %s ] is stopped", getServiceRole().getString(), getServiceName().getString() );
     StubConnectEvent::removeListener( static_cast<IEStubEventConsumer &>(self()), holder.getMasterThread() );
 }
 
 void StubBase::errorAllRequests( void )
 {
+    TRACE_SCOPE( areg_component_StubBase_errorAllRequests );
+    TRACE_INFO( "Service [ %s ] with interface [ %s ] send errors to all consumer.", getServiceRole().getString(), getServiceName().getString() );
+
     unsigned int i;
 
     const unsigned int numOfAttr= getNumberOfAttributes();
@@ -319,10 +335,14 @@ void StubBase::invalidateAttribute( unsigned int attrId )
 
 void StubBase::sendUpdateEvent( unsigned int msgId, const EventDataStream & data, NEService::eResultType result ) const
 {
+    TRACE_SCOPE( areg_component_StubBase_sendBusyRespone );
     StubBase::StubListenerList listeners;
     if (findListeners(msgId, listeners) > 0)
     {
-        ResponseEvent* eventElem = createResponseEvent(listeners.getFirstEntry().mProxy, msgId, result, data);
+        const ProxyAddress & proxy = listeners.getFirstEntry( ).mProxy;
+        TRACE_WARN( "Sends busy message to proxy [ %s ] for the request [ %u ]", ProxyAddress::convAddressToPath( proxy).getString(), msgId);
+
+        ResponseEvent* eventElem = createResponseEvent(proxy, msgId, result, data);
         if (eventElem != nullptr)
         {
             sendUpdateNotification(listeners, *eventElem);
@@ -437,6 +457,11 @@ void StubBase::removeNotificationListener( unsigned int msgId, const ProxyAddres
 
 void StubBase::clientConnected(const ProxyAddress & client, NEService::eServiceConnection status )
 {
+    TRACE_SCOPE( areg_component_StubBase_clientConnected );
+    TRACE_DBG( "Service consumer [ %s ] connection event with status [ %s ]"
+               , ProxyAddress::convAddressToPath( client ).getString( )
+               , NEService::getString( status ) );
+
     if ( NEService::isServiceDisconnected( status ) )
     {
         clearAllListeners( client );
