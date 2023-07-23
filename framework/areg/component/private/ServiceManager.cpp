@@ -345,19 +345,11 @@ void ServiceManager::_unregisterClient( const ProxyAddress & whichClient, const 
 
     ClientInfo client;
 
-#if AREG_LOGS
-
     ServerInfo server = mServerList.unregisterClient(whichClient, client);
     TRACE_DBG("Client [ %s ] is unregistered from server [ %s ], connection status [ %s ]"
                 , ProxyAddress::convAddressToPath(client.getAddress()).getString()
                 , StubAddress::convAddressToPath(server.getAddress()).getString()
                 , NEService::getString(client.getConnectionStatus()));
-
-#else   // AREG_LOGS
-
-    static_cast<void>(mServerList.unregisterClient( whichClient, client ));
-
-#endif  // AREG_LOGS
 
     // Unregister client first, then send event that client does not receive notification
     _sendClientDisconnectEvent(client, server.getAddress(), NEService::serviceConnection(reason) );
