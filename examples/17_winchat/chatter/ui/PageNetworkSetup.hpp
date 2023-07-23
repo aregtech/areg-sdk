@@ -2,7 +2,7 @@
 
 #include "areg/base/String.hpp"
 #include "chatter/res/resource.h"
-#include "generated/NEConnectionManager.hpp"
+#include "generated/src/NEConnectionManager.hpp"
 
 class Component;
 class NetworkSetup;

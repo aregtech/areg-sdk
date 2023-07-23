@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:09:38 GMT+01:00
+ * Generated at     23.07.2023  03:05:03 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PowerManager.
  *
  * \file            generated/src/private/PowerManagerProxy.hpp
@@ -101,7 +101,7 @@ protected:
      *                          If nullptr, current dispatching thread is used to dispatch messages.
      * \return  Returns pointer to instantiated proxy object.
      **/
-    static PowerManagerProxy * createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread = String::getEmptyString() );
+    static PowerManagerProxy * createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread = String::EmptyString );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
@@ -118,7 +118,7 @@ protected:
     /**
      * \brief   Destructor
      **/
-    virtual ~PowerManagerProxy( void );
+    virtual ~PowerManagerProxy( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations.

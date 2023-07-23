@@ -229,8 +229,8 @@ bool MulticastRouter::serviceStart(void)
 {
     TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceStart);
     TRACE_DBG("Starting service [ %s ]", NEMulticastRouterSettings::SERVICE_NAME_ASCII);
-    bool result = false;
-    if (  mServiceServer.configureRemoteServicing( NEApplication::DEFAULT_ROUTER_CONFIG_FILE.data() ) && mServiceServer.startRemoteServicing() )
+    bool result{ false };
+    if ( getService().configureRemoteServicing( NEApplication::DEFAULT_ROUTER_CONFIG_FILE.data( ) ) && getService( ).startRemoteServicing( ) )
     {
         result = setState(NEMulticastRouterSettings::eRouterState::RouterRunning);
     }
@@ -247,7 +247,7 @@ void MulticastRouter::serviceStop(void)
     TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceStop);
     TRACE_WARN("Stopping service [ %s ]", NEMulticastRouterSettings::SERVICE_NAME_ASCII);
     setState(NEMulticastRouterSettings::eRouterState::RouterStopping);
-    mServiceServer.stopRemoteServicing();
+    getService( ).stopRemoteServicing();
     Application::signalAppQuit();
 }
 
@@ -257,7 +257,7 @@ void MulticastRouter::servicePause(void)
     TRACE_DBG("Pausing Router service");
 
     setState( NEMulticastRouterSettings::eRouterState::RouterPausing );
-    mServiceServer.stopRemoteServicing();
+    getService( ).stopRemoteServicing();
     setState( NEMulticastRouterSettings::eRouterState::RouterPaused );
 }
 
@@ -268,7 +268,7 @@ bool MulticastRouter::serviceContinue(void)
 
     bool result = false;
     setState( NEMulticastRouterSettings::eRouterState::RouterContinuing );
-    if ( mServiceServer.isRemoteServicingConfigured() && mServiceServer.startRemoteServicing() )
+    if ( getService( ).isRemoteServicingConfigured() && getService( ).startRemoteServicing() )
     {
         result = true;
         setState( NEMulticastRouterSettings::eRouterState::RouterRunning );

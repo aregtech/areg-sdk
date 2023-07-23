@@ -84,18 +84,20 @@ public:
     /**
      * \brief   Unregisters remote stub in the current process.
      * \param   stub    The address of remote stub server to unregister
+     * \param   reason  The remote service provider unregister or disconnect reason.
      * \param   cookie  The cookie that has initiated unregister message.
      *                  The parameter is ignored if 'NEService::COOKIE_ANY'.
      **/
-    virtual void unregisterRemoteStub( const StubAddress & stub, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ ) = 0;
+    virtual void unregisterRemoteStub( const StubAddress & stub, NEService::eDisconnectReason reason, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ ) = 0;
 
     /**
      * \brief   Unregisters remote proxy in the current process.
-     * \param   proxy   The address of remote proxy client to unregister
+     * \param   proxy   The address of remote proxy client to unregister.
+     * \param   reason  The remote service consumer unregister or disconnect reason.
      * \param   cookie  The cookie that has initiated unregister message.
      *                  The parameter is ignored if 'NEService::COOKIE_ANY'.
      **/
-    virtual void unregisterRemoteProxy( const ProxyAddress & proxy, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ ) = 0;
+    virtual void unregisterRemoteProxy( const ProxyAddress & proxy, NEService::eDisconnectReason reason, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ ) = 0;
 
     /**
      * \brief   Triggered when remote service has been started and there is a

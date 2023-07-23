@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2022
+ * (c) copyright    2023
  *
- * Generated at     20.12.2022  16:24:46 GMT+01:00
+ * Generated at     23.07.2023  03:03:49 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloService.
  *
  * \file            generated/src/private/HelloServiceProxy.hpp
@@ -56,7 +56,7 @@ HelloServiceProxy * HelloServiceProxy::createProxy( const String & roleName, IEP
                                                                       , ownerThread).get() );
 }
 
-HelloServiceProxy * HelloServiceProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::getEmptyString()*/ )
+HelloServiceProxy * HelloServiceProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
 {
     return static_cast<HelloServiceProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEHelloService::getInterfaceData()
@@ -79,10 +79,6 @@ HelloServiceProxy::HelloServiceProxy( const String & roleName, DispatcherThread 
  * Parameters
  ************************************************************************/
     , mParamsuccess   (  )
-{
-}
-
-HelloServiceProxy::~HelloServiceProxy( void )
 {
 }
 
@@ -146,7 +142,7 @@ unsigned int HelloServiceProxy::requestHelloService( IENotificationEventConsumer
     sendRequestEvent( static_cast<unsigned int>(msgId), args, &caller );
     return mSequenceCount;
 }
-    
+
 /************************************************************************
  * Event processing.
  ************************************************************************/
@@ -159,18 +155,26 @@ void HelloServiceProxy::processResponseEvent( ServiceResponseEvent & eventElem )
 {
     HelloServiceResponseEvent * eventResp = RUNTIME_CAST( &eventElem, HelloServiceResponseEvent );
     if (eventResp != nullptr)
+    {
         processResponse( *eventResp );
+    }
     else
+    {
         processProxyEvent( eventElem );
+    }
 }
 
 void HelloServiceProxy::processAttributeEvent( ServiceResponseEvent & eventElem )
 {
     HelloServiceResponseEvent * eventResp = RUNTIME_CAST( &eventElem, HelloServiceResponseEvent );
     if (eventResp != nullptr)
+    {
         processResponse( *eventResp );
+    }
     else
+    {
         processProxyEvent( eventElem );
+    }
 }
 
 /************************************************************************
@@ -180,7 +184,7 @@ void HelloServiceProxy::processAttributeEvent( ServiceResponseEvent & eventElem 
 DEF_TRACE_SCOPE(generated_src_private_HelloServiceProxy_updateData);
 void HelloServiceProxy::updateData( HelloServiceResponseEvent & eventElem, NEHelloService::eMessageIDs respId )
 {
-    const IEInStream & stream = static_cast<const HelloServiceResponseEvent &>(eventElem).getData().getReadStream();
+    const IEInStream & stream { static_cast<const HelloServiceResponseEvent &>(eventElem).getData().getReadStream() };
 
     switch (respId)
     {
@@ -209,13 +213,13 @@ void HelloServiceProxy::updateData( HelloServiceResponseEvent & eventElem, NEHel
     }
 }
 
-    void HelloServiceProxy::processResponse( HelloServiceResponseEvent & evenElem )
+void HelloServiceProxy::processResponse( HelloServiceResponseEvent & evenElem )
 {
-    NEHelloService::eMessageIDs respId  = static_cast<NEHelloService::eMessageIDs>(evenElem.getResponseId());
-    NEService::eResultType resultType  = evenElem.getResult();
+    NEHelloService::eMessageIDs respId  { static_cast<NEHelloService::eMessageIDs>(evenElem.getResponseId()) };
+    NEService::eResultType resultType   { evenElem.getResult() };
 
-    bool dataValid  = false;
-    bool setStates  = true;
+    bool dataValid { false };
+    bool setStates { true  };
 
     switch (resultType)
     {
@@ -249,12 +253,12 @@ void HelloServiceProxy::updateData( HelloServiceResponseEvent & eventElem, NEHel
         break;
     }
 
-    if (dataValid == true)
+    if ( dataValid )
     {
         updateData(evenElem, respId);
     }
 
-    if (setStates == true)
+    if ( setStates )
     {
         setState(static_cast<msg_id>(respId), dataValid ? NEService::eDataStateType::DataIsOK : NEService::eDataStateType::DataIsInvalid);
     }

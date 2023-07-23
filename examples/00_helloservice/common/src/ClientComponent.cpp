@@ -27,12 +27,13 @@ ClientComponent::ClientComponent(const NERegistry::ComponentEntry & entry, Compo
 {
 }
 
-bool ClientComponent::serviceConnected(bool isConnected, ProxyBase & proxy)
+bool ClientComponent::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
 {
-    bool result = false;
-    if ( HelloServiceClientBase::serviceConnected(isConnected, proxy) )
+    bool result{ false };
+    if ( HelloServiceClientBase::serviceConnected(status, proxy) )
     {
-        if (isConnected)
+        result = true;
+        if (NEService::isServiceConnected(status))
         {
             // Up from this part the client can:
             //      a. call requests to run on the server side.

@@ -43,8 +43,8 @@ When creating a service provider and service consumer, it is important to keep i
 4. The consumers refer to the services _Role Name_, because same implementation of the service can be instantiated multiple times.
 5. Instances of the service provider and its consumer can be in the same thread.
 6. The _Role Names_ of the _Local_ services are unique within the same process, and the _Role Names_ of the _Public_ services are unique within the same network.
-7. Service consumers know the availability of the service via the notification callback `void serviceConnected(bool isConnected, ProxyBase& proxy)`, where `isConnected` parameter indicates the connection status.
-8. Service providers know a new consumer connection via the notification callback `void clientConnected(const ProxyAddress& client, bool isConnected)`, where `isConnected` parameter indicates the connection status.
+7. Service consumers know the availability of the service via the notification callback `void serviceConnected(NEService::eNetConnection status, ProxyBase& proxy)`, where `status` parameter indicates the connection status.
+8. Service providers know a new consumer connection via the notification callback `void clientConnected(const ProxyAddress& client, NEService::eServiceConnection connectionStatus)`, where `connectionStatus` parameter indicates the connection status.
 
 ---
 
@@ -225,7 +225,7 @@ public:
 protected:
 
     // Override to get connection notification.
-    bool serviceConnected( bool isConnected, ProxyBase & proxy ) override;
+    bool serviceConnected( NEService::eNetConnection status, ProxyBase & proxy ) override;
 
     // Override of response.
     void responseHelloService( bool success ) override;
@@ -273,12 +273,12 @@ ClientComponent::ClientComponent(const NERegistry::ComponentEntry & entry, Compo
 {
 }
 
-bool ClientComponent::serviceConnected(bool isConnected, ProxyBase & proxy)
+bool ClientComponent::serviceConnected(NEService::eNetConnection status, ProxyBase & proxy)
 {
     bool result = false;
-    if ( HelloServiceClientBase::serviceConnected(isConnected, proxy) )
+    if ( HelloServiceClientBase::serviceConnected(status, proxy) )
     {
-        if (isConnected)
+        if (NEService::isNetConnected(status))
         {
             // Up from this part the client can:
             //      a. call requests to run on the server side.

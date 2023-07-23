@@ -9,7 +9,7 @@
 #include "areg/component/NERegistry.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "generated/NECommon.hpp"
+#include "common/NECommon.hpp"
 #include "chatter/NEDistributedApp.hpp"
 #include "chatter/DistrbutedApp.hpp"
 #include "chatter/ui/DistributedDialog.hpp"

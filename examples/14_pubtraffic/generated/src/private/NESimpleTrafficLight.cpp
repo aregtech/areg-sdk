@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:09:10 GMT+01:00
+ * Generated at     23.07.2023  03:04:40 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficLight.
  *
  * \file            generated/src/NESimpleTrafficLight.hpp
@@ -58,7 +58,7 @@ const NEService::SInterfaceData & NESimpleTrafficLight::getInterfaceData( void )
     /************************************************************************
      * SimpleTrafficLight Service Interface data
      ************************************************************************/
-    static NEService::SInterfaceData _InterfaceData =
+    static const NEService::SInterfaceData _InterfaceData
     {
           NESimpleTrafficLight::ServiceName
         , NESimpleTrafficLight::InterfaceVersion

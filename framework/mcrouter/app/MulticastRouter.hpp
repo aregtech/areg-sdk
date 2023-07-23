@@ -159,6 +159,11 @@ public:
      */
     bool parseOptions(int argc, char** argv);
 
+    /**
+     * \brief   Returns the instance of the remote servicing object.
+     **/
+    inline IERemoteService & getService( void );
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.
 //////////////////////////////////////////////////////////////////////////
@@ -294,6 +299,11 @@ inline uint32_t MulticastRouter::queryDataSent(void)
 inline bool MulticastRouter::isVerbose(void) const
 {
     return mRunVerbose;
+}
+
+inline IERemoteService & MulticastRouter::getService( void )
+{
+    return static_cast<IERemoteService &>(mServiceServer);
 }
 
 inline MulticastRouter & MulticastRouter::self( void )

@@ -19,9 +19,10 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/NEMemory.hpp"
-#include "areg/component/Timer.hpp"
 #include "areg/appbase/NEApplication.hpp"
+#include "areg/base/NEMemory.hpp"
+#include "areg/component/NEService.hpp"
+#include "areg/component/Timer.hpp"
 #include "areg/ipc/NERemoteService.hpp"
 
 #include <string_view>
@@ -182,11 +183,12 @@ namespace NEConnection
      * \brief   NEConnection::createRouterUnregisterService
      *          Initializes Stub unregister message at router.
      * \param   stub    The address of remote Stub service, which is registering.
+     * \param   reason  The unregister / disconnect reason.
      * \param   source  The ID of source, which initiates message.
      * \return  Returns unregister stub message to send.
      * \see     createRouterRegisterService
      **/
-    AREG_API RemoteMessage createRouterUnregisterService( const StubAddress & stub, ITEM_ID source );
+    AREG_API RemoteMessage createRouterUnregisterService( const StubAddress & stub, NEService::eDisconnectReason reason, ITEM_ID source );
     /**
      * \brief   NEConnection::createRouterRegisterClient
      *          Initializes Proxy register message at router.
@@ -200,11 +202,12 @@ namespace NEConnection
      * \brief   NEConnection::createRouterUnregisterClient
      *          Initializes Proxy unregister message at router.
      * \param   proxy   The address of remote Proxy, which is registering.
+     * \param   reason  The unregister / disconnect reason.
      * \param   source  The ID of source, which initiates message.
      * \return  Returns unregister proxy message to send.
      * \see     createRouterRegisterClient
      **/
-    AREG_API RemoteMessage createRouterUnregisterClient( const ProxyAddress & proxy, ITEM_ID source );
+    AREG_API RemoteMessage createRouterUnregisterClient( const ProxyAddress & proxy, NEService::eDisconnectReason reason, ITEM_ID source );
     /**
      * \brief   NEConnection::createServiceRegisteredNotification
      *          Initializes Stub registered notification message to broadcast.
@@ -218,11 +221,12 @@ namespace NEConnection
      * \brief   NEConnection::createServiceUnregisteredNotification
      *          Initializes Stub service unregistering notification message to broadcast.
      * \param   stub    The address of remote Stub to notify unregistering.
+     * \param   reason  The unregister / disconnect reason.
      * \param   target  The ID of target to notify message.
      * \return  Returns unregister stub notification message to broadcast.
      * \see     createServiceRegisteredNotification
      **/
-    AREG_API RemoteMessage createServiceUnregisteredNotification( const StubAddress & stub, ITEM_ID target );
+    AREG_API RemoteMessage createServiceUnregisteredNotification( const StubAddress & stub, NEService::eDisconnectReason reason, ITEM_ID target );
     /**
      * \brief   NEConnection::createServiceClientRegisteredNotification
      *          Initializes service proxy registering notification message to broadcast.
@@ -236,11 +240,12 @@ namespace NEConnection
      * \brief   NEConnection::createServiceClientUnregisteredNotification
      *          Initializes service proxy unregistering notification message to broadcast.
      * \param   proxy   The address of remote Proxy to notify unregistering.
+     * \param   reason  The unregister / disconnect reason.
      * \param   target  The ID of target to notify message.
      * \return  Returns service proxy unregistering notification message to broadcast
      * \see     createServiceClientRegisteredNotification
      **/
-    AREG_API RemoteMessage createServiceClientUnregisteredNotification( const ProxyAddress & proxy, ITEM_ID target );
+    AREG_API RemoteMessage createServiceClientUnregisteredNotification( const ProxyAddress & proxy, NEService::eDisconnectReason reason, ITEM_ID target );
     /**
      * \brief   NEConnection::isMessageHelloServer
      *          Checks whether specified message is a connect request.

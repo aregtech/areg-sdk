@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:08:55 GMT+01:00
+ * Generated at     23.07.2023  03:04:29 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SystemShutdown.
  *
  * \file            generated/src/private/SystemShutdownProxy.hpp
@@ -102,7 +102,7 @@ protected:
      *                          If nullptr, current dispatching thread is used to dispatch messages.
      * \return  Returns pointer to instantiated proxy object.
      **/
-    static SystemShutdownProxy * createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread = String::getEmptyString() );
+    static SystemShutdownProxy * createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread = String::EmptyString );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
@@ -119,7 +119,7 @@ protected:
     /**
      * \brief   Destructor
      **/
-    virtual ~SystemShutdownProxy( void );
+    virtual ~SystemShutdownProxy( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations.

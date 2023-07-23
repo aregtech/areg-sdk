@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:10:45 GMT+01:00
+ * Generated at     23.07.2023  03:05:54 GMT+02:00
  *                  Create by AREG SDK code generator tool from source LargeData.
  *
  * \file            generated/src/private/LargeDataProxy.hpp
@@ -56,7 +56,7 @@ LargeDataProxy * LargeDataProxy::createProxy( const String & roleName, IEProxyLi
                                                                       , ownerThread).get() );
 }
 
-LargeDataProxy * LargeDataProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::getEmptyString()*/ )
+LargeDataProxy * LargeDataProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
 {
     return static_cast<LargeDataProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NELargeData::getInterfaceData()
@@ -79,10 +79,6 @@ LargeDataProxy::LargeDataProxy( const String & roleName, DispatcherThread * owne
  * Parameters
  ************************************************************************/
     , mParamimageBlock    (  )
-{
-}
-
-LargeDataProxy::~LargeDataProxy( void )
 {
 }
 
@@ -149,18 +145,26 @@ void LargeDataProxy::processResponseEvent( ServiceResponseEvent & eventElem )
 {
     LargeDataResponseEvent * eventResp = RUNTIME_CAST( &eventElem, LargeDataResponseEvent );
     if (eventResp != nullptr)
+    {
         processResponse( *eventResp );
+    }
     else
+    {
         processProxyEvent( eventElem );
+    }
 }
 
 void LargeDataProxy::processAttributeEvent( ServiceResponseEvent & eventElem )
 {
     LargeDataResponseEvent * eventResp = RUNTIME_CAST( &eventElem, LargeDataResponseEvent );
     if (eventResp != nullptr)
+    {
         processResponse( *eventResp );
+    }
     else
+    {
         processProxyEvent( eventElem );
+    }
 }
 
 /************************************************************************
@@ -170,7 +174,7 @@ void LargeDataProxy::processAttributeEvent( ServiceResponseEvent & eventElem )
 DEF_TRACE_SCOPE(generated_src_private_LargeDataProxy_updateData);
 void LargeDataProxy::updateData( LargeDataResponseEvent & eventElem, NELargeData::eMessageIDs respId )
 {
-    const IEInStream & stream = static_cast<const LargeDataResponseEvent &>(eventElem).getData().getReadStream();
+    const IEInStream & stream { static_cast<const LargeDataResponseEvent &>(eventElem).getData().getReadStream() };
 
     switch (respId)
     {
@@ -202,13 +206,13 @@ void LargeDataProxy::updateData( LargeDataResponseEvent & eventElem, NELargeData
     }
 }
 
-    void LargeDataProxy::processResponse( LargeDataResponseEvent & evenElem )
+void LargeDataProxy::processResponse( LargeDataResponseEvent & evenElem )
 {
-    NELargeData::eMessageIDs respId  = static_cast<NELargeData::eMessageIDs>(evenElem.getResponseId());
-    NEService::eResultType resultType  = evenElem.getResult();
+    NELargeData::eMessageIDs respId  { static_cast<NELargeData::eMessageIDs>(evenElem.getResponseId()) };
+    NEService::eResultType resultType   { evenElem.getResult() };
 
-    bool dataValid  = false;
-    bool setStates  = true;
+    bool dataValid { false };
+    bool setStates { true  };
 
     switch (resultType)
     {
@@ -242,12 +246,12 @@ void LargeDataProxy::updateData( LargeDataResponseEvent & eventElem, NELargeData
         break;
     }
 
-    if (dataValid == true)
+    if ( dataValid )
     {
         updateData(evenElem, respId);
     }
 
-    if (setStates == true)
+    if ( setStates )
     {
         setState(static_cast<msg_id>(respId), dataValid ? NEService::eDataStateType::DataIsOK : NEService::eDataStateType::DataIsInvalid);
     }

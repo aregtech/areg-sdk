@@ -43,12 +43,13 @@ ServiceManagerEventData ServiceManagerEventData::registerProxy(const ProxyAddres
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::unregisterProxy(const ProxyAddress & addrProxy)
+ServiceManagerEventData ServiceManagerEventData::unregisterProxy( const ProxyAddress & addrProxy, NEService::eDisconnectReason reason )
 {
     ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_UnregisterProxy );
     IEOutStream & stream = data.getWriteStream();
     stream << addrProxy;
     stream << addrProxy.getChannel();
+    stream << reason;
     return data;
 }
 
@@ -61,12 +62,13 @@ ServiceManagerEventData ServiceManagerEventData::registerStub(const StubAddress 
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::unregisterStub(const StubAddress & addrStub)
+ServiceManagerEventData ServiceManagerEventData::unregisterStub( const StubAddress & addrStub, NEService::eDisconnectReason reason )
 {
     ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_UnregisterStub );
     IEOutStream & stream = data.getWriteStream();
     stream << addrStub;
     stream << addrStub.getChannel();
+    stream << reason;
     return data;
 }
 

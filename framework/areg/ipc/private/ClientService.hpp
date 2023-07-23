@@ -235,6 +235,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
+protected:
 
 /************************************************************************/
 // IERemoteService interface overrides
@@ -315,8 +316,9 @@ public:
     /**
      * \brief   Call to unregister previously registered server stub interface.
      * \param   stubService     The address of server stub service to unregister in system.
+     * \param   reason          The service provider unregister or reason of unregistering / disconnecting service provider.
      **/
-    virtual void unregisterService( const StubAddress & stubService ) override;
+    virtual void unregisterService( const StubAddress & stubService, NEService::eDisconnectReason reason ) override;
 
     /**
      * \brief   Call to register client proxy of service. If system already has registered
@@ -331,8 +333,9 @@ public:
     /**
      * \brief   Call to unregister previously registered client prosy service.
      * \param   proxyService    The address of client proxy to unregister from system.
+     * \param   reason          The service consumer unregister or reason unregistering / disconnecting the service consumer.
      **/
-    virtual void unregisterServiceClient( const ProxyAddress & proxyService ) override;
+    virtual void unregisterServiceClient( const ProxyAddress & proxyService, const NEService::eDisconnectReason reason ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides

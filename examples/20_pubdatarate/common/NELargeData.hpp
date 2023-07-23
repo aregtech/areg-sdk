@@ -86,7 +86,7 @@ namespace NELargeData
 //////////////////////////////////////////////////////////////////////////
     public:
         inline ImageBlock(void);
-        inline ImageBlock(ImageBlock&& src);
+        inline ImageBlock(ImageBlock&& src) noexcept;
         inline ~ImageBlock(void);
 
 //////////////////////////////////////////////////////////////////////////
@@ -98,7 +98,7 @@ namespace NELargeData
          * 
          * \param   src     The source of an image block.
          */
-        inline ImageBlock& operator = (ImageBlock&& src);
+        inline ImageBlock& operator = (ImageBlock&& src) noexcept;
 
         /**
          * \brief   Allocates space and initializes image block of specified size.
@@ -194,7 +194,7 @@ inline NELargeData::ImageBlock::ImageBlock(void)
 {
 }
 
-inline NELargeData::ImageBlock::ImageBlock(NELargeData::ImageBlock&& src)
+inline NELargeData::ImageBlock::ImageBlock(NELargeData::ImageBlock&& src) noexcept
     : mBlock    (std::move(src.mBlock))
 {
     src.mBlock = nullptr;
@@ -205,7 +205,7 @@ inline NELargeData::ImageBlock::~ImageBlock(void)
     release();
 }
 
-inline NELargeData::ImageBlock& NELargeData::ImageBlock::operator = (NELargeData::ImageBlock&& src)
+inline NELargeData::ImageBlock& NELargeData::ImageBlock::operator = (NELargeData::ImageBlock&& src) noexcept
 {
     if (this != &src)
     {

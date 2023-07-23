@@ -2,9 +2,9 @@
 // Begin generate generated/src/private/HelloServiceClientBase.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2022
+ * (c) copyright    2023
  *
- * Generated at     20.12.2022  16:24:46 GMT+01:00
+ * Generated at     23.07.2023  03:03:49 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloService.
  *
  * \file            generated/src/HelloServiceClientBase.hpp
@@ -44,7 +44,7 @@ namespace NEHelloService
  * Constructor / Destructor
  ************************************************************************/
 
-HelloServiceClientBase::HelloServiceClientBase( const String & roleName, const String & ownerThread /* = String::getEmptyString() */ )
+HelloServiceClientBase::HelloServiceClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -98,11 +98,11 @@ HelloServiceClientBase::~HelloServiceClientBase( void )
 
 bool HelloServiceClientBase::recreateProxy( void )
 {
-    bool result         = false;
+    bool result { false };
     if (mProxy != nullptr)
     {
-        const String & roleName   = mProxy->getProxyAddress().getRoleName();
-        const String & threadName = mProxy->getProxyAddress().getThread();
+        const String & roleName   { mProxy->getProxyAddress().getRoleName() };
+        const String & threadName { mProxy->getProxyAddress().getThread()   };
         if ( roleName.isEmpty() == false )
         {
             HelloServiceProxy * newProxy = HelloServiceProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), threadName);
@@ -125,21 +125,21 @@ DispatcherThread * HelloServiceClientBase::getDispatcherThread( void )
 }
 
 DEF_TRACE_SCOPE(generated_src_HelloServiceClientBase_serviceConnected);
-bool HelloServiceClientBase::serviceConnected( bool isConnected, ProxyBase & proxy )
+bool HelloServiceClientBase::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
 {
     TRACE_SCOPE(generated_src_HelloServiceClientBase_serviceConnected);
 
-    bool result = false;
+    bool result { false };
     if(mProxy == &proxy)
     {
+        mIsConnected= NEService::isServiceConnected(status);
+        result      = true;
+
         TRACE_DBG("Client [ %p ]: The Service [ %s ] with Role Name [ %s ] is [ %s ]"
                  , this
                  , proxy.getProxyAddress().getServiceName().getString()
                  , proxy.getProxyAddress().getRoleName().getString()
-                 , isConnected ? "CONNECTED" : "DISCONNECTED");
-
-        mIsConnected= isConnected;
-        result      = true;
+                 , mIsConnected ? "CONNECTED" : "DISCONNECTED");
     }
 
     return result;
@@ -160,9 +160,9 @@ void HelloServiceClientBase::notifyOn( NEHelloService::eMessageIDs msgId, bool n
 DEF_TRACE_SCOPE(generated_src_HelloServiceClientBase_processNotificationEvent);
 void HelloServiceClientBase::processNotificationEvent( NotificationEvent & eventElem )
 {
-    const NotificationEventData & data  = static_cast<const NotificationEvent &>(eventElem).getData();
-    NEService::eResultType result       = data.getNotifyType();
-    NEHelloService::eMessageIDs msgId   = static_cast<NEHelloService::eMessageIDs>(data.getNotifyId());
+    const NotificationEventData & data  { static_cast<const NotificationEvent &>(eventElem).getData() };
+    NEService::eResultType result       { data.getNotifyType() };
+    NEHelloService::eMessageIDs msgId   { static_cast<NEHelloService::eMessageIDs>(data.getNotifyId()) };
     mCurrSequenceNr = data.getSequenceNr();
 
     switch (result)
@@ -270,8 +270,7 @@ void HelloServiceClientBase::requestFailed( NEHelloService::eMessageIDs FailureM
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason) );
 
-    unsigned int index = static_cast<msg_id>(NEHelloService::eMessageIDs::MsgId_Invalid);
-    index = static_cast<msg_id>( NEService::isResponseId(static_cast<unsigned int>(FailureMsgId)) ? NEHelloService::getRequestId(FailureMsgId) : FailureMsgId);
+    msg_id index { static_cast<msg_id>( NEService::isResponseId(static_cast<unsigned int>(FailureMsgId)) ? NEHelloService::getRequestId(FailureMsgId) : FailureMsgId) };
     index = NEService::isRequestId(index)  ? GET_REQ_INDEX(index) : static_cast<msg_id>(NEHelloService::eMessageIDs::MsgId_Invalid);
     if ( index != static_cast<msg_id>(NEHelloService::eMessageIDs::MsgId_Invalid) && (index < NEHelloService::getInterfaceData().idRequestCount) )
     {

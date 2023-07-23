@@ -6,7 +6,7 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "generated/DirectConnectionStub.hpp"
+#include "generated/src/DirectConnectionStub.hpp"
 
 #include "areg/base/DateTime.hpp"
 #include "areg/base/String.hpp"
@@ -53,7 +53,7 @@ public:
      * \param   listParticipants    The list of chat-room participants
      * \see     responseConnectoinSetup
      **/
-    virtual void requestConnectoinSetup( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
+    virtual void requestConnectoinSetup( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants ) override;
 
     /**
      * \brief   Request call.
@@ -62,7 +62,7 @@ public:
      * \param   listParticipants    List of participants
      * \see     responseAddParticipant
      **/
-    virtual void requestAddParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
+    virtual void requestAddParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants ) override;
 
     /**
      * \brief   Request call.
@@ -71,7 +71,7 @@ public:
      * \param   listParticipants    List of chat-room participants
      * \see     responseRemoveParticipant
      **/
-    virtual void requestRemoveParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
+    virtual void requestRemoveParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants ) override;
 
     /**
      * \brief   Request call.
@@ -79,37 +79,7 @@ public:
      * \param   initiator   The initiator to close chat-room.
      * \note    Has no response
      **/
-    virtual void requestCloseConnection( const NEDirectConnection::sInitiator & initiator );
-
-protected:
-/************************************************************************/
-// StubBase overrides. Triggered by Component on startup.
-/************************************************************************/
-
-    /**
-     * \brief   This function is triggered by Component when starts up.
-     *          Overwrite this method and set appropriate request and
-     *          attribute update notification event listeners here
-     * \param   holder  The holder component of service interface of Stub,
-     *                  which started up.
-     **/
-    virtual void startupServiceInterface( Component & holder );
-
-    /**
-     * \brief   This function is triggered by Component when shuts down.
-     *          Overwrite this method to remove listeners and stub cleanup
-     * \param   holder  The holder component of service interface of Stub,
-     *                  which shuts down.
-     **/
-    virtual void shutdownServiceIntrface ( Component & holder );
-
-    /**
-     * \brief   Triggered when proxy client either connected or disconnected to stub.
-     * \param   client      The address of proxy client, which connection status is changed.
-     * \param   isConnected Flag, indicating whether client is connected or disconnected.
-     *                      When client disconnects, all listeners are removed.
-     **/
-    virtual void clientConnected( const ProxyAddress & client, bool isConnected );
+    virtual void requestCloseConnection( const NEDirectConnection::sInitiator & initiator ) override;
 
 private:
     inline DirectConnectionService & self( void );

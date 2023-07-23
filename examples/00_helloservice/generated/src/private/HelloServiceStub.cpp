@@ -2,9 +2,9 @@
 // Begin generate generated/src/private/HelloServiceStub.cpp file
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * (c) copyright    2022
+ * (c) copyright    2023
  *
- * Generated at     20.12.2022  16:24:46 GMT+01:00
+ * Generated at     23.07.2023  03:03:49 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloService.
  *
  * \file            generated/src/HelloServiceStub.hpp
@@ -33,7 +33,6 @@
 //////////////////////////////////////////////////////////////////////////
 HelloServiceStub::HelloServiceStub( Component & masterComp )
     : StubBase    ( masterComp, NEHelloService::getInterfaceData() )
-
 {
 }
 
@@ -100,8 +99,8 @@ void HelloServiceStub::sendNotification( unsigned int msgId )
 DEF_TRACE_SCOPE(generated_src_HelloServiceStub_errorRequest);
 void HelloServiceStub::errorRequest( unsigned int msgId, bool msgCancel )
 {
-    NEService::eResultType result = NEService::eResultType::NotProcessed;
-    msg_id listenerId = msgId;
+    NEService::eResultType result { NEService::eResultType::NotProcessed };
+    msg_id listenerId { msgId };
 
     switch ( static_cast<NEHelloService::eMessageIDs>(msgId) )
     {
@@ -157,7 +156,7 @@ void HelloServiceStub::errorRequest( unsigned int msgId, bool msgCancel )
 
 void HelloServiceStub::responseHelloService( bool success )
 {
-    static const NEHelloService::eMessageIDs msgId = NEHelloService::eMessageIDs::MsgId_responseHelloService;
+    constexpr NEHelloService::eMessageIDs msgId { NEHelloService::eMessageIDs::MsgId_responseHelloService };
     EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << success;
@@ -212,31 +211,32 @@ void HelloServiceStub::processRequestEvent( ServiceRequestEvent & eventElem )
 DEF_TRACE_SCOPE(generated_src_HelloServiceStub_processAttributeEvent);
 void HelloServiceStub::processAttributeEvent( ServiceRequestEvent & eventElem )
 {
-    const NEService::eRequestType reqType = eventElem.getRequestType();
+    const NEService::eRequestType reqType { eventElem.getRequestType() };
+    const ProxyAddress & source { eventElem.getEventSource( ) };
     if (reqType == NEService::eRequestType::RemoveAllNotify)
     {
         IntegerArray removedIds;
-        StubBase::clearAllListeners(eventElem.getEventSource(), removedIds);
+        StubBase::clearAllListeners(source, removedIds);
     }
     else
     {
-        NEHelloService::eMessageIDs updId  = static_cast<NEHelloService::eMessageIDs>(eventElem.getRequestId());
+        NEHelloService::eMessageIDs updId  { static_cast<NEHelloService::eMessageIDs>(eventElem.getRequestId()) };
         if (reqType == NEService::eRequestType::StopNotify)
         {
-            removeNotificationListener( static_cast<msg_id>(updId), eventElem.getEventSource() );
+            removeNotificationListener( static_cast<msg_id>(updId), source );
         }
         else if (reqType == NEService::eRequestType::StartNotify)
         {
 #ifdef  _DEBUG
-            if (addNotificationListener( static_cast<msg_id>(updId), eventElem.getEventSource() ) == false )
+            if (addNotificationListener( static_cast<msg_id>(updId), source ) == false )
             {
                 TRACE_SCOPE(generated_src_HelloServiceStub_processAttributeEvent);
                 TRACE_WARN("The notification request of message ID [ %s ] of sources [ %s ] is already registered. Ignoring start notification registration request."
                             , NEHelloService::getString(updId)
-                            , ProxyAddress::convAddressToPath(eventElem.getEventSource()).getString());
+                            , ProxyAddress::convAddressToPath(source).getString());
             }
 #else   // _DEBUG
-            addNotificationListener( static_cast<msg_id>(updId), eventElem.getEventSource() );
+            addNotificationListener( static_cast<msg_id>(updId), source );
 #endif  // _DEBUG
 #ifdef  _DEBUG
             if ( NEService::isResponseId(static_cast<msg_id>(updId)) == false )

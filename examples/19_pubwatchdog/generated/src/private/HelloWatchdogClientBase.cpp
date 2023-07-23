@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:10:31 GMT+01:00
+ * Generated at     23.07.2023  03:05:44 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloWatchdog.
  *
  * \file            generated/src/HelloWatchdogClientBase.hpp
@@ -46,7 +46,7 @@ namespace NEHelloWatchdog
  * Constructor / Destructor
  ************************************************************************/
 
-HelloWatchdogClientBase::HelloWatchdogClientBase( const String & roleName, const String & ownerThread /* = String::getEmptyString() */ )
+HelloWatchdogClientBase::HelloWatchdogClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -100,11 +100,11 @@ HelloWatchdogClientBase::~HelloWatchdogClientBase( void )
 
 bool HelloWatchdogClientBase::recreateProxy( void )
 {
-    bool result         = false;
+    bool result { false };
     if (mProxy != nullptr)
     {
-        const String & roleName   = mProxy->getProxyAddress().getRoleName();
-        const String & threadName = mProxy->getProxyAddress().getThread();
+        const String & roleName   { mProxy->getProxyAddress().getRoleName() };
+        const String & threadName { mProxy->getProxyAddress().getThread()   };
         if ( roleName.isEmpty() == false )
         {
             HelloWatchdogProxy * newProxy = HelloWatchdogProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), threadName);
@@ -127,21 +127,21 @@ DispatcherThread * HelloWatchdogClientBase::getDispatcherThread( void )
 }
 
 DEF_TRACE_SCOPE(generated_src_HelloWatchdogClientBase_serviceConnected);
-bool HelloWatchdogClientBase::serviceConnected( bool isConnected, ProxyBase & proxy )
+bool HelloWatchdogClientBase::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
 {
     TRACE_SCOPE(generated_src_HelloWatchdogClientBase_serviceConnected);
 
-    bool result = false;
+    bool result { false };
     if(mProxy == &proxy)
     {
+        mIsConnected= NEService::isServiceConnected(status);
+        result      = true;
+
         TRACE_DBG("Client [ %p ]: The Service [ %s ] with Role Name [ %s ] is [ %s ]"
                  , this
                  , proxy.getProxyAddress().getServiceName().getString()
                  , proxy.getProxyAddress().getRoleName().getString()
-                 , isConnected ? "CONNECTED" : "DISCONNECTED");
-
-        mIsConnected= isConnected;
-        result      = true;
+                 , mIsConnected ? "CONNECTED" : "DISCONNECTED");
     }
 
     return result;
@@ -162,9 +162,9 @@ void HelloWatchdogClientBase::notifyOn( NEHelloWatchdog::eMessageIDs msgId, bool
 DEF_TRACE_SCOPE(generated_src_HelloWatchdogClientBase_processNotificationEvent);
 void HelloWatchdogClientBase::processNotificationEvent( NotificationEvent & eventElem )
 {
-    const NotificationEventData & data  = static_cast<const NotificationEvent &>(eventElem).getData();
-    NEService::eResultType result       = data.getNotifyType();
-    NEHelloWatchdog::eMessageIDs msgId   = static_cast<NEHelloWatchdog::eMessageIDs>(data.getNotifyId());
+    const NotificationEventData & data  { static_cast<const NotificationEvent &>(eventElem).getData() };
+    NEService::eResultType result       { data.getNotifyType() };
+    NEHelloWatchdog::eMessageIDs msgId   { static_cast<NEHelloWatchdog::eMessageIDs>(data.getNotifyId()) };
     mCurrSequenceNr = data.getSequenceNr();
 
     switch (result)
@@ -297,8 +297,7 @@ void HelloWatchdogClientBase::requestFailed( NEHelloWatchdog::eMessageIDs Failur
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason) );
 
-    unsigned int index = static_cast<msg_id>(NEHelloWatchdog::eMessageIDs::MsgId_Invalid);
-    index = static_cast<msg_id>( NEService::isResponseId(static_cast<unsigned int>(FailureMsgId)) ? NEHelloWatchdog::getRequestId(FailureMsgId) : FailureMsgId);
+    msg_id index { static_cast<msg_id>( NEService::isResponseId(static_cast<unsigned int>(FailureMsgId)) ? NEHelloWatchdog::getRequestId(FailureMsgId) : FailureMsgId) };
     index = NEService::isRequestId(index)  ? GET_REQ_INDEX(index) : static_cast<msg_id>(NEHelloWatchdog::eMessageIDs::MsgId_Invalid);
     if ( index != static_cast<msg_id>(NEHelloWatchdog::eMessageIDs::MsgId_Invalid) && (index < NEHelloWatchdog::getInterfaceData().idRequestCount) )
     {

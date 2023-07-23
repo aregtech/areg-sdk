@@ -8,7 +8,7 @@
 #include "register/ui/CentralDialog.hpp"
 #include "register/NECentralApp.hpp"
 #include "register/CentralApp.hpp"
-#include "generated/NECommon.hpp"
+#include "common/NECommon.hpp"
 #include "areg/component/NERegistry.hpp"
 #include "areg/component/ComponentLoader.hpp"
 

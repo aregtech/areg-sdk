@@ -21,21 +21,18 @@ ConnectionList::ConnectionList( const char * roleName, DispatcherThread & dispTh
 
 }
 
-ConnectionList::~ConnectionList( )
+bool ConnectionList::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
 {
-}
-
-bool ConnectionList::serviceConnected( bool isConnected, ProxyBase & proxy )
-{
-    bool result = false;
-    if ( ConnectionManagerClientBase::serviceConnected( isConnected, proxy ) )
+    bool result = ConnectionManagerClientBase::serviceConnected( status, proxy );
+    if ( isConnected( ) )
     {
-        result = true;
-        if ( isConnected )
-            DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdServiceConnection, 1, reinterpret_cast<LPARAM>(getDispatcherThread( )) );
-        else
-            DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdServiceConnection, 0, 0 );
+        DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdServiceConnection, 1, reinterpret_cast<LPARAM>(getDispatcherThread( )) );
     }
+    else
+    {
+        DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdServiceConnection, 0, 0 );
+    }
+
     return result;
 }
 

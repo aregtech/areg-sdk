@@ -953,14 +953,12 @@ protected:
 #endif  // _MSC_VER
 
     /**
-     * \brief   Flag, indicating whether Proxy is connected to server
-     *          component or not. If it is not connected, no event
-     *          message will be sent to Stub.
+     * \brief   Indicates the Service connection status.
      **/
-    bool                    mIsConnected;
+    NEService::eServiceConnection mConnectionStatus;
 
     /**
-     * \brief   Flag, indicating whether the proxy is stopper or not.
+     * \brief   Flag, indicating whether the proxy is stopped or not.
      *          Stopped proxy is inactive and cannot neither receive, nor respond on message.
      *          The stopped proxy should be recreated again. This flag for internal use.
      **/
@@ -1033,7 +1031,7 @@ inline const StubAddress& ProxyBase::getStubAddress( void ) const
 
 inline bool ProxyBase::isConnected( void ) const
 {
-    return mIsConnected;
+    return (NEService::isServiceConnected(mConnectionStatus));
 }
 
 inline bool ProxyBase::hasAnyListener(unsigned int msgId) const

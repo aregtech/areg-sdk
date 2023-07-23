@@ -19,8 +19,8 @@
 #include "chatter/NEDistributedApp.hpp"
 #include "chatter/services/NetworkSetup.hpp"
 #include "chatter/services/ConnectionService.hpp"
-#include "generated/NECommon.hpp"
-#include "generated/NEConnectionManager.hpp"
+#include "common/NECommon.hpp"
+#include "generated/src/NEConnectionManager.hpp"
 #include "areg/appbase/Application.hpp"
 
 #ifdef _DEBUG

@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:09:10 GMT+01:00
+ * Generated at     23.07.2023  03:04:40 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficLight.
  *
  * \file            generated/src/private/SimpleTrafficLightProxy.hpp
@@ -56,7 +56,7 @@ SimpleTrafficLightProxy * SimpleTrafficLightProxy::createProxy( const String & r
                                                                       , ownerThread).get() );
 }
 
-SimpleTrafficLightProxy * SimpleTrafficLightProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::getEmptyString()*/ )
+SimpleTrafficLightProxy * SimpleTrafficLightProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
 {
     return static_cast<SimpleTrafficLightProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NESimpleTrafficLight::getInterfaceData()
@@ -80,10 +80,6 @@ SimpleTrafficLightProxy::SimpleTrafficLightProxy( const String & roleName, Dispa
 /************************************************************************
  * Parameters
  ************************************************************************/
-{
-}
-
-SimpleTrafficLightProxy::~SimpleTrafficLightProxy( void )
 {
 }
 
@@ -150,18 +146,26 @@ void SimpleTrafficLightProxy::processResponseEvent( ServiceResponseEvent & event
 {
     SimpleTrafficLightResponseEvent * eventResp = RUNTIME_CAST( &eventElem, SimpleTrafficLightResponseEvent );
     if (eventResp != nullptr)
+    {
         processResponse( *eventResp );
+    }
     else
+    {
         processProxyEvent( eventElem );
+    }
 }
 
 void SimpleTrafficLightProxy::processAttributeEvent( ServiceResponseEvent & eventElem )
 {
     SimpleTrafficLightResponseEvent * eventResp = RUNTIME_CAST( &eventElem, SimpleTrafficLightResponseEvent );
     if (eventResp != nullptr)
+    {
         processResponse( *eventResp );
+    }
     else
+    {
         processProxyEvent( eventElem );
+    }
 }
 
 /************************************************************************
@@ -171,7 +175,7 @@ void SimpleTrafficLightProxy::processAttributeEvent( ServiceResponseEvent & even
 DEF_TRACE_SCOPE(generated_src_private_SimpleTrafficLightProxy_updateData);
 void SimpleTrafficLightProxy::updateData( SimpleTrafficLightResponseEvent & eventElem, NESimpleTrafficLight::eMessageIDs respId )
 {
-    const IEInStream & stream = static_cast<const SimpleTrafficLightResponseEvent &>(eventElem).getData().getReadStream();
+    const IEInStream & stream { static_cast<const SimpleTrafficLightResponseEvent &>(eventElem).getData().getReadStream() };
 
     switch (respId)
     {
@@ -204,13 +208,13 @@ void SimpleTrafficLightProxy::updateData( SimpleTrafficLightResponseEvent & even
     }
 }
 
-    void SimpleTrafficLightProxy::processResponse( SimpleTrafficLightResponseEvent & evenElem )
+void SimpleTrafficLightProxy::processResponse( SimpleTrafficLightResponseEvent & evenElem )
 {
-    NESimpleTrafficLight::eMessageIDs respId  = static_cast<NESimpleTrafficLight::eMessageIDs>(evenElem.getResponseId());
-    NEService::eResultType resultType  = evenElem.getResult();
+    NESimpleTrafficLight::eMessageIDs respId  { static_cast<NESimpleTrafficLight::eMessageIDs>(evenElem.getResponseId()) };
+    NEService::eResultType resultType   { evenElem.getResult() };
 
-    bool dataValid  = false;
-    bool setStates  = true;
+    bool dataValid { false };
+    bool setStates { true  };
 
     switch (resultType)
     {
@@ -244,12 +248,12 @@ void SimpleTrafficLightProxy::updateData( SimpleTrafficLightResponseEvent & even
         break;
     }
 
-    if (dataValid == true)
+    if ( dataValid )
     {
         updateData(evenElem, respId);
     }
 
-    if (setStates == true)
+    if ( setStates )
     {
         setState(static_cast<msg_id>(respId), dataValid ? NEService::eDataStateType::DataIsOK : NEService::eDataStateType::DataIsInvalid);
     }

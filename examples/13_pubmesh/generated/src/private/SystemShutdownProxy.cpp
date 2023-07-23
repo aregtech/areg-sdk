@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:08:55 GMT+01:00
+ * Generated at     23.07.2023  03:04:29 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SystemShutdown.
  *
  * \file            generated/src/private/SystemShutdownProxy.hpp
@@ -56,7 +56,7 @@ SystemShutdownProxy * SystemShutdownProxy::createProxy( const String & roleName,
                                                                       , ownerThread).get() );
 }
 
-SystemShutdownProxy * SystemShutdownProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::getEmptyString()*/ )
+SystemShutdownProxy * SystemShutdownProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
 {
     return static_cast<SystemShutdownProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NESystemShutdown::getInterfaceData()
@@ -79,10 +79,6 @@ SystemShutdownProxy::SystemShutdownProxy( const String & roleName, DispatcherThr
 /************************************************************************
  * Parameters
  ************************************************************************/
-{
-}
-
-SystemShutdownProxy::~SystemShutdownProxy( void )
 {
 }
 
@@ -154,18 +150,26 @@ void SystemShutdownProxy::processResponseEvent( ServiceResponseEvent & eventElem
 {
     SystemShutdownResponseEvent * eventResp = RUNTIME_CAST( &eventElem, SystemShutdownResponseEvent );
     if (eventResp != nullptr)
+    {
         processResponse( *eventResp );
+    }
     else
+    {
         processProxyEvent( eventElem );
+    }
 }
 
 void SystemShutdownProxy::processAttributeEvent( ServiceResponseEvent & eventElem )
 {
     SystemShutdownResponseEvent * eventResp = RUNTIME_CAST( &eventElem, SystemShutdownResponseEvent );
     if (eventResp != nullptr)
+    {
         processResponse( *eventResp );
+    }
     else
+    {
         processProxyEvent( eventElem );
+    }
 }
 
 /************************************************************************
@@ -175,7 +179,7 @@ void SystemShutdownProxy::processAttributeEvent( ServiceResponseEvent & eventEle
 DEF_TRACE_SCOPE(generated_src_private_SystemShutdownProxy_updateData);
 void SystemShutdownProxy::updateData( SystemShutdownResponseEvent & eventElem, NESystemShutdown::eMessageIDs respId )
 {
-    const IEInStream & stream = static_cast<const SystemShutdownResponseEvent &>(eventElem).getData().getReadStream();
+    const IEInStream & stream { static_cast<const SystemShutdownResponseEvent &>(eventElem).getData().getReadStream() };
 
     switch (respId)
     {
@@ -204,13 +208,13 @@ void SystemShutdownProxy::updateData( SystemShutdownResponseEvent & eventElem, N
     }
 }
 
-    void SystemShutdownProxy::processResponse( SystemShutdownResponseEvent & evenElem )
+void SystemShutdownProxy::processResponse( SystemShutdownResponseEvent & evenElem )
 {
-    NESystemShutdown::eMessageIDs respId  = static_cast<NESystemShutdown::eMessageIDs>(evenElem.getResponseId());
-    NEService::eResultType resultType  = evenElem.getResult();
+    NESystemShutdown::eMessageIDs respId  { static_cast<NESystemShutdown::eMessageIDs>(evenElem.getResponseId()) };
+    NEService::eResultType resultType   { evenElem.getResult() };
 
-    bool dataValid  = false;
-    bool setStates  = true;
+    bool dataValid { false };
+    bool setStates { true  };
 
     switch (resultType)
     {
@@ -244,12 +248,12 @@ void SystemShutdownProxy::updateData( SystemShutdownResponseEvent & eventElem, N
         break;
     }
 
-    if (dataValid == true)
+    if ( dataValid )
     {
         updateData(evenElem, respId);
     }
 
-    if (setStates == true)
+    if ( setStates )
     {
         setState(static_cast<msg_id>(respId), dataValid ? NEService::eDataStateType::DataIsOK : NEService::eDataStateType::DataIsInvalid);
     }

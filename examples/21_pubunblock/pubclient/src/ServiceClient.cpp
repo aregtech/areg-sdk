@@ -45,20 +45,16 @@ ServiceClient::ServiceClient( const NERegistry::ComponentEntry & entry, Componen
 {
 }
 
-bool ServiceClient::serviceConnected( bool isConnected, ProxyBase & proxy )
+bool ServiceClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
 {
     TRACE_SCOPE( examples_21_pubservice_ServiceClient_serviceConnected );
-    bool result{ false };
-    if ( HelloUnblockClientBase::serviceConnected( isConnected, proxy ) )
+    bool result = HelloUnblockClientBase::serviceConnected( status, proxy );
+    mClientId = NEHelloUnblock::InvalidId;
+    notifyOnHelloServiceStateUpdate( isConnected( ) );
+    if ( isConnected( ) == false )
     {
-        result = true;
-        mClientId = NEHelloUnblock::InvalidId;
-        notifyOnHelloServiceStateUpdate( isConnected );
-        if ( isConnected == false )
-        {
-            mTimer.stopTimer( );
-            Application::signalAppQuit( );
-        }
+        mTimer.stopTimer( );
+        Application::signalAppQuit( );
     }
 
     return result;

@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:10:56 GMT+01:00
+ * Generated at     23.07.2023  03:06:04 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloUnblock.
  *
  * \file            generated/src/HelloUnblockStub.hpp
@@ -119,7 +119,7 @@ public:
 
     /**
      * \brief   Request call.
-     *          Request to assign an ID to the client used to to call unblock request.
+     *          Request to assign an ID to the client used to call unblock request.
      * \see     responseIdentifier
      **/
     virtual void requestIdentifier( void ) = 0;
@@ -142,7 +142,7 @@ public:
     /**
      * \brief   Response call.
      *          Sent to set ID for client.
-     * \param   clientId    Generated ID for the client used when send requst to unblock.
+     * \param   clientId    Generated ID for the client used when send request to unblock.
      * \see     requestIdentifier
      **/
     virtual void responseIdentifier( unsigned int clientId );
@@ -152,7 +152,7 @@ public:
      *          The response to hello world request.
      * \param   clientId    The ID of the client to send the response. Never is 0.
      * \param   seqNr       The sequence number created by the client. On reply the service sends the sequence number so that
-     *          the cilent can check that all sequences exist.
+     *          the client can check that all sequences exist.
      * \see     requestHelloUblock
      **/
     virtual void responseHelloUnblock( unsigned int clientId, unsigned int seqNr );

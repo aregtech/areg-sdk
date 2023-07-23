@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:08:55 GMT+01:00
+ * Generated at     23.07.2023  03:04:29 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SystemShutdown.
  *
  * \file            generated/src/SystemShutdownStub.hpp
@@ -36,7 +36,6 @@ SystemShutdownStub::SystemShutdownStub( Component & masterComp )
 
     , mServiceState       (  )
     , mServiceStateState  ( NEService::eDataStateType::DataIsUnavailable )
-    
 {
 }
 
@@ -95,7 +94,7 @@ DEF_TRACE_SCOPE(generated_src_SystemShutdownStub_sendNotification);
 void SystemShutdownStub::sendNotification( unsigned int msgId )
 {
     EventDataStream args(EventDataStream::eEventData::EventDataExternal);
-    IEOutStream & stream = args.getStreamForWrite();
+    IEOutStream & stream { args.getStreamForWrite() };
 
     switch ( static_cast<NESystemShutdown::eMessageIDs>(msgId) )
     {
@@ -118,8 +117,8 @@ void SystemShutdownStub::sendNotification( unsigned int msgId )
 DEF_TRACE_SCOPE(generated_src_SystemShutdownStub_errorRequest);
 void SystemShutdownStub::errorRequest( unsigned int msgId, bool msgCancel )
 {
-    NEService::eResultType result = NEService::eResultType::NotProcessed;
-    msg_id listenerId = msgId;
+    NEService::eResultType result { NEService::eResultType::NotProcessed };
+    msg_id listenerId { msgId };
 
     switch ( static_cast<NESystemShutdown::eMessageIDs>(msgId) )
     {
@@ -227,16 +226,16 @@ void SystemShutdownStub::processRequestEvent( ServiceRequestEvent & eventElem )
 DEF_TRACE_SCOPE(generated_src_SystemShutdownStub_processAttributeEvent);
 void SystemShutdownStub::processAttributeEvent( ServiceRequestEvent & eventElem )
 {
-    const NEService::eRequestType reqType = eventElem.getRequestType();
+    const NEService::eRequestType reqType { eventElem.getRequestType() };
+    const ProxyAddress & source { eventElem.getEventSource( ) };
     if (reqType == NEService::eRequestType::RemoveAllNotify)
     {
         IntegerArray removedIds;
-        StubBase::clearAllListeners(eventElem.getEventSource(), removedIds);
+        StubBase::clearAllListeners(source, removedIds);
     }
     else
     {
-        NESystemShutdown::eMessageIDs updId  = static_cast<NESystemShutdown::eMessageIDs>(eventElem.getRequestId());
-        const ProxyAddress & source = eventElem.getEventSource( );
+        NESystemShutdown::eMessageIDs updId  { static_cast<NESystemShutdown::eMessageIDs>(eventElem.getRequestId()) };
         if (reqType == NEService::eRequestType::StopNotify)
         {
             removeNotificationListener( static_cast<msg_id>(updId), source );

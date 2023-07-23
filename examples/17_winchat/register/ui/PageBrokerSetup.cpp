@@ -6,7 +6,7 @@
 #include "register/ui/PageBrokerSetup.hpp"
 #include "register/ui/CentralDialog.hpp"
 #include "register/NECentralApp.hpp"
-#include "generated/NECommon.hpp"
+#include "common/NECommon.hpp"
 
 #include "areg/base/String.hpp"
 #include "areg/base/NESocket.hpp"

@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
-    <Import Project="$(SolutionDir)\msvc_setup.props"/>
+    <Import Project="$(SolutionDir)\msvc_setup.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="$(AregSdkRoot)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
@@ -42,59 +42,58 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="generated\CentralMessagerClientBase.hpp" />
-    <ClInclude Include="generated\CentralMessagerStub.hpp" />
-    <ClInclude Include="generated\ConnectionManagerClientBase.hpp" />
-    <ClInclude Include="generated\ConnectionManagerStub.hpp" />
-    <ClInclude Include="generated\DirectConnectionClientBase.hpp" />
-    <ClInclude Include="generated\DirectConnectionStub.hpp" />
-    <ClInclude Include="generated\DirectMessagerClientBase.hpp" />
-    <ClInclude Include="generated\DirectMessagerStub.hpp" />
-    <ClInclude Include="generated\NECentralMessager.hpp" />
-    <ClInclude Include="generated\NEConnectionManager.hpp" />
-    <ClInclude Include="generated\NEDirectConnection.hpp" />
-    <ClInclude Include="generated\private\CentralMessagerEvents.hpp" />
-    <ClInclude Include="generated\private\ConnectionManagerEvents.hpp" />
-    <ClInclude Include="generated\private\DirectConnectionEvents.hpp" />
-    <ClInclude Include="generated\private\DirectConnectionProxy.hpp" />
-    <ClInclude Include="generated\NECommon.hpp" />
-    <ClInclude Include="generated\NEDirectMessager.hpp" />
-    <ClInclude Include="generated\private\CentralMessagerProxy.hpp" />
-    <ClInclude Include="generated\private\ConnectionManagerProxy.hpp" />
-    <ClInclude Include="generated\private\DirectMessagerEvents.hpp" />
-    <ClInclude Include="generated\private\DirectMessagerProxy.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="generated\private\CentralMessagerClientBase.cpp" />
-    <ClCompile Include="generated\private\CentralMessagerEvents.cpp" />
-    <ClCompile Include="generated\private\CentralMessagerProxy.cpp" />
-    <ClCompile Include="generated\private\CentralMessagerStub.cpp" />
-    <ClCompile Include="generated\private\ConnectionManagerClientBase.cpp" />
-    <ClCompile Include="generated\private\ConnectionManagerEvents.cpp" />
-    <ClCompile Include="generated\private\ConnectionManagerProxy.cpp" />
-    <ClCompile Include="generated\private\ConnectionManagerStub.cpp" />
-    <ClCompile Include="generated\private\DirectConnectionClientBase.cpp" />
-    <ClCompile Include="generated\private\DirectConnectionEvents.cpp" />
-    <ClCompile Include="generated\private\DirectConnectionProxy.cpp" />
-    <ClCompile Include="generated\private\DirectConnectionStub.cpp" />
-    <ClCompile Include="generated\private\DirectMessagerClientBase.cpp" />
-    <ClCompile Include="generated\private\DirectMessagerEvents.cpp" />
-    <ClCompile Include="generated\private\DirectMessagerProxy.cpp" />
-    <ClCompile Include="generated\private\DirectMessagerStub.cpp" />
-    <ClCompile Include="generated\private\NECentralMessager.cpp" />
-    <ClCompile Include="generated\private\NEConnectionManager.cpp" />
-    <ClCompile Include="generated\private\NEDirectConnection.cpp" />
-    <ClCompile Include="generated\private\NEDirectMessager.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <Text Include="generated\CMakeLists.txt" />
-    <Text Include="generated\private\CMakeLists.txt" />
+    <Text Include="generated\src\private\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\CentralMessager.siml" />
     <None Include="res\ConnectionManager.siml" />
     <None Include="res\DirectConnection.siml" />
     <None Include="res\DirectMessager.siml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="generated\src\private\CentralMessagerClientBase.cpp" />
+    <ClCompile Include="generated\src\private\CentralMessagerEvents.cpp" />
+    <ClCompile Include="generated\src\private\CentralMessagerProxy.cpp" />
+    <ClCompile Include="generated\src\private\CentralMessagerStub.cpp" />
+    <ClCompile Include="generated\src\private\ConnectionManagerClientBase.cpp" />
+    <ClCompile Include="generated\src\private\ConnectionManagerEvents.cpp" />
+    <ClCompile Include="generated\src\private\ConnectionManagerProxy.cpp" />
+    <ClCompile Include="generated\src\private\ConnectionManagerStub.cpp" />
+    <ClCompile Include="generated\src\private\DirectConnectionClientBase.cpp" />
+    <ClCompile Include="generated\src\private\DirectConnectionEvents.cpp" />
+    <ClCompile Include="generated\src\private\DirectConnectionProxy.cpp" />
+    <ClCompile Include="generated\src\private\DirectConnectionStub.cpp" />
+    <ClCompile Include="generated\src\private\DirectMessagerClientBase.cpp" />
+    <ClCompile Include="generated\src\private\DirectMessagerEvents.cpp" />
+    <ClCompile Include="generated\src\private\DirectMessagerProxy.cpp" />
+    <ClCompile Include="generated\src\private\DirectMessagerStub.cpp" />
+    <ClCompile Include="generated\src\private\NECentralMessager.cpp" />
+    <ClCompile Include="generated\src\private\NEConnectionManager.cpp" />
+    <ClCompile Include="generated\src\private\NEDirectConnection.cpp" />
+    <ClCompile Include="generated\src\private\NEDirectMessager.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="generated\src\CentralMessagerClientBase.hpp" />
+    <ClInclude Include="generated\src\CentralMessagerStub.hpp" />
+    <ClInclude Include="generated\src\ConnectionManagerClientBase.hpp" />
+    <ClInclude Include="generated\src\ConnectionManagerStub.hpp" />
+    <ClInclude Include="generated\src\DirectConnectionClientBase.hpp" />
+    <ClInclude Include="generated\src\DirectConnectionStub.hpp" />
+    <ClInclude Include="generated\src\DirectMessagerClientBase.hpp" />
+    <ClInclude Include="generated\src\DirectMessagerStub.hpp" />
+    <ClInclude Include="generated\src\NECentralMessager.hpp" />
+    <ClInclude Include="generated\src\NEConnectionManager.hpp" />
+    <ClInclude Include="generated\src\NEDirectConnection.hpp" />
+    <ClInclude Include="generated\src\NEDirectMessager.hpp" />
+    <ClInclude Include="generated\src\private\CentralMessagerEvents.hpp" />
+    <ClInclude Include="generated\src\private\CentralMessagerProxy.hpp" />
+    <ClInclude Include="generated\src\private\ConnectionManagerEvents.hpp" />
+    <ClInclude Include="generated\src\private\ConnectionManagerProxy.hpp" />
+    <ClInclude Include="generated\src\private\DirectConnectionEvents.hpp" />
+    <ClInclude Include="generated\src\private\DirectConnectionProxy.hpp" />
+    <ClInclude Include="generated\src\private\DirectMessagerEvents.hpp" />
+    <ClInclude Include="generated\src\private\DirectMessagerProxy.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

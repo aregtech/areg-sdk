@@ -6,7 +6,7 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/base/String.hpp"
 #include "areg/base/SynchObjects.hpp"
-#include "generated/NECommon.hpp"
+#include "common/NECommon.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Dependencies

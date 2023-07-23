@@ -5,7 +5,7 @@
 
 #include "chatter/services/DirectMessagingClient.hpp"
 #include "chatter/services/ChatPrticipantHandler.hpp"
-#include "generated/NECommon.hpp"
+#include "common/NECommon.hpp"
 #include "areg/trace/GETrace.h"
 
 #include <Windows.h>
@@ -31,29 +31,23 @@ DirectMessagingClient::~DirectMessagingClient( )
 {
 }
 
-bool DirectMessagingClient::serviceConnected( bool isConnected, ProxyBase & proxy )
+bool DirectMessagingClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
 {
     TRACE_SCOPE( distrbutedapp_DirectMessagingClient_ServiceConnected );
 
-    bool result = false;
-    if ( isConnected )
-    {
-        if ( DirectMessagerClientBase::serviceConnected( isConnected, proxy ) )
-        {
-            result = true;
-            mParticipantsHandler.SetChatClient( this );
-            
-            notifyOnBroadcastChatClosed(true);
-            notifyOnBroadcastParticipantJoined(true);
-            notifyOnBroadcastParticipantLeft(true);
+    bool result = DirectMessagerClientBase::serviceConnected( status, proxy );
+    notifyOnBroadcastChatClosed( isConnected( ) );
+    notifyOnBroadcastParticipantJoined( isConnected( ) );
+    notifyOnBroadcastParticipantLeft( isConnected( ) );
 
-            requestChatJoin( mParticipantsHandler.GetConnectionOwner(), DateTime::getNow() );
-        }
+    if ( isConnected( ) )
+    {
+        mParticipantsHandler.SetChatClient( this );
+        requestChatJoin( mParticipantsHandler.GetConnectionOwner( ), DateTime::getNow( ) );
     }
     else
     {
-        requestChatLeave( mParticipantsHandler.GetConnectionOwner(), DateTime::getNow() );
-        result = DirectMessagerClientBase::serviceConnected( isConnected, proxy );
+        requestChatLeave( mParticipantsHandler.GetConnectionOwner( ), DateTime::getNow( ) );
     }
 
     return result;

@@ -301,6 +301,6 @@ inline void Component::_shutdownServices(void)
         ASSERT(stub != nullptr);
         OUTPUT_INFO("Shutting down Service Interface [ %s ] of component [ %s ]", stub->getAddress().getServiceName().getString(), getRoleName().getString());
         stub->shutdownServiceIntrface(self());
-        ServiceManager::requestUnregisterServer(stub->getAddress());
+        ServiceManager::requestUnregisterServer(stub->getAddress(), NEService::eDisconnectReason::ReasonProviderDisconnected);
     }
 }

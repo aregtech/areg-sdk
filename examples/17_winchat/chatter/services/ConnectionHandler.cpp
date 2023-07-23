@@ -4,7 +4,7 @@
 ************************************************************************/
 
 #include "chatter/services/ConnectionHandler.hpp"
-#include "generated/NEConnectionManager.hpp"
+#include "generated/src/NEConnectionManager.hpp"
 
 ConnectionHandler::ConnectionHandler(void)
     : mListConnections  ( )

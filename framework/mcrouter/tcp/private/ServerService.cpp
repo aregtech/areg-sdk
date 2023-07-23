@@ -245,7 +245,7 @@ bool ServerService::registerService(const StubAddress & /* stubService */)
     return false;
 }
 
-void ServerService::unregisterService(const StubAddress & /* stubService */)
+void ServerService::unregisterService(const StubAddress & /* stubService */, const NEService::eDisconnectReason /*reason*/ )
 {
     TRACE_SCOPE(mcrouter_tcp_private_ServerService_unregisterService);
     TRACE_ERR("Method is not implemented, this should not be called");
@@ -258,7 +258,7 @@ bool ServerService::registerServiceClient(const ProxyAddress & /* proxyService *
     return false;
 }
 
-void ServerService::unregisterServiceClient(const ProxyAddress & /* proxyService */)
+void ServerService::unregisterServiceClient(const ProxyAddress & /* proxyService */, const NEService::eDisconnectReason /*reason*/ )
 {
     TRACE_SCOPE(mcrouter_tcp_private_ServerService_unregisterServiceClient);
     TRACE_ERR("Method is not implemented, this should not be called");
@@ -377,16 +377,20 @@ void ServerService::onServiceMessageReceived(const RemoteMessage &msgReceived)
             case NEService::eServiceRequestType::UnregisterStub:
                 {
                     StubAddress stubService(msgReceived);
+                    NEService::eDisconnectReason reason{NEService::eDisconnectReason::ReasonUndefined};
+                    msgReceived >> reason;
                     stubService.setSource(source);
-                    unregisterRemoteStub(stubService, stubService.getCookie());
+                    unregisterRemoteStub(stubService, reason, stubService.getCookie());
                 }
                 break;
 
             case NEService::eServiceRequestType::UnregisterClient:
                 {
                     ProxyAddress proxyService(msgReceived);
+                    NEService::eDisconnectReason reason { NEService::eDisconnectReason::ReasonUndefined };
+                    msgReceived >> reason;
                     proxyService.setSource(source);
-                    unregisterRemoteProxy(proxyService, proxyService.getCookie());
+                    unregisterRemoteProxy(proxyService, reason, proxyService.getCookie());
                 }
                 break;
 
@@ -414,12 +418,12 @@ void ServerService::onServiceMessageReceived(const RemoteMessage &msgReceived)
 
             for (uint32_t i = 0; i < listProxies.getSize(); ++i)
             {
-                unregisterRemoteProxy(listProxies[i], cookie);
+                unregisterRemoteProxy(listProxies[i], NEService::eDisconnectReason::ReasonConsumerDisconnected, cookie);
             }
 
             for (uint32_t i = 0; i < listStubs.getSize(); ++i)
             {
-                unregisterRemoteStub(listStubs[i], cookie);
+                unregisterRemoteStub(listStubs[i], NEService::eDisconnectReason::ReasonProviderDisconnected, cookie);
             }
         }
         break;
@@ -579,12 +583,12 @@ void ServerService::stopConnection(void)
 
     for ( uint32_t i = 0; i < stubList.getSize(); ++ i )
     {
-        unregisterRemoteStub( stubList[i], NEService::COOKIE_ANY );
+        unregisterRemoteStub( stubList[i], NEService::eDisconnectReason::ReasonRouterDisconnected, NEService::COOKIE_ANY );
     }
 
     for ( uint32_t i = 0; i < proxyList.getSize(); ++ i )
     {
-        unregisterRemoteProxy( proxyList[i], NEService::COOKIE_ANY );
+        unregisterRemoteProxy( proxyList[i], NEService::eDisconnectReason::ReasonRouterDisconnected, NEService::COOKIE_ANY );
     }
 
     _disconnectService( Event::eEventPriority::EventPriorityHigh );
@@ -727,7 +731,7 @@ void ServerService::registerRemoteProxy(const ProxyAddress & proxy)
     }
 }
 
-void ServerService::unregisterRemoteStub(const StubAddress & stub, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ )
+void ServerService::unregisterRemoteStub(const StubAddress & stub, NEService::eDisconnectReason reason, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ )
 {
     TRACE_SCOPE(mcrouter_tcp_private_ServerService_unregisterRemoteStub);
     if ( mServiceRegistry.getServiceStatus(stub) == NEService::eServiceConnection::ServiceConnected )
@@ -751,7 +755,7 @@ void ServerService::unregisterRemoteStub(const StubAddress & stub, ITEM_ID cooki
                 // no need to send message to unregistered stub, only to proxy side
                 if (sendList.addIfUnique(addrProxy.getSource()) )
                 {
-                    RemoteMessage msgRegisterStub = NEConnection::createServiceUnregisteredNotification( stub, addrProxy.getSource( ) );
+                    RemoteMessage msgRegisterStub = NEConnection::createServiceUnregisteredNotification( stub, reason, addrProxy.getSource( ) );
                     _sendMessage(msgRegisterStub, Event::eEventPriority::EventPriorityHigh);
 
                     TRACE_INFO("Send stub [ %s ] disconnect message to proxy [ %s ]"
@@ -780,7 +784,7 @@ void ServerService::unregisterRemoteStub(const StubAddress & stub, ITEM_ID cooki
     }
 }
 
-void ServerService::unregisterRemoteProxy(const ProxyAddress & proxy, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ )
+void ServerService::unregisterRemoteProxy(const ProxyAddress & proxy, NEService::eDisconnectReason reason, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ )
 {
     TRACE_SCOPE(mcrouter_tcp_private_ServerService_unregisterRemoteProxy);
     TRACE_DBG("Unregistering services of proxy [ %s ] related to cookie [ %u ]"
@@ -805,7 +809,7 @@ void ServerService::unregisterRemoteProxy(const ProxyAddress & proxy, ITEM_ID co
 
     if ((svcStub->getServiceStatus() == NEService::eServiceConnection::ServiceConnected) && (proxy.getSource() != addrStub.getSource()))
     {
-        msgRegisterProxy = NEConnection::createServiceClientUnregisteredNotification(proxy, addrStub.getSource());
+        msgRegisterProxy = NEConnection::createServiceClientUnregisteredNotification(proxy, reason, addrStub.getSource());
         _sendMessage(msgRegisterProxy, Event::eEventPriority::EventPriorityHigh);
 
         TRACE_INFO("Send proxy [ %s ] disconnect message to stub [ %s ]"

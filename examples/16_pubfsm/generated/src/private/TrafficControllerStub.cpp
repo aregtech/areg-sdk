@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:09:40 GMT+01:00
+ * Generated at     23.07.2023  03:05:04 GMT+02:00
  *                  Create by AREG SDK code generator tool from source TrafficController.
  *
  * \file            generated/src/TrafficControllerStub.hpp
@@ -36,10 +36,9 @@ TrafficControllerStub::TrafficControllerStub( Component & masterComp )
 
     , mTrafficSouthNorth      (  )
     , mTrafficSouthNorthState ( NEService::eDataStateType::DataIsUnavailable )
-    
+
     , mTrafficEastWest        (  )
     , mTrafficEastWestState   ( NEService::eDataStateType::DataIsUnavailable )
-    
 {
 }
 
@@ -98,7 +97,7 @@ DEF_TRACE_SCOPE(generated_src_TrafficControllerStub_sendNotification);
 void TrafficControllerStub::sendNotification( unsigned int msgId )
 {
     EventDataStream args(EventDataStream::eEventData::EventDataExternal);
-    IEOutStream & stream = args.getStreamForWrite();
+    IEOutStream & stream { args.getStreamForWrite() };
 
     switch ( static_cast<NETrafficController::eMessageIDs>(msgId) )
     {
@@ -127,8 +126,8 @@ void TrafficControllerStub::sendNotification( unsigned int msgId )
 DEF_TRACE_SCOPE(generated_src_TrafficControllerStub_errorRequest);
 void TrafficControllerStub::errorRequest( unsigned int msgId, bool msgCancel )
 {
-    NEService::eResultType result = NEService::eResultType::NotProcessed;
-    msg_id listenerId = msgId;
+    NEService::eResultType result { NEService::eResultType::NotProcessed };
+    msg_id listenerId { msgId };
 
     switch ( static_cast<NETrafficController::eMessageIDs>(msgId) )
     {
@@ -212,7 +211,7 @@ void TrafficControllerStub::setTrafficEastWest( const NETrafficController::sTraf
 
 void TrafficControllerStub::broadcastSouthNorth( NETrafficController::eVehicleTrafficLight LightVehicle, NETrafficController::ePedestrianTrafficLight LightPedestrian )
 {
-    static const NETrafficController::eMessageIDs msgId = NETrafficController::eMessageIDs::MsgId_broadcastSouthNorth;
+    constexpr NETrafficController::eMessageIDs msgId { NETrafficController::eMessageIDs::MsgId_broadcastSouthNorth };
     EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << LightVehicle;
@@ -222,7 +221,7 @@ void TrafficControllerStub::broadcastSouthNorth( NETrafficController::eVehicleTr
 
 void TrafficControllerStub::broadcastEastWest( NETrafficController::eVehicleTrafficLight LightVehicle, NETrafficController::ePedestrianTrafficLight LightPedestrian )
 {
-    static const NETrafficController::eMessageIDs msgId = NETrafficController::eMessageIDs::MsgId_broadcastEastWest;
+    constexpr NETrafficController::eMessageIDs msgId { NETrafficController::eMessageIDs::MsgId_broadcastEastWest };
     EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << LightVehicle;
@@ -245,9 +244,9 @@ void TrafficControllerStub::processRequestEvent( ServiceRequestEvent & eventElem
         msg_id reqId = static_cast<msg_id>(reqEvent->getRequestId());
         StubBase::Listener listener( reqId, 0, reqEvent->getEventSource() );
 
-    TRACE_SCOPE(generated_src_TrafficControllerStub_processRequestEvent);
-    TRACE_ERR("The service TrafficController has no request. Unexpected request ID [ %d ] to process in Stub [ %s ]!", reqId, StubAddress::convAddressToPath(mAddress).getString());
-    ASSERT(false);
+        TRACE_SCOPE(generated_src_TrafficControllerStub_processRequestEvent);
+        TRACE_ERR("The service TrafficController has no request. Unexpected request ID [ %d ] to process in Stub [ %s ]!", reqId, StubAddress::convAddressToPath(mAddress).getString());
+        ASSERT(false);
     }
 
     cancelCurrentRequest();
@@ -256,16 +255,16 @@ void TrafficControllerStub::processRequestEvent( ServiceRequestEvent & eventElem
 DEF_TRACE_SCOPE(generated_src_TrafficControllerStub_processAttributeEvent);
 void TrafficControllerStub::processAttributeEvent( ServiceRequestEvent & eventElem )
 {
-    const NEService::eRequestType reqType = eventElem.getRequestType();
+    const NEService::eRequestType reqType { eventElem.getRequestType() };
+    const ProxyAddress & source { eventElem.getEventSource( ) };
     if (reqType == NEService::eRequestType::RemoveAllNotify)
     {
         IntegerArray removedIds;
-        StubBase::clearAllListeners(eventElem.getEventSource(), removedIds);
+        StubBase::clearAllListeners(source, removedIds);
     }
     else
     {
-        NETrafficController::eMessageIDs updId  = static_cast<NETrafficController::eMessageIDs>(eventElem.getRequestId());
-        const ProxyAddress & source = eventElem.getEventSource( );
+        NETrafficController::eMessageIDs updId  { static_cast<NETrafficController::eMessageIDs>(eventElem.getRequestId()) };
         if (reqType == NEService::eRequestType::StopNotify)
         {
             removeNotificationListener( static_cast<msg_id>(updId), source );

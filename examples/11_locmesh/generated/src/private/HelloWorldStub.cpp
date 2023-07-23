@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:08:00 GMT+01:00
+ * Generated at     23.07.2023  03:04:03 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/HelloWorldStub.hpp
@@ -33,7 +33,6 @@
 //////////////////////////////////////////////////////////////////////////
 HelloWorldStub::HelloWorldStub( Component & masterComp )
     : StubBase    ( masterComp, NEHelloWorld::getInterfaceData() )
-
 {
 }
 
@@ -90,8 +89,8 @@ void HelloWorldStub::sendNotification( unsigned int msgId )
 DEF_TRACE_SCOPE(generated_src_HelloWorldStub_errorRequest);
 void HelloWorldStub::errorRequest( unsigned int msgId, bool msgCancel )
 {
-    NEService::eResultType result = NEService::eResultType::NotProcessed;
-    msg_id listenerId = msgId;
+    NEService::eResultType result { NEService::eResultType::NotProcessed };
+    msg_id listenerId { msgId };
 
     switch ( static_cast<NEHelloWorld::eMessageIDs>(msgId) )
     {
@@ -149,7 +148,7 @@ void HelloWorldStub::errorRequest( unsigned int msgId, bool msgCancel )
 
 void HelloWorldStub::responseHelloWorld( const String & clientName, unsigned int clientId )
 {
-    static const NEHelloWorld::eMessageIDs msgId = NEHelloWorld::eMessageIDs::MsgId_responseHelloWorld;
+    constexpr NEHelloWorld::eMessageIDs msgId { NEHelloWorld::eMessageIDs::MsgId_responseHelloWorld };
     EventDataStream args(EventDataStream::eEventData::EventDataInternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << clientName;
@@ -163,7 +162,7 @@ void HelloWorldStub::responseHelloWorld( const String & clientName, unsigned int
 
 void HelloWorldStub::broadcastReachedMaximum( int maxNumber )
 {
-    static const NEHelloWorld::eMessageIDs msgId = NEHelloWorld::eMessageIDs::MsgId_broadcastReachedMaximum;
+    constexpr NEHelloWorld::eMessageIDs msgId { NEHelloWorld::eMessageIDs::MsgId_broadcastReachedMaximum };
     EventDataStream args(EventDataStream::eEventData::EventDataInternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << maxNumber;
@@ -225,16 +224,16 @@ void HelloWorldStub::processRequestEvent( ServiceRequestEvent & eventElem )
 DEF_TRACE_SCOPE(generated_src_HelloWorldStub_processAttributeEvent);
 void HelloWorldStub::processAttributeEvent( ServiceRequestEvent & eventElem )
 {
-    const NEService::eRequestType reqType = eventElem.getRequestType();
+    const NEService::eRequestType reqType { eventElem.getRequestType() };
+    const ProxyAddress & source { eventElem.getEventSource( ) };
     if (reqType == NEService::eRequestType::RemoveAllNotify)
     {
         IntegerArray removedIds;
-        StubBase::clearAllListeners(eventElem.getEventSource(), removedIds);
+        StubBase::clearAllListeners(source, removedIds);
     }
     else
     {
-        NEHelloWorld::eMessageIDs updId  = static_cast<NEHelloWorld::eMessageIDs>(eventElem.getRequestId());
-        const ProxyAddress & source = eventElem.getEventSource( );
+        NEHelloWorld::eMessageIDs updId  { static_cast<NEHelloWorld::eMessageIDs>(eventElem.getRequestId()) };
         if (reqType == NEService::eRequestType::StopNotify)
         {
             removeNotificationListener( static_cast<msg_id>(updId), source );

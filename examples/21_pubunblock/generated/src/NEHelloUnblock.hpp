@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:10:56 GMT+01:00
+ * Generated at     23.07.2023  03:06:04 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloUnblock.
  *
  * \file            generated/src/NEHelloUnblock.hpp
@@ -139,7 +139,7 @@ namespace   NEHelloUnblock
      ************************************************************************/
         /**
          * \brief   Request ID: MsgId_requestIdentifier
-         *          Request to assign an ID to the client used to to call unblock request.
+         *          Request to assign an ID to the client used to call unblock request.
          **/
           MsgId_requestIdentifier     = NEService::REQUEST_ID_FIRST   // void requestIdentifier( void );
         /**

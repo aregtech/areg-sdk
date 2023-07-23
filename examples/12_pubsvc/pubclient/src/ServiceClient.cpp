@@ -38,26 +38,26 @@ ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, Component
 {
 }
 
-bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
+bool ServiceClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
 {
-    TRACE_SCOPE(examples_12_pubclient_ServiceClient_serviceConnected);
-    bool result = HelloWorldClientBase::serviceConnected(isConnected, proxy);
-
-    TRACE_DBG("Client [ %s ] of [ %s ] service is [ %s ]"
-                , proxy.getProxyAddress().getRoleName().getString()
-                , proxy.getProxyAddress().getServiceName().getString()
-                , isConnected ? "connected" : "disconnected");
+    TRACE_SCOPE( examples_12_pubclient_ServiceClient_serviceConnected );
+    bool result = HelloWorldClientBase::serviceConnected( status, proxy );
 
     // subscribe when service connected and un-subscribe when disconnected.
-    notifyOnBroadcastReachedMaximum(isConnected);
-    if (isConnected)
+    notifyOnBroadcastReachedMaximum( isConnected( ) );
+    if ( isConnected( ) )
     {
-        mTimer.startTimer(ServiceClient::TIMEOUT_VALUE);
+        mTimer.startTimer( ServiceClient::TIMEOUT_VALUE );
+    }
+    else if ( NEService::isServiceConnectionLost( status ) )
+    {
+        TRACE_WARN( "The connection is lost! Waiting for connection recovery!" );
+        mTimer.stopTimer( );
     }
     else
     {
-        mTimer.stopTimer();
         TRACE_WARN("Shutting down application!");
+        mTimer.stopTimer( );
         Application::signalAppQuit();
     }
 

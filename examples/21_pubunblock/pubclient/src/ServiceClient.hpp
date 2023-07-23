@@ -26,7 +26,7 @@
  *          (NEService::eResultType::RequestBusy).
  *          This client demonstrate that all requests are processed and sent to the client.
  *          Start multiple instances of the client to make sure that all clients properly
- *          recieve requests.
+ *          receive requests.
  **/
 class ServiceClient : public    Component
                     , private   HelloUnblockClientBase
@@ -66,21 +66,27 @@ protected:
      **/
     ServiceClient( const NERegistry::ComponentEntry & entry, ComponentThread & owner );
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~ServiceClient( void ) = default;
 
+//////////////////////////////////////////////////////////////////////////
+// Overrides
+//////////////////////////////////////////////////////////////////////////
 protected:
+/************************************************************************/
+// IEProxyListener Overrides
+/************************************************************************/
     /**
-     * \brief   Triggered by Proxy, when gets service connected event.
-     * \param   isConnected     The flag, indicating whether service is connected
-     *                          or disconnected.
-     * \param   proxy           The Service Interface Proxy object, which is
-     *                          notifying service connection.
+     * \brief   Triggered when receives service provider connected / disconnected event.
+     *          When the service provider is connected, the client objects can set the listeners here.
+     *          When the service provider is disconnected, the client object should clean the listeners.
+     *          Up from connected status, the clients can subscribe and unsubscribe on updates,
+     *          responses and broadcasts, can trigger requests. Before connection, the clients cannot
+     *          neither trigger requests, nor receive data update messages.
+     * \param   status  The service connection status.
+     * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
      * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( bool isConnected, ProxyBase & proxy ) override;
+    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
 
 /************************************************************************
  * Response HelloUnblock
@@ -90,7 +96,7 @@ protected:
      *          Sent to set ID for client.
      *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
-     * \param   clientId    Generated ID for the client used when send requst to unblock.
+     * \param   clientId    Generated ID for the client used when send request to unblock.
      * \see     requestIdentifier
      **/
     virtual void responseIdentifier( unsigned int clientId ) override;
@@ -101,13 +107,13 @@ protected:
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientId    The ID of the client to send the response. Never is 0.
      * \param   seqNr       The sequence number created by the client. On reply the service sends the sequence number so that
-     *          the cilent can check that all sequences exist.
+     *          the client can check that all sequences exist.
      * \see     requestHelloUblock
      **/
     virtual void responseHelloUnblock( unsigned int clientId, unsigned int seqNr ) override;
 
     /**
-     * \brief   This method is triggered if requestHelloUblock call failes.
+     * \brief   This method is triggered if requestHelloUblock call fails.
      *          It may happen if the request is busy and not completed.
      *          Since the request is manually unblocked on service side,
      *          we override this method to make sure that it never fails

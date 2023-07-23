@@ -36,17 +36,12 @@ ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, Component
 {
 }
 
-bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
+bool ServiceClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
 {
     TRACE_SCOPE(examples_18_locwatchdog_ServiceClient_serviceConnected);
-    bool result = HelloWatchdogClientBase::serviceConnected(isConnected, proxy);
+    bool result = HelloWatchdogClientBase::serviceConnected(status, proxy);
 
-    TRACE_DBG("Client [ %s ] of [ %s ] service is [ %s ]"
-                , proxy.getProxyAddress().getRoleName().getString()
-                , proxy.getProxyAddress().getServiceName().getString()
-                , isConnected ? "connected" : "disconnected");
-
-    if (isConnected)
+    if (isConnected())
     {
         if (++ mRestarts <= NEHelloWatchdog::MaximumRestarts)
         {

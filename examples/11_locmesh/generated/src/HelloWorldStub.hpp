@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:08:00 GMT+01:00
+ * Generated at     23.07.2023  03:04:03 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/HelloWorldStub.hpp
@@ -104,7 +104,7 @@ public:
      * \brief   Response call.
      *          The response to hello world request.
      * \param   clientName  The name of connected client that requested to output message.
-     * \param   clientId    Thegiven ID of the client that requested to output message.
+     * \param   clientId    The given ID of the client that requested to output message.
      * \see     requestHelloWorld
      **/
     virtual void responseHelloWorld( const String & clientName, unsigned int clientId );

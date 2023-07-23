@@ -5,7 +5,7 @@
 
 #include "register/res/resource.h"
 #include "register/NECentralApp.hpp"
-#include "generated/NECommon.hpp"
+#include "common/NECommon.hpp"
 #include "areg/base/TEArrayList.hpp"
 
 class PageConnections : public CPropertyPage

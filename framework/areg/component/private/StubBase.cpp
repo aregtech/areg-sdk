@@ -435,40 +435,22 @@ void StubBase::removeNotificationListener( unsigned int msgId, const ProxyAddres
     }
 }
 
-void StubBase::clientConnected(const ProxyAddress & client, bool isConnected)
+void StubBase::clientConnected(const ProxyAddress & client, NEService::eServiceConnection status )
 {
-    if ( isConnected == false )
-        clearAllListeners(client);
-}
-
-void StubBase::processClientConnectEvent( const ProxyAddress & proxyAddress, NEService::eServiceConnection connectionStatus )
-{
-    switch ( connectionStatus )
+    if ( NEService::isServiceDisconnected( status ) )
     {
-    case NEService::eServiceConnection::ServiceConnected:
-        clientConnected( proxyAddress, true );
-        break;
-
-    case NEService::eServiceConnection::ServicePending:
-        break;  // do nothing, the client connection is pending
-
-    case NEService::eServiceConnection::ServiceFailed:              // fall through
-    case NEService::eServiceConnection::ServiceRejected:            // fall through
-    case NEService::eServiceConnection::ServiceConnectionUnknown:
-        ASSERT(false);  // unexpected here
-        break;
-
-    case NEService::eServiceConnection::ServiceDisconnected:        // fall through
-    case NEService::eServiceConnection::ServiceShutdown:            // fall through
-    default:
-        clientConnected( proxyAddress, false );
-        break;
+        clearAllListeners( client );
     }
 }
 
-void StubBase::processStubRegisteredEvent(const StubAddress & stubTarget, NEService::eServiceConnection connectionStatus)
+void StubBase::processClientConnectEvent( const ProxyAddress & proxyAddress, NEService::eServiceConnection status )
 {
-    if ( connectionStatus == NEService::eServiceConnection::ServiceConnected )
+    clientConnected( proxyAddress, status );
+}
+
+void StubBase::processStubRegisteredEvent(const StubAddress & stubTarget, NEService::eServiceConnection status )
+{
+    if ( NEService::isServiceConnected( status) )
     {
         ASSERT( stubTarget.isValid() );
         _mapRegisteredStubs.lock();
@@ -480,7 +462,7 @@ void StubBase::processStubRegisteredEvent(const StubAddress & stubTarget, NEServ
         _mapRegisteredStubs.unlock();
     }
 
-    mConnectionStatus = connectionStatus;
+    mConnectionStatus = status;
 }
 
 const Version & StubBase::getImplVersion( void ) const

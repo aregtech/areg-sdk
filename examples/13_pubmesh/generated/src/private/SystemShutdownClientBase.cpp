@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:08:55 GMT+01:00
+ * Generated at     23.07.2023  03:04:29 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SystemShutdown.
  *
  * \file            generated/src/SystemShutdownClientBase.hpp
@@ -44,7 +44,7 @@ namespace NESystemShutdown
  * Constructor / Destructor
  ************************************************************************/
 
-SystemShutdownClientBase::SystemShutdownClientBase( const String & roleName, const String & ownerThread /* = String::getEmptyString() */ )
+SystemShutdownClientBase::SystemShutdownClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -98,11 +98,11 @@ SystemShutdownClientBase::~SystemShutdownClientBase( void )
 
 bool SystemShutdownClientBase::recreateProxy( void )
 {
-    bool result         = false;
+    bool result { false };
     if (mProxy != nullptr)
     {
-        const String & roleName   = mProxy->getProxyAddress().getRoleName();
-        const String & threadName = mProxy->getProxyAddress().getThread();
+        const String & roleName   { mProxy->getProxyAddress().getRoleName() };
+        const String & threadName { mProxy->getProxyAddress().getThread()   };
         if ( roleName.isEmpty() == false )
         {
             SystemShutdownProxy * newProxy = SystemShutdownProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), threadName);
@@ -125,21 +125,21 @@ DispatcherThread * SystemShutdownClientBase::getDispatcherThread( void )
 }
 
 DEF_TRACE_SCOPE(generated_src_SystemShutdownClientBase_serviceConnected);
-bool SystemShutdownClientBase::serviceConnected( bool isConnected, ProxyBase & proxy )
+bool SystemShutdownClientBase::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
 {
     TRACE_SCOPE(generated_src_SystemShutdownClientBase_serviceConnected);
 
-    bool result = false;
+    bool result { false };
     if(mProxy == &proxy)
     {
+        mIsConnected= NEService::isServiceConnected(status);
+        result      = true;
+
         TRACE_DBG("Client [ %p ]: The Service [ %s ] with Role Name [ %s ] is [ %s ]"
                  , this
                  , proxy.getProxyAddress().getServiceName().getString()
                  , proxy.getProxyAddress().getRoleName().getString()
-                 , isConnected ? "CONNECTED" : "DISCONNECTED");
-
-        mIsConnected= isConnected;
-        result      = true;
+                 , mIsConnected ? "CONNECTED" : "DISCONNECTED");
     }
 
     return result;
@@ -160,9 +160,9 @@ void SystemShutdownClientBase::notifyOn( NESystemShutdown::eMessageIDs msgId, bo
 DEF_TRACE_SCOPE(generated_src_SystemShutdownClientBase_processNotificationEvent);
 void SystemShutdownClientBase::processNotificationEvent( NotificationEvent & eventElem )
 {
-    const NotificationEventData & data  = static_cast<const NotificationEvent &>(eventElem).getData();
-    NEService::eResultType result       = data.getNotifyType();
-    NESystemShutdown::eMessageIDs msgId   = static_cast<NESystemShutdown::eMessageIDs>(data.getNotifyId());
+    const NotificationEventData & data  { static_cast<const NotificationEvent &>(eventElem).getData() };
+    NEService::eResultType result       { data.getNotifyType() };
+    NESystemShutdown::eMessageIDs msgId   { static_cast<NESystemShutdown::eMessageIDs>(data.getNotifyId()) };
     mCurrSequenceNr = data.getSequenceNr();
 
     switch (result)
@@ -268,8 +268,7 @@ void SystemShutdownClientBase::requestFailed( NESystemShutdown::eMessageIDs Fail
                     , ProxyAddress::convAddressToPath(mProxy->getProxyAddress()).getString()
                     , NEService::getString(FailureReason) );
 
-    unsigned int index = static_cast<msg_id>(NESystemShutdown::eMessageIDs::MsgId_Invalid);
-    index = static_cast<msg_id>( NEService::isResponseId(static_cast<unsigned int>(FailureMsgId)) ? NESystemShutdown::getRequestId(FailureMsgId) : FailureMsgId);
+    msg_id index { static_cast<msg_id>( NEService::isResponseId(static_cast<unsigned int>(FailureMsgId)) ? NESystemShutdown::getRequestId(FailureMsgId) : FailureMsgId) };
     index = NEService::isRequestId(index)  ? GET_REQ_INDEX(index) : static_cast<msg_id>(NESystemShutdown::eMessageIDs::MsgId_Invalid);
     if ( index != static_cast<msg_id>(NESystemShutdown::eMessageIDs::MsgId_Invalid) && (index < NESystemShutdown::getInterfaceData().idRequestCount) )
     {

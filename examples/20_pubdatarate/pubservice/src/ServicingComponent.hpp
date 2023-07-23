@@ -86,7 +86,7 @@ class ServicingComponent    : public    Component
         ServicingComponent &    mService;   //!< The service, which handles the options
 
     //////////////////////////////////////////////////////////////////////////
-    // Forbidden calss
+    // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
         OptionConsumer( void ) = delete;
         DECLARE_NOCOPY_NOMOVE(OptionConsumer);
@@ -122,7 +122,7 @@ class ServicingComponent    : public    Component
         ServicingComponent &    mService;   //!< The service, which handles the options
 
     //////////////////////////////////////////////////////////////////////////
-    // Forbidden calss
+    // Forbidden calls
     //////////////////////////////////////////////////////////////////////////
         TimerConsumer( void ) = delete;
         DECLARE_NOCOPY_NOMOVE(TimerConsumer);
@@ -215,11 +215,11 @@ protected:
      **/
     ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & owner);
 
-    /**
-     * \brief   Destructor.
-     **/
     virtual ~ServicingComponent(void) = default;
 
+//////////////////////////////////////////////////////////////////////////
+// Overrides
+//////////////////////////////////////////////////////////////////////////
 protected:
 
 /************************************************************************/
@@ -243,13 +243,15 @@ protected:
      **/
     virtual void shutdownServiceIntrface ( Component & holder ) override;
 
+/************************************************************************/
+// StubBase overrides
+/************************************************************************/
     /**
      * \brief   Triggered when proxy client either connected or disconnected to stub.
-     * \param   client      The address of proxy client, which connection status is changed.
-     * \param   isConnected Flag, indicating whether client is connected or disconnected.
-     *                      When client disconnects, all listeners are removed.
+     * \param   client  The address of proxy client, which connection status is changed.
+     * \param   status  The service consumer connection status.
      **/
-    virtual void clientConnected( const ProxyAddress & client, bool isConnected ) override;
+    virtual void clientConnected( const ProxyAddress & client, NEService::eServiceConnection status ) override;
 
 /************************************************************************/
 // IEThreadConsumer interface overrides

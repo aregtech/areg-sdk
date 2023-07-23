@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:08:00 GMT+01:00
+ * Generated at     23.07.2023  03:04:03 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/private/HelloWorldProxy.hpp
@@ -56,7 +56,7 @@ HelloWorldProxy * HelloWorldProxy::createProxy( const String & roleName, IEProxy
                                                                       , ownerThread).get() );
 }
 
-HelloWorldProxy * HelloWorldProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::getEmptyString()*/ )
+HelloWorldProxy * HelloWorldProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
 {
     return static_cast<HelloWorldProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEHelloWorld::getInterfaceData()
@@ -81,10 +81,6 @@ HelloWorldProxy::HelloWorldProxy( const String & roleName, DispatcherThread * ow
     , mParamclientName    (  )
     , mParamclientId      (  )
     , mParammaxNumber     (  )
-{
-}
-
-HelloWorldProxy::~HelloWorldProxy( void )
 {
 }
 
@@ -138,7 +134,7 @@ unsigned int HelloWorldProxy::requestHelloWorld( IENotificationEventConsumer & c
     sendRequestEvent( static_cast<unsigned int>(msgId), args, &caller );
     return mSequenceCount;
 }
-    
+
 void HelloWorldProxy::requestShutdownService( unsigned int clientID, const String & roleName )
 {
     static const NEHelloWorld::eMessageIDs msgId = NEHelloWorld::eMessageIDs::MsgId_requestShutdownService;
@@ -160,18 +156,26 @@ void HelloWorldProxy::processResponseEvent( ServiceResponseEvent & eventElem )
 {
     HelloWorldResponseEvent * eventResp = RUNTIME_CAST( &eventElem, HelloWorldResponseEvent );
     if (eventResp != nullptr)
+    {
         processResponse( *eventResp );
+    }
     else
+    {
         processProxyEvent( eventElem );
+    }
 }
 
 void HelloWorldProxy::processAttributeEvent( ServiceResponseEvent & eventElem )
 {
     HelloWorldResponseEvent * eventResp = RUNTIME_CAST( &eventElem, HelloWorldResponseEvent );
     if (eventResp != nullptr)
+    {
         processResponse( *eventResp );
+    }
     else
+    {
         processProxyEvent( eventElem );
+    }
 }
 
 /************************************************************************
@@ -181,7 +185,7 @@ void HelloWorldProxy::processAttributeEvent( ServiceResponseEvent & eventElem )
 DEF_TRACE_SCOPE(generated_src_private_HelloWorldProxy_updateData);
 void HelloWorldProxy::updateData( HelloWorldResponseEvent & eventElem, NEHelloWorld::eMessageIDs respId )
 {
-    const IEInStream & stream = static_cast<const HelloWorldResponseEvent &>(eventElem).getData().getReadStream();
+    const IEInStream & stream { static_cast<const HelloWorldResponseEvent &>(eventElem).getData().getReadStream() };
 
     switch (respId)
     {
@@ -215,13 +219,13 @@ void HelloWorldProxy::updateData( HelloWorldResponseEvent & eventElem, NEHelloWo
     }
 }
 
-    void HelloWorldProxy::processResponse( HelloWorldResponseEvent & evenElem )
+void HelloWorldProxy::processResponse( HelloWorldResponseEvent & evenElem )
 {
-    NEHelloWorld::eMessageIDs respId  = static_cast<NEHelloWorld::eMessageIDs>(evenElem.getResponseId());
-    NEService::eResultType resultType  = evenElem.getResult();
+    NEHelloWorld::eMessageIDs respId  { static_cast<NEHelloWorld::eMessageIDs>(evenElem.getResponseId()) };
+    NEService::eResultType resultType   { evenElem.getResult() };
 
-    bool dataValid  = false;
-    bool setStates  = true;
+    bool dataValid { false };
+    bool setStates { true  };
 
     switch (resultType)
     {
@@ -255,12 +259,12 @@ void HelloWorldProxy::updateData( HelloWorldResponseEvent & eventElem, NEHelloWo
         break;
     }
 
-    if (dataValid == true)
+    if ( dataValid )
     {
         updateData(evenElem, respId);
     }
 
-    if (setStates == true)
+    if ( setStates )
     {
         setState(static_cast<msg_id>(respId), dataValid ? NEService::eDataStateType::DataIsOK : NEService::eDataStateType::DataIsInvalid);
     }

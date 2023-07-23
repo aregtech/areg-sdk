@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:09:24 GMT+01:00
+ * Generated at     23.07.2023  03:04:51 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PatientInformation.
  *
  * \file            generated/src/PatientInformationStub.hpp
@@ -36,7 +36,6 @@ PatientInformationStub::PatientInformationStub( Component & masterComp )
 
     , mPatient        (  )
     , mPatientState   ( NEService::eDataStateType::DataIsUnavailable )
-    
 {
 }
 
@@ -95,7 +94,7 @@ DEF_TRACE_SCOPE(generated_src_PatientInformationStub_sendNotification);
 void PatientInformationStub::sendNotification( unsigned int msgId )
 {
     EventDataStream args(EventDataStream::eEventData::EventDataExternal);
-    IEOutStream & stream = args.getStreamForWrite();
+    IEOutStream & stream { args.getStreamForWrite() };
 
     switch ( static_cast<NEPatientInformation::eMessageIDs>(msgId) )
     {
@@ -118,8 +117,8 @@ void PatientInformationStub::sendNotification( unsigned int msgId )
 DEF_TRACE_SCOPE(generated_src_PatientInformationStub_errorRequest);
 void PatientInformationStub::errorRequest( unsigned int msgId, bool msgCancel )
 {
-    NEService::eResultType result = NEService::eResultType::NotProcessed;
-    msg_id listenerId = msgId;
+    NEService::eResultType result { NEService::eResultType::NotProcessed };
+    msg_id listenerId { msgId };
 
     switch ( static_cast<NEPatientInformation::eMessageIDs>(msgId) )
     {
@@ -197,9 +196,9 @@ void PatientInformationStub::processRequestEvent( ServiceRequestEvent & eventEle
         msg_id reqId = static_cast<msg_id>(reqEvent->getRequestId());
         StubBase::Listener listener( reqId, 0, reqEvent->getEventSource() );
 
-    TRACE_SCOPE(generated_src_PatientInformationStub_processRequestEvent);
-    TRACE_ERR("The service PatientInformation has no request. Unexpected request ID [ %d ] to process in Stub [ %s ]!", reqId, StubAddress::convAddressToPath(mAddress).getString());
-    ASSERT(false);
+        TRACE_SCOPE(generated_src_PatientInformationStub_processRequestEvent);
+        TRACE_ERR("The service PatientInformation has no request. Unexpected request ID [ %d ] to process in Stub [ %s ]!", reqId, StubAddress::convAddressToPath(mAddress).getString());
+        ASSERT(false);
     }
 
     cancelCurrentRequest();
@@ -208,16 +207,16 @@ void PatientInformationStub::processRequestEvent( ServiceRequestEvent & eventEle
 DEF_TRACE_SCOPE(generated_src_PatientInformationStub_processAttributeEvent);
 void PatientInformationStub::processAttributeEvent( ServiceRequestEvent & eventElem )
 {
-    const NEService::eRequestType reqType = eventElem.getRequestType();
+    const NEService::eRequestType reqType { eventElem.getRequestType() };
+    const ProxyAddress & source { eventElem.getEventSource( ) };
     if (reqType == NEService::eRequestType::RemoveAllNotify)
     {
         IntegerArray removedIds;
-        StubBase::clearAllListeners(eventElem.getEventSource(), removedIds);
+        StubBase::clearAllListeners(source, removedIds);
     }
     else
     {
-        NEPatientInformation::eMessageIDs updId  = static_cast<NEPatientInformation::eMessageIDs>(eventElem.getRequestId());
-        const ProxyAddress & source = eventElem.getEventSource( );
+        NEPatientInformation::eMessageIDs updId  { static_cast<NEPatientInformation::eMessageIDs>(eventElem.getRequestId()) };
         if (reqType == NEService::eRequestType::StopNotify)
         {
             removeNotificationListener( static_cast<msg_id>(updId), source );

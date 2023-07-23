@@ -37,20 +37,18 @@ PublicHelloWorldClient::PublicHelloWorldClient( const NERegistry::DependencyEntr
 {
 }
 
-bool PublicHelloWorldClient::serviceConnected(bool isConnected, ProxyBase & proxy)
+bool PublicHelloWorldClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
 {
     TRACE_SCOPE(examples_13_pubmesh_common_PublicHelloWorldClient_serviceConnected);
-    TRACE_DBG("Client [ %p ] - [ %s ] is [ %s ]"
-                , this
-                , ProxyAddress::convAddressToPath(proxy.getProxyAddress()).getString()
-                , isConnected ? "CONNECTED" : "DISCONNECTED");
-
     bool result{ false };
-    if ( PublicHelloWorldClientBase::serviceConnected(isConnected, proxy) )
+
+    // Since this class is using multiple proxies and client base classes, check for each of that class.
+    if ( PublicHelloWorldClientBase::serviceConnected(status, proxy) )
     {
+        result = true;
         // Reset the ID here. Otherwise, it keeps old value when service connection lost.
         mClient.crID = 0;
-        if (isConnected )
+        if ( PublicHelloWorldClientBase::isConnected() )
         {
             TRACE_DBG("Client [ %p ]-[ %s ] sends request to register", this, mTimer.getName().getString());
             requestRegister(mTimer.getName(), proxy.getProxyAddress(), proxy.getProxyDispatcherThread().getName(), Process::getInstance().getAppName());
@@ -59,14 +57,11 @@ bool PublicHelloWorldClient::serviceConnected(bool isConnected, ProxyBase & prox
         {
             mTimer.stopTimer( );
         }
-
-        result = true;
     }
-    else if (SystemShutdownClientBase::serviceConnected(isConnected, proxy))
+    else if (SystemShutdownClientBase::serviceConnected(status, proxy))
     {
         TRACE_DBG("Client [ %p ]-[ %s ]subscribes on service unavailable and service state update messages", this, mTimer.getName().getString());
-        notifyOnServiceStateUpdate( isConnected );
-
+        notifyOnServiceStateUpdate( SystemShutdownClientBase::isConnected() );
         result = true;
     }
 

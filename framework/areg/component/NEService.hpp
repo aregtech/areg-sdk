@@ -173,25 +173,80 @@ namespace NEService
      **/
     typedef enum class E_ServiceConnection : uint16_t
     {
-          ServiceConnectionUnknown  =    0  /*0x0000*/  //!< Connection is unknown.               Bit set: 0000 0000
-        , ServiceConnected          =    1  /*0x0001*/  //!< Service Connected, ready to serve.   Bit set: 0000 0001
-        , ServicePending            =    3  /*0x0003*/  //!< Service Connection is pending.       Bit set: 0000 0011
-        , ServiceDisconnected       =   16  /*0x0010*/  //!< Service disconnected.                Bit set: 0001 0000
-        , ServiceRejected           =   48  /*0x0030*/  //!< Service Connection rejected.         Bit set: 0011 0000
-        , ServiceFailed             =   80  /*0x0050*/  //!< Service Connection failed.           Bit set: 0101 0000
-        , ServiceShutdown           =  144  /*0x0090*/  //!< Service shut down, no connection.    Bit set: 1001 0000
+          ServiceConnectionUnknown  =    0  /*0x0000*/  //!< Connection is unknown.             Bit set: 0000 0000 0000 0000
+        , ServiceConnected          =    1  /*0x0001*/  //!< Service connected, ready to serve. Bit set: 0000 0000 0000 0001
+        , ServiceDisconnected       =  256  /*0x0100*/  //!< Service disconnected.              Bit set: 0000 0001 0000 0000
+        , ServicePending            =  257  /*0x0101*/  //!< Service connection is pending.     Bit set: 0000 0001 0000 0001
+        , ServiceConnectionLost     =  768  /*0x0300*/  //!< Service lost connection.           Bit set: 0000 0011 0000 0000
+        , ServiceRejected           = 1280  /*0x0500*/  //!< Service connection rejected.       Bit set: 0000 0101 0000 0000
+        , ServiceFailed             = 2304  /*0x0900*/  //!< Service connection failed.         Bit set: 0000 1001 0000 0000
+        , ServiceShutdown           = 4352  /*0x1100*/  //!< Service shut down, no connection.  Bit set: 0001 0001 0000 0000
     } eServiceConnection;
+
     /**
      * \brief   Returns string value of NEService::eDataType type
      **/
     inline const char* getString( NEService::eServiceConnection serviceConnection );
 
+    /**
+     * \brief   Returns true if the service connection status is connected.
+     **/
+    inline bool isServiceConnected( NEService::eServiceConnection connectionStatus );
+
+    /**
+     * \brief   Returns true if the service connection status is connected.
+     **/
+    inline bool isServiceConnectionPending( NEService::eServiceConnection connectionStatus );
+
+    /**
+     * \brief   Returns true if the service connection status is rejected.
+     **/
+    inline bool isServiceRejected( NEService::eServiceConnection connectionStatus );
+
+    /**
+     * \brief   Returns true if the service connection status is connection lost.
+     **/
+    inline bool isServiceConnectionLost( NEService::eServiceConnection connectionStatus );
+
+    /**
+     * \brief   Returns true if the status is not connected.
+     **/
+    inline bool isServiceDisconnected( NEService::eServiceConnection connectionStatus );
+
+    /**
+     * \brief   NEService::eDisconnectReason
+     *          The service provider and service consumer disconnect reason.
+     *          Valid only when service is not connected. Otherwise, it should be ignored.
+     **/
+    typedef enum class E_DisconnectReason : uint16_t
+    {
+          ReasonUndefined               = 0     //!< Undefined disconnect reason.
+        , ReasonRouterDisconnected      = 1     //!< The router is disconnected.
+        , ReasonRouterLost              = 2     //!< The router connection is lost.
+        , ReasonRouterRejected          = 4     //!< The router rejected connection.
+        , ReasonProviderDisconnected    = 8     //!< The service provider disconnected.
+        , ReasonProviderLost            = 16    //!< The connection with service provider is lost.
+        , ReasonProviderRejected        = 32    //!< The service provider rejected the service consumer.
+        , ReasonConsumerDisconnected    = 64    //!< The service consumer is disconnected.
+        , ReasonConsumerLost            = 128   //!< The connection with service consumer is lost.
+        , ReasonConsumerNotSupported    = 256   //!< The service consumer is rejected because is not supported (wrong version, for example).
+        , ReasonSystemShutdown          = 512   //!< The system is shutting down.
+    } eDisconnectReason;
+
+    inline const char * getString( NEService::eDisconnectReason reason );
+
+    inline NEService::eServiceConnection serviceConnection( NEService::eDisconnectReason reason );
+
+    /**
+     * \brief   NEService::eServiceRequestType
+     *          The service request types.
+     **/
     typedef enum class E_ServiceRequestType : uint16_t
     {
-          RegisterClient    = 0x10  //!< Client requests to register for service.     Bit set:    0001 0000
-        , UnregisterClient  = 0x11  //!< Client requests to unregister for service.   Bit set:    0001 0001
-        , RegisterStub      = 0x20  //!< Server requests to register for service.     Bit set:    0010 0000
-        , UnregisterStub    = 0x21  //!< Server requests to unregister for service.   Bit set:    0010 0001
+          RegisterClient    = 0x0010    //!< Client requests to register.           Bit set: 0001 0000
+        , UnregisterClient  = 0x0011    //!< Client requests to unregister.         Bit set: 0001 0001
+        , RegisterStub      = 0x0020    //!< Server requests to register.           Bit set: 0010 0000
+        , UnregisterStub    = 0x0021    //!< Server requests to unregister.         Bit set: 0010 0001
     } eServiceRequestType;
     
     /**
@@ -205,10 +260,10 @@ namespace NEService
      **/
     typedef enum class E_ServiceType : uint16_t
     {
-          ServiceInvalid    = 0x00  //!< Invalid Service      Bit set: 0000 0000
-        , ServiceLocal      = 0x40  //!< Local Service.       Bit set: 0100 0000
-        , ServicePublic     = 0x80  //!< External Service.    Bit set: 1000 0000
-        , ServiceAny        = 0xC0  //!< Any service.         Bit set: 1100 0000
+          ServiceInvalid    = 0x0000    //!< Invalid Service      Bit set: 0000 0000 0000 0000
+        , ServiceLocal      = 0x0040    //!< Local Service.       Bit set: 0000 0000 0100 0000
+        , ServicePublic     = 0x0080    //!< External Service.    Bit set: 0000 0000 1000 0000
+        , ServiceAny        = 0x00C0    //!< Any service.         Bit set: 0000 0000 1100 0000
     } eServiceType;
 
     /**
@@ -945,6 +1000,7 @@ IMPLEMENT_STREAMABLE(NEService::eDataStateType)
 IMPLEMENT_STREAMABLE(NEService::eRequestType)
 IMPLEMENT_STREAMABLE(NEService::eMessageDataType)
 IMPLEMENT_STREAMABLE(NEService::eServiceConnection)
+IMPLEMENT_STREAMABLE(NEService::eDisconnectReason)
 IMPLEMENT_STREAMABLE(NEService::eServiceRequestType)
 IMPLEMENT_STREAMABLE(NEService::eServiceType)
 IMPLEMENT_STREAMABLE(NEService::eFuncIdRange)
@@ -952,6 +1008,61 @@ IMPLEMENT_STREAMABLE(NEService::eFuncIdRange)
 //////////////////////////////////////////////////////////////////////////
 // namespace NEService inline function implementation
 //////////////////////////////////////////////////////////////////////////
+
+inline bool NEService::isServiceConnected( NEService::eServiceConnection connectionStatus )
+{
+    return (connectionStatus == NEService::eServiceConnection::ServiceConnected);
+}
+
+bool NEService::isServiceConnectionPending( NEService::eServiceConnection connectionStatus )
+{
+    return (connectionStatus == NEService::eServiceConnection::ServicePending);
+}
+
+inline bool NEService::isServiceRejected( NEService::eServiceConnection connectionStatus )
+{
+    return (connectionStatus == NEService::eServiceConnection::ServiceRejected);
+}
+
+inline bool NEService::isServiceConnectionLost( NEService::eServiceConnection connectionStatus )
+{
+    return (connectionStatus == NEService::eServiceConnection::ServiceConnectionLost);
+}
+
+inline bool NEService::isServiceDisconnected( NEService::eServiceConnection connectionStatus )
+{
+    return (connectionStatus != NEService::eServiceConnection::ServiceConnected);
+}
+
+inline NEService::eServiceConnection NEService::serviceConnection( NEService::eDisconnectReason reason )
+{
+    switch ( reason )
+    {
+    case NEService::eDisconnectReason::ReasonUndefined:
+        return NEService::eServiceConnection::ServiceConnectionUnknown;
+    
+    case NEService::eDisconnectReason::ReasonRouterDisconnected:
+    case NEService::eDisconnectReason::ReasonRouterLost:
+    case NEService::eDisconnectReason::ReasonProviderLost:
+    case NEService::eDisconnectReason::ReasonConsumerLost:
+        return NEService::eServiceConnection::ServiceConnectionLost;
+
+    case NEService::eDisconnectReason::ReasonRouterRejected:
+    case NEService::eDisconnectReason::ReasonProviderRejected:
+    case NEService::eDisconnectReason::ReasonConsumerDisconnected:
+    case NEService::eDisconnectReason::ReasonConsumerNotSupported:
+        return NEService::eServiceConnection::ServiceRejected;
+
+    case NEService::eDisconnectReason::ReasonProviderDisconnected:
+        return NEService::eServiceConnection::ServiceDisconnected;
+
+    case NEService::eDisconnectReason::ReasonSystemShutdown:
+        return NEService::eServiceConnection::ServiceShutdown;
+
+    default:
+        return NEService::eServiceConnection::ServiceConnected;
+    }
+}
 
 inline bool NEService::isRequestId(unsigned int msgId)
 {
@@ -1248,12 +1359,14 @@ inline const char* NEService::getString( NEService::eServiceConnection serviceCo
     {
     case NEService::eServiceConnection::ServiceConnectionUnknown:
         return "NEService::eServiceConnection::ServiceConnectionUnknown";
-    case NEService::eServiceConnection::ServiceDisconnected:
-        return "NEService::eServiceConnection::ServiceDisconnected";
-    case NEService::eServiceConnection::ServicePending:
-        return "NEService::eServiceConnection::ServicePending";
     case NEService::eServiceConnection::ServiceConnected:
         return "NEService::eServiceConnection::ServiceConnected";
+    case NEService::eServiceConnection::ServicePending:
+        return "NEService::eServiceConnection::ServicePending";
+    case NEService::eServiceConnection::ServiceDisconnected:
+        return "NEService::eServiceConnection::ServiceDisconnected";
+    case NEService::eServiceConnection::ServiceConnectionLost:
+        return "NEService::eServiceConnection::ServiceConnectionLost";
     case NEService::eServiceConnection::ServiceRejected:
         return "NEService::eServiceConnection::ServiceRejected";
     case NEService::eServiceConnection::ServiceFailed:
@@ -1263,6 +1376,38 @@ inline const char* NEService::getString( NEService::eServiceConnection serviceCo
     default:
         ASSERT(false);
         return "ERR: Undefined NEService::eServiceConnection value!";
+    }
+}
+
+inline const char * NEService::getString( NEService::eDisconnectReason reason )
+{
+    switch ( reason )
+    {
+    case NEService::eDisconnectReason::ReasonUndefined:
+        return "NEService::eDisconnectReason::ReasonUndefined";
+    case NEService::eDisconnectReason::ReasonRouterDisconnected:
+        return "NEService::eDisconnectReason::ReasonRouterDisconnected";
+    case NEService::eDisconnectReason::ReasonRouterLost:
+        return "NEService::eDisconnectReason::ReasonRouterLost";
+    case NEService::eDisconnectReason::ReasonRouterRejected:
+        return "NEService::eDisconnectReason::ReasonRouterRejected";
+    case NEService::eDisconnectReason::ReasonProviderDisconnected:
+        return "NEService::eDisconnectReason::ReasonProviderDisconnected";
+    case NEService::eDisconnectReason::ReasonProviderLost:
+        return "NEService::eDisconnectReason::ReasonProviderLost";
+    case NEService::eDisconnectReason::ReasonProviderRejected:
+        return "NEService::eDisconnectReason::ReasonProviderRejected";
+    case NEService::eDisconnectReason::ReasonConsumerDisconnected:
+        return "NEService::eDisconnectReason::ReasonConsumerDisconnected";
+    case NEService::eDisconnectReason::ReasonConsumerLost:
+        return "NEService::eDisconnectReason::ReasonConsumerLost";
+    case NEService::eDisconnectReason::ReasonConsumerNotSupported:
+        return "NEService::eDisconnectReason::ReasonConsumerNotSupported";
+    case NEService::eDisconnectReason::ReasonSystemShutdown:
+        return "NEService::eDisconnectReason::ReasonSystemShutdown";
+    default:
+        ASSERT( false );
+        return "ERR: Undefined NEService::eDisconnectReason value!";
     }
 }
 

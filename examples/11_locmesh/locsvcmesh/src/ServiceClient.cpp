@@ -37,32 +37,22 @@ ServiceClient::ServiceClient(const String & roleName, Component & owner)
     TRACE_DBG("Proxy: [ %s ]", ProxyAddress::convAddressToPath(getProxy()->getProxyAddress()).getString());
 }
 
-bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
+bool ServiceClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
 {
     TRACE_SCOPE(examples_11_locsvcmesh_ServiceClient_serviceConnected);
-    if ( HelloWorldClientBase::serviceConnected( isConnected, proxy ) )
+    bool result = HelloWorldClientBase::serviceConnected( status, proxy );
+    if ( isConnected( ) )
     {
-        TRACE_DBG( "Proxy [ %s ] is [ %s ]"
-            , ProxyAddress::convAddressToPath( proxy.getProxyAddress( ) ).getString( )
-            , isConnected ? "connected" : "disconnected" );
-
-        notifyOnBroadcastReachedMaximum( isConnected );
-
-        if ( isConnected )
-        {
-            mTimer.startTimer( ServiceClient::TIMEOUT_VALUE );    // dynamic subscribe.
-        }
-        else
-        {
-            mTimer.stopTimer( );
-        }
-
-        return true;
+        notifyOnBroadcastReachedMaximum( true );
+        mTimer.startTimer( ServiceClient::TIMEOUT_VALUE );
     }
     else
     {
-        return false;
+        notifyOnBroadcastReachedMaximum( false );
+        mTimer.stopTimer( );
     }
+
+    return result;
 }
 
 void ServiceClient::responseHelloWorld( const String & clientName, unsigned int clientId )

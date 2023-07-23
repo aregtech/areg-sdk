@@ -7,7 +7,7 @@
 #include "chatter/services/NetworkSetup.hpp"
 #include "chatter/ui/PageNetworkSetup.hpp"
 #include "chatter/ui/DistributedDialog.hpp"
-#include "generated/NECommon.hpp"
+#include "common/NECommon.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/NESocket.hpp"
 #include "areg/ipc/ConnectionConfiguration.hpp"

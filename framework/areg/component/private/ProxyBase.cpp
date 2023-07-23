@@ -216,7 +216,7 @@ std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const String & roleName
                     proxy->registerServiceListeners( );
                     ServiceManager::requestRegisterClient( proxy->getProxyAddress( ) );
                 }
-                else if ( proxy->mIsConnected )
+                else if ( proxy->isConnected() )
                 {
                     proxy->sendServiceAvailableEvent( proxy->createServiceAvailableEvent(connect) );
                 }
@@ -273,7 +273,7 @@ ProxyBase::ProxyBase(const String & roleName, const NEService::SInterfaceData & 
     , mListConnect      (   )
     , mProxyInstCount   ( 0 )
 
-    , mIsConnected      ( false )
+    , mConnectionStatus ( NEService::eServiceConnection::ServiceConnectionUnknown )
     , mIsStopped        ( false )
 
     , mProxyData        ( serviceIfData )
@@ -304,7 +304,7 @@ void ProxyBase::freeProxy( IEProxyListener & connect )
     if ( exists >= 0 )
     {
         mListConnect.removeAt(exists);
-        connect.serviceConnected(false, self());
+        connect.serviceConnected(NEService::eServiceConnection::ServiceDisconnected, self());
     }
 
     removeListener( static_cast<unsigned int>(NEService::eFuncIdRange::ServiceNotifyConnection)
@@ -325,11 +325,11 @@ void ProxyBase::freeProxy( IEProxyListener & connect )
             unregisterServiceListeners( );
             mListenerList.clear();
 
-            ServiceManager::requestUnregisterClient( getProxyAddress( ) );
+            ServiceManager::requestUnregisterClient( getProxyAddress( ), NEService::eDisconnectReason::ReasonConsumerDisconnected );
             mDispatcherThread.removeConsumer( *this );
         }
 
-        mIsConnected = false;
+        mConnectionStatus = NEService::eServiceConnection::ServiceDisconnected;
         mIsStopped   = true;
 
         mProxyInstCount = 0;
@@ -349,10 +349,10 @@ void ProxyBase::terminateSelf(void)
         mListenerList.clear();
         if (mIsStopped == false)
         {
-            ServiceManager::requestUnregisterClient(getProxyAddress());
+            ServiceManager::requestUnregisterClient(getProxyAddress(), NEService::eDisconnectReason::ReasonConsumerDisconnected );
         }
 
-        mIsConnected    = false;
+        mConnectionStatus = NEService::eServiceConnection::ServiceDisconnected;
         mIsStopped      = true;
         mProxyInstCount = 0;
 
@@ -374,14 +374,13 @@ void ProxyBase::serviceConnectionUpdated( const StubAddress & server, const Chan
 
         ASSERT(channel.getTarget() == server.getSource() || status != NEService::eServiceConnection::ServiceConnected);
         mProxyAddress.setChannel(channel);
-        if ( status == NEService::eServiceConnection::ServiceConnected )
+        mConnectionStatus = status;
+        if ( isConnected() )
         {
-            mIsConnected = true;
             mStubAddress = server;
         }
         else
         {
-            mIsConnected = false;
             mStubAddress = StubAddress::getInvalidStubAddress();
             mProxyData.resetStates();
         }
@@ -402,19 +401,20 @@ void ProxyBase::serviceConnectionUpdated( const StubAddress & server, const Chan
 
         TRACE_DBG("Notifying [ %d ] clients the service connection", conListeners.getSize());
 
+        bool proxyConnected{ isConnected( ) };
         for (index = 0 ; index < conListeners.getSize(); ++ index)
         {
             ProxyBase::Listener& listener = conListeners[index];
             IEProxyListener * consumer = static_cast<IEProxyListener *>(listener.mListener);
-            if (mIsConnected)
+            if ( proxyConnected )
             {
                 mListConnect.addIfUnique(consumer);
-                consumer->serviceConnected( true, *this );
+                consumer->serviceConnected( mConnectionStatus, *this );
             }
             else
             {
                 mListConnect.removeElem(consumer, 0);
-                consumer->serviceConnected(false, *this);
+                consumer->serviceConnected( mConnectionStatus, *this );
                 mListenerList.addIfUnique(listener);
             }
         }
@@ -548,11 +548,11 @@ void ProxyBase::processProxyEvent( ProxyEvent& eventElem )
 {
     ASSERT(eventElem.getTargetProxy() == getProxyAddress());
 }
-#else
+#else   // !DEBUG
 void ProxyBase::processProxyEvent( ProxyEvent& /*eventElem*/ )
 {
 }
-#endif
+#endif  // DEBUG
 
 void ProxyBase::processGenericEvent( Event& eventElem )
 {
@@ -624,9 +624,9 @@ bool ProxyBase::isServiceListenerRegistered( IENotificationEventConsumer & calle
 
 void ProxyBase::processServiceAvailableEvent( IENotificationEventConsumer & consumer )
 {
-    if (mIsConnected && isServiceListenerRegistered(consumer))
+    if (isConnected() && isServiceListenerRegistered( consumer ) )
     {
-        static_cast<IEProxyListener&>(consumer).serviceConnected(true, self());
+        static_cast<IEProxyListener&>(consumer).serviceConnected(mConnectionStatus, self());
     }
 }
 
@@ -655,18 +655,18 @@ void ProxyBase::stopProxy(void)
         {
             IEProxyListener * listener = mListConnect.getAt(i);
             ASSERT(listener != nullptr);
-            listener->serviceConnected(false, *this);
+            listener->serviceConnected( NEService::eServiceConnection::ServiceDisconnected, *this);
         }
 
         mListConnect.clear();
 
-        mIsConnected = false;
-        mIsStopped   = true;
+        mConnectionStatus = NEService::eServiceConnection::ServiceDisconnected;
+        mIsStopped = true;
 
         stopAllServiceNotifications( );
         unregisterServiceListeners( );
         mListenerList.clear();
-        ServiceManager::requestUnregisterClient( getProxyAddress( ) );
+        ServiceManager::requestUnregisterClient( getProxyAddress( ), NEService::eDisconnectReason::ReasonConsumerDisconnected );
         mDispatcherThread.removeConsumer( *this );
 
         mStubAddress = StubAddress::getInvalidStubAddress();

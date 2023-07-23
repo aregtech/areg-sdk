@@ -143,27 +143,22 @@ void PowerControllerClient::processEvent(const PowerControllerEventData & data)
     }
 }
 
-bool PowerControllerClient::serviceConnected(bool isConnected, ProxyBase & proxy)
+bool PowerControllerClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
 {
     TRACE_SCOPE(16_pubfsm_pubservice_src_PowerControllerClient_serviceConnected);
 
-    bool result = false;
-    if (PowerManagerClientBase::serviceConnected(isConnected, proxy))
+    bool result = PowerManagerClientBase::serviceConnected( status, proxy );
+    if ( isConnected( ) )
     {
-        if (isConnected)
-        {
-            PowerControllerEvent::addListener( static_cast<IEPowerControllerEventConsumer &>(self()), proxy.getProxyDispatcherThread() );
-
-            mConsole.createThread(NECommon::WAIT_INFINITE);
-        }
-        else
-        {
-            mConsole.destroyThread(NECommon::WAIT_INFINITE);
-
-            PowerControllerEvent::removeListener( static_cast<IEPowerControllerEventConsumer &>(self()) );
-        }
-
-        result = true;
+        TRACE_DBG( "Adding PowerControllerEvent custom event listener to receive messages" );
+        PowerControllerEvent::addListener( static_cast<IEPowerControllerEventConsumer &>(self( )), proxy.getProxyDispatcherThread( ) );
+        mConsole.createThread( NECommon::WAIT_INFINITE );
+    }
+    else
+    {
+        TRACE_DBG( "Remove listener and stop worker thread" );
+        mConsole.destroyThread( NECommon::WAIT_INFINITE );
+        PowerControllerEvent::removeListener( static_cast<IEPowerControllerEventConsumer &>(self( )) );
     }
 
     return result;

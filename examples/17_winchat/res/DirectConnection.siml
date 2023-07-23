@@ -9,23 +9,23 @@ the role name is a nick name of a registered application.</Description>
     <DataTypeList>
         <DataType ID="2" Name="sParticipant" Type="Imported">
             <Namespace>NECommon</Namespace>
-            <Location>generated/NECommon.hpp</Location>
+            <Location>common/NECommon.hpp</Location>
         </DataType>
         <DataType ID="3" Name="sInitiator" Type="Imported">
             <Namespace>NECommon</Namespace>
-            <Location>generated/NECommon.hpp</Location>
+            <Location>common/NECommon.hpp</Location>
         </DataType>
         <DataType ID="4" Name="ListParticipants" Type="Imported">
             <Namespace>NECommon</Namespace>
-            <Location>generated/NECommon.hpp</Location>
+            <Location>common/NECommon.hpp</Location>
         </DataType>
         <DataType ID="5" Name="PairParticipants" Type="Imported">
             <Namespace>NECommon</Namespace>
-            <Location>generated/NECommon.hpp</Location>
+            <Location>common/NECommon.hpp</Location>
         </DataType>
         <DataType ID="6" Name="MapParticipants" Type="Imported">
             <Namespace>NECommon</Namespace>
-            <Location>generated/NECommon.hpp</Location>
+            <Location>common/NECommon.hpp</Location>
         </DataType>
         <DataType ID="41" Name="sParticipant" Type="DefinedType">
             <Description>Localizing Participant structure</Description>
@@ -154,7 +154,7 @@ the role name is a nick name of a registered application.</Description>
         </Constant>
     </ConstantList>
     <IncludeList>
-        <Location ID="47" Name="generated/NECommon.hpp">
+        <Location ID="47" Name="common/NECommon.hpp">
             <Description>Shared data</Description>
         </Location>
     </IncludeList>

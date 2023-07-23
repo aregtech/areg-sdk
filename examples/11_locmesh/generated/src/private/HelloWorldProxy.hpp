@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:08:00 GMT+01:00
+ * Generated at     23.07.2023  03:04:03 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/private/HelloWorldProxy.hpp
@@ -101,7 +101,7 @@ protected:
      *                          If nullptr, current dispatching thread is used to dispatch messages.
      * \return  Returns pointer to instantiated proxy object.
      **/
-    static HelloWorldProxy * createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread = String::getEmptyString() );
+    static HelloWorldProxy * createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread = String::EmptyString );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
@@ -118,7 +118,7 @@ protected:
     /**
      * \brief   Destructor
      **/
-    virtual ~HelloWorldProxy( void );
+    virtual ~HelloWorldProxy( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations.
@@ -142,7 +142,7 @@ public:
      * \brief   Returns value of clientId of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
      *          Parameter clientId description:
-     *          Thegiven ID of the client that requested to output message.
+     *          The given ID of the client that requested to output message.
      **/
     inline unsigned int getParamclientId( void ) const;
 
@@ -302,7 +302,7 @@ private:
 
     /**
      * \brief   clientId parameter value.
-     *          Thegiven ID of the client that requested to output message.
+     *          The given ID of the client that requested to output message.
      **/
     unsigned int    mParamclientId;
 

@@ -6,13 +6,13 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "generated/DirectMessagerStub.hpp"
+#include "generated/src/DirectMessagerStub.hpp"
 #include "chatter/services/DirectMessagingClient.hpp"
 
 #include "areg/component/NERegistry.hpp"
 #include "areg/base/TEResourceMap.hpp"
-#include "generated/NEDirectConnection.hpp"
-#include "generated/NECommon.hpp"
+#include "generated/src/NEDirectConnection.hpp"
+#include "common/NECommon.hpp"
 #include "chatter/NEDistributedApp.hpp"
 
 class DirectConnectionClient;

@@ -8,7 +8,7 @@
 #include "areg/component/Component.hpp"
 #include "areg/component/NERegistry.hpp"
 #include "chatter/services/DirectMessagingClient.hpp"
-#include "generated/NECommon.hpp"
+#include "common/NECommon.hpp"
 
 class ComponentThread;
 
