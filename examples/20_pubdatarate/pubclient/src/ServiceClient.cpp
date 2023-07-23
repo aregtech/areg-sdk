@@ -84,28 +84,23 @@ void ServiceClient::broadcastServiceStopping(void)
     Application::signalAppQuit();
 }
 
-bool ServiceClient::serviceConnected(bool isConnected, ProxyBase & proxy)
+bool ServiceClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
 {
     TRACE_SCOPE(examples_20_clientdatarate_ServiceClient_serviceConnected);
-    bool result = LargeDataClientBase::serviceConnected(isConnected, proxy);
-
-    TRACE_DBG("Client [ %s ] of [ %s ] service is [ %s ]"
-                , proxy.getProxyAddress().getRoleName().getString()
-                , proxy.getProxyAddress().getServiceName().getString()
-                , isConnected ? "connected" : "disconnected");
+    bool result = LargeDataClientBase::serviceConnected(status, proxy);
 
     // dynamic subscribe on messages.
-    notifyOnBroadcastServiceStopping(isConnected);
-    notifyOnBroadcastImageBlockAcquired(isConnected);
+    notifyOnBroadcastServiceStopping(isConnected());
+    notifyOnBroadcastImageBlockAcquired(isConnected());
 
-    if (isConnected == false)
+    if (isConnected())
     {
-        mTimer.stopTimer();
-        Application::signalAppQuit();
+        mTimer.startTimer( NELargeData::TIMER_TIMEOUT, Timer::CONTINUOUSLY );
     }
     else
     {
-        mTimer.startTimer(NELargeData::TIMER_TIMEOUT, Timer::CONTINUOUSLY);
+        mTimer.stopTimer( );
+        Application::signalAppQuit( );
     }
 
     return result;

@@ -58,10 +58,16 @@ class AREG_API String : public TEString<char>
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   String::getEmptyString()
+     * \brief   String::getEmptyString
      *          The empty string.
      **/
     static const String & getEmptyString( void );
+
+    /**
+     * \brief   String::EmptyString
+     *          The empty string.
+     **/
+    static constexpr char EmptyString[] { "" };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor

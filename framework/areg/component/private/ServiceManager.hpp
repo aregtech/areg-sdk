@@ -106,9 +106,10 @@ public:
      *          unregister request to Service Manager. All Proxy clients 
      *          will receive appropriate disconnect messages to stop
      *          communication with Stub Service Interface.
-     * \param   whichServer     The address of Stub Server object, which has been
+     * \param   whichServer     The address of Stub Server object, which has been.
+     * \param   reason          The reason to unregister the service provider.
      **/
-    static void requestUnregisterServer( const StubAddress & whichServer );
+    static void requestUnregisterServer( const StubAddress & whichServer, const NEService::eDisconnectReason reason );
 
     /**
      * \brief   Static method to be called globally.
@@ -127,18 +128,18 @@ public:
     static void requestRegisterClient( const ProxyAddress & whichClient );
 
     /**
-     * \brief   Static method to be called globally.
-     *          The function is called when Proxy is shutting down,
-     *          and requests to unregister at Service Manager module
-     *          by specifying the address of Proxy of Service Interface.
-     *          The function will generate appropriate Event and send 
+     * \brief   Static method to be called when a proxy is shutting down
+     *          and requests to unregister the consumer by specifying
+     *          the address of Proxy of Service Interface.
+     *          The function generates appropriate Event and sends 
      *          unregister request to Service Manager. After Proxy client
      *          is unregistered, the Stub server will get notification
      *          of disconnected client.
      * \param   whichClient     The address of Proxy client object, which is
      *                          unregistering at Service Manager Module.
+     * \param   reason          The reason to unregister the service consumer
      **/
-    static void requestUnregisterClient( const ProxyAddress & whichClient );
+    static void requestUnregisterClient( const ProxyAddress & whichClient, const NEService::eDisconnectReason reason );
 
     /**
      * \brief   Static method to be called globally.
@@ -172,10 +173,32 @@ public:
      **/
     static void queryCommunicationData( unsigned int & OUT sizeSend, unsigned int & OUT sizeReceive );
 
+private:
+//////////////////////////////////////////////////////////////////////////
+// Constructor / Destructor
+//////////////////////////////////////////////////////////////////////////
+
+    /**
+     * \brief   Default Constructor.
+     *          Protected and cannot be accessed globally.
+     **/
+    ServiceManager( void );
+
+    /**
+     * \brief   Destructor
+     **/
+    virtual ~ServiceManager( void ) = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Private static methods
+//////////////////////////////////////////////////////////////////////////
+
+    static inline ServiceManager & getInstance( void );
+
 /************************************************************************/
 // Service Manager start / stop functions
 /************************************************************************/
-private:
+
     /**
      * \brief   This function called, when Service Manager should be started.
      *          If Service Manager already started, the function will be ignored.
@@ -336,19 +359,21 @@ private:
 
     /**
      * \brief   Unregisters remote stub in the current process.
-     * \param   stub    The address of remote stub server to unregister
+     * \param   stub    The address of remote stub server to unregister.
+     * \param   reason  The unregister or disconnect reason of the remote service provider.
      * \param   cookie  The cookie that has initiated unregister message.
      *                  The parameter is ignored if 'NEService::COOKIE_ANY'.
      **/
-    virtual void unregisterRemoteStub( const StubAddress & stub, ITEM_ID cookie = NEService::COOKIE_ANY ) override;
+    virtual void unregisterRemoteStub( const StubAddress & stub, NEService::eDisconnectReason reason, ITEM_ID cookie = NEService::COOKIE_ANY ) override;
 
     /**
      * \brief   Unregisters remote proxy in the current process.
      * \param   proxy   The address of remote proxy client to unregister
+     * \param   reason  The unregister or disconnect reason of the remote service consumer.
      * \param   cookie  The cookie that has initiated unregister message.
      *                  The parameter is ignored if 'NEService::COOKIE_ANY'.
      **/
-    virtual void unregisterRemoteProxy( const ProxyAddress & proxy, ITEM_ID cookie = NEService::COOKIE_ANY ) override;
+    virtual void unregisterRemoteProxy( const ProxyAddress & proxy, NEService::eDisconnectReason reason, ITEM_ID cookie = NEService::COOKIE_ANY ) override;
 
     /**
      * \brief   Triggered when remote service has been started and there is a
@@ -372,30 +397,14 @@ private:
     virtual void remoteServiceConnectionLost( const Channel & channel ) override;
 
 //////////////////////////////////////////////////////////////////////////
-// Private static methods
-//////////////////////////////////////////////////////////////////////////
-
-    static inline ServiceManager & getInstance( void );
-
-//////////////////////////////////////////////////////////////////////////
-// Constructor / Destructor
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   Default Constructor.
-     *          Protected and cannot be accessed globally.
-     **/
-    ServiceManager( void );
-
-    /**
-     * \brief   Destructor
-     **/
-    virtual ~ServiceManager( void ) = default;
-
-//////////////////////////////////////////////////////////////////////////
 // Operations and attributes
 //////////////////////////////////////////////////////////////////////////
-private:
+
+    /**
+     * \brief   Returns the instance of remote servicing handler.
+     **/
+    inline IERemoteService & getRemoteService( void );
+
     /**
      * \brief   The function is called when Stub Server is starting up
      *          and requests registration at Service Manager module
@@ -420,8 +429,9 @@ private:
      *          communication with Stub Service Interface.
      * \param   whichServer     The address of Stub Server object, which has been
      *                          started and requesting registration at Service Manager Module.
+     * \param   reason          The reason to unregister or disconnect the service provider.
      **/
-    void _unregisterServer( const StubAddress & whichServer );
+    void _unregisterServer( const StubAddress & whichServer, const NEService::eDisconnectReason reason );
 
     /**
      * \brief   The function is called when new Proxy client is start up,
@@ -448,8 +458,9 @@ private:
      *          of disconnected client.
      * \param   whichClient     The address of Proxy client object, which is
      *                          unregistering at Service Manager Module.
+     * \param   reason          The reason to unregister or disconnect the service consumer.
      **/
-    void _unregisterClient( const ProxyAddress & whichClient );
+    void _unregisterClient( const ProxyAddress & whichClient, const NEService::eDisconnectReason reason );
 
     /**
      * \brief   Sends predefined Service Manager Event, notifying Proxy client 
@@ -470,8 +481,9 @@ private:
      * \param   client  The Client Info object containing all required information
      *                  to send Event. The target of Event is a Proxy address,
      *                  specified in the Client Info object.
+     * \param   status  The service connection status of a service consumer.
      **/
-    void _sendClientDisconnectedEvent(const ClientInfo & client, const StubAddress & server) const;
+    void _sendClientDisconnectEvent(const ClientInfo & client, const StubAddress & server, const NEService::eServiceConnection status) const;
 
     /**
      * \brief   Starts Service Manager Thread. If Thread is started, the Timer Server
@@ -534,6 +546,11 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // ServiceManager class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
+
+inline IERemoteService & ServiceManager::getRemoteService( void )
+{
+    return static_cast<IERemoteService &>(mConnectService);
+}
 
 inline ServiceManager & ServiceManager::self( void )
 {

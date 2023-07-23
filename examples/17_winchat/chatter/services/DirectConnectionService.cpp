@@ -13,9 +13,6 @@
 
 DEF_TRACE_SCOPE( distrbutedapp_DirectConnectionService_CreateComponent );
 DEF_TRACE_SCOPE( distrbutedapp_DirectConnectionService_DeleteComponent );
-DEF_TRACE_SCOPE( distrbutedapp_DirectConnectionService_startupServiceInterface );
-DEF_TRACE_SCOPE( distrbutedapp_DirectConnectionService_shutdownServiceIntrface );
-DEF_TRACE_SCOPE( distrbutedapp_DirectConnectionService_clientConnected );
 DEF_TRACE_SCOPE( distrbutedapp_DirectConnectionService_requestConnectoinSetup );
 DEF_TRACE_SCOPE( distrbutedapp_DirectConnectionService_requestAddParticipant );
 DEF_TRACE_SCOPE( distrbutedapp_DirectConnectionService_requestRemoveParticipant );
@@ -76,24 +73,6 @@ DirectConnectionService::DirectConnectionService( const NERegistry::ComponentEnt
 DirectConnectionService::~DirectConnectionService( )
 {
     DirectConnectionService::mService = nullptr;
-}
-
-void DirectConnectionService::startupServiceInterface( Component & holder )
-{
-    TRACE_SCOPE( distrbutedapp_DirectConnectionService_startupServiceInterface );
-    DirectConnectionStub::startupServiceInterface(holder);
-}
-
-void DirectConnectionService::shutdownServiceIntrface ( Component & holder )
-{
-    TRACE_SCOPE( distrbutedapp_DirectConnectionService_shutdownServiceIntrface );
-    DirectConnectionStub::shutdownServiceIntrface( holder );
-}
-
-void DirectConnectionService::clientConnected( const ProxyAddress & client, bool isConnected )
-{
-    TRACE_SCOPE( distrbutedapp_DirectConnectionService_clientConnected );
-    DirectConnectionStub::clientConnected(client, isConnected);
 }
 
 inline bool DirectConnectionService::isInitiatorValid( const NEDirectConnection::sInitiator & initiator ) const

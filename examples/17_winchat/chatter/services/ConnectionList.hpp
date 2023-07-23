@@ -1,5 +1,5 @@
 #pragma once
-#include "generated/ConnectionManagerClientBase.hpp"
+#include "generated/src/ConnectionManagerClientBase.hpp"
 
 class Component;
 class ConnectionHandler;
@@ -9,12 +9,11 @@ class ConnectionList : public ConnectionManagerClientBase
 public:
     ConnectionList( const char * roleName, Component & owner, ConnectionHandler & handlerConnection );
     ConnectionList( const char * roleName, DispatcherThread & dispThread, ConnectionHandler & handlerConnection );
-    virtual ~ConnectionList( );
 
 //////////////////////////////////////////////////////////////////////////
-// ConnectionManager Interface Attributes
+// Overrides
 //////////////////////////////////////////////////////////////////////////
-public:
+protected:
 /************************************************************************
  * Response Connect
  ************************************************************************/
@@ -28,7 +27,7 @@ public:
      * \param   success         Flag, indicating whether the request to register connection succeeded or not.
      * \see     requestRegisterConnection
      **/
-    virtual void responseRegisterConnection( const NEConnectionManager::sConnection & connection, const NEConnectionManager::ListConnection & connectionList, bool success );
+    virtual void responseRegisterConnection( const NEConnectionManager::sConnection & connection, const NEConnectionManager::ListConnection & connectionList, bool success ) override;
     /**
      * \brief   Broadcast callback.
      *          Triggered each time when new client connection is accepted
@@ -36,7 +35,7 @@ public:
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientConnected New client data, which contains nick name and connected date-time
      **/
-    virtual void broadcastClientConnected( const NEConnectionManager::sConnection & clientConnected );
+    virtual void broadcastClientConnected( const NEConnectionManager::sConnection & clientConnected ) override;
     /**
      * \brief   Broadcast callback.
      *          Triggered each time when client is disconnected
@@ -44,32 +43,27 @@ public:
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientLeft  The connection data of disconnected client.
      **/
-    virtual void broadcastClientDisconnected( const NEConnectionManager::sConnection & clientLeft );
+    virtual void broadcastClientDisconnected( const NEConnectionManager::sConnection & clientLeft ) override;
 
-protected:
 /************************************************************************/
 // IEProxyListener Overrides
 /************************************************************************/
     /**
-     * \brief   Triggered by Proxy, when gets service connected event.
-     *          Make client initializations in this function. No request
-     *          will be processed until this function is not called for
-     *          client object. Also set listeners here if client is interested
-     *          to receive update notifications.
-     * \param   isConnected     The flag, indicating whether service is connected
-     *                          or disconnected. Make cleanups and stop sending
-     *                          requests or assigning for notification if
-     *                          this flag is false. No event to Stub target will
-     *                          be sent, until no service connected event is
-     *                          received.
-     * \param   proxy           The Service Interface Proxy object, which is
-     *                          notifying service connection.
-     * \return  Return true if this service connect notification was relevant to client object,
-     *          i.e. if passed Proxy address is equal to the Proxy object that client has.
-     *          If Proxy objects are not equal, it should return false;
+     * \brief   Triggered when receives service provider connected / disconnected event.
+     *          When the service provider is connected, the client objects can set the listeners here.
+     *          When the service provider is disconnected, the client object should clean the listeners.
+     *          Up from connected status, the clients can subscribe and unsubscribe on updates,
+     *          responses and broadcasts, can trigger requests. Before connection, the clients cannot
+     *          neither trigger requests, nor receive data update messages.
+     * \param   status  The service connection status.
+     * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
+     * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( bool isConnected, ProxyBase & proxy );
+    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
 
+//////////////////////////////////////////////////////////////////////////
+// Hidden members
+//////////////////////////////////////////////////////////////////////////
 private:
     ConnectionHandler &   mConnectionHandler;
 
@@ -77,7 +71,6 @@ private:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ConnectionList( void );
-    ConnectionList( const ConnectionList & /*src*/ );
-    const ConnectionList & operator = ( const ConnectionList & /*src*/ );
+    ConnectionList( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( ConnectionList );
 };

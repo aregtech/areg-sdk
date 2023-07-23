@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:08:55 GMT+01:00
+ * Generated at     23.07.2023  03:04:29 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SystemShutdown.
  *
  * \file            generated/src/NESystemShutdown.hpp
@@ -63,7 +63,7 @@ const NEService::SInterfaceData & NESystemShutdown::getInterfaceData( void )
     /************************************************************************
      * SystemShutdown Service Interface data
      ************************************************************************/
-    static NEService::SInterfaceData _InterfaceData =
+    static const NEService::SInterfaceData _InterfaceData
     {
           NESystemShutdown::ServiceName
         , NESystemShutdown::InterfaceVersion
@@ -88,8 +88,8 @@ NESystemShutdown::eMessageIDs NESystemShutdown::getResponseId( NESystemShutdown:
 
 NESystemShutdown::eMessageIDs NESystemShutdown::getRequestId( NESystemShutdown::eMessageIDs respId )
 {
-    const NEService::SInterfaceData & sid = NESystemShutdown::getInterfaceData();
-    NESystemShutdown::eMessageIDs result = NESystemShutdown::eMessageIDs::MsgId_Invalid;
+    const NEService::SInterfaceData & sid { NESystemShutdown::getInterfaceData() };
+    NESystemShutdown::eMessageIDs result { NESystemShutdown::eMessageIDs::MsgId_Invalid };
     for ( unsigned int i = 0; (result == NESystemShutdown::eMessageIDs::MsgId_Invalid) && (i < sid.idRequestCount); ++ i )
     {
         result = sid.idRequestToResponseMap[i] == static_cast<msg_id>(respId) ? static_cast<NESystemShutdown::eMessageIDs>(sid.idRequestList[i]) : NESystemShutdown::eMessageIDs::MsgId_Invalid;

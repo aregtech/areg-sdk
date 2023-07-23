@@ -19,7 +19,6 @@
 #include "areg/ipc/NEConnection.hpp"
 
 #include "areg/ipc/RemoteServiceEvent.hpp"
-#include "areg/component/private/ServiceManager.hpp"
 #include "areg/component/RemoteEventFactory.hpp"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/StreamableEvent.hpp"
@@ -267,7 +266,7 @@ bool ClientService::registerService( const StubAddress & stubService )
     return result;
 }
 
-void ClientService::unregisterService(const StubAddress & stubService)
+void ClientService::unregisterService(const StubAddress & stubService, const NEService::eDisconnectReason reason )
 {
     TRACE_SCOPE(areg_ipc_private_ClientService_unregisterService);
 
@@ -278,7 +277,7 @@ void ClientService::unregisterService(const StubAddress & stubService)
                    , StubAddress::convAddressToPath(stubService).getString()
                    , mClientConnection.getCookie());
 
-        _sendMessage( NEConnection::createRouterUnregisterService(stubService, mClientConnection.getCookie()), Event::eEventPriority::EventPriorityHigh);
+        _sendMessage( NEConnection::createRouterUnregisterService(stubService, reason, mClientConnection.getCookie()), Event::eEventPriority::EventPriorityHigh);
     }
 }
 
@@ -299,7 +298,7 @@ bool ClientService::registerServiceClient(const ProxyAddress & proxyService)
     return result;
 }
 
-void ClientService::unregisterServiceClient(const ProxyAddress & proxyService)
+void ClientService::unregisterServiceClient(const ProxyAddress & proxyService, const NEService::eDisconnectReason reason )
 {
     TRACE_SCOPE(areg_ipc_private_ClientService_unregisterServiceClient);
 
@@ -310,7 +309,7 @@ void ClientService::unregisterServiceClient(const ProxyAddress & proxyService)
                    , ProxyAddress::convAddressToPath(proxyService).getString()
                    , mClientConnection.getCookie());
 
-        _sendMessage( NEConnection::createRouterUnregisterClient(proxyService, mClientConnection.getCookie()), Event::eEventPriority::EventPriorityHigh);
+        _sendMessage( NEConnection::createRouterUnregisterClient(proxyService, reason, mClientConnection.getCookie()), Event::eEventPriority::EventPriorityHigh);
     }
 }
 
@@ -411,7 +410,7 @@ void ClientService::onServiceConnectionLost(void)
 
         mThreadReceive.completionWait( NECommon::WAIT_INFINITE );
         mThreadSend.completionWait( NECommon::WAIT_INFINITE );
-        mServiceConsumer.remoteServiceStopped( channel );
+        mServiceConsumer.remoteServiceConnectionLost( channel );
 
         _setConnectionState( ClientService::eConnectionState::ConnectionStarting );
         mTimerConnect.startTimer( NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT, static_cast<DispatcherThread &>(self( )), 1 );
@@ -616,21 +615,39 @@ void ClientService::processReceivedMessage( const RemoteMessage & msgReceived, S
                 msgReceived >> cookie;
                 TRACE_DBG("Router connection notification. Connection status [ %s ], cookie [ %u ]", NEService::getString(connection), static_cast<uint32_t>(cookie));
 
-                if ( (msgReceived.getResult() == NEMemory::MESSAGE_SUCCESS) && (connection == NEService::eServiceConnection::ServiceConnected))
+                switch ( connection )
                 {
-                    Lock lock(mLock);
-                    ASSERT(cookie == msgReceived.getTarget());
-                    mClientConnection.setCookie(cookie);
-                    _sendCommand(ClientServiceEventData::eClientServiceCommands::CMD_ServiceStarted);
-                }
-                else if ( (static_cast<unsigned int>(connection) & static_cast<unsigned int>(NEService::eServiceConnection::ServiceConnected)) == 0 )
-                {
-                    _cancelConnection( );
-                    _sendCommand(ClientServiceEventData::eClientServiceCommands::CMD_ServiceLost );
-                }
-                else
-                {
-                    ; // ignore
+                case NEService::eServiceConnection::ServiceConnected:
+                case NEService::eServiceConnection::ServicePending:
+                    {
+                        if ( msgReceived.getResult( ) == NEMemory::MESSAGE_SUCCESS )
+                        {
+                            Lock lock( mLock );
+                            ASSERT( cookie == msgReceived.getTarget( ) );
+                            mClientConnection.setCookie( cookie );
+                            _sendCommand( ClientServiceEventData::eClientServiceCommands::CMD_ServiceStarted );
+                        }
+                        else
+                        {
+                            _cancelConnection( );
+                            _sendCommand( ClientServiceEventData::eClientServiceCommands::CMD_ServiceLost );
+                        }
+                    }
+                    break;
+
+                case NEService::eServiceConnection::ServiceConnectionLost:
+                    {
+                        _cancelConnection( );
+                        _sendCommand( ClientServiceEventData::eClientServiceCommands::CMD_ServiceLost );
+                    }
+                    break;
+
+                default:
+                    {
+                        _cancelConnection( );
+                        _sendCommand( ClientServiceEventData::eClientServiceCommands::CMD_ServiceStopped );
+                    }
+                    break;
                 }
             }
             break;
@@ -647,11 +664,17 @@ void ClientService::processReceivedMessage( const RemoteMessage & msgReceived, S
                 case NEService::eServiceRequestType::RegisterClient:
                     {
                         ProxyAddress proxy(msgReceived);
+                        NEService::eDisconnectReason reason { NEService::eDisconnectReason::ReasonUndefined };
+                        msgReceived >> reason;
                         proxy.setSource( mChannel.getSource() );
                         if ( result == NEMemory::eMessageResult::ResultSucceed )
+                        {
                             mServiceConsumer.registerRemoteProxy(proxy);
+                        }
                         else
-                            mServiceConsumer.unregisterRemoteProxy(proxy, NEService::COOKIE_ANY);
+                        {
+                            mServiceConsumer.unregisterRemoteProxy(proxy, reason, NEService::COOKIE_ANY);
+                        }
                     }
                     break;
 
@@ -660,25 +683,33 @@ void ClientService::processReceivedMessage( const RemoteMessage & msgReceived, S
                         StubAddress stub(msgReceived);
                         stub.setSource( mChannel.getSource() );
                         if ( result == NEMemory::eMessageResult::ResultSucceed )
-                            mServiceConsumer.registerRemoteStub(stub);
+                        {
+                            mServiceConsumer.registerRemoteStub( stub );
+                        }
                         else
-                            mServiceConsumer.unregisterRemoteStub(stub, NEService::COOKIE_ANY);
+                        {
+                            mServiceConsumer.unregisterRemoteStub( stub, NEService::eDisconnectReason::ReasonUndefined, NEService::COOKIE_ANY );
+                        }
                     }
                     break;
 
                 case NEService::eServiceRequestType::UnregisterClient:
                     {
                         ProxyAddress proxy(msgReceived);
+                        NEService::eDisconnectReason reason { NEService::eDisconnectReason::ReasonUndefined };
+                        msgReceived >> reason;
                         proxy.setSource( mChannel.getSource() );
-                        mServiceConsumer.unregisterRemoteProxy(proxy, NEService::COOKIE_ANY);
+                        mServiceConsumer.unregisterRemoteProxy(proxy, reason, NEService::COOKIE_ANY);
                     }
                     break;
 
                 case NEService::eServiceRequestType::UnregisterStub:
                     {
                         StubAddress stub(msgReceived);
+                        NEService::eDisconnectReason reason{NEService::eDisconnectReason::ReasonUndefined};
+                        msgReceived >> reason;
                         stub.setSource( mChannel.getSource() );
-                        mServiceConsumer.unregisterRemoteStub(stub, NEService::COOKIE_ANY);
+                        mServiceConsumer.unregisterRemoteStub(stub, reason, NEService::COOKIE_ANY);
                     }
                     break;
 

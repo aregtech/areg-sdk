@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:09:40 GMT+01:00
+ * Generated at     23.07.2023  03:05:04 GMT+02:00
  *                  Create by AREG SDK code generator tool from source TrafficController.
  *
  * \file            generated/src/private/TrafficControllerProxy.hpp
@@ -56,7 +56,7 @@ TrafficControllerProxy * TrafficControllerProxy::createProxy( const String & rol
                                                                       , ownerThread).get() );
 }
 
-TrafficControllerProxy * TrafficControllerProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::getEmptyString()*/ )
+TrafficControllerProxy * TrafficControllerProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
 {
     return static_cast<TrafficControllerProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NETrafficController::getInterfaceData()
@@ -82,10 +82,6 @@ TrafficControllerProxy::TrafficControllerProxy( const String & roleName, Dispatc
  ************************************************************************/
     , mParamLightVehicle      (  )
     , mParamLightPedestrian   (  )
-{
-}
-
-TrafficControllerProxy::~TrafficControllerProxy( void )
 {
 }
 
@@ -152,18 +148,26 @@ void TrafficControllerProxy::processResponseEvent( ServiceResponseEvent & eventE
 {
     TrafficControllerResponseEvent * eventResp = RUNTIME_CAST( &eventElem, TrafficControllerResponseEvent );
     if (eventResp != nullptr)
+    {
         processResponse( *eventResp );
+    }
     else
+    {
         processProxyEvent( eventElem );
+    }
 }
 
 void TrafficControllerProxy::processAttributeEvent( ServiceResponseEvent & eventElem )
 {
     TrafficControllerResponseEvent * eventResp = RUNTIME_CAST( &eventElem, TrafficControllerResponseEvent );
     if (eventResp != nullptr)
+    {
         processResponse( *eventResp );
+    }
     else
+    {
         processProxyEvent( eventElem );
+    }
 }
 
 /************************************************************************
@@ -173,7 +177,7 @@ void TrafficControllerProxy::processAttributeEvent( ServiceResponseEvent & event
 DEF_TRACE_SCOPE(generated_src_private_TrafficControllerProxy_updateData);
 void TrafficControllerProxy::updateData( TrafficControllerResponseEvent & eventElem, NETrafficController::eMessageIDs respId )
 {
-    const IEInStream & stream = static_cast<const TrafficControllerResponseEvent &>(eventElem).getData().getReadStream();
+    const IEInStream & stream { static_cast<const TrafficControllerResponseEvent &>(eventElem).getData().getReadStream() };
 
     switch (respId)
     {
@@ -216,13 +220,13 @@ void TrafficControllerProxy::updateData( TrafficControllerResponseEvent & eventE
     }
 }
 
-    void TrafficControllerProxy::processResponse( TrafficControllerResponseEvent & evenElem )
+void TrafficControllerProxy::processResponse( TrafficControllerResponseEvent & evenElem )
 {
-    NETrafficController::eMessageIDs respId  = static_cast<NETrafficController::eMessageIDs>(evenElem.getResponseId());
-    NEService::eResultType resultType  = evenElem.getResult();
+    NETrafficController::eMessageIDs respId  { static_cast<NETrafficController::eMessageIDs>(evenElem.getResponseId()) };
+    NEService::eResultType resultType   { evenElem.getResult() };
 
-    bool dataValid  = false;
-    bool setStates  = true;
+    bool dataValid { false };
+    bool setStates { true  };
 
     switch (resultType)
     {
@@ -256,12 +260,12 @@ void TrafficControllerProxy::updateData( TrafficControllerResponseEvent & eventE
         break;
     }
 
-    if (dataValid == true)
+    if ( dataValid )
     {
         updateData(evenElem, respId);
     }
 
-    if (setStates == true)
+    if ( setStates )
     {
         setState(static_cast<msg_id>(respId), dataValid ? NEService::eDataStateType::DataIsOK : NEService::eDataStateType::DataIsInvalid);
     }

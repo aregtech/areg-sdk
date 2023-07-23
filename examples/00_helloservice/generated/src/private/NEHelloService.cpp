@@ -3,9 +3,9 @@
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************
- * (c) copyright    2022
+ * (c) copyright    2023
  *
- * Generated at     20.12.2022  16:24:46 GMT+01:00
+ * Generated at     23.07.2023  03:03:49 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloService.
  *
  * \file            generated/src/NEHelloService.hpp
@@ -74,7 +74,7 @@ const NEService::SInterfaceData & NEHelloService::getInterfaceData( void )
     /************************************************************************
      * HelloService Service Interface data
      ************************************************************************/
-    static NEService::SInterfaceData _InterfaceData =
+    static const NEService::SInterfaceData _InterfaceData
     {
           NEHelloService::ServiceName
         , NEHelloService::InterfaceVersion
@@ -94,16 +94,16 @@ const NEService::SInterfaceData & NEHelloService::getInterfaceData( void )
 
 NEHelloService::eMessageIDs NEHelloService::getResponseId( NEHelloService::eMessageIDs reqId)
 {
-    const NEService::SInterfaceData & sid = NEHelloService::getInterfaceData();
-    msg_id index = GET_REQ_INDEX(reqId);
-    
-    return  ( (index >= 0) && (index < static_cast<msg_id>(sid.idRequestCount)) ? static_cast<NEHelloService::eMessageIDs>(sid.idRequestToResponseMap[index]) : NEHelloService::eMessageIDs::MsgId_Invalid );
+    const NEService::SInterfaceData & sid { NEHelloService::getInterfaceData() };
+    msg_id index { static_cast<msg_id>(GET_REQ_INDEX(reqId)) };
+
+    return  ( (index < static_cast<msg_id>(sid.idRequestCount)) ? static_cast<NEHelloService::eMessageIDs>(sid.idRequestToResponseMap[index]) : NEHelloService::eMessageIDs::MsgId_Invalid );
 }
 
 NEHelloService::eMessageIDs NEHelloService::getRequestId( NEHelloService::eMessageIDs respId )
 {
-    const NEService::SInterfaceData & sid = NEHelloService::getInterfaceData();
-    NEHelloService::eMessageIDs result = NEHelloService::eMessageIDs::MsgId_Invalid;
+    const NEService::SInterfaceData & sid { NEHelloService::getInterfaceData() };
+    NEHelloService::eMessageIDs result { NEHelloService::eMessageIDs::MsgId_Invalid };
     for ( unsigned int i = 0; (result == NEHelloService::eMessageIDs::MsgId_Invalid) && (i < sid.idRequestCount); ++ i )
     {
         result = sid.idRequestToResponseMap[i] == static_cast<msg_id>(respId) ? static_cast<NEHelloService::eMessageIDs>(sid.idRequestList[i]) : NEHelloService::eMessageIDs::MsgId_Invalid;

@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:09:40 GMT+01:00
+ * Generated at     23.07.2023  03:05:04 GMT+02:00
  *                  Create by AREG SDK code generator tool from source TrafficController.
  *
  * \file            generated/src/TrafficControllerClientBase.hpp
@@ -43,7 +43,7 @@ namespace NETrafficController
  * Constructor / Destructor
  ************************************************************************/
 
-TrafficControllerClientBase::TrafficControllerClientBase( const String & roleName, const String & ownerThread /* = String::getEmptyString() */ )
+TrafficControllerClientBase::TrafficControllerClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -97,11 +97,11 @@ TrafficControllerClientBase::~TrafficControllerClientBase( void )
 
 bool TrafficControllerClientBase::recreateProxy( void )
 {
-    bool result         = false;
+    bool result { false };
     if (mProxy != nullptr)
     {
-        const String & roleName   = mProxy->getProxyAddress().getRoleName();
-        const String & threadName = mProxy->getProxyAddress().getThread();
+        const String & roleName   { mProxy->getProxyAddress().getRoleName() };
+        const String & threadName { mProxy->getProxyAddress().getThread()   };
         if ( roleName.isEmpty() == false )
         {
             TrafficControllerProxy * newProxy = TrafficControllerProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), threadName);
@@ -124,21 +124,21 @@ DispatcherThread * TrafficControllerClientBase::getDispatcherThread( void )
 }
 
 DEF_TRACE_SCOPE(generated_src_TrafficControllerClientBase_serviceConnected);
-bool TrafficControllerClientBase::serviceConnected( bool isConnected, ProxyBase & proxy )
+bool TrafficControllerClientBase::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
 {
     TRACE_SCOPE(generated_src_TrafficControllerClientBase_serviceConnected);
 
-    bool result = false;
+    bool result { false };
     if(mProxy == &proxy)
     {
+        mIsConnected= NEService::isServiceConnected(status);
+        result      = true;
+
         TRACE_DBG("Client [ %p ]: The Service [ %s ] with Role Name [ %s ] is [ %s ]"
                  , this
                  , proxy.getProxyAddress().getServiceName().getString()
                  , proxy.getProxyAddress().getRoleName().getString()
-                 , isConnected ? "CONNECTED" : "DISCONNECTED");
-
-        mIsConnected= isConnected;
-        result      = true;
+                 , mIsConnected ? "CONNECTED" : "DISCONNECTED");
     }
 
     return result;
@@ -159,9 +159,9 @@ void TrafficControllerClientBase::notifyOn( NETrafficController::eMessageIDs msg
 DEF_TRACE_SCOPE(generated_src_TrafficControllerClientBase_processNotificationEvent);
 void TrafficControllerClientBase::processNotificationEvent( NotificationEvent & eventElem )
 {
-    const NotificationEventData & data  = static_cast<const NotificationEvent &>(eventElem).getData();
-    NEService::eResultType result       = data.getNotifyType();
-    NETrafficController::eMessageIDs msgId   = static_cast<NETrafficController::eMessageIDs>(data.getNotifyId());
+    const NotificationEventData & data  { static_cast<const NotificationEvent &>(eventElem).getData() };
+    NEService::eResultType result       { data.getNotifyType() };
+    NETrafficController::eMessageIDs msgId   { static_cast<NETrafficController::eMessageIDs>(data.getNotifyId()) };
     mCurrSequenceNr = data.getSequenceNr();
 
     switch (result)

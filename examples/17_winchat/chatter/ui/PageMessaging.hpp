@@ -2,9 +2,9 @@
 
 #include "areg/base/String.hpp"
 #include "areg/base/TEArrayList.hpp"
-#include "generated/NECommon.hpp"
+#include "common/NECommon.hpp"
 #include "chatter/res/resource.h"
-#include "generated/NEConnectionManager.hpp"
+#include "generated/src/NEConnectionManager.hpp"
 
 class Component;
 class DispatcherThread;

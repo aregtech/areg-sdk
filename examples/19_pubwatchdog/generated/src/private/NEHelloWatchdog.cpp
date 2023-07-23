@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:10:31 GMT+01:00
+ * Generated at     23.07.2023  03:05:44 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloWatchdog.
  *
  * \file            generated/src/NEHelloWatchdog.hpp
@@ -81,7 +81,7 @@ const NEService::SInterfaceData & NEHelloWatchdog::getInterfaceData( void )
     /************************************************************************
      * HelloWatchdog Service Interface data
      ************************************************************************/
-    static NEService::SInterfaceData _InterfaceData =
+    static const NEService::SInterfaceData _InterfaceData
     {
           NEHelloWatchdog::ServiceName
         , NEHelloWatchdog::InterfaceVersion
@@ -101,16 +101,16 @@ const NEService::SInterfaceData & NEHelloWatchdog::getInterfaceData( void )
 
 NEHelloWatchdog::eMessageIDs NEHelloWatchdog::getResponseId( NEHelloWatchdog::eMessageIDs reqId)
 {
-    const NEService::SInterfaceData & sid = NEHelloWatchdog::getInterfaceData();
-    msg_id index = GET_REQ_INDEX(reqId);
-    
-    return  ( (index >= 0) && (index < static_cast<msg_id>(sid.idRequestCount)) ? static_cast<NEHelloWatchdog::eMessageIDs>(sid.idRequestToResponseMap[index]) : NEHelloWatchdog::eMessageIDs::MsgId_Invalid );
+    const NEService::SInterfaceData & sid { NEHelloWatchdog::getInterfaceData() };
+    msg_id index { static_cast<msg_id>(GET_REQ_INDEX(reqId)) };
+
+    return  ( (index < static_cast<msg_id>(sid.idRequestCount)) ? static_cast<NEHelloWatchdog::eMessageIDs>(sid.idRequestToResponseMap[index]) : NEHelloWatchdog::eMessageIDs::MsgId_Invalid );
 }
 
 NEHelloWatchdog::eMessageIDs NEHelloWatchdog::getRequestId( NEHelloWatchdog::eMessageIDs respId )
 {
-    const NEService::SInterfaceData & sid = NEHelloWatchdog::getInterfaceData();
-    NEHelloWatchdog::eMessageIDs result = NEHelloWatchdog::eMessageIDs::MsgId_Invalid;
+    const NEService::SInterfaceData & sid { NEHelloWatchdog::getInterfaceData() };
+    NEHelloWatchdog::eMessageIDs result { NEHelloWatchdog::eMessageIDs::MsgId_Invalid };
     for ( unsigned int i = 0; (result == NEHelloWatchdog::eMessageIDs::MsgId_Invalid) && (i < sid.idRequestCount); ++ i )
     {
         result = sid.idRequestToResponseMap[i] == static_cast<msg_id>(respId) ? static_cast<NEHelloWatchdog::eMessageIDs>(sid.idRequestList[i]) : NEHelloWatchdog::eMessageIDs::MsgId_Invalid;

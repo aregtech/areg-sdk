@@ -11,7 +11,7 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/base/GEGlobal.h"
 #include "areg/trace/GETrace.h"
-#include "generated/NECommon.hpp"
+#include "common/NECommon.hpp"
 
 DEF_TRACE_SCOPE( distrbutedapp_ui_PageConnections_OnClientRegistration );
 DEF_TRACE_SCOPE( distrbutedapp_ui_PageConnections_LoadModel );

@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:09:24 GMT+01:00
+ * Generated at     23.07.2023  03:04:51 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PatientInformation.
  *
  * \file            generated/src/private/PatientInformationProxy.hpp
@@ -56,7 +56,7 @@ PatientInformationProxy * PatientInformationProxy::createProxy( const String & r
                                                                       , ownerThread).get() );
 }
 
-PatientInformationProxy * PatientInformationProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::getEmptyString()*/ )
+PatientInformationProxy * PatientInformationProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
 {
     return static_cast<PatientInformationProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEPatientInformation::getInterfaceData()
@@ -79,10 +79,6 @@ PatientInformationProxy::PatientInformationProxy( const String & roleName, Dispa
 /************************************************************************
  * Parameters
  ************************************************************************/
-{
-}
-
-PatientInformationProxy::~PatientInformationProxy( void )
 {
 }
 
@@ -149,18 +145,26 @@ void PatientInformationProxy::processResponseEvent( ServiceResponseEvent & event
 {
     PatientInformationResponseEvent * eventResp = RUNTIME_CAST( &eventElem, PatientInformationResponseEvent );
     if (eventResp != nullptr)
+    {
         processResponse( *eventResp );
+    }
     else
+    {
         processProxyEvent( eventElem );
+    }
 }
 
 void PatientInformationProxy::processAttributeEvent( ServiceResponseEvent & eventElem )
 {
     PatientInformationResponseEvent * eventResp = RUNTIME_CAST( &eventElem, PatientInformationResponseEvent );
     if (eventResp != nullptr)
+    {
         processResponse( *eventResp );
+    }
     else
+    {
         processProxyEvent( eventElem );
+    }
 }
 
 /************************************************************************
@@ -170,7 +174,7 @@ void PatientInformationProxy::processAttributeEvent( ServiceResponseEvent & even
 DEF_TRACE_SCOPE(generated_src_private_PatientInformationProxy_updateData);
 void PatientInformationProxy::updateData( PatientInformationResponseEvent & eventElem, NEPatientInformation::eMessageIDs respId )
 {
-    const IEInStream & stream = static_cast<const PatientInformationResponseEvent &>(eventElem).getData().getReadStream();
+    const IEInStream & stream { static_cast<const PatientInformationResponseEvent &>(eventElem).getData().getReadStream() };
 
     switch (respId)
     {
@@ -199,13 +203,13 @@ void PatientInformationProxy::updateData( PatientInformationResponseEvent & even
     }
 }
 
-    void PatientInformationProxy::processResponse( PatientInformationResponseEvent & evenElem )
+void PatientInformationProxy::processResponse( PatientInformationResponseEvent & evenElem )
 {
-    NEPatientInformation::eMessageIDs respId  = static_cast<NEPatientInformation::eMessageIDs>(evenElem.getResponseId());
-    NEService::eResultType resultType  = evenElem.getResult();
+    NEPatientInformation::eMessageIDs respId  { static_cast<NEPatientInformation::eMessageIDs>(evenElem.getResponseId()) };
+    NEService::eResultType resultType   { evenElem.getResult() };
 
-    bool dataValid  = false;
-    bool setStates  = true;
+    bool dataValid { false };
+    bool setStates { true  };
 
     switch (resultType)
     {
@@ -239,12 +243,12 @@ void PatientInformationProxy::updateData( PatientInformationResponseEvent & even
         break;
     }
 
-    if (dataValid == true)
+    if ( dataValid )
     {
         updateData(evenElem, respId);
     }
 
-    if (setStates == true)
+    if ( setStates )
     {
         setState(static_cast<msg_id>(respId), dataValid ? NEService::eDataStateType::DataIsOK : NEService::eDataStateType::DataIsInvalid);
     }

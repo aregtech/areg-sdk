@@ -1,1 +1,1 @@
-INCLUDE_DIR("private")
+INCLUDE_DIR("src/private")

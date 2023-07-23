@@ -16,11 +16,6 @@ NetworkSetup::NetworkSetup( const char * roleName, Component & owner, Connection
 {
 }
 
-
-NetworkSetup::~NetworkSetup( )
-{
-}
-
 void NetworkSetup::responseConnect( const String & nickName, unsigned int cookie, const DateTime & dateTime, NEConnectionManager::eConnectionResult result )
 {
     DateTime timeConnected = DateTime::getNow();
@@ -45,17 +40,18 @@ void NetworkSetup::responseConnect( const String & nickName, unsigned int cookie
     DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdClientConnection, isConnected ? 1 : 0, reinterpret_cast<LPARAM>(dispThread) );
 }
 
-bool NetworkSetup::serviceConnected( bool isConnected, ProxyBase & proxy )
+bool NetworkSetup::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
 {
-    bool result = false;
-    if ( ConnectionManagerClientBase::serviceConnected( true, proxy ) )
+    bool result = ConnectionManagerClientBase::serviceConnected( status, proxy );
+    if ( isConnected( ) )
     {
-        result = true;
-        if ( isConnected )
-            DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdServiceNetwork, 1, reinterpret_cast<LPARAM>(getDispatcherThread()) );
-        else
-            DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdServiceNetwork, 0, 0 );
+        DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdServiceNetwork, 1, reinterpret_cast<LPARAM>(getDispatcherThread( )) );
     }
+    else
+    {
+        DistributedDialog::PostServiceMessage( NEDistributedApp::eWndCommands::CmdServiceNetwork, 0, 0 );
+    }
+
     return result;
 }
 

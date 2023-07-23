@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:09:10 GMT+01:00
+ * Generated at     23.07.2023  03:04:40 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficLight.
  *
  * \file            generated/src/SimpleTrafficLightStub.hpp
@@ -36,10 +36,9 @@ SimpleTrafficLightStub::SimpleTrafficLightStub( Component & masterComp )
 
     , mSouthNorth         (  )
     , mSouthNorthState    ( NEService::eDataStateType::DataIsUnavailable )
-    
+
     , mEastWest           (  )
     , mEastWestState      ( NEService::eDataStateType::DataIsUnavailable )
-    
 {
 }
 
@@ -98,7 +97,7 @@ DEF_TRACE_SCOPE(generated_src_SimpleTrafficLightStub_sendNotification);
 void SimpleTrafficLightStub::sendNotification( unsigned int msgId )
 {
     EventDataStream args(EventDataStream::eEventData::EventDataExternal);
-    IEOutStream & stream = args.getStreamForWrite();
+    IEOutStream & stream { args.getStreamForWrite() };
 
     switch ( static_cast<NESimpleTrafficLight::eMessageIDs>(msgId) )
     {
@@ -127,8 +126,8 @@ void SimpleTrafficLightStub::sendNotification( unsigned int msgId )
 DEF_TRACE_SCOPE(generated_src_SimpleTrafficLightStub_errorRequest);
 void SimpleTrafficLightStub::errorRequest( unsigned int msgId, bool msgCancel )
 {
-    NEService::eResultType result = NEService::eResultType::NotProcessed;
-    msg_id listenerId = msgId;
+    NEService::eResultType result { NEService::eResultType::NotProcessed };
+    msg_id listenerId { msgId };
 
     switch ( static_cast<NESimpleTrafficLight::eMessageIDs>(msgId) )
     {
@@ -220,9 +219,9 @@ void SimpleTrafficLightStub::processRequestEvent( ServiceRequestEvent & eventEle
         msg_id reqId = static_cast<msg_id>(reqEvent->getRequestId());
         StubBase::Listener listener( reqId, 0, reqEvent->getEventSource() );
 
-    TRACE_SCOPE(generated_src_SimpleTrafficLightStub_processRequestEvent);
-    TRACE_ERR("The service SimpleTrafficLight has no request. Unexpected request ID [ %d ] to process in Stub [ %s ]!", reqId, StubAddress::convAddressToPath(mAddress).getString());
-    ASSERT(false);
+        TRACE_SCOPE(generated_src_SimpleTrafficLightStub_processRequestEvent);
+        TRACE_ERR("The service SimpleTrafficLight has no request. Unexpected request ID [ %d ] to process in Stub [ %s ]!", reqId, StubAddress::convAddressToPath(mAddress).getString());
+        ASSERT(false);
     }
 
     cancelCurrentRequest();
@@ -231,16 +230,16 @@ void SimpleTrafficLightStub::processRequestEvent( ServiceRequestEvent & eventEle
 DEF_TRACE_SCOPE(generated_src_SimpleTrafficLightStub_processAttributeEvent);
 void SimpleTrafficLightStub::processAttributeEvent( ServiceRequestEvent & eventElem )
 {
-    const NEService::eRequestType reqType = eventElem.getRequestType();
+    const NEService::eRequestType reqType { eventElem.getRequestType() };
+    const ProxyAddress & source { eventElem.getEventSource( ) };
     if (reqType == NEService::eRequestType::RemoveAllNotify)
     {
         IntegerArray removedIds;
-        StubBase::clearAllListeners(eventElem.getEventSource(), removedIds);
+        StubBase::clearAllListeners(source, removedIds);
     }
     else
     {
-        NESimpleTrafficLight::eMessageIDs updId  = static_cast<NESimpleTrafficLight::eMessageIDs>(eventElem.getRequestId());
-        const ProxyAddress & source = eventElem.getEventSource( );
+        NESimpleTrafficLight::eMessageIDs updId  { static_cast<NESimpleTrafficLight::eMessageIDs>(eventElem.getRequestId()) };
         if (reqType == NEService::eRequestType::StopNotify)
         {
             removeNotificationListener( static_cast<msg_id>(updId), source );

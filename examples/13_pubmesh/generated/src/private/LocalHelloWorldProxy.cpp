@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:08:52 GMT+01:00
+ * Generated at     23.07.2023  03:04:26 GMT+02:00
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
  *
  * \file            generated/src/private/LocalHelloWorldProxy.hpp
@@ -56,7 +56,7 @@ LocalHelloWorldProxy * LocalHelloWorldProxy::createProxy( const String & roleNam
                                                                       , ownerThread).get() );
 }
 
-LocalHelloWorldProxy * LocalHelloWorldProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::getEmptyString()*/ )
+LocalHelloWorldProxy * LocalHelloWorldProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
 {
     return static_cast<LocalHelloWorldProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NELocalHelloWorld::getInterfaceData()
@@ -79,10 +79,6 @@ LocalHelloWorldProxy::LocalHelloWorldProxy( const String & roleName, DispatcherT
  * Parameters
  ************************************************************************/
     , mParamclientInfo    (  )
-{
-}
-
-LocalHelloWorldProxy::~LocalHelloWorldProxy( void )
 {
 }
 
@@ -147,18 +143,26 @@ void LocalHelloWorldProxy::processResponseEvent( ServiceResponseEvent & eventEle
 {
     LocalHelloWorldResponseEvent * eventResp = RUNTIME_CAST( &eventElem, LocalHelloWorldResponseEvent );
     if (eventResp != nullptr)
+    {
         processResponse( *eventResp );
+    }
     else
+    {
         processProxyEvent( eventElem );
+    }
 }
 
 void LocalHelloWorldProxy::processAttributeEvent( ServiceResponseEvent & eventElem )
 {
     LocalHelloWorldResponseEvent * eventResp = RUNTIME_CAST( &eventElem, LocalHelloWorldResponseEvent );
     if (eventResp != nullptr)
+    {
         processResponse( *eventResp );
+    }
     else
+    {
         processProxyEvent( eventElem );
+    }
 }
 
 /************************************************************************
@@ -168,7 +172,7 @@ void LocalHelloWorldProxy::processAttributeEvent( ServiceResponseEvent & eventEl
 DEF_TRACE_SCOPE(generated_src_private_LocalHelloWorldProxy_updateData);
 void LocalHelloWorldProxy::updateData( LocalHelloWorldResponseEvent & eventElem, NELocalHelloWorld::eMessageIDs respId )
 {
-    const IEInStream & stream = static_cast<const LocalHelloWorldResponseEvent &>(eventElem).getData().getReadStream();
+    const IEInStream & stream { static_cast<const LocalHelloWorldResponseEvent &>(eventElem).getData().getReadStream() };
 
     switch (respId)
     {
@@ -197,13 +201,13 @@ void LocalHelloWorldProxy::updateData( LocalHelloWorldResponseEvent & eventElem,
     }
 }
 
-    void LocalHelloWorldProxy::processResponse( LocalHelloWorldResponseEvent & evenElem )
+void LocalHelloWorldProxy::processResponse( LocalHelloWorldResponseEvent & evenElem )
 {
-    NELocalHelloWorld::eMessageIDs respId  = static_cast<NELocalHelloWorld::eMessageIDs>(evenElem.getResponseId());
-    NEService::eResultType resultType  = evenElem.getResult();
+    NELocalHelloWorld::eMessageIDs respId  { static_cast<NELocalHelloWorld::eMessageIDs>(evenElem.getResponseId()) };
+    NEService::eResultType resultType   { evenElem.getResult() };
 
-    bool dataValid  = false;
-    bool setStates  = true;
+    bool dataValid { false };
+    bool setStates { true  };
 
     switch (resultType)
     {
@@ -237,12 +241,12 @@ void LocalHelloWorldProxy::updateData( LocalHelloWorldResponseEvent & eventElem,
         break;
     }
 
-    if (dataValid == true)
+    if ( dataValid )
     {
         updateData(evenElem, respId);
     }
 
-    if (setStates == true)
+    if ( setStates )
     {
         setState(static_cast<msg_id>(respId), dataValid ? NEService::eDataStateType::DataIsOK : NEService::eDataStateType::DataIsInvalid);
     }

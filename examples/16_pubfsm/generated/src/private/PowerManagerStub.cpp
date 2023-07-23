@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:09:38 GMT+01:00
+ * Generated at     23.07.2023  03:05:03 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PowerManager.
  *
  * \file            generated/src/PowerManagerStub.hpp
@@ -36,7 +36,6 @@ PowerManagerStub::PowerManagerStub( Component & masterComp )
 
     , mLightsPowerState       (  )
     , mLightsPowerStateState  ( NEService::eDataStateType::DataIsUnavailable )
-    
 {
 }
 
@@ -85,7 +84,7 @@ DEF_TRACE_SCOPE(generated_src_PowerManagerStub_sendNotification);
 void PowerManagerStub::sendNotification( unsigned int msgId )
 {
     EventDataStream args(EventDataStream::eEventData::EventDataInternal);
-    IEOutStream & stream = args.getStreamForWrite();
+    IEOutStream & stream { args.getStreamForWrite() };
 
     switch ( static_cast<NEPowerManager::eMessageIDs>(msgId) )
     {
@@ -108,8 +107,8 @@ void PowerManagerStub::sendNotification( unsigned int msgId )
 DEF_TRACE_SCOPE(generated_src_PowerManagerStub_errorRequest);
 void PowerManagerStub::errorRequest( unsigned int msgId, bool msgCancel )
 {
-    NEService::eResultType result = NEService::eResultType::NotProcessed;
-    msg_id listenerId = msgId;
+    NEService::eResultType result { NEService::eResultType::NotProcessed };
+    msg_id listenerId { msgId };
 
     switch ( static_cast<NEPowerManager::eMessageIDs>(msgId) )
     {
@@ -183,7 +182,7 @@ void PowerManagerStub::setLightsPowerState( const NEPowerManager::ePoweredState 
 
 void PowerManagerStub::responseStartTrafficLight( bool Success )
 {
-    static const NEPowerManager::eMessageIDs msgId = NEPowerManager::eMessageIDs::MsgId_responseStartTrafficLight;
+    constexpr NEPowerManager::eMessageIDs msgId { NEPowerManager::eMessageIDs::MsgId_responseStartTrafficLight };
     EventDataStream args(EventDataStream::eEventData::EventDataInternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << Success;
@@ -192,7 +191,7 @@ void PowerManagerStub::responseStartTrafficLight( bool Success )
 
 void PowerManagerStub::responseStopTrafficLight( bool Success )
 {
-    static const NEPowerManager::eMessageIDs msgId = NEPowerManager::eMessageIDs::MsgId_responseStopTrafficLight;
+    constexpr NEPowerManager::eMessageIDs msgId { NEPowerManager::eMessageIDs::MsgId_responseStopTrafficLight };
     EventDataStream args(EventDataStream::eEventData::EventDataInternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << Success;
@@ -265,16 +264,16 @@ void PowerManagerStub::processRequestEvent( ServiceRequestEvent & eventElem )
 DEF_TRACE_SCOPE(generated_src_PowerManagerStub_processAttributeEvent);
 void PowerManagerStub::processAttributeEvent( ServiceRequestEvent & eventElem )
 {
-    const NEService::eRequestType reqType = eventElem.getRequestType();
+    const NEService::eRequestType reqType { eventElem.getRequestType() };
+    const ProxyAddress & source { eventElem.getEventSource( ) };
     if (reqType == NEService::eRequestType::RemoveAllNotify)
     {
         IntegerArray removedIds;
-        StubBase::clearAllListeners(eventElem.getEventSource(), removedIds);
+        StubBase::clearAllListeners(source, removedIds);
     }
     else
     {
-        NEPowerManager::eMessageIDs updId  = static_cast<NEPowerManager::eMessageIDs>(eventElem.getRequestId());
-        const ProxyAddress & source = eventElem.getEventSource( );
+        NEPowerManager::eMessageIDs updId  { static_cast<NEPowerManager::eMessageIDs>(eventElem.getRequestId()) };
         if (reqType == NEService::eRequestType::StopNotify)
         {
             removeNotificationListener( static_cast<msg_id>(updId), source );

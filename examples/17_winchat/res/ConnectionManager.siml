@@ -6,15 +6,15 @@
     <DataTypeList>
         <DataType ID="3" Name="sConnection" Type="Imported">
             <Namespace>NECommon</Namespace>
-            <Location>generated/NECommon.hpp</Location>
+            <Location>common/NECommon.hpp</Location>
         </DataType>
         <DataType ID="4" Name="ListConnections" Type="Imported">
             <Namespace>NECommon</Namespace>
-            <Location>generated/NECommon.hpp</Location>
+            <Location>common/NECommon.hpp</Location>
         </DataType>
         <DataType ID="5" Name="MapConnections" Type="Imported">
             <Namespace>NECommon</Namespace>
-            <Location>generated/NECommon.hpp</Location>
+            <Location>common/NECommon.hpp</Location>
         </DataType>
         <DataType ID="15" Name="eConnectionResult" Type="Enumerate" Values="default">
             <Description>The result of connection</Description>
@@ -172,7 +172,7 @@
         </Constant>
     </ConstantList>
     <IncludeList>
-        <Location ID="59" Name="generated/NECommon.hpp">
+        <Location ID="59" Name="common/NECommon.hpp">
             <Description>Shared data.</Description>
         </Location>
     </IncludeList>

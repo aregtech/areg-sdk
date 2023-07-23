@@ -225,7 +225,7 @@ inline static bool _isValidSource( ITEM_ID client )
     return ((client != NEService::COOKIE_UNKNOWN) && client != (NEService::COOKIE_LOCAL));
 }
 
-inline static void _createRegisterRequest( RemoteMessage & out_msgRegister, ITEM_ID source, NEService::eServiceRequestType reqType, const StubAddress & addrService )
+inline static void _createRegisterRequest( RemoteMessage & out_msgRegister, ITEM_ID source, NEService::eServiceRequestType reqType, NEService::eDisconnectReason reason, const StubAddress & addrService )
 {
     if ( out_msgRegister.initMessage( NEConnection::getMessageRegisterService().rbHeader ) != nullptr )
     {
@@ -233,12 +233,13 @@ inline static void _createRegisterRequest( RemoteMessage & out_msgRegister, ITEM
         out_msgRegister.setSequenceNr( NEService::SEQUENCE_NUMBER_NOTIFY );
         out_msgRegister << reqType;
         out_msgRegister << addrService;
+        out_msgRegister << reason;
         out_msgRegister.bufferCompletionFix();
     }
 
 }
 
-inline static void _createRegisterRequest( RemoteMessage & out_msgRegister, ITEM_ID source, NEService::eServiceRequestType reqType, const ProxyAddress & addrService )
+inline static void _createRegisterRequest( RemoteMessage & out_msgRegister, ITEM_ID source, NEService::eServiceRequestType reqType, NEService::eDisconnectReason reason, const ProxyAddress & addrService )
 {
     if ( out_msgRegister.initMessage( NEConnection::getMessageRegisterService().rbHeader ) != nullptr )
     {
@@ -246,11 +247,12 @@ inline static void _createRegisterRequest( RemoteMessage & out_msgRegister, ITEM
         out_msgRegister.setSequenceNr( NEService::SEQUENCE_NUMBER_NOTIFY );
         out_msgRegister << reqType;
         out_msgRegister << addrService;
+        out_msgRegister << reason;
         out_msgRegister.bufferCompletionFix();
     }
 }
 
-inline static void _createRegistereNotify( RemoteMessage & out_msgNotify, ITEM_ID target, NEService::eServiceRequestType reqType, const StubAddress & addrService )
+inline static void _createRegisterNotify( RemoteMessage & out_msgNotify, ITEM_ID target, NEService::eServiceRequestType reqType, NEService::eDisconnectReason reason, const StubAddress & addrService )
 {
     if ( out_msgNotify.initMessage( NEConnection::getMessageRegisterNotify().rbHeader ) != nullptr )
     {
@@ -258,11 +260,12 @@ inline static void _createRegistereNotify( RemoteMessage & out_msgNotify, ITEM_I
         out_msgNotify.setSequenceNr( NEService::SEQUENCE_NUMBER_NOTIFY );
         out_msgNotify << reqType;
         out_msgNotify << addrService;
+        out_msgNotify << reason;
         out_msgNotify.bufferCompletionFix();
     }
 }
 
-inline static void _createRegistereNotify( RemoteMessage & out_msgNotify, ITEM_ID target, NEService::eServiceRequestType reqType, const ProxyAddress & addrService )
+inline static void _createRegisterNotify( RemoteMessage & out_msgNotify, ITEM_ID target, NEService::eServiceRequestType reqType, NEService::eDisconnectReason reason, const ProxyAddress & addrService )
 {
     if ( out_msgNotify.initMessage( NEConnection::getMessageRegisterNotify().rbHeader ) != nullptr )
     {
@@ -270,6 +273,7 @@ inline static void _createRegistereNotify( RemoteMessage & out_msgNotify, ITEM_I
         out_msgNotify.setSequenceNr( NEService::SEQUENCE_NUMBER_NOTIFY );
         out_msgNotify << reqType;
         out_msgNotify << addrService;
+        out_msgNotify << reason;
         out_msgNotify.bufferCompletionFix();
     }
 }
@@ -281,7 +285,7 @@ AREG_API_IMPL RemoteMessage NEConnection::createRouterRegisterService( const Stu
     {
         StubAddress temp( stub );
         temp.setCookie(source);
-        _createRegisterRequest(msgResult, source, NEService::eServiceRequestType::RegisterStub, temp);
+        _createRegisterRequest(msgResult, source, NEService::eServiceRequestType::RegisterStub, NEService::eDisconnectReason::ReasonUndefined, temp);
     }
 
     return msgResult;
@@ -294,33 +298,33 @@ AREG_API_IMPL RemoteMessage NEConnection::createRouterRegisterClient( const Prox
     {
         ProxyAddress temp( proxy );
         temp.setCookie(source);
-        _createRegisterRequest(msgResult, source, NEService::eServiceRequestType::RegisterClient, temp);
+        _createRegisterRequest(msgResult, source, NEService::eServiceRequestType::RegisterClient, NEService::eDisconnectReason::ReasonUndefined, temp);
     }
 
     return msgResult;
 }
 
-AREG_API_IMPL RemoteMessage NEConnection::createRouterUnregisterService( const StubAddress & stub, ITEM_ID source )
+AREG_API_IMPL RemoteMessage NEConnection::createRouterUnregisterService( const StubAddress & stub, NEService::eDisconnectReason reason, ITEM_ID source )
 {
     RemoteMessage msgResult;
     if ( stub.isServicePublic() && _isValidSource(source) )
     {
         StubAddress temp( stub );
         temp.setCookie(source);
-        _createRegisterRequest(msgResult, source, NEService::eServiceRequestType::UnregisterStub, temp);
+        _createRegisterRequest(msgResult, source, NEService::eServiceRequestType::UnregisterStub, reason, temp);
     }
 
     return msgResult;
 }
 
-AREG_API_IMPL RemoteMessage NEConnection::createRouterUnregisterClient( const ProxyAddress & proxy, ITEM_ID source )
+AREG_API_IMPL RemoteMessage NEConnection::createRouterUnregisterClient( const ProxyAddress & proxy, NEService::eDisconnectReason reason, ITEM_ID source )
 {
     RemoteMessage msgResult;
     if ( proxy.isServicePublic() && _isValidSource(source) )
     {
         ProxyAddress temp( proxy );
         temp.setCookie(source);
-        _createRegisterRequest(msgResult, source, NEService::eServiceRequestType::UnregisterClient, temp);
+        _createRegisterRequest(msgResult, source, NEService::eServiceRequestType::UnregisterClient, reason, temp);
     }
 
     return msgResult;
@@ -381,7 +385,7 @@ AREG_API_IMPL RemoteMessage NEConnection::createServiceRegisteredNotification(co
     if ( stub.isServicePublic() && _isValidSource(target) )
     {
         StubAddress temp( stub );
-        _createRegistereNotify(msgResult, target, NEService::eServiceRequestType::RegisterStub, temp);
+        _createRegisterNotify(msgResult, target, NEService::eServiceRequestType::RegisterStub, NEService::eDisconnectReason::ReasonUndefined, temp);
     }
 
     return msgResult;
@@ -393,30 +397,30 @@ AREG_API_IMPL RemoteMessage NEConnection::createServiceClientRegisteredNotificat
     if ( proxy.isServicePublic() && _isValidSource(target) )
     {
         ProxyAddress temp( proxy );
-        _createRegistereNotify(msgResult, target, NEService::eServiceRequestType::RegisterClient, temp);
+        _createRegisterNotify(msgResult, target, NEService::eServiceRequestType::RegisterClient, NEService::eDisconnectReason::ReasonUndefined, temp);
     }
 
     return msgResult;
 }
 
-AREG_API_IMPL RemoteMessage NEConnection::createServiceUnregisteredNotification(const StubAddress & stub, ITEM_ID target)
+AREG_API_IMPL RemoteMessage NEConnection::createServiceUnregisteredNotification(const StubAddress & stub, NEService::eDisconnectReason reason, ITEM_ID target)
 {
     RemoteMessage msgResult;
     if ( stub.isServicePublic() && _isValidSource(target) )
     {
         StubAddress temp( stub );
-        _createRegistereNotify(msgResult, target, NEService::eServiceRequestType::UnregisterStub, temp);
+        _createRegisterNotify(msgResult, target, NEService::eServiceRequestType::UnregisterStub, reason, temp);
     }
     return msgResult;
 }
 
-AREG_API_IMPL RemoteMessage NEConnection::createServiceClientUnregisteredNotification(const ProxyAddress & proxy, ITEM_ID target)
+AREG_API_IMPL RemoteMessage NEConnection::createServiceClientUnregisteredNotification(const ProxyAddress & proxy, NEService::eDisconnectReason reason, ITEM_ID target)
 {
     RemoteMessage msgResult;
     if ( proxy.isServicePublic() && _isValidSource(target) )
     {
         ProxyAddress temp( proxy );
-        _createRegistereNotify(msgResult, target, NEService::eServiceRequestType::UnregisterClient, temp);
+        _createRegisterNotify(msgResult, target, NEService::eServiceRequestType::UnregisterClient, reason, temp);
     }
 
     return msgResult;

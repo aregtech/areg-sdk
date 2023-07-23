@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:10:19 GMT+01:00
+ * Generated at     23.07.2023  03:05:34 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloWatchdog.
  *
  * \file            generated/src/private/HelloWatchdogProxy.hpp
@@ -56,7 +56,7 @@ HelloWatchdogProxy * HelloWatchdogProxy::createProxy( const String & roleName, I
                                                                       , ownerThread).get() );
 }
 
-HelloWatchdogProxy * HelloWatchdogProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::getEmptyString()*/ )
+HelloWatchdogProxy * HelloWatchdogProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
 {
     return static_cast<HelloWatchdogProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEHelloWatchdog::getInterfaceData()
@@ -80,10 +80,6 @@ HelloWatchdogProxy::HelloWatchdogProxy( const String & roleName, DispatcherThrea
  * Parameters
  ************************************************************************/
     , mParamtimeoutSleep  (  )
-{
-}
-
-HelloWatchdogProxy::~HelloWatchdogProxy( void )
 {
 }
 
@@ -137,7 +133,7 @@ unsigned int HelloWatchdogProxy::requestStartSleep( IENotificationEventConsumer 
     sendRequestEvent( static_cast<unsigned int>(msgId), args, &caller );
     return mSequenceCount;
 }
-    
+
 /************************************************************************
  * Event processing.
  ************************************************************************/
@@ -150,18 +146,26 @@ void HelloWatchdogProxy::processResponseEvent( ServiceResponseEvent & eventElem 
 {
     HelloWatchdogResponseEvent * eventResp = RUNTIME_CAST( &eventElem, HelloWatchdogResponseEvent );
     if (eventResp != nullptr)
+    {
         processResponse( *eventResp );
+    }
     else
+    {
         processProxyEvent( eventElem );
+    }
 }
 
 void HelloWatchdogProxy::processAttributeEvent( ServiceResponseEvent & eventElem )
 {
     HelloWatchdogResponseEvent * eventResp = RUNTIME_CAST( &eventElem, HelloWatchdogResponseEvent );
     if (eventResp != nullptr)
+    {
         processResponse( *eventResp );
+    }
     else
+    {
         processProxyEvent( eventElem );
+    }
 }
 
 /************************************************************************
@@ -171,7 +175,7 @@ void HelloWatchdogProxy::processAttributeEvent( ServiceResponseEvent & eventElem
 DEF_TRACE_SCOPE(generated_src_private_HelloWatchdogProxy_updateData);
 void HelloWatchdogProxy::updateData( HelloWatchdogResponseEvent & eventElem, NEHelloWatchdog::eMessageIDs respId )
 {
-    const IEInStream & stream = static_cast<const HelloWatchdogResponseEvent &>(eventElem).getData().getReadStream();
+    const IEInStream & stream { static_cast<const HelloWatchdogResponseEvent &>(eventElem).getData().getReadStream() };
 
     switch (respId)
     {
@@ -204,13 +208,13 @@ void HelloWatchdogProxy::updateData( HelloWatchdogResponseEvent & eventElem, NEH
     }
 }
 
-    void HelloWatchdogProxy::processResponse( HelloWatchdogResponseEvent & evenElem )
+void HelloWatchdogProxy::processResponse( HelloWatchdogResponseEvent & evenElem )
 {
-    NEHelloWatchdog::eMessageIDs respId  = static_cast<NEHelloWatchdog::eMessageIDs>(evenElem.getResponseId());
-    NEService::eResultType resultType  = evenElem.getResult();
+    NEHelloWatchdog::eMessageIDs respId  { static_cast<NEHelloWatchdog::eMessageIDs>(evenElem.getResponseId()) };
+    NEService::eResultType resultType   { evenElem.getResult() };
 
-    bool dataValid  = false;
-    bool setStates  = true;
+    bool dataValid { false };
+    bool setStates { true  };
 
     switch (resultType)
     {
@@ -244,12 +248,12 @@ void HelloWatchdogProxy::updateData( HelloWatchdogResponseEvent & eventElem, NEH
         break;
     }
 
-    if (dataValid == true)
+    if ( dataValid )
     {
         updateData(evenElem, respId);
     }
 
-    if (setStates == true)
+    if ( setStates )
     {
         setState(static_cast<msg_id>(respId), dataValid ? NEService::eDataStateType::DataIsOK : NEService::eDataStateType::DataIsInvalid);
     }

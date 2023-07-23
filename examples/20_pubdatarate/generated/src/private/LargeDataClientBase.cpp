@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:10:45 GMT+01:00
+ * Generated at     23.07.2023  03:05:54 GMT+02:00
  *                  Create by AREG SDK code generator tool from source LargeData.
  *
  * \file            generated/src/LargeDataClientBase.hpp
@@ -43,7 +43,7 @@ namespace NELargeData
  * Constructor / Destructor
  ************************************************************************/
 
-LargeDataClientBase::LargeDataClientBase( const String & roleName, const String & ownerThread /* = String::getEmptyString() */ )
+LargeDataClientBase::LargeDataClientBase( const String & roleName, const String & ownerThread /* = String::EmptyString */ )
     : IEProxyListener   ( )
 
     , mIsConnected      ( false )
@@ -97,11 +97,11 @@ LargeDataClientBase::~LargeDataClientBase( void )
 
 bool LargeDataClientBase::recreateProxy( void )
 {
-    bool result         = false;
+    bool result { false };
     if (mProxy != nullptr)
     {
-        const String & roleName   = mProxy->getProxyAddress().getRoleName();
-        const String & threadName = mProxy->getProxyAddress().getThread();
+        const String & roleName   { mProxy->getProxyAddress().getRoleName() };
+        const String & threadName { mProxy->getProxyAddress().getThread()   };
         if ( roleName.isEmpty() == false )
         {
             LargeDataProxy * newProxy = LargeDataProxy::createProxy(roleName, static_cast<IEProxyListener &>(self()), threadName);
@@ -124,21 +124,21 @@ DispatcherThread * LargeDataClientBase::getDispatcherThread( void )
 }
 
 DEF_TRACE_SCOPE(generated_src_LargeDataClientBase_serviceConnected);
-bool LargeDataClientBase::serviceConnected( bool isConnected, ProxyBase & proxy )
+bool LargeDataClientBase::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
 {
     TRACE_SCOPE(generated_src_LargeDataClientBase_serviceConnected);
 
-    bool result = false;
+    bool result { false };
     if(mProxy == &proxy)
     {
+        mIsConnected= NEService::isServiceConnected(status);
+        result      = true;
+
         TRACE_DBG("Client [ %p ]: The Service [ %s ] with Role Name [ %s ] is [ %s ]"
                  , this
                  , proxy.getProxyAddress().getServiceName().getString()
                  , proxy.getProxyAddress().getRoleName().getString()
-                 , isConnected ? "CONNECTED" : "DISCONNECTED");
-
-        mIsConnected= isConnected;
-        result      = true;
+                 , mIsConnected ? "CONNECTED" : "DISCONNECTED");
     }
 
     return result;
@@ -159,9 +159,9 @@ void LargeDataClientBase::notifyOn( NELargeData::eMessageIDs msgId, bool notify,
 DEF_TRACE_SCOPE(generated_src_LargeDataClientBase_processNotificationEvent);
 void LargeDataClientBase::processNotificationEvent( NotificationEvent & eventElem )
 {
-    const NotificationEventData & data  = static_cast<const NotificationEvent &>(eventElem).getData();
-    NEService::eResultType result       = data.getNotifyType();
-    NELargeData::eMessageIDs msgId   = static_cast<NELargeData::eMessageIDs>(data.getNotifyId());
+    const NotificationEventData & data  { static_cast<const NotificationEvent &>(eventElem).getData() };
+    NEService::eResultType result       { data.getNotifyType() };
+    NELargeData::eMessageIDs msgId   { static_cast<NELargeData::eMessageIDs>(data.getNotifyId()) };
     mCurrSequenceNr = data.getSequenceNr();
 
     switch (result)

@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:10:56 GMT+01:00
+ * Generated at     23.07.2023  03:06:04 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloUnblock.
  *
  * \file            generated/src/private/HelloUnblockProxy.hpp
@@ -106,7 +106,7 @@ protected:
      *                          If nullptr, current dispatching thread is used to dispatch messages.
      * \return  Returns pointer to instantiated proxy object.
      **/
-    static HelloUnblockProxy * createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread = String::getEmptyString() );
+    static HelloUnblockProxy * createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread = String::EmptyString );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
@@ -123,7 +123,7 @@ protected:
     /**
      * \brief   Destructor
      **/
-    virtual ~HelloUnblockProxy( void );
+    virtual ~HelloUnblockProxy( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations.
@@ -154,7 +154,7 @@ public:
      * \brief   Returns value of clientId of response call function.
      *          The parameter is validated and set when Proxy is getting response call.
      *          Parameter clientId description:
-     *          Generated ID for the client used when send requst to unblock.
+     *          Generated ID for the client used when send request to unblock.
      **/
     inline unsigned int getParamclientId( void ) const;
 
@@ -163,7 +163,7 @@ public:
      *          The parameter is validated and set when Proxy is getting response call.
      *          Parameter seqNr description:
      *          The sequence number created by the client. On reply the service sends the sequence number so that
-     *          the cilent can check that all sequences exist.
+     *          the client can check that all sequences exist.
      **/
     inline unsigned int getParamseqNr( void ) const;
 
@@ -172,7 +172,7 @@ public:
  ************************************************************************/
     /**
      * \brief   Request call.
-     *          Request to assign an ID to the client used to to call unblock request.
+     *          Request to assign an ID to the client used to call unblock request.
      * \param   caller  The reference of caller object to get response.
      * \return  The sequence count number of call
      * \see     responseIdentifier
@@ -336,14 +336,14 @@ private:
  ************************************************************************/
     /**
      * \brief   clientId parameter value.
-     *          Generated ID for the client used when send requst to unblock.
+     *          Generated ID for the client used when send request to unblock.
      **/
     unsigned int                    mParamclientId;
 
     /**
      * \brief   seqNr parameter value.
      *          The sequence number created by the client. On reply the service sends the sequence number so that
-     *          the cilent can check that all sequences exist.
+     *          the client can check that all sequences exist.
      **/
     unsigned int                    mParamseqNr;
 

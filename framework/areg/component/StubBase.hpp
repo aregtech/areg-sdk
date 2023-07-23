@@ -309,11 +309,10 @@ public:
 
     /**
      * \brief   Triggered when proxy client either connected or disconnected to stub.
-     * \param   client      The address of proxy client, which connection status is changed.
-     * \param   isConnected Flag, indicating whether client is connected or disconnected.
-     *                      When client disconnects, all listeners are removed.
+     * \param   client  The address of proxy client, which connection status is changed.
+     * \param   status  The service consumer connection status.
      **/
-    virtual void clientConnected( const ProxyAddress & client, bool isConnected );
+    virtual void clientConnected( const ProxyAddress & client, NEService::eServiceConnection status );
 
 /************************************************************************/
 // StubBase overrides. Public pure virtual methods 
@@ -402,17 +401,17 @@ protected:
     /**
      * \brief   Triggered by system when stub is registered in service. The connection status indicated
      *          registration status. If succeeded, the value is NEService::ServiceConnected
-     * \param   stubTarget          The address of registered Stub
-     * \param   connectionStatus    Stub registration status.
+     * \param   stubTarget  The address of registered service provider
+     * \param   status      The connection status of the service provider.
      **/
-    virtual void processStubRegisteredEvent( const StubAddress & stubTarget, NEService::eServiceConnection connectionStatus ) override;
+    virtual void processStubRegisteredEvent( const StubAddress & stubTarget, NEService::eServiceConnection status ) override;
 
     /**
      * \brief   Send by system when client is requested connect / disconnect
-     * \param   proxyAddress        The address of source proxy
-     * \param   connectionStatus    Connection status of specified client
+     * \param   proxyAddress    The address of the service consumer proxy.
+     * \param   status          The service consumer connection status.
      **/
-    virtual void processClientConnectEvent( const ProxyAddress & proxyAddress, NEService::eServiceConnection connectionStatus ) override;
+    virtual void processClientConnectEvent( const ProxyAddress & proxyAddress, NEService::eServiceConnection status ) override;
 
     /**
      * \brief   Triggered to process generic stub event.

@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:08:52 GMT+01:00
+ * Generated at     23.07.2023  03:04:26 GMT+02:00
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
  *
  * \file            generated/src/private/LocalHelloWorldProxy.hpp
@@ -101,7 +101,7 @@ protected:
      *                          If nullptr, current dispatching thread is used to dispatch messages.
      * \return  Returns pointer to instantiated proxy object.
      **/
-    static LocalHelloWorldProxy * createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread = String::getEmptyString() );
+    static LocalHelloWorldProxy * createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread = String::EmptyString );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
@@ -118,7 +118,7 @@ protected:
     /**
      * \brief   Destructor
      **/
-    virtual ~LocalHelloWorldProxy( void );
+    virtual ~LocalHelloWorldProxy( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations.

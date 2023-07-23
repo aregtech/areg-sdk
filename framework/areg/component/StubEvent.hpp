@@ -230,19 +230,19 @@ protected:
     virtual void processGenericEvent( Event & eventElem ) = 0;
 
     /**
-     * \brief   Send by system when client is requested connect / disconnect
-     * \param   proxyAddress        The address of source proxy
-     * \param   connectionStatus    Connection status of specified client
-     **/
-    virtual void processClientConnectEvent( const ProxyAddress & proxyAddress, NEService::eServiceConnection connectionStatus ) = 0;
-
-    /**
      * \brief   Triggered by system when stub is registered in service. The connection status indicated
      *          registration status. If succeeded, the value is NEService::ServiceConnected
-     * \param   stubTarget          The address of registered Stub
-     * \param   connectionStatus    Stub registration status.
+     * \param   stubTarget  The address of registered service provider
+     * \param   status      The connection status of the service provider.
      **/
-    virtual void processStubRegisteredEvent( const StubAddress & stubTarget, NEService::eServiceConnection connectionStatus ) = 0;
+    virtual void processStubRegisteredEvent( const StubAddress & stubTarget, NEService::eServiceConnection status ) = 0;
+
+    /**
+     * \brief   Send by system when client is requested connect / disconnect
+     * \param   proxyAddress    The address of the service consumer proxy.
+     * \param   status          The service consumer connection status.
+     **/
+    virtual void processClientConnectEvent( const ProxyAddress & proxyAddress, NEService::eServiceConnection status ) = 0;
 
     /**
      * \brief   This function is triggered when object is adding listener

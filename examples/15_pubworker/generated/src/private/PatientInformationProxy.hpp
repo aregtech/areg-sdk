@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:09:24 GMT+01:00
+ * Generated at     23.07.2023  03:04:51 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PatientInformation.
  *
  * \file            generated/src/private/PatientInformationProxy.hpp
@@ -101,7 +101,7 @@ protected:
      *                          If nullptr, current dispatching thread is used to dispatch messages.
      * \return  Returns pointer to instantiated proxy object.
      **/
-    static PatientInformationProxy * createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread = String::getEmptyString() );
+    static PatientInformationProxy * createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread = String::EmptyString );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
@@ -118,7 +118,7 @@ protected:
     /**
      * \brief   Destructor
      **/
-    virtual ~PatientInformationProxy( void );
+    virtual ~PatientInformationProxy( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations.

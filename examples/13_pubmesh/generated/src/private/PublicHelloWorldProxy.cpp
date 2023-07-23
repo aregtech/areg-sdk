@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:08:54 GMT+01:00
+ * Generated at     23.07.2023  03:04:27 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PublicHelloWorld.
  *
  * \file            generated/src/private/PublicHelloWorldProxy.hpp
@@ -56,7 +56,7 @@ PublicHelloWorldProxy * PublicHelloWorldProxy::createProxy( const String & roleN
                                                                       , ownerThread).get() );
 }
 
-PublicHelloWorldProxy * PublicHelloWorldProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::getEmptyString()*/ )
+PublicHelloWorldProxy * PublicHelloWorldProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
 {
     return static_cast<PublicHelloWorldProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEPublicHelloWorld::getInterfaceData()
@@ -80,10 +80,6 @@ PublicHelloWorldProxy::PublicHelloWorldProxy( const String & roleName, Dispatche
  ************************************************************************/
     , mParamclient    (  )
     , mParamclientID  (  )
-{
-}
-
-PublicHelloWorldProxy::~PublicHelloWorldProxy( void )
 {
 }
 
@@ -150,7 +146,7 @@ unsigned int PublicHelloWorldProxy::requestRegister( IENotificationEventConsumer
     sendRequestEvent( static_cast<unsigned int>(msgId), args, &caller );
     return mSequenceCount;
 }
-    
+
 void PublicHelloWorldProxy::requestUnregister( const NEPublicHelloWorld::sClientRegister & client )
 {
     static const NEPublicHelloWorld::eMessageIDs msgId = NEPublicHelloWorld::eMessageIDs::MsgId_requestUnregister;
@@ -168,7 +164,7 @@ unsigned int PublicHelloWorldProxy::requestHelloWorld( IENotificationEventConsum
     sendRequestEvent( static_cast<unsigned int>(msgId), args, &caller );
     return mSequenceCount;
 }
-    
+
 /************************************************************************
  * Event processing.
  ************************************************************************/
@@ -181,18 +177,26 @@ void PublicHelloWorldProxy::processResponseEvent( ServiceResponseEvent & eventEl
 {
     PublicHelloWorldResponseEvent * eventResp = RUNTIME_CAST( &eventElem, PublicHelloWorldResponseEvent );
     if (eventResp != nullptr)
+    {
         processResponse( *eventResp );
+    }
     else
+    {
         processProxyEvent( eventElem );
+    }
 }
 
 void PublicHelloWorldProxy::processAttributeEvent( ServiceResponseEvent & eventElem )
 {
     PublicHelloWorldResponseEvent * eventResp = RUNTIME_CAST( &eventElem, PublicHelloWorldResponseEvent );
     if (eventResp != nullptr)
+    {
         processResponse( *eventResp );
+    }
     else
+    {
         processProxyEvent( eventElem );
+    }
 }
 
 /************************************************************************
@@ -202,7 +206,7 @@ void PublicHelloWorldProxy::processAttributeEvent( ServiceResponseEvent & eventE
 DEF_TRACE_SCOPE(generated_src_private_PublicHelloWorldProxy_updateData);
 void PublicHelloWorldProxy::updateData( PublicHelloWorldResponseEvent & eventElem, NEPublicHelloWorld::eMessageIDs respId )
 {
-    const IEInStream & stream = static_cast<const PublicHelloWorldResponseEvent &>(eventElem).getData().getReadStream();
+    const IEInStream & stream { static_cast<const PublicHelloWorldResponseEvent &>(eventElem).getData().getReadStream() };
 
     switch (respId)
     {
@@ -235,13 +239,13 @@ void PublicHelloWorldProxy::updateData( PublicHelloWorldResponseEvent & eventEle
     }
 }
 
-    void PublicHelloWorldProxy::processResponse( PublicHelloWorldResponseEvent & evenElem )
+void PublicHelloWorldProxy::processResponse( PublicHelloWorldResponseEvent & evenElem )
 {
-    NEPublicHelloWorld::eMessageIDs respId  = static_cast<NEPublicHelloWorld::eMessageIDs>(evenElem.getResponseId());
-    NEService::eResultType resultType  = evenElem.getResult();
+    NEPublicHelloWorld::eMessageIDs respId  { static_cast<NEPublicHelloWorld::eMessageIDs>(evenElem.getResponseId()) };
+    NEService::eResultType resultType   { evenElem.getResult() };
 
-    bool dataValid  = false;
-    bool setStates  = true;
+    bool dataValid { false };
+    bool setStates { true  };
 
     switch (resultType)
     {
@@ -275,12 +279,12 @@ void PublicHelloWorldProxy::updateData( PublicHelloWorldResponseEvent & eventEle
         break;
     }
 
-    if (dataValid == true)
+    if ( dataValid )
     {
         updateData(evenElem, respId);
     }
 
-    if (setStates == true)
+    if ( setStates )
     {
         setState(static_cast<msg_id>(respId), dataValid ? NEService::eDataStateType::DataIsOK : NEService::eDataStateType::DataIsInvalid);
     }

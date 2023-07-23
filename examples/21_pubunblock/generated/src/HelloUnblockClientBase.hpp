@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:10:56 GMT+01:00
+ * Generated at     23.07.2023  03:06:04 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloUnblock.
  *
  * \file            generated/src/HelloUnblockClientBase.hpp
@@ -59,7 +59,7 @@ protected:
      * \param   roleName    The dependent service HelloUnblock role name.
      * \param   ownerThread The name of client owner thread. If empty, assign current thread.
      **/
-    HelloUnblockClientBase( const String & roleName, const String & ownerThread = String::getEmptyString() );
+    HelloUnblockClientBase( const String & roleName, const String & ownerThread = String::EmptyString );
 
     /**
      * \brief   Initialize HelloUnblock Service client object by specifying the
@@ -181,7 +181,7 @@ public:
  ************************************************************************/
     /**
      * \brief   Request call.
-     *          Request to assign an ID to the client used to to call unblock request.
+     *          Request to assign an ID to the client used to call unblock request.
      * \return  The sequence count number of call
      * \see     responseIdentifier
      **/
@@ -219,7 +219,7 @@ public:
      *          Sent to set ID for client.
      *          Overwrite, if need to handle Response call of server object.
      *          This call will be automatically triggered, on every appropriate request call
-     * \param   clientId    Generated ID for the client used when send requst to unblock.
+     * \param   clientId    Generated ID for the client used when send request to unblock.
      * \see     requestIdentifier
      **/
     virtual void responseIdentifier( unsigned int clientId );
@@ -241,7 +241,7 @@ public:
      *          This call will be automatically triggered, on every appropriate request call
      * \param   clientId    The ID of the client to send the response. Never is 0.
      * \param   seqNr       The sequence number created by the client. On reply the service sends the sequence number so that
-     *          the cilent can check that all sequences exist.
+     *          the client can check that all sequences exist.
      * \see     requestHelloUblock
      **/
     virtual void responseHelloUnblock( unsigned int clientId, unsigned int seqNr );
@@ -265,24 +265,17 @@ protected:
 // IEProxyListener Overrides
 /************************************************************************/
     /**
-     * \brief   Triggered by Proxy, when gets service connected event.
-     *          Make client initializations in this function. No request
-     *          will be processed until this function is not called for
-     *          client object. Also set listeners here if client is interested
-     *          to receive update notifications.
-     * \param   isConnected     The flag, indicating whether service is connected
-     *                          or disconnected. Make cleanups and stop sending
-     *                          requests or assigning for notification if
-     *                          this flag is false. No event to Stub target will
-     *                          be sent, until no service connected event is
-     *                          received.
-     * \param   proxy           The Service Interface Proxy object, which is
-     *                          notifying service connection.
-     * \return  Return true if this service connect notification was relevant to client object,
-     *          i.e. if passed Proxy address is equal to the Proxy object that client has.
-     *          If Proxy objects are not equal, it should return false;
+     * \brief   Triggered when receives service provider connected / disconnected event.
+     *          When the service provider is connected, the client objects can set the listeners here.
+     *          When the service provider is disconnected, the client object should clean the listeners.
+     *          Up from connected status, the clients can subscribe and unsubscribe on updates,
+     *          responses and broadcasts, can trigger requests. Before connection, the clients cannot
+     *          neither trigger requests, nor receive data update messages.
+     * \param   status  The service connection status.
+     * \param   proxy   The Service Interface Proxy object, which is notifying service connection.
+     * \return  Return true if this service connect notification was relevant to client object.
      **/
-    virtual bool serviceConnected( bool isConnected, ProxyBase & proxy ) override;
+    virtual bool serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy ) override;
 
 /************************************************************************/
 // HelloUnblockClientBase Error Handling overrides

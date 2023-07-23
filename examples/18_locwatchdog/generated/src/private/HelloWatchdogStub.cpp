@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:10:19 GMT+01:00
+ * Generated at     23.07.2023  03:05:34 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloWatchdog.
  *
  * \file            generated/src/HelloWatchdogStub.hpp
@@ -36,7 +36,6 @@ HelloWatchdogStub::HelloWatchdogStub( Component & masterComp )
 
     , mServiceState       (  )
     , mServiceStateState  ( NEService::eDataStateType::DataIsUnavailable )
-    
 {
 }
 
@@ -85,7 +84,7 @@ DEF_TRACE_SCOPE(generated_src_HelloWatchdogStub_sendNotification);
 void HelloWatchdogStub::sendNotification( unsigned int msgId )
 {
     EventDataStream args(EventDataStream::eEventData::EventDataInternal);
-    IEOutStream & stream = args.getStreamForWrite();
+    IEOutStream & stream { args.getStreamForWrite() };
 
     switch ( static_cast<NEHelloWatchdog::eMessageIDs>(msgId) )
     {
@@ -108,8 +107,8 @@ void HelloWatchdogStub::sendNotification( unsigned int msgId )
 DEF_TRACE_SCOPE(generated_src_HelloWatchdogStub_errorRequest);
 void HelloWatchdogStub::errorRequest( unsigned int msgId, bool msgCancel )
 {
-    NEService::eResultType result = NEService::eResultType::NotProcessed;
-    msg_id listenerId = msgId;
+    NEService::eResultType result { NEService::eResultType::NotProcessed };
+    msg_id listenerId { msgId };
 
     switch ( static_cast<NEHelloWatchdog::eMessageIDs>(msgId) )
     {
@@ -179,7 +178,7 @@ void HelloWatchdogStub::setServiceState( const NEHelloWatchdog::eState & newValu
 
 void HelloWatchdogStub::responseStartSleep( unsigned int timeoutSleep )
 {
-    static const NEHelloWatchdog::eMessageIDs msgId = NEHelloWatchdog::eMessageIDs::MsgId_responseStartSleep;
+    constexpr NEHelloWatchdog::eMessageIDs msgId { NEHelloWatchdog::eMessageIDs::MsgId_responseStartSleep };
     EventDataStream args(EventDataStream::eEventData::EventDataInternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << timeoutSleep;
@@ -234,16 +233,16 @@ void HelloWatchdogStub::processRequestEvent( ServiceRequestEvent & eventElem )
 DEF_TRACE_SCOPE(generated_src_HelloWatchdogStub_processAttributeEvent);
 void HelloWatchdogStub::processAttributeEvent( ServiceRequestEvent & eventElem )
 {
-    const NEService::eRequestType reqType = eventElem.getRequestType();
+    const NEService::eRequestType reqType { eventElem.getRequestType() };
+    const ProxyAddress & source { eventElem.getEventSource( ) };
     if (reqType == NEService::eRequestType::RemoveAllNotify)
     {
         IntegerArray removedIds;
-        StubBase::clearAllListeners(eventElem.getEventSource(), removedIds);
+        StubBase::clearAllListeners(source, removedIds);
     }
     else
     {
-        NEHelloWatchdog::eMessageIDs updId  = static_cast<NEHelloWatchdog::eMessageIDs>(eventElem.getRequestId());
-        const ProxyAddress & source = eventElem.getEventSource( );
+        NEHelloWatchdog::eMessageIDs updId  { static_cast<NEHelloWatchdog::eMessageIDs>(eventElem.getRequestId()) };
         if (reqType == NEService::eRequestType::StopNotify)
         {
             removeNotificationListener( static_cast<msg_id>(updId), source );

@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:10:56 GMT+01:00
+ * Generated at     23.07.2023  03:06:04 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloUnblock.
  *
  * \file            generated/src/HelloUnblockStub.hpp
@@ -36,7 +36,6 @@ HelloUnblockStub::HelloUnblockStub( Component & masterComp )
 
     , mHelloServiceState      (  )
     , mHelloServiceStateState ( NEService::eDataStateType::DataIsUnavailable )
-    
 {
 }
 
@@ -95,7 +94,7 @@ DEF_TRACE_SCOPE(generated_src_HelloUnblockStub_sendNotification);
 void HelloUnblockStub::sendNotification( unsigned int msgId )
 {
     EventDataStream args(EventDataStream::eEventData::EventDataExternal);
-    IEOutStream & stream = args.getStreamForWrite();
+    IEOutStream & stream { args.getStreamForWrite() };
 
     switch ( static_cast<NEHelloUnblock::eMessageIDs>(msgId) )
     {
@@ -118,8 +117,8 @@ void HelloUnblockStub::sendNotification( unsigned int msgId )
 DEF_TRACE_SCOPE(generated_src_HelloUnblockStub_errorRequest);
 void HelloUnblockStub::errorRequest( unsigned int msgId, bool msgCancel )
 {
-    NEService::eResultType result = NEService::eResultType::NotProcessed;
-    msg_id listenerId = msgId;
+    NEService::eResultType result { NEService::eResultType::NotProcessed };
+    msg_id listenerId { msgId };
 
     switch ( static_cast<NEHelloUnblock::eMessageIDs>(msgId) )
     {
@@ -191,7 +190,7 @@ void HelloUnblockStub::setHelloServiceState( const NEHelloUnblock::eServiceState
 
 void HelloUnblockStub::responseIdentifier( unsigned int clientId )
 {
-    static const NEHelloUnblock::eMessageIDs msgId = NEHelloUnblock::eMessageIDs::MsgId_responseIdentifier;
+    constexpr NEHelloUnblock::eMessageIDs msgId { NEHelloUnblock::eMessageIDs::MsgId_responseIdentifier };
     EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << clientId;
@@ -200,7 +199,7 @@ void HelloUnblockStub::responseIdentifier( unsigned int clientId )
 
 void HelloUnblockStub::responseHelloUnblock( unsigned int clientId, unsigned int seqNr )
 {
-    static const NEHelloUnblock::eMessageIDs msgId = NEHelloUnblock::eMessageIDs::MsgId_responseHelloUnblock;
+    constexpr NEHelloUnblock::eMessageIDs msgId { NEHelloUnblock::eMessageIDs::MsgId_responseHelloUnblock };
     EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << clientId;
@@ -265,16 +264,16 @@ void HelloUnblockStub::processRequestEvent( ServiceRequestEvent & eventElem )
 DEF_TRACE_SCOPE(generated_src_HelloUnblockStub_processAttributeEvent);
 void HelloUnblockStub::processAttributeEvent( ServiceRequestEvent & eventElem )
 {
-    const NEService::eRequestType reqType = eventElem.getRequestType();
+    const NEService::eRequestType reqType { eventElem.getRequestType() };
+    const ProxyAddress & source { eventElem.getEventSource( ) };
     if (reqType == NEService::eRequestType::RemoveAllNotify)
     {
         IntegerArray removedIds;
-        StubBase::clearAllListeners(eventElem.getEventSource(), removedIds);
+        StubBase::clearAllListeners(source, removedIds);
     }
     else
     {
-        NEHelloUnblock::eMessageIDs updId  = static_cast<NEHelloUnblock::eMessageIDs>(eventElem.getRequestId());
-        const ProxyAddress & source = eventElem.getEventSource( );
+        NEHelloUnblock::eMessageIDs updId  { static_cast<NEHelloUnblock::eMessageIDs>(eventElem.getRequestId()) };
         if (reqType == NEService::eRequestType::StopNotify)
         {
             removeNotificationListener( static_cast<msg_id>(updId), source );

@@ -47,21 +47,17 @@ IEWorkerThreadConsumer * PatientClient::workerThreadConsumer(const String & cons
     }
 }
 
-bool PatientClient::serviceConnected(bool isConnected, ProxyBase & proxy)
+bool PatientClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
 {
-    bool result = true;
-    if (PatientInformationClientBase::serviceConnected(isConnected, proxy))
+    bool result = PatientInformationClientBase::serviceConnected( status, proxy );
+    if ( isConnected( ) )
     {
-        notifyOnPatientUpdate(isConnected);
-
-        if (isConnected == false)
-        {
-            Application::signalAppQuit();
-        }
+        notifyOnPatientUpdate( true );
     }
     else
     {
-        result = false;
+        notifyOnPatientUpdate( false );
+        Application::signalAppQuit( );
     }
 
     return result;

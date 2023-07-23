@@ -7,12 +7,12 @@
 
 #include "chatter/res/stdafx.h"
 #include "chatter/res/resource.h"
-#include "generated/NECommon.hpp"
+#include "common/NECommon.hpp"
 #include "areg/base/GEGlobal.h"
 #include "areg/base/String.hpp"
 #include "areg/base/TEArrayList.hpp"
 #include "areg/base/TEHashMap.hpp"
-#include "generated/NEDirectConnection.hpp"
+#include "generated/src/NEDirectConnection.hpp"
 #include "chatter/services/ChatPrticipantHandler.hpp"
 
 class PageChat  : public CPropertyPage

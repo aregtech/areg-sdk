@@ -20,8 +20,9 @@
  * Includes
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/component/TEEvent.hpp"
 #include "areg/base/SharedBuffer.hpp"
+#include "areg/component/NEService.hpp"
+#include "areg/component/TEEvent.hpp"
 
 /************************************************************************
  * Dependencies
@@ -95,8 +96,10 @@ public:
 
     /**
      * \brief   Creates and returns Service Manager event data with command to unregister Proxy
+     * \param   addrProxy   The address of the service consumer to unregister.
+     * \param   reason      The reason to unregister or disconnect the service consumer.
      **/
-    static ServiceManagerEventData unregisterProxy( const ProxyAddress & addrProxy );
+    static ServiceManagerEventData unregisterProxy( const ProxyAddress & addrProxy, NEService::eDisconnectReason reason );
 
     /**
      * \brief   Creates and returns Service Manager event data with command to register Stub
@@ -105,8 +108,10 @@ public:
 
     /**
      * \brief   Creates and returns Service Manager event data with command to unregister Stub
+     * \param   addrStub    The address of the service provider to unregister / disconnect.
+     * \param   reason      The reason to unregister or disconnect the service provider.
      **/
-    static ServiceManagerEventData unregisterStub( const StubAddress & addrStub );
+    static ServiceManagerEventData unregisterStub( const StubAddress & addrStub, NEService::eDisconnectReason reason );
 
     /**
      * \brief   Creates and returns Service Manager event data with command to configure connection

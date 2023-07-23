@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:09:38 GMT+01:00
+ * Generated at     23.07.2023  03:05:03 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PowerManager.
  *
  * \file            generated/src/NEPowerManager.hpp
@@ -85,7 +85,7 @@ const NEService::SInterfaceData & NEPowerManager::getInterfaceData( void )
     /************************************************************************
      * PowerManager Service Interface data
      ************************************************************************/
-    static NEService::SInterfaceData _InterfaceData =
+    static const NEService::SInterfaceData _InterfaceData
     {
           NEPowerManager::ServiceName
         , NEPowerManager::InterfaceVersion
@@ -105,16 +105,16 @@ const NEService::SInterfaceData & NEPowerManager::getInterfaceData( void )
 
 NEPowerManager::eMessageIDs NEPowerManager::getResponseId( NEPowerManager::eMessageIDs reqId)
 {
-    const NEService::SInterfaceData & sid = NEPowerManager::getInterfaceData();
-    msg_id index = GET_REQ_INDEX(reqId);
-    
-    return  ( (index >= 0) && (index < static_cast<msg_id>(sid.idRequestCount)) ? static_cast<NEPowerManager::eMessageIDs>(sid.idRequestToResponseMap[index]) : NEPowerManager::eMessageIDs::MsgId_Invalid );
+    const NEService::SInterfaceData & sid { NEPowerManager::getInterfaceData() };
+    msg_id index { static_cast<msg_id>(GET_REQ_INDEX(reqId)) };
+
+    return  ( (index < static_cast<msg_id>(sid.idRequestCount)) ? static_cast<NEPowerManager::eMessageIDs>(sid.idRequestToResponseMap[index]) : NEPowerManager::eMessageIDs::MsgId_Invalid );
 }
 
 NEPowerManager::eMessageIDs NEPowerManager::getRequestId( NEPowerManager::eMessageIDs respId )
 {
-    const NEService::SInterfaceData & sid = NEPowerManager::getInterfaceData();
-    NEPowerManager::eMessageIDs result = NEPowerManager::eMessageIDs::MsgId_Invalid;
+    const NEService::SInterfaceData & sid { NEPowerManager::getInterfaceData() };
+    NEPowerManager::eMessageIDs result { NEPowerManager::eMessageIDs::MsgId_Invalid };
     for ( unsigned int i = 0; (result == NEPowerManager::eMessageIDs::MsgId_Invalid) && (i < sid.idRequestCount); ++ i )
     {
         result = sid.idRequestToResponseMap[i] == static_cast<msg_id>(respId) ? static_cast<NEPowerManager::eMessageIDs>(sid.idRequestList[i]) : NEPowerManager::eMessageIDs::MsgId_Invalid;

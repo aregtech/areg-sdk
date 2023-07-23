@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:08:52 GMT+01:00
+ * Generated at     23.07.2023  03:04:26 GMT+02:00
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
  *
  * \file            generated/src/NELocalHelloWorld.hpp
@@ -74,7 +74,7 @@ const NEService::SInterfaceData & NELocalHelloWorld::getInterfaceData( void )
     /************************************************************************
      * LocalHelloWorld Service Interface data
      ************************************************************************/
-    static NEService::SInterfaceData _InterfaceData =
+    static const NEService::SInterfaceData _InterfaceData
     {
           NELocalHelloWorld::ServiceName
         , NELocalHelloWorld::InterfaceVersion
@@ -94,16 +94,16 @@ const NEService::SInterfaceData & NELocalHelloWorld::getInterfaceData( void )
 
 NELocalHelloWorld::eMessageIDs NELocalHelloWorld::getResponseId( NELocalHelloWorld::eMessageIDs reqId)
 {
-    const NEService::SInterfaceData & sid = NELocalHelloWorld::getInterfaceData();
-    msg_id index = GET_REQ_INDEX(reqId);
-    
-    return  ( (index >= 0) && (index < static_cast<msg_id>(sid.idRequestCount)) ? static_cast<NELocalHelloWorld::eMessageIDs>(sid.idRequestToResponseMap[index]) : NELocalHelloWorld::eMessageIDs::MsgId_Invalid );
+    const NEService::SInterfaceData & sid { NELocalHelloWorld::getInterfaceData() };
+    msg_id index { static_cast<msg_id>(GET_REQ_INDEX(reqId)) };
+
+    return  ( (index < static_cast<msg_id>(sid.idRequestCount)) ? static_cast<NELocalHelloWorld::eMessageIDs>(sid.idRequestToResponseMap[index]) : NELocalHelloWorld::eMessageIDs::MsgId_Invalid );
 }
 
 NELocalHelloWorld::eMessageIDs NELocalHelloWorld::getRequestId( NELocalHelloWorld::eMessageIDs respId )
 {
-    const NEService::SInterfaceData & sid = NELocalHelloWorld::getInterfaceData();
-    NELocalHelloWorld::eMessageIDs result = NELocalHelloWorld::eMessageIDs::MsgId_Invalid;
+    const NEService::SInterfaceData & sid { NELocalHelloWorld::getInterfaceData() };
+    NELocalHelloWorld::eMessageIDs result { NELocalHelloWorld::eMessageIDs::MsgId_Invalid };
     for ( unsigned int i = 0; (result == NELocalHelloWorld::eMessageIDs::MsgId_Invalid) && (i < sid.idRequestCount); ++ i )
     {
         result = sid.idRequestToResponseMap[i] == static_cast<msg_id>(respId) ? static_cast<NELocalHelloWorld::eMessageIDs>(sid.idRequestList[i]) : NELocalHelloWorld::eMessageIDs::MsgId_Invalid;

@@ -30,26 +30,22 @@ TrafficLightClient::TrafficLightClient(const NERegistry::ComponentEntry & entry,
 {
 }
 
-bool TrafficLightClient::serviceConnected(bool isConnected, ProxyBase & proxy)
+bool TrafficLightClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy)
 {
-    bool result{ false };
-    if ( SimpleTrafficLightClientBase::serviceConnected( isConnected, proxy ) )
+    bool result = SimpleTrafficLightClientBase::serviceConnected( status, proxy );
+
+    if ( mTrafficDirection == NECommon::eTrafficDirection::DirectionSouthNorth )
     {
-        if ( mTrafficDirection == NECommon::eTrafficDirection::DirectionSouthNorth )
-        {
-            notifyOnSouthNorthUpdate( isConnected );
-        }
-        else
-        {
-            notifyOnEastWestUpdate( isConnected );
-        }
+        notifyOnSouthNorthUpdate( isConnected( ) );
+    }
+    else
+    {
+        notifyOnEastWestUpdate( isConnected( ) );
+    }
 
-        if ( isConnected == false )
-        {
-            Application::signalAppQuit( );
-        }
-
-        result = true;
+    if ( isConnected( ) == false )
+    {
+        Application::signalAppQuit( );
     }
 
     return result;

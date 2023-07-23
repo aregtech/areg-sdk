@@ -220,6 +220,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
+protected:
 
 /************************************************************************/
 // IERemoteService interface overrides
@@ -288,7 +289,6 @@ public:
      **/
     virtual void enableRemoteServicing( bool enable ) override;
 
-protected:
     /**
      * \brief   Call to register remote service server stub object.
      *          All clients waiting for service should be connected notifications.
@@ -301,8 +301,9 @@ protected:
     /**
      * \brief   Call to unregister previously registered server stub interface.
      * \param   stubService     The address of server stub service to unregister in system.
+     * \param   reason          The reason of unregistering / disconnecting service provider.
      **/
-    virtual void unregisterService( const StubAddress & stubService ) override;
+    virtual void unregisterService( const StubAddress & stubService, const NEService::eDisconnectReason reason ) override;
 
     /**
      * \brief   Call to register client proxy of service. If system already has registered
@@ -317,8 +318,9 @@ protected:
     /**
      * \brief   Call to unregister previously registered client prosy service.
      * \param   proxyService    The address of client proxy to unregister from system.
+     * \param   reason          The reason unregistering / disconnecting the service consumer.
      **/
-    virtual void unregisterServiceClient( const ProxyAddress & proxyService ) override;
+    virtual void unregisterServiceClient( const ProxyAddress & proxyService, const NEService::eDisconnectReason reason ) override;
 
 /************************************************************************/
 // IEServerConnectionHandler interface overrides
@@ -375,18 +377,20 @@ protected:
     /**
      * \brief   Unregisters remote stub in the current process.
      * \param   stub    The address of remote stub server to unregister
+     * \param   reason  The service disconnect reason.
      * \param   cookie  The cookie that has initiated unregister message.
      *                  The parameter is ignored if 'NEService::COOKIE_ANY'.
      **/
-    virtual void unregisterRemoteStub( const StubAddress & stub, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ ) override;
+    virtual void unregisterRemoteStub( const StubAddress & stub, NEService::eDisconnectReason reason, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ ) override;
 
     /**
      * \brief   Unregisters remote proxy in the current process.
      * \param   proxy   The address of remote proxy client to unregister
+     * \param   reason  The service disconnect reason.
      * \param   cookie  The cookie that has initiated unregister message.
      *                  The parameter is ignored if 'NEService::COOKIE_ANY'.
      **/
-    virtual void unregisterRemoteProxy( const ProxyAddress & proxy, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ ) override;
+    virtual void unregisterRemoteProxy( const ProxyAddress & proxy, NEService::eDisconnectReason reason, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ ) override;
 
     /**
      * \brief   Triggered when remote service has been started and there is a

@@ -7,8 +7,8 @@
 #include "chatter/services/CentralMessaging.hpp"
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentThread.hpp"
-#include "generated/NECommon.hpp"
-#include "generated/NEConnectionManager.hpp"
+#include "common/NECommon.hpp"
+#include "generated/src/NEConnectionManager.hpp"
 #include "chatter/NEDistributedApp.hpp"
 #include "chatter/services/ConnectionHandler.hpp"
 #include "chatter/ui/DistributedDialog.hpp"
@@ -21,35 +21,30 @@ DEF_TRACE_SCOPE( distrbutedapp_CentralMessaging_broadcastBroadcastMessage );
 CentralMessaging::CentralMessaging( const char * roleName, DispatcherThread & ownerThread, ConnectionHandler & handlerConnection )
     : CentralMessagerClientBase   ( roleName, ownerThread )
 
-    , mConnectionHandler            ( handlerConnection )
-    , mReceiveMessages              ( false )
-    , mReceiveTyping                ( false )
-    , mReceiveBroadcast             ( false )
+    , mConnectionHandler( handlerConnection )
+    , mReceiveMessages  ( false )
+    , mReceiveTyping    ( false )
+    , mReceiveBroadcast ( false )
 {
 }
 
-CentralMessaging::~CentralMessaging( void )
-{
-}
-
-bool CentralMessaging::serviceConnected( bool isConnected, ProxyBase & proxy )
+bool CentralMessaging::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
 {
     TRACE_SCOPE( distrbutedapp_CentralMessaging_ServiceConnected );
-    bool result = false;
-    if ( isConnected == false )
+    bool result = CentralMessagerClientBase::serviceConnected( status, proxy );
+    if ( isConnected( ) )
     {
-        notifyOnBroadcastSendMessage(false);
-        notifyOnBroadcastKeyTyping(false);
-        notifyOnBroadcastBroadcastMessage(false);
-        result = CentralMessagerClientBase::serviceConnected( false, proxy );
-    }
-    else
-    {
-        result = CentralMessagerClientBase::serviceConnected( true, proxy );
         notifyOnBroadcastSendMessage( mReceiveMessages );
         notifyOnBroadcastKeyTyping( mReceiveTyping );
         notifyOnBroadcastBroadcastMessage( mReceiveBroadcast );
     }
+    else
+    {
+        notifyOnBroadcastSendMessage( false );
+        notifyOnBroadcastKeyTyping( false );
+        notifyOnBroadcastBroadcastMessage( false );
+    }
+
     return result;
 }
 

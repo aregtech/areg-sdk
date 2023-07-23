@@ -141,19 +141,10 @@ void ServicingComponent::shutdownServiceIntrface(Component& holder)
     LargeDataStub::shutdownServiceIntrface(holder);
 }
 
-void ServicingComponent::clientConnected(const ProxyAddress& client, bool isConnected)
+void ServicingComponent::clientConnected(const ProxyAddress& client, NEService::eServiceConnection connectionStatus )
 {
-    LargeDataStub::clientConnected(client, isConnected);
-
-    if (isConnected)
-    {
-        mClients += 1;
-    }
-    else
-    {
-        mClients -= 1;
-    }
-
+    LargeDataStub::clientConnected(client, connectionStatus );
+    mClients += (NEService::isServiceConnected( connectionStatus ) ? 1 : -1);
     _printInfo();
 }
 

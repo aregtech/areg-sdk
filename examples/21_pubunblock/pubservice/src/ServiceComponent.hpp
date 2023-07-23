@@ -93,7 +93,7 @@ protected:
 
     /**
      * \brief   Request call.
-     *          Request to assign an ID to the client used to to call unblock request.
+     *          Request to assign an ID to the client used to call unblock request.
      * \see     responseIdentifier
      **/
     virtual void requestIdentifier( void ) override;

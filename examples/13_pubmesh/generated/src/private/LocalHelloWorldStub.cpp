@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:08:52 GMT+01:00
+ * Generated at     23.07.2023  03:04:26 GMT+02:00
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
  *
  * \file            generated/src/LocalHelloWorldStub.hpp
@@ -33,7 +33,6 @@
 //////////////////////////////////////////////////////////////////////////
 LocalHelloWorldStub::LocalHelloWorldStub( Component & masterComp )
     : StubBase    ( masterComp, NELocalHelloWorld::getInterfaceData() )
-
 {
 }
 
@@ -90,8 +89,8 @@ void LocalHelloWorldStub::sendNotification( unsigned int msgId )
 DEF_TRACE_SCOPE(generated_src_LocalHelloWorldStub_errorRequest);
 void LocalHelloWorldStub::errorRequest( unsigned int msgId, bool msgCancel )
 {
-    NEService::eResultType result = NEService::eResultType::NotProcessed;
-    msg_id listenerId = msgId;
+    NEService::eResultType result { NEService::eResultType::NotProcessed };
+    msg_id listenerId { msgId };
 
     switch ( static_cast<NELocalHelloWorld::eMessageIDs>(msgId) )
     {
@@ -147,7 +146,7 @@ void LocalHelloWorldStub::errorRequest( unsigned int msgId, bool msgCancel )
 
 void LocalHelloWorldStub::responseHelloWorld( const NELocalHelloWorld::sConnectedClient & clientInfo )
 {
-    static const NELocalHelloWorld::eMessageIDs msgId = NELocalHelloWorld::eMessageIDs::MsgId_responseHelloWorld;
+    constexpr NELocalHelloWorld::eMessageIDs msgId { NELocalHelloWorld::eMessageIDs::MsgId_responseHelloWorld };
     EventDataStream args(EventDataStream::eEventData::EventDataInternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << clientInfo;
@@ -201,16 +200,16 @@ void LocalHelloWorldStub::processRequestEvent( ServiceRequestEvent & eventElem )
 DEF_TRACE_SCOPE(generated_src_LocalHelloWorldStub_processAttributeEvent);
 void LocalHelloWorldStub::processAttributeEvent( ServiceRequestEvent & eventElem )
 {
-    const NEService::eRequestType reqType = eventElem.getRequestType();
+    const NEService::eRequestType reqType { eventElem.getRequestType() };
+    const ProxyAddress & source { eventElem.getEventSource( ) };
     if (reqType == NEService::eRequestType::RemoveAllNotify)
     {
         IntegerArray removedIds;
-        StubBase::clearAllListeners(eventElem.getEventSource(), removedIds);
+        StubBase::clearAllListeners(source, removedIds);
     }
     else
     {
-        NELocalHelloWorld::eMessageIDs updId  = static_cast<NELocalHelloWorld::eMessageIDs>(eventElem.getRequestId());
-        const ProxyAddress & source = eventElem.getEventSource( );
+        NELocalHelloWorld::eMessageIDs updId  { static_cast<NELocalHelloWorld::eMessageIDs>(eventElem.getRequestId()) };
         if (reqType == NEService::eRequestType::StopNotify)
         {
             removeNotificationListener( static_cast<msg_id>(updId), source );

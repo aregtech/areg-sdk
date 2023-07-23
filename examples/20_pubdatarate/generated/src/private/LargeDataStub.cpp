@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:10:45 GMT+01:00
+ * Generated at     23.07.2023  03:05:54 GMT+02:00
  *                  Create by AREG SDK code generator tool from source LargeData.
  *
  * \file            generated/src/LargeDataStub.hpp
@@ -33,7 +33,6 @@
 //////////////////////////////////////////////////////////////////////////
 LargeDataStub::LargeDataStub( Component & masterComp )
     : StubBase    ( masterComp, NELargeData::getInterfaceData() )
-
 {
 }
 
@@ -100,8 +99,8 @@ void LargeDataStub::sendNotification( unsigned int msgId )
 DEF_TRACE_SCOPE(generated_src_LargeDataStub_errorRequest);
 void LargeDataStub::errorRequest( unsigned int msgId, bool msgCancel )
 {
-    NEService::eResultType result = NEService::eResultType::NotProcessed;
-    msg_id listenerId = msgId;
+    NEService::eResultType result { NEService::eResultType::NotProcessed };
+    msg_id listenerId { msgId };
 
     switch ( static_cast<NELargeData::eMessageIDs>(msgId) )
     {
@@ -157,7 +156,7 @@ void LargeDataStub::errorRequest( unsigned int msgId, bool msgCancel )
 
 void LargeDataStub::broadcastImageBlockAcquired( const NELargeData::ImageBlock & imageBlock )
 {
-    static const NELargeData::eMessageIDs msgId = NELargeData::eMessageIDs::MsgId_broadcastImageBlockAcquired;
+    constexpr NELargeData::eMessageIDs msgId { NELargeData::eMessageIDs::MsgId_broadcastImageBlockAcquired };
     EventDataStream args(EventDataStream::eEventData::EventDataExternal);
     IEOutStream & stream = args.getStreamForWrite();
     stream << imageBlock;
@@ -166,7 +165,7 @@ void LargeDataStub::broadcastImageBlockAcquired( const NELargeData::ImageBlock &
 
 void LargeDataStub::broadcastServiceStopping( void )
 {
-    static const NELargeData::eMessageIDs msgId = NELargeData::eMessageIDs::MsgId_broadcastServiceStopping;
+    constexpr NELargeData::eMessageIDs msgId { NELargeData::eMessageIDs::MsgId_broadcastServiceStopping };
     sendResponseEvent( static_cast<msg_id>(msgId), EventDataStream::EmptyData );
 }
 
@@ -185,9 +184,9 @@ void LargeDataStub::processRequestEvent( ServiceRequestEvent & eventElem )
         msg_id reqId = static_cast<msg_id>(reqEvent->getRequestId());
         StubBase::Listener listener( reqId, 0, reqEvent->getEventSource() );
 
-    TRACE_SCOPE(generated_src_LargeDataStub_processRequestEvent);
-    TRACE_ERR("The service LargeData has no request. Unexpected request ID [ %d ] to process in Stub [ %s ]!", reqId, StubAddress::convAddressToPath(mAddress).getString());
-    ASSERT(false);
+        TRACE_SCOPE(generated_src_LargeDataStub_processRequestEvent);
+        TRACE_ERR("The service LargeData has no request. Unexpected request ID [ %d ] to process in Stub [ %s ]!", reqId, StubAddress::convAddressToPath(mAddress).getString());
+        ASSERT(false);
     }
 
     cancelCurrentRequest();
@@ -196,16 +195,16 @@ void LargeDataStub::processRequestEvent( ServiceRequestEvent & eventElem )
 DEF_TRACE_SCOPE(generated_src_LargeDataStub_processAttributeEvent);
 void LargeDataStub::processAttributeEvent( ServiceRequestEvent & eventElem )
 {
-    const NEService::eRequestType reqType = eventElem.getRequestType();
+    const NEService::eRequestType reqType { eventElem.getRequestType() };
+    const ProxyAddress & source { eventElem.getEventSource( ) };
     if (reqType == NEService::eRequestType::RemoveAllNotify)
     {
         IntegerArray removedIds;
-        StubBase::clearAllListeners(eventElem.getEventSource(), removedIds);
+        StubBase::clearAllListeners(source, removedIds);
     }
     else
     {
-        NELargeData::eMessageIDs updId  = static_cast<NELargeData::eMessageIDs>(eventElem.getRequestId());
-        const ProxyAddress & source = eventElem.getEventSource( );
+        NELargeData::eMessageIDs updId  { static_cast<NELargeData::eMessageIDs>(eventElem.getRequestId()) };
         if (reqType == NEService::eRequestType::StopNotify)
         {
             removeNotificationListener( static_cast<msg_id>(updId), source );

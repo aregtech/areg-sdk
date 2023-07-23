@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     05.01.2023  11:10:56 GMT+01:00
+ * Generated at     23.07.2023  03:06:04 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloUnblock.
  *
  * \file            generated/src/private/HelloUnblockProxy.hpp
@@ -56,7 +56,7 @@ HelloUnblockProxy * HelloUnblockProxy::createProxy( const String & roleName, IEP
                                                                       , ownerThread).get() );
 }
 
-HelloUnblockProxy * HelloUnblockProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::getEmptyString()*/ )
+HelloUnblockProxy * HelloUnblockProxy::createProxy( const String & roleName, IEProxyListener & connectListener, const String & ownerThread /*= String::EmptyString*/ )
 {
     return static_cast<HelloUnblockProxy *>(ProxyBase::findOrCreateProxy( roleName
                                                                       , NEHelloUnblock::getInterfaceData()
@@ -81,10 +81,6 @@ HelloUnblockProxy::HelloUnblockProxy( const String & roleName, DispatcherThread 
  ************************************************************************/
     , mParamclientId      (  )
     , mParamseqNr         (  )
-{
-}
-
-HelloUnblockProxy::~HelloUnblockProxy( void )
 {
 }
 
@@ -145,7 +141,7 @@ unsigned int HelloUnblockProxy::requestIdentifier( IENotificationEventConsumer &
     sendRequestEvent( static_cast<unsigned int>(msgId), EventDataStream::EmptyData, &caller );
     return mSequenceCount;
 }
-    
+
 unsigned int HelloUnblockProxy::requestHelloUblock( IENotificationEventConsumer & caller, unsigned int clientId, unsigned int seqNr )
 {
     static const NEHelloUnblock::eMessageIDs msgId = NEHelloUnblock::eMessageIDs::MsgId_requestHelloUblock;
@@ -156,7 +152,7 @@ unsigned int HelloUnblockProxy::requestHelloUblock( IENotificationEventConsumer 
     sendRequestEvent( static_cast<unsigned int>(msgId), args, &caller );
     return mSequenceCount;
 }
-    
+
 /************************************************************************
  * Event processing.
  ************************************************************************/
@@ -169,18 +165,26 @@ void HelloUnblockProxy::processResponseEvent( ServiceResponseEvent & eventElem )
 {
     HelloUnblockResponseEvent * eventResp = RUNTIME_CAST( &eventElem, HelloUnblockResponseEvent );
     if (eventResp != nullptr)
+    {
         processResponse( *eventResp );
+    }
     else
+    {
         processProxyEvent( eventElem );
+    }
 }
 
 void HelloUnblockProxy::processAttributeEvent( ServiceResponseEvent & eventElem )
 {
     HelloUnblockResponseEvent * eventResp = RUNTIME_CAST( &eventElem, HelloUnblockResponseEvent );
     if (eventResp != nullptr)
+    {
         processResponse( *eventResp );
+    }
     else
+    {
         processProxyEvent( eventElem );
+    }
 }
 
 /************************************************************************
@@ -190,7 +194,7 @@ void HelloUnblockProxy::processAttributeEvent( ServiceResponseEvent & eventElem 
 DEF_TRACE_SCOPE(generated_src_private_HelloUnblockProxy_updateData);
 void HelloUnblockProxy::updateData( HelloUnblockResponseEvent & eventElem, NEHelloUnblock::eMessageIDs respId )
 {
-    const IEInStream & stream = static_cast<const HelloUnblockResponseEvent &>(eventElem).getData().getReadStream();
+    const IEInStream & stream { static_cast<const HelloUnblockResponseEvent &>(eventElem).getData().getReadStream() };
 
     switch (respId)
     {
@@ -228,13 +232,13 @@ void HelloUnblockProxy::updateData( HelloUnblockResponseEvent & eventElem, NEHel
     }
 }
 
-    void HelloUnblockProxy::processResponse( HelloUnblockResponseEvent & evenElem )
+void HelloUnblockProxy::processResponse( HelloUnblockResponseEvent & evenElem )
 {
-    NEHelloUnblock::eMessageIDs respId  = static_cast<NEHelloUnblock::eMessageIDs>(evenElem.getResponseId());
-    NEService::eResultType resultType  = evenElem.getResult();
+    NEHelloUnblock::eMessageIDs respId  { static_cast<NEHelloUnblock::eMessageIDs>(evenElem.getResponseId()) };
+    NEService::eResultType resultType   { evenElem.getResult() };
 
-    bool dataValid  = false;
-    bool setStates  = true;
+    bool dataValid { false };
+    bool setStates { true  };
 
     switch (resultType)
     {
@@ -268,12 +272,12 @@ void HelloUnblockProxy::updateData( HelloUnblockResponseEvent & eventElem, NEHel
         break;
     }
 
-    if (dataValid == true)
+    if ( dataValid )
     {
         updateData(evenElem, respId);
     }
 
-    if (setStates == true)
+    if ( setStates )
     {
         setState(static_cast<msg_id>(respId), dataValid ? NEService::eDataStateType::DataIsOK : NEService::eDataStateType::DataIsInvalid);
     }
