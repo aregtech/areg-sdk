@@ -237,20 +237,20 @@ public:
 //////////////////////////////////////////////////////////////////////////
 protected:
 
-    /************************************************************************/
-    // IERemoteServiceConnection interface overrides
-    /************************************************************************/
+/************************************************************************/
+// IERemoteServiceConnection interface overrides
+/************************************************************************/
 
-        /**
-         * \brief   Call to configure remote service. The passed file name
-         *          can be either absolute or relative path.
-         *          The function will read configuration file and initialize settings.
-         *          If file path is nullptr or empty, Remote Service will have default
-         *          configuration settings.
-         * \param   configFile  Relative or absolute path of remote service configuration file.
-         *                      If nullptr or empty, it will use default settings.
-         * \return  Returns true if system could configure. Otherwise, it returns false.
-         **/
+    /**
+     * \brief   Call to configure remote service. The passed file name
+     *          can be either absolute or relative path.
+     *          The function will read configuration file and initialize settings.
+     *          If file path is nullptr or empty, Remote Service will have default
+     *          configuration settings.
+     * \param   configFile  Relative or absolute path of remote service configuration file.
+     *                      If nullptr or empty, it will use default settings.
+     * \return  Returns true if system could configure. Otherwise, it returns false.
+     **/
     virtual bool setupServiceConnectionHost( const String & configFile ) override;
 
     /**
@@ -436,7 +436,6 @@ private:
      **/
     virtual bool postEvent( Event & eventElem ) override;
 
-private:
 /************************************************************************/
 // IERemoteEventConsumer interface overrides
 /************************************************************************/
