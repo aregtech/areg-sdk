@@ -75,84 +75,61 @@ public:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   The function is called when Stub Server is starting up
-     *          and requests registration at Service Manager module
-     *          by specifying the address of available Stub of Service Interface.
-     *          The function will generate appropriate Event and send
-     *          registration request to Service Manager. If connection and
-     *          registration succeeded, the Stub server will receive notification
-     *          and all Proxy clients will receive connection available messages
-     *          to start sending requests and assign for Attribute Update Notifications.
-     * \param   whichServer     The address of Stub Server object, which has been
-     *                          started and requesting registration at Service Manager Module.
+     * \brief   The function is called when it is requested to register the service provider.
+     *          For example, when the service is created and need to be registered.
+     *          The function generates event to send the service connection status notification.
+     * \param   whichServer         The address of service provider that is registering in the system.
+     * \param   serviceConnection   The service connection object to notify remote application
+     *                              about public service connection status.
      **/
     void _registerServer( const StubAddress & whichServer, IERemoteServiceConnection & serviceConnection );
 
     /**
-     * \brief   The function is called when Stub Server is shutting down
-     *          and requests to unregister at Service Manager module
-     *          by specifying the address of Stub of Service Interface.
-     *          The function will generate appropriate Event and send
-     *          unregister request to Service Manager. All Proxy clients
-     *          will receive appropriate disconnect messages to stop
-     *          communication with Stub Service Interface.
-     * \param   whichServer     The address of Stub Server object, which has been
-     *                          started and requesting registration at Service Manager Module.
-     * \param   reason          The reason to unregister or disconnect the service provider.
+      * \brief   The function is called when it is requested to unregister the service provider.
+      *          For example, when service shuts down or connection is lost.
+      *          The function generates event to send the service connection status notification.
+     * \param   whichServer         The address of service provider that is registering in the system.
+     * \param   reason              The reason to unregister or disconnect the service provider.
+     * \param   serviceConnection   The service connection object to notify remote application
+      *                              about public service connection status.
      **/
     void _unregisterServer( const StubAddress & whichServer, const NEService::eDisconnectReason reason, IERemoteServiceConnection & serviceConnection );
 
-    /**
-     * \brief   The function is called when new Proxy client is start up,
-     *          and requests registration at Service Manager module
-     *          by specifying the address of Proxy of Service Interface.
-     *          The function will generate appropriate Event and send
-     *          registration request to Service Manager. If connection and
-     *          registration succeeded, and the Stub server of implemented
-     *          Service Interface is available in the system, the Proxy will
-     *          receive connection available notification message, containing
-     *          available Stub address of implemented Service Interface.
-     * \param   whichClient     The address of Proxy client object, which has been
-     *                          started and requesting registration at Service Manager Module.
-     **/
+     /**
+      * \brief   The function is called when it is requested to register the service consumer.
+      *          For example, when the service consumer is created and need to be registered.
+      *          The function generates event to send the service connection status notification.
+      * \param   whichClient         The address of service consumer that is registering in the system.
+      * \param   serviceConnection   The service connection object to notify remote application
+      *                              about public service connection status.
+      **/
     void _registerClient( const ProxyAddress & whichClient, IERemoteServiceConnection & serviceConnection );
 
     /**
-     * \brief   The function is called when Proxy is shutting down,
-     *          and requests to unregister at Service Manager module
-     *          by specifying the address of Proxy of Service Interface.
-     *          The function will generate appropriate Event and send
-     *          unregister request to Service Manager. After Proxy client
-     *          is unregistered, the Stub server will get notification
-     *          of disconnected client.
-     * \param   whichClient     The address of Proxy client object, which is
-     *                          unregistering at Service Manager Module.
-     * \param   reason          The reason to unregister or disconnect the service consumer.
+     * \brief   The function is called when it is requested to unregister the service consumer.
+     *          For example, when the service consumer is created and need to be registered.
+     *          The function generates event to send the service connection status notification.
+     * \param   whichClient         The address of service consumer that is registering in the system.
+     * \param   reason              The reason to unregister or disconnect the service consumer.
+     * \param   serviceConnection   The service connection object to notify remote application
+     *                              about public service connection status.
      **/
     void _unregisterClient( const ProxyAddress & whichClient, const NEService::eDisconnectReason reason, IERemoteServiceConnection & serviceConnection );
 
     /**
-     * \brief   Sends predefined Service Manager Event, notifying Proxy client
-     *          that connection with Stub server is available and established.
-     *          When Proxy receives Event, it can start sending requests to
-     *          the Stub of implemented Service Interface.
-     * \param   client      The Client Info object containing all required information
-     *                      to send Event. The target of Event is a Proxy address,
-     *                      specified in the Client Info object.
+     * \brief   Creates and sends predefined service consumer connected notification.
+     * \param   client      The address of service consumer to send the event.
+     * \param   server      The address of service provider that connected.
      **/
-    void _sendClientConnectedEvent( const ClientInfo & client, const StubAddress & server ) const;
+    void _sendClientConnectedEvent( const ProxyAddress & client, const StubAddress & server ) const;
 
     /**
-     * \brief   Sends predefined Service Manager event to notify that Proxy client
-     *          disconnected service.
-     *          When Proxy receives Event, it should stop sending requests to
-     *          the Stub of implemented Service Interface.
-     * \param   client  The Client Info object containing all required information
-     *                  to send Event. The target of Event is a Proxy address,
-     *                  specified in the Client Info object.
-     * \param   status  The service connection status of a service consumer.
+     * \brief   Creates and sends predefined service consumer disconnected notification.
+     * \param   client      The address of service consumer to send the event.
+     * \param   server      The address of service provider that disconnected.
+     * \param   status      The service connection status.
      **/
-    void _sendClientDisconnectEvent( const ClientInfo & client, const StubAddress & server, const NEService::eServiceConnection status ) const;
+    void _sendClientDisconnectEvent( const ProxyAddress & client, const StubAddress & server, const NEService::eServiceConnection status ) const;
 
     /**
      * \brief   Terminates the component thread. No guarantee that all resources are cleanup.
@@ -163,7 +140,7 @@ private:
 
     /**
      * \brief   Creates new instance of the component thread after it was terminated.
-     *          All components, services, proxies and worker threads related with the
+     *          All components, services providers and consumers, and worker threads related with the
      *          component thread are restarted again.
      * \param   threadName  The name of the thread to re-start.
      */

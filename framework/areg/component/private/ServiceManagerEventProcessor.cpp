@@ -73,7 +73,10 @@ void ServiceManagerEventProcessor::processServiceEvent( ServiceManagerEventData:
                 for ( ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
                 {
                     const ClientInfo & client = clientList.valueAtPosition( pos );
-                    _sendClientDisconnectEvent( client, si.getAddress( ), NEService::eServiceConnection::ServiceDisconnected );
+                    if ( client.isConnected( ) )
+                    {
+                        _sendClientDisconnectEvent( client.getAddress(), si.getAddress( ), NEService::eServiceConnection::ServiceDisconnected );
+                    }
                 }
             }
 
@@ -322,7 +325,11 @@ void ServiceManagerEventProcessor::_registerServer( const StubAddress & whichSer
 
     for ( ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
     {
-        _sendClientConnectedEvent( clientList.valueAtPosition( pos ), whichServer );
+        const ClientInfo & client{ clientList.valueAtPosition( pos ) };
+        if ( client.isConnected( ) )
+        {
+            _sendClientConnectedEvent( client.getAddress( ), whichServer );
+        }
     }
 }
 
@@ -354,7 +361,11 @@ void ServiceManagerEventProcessor::_unregisterServer( const StubAddress & whichS
     NEService::eServiceConnection status = NEService::serviceConnection( reason );
     for ( ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
     {
-        _sendClientDisconnectEvent( clientList.valueAtPosition( pos ), whichServer, status );
+        const ClientInfo & client{ clientList.valueAtPosition( pos ) };
+        if ( client.isConnected( ) )
+        {
+            _sendClientDisconnectEvent( client.getAddress( ), whichServer, status );
+        }
     }
 }
 
@@ -375,7 +386,14 @@ void ServiceManagerEventProcessor::_registerClient( const ProxyAddress & whichCl
                , StubAddress::convAddressToPath( server.getAddress( ) ).getString( )
                , NEService::getString( client.getConnectionStatus( ) ) );
 
-    _sendClientConnectedEvent( client, server.getAddress( ) );
+    if ( client.isConnected( ) )
+    {
+        _sendClientConnectedEvent( client.getAddress(), server.getAddress( ) );
+    }
+    else
+    {
+        TRACE_INFO( "The Proxy [ %s ] has NO CONNECTION yet. Noting to send", ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( ) );
+    }
 }
 
 void ServiceManagerEventProcessor::_unregisterClient( const ProxyAddress & whichClient, const NEService::eDisconnectReason reason, IERemoteServiceConnection & serviceConnection )
@@ -396,81 +414,75 @@ void ServiceManagerEventProcessor::_unregisterClient( const ProxyAddress & which
                , NEService::getString( client.getConnectionStatus( ) ) );
 
     // Unregister client first, then send event that client does not receive notification
-    _sendClientDisconnectEvent( client, server.getAddress( ), NEService::serviceConnection( reason ) );
-}
-
-void ServiceManagerEventProcessor::_sendClientConnectedEvent( const ClientInfo & client, const StubAddress & addrStub ) const
-{
-    TRACE_SCOPE( areg_component_private_ServiceManagerEventProcessor__sendClientConnectedEvent );
-
     if ( client.isConnected( ) )
     {
-        const ProxyAddress & addrProxy = client.getAddress( );
-        if ( addrStub.isLocalAddress( ) && addrStub.getSource( ) != NEService::SOURCE_UNKNOWN )
-        {
-            TRACE_DBG( "Sending to Stub [ %s ] notification of connected client [ %s ]"
-                       , StubAddress::convAddressToPath( addrStub ).getString( )
-                       , ProxyAddress::convAddressToPath( addrProxy ).getString( ) );
-
-            StubConnectEvent * clientConnect = DEBUG_NEW StubConnectEvent( addrProxy, addrStub, NEService::eServiceConnection::ServiceConnected );
-            if ( clientConnect != nullptr )
-            {
-                addrStub.deliverServiceEvent( *clientConnect );
-            }
-        }
-
-        if ( addrProxy.isLocalAddress( ) && addrProxy.getSource( ) != NEService::SOURCE_UNKNOWN )
-        {
-            TRACE_DBG( "Sending to Proxy [ %s ] notification of connection to server [ %s ]"
-                       , ProxyAddress::convAddressToPath( addrProxy ).getString( )
-                       , StubAddress::convAddressToPath( addrStub ).getString( ) );
-
-            ProxyConnectEvent * proxyConnect = DEBUG_NEW ProxyConnectEvent( addrProxy, addrStub, NEService::eServiceConnection::ServiceConnected );
-            if ( proxyConnect != nullptr )
-            {
-                addrProxy.deliverServiceEvent( *proxyConnect );
-            }
-        }
+        _sendClientDisconnectEvent( client.getAddress(), server.getAddress( ), NEService::serviceConnection( reason ) );
     }
     else
     {
-        TRACE_INFO( "The client Proxy [ %s ] has NO CONNECTION yet. Noting to send", ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( ) );
+        TRACE_INFO( "The Proxy [ %s ] has NO CONNECTION. Noting to send", ProxyAddress::convAddressToPath( client.getAddress( ) ).getString( ) );
     }
 }
 
-void ServiceManagerEventProcessor::_sendClientDisconnectEvent( const ClientInfo & client
-                                                 , const StubAddress & addrStub
-                                                 , const NEService::eServiceConnection status ) const
+void ServiceManagerEventProcessor::_sendClientConnectedEvent( const ProxyAddress & client, const StubAddress & server ) const
+{
+    TRACE_SCOPE( areg_component_private_ServiceManagerEventProcessor__sendClientConnectedEvent );
+    if ( server.isLocalAddress( ) && server.getSource( ) != NEService::SOURCE_UNKNOWN )
+    {
+        TRACE_DBG( "Sending to Stub [ %s ] notification of connected client [ %s ]"
+                   , StubAddress::convAddressToPath( server ).getString( )
+                   , ProxyAddress::convAddressToPath( client ).getString( ) );
+
+        StubConnectEvent * clientConnect = DEBUG_NEW StubConnectEvent( client, server, NEService::eServiceConnection::ServiceConnected );
+        if ( clientConnect != nullptr )
+        {
+            server.deliverServiceEvent( *clientConnect );
+        }
+    }
+
+    if ( client.isLocalAddress( ) && client.getSource( ) != NEService::SOURCE_UNKNOWN )
+    {
+        TRACE_DBG( "Sending to Proxy [ %s ] notification of connection to server [ %s ]"
+                   , ProxyAddress::convAddressToPath( client ).getString( )
+                   , StubAddress::convAddressToPath( server ).getString( ) );
+
+        ProxyConnectEvent * proxyConnect = DEBUG_NEW ProxyConnectEvent( client, server, NEService::eServiceConnection::ServiceConnected );
+        if ( proxyConnect != nullptr )
+        {
+            client.deliverServiceEvent( *proxyConnect );
+        }
+    }
+}
+
+void ServiceManagerEventProcessor::_sendClientDisconnectEvent( const ProxyAddress & client
+                                                             , const StubAddress & server
+                                                             , const NEService::eServiceConnection status ) const
 {
     TRACE_SCOPE( areg_component_private_ServiceManagerEventProcessor__sendClientDisconnectedEvent );
 
-    if ( client.isConnected( ) )
+    if ( server.isLocalAddress( ) && server.getSource( ) != NEService::SOURCE_UNKNOWN )
     {
-        const ProxyAddress & addrProxy = client.getAddress( );
-        if ( addrStub.isLocalAddress( ) && addrStub.getSource( ) != NEService::SOURCE_UNKNOWN )
-        {
-            TRACE_DBG( "Sending to Stub [ %s ] notification of disconnected client [ %s ]"
-                       , StubAddress::convAddressToPath( addrStub ).getString( )
-                       , ProxyAddress::convAddressToPath( addrProxy ).getString( ) );
+        TRACE_DBG( "Sending to Stub [ %s ] notification of disconnected client [ %s ]"
+                   , StubAddress::convAddressToPath( server ).getString( )
+                   , ProxyAddress::convAddressToPath( client ).getString( ) );
 
-            StubConnectEvent * clientConnect = DEBUG_NEW StubConnectEvent( addrProxy, addrStub, status );
-            if ( clientConnect != nullptr )
-            {
-                addrStub.deliverServiceEvent( *clientConnect );
-            }
+        StubConnectEvent * clientConnect = DEBUG_NEW StubConnectEvent( client, server, status );
+        if ( clientConnect != nullptr )
+        {
+            server.deliverServiceEvent( *clientConnect );
         }
+    }
 
-        if ( addrProxy.isLocalAddress( ) )
+    if ( client.isLocalAddress( ) )
+    {
+        TRACE_DBG( "Sending to Proxy [ %s ] notification of disconnection from server [ %s ]"
+                   , ProxyAddress::convAddressToPath( client ).getString( )
+                   , StubAddress::convAddressToPath( server ).getString( ) );
+
+        ProxyConnectEvent * proxyConnect = DEBUG_NEW ProxyConnectEvent( client, server, status );
+        if ( proxyConnect != nullptr )
         {
-            TRACE_DBG( "Sending to Proxy [ %s ] notification of disconnection from server [ %s ]"
-                       , ProxyAddress::convAddressToPath( addrProxy ).getString( )
-                       , StubAddress::convAddressToPath( addrStub ).getString( ) );
-
-            ProxyConnectEvent * proxyConnect = DEBUG_NEW ProxyConnectEvent( addrProxy, addrStub, status );
-            if ( proxyConnect != nullptr )
-            {
-                addrProxy.deliverServiceEvent( *proxyConnect );
-            }
+            client.deliverServiceEvent( *proxyConnect );
         }
     }
 }
@@ -520,4 +532,3 @@ void ServiceManagerEventProcessor::_startComponentThread( const String & threadN
         TRACE_ERR( "The thread [ %s ] is registered in the system, ignoring to create seconds instance of the thread", threadName.getString( ) );
     }
 }
-
