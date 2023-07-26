@@ -162,7 +162,7 @@ public:
     /**
      * \brief   Returns the instance of the remote servicing object.
      **/
-    inline IERemoteService & getService( void );
+    inline IERemoteServiceConnection & getService( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.
@@ -301,9 +301,9 @@ inline bool MulticastRouter::isVerbose(void) const
     return mRunVerbose;
 }
 
-inline IERemoteService & MulticastRouter::getService( void )
+inline IERemoteServiceConnection & MulticastRouter::getService( void )
 {
-    return static_cast<IERemoteService &>(mServiceServer);
+    return static_cast<IERemoteServiceConnection &>(mServiceServer);
 }
 
 inline MulticastRouter & MulticastRouter::self( void )

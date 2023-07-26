@@ -27,7 +27,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IERemoteServiceHandler;
+class IERemoteServiceMessageHandler;
 class ServerConnection;
 
 //////////////////////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ public:
      * \param   remoteService   The instance of remote servicing handle to set.
      * \param   connection      The instance of server socket connection object.
      **/
-    ServerSendThread( IERemoteServiceHandler & remoteService, ServerConnection & connection );
+    ServerSendThread( IERemoteServiceMessageHandler & remoteService, ServerConnection & connection );
 
     /**
      * \brief   Destructor
@@ -121,7 +121,7 @@ private:
     /**
      * \brief   The instance of remote servicing interface object
      **/
-    IERemoteServiceHandler &    mRemoteService;
+    IERemoteServiceMessageHandler &    mRemoteService;
     /**
      * \brief   The instance of server connection object
      **/

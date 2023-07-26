@@ -232,7 +232,7 @@ bool Logger::serviceStart(void)
     bool result = false;
 
 #if 0
-    if (  mServiceServer.configureRemoteServicing( NEApplication::DEFAULT_ROUTER_CONFIG_FILE.data() ) && mServiceServer.startRemoteServicing() )
+    if (  mServiceServer.setupServiceConnectionHost( NEApplication::DEFAULT_ROUTER_CONFIG_FILE.data() ) && mServiceServer.connectServiceHost() )
     {
         result = setState(NELoggerSettings::eLoggerState::LoggerRunning);
     }
@@ -250,7 +250,7 @@ void Logger::serviceStop(void)
     TRACE_SCOPE(logger_app_logger_serviceStop);
     TRACE_WARN("Stopping service [ %s ]", NELoggerSettings::SERVICE_NAME_ASCII);
     setState(NELoggerSettings::eLoggerState::LoggerStopping);
-    // mServiceServer.stopRemoteServicing();
+    // mServiceServer.disconnectServiceHost();
     Application::signalAppQuit();
 }
 
@@ -260,7 +260,7 @@ void Logger::servicePause(void)
     TRACE_DBG("Pausing Router service");
 
     setState( NELoggerSettings::eLoggerState::LoggerPausing );
-    // mServiceServer.stopRemoteServicing();
+    // mServiceServer.disconnectServiceHost();
     setState( NELoggerSettings::eLoggerState::LoggerPaused );
 }
 
@@ -272,7 +272,7 @@ bool Logger::serviceContinue(void)
     bool result = false;
     setState( NELoggerSettings::eLoggerState::LoggerContinuing );
 #if 0
-    if ( mServiceServer.isRemoteServicingConfigured() && mServiceServer.startRemoteServicing() )
+    if ( mServiceServer.isServiceHostSetup() && mServiceServer.connectServiceHost() )
     {
         result = true;
         setState( NELoggerSettings::eLoggerState::LoggerRunning );

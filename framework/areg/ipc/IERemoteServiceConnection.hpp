@@ -1,5 +1,5 @@
-#ifndef AREG_IPC_IEREMOTESERVICE_HPP
-#define AREG_IPC_IEREMOTESERVICE_HPP
+#ifndef AREG_IPC_IEREMOTESERVICECONNECTION_HPP
+#define AREG_IPC_IEREMOTESERVICECONNECTION_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,10 +9,10 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        areg/ipc/IERemoteService.hpp
+ * \file        areg/ipc/IERemoteServiceConnection.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       AREG Platform, Remote Service Interface
+ * \brief       AREG Platform, Remote Service connection Interface
  ************************************************************************/
 
 /************************************************************************
@@ -33,15 +33,15 @@ class DispatcherThread;
 class IERemoteEventConsumer;
 
 //////////////////////////////////////////////////////////////////////////
-// IERemoteService interface
+// IERemoteServiceConnection interface
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   This is an interface of Remote Service, which should be implemented
+ * \brief   This is an interface of Remote Service Connection, which should be implemented
  *          on client and server side to handle remote service functionalities
  *          like configuring service, start and stop, registering and
  *          unregistering services and its clients.
  **/
-class AREG_API IERemoteService
+class AREG_API IERemoteServiceConnection
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -50,19 +50,19 @@ protected:
     /**
      * \brief   Default constructor. Protected.
      **/
-    IERemoteService( void ) = default;
+    IERemoteServiceConnection( void ) = default;
 
     /**
      * \brief   Destructor
      **/
-    virtual ~IERemoteService( void ) = default;
+    virtual ~IERemoteServiceConnection( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
 public:
 /************************************************************************/
-// IERemoteService interface overrides
+// IERemoteServiceConnection interface overrides
 /************************************************************************/
 
     /**
@@ -75,7 +75,7 @@ public:
      *                      If nullptr or empty, it will use default settings.
      * \return  Returns true if system could configure. Otherwise, it returns false.
      **/
-    virtual bool configureRemoteServicing( const String & configFile ) = 0;
+    virtual bool setupServiceConnectionHost( const String & configFile ) = 0;
 
     /**
      * \brief   Call manually to set router service host name and port number.
@@ -84,13 +84,13 @@ public:
      * \param   hostName    IP-address or host name of routing service to connect.
      * \param   portNr      Port number of routing service to connect.
      **/
-    virtual void setRemoteServiceAddress( const String & hostName, unsigned short portNr ) = 0;
+    virtual void applyServiceConnectionData( const String & hostName, unsigned short portNr ) = 0;
 
     /**
      * \brief   Call to start remote service. The host name and port number should be already set.
      * \return  Returns true if start service is triggered.
      **/
-    virtual bool startRemoteServicing( void ) = 0;
+    virtual bool connectServiceHost( void ) = 0;
 
     /**
      * \brief   Call to restart remove service. The host name and the port number should be already set.
@@ -98,22 +98,22 @@ public:
      *          connection, it starts new connection.
      * \return  Returns true if succeeded to restart service.
      **/
-    virtual bool restartRemoteServicing(void) = 0;
+    virtual bool reconnectServiceHost(void) = 0;
 
     /**
      * \brief   Call to stop service. No more remote communication should be possible.
      **/
-    virtual void stopRemoteServicing( void ) = 0;
+    virtual void disconnectServiceHost( void ) = 0;
 
     /**
      * \brief   Returns true, if remote service is started and ready to operate.
      **/
-    virtual bool isRemoteServicingStarted( void ) const = 0;
+    virtual bool isServiceHostConnected( void ) const = 0;
 
     /**
      * \brief   Returns true if service is configured and ready to start
      **/
-    virtual bool isRemoteServicingConfigured( void ) const = 0;
+    virtual bool isServiceHostSetup( void ) const = 0;
 
     /**
      * \brief   Returns true if remote service is enabled.
@@ -129,43 +129,44 @@ public:
     virtual void enableRemoteServicing( bool enable ) = 0;
 
     /**
-     * \brief   Call to register remote service server stub object.
-     *          All clients waiting for service should be connected notifications.
-     * \param   stubService     The address of server stub service to register in system
-     *                          The address contains service name and role name of service.
-     * \return  Returns true if succeeded to start registration.
+     * \brief   Call to register the remote service provider in the system and connect with service consumers.
+     *          When service provider is registered, the service provider and all waiting service consumers
+     *          receive appropriate connection notifications.
+     * \param   stubService     The address of service provider to register in the system.
+     * \return  Returns true if succeeded registration.
      **/
-    virtual bool registerService( const StubAddress & stubService ) = 0;
+    virtual bool registerServiceProvider( const StubAddress & stubService ) = 0;
 
     /**
-     * \brief   Call to unregister previously registered server stub interface.
-     * \param   stubService     The address of server stub service to unregister in system.
-     * \param   reason          The service provider unregister or reason of unregistering / disconnecting service provider.
+     * \brief   Call to unregister the service provider from the system and disconnect service consumers.
+     *          All connected service consumers automatically receive disconnect notifications.
+     * \param   stubService     The address of service provider to unregister in the system.
+     * \param   reason          The reason to unregister and disconnect the service provider.
      **/
-    virtual void unregisterService( const StubAddress & stubService, const NEService::eDisconnectReason reason ) = 0;
+    virtual void unregisterServiceProvider( const StubAddress & stubService, const NEService::eDisconnectReason reason ) = 0;
 
     /**
-     * \brief   Call to register client proxy of service. If system already has registered
-     *          service server stub, the client will receive connected notification.
-     *          Otherwise, the client will be in disconnected state as long, until server
-     *          service is not registered in system.
-     * \param   proxyService    The address of client proxy to register in system.
+     * \brief   Call to register the remote service consumer in the system and connect to service provider.
+     *          If the service provider is already available, the service consumer and the service provider
+     *          receive a connection notification.
+     * \param   proxyService    The address of the service consumer to register in system.
      * \return  Returns true if registration process started with success. Otherwise, it returns false.
      **/
-    virtual bool registerServiceClient( const ProxyAddress & proxyService ) = 0;
+    virtual bool registerServiceConsumer( const ProxyAddress & proxyService ) = 0;
 
     /**
-     * \brief   Call to unregister previously registered client prosy service.
-     * \param   proxyService    The address of client proxy to unregister from system.
-     * \param   reason          The service consumer unregister or reason unregistering / disconnecting the service consumer.
+     * \brief   Call to unregister the service consumer from the system and disconnect service provider.
+     *          Both, the service provider and the service consumer receive appropriate disconnect notification.
+     * \param   proxyService    The address of the service consumer to unregister from the system.
+     * \param   reason          The reason to unregister and disconnect the service consumer.
      **/
-    virtual void unregisterServiceClient( const ProxyAddress & proxyService, const NEService::eDisconnectReason reason ) = 0;
+    virtual void unregisterServiceConsumer( const ProxyAddress & proxyService, const NEService::eDisconnectReason reason ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( IERemoteService );
+    DECLARE_NOCOPY_NOMOVE( IERemoteServiceConnection );
 };
 
-#endif  // AREG_IPC_IEREMOTESERVICE_HPP
+#endif  // AREG_IPC_IEREMOTESERVICECONNECTION_HPP

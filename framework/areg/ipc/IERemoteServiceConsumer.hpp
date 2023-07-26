@@ -61,64 +61,64 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Call to receive list of registered remote stub and proxy services, which connection cookie is equal to 
-     *          specified value. In output out_listStubs and out_lisProxies contain list of remote stub and proxy addresses.
-     * \param   cookie          The cookie to filter. Pass NEService::COOKIE_ANY to ignore filtering
-     * \param   out_listStubs   On output this will contain list of remote stub addresses connected with specified cookie value.
-     * \param   out_lisProxies  On output this will contain list of remote proxy addresses connected with specified cookie value.
+     * \brief   Call to extract the list of addresses of registered and valid remote service providers and consumers of specified cookie.
+     *          If cookie value is 'NEService::COOKIE_ANY' it retrieves the list of all remote service providers and consumers.
+     *          On output out_listStubs and out_lisProxies contain the list of remote services.
+     * \param   cookie          The cookie to filter. Pass NEService::COOKIE_ANY to ignore filtering.
+     * \param   out_listStubs   On output this contains the list of address of the remote service providers of specified cookie.
+     * \param   out_lisProxies  On output this contains the list of address of the remote service consumers of specified cookie.
      **/
-    virtual void getServiceList( ITEM_ID cookie, TEArrayList<StubAddress> & OUT out_listStubs, TEArrayList<ProxyAddress> & OUT out_lisProxies ) const = 0;
+    virtual void extractRemoteServiceAddresses( ITEM_ID cookie, TEArrayList<StubAddress> & OUT out_listStubs, TEArrayList<ProxyAddress> & OUT out_lisProxies ) const = 0;
 
     /**
-     * \brief   Registers remote stub in the current process.
-     * \param   stub    The address of remote stub server to register
+     * \brief   Triggered when a remote service provider is registered in the system.
+     * \param   stub    The address of remote service provider that has been registered.
      **/
-    virtual void registerRemoteStub( const StubAddress & stub ) = 0;
+    virtual void registeredRemoteServiceProvider( const StubAddress & stub ) = 0;
 
     /**
-     * \brief   Registers remote proxy in the current process.
-     * \param   proxy   The address of remote proxy client to register
+     * \brief   Triggered when a remote service consumer is registered in the system.
+     * \param   proxy   The address of remote service consumer that has been registered.
      **/
-    virtual void registerRemoteProxy( const ProxyAddress & proxy ) = 0;
+    virtual void registeredRemoteServiceConsumer( const ProxyAddress & proxy ) = 0;
 
     /**
-     * \brief   Unregisters remote stub in the current process.
-     * \param   stub    The address of remote stub server to unregister
-     * \param   reason  The remote service provider unregister or disconnect reason.
-     * \param   cookie  The cookie that has initiated unregister message.
+     * \brief   Triggered when a remote service provider is unregistered from the system.
+     * \param   stub    The address of the remote service provider that has been unregistered.
+     * \param   reason  The reason that remote service provider is unregistered.
+     * \param   cookie  The cookie of source that has initiated to unregister provider.
      *                  The parameter is ignored if 'NEService::COOKIE_ANY'.
      **/
-    virtual void unregisterRemoteStub( const StubAddress & stub, NEService::eDisconnectReason reason, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ ) = 0;
+    virtual void unregisteredRemoteServiceProvider( const StubAddress & stub, NEService::eDisconnectReason reason, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ ) = 0;
 
     /**
-     * \brief   Unregisters remote proxy in the current process.
-     * \param   proxy   The address of remote proxy client to unregister.
-     * \param   reason  The remote service consumer unregister or disconnect reason.
-     * \param   cookie  The cookie that has initiated unregister message.
+     * \brief   Triggered when a remote service consumer is unregistered from the system.
+     * \param   proxy   The address of the remote service consumer that has been unregistered.
+     * \param   reason  The reason that remote service consumer is unregistered.
+     * \param   cookie  The cookie of source that has initiated to unregister consumer.
      *                  The parameter is ignored if 'NEService::COOKIE_ANY'.
      **/
-    virtual void unregisterRemoteProxy( const ProxyAddress & proxy, NEService::eDisconnectReason reason, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ ) = 0;
+    virtual void unregisteredRemoteServiceConsumer( const ProxyAddress & proxy, NEService::eDisconnectReason reason, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ ) = 0;
 
     /**
-     * \brief   Triggered when remote service has been started and there is a
-     *          connection established with service.
-     * \param   channel     The connection channel of remote routing service.
+     * \brief   Triggered when remote service connection and communication channel is established.
+     * \param   channel     The connection and communication channel of remote service.
      **/
-    virtual void remoteServiceStarted( const Channel & channel ) = 0;
+    virtual void connectedRemoteServiceChannel( const Channel & channel ) = 0;
 
     /**
-     * \brief   Triggered when connection with remote service has been stopped.
-     * \param   channel     The connection channel of remote routing service.
+     * \brief   Triggered when disconnected remote service connection and communication channel.
+     * \param   channel     The connection and communication channel of remote service.
      **/
-    virtual void remoteServiceStopped( const Channel & channel ) = 0;
+    virtual void disconnectedRemoteServiceChannel( const Channel & channel ) = 0;
 
     /**
-     * \brief   Triggered when connection with remote routing service is lost.
+     * \brief   Triggered when remote service connection and communication channel is lost.
      *          The connection is considered lost if it not possible to read or
-     *          receive data, and there was not stop connection triggered.
-     * \param   channel     The connection channel of remote routing service.
+     *          receive data, and it was not stopped by API call.
+     * \param   channel     The connection and communication channel of remote service.
      **/
-    virtual void remoteServiceConnectionLost( const Channel & channel ) = 0;
+    virtual void lostRemoteServiceChannel( const Channel & channel ) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

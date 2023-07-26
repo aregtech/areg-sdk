@@ -84,13 +84,13 @@
     <ClCompile Include="areg\component\private\TEEvent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\ipc\private\IERemoteService.cpp">
+    <ClCompile Include="areg\ipc\private\IERemoteServiceConnection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\ipc\private\IERemoteServiceConsumer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\ipc\private\IERemoteServiceHandler.cpp">
+    <ClCompile Include="areg\ipc\private\IERemoteServiceMessageHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\ipc\private\NEConnection.cpp">
@@ -543,6 +543,9 @@
     <ClCompile Include="areg\trace\private\ScopeController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="areg\component\private\ServiceManagerEventProcessor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\windows\GEWindows.h">
@@ -674,7 +677,7 @@
     <ClInclude Include="areg\component\TEEvent.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\ipc\IERemoteService.hpp">
+    <ClInclude Include="areg\ipc\IERemoteServiceConnection.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\ipc\IERemoteServiceConsumer.hpp">
@@ -1019,7 +1022,7 @@
     <ClInclude Include="areg\component\IETimerConsumer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\ipc\IERemoteServiceHandler.hpp">
+    <ClInclude Include="areg\ipc\IERemoteServiceMessageHandler.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\ipc\NEConnection.hpp">
@@ -1074,6 +1077,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\trace\private\ScopeController.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\component\private\ServiceManagerEventProcessor.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

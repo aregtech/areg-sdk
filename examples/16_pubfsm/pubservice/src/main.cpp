@@ -10,7 +10,7 @@
 //
 //               When the application starts, use one of commands:
 //                  - "on" to imitate the power ON.
-//                  - "sart" to start the run of FSM (as traffic light 
+//                  - "start" to start the run of FSM (as traffic light 
 //                    controller).
 //                  - "stop" to stop the run of FSM (as traffic light 
 //                    controller).

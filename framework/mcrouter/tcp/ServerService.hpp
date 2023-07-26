@@ -21,9 +21,9 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/IETimerConsumer.hpp"
-#include "areg/ipc/IERemoteService.hpp"
+#include "areg/ipc/IERemoteServiceConnection.hpp"
 #include "areg/ipc/IERemoteServiceConsumer.hpp"
-#include "areg/ipc/IERemoteServiceHandler.hpp"
+#include "areg/ipc/IERemoteServiceMessageHandler.hpp"
 #include "mcrouter/tcp/private/IEServerConnectionHandler.hpp"
 
 #include "mcrouter/tcp/private/ServerReceiveThread.hpp"
@@ -49,11 +49,11 @@ class IERemoteServiceConsumer;
  * \brief   The server side connection service. Used by message router to
  *          accept service connections.
  **/
-class ServerService : public    IERemoteService
+class ServerService : public    IERemoteServiceConnection
                     , private   DispatcherThread
                     , private   IEServerConnectionHandler
                     , private   IERemoteServiceConsumer
-                    , private   IERemoteServiceHandler
+                    , private   IERemoteServiceMessageHandler
 {
     friend class ServerServiceEventConsumer;
     friend class TimerConsumer;
@@ -222,36 +222,36 @@ public:
 //////////////////////////////////////////////////////////////////////////
 protected:
 
-/************************************************************************/
-// IERemoteService interface overrides
-/************************************************************************/
+    /************************************************************************/
+    // IERemoteServiceConnection interface overrides
+    /************************************************************************/
+
+        /**
+         * \brief   Call to configure remote service. The passed file name
+         *          can be either absolute or relative path.
+         *          The function will read configuration file and initialize settings.
+         *          If file path is nullptr or empty, Remote Service will have default
+         *          configuration settings.
+         * \param   configFile  Relative or absolute path of remote service configuration file.
+         *                      If nullptr or empty, it will use default settings.
+         * \return  Returns true if system could configure. Otherwise, it returns false.
+         **/
+    virtual bool setupServiceConnectionHost( const String & configFile ) override;
 
     /**
-     * \brief   Call to configure remote service. The passed file name
-     *          can be either absolute or relative path.
-     *          The function will read configuration file and initialize settings.
-     *          If file path is nullptr or empty, Remote Service will have default 
-     *          configuration settings.
-     * \param   configFile  Relative or absolute path of remote service configuration file.
-     *                      If nullptr or empty, it will use default settings.
-     * \return  Returns true if system could configure. Otherwise, it returns false.
-     **/
-    virtual bool configureRemoteServicing( const String & configFile ) override;
-
-    /**
-     * \brief   Call manually to set routing service host name and port number.
+     * \brief   Call manually to set router service host name and port number.
      *          Note, if remote service is already started, this call will change
      *          data, but will not restart service.
      * \param   hostName    IP-address or host name of routing service to connect.
      * \param   portNr      Port number of routing service to connect.
      **/
-    virtual void setRemoteServiceAddress( const String & hostName, unsigned short portNr ) override;
+    virtual void applyServiceConnectionData( const String & hostName, unsigned short portNr ) override;
 
     /**
      * \brief   Call to start remote service. The host name and port number should be already set.
      * \return  Returns true if start service is triggered.
      **/
-    virtual bool startRemoteServicing( void ) override;
+    virtual bool connectServiceHost( void ) override;
 
     /**
      * \brief   Call to restart remove service. The host name and the port number should be already set.
@@ -259,22 +259,22 @@ protected:
      *          connection, it starts new connection.
      * \return  Returns true if succeeded to restart service.
      **/
-    virtual bool restartRemoteServicing(void) override;
+    virtual bool reconnectServiceHost( void ) override;
 
     /**
      * \brief   Call to stop service. No more remote communication should be possible.
      **/
-    virtual void stopRemoteServicing( void ) override;
+    virtual void disconnectServiceHost( void ) override;
 
     /**
      * \brief   Returns true, if remote service is started and ready to operate.
      **/
-    virtual bool isRemoteServicingStarted( void ) const override;
+    virtual bool isServiceHostConnected( void ) const override;
 
     /**
      * \brief   Returns true if service is configured and ready to start
      **/
-    virtual bool isRemoteServicingConfigured( void ) const override;
+    virtual bool isServiceHostSetup( void ) const override;
 
     /**
      * \brief   Returns true if remote service is enabled.
@@ -290,37 +290,38 @@ protected:
     virtual void enableRemoteServicing( bool enable ) override;
 
     /**
-     * \brief   Call to register remote service server stub object.
-     *          All clients waiting for service should be connected notifications.
-     * \param   stubService     The address of server stub service to register in system
-     *                          The address contains service name and role name of service.
-     * \return  Returns true if succeeded to start registration.
+     * \brief   Call to register the remote service provider in the system and connect with service consumers.
+     *          When service provider is registered, the service provider and all waiting service consumers
+     *          receive appropriate connection notifications.
+     * \param   stubService     The address of service provider to register in the system.
+     * \return  Returns true if succeeded registration.
      **/
-    virtual bool registerService( const StubAddress & stubService ) override;
+    virtual bool registerServiceProvider( const StubAddress & stubService ) override;
 
     /**
-     * \brief   Call to unregister previously registered server stub interface.
-     * \param   stubService     The address of server stub service to unregister in system.
-     * \param   reason          The reason of unregistering / disconnecting service provider.
+     * \brief   Call to unregister the service provider from the system and disconnect service consumers.
+     *          All connected service consumers automatically receive disconnect notifications.
+     * \param   stubService     The address of service provider to unregister in the system.
+     * \param   reason          The reason to unregister and disconnect the service provider.
      **/
-    virtual void unregisterService( const StubAddress & stubService, const NEService::eDisconnectReason reason ) override;
+    virtual void unregisterServiceProvider( const StubAddress & stubService, const NEService::eDisconnectReason reason ) override;
 
     /**
-     * \brief   Call to register client proxy of service. If system already has registered
-     *          service server stub, the client will receive connected notification.
-     *          Otherwise, the client will be in disconnected state as long, until server
-     *          service is not registered in system.
-     * \param   proxyService    The address of client proxy to register in system.
+     * \brief   Call to register the remote service consumer in the system and connect to service provider.
+     *          If the service provider is already available, the service consumer and the service provider
+     *          receive a connection notification.
+     * \param   proxyService    The address of the service consumer to register in system.
      * \return  Returns true if registration process started with success. Otherwise, it returns false.
      **/
-    virtual bool registerServiceClient( const ProxyAddress & proxyService ) override;
+    virtual bool registerServiceConsumer( const ProxyAddress & proxyService ) override;
 
     /**
-     * \brief   Call to unregister previously registered client prosy service.
-     * \param   proxyService    The address of client proxy to unregister from system.
-     * \param   reason          The reason unregistering / disconnecting the service consumer.
+     * \brief   Call to unregister the service consumer from the system and disconnect service provider.
+     *          Both, the service provider and the service consumer receive appropriate disconnect notification.
+     * \param   proxyService    The address of the service consumer to unregister from the system.
+     * \param   reason          The reason to unregister and disconnect the service consumer.
      **/
-    virtual void unregisterServiceClient( const ProxyAddress & proxyService, const NEService::eDisconnectReason reason ) override;
+    virtual void unregisterServiceConsumer( const ProxyAddress & proxyService, const NEService::eDisconnectReason reason ) override;
 
 /************************************************************************/
 // IEServerConnectionHandler interface overrides
@@ -349,72 +350,72 @@ protected:
      **/
     virtual void connectionFailure( void ) override;
 
-/************************************************************************/
-// IERemoteServiceConsumer
-/************************************************************************/
+    /************************************************************************/
+    // IERemoteServiceConsumer
+    /************************************************************************/
 
     /**
-     * \brief   Call to receive list of registered remote stub and proxy services, which connection cookie is equal to 
-     *          specified value. In output out_listStubs and out_lisProxies contain list of remote stub and proxy addresses.
-     * \param   cookie          The cookie to filter. Pass NEService::COOKIE_ANY to ignore filtering
-     * \param   out_listStubs   On output this will contain list of remote stub addresses connected with specified cookie value.
-     * \param   out_lisProxies  On output this will contain list of remote proxy addresses connected with specified cookie value.
+     * \brief   Call to extract the list of addresses of registered and valid remote service providers and consumers of specified cookie.
+     *          If cookie value is 'NEService::COOKIE_ANY' it retrieves the list of all remote service providers and consumers.
+     *          On output out_listStubs and out_lisProxies contain the list of remote services.
+     * \param   cookie          The cookie to filter. Pass NEService::COOKIE_ANY to ignore filtering.
+     * \param   out_listStubs   On output this contains the list of address of the remote service providers of specified cookie.
+     * \param   out_lisProxies  On output this contains the list of address of the remote service consumers of specified cookie.
      **/
-    virtual void getServiceList( ITEM_ID IN cookie, TEArrayList<StubAddress> & OUT out_listStubs, TEArrayList<ProxyAddress> & OUT out_lisProxies ) const override;
+    virtual void extractRemoteServiceAddresses( ITEM_ID cookie, TEArrayList<StubAddress> & OUT out_listStubs, TEArrayList<ProxyAddress> & OUT out_lisProxies ) const override;
 
     /**
-     * \brief   Registers remote stub in the current process.
-     * \param   stub    The address of remote stub server to register
+     * \brief   Triggered when a remote service provider is registered in the system.
+     * \param   stub    The address of remote service provider that has been registered.
      **/
-    virtual void registerRemoteStub( const StubAddress & stub ) override;
+    virtual void registeredRemoteServiceProvider( const StubAddress & stub ) override;
 
     /**
-     * \brief   Registers remote proxy in the current process.
-     * \param   proxy   The address of remote proxy client to register
+     * \brief   Triggered when a remote service consumer is registered in the system.
+     * \param   proxy   The address of remote service consumer that has been registered.
      **/
-    virtual void registerRemoteProxy( const ProxyAddress & proxy ) override;
+    virtual void registeredRemoteServiceConsumer( const ProxyAddress & proxy ) override;
 
     /**
-     * \brief   Unregisters remote stub in the current process.
-     * \param   stub    The address of remote stub server to unregister
-     * \param   reason  The service disconnect reason.
-     * \param   cookie  The cookie that has initiated unregister message.
+     * \brief   Triggered when a remote service provider is unregistered from the system.
+     * \param   stub    The address of the remote service provider that has been unregistered.
+     * \param   reason  The reason that remote service provider is unregistered.
+     * \param   cookie  The cookie of source that has initiated to unregister provider.
      *                  The parameter is ignored if 'NEService::COOKIE_ANY'.
      **/
-    virtual void unregisterRemoteStub( const StubAddress & stub, NEService::eDisconnectReason reason, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ ) override;
+    virtual void unregisteredRemoteServiceProvider( const StubAddress & stub, NEService::eDisconnectReason reason, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ ) override;
 
     /**
-     * \brief   Unregisters remote proxy in the current process.
-     * \param   proxy   The address of remote proxy client to unregister
-     * \param   reason  The service disconnect reason.
-     * \param   cookie  The cookie that has initiated unregister message.
+     * \brief   Triggered when a remote service consumer is unregistered from the system.
+     * \param   proxy   The address of the remote service consumer that has been unregistered.
+     * \param   reason  The reason that remote service consumer is unregistered.
+     * \param   cookie  The cookie of source that has initiated to unregister consumer.
      *                  The parameter is ignored if 'NEService::COOKIE_ANY'.
      **/
-    virtual void unregisterRemoteProxy( const ProxyAddress & proxy, NEService::eDisconnectReason reason, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ ) override;
+    virtual void unregisteredRemoteServiceConsumer( const ProxyAddress & proxy, NEService::eDisconnectReason reason, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ ) override;
 
     /**
-     * \brief   Triggered when remote service has been started and there is a
-     *          connection established with service.
-     * \param   channel     The connection channel of remote routing service.
+     * \brief   Triggered when remote service connection and communication channel is established.
+     * \param   channel     The connection and communication channel of remote service.
      **/
-    virtual void remoteServiceStarted( const Channel & channel ) override;
+    virtual void connectedRemoteServiceChannel( const Channel & channel ) override;
 
     /**
-     * \brief   Triggered when connection with remote service has been stopped.
-     * \param   channel     The connection channel of remote routing service.
+     * \brief   Triggered when disconnected remote service connection and communication channel.
+     * \param   channel     The connection and communication channel of remote service.
      **/
-    virtual void remoteServiceStopped( const Channel & channel ) override;
+    virtual void disconnectedRemoteServiceChannel( const Channel & channel ) override;
 
     /**
-     * \brief   Triggered when connection with remote routing service is lost.
+     * \brief   Triggered when remote service connection and communication channel is lost.
      *          The connection is considered lost if it not possible to read or
-     *          receive data, and there was not stop connection triggered.
-     * \param   channel     The connection channel of remote routing service.
+     *          receive data, and it was not stopped by API call.
+     * \param   channel     The connection and communication channel of remote service.
      **/
-    virtual void remoteServiceConnectionLost( const Channel & channel ) override;
+    virtual void lostRemoteServiceChannel( const Channel & channel ) override;
 
 /************************************************************************/
-// IERemoteServiceHandler interface overrides
+// IERemoteServiceMessageHandler interface overrides
 /************************************************************************/
 
     /**

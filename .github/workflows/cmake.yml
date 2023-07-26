@@ -70,13 +70,6 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Update compilers on Linux
-        if: matrix.config.os == 'ubuntu-latest'
-        # Update compilers, set C/C++ compilers
-        run: |
-             sudo apt-get update
-             export CC=/usr/bin/${{matrix.config.cc}} CXX=/usr/bin/${{matrix.config.cxx}}
-
       - name: Fetch cygwin installer on Windows
         if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
         shell: powershell

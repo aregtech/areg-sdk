@@ -123,13 +123,7 @@ elseif(DEFINED AREG_COMPILER AND NOT AREG_COMPILER STREQUAL "")
     endif()
 
 else()
-
-    # Possible values: "gnu", "llvm", "msvc", "cygwin"
-    set(AREG_COMPILER_FAMILY    "gnu")
-    
-    set(AREG_CXX_COMPILER       "g++")
-    set(AREG_C_COMPILER         "gcc")
-
+    FIND_DEFAULT_COMPILER()
     message(STATUS ">>> Compile using default settings: Compiler family = \'${AREG_COMPILER_FAMILY}\', CXX compiler = \'${AREG_CXX_COMPILER}\', CC compiler = \'${AREG_C_COMPILER}\'")
 
 endif()
