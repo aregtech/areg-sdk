@@ -22,8 +22,8 @@
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/IERemoteEventConsumer.hpp"
 #include "areg/component/IETimerConsumer.hpp"
-#include "areg/ipc/IERemoteService.hpp"
-#include "areg/ipc/IERemoteServiceHandler.hpp"
+#include "areg/ipc/IERemoteServiceConnection.hpp"
+#include "areg/ipc/IERemoteServiceMessageHandler.hpp"
 
 #include "areg/ipc/private/ClientReceiveThread.hpp"
 #include "areg/ipc/private/ClientSendThread.hpp"
@@ -49,9 +49,9 @@ class DispatcherThread;
  *          to read and send message, to dispatch messages and
  *          communicate with service manager.
  **/
-class ClientService : public    IERemoteService
+class ClientService : public    IERemoteServiceConnection
                     , private   DispatcherThread
-                    , private   IERemoteServiceHandler
+                    , private   IERemoteServiceMessageHandler
                     , private   IERemoteEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
@@ -238,7 +238,7 @@ public:
 protected:
 
 /************************************************************************/
-// IERemoteService interface overrides
+// IERemoteServiceConnection interface overrides
 /************************************************************************/
 
     /**
@@ -251,7 +251,7 @@ protected:
      *                      If nullptr or empty, it will use default settings.
      * \return  Returns true if system could configure. Otherwise, it returns false.
      **/
-    virtual bool configureRemoteServicing( const String & configFile ) override;
+    virtual bool setupServiceConnectionHost( const String & configFile ) override;
 
     /**
      * \brief   Call manually to set router service host name and port number.
@@ -260,13 +260,13 @@ protected:
      * \param   hostName    IP-address or host name of routing service to connect.
      * \param   portNr      Port number of routing service to connect.
      **/
-    virtual void setRemoteServiceAddress( const String & hostName, unsigned short portNr ) override;
+    virtual void applyServiceConnectionData( const String & hostName, unsigned short portNr ) override;
 
     /**
-     * \brief   Call to start thread for remote servicing. The host name and port number should be already set.
+     * \brief   Call to start remote service. The host name and port number should be already set.
      * \return  Returns true if start service is triggered.
      **/
-    virtual bool startRemoteServicing( void ) override;
+    virtual bool connectServiceHost( void ) override;
 
     /**
      * \brief   Call to restart remove service. The host name and the port number should be already set.
@@ -274,22 +274,22 @@ protected:
      *          connection, it starts new connection.
      * \return  Returns true if succeeded to restart service.
      **/
-    virtual bool restartRemoteServicing(void) override;
+    virtual bool reconnectServiceHost( void ) override;
 
     /**
      * \brief   Call to stop service. No more remote communication should be possible.
      **/
-    virtual void stopRemoteServicing( void ) override;
+    virtual void disconnectServiceHost( void ) override;
 
     /**
      * \brief   Returns true, if remote service is started and ready to operate.
      **/
-    virtual bool isRemoteServicingStarted( void ) const override;
+    virtual bool isServiceHostConnected( void ) const override;
 
     /**
      * \brief   Returns true if service is configured and ready to start
      **/
-    virtual bool isRemoteServicingConfigured( void ) const override;
+    virtual bool isServiceHostSetup( void ) const override;
 
     /**
      * \brief   Returns true if remote service is enabled.
@@ -305,37 +305,38 @@ protected:
     virtual void enableRemoteServicing( bool enable ) override;
 
     /**
-     * \brief   Call to register remote service server stub object.
-     *          All clients waiting for service should be connected notifications.
-     * \param   stubService     The address of server stub service to register in system
-     *                          The address contains service name and role name of service.
-     * \return  Returns true if succeeded to start registration.
+     * \brief   Call to register the remote service provider in the system and connect with service consumers.
+     *          When service provider is registered, the service provider and all waiting service consumers
+     *          receive appropriate connection notifications.
+     * \param   stubService     The address of service provider to register in the system.
+     * \return  Returns true if succeeded registration.
      **/
-    virtual bool registerService( const StubAddress & stubService ) override;
+    virtual bool registerServiceProvider( const StubAddress & stubService ) override;
 
     /**
-     * \brief   Call to unregister previously registered server stub interface.
-     * \param   stubService     The address of server stub service to unregister in system.
-     * \param   reason          The service provider unregister or reason of unregistering / disconnecting service provider.
+     * \brief   Call to unregister the service provider from the system and disconnect service consumers.
+     *          All connected service consumers automatically receive disconnect notifications.
+     * \param   stubService     The address of service provider to unregister in the system.
+     * \param   reason          The reason to unregister and disconnect the service provider.
      **/
-    virtual void unregisterService( const StubAddress & stubService, NEService::eDisconnectReason reason ) override;
+    virtual void unregisterServiceProvider( const StubAddress & stubService, const NEService::eDisconnectReason reason ) override;
 
     /**
-     * \brief   Call to register client proxy of service. If system already has registered
-     *          service server stub, the client will receive connected notification.
-     *          Otherwise, the client will be in disconnected state as long, until server
-     *          service is not registered in system.
-     * \param   proxyService    The address of client proxy to register in system.
+     * \brief   Call to register the remote service consumer in the system and connect to service provider.
+     *          If the service provider is already available, the service consumer and the service provider
+     *          receive a connection notification.
+     * \param   proxyService    The address of the service consumer to register in system.
      * \return  Returns true if registration process started with success. Otherwise, it returns false.
      **/
-    virtual bool registerServiceClient( const ProxyAddress & proxyService ) override;
+    virtual bool registerServiceConsumer( const ProxyAddress & proxyService ) override;
 
     /**
-     * \brief   Call to unregister previously registered client prosy service.
-     * \param   proxyService    The address of client proxy to unregister from system.
-     * \param   reason          The service consumer unregister or reason unregistering / disconnecting the service consumer.
+     * \brief   Call to unregister the service consumer from the system and disconnect service provider.
+     *          Both, the service provider and the service consumer receive appropriate disconnect notification.
+     * \param   proxyService    The address of the service consumer to unregister from the system.
+     * \param   reason          The reason to unregister and disconnect the service consumer.
      **/
-    virtual void unregisterServiceClient( const ProxyAddress & proxyService, const NEService::eDisconnectReason reason ) override;
+    virtual void unregisterServiceConsumer( const ProxyAddress & proxyService, const NEService::eDisconnectReason reason ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -377,7 +378,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
 /************************************************************************/
-// IERemoteServiceHandler interface overrides
+// IERemoteServiceMessageHandler interface overrides
 /************************************************************************/
 
     /**
@@ -435,7 +436,6 @@ private:
      **/
     virtual bool postEvent( Event & eventElem ) override;
 
-private:
 /************************************************************************/
 // IERemoteEventConsumer interface overrides
 /************************************************************************/

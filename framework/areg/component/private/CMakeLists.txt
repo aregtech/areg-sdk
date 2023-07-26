@@ -39,6 +39,7 @@ list(APPEND areg_SRC
 	${areg_BASE}/component/private/ServiceAddress.cpp
 	${areg_BASE}/component/private/ServiceItem.cpp
 	${areg_BASE}/component/private/ServiceManager.cpp
+	${areg_BASE}/component/private/ServiceManagerEventProcessor.cpp
 	${areg_BASE}/component/private/ServiceManagerEvents.cpp
 	${areg_BASE}/component/private/ServiceRequestEvent.cpp
 	${areg_BASE}/component/private/ServiceResponseEvent.cpp

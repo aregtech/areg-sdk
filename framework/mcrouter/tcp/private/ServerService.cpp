@@ -10,18 +10,18 @@
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/trace/GETrace.h"
 
-DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_startRemoteServicing);
-DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_restartRemoteServicing);
-DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_stopRemoteServicing);
-DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_registerService);
-DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_unregisterService);
-DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_registerServiceClient);
-DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_unregisterServiceClient);
+DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_connectServiceHost);
+DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_reconnectServiceHost);
+DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_disconnectServiceHost);
+DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_registerServiceProvider);
+DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_unregisterServiceProvider);
+DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_registerServiceConsumer);
+DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_unregisterServiceConsumer);
 DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_connectionLost);
-DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_registerRemoteStub);
-DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_registerRemoteProxy);
-DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_unregisterRemoteStub);
-DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_unregisterRemoteProxy);
+DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_registeredRemoteServiceProvider);
+DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_registeredRemoteServiceConsumer);
+DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_unregisteredRemoteServiceProvider);
+DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_unregisteredRemoteServiceConsumer);
 DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_processReceivedMessage);
 
 DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerService_onServiceStart);
@@ -105,16 +105,16 @@ void ServerService::TimerConsumer::processTimer( Timer & timer )
 //////////////////////////////////////////////////////////////////////////
 
 ServerService::ServerService( void )
-    : IERemoteService               ( )
+    : IERemoteServiceConnection               ( )
     , DispatcherThread              ( NEConnection::SERVER_DISPATCH_MESSAGE_THREAD.data( ) )
     , IEServerConnectionHandler     ( )
     , IERemoteServiceConsumer       ( )
-    , IERemoteServiceHandler        ( )
+    , IERemoteServiceMessageHandler        ( )
 
     , mServerConnection ( )
     , mTimerConnect     ( static_cast<IETimerConsumer &>(mTimerConsumer), NEConnection::SERVER_CONNECT_TIMER_NAME.data( ) )
-    , mThreadSend       ( static_cast<IERemoteServiceHandler &>(self()), mServerConnection )
-    , mThreadReceive    ( static_cast<IEServerConnectionHandler &>(self()), static_cast<IERemoteServiceHandler &>(self()), mServerConnection )
+    , mThreadSend       ( static_cast<IERemoteServiceMessageHandler &>(self()), mServerConnection )
+    , mThreadReceive    ( static_cast<IEServerConnectionHandler &>(self()), static_cast<IERemoteServiceMessageHandler &>(self()), mServerConnection )
     , mServiceRegistry  ( )
     , mIsServiceEnabled ( true )    // TODO: by default it should be disabled and enabled via init file
     , mConfigFile       ( )
@@ -127,7 +127,7 @@ ServerService::ServerService( void )
 {
 }
 
-bool ServerService::configureRemoteServicing(const String &configFile)
+bool ServerService::setupServiceConnectionHost(const String &configFile)
 {
     ConnectionConfiguration configConnect;
      if ( configConnect.loadConfiguration(configFile) )
@@ -146,14 +146,14 @@ bool ServerService::configureRemoteServicing(const String &configFile)
     }
 }
 
-void ServerService::setRemoteServiceAddress(const String & hostName, unsigned short portNr)
+void ServerService::applyServiceConnectionData(const String & hostName, unsigned short portNr)
 {
     mServerConnection.setAddress( hostName, portNr );
 }
 
-bool ServerService::startRemoteServicing(void)
+bool ServerService::connectServiceHost(void)
 {
-    TRACE_SCOPE(mcrouter_tcp_private_ServerService_startRemoteServicing);
+    TRACE_SCOPE(mcrouter_tcp_private_ServerService_connectServiceHost);
 
     Lock lock(mLock);
 
@@ -177,9 +177,9 @@ bool ServerService::startRemoteServicing(void)
     return result;
 }
 
-bool ServerService::restartRemoteServicing(void)
+bool ServerService::reconnectServiceHost(void)
 {
-    TRACE_SCOPE(mcrouter_tcp_private_ServerService_restartRemoteServicing);
+    TRACE_SCOPE(mcrouter_tcp_private_ServerService_reconnectServiceHost);
 
     Lock lock(mLock);
     bool result = true;
@@ -201,9 +201,9 @@ bool ServerService::restartRemoteServicing(void)
     return result;
 }
 
-void ServerService::stopRemoteServicing(void)
+void ServerService::disconnectServiceHost(void)
 {
-    TRACE_SCOPE(mcrouter_tcp_private_ServerService_stopRemoteServicing);
+    TRACE_SCOPE(mcrouter_tcp_private_ServerService_disconnectServiceHost);
     if ( isRunning() )
     {
         sendCommand( ServerServiceEventData::eServerServiceCommands::CMD_ExitService, Event::eEventPriority::EventPriorityHigh );
@@ -211,13 +211,13 @@ void ServerService::stopRemoteServicing(void)
     }
 }
 
-bool ServerService::isRemoteServicingStarted(void) const
+bool ServerService::isServiceHostConnected(void) const
 {
     Lock lock( mLock );
     return (mServerConnection.isValid() && isRunning());
 }
 
-bool ServerService::isRemoteServicingConfigured(void) const
+bool ServerService::isServiceHostSetup(void) const
 {
     Lock lock(mLock);
     return mServerConnection.getAddress().isValid();
@@ -232,35 +232,37 @@ bool ServerService::isRemoteServicingEnabled(void) const
 void ServerService::enableRemoteServicing( bool enable )
 {
     Lock lock( mLock );
-    if ( isRunning() && (enable == false) )
-        stopRemoteServicing();
+    if ( isRunning( ) && (enable == false) )
+    {
+        disconnectServiceHost();
+    }
 
     mIsServiceEnabled = enable;
 }
 
-bool ServerService::registerService(const StubAddress & /* stubService */)
+bool ServerService::registerServiceProvider(const StubAddress & /* stubService */)
 {
-    TRACE_SCOPE(mcrouter_tcp_private_ServerService_registerService);
+    TRACE_SCOPE(mcrouter_tcp_private_ServerService_registerServiceProvider);
     TRACE_ERR("Method is not implemented, this should not be called");
     return false;
 }
 
-void ServerService::unregisterService(const StubAddress & /* stubService */, const NEService::eDisconnectReason /*reason*/ )
+void ServerService::unregisterServiceProvider(const StubAddress & /* stubService */, const NEService::eDisconnectReason /*reason*/ )
 {
-    TRACE_SCOPE(mcrouter_tcp_private_ServerService_unregisterService);
+    TRACE_SCOPE(mcrouter_tcp_private_ServerService_unregisterServiceProvider);
     TRACE_ERR("Method is not implemented, this should not be called");
 }
 
-bool ServerService::registerServiceClient(const ProxyAddress & /* proxyService */)
+bool ServerService::registerServiceConsumer(const ProxyAddress & /* proxyService */)
 {
-    TRACE_SCOPE(mcrouter_tcp_private_ServerService_registerServiceClient);
+    TRACE_SCOPE(mcrouter_tcp_private_ServerService_registerServiceConsumer);
     TRACE_ERR("Method is not implemented, this should not be called");
     return false;
 }
 
-void ServerService::unregisterServiceClient(const ProxyAddress & /* proxyService */, const NEService::eDisconnectReason /*reason*/ )
+void ServerService::unregisterServiceConsumer(const ProxyAddress & /* proxyService */, const NEService::eDisconnectReason /*reason*/ )
 {
-    TRACE_SCOPE(mcrouter_tcp_private_ServerService_unregisterServiceClient);
+    TRACE_SCOPE(mcrouter_tcp_private_ServerService_unregisterServiceConsumer);
     TRACE_ERR("Method is not implemented, this should not be called");
 }
 
@@ -290,9 +292,9 @@ void ServerService::connectionLost( SocketAccepted & clientSocket )
 
 void ServerService::connectionFailure(void)
 {
-    if (isRemoteServicingStarted())
+    if ( isServiceHostConnected())
     {
-        restartRemoteServicing();
+        reconnectServiceHost();
     }
 }
 
@@ -362,7 +364,7 @@ void ServerService::onServiceMessageReceived(const RemoteMessage &msgReceived)
                 {
                     StubAddress stubService(msgReceived);
                     stubService.setSource(source);
-                    registerRemoteStub(stubService);
+                    registeredRemoteServiceProvider(stubService);
                 }
                 break;
 
@@ -370,7 +372,7 @@ void ServerService::onServiceMessageReceived(const RemoteMessage &msgReceived)
                 {
                     ProxyAddress proxyService(msgReceived);
                     proxyService.setSource(source);
-                    registerRemoteProxy(proxyService);
+                    registeredRemoteServiceConsumer(proxyService);
                 }
                 break;
 
@@ -380,7 +382,7 @@ void ServerService::onServiceMessageReceived(const RemoteMessage &msgReceived)
                     NEService::eDisconnectReason reason{NEService::eDisconnectReason::ReasonUndefined};
                     msgReceived >> reason;
                     stubService.setSource(source);
-                    unregisterRemoteStub(stubService, reason, stubService.getCookie());
+                    unregisteredRemoteServiceProvider(stubService, reason, stubService.getCookie());
                 }
                 break;
 
@@ -390,7 +392,7 @@ void ServerService::onServiceMessageReceived(const RemoteMessage &msgReceived)
                     NEService::eDisconnectReason reason { NEService::eDisconnectReason::ReasonUndefined };
                     msgReceived >> reason;
                     proxyService.setSource(source);
-                    unregisterRemoteProxy(proxyService, reason, proxyService.getCookie());
+                    unregisteredRemoteServiceConsumer(proxyService, reason, proxyService.getCookie());
                 }
                 break;
 
@@ -418,12 +420,12 @@ void ServerService::onServiceMessageReceived(const RemoteMessage &msgReceived)
 
             for (uint32_t i = 0; i < listProxies.getSize(); ++i)
             {
-                unregisterRemoteProxy(listProxies[i], NEService::eDisconnectReason::ReasonConsumerDisconnected, cookie);
+                unregisteredRemoteServiceConsumer(listProxies[i], NEService::eDisconnectReason::ReasonConsumerDisconnected, cookie);
             }
 
             for (uint32_t i = 0; i < listStubs.getSize(); ++i)
             {
-                unregisterRemoteStub(listStubs[i], NEService::eDisconnectReason::ReasonProviderDisconnected, cookie);
+                unregisteredRemoteServiceProvider(listStubs[i], NEService::eDisconnectReason::ReasonProviderDisconnected, cookie);
             }
         }
         break;
@@ -579,16 +581,16 @@ void ServerService::stopConnection(void)
 
     TEArrayList<StubAddress>  stubList;
     TEArrayList<ProxyAddress> proxyList;
-    getServiceList(NEService::COOKIE_ANY, stubList, proxyList);
+    extractRemoteServiceAddresses(NEService::COOKIE_ANY, stubList, proxyList);
 
     for ( uint32_t i = 0; i < stubList.getSize(); ++ i )
     {
-        unregisterRemoteStub( stubList[i], NEService::eDisconnectReason::ReasonRouterDisconnected, NEService::COOKIE_ANY );
+        unregisteredRemoteServiceProvider( stubList[i], NEService::eDisconnectReason::ReasonRouterDisconnected, NEService::COOKIE_ANY );
     }
 
     for ( uint32_t i = 0; i < proxyList.getSize(); ++ i )
     {
-        unregisterRemoteProxy( proxyList[i], NEService::eDisconnectReason::ReasonRouterDisconnected, NEService::COOKIE_ANY );
+        unregisteredRemoteServiceConsumer( proxyList[i], NEService::eDisconnectReason::ReasonRouterDisconnected, NEService::COOKIE_ANY );
     }
 
     _disconnectService( Event::eEventPriority::EventPriorityHigh );
@@ -597,14 +599,14 @@ void ServerService::stopConnection(void)
     mServerConnection.closeSocket();
 }
 
-void ServerService::getServiceList(ITEM_ID IN cookie, TEArrayList<StubAddress> & OUT out_listStubs, TEArrayList<ProxyAddress> & OUT out_lisProxies) const
+void ServerService::extractRemoteServiceAddresses( ITEM_ID cookie, TEArrayList<StubAddress> & OUT out_listStubs, TEArrayList<ProxyAddress> & OUT out_lisProxies ) const
 {
     mServiceRegistry.getServiceList(cookie, out_listStubs, out_lisProxies);
 }
 
-void ServerService::registerRemoteStub(const StubAddress & stub)
+void ServerService::registeredRemoteServiceProvider(const StubAddress & stub)
 {
-    TRACE_SCOPE(mcrouter_tcp_private_ServerService_registerRemoteStub);
+    TRACE_SCOPE(mcrouter_tcp_private_ServerService_registeredRemoteServiceProvider);
     ASSERT(stub.isServicePublic());
 
     TRACE_DBG("Going to register remote stub [ %s ]", StubAddress::convAddressToPath(stub).getString());
@@ -679,9 +681,9 @@ void ServerService::registerRemoteStub(const StubAddress & stub)
     }
 }
 
-void ServerService::registerRemoteProxy(const ProxyAddress & proxy)
+void ServerService::registeredRemoteServiceConsumer(const ProxyAddress & proxy)
 {
-    TRACE_SCOPE(mcrouter_tcp_private_ServerService_registerRemoteProxy);
+    TRACE_SCOPE(mcrouter_tcp_private_ServerService_registeredRemoteServiceConsumer);
     if ( mServiceRegistry.getServiceStatus(proxy) != NEService::eServiceConnection::ServiceConnected )
     {
         ServiceProxy proxyService;
@@ -731,9 +733,9 @@ void ServerService::registerRemoteProxy(const ProxyAddress & proxy)
     }
 }
 
-void ServerService::unregisterRemoteStub(const StubAddress & stub, NEService::eDisconnectReason reason, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ )
+void ServerService::unregisteredRemoteServiceProvider(const StubAddress & stub, NEService::eDisconnectReason reason, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ )
 {
-    TRACE_SCOPE(mcrouter_tcp_private_ServerService_unregisterRemoteStub);
+    TRACE_SCOPE(mcrouter_tcp_private_ServerService_unregisteredRemoteServiceProvider);
     if ( mServiceRegistry.getServiceStatus(stub) == NEService::eServiceConnection::ServiceConnected )
     {
         ListServiceProxies listProxies;
@@ -784,9 +786,9 @@ void ServerService::unregisterRemoteStub(const StubAddress & stub, NEService::eD
     }
 }
 
-void ServerService::unregisterRemoteProxy(const ProxyAddress & proxy, NEService::eDisconnectReason reason, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ )
+void ServerService::unregisteredRemoteServiceConsumer(const ProxyAddress & proxy, NEService::eDisconnectReason reason, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ )
 {
-    TRACE_SCOPE(mcrouter_tcp_private_ServerService_unregisterRemoteProxy);
+    TRACE_SCOPE(mcrouter_tcp_private_ServerService_unregisteredRemoteServiceConsumer);
     TRACE_DBG("Unregistering services of proxy [ %s ] related to cookie [ %u ]"
                     , ProxyAddress::convAddressToPath(proxy).getString()
                     , static_cast<unsigned int>(cookie));
@@ -823,17 +825,17 @@ void ServerService::unregisterRemoteProxy(const ProxyAddress & proxy, NEService:
     }
 }
 
-void ServerService::remoteServiceStarted(const Channel & /* channel */)
+void ServerService::connectedRemoteServiceChannel(const Channel & /* channel */)
 {
 
 }
 
-void ServerService::remoteServiceStopped(const Channel & /* channel */)
+void ServerService::disconnectedRemoteServiceChannel(const Channel & /* channel */)
 {
 
 }
 
-void ServerService::remoteServiceConnectionLost(const Channel & /* channel */)
+void ServerService::lostRemoteServiceChannel(const Channel & /* channel */)
 {
 }
 

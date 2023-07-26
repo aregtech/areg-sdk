@@ -293,7 +293,7 @@ public:
     /**
      * \brief   Returns the list of registered (provided) Server Service list.
      **/
-    inline const ListServers & getServiceList( void ) const;
+    inline const ListServers & extractRemoteServiceAddresses( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
@@ -390,7 +390,7 @@ inline const ComponentAddress& Component::getAddress( void ) const
     return mComponentInfo.getAddress();
 }
 
-inline const Component::ListServers & Component::getServiceList( void ) const
+inline const Component::ListServers & Component::extractRemoteServiceAddresses( void ) const
 {
     return mServerList;
 }

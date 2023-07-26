@@ -52,10 +52,10 @@ DEF_TRACE_SCOPE(areg_ipc_private_ClientService_processRemoteResponseEvent);
 DEF_TRACE_SCOPE(areg_ipc_private_ClientService_processRemoteNotifyRequestEvent);
 DEF_TRACE_SCOPE(areg_ipc_private_ClientService_runDispatcher);
 
-DEF_TRACE_SCOPE(areg_ipc_private_ClientService_registerService);
-DEF_TRACE_SCOPE(areg_ipc_private_ClientService_unregisterService);
-DEF_TRACE_SCOPE(areg_ipc_private_ClientService_registerServiceClient);
-DEF_TRACE_SCOPE(areg_ipc_private_ClientService_unregisterServiceClient);
+DEF_TRACE_SCOPE(areg_ipc_private_ClientService_registerServiceProvider);
+DEF_TRACE_SCOPE(areg_ipc_private_ClientService_unregisterServiceProvider);
+DEF_TRACE_SCOPE(areg_ipc_private_ClientService_registerServiceConsumer);
+DEF_TRACE_SCOPE(areg_ipc_private_ClientService_unregisterServiceConsumer);
 
 //////////////////////////////////////////////////////////////////////////
 // ClientService::ClientServiceEventConsumer class implementation
@@ -125,16 +125,16 @@ void ClientService::TimerConsumer::processTimer( Timer & timer )
 //////////////////////////////////////////////////////////////////////////
 
 ClientService::ClientService( IERemoteServiceConsumer & serviceConsumer )
-    : IERemoteService               ( )
+    : IERemoteServiceConnection               ( )
     , DispatcherThread              ( NEConnection::CLIENT_DISPATCH_MESSAGE_THREAD.data() )
-    , IERemoteServiceHandler        ( )
+    , IERemoteServiceMessageHandler        ( )
     , IERemoteEventConsumer         ( )
 
     , mClientConnection ( )
     , mServiceConsumer  ( serviceConsumer )
     , mTimerConnect     ( static_cast<IETimerConsumer &>(mTimerConsumer), NEConnection::CLIENT_CONNECT_TIMER_NAME )
-    , mThreadReceive    ( static_cast<IERemoteServiceHandler &>(self()), mClientConnection )
-    , mThreadSend       ( static_cast<IERemoteServiceHandler &>(self()), mClientConnection )
+    , mThreadReceive    ( static_cast<IERemoteServiceMessageHandler &>(self()), mClientConnection )
+    , mThreadSend       ( static_cast<IERemoteServiceMessageHandler &>(self()), mClientConnection )
     , mIsServiceEnabled ( NEConnection::DEFAULT_REMOVE_SERVICE_ENABLED )    // TODO: by default, should be false and read out from configuration file.
     , mConfigFile       ( "" )
     , mChannel          ( )
@@ -145,7 +145,7 @@ ClientService::ClientService( IERemoteServiceConsumer & serviceConsumer )
 {
 }
 
-bool ClientService::configureRemoteServicing( const String & configFile )
+bool ClientService::setupServiceConnectionHost( const String & configFile )
 {
     Lock lock( mLock );
     ConnectionConfiguration configConnect;
@@ -165,13 +165,13 @@ bool ClientService::configureRemoteServicing( const String & configFile )
     }
 }
 
-void ClientService::setRemoteServiceAddress( const String & hostName, unsigned short portNr )
+void ClientService::applyServiceConnectionData( const String & hostName, unsigned short portNr )
 {
     Lock lock( mLock );
     mClientConnection.setAddress( hostName, portNr );
 }
 
-bool ClientService::startRemoteServicing(void)
+bool ClientService::connectServiceHost(void)
 {
     TRACE_SCOPE(areg_ipc_private_ClientService_startRemotingService);
     Lock lock( mLock );
@@ -204,12 +204,15 @@ bool ClientService::startRemoteServicing(void)
     return result;
 }
 
-bool ClientService::restartRemoteServicing(void)
+bool ClientService::reconnectServiceHost(void)
 {
-    return false;
+    disconnectServiceHost( );
+    _sendCommand( ClientServiceEventData::eClientServiceCommands::CMD_StartService );
+
+    return true;
 }
 
-void ClientService::stopRemoteServicing(void)
+void ClientService::disconnectServiceHost(void)
 {
     TRACE_SCOPE(areg_ipc_private_ClientService_stopRemotingService);
     TRACE_DBG( "Stopping remote servicing client connection, current state is [ %s ]", isRunning() ? "RUNNING" : "NOT RUNNING" );
@@ -221,13 +224,13 @@ void ClientService::stopRemoteServicing(void)
     }
 }
 
-bool ClientService::isRemoteServicingStarted(void) const
+bool ClientService::isServiceHostConnected(void) const
 {
     Lock lock( mLock );
     return _isStarted();
 }
 
-bool ClientService::isRemoteServicingConfigured( void ) const
+bool ClientService::isServiceHostSetup( void ) const
 {
     Lock lock(mLock);
     return mClientConnection.getAddress().isValid();
@@ -244,15 +247,15 @@ void ClientService::enableRemoteServicing( bool enable )
     Lock lock( mLock );
     if ( (enable == false) && isRunning( ) )
     {
-        stopRemoteServicing( );
+        disconnectServiceHost( );
     }
 
     mIsServiceEnabled = enable;
 }
 
-bool ClientService::registerService( const StubAddress & stubService )
+bool ClientService::registerServiceProvider( const StubAddress & stubService )
 {
-    TRACE_SCOPE(areg_ipc_private_ClientService_registerService);
+    TRACE_SCOPE(areg_ipc_private_ClientService_registerServiceProvider);
     Lock lock( mLock );
     bool result = false;
     if ( _isStarted() )
@@ -266,9 +269,9 @@ bool ClientService::registerService( const StubAddress & stubService )
     return result;
 }
 
-void ClientService::unregisterService(const StubAddress & stubService, const NEService::eDisconnectReason reason )
+void ClientService::unregisterServiceProvider(const StubAddress & stubService, const NEService::eDisconnectReason reason )
 {
-    TRACE_SCOPE(areg_ipc_private_ClientService_unregisterService);
+    TRACE_SCOPE(areg_ipc_private_ClientService_unregisterServiceProvider);
 
     Lock lock( mLock );
     if ( _isStarted() )
@@ -281,9 +284,9 @@ void ClientService::unregisterService(const StubAddress & stubService, const NES
     }
 }
 
-bool ClientService::registerServiceClient(const ProxyAddress & proxyService)
+bool ClientService::registerServiceConsumer(const ProxyAddress & proxyService)
 {
-    TRACE_SCOPE(areg_ipc_private_ClientService_registerServiceClient);
+    TRACE_SCOPE(areg_ipc_private_ClientService_registerServiceConsumer );
     Lock lock( mLock );
     bool result = false;
     if ( _isStarted() )
@@ -298,9 +301,9 @@ bool ClientService::registerServiceClient(const ProxyAddress & proxyService)
     return result;
 }
 
-void ClientService::unregisterServiceClient(const ProxyAddress & proxyService, const NEService::eDisconnectReason reason )
+void ClientService::unregisterServiceConsumer(const ProxyAddress & proxyService, const NEService::eDisconnectReason reason )
 {
-    TRACE_SCOPE(areg_ipc_private_ClientService_unregisterServiceClient);
+    TRACE_SCOPE(areg_ipc_private_ClientService_unregisterServiceConsumer);
 
     Lock lock( mLock );
     if ( _isStarted() )
@@ -351,7 +354,7 @@ void ClientService::onServiceConnectionStop(void)
     mThreadSend.completionWait( NECommon::WAIT_INFINITE );
 
     mClientConnection.closeSocket();
-    mServiceConsumer.remoteServiceStopped( channel );
+    mServiceConsumer.disconnectedRemoteServiceChannel( channel );
 
     mThreadReceive.destroyThread( NECommon::DO_NOT_WAIT );
     mThreadSend.destroyThread( NECommon::DO_NOT_WAIT );
@@ -369,7 +372,7 @@ void ClientService::onServiceConnectionStarted(void)
         mChannel.setCookie( mClientConnection.getCookie() );
         mChannel.setSource( getCurrentThreadId() );
         mChannel.setTarget( NEService::TARGET_LOCAL );
-        mServiceConsumer.remoteServiceStarted(mChannel);
+        mServiceConsumer.connectedRemoteServiceChannel(mChannel);
     }
 }
 
@@ -390,7 +393,7 @@ void ClientService::onServiceConnectionStopped(void)
 
     mThreadReceive.completionWait( NECommon::WAIT_INFINITE );
     mThreadSend.completionWait( NECommon::WAIT_INFINITE );
-    mServiceConsumer.remoteServiceStopped( channel );
+    mServiceConsumer.disconnectedRemoteServiceChannel( channel );
 }
 
 void ClientService::onServiceConnectionLost(void)
@@ -410,7 +413,7 @@ void ClientService::onServiceConnectionLost(void)
 
         mThreadReceive.completionWait( NECommon::WAIT_INFINITE );
         mThreadSend.completionWait( NECommon::WAIT_INFINITE );
-        mServiceConsumer.remoteServiceConnectionLost( channel );
+        mServiceConsumer.lostRemoteServiceChannel( channel );
 
         _setConnectionState( ClientService::eConnectionState::ConnectionStarting );
         mTimerConnect.startTimer( NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT, static_cast<DispatcherThread &>(self( )), 1 );
@@ -669,11 +672,11 @@ void ClientService::processReceivedMessage( const RemoteMessage & msgReceived, S
                         proxy.setSource( mChannel.getSource() );
                         if ( result == NEMemory::eMessageResult::ResultSucceed )
                         {
-                            mServiceConsumer.registerRemoteProxy(proxy);
+                            mServiceConsumer.registeredRemoteServiceConsumer(proxy);
                         }
                         else
                         {
-                            mServiceConsumer.unregisterRemoteProxy(proxy, reason, NEService::COOKIE_ANY);
+                            mServiceConsumer.unregisteredRemoteServiceConsumer(proxy, reason, NEService::COOKIE_ANY);
                         }
                     }
                     break;
@@ -684,11 +687,11 @@ void ClientService::processReceivedMessage( const RemoteMessage & msgReceived, S
                         stub.setSource( mChannel.getSource() );
                         if ( result == NEMemory::eMessageResult::ResultSucceed )
                         {
-                            mServiceConsumer.registerRemoteStub( stub );
+                            mServiceConsumer.registeredRemoteServiceProvider( stub );
                         }
                         else
                         {
-                            mServiceConsumer.unregisterRemoteStub( stub, NEService::eDisconnectReason::ReasonUndefined, NEService::COOKIE_ANY );
+                            mServiceConsumer.unregisteredRemoteServiceProvider( stub, NEService::eDisconnectReason::ReasonUndefined, NEService::COOKIE_ANY );
                         }
                     }
                     break;
@@ -699,7 +702,7 @@ void ClientService::processReceivedMessage( const RemoteMessage & msgReceived, S
                         NEService::eDisconnectReason reason { NEService::eDisconnectReason::ReasonUndefined };
                         msgReceived >> reason;
                         proxy.setSource( mChannel.getSource() );
-                        mServiceConsumer.unregisterRemoteProxy(proxy, reason, NEService::COOKIE_ANY);
+                        mServiceConsumer.unregisteredRemoteServiceConsumer(proxy, reason, NEService::COOKIE_ANY);
                     }
                     break;
 
@@ -709,7 +712,7 @@ void ClientService::processReceivedMessage( const RemoteMessage & msgReceived, S
                         NEService::eDisconnectReason reason{NEService::eDisconnectReason::ReasonUndefined};
                         msgReceived >> reason;
                         stub.setSource( mChannel.getSource() );
-                        mServiceConsumer.unregisterRemoteStub(stub, reason, NEService::COOKIE_ANY);
+                        mServiceConsumer.unregisteredRemoteServiceProvider(stub, reason, NEService::COOKIE_ANY);
                     }
                     break;
 

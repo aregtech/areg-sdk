@@ -25,7 +25,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IERemoteServiceHandler;
+class IERemoteServiceMessageHandler;
 class ClientConnection;
 
 //////////////////////////////////////////////////////////////////////////
@@ -47,7 +47,7 @@ public:
      * \param   remoteService   The instance of remote service to process messages.
      * \param   connection      The instance of client connection object to read messages.
      **/
-    ClientReceiveThread( IERemoteServiceHandler & remoteService, ClientConnection & connection );
+    ClientReceiveThread( IERemoteServiceMessageHandler & remoteService, ClientConnection & connection );
 
     /**
      * \brief   Destructor.
@@ -85,7 +85,7 @@ private:
     /**
      * \brief   The instance of remote service handler to dispatch messages.
      **/
-    IERemoteServiceHandler &    mRemoteService;
+    IERemoteServiceMessageHandler &    mRemoteService;
     /**
      * \brief   The instance of connection to receive messages from remote routing service.
      **/

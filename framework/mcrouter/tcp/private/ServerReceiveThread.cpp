@@ -18,7 +18,7 @@
 #include "mcrouter/tcp/private/IEServerConnectionHandler.hpp"
 #include "mcrouter/tcp/private/ServerConnection.hpp"
 
-#include "areg/ipc/IERemoteServiceHandler.hpp"
+#include "areg/ipc/IERemoteServiceMessageHandler.hpp"
 #include "areg/ipc/NEConnection.hpp"
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/base/SocketAccepted.hpp"
@@ -27,7 +27,7 @@
 
 DEF_TRACE_SCOPE(areg_ipc_private_ServerReceiveThread_runDispatcher);
 
-ServerReceiveThread::ServerReceiveThread( IEServerConnectionHandler & connectHandler, IERemoteServiceHandler & remoteService, ServerConnection & connection )
+ServerReceiveThread::ServerReceiveThread( IEServerConnectionHandler & connectHandler, IERemoteServiceMessageHandler & remoteService, ServerConnection & connection )
     : DispatcherThread  ( NEConnection::SERVER_RECEIVE_MESSAGE_THREAD )
     , mRemoteService    ( remoteService )
     , mConnectHandler   ( connectHandler )

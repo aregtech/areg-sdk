@@ -18,14 +18,14 @@
 #include "mcrouter/tcp/private/ServerConnection.hpp"
 
 #include "areg/ipc/NEConnection.hpp"
-#include "areg/ipc/IERemoteServiceHandler.hpp"
+#include "areg/ipc/IERemoteServiceMessageHandler.hpp"
 #include "areg/component/NEService.hpp"
 
 #include "areg/trace/GETrace.h"
 
 DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerSendThread__sendData );
 
-ServerSendThread::ServerSendThread(IERemoteServiceHandler & remoteService, ServerConnection & connection)
+ServerSendThread::ServerSendThread(IERemoteServiceMessageHandler & remoteService, ServerConnection & connection)
     : DispatcherThread          ( NEConnection::SERVER_SEND_MESSAGE_THREAD )
     , IESendMessageEventConsumer( )
     , mRemoteService            ( remoteService )

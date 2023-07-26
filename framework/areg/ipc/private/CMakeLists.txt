@@ -5,9 +5,9 @@ list(APPEND areg_SRC
 	${areg_BASE}/ipc/private/ClientService.cpp
 	${areg_BASE}/ipc/private/ClientServiceEvent.cpp
 	${areg_BASE}/ipc/private/ConnectionConfiguration.cpp
-	${areg_BASE}/ipc/private/IERemoteService.cpp
+	${areg_BASE}/ipc/private/IERemoteServiceConnection.cpp
 	${areg_BASE}/ipc/private/IERemoteServiceConsumer.cpp
-	${areg_BASE}/ipc/private/IERemoteServiceHandler.cpp
+	${areg_BASE}/ipc/private/IERemoteServiceMessageHandler.cpp
 	${areg_BASE}/ipc/private/NEConnection.cpp
 	${areg_BASE}/ipc/private/NERemoteService.cpp
 	${areg_BASE}/ipc/private/RemoteServiceEvent.cpp

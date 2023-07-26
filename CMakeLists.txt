@@ -13,6 +13,7 @@ set(AREG_EXAMPLES           "${AREG_SDK_ROOT}/examples")
 set(AREG_TESTS              "${AREG_SDK_ROOT}/tests")
 set(AREG_THIRDPARTY         "${AREG_SDK_ROOT}/thirdparty")
 
+include(${AREG_CMAKE_CONFIG_DIR}/functions.cmake)
 include(${AREG_CMAKE_CONFIG_DIR}/user.cmake)
 
 set(CMAKE_CXX_COMPILER  "${AREG_CXX_COMPILER}")
@@ -27,7 +28,6 @@ set(PROJECT_VERSION "1.5.0")
 project(${PROJECT_NAME} VERSION ${PROJECT_VERSION} LANGUAGES C CXX)
 
 include(${AREG_CMAKE_CONFIG_DIR}/common.cmake)
-include(${AREG_CMAKE_CONFIG_DIR}/functions.cmake)
 
 include_directories(${AREG_BASE})
 include_directories(${AREG_THIRDPARTY})

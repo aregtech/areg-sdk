@@ -7,9 +7,9 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        areg/ipc/private/IERemoteServiceHandler.cpp
+ * \file        areg/ipc/private/IERemoteServiceMessageHandler.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
  * \brief       AREG Platform, Remote Service Handler
  ************************************************************************/
-#include "areg/ipc/IERemoteServiceHandler.hpp"
+#include "areg/ipc/IERemoteServiceMessageHandler.hpp"

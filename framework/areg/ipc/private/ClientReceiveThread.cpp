@@ -16,13 +16,13 @@
 
 #include "areg/ipc/NEConnection.hpp"
 #include "areg/ipc/private/ClientConnection.hpp"
-#include "areg/ipc/IERemoteServiceHandler.hpp"
+#include "areg/ipc/IERemoteServiceMessageHandler.hpp"
 
 #include "areg/trace/GETrace.h"
 
 DEF_TRACE_SCOPE(areg_ipc_private_ClientReceiveThread_runDispatcher);
 
-ClientReceiveThread::ClientReceiveThread( IERemoteServiceHandler & remoteService, ClientConnection & connection )
+ClientReceiveThread::ClientReceiveThread( IERemoteServiceMessageHandler & remoteService, ClientConnection & connection )
     : DispatcherThread  ( NEConnection::CLIENT_RECEIVE_MESSAGE_THREAD )
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
