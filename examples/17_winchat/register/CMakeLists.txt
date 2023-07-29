@@ -1,8 +1,8 @@
-ADD_SOURCES(project_sources
+macro_add_sources(macro_project_sources
     CentralApp.cpp
     NECentralApp.cpp
 )
 
-INCLUDE_DIR("res")
-INCLUDE_DIR("services")
-INCLUDE_DIR("ui")
+macro_include_dir("res")
+macro_include_dir("services")
+macro_include_dir("ui")

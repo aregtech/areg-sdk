@@ -7,7 +7,7 @@ set(CMAKE_MFC_FLAG PRIVATE 2)
 # generated project
 
 # 'generated project'
-DECLARE_PROJECT(17_generated    "generated")
+macro_declare_project(17_generated    "generated")
 # Setting up appropriate flags
 addStaticLib(${project_generated} "${generated_src}")
 
@@ -17,7 +17,7 @@ list(APPEND MFC_DEFINES _AFXDLL _BIND_TO_CURRENT_CRT_VERSION _BIND_TO_CURRENT_MF
 # ####################################
 # 'chatter' project
 
-DECLARE_PROJECT(17_chatter      "chatter")
+macro_declare_project(17_chatter      "chatter")
 # Set resource files to compile with Microsoft RC compiler
 set_source_files_properties(${chatter_resources}  PROPERTIES LANGUAGE RC)
 list(APPEND chatter_src "${chatter_resources}")
@@ -34,7 +34,7 @@ target_include_directories(${project_chatter}   BEFORE PRIVATE ${project_root})
 # ####################################
 # 'register' project
 
-DECLARE_PROJECT(17_register     "register")
+macro_declare_project(17_register     "register")
 # Set resource files to compile with Microsoft RC compiler
 set_source_files_properties(${register_resources} PROPERTIES LANGUAGE RC)
 list(APPEND register_src ${register_resources})

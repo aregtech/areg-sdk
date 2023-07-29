@@ -51,7 +51,7 @@ TraceManager & TraceManager::getInstance( void )
 void TraceManager::sendLogMessage( LogMessage & logData )
 {
     TraceManager & tracer = TraceManager::getInstance();
-    tracer._sendLogEvent( TraceEventData(TraceEventData::eTraceAction::TraceLogMessage, logData) );
+    tracer.sendLogEvent( TraceEventData(TraceEventData::eTraceAction::TraceLogMessage, logData) );
 }
 
 bool TraceManager::startLogging( const char * configFile /*= nullptr*/, unsigned int waitTimeout /*= NECommon::WAIT_INFINITE*/ )
@@ -134,12 +134,12 @@ void TraceManager::netConnectionLost( void )
     TraceManager & traceManager = TraceManager::getInstance( );
     traceManager.mCookie = NETrace::COOKIE_LOCAL;
     traceManager.mLoggerTcp.closeConnection( );
-    traceManager._sendLogEvent(TraceEventData( TraceEventData::eTraceAction::TraceNetConnectionLost), Event::eEventPriority::EventPriorityHigh);
+    traceManager.sendLogEvent(TraceEventData( TraceEventData::eTraceAction::TraceNetConnectionLost), Event::eEventPriority::EventPriorityHigh);
 }
 
 void TraceManager::netReceivedData( const SharedBuffer & data )
 {
-    TraceManager::getInstance( )._sendLogEvent( TraceEventData( TraceEventData::eTraceAction::TraceNetReceivedData, data ), Event::eEventPriority::EventPriorityHigh );
+    TraceManager::getInstance( ).sendLogEvent( TraceEventData( TraceEventData::eTraceAction::TraceNetReceivedData, data ), Event::eEventPriority::EventPriorityHigh );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -161,6 +161,7 @@ TraceManager::TraceManager(void)
     , mLoggerDebug      ( mLogConfig )
     , mLoggerTcp        ( mLogConfig )
     , mTimerReconnect   ( static_cast<IETimerConsumer &>(self()) )
+    , mEventProcessor   ( self() )
 
     , mLogStarted       ( false, false )
     , mLock             ( )
@@ -215,7 +216,7 @@ bool TraceManager::startLoggingThread( unsigned int waitTimeout /* = NECommon::W
         {
             mLogStarted.resetEvent();
 
-            _sendLogEvent( TraceEventData(TraceEventData::eTraceAction::TraceStartLogs) );
+            sendLogEvent( TraceEventData(TraceEventData::eTraceAction::TraceStartLogs) );
 
             result = mLogStarted.lock(waitTimeout);
         }
@@ -231,68 +232,8 @@ bool TraceManager::startLoggingThread( unsigned int waitTimeout /* = NECommon::W
 void TraceManager::stopLoggingThread( unsigned int waitTimeout /* = NECommon::WAIT_INFINITE */ )
 {
     // RemoveAllEvents(false);
-    _sendLogEvent( TraceEventData(TraceEventData::eTraceAction::TraceStopLogs) );
+    sendLogEvent( TraceEventData(TraceEventData::eTraceAction::TraceStopLogs) );
     completionWait( isRunning() ? waitTimeout : NECommon::DO_NOT_WAIT );
-}
-
-void TraceManager::processEvent(const TraceEventData & data)
-{
-    const SharedBuffer & stream = data.getReadableStream();
-    stream.moveToBegin();
-
-    switch ( data.getTraceAction() )
-    {
-    case TraceEventData::eTraceAction::TraceConfigure:
-        _traceConfigure( stream );
-        break;
-
-    case TraceEventData::eTraceAction::TraceStartLogs:
-        _traceStartLogs( );
-        break;
-
-    case TraceEventData::eTraceAction::TraceStopLogs:
-        _traceStopLogs( );
-        break;
-
-    case TraceEventData::eTraceAction::TraceSetEnableLogs:
-        _traceSetEnableLogs( true );
-        break;
-
-    case TraceEventData::eTraceAction::TraceSetDisableLogs:
-        _traceSetEnableLogs( false );
-        break;
-
-    case TraceEventData::eTraceAction::TraceSaveScopes:
-        _traceSaveScopes( );
-        break;
-
-    case TraceEventData::eTraceAction::TraceLogMessage:
-        _traceLogMessage( stream );
-        break;
-
-    case TraceEventData::eTraceAction::TraceNetConnectService:
-        _traceNetConnectService( );
-        break;
-
-    case TraceEventData::eTraceAction::TraceNetDisconnectService:
-        _traceNetDisconnectService( );
-        break;
-
-    case TraceEventData::eTraceAction::TraceNetConnectionLost:
-        _traceNetConnectionLost( );
-        break;
-
-    case TraceEventData::eTraceAction::TraceNetRegisterScopes:
-        _traceNetRegisterScopes( );
-        break;
-
-    case TraceEventData::eTraceAction::TraceNetReceivedData:
-        _traceNetReceivedData( stream );
-        break;
-
-    default:
-        break; // ignore, do nothing
-    }
 }
 
 void TraceManager::processTimer( Timer & timer )
@@ -305,7 +246,7 @@ void TraceManager::processTimer( Timer & timer )
             if ( mLoggerTcp.openLogger( ) )
             {
                 mCookie = NETrace::COOKIE_ANY;
-                _sendLogEvent( TraceEventData( TraceEventData::eTraceAction::TraceNetConnectService ), Event::eEventPriority::EventPriorityHigh );
+                sendLogEvent( TraceEventData( TraceEventData::eTraceAction::TraceNetConnectService ), Event::eEventPriority::EventPriorityHigh );
             }
             else
             {
@@ -334,6 +275,11 @@ bool TraceManager::runDispatcher(void)
     return result;
 }
 
+void TraceManager::processEvent( const TraceEventData & data )
+{
+    mEventProcessor.processLogEvent( data.getTraceAction( ), data.getReadableStream( ) );
+}
+
 void TraceManager::traceStartLogs( void )
 {
     if ( mLogConfig.isLoggingEnabled() )
@@ -351,46 +297,48 @@ void TraceManager::traceStartLogs( void )
         }
 #endif // !defined(OUTPUT_DEBUG)
 
-        if (mLoggerTcp.isLoggerOpened() == false)
-        {
-            if ( isNetLoggingEnabled( ) )
-            {
-                if ( mLoggerTcp.openLogger( ) == false)
-                {
-                    mCookie = NETrace::COOKIE_ANY;
-                    mTimerReconnect.startTimer( LOG_RECONNECT_TIMEOUT, 1 );
-                }
-                else if (mLoggerTcp.isActive() == false )
-                {
-                    _sendLogEvent( TraceEventData( TraceEventData::eTraceAction::TraceNetConnectService ), Event::eEventPriority::EventPriorityHigh );
-                }
-                else
-                {
-                    ; // do nothing, just ignore.
-                }
-            }
-        }
+        connectTcpLogService( );
 
         mIsStarted = true;
+        mLogStarted.setEvent( );
     }
 }
 
 void TraceManager::traceStopLogs(void)
 {
-    _traceNetDisconnectService( );
+    mCookie = NETrace::COOKIE_LOCAL;
+    mTimerReconnect.stopTimer( );
     mScopeController.changeScopeActivityStatus( false );
+    mLogStarted.resetEvent( );
+
+    mLoggerDebug.closeLogger( );
+    mLoggerFile.closeLogger( );
+    mLoggerTcp.closeLogger( );
+    triggerExitEvent( );
 }
 
-void TraceManager::dataMessage( const LogMessage & logMessage )
+void TraceManager::writeLogMessage( const NETrace::sLogMessage & logMessage )
 {
-    mLoggerFile.logMessage( static_cast<const NETrace::sLogMessage &>(logMessage) );
-    mLoggerDebug.logMessage( static_cast<const NETrace::sLogMessage &>(logMessage) );
-    mLoggerTcp.logMessage(static_cast<const NETrace::sLogMessage&>(logMessage));
+    mLoggerFile.logMessage( logMessage );
+    mLoggerDebug.logMessage( logMessage );
+    mLoggerTcp.logMessage( logMessage );
 
     if ( hasMoreEvents() == false )
     {
         mLoggerFile.flushLogs();
     }
+}
+
+bool TraceManager::sendLogData( const SharedBuffer & logData )
+{
+    bool result{ true };
+    if ( mLoggerTcp.sendData( logData ) == false )
+    {
+        result = false;
+        reconnectTcpLogService( );
+    }
+
+    return result;
 }
 
 bool TraceManager::postEvent(Event & eventElem)
@@ -408,236 +356,57 @@ bool TraceManager::postEvent(Event & eventElem)
     return result;
 }
 
-inline void TraceManager::_sendLogEvent( const TraceEventData & data, Event::eEventPriority eventPrio /*= Event::eEventPriority::EventPriorityNormal*/ )
+inline void TraceManager::sendLogEvent( const TraceEventData & data, Event::eEventPriority eventPrio /*= Event::eEventPriority::EventPriorityNormal*/ )
 {
     TraceEvent::sendEvent( data, static_cast<IETraceEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )), eventPrio );
 }
 
-inline void TraceManager::_reconnectTcpLogService( void )
+void TraceManager::connectTcpLogService( void )
+{
+    if ( mLoggerTcp.isLoggerOpened( ) == false )
+    {
+        if ( isNetLoggingEnabled( ) )
+        {
+            if ( mLoggerTcp.openLogger( ) == false )
+            {
+                mCookie = NETrace::COOKIE_ANY;
+                mTimerReconnect.startTimer( LOG_RECONNECT_TIMEOUT, 1 );
+            }
+            else if ( mLoggerTcp.isActive( ) == false )
+            {
+                sendLogEvent( TraceEventData( TraceEventData::eTraceAction::TraceNetConnectService ), Event::eEventPriority::EventPriorityHigh );
+            }
+            else
+            {
+                ; // do nothing, just ignore.
+            }
+        }
+    }
+}
+
+void TraceManager::reconnectTcpLogService( void )
 {
     ASSERT( mLogConfig.isNetLoggingEnabled() );
     mCookie = NETrace::COOKIE_LOCAL;
-    mLoggerTcp.closeConnection( );
+    mLoggerTcp.closeLogger( );
     mTimerReconnect.startTimer( LOG_RECONNECT_TIMEOUT, static_cast<DispatcherThread &>(self( )), 1 );
 }
 
-inline void TraceManager::_traceConfigure( const SharedBuffer & data )
+void TraceManager::disconnectTcpLogService( void )
 {
-    FileBuffer file( data, "TraceConfigure" );
-    mLogConfig.loadConfig( file );
-}
-
-inline void TraceManager::_traceStartLogs( void )
-{
-    traceStartLogs( );
-    mLogStarted.setEvent( );
-}
-
-inline void TraceManager::_traceStopLogs( void )
-{
-    mTimerReconnect.stopTimer( );
-    traceStopLogs( );
-    triggerExitEvent( );
-    mLogStarted.resetEvent( );
-}
-
-inline void TraceManager::_traceSetEnableLogs( bool logsEnable )
-{
-    static_cast<TracePropertyValue &>(mLogConfig.getStatus( ).getValue( )) = logsEnable;
-}
-
-inline void TraceManager::_traceSaveScopes( void )
-{
-    // not implemented yet
-}
-
-inline void TraceManager::_traceLogMessage( const SharedBuffer & data )
-{
-    LogMessage logMessage( static_cast<const IEInStream &>(data) );
-    mLoggerFile.logMessage( static_cast<const NETrace::sLogMessage &>(logMessage) );
-    mLoggerDebug.logMessage( static_cast<const NETrace::sLogMessage &>(logMessage) );
-    mLoggerTcp.logMessage( static_cast<const NETrace::sLogMessage &>(logMessage) );
-
-    if ( hasMoreEvents( ) == false )
-    {
-        mLoggerFile.flushLogs( );
-    }
-}
-
-inline void TraceManager::_traceNetConnectService( void )
-{
-    const NETrace::sLogRequestConnect reqConnect;
-    SharedBuffer data;
-    data << reqConnect;
-    if ( mLoggerTcp.sendData( data ) == false )
-    {
-        _reconnectTcpLogService( );
-    }
-}
-
-inline void TraceManager::_traceNetDisconnectService( void )
-{
-    mTimerReconnect.stopTimer( );
-
-    if ( mLoggerTcp.isLoggerOpened( ) )
-    {
-        const NETrace::sLogRequestDisconnect reqDisconnect;
-        SharedBuffer data;
-        data << reqDisconnect;
-        mLoggerTcp.sendData( data );
-        mLoggerTcp.closeLogger( );
-    }
-
+    ASSERT( mLogConfig.isNetLoggingEnabled( ) );
     mCookie = NETrace::COOKIE_LOCAL;
+    mLoggerTcp.closeLogger( );
 }
 
-inline void TraceManager::_traceNetConnectionLost( void )
+void TraceManager::activateCookie( ITEM_ID newCookie )
 {
-    _reconnectTcpLogService( );
+    mCookie = newCookie;
+    mLoggerTcp.setActive( true );
 }
 
-inline void TraceManager::_traceNetRegisterScopes( void )
+void TraceManager::changeScopePriority( const String & scopeName, unsigned int scopeId, unsigned int scopePrio )
 {
-    if ( mLoggerTcp.isLoggerOpened( ) )
-    {
-        using POS = MapTraceScope::MAPPOS;
-
-        if ( _traceNetRegisterScopesStart( ) == false )
-        {
-            _reconnectTcpLogService( );
-            return; // do not send anymore
-        }
-
-        const TraceScopeMap & mapScopes = mScopeController.getScopeList( );
-        POS end = mapScopes.invalidPosition( );
-        POS pos = mapScopes.firstPosition( );
-
-        NETrace::sLogRequestRegisterScopes regScopes;
-        regScopes.reqScopeInfo.dataScopeAction = NETrace::eScopeAction::ScopesAppend;
-        while( pos != end )
-        {
-            constexpr int maxCount{ 500 };
-            SharedBuffer data;
-            data << regScopes.reqScopeHeader;
-            data << regScopes.reqScopeInfo;
-
-            int i{ 0 };
-            for ( ; (i < maxCount) && pos != end; ++ i )
-            {
-                TraceScopePair tracePair;
-                mapScopes.getAtPosition( pos, tracePair );
-                ASSERT( tracePair.second != nullptr );
-                data << (*tracePair.second);
-                pos = mapScopes.nextPosition( pos );
-            }
-
-            int sizeHeader{ sizeof( NETrace::sLogHeader ) };
-            int sizeInfo{ sizeof( NETrace::sLogScopeInfo ) };
-
-            NETrace::sLogHeader * logHeader = reinterpret_cast<NETrace::sLogHeader *>(data.getBuffer( ));
-            logHeader->hdrDataLen = data.getSizeUsed( ) - sizeHeader;
-            NETrace::sLogScopeInfo * scopeInfo  = reinterpret_cast<NETrace::sLogScopeInfo *>(data.getBuffer( ) + sizeHeader);
-            scopeInfo->dataBufferLen = data.getSizeUsed( ) - (sizeHeader + sizeInfo);
-            scopeInfo->dataScopeCount = i;
-
-            if ( mLoggerTcp.sendData( data ) == false )
-            {
-                _reconnectTcpLogService( );
-                return; // do not send anymore
-            }
-        }
-
-        if ( _traceNetRegisterScopesEnd( ) == false )
-        {
-            _reconnectTcpLogService( );
-            return; // do not send anymore
-        }
-    }
+    mScopeController.changeScopeActivityStatus( scopeName, scopeId, scopePrio );
 }
 
-bool TraceManager::_traceNetRegisterScopesStart( void )
-{
-    // sends empty list and action 'set' to reset list on service side.
-    NETrace::sLogRequestRegisterScopes regScopes;
-    regScopes.reqScopeInfo.dataScopeAction = NETrace::eScopeAction::ScopesSet;
-    SharedBuffer data;
-    data << regScopes.reqScopeHeader;
-    data << regScopes.reqScopeInfo;
-    return mLoggerTcp.sendData( data );
-}
-
-bool TraceManager::_traceNetRegisterScopesEnd( void )
-{
-    // sends empty list and action 'no action' to complete appending scopes.
-    NETrace::sLogRequestRegisterScopes regScopes;
-    regScopes.reqScopeInfo.dataScopeAction = NETrace::eScopeAction::ScopesNoAction;
-    SharedBuffer data;
-    data << regScopes.reqScopeHeader;
-    data << regScopes.reqScopeInfo;
-    return mLoggerTcp.sendData( data );
-}
-
-void TraceManager::_traceNetReceivedData( const SharedBuffer & stream )
-{
-    const NETrace::sLogHeader * cmdHeader = reinterpret_cast<const NETrace::sLogHeader *>(stream.getBuffer( ));
-    const NETrace::sLogCommandData * cmdData = reinterpret_cast<const NETrace::sLogCommandData *>(stream.getBuffer( ) + sizeof( NETrace::sLogHeader ));
-    ASSERT( cmdHeader != nullptr );
-    ASSERT( cmdData != nullptr );
-
-    if ( cmdHeader->hdrCookieHost == NETrace::COOKIE_SERVICE )
-    {
-        if ( (cmdHeader->hdrCookieTarget == mCookie) || (mCookie == NETrace::COOKIE_ANY && cmdData->dataCommand == NETrace::eLogCommands::LogResponseConnect) )
-        {
-            // Past all checkups to make sure the correctness of the target.
-            if ( cmdHeader->hdrLogType == NETrace::eLogType::LogResponse )
-            {
-                _traceNetResponseData( *cmdData, stream );
-            }
-            else if ( cmdHeader->hdrLogType == NETrace::eLogType::LogNotify )
-            {
-                _traceNetNotifyData( *cmdData, stream );
-            }
-        }
-    }
-}
-
-void TraceManager::_traceNetResponseData( const NETrace::sLogCommandData & cmdData, const SharedBuffer & stream )
-{
-    if ( cmdData.dataCommand == NETrace::eLogCommands::LogResponseConnect )
-    {
-        const NETrace::sLogResponseConnectData & respData = reinterpret_cast<const NETrace::sLogResponseConnectData &>(cmdData);
-        mCookie = respData.dataCookie;
-        mLoggerTcp.setActive( true );
-        _sendLogEvent( TraceEventData( TraceEventData::eTraceAction::TraceNetRegisterScopes ), Event::eEventPriority::EventPriorityHigh );
-    }
-    else if ( cmdData.dataCommand == NETrace::eLogCommands::LogResponseRegisterScopes )
-    {
-        const NETrace::sLogScopeInfo & scopeInfo = reinterpret_cast<const NETrace::sLogScopeInfo &>(cmdData);
-        if ( (scopeInfo.dataBufferLen != 0) && (scopeInfo.dataScopeCount != 0) )
-        {
-            stream.setPosition( sizeof( NETrace::sLogHeader ) + sizeof( NETrace::sLogScopeInfo ), IECursorPosition::eCursorPosition::PositionBegin );
-            ASSERT( stream.isEndOfBuffer( ) == false );
-            String scopeName{ };
-            uint32_t scopeId{ };
-            uint32_t scopePrio{ };
-
-            for ( uint32_t i = 0; i < scopeInfo.dataScopeCount; ++ i )
-            {
-                stream >> scopeName;
-                stream >> scopeId;
-                stream >> scopePrio;
-
-                // TraceScope * scope = mMapTraceScope.getAt( scopeId );
-                // ASSERT( scope != nullptr );
-                // ASSERT( scope->getScopeName( ) == scopeName );
-
-                // TODO: move to separate function to be used for notification and response.
-                // TODO: check whether it is a scope name or scope group. In case of group, ignore scopeId.
-            }
-        }
-    }
-}
-
-void TraceManager::_traceNetNotifyData( const NETrace::sLogCommandData & cmdData, const SharedBuffer & data )
-{
-}

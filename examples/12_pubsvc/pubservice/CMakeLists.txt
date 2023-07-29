@@ -1,1 +1,1 @@
-INCLUDE_DIR("src")
+macro_include_dir("src")

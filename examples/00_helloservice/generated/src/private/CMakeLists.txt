@@ -1,4 +1,4 @@
-ADD_SOURCES(project_sources
+macro_add_sources(macro_project_sources
     HelloServiceClientBase.cpp
     HelloServiceEvents.cpp
     HelloServiceProxy.cpp

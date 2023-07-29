@@ -362,6 +362,16 @@ public:
      **/
     inline bool moveToEnd( void );
 
+    /**
+     * \brief   Returns the start position value.
+     **/
+    inline static unsigned int getStartPosition( void );
+
+    /**
+     * \brief   Return the invalid position value.
+     **/
+    inline static unsigned int getInvalidPosition( void );
+
 /************************************************************************/
 // Read / Write operation functions
 /************************************************************************/
@@ -602,6 +612,37 @@ public:
      **/
     bool write(const char * asciiString);
     bool write(const wchar_t * wideString);
+
+    /**
+     * \brief   Searches the given binary data in the file and returns the position where the data starts.
+     * \param   startPos    The position in the file to start to search.
+     * \param   buffer      The binary data buffer to search.
+     * \param   length      The length of the data to search.
+     * \return  If found, returns the valid position in the file where the binary data starts.
+     *          Otherwise, returns invalid position (IECursorPosition::INVALID_CURSOR_POSITION).
+     **/
+    unsigned int searchData( unsigned int startPos, const unsigned char * buffer, int length ) const;
+    /**
+     * \brief   Searches the given binary data in the file and returns the position where the data starts.
+     * \param   startPos    The position in the file to start to search.
+     * \param   buffer      The buffer of byte-binary data to search.
+     * \return  If found, returns the valid position in the file where the binary data starts.
+     *          Otherwise, returns invalid position (IECursorPosition::INVALID_CURSOR_POSITION).
+     **/
+    unsigned int searchData( unsigned int startPos, const IEByteBuffer & buffer ) const;
+
+    /**
+     * \brief   Searches the given null-terminated text in the file and returns the position where the data starts.
+     * \param   startPos    The position in the file to start to search.
+     * \param   text        The null-terminated text to search.
+     * \param   length      The length of the data to search.
+     * \return  If found, returns the valid position in the file where the binary data starts.
+     *          Otherwise, returns invalid position (IECursorPosition::INVALID_CURSOR_POSITION).
+     **/
+    unsigned int searchText( unsigned int startPos, const char * text, bool caseSensitive ) const;
+    unsigned int searchText( unsigned int startPos, const wchar_t * text, bool caseSensitive ) const;
+    unsigned int searchText( unsigned int startPos, const String & text, bool caseSensitive ) const;
+    unsigned int searchText( unsigned int startPos, const WideString & text, bool caseSensitive ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Override methods
@@ -944,6 +985,16 @@ inline bool FileBase::moveToEnd( void )
 {
     ASSERT(isOpened());
     return IECursorPosition::moveToEnd();
+}
+
+inline unsigned int FileBase::getStartPosition( void )
+{
+    return IECursorPosition::START_CURSOR_POSITION;
+}
+
+inline unsigned int FileBase::getInvalidPosition( void )
+{
+    return IECursorPosition::INVALID_CURSOR_POSITION;
 }
 
 inline const IEInStream& FileBase::getReadStream( void ) const

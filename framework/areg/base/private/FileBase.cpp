@@ -244,6 +244,67 @@ inline  bool _writeLine(FileBase & file, const CharType * buffer)
     return result;
 }
 
+template<typename DataType>
+NEMath::eCompare _compareData( const DataType * memBuffer1, const DataType * memBuffer2, std::function<NEMath::eCompare( const DataType *, const DataType * )> func )
+{
+    return func( memBuffer1, memBuffer2 );
+}
+
+template<typename CharType>
+unsigned int _searchText( const FileBase & file, unsigned int startPos, const CharType * text, int length, bool sensitive )
+{
+    unsigned int result{ IECursorPosition::INVALID_CURSOR_POSITION };
+    if ( file.canRead( ) && (startPos != IECursorPosition::INVALID_CURSOR_POSITION) )
+    {
+        unsigned int posSearch = file.setPosition( static_cast<int>(startPos), IECursorPosition::eCursorPosition::PositionBegin );
+        if ( (NEString::isEmpty<CharType>(text) == false) && (length > 0) )
+        {
+            unsigned int dataLen = length * 2;
+            unsigned int readLen = 0;
+            CharType * fileData = new CharType[ dataLen + 1];
+
+            while ( result == IECursorPosition::INVALID_CURSOR_POSITION )
+            {
+                if ( readLen != 0 )
+                {
+                    NEMemory::memMove( fileData, fileData + length, readLen - length );
+                    readLen -= length;
+                }
+
+                unsigned int inBuf = readLen;
+                readLen = file.read( reinterpret_cast<unsigned char *>(fileData), (dataLen - readLen) * sizeof( CharType) ) / sizeof(CharType);
+                if ( (readLen == 0) || (readLen < static_cast<unsigned int>(length)) )
+                    break;
+
+                readLen += inBuf;
+                for ( unsigned int i = 0; (readLen - i) >= static_cast<unsigned int>(length); ++i )
+                {
+                    NEMath::eCompare comp = _compareData<CharType>( (fileData + i)
+                                                                , text
+                                                                , [length, sensitive]( const CharType * buf1, const CharType * buf2 ) -> NEMath::eCompare
+                                                                {
+                                                                    return NEString::compareStrings<CharType, CharType>( buf1, buf2, length, sensitive );
+                                                                }
+                    );
+
+                    if ( comp == NEMath::eCompare::Equal )
+                    {
+                        posSearch += i * sizeof(CharType);
+                        result = posSearch;
+                        break;
+                    }
+                }
+
+                posSearch += static_cast<unsigned int>(length) * sizeof(CharType);
+            }
+
+            delete [] fileData;
+        }
+    }
+
+    return result;
+}
+
 } // namespace
 
 //////////////////////////////////////////////////////////////////////////
@@ -580,6 +641,83 @@ bool FileBase::write(const char * asciiString)
 bool FileBase::write(const wchar_t * wideString)
 {
     return writeString(wideString);
+}
+
+unsigned int FileBase::searchData( unsigned int startPos, const unsigned char * buffer, int length ) const
+{
+    unsigned int result{ IECursorPosition::INVALID_CURSOR_POSITION };
+    if ( canRead( ) && (startPos != IECursorPosition::INVALID_CURSOR_POSITION))
+    {
+        unsigned int posSearch = setPosition( static_cast<int>(startPos), IECursorPosition::eCursorPosition::PositionBegin );
+        if ( (buffer != nullptr) && (length > 0) )
+        {
+            unsigned int dataLen = length * 2;
+            unsigned int readLen = 0;
+            unsigned char * fileData = new unsigned char[ dataLen ];
+
+            while ((result == IECursorPosition::INVALID_CURSOR_POSITION) && (posSearch != IECursorPosition::INVALID_CURSOR_POSITION))
+            {
+                if ( readLen != 0 )
+                {
+                    NEMemory::memMove( fileData, fileData + length, readLen - length );
+                    readLen = length;
+                }
+
+                readLen = read( fileData, dataLen - readLen ) + readLen;
+                if ( (readLen == 0) || (readLen < static_cast<unsigned int>(length)) )
+                    break;
+
+                for ( unsigned int i = 0; (readLen - i) >= static_cast<unsigned int>(length); ++i )
+                {
+                    NEMath::eCompare comp = _compareData<unsigned char>( (fileData + i)
+                                                                       , buffer
+                                                                       , [length]( const unsigned char * buf1, const unsigned char * buf2 ) -> NEMath::eCompare
+                                                                         {
+                                                                             return NEMemory::memCompare( buf1, buf1, length );
+                                                                         }
+                                                                        );
+
+                    if ( comp == NEMath::eCompare::Equal )
+                    {
+                        posSearch += i;
+                        result = posSearch;
+                        break;
+                    }
+                }
+
+                posSearch += static_cast<unsigned int>(length);
+            }
+
+            delete[ ] fileData;
+        }
+    }
+
+    return result;
+}
+
+unsigned int FileBase::searchData( unsigned int startPos, const IEByteBuffer & buffer ) const
+{
+    return searchData(startPos, buffer.getBuffer(), buffer.getSizeUsed());
+}
+
+unsigned int FileBase::searchText( unsigned int startPos, const char * text, bool caseSensitive ) const
+{
+    return _searchText<char>( *this, startPos, text, static_cast<int>(NEString::getStringLength<char>( text )), caseSensitive );
+}
+
+unsigned int FileBase::searchText( unsigned int startPos, const wchar_t * text, bool caseSensitive ) const
+{
+    return _searchText<wchar_t>( *this, startPos, text, static_cast<int>(NEString::getStringLength<wchar_t>( text )), caseSensitive );
+}
+
+unsigned int FileBase::searchText( unsigned int startPos, const String & text, bool caseSensitive ) const
+{
+    return _searchText<char>( *this, startPos, text.getString(), static_cast<int>(text.getLength()), caseSensitive );
+}
+
+unsigned int FileBase::searchText( unsigned int startPos, const WideString & text, bool caseSensitive ) const
+{
+    return _searchText<wchar_t>( *this, startPos, text.getString( ), static_cast<int>(text.getLength( )), caseSensitive );
 }
 
 void FileBase::flush(void)

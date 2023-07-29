@@ -1,7 +1,7 @@
 # Project names
-DECLARE_PROJECT(19_generated    "generated")
-DECLARE_PROJECT(19_pubclient    "pubclient")
-DECLARE_PROJECT(19_pubservice   "pubservice")
+macro_declare_project(19_generated    "generated")
+macro_declare_project(19_pubclient    "pubclient")
+macro_declare_project(19_pubservice   "pubservice")
 
 
 # Setting up appropriate flags

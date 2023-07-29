@@ -202,6 +202,7 @@
     <ClCompile Include="areg\trace\private\LogConfiguration.cpp" />
     <ClCompile Include="areg\trace\private\LogMessage.cpp" />
     <ClCompile Include="areg\trace\private\NetTcpLogger.cpp" />
+    <ClCompile Include="areg\trace\private\TraceEventProcessor.cpp" />
     <ClCompile Include="areg\trace\private\ScopeController.cpp" />
     <ClCompile Include="areg\trace\private\TraceManager.cpp" />
     <ClCompile Include="areg\trace\private\TraceMessage.cpp" />
@@ -371,6 +372,7 @@
     <ClInclude Include="areg\trace\private\LogConfiguration.hpp" />
     <ClInclude Include="areg\trace\private\NetTcpLogger.hpp" />
     <ClInclude Include="areg\trace\private\ScopeController.hpp" />
+    <ClInclude Include="areg\trace\private\TraceEventProcessor.hpp" />
     <ClInclude Include="areg\trace\TraceMessage.hpp" />
     <ClInclude Include="areg\trace\TraceScope.hpp" />
     <ClInclude Include="areg\trace\NETrace.hpp" />

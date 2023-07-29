@@ -546,6 +546,9 @@
     <ClCompile Include="areg\component\private\ServiceManagerEventProcessor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="areg\trace\private\TraceEventProcessor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\windows\GEWindows.h">
@@ -1080,6 +1083,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\component\private\ServiceManagerEventProcessor.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\trace\private\TraceEventProcessor.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

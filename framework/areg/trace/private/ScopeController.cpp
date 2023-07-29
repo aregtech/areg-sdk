@@ -277,4 +277,3 @@ void ScopeController::changeScopeActivityStatus( const String & scopeName, unsig
         mConfigScopeList.setAt( scopeName, logPrio );
     }
 }
-

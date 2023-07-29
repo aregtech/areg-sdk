@@ -250,6 +250,12 @@ public:
      **/
     void clearProperty( bool clearComment = true );
 
+    /**
+     * \brief   Converts the property values into human readable format
+     *          and returns it as a text (string).
+     **/
+    String makeString( void ) const;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////

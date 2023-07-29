@@ -191,13 +191,171 @@ function(setSources source_list)
 endfunction(setSources)
 
 # ---------------------------------------------------------------------------
+# Description : This function is called to set the compiler short name such
+#               as 'g++', 'gcc', 'clang' or 'msvc', etc.
+# Function ...: findCompilerShortName
+# Usage ......: findCompilerShortName( <compiler path> <compiler short name option> ) 
+# Example ....: findCompilerShortName("${CMAKE_CXX_COMPILER}" AREG_COMPILER_SHORT)
+#               It sets in variable 'AREG_COMPILER_SHORT' the short name of the compiler.
+# ---------------------------------------------------------------------------
+function(findCompilerShortName compiler_path compiler_short_name_option)
+
+    set(FOUND_POS)
+    set(${compiler_short_name_option} "unknown" PARENT_SCOPE)
+
+    string(FIND "${compiler_path}" "gcc" FOUND_POS REVERSE)
+    if (${FOUND_POS} GREATER -1)
+        set(${compiler_short_name_option} "gcc" PARENT_SCOPE)
+        return()
+    endif()
+
+    string(FIND "${compiler_path}" "g++" FOUND_POS REVERSE)
+    if (${FOUND_POS} GREATER -1)
+        set(${compiler_short_name_option} "g++" PARENT_SCOPE)
+        return()
+    endif()
+
+    string(FIND "${compiler_path}" "c++" FOUND_POS REVERSE)
+    if (${FOUND_POS} GREATER -1)
+        set(${compiler_short_name_option} "c++" PARENT_SCOPE)
+        return()
+    endif()
+
+    string(FIND "${compiler_path}" "cc" FOUND_POS REVERSE)
+    if (${FOUND_POS} GREATER -1)
+        set(${compiler_short_name_option} "cc" PARENT_SCOPE)
+        return()
+    endif()
+
+    string(FIND "${compiler_path}" "clang++" FOUND_POS REVERSE)
+    if (${FOUND_POS} GREATER -1)
+        set(${compiler_short_name_option} "clang++" PARENT_SCOPE)
+        return()
+    endif()
+
+    string(FIND "${compiler_path}" "clang" FOUND_POS REVERSE)
+    if (${FOUND_POS} GREATER -1)
+        set(${compiler_short_name_option} "clang" PARENT_SCOPE)
+        return()
+    endif()
+
+    string(FIND "${compiler_path}" "cl" FOUND_POS REVERSE)
+    if (${FOUND_POS} GREATER -1)
+        set(${compiler_short_name_option} "cl" PARENT_SCOPE)
+        return()
+    endif()
+
+endfunction(findCompilerShortName)
+
+# ---------------------------------------------------------------------------
+# Description : This function is called to set the compiler family name such
+#               as 'gnu', 'llvm', 'msvc' or 'cygwin'.
+# Function ...: findCompilerFamilyName
+# Usage ......: findCompilerFamilyName( <compiler path> <compiler family name option> ) 
+# Example ....: findCompilerFamilyName("${CMAKE_CXX_COMPILER}" AREG_COMPILER_FAMILY)
+#               It sets in variable 'AREG_COMPILER_FAMILY' the family of the compiler.
+# ---------------------------------------------------------------------------
+function(findCompilerFamilyName compiler_path compiler_family_option_name)
+
+    set(FOUND_POS)
+
+    string(FIND "${compiler_path}" "gcc" FOUND_POS REVERSE)
+    if (${FOUND_POS} GREATER -1)
+        if (CYGWIN)
+            set(${compiler_family_option_name} "cygwin" PARENT_SCOPE)
+        else()
+            set(${compiler_family_option_name} "gnu" PARENT_SCOPE)
+        endif()
+        return()
+    endif()
+
+    string(FIND "${compiler_path}" "g++" FOUND_POS REVERSE)
+    if (${FOUND_POS} GREATER -1)
+        if (CYGWIN)
+            set(${compiler_family_option_name} "cygwin" PARENT_SCOPE)
+        else()
+            set(${compiler_family_option_name} "gnu" PARENT_SCOPE)
+        endif()
+        return()
+    endif()
+
+    string(FIND "${compiler_path}" "c++" FOUND_POS REVERSE)
+    if (${FOUND_POS} GREATER -1)
+        if (CYGWIN)
+            set(${compiler_family_option_name} "cygwin" PARENT_SCOPE)
+        else()
+            set(${compiler_family_option_name} "gnu" PARENT_SCOPE)
+        endif()
+        return()
+    endif()
+
+    string(FIND "${compiler_path}" "cc" FOUND_POS REVERSE)
+    if (${FOUND_POS} GREATER -1)
+        if (CYGWIN)
+            set(${compiler_family_option_name} "cygwin" PARENT_SCOPE)
+        else()
+            set(${compiler_family_option_name} "gnu" PARENT_SCOPE)
+        endif()
+        return()
+    endif()
+
+    string(FIND "${compiler_path}" "clang++" FOUND_POS REVERSE)
+    if (${FOUND_POS} GREATER -1)
+        set(${compiler_family_option_name} "clang" PARENT_SCOPE)
+        return()
+    endif()
+
+    string(FIND "${compiler_path}" "clang" FOUND_POS REVERSE)
+    if (${FOUND_POS} GREATER -1)
+        set(${compiler_family_option_name} "clang" PARENT_SCOPE)
+        return()
+    endif()
+
+    string(FIND "${compiler_path}" "cl" FOUND_POS REVERSE)
+    if (${FOUND_POS} GREATER -1)
+        set(${compiler_family_option_name} "msvc" PARENT_SCOPE)
+        return()
+    endif()
+
+    set(${compiler_family_option_name} "unknown" PARENT_SCOPE)
+
+endfunction(findCompilerFamilyName)
+
+# ---------------------------------------------------------------------------
+# Description : This function is called if use default compiler.
+#               It sets CXX and CC compilers, as well as parses the compiler
+#               names to set the compiler family name.
+#               All argument should be passed by option name.
+#               For example, macro_find_default_compiler(AREG_COMPILER_FAMILY, AREG_CXX_COMPILER, AREG_C_COMPILER)
+#               This sets values for options AREG_COMPILER_FAMILY, AREG_CXX_COMPILER and AREG_C_COMPILER
+# Function ...: macro_find_default_compiler
+# usage ......: macro_find_default_compiler( <name of compiler family option> <compiler short name option> <name of cc compiler option> ) 
+# ---------------------------------------------------------------------------
+macro(delete_macro_find_default_compiler compiler_family_option_name)
+
+    findCompiler("${CMAKE_CXX_COMPILER}" IS_GCC IS_CPP IS_CLANG IS_MSVC)
+
+    if (${IS_GCC})
+        if (CYGWIN)
+            set(${compiler_family_option_name} "cygwin")
+        else()
+            set(${compiler_family_option_name} "gnu")
+        endif()
+    elseif(${IS_CLANG})
+        set(${compiler_family_option_name} "llvm")
+    elseif(${IS_MSVC})
+        set(${compiler_family_option_name} "msvc")
+    endif()
+endmacro(delete_macro_find_default_compiler)
+
+# ---------------------------------------------------------------------------
 # Description : This macro adds a list of source files at the end of the existing list.
 #               The list should be declared and exist, the previous values
 #               will not be lost.
-# Function ...: ADD_SOURCES
-# usage ......: ADD_SOURCES( <name of the list> <list of sources> ) 
+# macro ......: macro_add_sources
+# usage ......: macro_add_sources( <name of the list> <list of sources> ) 
 # ---------------------------------------------------------------------------
-macro(ADD_SOURCES source_list)
+macro(macro_add_sources source_list)
     
     if (NOT DEFINED ${source_list})
         set(${source_list})
@@ -215,37 +373,37 @@ macro(ADD_SOURCES source_list)
             message(warning " >>> Do not add item ${arg} to list, it does not exist")
         endif()
     endforeach()
-endmacro(ADD_SOURCES)
+endmacro(macro_add_sources)
 
 # ---------------------------------------------------------------------------
 # Description : This macro include the 'CMakeLists.txt' file of specified
 #               sub-directory to include in the build. The name of
 #               sub-directory should not include slash '/' at the
 #               begin and at the end.
-# Function ...: INCLUDE_DIR
-# usage ......: INCLUDE_DIR( <sub-directory path> <list of sources> ) 
+# macro ......: macro_include_dir
+# usage ......: macro_include_dir( <sub-directory path> ) 
 # ---------------------------------------------------------------------------
-macro(INCLUDE_DIR sub_dir)
+macro(macro_include_dir sub_dir)
     if (NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/${sub_dir}/CMakeLists.txt")
         message(ERROR " >>> The file \'${CMAKE_CURRENT_LIST_DIR}/${sub_dir}/CMakeLists.txt\' does not exist, cannot include")
     endif()
     include("${CMAKE_CURRENT_LIST_DIR}/${sub_dir}/CMakeLists.txt")
-endmacro(INCLUDE_DIR)
+endmacro(macro_include_dir)
 
 # ---------------------------------------------------------------------------
 # Description : This macro include the 'CMakeLists.txt' file of specified
 #               sub-directory, which will append the sources to the 'list_name'.
-# Function ...: PROJECT_SOURCES_EX
-# usage ......: PROJECT_SOURCES_EX( <name of the list> <name of sub-directory> ) 
+# macro ......: macro_project_sources_ex
+# usage ......: macro_project_sources_ex( <name of the list> <name of sub-directory> ) 
 # ---------------------------------------------------------------------------
-macro(PROJECT_SOURCES_EX list_name project_dir)
-    set(project_sources)
+macro(macro_project_sources_ex list_name project_dir)
+    set(macro_project_sources)
 
-    INCLUDE_DIR(${project_dir})
+    macro_include_dir(${project_dir})
 
-    set(${list_name} "${project_sources}")
-    unset(project_sources)
-endmacro(PROJECT_SOURCES_EX)
+    set(${list_name} "${macro_project_sources}")
+    unset(macro_project_sources)
+endmacro(macro_project_sources_ex)
 
 # ---------------------------------------------------------------------------
 # Description : This macro include the 'CMakeLists.txt' file of specified
@@ -253,15 +411,15 @@ endmacro(PROJECT_SOURCES_EX)
 #               '${project_name}_src'. For example if the project name is
 #               'my_project', the list of source files to compile will be
 #               'my_project_src'. This macro is simplified version of
-#               the macro PROJECT_SOURCES_EX.
-# Function ...: PROJECT_SOURCES
-# usage ......: PROJECT_SOURCES( <name of the project> ) 
+#               the macro macro_project_sources_ex.
+# macro ......: macro_project_sources
+# usage ......: macro_project_sources( <name of the project> ) 
 # ---------------------------------------------------------------------------
-macro(PROJECT_SOURCES project_name)
+macro(macro_project_sources project_name)
     set(src_name    "${project_dir}_src")
-    PROJECT_SOURCES_EX("${src_name}" "${proj_name}")
+    macro_project_sources_ex("${src_name}" "${proj_name}")
     unset(src_name)
-endmacro(PROJECT_SOURCES)
+endmacro(macro_project_sources)
 
 # ---------------------------------------------------------------------------
 # Description : This macro declares a variable named 'project_${project_alias}',
@@ -275,22 +433,22 @@ endmacro(PROJECT_SOURCES)
 #               is 'my_proj' and the list of sources to compile, which name is
 #               'foo_src', so that after using this macro, the developer can
 #               use both variables: the 'project_foo' and 'foo_src'.
-# Function ...: DECLARE_PROJECT
-# usage ......: DECLARE_PROJECT( <name of the project> <name of project sub-directory> ) 
+# macro ......: macro_declare_project_ex
+# usage ......: macro_declare_project_ex( <name of the project> <project alias> <name of project sub-directory> ) 
 # ---------------------------------------------------------------------------
-macro(DECLARE_PROJECT_EX project_name project_alias project_dir)
+macro(macro_declare_project_ex project_name project_alias project_dir)
     set(pr_name      "project_${project_alias}")
     set(src_name     "${project_alias}_src")
     set(${pr_name}   "${project_name}")
     set(project_root "${CMAKE_CURRENT_LIST_DIR}")
 
     if (NOT ${project_dir} STREQUAL "")
-        PROJECT_SOURCES_EX(${src_name} ${project_dir})
+        macro_project_sources_ex(${src_name} ${project_dir})
     endif()
 
     unset(pr_name)
     unset(src_name)
-endmacro(DECLARE_PROJECT_EX)
+endmacro(macro_declare_project_ex)
 
 # ---------------------------------------------------------------------------
 # Description : This macro declares a variable named 'project_${project_alias}',
@@ -303,48 +461,10 @@ endmacro(DECLARE_PROJECT_EX)
 #               is 'my_proj' and the list of sources to compile, which name is
 #               'foo_src', so that after using this macro, the developer can
 #               use both variables: the 'project_foo' and 'foo_src'.
-# Function ...: DECLARE_PROJECT
-# usage ......: DECLARE_PROJECT( <name of the project> <name of project sub-directory> ) 
+# macro ......: macro_declare_project
+# usage ......: macro_declare_project( <name of the project> <project alias> ) 
 # ---------------------------------------------------------------------------
-macro(DECLARE_PROJECT project_name project_alias)
-    DECLARE_PROJECT_EX(${project_name} ${project_alias} ${project_alias})
-endmacro(DECLARE_PROJECT)
+macro(macro_declare_project project_name project_alias)
+    macro_declare_project_ex(${project_name} ${project_alias} ${project_alias})
+endmacro(macro_declare_project)
 
-macro(FIND_DEFAULT_COMPILER)
-    set(AREG_CXX_COMPILER "${CMAKE_CXX_COMPILER}")
-    set(AREG_C_COMPILER "${CMAKE_C_COMPILER}")
-
-    set(COMPILER_POS)
-    string(FIND "${CMAKE_CXX_COMPILER}" "clang++" TEMP_POS REVERSE)
-    if (${TEMP_POS} GREATER -1)
-        set(AREG_COMPILER_FAMILY "llvm")
-    else()
-        string(FIND "${CMAKE_CXX_COMPILER}" "clang" TEMP_POS REVERSE)
-        if (${TEMP_POS} GREATER -1)
-            set(AREG_COMPILER_FAMILY "llvm")
-        else()
-            string(FIND "${CMAKE_CXX_COMPILER}" "g++" TEMP_POS REVERSE)
-            if (${TEMP_POS} GREATER -1)
-                if (CYGWIN)
-                    set(AREG_COMPILER_FAMILY "cygwin")
-                else()
-                    set(AREG_COMPILER_FAMILY "gnu")
-                endif()
-            else()
-                string(FIND "${CMAKE_CXX_COMPILER}" "gcc" TEMP_POS REVERSE)
-                if (${TEMP_POS} GREATER -1)
-                    if (CYGWIN)
-                        set(AREG_COMPILER_FAMILY "cygwin")
-                    else()
-                        set(AREG_COMPILER_FAMILY "gnu")
-                    endif()
-                else()
-                    string(FIND "${CMAKE_CXX_COMPILER}" "cl" TEMP_POS REVERSE)
-                    if (${TEMP_POS} GREATER -1)
-                        set(AREG_COMPILER_FAMILY "msvc")
-                    endif()
-                endif()
-            endif()
-        endif()
-    endif()
-endmacro(FIND_DEFAULT_COMPILER)

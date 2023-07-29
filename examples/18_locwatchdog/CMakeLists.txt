@@ -1,6 +1,6 @@
 # Project names
-DECLARE_PROJECT(18_generated    "generated")
-DECLARE_PROJECT(18_locservice   "locservice")
+macro_declare_project(18_generated    "generated")
+macro_declare_project(18_locservice   "locservice")
 
 # Setting up appropriate flags
 addStaticLib(${project_generated}       "${generated_src}")

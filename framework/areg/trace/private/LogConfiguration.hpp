@@ -19,6 +19,7 @@
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
+#include "areg/base/TEArrayList.hpp"
 #include "areg/trace/private/NELogConfig.hpp"
 #include "areg/trace/private/TraceProperty.hpp"
 
@@ -38,6 +39,8 @@ class FileBase;
  **/
 class LogConfiguration
 {
+    using PropertyList = TEArrayList< TraceProperty >;
+
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
 //////////////////////////////////////////////////////////////////////////
@@ -249,6 +252,33 @@ public:
     bool loadConfig( FileBase & file );
 
     /**
+     * \brief   Saves the configuration in the file.
+     *          It modifies only the part relevant with current executable.
+     *          All existing data remains unchanged.
+     *          The file path should already exist, i.e. the configuration
+     *          should be already loaded.
+     * \return  Returns true if operation succeeded.
+     **/
+    bool saveConfig( void ) const;
+
+    /**
+     * \brief   Saves the configuration in the file with specified path.
+     *          If the path name is empty, it uses the default log configuration path.
+     *          It modifies only the part relevant with current executable.
+     *          All existing data remains unchanged.
+     * \return  Returns true if operation succeeded.
+     **/
+    bool saveConfig( const String & filePath ) const;
+    
+    /**
+     * \brief   Saves the configuration in the file opened for writing in the text mode.
+     *          It modifies only the part relevant with current executable.
+     *          All existing data remains unchanged.
+     * \return  Returns true if operation succeeded.
+     **/
+    bool saveConfig( FileBase & file ) const;
+
+    /**
      * \brief   Sets the logging configuration default values.
      **/
     void setDefaultValues( void );
@@ -281,7 +311,7 @@ private:
     bool                mIsConfigured;
 
     //!< The list of log properties that can be configured.
-    TraceProperty       mProperties[ NELogConfig::LOG_PROPERTY_COUNT ];
+    PropertyList       mProperties;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -297,9 +327,9 @@ private:
 
 inline void LogConfiguration::clearProperties( void )
 {
-    for ( TraceProperty & prop : mProperties )
+    for ( unsigned int i = 0; i < mProperties.getSize(); ++ i)
     {
-        prop.clearProperty();
+        mProperties[ i ].clearProperty( );
     }
 }
 
@@ -344,287 +374,287 @@ inline bool LogConfiguration::isDebugOutputEnabled( void ) const
 
 inline const TraceProperty & LogConfiguration::getProperty( NELogConfig::eLogConfig whichProperty ) const
 {
-    return mProperties[ static_cast<int>(whichProperty)];
+    return mProperties[ static_cast<unsigned int>(whichProperty)];
 }
 
 inline TraceProperty & LogConfiguration::getProperty( NELogConfig::eLogConfig whichProperty )
 {
-    return mProperties[static_cast<int>(whichProperty)];
+    return mProperties[static_cast<unsigned int>(whichProperty)];
 }
 
 inline void LogConfiguration::setProperty( NELogConfig::eLogConfig whichProperty, const TraceProperty & newProp )
 {
-    mProperties[static_cast<int>(whichProperty)] = newProp;
+    mProperties[static_cast<unsigned int>(whichProperty)] = newProp;
 }
 
 inline const TraceProperty & LogConfiguration::getVersion( void ) const
 {
-    return mProperties[ static_cast<int>(NELogConfig::eLogConfig::ConfigLogVersion)];
+    return mProperties[ static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogVersion)];
 }
 
 inline TraceProperty & LogConfiguration::getVersion( void )
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogVersion)];
+    return mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogVersion)];
 }
 
 inline void LogConfiguration::setVersion( const TraceProperty & prop )
 {
-    mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogVersion)] = prop;
+    mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogVersion)] = prop;
 }
 
 inline const TraceProperty & LogConfiguration::getLayoutEnter( void ) const
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogLayoutEnter)];
+    return mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogLayoutEnter)];
 }
 
 inline TraceProperty & LogConfiguration::getLayoutEnter( void )
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogLayoutEnter)];
+    return mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogLayoutEnter)];
 }
 
 inline void LogConfiguration::setLayoutEnter( const TraceProperty & prop )
 {
-    mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogLayoutEnter)] = prop;
+    mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogLayoutEnter)] = prop;
 }
 
 inline const TraceProperty & LogConfiguration::getLayoutMessage( void ) const
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogLayoutMessage)];
+    return mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogLayoutMessage)];
 }
 
 inline TraceProperty & LogConfiguration::getLayoutMessage( void )
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogLayoutMessage)];
+    return mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogLayoutMessage)];
 }
 
 inline void LogConfiguration::setLayoutMessage( const TraceProperty & prop )
 {
-    mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogLayoutMessage)] = prop;
+    mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogLayoutMessage)] = prop;
 }
 
 inline const TraceProperty & LogConfiguration::getLayoutExit( void ) const
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogLayoutExit)];
+    return mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogLayoutExit)];
 }
 
 inline TraceProperty & LogConfiguration::getLayoutExit( void )
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogLayoutExit)];
+    return mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogLayoutExit)];
 }
 
 inline void LogConfiguration::setLayoutExit( const TraceProperty & prop )
 {
-    mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogLayoutExit)] = prop;
+    mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogLayoutExit)] = prop;
 }
 
 inline const TraceProperty & LogConfiguration::getStackSize( void ) const
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogStack)];
+    return mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogStack)];
 }
 
 inline TraceProperty & LogConfiguration::getStackSize( void )
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogStack)];
+    return mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogStack)];
 }
 
 inline void LogConfiguration::setStackSize( const TraceProperty & prop )
 {
-    mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogStack)] = prop;
+    mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogStack)] = prop;
 }
 
 inline const TraceProperty & LogConfiguration::getDebugOutput( void ) const
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogDebug)];
+    return mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogDebug)];
 }
 
 inline TraceProperty & LogConfiguration::getDebugOutput( void )
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogDebug)];
+    return mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogDebug)];
 }
 
 inline void LogConfiguration::setDebugOutput( const TraceProperty & prop )
 {
-    mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogDebug)] = prop;
+    mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogDebug)] = prop;
 }
 
 inline const TraceProperty & LogConfiguration::getStatus( void ) const
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogEnable)];
+    return mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogEnable)];
 }
 
 inline TraceProperty & LogConfiguration::getStatus( void )
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogEnable)];
+    return mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogEnable)];
 }
 
 inline void LogConfiguration::setStatus( const TraceProperty & prop )
 {
-    mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogEnable)] = prop;
+    mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogEnable)] = prop;
 }
 
 inline const TraceProperty & LogConfiguration::getAppendData( void ) const
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogAppend)];
+    return mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogAppend)];
 }
 
 inline TraceProperty & LogConfiguration::getAppendData( void )
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogAppend)];
+    return mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogAppend)];
 }
 
 inline void LogConfiguration::setAppendData( const TraceProperty & prop )
 {
-    mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogAppend)] = prop;
+    mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogAppend)] = prop;
 }
 
 inline const TraceProperty & LogConfiguration::getLogFile( void ) const
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogFile)];
+    return mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogFile)];
 }
 
 inline TraceProperty & LogConfiguration::getLogFile( void )
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogFile)];
+    return mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogFile)];
 }
 
 inline void LogConfiguration::setLogFile( const TraceProperty & prop )
 {
-    mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogFile)] = prop;
+    mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogFile)] = prop;
 }
 
 inline const TraceProperty & LogConfiguration::getRemoteTcpEnable( void ) const
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpEnable)];
+    return mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpEnable)];
 }
 
 inline TraceProperty & LogConfiguration::getRemoteTcpEnable( void )
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpEnable)];
+    return mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpEnable)];
 }
 
 inline void LogConfiguration::setRemoteTcpEnable( const TraceProperty & prop )
 {
-    mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpEnable)] = prop;
+    mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpEnable)] = prop;
 }
 
 inline const TraceProperty & LogConfiguration::getRemoteTcpHost( void ) const
 {
-    return mProperties[ static_cast<int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpHost) ];
+    return mProperties[ static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpHost) ];
 }
 
 inline TraceProperty & LogConfiguration::getRemoteTcpHost( void )
 {
-    return mProperties[ static_cast<int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpHost) ];
+    return mProperties[ static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpHost) ];
 }
 
 inline void LogConfiguration::setRemoteTcpHost( const TraceProperty & prop )
 {
-    mProperties[ static_cast<int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpHost) ] = prop;
+    mProperties[ static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpHost) ] = prop;
 }
 
 inline const TraceProperty & LogConfiguration::getRemoteTcpPort( void ) const
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpPort)];
+    return mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpPort)];
 }
 
 inline TraceProperty & LogConfiguration::getRemoteTcpPort( void )
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpPort)];
+    return mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpPort)];
 }
 
 inline void LogConfiguration::setRemoteTcpPort( const TraceProperty & prop )
 {
-    mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpPort)] = prop;
+    mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogRemoteTcpPort)] = prop;
 }
 
 inline const TraceProperty & LogConfiguration::getDatabaseEnable( void ) const
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogDatabaseEnable)];
+    return mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogDatabaseEnable)];
 }
 
 inline TraceProperty & LogConfiguration::getDatabaseEnable( void )
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogDatabaseEnable)];
+    return mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogDatabaseEnable)];
 }
 
 inline void LogConfiguration::setDatabaseEnable( const TraceProperty & prop )
 {
-    mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogDatabaseEnable)] = prop;
+    mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogDatabaseEnable)] = prop;
 }
 
 inline const TraceProperty & LogConfiguration::getDatabaseHost( void ) const
 {
-    return mProperties[ static_cast<int>(NELogConfig::eLogConfig::ConfigLogDatabaseHost) ];
+    return mProperties[ static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogDatabaseHost) ];
 }
 
 inline TraceProperty & LogConfiguration::getDatabaseHost( void )
 {
-    return mProperties[ static_cast<int>(NELogConfig::eLogConfig::ConfigLogDatabaseHost) ];
+    return mProperties[ static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogDatabaseHost) ];
 }
 
 inline void LogConfiguration::setDatabaseHost( const TraceProperty & prop )
 {
-    mProperties[ static_cast<int>(NELogConfig::eLogConfig::ConfigLogDatabaseHost) ] = prop;
+    mProperties[ static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogDatabaseHost) ] = prop;
 }
 
 inline const TraceProperty & LogConfiguration::getDatabaseName( void ) const
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogDatabaseName)];
+    return mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogDatabaseName)];
 }
 
 inline TraceProperty & LogConfiguration::getDatabaseName( void )
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogDatabaseName)];
+    return mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogDatabaseName)];
 }
 
 inline void LogConfiguration::setDatabaseName( const TraceProperty & prop )
 {
-    mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogDatabaseName)] = prop;
+    mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogDatabaseName)] = prop;
 }
 
 inline const TraceProperty & LogConfiguration::getDatabaseDriver( void ) const
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogDatabaseDriver)];
+    return mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogDatabaseDriver)];
 }
 
 inline TraceProperty & LogConfiguration::getDatabaseDriver( void )
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogDatabaseDriver)];
+    return mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogDatabaseDriver)];
 }
 
 inline void LogConfiguration::setDatabaseDriver( const TraceProperty & prop )
 {
-    mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogDatabaseDriver)] = prop;
+    mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogDatabaseDriver)] = prop;
 }
 
 inline const TraceProperty & LogConfiguration::getDatabaseUser( void ) const
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogDatabaseUser)];
+    return mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogDatabaseUser)];
 }
 
 inline TraceProperty & LogConfiguration::getDatabaseUser( void )
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogDatabaseUser)];
+    return mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogDatabaseUser)];
 }
 
 inline void LogConfiguration::setDatabaseUser( const TraceProperty & prop )
 {
-    mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogDatabaseUser)] = prop;
+    mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogDatabaseUser)] = prop;
 }
 
 inline const TraceProperty & LogConfiguration::getDatabasePassword( void ) const
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogDatabasePwd)];
+    return mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogDatabasePwd)];
 }
 
 inline TraceProperty & LogConfiguration::getDatabasePassword( void )
 {
-    return mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogDatabasePwd)];
+    return mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogDatabasePwd)];
 }
 
 inline void LogConfiguration::setDatabasePassword( const TraceProperty & prop )
 {
-    mProperties[static_cast<int>(NELogConfig::eLogConfig::ConfigLogDatabasePwd)] = prop;
+    mProperties[static_cast<unsigned int>(NELogConfig::eLogConfig::ConfigLogDatabasePwd)] = prop;
 }
 
 #endif  // AREG_TRACE_PRIVATE_LOGCONFIGURATION_HPP

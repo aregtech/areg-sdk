@@ -2,7 +2,7 @@ setSources(register_resources
     register.rc
 )
 
-ADD_SOURCES(project_sources
+macro_add_sources(macro_project_sources
     resource.h
     stdafx.cpp
     targetver.h

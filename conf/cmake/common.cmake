@@ -2,33 +2,14 @@
 # Common settings for all projects
 # ###########################################################################
 
-set(AREG_COMPILER_SHORT "unknown")
-set(TEMP_POS)
-
-string(FIND "${CMAKE_CXX_COMPILER}" "clang++" TEMP_POS REVERSE)
-if (${TEMP_POS} GREATER -1)
-    set(AREG_COMPILER_SHORT "clang++")
-else()
-    string(FIND "${CMAKE_CXX_COMPILER}" "clang" TEMP_POS REVERSE)
-    if (${TEMP_POS} GREATER -1)
-        set(AREG_COMPILER_SHORT "clang")
-    else()
-        string(FIND "${CMAKE_CXX_COMPILER}" "g++" TEMP_POS REVERSE)
-        if (${TEMP_POS} GREATER -1)
-            set(AREG_COMPILER_SHORT "g++")
-        else()
-            string(FIND "${CMAKE_CXX_COMPILER}" "gcc" TEMP_POS REVERSE)
-            if (${TEMP_POS} GREATER -1)
-                set(AREG_COMPILER_SHORT "gcc")
-            else()
-                string(FIND "${CMAKE_CXX_COMPILER}" "cl" TEMP_POS REVERSE)
-                if (${TEMP_POS} GREATER -1)
-                    set(AREG_COMPILER_SHORT "cl")
-                endif()
-            endif()
-        endif()
-    endif()
+if ("${AREG_COMPILER_FAMILY}" STREQUAL "")
+    set(AREG_CXX_COMPILER "${CMAKE_CXX_COMPILER}")
+    set(AREG_C_COMPILER   "${CMAKE_C_COMPILER}")
+    findCompilerFamilyName("${CMAKE_CXX_COMPILER}" AREG_COMPILER_FAMILY)
+    message(STATUS ">>> Using system default settings: Compiler family = \'${AREG_COMPILER_FAMILY}\', CXX compiler = \'${AREG_CXX_COMPILER}\', CC compiler = \'${AREG_C_COMPILER}\'")
 endif()
+
+findCompilerShortName("${CMAKE_CXX_COMPILER}" AREG_COMPILER_SHORT)
 
 # Identify the OS
 set(AREG_OS ${CMAKE_SYSTEM_NAME})

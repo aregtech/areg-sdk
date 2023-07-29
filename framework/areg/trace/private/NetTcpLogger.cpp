@@ -109,14 +109,21 @@ void NetTcpLogger::logMessage(const NETrace::sLogMessage& logMessage)
         }
         else if (logMessage.lmHeader.hdrCookieHost == NETrace::COOKIE_ANY)
         {
-            NETrace::sLogMessage* log = new NETrace::sLogMessage;
-            *log = logMessage;
+            NETrace::sLogMessage* log = new NETrace::sLogMessage(logMessage);
             mRingStack.pushLast(log);
         }
         else
         {
             ASSERT(false);
         }
+    }
+}
+
+void NetTcpLogger::writeData( const SharedBuffer & data )
+{
+    if ( mSocket.isValid( ) && (sendData(data) == false))
+    {
+        TraceManager::netConnectionLost( );
     }
 }
 

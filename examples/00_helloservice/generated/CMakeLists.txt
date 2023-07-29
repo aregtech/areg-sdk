@@ -1,2 +1,2 @@
 
-INCLUDE_DIR("src/private")
+macro_include_dir("src/private")

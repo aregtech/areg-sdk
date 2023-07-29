@@ -36,6 +36,7 @@
 #include "areg/trace/private/DebugOutputLogger.hpp"
 #include "areg/trace/private/NetTcpLogger.hpp"
 #include "areg/trace/private/LogConfiguration.hpp"
+#include "areg/trace/private/TraceEventProcessor.hpp"
 
 #include <string_view>
 
@@ -61,6 +62,8 @@ class TraceManager  : private   DispatcherThread
                     , private   IETraceEventConsumer
                     , private   IETimerConsumer
 {
+    friend class TraceEventProcessor;
+
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants
 //////////////////////////////////////////////////////////////////////////
@@ -272,115 +275,6 @@ protected:
 private:
 
 /************************************************************************/
-// Logging commands
-/************************************************************************/
-
-    /**
-     * \brief   Configures the logging
-     **/
-    void _traceConfigure( const SharedBuffer & data );
-
-    /**
-     * \brief   Start the logging.
-     **/
-    void _traceStartLogs( void );
-
-    /**
-     * \brief   Stop logging
-     **/
-    void _traceStopLogs( void );
-
-    /**
-     * \brief   Enables or disables logs.
-     **/
-    void _traceSetEnableLogs( bool logsEnable );
-
-    /**
-     * \brief   Saves log configuration in the file.
-     **/
-    void _traceSaveScopes( void );
-
-    /**
-     * \brief   Logs the message.
-     **/
-    void _traceLogMessage( const SharedBuffer & data );
-
-    /**
-     * \brief   Sends connect request message to the remote logging service.
-     **/
-    void _traceNetConnectService( void );
-
-    /**
-     * \brief   Sends disconnect request message to the remote logging service.
-     **/
-    void _traceNetDisconnectService( void );
-
-    /**
-     * \brief   Sends connection lost event to reconnect again.
-     **/
-    void _traceNetConnectionLost( void );
-
-    /**
-     * \brief   Sends message to register logs at remote logging service.
-     **/
-    void _traceNetRegisterScopes( void );
-
-    /**
-     * \brief   Sends empty list of scopes and scope 'set' action to reset the list of scopes on the service side.
-     **/
-    bool _traceNetRegisterScopesStart( void );
-
-    /**
-     * \brief   Sends empty list of scopes and scope 'no action' action to notify the end of scope list.
-     **/
-    bool _traceNetRegisterScopesEnd( void );
-
-    /**
-     * \brief   Received data from remote logging service, which should be processed.
-     * \param   data    The data, which first is converted into type NETrace::sLogCommand
-     *                  to figure out the information of 'NETrace::eLogCommands'.
-     **/
-    void _traceNetReceivedData( const SharedBuffer & stream );
-
-    /**
-     * \brief   Called when receive the response from remote logging service.
-     * \param   cmdData     The command data received from remote logging service.
-     * \param   stream      The streaming object where the data is serialized.
-     *                      Depending on the command, the stream object may contain
-     *                      additional information or no information at all.
-     **/
-    void _traceNetResponseData( const NETrace::sLogCommandData & cmdData, const SharedBuffer & stream );
-
-    /**
-     * \brief   Called when receive the notification from remote logging service.
-     * \param   cmdData     The command data received from remote logging service.
-     * \param   stream      The streaming object where the data is serialized.
-     *                      Depending on the command, the stream object may contain
-     *                      additional information or no information at all.
-     **/
-    void _traceNetNotifyData( const NETrace::sLogCommandData & cmdData, const SharedBuffer & stream );
-
-/************************************************************************/
-// Other hidden methods
-/************************************************************************/
-
-    /**
-     * \brief   Returns instance of trace manager.
-     **/
-    inline TraceManager & self( void );
-
-    /**
-     * \brief   Sends log event with the preferred priority.
-     *          By default, it the priority is Normal.
-     **/
-    void _sendLogEvent( const TraceEventData & data, Event::eEventPriority eventPrio = Event::eEventPriority::EventPriorityNormal);
-
-    /**
-     * \brief   Tries to reconnect with the remote logging service.
-     **/
-    void _reconnectTcpLogService( void );
-
-/************************************************************************/
 // Logging configuration, start / stop
 /************************************************************************/
 
@@ -447,13 +341,61 @@ private:
     void traceStopLogs( void );
 
     /**
-     * \brief   Logs (traces) the specified message.
-     *          The method passes message to every logger to output message.
+     * \brief   Writes a log message to the existing loggers.
      * \param   logMessage  The message to log.
-     * \note    Currently only logging in output window and file system works.
-     *          There should be slight refactoring to be able to register any logger.
      **/
-    void dataMessage( const LogMessage & logMessage );
+    void writeLogMessage( const NETrace::sLogMessage & logMessage );
+
+    /**
+     * \brief   Sends a binary data to the remote log service.
+     * \param   logData     The binary log data to send to remote log service.
+     * \return  Returns true if succeeded to send. Otherwise, returns false.
+     **/
+    bool sendLogData( const SharedBuffer & logData );
+
+    /**
+     * \brief   Sends log event with the preferred priority.
+     *          By default, it the priority is Normal.
+     **/
+    void sendLogEvent( const TraceEventData & data, Event::eEventPriority eventPrio = Event::eEventPriority::EventPriorityNormal);
+
+    /**
+     * \brief   Establishes TCP/IP connection with the remote log service.
+     **/
+    void connectTcpLogService( void );
+
+    /**
+     * \brief   Triggers a timer to reconnect with the TCP/IP remote logging service.
+     **/
+    void reconnectTcpLogService( void );
+
+    /**
+     * \brief   Disconnects from the TCP/IP remote logging service.
+     **/
+    void disconnectTcpLogService( void );
+
+    /**
+     * \brief   Sets and activates new Cookie set by remote logging service.
+     **/
+    void activateCookie( ITEM_ID newCookie );
+
+    /**
+     * \brief   Changes the scope priority. It can be either a single scope or scope group.
+     * \param   scopeName   The name of a single scope or group of scopes ending with '*'.
+     * \param   scopeId     The ID of the scope. If it is a scope group, the value is ignored.
+     * \param   scopePrio   The new priority to set to the scope or scope group.
+     **/
+    void changeScopePriority( const String & scopeName, unsigned int scopeId, unsigned int scopePrio );
+
+    /**
+     * \brief   Returns read-only list of registered scopes.
+     **/
+    inline const TEHashMap<unsigned int, TraceScope *> & getScopeList( void ) const;
+
+    /**
+     * \brief   Returns instance of trace manager.
+     **/
+    inline TraceManager & self( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -495,6 +437,10 @@ private:
      * \brief   The timer to reconnect with remote logging service
      **/
     Timer               mTimerReconnect;
+    /**
+     * \brief   The log event processor helper object.
+     **/
+    TraceEventProcessor mEventProcessor;
     /**
      * \brief   An event, indicating that the logging has been started.
      */
@@ -553,6 +499,11 @@ inline const ITEM_ID& TraceManager::getModuleId(void)
 inline void TraceManager::forceEnableLogging(void)
 {
     TraceManager::getInstance().mLogConfig.getStatus().parseProperty(NELogConfig::DEFAULT_LOG_ENABLE.data());
+}
+
+inline const TEHashMap<unsigned int, TraceScope *> & TraceManager::getScopeList( void ) const
+{
+    return mScopeController.getScopeList( );
 }
 
 inline TraceManager & TraceManager::self( void )
