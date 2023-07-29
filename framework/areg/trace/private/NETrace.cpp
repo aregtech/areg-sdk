@@ -19,6 +19,7 @@
 #include "areg/base/DateTime.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/Thread.hpp"
+#include "areg/trace/TraceScope.hpp"
 #include "areg/trace/private/TraceManager.hpp"
 
 #include <string.h>
@@ -249,6 +250,84 @@ AREG_API_IMPL unsigned int NETrace::makeScopeId( const char * scopeName )
 #else   // !AREG_LOGS
     return 0;
 #endif  // AREG_LOGS
+}
+
+AREG_API_IMPL SharedBuffer NETrace::messageConnectLogService( void )
+{
+    SharedBuffer result;
+    result << NETrace::sLogRequestConnect( );
+    return result;
+}
+
+AREG_API_IMPL SharedBuffer NETrace::messageDisconnectLogService( )
+{
+    SharedBuffer result;
+    result << NETrace::sLogRequestDisconnect( );
+    return result;
+}
+
+AREG_API_IMPL SharedBuffer NETrace::messageRegisterScopesStart( )
+{
+    NETrace::sLogRequestRegisterScopes regScopes;
+    regScopes.reqScopeInfo.dataScopeAction = NETrace::eScopeAction::ScopesSet;
+    SharedBuffer result;
+    result << regScopes.reqScopeHeader;
+    result << regScopes.reqScopeInfo;
+    return result;
+}
+
+AREG_API_IMPL SharedBuffer NETrace::messageRegisterScopesEnd( )
+{
+    NETrace::sLogRequestRegisterScopes regScopes;
+    regScopes.reqScopeInfo.dataScopeAction = NETrace::eScopeAction::ScopesNoAction;
+    SharedBuffer result;
+    result << regScopes.reqScopeHeader;
+    result << regScopes.reqScopeInfo;
+    return result;
+}
+
+AREG_API_IMPL SharedBuffer NETrace::messageRegisterScopes( const TEHashMap<unsigned int, TraceScope *> & scopeList
+                                                         , TEHashMap<unsigned int, TraceScope *>::MAPPOS & startAt
+                                                         , unsigned int maxEntries )
+{
+    using POS = TEHashMap<unsigned int, TraceScope *>::MAPPOS;
+
+    POS end = scopeList.invalidPosition( );
+    POS pos = startAt == end ? scopeList.firstPosition( ) : startAt;
+
+    NETrace::sLogRequestRegisterScopes regScopes;
+    regScopes.reqScopeInfo.dataScopeAction = NETrace::eScopeAction::ScopesAppend;
+
+    SharedBuffer result;
+    result << regScopes.reqScopeHeader;
+    result << regScopes.reqScopeInfo;
+
+    if ( maxEntries == 0xFFFFFFFF )
+    {
+        maxEntries = scopeList.getSize( );
+    }
+
+    unsigned int i { 0 };
+    for ( ; (i < maxEntries) && pos != end; ++ i )
+    {
+        TraceScopePair tracePair;
+        scopeList.getAtPosition( pos, tracePair );
+        ASSERT( tracePair.second != nullptr );
+        result << (*tracePair.second);
+        pos = scopeList.nextPosition( pos );
+    }
+
+    startAt = pos;
+    int sizeHeader{ sizeof( NETrace::sLogHeader ) };
+    int sizeInfo{ sizeof( NETrace::sLogScopeInfo ) };
+
+    NETrace::sLogHeader * logHeader = reinterpret_cast<NETrace::sLogHeader *>(result.getBuffer( ));
+    logHeader->hdrDataLen = result.getSizeUsed( ) - sizeHeader;
+    NETrace::sLogScopeInfo * scopeInfo = reinterpret_cast<NETrace::sLogScopeInfo *>(result.getBuffer( ) + sizeHeader);
+    scopeInfo->dataBufferLen = result.getSizeUsed( ) - (sizeHeader + sizeInfo);
+    scopeInfo->dataScopeCount = i;
+
+    return result;
 }
 
 AREG_API_IMPL bool NETrace::forceStartLogging(void)

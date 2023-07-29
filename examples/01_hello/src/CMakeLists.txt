@@ -1,3 +1,3 @@
-setSources(project_sources
+setSources(macro_project_sources
     main.cpp
 )

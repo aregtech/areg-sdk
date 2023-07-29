@@ -1,7 +1,7 @@
 # Project names
-DECLARE_PROJECT(20_generated    "generated")
-DECLARE_PROJECT(20_pubclient    "pubclient")
-DECLARE_PROJECT(20_pubservice   "pubservice")
+macro_declare_project(20_generated    "generated")
+macro_declare_project(20_pubclient    "pubclient")
+macro_declare_project(20_pubservice   "pubservice")
 
 # Setting up appropriate flags
 addStaticLib(${project_generated}     "${generated_src}")

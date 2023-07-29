@@ -39,7 +39,7 @@ LogConfiguration::LogConfiguration( ScopeController & scopeController )
     : mScopeController  ( scopeController )
     , mFilePath         ( )
     , mIsConfigured     ( false )
-    , mProperties       ( )
+    , mProperties       ( NELogConfig::LOG_PROPERTY_COUNT )
 {
 }
 
@@ -67,6 +67,8 @@ bool LogConfiguration::loadConfig( FileBase & file )
     clearProperties( );
     if ( file.isOpened( ) )
     {
+        file.moveToBegin( );
+
         const String & moduleName = Process::getInstance( ).getAppName( );
         String line;
         TraceProperty newProperty;
@@ -89,6 +91,70 @@ bool LogConfiguration::loadConfig( FileBase & file )
     }
 
     return mIsConfigured;
+}
+
+bool LogConfiguration::saveConfig( void ) const
+{
+    return saveConfig( mFilePath );
+}
+
+bool LogConfiguration::saveConfig( const String & filePath ) const
+{
+    String path = filePath.isEmpty( ) ? _getDefaultConfigFile( ) : filePath;
+    path = File::getFileFullPath( File::normalizePath( path ) );
+    File fileConfig( path, FileBase::FO_MODE_EXIST | FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_SHARE_READ );
+    fileConfig.open( );
+
+    return saveConfig( fileConfig );
+}
+
+bool LogConfiguration::saveConfig( FileBase & file ) const
+{
+    bool result{ false };
+
+    if ( file.isOpened( ) && file.canWrite( ) )
+    {
+        file.moveToBegin( );
+        PropertyList properties( mProperties );
+        PropertyList scopes;
+
+        const String & moduleName = Process::getInstance( ).getAppName( );
+        String line;
+        TraceProperty newProperty;
+        while ( file.readLine( line ) > 0 )
+        {
+            if ( newProperty.parseProperty( line ) )
+            {
+                // add new entry if unique. otherwise, update existing.
+                const TracePropertyKey & Key = newProperty.getKey( );
+                if ( Key.getLogConfig( ) != NELogConfig::eLogConfig::ConfigScope )
+                {
+                    properties.addIfUnique( newProperty, false );
+                }
+                else if ( Key.isModuleKeySet( moduleName ) == false)
+                {
+                    scopes.addIfUnique( newProperty, true );
+                }
+
+                newProperty.clearProperty( );
+            }
+        }
+
+        file.moveToBegin( );
+        for ( unsigned int i = 0; i < properties.getSize( ); ++ i )
+        {
+            file.writeString( properties[ i ].makeString( ) );
+        }
+
+        for ( unsigned int i = 0; i < properties.getSize( ); ++ i )
+        {
+            file.writeString( scopes[ i ].makeString( ) );
+        }
+
+        // The scopes controller should save scopes here.
+    }
+
+    return result;
 }
 
 void LogConfiguration::setDefaultValues( void )

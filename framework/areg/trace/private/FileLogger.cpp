@@ -129,6 +129,11 @@ bool FileLogger::isLoggerOpened(void) const
     return mLogFile.isOpened();
 }
 
+void FileLogger::writeData( const SharedBuffer & data )
+{
+    mLogFile.write(data);
+}
+
 void FileLogger::flushLogs(void)
 {
     mLogFile.flush();

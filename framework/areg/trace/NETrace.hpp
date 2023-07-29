@@ -21,7 +21,9 @@
 
 #include "areg/base/IEIOStream.hpp"
 #include "areg/base/NECommon.hpp"
+#include "areg/base/SharedBuffer.hpp"
 #include "areg/base/String.hpp"
+#include "areg/base/TEHashMap.hpp"
 
 /************************************************************************
  * Dependencies
@@ -653,6 +655,47 @@ namespace NETrace
      * \return  Returns the ID of given scope name.
      **/
     AREG_API unsigned int makeScopeId( const char * scopeName );
+
+    /**
+     * \brief   Creates a message for logging service to get connection registration.
+     * \return  Returns generated message.
+     **/
+    AREG_API SharedBuffer messageConnectLogService( void );
+
+    /**
+     * \brief   Creates a message for logging service to get connection unregistration.
+     * \return  Returns generated message.
+     **/
+    AREG_API SharedBuffer messageDisconnectLogService( void );
+
+    /**
+     * \brief   Creates a message for logging service to start registering application logging scopes.
+     * \return  Returns generated message.
+     **/
+    AREG_API SharedBuffer messageRegisterScopesStart( void );
+
+    /**
+     * \brief   Creates a message for logging service to end registering application logging scopes.
+     * \return  Returns generated message.
+     **/
+    AREG_API SharedBuffer messageRegisterScopesEnd( void );
+
+    /**
+     * \brief   Creates a message for logging service to register scopes with message priority.
+     * \param   scopeList   The list of scopes to register.
+     * \param   startAt     The position in the list to extract and register scopes.
+     *                          - If in input the value is invalid, it starts to register from beginning.
+     *                          - If on output the value is valid, there are still unregistered scopes 
+     *                            in the list and the value indicates the next valid scope.
+     *                          - In on output the value is invalid, there are no more unregistered scopes
+     *                            in the list.
+     * \param   maxEntries  The maximum entries to push to scope registering message.
+     *                      If the value is 0xFFFFFFFF, it registers all entries.
+     * \return  Returns generated message.
+     **/
+    AREG_API SharedBuffer messageRegisterScopes( const TEHashMap<unsigned int, TraceScope *> & scopeList
+                                               , TEHashMap<unsigned int, TraceScope *>::MAPPOS & startAt
+                                               , unsigned int maxEntries );
 }
 
 //////////////////////////////////////////////////////////////////////////////

@@ -1,9 +1,9 @@
 # Project names
-DECLARE_PROJECT(13_generated    "generated")
-DECLARE_PROJECT(13_common       "common")
-DECLARE_PROJECT(13_pubclients   "pubclients")
-DECLARE_PROJECT(13_pubservice   "pubservice")
-DECLARE_PROJECT(13_pubsvcmesh   "pubsvcmesh")
+macro_declare_project(13_generated    "generated")
+macro_declare_project(13_common       "common")
+macro_declare_project(13_pubclients   "pubclients")
+macro_declare_project(13_pubservice   "pubservice")
+macro_declare_project(13_pubsvcmesh   "pubsvcmesh")
 
 addStaticLib(${project_generated}       "${generated_src}")
 addStaticLibEx(${project_common}        "${common_src}"     "${project_generated}")

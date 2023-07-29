@@ -18,8 +18,14 @@ set(AREG_BUILD_EXAMPLES ON)
 include(${AREG_CMAKE_CONFIG_DIR}/functions.cmake)
 include(${AREG_CMAKE_CONFIG_DIR}/user.cmake)
 
-set(CMAKE_CXX_COMPILER  "${AREG_CXX_COMPILER}")
-set(CMAKE_C_COMPILER    "${AREG_C_COMPILER}")
+# If compiler family name is not empty.
+# Otherwise, use system default compiler.
+# See in 'common.cmake'
+if (NOT "${AREG_COMPILER_FAMILY}" STREQUAL "")
+    set(CMAKE_CXX_COMPILER  "${AREG_CXX_COMPILER}")
+    set(CMAKE_C_COMPILER    "${AREG_C_COMPILER}")
+endif()
+
 set(CMAKE_BUILD_TYPE    ${AREG_BUILD_TYPE})
 set(CMAKE_BUILD_TYPE    ${AREG_BUILD_TYPE} CACHE STRING "Configuration Type" FORCE)
 set(CXX_STANDARD        ${AREG_CXX_STANDARD})

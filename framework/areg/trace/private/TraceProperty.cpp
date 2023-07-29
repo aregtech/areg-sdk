@@ -111,6 +111,18 @@ void TraceProperty::clearProperty( bool clearComment /* = true */ )
         mComment = String::getEmptyString();
 }
 
+String TraceProperty::makeString( void ) const
+{
+    String result(mComment);
+    result += NELogConfig::SYNTAX_LINEEND;
+    result += mProperty.mValue.first.getKey( );
+    result += NELogConfig::SYNTAX_EQUAL;
+    result += static_cast<String>(mProperty.mValue.second);
+    result += NELogConfig::SYNTAX_LINEEND;
+
+    return result;
+}
+
 bool TraceProperty::parseProperty( const char * logSetting )
 {
     bool result = false;

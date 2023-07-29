@@ -88,6 +88,12 @@ public:
     virtual void logMessage( const NETrace::sLogMessage & logMessage ) override;
 
     /**
+     * \brief   Called to write raw log data.
+     * \param   data    The data to write.
+     **/
+    virtual void writeData( const SharedBuffer & data ) override;
+
+    /**
      * \brief   Call to flush logs, if they are queued. Some loggers might ignore this.
      **/
     virtual void flushLogs( void ) override;

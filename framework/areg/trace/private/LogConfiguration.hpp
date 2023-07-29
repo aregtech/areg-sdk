@@ -19,6 +19,7 @@
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
+#include "areg/base/TEArrayList.hpp"
 #include "areg/trace/private/NELogConfig.hpp"
 #include "areg/trace/private/TraceProperty.hpp"
 
@@ -38,6 +39,8 @@ class FileBase;
  **/
 class LogConfiguration
 {
+    using PropertyList = TEArrayList< TraceProperty >;
+
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
 //////////////////////////////////////////////////////////////////////////
@@ -249,6 +252,33 @@ public:
     bool loadConfig( FileBase & file );
 
     /**
+     * \brief   Saves the configuration in the file.
+     *          It modifies only the part relevant with current executable.
+     *          All existing data remains unchanged.
+     *          The file path should already exist, i.e. the configuration
+     *          should be already loaded.
+     * \return  Returns true if operation succeeded.
+     **/
+    bool saveConfig( void ) const;
+
+    /**
+     * \brief   Saves the configuration in the file with specified path.
+     *          If the path name is empty, it uses the default log configuration path.
+     *          It modifies only the part relevant with current executable.
+     *          All existing data remains unchanged.
+     * \return  Returns true if operation succeeded.
+     **/
+    bool saveConfig( const String & filePath ) const;
+    
+    /**
+     * \brief   Saves the configuration in the file opened for writing in the text mode.
+     *          It modifies only the part relevant with current executable.
+     *          All existing data remains unchanged.
+     * \return  Returns true if operation succeeded.
+     **/
+    bool saveConfig( FileBase & file ) const;
+
+    /**
      * \brief   Sets the logging configuration default values.
      **/
     void setDefaultValues( void );
@@ -281,7 +311,7 @@ private:
     bool                mIsConfigured;
 
     //!< The list of log properties that can be configured.
-    TraceProperty       mProperties[ NELogConfig::LOG_PROPERTY_COUNT ];
+    PropertyList       mProperties;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -297,9 +327,9 @@ private:
 
 inline void LogConfiguration::clearProperties( void )
 {
-    for ( TraceProperty & prop : mProperties )
+    for ( unsigned int i = 0; i < mProperties.getSize(); ++ i)
     {
-        prop.clearProperty();
+        mProperties[ i ].clearProperty( );
     }
 }
 

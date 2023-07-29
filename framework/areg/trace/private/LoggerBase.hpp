@@ -107,6 +107,12 @@ public:
     virtual void logMessage( const NETrace::sLogMessage & logMessage ) = 0;
 
     /**
+     * \brief   Called to write raw log data.
+     * \param   data    The data to write.
+     **/
+    virtual void writeData( const SharedBuffer & data ) = 0;
+
+    /**
      * \brief   Call to flush logs, if they are queued. Some loggers might ignore this.
      **/
     virtual void flushLogs( void ) = 0;

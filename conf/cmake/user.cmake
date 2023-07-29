@@ -20,11 +20,11 @@
 #
 # The default values are:
 #   1. AREG_COMPILER_FAMILY = gnu       (possible values: gnu, cygwin, llvm, msvc)
-#   2. AREG_COMPILER        = g++       (possible values: g++, gcc, clang++, clang, cl)
+#   2. AREG_COMPILER        = g++       (possible values: g++, gcc, c++, cc, clang++, clang, cl)
 #   3. AREG_BINARY          = shared    (possible values: shared, static)
 #   4. AREG_BUILD_TYPE      = Release   (possible values: Release, Debug
 #   5. AREG_BUILD_TESTS     = OFF       (possible values: ON, OFF)
-#   6. AREG_BUILD_EXAMPLES  = OFF       (possible values: ON, OFF)
+#   6. AREG_BUILD_EXAMPLES  = ON        (possible values: ON, OFF)
 #   7. AREG_EXTENDED        = OFF       (possible values: ON, OFF)
 #   8. AREG_LOGS            = ON        (possible values: ON, OFF)
 #   9. AREG_BUILD_ROOT      = <areg-sdk>/product                                                (possible values: any full path)
@@ -42,7 +42,7 @@
 #       - The value 'msvc' will set Microsoft Visual C++ compiler for C++ and C.
 #
 # Example:
-# $ cmake -B ./build -DAREG_COMPILER_FAMILY=clang -DAREG_BINARY=Release -DAREG_BUILD_TESTS:BOOL=ON -DAREG_BUILD_EXAMPLES:BOOL=ON
+# $ cmake -B ./build -DAREG_COMPILER_FAMILY=llvm -DAREG_BINARY=Release -DAREG_BUILD_TESTS=ON -DAREG_BUILD_EXAMPLES=ON
 # 
 # NOTE: if in command line specify AREG_CXX_COMPILER, the AREG_C_COMPILER
 #       must be specified as well. The both options must be specified
@@ -58,7 +58,7 @@
 # $ cmake -B ./build -D=AREG_BUILD_ROOT="~/projects/my_project/product"
 # ---------------------------------------------------------------------------
 
-# CPP compiler, possible values: g++, gcc, clang++, clang, cl
+# CPP compiler, possible values: g++, gcc, c++, cc, clang++, clang, cl
 set(AREG_CXX_COMPILER)
 
 # C compiler, possible values: gcc, clang, cl
@@ -66,12 +66,13 @@ set(AREG_C_COMPILER)
 
 # Check the compiler option.
 # Check and set the simple and shortest way to set the compiler
-if (DEFINED AREG_COMPILER_FAMILY AND NOT ${AREG_COMPILER_FAMILY} STREQUAL "")
+if(DEFINED AREG_COMPILER_FAMILY AND NOT ${AREG_COMPILER_FAMILY} STREQUAL "")
+
     message(STATUS ">>> User selected C/C++ compiler family ${AREG_COMPILER_FAMILY}")
-    if (${AREG_COMPILER_FAMILY} STREQUAL "gnu")
+    if(${AREG_COMPILER_FAMILY} STREQUAL "gnu")
         set(AREG_CXX_COMPILER "g++")
         set(AREG_C_COMPILER   "gcc")
-    elseif (${AREG_COMPILER_FAMILY} STREQUAL "cygwin")
+    elseif(${AREG_COMPILER_FAMILY} STREQUAL "cygwin")
         set(AREG_CXX_COMPILER "g++")
         set(AREG_C_COMPILER   "gcc")
     elseif(${AREG_COMPILER_FAMILY} STREQUAL "llvm")
@@ -81,12 +82,10 @@ if (DEFINED AREG_COMPILER_FAMILY AND NOT ${AREG_COMPILER_FAMILY} STREQUAL "")
         set(AREG_CXX_COMPILER "cl")
         set(AREG_C_COMPILER   "cl")
     else()
-        message(WARNING ">>> Unrecognized compiler family ${AREG_COMPILER_FAMILY}, supported: \'gnu\', \'llvm\', \'cygwin\', \'msvc\', set for \'gnu\'")
-        set(AREG_CXX_COMPILER       "g++")
-        set(AREG_C_COMPILER         "gcc")
+        message(WARNING ">>> Unrecognized compiler family ${AREG_COMPILER_FAMILY}, supported values: \'gnu\', \'llvm\', \'cygwin\', \'msvc\''")
     endif()
 
-elseif(DEFINED AREG_COMPILER AND NOT AREG_COMPILER STREQUAL "")
+elseif(DEFINED AREG_COMPILER AND NOT ${AREG_COMPILER} STREQUAL "")
 
     set(AREG_CXX_COMPILER   "${AREG_COMPILER}")
     set(AREG_C_COMPILER     "${AREG_COMPILER}")
@@ -97,6 +96,20 @@ elseif(DEFINED AREG_COMPILER AND NOT AREG_COMPILER STREQUAL "")
         # Make sure that C-compiler is properly set
         if (${AREG_COMPILER} STREQUAL "g++")
             set(AREG_C_COMPILER     "gcc")
+        endif()
+
+        if (CYGWIN)
+            set(AREG_COMPILER_FAMILY "cygwin")
+        else()
+            set(AREG_COMPILER_FAMILY "gnu")
+        endif()
+
+    elseif (${AREG_COMPILER} STREQUAL "c++" OR ${AREG_COMPILER} STREQUAL "cc")
+        # GNU compiler
+
+        # Make sure that C-compiler is properly set
+        if (${AREG_COMPILER} STREQUAL "c++")
+            set(AREG_C_COMPILER     "cc")
         endif()
 
         if (CYGWIN)
@@ -118,13 +131,13 @@ elseif(DEFINED AREG_COMPILER AND NOT AREG_COMPILER STREQUAL "")
     elseif (${AREG_COMPILER} STREQUAL "cl")
         set(AREG_COMPILER_FAMILY    "msvc")
     else()
-        message(WARNING ">>> Unrecognized compiler ${AREG_COMPILER} is selected")
-        set(AREG_COMPILER_FAMILY    "Unknown")
+        set(AREG_COMPILER_FAMILY)
+        message(WARNING ">>> Unrecognized compiler ${AREG_COMPILER}, supported compilers: \'gcc\', \'g++\', \'clang\', \'clang++\', \'cl\'")
     endif()
 
 else()
-    FIND_DEFAULT_COMPILER()
-    message(STATUS ">>> Compile using default settings: Compiler family = \'${AREG_COMPILER_FAMILY}\', CXX compiler = \'${AREG_CXX_COMPILER}\', CC compiler = \'${AREG_C_COMPILER}\'")
+
+    message(STATUS ">>> No compiler is selected, will use system default")
 
 endif()
 
@@ -145,7 +158,7 @@ endif()
 
 # Build examples. By default it is disabled. To enable, set ON
 if (NOT DEFINED AREG_BUILD_EXAMPLES)
-    option(AREG_BUILD_EXAMPLES  "Build examples"   OFF)
+    option(AREG_BUILD_EXAMPLES  "Build examples"   ON)
 endif()
 
 # Set AREG extended features enable or disable flag to compiler additional optional features. By default, it is disabled.
