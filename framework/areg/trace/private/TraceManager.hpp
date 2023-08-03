@@ -91,7 +91,14 @@ public:
      *          full or relative path to configuration file. If passed nullptr,
      *          the default configuration file will be loaded.
      **/
-    inline static bool configureLogging( const char * configFile = nullptr );
+    inline static bool readLogConfig( const char * configFile = nullptr );
+
+    /**
+     * \brief   Call to read the configuration instructions from the given file opened for reading.
+     * \param   file    The file with configuration instructions opened for reading.
+     * \return  Returns true if succeeded to read and configure the logging.
+     **/
+    inline static bool readLogConfig( const FileBase & file );
 
     /**
      * \brief   Call to initialize and start logging.
@@ -101,19 +108,32 @@ public:
      * \param   configFile  The full or relative path to configuration file.
      *                      If nullptr, the log configuration will be read out
      *                      from default configuration file.
-     * \param   waitTimeout The timeout in milliseconds to wait until logging starts.
      * \return  Returns true if could read configuration and start logging thread.
      *          If logging was already started, the call will be ignored and return true.
      *          If starting fails, returns false.
      **/
-    static bool startLogging( const char * configFile = nullptr, unsigned int waitTimeout = NECommon::WAIT_INFINITE );
+    static bool startLogging( const char * configFile = nullptr);
+
+    /**
+     * \brief   Saves the current logging state in the configuration file.
+     * \param   configFile  Relative of absolute path to the configuration file.
+     *                      If nullptr, it uses the file used to configure the logs.
+     * \return  Returns true if succeeded to save the current logging state in the configuration file.
+     **/
+    static bool saveLogConfig( const char * configFile = nullptr );
+
+    /**
+     * \brief   Saves the current logging state in the given file opened to write.
+     * \param   file    The opened file to save configuration.
+     * \return  Returns true if succeeded to save the current logging state in the file.
+     **/
+    static bool saveLogConfig( FileBase & file );
 
     /**
      * \brief   Call to stop logging. This call will stop all loggers and exit thread.
-     *          The call will be blocked until either logging thread is not stopped,
-     *          or the waiting timeout is not expired.
+     *          The call will be blocked until logging thread is stopped.
      **/
-    inline static void stopLogging( unsigned int waitTimeout = NECommon::WAIT_INFINITE );
+    inline static void stopLogging( void );
 
     /**
      * \brief   Registers instance of trace scope object in trace manager.
@@ -168,6 +188,14 @@ public:
      * \return  Returns true if could activate logging. For non-debug builds, the function always returns false.
      **/
     static bool forceActivateLogging( void );
+
+    /**
+     * \brief   Call to change the scope log priority.
+     * \param   scopeName   The name of existing scope. Ignored if scope does not exit.
+     * \param   newPrio     The new priority to set. Can be bitwise combination with scopes.
+     * \return  Returns true if scope found and priority changed.
+     **/
+    static bool scopePriorityChange( const char * scopeName, unsigned int newPrio );
 
     /**
      * \brief   Call if connection lost.
@@ -288,12 +316,16 @@ private:
     bool loadConfiguration( const char * filePath = nullptr );
 
     /**
+     * \brief   Unloads the configuration, resets all logging.
+     **/
+    void unloadConfiguration( void );
+
+    /**
      * \brief   Starts logging thread, loads scopes and sets up all tracers.
      *          The configuration should be already loaded.
-     * \param   waitTimeout     The timeout in milliseconds to wait until logging starts.
      * \return  Returns true if started with success.
      **/
-    bool startLoggingThread( unsigned int waitTimeout = NECommon::WAIT_INFINITE );
+    bool startLoggingThread( void );
 
     /**
      * \brief   Stops logging thread. If needed, it will wait for completion.
@@ -301,7 +333,7 @@ private:
      *                          and immediately returns from method. If INFINITE (value 0xFFFFFFFF),
      *                          it will wait until thread completes job and exits.
      **/
-    void stopLoggingThread( unsigned int waitTimeout = NECommon::WAIT_INFINITE );
+    void stopLoggingThread( void );
 
     /**
      * \brief   Returns true, if settings to log traces on remote host are valid.
@@ -461,9 +493,10 @@ private:
 // TraceManager class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline void TraceManager::stopLogging(unsigned int waitTimeout /*= NECommon::WAIT_INFINITE*/)
+inline void TraceManager::stopLogging( void )
 {
-    getInstance().stopLoggingThread(waitTimeout);
+    getInstance().stopLoggingThread( );
+    getInstance( ).unloadConfiguration( );
 }
 
 inline void TraceManager::registerTraceScope(TraceScope& scope)
@@ -481,9 +514,14 @@ inline void TraceManager::activateTraceScope(TraceScope& scope)
     getInstance().mScopeController.activateScope(scope);
 }
 
-inline bool TraceManager::configureLogging(const char* configFile /*= nullptr */)
+inline bool TraceManager::readLogConfig(const char* configFile /*= nullptr */)
 {
     return TraceManager::getInstance().loadConfiguration(configFile);
+}
+
+inline bool TraceManager::readLogConfig( const FileBase & file )
+{
+    return TraceManager::getInstance( ).mLogConfig.loadConfig( file );
 }
 
 inline const ITEM_ID & TraceManager::getCookie(void)

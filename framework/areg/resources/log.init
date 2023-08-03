@@ -145,7 +145,7 @@
 # Logging configuration
 # ###########################################################################
 
-log.version                 = 1.0.0
+log.version                 = 1.1.0
 log.enable                  = true
 # log.file                    = %appdata%/logs/trace_%time%.log
 log.file                    = ./logs/%appname%_%time%.log
@@ -158,8 +158,8 @@ log.debug                   = false
 # log.enable.mcrouter       = true
 # log.file.mcrouter         = ./logs/%appname%_%time%.log
 
-log.remote.tcp.enable     = true
-log.remote.tcp.port       = 8181
+log.remote.tcp.enable     = false
+log.remote.tcp.port       = 8282
 log.remote.tcp.host       = localhost
 
 # #######################################

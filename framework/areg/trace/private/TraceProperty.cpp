@@ -108,17 +108,27 @@ void TraceProperty::clearProperty( bool clearComment /* = true */ )
     mProperty.mValue.first  = String::getEmptyString();
     mProperty.mValue.second = String::getEmptyString();
     if ( clearComment )
-        mComment = String::getEmptyString();
+    {
+        mComment = String::getEmptyString( );
+    }
 }
 
-String TraceProperty::makeString( void ) const
+String TraceProperty::makeConfigString( void ) const
 {
-    String result(mComment);
-    result += NELogConfig::SYNTAX_LINEEND;
-    result += mProperty.mValue.first.getKey( );
-    result += NELogConfig::SYNTAX_EQUAL;
-    result += static_cast<String>(mProperty.mValue.second);
-    result += NELogConfig::SYNTAX_LINEEND;
+    String result;
+    if ( mProperty.mValue.first.isValidKey( ) )
+    {
+        if ( mComment.isEmpty( ) == false )
+        {
+            result += mComment;
+        }
+
+        constexpr int size{ 512 };
+        char buffer[ size ];
+        String::formatString( buffer, size, "%s = %s\n", mProperty.mValue.first.getKey( ).getString( ), static_cast<const char *>(mProperty.mValue.second) );
+
+        result += buffer;
+    }
 
     return result;
 }
@@ -149,17 +159,21 @@ bool TraceProperty::operator == ( const TraceProperty & other ) const
 void TraceProperty::_parseProperty(String& source)
 {
     NEString::CharPos posComment = source.findFirst(NELogConfig::SYNTAX_COMMENT);
-    bool isValidPos = false;
+    NEString::CharPos posEqual = source.findFirst( NELogConfig::SYNTAX_EQUAL );
+
+    bool isValidPos{ false };
     if (source.isValidPosition(posComment))
     {
+        String comment;
         isValidPos = true;
-        source.substring(mComment, posComment);
+        source.substring(comment, posComment);
+        ASSERT( comment.isEmpty( ) == false );
+        mComment += comment;
         mComment += NELogConfig::SYNTAX_LINEEND;
 
         source.substring(0, posComment);
     }
 
-    NEString::CharPos posEqual = source.findFirst(NELogConfig::SYNTAX_EQUAL);
     if (source.isValidPosition(posEqual) && ((isValidPos == false) || (posEqual < posComment)))
     {
         String temp;
@@ -169,5 +183,9 @@ void TraceProperty::_parseProperty(String& source)
 
         source.substring(temp, posEqual + 1, isValidPos ? posComment - posEqual : NEString::END_POS);
         mProperty.mValue.second = temp.getString();
+    }
+    else if ( (source.isValidPosition( posEqual ) == false) && (isValidPos == false) )
+    {
+        mComment += NELogConfig::SYNTAX_LINEEND;
     }
 }

@@ -104,7 +104,7 @@ inline int _readLine(const FileBase & file, ClassType & outValue)
             length = readLength;
             if ( readLength != 0 )
             {
-                readLength = NEString::removeChar<CharType>(static_cast<CharType>('\r'), buffer, static_cast<NEString::CharCount>(readLength), true);
+                // readLength = NEString::removeChar<CharType>(static_cast<CharType>('\r'), buffer, static_cast<NEString::CharCount>(readLength), true);
                 const CharType * str = NEString::getLine<CharType>( buffer, static_cast<NEString::CharCount>(readLength), &context );
                 length   = context != nullptr ? MACRO_ELEM_COUNT(buffer, context) : readLength;
                 outValue+= str;
@@ -332,7 +332,14 @@ FileBase::FileBase( void )
 unsigned int FileBase::normalizeMode(unsigned int mode) const
 {
     if (mode != FO_MODE_INVALID)
+    {
         mode |= FO_MODE_READ;
+    }
+
+    if ((mode & FOB_WRITE) != 0)
+    {
+        mode |= FO_MODE_WRITE;
+    }
 
     if (mode & FOB_ATTACH)
     {
@@ -369,20 +376,34 @@ unsigned int FileBase::normalizeMode(unsigned int mode) const
     }
 
     if ((mode & FOB_WRITE) == 0 && (mode & FOB_READ) != 0)
+    {
         mode |= FOB_EXIST;
-    else if (mode & FOB_CREATE)
+    }
+    else if ((mode & FOB_CREATE) != 0)
+    {
+        mode &= ~FO_MODE_EXIST;
         mode |= FO_MODE_CREATE;
+        mode |= FO_MODE_WRITE;
+    }
 
     if (mode & FOB_EXIST)
+    {
         mode |= FO_MODE_EXIST;
+    }
     else
+    {
         mode &= ~FOB_TRUNCATE;
+    }
 
     if (mode & FOB_TRUNCATE)
+    {
         mode |= FO_MODE_TRUNCATE;
+    }
 
     if (mode & FOB_WRITE_DIRECT)
+    {
         mode |= FO_MODE_WRITE_DIRECT;
+    }
 
     return mode;
 }

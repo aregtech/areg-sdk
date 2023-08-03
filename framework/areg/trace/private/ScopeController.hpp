@@ -89,9 +89,9 @@ private:
     //!< The last entry in the list must have nullptr instead of name.
     static constexpr sLogEnabling   DEFAULT_LOG_ENABLED_SCOPES[ ]
     {
-          { NELogConfig::LOG_SCOPES_GRPOUP.data( )  , static_cast<unsigned int>(NETrace::PrioDebug) | static_cast<unsigned int>(NETrace::PrioScope) }
-        , { NELogConfig::LOG_SCOPES_SELF.data( )    , static_cast<unsigned int>(NETrace::PrioNotset)                                                }
-        , { nullptr /* must end with nullptr */     , static_cast<unsigned int>(NETrace::PrioNotset)                                                }
+          { NELogConfig::LOG_SCOPES_GRPOUP.data( )  , static_cast<unsigned int>(NETrace::eLogPriority::PrioDebug) | static_cast<unsigned int>(NETrace::eLogPriority::PrioScope) }
+        , { NELogConfig::LOG_SCOPES_SELF.data( )    , static_cast<unsigned int>(NETrace::eLogPriority::PrioNotset)                                                              }
+        , { nullptr /* must end with nullptr */     , static_cast<unsigned int>(NETrace::eLogPriority::PrioInvalid)                                                             }
     };
 
 //////////////////////////////////////////////////////////////////////////

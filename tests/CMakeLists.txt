@@ -32,7 +32,7 @@ endfunction(addTest testName)
 find_package(GTest)
 if (GTEST_FOUND)
 
-    message(STATUS ">>> Found insalled package GTest, will use the installed package.")
+    message(STATUS ">>> Found installed package GTest, will use the installed package.")
     set(GOOGLE_TEST_BASE "${GTEST_INCLUDE_DIRS}")
     enable_testing()
     include_directories(${GOOGLE_TEST_BASE})

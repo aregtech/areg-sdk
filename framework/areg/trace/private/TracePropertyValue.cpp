@@ -20,59 +20,24 @@
 
 #include <utility>
 
-inline void TracePropertyValue::_setValue( const String & newValue )
-{
-    mValue = newValue;
-    NEString::CharPos pos = newValue.findFirst(NELogConfig::SYNTAX_END_COMMAND_DELIMITER);
-    if (newValue.isValidPosition(pos))
-    {
-        newValue.substring(mValue, 0, pos);
-    }
-    else
-    {
-        mValue = newValue;
-    }
-    
-    mValue.trimAll();
-
-    String prio = mValue;
-    mPriority   = static_cast<unsigned int>(NETrace::PrioNotset);
-    pos         = mValue.findFirst(NELogConfig::SYNTAX_LOGICAL_OR.data());
-    if ( mValue.isValidPosition(pos) )
-    {
-        mValue.substring(prio, 0, pos);
-        prio.trimAll();
-        mPriority |= static_cast<unsigned int>( NETrace::convFromString(prio.getString()));
-
-        mValue.substring(prio, pos + 1);
-        prio.trimAll();
-        mPriority |= static_cast<unsigned int>( NETrace::convFromString(prio.getString()));
-    }
-    else
-    {
-        mPriority |= static_cast<unsigned int>( NETrace::convFromString(prio.getString()));
-    }
-}
-
-
 TracePropertyValue::TracePropertyValue( void )
     : mValue    ( String::getEmptyString(), 0 )
-    , mPriority ( static_cast<unsigned int>(NETrace::PrioNotset) )
+    , mPriority ( static_cast<unsigned int>(NETrace::PrioInvalid) )
 {
 }
 
 TracePropertyValue::TracePropertyValue( const char * initValue )
     : mValue    ( String::getEmptyString(), 0 )
-    , mPriority ( static_cast<unsigned int>(NETrace::PrioNotset) )
+    , mPriority ( static_cast<unsigned int>(NETrace::PrioInvalid) )
 {
-    _setValue(initValue);
+    setData(initValue);
 }
 
 TracePropertyValue::TracePropertyValue( const String & initValue )
     : mValue    ( String::getEmptyString(), 0 )
     , mPriority ( static_cast<unsigned int>(NETrace::PrioNotset) )
 {
-    _setValue( initValue.getString() );
+    setData( initValue.getString() );
 }
 
 TracePropertyValue::TracePropertyValue( const TracePropertyValue & source )
@@ -89,7 +54,7 @@ TracePropertyValue::TracePropertyValue( TracePropertyValue && source ) noexcept
 
 TracePropertyValue & TracePropertyValue::operator = ( bool newValue )
 {
-    mValue = newValue ? NELogConfig::SYNTAX_TRUE.data( ) : NELogConfig::SYNTAX_FALSE.data( );
+    mValue = newValue ? NELogConfig::SYNTAX_TRUE : NELogConfig::SYNTAX_FALSE;
     return (*this);
 }
 
@@ -127,16 +92,75 @@ TracePropertyValue::operator float ( void ) const
 
 TracePropertyValue & TracePropertyValue::operator += ( NETrace::eLogPriority newValue )
 {
-    int prioInt     = static_cast<NETrace::eLogPriority>(*this);
-    String prioStr= NETrace::convToString(newValue);
-    if ( prioInt == NETrace::PrioNotset )
+    setPriority( newValue );
+    return (*this);
+}
+
+unsigned int TracePropertyValue::setPriority( NETrace::eLogPriority newPriority )
+{
+    if ( NETrace::isValidLogPriority(newPriority))
     {
-        _setValue( prioStr.getString( ) );
+        if ( newPriority == NETrace::eLogPriority::PrioScope )
+        {
+            mPriority &= static_cast<unsigned int>(NETrace::eLogPriority::PrioLogs);
+            mPriority |= static_cast<unsigned int>(NETrace::eLogPriority::PrioScope);
+        }
+        else
+        {
+            mPriority &= static_cast<unsigned int>(NETrace::eLogPriority::PrioScope);
+            mPriority |= static_cast<unsigned int>(newPriority);
+        }
+
+        mValue = NETrace::makePrioString( mPriority );
     }
-    else if (( newValue != NETrace::PrioNotset) && (prioInt & static_cast<int>(newValue)) == 0 )
+    else
     {
-        _setValue( (mValue + NELogConfig::SYNTAX_LOGICAL_OR.data( ) + prioStr).getString( ) );
+        mPriority = static_cast<unsigned int>(NETrace::eLogPriority::PrioNotset);
+        mValue = NETrace::convToString( NETrace::eLogPriority::PrioNotset );
     }
 
-    return (*this);
+    return mPriority;
+}
+
+void TracePropertyValue::setData( String newValue )
+{
+    NEString::CharPos pos = newValue.findFirst( NELogConfig::SYNTAX_END_COMMAND_DELIMITER );
+    if ( newValue.isValidPosition( pos ) )
+    {
+        newValue.substring(0, pos );
+    }
+
+    newValue.trimAll( );
+    mValue = newValue;
+    mPriority = static_cast<unsigned int>(NETrace::eLogPriority::PrioInvalid);
+
+    pos = newValue.findFirst( NELogConfig::SYNTAX_LOGICAL_OR.data( ) );
+    if ( newValue.isValidPosition( pos ) )
+    {
+        String strPrio1, strPrio2;
+        newValue.substring( strPrio1, 0, pos );
+        newValue.substring( strPrio2, pos + 1);
+
+        strPrio1.trimAll( );
+        strPrio2.trimAll( );
+
+        NETrace::eLogPriority prio1 = NETrace::convFromString( strPrio1 );
+        NETrace::eLogPriority prio2 = NETrace::convFromString( strPrio2 );
+
+        if ( NETrace::isValidLogPriority( prio1 ) && NETrace::isValidLogPriority( prio2 ) )
+        {
+            mPriority = static_cast<unsigned int>(prio1) | static_cast<unsigned int>(prio2);
+            mValue = NETrace::makePrioString( mPriority );
+        }
+    }
+    else
+    {
+
+        NETrace::eLogPriority prio = NETrace::convFromString( newValue );
+        if ( NETrace::isValidLogPriority( prio ) )
+        {
+            mPriority = static_cast<unsigned int>(prio);
+            mValue = NETrace::convToString( prio );
+        }
+    }
 }

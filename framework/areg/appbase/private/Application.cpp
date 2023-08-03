@@ -172,7 +172,7 @@ bool Application::tracerConfig( const char * configFile /*= nullptr*/ )
 
     if ( NETrace::isStarted() == false )
     {
-        if (NETrace::configureLoging(config))
+        if (NETrace::initializeLogging(config))
         {
             theApp.mConfigTracer = config;
             result = true;

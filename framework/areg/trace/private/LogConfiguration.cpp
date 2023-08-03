@@ -19,9 +19,10 @@
 #include "areg/base/Containers.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/Process.hpp"
+#include "areg/trace/TraceScope.hpp"
 #include "areg/trace/private/NELogConfig.hpp"
 #include "areg/trace/private/ScopeController.hpp"
-
+#include "areg/trace/private/ScopeNodes.hpp"
 
 namespace
 {
@@ -55,14 +56,14 @@ bool LogConfiguration::loadConfig( const String & filePath )
 
         if ( loadConfig( fileConfig ) )
         {
-            mFilePath = fileConfig.getFileFullPath( );
+            mFilePath = fileConfig.getName( );
         }
     }
 
     return mIsConfigured;
 }
 
-bool LogConfiguration::loadConfig( FileBase & file )
+bool LogConfiguration::loadConfig( const FileBase & file )
 {
     clearProperties( );
     if ( file.isOpened( ) )
@@ -93,6 +94,14 @@ bool LogConfiguration::loadConfig( FileBase & file )
     return mIsConfigured;
 }
 
+void LogConfiguration::unloadConfig( void )
+{
+    clearProperties( );
+    mScopeController.clearConfigScopes( );
+    mIsConfigured = false;
+    mFilePath.clear( );
+}
+
 bool LogConfiguration::saveConfig( void ) const
 {
     return saveConfig( mFilePath );
@@ -100,61 +109,106 @@ bool LogConfiguration::saveConfig( void ) const
 
 bool LogConfiguration::saveConfig( const String & filePath ) const
 {
-    String path = filePath.isEmpty( ) ? _getDefaultConfigFile( ) : filePath;
-    path = File::getFileFullPath( File::normalizePath( path ) );
-    File fileConfig( path, FileBase::FO_MODE_EXIST | FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_SHARE_READ );
-    fileConfig.open( );
+    constexpr unsigned int mode{ FileBase::FO_MODE_WRITE | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_CREATE | FileBase::FO_MODE_SHARE_READ | FileBase::FO_MODE_SHARE_WRITE };
+
+    String path = filePath.isEmpty( ) ? mFilePath : filePath;
+    // path = File::getFileFullPath( File::normalizePath( path ) );
+    File fileConfig( path, mode );
+    
+    VERIFY(fileConfig.open( ));
 
     return saveConfig( fileConfig );
 }
 
 bool LogConfiguration::saveConfig( FileBase & file ) const
 {
-    bool result{ false };
+    constexpr unsigned int mode{ FileBase::FO_MODE_EXIST | FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_SHARE_READ };
+    File fileConfig( mFilePath, mode);
 
-    if ( file.isOpened( ) && file.canWrite( ) )
+    if ( fileConfig.open( ) == false )
     {
-        file.moveToBegin( );
-        PropertyList properties( mProperties );
-        PropertyList scopes;
-
-        const String & moduleName = Process::getInstance( ).getAppName( );
-        String line;
-        TraceProperty newProperty;
-        while ( file.readLine( line ) > 0 )
-        {
-            if ( newProperty.parseProperty( line ) )
-            {
-                // add new entry if unique. otherwise, update existing.
-                const TracePropertyKey & Key = newProperty.getKey( );
-                if ( Key.getLogConfig( ) != NELogConfig::eLogConfig::ConfigScope )
-                {
-                    properties.addIfUnique( newProperty, false );
-                }
-                else if ( Key.isModuleKeySet( moduleName ) == false)
-                {
-                    scopes.addIfUnique( newProperty, true );
-                }
-
-                newProperty.clearProperty( );
-            }
-        }
-
-        file.moveToBegin( );
-        for ( unsigned int i = 0; i < properties.getSize( ); ++ i )
-        {
-            file.writeString( properties[ i ].makeString( ) );
-        }
-
-        for ( unsigned int i = 0; i < properties.getSize( ); ++ i )
-        {
-            file.writeString( scopes[ i ].makeString( ) );
-        }
-
-        // The scopes controller should save scopes here.
+        ASSERT( false );
+        return false;
     }
 
-    return result;
+    if ( file.isOpened( ) == false )
+    {
+        ASSERT( false );
+        return false;
+    }
+
+    if ( file.canWrite( ) == false )
+    {
+        ASSERT( false );
+        return false;
+    }
+
+    PropertyList scopes;
+    PropertyList properties;
+
+    const String & moduleName = Process::getInstance( ).getAppName( );
+    String line;
+    TraceProperty newProperty;
+    while ( fileConfig.readLine( line ) > 0 )
+    {
+        if ( newProperty.parseProperty( line ) )
+        {
+            // add new entry if unique. otherwise, update existing.
+            const TracePropertyKey & Key = newProperty.getKey( );
+            if ( Key.getLogConfig( ) != NELogConfig::eLogConfig::ConfigScope )
+            {
+                if ( Key.getLogConfig( ) == NELogConfig::eLogConfig::ConfigLogVersion )
+                {
+                    newProperty.setData( NELogConfig::SYNTAX_CMD_LOG_VERSION.data( ), NETrace::LOG_VERSION.data( ) );
+                }
+                else
+                {
+                    const TraceProperty & prop{ getProperty( Key.getLogConfig( ) ) };
+                    if ( prop.isValid( ) )
+                    {
+                        newProperty.setProperty( prop.getProperty( ) );
+                    }
+                }
+
+                properties.addIfUnique( newProperty, false );
+            }
+            else if ( Key.isExactModule( moduleName ) == false )
+            {
+                scopes.addIfUnique( newProperty, true );
+            }
+
+            newProperty.clearProperty( );
+        }
+    }
+
+    fileConfig.close( );
+    file.moveToBegin( );
+
+    for ( unsigned int i = 0; i < properties.getSize( ); ++ i )
+    {
+        if ( properties[ i ].isValid( ) )
+        {
+            file.writeString( properties[ i ].makeConfigString( ) );
+        }
+    }
+
+    for ( unsigned int i = 0; i < scopes.getSize( ); ++ i )
+    {
+        file.writeString( scopes[ i ].makeConfigString( ) );
+    }
+
+    const auto & scopeList = mScopeController.getScopeList( );
+    unsigned int key{ 0 };
+    TraceScope * scope = scopeList.resourceFirstKey( key );
+    ScopeRoot root;
+    while ( scope != nullptr )
+    {
+        root.addChildRecursive( *scope );
+        scope = scopeList.resourceNextKey( key );
+    }
+
+    root.groupRecursive( );
+    return (root.saveNodeConfig( file, String::EmptyString ) != 0);
 }
 
 void LogConfiguration::setDefaultValues( void )

@@ -31,6 +31,10 @@ NELogConfig::eLogConfig NELogConfig::convFromString( const char * cmdSyntax )
         {
             result = NELogConfig::eLogConfig::ConfigLogFile;
         }
+        else if ( NEString::compareStrings<char, char>( cmdSyntax, SYNTAX_CMD_LOG_REMOTE_TCP_ENABLE.data( ), static_cast<int>(SYNTAX_CMD_LOG_REMOTE_TCP_ENABLE.length( )), false ) == NEMath::eCompare::Equal )
+        {
+            result = NELogConfig::eLogConfig::ConfigLogRemoteTcpEnable;
+        }
         else if ( NEString::compareStrings<char, char>(cmdSyntax, SYNTAX_CMD_LOG_REMOTE_TCP_HOST.data(), static_cast<int>(SYNTAX_CMD_LOG_REMOTE_TCP_HOST.length()), false) == NEMath::eCompare::Equal)
         {
             result = NELogConfig::eLogConfig::ConfigLogRemoteTcpHost;

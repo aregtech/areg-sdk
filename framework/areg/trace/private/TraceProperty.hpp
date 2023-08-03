@@ -220,6 +220,16 @@ public:
     inline const String & getComment( void ) const;
 
     /**
+     * \brief   Returns the Key-Value property pair.
+     **/
+    inline const TEProperty<TracePropertyKey, TracePropertyValue> & getProperty( void ) const;
+
+    /**
+     * \brief   Sets the Key-Value property pair.
+     **/
+    inline void setProperty( const TEProperty<TracePropertyKey, TracePropertyValue> & newProperty );
+
+    /**
      * \brief   Returns true if property is valid.
      **/
     inline bool isValid( void ) const;
@@ -254,7 +264,7 @@ public:
      * \brief   Converts the property values into human readable format
      *          and returns it as a text (string).
      **/
-    String makeString( void ) const;
+    String makeConfigString( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -370,6 +380,16 @@ inline TracePropertyValue & TraceProperty::getValue( void )
 inline const String & TraceProperty::getComment( void ) const
 {
     return mComment;
+}
+
+inline const TEProperty<TracePropertyKey, TracePropertyValue> & TraceProperty::getProperty( void ) const
+{
+    return mProperty;
+}
+
+inline void TraceProperty::setProperty( const TEProperty<TracePropertyKey, TracePropertyValue> & newProperty )
+{
+    mProperty = newProperty;
 }
 
 inline bool TraceProperty::isValid(void) const

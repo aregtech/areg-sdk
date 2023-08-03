@@ -100,8 +100,8 @@ void File::_osCloseFile( void )
 
 bool File::_osOpenFile( void )
 {
-    bool result = false;
-    if (isOpened() == false)
+    bool result{ isOpened( ) };
+    if ( result == false)
     {
         if (mFileName.isEmpty() == false )
         {

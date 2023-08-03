@@ -431,6 +431,15 @@ namespace NEString
     inline bool isCarriageReturn( CharType ch );
 
     /**
+     * \brief	Checks whether the passed single character is a new line symbol or not.
+     *          The checkup is done based on ISO8859
+     * \param	ch	    ASCII character to check.
+     * \return	Returns true if character is carriage return symbol.
+     **/
+    template<typename CharType>
+    inline bool isNewLine( CharType ch );
+
+    /**
      * \brief	Checks whether the passed single character is an  end of string symbol.
      *          The checkup is done based on ISO8859
      * \param	ch	    ASCII character to check.
@@ -862,6 +871,11 @@ const CharType * NEString::getLine( CharType * strSource, NEString::CharCount ch
         {
             if (NEString::isEndOfLine<CharType>(*strSource))
             {
+                if ( NEString::isCarriageReturn<CharType>(*strSource) && NEString::isNewLine<CharType>( *(strSource + 1) ) )
+                {
+                    *strSource ++ = static_cast<CharType>(NEString::EndOfString);
+                }
+
                 *strSource ++ = static_cast<CharType>(NEString::EndOfString);
                 break;
             }
@@ -1407,6 +1421,12 @@ template<typename CharType>
 inline bool NEString::isCarriageReturn( CharType ch )
 {
     return ((NEString::getISO8859CharDef( ch ) & static_cast<unsigned short>(NEString::eCharDefs::CD_CarReturn)) != 0);
+}
+
+template<typename CharType>
+bool NEString::isNewLine( CharType ch )
+{
+    return (ch == '\n');
 }
 
 template<typename CharType>

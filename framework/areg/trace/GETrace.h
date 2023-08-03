@@ -68,6 +68,37 @@
 #if AREG_LOGS
 
 //////////////////////////////////////////////////////////////////////////
+// if AREG_LOGS is defined, set logging priorities
+//////////////////////////////////////////////////////////////////////////
+
+    //!< Priority to log everything
+    #define PRIO_LOG_ALL        (static_cast<unsigned int>(NETrace::eLogPriority::PrioDebug)    | static_cast<unsigned int>(NETrace::eLogPriority::PrioScope))
+
+    //!< Priority to log info, warnings, error and fatal
+    #define PRIO_INFO           (static_cast<unsigned int>(NETrace::eLogPriority::PrioInfo)     | static_cast<unsigned int>(NETrace::eLogPriority::PrioScope))
+
+    //!< Priority to log warnings, error and fatal
+    #define PRIO_WARNING        (static_cast<unsigned int>(NETrace::eLogPriority::PrioWarning)  | static_cast<unsigned int>(NETrace::eLogPriority::PrioScope))
+
+    //!< Priority to log error and fatal
+    #define PRIO_ERROR          (static_cast<unsigned int>(NETrace::eLogPriority::PrioError)    | static_cast<unsigned int>(NETrace::eLogPriority::PrioScope))
+
+    //!< Priority to log only fatal
+    #define PRIO_FATAL          (static_cast<unsigned int>(NETrace::eLogPriority::PrioFatal)    | static_cast<unsigned int>(NETrace::eLogPriority::PrioScope))
+
+    //!< Unset logging scopes in priorities
+    #define PRIO_NOSCOPES(x)    ((x)& (~static_cast<unsigned int>(NETrace::eLogPriority::PrioScope)))
+
+    //!< No logging
+    #define PRIO_NOLOGS         (static_cast<unsigned int>(NETrace::eLogPriority::PrioNotset))
+
+    /**
+     * \brief   Change scope log priority during runtime.
+     *          Pass scope set in DEF_TRACE_SCOPE and priority value with OR operation specified in NETrace::eLogPriority.
+     **/
+    #define SCOPE_PRIORITY_CHANGE(scope, prio)          NETrace::scopePriorityChange(#scope, static_cast<unsigned int>(prio))
+
+//////////////////////////////////////////////////////////////////////////
 // if AREG_LOGS is defined and not zero
 //////////////////////////////////////////////////////////////////////////
 
@@ -75,6 +106,11 @@
      * \brief   Returns true if logging is already configured and started
      **/
     #define IS_TRACE_STARTED()                          NETrace::isStarted()
+
+    /**
+     * \brief   Returns true if logging is enabled
+     **/
+    #define IS_LOG_ENABLED()                            NETrace::isEnabled()
 
     /**
      * \brief   Use this macro to load configuration file and start tracer.
@@ -90,7 +126,7 @@
     /**
      * \brief   Either configures logging values from file or sets default values, enables and starts logging
      **/
-    #define TRACER_CONFIGURE_AND_START(configFile)      NETrace::configAndStart((configFile))
+    #define TRACER_CONFIGURE_AND_START(configFile)      NETrace::initAndStartLogging((configFile))
 
     /**
      * \brief   Use this macro to stop logging
@@ -128,7 +164,7 @@
     /**
      * \brief   Use this macro to log Fatal Error priority messages in logging target (file or remote host)
      **/
-    #define TRACE_FATAL(...)                            if (_messager.isFatalEnabled()  _messager.logMessage( NETrace::PrioFatal    , __VA_ARGS__ )
+    #define TRACE_FATAL(...)                            if (_messager.isFatalEnabled()) _messager.logMessage( NETrace::PrioFatal    , __VA_ARGS__ )
 
     /**
      * \brief   Use this macro to define global scope and global message object.
@@ -182,14 +218,50 @@
 
 #else   // !AREG_LOGS
 
+    //////////////////////////////////////////////////////////////////////////
+    // if AREG_LOGS is not defined, disable priorities
+    //////////////////////////////////////////////////////////////////////////
+
+        //!< Priority to log everything
+    #define PRIO_LOG_ALL        0
+
+    //!< Priority to log info, warnings, error and fatal
+    #define PRIO_INFO           0
+
+    //!< Priority to log warnings, error and fatal
+    #define PRIO_WARNING        0
+
+    //!< Priority to log error and fatal
+    #define PRIO_ERROR          0
+
+    //!< Priority to log only fatal
+    #define PRIO_FATAL          0
+
+    //!< Unset logging scopes in priorities
+    #define PRIO_NOSCOPES(x)    0
+
+    //!< No logging
+    #define PRIO_NOLOGS         0
+
+    /**
+     * \brief   Change scope log priority during runtime.
+     *          Pass scope set in DEF_TRACE_SCOPE and priority value with OR operation specified in NETrace::eLogPriority.
+     **/
+    #define SCOPE_PRIORITY_CHANGE(scope, prio)              ((3-2) > 0)
+
 //////////////////////////////////////////////////////////////////////////
-// if TRACE_DEBUG_OUTPUT and TRACE_DEBUG_OUTPUT are not defined or both are zero
+// if AREG_LOG is not defined
 //////////////////////////////////////////////////////////////////////////
 
     /**
      * \brief   If !AREG_LOGS, returns true, makes no effect
      **/
     #define IS_TRACE_STARTED()                          ((3-2) > 0)
+
+    /**
+     * \brief   Returns true if logging is enabled
+     **/
+    #define IS_LOG_ENABLED()                            ((3-2) > 0)
 
     /**
      * \brief   If !AREG_LOGS, returns true, makes no effect

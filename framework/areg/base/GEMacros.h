@@ -311,7 +311,7 @@
  * \brief   Returns the sign of given number
  **/
 #ifndef MACRO_SIGN_OF
-    #define  MACRO_SIGN_OF( val )               ( (val) == 0 ? 0 : ((val) > 0 ? 1 : -1) )
+    #define  MACRO_SIGN_OF( val )               ( static_cast<int>((val) > 0) - static_cast<int>((val) < 0) )
 #endif  // MACRO_SIGN_OF
 
 /**

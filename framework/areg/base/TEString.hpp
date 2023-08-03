@@ -2638,7 +2638,7 @@ NEString::CharPos TEString<CharType>::readLine(std::basic_string<CharType>& OUT 
     if (isValidPosition(startPos))
     {
         const CharType* begin = getBuffer(startPos);
-        while (NEString::isEndOfLine(*begin) && (*begin != EmptyChar))
+        while (NEString::isEndOfLine<CharType>(*begin) && (*begin != EmptyChar))
         {
             // escape end of line symbols at the begin.
             ++begin;
@@ -2647,7 +2647,7 @@ NEString::CharPos TEString<CharType>::readLine(std::basic_string<CharType>& OUT 
         if (*begin != EmptyChar)
         {
             const CharType* str = begin;
-            while ((NEString::isEndOfLine(*str) == false) && (*str != EmptyChar))
+            while ((NEString::isNewLine<CharType>(*str) == false) && (*str != EmptyChar))
             {
                 // move until reach end of line
                 ++str;
@@ -2656,7 +2656,7 @@ NEString::CharPos TEString<CharType>::readLine(std::basic_string<CharType>& OUT 
             // copy the line
             strResult.assign(begin, static_cast<uint32_t>(str - begin));
 
-            while (NEString::isEndOfLine(*str) && (*str != EmptyChar))
+            while (NEString::isEndOfLine<CharType>(*str) && (*str != EmptyChar))
             {
                 // find next line or reach end of string
                 ++str;

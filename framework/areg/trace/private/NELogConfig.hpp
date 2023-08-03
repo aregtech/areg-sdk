@@ -46,6 +46,10 @@ namespace NELogConfig
     {
           ConfigUnknown             //!< Configuration property is unknown, should not be used
         , ConfigLogVersion          //!< Configuration property is version information
+        , ConfigLogEnable           //!< Configuration property is information whether logging is enabled or not
+        , ConfigLogLayoutEnter      //!< Configuration property is information for layout to output enter scope message
+        , ConfigLogLayoutMessage    //!< Configuration property is information for layout to output message
+        , ConfigLogLayoutExit       //!< Configuration property is information for layout to output exit scope message
         , ConfigLogFile             //!< Configuration property is logging file name
         , ConfigLogRemoteTcpEnable  //!< Configuration property is remote TCP/IP logging service enabled.
         , ConfigLogRemoteTcpHost    //!< Configuration property is remote TCP/IP logging service host name or IP-address to establish connection
@@ -59,10 +63,6 @@ namespace NELogConfig
         , ConfigLogDebug            //!< Configuration property is information to print logging message in output debug console
         , ConfigLogAppend           //!< Configuration property is instruction to append message in existing file or create new logging file.
         , ConfigLogStack            //!< Configuration property is information of maximum stack size to hold log data before streaming is initialized
-        , ConfigLogEnable           //!< Configuration property is information whether logging is enabled or not
-        , ConfigLogLayoutEnter      //!< Configuration property is information for layout to output enter scope message
-        , ConfigLogLayoutMessage    //!< Configuration property is information for layout to output message
-        , ConfigLogLayoutExit       //!< Configuration property is information for layout to output exit scope message
         , ConfigScope               //!< Configuration property is information of scopes to activate or deactivate
 
     } eLogConfig;
@@ -459,6 +459,10 @@ namespace NELogConfig
             {
                   NEString::EmptyStringA                        //!< eLogConfig::ConfigUnknown
                 , NELogConfig::SYNTAX_CMD_LOG_VERSION           //!< eLogConfig::ConfigLogVersion
+                , NELogConfig::SYNTAX_CMD_LOG_ENABLE            //!< eLogConfig::ConfigLogEnable
+                , NELogConfig::SYNTAX_CMD_LOG_LAYOUT_ENTER      //!< eLogConfig::ConfigLogLayoutEnter
+                , NELogConfig::SYNTAX_CMD_LOG_LAYOUT_MESSAGE    //!< eLogConfig::ConfigLogLayoutMessage
+                , NELogConfig::SYNTAX_CMD_LOG_LAYOUT_EXIT       //!< eLogConfig::ConfigLogLayoutExit
                 , NELogConfig::SYNTAX_CMD_LOG_FILE              //!< eLogConfig::ConfigLogFile
                 , NELogConfig::SYNTAX_CMD_LOG_REMOTE_TCP_ENABLE //!< eLogConfig::ConfigLogRemoteTcpEnable
                 , NELogConfig::SYNTAX_CMD_LOG_REMOTE_TCP_HOST   //!< eLogConfig::ConfigLogRemoteTcpHost
@@ -472,15 +476,11 @@ namespace NELogConfig
                 , NELogConfig::SYNTAX_CMD_LOG_DEBUG             //!< eLogConfig::ConfigLogDebug
                 , NELogConfig::SYNTAX_CMD_LOG_APPEND            //!< eLogConfig::ConfigLogAppend
                 , NELogConfig::SYNTAX_CMD_LOG_STACK             //!< eLogConfig::ConfigLogStack
-                , NELogConfig::SYNTAX_CMD_LOG_ENABLE            //!< eLogConfig::ConfigLogEnable
-                , NELogConfig::SYNTAX_CMD_LOG_LAYOUT_ENTER      //!< eLogConfig::ConfigLogLayoutEnter
-                , NELogConfig::SYNTAX_CMD_LOG_LAYOUT_MESSAGE    //!< eLogConfig::ConfigLogLayoutMessage
-                , NELogConfig::SYNTAX_CMD_LOG_LAYOUT_EXIT       //!< eLogConfig::ConfigLogLayoutExit
                 , NELogConfig::SYNTAX_CMD_LOG_SCOPE             //!< eLogConfig::ConfigScope
             };
 
     //!< The default logging version
-    constexpr std::string_view  DEFAULT_LOG_VERSION             { "log.version = 1.0.0" };
+    constexpr std::string_view  DEFAULT_LOG_VERSION             { "log.version = 1.1.0" };
 
     //!< The default logging enabled flag.
     constexpr std::string_view  DEFAULT_LOG_ENABLE              { "log.enable = true" };
