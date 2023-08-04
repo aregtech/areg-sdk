@@ -110,7 +110,7 @@ jobs:
       - name: Build with CMake
         working-directory: ${{github.workspace}}
         # Build your program with the given configuration
-        run: cmake --build ./build -j10
+        run: cmake --build ./build -j 16
 
       - name: Run Unit Tests
         if: matrix.config.test == 'ON'
