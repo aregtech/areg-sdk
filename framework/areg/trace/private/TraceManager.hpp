@@ -191,11 +191,19 @@ public:
 
     /**
      * \brief   Call to change the scope log priority.
-     * \param   scopeName   The name of existing scope. Ignored if scope does not exit.
+     * \param   scopeName   The name of the existing scope. Ignored if scope does not exit.
      * \param   newPrio     The new priority to set. Can be bitwise combination with scopes.
      * \return  Returns true if scope found and priority changed.
      **/
-    static bool scopePriorityChange( const char * scopeName, unsigned int newPrio );
+    static bool setScopePriority( const char * scopeName, unsigned int newPrio );
+
+    /**
+     * \brief   Returns the scope priority if found. Otherwise, returns invalid priority.
+     * \param   scopeName   The name of the existing scope.
+     * \return  Is found the scope, returns the actual priority of the scope.
+     *          Otherwise, returns invalid priority (NETrace::eLogPriority::PrioInvalid).
+     **/
+    static unsigned int getScopePriority( const char * scopeName );
 
     /**
      * \brief   Call if connection lost.

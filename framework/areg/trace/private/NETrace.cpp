@@ -182,6 +182,7 @@ AREG_API_IMPL NETrace::eLogPriority NETrace::convFromString( const String& strPr
 AREG_API_IMPL String NETrace::makePrioString( unsigned int priorities )
 {
     String result;
+#if AREG_LOGS
     NETrace::eLogPriority prio1{NETrace::eLogPriority::PrioInvalid};
     NETrace::eLogPriority prio2{NETrace::eLogPriority::PrioInvalid};
 
@@ -213,6 +214,7 @@ AREG_API_IMPL String NETrace::makePrioString( unsigned int priorities )
     {
         result = NETrace::convToString( prio1 );
     }
+#endif  //     String result;
 
     return result;
 }
@@ -321,12 +323,21 @@ AREG_API_IMPL unsigned int NETrace::makeScopeId( const char * scopeName )
 #endif  // AREG_LOGS
 }
 
-AREG_API_IMPL unsigned int NETrace::scopePriorityChange( const char * scopeName, unsigned int newPrio )
+AREG_API_IMPL unsigned int NETrace::setScopePriority( const char * scopeName, unsigned int newPrio )
 {
 #if AREG_LOGS
-    return TraceManager::scopePriorityChange( scopeName, newPrio );
+    return TraceManager::setScopePriority( scopeName, newPrio );
 #else   // !AREG_LOGS
     return true;
+#endif  // AREG_LOGS
+}
+
+AREG_API_IMPL unsigned int NETrace::getScopePriority( const char * scopeName )
+{
+#if AREG_LOGS
+    return TraceManager::getScopePriority( scopeName );
+#else   // !AREG_LOGS
+    return static_cast<unsigned int>(NETrace::eLogPriority::PrioInvalid);
 #endif  // AREG_LOGS
 }
 

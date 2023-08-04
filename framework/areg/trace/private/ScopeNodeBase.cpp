@@ -181,7 +181,8 @@ unsigned int ScopeNodeBase::addChildRecursive( String & scopePath, unsigned int 
 
 unsigned int ScopeNodeBase::addChildRecursive( const TraceScope & traceScope )
 {
-    return addChildRecursive( traceScope.getScopeName( ), traceScope.getPriority( ) );
+    String scopeName( traceScope.getScopeName( ) );
+    return addChildRecursive( scopeName, traceScope.getPriority( ) );
 }
 
 unsigned int ScopeNodeBase::groupRecursive( void )
@@ -237,7 +238,8 @@ String ScopeNodeBase::makePrioString( void ) const
 
         if ( hasLogScopes( ) )
         {
-            result.format("%s | %s", result.getString() : NETrace::PRIO_SCOPE_STR.data());
+            String temp( result );
+            result.format("%s | %s", temp.getString() , NETrace::PRIO_SCOPE_STR.getString());
         }
     }
 

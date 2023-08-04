@@ -150,7 +150,7 @@ bool TraceManager::forceActivateLogging(void)
     return result;
 }
 
-bool TraceManager::scopePriorityChange( const char * scopeName, unsigned int newPrio )
+bool TraceManager::setScopePriority( const char * scopeName, unsigned int newPrio )
 {
     ScopeController & ctrScope = TraceManager::getInstance( ).mScopeController;
     unsigned int scopeId = NETrace::makeScopeId( scopeName );
@@ -162,6 +162,14 @@ bool TraceManager::scopePriorityChange( const char * scopeName, unsigned int new
     }
 
     return result;
+}
+
+unsigned int TraceManager::getScopePriority( const char * scopeName )
+{
+    ScopeController & ctrScope = TraceManager::getInstance( ).mScopeController;
+    unsigned int scopeId = NETrace::makeScopeId( scopeName );
+    const TraceScope * scope = ctrScope.getScope( scopeId );
+    return (scope != nullptr ? scope->getPriority() : static_cast<unsigned int>(NETrace::eLogPriority::PrioInvalid));
 }
 
 void TraceManager::netConnectionLost( void )

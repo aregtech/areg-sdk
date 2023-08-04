@@ -97,7 +97,7 @@ void TracePropertyKey::setKey(const String & fullKey)
         int len = static_cast<int>(NELogConfig::ValidSyntaxList[static_cast<int>(mLogConfig)].length());
         if ( mKeyName.getLength() > len )
         {
-            NEString::CharPos pos = mKeyName.findLast(NELogConfig::SYNTAX_OBJECT_SEPARATOR, len + 1);
+            NEString::CharPos pos = mKeyName.findLast(NELogConfig::SYNTAX_OBJECT_SEPARATOR, NEString::END_POS );
             if (mKeyName.isValidPosition(pos) && (pos > len) )
             {
                 mKeyName.substring(mModuleName, len + 1, pos - len - 1);
@@ -115,14 +115,7 @@ void TracePropertyKey::setKey(const String & fullKey)
             mModuleData = String::EmptyString;
         }
 
-        if ( mModuleName.isEmpty( ) || (mModuleName == NELogConfig::SYNTAX_SCOPE_GROUP) )
-        {
-            mConfigKey  = NELogConfig::eConfigKey::KeyGlobal;
-        }
-        else
-        {
-            mConfigKey = NELogConfig::eConfigKey::KeyLocal;
-        }
+        mConfigKey = (mModuleName.isEmpty( ) || (mModuleName == NELogConfig::SYNTAX_SCOPE_GROUP)) ? NELogConfig::eConfigKey::KeyGlobal : NELogConfig::eConfigKey::KeyLocal;
     }
     else
     {

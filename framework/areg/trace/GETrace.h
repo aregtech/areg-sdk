@@ -87,7 +87,7 @@
     #define PRIO_FATAL          (static_cast<unsigned int>(NETrace::eLogPriority::PrioFatal)    | static_cast<unsigned int>(NETrace::eLogPriority::PrioScope))
 
     //!< Unset logging scopes in priorities
-    #define PRIO_NOSCOPES(x)    ((x)& (~static_cast<unsigned int>(NETrace::eLogPriority::PrioScope)))
+    #define PRIO_NOSCOPES(x)    ((x) & (~static_cast<unsigned int>(NETrace::eLogPriority::PrioScope)))
 
     //!< No logging
     #define PRIO_NOLOGS         (static_cast<unsigned int>(NETrace::eLogPriority::PrioNotset))
@@ -96,7 +96,12 @@
      * \brief   Change scope log priority during runtime.
      *          Pass scope set in DEF_TRACE_SCOPE and priority value with OR operation specified in NETrace::eLogPriority.
      **/
-    #define SCOPE_PRIORITY_CHANGE(scope, prio)          NETrace::scopePriorityChange(#scope, static_cast<unsigned int>(prio))
+    #define SCOPE_PRIORITY_CHANGE(scope, prio)          NETrace::setScopePriority(#scope, static_cast<unsigned int>(prio))
+
+    /**
+     * \brief   Get the actual priority of the scope. Pass scope set in DEF_TRACE_SCOPE.
+     **/
+    #define SCOPE_PRIORITY_GET(scope)                   NETrace::getScopePriority(#scope)
 
 //////////////////////////////////////////////////////////////////////////
 // if AREG_LOGS is defined and not zero
@@ -244,10 +249,14 @@
     #define PRIO_NOLOGS         0
 
     /**
-     * \brief   Change scope log priority during runtime.
-     *          Pass scope set in DEF_TRACE_SCOPE and priority value with OR operation specified in NETrace::eLogPriority.
+     * \brief   Always returns true
      **/
-    #define SCOPE_PRIORITY_CHANGE(scope, prio)              ((3-2) > 0)
+    #define SCOPE_PRIORITY_CHANGE(scope, prio)          ((3-2) > 0)
+
+    /**
+     * \brief   Always returns 'NETrace::eLogPriority::PrioInvalid'
+     **/
+    #define SCOPE_PRIORITY_GET(scope)                   static_cast<unsigned int>(NETrace::eLogPriority::PrioInvalid)
 
 //////////////////////////////////////////////////////////////////////////
 // if AREG_LOG is not defined
@@ -319,23 +328,23 @@
     /**
      * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
      **/
-#define GLOBAL_DBG(...)
-     /**
-      * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
-      **/
-#define GLOBAL_INFO(...)
-      /**
-       * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
-       **/
-#define GLOBAL_WARN(...)
-       /**
-        * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
-        **/
-#define GLOBAL_ERR(...)
-        /**
-         * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
-         **/
-#define GLOBAL_FATAL(...)
+    #define GLOBAL_DBG(...)
+    /**
+     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
+     **/
+    #define GLOBAL_INFO(...)
+    /**
+     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
+     **/
+    #define GLOBAL_WARN(...)
+    /**
+     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
+     **/
+    #define GLOBAL_ERR(...)
+    /**
+     * \brief   If !AREG_LOGS, does nothing, all parameters are ignored.
+     **/
+    #define GLOBAL_FATAL(...)
 
 #endif  // AREG_LOGS
 

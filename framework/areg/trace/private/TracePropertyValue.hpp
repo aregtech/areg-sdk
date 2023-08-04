@@ -192,6 +192,11 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
     /**
+     * \brief   Returns true if the property key value is empty.
+     **/
+    inline bool isEmtpy( void ) const;
+
+    /**
      * \brief   Returns true if the property value is valid.
      **/
     inline bool isValid( void ) const;
@@ -237,6 +242,11 @@ namespace std
 //////////////////////////////////////////////////////////////////////////
 // TracePropertyValue class inline methods implementation
 //////////////////////////////////////////////////////////////////////////
+
+inline bool TracePropertyValue::isEmtpy( void ) const
+{
+    return mValue.isEmpty();
+}
 
 inline bool TracePropertyValue::isValid( void ) const
 {

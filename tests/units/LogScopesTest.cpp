@@ -227,7 +227,11 @@ TEST( LogScopeTest, ChangeScopePrioAndSaveConfig )
 }
 
 /**
- * \brief   This test is checking the grouping by priority.
+ * \brief   This test is checking:
+ *              1. the grouping by priority;
+ *              2. saves modified scope priority;
+ *              3. load scopes from saved config;
+ *              4. checks the priority that are set correct.
  **/
 DEF_TRACE_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_errLeaf1 );
 DEF_TRACE_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_errLeaf2 );
@@ -242,6 +246,16 @@ TEST( LogScopeTest, ScopePriorityGroupping )
 {
     String defaultConfig{ DEFAULT_CONFIG_FILE };
     String testConfig{ TEST_CONFIG_FILE };
+
+    uint32_t information{ 0 };
+    uint32_t errLeaf1{ 0 };
+    uint32_t errLeaf2{ 0 };
+    uint32_t fatalNode1_leaf{ 0 };
+    uint32_t fatalNode2_leaf{ 0 };
+    uint32_t warnNode1_leaf{ 0 };
+    uint32_t warnNode2_leaf{ 0 };
+    uint32_t infoNode1_noScope{ 0 };
+    uint32_t infoNode2_noScope{ 0 };
 
     TRACER_START_LOGGING( defaultConfig );
 
@@ -315,6 +329,20 @@ TEST( LogScopeTest, ScopePriorityGroupping )
     {
         TRACE_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_information );
         TRACE_INFO( ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
+        TRACE_INFO( ">>>>>>>>    Store scope priority  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
+        TRACE_INFO( ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
+
+        information = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_information );
+        errLeaf1    = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_errLeaf1 );
+        errLeaf2    = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_errLeaf2 );
+        fatalNode1_leaf = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_fatalNode1_leaf );
+        fatalNode2_leaf = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_fatalNode2_leaf );
+        warnNode1_leaf  = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_warnNode1_leaf );
+        warnNode2_leaf  = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_warnNode2_leaf );
+        infoNode1_noScope   = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_infoNode1_noScope );
+        infoNode2_noScope   = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_infoNode2_noScope );
+
+        TRACE_INFO( ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
         TRACE_INFO( ">>>>>>>>    Saving logging configuration  >>>>>>>>>>>>>>>>>>>>>>>>>" );
         TRACE_INFO( ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
 
@@ -384,6 +412,16 @@ TEST( LogScopeTest, ScopePriorityGroupping )
         TRACE_ERR( "This log should visible without scopes!" );
         TRACE_FATAL( "This log should visible without scopes!" );
     } while ( false );
+
+    ASSERT_EQ( information, SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_information ));
+    ASSERT_EQ( errLeaf1, SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_errLeaf1 ));
+    ASSERT_EQ( errLeaf2, SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_errLeaf2 ));
+    ASSERT_EQ( fatalNode1_leaf, SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_fatalNode1_leaf ));
+    ASSERT_EQ( fatalNode2_leaf, SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_fatalNode2_leaf ));
+    ASSERT_EQ( warnNode1_leaf, SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_warnNode1_leaf ));
+    ASSERT_EQ( warnNode2_leaf, SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_warnNode2_leaf ));
+    ASSERT_EQ( infoNode1_noScope, SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_infoNode1_noScope ));
+    ASSERT_EQ( infoNode2_noScope, SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_infoNode2_noScope ));
 
     TRACER_STOP_LOGGING( );
     ASSERT_FALSE( IS_TRACE_STARTED( ) );

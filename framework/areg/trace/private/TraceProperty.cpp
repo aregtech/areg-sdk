@@ -100,34 +100,28 @@ bool TraceProperty::readProperty( const File & fileConfig )
         while ( fileConfig.readLine(line) > 0 && parseProperty(line) == false )
             ;
     }
+
     return isValid();
 }
 
 void TraceProperty::clearProperty( bool clearComment /* = true */ )
 {
-    mProperty.mValue.first  = String::getEmptyString();
-    mProperty.mValue.second = String::getEmptyString();
+    mProperty.mValue.first  = String::EmptyString;
+    mProperty.mValue.second = String::EmptyString;
     if ( clearComment )
     {
-        mComment = String::getEmptyString( );
+        mComment = String::EmptyString;
     }
 }
 
 String TraceProperty::makeConfigString( void ) const
 {
-    String result;
+    String result (mComment);
     if ( mProperty.mValue.first.isValidKey( ) )
     {
-        if ( mComment.isEmpty( ) == false )
-        {
-            result += mComment;
-        }
-
-        constexpr int size{ 512 };
-        char buffer[ size ];
-        String::formatString( buffer, size, "%s = %s\n", mProperty.mValue.first.getKey( ).getString( ), static_cast<const char *>(mProperty.mValue.second) );
-
-        result += buffer;
+        String config;
+        config.format( "%s = %s", mProperty.mValue.first.getKey( ).getString( ), static_cast<const char *>(mProperty.mValue.second) );
+        result += config;
     }
 
     return result;

@@ -118,12 +118,17 @@ namespace NETrace
      **/
     AREG_API NETrace::eLogPriority convFromString( const String& strPrio );
 
+    /**
+     * \brief   Converts the bitwise set of priority into the human readable string.
+     * \param   priorities      The priorities to convert. Set bitwise.
+     * \return  Returns converted string that may contain logical OR ('|') if more than one priority is set.
+     **/
     AREG_API String makePrioString( unsigned int priorities );
 
     /**
      * \brief   Returns the cookie of the logger.
      **/
-    AREG_API const ITEM_ID& getCookie(void);
+    AREG_API const ITEM_ID & getCookie(void);
 
     /**
      * \brief   NETrace::HAS_MESSAGE_PRIORITY
@@ -720,14 +725,20 @@ namespace NETrace
     AREG_API unsigned int makeScopeId( const char * scopeName );
 
     /**
-     * \brief   Call to change the logging priority of the specified scope.
-     *          If scope does not exist in the process, nothing is changed.
-     * \param   scopeName   The name of the scope to change the priority.
-     *                      Must exist in the system.
-     * \param   newPrio     New logging priority to set.
-     * \return  Returns the actual priority of messages that scope can log.
+     * \brief   Call to change the scope log priority.
+     * \param   scopeName   The name of the existing scope. Ignored if scope does not exit.
+     * \param   newPrio     The new priority to set. Can be bitwise combination with scopes.
+     * \return  Returns true if scope found and priority changed.
      **/
-    AREG_API unsigned int scopePriorityChange( const char * scopeName, unsigned int newPrio );
+    AREG_API unsigned int setScopePriority( const char * scopeName, unsigned int newPrio );
+
+    /**
+     * \brief   Returns the scope priority if found. Otherwise, returns invalid priority.
+     * \param   scopeName   The name of the existing scope.
+     * \return  Is found the scope, returns the actual priority of the scope.
+     *          Otherwise, returns invalid priority (NETrace::eLogPriority::PrioInvalid).
+     **/
+    AREG_API unsigned int getScopePriority( const char * scopeName );
 
     /**
      * \brief   Creates a message for logging service to get connection registration.
@@ -979,6 +990,8 @@ inline const char* NETrace::getString(NETrace::eLogPriority prio)
         return "NETrace::PrioNotset";
     case NETrace::eLogPriority::PrioFatal:
         return "NETrace::PrioFatal";
+    case NETrace::eLogPriority::PrioScope:
+        return "NETrace::PrioScope";
     case NETrace::eLogPriority::PrioError:
         return "NETrace::PrioError";
     case NETrace::eLogPriority::PrioWarning:
@@ -987,8 +1000,8 @@ inline const char* NETrace::getString(NETrace::eLogPriority prio)
         return "NETrace::PrioInfo";
     case NETrace::eLogPriority::PrioDebug:
         return "NETrace::PrioDebug";
-    case NETrace::eLogPriority::PrioScope:
-        return "NETrace::PrioScope";
+    case NETrace::eLogPriority::PrioLogs:
+        return "NETrace::PrioLogs";
     case NETrace::eLogPriority::PrioValidLogs:
         return "NETrace::PrioValidLogs";
     case NETrace::eLogPriority::PrioIgnore:

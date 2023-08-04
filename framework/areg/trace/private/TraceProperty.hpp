@@ -235,6 +235,11 @@ public:
     inline bool isValid( void ) const;
 
     /**
+     * \brief   Returns true if the property is empty, i.e. has neither property nor comment.
+     **/
+    inline bool isEmpty( void ) const;
+
+    /**
      * \brief   Call to read a single property entry from given file.
      *          The file should be opened for the reading.
      * \param   fileConfig  The instance of configuration file, 
@@ -395,6 +400,11 @@ inline void TraceProperty::setProperty( const TEProperty<TracePropertyKey, Trace
 inline bool TraceProperty::isValid(void) const
 {
     return (mProperty.mValue.first.isValidKey() && mProperty.mValue.second.isValid());
+}
+
+inline bool TraceProperty::isEmpty( void ) const
+{
+    return (mProperty.mValue.first.isEmtpy() && mProperty.mValue.second.isEmtpy() && mComment.isEmpty());
 }
 
 #endif  // AREG_TRACE_PRIVATE_TRACEPROPERTY_HPP

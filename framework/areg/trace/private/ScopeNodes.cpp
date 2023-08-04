@@ -154,13 +154,13 @@ std::pair<ScopeNodeBase &, bool>  ScopeNode::addChildNode( const ScopeNodeBase &
 
     if ( child.isLeaf( ) )
     {
-        std::pair<LeafList::LISTPOS, bool> atPos = mChildLeafs.addIfUnique( ScopeLeaf( child ), false );
+        auto atPos = mChildLeafs.addIfUnique( ScopeLeaf( child ), false );
         scope = &(mChildLeafs.valueAtPosition( atPos.first ));
         newEntry = atPos.second;
     }
     else if (child.isNode( ))
     {
-        std::pair<NodeList::LISTPOS, bool> atPos = mChildNodes.addIfUnique( ScopeNode( child ), false );
+        auto atPos = mChildNodes.addIfUnique( ScopeNode( child ), false );
         scope = &(mChildNodes.valueAtPosition( atPos.first ));
         scope->addPriority(child.getPriority());
         newEntry = atPos.second;
@@ -295,12 +295,9 @@ unsigned int ScopeNode::groupRecursive( void )
 
 String ScopeNode::makeConfigString( const String & parent ) const
 {
-    String prio{ makePrioString( ) };
-    constexpr int size{ 512 };
-    char buffer[ size ];
-    String::formatString( buffer, size, "%s%s_* = %s", parent.getString( ), mNodeName.getString(), prio.getString( ) );
-
-    return String( buffer );
+    String result;
+    result.format( "%s%s_* = %s", parent.getString( ), mNodeName.getString( ), makePrioString( ).getString( ) );
+    return result;
 }
 
 unsigned int ScopeNode::removePriorityNodesRecursive( unsigned int prioRemove )
@@ -377,12 +374,8 @@ ScopeRoot::ScopeRoot( void )
 
 String ScopeRoot::makeScopePath( const String & /*prefix*/ ) const
 {
-    String result{ NELogConfig::SYNTAX_CMD_LOG_SCOPE };
-    result += NELogConfig::SYNTAX_OBJECT_SEPARATOR;
-    result += Process::getInstance( ).getAppName( );
-    result += NELogConfig::SYNTAX_OBJECT_SEPARATOR;
-
-    return result;
+    String result;
+    return result.format( "%s.%s.", NELogConfig::SYNTAX_CMD_LOG_SCOPE.data( ), Process::getInstance( ).getAppName( ).getString( ) );
 }
 
 unsigned int ScopeRoot::saveNodeConfig( FileBase & file, const String & /*parentPath*/ ) const
@@ -420,10 +413,6 @@ unsigned int ScopeRoot::saveNodeConfig( FileBase & file, const String & /*parent
 
 String ScopeRoot::makeConfigString( const String & parent ) const
 {
-    String prio{ makePrioString( ) };
-    constexpr int size{ 512 };
-    char buffer[ size ];
-    String::formatString( buffer, size, "%s* = %s", parent.getString(), prio.getString() );
-
-    return String( buffer );
+    String result;
+    return result.format( "%s* = %s", parent.getString(), makePrioString( ).getString() );
 }

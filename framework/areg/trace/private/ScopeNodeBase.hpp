@@ -64,7 +64,7 @@ protected:
     /**
      * \brief   The grouping flags to set bitwise.
      **/
-    enum class eGroupping
+    enum class eGroupping   : unsigned char
     {
           NoGroupping           = 0 // Bits: 0000 0000
         , GrouppingPartially    = 4 // Bits: 0000 0100

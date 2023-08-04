@@ -256,7 +256,7 @@ public:
     /**
      * \brief   Returns true if a node has no children nodes.
      **/
-    virtual bool isEmpty( void ) const;
+    virtual bool isEmpty( void ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -345,7 +345,7 @@ public:
      * \param   parentPath  The path name of the parent node. The nodes contain '_' at the end.
      * \return  Returns the number of nodes that have been saved.
      **/
-    virtual unsigned int saveNodeConfig( FileBase & file, const String & parentPath ) const;
+    virtual unsigned int saveNodeConfig( FileBase & file, const String & parentPath ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

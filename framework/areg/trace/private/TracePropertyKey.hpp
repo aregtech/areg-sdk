@@ -104,6 +104,11 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
     /**
+     * \brief   Returns true if the property key value is empty.
+     **/
+    inline bool isEmtpy( void ) const;
+
+    /**
      * \brief   Returns the string value of property key.
      **/
     inline const String & getKey( void ) const;
@@ -233,6 +238,11 @@ inline TracePropertyKey & TracePropertyKey::operator = ( const char * fullKey )
 inline bool TracePropertyKey::operator == ( const TracePropertyKey & other ) const
 {
     return ( (this == &other) || (mKeyName == other.mKeyName) );
+}
+
+inline bool TracePropertyKey::isEmtpy( void ) const
+{
+    return mKeyName.isEmpty();
 }
 
 inline const String & TracePropertyKey::getKey( void ) const

@@ -109,37 +109,39 @@ bool LogConfiguration::saveConfig( void ) const
 
 bool LogConfiguration::saveConfig( const String & filePath ) const
 {
-    constexpr unsigned int mode{ FileBase::FO_MODE_WRITE | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_CREATE | FileBase::FO_MODE_SHARE_READ | FileBase::FO_MODE_SHARE_WRITE };
+    constexpr unsigned int mode {   File::FO_MODE_WRITE         |
+                                    File::FO_MODE_READ          |
+                                    File::FO_MODE_TEXT          |
+                                    FileBase::FO_MODE_CREATE    | 
+                                    File::FO_MODE_SHARE_READ    |
+                                    File::FO_MODE_TRUNCATE };
 
     String path = filePath.isEmpty( ) ? mFilePath : filePath;
-    // path = File::getFileFullPath( File::normalizePath( path ) );
+    path = File::getFileFullPath( File::normalizePath( path ) );
     File fileConfig( path, mode );
     
-    VERIFY(fileConfig.open( ));
+    fileConfig.open( );
 
     return saveConfig( fileConfig );
 }
 
 bool LogConfiguration::saveConfig( FileBase & file ) const
 {
-    constexpr unsigned int mode{ FileBase::FO_MODE_EXIST | FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_SHARE_READ };
+    constexpr unsigned int mode{ FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_EXIST | FileBase::FO_MODE_SHARE_READ };
     File fileConfig( mFilePath, mode);
 
     if ( fileConfig.open( ) == false )
     {
-        ASSERT( false );
         return false;
     }
 
     if ( file.isOpened( ) == false )
     {
-        ASSERT( false );
         return false;
     }
 
     if ( file.canWrite( ) == false )
     {
-        ASSERT( false );
         return false;
     }
 
@@ -177,8 +179,13 @@ bool LogConfiguration::saveConfig( FileBase & file ) const
                 scopes.addIfUnique( newProperty, true );
             }
 
-            newProperty.clearProperty( );
+            newProperty.clearProperty( true );
         }
+    }
+
+    if ( newProperty.isEmpty( ) == false )
+    {
+        properties.add( newProperty );
     }
 
     fileConfig.close( );
@@ -188,13 +195,13 @@ bool LogConfiguration::saveConfig( FileBase & file ) const
     {
         if ( properties[ i ].isValid( ) )
         {
-            file.writeString( properties[ i ].makeConfigString( ) );
+            file.writeLine( properties[ i ].makeConfigString( ) );
         }
     }
 
     for ( unsigned int i = 0; i < scopes.getSize( ); ++ i )
     {
-        file.writeString( scopes[ i ].makeConfigString( ) );
+        file.writeLine( scopes[ i ].makeConfigString( ) );
     }
 
     const auto & scopeList = mScopeController.getScopeList( );
