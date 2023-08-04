@@ -9,6 +9,7 @@
   ************************************************************************/
 
 #include "units/GUnitTest.hpp"
+#include "areg/appbase/Application.hpp"
 #include "areg/trace/GETrace.h"
 #include "areg/appbase/NEApplication.hpp"
 #include "areg/base/Thread.hpp"
@@ -257,6 +258,7 @@ TEST( LogScopeTest, ScopePriorityGroupping )
     uint32_t infoNode1_noScope{ 0 };
     uint32_t infoNode2_noScope{ 0 };
 
+    Application::setWorkingDirecyory(nullptr);
     TRACER_START_LOGGING( defaultConfig );
 
     do
