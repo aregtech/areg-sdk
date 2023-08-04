@@ -19,8 +19,8 @@
 #  12. AREG_OUTPUT_LIB      -- Set the path to folder to output compiled static libraries.
 #
 # The default values are:
-#   1. AREG_COMPILER_FAMILY = gnu       (possible values: gnu, cygwin, llvm, msvc)
-#   2. AREG_COMPILER        = g++       (possible values: g++, gcc, c++, cc, clang++, clang, cl)
+#   1. AREG_COMPILER_FAMILY = <default> (possible values: gnu, cygwin, llvm, msvc)
+#   2. AREG_COMPILER        = <default> (possible values: g++, gcc, c++, cc, clang++, clang, cl)
 #   3. AREG_BINARY          = shared    (possible values: shared, static)
 #   4. AREG_BUILD_TYPE      = Release   (possible values: Release, Debug
 #   5. AREG_BUILD_TESTS     = OFF       (possible values: ON, OFF)
