@@ -116,3 +116,28 @@ jobs:
         if: matrix.config.test == 'ON'
         working-directory: ${{github.workspace}}
         run: ctest --test-dir ./build --output-on-failure --output-junit test_results.xml
+
+      - name: Linux build path guess
+        if: matrix.config.os == 'ubunt-latest'
+        shell: bash
+        run: echo "BUILD_DEST=product/build/${{matrix.config.family}}-${{matrix.config.cxx}}/linux-64-x86_64-release-${{matrix.config.lib}}" >> "$GITHUB_ENV"
+
+      - name: Windows build path guess
+        if: matrix.config.os == 'windows-latest'
+        shell: bash
+        run: echo "BUILD_DEST=product/build/${{matrix.config.family}}-${{matrix.config.cxx}}/windows-64-amd64-release-${{matrix.config.lib}}" >> "$GITHUB_ENV"
+
+      - name: Copy test artifacts
+        if: matrix.config.test == 'ON'
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: |
+          mkdir ./${{matrix.config.name}}/
+          cp -R ./${{env.BUILD_DEST}}/bin/ ./${{matrix.config.name}}/
+
+      - name: Upload artifacts if use of external packages is set OFF
+        if: matrix.config.test == 'ON'
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{matrix.config.name}}
+          path: ./${{matrix.config.name}}/
