@@ -258,7 +258,7 @@ TEST( LogScopeTest, ScopePriorityGroupping )
     uint32_t infoNode1_noScope{ 0 };
     uint32_t infoNode2_noScope{ 0 };
 
-    Application::setWorkingDirecyory(nullptr);
+    Application::setWorkingDirectory(nullptr);
     TRACER_START_LOGGING( defaultConfig );
 
     do
