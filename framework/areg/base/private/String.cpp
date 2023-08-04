@@ -99,28 +99,27 @@ namespace
 
     inline int _formatStringList( char * buffer, int count, const char * format, va_list argptr )
     {
-
-        int result = -1;
         if ( buffer != nullptr )
         {
-            *buffer = String::EmptyChar;
 #ifdef  WIN32
-            result = vsprintf_s( buffer, static_cast<size_t>(count), format, argptr );
+            return ::vsprintf_s( buffer, static_cast<size_t>(count), format, argptr );
 #else   // !WIN32
-            result = vsnprintf( buffer, count, format, argptr );
+            return ::vsnprintf( buffer, static_cast<size_t>(count), format, argptr );
 #endif  // !WIN32
         }
-        return result;
+
+        return -1;
     }
 
     template<int const CharCount>
     inline int32_t _formatStringList( String & result, const char * format, va_list argptr )
     {
-    
-        char buffer[CharCount];
-        int32_t count = _formatStringList(buffer, CharCount, format, argptr);
-        result = buffer;
-        return count;
+        char buffer[CharCount] { 0 };
+#ifdef  WIN32
+        return vsprintf_s<static_cast<size_t>(CharCount)>( buffer, format, argptr );
+#else   // !WIN32
+        return vsnprintf( buffer, static_cast<size_t>(CharCount), format, argptr );
+#endif  // !WIN32
     }
 
     template<int const CharCount>

@@ -15,7 +15,13 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#ifdef  _WINDOWS
+#ifdef  WINDOWS
+
+    #if     WIN32
+        MACRO_COMPILER_MESSAGE("Compiling with Win32 API")
+    #else   // WIN32
+        MACRO_COMPILER_MESSAGE( "Compiling in Windows with unknown API" )
+    #endif // WIN32
 
     #if     OUTPUT_DEBUG
         MACRO_COMPILER_MESSAGE("Compiling the sources WITH debug outputs, the output debug level is" OUTPUT_DEBUG_LEVEL)
@@ -35,4 +41,4 @@
         MACRO_COMPILER_MESSAGE("Compiling the sources WITHOUT extended features")
     #endif // AREG_EXTENDED
 
-#endif  // _WINDOWS
+#endif  // WINDOWS
