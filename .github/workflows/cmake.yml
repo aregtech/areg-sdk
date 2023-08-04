@@ -118,12 +118,12 @@ jobs:
         run: ctest --test-dir ./build --output-on-failure --output-junit test_results.xml
 
       - name: Linux build path guess
-        if: matrix.config.os == 'ubunt-latest'
+        if: always() && matrix.config.os == 'ubunt-latest'
         shell: bash
         run: echo "BUILD_DEST=product/build/${{matrix.config.family}}-${{matrix.config.cxx}}/linux-64-x86_64-release-${{matrix.config.lib}}" >> "$GITHUB_ENV"
 
       - name: Windows build path guess
-        if: matrix.config.os == 'windows-latest'
+        if: always() && matrix.config.os == 'windows-latest'
         shell: bash
         run: echo "BUILD_DEST=product/build/${{matrix.config.family}}-${{matrix.config.cxx}}/windows-64-amd64-release-${{matrix.config.lib}}" >> "$GITHUB_ENV"
 
