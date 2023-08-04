@@ -133,34 +133,12 @@ bool ScopeNodeBase::operator != ( const ScopeNodeBase & other ) const
 
 bool ScopeNodeBase::operator > ( const ScopeNodeBase & other ) const
 {
-    if ( mNodeType > other.mNodeType )
-    {
-        return true;
-    }
-    else if ( mNodeType == other.mNodeType )
-    {
-        return (mNodeName > other.mNodeName);
-    }
-    else
-    {
-        return false;
-    }
+    return (mNodeType == other.mNodeType ? (mNodeName > other.mNodeName) : (mNodeType > other.mNodeType));
 }
 
 bool ScopeNodeBase::operator < ( const ScopeNodeBase & other ) const
 {
-    if ( mNodeType > other.mNodeType )
-    {
-        return false;
-    }
-    else if ( mNodeType == other.mNodeType )
-    {
-        return (mNodeName < other.mNodeName);
-    }
-    else
-    {
-        return true;
-    }
+    return (mNodeType == other.mNodeType ? (mNodeName < other.mNodeName) : (mNodeType < other.mNodeType));
 }
 
 const ScopeNodeBase & ScopeNodeBase::makeChildNode( String & IN OUT scopePath, unsigned int prioStates ) const
@@ -198,15 +176,12 @@ unsigned int ScopeNodeBase::saveNodeConfig( FileBase & file, const String & pare
 unsigned int ScopeNodeBase::addChildRecursive( String & scopePath, unsigned int prioStates )
 {
     std::pair<ScopeNodeBase &, bool> node = addChildNode( scopePath, prioStates );
-    return node.first.isValid() == false ? 0 : (1 + node.first.addChildRecursive(scopePath, prioStates));
+    return (node.first.isValid() ? (1 + node.first.addChildRecursive(scopePath, prioStates)) : 0);
 }
 
 unsigned int ScopeNodeBase::addChildRecursive( const TraceScope & traceScope )
 {
-    String scopePath{ traceScope.getScopeName( ) };
-    unsigned int prio{ traceScope.getPriority( ) };
-
-    return addChildRecursive( scopePath, prio );
+    return addChildRecursive( traceScope.getScopeName( ), traceScope.getPriority( ) );
 }
 
 unsigned int ScopeNodeBase::groupRecursive( void )
@@ -216,19 +191,8 @@ unsigned int ScopeNodeBase::groupRecursive( void )
 
 String ScopeNodeBase::makeConfigString( const String & parent ) const
 {
-    if ( isValid( ) )
-    {
-        String prio{ makePrioString( ) };
-        constexpr int size{ 512 };
-        char buffer[ size ];
-        String::formatString( buffer, size, "%s%s = %s", parent.getBuffer( ), mNodeName.getString( ), prio.getString( ) );
-
-        return String( buffer );
-    }
-    else
-    {
-        return parent;
-    }
+    String result(parent);
+    return (isValid() ? result.format("%s%s = %s", parent.getString( ), mNodeName.getString( ), makePrioString( ).getString( )) : result);
 }
 
 unsigned int ScopeNodeBase::removePriorityNodesRecursive( unsigned int prioRemove )
@@ -273,10 +237,7 @@ String ScopeNodeBase::makePrioString( void ) const
 
         if ( hasLogScopes( ) )
         {
-            result += NELogConfig::SYNTAX_WHITESPACE_DELIMITER;
-            result += NELogConfig::SYNTAX_LOGICAL_OR;
-            result += NELogConfig::SYNTAX_WHITESPACE_DELIMITER;
-            result += NETrace::PRIO_SCOPE_STR;
+            result.format("%s | %s", result.getString() : NETrace::PRIO_SCOPE_STR.data());
         }
     }
 
