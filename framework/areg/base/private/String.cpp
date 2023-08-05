@@ -36,10 +36,10 @@
 #endif
 
 #define _MAX_BINARY_BUFFER    72
-#define _MIN_BUF_SIZE        128
-#define _BUF_SIZE            256
-#define _MAX_BUF_SIZE        512
-#define _EXTRA_BUF_SIZE     1024
+#define _MIN_BUF_SIZE        512
+#define _BUF_SIZE            1024
+#define _MAX_BUF_SIZE        2048
+#define _EXTRA_BUF_SIZE     4096
 
 namespace 
 {
