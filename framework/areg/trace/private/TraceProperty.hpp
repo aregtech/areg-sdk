@@ -255,8 +255,8 @@ public:
      * \return  Returns true if succeeded to initialize key and value or logging property.
      *          Otherwise, returns false.
      **/
-    bool parseProperty( String & line );
-    bool parseProperty( const char * logSetting );
+    bool parseProperty( String & line, bool discardComment = true );
+    bool parseProperty( const char * logSetting, bool discardComment = true );
 
     /**
      * \brief   Clears the property data and invalidates object.
@@ -279,7 +279,7 @@ private:
      * \brief   Parses the property as a string and extracts appropriate comment, key and value pairs.
      * \param   source  The property as a string to pars and extract data.
      **/
-    void _parseProperty(String& source);
+    void _parseProperty(String& source, bool discardComment = true );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

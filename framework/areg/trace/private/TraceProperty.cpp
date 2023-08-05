@@ -127,21 +127,21 @@ String TraceProperty::makeConfigString( void ) const
     return result;
 }
 
-bool TraceProperty::parseProperty( const char * logSetting )
+bool TraceProperty::parseProperty( const char * logSetting, bool discardComment /*= true*/ )
 {
     bool result = false;
     if ( NEString::isEmpty<char>(logSetting) == false )
     {
         String setting(logSetting);
-        result = parseProperty(setting);
+        result = parseProperty(setting, discardComment);
     }
 
     return result;
 }
 
-bool TraceProperty::parseProperty( String & line)
+bool TraceProperty::parseProperty( String & line, bool discardComment /*= true*/ )
 {
-    _parseProperty(line);
+    _parseProperty(line, discardComment);
     return isValid();
 }
 
@@ -150,7 +150,7 @@ bool TraceProperty::operator == ( const TraceProperty & other ) const
     return mProperty.mValue.first == other.mProperty.mValue.first;
 }
 
-void TraceProperty::_parseProperty(String& source)
+void TraceProperty::_parseProperty(String& source, bool discardComment /*= true*/ )
 {
     NEString::CharPos posComment = source.findFirst(NELogConfig::SYNTAX_COMMENT);
     NEString::CharPos posEqual = source.findFirst( NELogConfig::SYNTAX_EQUAL );
@@ -158,12 +158,15 @@ void TraceProperty::_parseProperty(String& source)
     bool isValidPos{ false };
     if (source.isValidPosition(posComment))
     {
-        String comment;
-        isValidPos = true;
-        source.substring(comment, posComment);
-        ASSERT( comment.isEmpty( ) == false );
-        mComment += comment;
-        mComment += NELogConfig::SYNTAX_LINEEND;
+        if ( discardComment == false )
+        {
+            String comment;
+            isValidPos = true;
+            source.substring( comment, posComment );
+            ASSERT( comment.isEmpty( ) == false );
+            mComment += comment;
+            mComment += NELogConfig::SYNTAX_LINEEND;
+        }
 
         source.substring(0, posComment);
     }
