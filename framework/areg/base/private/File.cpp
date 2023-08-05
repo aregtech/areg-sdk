@@ -271,8 +271,15 @@ String File::getFileDirectory(const char* filePath)
 
 bool File::createDirCascaded( const char* dirPath )
 {
-    std::error_code err;
-    return (NEString::isEmpty<char>(dirPath) == false ? std::filesystem::create_directories(dirPath, err) : false);
+    bool result{ false };
+    if ( NEString::isEmpty<char>( dirPath ) == false )
+    {
+        std::error_code err;
+        std::filesystem::create_directories( dirPath, err );
+        result = static_cast<bool>(err) == false;
+    }
+
+    return result;
 }
 
 String File::normalizePath(const char* fileName)
@@ -289,6 +296,7 @@ String File::normalizePath(const char* fileName)
             result = fp.string();
         }
     }
+
     return result;
 }
 

@@ -135,12 +135,65 @@ TEST( GitHubFileAccessTest, FileReadWithAreg )
     file.close( );
 }
 
+TEST( GitHubFileAccessTest, FileCreateEmptyFileWithAreg )
+{
+    Application::setWorkingDirectory( nullptr );
+    const String fileNameWrite{ "./empty_file_areg.txt" };
+    constexpr unsigned int modeWrite{ FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_CREATE | FileBase::FO_MODE_SHARE_READ | FileBase::FO_MODE_WRITE };
+
+    File fileWrite( fileNameWrite, modeWrite );
+    ASSERT_TRUE( fileWrite.open( ) );
+    fileWrite.close( );
+    ASSERT_TRUE( File::existFile( fileNameWrite ) );
+}
+
 TEST( GitHubFileAccessTest, FileReadWriteWithAreg )
 {
     Application::setWorkingDirectory( nullptr );
 
+    const String fileNameRead{ "./config/log.init" };
+    const String fileNameWrite{ "./write_with_areg.txt" };
+
+    constexpr unsigned int modeRead{ FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_EXIST | FileBase::FO_MODE_SHARE_READ };
+    constexpr unsigned int modeWrite{ FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_CREATE | FileBase::FO_MODE_SHARE_READ | FileBase::FO_MODE_WRITE };
+
+    File fileRead( fileNameRead.getString( ), modeRead );
+    ASSERT_TRUE( fileRead.open( ) );
+
+    char buffer[ 1025 ]{ 0 };
+    uint32_t dwRead = static_cast<uint32_t>(fileRead.readString( buffer, 1025 ));
+    ASSERT_EQ( dwRead, 1024 );
+    ASSERT_EQ( buffer[ 0 ], '#' );
+    buffer[ 1024 ] = '\0';
+    fileRead.close( );
+
+    File fileWrite( fileNameWrite, modeWrite );
+    ASSERT_TRUE( fileWrite.open( ) );
+    ASSERT_TRUE( fileWrite.writeString( buffer ) );
+
+    fileWrite.close( );
+
+    ASSERT_TRUE( File::existFile( fileNameWrite ) );
+}
+
+TEST( GitHubFileAccessTest, CreateFolderCascadedWithAreg )
+{
+    Application::setWorkingDirectory( nullptr );
+
+    const String dirPath( "./dir1/dir2/dir3/" );
+    ASSERT_FALSE( File::existDir( dirPath ) );
+    ASSERT_TRUE( File::createDirCascaded( dirPath ) );
+    ASSERT_TRUE( File::existDir( dirPath ) );
+    ASSERT_TRUE( File::deleteDir( dirPath ) );
+    ASSERT_FALSE( File::existDir( dirPath ) );
+}
+
+TEST( GitHubFileAccessTest, FileReadWriteSubfolderWithAreg )
+{
+    Application::setWorkingDirectory( nullptr );
+
     const String fileNameRead { "./config/log.init" };
-    const String fileNameWrite{ "./log/write_with_win32.txt" };
+    const String fileNameWrite{ "./log/write_with_areg.txt" };
 
     constexpr unsigned int modeRead { FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_EXIST | FileBase::FO_MODE_SHARE_READ };
     constexpr unsigned int modeWrite{ FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_CREATE | FileBase::FO_MODE_SHARE_READ | FileBase::FO_MODE_WRITE };
