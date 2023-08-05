@@ -143,7 +143,7 @@ bool File::_osOpenFile( void )
                 File::createDirCascaded( File::getFileDirectory(mFileName) );
             }
 
-            mFileHandle = static_cast<FILEHANDLE>(::CreateFileA(mFileName.getString(), access, shared, nullptr, creation, attributes, nullptr ));
+            mFileHandle = static_cast<FILEHANDLE>(::CreateFileA(mFileName.getString(), access, shared, NULL, creation, attributes, NULL));
             result = isOpened();
         }
         else

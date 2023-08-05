@@ -955,7 +955,9 @@ NEString::CharPos NEString::findLast( CharType   chSearch
                     result = MACRO_ELEM_COUNT(strSource, end);
                     --end;
                     if ( (out_next != nullptr) && (end >= strSource) )
-                        *out_next =  end;
+                    {
+                        *out_next = end;
+                    }
 
                     break;
                 }

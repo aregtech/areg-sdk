@@ -120,7 +120,7 @@ public:
      * \brief   Returns path separator. The return character is OS dependent.
      *          For example, on POSIX it is '/' and on Windows it is '\\'.
      **/
-    static const char getPathSeparator( void );
+    static constexpr char getPathSeparator( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor

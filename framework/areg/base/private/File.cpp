@@ -31,7 +31,7 @@
 // File class implementation
 //////////////////////////////////////////////////////////////////////////
 
-const char File::getPathSeparator( void )
+constexpr char File::getPathSeparator( void )
 {
     return static_cast<char>(std::filesystem::path::preferred_separator);
 }
@@ -265,8 +265,16 @@ String File::getFileExtension( const char* filePath )
 
 String File::getFileDirectory(const char* filePath)
 {
-    NEString::CharPos pos = NEString::isEmpty<char>(filePath) ? NEString::INVALID_POS : NEString::findLast<char>(File::getPathSeparator(), filePath, NEString::END_POS, nullptr);
-    return (NEString::isPositionValid(pos) ? String(filePath, pos) : String(String::getEmptyString()));
+    constexpr char separator{ File::getPathSeparator( ) };
+    NEString::CharPos pos = NEString::isEmpty<char>(filePath) ? NEString::INVALID_POS : NEString::findLast<char>( separator, filePath, NEString::END_POS, nullptr);
+    if ( NEString::isPositionValid( pos ) )
+    {
+        return String( filePath, (*(filePath + pos) == separator ? pos : pos + 1) );
+    }
+    else
+    {
+        return String::EmptyString;
+    }
 }
 
 bool File::createDirCascaded( const char* dirPath )

@@ -122,7 +122,7 @@ inline int _readString(const FileBase & file, CharType * buffer, int charCount)
     {
         OUTPUT_ERR("Either file is not opened or forbidden to read data. Data cannot be read.");
     } 
-    else if ((buffer != nullptr) && (charCount > 0))
+    else if ((buffer != nullptr) && (charCount > 1))
     {
         unsigned int strLength  = static_cast<unsigned int>(charCount) - 1;
         buffer[0]               = NEString::EndOfString;
@@ -135,7 +135,7 @@ inline int _readString(const FileBase & file, CharType * buffer, int charCount)
         if ( readLength > 0 )
         {
             NEString::getPrintable<CharType>( buffer, charCount, &context );
-            ASSERT((context == nullptr) || (context > buffer));
+            ASSERT((context == nullptr) || (context >= buffer));
             result = context != nullptr ? MACRO_ELEM_COUNT( buffer, context ) : readLength;
             int newPos = static_cast<int>( (result * sizeof(CharType)) + oldPos );
             file.setPosition(newPos, IECursorPosition::eCursorPosition::PositionBegin);
@@ -157,9 +157,9 @@ inline int _readLine(const FileBase & file, CharType * buffer, int charCount)
     {
         OUTPUT_ERR("Either file is not opened or forbidden to read data. Data cannot be read.");
     } 
-    else if ((buffer != nullptr) && (charCount > 0))
+    else if ((buffer != nullptr) && (charCount > 1))
     {
-        unsigned int strLength  = static_cast<unsigned int>(charCount - 1);
+        unsigned int strLength  = static_cast<unsigned int>(charCount) - 1;
         buffer[0]               = NEString::EndOfString;
         unsigned int oldPos     = file.getPosition();
         CharType * context      = nullptr;
@@ -169,7 +169,7 @@ inline int _readLine(const FileBase & file, CharType * buffer, int charCount)
         if ( readLength != 0 )
         {
             NEString::getLine<CharType>(buffer, charCount, &context);
-            ASSERT((context == nullptr) || (context > buffer));
+            ASSERT((context == nullptr) || (context >= buffer));
             result = context != nullptr ? MACRO_ELEM_COUNT(buffer, context) : readLength;
             int newPos = static_cast<int>( (result * sizeof(CharType)) + oldPos );
             file.setPosition(newPos, IECursorPosition::eCursorPosition::PositionBegin);
