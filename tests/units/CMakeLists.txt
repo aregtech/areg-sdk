@@ -1,4 +1,5 @@
 include(GoogleTest)
 
 addTest(DemoTest.cpp)
-addTest(LogScopesTest.cpp)
+addTest(GitHubFileAccessTest.cpp)
+# addTest(LogScopesTest.cpp)

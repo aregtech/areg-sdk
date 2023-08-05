@@ -46,10 +46,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="units\DemoTest.cpp" />
+    <ClCompile Include="units\GitHubFileAccessTest.cpp" />
     <ClCompile Include="units\LogScopesTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="units\GUnitTest.hpp" />
+    <ClInclude Include="units\VirtualConfig.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(AregSdkRoot)\framework\areg.vcxproj">

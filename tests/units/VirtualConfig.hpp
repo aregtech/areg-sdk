@@ -1,4 +1,5 @@
-#ifndef AREG_TESTS_UNITS_GUNITTESTS_HPP
+#ifndef AREG_UNIT_TESTS_VIRTUALCONFIG_HPP
+#define AREG_UNIT_TESTS_VIRTUALCONFIG_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -8,36 +9,32 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        units/GUnitTest.hpp
+ * \file        units/VirtualConfig.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       AREG Platform, Unit Tests. Global configuration file.
+ * \brief       AREG Platform, Unit Tests. Virtual Configurations.
  ************************************************************************/
  /************************************************************************
   * Include files.
   ************************************************************************/
-  
-#if !defined(IMP_AREG_DLL)          && \
-    !defined(_IMP_AREG_DLL)         && \
-    !defined(IMPORT_SHARED_SYMBOLS) && \
-    !defined(_IMPORT_SHARED_SYMBOLS)&& \
-    !defined(IMP_AREG_LIB)          && \
-    !defined(_IMP_AREG_LIB)         && \
-    !defined(IMPORT_STATIC_SYMBOLS) && \
-    !defined(_IMPORT_STATIC_SYMBOLS)
-
-    #error  "You should import AREG engine either as shared or static library"
-
-#endif // wrong imports
-
 #include "areg/base/GEGlobal.h"
-#include "googletest/googletest/include/gtest/gtest.h"
-#include "units/VirtualConfig.hpp"
 
-#ifdef _WIN32
-    #pragma comment(lib, "gtest.lib")
-    #pragma comment(lib, "gtest_main.lib")
-    #pragma comment(lib, "areg.lib")
-#endif // _WIN32
+#include <string_view>
 
-#endif // !AREG_TESTS_UNITS_GUNITTESTS_HPP
+namespace VirtualConfig
+{
+    constexpr std::string_view  LogConfig {
+        "log.version = 1.1.0\n"
+        "log.enable = true\n"
+        "log.file = ./logs/%appname%_%time%.log\n"
+        "log.append = false\n"
+        "log.layout.enter   = %d: [ %t:%s  %x.%z: Enter -->]%n\n"
+        "log.layout.message = %d: [ %t:%s  %p >>> ] %m%n\n"
+        "log.layout.exit    = %d: [ %t:%s  %x.%z: Exit  <--] %n\n"
+        "log.debug = false\n"
+        "log.remote.tcp.enable = false\n"
+        "scope.* = DEBUG | SCOPE\n"
+    };
+}
+
+#endif  // AREG_UNIT_TESTS_VIRTUALCONFIG_HPP

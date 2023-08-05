@@ -25,9 +25,15 @@
     <ClCompile Include="units\LogScopesTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="units\GitHubFileAccessTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="units\GUnitTest.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="units\VirtualConfig.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
