@@ -323,7 +323,7 @@ FileBase::FileBase( void )
 
 unsigned int FileBase::normalizeMode(unsigned int mode) const
 {
-    if (mode != FO_MODE_INVALID)
+    if ((mode != FO_MODE_INVALID) != 0)
     {
         mode |= FO_MODE_READ;
     }
@@ -333,25 +333,25 @@ unsigned int FileBase::normalizeMode(unsigned int mode) const
         mode |= FO_MODE_WRITE;
     }
 
-    if (mode & FOB_ATTACH)
+    if ((mode & FOB_ATTACH) != 0)
     {
         mode &= ~(FOB_DETACH | FOB_TRUNCATE | FOB_TEMP_FILE | FOB_SHARE_WRITE | FOB_WRITE);
         mode |= FO_MODE_ATTACH;
     }
 
-    if (mode & FOB_DETACH)
+    if ((mode & FOB_DETACH) != 0)
     {
         mode &= ~(FOB_ATTACH | FOB_TEMP_FILE | FOB_SHARE_WRITE);
         mode |= FO_MODE_DETACH;
     }
 
-    if (mode & FOB_TEMP_FILE)
+    if ((mode & FOB_TEMP_FILE) != 0)
     {
         mode &= ~(FOB_FOR_DELETE | FOB_EXIST | FOB_ATTACH | FOB_DETACH | FOB_SHARE_READ | FOB_SHARE_WRITE);
         mode |= FO_MODE_CREATE_TEMP;
     }
 
-    if (mode & FOB_TEXT)
+    if ((mode & FOB_TEXT) != 0)
     {
         mode &= ~FOB_BINARY;
         mode |= FO_MODE_TEXT;
@@ -361,13 +361,13 @@ unsigned int FileBase::normalizeMode(unsigned int mode) const
         mode |= FO_MODE_BINARY;
     }
 
-    if (mode & FOB_BINARY)
+    if ((mode & FOB_BINARY) != 0)
     {
         mode &= ~FOB_TEXT;
         mode |= FO_MODE_BINARY;
     }
 
-    if ((mode & FOB_WRITE) == 0 && (mode & FOB_READ) != 0)
+    if (((mode & FOB_WRITE) == 0) && ((mode & FOB_READ) != 0))
     {
         mode |= FOB_EXIST;
     }
@@ -378,7 +378,7 @@ unsigned int FileBase::normalizeMode(unsigned int mode) const
         mode |= FO_MODE_WRITE;
     }
 
-    if (mode & FOB_EXIST)
+    if ((mode & FOB_EXIST) != 0)
     {
         mode |= FO_MODE_EXIST;
     }
@@ -387,12 +387,12 @@ unsigned int FileBase::normalizeMode(unsigned int mode) const
         mode &= ~FOB_TRUNCATE;
     }
 
-    if (mode & FOB_TRUNCATE)
+    if ((mode & FOB_TRUNCATE) != 0)
     {
         mode |= FO_MODE_TRUNCATE;
     }
 
-    if (mode & FOB_WRITE_DIRECT)
+    if ((mode & FOB_WRITE_DIRECT) != 0)
     {
         mode |= FO_MODE_WRITE_DIRECT;
     }

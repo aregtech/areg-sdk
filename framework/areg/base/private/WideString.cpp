@@ -99,8 +99,7 @@ namespace
 
     inline int _formatStringList( wchar_t * buffer, int count, const wchar_t * format, va_list argptr )
     {
-
-        int result = -1;
+        int result { -1 };
         if ( buffer != nullptr )
         {
             *buffer = WideString::EmptyChar;
@@ -110,16 +109,16 @@ namespace
             result = vswprintf( buffer, count, format, argptr );
 #endif  // !WIN32
         }
+
         return result;
     }
 
     template<int const CharCount>
     inline int32_t _formatStringList( WideString & result, const wchar_t * format, va_list argptr )
     {
-    
-        wchar_t buffer[CharCount];
-        int32_t count = _formatStringList(buffer, CharCount, format, argptr);
-        result = buffer;
+        wchar_t buffer[ CharCount ] { 0 };
+        int32_t count = _formatStringList( buffer, CharCount, format, argptr );
+        result.assign( buffer, count > 0 ? count : 0 );
         return count;
     }
 

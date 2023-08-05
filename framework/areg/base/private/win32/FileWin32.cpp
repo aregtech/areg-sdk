@@ -111,34 +111,34 @@ bool File::_osOpenFile( void )
             unsigned long creation  = 0;
             unsigned long attributes= FILE_ATTRIBUTE_NORMAL;
 
-            if (mFileMode & FileBase::FOB_READ)
+            if ((mFileMode & FileBase::FOB_READ) != 0)
                 access |= GENERIC_READ;
 
-            if (mFileMode & FileBase::FOB_WRITE)
+            if ((mFileMode & FileBase::FOB_WRITE) != 0)
                 access |= GENERIC_WRITE;
             
-            if (mFileMode & FileBase::FOB_SHARE_READ)
+            if ((mFileMode & FileBase::FOB_SHARE_READ) != 0)
                 shared |= FILE_SHARE_READ;
             
-            if (mFileMode & FileBase::FOB_SHARE_WRITE)
+            if ((mFileMode & FileBase::FOB_SHARE_WRITE) != 0)
                 shared |= FILE_SHARE_WRITE;
             
-            if (mFileMode & FileBase::FOB_CREATE)
+            if ((mFileMode & FileBase::FOB_CREATE) != 0)
                 creation |= CREATE_ALWAYS;
             
-            if (mFileMode & FileBase::FOB_EXIST)
+            if ((mFileMode & FileBase::FOB_EXIST) != 0)
                 creation |= OPEN_EXISTING;
             
-            if (mFileMode & FileBase::FOB_TRUNCATE)
+            if ((mFileMode & FileBase::FOB_TRUNCATE) != 0)
                 creation |= TRUNCATE_EXISTING;
             
-            if (mFileMode & FileBase::FOB_TEMP_FILE)
+            if ((mFileMode & FileBase::FOB_TEMP_FILE) != 0)
                 attributes = FILE_ATTRIBUTE_TEMPORARY;
             
-            if (mFileMode & FileBase::FOB_WRITE_DIRECT)
+            if ((mFileMode & FileBase::FOB_WRITE_DIRECT) != 0)
                 attributes |= FILE_FLAG_WRITE_THROUGH;
             
-            if ( mFileMode & FileBase::FOB_CREATE )
+            if ((mFileMode & FileBase::FOB_CREATE ) != 0)
             {
                 File::createDirCascaded( File::getFileDirectory(mFileName) );
             }

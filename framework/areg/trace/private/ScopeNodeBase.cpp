@@ -193,7 +193,7 @@ unsigned int ScopeNodeBase::groupRecursive( void )
 String ScopeNodeBase::makeConfigString( const String & parent ) const
 {
     String result(parent);
-    return (isValid() ? result.format("%s%s = %s", parent.getString( ), mNodeName.getString( ), makePrioString( ).getString( )) : result);
+    return (isValid() ? result.format("%s%s = %s\n", parent.getString( ), mNodeName.getString( ), makePrioString( ).getString( )) : result);
 }
 
 unsigned int ScopeNodeBase::removePriorityNodesRecursive( unsigned int prioRemove )

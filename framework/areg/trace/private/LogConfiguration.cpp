@@ -195,13 +195,13 @@ bool LogConfiguration::saveConfig( FileBase & file ) const
     {
         if ( properties[ i ].isValid( ) )
         {
-            file.writeLine( properties[ i ].makeConfigString( ) );
+            file.write( properties[ i ].makeConfigString( ) );
         }
     }
 
     for ( unsigned int i = 0; i < scopes.getSize( ); ++ i )
     {
-        file.writeLine( scopes[ i ].makeConfigString( ) );
+        file.write( scopes[ i ].makeConfigString( ) );
     }
 
     const auto & scopeList = mScopeController.getScopeList( );

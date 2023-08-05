@@ -120,7 +120,7 @@ String TraceProperty::makeConfigString( void ) const
     if ( mProperty.mValue.first.isValidKey( ) )
     {
         String config;
-        config.format( "%s = %s", mProperty.mValue.first.getKey( ).getString( ), static_cast<const char *>(mProperty.mValue.second) );
+        config.format( "%s = %s\n", mProperty.mValue.first.getKey( ).getString( ), static_cast<const char *>(mProperty.mValue.second) );
         result += config;
     }
 

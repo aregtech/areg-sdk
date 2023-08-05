@@ -33,6 +33,7 @@ namespace
 DEF_TRACE_SCOPE( areg_unit_tests_LogScopeTest_StartAndStopLogging );
 TEST( LogScopeTest, StartAndStopLogging )
 {
+    Application::setWorkingDirectory( nullptr );
     ASSERT_TRUE( TRACER_START_LOGGING( DEFAULT_CONFIG_FILE.data( ) ) );
     ASSERT_TRUE( IS_TRACE_STARTED( ) );
     
@@ -52,6 +53,7 @@ TEST( LogScopeTest, StartAndStopLogging )
 DEF_TRACE_SCOPE( areg_unit_tests_LogScopeTest_LoadAndSaveConfiguration );
 TEST( LogScopeTest, LoadAndSaveConfiguration )
 {
+    Application::setWorkingDirectory( nullptr );
     ASSERT_TRUE( TRACER_START_LOGGING( DEFAULT_CONFIG_FILE.data( ) ) );
     ASSERT_TRUE( IS_TRACE_STARTED( ) );
 
@@ -74,6 +76,7 @@ DEF_TRACE_SCOPE( areg_unit_tests_LogScopeTest_LoadSavedLogConfiguration_part1 );
 DEF_TRACE_SCOPE( areg_unit_tests_LogScopeTest_LoadSavedLogConfiguration_part2 );
 TEST( LogScopeTest, LoadSavedLogConfiguration )
 {
+    Application::setWorkingDirectory( nullptr );
     String defaultConfig{ DEFAULT_CONFIG_FILE };
     String testConfig{ TEST_CONFIG_FILE };
     bool isLogEnabled{ false };
@@ -130,6 +133,7 @@ DEF_TRACE_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_nosco
 DEF_TRACE_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_nolog );
 TEST( LogScopeTest, ChangeScopePrioAndSaveConfig )
 {
+    Application::setWorkingDirectory( nullptr );
     String defaultConfig{ DEFAULT_CONFIG_FILE };
     String testConfig{ TEST_CONFIG_FILE };
 
@@ -245,6 +249,7 @@ DEF_TRACE_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_infoNode2_n
 DEF_TRACE_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_information );
 TEST( LogScopeTest, ScopePriorityGroupping )
 {
+    Application::setWorkingDirectory( nullptr );
     String defaultConfig{ DEFAULT_CONFIG_FILE };
     String testConfig{ TEST_CONFIG_FILE };
 
@@ -258,7 +263,6 @@ TEST( LogScopeTest, ScopePriorityGroupping )
     uint32_t infoNode1_noScope{ 0 };
     uint32_t infoNode2_noScope{ 0 };
 
-    Application::setWorkingDirectory(nullptr);
     TRACER_START_LOGGING( defaultConfig );
 
     do

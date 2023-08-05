@@ -54,7 +54,7 @@ String ScopeLeaf::makeScopePath( const String & prefix ) const
 
 unsigned int ScopeLeaf::saveNodeConfig( FileBase & file, const String & parentPath ) const
 {
-    file.writeLine( makeConfigString( parentPath ) );
+    file.write( makeConfigString( parentPath ) );
     return 1;
 }
 
@@ -262,7 +262,7 @@ unsigned int ScopeNode::saveNodeConfig( FileBase & file, const String & parentPa
     String thisScope = makeScopePath( parentPath );
     if ( (mGroupping & static_cast<unsigned int>(ScopeNodeBase::eGroupping::GrouppingAll)) != 0 )
     {
-        file.writeLine( makeConfigString(parentPath) );
+        file.write( makeConfigString(parentPath) );
         result = 1;
     }
 
@@ -296,7 +296,7 @@ unsigned int ScopeNode::groupRecursive( void )
 String ScopeNode::makeConfigString( const String & parent ) const
 {
     String result;
-    result.format( "%s%s_* = %s", parent.getString( ), mNodeName.getString( ), makePrioString( ).getString( ) );
+    result.format( "%s%s_* = %s\n", parent.getString( ), mNodeName.getString( ), makePrioString( ).getString( ) );
     return result;
 }
 
@@ -404,7 +404,7 @@ unsigned int ScopeRoot::saveNodeConfig( FileBase & file, const String & /*parent
 
     if ( result == 0 )
     {
-        file.writeLine( makeConfigString( thisScope) );
+        file.write( makeConfigString( thisScope) );
         result = 1;
     }
 
@@ -414,5 +414,5 @@ unsigned int ScopeRoot::saveNodeConfig( FileBase & file, const String & /*parent
 String ScopeRoot::makeConfigString( const String & parent ) const
 {
     String result;
-    return result.format( "%s* = %s", parent.getString(), makePrioString( ).getString() );
+    return result.format( "%s* = %s\n", parent.getString(), makePrioString( ).getString() );
 }

@@ -36,10 +36,10 @@
 #endif
 
 #define _MAX_BINARY_BUFFER    72
-#define _MIN_BUF_SIZE        512
-#define _BUF_SIZE            1024
-#define _MAX_BUF_SIZE        2048
-#define _EXTRA_BUF_SIZE     4096
+#define _MIN_BUF_SIZE        128
+#define _BUF_SIZE            256
+#define _MAX_BUF_SIZE        512
+#define _EXTRA_BUF_SIZE     1024
 
 namespace 
 {
@@ -99,27 +99,27 @@ namespace
 
     inline int _formatStringList( char * buffer, int count, const char * format, va_list argptr )
     {
+        int result { -1 };
         if ( buffer != nullptr )
         {
+            *buffer = String::EmptyChar;
 #ifdef  WIN32
-            return ::vsprintf_s( buffer, static_cast<size_t>(count), format, argptr );
+            result = vsprintf_s( buffer, static_cast<size_t>(count), format, argptr );
 #else   // !WIN32
-            return ::vsnprintf( buffer, static_cast<size_t>(count), format, argptr );
+            result = vsnprintf( buffer, count, format, argptr );
 #endif  // !WIN32
         }
 
-        return -1;
+        return result;
     }
 
     template<int const CharCount>
     inline int32_t _formatStringList( String & result, const char * format, va_list argptr )
     {
-        char buffer[CharCount] { 0 };
-#ifdef  WIN32
-        return vsprintf_s<static_cast<size_t>(CharCount)>( buffer, format, argptr );
-#else   // !WIN32
-        return vsnprintf( buffer, static_cast<size_t>(CharCount), format, argptr );
-#endif  // !WIN32
+        char buffer[ CharCount ] { 0 };
+        int32_t count = _formatStringList( buffer, CharCount, format, argptr );
+        result.assign( buffer, count > 0 ? count : 0 );
+        return count;
     }
 
     template<int const CharCount>
