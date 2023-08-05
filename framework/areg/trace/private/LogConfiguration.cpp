@@ -109,12 +109,11 @@ bool LogConfiguration::saveConfig( void ) const
 
 bool LogConfiguration::saveConfig( const String & filePath ) const
 {
-    constexpr unsigned int mode {   File::FO_MODE_WRITE         |
-                                    File::FO_MODE_READ          |
-                                    File::FO_MODE_TEXT          |
-                                    FileBase::FO_MODE_CREATE    | 
-                                    File::FO_MODE_SHARE_READ    |
-                                    File::FO_MODE_TRUNCATE };
+    constexpr unsigned int mode {   File::FO_MODE_WRITE     |
+                                    File::FO_MODE_READ      |
+                                    File::FO_MODE_TEXT      |
+                                    File::FO_MODE_CREATE    |
+                                    File::FO_MODE_SHARE_READ};
 
     String path = filePath.isEmpty( ) ? mFilePath : filePath;
     path = File::getFileFullPath( File::normalizePath( path ) );

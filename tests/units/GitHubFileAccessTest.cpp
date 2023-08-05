@@ -4,6 +4,7 @@
 
 #include "units/GUnitTest.hpp"
 #include "areg/appbase/Application.hpp"
+#include "areg/base/File.hpp"
 
 #include <fstream>
 #include <filesystem>
@@ -113,4 +114,52 @@ TEST( GitHubFileAccessTest, FileReadWriteWithWin32 )
     ASSERT_TRUE( PathFileExistsA( fileNameWrite ) );
 
 #endif // WINDOWS
+}
+
+TEST( GitHubFileAccessTest, FileReadWithAreg )
+{
+    Application::setWorkingDirectory( nullptr );
+
+    const String fileName{ "./config/log.init" };
+    constexpr unsigned int mode{ FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_EXIST | FileBase::FO_MODE_SHARE_READ };
+    File file( fileName, mode );
+
+    ASSERT_TRUE(File::existFile( fileName.getString( ) ));
+    ASSERT_TRUE( file.open( ) );
+
+    char buffer[ 1025 ]{ 0 };
+    uint32_t dwRead = static_cast<uint32_t>(file.readString( buffer, 1025 ));
+    ASSERT_EQ( dwRead, 1024 );
+    ASSERT_EQ( buffer[ 0 ], '#' );
+
+    file.close( );
+}
+
+TEST( GitHubFileAccessTest, FileReadWriteWithAreg )
+{
+    Application::setWorkingDirectory( nullptr );
+
+    const String fileNameRead { "./config/log.init" };
+    const String fileNameWrite{ "./log/write_with_win32.txt" };
+
+    constexpr unsigned int modeRead { FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_EXIST | FileBase::FO_MODE_SHARE_READ };
+    constexpr unsigned int modeWrite{ FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_CREATE | FileBase::FO_MODE_SHARE_READ | FileBase::FO_MODE_WRITE };
+
+    File fileRead( fileNameRead.getString( ), modeRead );
+    ASSERT_TRUE( fileRead.open( ) );
+
+    char buffer[ 1025 ]{ 0 };
+    uint32_t dwRead = static_cast<uint32_t>(fileRead.readString(buffer, 1025));
+    ASSERT_EQ( dwRead, 1024 );
+    ASSERT_EQ( buffer[ 0 ], '#' );
+    buffer[ 1024 ] = '\0';
+    fileRead.close( );
+
+    File fileWrite( fileNameWrite, modeWrite );
+    ASSERT_TRUE( fileWrite.open() );
+    ASSERT_TRUE(fileWrite.writeString(buffer));
+
+    fileWrite.close( );
+
+    ASSERT_TRUE( File::existFile(fileNameWrite) );
 }

@@ -181,7 +181,7 @@ void TraceProperty::_parseProperty(String& source, bool discardComment /*= true*
         source.substring(temp, posEqual + 1, isValidPos ? posComment - posEqual : NEString::END_POS);
         mProperty.mValue.second = temp.getString();
     }
-    else if ( (source.isValidPosition( posEqual ) == false) && (isValidPos == false) )
+    else if ( (source.isValidPosition( posEqual ) == false) && (isValidPos == false) && (discardComment == false))
     {
         mComment += NELogConfig::SYNTAX_LINEEND;
     }
