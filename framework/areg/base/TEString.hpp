@@ -2964,7 +2964,7 @@ inline bool TEString<CharType>::startsWith(const CharType* phrase, bool isCaseSe
 template<typename CharType>
 inline bool TEString<CharType>::endsWith(const TEString<CharType>& phrase, bool isCaseSensitive /*= true*/) const
 {
-    return startsWith(phrase.mData);
+    return endsWith(phrase.mData, isCaseSensitive);
 }
 
 template<typename CharType>

@@ -741,10 +741,10 @@ void FileBase::flush(void)
 void FileBase::normalizeName(String & IN OUT name)
 {
     // replace all "%time%"
-    char fmt[32];
+    char fmt[128] { 0 };
     NEUtilities::sSystemTime st;
     DateTime::getNow(st, true);
-    String::formatString(fmt, 32, FileBase::TIMESTAMP_FORMAT.data(), st.stYear, st.stMonth, st.stDay, st.stHour, st.stMinute, st.stSecond, st.stMillisecs);
+    String::formatString(fmt, 128, FileBase::TIMESTAMP_FORMAT.data(), st.stYear, st.stMonth, st.stDay, st.stHour, st.stMinute, st.stSecond, st.stMillisecs);
     name.replace(FileBase::FILE_MASK_TIMESTAMP, fmt, NEString::START_POS, true);
 
     // replace all "%appname%"

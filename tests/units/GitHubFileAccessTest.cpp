@@ -126,6 +126,16 @@ TEST( GitHubFileAccessTest, FileCheckFileWithAreg )
     ASSERT_FALSE( File::existFile( fileWrong ) );
 }
 
+TEST( GitHubFileAccessTest, FileNormalizeWithAreg )
+{
+    Application::setWorkingDirectory( nullptr );
+
+    const String fileName{ "./config/log.init" };
+    String normalized = File::normalizePath( fileName );
+    ASSERT_TRUE( normalized.getLength( ) > fileName.getLength( ) );
+    ASSERT_TRUE( normalized.endsWith( "log.init" ) );
+}
+
 TEST( GitHubFileAccessTest, FileOpenWithAreg )
 {
     Application::setWorkingDirectory( nullptr );
