@@ -78,6 +78,8 @@ TEST( DateTimeTest, TestNow )
 
 TEST( DateTimeTest, TestLocalTimeWin32 )
 {
+#ifdef WINDOWS
+
     DateTime date( DateTime::getNow( ) );
     ASSERT_TRUE( date.getTime( ) != 0 );
 
@@ -155,6 +157,8 @@ TEST( DateTimeTest, TestLocalTimeWin32 )
 
     EXPECT_GE( localTime.stMicrosecs, 0 ) << "Local MuSec:  " << localTime.stMicrosecs << std::endl;
     EXPECT_LE( localTime.stMicrosecs, 999 ) << "Local MuSec:  " << localTime.stMicrosecs << std::endl;
+
+#endif // WINDOWS
 }
 
 TEST( DateTimeTest, TestFormatISO8601 )
