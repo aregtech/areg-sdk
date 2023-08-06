@@ -5,6 +5,7 @@
 #include "units/GUnitTest.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/base/File.hpp"
+#include "areg/trace/GETrace.h"
 
 #include <fstream>
 #include <filesystem>
@@ -250,4 +251,11 @@ TEST( GitHubFileAccessTest, FileReadWriteSubfolderWithAreg )
     fileWrite.close( );
 
     ASSERT_TRUE( File::existFile(fileNameWrite) );
+}
+
+TEST( GitHubFileAccessTest, TryeStartAndStopOnly )
+{
+    Application::setWorkingDirectory( nullptr );
+    ASSERT_TRUE( TRACER_START_LOGGING( "./config/log.init" ) );
+    TRACER_STOP_LOGGING( );
 }
