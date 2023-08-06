@@ -31,6 +31,9 @@
     <ClCompile Include="units\DateTimeTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="units\StringUtilsTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="units\GUnitTest.hpp">

@@ -35,11 +35,13 @@
     #define strtof      strtod
 #endif
 
-#define _MAX_BINARY_BUFFER    72
-#define _MIN_BUF_SIZE        512
-#define _BUF_SIZE            1024
-#define _MAX_BUF_SIZE        2048
-#define _EXTRA_BUF_SIZE     4096
+#define _MAX_BINARY_BUFFER   128
+#define _MIN_BUF_SIZE        128
+#define _BUF_SIZE            256
+#define _MAX_BUF_SIZE        512
+#define _EXTRA_BUF_SIZE     1024
+
+
 
 namespace 
 {
@@ -81,18 +83,18 @@ namespace
         return count;
     }
 
-    template<typename DigitType, int const CharCount>
+    template<typename DigitType, int const CharCount = _MIN_BUF_SIZE>
     inline int32_t _formatDigit( String & result, const char * format, DigitType number )
     {
         char buffer[CharCount];
         buffer[0] = String::EmptyChar;
 
         int32_t count = -1;
-#ifdef _WIN32
+#ifdef WINDOWS
         count = ::sprintf_s(buffer, CharCount, format, number);
-#else   // _WIN32
+#else   // !WINDOWS
         count = ::snprintf( buffer, CharCount, format, number);
-#endif  // _WIN32
+#endif  // WINDOWS
         result = buffer;
         return count;
     }
@@ -103,17 +105,17 @@ namespace
         if ( buffer != nullptr )
         {
             *buffer = String::EmptyChar;
-#ifdef  WIN32
+#ifdef  WINDOWS
             result = vsprintf_s( buffer, static_cast<size_t>(count), format, argptr );
-#else   // !WIN32
+#else   // !WINDOWS
             result = vsnprintf( buffer, count, format, argptr );
-#endif  // !WIN32
+#endif  // WINDOWS
         }
 
         return result;
     }
 
-    template<int const CharCount>
+    template<int const CharCount = _MIN_BUF_SIZE>
     inline int32_t _formatStringList( String & result, const char * format, va_list argptr )
     {
         char buffer[ CharCount ] { 0 };
@@ -122,7 +124,7 @@ namespace
         return count;
     }
 
-    template<int const CharCount>
+    template<int const CharCount = _MIN_BUF_SIZE>
     inline int32_t _formatString( String & result, const char * format, ... )
     {
         va_list argptr;
@@ -140,7 +142,26 @@ namespace
         return (*str == TEString<char>::EmptyChar);
     }
 
+    int _lenNeeded( const char * format, va_list args )
+    {
+        int retval{ 0 };
+        va_list argcopy;
+        va_copy( argcopy, args );
+
+        retval = vsnprintf( nullptr, 0, format, argcopy );
+        
+        va_end( argcopy );
+        return retval;
+    }
+
 } // namespace
+
+#ifdef WINDOWS
+    #define MACRO_VSCPRINTF( format, args )     _vscprintf( format, args )
+#else   // WINDOWS
+    #define MACRO_VSCPRINTF( format, args )     _lenNeeded( format, args )
+#endif // !WINDOWS
+
 
 // the static empty string
 const String& String::getEmptyString(void)
@@ -372,22 +393,22 @@ String String::toString(int32_t number, NEString::eRadix radix /*= NEString::Rad
 
     case NEString::eRadix::RadixOctal:
         if ( number < 0)
-            _formatDigit<int32_t, 24>( result, "-%0.11o", -1 * number );
+            _formatDigit<int32_t>( result, "-%0.11o", -1 * number );
         else
-            _formatDigit<int32_t, 24>( result, "%0.11o", number );
+            _formatDigit<int32_t>( result, "%0.11o", number );
         break;
 
     case NEString::eRadix::RadixHexadecimal:
         if ( number < 0 )
-            _formatDigit<int32_t, 24>( result, "-0x%.8X", -1 * number );
+            _formatDigit<int32_t>( result, "-0x%.8X", -1 * number );
         else
-            _formatDigit<int32_t, 24>( result, "0x%.8X", number );
+            _formatDigit<int32_t>( result, "0x%.8X", number );
         break;
 
     case NEString::eRadix::RadixDecimal:    // fall through
     case NEString::eRadix::RadixAutomatic:  // fall through
     default:
-        _formatDigit<int32_t, 24>( result, "%d", number );
+        _formatDigit<int32_t>( result, "%d", number );
         break;
     }
     return result;
@@ -404,17 +425,17 @@ String String::toString(uint32_t number, NEString::eRadix radix /*= NEString::Ra
         break;
 
     case NEString::eRadix::RadixOctal:
-        _formatDigit<uint32_t, 24>(result, "%0.11o", number);
+        _formatDigit<uint32_t>(result, "%0.11o", number);
         break;
 
     case NEString::eRadix::RadixHexadecimal:
-        _formatDigit<uint32_t, 24>(result, "0x%.8X", number);
+        _formatDigit<uint32_t>(result, "0x%.8X", number);
         break;
 
     case NEString::eRadix::RadixDecimal:    // fall through
     case NEString::eRadix::RadixAutomatic:  // fall through
     default:
-        _formatDigit<uint32_t, 24>( result, "%u", number );
+        _formatDigit<uint32_t>( result, "%u", number );
         break;
     }
     return result;
@@ -432,22 +453,22 @@ String String::toString(int64_t number, NEString::eRadix radix /*= NEString::Rad
 
     case NEString::eRadix::RadixOctal:
         if (number < 0)
-            _formatDigit<int64_t, 32>(result, "-%0.22llo", -1 * number);
+            _formatDigit<int64_t>(result, "-%0.22llo", -1 * number);
         else
-            _formatDigit<int64_t, 32>(result, "%0.22llo", number);
+            _formatDigit<int64_t>(result, "%0.22llo", number);
         break;
 
     case NEString::eRadix::RadixHexadecimal:
         if (number < 0)
-            _formatDigit<int64_t, 32>(result, "-0x%.16llX", -1 * number);
+            _formatDigit<int64_t>(result, "-0x%.16llX", -1 * number);
         else
-            _formatDigit<int64_t, 32>(result, "0x%.16llX", number);
+            _formatDigit<int64_t>(result, "0x%.16llX", number);
         break;
 
     case NEString::eRadix::RadixDecimal:    // fall through
     case NEString::eRadix::RadixAutomatic:  // fall through
     default:
-        _formatDigit<int64_t, 32>(result, "%lld", number);
+        _formatDigit<int64_t>(result, "%lld", number);
         break;
     }
 
@@ -465,17 +486,17 @@ String String::toString(uint64_t number, NEString::eRadix radix /*= NEString::Ra
         break;
 
     case NEString::eRadix::RadixOctal:
-        _formatDigit<uint64_t, 32>( result, "%.22llo", number );
+        _formatDigit<uint64_t>( result, "%.22llo", number );
         break;
 
     case NEString::eRadix::RadixHexadecimal:
-        _formatDigit<uint64_t, 32>( result, "0x%.16llX", number );
+        _formatDigit<uint64_t>( result, "0x%.16llX", number );
         break;
 
     case NEString::eRadix::RadixDecimal:    // fall through
     case NEString::eRadix::RadixAutomatic:  // fall through
     default:
-        _formatDigit<uint64_t, 32>( result, "%llu", number );
+        _formatDigit<uint64_t>( result, "%llu", number );
         break;
     }
 
@@ -485,14 +506,14 @@ String String::toString(uint64_t number, NEString::eRadix radix /*= NEString::Ra
 String String::toString(float number)
 {
     String result;
-    _formatDigit<float, 32>( result, "%f", number );
+    _formatDigit<float>( result, "%f", number );
     return result;
 }
 
 String String::toString(double number)
 {
     String result;
-    _formatDigit<double, 64>( result, "%g", number );
+    _formatDigit<double>( result, "%g", number );
     return result;
 }
 
@@ -532,15 +553,31 @@ const String & String::formatList(const char * format, va_list argptr)
     clear();
     if (format != nullptr)
     {
-        if ( _formatStringList<_MIN_BUF_SIZE>( *this, format, argptr ) < 0 )
+        int count = MACRO_VSCPRINTF( format, argptr );
+        if ( count < _MIN_BUF_SIZE )
         {
-            if ( _formatStringList<_BUF_SIZE>(*this, format, argptr ) < 0 )
-            {
-                if ( _formatStringList<_MAX_BUF_SIZE>(*this, format, argptr ) < 0 )
-                {
-                    _formatStringList<_EXTRA_BUF_SIZE>(*this, format, argptr );
-                }
-            }
+            _formatStringList<_MIN_BUF_SIZE>( *this, format, argptr );
+        }
+        else if ( count < _BUF_SIZE )
+        {
+            _formatStringList<_BUF_SIZE>( *this, format, argptr );
+        }
+        else if ( count < _MAX_BUF_SIZE )
+        {
+            _formatStringList<_MAX_BUF_SIZE>( *this, format, argptr );
+        }
+        else if ( count < _EXTRA_BUF_SIZE )
+        {
+            _formatStringList<_EXTRA_BUF_SIZE>( *this, format, argptr );
+        }
+        else
+        {
+            char * buffer = new char[ count + 1 ];
+            buffer[ 0 ] = String::EmptyChar;
+            _formatStringList( buffer, count + 1, format, argptr );
+
+            *this = buffer;
+            delete[ ] buffer;
         }
     }
 
