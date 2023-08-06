@@ -16,7 +16,7 @@
 
 #include "areg/base/NEUtilities.hpp"
 
-#ifdef  _WINDOWS
+#ifdef  WINDOWS
 
 #include "areg/base/String.hpp"
 #include "areg/base/NEMemory.hpp"
@@ -268,4 +268,4 @@ namespace NEUtilities {
 
 } // namespace
 
-#endif // _WINDOWS
+#endif // WINDOWS
