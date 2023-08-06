@@ -159,6 +159,12 @@ namespace NEString
     constexpr char              EndOfString     { static_cast<char>('\0') };  //!< End of String, signed char (ASCII)
 
     /**
+     * \brief   End of String value
+     *          NEString::EndOfLine
+     **/
+    constexpr char              EndOfLine       { static_cast<char>('\n') };    //!< UNIX End of line character
+
+    /**
      * \brief   Empty 8-bit string
      *          NEString::EmptyStringA
      **/
@@ -1428,7 +1434,7 @@ inline bool NEString::isCarriageReturn( CharType ch )
 template<typename CharType>
 bool NEString::isNewLine( CharType ch )
 {
-    return (ch == '\n');
+    return (ch == static_cast<CharType>(NEString::EndOfLine));
 }
 
 template<typename CharType>

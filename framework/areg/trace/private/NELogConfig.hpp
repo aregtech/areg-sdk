@@ -167,7 +167,7 @@ namespace NELogConfig
     /**
      * \brief   End of line symbol in configuration file
      **/
-    constexpr char              SYNTAX_LINEEND                      { '\n' };
+    constexpr char              SYNTAX_LINEEND                      { NEString::EndOfLine };
 
     /**
      * \brief   Symbol of object separator in configuration file

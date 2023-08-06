@@ -50,8 +50,8 @@ TickCountLayout::TickCountLayout( TickCountLayout && /*src*/ ) noexcept
 
 void TickCountLayout::logMessage( const NETrace::sLogMessageData & /*msgLog*/, IEOutStream & stream ) const
 {
-    char buffer[65];    
-    String::formatString(buffer, 64, "%llu", static_cast<uint64_t>( DateTime::getProcessTickCount() ));
+    char buffer[128];    
+    String::formatString(buffer, 128, "%llu", static_cast<uint64_t>( DateTime::getProcessTickCount() ));
     stream.write(buffer);
 }
 
@@ -107,9 +107,8 @@ void ModuleIdLayout::logMessage( const NETrace::sLogMessageData & msgLog, IEOutS
 {
     if (msgLog.dataModuleId != 0)
     {
-        constexpr unsigned int size{ 40 };
-        char buffer[size];
-        String::formatString(buffer, size, "0x%llX", msgLog.dataModuleId);
+        char buffer[128];
+        String::formatString(buffer, 128, "0x%llX", msgLog.dataModuleId);
         stream.write(buffer);
     }
 }
@@ -159,8 +158,8 @@ EndOfLineLayout::EndOfLineLayout( EndOfLineLayout && /*src*/ ) noexcept
 
 void EndOfLineLayout::logMessage( const NETrace::sLogMessageData & /*msgLog*/, IEOutStream & stream ) const
 {
-    constexpr char const END_OF_LINE[] { "\n" };
-    stream.write(END_OF_LINE);
+    constexpr char const END_OF_LINE[] { NEString::EndOfLine, NEString::EndOfString };
+    stream.write( END_OF_LINE );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -210,8 +209,8 @@ void ScopeIdLayout::logMessage( const NETrace::sLogMessageData & msgLog, IEOutSt
 {
     if ( msgLog.dataScopeId != 0 )
     {
-        char buffer[16];
-        String::formatString(buffer, 16, "%u", msgLog.dataScopeId);
+        char buffer[128];
+        String::formatString(buffer, 128, "%u", msgLog.dataScopeId);
         stream.write(buffer);
     }
 }
@@ -239,12 +238,12 @@ void ThreadIdLayout::logMessage( const NETrace::sLogMessageData & msgLog, IEOutS
 {
     if ( msgLog.dataThreadId != 0 )
     {
-        char buffer[32];
+        char buffer[128];
 
 #ifdef _BIT64
-        String::formatString(buffer, 32, "0x%016llX", static_cast<uint64_t>(msgLog.dataThreadId));
+        String::formatString(buffer, 128, "0x%016llX", static_cast<uint64_t>(msgLog.dataThreadId));
 #else   // _BIT32
-        String::formatString(buffer, 32, "0x%08X", static_cast<uint32_t>(msgLog.dataThreadId));
+        String::formatString(buffer, 128, "0x%08X", static_cast<uint32_t>(msgLog.dataThreadId));
 #endif  // _BIT64
 
         stream.write(buffer);

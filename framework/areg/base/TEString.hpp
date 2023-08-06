@@ -58,12 +58,12 @@ public:
     /**
      * \brief   Empty character constant
      **/
-    static constexpr CharType   EmptyChar       { static_cast<CharType>('\0') };
+    static constexpr CharType   EmptyChar       { static_cast<CharType>(NEString::EndOfString) };
 
     /**
      * \brief   New line constant
      **/
-    static constexpr CharType   NewLine         { static_cast<CharType>('\n') };
+    static constexpr CharType   NewLine         { static_cast<CharType>(NEString::EndOfLine) };
 
     /**
      * \brief   DOS format new line
