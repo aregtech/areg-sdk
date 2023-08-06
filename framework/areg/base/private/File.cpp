@@ -25,16 +25,10 @@
 #include "areg/base/NEString.hpp"
 #include "areg/base/Containers.hpp"
 
-#include <filesystem>
 
 //////////////////////////////////////////////////////////////////////////
 // File class implementation
 //////////////////////////////////////////////////////////////////////////
-
-constexpr char File::getPathSeparator( void )
-{
-    return static_cast<char>(std::filesystem::path::preferred_separator);
-}
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor
@@ -225,9 +219,9 @@ String File::getFileNameWithExtension( const char* filePath )
     if ( NEString::isEmpty<char>(filePath) == false )
     {
         NEString::CharPos pos = NEString::getStringLength<char>(filePath) - 1;
-        if (filePath[pos] != File::getPathSeparator())
+        if (filePath[pos] != File::PATH_SEPARATOR )
         {
-            pos = NEString::findLast<char>(File::getPathSeparator(), filePath, pos - 1, nullptr);
+            pos = NEString::findLast<char>( File::PATH_SEPARATOR, filePath, pos - 1, nullptr);
             if (NEString::isPositionValid(pos))
             {
                 result = filePath + pos + 1;
@@ -265,7 +259,7 @@ String File::getFileExtension( const char* filePath )
 
 String File::getFileDirectory(const char* filePath)
 {
-    constexpr char separator{ File::getPathSeparator( ) };
+    constexpr char separator{ File::PATH_SEPARATOR };
     NEString::CharPos pos = NEString::isEmpty<char>(filePath) ? NEString::INVALID_POS : NEString::findLast<char>( separator, filePath, NEString::END_POS, nullptr);
     if ( NEString::isPositionValid( pos ) )
     {
@@ -324,13 +318,13 @@ bool File::findParent(const char * filePath, const char ** nextPos, const char *
         else
         {
             length = NEString::getStringLength<char>(filePath); 
-            if ( filePath[length - 1] == File::getPathSeparator() )
+            if ( filePath[length - 1] == File::PATH_SEPARATOR )
                 -- length;
         }
 
         if (length != 0)
         {
-            int pos = NEString::findLast(File::getPathSeparator(), filePath, NEString::END_POS, nextPos);
+            int pos = NEString::findLast( File::PATH_SEPARATOR, filePath, NEString::END_POS, nextPos);
             if ((pos > 0) && (pos < length))
             {
                 result = true;

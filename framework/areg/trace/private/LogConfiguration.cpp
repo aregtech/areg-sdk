@@ -28,7 +28,7 @@ namespace
 {
     String _getDefaultConfigFile( void )
     {
-        return (Process::getInstance( ).getPath( ) + File::getPathSeparator( ) + NEApplication::DEFAULT_TRACING_CONFIG_FILE);
+        return (Process::getInstance( ).getPath( ) + File::PATH_SEPARATOR + NEApplication::DEFAULT_TRACING_CONFIG_FILE);
     }
 }
 
@@ -306,4 +306,3 @@ bool LogConfiguration::updateProperty( const TraceProperty & prop )
     
     return result;
 }
-
