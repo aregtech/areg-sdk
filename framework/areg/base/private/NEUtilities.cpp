@@ -204,22 +204,22 @@ AREG_API_IMPL uint64_t NEUtilities::getTickCount( void )
 
 AREG_API_IMPL bool NEUtilities::convToLocalTime( const sSystemTime & IN utcTime, sSystemTime & OUT localTime )
 {
-    return _osConvToLocalTime( static_cast<const sSystemTime & >(utcTime), static_cast<sSystemTime &>(localTime) );
+    return _osConvToLocalTime( utcTime, localTime );
 }
 
 AREG_API_IMPL bool NEUtilities::convToLocalTime( const TIME64 & IN utcTime, sSystemTime & OUT localTime )
 {
-    return _osConvToLocalTime( static_cast<const TIME64 &>(utcTime), static_cast<sSystemTime &>(localTime) );
+    return _osConvToLocalTime( utcTime, localTime );
 }
 
 AREG_API_IMPL void NEUtilities::systemTimeNow( NEUtilities::sSystemTime & OUT sysTime, bool localTime )
 {
-    _osSystemTimeNow( static_cast<NEUtilities::sSystemTime &>(sysTime), localTime );
+    _osSystemTimeNow( sysTime, localTime );
 }
 
 AREG_API_IMPL void NEUtilities::systemTimeNow( NEUtilities::sFileTime & OUT fileTime, bool localTime )
 {
-    _osSystemTimeNow( static_cast<NEUtilities::sFileTime &>(fileTime), localTime );
+    _osSystemTimeNow( fileTime, localTime );
 }
 
 AREG_API_IMPL TIME64 NEUtilities::systemTimeNow( void )
@@ -239,7 +239,7 @@ AREG_API_IMPL void NEUtilities::convToSystemTime( const TIME64 & IN timeValue, N
 
 AREG_API_IMPL void NEUtilities::convToSystemTime( const NEUtilities::sFileTime & IN fileTime, NEUtilities::sSystemTime & OUT sysTime )
 {
-    _osConvToSystemTime( static_cast<const NEUtilities::sFileTime &>(fileTime), static_cast<NEUtilities::sSystemTime &>(sysTime) );
+    _osConvToSystemTime( fileTime, sysTime );
 }
 
 AREG_API_IMPL void NEUtilities::convToFileTime( const NEUtilities::sSystemTime & IN sysTime, NEUtilities::sFileTime & OUT fileTime )

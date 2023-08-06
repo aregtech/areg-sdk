@@ -85,16 +85,20 @@ namespace NEMath
      **/
     typedef union  U_LargeInteger
     {
+        U_LargeInteger( )
+            : quadPart( 0 )
+        { }
+
         /**
          * \brief   Named structure
          **/
         struct _name
         {
-            uint32_t    lowPart { 0 };  //!< Low part 32-bit integer
-            uint32_t    highPart{ 0 };  //!< High part 32-bit integer
+            uint32_t    lowPart;   //!< Low part 32-bit integer
+            uint32_t    highPart;  //!< High part 32-bit integer
         } u;
 
-        uint64_t        quadPart{ 0 };  //!< 64-bit integer
+        uint64_t        quadPart;  //!< 64-bit integer
     } uLargeInteger;
 
     /**
@@ -528,7 +532,7 @@ inline NEMath::S_LargeInteger::S_LargeInteger( uint32_t hi, uint32_t lo )
 inline NEMath::S_LargeInteger::S_LargeInteger( uint64_t num )
     : hiBits ( 0), loBits ( 0 ) 
 {
-    uLargeInteger li;
+    uLargeInteger li{};
     li.quadPart = num;
     hiBits = li.u.highPart;
     loBits = li.u.lowPart;

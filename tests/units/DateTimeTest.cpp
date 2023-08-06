@@ -55,6 +55,32 @@ TEST( DateTimeTest, TestFormatISO8601 )
     String tmp;
     NEUtilities::convToLocalTime( date.getTime( ), sysTime );
 
+    EXPECT_GE( sysTime.stYear, 2023 )   << "Year:   " << sysTime.stYear  << std::endl;
+
+    EXPECT_GE( sysTime.stMonth, 1 )     << "Month:  " << sysTime.stMonth << std::endl;
+    EXPECT_LE( sysTime.stMonth, 12 )    << "Month:  " << sysTime.stMonth << std::endl;
+
+    EXPECT_GE( sysTime.stDayOfWeek, 0 ) << "DoF:    " << sysTime.stDayOfWeek << std::endl;
+    EXPECT_LE( sysTime.stDayOfWeek, 6 ) << "DoF:    " << sysTime.stDayOfWeek << std::endl;
+
+    EXPECT_GE( sysTime.stDay, 0 )       << "Day:    " << sysTime.stDay << std::endl;
+    EXPECT_LE( sysTime.stDay, 31)       << "Day:    " << sysTime.stDay << std::endl;
+
+    EXPECT_GE( sysTime.stHour, 0 )      << "Hour:   " << sysTime.stHour << std::endl;
+    EXPECT_LE( sysTime.stHour, 23 )     << "Hour:   " << sysTime.stHour << std::endl;
+
+    EXPECT_GE( sysTime.stMinute, 0 )    << "Minute: " << sysTime.stMinute << std::endl;
+    EXPECT_LE( sysTime.stMinute, 59 )   << "Minute: " << sysTime.stMinute << std::endl;
+
+    EXPECT_GE( sysTime.stSecond, 0 )    << "Second: " << sysTime.stSecond << std::endl;
+    EXPECT_LE( sysTime.stSecond, 59 )   << "Second: " << sysTime.stSecond << std::endl;
+
+    EXPECT_GE( sysTime.stMillisecs, 0 ) << "MSec:   " << sysTime.stMillisecs << std::endl;
+    EXPECT_LE( sysTime.stMillisecs, 999)<< "MSec:   " << sysTime.stMillisecs << std::endl;
+
+    EXPECT_GE( sysTime.stMicrosecs, 0 ) << "MuSec:  " << sysTime.stMicrosecs << std::endl;
+    EXPECT_LE( sysTime.stMicrosecs,999) << "MuSec:  " << sysTime.stMicrosecs << std::endl;
+
     String::formatString( buf, 128, "%04u-", sysTime.stYear );
     ASSERT_EQ( timestamp.findFirst( buf ), NEString::START_POS );
 
