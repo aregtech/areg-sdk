@@ -1,7 +1,21 @@
 /************************************************************************
- * Include files.
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
+ * \file        units/FileTest.Cpp
+ * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \author      Artak Avetyan
+ * \brief       AREG Platform, Google test dummy file.
+ *              Created as a fist file to integrate GTest in AREG
  ************************************************************************/
-
+ /************************************************************************
+  * Include files.
+  ************************************************************************/
 #include "units/GUnitTest.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/base/File.hpp"
@@ -12,14 +26,13 @@
 #include <filesystem>
 
 #ifdef WINDOWS
-#include <shlwapi.h>
+    #include <shlwapi.h>
 
-#pragma comment(lib, "Shlwapi.lib")
-
+    #pragma comment(lib, "Shlwapi.lib")
 #endif // WINDOWS
 
 
-TEST( GitHubFileAccessTest, FileReadWithStl )
+TEST( FileTest, StlFileRead )
 {
     Application::setWorkingDirectory( nullptr );
 
@@ -38,7 +51,7 @@ TEST( GitHubFileAccessTest, FileReadWithStl )
     file.close( );
 }
 
-TEST( GitHubFileAccessTest, FileReadWriteWithStl )
+TEST( FileTest, StlFileReadWrite )
 {
     Application::setWorkingDirectory( nullptr );
 
@@ -64,7 +77,7 @@ TEST( GitHubFileAccessTest, FileReadWriteWithStl )
     ASSERT_FALSE( static_cast<bool>(err) );
 }
 
-TEST( GitHubFileAccessTest, FileReadWithWin32 )
+TEST( FileTest, Win32FileRead )
 {
 #ifdef WINDOWS
 
@@ -87,7 +100,7 @@ TEST( GitHubFileAccessTest, FileReadWithWin32 )
 #endif // WINDOWS
 }
 
-TEST( GitHubFileAccessTest, FileReadWriteWithWin32 )
+TEST( FileTest, Win32FileReadWrite )
 {
 #ifdef WINDOWS
 
@@ -118,7 +131,7 @@ TEST( GitHubFileAccessTest, FileReadWriteWithWin32 )
 #endif // WINDOWS
 }
 
-TEST( GitHubFileAccessTest, FileCheckFileWithAreg )
+TEST( FileTest, AregFileCheck )
 {
     Application::setWorkingDirectory( nullptr );
 
@@ -128,7 +141,7 @@ TEST( GitHubFileAccessTest, FileCheckFileWithAreg )
     ASSERT_FALSE( File::existFile( fileWrong ) );
 }
 
-TEST( GitHubFileAccessTest, FileNormalizeWithAreg )
+TEST( FileTest, AregFileNormalizedPath )
 {
     Application::setWorkingDirectory( nullptr );
 
@@ -138,7 +151,7 @@ TEST( GitHubFileAccessTest, FileNormalizeWithAreg )
     ASSERT_TRUE( normalized.endsWith( "log.init" ) );
 }
 
-TEST( GitHubFileAccessTest, FileOpenWithAreg )
+TEST( FileTest, AregFileOpen )
 {
     Application::setWorkingDirectory( nullptr );
 
@@ -153,7 +166,7 @@ TEST( GitHubFileAccessTest, FileOpenWithAreg )
     file.close( );
 }
 
-TEST( GitHubFileAccessTest, FileCreateEmptyFileWithAreg )
+TEST( FileTest, AregFileCreateEmptyFile )
 {
     Application::setWorkingDirectory( nullptr );
     const String fileNameWrite{ "./empty_file_areg.txt" };
@@ -165,7 +178,7 @@ TEST( GitHubFileAccessTest, FileCreateEmptyFileWithAreg )
     ASSERT_TRUE( File::existFile( fileNameWrite ) );
 }
 
-TEST( GitHubFileAccessTest, FileReadWithAreg )
+TEST( FileTest, AregFileRead )
 {
     Application::setWorkingDirectory( nullptr );
 
@@ -184,7 +197,7 @@ TEST( GitHubFileAccessTest, FileReadWithAreg )
     file.close( );
 }
 
-TEST( GitHubFileAccessTest, FileReadWriteWithAreg )
+TEST( FileTest, AregFileReadWrite )
 {
     Application::setWorkingDirectory( nullptr );
 
@@ -213,7 +226,7 @@ TEST( GitHubFileAccessTest, FileReadWriteWithAreg )
     ASSERT_TRUE( File::existFile( fileNameWrite ) );
 }
 
-TEST( GitHubFileAccessTest, CreateFolderCascadedWithAreg )
+TEST( FileTest, AregCreateFolderCascaded )
 {
     Application::setWorkingDirectory( nullptr );
 
@@ -225,7 +238,7 @@ TEST( GitHubFileAccessTest, CreateFolderCascadedWithAreg )
     ASSERT_FALSE( File::existDir( "./dir1/" ) );
 }
 
-TEST( GitHubFileAccessTest, FileReadWriteSubfolderWithAreg )
+TEST( FileTest, AregFileReadWriteSubfolder )
 {
     Application::setWorkingDirectory( nullptr );
 
@@ -255,7 +268,7 @@ TEST( GitHubFileAccessTest, FileReadWriteSubfolderWithAreg )
 }
 
 DEF_TRACE_SCOPE( areg_unit_tests_LogScopeTest_StartAndStopLogging );
-TEST( GitHubFileAccessTest, TryeStartAndStopOnly )
+TEST( FileTest, Areg_TraceStartAndStopOnly )
 {
     Application::setWorkingDirectory( nullptr );
     ASSERT_TRUE( NETrace::startLogging( "./config/log.init" ) );
@@ -263,5 +276,6 @@ TEST( GitHubFileAccessTest, TryeStartAndStopOnly )
     {
         TRACE_SCOPE( areg_unit_tests_LogScopeTest_StartAndStopLogging );
     } while ( false );
+
     NETrace::stopLogging( );
 }

@@ -1,5 +1,5 @@
 # ###########################################################################
-# The google test settings
+# The Google test settings
 
 # ---------------------------------------------------------------------------
 # Description : Compiles test source file and adds the specified unit test
@@ -28,7 +28,7 @@ function(addTest testName)
     addTestEx(${testName} "${AREG_UNIT_TEST_BASE}/${testName}" "")
 endfunction(addTest testName)
 
-# Check whether the google test sources exist.
+# Check whether the Google test sources exist.
 find_package(GTest)
 if (GTEST_FOUND)
 

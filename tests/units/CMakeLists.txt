@@ -1,5 +1,6 @@
 include(GoogleTest)
 
 addTest(DemoTest.cpp)
-addTest(GitHubFileAccessTest.cpp)
+addTest(DateTime.cpp)
+addTest(FileTest.cpp)
 addTest(LogScopesTest.cpp)

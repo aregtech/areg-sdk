@@ -1,13 +1,21 @@
 /************************************************************************
- * \file        tests/units/DemoTest.Cpp
- * \ingroup     platform dependent files
- * \brief       AREG Framework, DemoTest to check the AREG engine and 
- *              google test compilation
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
+ * \file        units/DemoTest.Cpp
+ * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \author      Artak Avetyan
+ * \brief       AREG Platform, Google test dummy file.
+ *              Created as a fist file to integrate GTest in AREG
  ************************************************************************/
  /************************************************************************
   * Include files.
   ************************************************************************/
-
 #include "units/GUnitTest.hpp"
 #include "areg/base/String.hpp"
 

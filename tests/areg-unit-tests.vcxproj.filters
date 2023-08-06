@@ -25,7 +25,10 @@
     <ClCompile Include="units\LogScopesTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="units\GitHubFileAccessTest.cpp">
+    <ClCompile Include="units\FileTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="units\DateTimeTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

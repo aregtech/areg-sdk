@@ -140,8 +140,8 @@ String DateTime::formatTime( const std::string_view & formatName /*= DateTime::T
     
     if ( mDateTime != 0 )
     {
-        NEUtilities::sSystemTime sysTime;
-        struct tm conv;
+        NEUtilities::sSystemTime sysTime{ 0 };
+        struct tm conv { 0 };
 
         NEUtilities::convToLocalTime( mDateTime, sysTime);
         NEUtilities::convToTm(sysTime, conv);
@@ -152,8 +152,8 @@ String DateTime::formatTime( const std::string_view & formatName /*= DateTime::T
         NEString::CharPos ms = str.findFirst( FORMAT_MILLISECOND.data() );
         if ( str.isValidPosition(ms) )
         {
-            char buf[12];
-            String::formatString( buf, 12, "%03d", milli );
+            char buf[128];
+            String::formatString( buf, 128, "%03u", milli );
             str.replace( ms, static_cast<NEString::CharCount>(FORMAT_MILLISECOND.length()), buf);
         }
 

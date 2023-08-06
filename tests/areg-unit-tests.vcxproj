@@ -45,8 +45,9 @@
     <Text Include="units\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="units\DateTimeTest.cpp" />
     <ClCompile Include="units\DemoTest.cpp" />
-    <ClCompile Include="units\GitHubFileAccessTest.cpp" />
+    <ClCompile Include="units\FileTest.cpp" />
     <ClCompile Include="units\LogScopesTest.cpp" />
   </ItemGroup>
   <ItemGroup>
