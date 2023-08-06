@@ -6,6 +6,7 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/base/File.hpp"
 #include "areg/trace/GETrace.h"
+#include "areg/trace/NETrace.hpp"
 
 #include <fstream>
 #include <filesystem>
@@ -253,9 +254,14 @@ TEST( GitHubFileAccessTest, FileReadWriteSubfolderWithAreg )
     ASSERT_TRUE( File::existFile(fileNameWrite) );
 }
 
+DEF_TRACE_SCOPE( areg_unit_tests_LogScopeTest_StartAndStopLogging );
 TEST( GitHubFileAccessTest, TryeStartAndStopOnly )
 {
     Application::setWorkingDirectory( nullptr );
-    ASSERT_TRUE( TRACER_START_LOGGING( "./config/log.init" ) );
-    TRACER_STOP_LOGGING( );
+    ASSERT_TRUE( NETrace::startLogging( "./config/log.init" ) );
+    do
+    {
+        TRACE_SCOPE( areg_unit_tests_LogScopeTest_StartAndStopLogging );
+    } while ( false );
+    NETrace::stopLogging( );
 }

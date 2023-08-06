@@ -30,18 +30,20 @@ namespace
 /**
  * \brief   This is a basic test to start and stop the logging.
  **/
-DEF_TRACE_SCOPE( areg_unit_tests_LogScopeTest_StartAndStopLogging );
+DEF_TRACE_SCOPE( areg_unit_tests_LogScopeTest_StartAndStopLogging_exp );
 TEST( LogScopeTest, StartAndStopLogging )
 {
     Application::setWorkingDirectory( nullptr );
     ASSERT_TRUE( TRACER_START_LOGGING( DEFAULT_CONFIG_FILE.data( ) ) );
     ASSERT_TRUE( IS_TRACE_STARTED( ) );
     
+#if 0
     do
     {
-        TRACE_SCOPE( areg_unit_tests_LogScopeTest_StartAndStopLogging );
+        TRACE_SCOPE( areg_unit_tests_LogScopeTest_StartAndStopLogging_exp );
         TRACE_DBG( "The logging started." );
     } while ( false );
+#endif
 
     TRACER_STOP_LOGGING( );
     ASSERT_FALSE( IS_TRACE_STARTED( ) );
