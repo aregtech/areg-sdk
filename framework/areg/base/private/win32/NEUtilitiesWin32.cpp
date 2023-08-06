@@ -135,18 +135,16 @@ namespace NEUtilities {
         bool result = false;
 
         TIME_ZONE_INFORMATION tzi{ 0 };
-        if ( TIME_ZONE_ID_UNKNOWN != GetTimeZoneInformation( &tzi ) )
-        {
-            SYSTEMTIME utc{ 0 };
-            SYSTEMTIME local{ 0 };
+        GetTimeZoneInformation( &tzi );
+        SYSTEMTIME utc{ 0 };
+        SYSTEMTIME local{ 0 };
 
-            _convAregSysTime2WinSysTime( inUtcTime, utc );
-            if ( SystemTimeToTzSpecificLocalTime( &tzi, &utc, &local ) )
-            {
-                _convWinSysTime2AregSysTime( local, outLocalTime );
-                outLocalTime.stMicrosecs = inUtcTime.stMicrosecs;
-                result = true;
-            }
+        _convAregSysTime2WinSysTime( inUtcTime, utc );
+        if ( SystemTimeToTzSpecificLocalTime( &tzi, &utc, &local ) )
+        {
+            _convWinSysTime2AregSysTime( local, outLocalTime );
+            outLocalTime.stMicrosecs = inUtcTime.stMicrosecs;
+            result = true;
         }
 
         return result;
@@ -172,7 +170,8 @@ namespace NEUtilities {
             NEMemory::memZero( reinterpret_cast<void *>(&tzi), sizeof( TIME_ZONE_INFORMATION ) );
             SYSTEMTIME local;
             NEMemory::zeroElement<SYSTEMTIME>( local );
-            if ( (TIME_ZONE_ID_UNKNOWN != GetTimeZoneInformation( &tzi )) && SystemTimeToTzSpecificLocalTime( &tzi, &st, &local ) )
+            GetTimeZoneInformation( &tzi );
+            if ( SystemTimeToTzSpecificLocalTime( &tzi, &st, &local ) )
             {
                 _convWinSysTime2AregSysTime( local, sysTime );
             }
@@ -195,7 +194,8 @@ namespace NEUtilities {
             TIME_ZONE_INFORMATION tzi;
             NEMemory::memZero( reinterpret_cast<void *>(&tzi), sizeof( TIME_ZONE_INFORMATION ) );
             NEMemory::zeroElement<SYSTEMTIME>( local );
-            if ( (TIME_ZONE_ID_UNKNOWN != GetTimeZoneInformation( &tzi )) && SystemTimeToTzSpecificLocalTime( &tzi, &st, &local ) )
+            GetTimeZoneInformation( &tzi );
+            if ( SystemTimeToTzSpecificLocalTime( &tzi, &st, &local ) )
             {
                 src = &local;
             }
