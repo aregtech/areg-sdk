@@ -216,11 +216,6 @@ TEST( DateTimeTest, TestLocalTime )
     NEUtilities::convToLocalTime( utcTime, localTime );
     _checkTimeStruct( localTime, "Areg Local " );
 
-    struct tm conv { 0 };
-    NEUtilities::convToTm( localTime, conv );
-
-    _checkTimeStruct( conv, "struct tm Local " );
-
     NEUtilities::sSystemTime sysTime;
     NEUtilities::convToLocalTime( date.getTime( ), sysTime );
 
@@ -228,7 +223,7 @@ TEST( DateTimeTest, TestLocalTime )
     ASSERT_EQ( localTime.stMonth, sysTime.stMonth ) << "localTime.stMonth= " << localTime.stMonth   << ", sysTime.stMonth = " << sysTime.stMonth << std::endl;
     ASSERT_EQ( localTime.stDay, sysTime.stDay )     << "localTime.stDay = "  << localTime.stDay     << ", sysTime.stDay = "   << sysTime.stDay << std::endl;
     ASSERT_EQ( localTime.stDayOfWeek, sysTime.stDayOfWeek ) << "localTime.stDayOfWeek = " << localTime.stDayOfWeek << ", sysTime.stDayOfWeek = " << sysTime.stDayOfWeek << std::endl;
-    // ASSERT_EQ( localTime.stHour, sysTime.stHour ) << "localTime.stHour = " << localTime.stHour << ", sysTime.stHour = " << sysTime.stHour << std::endl;
+    ASSERT_EQ( localTime.stHour, sysTime.stHour ) << "localTime.stHour = " << localTime.stHour << ", sysTime.stHour = " << sysTime.stHour << std::endl;
     ASSERT_EQ( localTime.stMinute, sysTime.stMinute ) << "localTime.stMinute = " << localTime.stMinute << ", sysTime.stMinute = " << sysTime.stMinute << std::endl;
     ASSERT_EQ( localTime.stSecond, sysTime.stSecond ) << "localTime.stSecond = " << localTime.stSecond << ", sysTime.stSecond = " << sysTime.stSecond << std::endl;
     ASSERT_EQ( localTime.stMillisecs, sysTime.stMillisecs ) << "localTime.stMillisecs = " << localTime.stMillisecs << ", sysTime.stMillisecs = " << sysTime.stMillisecs << std::endl;
