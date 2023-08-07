@@ -54,29 +54,50 @@ void TraceManager::sendLogMessage( LogMessage & logData )
     tracer.sendLogEvent( TraceEventData(TraceEventData::eTraceAction::TraceLogMessage, logData) );
 }
 
-bool TraceManager::startLogging( const char * configFile /*= nullptr*/, unsigned int waitTimeout /*= NECommon::WAIT_INFINITE*/ )
+bool TraceManager::startLogging( const char * configFile /*= nullptr*/ )
 {
     TraceManager & traceManager = TraceManager::getInstance();
-    bool canStart = false;
 
     do
     {
         Lock lock(traceManager.mLock);
-        if (TraceManager::isLoggingConfigured() == false)
+        if ( traceManager.isReady( ) == false )
         {
-        	if (traceManager.isReady( ) == false)
-        	{
-                canStart = traceManager.loadConfiguration( configFile);
+            if ( TraceManager::isLoggingConfigured( ) == false )
+            {
+                traceManager.loadConfiguration( configFile );
             }
-        }
-        else
-        {
-        	canStart = traceManager.isReady( ) == false;
+
+            lock.unlock( );
+            VERIFY( traceManager.startLoggingThread( ) );
+            lock.lock( );
         }
 
     } while (false);
 
-    return (canStart ? traceManager.startLoggingThread( waitTimeout ) : traceManager.mIsStarted);
+    return traceManager.mIsStarted;
+}
+
+bool TraceManager::saveLogConfig( const char * configFile )
+{
+    TraceManager & traceManager = TraceManager::getInstance( );
+    if ( NEString::isEmpty( configFile ) )
+    {
+        Lock lock( traceManager.mLock );
+        return traceManager.mLogConfig.saveConfig( );
+    }
+    else
+    {
+        Lock lock( traceManager.mLock );
+        return traceManager.mLogConfig.saveConfig( configFile );
+    }
+}
+
+bool TraceManager::saveLogConfig( FileBase & file )
+{
+    TraceManager & traceManager = TraceManager::getInstance( );
+    Lock lock( traceManager.mLock );
+    return traceManager.mLogConfig.saveConfig( file );
 }
 
 bool TraceManager::isLoggingConfigured(void)
@@ -129,6 +150,28 @@ bool TraceManager::forceActivateLogging(void)
     return result;
 }
 
+bool TraceManager::setScopePriority( const char * scopeName, unsigned int newPrio )
+{
+    ScopeController & ctrScope = TraceManager::getInstance( ).mScopeController;
+    unsigned int scopeId = NETrace::makeScopeId( scopeName );
+    const TraceScope * scope = ctrScope.getScope( scopeId );
+    bool result{ scope != nullptr };
+    if ( result && (scope->getPriority() != newPrio))
+    {
+        ctrScope.setScopePriority( scopeId, newPrio );
+    }
+
+    return result;
+}
+
+unsigned int TraceManager::getScopePriority( const char * scopeName )
+{
+    ScopeController & ctrScope = TraceManager::getInstance( ).mScopeController;
+    unsigned int scopeId = NETrace::makeScopeId( scopeName );
+    const TraceScope * scope = ctrScope.getScope( scopeId );
+    return (scope != nullptr ? scope->getPriority() : static_cast<unsigned int>(NETrace::eLogPriority::PrioInvalid));
+}
+
 void TraceManager::netConnectionLost( void )
 {
     TraceManager & traceManager = TraceManager::getInstance( );
@@ -177,6 +220,13 @@ bool TraceManager::loadConfiguration( const char * filePath /*= nullptr */ )
     return mLogConfig.loadConfig( filePath );
 }
 
+void TraceManager::unloadConfiguration( void )
+{
+    Lock lock( mLock );
+    mScopeController.clearConfigScopes( );
+    mLogConfig.unloadConfig( );
+}
+
 void TraceManager::clearConfigData( void )
 {
     Lock lock(mLock);
@@ -205,35 +255,34 @@ bool TraceManager::isDebugOutputValid(void) const
     return mLogConfig.getDebugOutput().isValid();
 }
 
-bool TraceManager::startLoggingThread( unsigned int waitTimeout /* = NECommon::WAIT_INFINITE */ )
+bool TraceManager::startLoggingThread( void )
 {
-    bool result = false;
     ASSERT((isRunning() == false) && (isReady() == false));
+    mLogStarted.resetEvent( );
     if ( createThread(NECommon::WAIT_INFINITE) )
     {
-        // SetScopesActivity(true);
         if ( waitForDispatcherStart(NECommon::WAIT_INFINITE) )
         {
-            mLogStarted.resetEvent();
-
             sendLogEvent( TraceEventData(TraceEventData::eTraceAction::TraceStartLogs) );
-
-            result = mLogStarted.lock(waitTimeout);
+            mLogStarted.lock( NECommon::WAIT_INFINITE );
         }
     }
     else
     {
+        ASSERT( false );
         OUTPUT_ERR("Failed to create [ %s ] System Timer Thread", TraceManager::TRACER_THREAD_NAME);
     }
 
-    return result;
+    return mIsStarted;
 }
 
-void TraceManager::stopLoggingThread( unsigned int waitTimeout /* = NECommon::WAIT_INFINITE */ )
+void TraceManager::stopLoggingThread( void )
 {
     // RemoveAllEvents(false);
     sendLogEvent( TraceEventData(TraceEventData::eTraceAction::TraceStopLogs) );
-    completionWait( isRunning() ? waitTimeout : NECommon::DO_NOT_WAIT );
+    completionWait( NECommon::WAIT_INFINITE );
+    mIsStarted = false;
+    destroyThread( NECommon::DO_NOT_WAIT );
 }
 
 void TraceManager::processTimer( Timer & timer )
@@ -298,10 +347,10 @@ void TraceManager::traceStartLogs( void )
 #endif // !defined(OUTPUT_DEBUG)
 
         connectTcpLogService( );
-
-        mIsStarted = true;
-        mLogStarted.setEvent( );
     }
+
+    mIsStarted = true;
+    mLogStarted.setEvent( );
 }
 
 void TraceManager::traceStopLogs(void)
@@ -310,6 +359,8 @@ void TraceManager::traceStopLogs(void)
     mTimerReconnect.stopTimer( );
     mScopeController.changeScopeActivityStatus( false );
     mLogStarted.resetEvent( );
+
+    mIsStarted = false;
 
     mLoggerDebug.closeLogger( );
     mLoggerFile.closeLogger( );

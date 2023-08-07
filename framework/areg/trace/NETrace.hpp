@@ -29,6 +29,7 @@
  * Dependencies
  ************************************************************************/
 class TraceScope;
+class FileBase;
 
 //////////////////////////////////////////////////////////////////////////
 // NETrace namespace declaration
@@ -40,22 +41,28 @@ class TraceScope;
  **/
 namespace NETrace
 {
+    constexpr std::string_view LOG_VERSION  { "1.1.0" };
+
     /**
      * \brief   NETrace::eLogPriority
      *          Log priority definition set when logging message
      **/
     enum eLogPriority : unsigned int
     {
-          PrioNotset        = 0x00  //!< No priority is set,        bit set:    0000 0000
-        , PrioScope         = 0x01  //!< Output scopes priority,    bit set:    0000 0001
-        , PrioFatal         = 0x02  //!< Fatal error log priority,  bit set:    0000 0010
-        , PrioError         = 0x04  //!< Error log priority,        bit set:    0000 0100
-        , PrioWarning       = 0x08  //!< Warning log priority,      bit set:    0000 1000
-        , PrioInfo          = 0x10  //!< Information log priority,  bit set:    0001 0000
-        , PrioDebug         = 0x20  //!< Debug log priority,        bit set:    0010 0000
-        , PrioIgnore        = 0x40  //!< Ignore logging priority,   bit set:    0100 0000
-        , PrioIgnoreLayout  = 0xC0  //!< Ignore layout priority,    bit set:    1100 0000
-        , PrioAny           = 0xFF  //!< Log without priority,      bit set:    1111 1111
+          PrioInvalid       = 0x0000  //!< Invalid priority,          bit set:  0000 0000 0000
+        , PrioNotset        = 0x0001  //!< No priority is set,        bit set:  0000 0000 0001
+        , PrioScope         = 0x0010  //!< Output scopes priority,    bit set:  0000 0001 0000
+        , PrioFatal         = 0x0020  //!< Fatal error log priority,  bit set:  0000 0010 0000
+        , PrioError         = 0x0040  //!< Error log priority,        bit set:  0000 0100 0000
+        , PrioWarning       = 0x0080  //!< Warning log priority,      bit set:  0000 1000 1000
+        , PrioInfo          = 0x0100  //!< Information log priority,  bit set:  0001 0000 0000
+        , PrioDebug         = 0x0200  //!< Debug log priority,        bit set:  0010 0000 0000
+        , PrioLogs          = 0x03E0  //!< Log is enabled priority,   bit set:  0011 1110 0000
+        , PrioValidLogs     = 0x03F1  //!< The valid log priority,    bit set:  0011 1111 0001
+        , PrioIgnore        = 0x0400  //!< Ignore logging priority,   bit set:  0100 0000 0000
+        , PrioIgnoreLayout  = 0x0C00  //!< Ignore layout priority,    bit set:  1100 0000 0000
+        , PrioAny           = 0x0FF0  //!< Log without priority,      bit set:  1111 1111 0000
+        , PrioValid         = 0x0FF1  //!< Valid logging priority     bit set:  1111 1111 0001
     };
 
     /**
@@ -63,6 +70,31 @@ namespace NETrace
      *          Converts NETrace::eLogPriority values to readable string values
      **/
     inline const char * getString( NETrace::eLogPriority prio );
+
+    /**
+     * \brief   Returns true if the specified log priority value is valid.
+     **/
+    inline bool isValidLogPriority( NETrace::eLogPriority prio );
+
+    /**
+     * \brief   Returns true if the specified priority refers to the logging.
+     **/
+    inline bool isLogPriority( NETrace::eLogPriority prio );
+
+    /**
+     * \brief   Returns true if the specified priority enables logging, i.e. logs messages..
+     **/
+    inline bool isEnablingLog( NETrace::eLogPriority prio );
+
+    /**
+     * \brief   Returns true if the specified priority makes scope logging.
+     **/
+    inline bool isLogScope( NETrace::eLogPriority prio );
+
+    /**
+     * \brief   Returns true if the specified priority does not log messages.
+     **/
+    inline bool isDisablingLog( NETrace::eLogPriority prio );
 
     /**
      * \brief   NETrace::ToString
@@ -87,9 +119,16 @@ namespace NETrace
     AREG_API NETrace::eLogPriority convFromString( const String& strPrio );
 
     /**
+     * \brief   Converts the bitwise set of priority into the human readable string.
+     * \param   priorities      The priorities to convert. Set bitwise.
+     * \return  Returns converted string that may contain logical OR ('|') if more than one priority is set.
+     **/
+    AREG_API String makePrioString( unsigned int priorities );
+
+    /**
      * \brief   Returns the cookie of the logger.
      **/
-    AREG_API const ITEM_ID& getCookie(void);
+    AREG_API const ITEM_ID & getCookie(void);
 
     /**
      * \brief   NETrace::HAS_MESSAGE_PRIORITY
@@ -103,6 +142,11 @@ namespace NETrace
      *          Constant, defines no scope ID. It is used to output message without scope
      **/
     constexpr unsigned int  TRACE_SCOPE_ID_NONE     { 0 };
+
+    /**
+     * \brief   Invalid cookie, indicating that there are no logs compiled with the project.
+     **/
+    constexpr ITEM_ID       INVALID_COOKIE          { 0 };
 
     /**
      * \brief   The cookie to indicate that messages are not for remote host.
@@ -567,14 +611,6 @@ namespace NETrace
     inline bool isLogNotify(const NETrace::sLogHeader& logHeader);
 
     /**
-     * \brief   Configures logging data from given logging file.
-     * \param   fileConfig  The relative or absolute path of logging file.
-     *                      If empty or nullptr, the system default path will be taken.
-     * \return  Returns true if succeeded to open file and configure logging.
-     **/
-    AREG_API bool configureLoging( const char * fileConfig );
-
-    /**
      * \brief   Start logging. If specified file is not nullptr, it configures logging first, then starts logging.
      * \param   fileConfig  The relative or absolute path to logging configuration file.
      *                      If not nullptr, the system configures logging then starts logging.
@@ -601,7 +637,7 @@ namespace NETrace
      * \param   configFile
      * \return  Returns true if succeeded to start logging.
      **/
-    AREG_API bool configAndStart( const char * fileConfig = nullptr );
+    AREG_API bool initAndStartLogging( const char * fileConfig = nullptr );
 
     /**
      * \brief   Stops logging. No message will be logged anymore
@@ -648,6 +684,38 @@ namespace NETrace
     AREG_API const String& getConfigFile( void );
 
     /**
+     * \brief   Initializes the logging by reading and configuration instructions
+     *          from given logging file.
+     * \param   fileConfig  The relative or absolute path of logging file.
+     *                      If empty or nullptr, the system default path will be taken.
+     * \return  Returns true if succeeded to open file and configure logging.
+     **/
+    AREG_API bool initializeLogging( const char * fileConfig );
+
+    /**
+     * \brief   Saves the current configuration of the logging state in the file.
+     * \param   configFile  The pointer to the configuration file to save.
+     * \return  Returns true if succeeded to save the current state of the logging.
+     **/
+    AREG_API bool saveLogging( const char * configFile = nullptr );
+
+    /**
+     * \brief   Reads the log configuration and initializes logging from the specified file.
+     *          The file should be opened for reading.
+     **/
+    AREG_API bool readConfiguration( const FileBase & file );
+
+    /**
+     * \brief   Saves the current state of the logging in the configuration file.
+     *          It keeps the existing configurations and modifies only
+     *          part relevant to current module. In all other cases, nothing is changes.
+     * \param   file    The file to save log configuration.
+     *                  The file should be opened for writing.
+     * \return  Returns true if succeeded to save current state of logging.
+     **/
+    AREG_API bool saveConfiguration( FileBase & file );
+
+    /**
      * \brief   Returns the ID of given scope name.
      *          If scope name is nullptr or empty, it returns zero.
      * \param   scopeName   The name of scope. If nullptr or empty,
@@ -655,6 +723,22 @@ namespace NETrace
      * \return  Returns the ID of given scope name.
      **/
     AREG_API unsigned int makeScopeId( const char * scopeName );
+
+    /**
+     * \brief   Call to change the scope log priority.
+     * \param   scopeName   The name of the existing scope. Ignored if scope does not exit.
+     * \param   newPrio     The new priority to set. Can be bitwise combination with scopes.
+     * \return  Returns true if scope found and priority changed.
+     **/
+    AREG_API unsigned int setScopePriority( const char * scopeName, unsigned int newPrio );
+
+    /**
+     * \brief   Returns the scope priority if found. Otherwise, returns invalid priority.
+     * \param   scopeName   The name of the existing scope.
+     * \return  Is found the scope, returns the actual priority of the scope.
+     *          Otherwise, returns invalid priority (NETrace::eLogPriority::PrioInvalid).
+     **/
+    AREG_API unsigned int getScopePriority( const char * scopeName );
 
     /**
      * \brief   Creates a message for logging service to get connection registration.
@@ -900,10 +984,14 @@ inline const char* NETrace::getString(NETrace::eLogPriority prio)
 {
     switch ( prio )
     {
+    case NETrace::eLogPriority::PrioInvalid:
+        return "NETrace::PrioInvalid";
     case NETrace::eLogPriority::PrioNotset:
         return "NETrace::PrioNotset";
     case NETrace::eLogPriority::PrioFatal:
         return "NETrace::PrioFatal";
+    case NETrace::eLogPriority::PrioScope:
+        return "NETrace::PrioScope";
     case NETrace::eLogPriority::PrioError:
         return "NETrace::PrioError";
     case NETrace::eLogPriority::PrioWarning:
@@ -912,18 +1000,47 @@ inline const char* NETrace::getString(NETrace::eLogPriority prio)
         return "NETrace::PrioInfo";
     case NETrace::eLogPriority::PrioDebug:
         return "NETrace::PrioDebug";
-    case NETrace::eLogPriority::PrioScope:
-        return "NETrace::PrioScope";
+    case NETrace::eLogPriority::PrioLogs:
+        return "NETrace::PrioLogs";
+    case NETrace::eLogPriority::PrioValidLogs:
+        return "NETrace::PrioValidLogs";
     case NETrace::eLogPriority::PrioIgnore:
         return "NETrace::PrioIgnore";
     case NETrace::eLogPriority::PrioIgnoreLayout:
         return "NETrace::PrioIgnoreLayout";
     case NETrace::eLogPriority::PrioAny:
         return "NETrace::PrioAny";
+    case NETrace::eLogPriority::PrioValid:
+        return "NETrace::PrioValid";
     default:
         ASSERT(false);
         return "ERR: Unexpected NETrace::eLogPrior value";
     }
+}
+
+inline bool NETrace::isValidLogPriority( NETrace::eLogPriority prio )
+{
+    return (static_cast<unsigned int>(prio) & static_cast<unsigned int>(NETrace::eLogPriority::PrioValid)) != 0;
+}
+
+inline bool NETrace::isLogPriority( NETrace::eLogPriority prio )
+{
+    return (static_cast<unsigned int>(prio) & static_cast<unsigned int>(NETrace::eLogPriority::PrioValidLogs)) != 0;
+}
+
+inline bool NETrace::isEnablingLog( NETrace::eLogPriority prio )
+{
+    return (static_cast<unsigned int>(prio) & static_cast<unsigned int>(NETrace::eLogPriority::PrioLogs)) != 0;
+}
+
+inline bool NETrace::isLogScope( NETrace::eLogPriority prio )
+{
+    return (prio == NETrace::eLogPriority::PrioScope);
+}
+
+inline bool NETrace::isDisablingLog( NETrace::eLogPriority prio )
+{
+    return (prio == NETrace::eLogPriority::PrioNotset) || (prio == NETrace::eLogPriority::PrioInvalid);
 }
 
 #endif  // AREG_TRACE_NETRACE_HPP

@@ -142,9 +142,13 @@ AREG_API_IMPL const String& NETrace::convToString( NETrace::eLogPriority prio )
         return NETrace::PRIO_DEBUG_STR;
     case NETrace::eLogPriority::PrioScope:
         return NETrace::PRIO_SCOPE_STR;
+    case NETrace::eLogPriority::PrioInvalid:
+    case NETrace::eLogPriority::PrioValidLogs:
     case NETrace::eLogPriority::PrioIgnore:
     case NETrace::eLogPriority::PrioIgnoreLayout:
+    case NETrace::eLogPriority::PrioLogs:
     case NETrace::eLogPriority::PrioAny:
+    case NETrace::eLogPriority::PrioValid:
         return NETrace::PRIO_NO_PRIO;
     default:
         ASSERT(false);
@@ -172,7 +176,47 @@ AREG_API_IMPL NETrace::eLogPriority NETrace::convFromString( const String& strPr
             return NETrace::eLogPriority::PrioFatal;
     }
 
-    return NETrace::eLogPriority::PrioNotset;
+    return NETrace::eLogPriority::PrioInvalid;
+}
+
+AREG_API_IMPL String NETrace::makePrioString( unsigned int priorities )
+{
+    String result;
+#if AREG_LOGS
+    NETrace::eLogPriority prio1{NETrace::eLogPriority::PrioInvalid};
+    NETrace::eLogPriority prio2{NETrace::eLogPriority::PrioInvalid};
+
+    if ( (priorities & static_cast<unsigned int>(NETrace::eLogPriority::PrioValidLogs)) != 0 )
+    {
+        prio1 = static_cast<NETrace::eLogPriority>(priorities & static_cast<unsigned int>(NETrace::eLogPriority::PrioLogs));
+        if ( prio1 != NETrace::eLogPriority::PrioInvalid )
+        {
+            priorities &= ~static_cast<unsigned int>(NETrace::eLogPriority::PrioLogs);
+            prio2 = static_cast<NETrace::eLogPriority>(priorities) == NETrace::eLogPriority::PrioScope ? NETrace::eLogPriority::PrioScope : prio2;
+        }
+        else
+        {
+            prio1 = static_cast<NETrace::eLogPriority>(priorities);
+        }
+    }
+
+    if ( NETrace::isValidLogPriority( prio1 ) && NETrace::isValidLogPriority( prio2 ) )
+    {
+        if ( NETrace::isLogScope( prio1 ) || NETrace::isLogScope( prio2 ) )
+        {
+            constexpr int size{ 0xFF + 1 };
+            char buffer[ size ];
+            String::formatString( buffer, size, "%s | %s", NETrace::convToString( prio1 ).getString( ), NETrace::convToString( prio2 ).getString() );
+            result = buffer;
+        }
+    }
+    else if ( NETrace::isValidLogPriority( prio1 ) )
+    {
+        result = NETrace::convToString( prio1 );
+    }
+#endif  //     String result;
+
+    return result;
 }
 
 AREG_API_IMPL bool NETrace::startLogging(const char * fileConfig /*= nullptr */ )
@@ -216,10 +260,10 @@ AREG_API_IMPL bool NETrace::isConfigured(void)
 #endif  // AREG_LOGS
 }
 
-AREG_API_IMPL bool NETrace::configureLoging(const char * fileConfig)
+AREG_API_IMPL bool NETrace::initializeLogging(const char * fileConfig)
 {
 #if AREG_LOGS
-    return TraceManager::configureLogging(fileConfig);
+    return TraceManager::readLogConfig(fileConfig);
 #else   // !AREG_LOGS
     return true;
 #endif  // AREG_LOGS
@@ -243,12 +287,57 @@ AREG_API_IMPL const String& NETrace::getConfigFile(void)
 #endif  // AREG_LOGS
 }
 
+AREG_API_IMPL bool NETrace::saveLogging( const char * configFile )
+{
+#if AREG_LOGS
+    return TraceManager::saveLogConfig( configFile );
+#else   // !AREG_LOGS
+    return true;
+#endif  // AREG_LOGS
+}
+
+AREG_API_IMPL bool NETrace::readConfiguration( const FileBase & file )
+{
+#if AREG_LOGS
+    return TraceManager::readLogConfig( file );
+#else   // !AREG_LOGS
+    return true;
+#endif  // AREG_LOGS
+}
+
+AREG_API_IMPL bool NETrace::saveConfiguration( FileBase & file )
+{
+#if AREG_LOGS
+    return TraceManager::saveLogConfig( file );
+#else   // !AREG_LOGS
+    return true;
+#endif  // AREG_LOGS
+}
+
 AREG_API_IMPL unsigned int NETrace::makeScopeId( const char * scopeName )
 {
 #if AREG_LOGS
     return  NEMath::crc32Calculate( scopeName );
 #else   // !AREG_LOGS
     return 0;
+#endif  // AREG_LOGS
+}
+
+AREG_API_IMPL unsigned int NETrace::setScopePriority( const char * scopeName, unsigned int newPrio )
+{
+#if AREG_LOGS
+    return TraceManager::setScopePriority( scopeName, newPrio );
+#else   // !AREG_LOGS
+    return true;
+#endif  // AREG_LOGS
+}
+
+AREG_API_IMPL unsigned int NETrace::getScopePriority( const char * scopeName )
+{
+#if AREG_LOGS
+    return TraceManager::getScopePriority( scopeName );
+#else   // !AREG_LOGS
+    return static_cast<unsigned int>(NETrace::eLogPriority::PrioInvalid);
 #endif  // AREG_LOGS
 }
 
@@ -339,10 +428,10 @@ AREG_API_IMPL bool NETrace::forceStartLogging(void)
 #endif  // AREG_LOGS
 }
 
-AREG_API_IMPL bool NETrace::configAndStart(const char * fileConfig /*= nullptr */)
+AREG_API_IMPL bool NETrace::initAndStartLogging(const char * fileConfig /*= nullptr */)
 {
 #if AREG_LOGS
-    if (TraceManager::configureLogging(fileConfig))
+    if (TraceManager::readLogConfig(fileConfig))
     {
         TraceManager::forceEnableLogging();
         return TraceManager::startLogging(nullptr);
@@ -358,5 +447,9 @@ AREG_API_IMPL bool NETrace::configAndStart(const char * fileConfig /*= nullptr *
 
 AREG_API_IMPL const ITEM_ID& NETrace::getCookie(void)
 {
+#if AREG_LOGS
     return TraceManager::getCookie();
+#else   // !AREG_LOGS
+    return NETrace::INVALID_COOKIE;
+#endif  // AREG_LOGS
 }

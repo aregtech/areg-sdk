@@ -22,6 +22,7 @@
  * Includes
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
+#include "areg/base/NEString.hpp"
 
 /************************************************************************
  * Dependencies
@@ -215,12 +216,12 @@ private:
 
 inline bool WriteConverter::writeLine( const char * in_value )
 {
-    return (appendString(in_value) && setChar(static_cast<char>('\n')));
+    return (appendString(in_value) && setChar(static_cast<char>(NEString::EndOfLine)));
 }
 
 inline bool WriteConverter::writeLine( const wchar_t * in_value )
 {
-    return (appendString(in_value) && setChar(static_cast<wchar_t>('\n')));
+    return (appendString(in_value) && setChar(static_cast<wchar_t>(NEString::EndOfLine)));
 }
 
 inline bool WriteConverter::setEndOfString( bool isWideChar )

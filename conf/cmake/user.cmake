@@ -19,8 +19,8 @@
 #  12. AREG_OUTPUT_LIB      -- Set the path to folder to output compiled static libraries.
 #
 # The default values are:
-#   1. AREG_COMPILER_FAMILY = gnu       (possible values: gnu, cygwin, llvm, msvc)
-#   2. AREG_COMPILER        = g++       (possible values: g++, gcc, c++, cc, clang++, clang, cl)
+#   1. AREG_COMPILER_FAMILY = <default> (possible values: gnu, cygwin, llvm, msvc)
+#   2. AREG_COMPILER        = <default> (possible values: g++, gcc, c++, cc, clang++, clang, cl)
 #   3. AREG_BINARY          = shared    (possible values: shared, static)
 #   4. AREG_BUILD_TYPE      = Release   (possible values: Release, Debug
 #   5. AREG_BUILD_TESTS     = OFF       (possible values: ON, OFF)
@@ -143,7 +143,7 @@ endif()
 
 # Set build configuration. Set "Debug" for debug build, and "Release" for release build.
 if (NOT DEFINED AREG_BUILD_TYPE OR NOT ${AREG_BUILD_TYPE} STREQUAL "Debug")
-    set(AREG_BUILD_TYPE "Release")
+    set(AREG_BUILD_TYPE "Debug")
 endif()
 
 # Set the AREG binary library type to compile. Set "shared" if not "static"
@@ -153,7 +153,7 @@ endif()
 
 # Build tests. By default it is disabled. To enable, set ON
 if (NOT DEFINED AREG_BUILD_TESTS)
-    option(AREG_BUILD_TESTS     "Build unit tests" OFF)
+    option(AREG_BUILD_TESTS     "Build unit tests" ON)
 endif()
 
 # Build examples. By default it is disabled. To enable, set ON
@@ -163,7 +163,7 @@ endif()
 
 # Set AREG extended features enable or disable flag to compiler additional optional features. By default, it is disabled.
 if (NOT DEFINED AREG_EXTENDED)
-    option(AREG_EXTENDED      "Enable extensions" OFF)
+    option(AREG_EXTENDED      "Enable extensions" ON)
 endif()
 
 # Modify 'AREG_LOGS' to enable or disable compilation with logs. By default, compile with logs

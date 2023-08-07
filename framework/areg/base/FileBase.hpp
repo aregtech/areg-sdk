@@ -354,13 +354,13 @@ public:
      * \brief   Move file pointer to the beginning of file
      *          File object must be opened before calling, otherwise will fail with assertion.
      **/
-    inline bool moveToBegin( void );
+    inline bool moveToBegin( void ) const;
 
     /**
      * \brief   Move file pointer to the end of file
      *          File object must be opened before calling, otherwise will fail with assertion.
      **/
-    inline bool moveToEnd( void );
+    inline bool moveToEnd( void ) const;
 
     /**
      * \brief   Returns the start position value.
@@ -975,13 +975,13 @@ inline bool FileBase::canRead( void ) const
     return ( (getMode() & static_cast<int>(FOB_READ)) != 0 );
 }
 
-inline bool FileBase::moveToBegin( void )
+inline bool FileBase::moveToBegin( void ) const
 {
     ASSERT(isOpened());
     return IECursorPosition::moveToBegin();
 }
 
-inline bool FileBase::moveToEnd( void )
+inline bool FileBase::moveToEnd( void ) const
 {
     ASSERT(isOpened());
     return IECursorPosition::moveToEnd();

@@ -25,16 +25,10 @@
 #include "areg/base/NEString.hpp"
 #include "areg/base/Containers.hpp"
 
-#include <filesystem>
 
 //////////////////////////////////////////////////////////////////////////
 // File class implementation
 //////////////////////////////////////////////////////////////////////////
-
-const char File::getPathSeparator( void )
-{
-    return static_cast<char>(std::filesystem::path::preferred_separator);
-}
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor
@@ -225,9 +219,9 @@ String File::getFileNameWithExtension( const char* filePath )
     if ( NEString::isEmpty<char>(filePath) == false )
     {
         NEString::CharPos pos = NEString::getStringLength<char>(filePath) - 1;
-        if (filePath[pos] != File::getPathSeparator())
+        if (filePath[pos] != File::PATH_SEPARATOR )
         {
-            pos = NEString::findLast<char>(File::getPathSeparator(), filePath, pos - 1, nullptr);
+            pos = NEString::findLast<char>( File::PATH_SEPARATOR, filePath, pos - 1, nullptr);
             if (NEString::isPositionValid(pos))
             {
                 result = filePath + pos + 1;
@@ -265,14 +259,29 @@ String File::getFileExtension( const char* filePath )
 
 String File::getFileDirectory(const char* filePath)
 {
-    NEString::CharPos pos = NEString::isEmpty<char>(filePath) ? NEString::INVALID_POS : NEString::findLast<char>(File::getPathSeparator(), filePath, NEString::END_POS, nullptr);
-    return (NEString::isPositionValid(pos) ? String(filePath, pos) : String(String::getEmptyString()));
+    constexpr char separator{ File::PATH_SEPARATOR };
+    NEString::CharPos pos = NEString::isEmpty<char>(filePath) ? NEString::INVALID_POS : NEString::findLast<char>( separator, filePath, NEString::END_POS, nullptr);
+    if ( NEString::isPositionValid( pos ) )
+    {
+        return String( filePath, (*(filePath + pos) == separator ? pos : pos + 1) );
+    }
+    else
+    {
+        return String::EmptyString;
+    }
 }
 
 bool File::createDirCascaded( const char* dirPath )
 {
-    std::error_code err;
-    return (NEString::isEmpty<char>(dirPath) == false ? std::filesystem::create_directories(dirPath, err) : false);
+    bool result{ false };
+    if ( NEString::isEmpty<char>( dirPath ) == false )
+    {
+        std::error_code err;
+        std::filesystem::create_directories( dirPath, err );
+        result = static_cast<bool>(err) == false;
+    }
+
+    return result;
 }
 
 String File::normalizePath(const char* fileName)
@@ -289,6 +298,7 @@ String File::normalizePath(const char* fileName)
             result = fp.string();
         }
     }
+
     return result;
 }
 
@@ -308,13 +318,13 @@ bool File::findParent(const char * filePath, const char ** nextPos, const char *
         else
         {
             length = NEString::getStringLength<char>(filePath); 
-            if ( filePath[length - 1] == File::getPathSeparator() )
+            if ( filePath[length - 1] == File::PATH_SEPARATOR )
                 -- length;
         }
 
         if (length != 0)
         {
-            int pos = NEString::findLast(File::getPathSeparator(), filePath, NEString::END_POS, nextPos);
+            int pos = NEString::findLast( File::PATH_SEPARATOR, filePath, NEString::END_POS, nextPos);
             if ((pos > 0) && (pos < length))
             {
                 result = true;

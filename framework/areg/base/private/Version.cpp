@@ -156,8 +156,11 @@ bool Version::operator > ( const Version & version ) const
 
 String Version::convToString( void ) const
 {
-    String result;
-    return result.format("%d%c%d%c%d", mMajor, NECommon::OBJECT_SEPARATOR, mMinor, NECommon::OBJECT_SEPARATOR, mPatch);
+    constexpr const char * format{ "%d%c%d%c%d" };
+
+    char buffer[ 128 ]{ 0 };
+    int len = String::formatString( buffer, 128, format, mMajor, NECommon::OBJECT_SEPARATOR, mMinor, NECommon::OBJECT_SEPARATOR, mPatch );
+    return (len > 0 ? String( buffer, len ) : String::getEmptyString());
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -44,7 +44,7 @@ namespace
                 {
                     if (fgets(buffer, File::MAXIMUM_PATH + 1, file) != nullptr)
                     {
-                        NEString::CharPos pos = NEString::findLast<char>(File::getPathSeparator(), buffer);
+                        NEString::CharPos pos = NEString::findLast<char>( File::PATH_SEPARATOR, buffer);
                         if (NEString::isPositionValid(pos))
                         {
                             char* name = buffer + pos + 1;
@@ -120,7 +120,7 @@ bool Application::_osStartRouterService( void )
         
         String fileName = String::getEmptyString();
         fileName.append(Process::getInstance().getPath())
-                .append(File::getPathSeparator())
+                .append( File::PATH_SEPARATOR )
                 .append(NEApplication::DEFAULT_ROUTER_SERVICE_NAME);
 
         result = execl(fileName.getString(), fileName.getString(), argv0, nullptr) > 0;

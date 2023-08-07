@@ -97,7 +97,7 @@ void TracePropertyKey::setKey(const String & fullKey)
         int len = static_cast<int>(NELogConfig::ValidSyntaxList[static_cast<int>(mLogConfig)].length());
         if ( mKeyName.getLength() > len )
         {
-            NEString::CharPos pos = mKeyName.findFirst(NELogConfig::SYNTAX_OBJECT_SEPARATOR, len + 1);
+            NEString::CharPos pos = mKeyName.findLast(NELogConfig::SYNTAX_OBJECT_SEPARATOR, NEString::END_POS );
             if (mKeyName.isValidPosition(pos) && (pos > len) )
             {
                 mKeyName.substring(mModuleName, len + 1, pos - len - 1);
@@ -106,21 +106,16 @@ void TracePropertyKey::setKey(const String & fullKey)
             else
             {
                 mKeyName.substring(mModuleName, len + 1);
-                mModuleData = String::getEmptyString();
-            }
-
-            if ( mModuleName == NELogConfig::SYNTAX_SCOPE_GROUP )
-            {
-                mModuleName.clear( );
+                mModuleData = String::EmptyString;
             }
         }
         else
         {
-            mModuleName = String::getEmptyString();
-            mModuleData = String::getEmptyString();
+            mModuleName = String::EmptyString;
+            mModuleData = String::EmptyString;
         }
 
-        mConfigKey  = mModuleName.isEmpty() ? NELogConfig::eConfigKey::KeyGlobal : NELogConfig::eConfigKey::KeyLocal;
+        mConfigKey = (mModuleName.isEmpty( ) || (mModuleName == NELogConfig::SYNTAX_SCOPE_GROUP)) ? NELogConfig::eConfigKey::KeyGlobal : NELogConfig::eConfigKey::KeyLocal;
     }
     else
     {
@@ -133,7 +128,21 @@ bool TracePropertyKey::isModuleKeySet(const String & moduleName /*= String::getE
 {
     if ( mConfigKey != NELogConfig::eConfigKey::KeyUndefined )
     {
-        return (mModuleName.isEmpty( ) || (mModuleName.compare( moduleName, 0, NEString::COUNT_ALL, false ) == NEMath::eCompare::Equal));
+        return (mModuleName.isEmpty() || 
+               (mModuleName == NELogConfig::SYNTAX_SCOPE_GROUP) || 
+               (mModuleName.compare( moduleName, 0, NEString::COUNT_ALL, false ) == NEMath::eCompare::Equal));
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool TracePropertyKey::isExactModule( const String & module ) const
+{
+    if ( mConfigKey != NELogConfig::eConfigKey::KeyUndefined )
+    {
+        return (mModuleName.compare( module, 0, NEString::COUNT_ALL, false ) == NEMath::eCompare::Equal);
     }
     else
     {

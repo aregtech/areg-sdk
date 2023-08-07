@@ -69,8 +69,11 @@ Channel & Channel::operator = ( Channel && source ) noexcept
 
 String Channel::convToString( void ) const
 {
-    String result;
-    return result.format("%llu.%llu.%llu", mSource, mTarget, mCookie);
+    constexpr const char * format{ "%llu.%llu.%llu" };
+
+    char buffer[ 128 ]{ 0 };
+    int len = String::formatString( buffer, 128, format, mSource, mTarget, mCookie );
+    return (len > 0 ? String( buffer, len ) : String::getEmptyString());
 }
 
 const Channel & Channel::convFromString(const String & channel)

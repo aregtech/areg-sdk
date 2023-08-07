@@ -249,7 +249,12 @@ public:
      * \param   file    The opened file object of the log configuration file.
      * \return  Returns true if logging is configured.
      **/
-    bool loadConfig( FileBase & file );
+    bool loadConfig( const FileBase & file );
+
+    /**
+     * \brief   Unloads the configuration, resets all data.
+     **/
+    void unloadConfig( void );
 
     /**
      * \brief   Saves the configuration in the file.

@@ -173,9 +173,28 @@ public:
      **/
     TracePropertyValue & operator += ( NETrace::eLogPriority newValue );
 
+    /**
+     * \brief   Changes the priority value.
+     *          This does not remove the scope logging priority bits.
+     * \param   newPriority     New priority to set.
+     * \return  Returns the actual priority value.
+     **/
+    unsigned int setPriority( NETrace::eLogPriority newPriority );
+
+    /**
+     * \brief   Sets the data of the property value.
+     * \param   newValue    New data to set.
+     **/
+    void setData( String newValue );
+
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////
+
+    /**
+     * \brief   Returns true if the property key value is empty.
+     **/
+    inline bool isEmtpy( void ) const;
 
     /**
      * \brief   Returns true if the property value is valid.
@@ -199,16 +218,6 @@ private:
      * \brief   The priority level of the property value.
      **/
     unsigned int    mPriority;
-
-//////////////////////////////////////////////////////////////////////////
-// Hidden methods
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   Parses given string and sets the priority value.
-     * \param   newValue    The value as a string to parse and set.
-     **/
-    void _setValue( const String & newValue);
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -234,6 +243,11 @@ namespace std
 // TracePropertyValue class inline methods implementation
 //////////////////////////////////////////////////////////////////////////
 
+inline bool TracePropertyValue::isEmtpy( void ) const
+{
+    return mValue.isEmpty();
+}
+
 inline bool TracePropertyValue::isValid( void ) const
 {
     return mValue.isEmpty() == false;
@@ -258,13 +272,13 @@ inline TracePropertyValue & TracePropertyValue::operator = ( TracePropertyValue 
 
 inline TracePropertyValue & TracePropertyValue::operator = ( const String & newValue )
 {
-    _setValue( newValue.getString( ) );
+    setData( newValue );
     return (*this);
 }
 
 inline TracePropertyValue & TracePropertyValue::operator = ( const char * newValue )
 {
-    _setValue( newValue );
+    setData( newValue );
     return (*this);
 }
 
@@ -276,7 +290,7 @@ inline TracePropertyValue & TracePropertyValue::operator = ( unsigned int newVal
 
 inline TracePropertyValue & TracePropertyValue::operator = ( NETrace::eLogPriority newValue )
 {
-    mValue  = NETrace::convToString( newValue );
+    setPriority( newValue );
     return (*this);
 }
 

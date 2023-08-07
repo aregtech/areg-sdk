@@ -169,9 +169,8 @@ void ScopeController::configureScopes( const TraceProperty & prop )
     ASSERT( Key.isValidKey( ) );
 
     unsigned int prio = Value.getPriority( );
-    if ( Key.isGlobalKey( ) && Key.getModuleData( ).isEmpty( ) )
+    if ( Key.isGlobalKey( ) && Key.isModuleGlobal() )
     {
-        ASSERT( Key.getModule( ).isEmpty( ) );
         mConfigScopeGroup.setAt( NELogConfig::LOG_SCOPES_GRPOUP, prio );
     }
     else
@@ -257,7 +256,7 @@ void ScopeController::changeScopeActivityStatus( bool makeActive )
     {
         for ( TraceScopeMap::MAPPOS pos = mMapTraceScope.firstPosition( ); mMapTraceScope.isValidPosition( pos ); pos = mMapTraceScope.nextPosition( pos ) )
         {
-            mMapTraceScope.valueAtPosition( pos )->setPriority( NETrace::PrioNotset );
+            mMapTraceScope.valueAtPosition( pos )->setPriority( NETrace::eLogPriority::PrioNotset );
         }
     }
 

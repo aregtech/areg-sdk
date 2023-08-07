@@ -36,10 +36,10 @@ void AREG_API_IMPL NEDebug::outputConsole( NEDebug::eDegubPrio priority, const c
         int lenPref = String::formatString(buffer, static_cast<int>(NEDebug::MAX_DEBUG_BUFFER_SIZE) - 2, "%s", NEDebug::getPrioPrefix(priority));
         int lenMsg  = String::formatStringList(buffer + lenPref, static_cast<int>(NEDebug::MAX_DEBUG_BUFFER_SIZE) - 2 - lenPref, msg, args);
         char last   = buffer[lenPref + lenMsg - 1];
-        if ( last != '\n' )
+        if ( last != NEString::EndOfLine )
         {
-            buffer[lenPref + lenMsg + 0] = '\n';
-            buffer[lenPref + lenMsg + 1] = '\0';
+            buffer[lenPref + lenMsg + 0] = NEString::EndOfLine;
+            buffer[lenPref + lenMsg + 1] = NEString::EndOfString;
         }
 
         NEDebug::outputMessageOS(buffer);

@@ -12,7 +12,7 @@
  * \file        areg/base/TEProperty.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
- * \brief       AREG Platform, FIFO Stack base class templates.
+ * \brief       AREG Platform, Property object to hold Key-Value pairs.
  ************************************************************************/
 /************************************************************************
  * Include files.

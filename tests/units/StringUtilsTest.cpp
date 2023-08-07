@@ -7,7 +7,7 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        units/DemoTest.Cpp
+ * \file        units/StringUtilsTest.Cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
  * \brief       AREG Platform, Google test dummy file.
@@ -19,23 +19,20 @@
 #include "units/GUnitTest.hpp"
 #include "areg/base/String.hpp"
 
-/**
- * \brief   A dummy test to run to make sure that Unit Tests are running.
- **/
-TEST(DemoTest, BasicAssertion)
+TEST( StringUtilsTest, TestBufferAutoSetWhenFormat )
 {
-    EXPECT_EQ(2*2, 4);
-}
+    String str;
+    str.format("I want to try some extra [ %s ], [ %s ], [ %s ], [ %s ], [ %s ], [ %s ], [ %s ], , [ %s ], , [ %s ] string"
+                , "extra"
+                , "very extra"
+                , "very-very extra"
+                , "very-very-very extra"
+                , "very-very-very-very extra"
+                , "very-very-very-very-very extra"
+                , "very-very-very-very-very-very extra"
+                , "very-very-very-very-very-very-very extra"
+                , "very-very-very-very-very-very-very-very extra"
+    );
 
-/**
- * \brief   A dummy test using AREG library to make sure that the unit tests are
- *          properly linked with AREG framework library.
- **/
-TEST( DemoTest, BasicString )
-{
-    constexpr std::string_view _hello{ "hello areg-sdk" };
-
-    String hello( _hello );
-    hello = hello.makeUpper( );
-    EXPECT_EQ( hello.compare( _hello, false ), NEMath::eCompare::Equal );
+    ASSERT_TRUE( str.getLength( ) > 128 );
 }

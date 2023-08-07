@@ -125,22 +125,22 @@ namespace   NEUtilities
 /************************************************************************/
 // NEUtilities namespace utility types
 /************************************************************************/
-    
+
     /**
      * \brief   NEUtilities::sSystemTime
      *          The structure defines date-time data used in system time
      **/
     typedef struct S_SystemTime
     {
-        unsigned short  stYear;         //!< The year in the time
-        unsigned short  stMonth;        //!< The month in the time, which starts from 1 (January) until 12 (December)
-        unsigned short  stDayOfWeek;    //!< The day of week in the time, which starts from 0 (Sunday) until 6 (Saturday)
-        unsigned short  stDay;          //!< The day of the month in the time, which starts from 1
-        unsigned short  stHour;         //!< The hour in the time, which starts from 0
-        unsigned short  stMinute;       //!< The minute in the time, which starts from 0
-        unsigned short  stSecond;       //!< The second in the time, which starts from 0
-        unsigned short  stMillisecs;    //!< The millisecond in the time, which starts from 0
-        unsigned short  stMicrosecs;    //!< The microseconds in the time, which starts from 0
+        int     stYear{ 0 };        //!< The year in the time
+        int     stMonth{ 0 };       //!< The month in the time, which starts from 1 (January) until 12 (December)
+        int     stDayOfWeek{ 0 };   //!< The day of week in the time, which starts from 0 (Sunday) until 6 (Saturday)
+        int     stDay{ 0 };         //!< The day of the month in the time, which starts from 1
+        int     stHour{ 0 };        //!< The hour in the time, which starts from 0
+        int     stMinute{ 0 };      //!< The minute in the time, which starts from 0
+        int     stSecond{ 0 };      //!< The second in the time, which starts from 0
+        int     stMillisecs{ 0 };   //!< The millisecond in the time, which starts from 0
+        int     stMicrosecs{ 0 };   //!< The microseconds in the time, which starts from 0
     } sSystemTime;
 
     /**
@@ -149,8 +149,8 @@ namespace   NEUtilities
      **/
     typedef struct S_FileTime
     {
-        unsigned long   ftLowDateTime;  //!< Low part of date-time.
-        unsigned long   ftHighDateTime; //!< High part of date-time.
+        unsigned long   ftLowDateTime{ 0 };     //!< Low part of date-time.
+        unsigned long   ftHighDateTime{ 0 };    //!< High part of date-time.
     } sFileTime;
 
     /**
@@ -202,7 +202,7 @@ namespace   NEUtilities
      * \param   fileTime        The file-time data structure to convert.
      * \param   out_sysTime     On output the system time parameter contains date-time of converted time.
      **/
-    AREG_API void convToSystemTime( const sFileTime & fileTime, sSystemTime & out_sysTime );
+    AREG_API void convToSystemTime( const sFileTime & IN fileTime, sSystemTime & OUT out_sysTime );
 
     /**
      * \brief   Converts 64-bit value of microseconds passed since January 1 1970 into file time data structure.
@@ -264,7 +264,7 @@ namespace   NEUtilities
      * \param   time        Contains date-time of converted system time without information of milliseconds.
      * \param   sysTime     On output, the parameter contains date-time information in system-time data structure format without millisecond information.
      **/
-    AREG_API void convToSystemTime( const tm & IN time, sSystemTime & OUT sysTime );
+    AREG_API void convToSystemTime( const struct tm & IN time, sSystemTime & OUT sysTime );
 
     /**
      * \brief   Localizes the UTC time data value. On output the passed structure contains values in UTC timezone.

@@ -25,6 +25,8 @@
 #include "areg/base/Containers.hpp"
 
 #include <string_view>
+#include <filesystem>
+
 
 /**
  * \brief   File class to work with files on File System. Supports data streaming
@@ -108,19 +110,15 @@ public:
      **/
     static constexpr int                MAXIMUM_PATH        {1024};
 
+    /**
+     * \brief   File::PATH_SEPARATOR
+     *          The OS dependent path separator. On POSIX it is '/' and on Windows it is '\\'.
+     **/
+    static constexpr char               PATH_SEPARATOR      { std::filesystem::path::preferred_separator };
+
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
-
-//////////////////////////////////////////////////////////////////////////
-// Public static methods
-//////////////////////////////////////////////////////////////////////////
-
-    /**
-     * \brief   Returns path separator. The return character is OS dependent.
-     *          For example, on POSIX it is '/' and on Windows it is '\\'.
-     **/
-    static const char getPathSeparator( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor

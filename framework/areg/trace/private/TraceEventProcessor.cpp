@@ -20,7 +20,9 @@
 
 #include "areg/base/FileBuffer.hpp"
 #include "areg/base/IEIOStream.hpp"
+#include "areg/trace/TraceScope.hpp"
 #include "areg/trace/private/TraceManager.hpp"
+#include "areg/trace/private/ScopeNodes.hpp"
 
 TraceEventProcessor::TraceEventProcessor( TraceManager & traceManager )
     : mTraceManager ( traceManager )
@@ -111,7 +113,7 @@ inline void TraceEventProcessor::_traceSetEnableLogs( bool logsEnable )
 
 inline void TraceEventProcessor::_traceSaveScopes( void )
 {
-    // not implemented yet
+    mTraceManager.mLogConfig.saveConfig( );
 }
 
 inline void TraceEventProcessor::_traceLogMessage( const SharedBuffer & data )

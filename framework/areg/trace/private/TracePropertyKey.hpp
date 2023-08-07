@@ -104,6 +104,11 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
     /**
+     * \brief   Returns true if the property key value is empty.
+     **/
+    inline bool isEmtpy( void ) const;
+
+    /**
      * \brief   Returns the string value of property key.
      **/
     inline const String & getKey( void ) const;
@@ -149,6 +154,18 @@ public:
     inline bool isValidKey( void ) const;
 
     /**
+     * \brief   Returns true if the key refers to any running module.
+     *          The any running module is marked with sign '*'.
+     **/
+    inline bool isModuleAny( void ) const;
+
+    /**
+     * \brief   Returns true if the key setting is global.
+     *          In case of global key, the module name is either empty or '*'.
+     **/
+    inline bool isModuleGlobal( void ) const;
+
+    /**
      * \brief   Parses given string and initializes property key data
      * \param   fullKey     The full string of property key to parse and initialize.
      **/
@@ -162,7 +179,13 @@ public:
      * \return  Returns true if property key is set and either module name is empty (i.e. global visibility)
      *          or equal to the given module name.
      **/
-    bool isModuleKeySet( const String & moduleName = String::getEmptyString() ) const;
+    bool isModuleKeySet( const String & moduleName) const;
+
+    /**
+     * \brief   Returns true if the key refers to the exact specified module.
+     * \param   module  The module name to check.
+     **/
+    bool isExactModule( const String & module ) const;
 
     /**
      * \brief   Returns the syntax name of the property key.
@@ -217,6 +240,11 @@ inline bool TracePropertyKey::operator == ( const TracePropertyKey & other ) con
     return ( (this == &other) || (mKeyName == other.mKeyName) );
 }
 
+inline bool TracePropertyKey::isEmtpy( void ) const
+{
+    return mKeyName.isEmpty();
+}
+
 inline const String & TracePropertyKey::getKey( void ) const
 {
     return mKeyName;
@@ -255,6 +283,16 @@ inline bool TracePropertyKey::isGlobalKey( void ) const
 inline bool TracePropertyKey::isValidKey( void ) const
 {
     return ( mConfigKey != NELogConfig::eConfigKey::KeyUndefined );
+}
+
+inline bool TracePropertyKey::isModuleAny( void ) const
+{
+    return (mModuleName == NELogConfig::SYNTAX_SCOPE_GROUP);
+}
+
+inline bool TracePropertyKey::isModuleGlobal( void ) const
+{
+    return (mModuleName.isEmpty() || (mModuleName == NELogConfig::SYNTAX_SCOPE_GROUP));
 }
 
 #endif  // AREG_TRACE_PRIVATE_TRACEPROPERTYKEY_HPP

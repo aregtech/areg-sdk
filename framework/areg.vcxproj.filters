@@ -549,6 +549,12 @@
     <ClCompile Include="areg\trace\private\TraceEventProcessor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="areg\trace\private\ScopeNodeBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\trace\private\ScopeNodes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\windows\GEWindows.h">
@@ -1086,6 +1092,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\trace\private\TraceEventProcessor.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\trace\private\ScopeNodeBase.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\trace\private\ScopeNodes.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

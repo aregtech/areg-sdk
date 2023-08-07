@@ -324,7 +324,7 @@ private:
     void _osSaveCursorPosition(void) const;
 
     /**
-     * \brief   OS specific implementation to restore previousely saved in memory cursor position.
+     * \brief   OS specific implementation to restore previously saved in memory cursor position.
      **/
     void _osRestoreCursorPosition(void) const;
 
