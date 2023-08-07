@@ -100,15 +100,13 @@ AREG_API_IMPL void NEUtilities::convToTm(const sSystemTime & IN sysTime, struct 
 
 AREG_API_IMPL void NEUtilities::makeTmLocal( struct tm & IN OUT utcTime )
 {
+    NEMemory::memSet( &utcTime, sizeof( struct tm ), 0 );
     time_t _timer = mktime( &utcTime );
+
 #ifdef  _WIN32
     localtime_s( &utcTime, &_timer );
 #else   // _WIN32
-    struct tm * temp = localtime( &_timer );
-    if ( temp != nullptr )
-    {
-        NEMemory::memCopy( &utcTime, static_cast<unsigned int>(sizeof( tm )), temp, static_cast<unsigned int>(sizeof( tm )) );
-    }
+    localtime_r( &_timer, &utcTime );
 #endif  // _WIN32
 }
 
