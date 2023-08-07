@@ -25,6 +25,8 @@
 #include "areg/base/NEMath.hpp"
 
 #include <string_view>
+#include <stdarg.h>
+#include <wchar.h>
 
 /**
  * \brief   String namespace to work with null-terminated strings.
@@ -103,6 +105,26 @@ namespace NEString
      * \brief   Last valid position in string where it is marked 'end of string'
      **/
     constexpr CharPos   END_POS             { NECommon::LAST_INDEX };
+
+    /**
+     * \brief   The minimum size of a buffer allocated in the stack to format a string.
+     **/
+    constexpr int       MSG_MIN_BUF_SIZE    { 128 };
+
+    /**
+     * \brief   The size of a buffer allocated in the stack to format a string.
+     **/
+    constexpr int       MSG_BUF_SIZE        { 256 };
+
+    /**
+     * \brief   The big size of a buffer allocated in the stack to format a large string.
+     **/
+    constexpr int       MSG_BIG_BUF_SIZE    { 512 };
+
+    /**
+     * \brief   The extra large size of a buffer allocated in the stack to format an extra large string.
+     **/
+    constexpr int       MSG_EXTRA_BUF_SIZE  { 1024 };
 
     /**
      * \brief   The enum used to convert string to digit and vice versa
@@ -735,6 +757,39 @@ namespace NEString
      */
     template<typename CharType>
     int makeInteger(const CharType * strNumber, const CharType ** remain);
+
+    /**
+     * \brief   Computes and returns the buffer size required to allocate to format the string.
+     *          This function works only for 'char' and 'wchar_t' types.
+     * \note    Note:   This method does not compute the exact size required to allocate, rather
+     *                  than the approximate size of buffer. The method start checking for buffer
+     *                  sizes 128, 256, 512 and 1024. If it is required to allocate more than
+     *                  1024 bytes, the function returns -1.
+     * \param   dummy   Not used.
+     * \param   format  The formatting string to calculate required size.
+     * \param   argptr  The pointer to the argument list that fits the format.
+     * \return  Returned values are 128, 256, 512, 1024 or -1 if failed to format or the required
+     *          buffer size is 0 or larger than 1024. The return value includes null-character at
+     *          the end of the string. If the buffer size could be bigger than 1024, check with
+     *          function 'isBufferFit'
+     **/
+    template<char dummy = '\0'>
+    int requiredBufferSize( const char * format, va_list argptr );
+    template<wchar_t dummy = L'\0'>
+    int requiredBufferSize( const wchar_t * format, va_list argptr );
+
+    /**
+     * \brief   Checks whether the buffer size fits to format a string.
+     * \param   size    A constant expression to check the size.
+     * \param   dummy   Is not used.
+     * \param   format  The formatting string.
+     * \param   argptr  The pointer to the argument list.
+     * \return  Returns true if the checking size is enough to format the string.
+     **/
+    template<int size, char dummy>
+    bool isBufferFit( const char * format, va_list argptr );
+    template<int size, wchar_t dummy>
+    bool isBufferFit( const wchar_t * format, va_list argptr );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -860,6 +915,91 @@ int NEString::makeInteger(const CharType * strNumber, const CharType ** remain)
         *remain = strNumber;
     
     return (static_cast<int>(sign) * result);
+}
+
+template<char dummy>
+int NEString::requiredBufferSize( const char * format, va_list argptr )
+{
+    int result{ -1 };
+
+    va_list argcopy;
+    va_copy( argcopy, argptr );
+    int charCount = vsnprintf( nullptr, 0, format, argcopy );
+    va_end( argcopy );
+
+    if ( charCount > 0 )
+    {
+        if ( charCount < NEString::MSG_MIN_BUF_SIZE )
+        {
+            result = NEString::MSG_MIN_BUF_SIZE;
+        }
+        else if ( charCount < NEString::MSG_BUF_SIZE )
+        {
+            result = NEString::MSG_BUF_SIZE;
+        }
+        else if ( charCount < NEString::MSG_BIG_BUF_SIZE )
+        {
+            result = NEString::MSG_BIG_BUF_SIZE;
+        }
+        else if ( charCount < NEString::MSG_EXTRA_BUF_SIZE )
+        {
+            result = NEString::MSG_EXTRA_BUF_SIZE;
+        }
+    }
+
+    return result;
+}
+
+template<wchar_t dummy>
+int NEString::requiredBufferSize( const wchar_t * format, va_list argptr )
+{
+    int result{ -1 };
+    if ( NEString::isBufferFit< NEString::MSG_MIN_BUF_SIZE, dummy >( format, argptr ) )
+    {
+        result = NEString::MSG_MIN_BUF_SIZE;
+    }
+    else if ( NEString::isBufferFit< NEString::MSG_MIN_BUF_SIZE, dummy >( format, argptr ) )
+    {
+        result = NEString::MSG_MIN_BUF_SIZE;
+    }
+    else if ( NEString::isBufferFit< NEString::MSG_BUF_SIZE, dummy >( format, argptr ) )
+    {
+        result = NEString::MSG_BUF_SIZE;
+    }
+    else if ( NEString::isBufferFit< NEString::MSG_BIG_BUF_SIZE, dummy >( format, argptr ) )
+    {
+        result = NEString::MSG_BIG_BUF_SIZE;
+    }
+    else if ( NEString::isBufferFit< NEString::MSG_EXTRA_BUF_SIZE, dummy >( format, argptr ) )
+    {
+        result = NEString::MSG_EXTRA_BUF_SIZE;
+    }
+
+    return result;
+}
+
+template<int size, char dummy>
+bool NEString::isBufferFit( const char * format, va_list argptr )
+{
+    char buf[ size ]{ 0 };
+    va_list argcopy;
+    va_copy( argcopy, argptr );
+    int charCount = vsnprintf( buf, size, format, argcopy );
+    va_end( argcopy );
+
+    return (charCount < size);
+}
+
+template<int size, wchar_t dummy>
+bool NEString::isBufferFit( const wchar_t * format, va_list argptr )
+{
+    wchar_t buf[ size ]{ 0 };
+    va_list argcopy;
+    va_copy( argcopy, argptr );
+    int charCount = vswprintf( buf, size, format, argcopy );
+    va_end( argcopy );
+
+    return (charCount < size);
 }
 
 template<typename CharType>

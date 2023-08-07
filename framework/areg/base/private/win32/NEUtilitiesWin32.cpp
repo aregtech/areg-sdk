@@ -100,28 +100,20 @@ namespace NEUtilities {
     //!< Converts windows 64-bit file structure to areg 64-bit time.
     inline void _convWinFileTime2AregTime( const FILETIME & IN winTime, TIME64 & OUT aregTime)
     {
-        ULARGE_INTEGER ui{ 0 };
-        ui.LowPart  = winTime.dwLowDateTime;
-        ui.HighPart = winTime.dwHighDateTime;
-        aregTime = ui.QuadPart;
+        aregTime = MACRO_MAKE_64( winTime.dwHighDateTime, winTime.dwLowDateTime );
     }
 
     //!< Converts areg 64-bits time structure to 64-bits time value.
     inline TIME64 _convWinFileTime2AregTime( const FILETIME & winTime )
     {
-        ULARGE_INTEGER ui{ 0 };
-        ui.LowPart  = winTime.dwLowDateTime;
-        ui.HighPart = winTime.dwHighDateTime;
-        return static_cast<TIME64>(ui.QuadPart);
+        return MACRO_MAKE_64( winTime.dwHighDateTime, winTime.dwLowDateTime );
     }
 
     //!< Converts 64-bits time value to areg 64-bit time structure.
     inline void _convAregTime2WinFileTime(const TIME64 & IN aregTime, FILETIME & OUT winTime)
     {
-        ULARGE_INTEGER ui{ 0 };
-        ui.QuadPart = static_cast<ULONGLONG>(aregTime);
-        winTime.dwLowDateTime   = ui.LowPart;
-        winTime.dwHighDateTime  = ui.HighPart;
+        winTime.dwLowDateTime   = MACRO_64_LO_BYTE32(aregTime);
+        winTime.dwHighDateTime  = MACRO_64_HI_BYTE32(aregTime);
     }
 
     uint64_t _osGetTickCount( void )
@@ -146,6 +138,11 @@ namespace NEUtilities {
             outLocalTime.stMicrosecs = inUtcTime.stMicrosecs;
             result = true;
         }
+        else
+        {
+            _convWinSysTime2AregSysTime( utc, outLocalTime );
+            outLocalTime.stMicrosecs = inUtcTime.stMicrosecs;
+        }
 
         return result;
     }
@@ -160,49 +157,40 @@ namespace NEUtilities {
 
     void _osSystemTimeNow( NEUtilities::sSystemTime & OUT sysTime, bool localTime )
     {
-        SYSTEMTIME st;
-        NEMemory::zeroElement<SYSTEMTIME>( st );
-        ::GetSystemTime( &st );
+        SYSTEMTIME utc{ 0 };
+        ::GetSystemTime( &utc );
 
         if ( localTime )
         {
-            TIME_ZONE_INFORMATION tzi;
-            NEMemory::memZero( reinterpret_cast<void *>(&tzi), sizeof( TIME_ZONE_INFORMATION ) );
-            SYSTEMTIME local;
-            NEMemory::zeroElement<SYSTEMTIME>( local );
+            TIME_ZONE_INFORMATION tzi{ 0 };
+            SYSTEMTIME local{ 0 };
             GetTimeZoneInformation( &tzi );
-            if ( SystemTimeToTzSpecificLocalTime( &tzi, &st, &local ) )
-            {
-                _convWinSysTime2AregSysTime( local, sysTime );
-            }
+            _convWinSysTime2AregSysTime( SystemTimeToTzSpecificLocalTime( &tzi, &utc, &local ) ? local : utc, sysTime );
         }
         else
         {
-            NEUtilities::_convWinSysTime2AregSysTime( st, sysTime );
+            NEUtilities::_convWinSysTime2AregSysTime( utc, sysTime );
         }
     }
 
     void _osSystemTimeNow( NEUtilities::sFileTime & OUT fileTime, bool localTime )
     {
-        SYSTEMTIME st, local;
-        SYSTEMTIME * src = &st;
-        NEMemory::zeroElement<SYSTEMTIME>( st );
-        ::GetSystemTime( &st );
+        SYSTEMTIME utc{ 0 };
+        SYSTEMTIME * src = &utc;
+        ::GetSystemTime( src );
 
         if ( localTime )
         {
-            TIME_ZONE_INFORMATION tzi;
-            NEMemory::memZero( reinterpret_cast<void *>(&tzi), sizeof( TIME_ZONE_INFORMATION ) );
-            NEMemory::zeroElement<SYSTEMTIME>( local );
+            SYSTEMTIME local{ 0 };
+            TIME_ZONE_INFORMATION tzi{ 0 };
             GetTimeZoneInformation( &tzi );
-            if ( SystemTimeToTzSpecificLocalTime( &tzi, &st, &local ) )
+            if ( SystemTimeToTzSpecificLocalTime( &tzi, &utc, &local ) )
             {
                 src = &local;
             }
         }
 
-        FILETIME ft;
-        NEMemory::zeroElement<FILETIME>( ft );
+        FILETIME ft{ 0 };
         ::SystemTimeToFileTime( src, &ft );
 
         NEUtilities::_convWinFileTime2AregFileTime( ft, fileTime );
@@ -210,12 +198,10 @@ namespace NEUtilities {
 
     TIME64 _osSystemTimeNow( void )
     {
-        SYSTEMTIME st;
-        NEMemory::zeroElement<SYSTEMTIME>( st );
+        SYSTEMTIME st{ 0 };
         ::GetSystemTime( &st );
 
-        FILETIME ft;
-        NEMemory::zeroElement<FILETIME>( ft );
+        FILETIME ft{ 0 };
         ::SystemTimeToFileTime( &st, &ft );
 
         return _convWinFileTime2AregTime( ft );
@@ -223,11 +209,10 @@ namespace NEUtilities {
 
     TIME64 _osConvToTime( const NEUtilities::sSystemTime & IN sysTime )
     {
-        SYSTEMTIME st;
+        SYSTEMTIME st{ 0 };
         NEUtilities::_convAregSysTime2WinSysTime( sysTime, st );
 
-        FILETIME ft;
-        NEMemory::zeroElement<FILETIME>( ft );
+        FILETIME ft{ 0 };
         ::SystemTimeToFileTime( &st, &ft );
 
         return _convWinFileTime2AregTime( ft );

@@ -35,24 +35,26 @@
     #define wcstof      wcstod
 #endif
 
-#define _MAX_BINARY_BUFFER    72
-#define _MIN_BUF_SIZE        128
-#define _BUF_SIZE            256
-#define _MAX_BUF_SIZE        512
-#define _EXTRA_BUF_SIZE     1024
-
 namespace 
 {
+    //!< A formate chars to generate human readable binary text.
     constexpr wchar_t const _formatRadixBinary[] = { L'0', L'1', L'\0' };
 
 //////////////////////////////////////////////////////////////////////////
 // WideString class implementation
 //////////////////////////////////////////////////////////////////////////
 
+    /**
+     * \brief   Format to create binary text containing '0' and '1'.
+     * \tparam  DigitType   The time of digital number to convert. Must be a primitive.
+     * \param   result      On output, this contains the conversion result.
+     * \param   number      The digit to convert.
+     * \return  Returns the number of characters copied into the string.
+     **/
     template<typename DigitType>
-    inline int32_t _formatBinary( WideString & result, DigitType number )
+    inline int32_t _formatBinary( WideString & OUT result, DigitType number )
     {
-        wchar_t buffer[_MAX_BINARY_BUFFER];
+        wchar_t buffer[ NEString::MSG_MIN_BUF_SIZE ]{ 0 };
         wchar_t * dst  = buffer;
         DigitType base = static_cast<DigitType>(NEString::eRadix::RadixBinary);
         bool isNegative = number < 0;
@@ -81,39 +83,68 @@ namespace
         return count;
     }
 
-    template<typename DigitType, int const CharCount>
+    /**
+     * \brief   Formats the digit using predefined formatting.
+     *          The buffer to format is allocated in the stack and
+     *          the length of buffer is passed as a type argument.
+     * \tparam  DigitType   The type of digit to format.
+     * \tparam  CharCount   The size of buffer to allocated in the stack.
+     *                      By default, the length of buffer in '_MIN_BUF_SIZE'
+     * \param   result      On output, contains the conversion result.
+     * \param   format      The format to convert the digit.
+     * \param   number      The digit to convert.
+     * \return  Returns number of characters in the string.
+     *          In case of error, the return is negative.
+     **/
+    template<typename DigitType, int const CharCount = NEString::MSG_MIN_BUF_SIZE>
     inline int32_t _formatDigit( WideString & result, const wchar_t * format, DigitType number )
     {
-        wchar_t buffer[CharCount];
-        buffer[0] = WideString::EmptyChar;
+        wchar_t buffer[ CharCount ] { 0 };
 
         int32_t count = -1;
-#ifdef _WIN32
+#ifdef WINDOWS
         count = ::swprintf_s(buffer, CharCount, format, number);
-#else   // _WIN32
+#else   // WINDOWS
         count = ::swprintf( buffer, CharCount, format, number);
-#endif  // _WIN32
+#endif  // WINDOWS
         result = buffer;
         return count;
     }
 
+    /**
+     * \brief   Formats the list of arguments and copies the result into the buffer.
+     * \param   buffer  The buffer to copy formatted values.
+     * \param   count   The size of the buffer to allocated.
+     * \param   format  The format to convert.
+     * \param   argptr  The list of arguments to convert.
+     * \return  Returns the number of characters in the buffer, not including null-character.
+     **/
     inline int _formatStringList( wchar_t * buffer, int count, const wchar_t * format, va_list argptr )
     {
         int result { -1 };
         if ( buffer != nullptr )
         {
             *buffer = WideString::EmptyChar;
-#ifdef  WIN32
+#ifdef  WINDOWS
             result = vswprintf_s( buffer, static_cast<size_t>(count), format, argptr );
-#else   // !WIN32
+#else   // !WINDOWS
             result = vswprintf( buffer, count, format, argptr );
-#endif  // !WIN32
+#endif  // WINDOWS
         }
 
         return result;
     }
 
-    template<int const CharCount>
+    /**
+     * \brief   Formats the list of arguments and copies the result into the buffer.
+     *          The buffer is allocated in the stack.
+     * \tparam  CharCount   The size of the buffer to allocate in the stack.
+     * \param   result      On output, this contain the result of conversion.
+     * \param   format      The format to convert.
+     * \param   argptr      The list of arguments to convert.
+     * \return  Returns the number of characters in the buffer, not including null-character.
+     **/
+    template<int const CharCount = NEString::MSG_MIN_BUF_SIZE>
     inline int32_t _formatStringList( WideString & result, const wchar_t * format, va_list argptr )
     {
         wchar_t buffer[ CharCount ] { 0 };
@@ -122,7 +153,14 @@ namespace
         return count;
     }
 
-    template<int const CharCount>
+    /**
+     * \brief   Formats the string. The buffer is allocated in the stack.
+     * \tparam  CharCount   The size of the buffer to allocate in the stack.
+     * \param   result      On output, this contain the result of conversion.
+     * \param   format      The format to convert.
+     * \return  Returns the number of characters in the buffer, not including null-character.
+     **/
+    template<int const CharCount = NEString::MSG_BUF_SIZE>
     inline int32_t _formatString( WideString & result, const wchar_t * format, ... )
     {
         va_list argptr;
@@ -132,6 +170,9 @@ namespace
         return count;
     }
 
+    /**
+     * \brief   Compare 2 strings of different char-set and returns true if they are equal.
+     **/
     inline bool _isEqua(const wchar_t* str, const char* wstr)
     {
         while ((*str != TEString<wchar_t>::EmptyChar) && (*wstr++ == static_cast<char>(*str++)))
@@ -141,6 +182,7 @@ namespace
     }
 
 } // namespace
+
 
 // the static empty string
 const WideString & WideString::getEmptyString(void)
@@ -372,22 +414,22 @@ WideString WideString::toString(int32_t number, NEString::eRadix radix /*= NEStr
 
     case NEString::eRadix::RadixOctal:
         if ( number < 0)
-            _formatDigit<int32_t, 24>( result, L"-%0.11o", -1 * number );
+            _formatDigit<int32_t>( result, L"-%0.11o", -1 * number );
         else
-            _formatDigit<int32_t, 24>( result, L"%0.11o", number );
+            _formatDigit<int32_t>( result, L"%0.11o", number );
         break;
 
     case NEString::eRadix::RadixHexadecimal:
         if ( number < 0 )
-            _formatDigit<int32_t, 24>( result, L"-0x%.8X", -1 * number );
+            _formatDigit<int32_t>( result, L"-0x%.8X", -1 * number );
         else
-            _formatDigit<int32_t, 24>( result, L"0x%.8X", number );
+            _formatDigit<int32_t>( result, L"0x%.8X", number );
         break;
 
     case NEString::eRadix::RadixDecimal:    // fall through
     case NEString::eRadix::RadixAutomatic:  // fall through
     default:
-        _formatDigit<int32_t, 24>( result, L"%d", number );
+        _formatDigit<int32_t>( result, L"%d", number );
         break;
     }
     return result;
@@ -404,17 +446,17 @@ WideString WideString::toString(uint32_t number, NEString::eRadix radix /*= NESt
         break;
 
     case NEString::eRadix::RadixOctal:
-        _formatDigit<uint32_t, 24>(result, L"%0.11o", number);
+        _formatDigit<uint32_t>(result, L"%0.11o", number);
         break;
 
     case NEString::eRadix::RadixHexadecimal:
-        _formatDigit<uint32_t, 24>(result, L"0x%.8X", number);
+        _formatDigit<uint32_t>(result, L"0x%.8X", number);
         break;
 
     case NEString::eRadix::RadixDecimal:    // fall through
     case NEString::eRadix::RadixAutomatic:  // fall through
     default:
-        _formatDigit<uint32_t, 24>( result, L"%u", number );
+        _formatDigit<uint32_t>( result, L"%u", number );
         break;
     }
     return result;
@@ -432,22 +474,22 @@ WideString WideString::toString(int64_t number, NEString::eRadix radix /*= NEStr
 
     case NEString::eRadix::RadixOctal:
         if (number < 0)
-            _formatDigit<int64_t, 32>(result, L"-%0.22llo", -1 * number);
+            _formatDigit<int64_t>(result, L"-%0.22llo", -1 * number);
         else
-            _formatDigit<int64_t, 32>(result, L"%0.22llo", number);
+            _formatDigit<int64_t>(result, L"%0.22llo", number);
         break;
 
     case NEString::eRadix::RadixHexadecimal:
         if (number < 0)
-            _formatDigit<int64_t, 32>(result, L"-0x%.16llX", -1 * number);
+            _formatDigit<int64_t>(result, L"-0x%.16llX", -1 * number);
         else
-            _formatDigit<int64_t, 32>(result, L"0x%.16llX", number);
+            _formatDigit<int64_t>(result, L"0x%.16llX", number);
         break;
 
     case NEString::eRadix::RadixDecimal:    // fall through
     case NEString::eRadix::RadixAutomatic:  // fall through
     default:
-        _formatDigit<int64_t, 32>(result, L"%lld", number);
+        _formatDigit<int64_t>(result, L"%lld", number);
         break;
     }
 
@@ -465,17 +507,17 @@ WideString WideString::toString(uint64_t number, NEString::eRadix radix /*= NESt
         break;
 
     case NEString::eRadix::RadixOctal:
-        _formatDigit<uint64_t, 32>( result, L"%.22llo", number );
+        _formatDigit<uint64_t>( result, L"%.22llo", number );
         break;
 
     case NEString::eRadix::RadixHexadecimal:
-        _formatDigit<uint64_t, 32>( result, L"0x%.16llX", number );
+        _formatDigit<uint64_t>( result, L"0x%.16llX", number );
         break;
 
     case NEString::eRadix::RadixDecimal:    // fall through
     case NEString::eRadix::RadixAutomatic:  // fall through
     default:
-        _formatDigit<uint64_t, 32>( result, L"%llu", number );
+        _formatDigit<uint64_t>( result, L"%llu", number );
         break;
     }
 
@@ -485,14 +527,14 @@ WideString WideString::toString(uint64_t number, NEString::eRadix radix /*= NESt
 WideString WideString::toString(float number)
 {
     WideString result;
-    _formatDigit<float, 32>( result, L"%f", number );
+    _formatDigit<float>( result, L"%f", number );
     return result;
 }
 
 WideString WideString::toString(double number)
 {
     WideString result;
-    _formatDigit<double, 64>( result, L"%g", number );
+    _formatDigit<double>( result, L"%g", number );
     return result;
 }
 
@@ -532,15 +574,29 @@ const WideString & WideString::formatList(const wchar_t * format, va_list argptr
     clear();
     if (format != nullptr)
     {
-        if ( _formatStringList<_MIN_BUF_SIZE>( *this, format, argptr ) < 0 )
+        int count = NEString::requiredBufferSize(format, argptr);
+
+        switch ( count )
         {
-            if ( _formatStringList<_BUF_SIZE>(*this, format, argptr ) < 0 )
-            {
-                if ( _formatStringList<_MAX_BUF_SIZE>(*this, format, argptr ) < 0 )
-                {
-                    _formatStringList<_EXTRA_BUF_SIZE>(*this, format, argptr );
-                }
-            }
+        case NEString::MSG_MIN_BUF_SIZE:
+            _formatStringList< NEString::MSG_MIN_BUF_SIZE>( *this, format, argptr );
+            break;
+
+        case NEString::MSG_BUF_SIZE:
+            _formatStringList< NEString::MSG_BUF_SIZE>( *this, format, argptr );
+            break;
+
+        case NEString::MSG_BIG_BUF_SIZE:
+            _formatStringList< NEString::MSG_BIG_BUF_SIZE>( *this, format, argptr );
+            break;
+
+        case NEString::MSG_EXTRA_BUF_SIZE:
+            _formatStringList< NEString::MSG_EXTRA_BUF_SIZE>( *this, format, argptr );
+            break;
+
+        default:
+            ASSERT( false ); // put assertion to catch assertion.
+            break;
         }
     }
 

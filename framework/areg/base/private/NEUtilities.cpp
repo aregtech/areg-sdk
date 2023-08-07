@@ -234,7 +234,7 @@ AREG_API_IMPL TIME64 NEUtilities::convToTime( const NEUtilities::sSystemTime & I
 
 AREG_API_IMPL void NEUtilities::convToSystemTime( const TIME64 & IN timeValue, NEUtilities::sSystemTime & OUT sysTime )
 {
-    _osConvToSystemTime( static_cast<const TIME64 &>(timeValue), static_cast<NEUtilities::sSystemTime &>(sysTime) );
+    _osConvToSystemTime( timeValue, sysTime );
 }
 
 AREG_API_IMPL void NEUtilities::convToSystemTime( const NEUtilities::sFileTime & IN fileTime, NEUtilities::sSystemTime & OUT sysTime )

@@ -3,11 +3,11 @@ name: CMake
 on:
   push:         # Keep empty to run on each branch when push the code. Otherwise use branches: [ master ]
   # pull_request: # Set to master to run only when merge with master branch
-  #  branches: [ master ]
+  # branches: [ master ]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: Debug
+  BUILD_TYPE: Release
 
 # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Linux.
 # You can convert this to a matrix build if you need cross-platform coverage.
@@ -22,48 +22,257 @@ jobs:
       fail-fast: false
       matrix:
         config: # Create matrix with combinations
+
             # compile AREG engine as a shared library with GNU g++ / gcc on Ubuntu Linux, enable AREG extensions and logs
-          # - { name: linux-gnu-shared-ext-log,     os: ubuntu-latest,  lib: shared,  family: gnu,    cxx: g++,     cc: gcc,    extend: ON,   logs: ON, test: OFF}
+          - { name  : linux-gnu-shared-ext-log,
+              os    : ubuntu-latest,
+              lib   : shared,
+              family: gnu,
+              cxx   : g++,
+              cc    : gcc,
+              extend: ON,
+              logs  : ON,
+              test  : OFF
+            }
+
             # compile AREG engine as a shared library with GNU g++ / gcc on Ubuntu Linux, enable AREG extensions and no logs
-          # - { name: linux-gnu-shared-ext-nolog,   os: ubuntu-latest,  lib: shared,  family: gnu,    cxx: g++,     cc: gcc,    extend: ON,   logs: OFF,test: OFF}
+          - { name  : linux-gnu-shared-ext-nolog,
+              os    : ubuntu-latest,
+              lib   : shared,
+              family: gnu,
+              cxx   : g++,
+              cc    : gcc,
+              extend: ON,
+              logs  : OFF,
+              test  : OFF
+            }
+
             # compile AREG engine as a static library with GNU g++ / gcc on Ubuntu Linux, enable AREG extensions, logs, examples and tests
-          # - { name: linux-gnu-static-all-test,    os: ubuntu-latest,  lib: static,  family: gnu,    cxx: g++,     cc: gcc,    extend: ON,   logs: ON, test: ON}
+          - { name  : linux-gnu-static-all-test,
+              os    : ubuntu-latest,
+              lib   : static,
+              family: gnu,
+              cxx   : g++,
+              cc    : gcc,
+              extend: ON,
+              logs  : ON,
+              test: ON
+            }
+
             # compile AREG engine as a shared library with GNU g++ / gcc on Ubuntu Linux, enable AREG extensions, logs, examples and tests
-          - { name: linux-gnu-shared-all-test,    os: ubuntu-latest,  lib: shared,  family: gnu,    cxx: g++,     cc: gcc,    extend: ON,   logs: ON, test: ON}
+          - { name  : linux-gnu-shared-all-test,
+              os    : ubuntu-latest,
+              lib   : shared,
+              family: gnu,
+              cxx   : g++,
+              cc    : gcc,
+              extend: ON,
+              logs  : ON,
+              test  : ON
+            }
+
             # compile AREG engine as a shared library with GNU g++ / gcc on Ubuntu Linux, disable AREG extensions and no logs
-          # - { name: linux-gnu-shared-noext-nolog, os: ubuntu-latest,  lib: shared,  family: gnu,    cxx: g++,     cc: gcc,    extend: OFF,  logs: OFF,test: OFF}
+          - { name  : linux-gnu-shared-noext-nolog,
+              os    : ubuntu-latest,
+              lib   : shared,
+              family: gnu,
+              cxx   : g++,
+              cc    : gcc,
+              extend: OFF,
+              logs  : OFF,
+              test  : OFF
+            }
+
             # compile AREG engine as a shared library with clang on Ubuntu Linux, enable AREG extensions and logs
-          # - { name: linux-clang-shared-ext-log,   os: ubuntu-latest,  lib: shared,  family: llvm,   cxx: clang++, cc: clang,  extend: ON,   logs: ON, test: OFF}
+          - { name  : linux-clang-shared-ext-log,
+              os    : ubuntu-latest,
+              lib   : shared,
+              family: llvm,
+              cxx   : clang++,
+              cc    : clang,
+              extend: ON,
+              logs  : ON,
+              test  : OFF
+            }
+
             # compile AREG engine as a shared library with clang on Ubuntu Linux, enable AREG extensions and no logs
-          # - { name: linux-clang-shared-ext-nolog, os: ubuntu-latest,  lib: shared,  family: llvm,   cxx: clang++, cc: clang,  extend: ON,   logs: OFF,test: OFF}
+          - { name  : linux-clang-shared-ext-nolog,
+              os    : ubuntu-latest,
+              lib   : shared,
+              family: llvm,
+              cxx   : clang++,
+              cc    : clang,
+              extend: ON,
+              logs  : OFF,
+              test  : OFF
+            }
+
             # compile AREG engine as a static library with clang on Ubuntu Linux, enable AREG extensions, logs, examples and tests
-          # - { name: linux-clang-static-all-test,  os: ubuntu-latest,  lib: static,  family: llvm,   cxx: clang++, cc: clang,  extend: ON,   logs: ON, test: ON}
+          - { name  : linux-clang-static-all-test,
+              os    : ubuntu-latest,
+              lib   : static,
+              family: llvm,
+              cxx   : clang++,
+              cc    : clang,
+              extend: ON,
+              logs  : ON,
+              test  : ON
+            }
+
             # compile AREG engine as a static library with clang on Ubuntu Linux, enable AREG extensions, logs, examples and tests
-          # - { name: linux-clang-shared-all-test,  os: ubuntu-latest,  lib: shared,  family: llvm,   cxx: clang++, cc: clang,  extend: ON,   logs: ON, test: ON}
+          - { name  : linux-clang-shared-all-test,
+              os    : ubuntu-latest,
+              lib   : shared,
+              family: llvm,
+              cxx   : clang++,
+              cc    : clang,
+              extend: ON,
+              logs  : ON,
+              test  : ON
+            }
+
             # compile AREG engine as a shared library with clang on Ubuntu Linux, disable AREG extensions and no logs
-          # - { name: linux-clang-shared-noext-nolog,os: ubuntu-latest, lib: shared,  family: llvm,   cxx: clang++, cc: clang,  extend: OFF,  logs: OFF,test: OFF}
+          - { name  : linux-clang-shared-noext-nolog,
+              os    : ubuntu-latest,
+              lib   : shared,
+              family: llvm,
+              cxx   : clang++,
+              cc    : clang,
+              extend: OFF,
+              logs  : OFF,
+              test  : OFF
+            }
+
             # compile AREG engine as a shared with CYGWIN g++ / gcc on Windows, enable AREG extensions and logs
-          # - { name: win-cygwin-shared-ext-log,    os: windows-latest, lib: shared,  family: cygwin, cxx: g++,     cc: gcc,    extend: ON,   logs: ON, test: OFF}
+          - { name  : win-cygwin-shared-ext-log,
+              os    : windows-latest,
+              lib   : shared,
+              family: cygwin,
+              cxx   : g++,
+              cc    : gcc,
+              extend: ON,
+              logs  : ON,
+              test  : OFF}
+
             # compile AREG engine as a shared with CYGWIN g++ / gcc on Windows, enable AREG extensions and no logs
-          # - { name: win-cygwin-shared-ext-nolog,  os: windows-latest, lib: shared,  family: cygwin, cxx: g++,     cc: gcc,    extend: ON,   logs: OFF,test: OFF}
+          - { name  : win-cygwin-shared-ext-nolog,
+              os    : windows-latest,
+              lib   : shared,
+              family: cygwin,
+              cxx   : g++,
+              cc    : gcc,
+              extend: ON,
+              logs  : OFF,
+              test  : OFF
+            }
+
             # compile AREG engine as a static with CYGWIN g++ / gcc on Windows, enable AREG extensions, logs, examples and tests
-          # - { name: win-cygwin-static-all-test,   os: windows-latest, lib: static,  family: cygwin, cxx: g++,     cc: gcc,    extend: ON,   logs: ON, test: ON}
+          - { name  : win-cygwin-static-all-test,
+              os    : windows-latest,
+              lib   : static,
+              family: cygwin,
+              cxx   : g++,
+              cc    : gcc,
+              extend: ON,
+              logs  : ON,
+              test  : ON
+            }
+
             # compile AREG engine as a static with CYGWIN g++ / gcc on Windows, enable AREG extensions, logs, examples and tests
-          # - { name: win-cygwin-shared-all-test,   os: windows-latest, lib: shared,  family: cygwin, cxx: g++,     cc: gcc,    extend: ON,   logs: ON, test: ON}
+          - { name  : win-cygwin-shared-all-test,
+              os    : windows-latest,
+              lib   : shared,
+              family: cygwin,
+              cxx   : g++,
+              cc    : gcc,
+              extend: ON,
+              logs  : ON,
+              test  : ON
+            }
+
             # compile AREG engine as a shared with CYGWIN g++ / gcc on Windows, disable AREG extensions and no logs
-          # - { name: win-cygwin-shared-noext-nolog,os: windows-latest, lib: shared,  family: cygwin, cxx: g++,     cc: gcc,    extend: OFF,  logs: OFF,test: OFF}
+          - { name  : win-cygwin-shared-noext-nolog,
+              os    : windows-latest,
+              lib   : shared,
+              family: cygwin,
+              cxx   : g++,
+              cc    : gcc,
+              extend: OFF,
+              logs  : OFF,
+              test  : OFF
+            }
+
             # compile AREG engine as a shared with MSVC on Windows, enable AREG extensions and logs
-          # - { name: win-msvc-shared-ext-log,      os: windows-latest, lib: shared,  family: msvc,   cxx: cl,      cc: cl,     extend: ON,   logs: ON, test: OFF}
+          - { name  : win-msvc-shared-ext-log,
+              os    : windows-latest,
+              lib   : shared,
+              family: msvc,
+              cxx   : cl,
+              cc    : cl,
+              extend: ON,
+              logs  : ON,
+              test  : OFF
+            }
+
             # compile AREG engine as a shared with MSVC on Windows, enable AREG extensions and no logs
-          # - { name: win-msvc-shared-ext-nolog,    os: windows-latest, lib: shared,  family: msvc,   cxx: cl,      cc: cl,     extend: ON,   logs: OFF,test: OFF}
+          - { name  : win-msvc-shared-ext-nolog,
+              os    : windows-latest,
+              lib   : shared,
+              family: msvc,
+              cxx   : cl,
+              cc    : cl,
+              extend: ON,
+              logs  : OFF,
+              test  : OFF
+            }
+
             # compile AREG engine as a static with MSVC on Windows, enable AREG extensions, logs, examples and tests
-          # - { name: win-msvc-static-all-test,     os: windows-latest, lib: static, family: msvc,    cxx: cl,      cc: cl,     extend: ON,   logs: ON, test: ON}
+          - { name  : win-msvc-static-all-test,
+              os    : windows-latest,
+              lib   : static,
+              family: msvc,
+              cxx   : cl,
+              cc    : cl,
+              extend: ON,
+              logs  : ON,
+              test  : ON
+            }
+
             # compile AREG engine as a static with MSVC on Windows, enable AREG extensions, logs, examples and tests
-          - { name: win-msvc-shared-all-test,     os: windows-latest, lib: shared, family: msvc,    cxx: cl,      cc: cl,     extend: ON,   logs: ON, test: ON}
+          - { name  : win-msvc-shared-all-test,
+              os    : windows-latest,
+              lib   : shared,
+              family: msvc,
+              cxx   : cl,
+              cc    : cl,
+              extend: ON,
+              logs  : ON,
+              test  : ON
+            }
+
             # compile AREG engine as a shared with MSVC on Windows, enable AREG extensions and logs
-          # - { name: win-msvc-shared-noext-log,    os: windows-latest, lib: shared,  family: msvc,   cxx: cl,      cc: cl,     extend: OFF,  logs: ON, test: OFF}
+          - { name  : win-msvc-shared-noext-log,
+              os    : windows-latest,
+              lib   : shared,
+              family: msvc,
+              cxx   : cl,
+              cc    : cl,
+              extend: OFF,
+              logs  : ON,
+              test  : OFF
+            }
+
             # compile AREG engine as a shared with MSVC on Windows, enable AREG extensions and no logs
-          # - { name: win-msvc-shared-noext-nolog,  os: windows-latest, lib: shared,  family: msvc,   cxx: cl,      cc: cl,     extend: OFF,  logs: OFF,test: OFF}
+          - { name  : win-msvc-shared-noext-nolog,
+              os    : windows-latest,
+              lib   : shared,
+              family: msvc,
+              cxx   : cl,
+              cc    : cl,
+              extend: OFF,
+              logs  : OFF,
+              test  : OFF
+            }
 
     steps:
 
@@ -121,13 +330,13 @@ jobs:
         if: always() && matrix.config.os == 'ubuntu-latest'
         shell: bash
         run: |
-          echo "BUILD_DEST=product/build/${{matrix.config.family}}-${{matrix.config.cxx}}/linux-64-x86_64-debug-${{matrix.config.lib}}" >> "$GITHUB_ENV"
+          echo "BUILD_DEST=product/build/${{matrix.config.family}}-${{matrix.config.cxx}}/linux-64-x86_64-release-${{matrix.config.lib}}" >> "$GITHUB_ENV"
 
       - name: Windows build path guess
         if: always() && matrix.config.os == 'windows-latest'
         shell: bash
         run: |
-          echo "BUILD_DEST=product/build/${{matrix.config.family}}-${{matrix.config.cxx}}/windows-64-amd64-debug-${{matrix.config.lib}}" >> "$GITHUB_ENV"
+          echo "BUILD_DEST=product/build/${{matrix.config.family}}-${{matrix.config.cxx}}/windows-64-amd64-release-${{matrix.config.lib}}" >> "$GITHUB_ENV"
 
       - name: Copy test artifacts
         if: failure() && matrix.config.test == 'ON'

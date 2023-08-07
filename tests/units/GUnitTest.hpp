@@ -32,7 +32,6 @@
 
 #include "areg/base/GEGlobal.h"
 #include "googletest/googletest/include/gtest/gtest.h"
-#include "units/VirtualConfig.hpp"
 
 #ifdef _WIN32
     #pragma comment(lib, "gtest.lib")

@@ -10,8 +10,7 @@
  * \file        units/FileTest.Cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       AREG Platform, Google test dummy file.
- *              Created as a fist file to integrate GTest in AREG
+ * \brief       AREG Platform, Google test of File object.
  ************************************************************************/
  /************************************************************************
   * Include files.
@@ -31,7 +30,10 @@
     #pragma comment(lib, "Shlwapi.lib")
 #endif // WINDOWS
 
-
+/**
+ * \brief   Makes sure that the system has no problem to read file from file system.
+ *          The test is using STL objects, which suppose to work under any platform.
+ **/
 TEST( FileTest, StlFileRead )
 {
     Application::setWorkingDirectory( nullptr );
@@ -51,6 +53,10 @@ TEST( FileTest, StlFileRead )
     file.close( );
 }
 
+/**
+ * \brief   Makes sure that the system has no problem to read and write file from file system.
+ *          The test is using STL objects, which suppose to work under any platform.
+ **/
 TEST( FileTest, StlFileReadWrite )
 {
     Application::setWorkingDirectory( nullptr );
@@ -77,6 +83,10 @@ TEST( FileTest, StlFileReadWrite )
     ASSERT_FALSE( static_cast<bool>(err) );
 }
 
+/**
+ * \brief   Makes sure that the system has no problem to read file from file system.
+ *          The test is using Win32 API and supposed to work only on Windows system.
+ **/
 TEST( FileTest, Win32FileRead )
 {
 #ifdef WINDOWS
@@ -100,6 +110,10 @@ TEST( FileTest, Win32FileRead )
 #endif // WINDOWS
 }
 
+/**
+ * \brief   Makes sure that the system has no problem to read and write file from file system.
+ *          The test is using Win32 API and supposed to work only on Windows system.
+ **/
 TEST( FileTest, Win32FileReadWrite )
 {
 #ifdef WINDOWS
@@ -131,7 +145,10 @@ TEST( FileTest, Win32FileReadWrite )
 #endif // WINDOWS
 }
 
-TEST( FileTest, AregFileCheck )
+/**
+ * \brief   The test checks file existence using File API.
+ **/
+TEST( FileTest, CheckFileExistence )
 {
     Application::setWorkingDirectory( nullptr );
 
@@ -141,7 +158,10 @@ TEST( FileTest, AregFileCheck )
     ASSERT_FALSE( File::existFile( fileWrong ) );
 }
 
-TEST( FileTest, AregFileNormalizedPath )
+/**
+ * \brief   The test checks basic functionality of the file path normalization.
+ **/
+TEST( FileTest, NormalizeFilePathBasic )
 {
     Application::setWorkingDirectory( nullptr );
 
@@ -151,7 +171,10 @@ TEST( FileTest, AregFileNormalizedPath )
     ASSERT_TRUE( normalized.endsWith( "log.init" ) );
 }
 
-TEST( FileTest, AregFileOpen )
+/**
+ * \brief   The test checks file open functionality using File object API.
+ **/
+TEST( FileTest, FileOpenBasic )
 {
     Application::setWorkingDirectory( nullptr );
 
@@ -166,7 +189,10 @@ TEST( FileTest, AregFileOpen )
     file.close( );
 }
 
-TEST( FileTest, AregFileCreateEmptyFile )
+/**
+ * \brief   The test checks creating an empty file by using File object API.
+ **/
+TEST( FileTest, CreateEmptyFile )
 {
     Application::setWorkingDirectory( nullptr );
     const String fileNameWrite{ "./empty_file_areg.txt" };
@@ -178,7 +204,10 @@ TEST( FileTest, AregFileCreateEmptyFile )
     ASSERT_TRUE( File::existFile( fileNameWrite ) );
 }
 
-TEST( FileTest, AregFileRead )
+/**
+ * \brief   The test checks the basic functionality of opening and reading a file by using File object API.
+ **/
+TEST( FileTest, FileReadBasic )
 {
     Application::setWorkingDirectory( nullptr );
 
@@ -197,7 +226,10 @@ TEST( FileTest, AregFileRead )
     file.close( );
 }
 
-TEST( FileTest, AregFileReadWrite )
+/**
+ * \brief   The test checks the basic functionality of opening, reading and writing a file by using File object API.
+ **/
+TEST( FileTest, FileReadWriteBasic )
 {
     Application::setWorkingDirectory( nullptr );
 
@@ -226,7 +258,11 @@ TEST( FileTest, AregFileReadWrite )
     ASSERT_TRUE( File::existFile( fileNameWrite ) );
 }
 
-TEST( FileTest, AregCreateFolderCascaded )
+/**
+ * \brief   The test checks the basic functionality of creating folders cascaded
+ *          and deleting them by using File object API.
+ **/
+TEST( FileTest, CreateFolderCascaded )
 {
     Application::setWorkingDirectory( nullptr );
 
@@ -238,7 +274,12 @@ TEST( FileTest, AregCreateFolderCascaded )
     ASSERT_FALSE( File::existDir( "./dir1/" ) );
 }
 
-TEST( FileTest, AregFileReadWriteSubfolder )
+/**
+ * \brief   The test checks the functionality read an existing file and
+ *          wring that into another file located in non-existing folder.
+ *          The test will create subfolder and create a file inside.
+ **/
+TEST( FileTest, FileReadAndWriteInSubfolder )
 {
     Application::setWorkingDirectory( nullptr );
 
@@ -265,17 +306,4 @@ TEST( FileTest, AregFileReadWriteSubfolder )
     fileWrite.close( );
 
     ASSERT_TRUE( File::existFile(fileNameWrite) );
-}
-
-DEF_TRACE_SCOPE( areg_unit_tests_LogScopeTest_StartAndStopLogging );
-TEST( FileTest, Areg_TraceStartAndStopOnly )
-{
-    Application::setWorkingDirectory( nullptr );
-    ASSERT_TRUE( NETrace::startLogging( "./config/log.init" ) );
-    do
-    {
-        TRACE_SCOPE( areg_unit_tests_LogScopeTest_StartAndStopLogging );
-    } while ( false );
-
-    NETrace::stopLogging( );
 }

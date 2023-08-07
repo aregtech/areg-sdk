@@ -39,8 +39,5 @@
     <ClInclude Include="units\GUnitTest.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="units\VirtualConfig.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

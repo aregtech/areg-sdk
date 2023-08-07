@@ -35,26 +35,26 @@
     #define strtof      strtod
 #endif
 
-#define _MAX_BINARY_BUFFER   128
-#define _MIN_BUF_SIZE        128
-#define _BUF_SIZE            256
-#define _MAX_BUF_SIZE        512
-#define _EXTRA_BUF_SIZE     1024
-
-
-
 namespace 
 {
+    //!< A formate chars to generate human readable binary text.
     constexpr char const _formatRadixBinary[] = { '0', '1', '\0' };
 
 //////////////////////////////////////////////////////////////////////////
 // String class implementation
 //////////////////////////////////////////////////////////////////////////
 
+    /**
+     * \brief   Format to create binary text containing '0' and '1'.
+     * \tparam  DigitType   The time of digital number to convert. Must be a primitive.
+     * \param   result      On output, this contains the conversion result.
+     * \param   number      The digit to convert.
+     * \return  Returns the number of characters copied into the string.
+     **/
     template<typename DigitType>
-    inline int32_t _formatBinary( String & result, DigitType number )
+    inline int32_t _formatBinary( String & OUT result, DigitType number )
     {
-        char buffer[_MAX_BINARY_BUFFER];
+        char buffer[ NEString::MSG_MIN_BUF_SIZE ]{ 0 };
         char * dst  = buffer;
         DigitType base = static_cast<DigitType>(NEString::eRadix::RadixBinary);
         bool isNegative = number < 0;
@@ -83,11 +83,23 @@ namespace
         return count;
     }
 
-    template<typename DigitType, int const CharCount = _MIN_BUF_SIZE>
+    /**
+     * \brief   Formats the digit using predefined formatting.
+     *          The buffer to format is allocated in the stack and
+     *          the length of buffer is passed as a type argument.
+     * \tparam  DigitType   The type of digit to format.
+     * \tparam  CharCount   The size of buffer to allocated in the stack.
+     *                      By default, the length of buffer in '_MIN_BUF_SIZE'
+     * \param   result      On output, contains the conversion result.
+     * \param   format      The format to convert the digit.
+     * \param   number      The digit to convert.
+     * \return  Returns number of characters in the string.
+     *          In case of error, the return is negative.
+     **/
+    template<typename DigitType, int const CharCount = NEString::MSG_MIN_BUF_SIZE>
     inline int32_t _formatDigit( String & result, const char * format, DigitType number )
     {
-        char buffer[CharCount];
-        buffer[0] = String::EmptyChar;
+        char buffer[ CharCount ]{ 0 };
 
         int32_t count = -1;
 #ifdef WINDOWS
@@ -99,6 +111,14 @@ namespace
         return count;
     }
 
+    /**
+     * \brief   Formats the list of arguments and copies the result into the buffer.
+     * \param   buffer  The buffer to copy formatted values.
+     * \param   count   The size of the buffer to allocated.
+     * \param   format  The format to convert.
+     * \param   argptr  The list of arguments to convert.
+     * \return  Returns the number of characters in the buffer, not including null-character.
+     **/
     inline int _formatStringList( char * buffer, int count, const char * format, va_list argptr )
     {
         int result { -1 };
@@ -115,7 +135,16 @@ namespace
         return result;
     }
 
-    template<int const CharCount = _MIN_BUF_SIZE>
+    /**
+     * \brief   Formats the list of arguments and copies the result into the buffer.
+     *          The buffer is allocated in the stack.
+     * \tparam  CharCount   The size of the buffer to allocate in the stack.
+     * \param   result      On output, this contain the result of conversion.
+     * \param   format      The format to convert.
+     * \param   argptr      The list of arguments to convert.
+     * \return  Returns the number of characters in the buffer, not including null-character.
+     **/
+    template<int const CharCount = NEString::MSG_BUF_SIZE>
     inline int32_t _formatStringList( String & result, const char * format, va_list argptr )
     {
         char buffer[ CharCount ] { 0 };
@@ -124,7 +153,14 @@ namespace
         return count;
     }
 
-    template<int const CharCount = _MIN_BUF_SIZE>
+    /**
+     * \brief   Formats the string. The buffer is allocated in the stack.
+     * \tparam  CharCount   The size of the buffer to allocate in the stack.
+     * \param   result      On output, this contain the result of conversion.
+     * \param   format      The format to convert.
+     * \return  Returns the number of characters in the buffer, not including null-character.
+     **/
+    template<int const CharCount = NEString::MSG_BUF_SIZE>
     inline int32_t _formatString( String & result, const char * format, ... )
     {
         va_list argptr;
@@ -134,6 +170,9 @@ namespace
         return count;
     }
 
+    /**
+     * \brief   Compare 2 strings of different char-set and returns true if they are equal.
+     **/
     inline bool _isEqual(const char* str, const wchar_t* wstr)
     {
         while ((*str != TEString<char>::EmptyChar) && (*wstr++ == static_cast<wchar_t>(*str++)))
@@ -142,29 +181,11 @@ namespace
         return (*str == TEString<char>::EmptyChar);
     }
 
-    int _lenNeeded( const char * format, va_list args )
-    {
-        int retval{ 0 };
-        va_list argcopy;
-        va_copy( argcopy, args );
-
-        retval = vsnprintf( nullptr, 0, format, argcopy );
-        
-        va_end( argcopy );
-        return retval;
-    }
-
 } // namespace
-
-#ifdef WINDOWS
-    #define MACRO_VSCPRINTF( format, args )     _vscprintf( format, args )
-#else   // WINDOWS
-    #define MACRO_VSCPRINTF( format, args )     _lenNeeded( format, args )
-#endif // !WINDOWS
 
 
 // the static empty string
-const String& String::getEmptyString(void)
+const String & String::getEmptyString(void)
 {
     static const String _emptyString{ "" };
     return _emptyString;
@@ -553,31 +574,29 @@ const String & String::formatList(const char * format, va_list argptr)
     clear();
     if (format != nullptr)
     {
-        int count = MACRO_VSCPRINTF( format, argptr );
-        if ( count < _MIN_BUF_SIZE )
-        {
-            _formatStringList<_MIN_BUF_SIZE>( *this, format, argptr );
-        }
-        else if ( count < _BUF_SIZE )
-        {
-            _formatStringList<_BUF_SIZE>( *this, format, argptr );
-        }
-        else if ( count < _MAX_BUF_SIZE )
-        {
-            _formatStringList<_MAX_BUF_SIZE>( *this, format, argptr );
-        }
-        else if ( count < _EXTRA_BUF_SIZE )
-        {
-            _formatStringList<_EXTRA_BUF_SIZE>( *this, format, argptr );
-        }
-        else
-        {
-            char * buffer = new char[ count + 1 ];
-            buffer[ 0 ] = String::EmptyChar;
-            _formatStringList( buffer, count + 1, format, argptr );
+        int count = NEString::requiredBufferSize(format, argptr);
 
-            *this = buffer;
-            delete[ ] buffer;
+        switch ( count )
+        {
+        case NEString::MSG_MIN_BUF_SIZE:
+            _formatStringList< NEString::MSG_MIN_BUF_SIZE>( *this, format, argptr );
+            break;
+
+        case NEString::MSG_BUF_SIZE:
+            _formatStringList< NEString::MSG_BUF_SIZE>( *this, format, argptr );
+            break;
+
+        case NEString::MSG_BIG_BUF_SIZE:
+            _formatStringList< NEString::MSG_BIG_BUF_SIZE>( *this, format, argptr );
+            break;
+
+        case NEString::MSG_EXTRA_BUF_SIZE:
+            _formatStringList< NEString::MSG_EXTRA_BUF_SIZE>( *this, format, argptr );
+            break;
+
+        default:
+            ASSERT( false ); // put assertion to catch assertion.
+            break;
         }
     }
 

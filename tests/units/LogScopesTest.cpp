@@ -37,13 +37,11 @@ TEST( LogScopeTest, StartAndStopLogging )
     ASSERT_TRUE( TRACER_START_LOGGING( DEFAULT_CONFIG_FILE.data( ) ) );
     ASSERT_TRUE( IS_TRACE_STARTED( ) );
     
-#if 0
     do
     {
         TRACE_SCOPE( areg_unit_tests_LogScopeTest_StartAndStopLogging_exp );
         TRACE_DBG( "The logging started." );
     } while ( false );
-#endif
 
     TRACER_STOP_LOGGING( );
     ASSERT_FALSE( IS_TRACE_STARTED( ) );

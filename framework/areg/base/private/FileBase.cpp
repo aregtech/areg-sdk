@@ -252,8 +252,9 @@ unsigned int _searchText( const FileBase & file, unsigned int startPos, const Ch
         if ( (NEString::isEmpty<CharType>(text) == false) && (length > 0) )
         {
             unsigned int dataLen = length * 2;
+            unsigned int bufLen  = length + 1;
             unsigned int readLen = 0;
-            CharType * fileData = new CharType[ dataLen + 1];
+            CharType * fileData = new CharType[ bufLen ];
 
             while ( result == IECursorPosition::INVALID_CURSOR_POSITION )
             {

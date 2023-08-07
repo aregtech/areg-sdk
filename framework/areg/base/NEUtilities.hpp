@@ -149,10 +149,6 @@ namespace   NEUtilities
      **/
     typedef struct S_FileTime
     {
-        S_FileTime( void )
-            : ftLowDateTime( 0 ), ftHighDateTime( 0 )
-        { }
-
         unsigned long   ftLowDateTime{ 0 };     //!< Low part of date-time.
         unsigned long   ftHighDateTime{ 0 };    //!< High part of date-time.
     } sFileTime;

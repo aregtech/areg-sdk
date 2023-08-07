@@ -51,8 +51,8 @@ TickCountLayout::TickCountLayout( TickCountLayout && /*src*/ ) noexcept
 void TickCountLayout::logMessage( const NETrace::sLogMessageData & /*msgLog*/, IEOutStream & stream ) const
 {
     char buffer[128];    
-    String::formatString(buffer, 128, "%llu", static_cast<uint64_t>( DateTime::getProcessTickCount() ));
-    stream.write(buffer);
+    int len = String::formatString(buffer, 128, "%llu", static_cast<uint64_t>( DateTime::getProcessTickCount() ));
+    stream.write(reinterpret_cast<const unsigned char *>(buffer), len > 0 ? len : 0);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -108,8 +108,8 @@ void ModuleIdLayout::logMessage( const NETrace::sLogMessageData & msgLog, IEOutS
     if (msgLog.dataModuleId != 0)
     {
         char buffer[128];
-        String::formatString(buffer, 128, "0x%llX", msgLog.dataModuleId);
-        stream.write(buffer);
+        int len = String::formatString(buffer, 128, "0x%llX", msgLog.dataModuleId);
+        stream.write( reinterpret_cast<const unsigned char *>(buffer), len > 0 ? len : 0 );
     }
 }
 
@@ -210,8 +210,8 @@ void ScopeIdLayout::logMessage( const NETrace::sLogMessageData & msgLog, IEOutSt
     if ( msgLog.dataScopeId != 0 )
     {
         char buffer[128];
-        String::formatString(buffer, 128, "%u", msgLog.dataScopeId);
-        stream.write(buffer);
+        int len = String::formatString(buffer, 128, "%u", msgLog.dataScopeId);
+        stream.write( reinterpret_cast<const unsigned char *>(buffer), len > 0 ? len : 0 );
     }
 }
 
@@ -241,12 +241,12 @@ void ThreadIdLayout::logMessage( const NETrace::sLogMessageData & msgLog, IEOutS
         char buffer[128];
 
 #ifdef _BIT64
-        String::formatString(buffer, 128, "0x%016llX", static_cast<uint64_t>(msgLog.dataThreadId));
+        int len = String::formatString(buffer, 128, "0x%016llX", static_cast<uint64_t>(msgLog.dataThreadId));
 #else   // _BIT32
-        String::formatString(buffer, 128, "0x%08X", static_cast<uint32_t>(msgLog.dataThreadId));
+        int lent = String::formatString(buffer, 128, "0x%08X", static_cast<uint32_t>(msgLog.dataThreadId));
 #endif  // _BIT64
 
-        stream.write(buffer);
+        stream.write( reinterpret_cast<const unsigned char *>(buffer), len > 0 ? len : 0 );
     }
 }
 

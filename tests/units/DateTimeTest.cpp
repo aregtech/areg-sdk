@@ -10,19 +10,20 @@
  * \file        units/DateTimeTest.Cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       AREG Platform, Google test dummy file.
- *              Created as a fist file to integrate GTest in AREG
+ * \brief       AREG Platform, Google test of DateTime class.
  ************************************************************************/
  /************************************************************************
   * Include files.
   ************************************************************************/
 #include "units/GUnitTest.hpp"
 #include "areg/base/DateTime.hpp"
-#include "areg/base/String.hpp"
+
+#include "areg/base/NEMemory.hpp"
+#include "areg/base/NEMath.hpp"
 #include "areg/base/NEUtilities.hpp"
+#include "areg/base/String.hpp"
 
 #ifdef WINDOWS
-
     #include <Windows.h>
 #endif  // WINDOWS
 
@@ -56,89 +57,104 @@ namespace
         winTime.wMilliseconds = static_cast<WORD>(aregTime.stMillisecs);
     }
 
+    //!< Checks the values of SYSTEMTIME type parameter and if does not match
+    //!< the expectation, outputs the message to be visible on console.
+    //!< The developer passes 'prefix' to identify the value it checks.
+    //!< Otherwise, no prefix is displayed.
     void _checkTimeStruct( const SYSTEMTIME & time, const char * prefix = "" )
     {
-        EXPECT_GE( time.wYear, 2023 ) << prefix << "Year:   " << time.wYear << std::endl;
+        EXPECT_GE( time.wYear, 2023 )       << prefix << "Year:   " << time.wYear << std::endl;
 
-        EXPECT_GE( time.wMonth, 1 ) << prefix << "Month:  " << time.wMonth << std::endl;
-        EXPECT_LE( time.wMonth, 12 ) << prefix << "Month:  " << time.wMonth << std::endl;
+        EXPECT_GE( time.wMonth, 1 )         << prefix << "Month:  " << time.wMonth << std::endl;
+        EXPECT_LE( time.wMonth, 12 )        << prefix << "Month:  " << time.wMonth << std::endl;
 
-        EXPECT_GE( time.wDayOfWeek, 0 ) << prefix << "DoF:    " << time.wDayOfWeek << std::endl;
-        EXPECT_LE( time.wDayOfWeek, 6 ) << prefix << "DoF:    " << time.wDayOfWeek << std::endl;
+        EXPECT_GE( time.wDayOfWeek, 0 )     << prefix << "DoF:    " << time.wDayOfWeek << std::endl;
+        EXPECT_LE( time.wDayOfWeek, 6 )     << prefix << "DoF:    " << time.wDayOfWeek << std::endl;
 
-        EXPECT_GE( time.wDay, 1 ) << prefix << "Day:    " << time.wDay << std::endl;
-        EXPECT_LE( time.wDay, 31 ) << prefix << "Day:    " << time.wDay << std::endl;
+        EXPECT_GE( time.wDay, 1 )           << prefix << "Day:    " << time.wDay << std::endl;
+        EXPECT_LE( time.wDay, 31 )          << prefix << "Day:    " << time.wDay << std::endl;
 
-        EXPECT_GE( time.wHour, 0 ) << prefix << "Hour:   " << time.wHour << std::endl;
-        EXPECT_LE( time.wHour, 23 ) << prefix << "Hour:   " << time.wHour << std::endl;
+        EXPECT_GE( time.wHour, 0 )          << prefix << "Hour:   " << time.wHour << std::endl;
+        EXPECT_LE( time.wHour, 23 )         << prefix << "Hour:   " << time.wHour << std::endl;
 
-        EXPECT_GE( time.wMinute, 0 ) << prefix << "Minute: " << time.wMinute << std::endl;
-        EXPECT_LE( time.wMinute, 59 ) << prefix << "Minute: " << time.wMinute << std::endl;
+        EXPECT_GE( time.wMinute, 0 )        << prefix << "Minute: " << time.wMinute << std::endl;
+        EXPECT_LE( time.wMinute, 59 )       << prefix << "Minute: " << time.wMinute << std::endl;
 
-        EXPECT_GE( time.wSecond, 0 ) << prefix << "Second: " << time.wSecond << std::endl;
-        EXPECT_LE( time.wSecond, 59 ) << prefix << "Second: " << time.wSecond << std::endl;
+        EXPECT_GE( time.wSecond, 0 )        << prefix << "Second: " << time.wSecond << std::endl;
+        EXPECT_LE( time.wSecond, 59 )       << prefix << "Second: " << time.wSecond << std::endl;
 
-        EXPECT_GE( time.wMilliseconds, 0 ) << prefix << "MSec:   " << time.wMilliseconds << std::endl;
-        EXPECT_LE( time.wMilliseconds, 999 ) << prefix << "MSec:   " << time.wMilliseconds << std::endl;
+        EXPECT_GE( time.wMilliseconds, 0 )  << prefix << "MSec:   " << time.wMilliseconds << std::endl;
+        EXPECT_LE( time.wMilliseconds, 999 )<< prefix << "MSec:   " << time.wMilliseconds << std::endl;
     }
 
 #endif  // WINDOWS
 
+    //!< Checks the values of NEUtilities::sSystemTime type parameter and if does not match
+    //!< the expectation, outputs the message to be visible on console.
+    //!< The developer passes 'prefix' to identify the value it checks.
+    //!< Otherwise, no prefix is displayed.
     void _checkTimeStruct( const NEUtilities::sSystemTime & time, const char * prefix = "" )
     {
-        EXPECT_GE( time.stYear, 2023 ) << prefix << "Year:   " << time.stYear << std::endl;
+        EXPECT_GE( time.stYear, 2023 )      << prefix << "Year:   " << time.stYear << std::endl;
 
-        EXPECT_GE( time.stMonth, 1 ) << prefix << "Month:  " << time.stMonth << std::endl;
-        EXPECT_LE( time.stMonth, 12 ) << prefix << "Month:  " << time.stMonth << std::endl;
+        EXPECT_GE( time.stMonth, 1 )        << prefix << "Month:  " << time.stMonth << std::endl;
+        EXPECT_LE( time.stMonth, 12 )       << prefix << "Month:  " << time.stMonth << std::endl;
 
-        EXPECT_GE( time.stDayOfWeek, 0 ) << prefix << "DoF:    " << time.stDayOfWeek << std::endl;
-        EXPECT_LE( time.stDayOfWeek, 6 ) << prefix << "DoF:    " << time.stDayOfWeek << std::endl;
+        EXPECT_GE( time.stDayOfWeek, 0 )    << prefix << "DoF:    " << time.stDayOfWeek << std::endl;
+        EXPECT_LE( time.stDayOfWeek, 6 )    << prefix << "DoF:    " << time.stDayOfWeek << std::endl;
 
-        EXPECT_GE( time.stDay, 1 ) << prefix << "Day:    " << time.stDay << std::endl;
-        EXPECT_LE( time.stDay, 31 ) << prefix << "Day:    " << time.stDay << std::endl;
+        EXPECT_GE( time.stDay, 1 )          << prefix << "Day:    " << time.stDay << std::endl;
+        EXPECT_LE( time.stDay, 31 )         << prefix << "Day:    " << time.stDay << std::endl;
 
-        EXPECT_GE( time.stHour, 0 ) << prefix << "Hour:   " << time.stHour << std::endl;
-        EXPECT_LE( time.stHour, 23 ) << prefix << "Hour:   " << time.stHour << std::endl;
+        EXPECT_GE( time.stHour, 0 )         << prefix << "Hour:   " << time.stHour << std::endl;
+        EXPECT_LE( time.stHour, 23 )        << prefix << "Hour:   " << time.stHour << std::endl;
 
-        EXPECT_GE( time.stMinute, 0 ) << prefix << "Minute: " << time.stMinute << std::endl;
-        EXPECT_LE( time.stMinute, 59 ) << prefix << "Minute: " << time.stMinute << std::endl;
+        EXPECT_GE( time.stMinute, 0 )       << prefix << "Minute: " << time.stMinute << std::endl;
+        EXPECT_LE( time.stMinute, 59 )      << prefix << "Minute: " << time.stMinute << std::endl;
 
-        EXPECT_GE( time.stSecond, 0 ) << prefix << "Second: " << time.stSecond << std::endl;
-        EXPECT_LE( time.stSecond, 59 ) << prefix << "Second: " << time.stSecond << std::endl;
+        EXPECT_GE( time.stSecond, 0 )       << prefix << "Second: " << time.stSecond << std::endl;
+        EXPECT_LE( time.stSecond, 59 )      << prefix << "Second: " << time.stSecond << std::endl;
 
-        EXPECT_GE( time.stMillisecs, 0 ) << prefix << "MSec:   " << time.stMillisecs << std::endl;
-        EXPECT_LE( time.stMillisecs, 999 ) << prefix << "MSec:   " << time.stMillisecs << std::endl;
+        EXPECT_GE( time.stMillisecs, 0 )    << prefix << "MSec:   " << time.stMillisecs << std::endl;
+        EXPECT_LE( time.stMillisecs, 999 )  << prefix << "MSec:   " << time.stMillisecs << std::endl;
 
-        EXPECT_GE( time.stMicrosecs, 0 ) << prefix << "MuSec:  " << time.stMicrosecs << std::endl;
-        EXPECT_LE( time.stMicrosecs, 999 ) << prefix << "MuSec:  " << time.stMicrosecs << std::endl;
+        EXPECT_GE( time.stMicrosecs, 0 )    << prefix << "MuSec:  " << time.stMicrosecs << std::endl;
+        EXPECT_LE( time.stMicrosecs, 999 )  << prefix << "MuSec:  " << time.stMicrosecs << std::endl;
     }
 
-    void _checkTimeStruct( const tm & time, const char * prefix = "" )
+    //!< Checks the values of struct tm type parameter and if does not match
+    //!< the expectation, outputs the message to be visible on console.
+    //!< The developer passes 'prefix' to identify the value it checks.
+    //!< Otherwise, no prefix is displayed.
+    void _checkTimeStruct( const struct tm & time, const char * prefix = "" )
     {
         constexpr int year{ 2023 - 1900 };
 
         EXPECT_GE( time.tm_year, year ) << prefix << "Year:   " << time.tm_year << std::endl;
 
-        EXPECT_GE( time.tm_mon, 0 ) << prefix << "Month:  " << time.tm_mon << std::endl;
-        EXPECT_LE( time.tm_mon, 11 ) << prefix << "Month:  " << time.tm_mon << std::endl;
+        EXPECT_GE( time.tm_mon, 0 )     << prefix << "Month:  " << time.tm_mon << std::endl;
+        EXPECT_LE( time.tm_mon, 11 )    << prefix << "Month:  " << time.tm_mon << std::endl;
 
-        EXPECT_GE( time.tm_wday, 0 ) << prefix << "DoF:    " << time.tm_wday << std::endl;
-        EXPECT_LE( time.tm_wday, 6 ) << prefix << "DoF:    " << time.tm_wday << std::endl;
+        EXPECT_GE( time.tm_wday, 0 )    << prefix << "DoF:    " << time.tm_wday << std::endl;
+        EXPECT_LE( time.tm_wday, 6 )    << prefix << "DoF:    " << time.tm_wday << std::endl;
 
-        EXPECT_GE( time.tm_mday, 1 ) << prefix << "Day:    " << time.tm_mday << std::endl;
-        EXPECT_LE( time.tm_mday, 31 ) << prefix << "Day:    " << time.tm_mday << std::endl;
+        EXPECT_GE( time.tm_mday, 1 )    << prefix << "Day:    " << time.tm_mday << std::endl;
+        EXPECT_LE( time.tm_mday, 31 )   << prefix << "Day:    " << time.tm_mday << std::endl;
 
-        EXPECT_GE( time.tm_hour, 0 ) << prefix << "Hour:   " << time.tm_hour << std::endl;
-        EXPECT_LE( time.tm_hour, 23 ) << prefix << "Hour:   " << time.tm_hour << std::endl;
+        EXPECT_GE( time.tm_hour, 0 )    << prefix << "Hour:   " << time.tm_hour << std::endl;
+        EXPECT_LE( time.tm_hour, 23 )   << prefix << "Hour:   " << time.tm_hour << std::endl;
 
-        EXPECT_GE( time.tm_min, 0 ) << prefix << "Minute: " << time.tm_min << std::endl;
-        EXPECT_LE( time.tm_min, 59 ) << prefix << "Minute: " << time.tm_min << std::endl;
+        EXPECT_GE( time.tm_min, 0 )     << prefix << "Minute: " << time.tm_min << std::endl;
+        EXPECT_LE( time.tm_min, 59 )    << prefix << "Minute: " << time.tm_min << std::endl;
 
-        EXPECT_GE( time.tm_sec, 0 ) << prefix << "Second: " << time.tm_sec << std::endl;
-        EXPECT_LE( time.tm_sec, 59 ) << prefix << "Second: " << time.tm_sec << std::endl;
+        EXPECT_GE( time.tm_sec, 0 )     << prefix << "Second: " << time.tm_sec << std::endl;
+        EXPECT_LE( time.tm_sec, 59 )    << prefix << "Second: " << time.tm_sec << std::endl;
     }
 }
 
+/**
+ * \brief   Checks current date-time value.
+ **/
 TEST( DateTimeTest, TestNow )
 {
     NEUtilities::sSystemTime sysTime;
@@ -146,10 +162,14 @@ TEST( DateTimeTest, TestNow )
     ASSERT_TRUE( date.getTime( ) != 0 );
 
     date.convToSystemTime( sysTime );
-
     _checkTimeStruct( sysTime, "UTC " );
 }
 
+/**
+ * \brief   Converts current system time in UTC to local time
+ *          by using Win32 API to make sure that the sequence of
+ *          function calls is correct.
+ **/
 TEST( DateTimeTest, TestLocalTimeWin32 )
 {
 #ifdef WINDOWS
@@ -179,6 +199,47 @@ TEST( DateTimeTest, TestLocalTimeWin32 )
 #endif // WINDOWS
 }
 
+/**
+ * \brief   Gets current time in UTC and converts to local time.
+ *          Checks that values are correct.
+ **/
+TEST( DateTimeTest, TestLocalTime )
+{
+    DateTime date( DateTime::getNow( ) );
+    ASSERT_TRUE( date.getTime( ) != 0 );
+
+    NEUtilities::sSystemTime utcTime;
+    NEUtilities::convToSystemTime( date.getTime( ), utcTime );
+    _checkTimeStruct( utcTime, "Areg UTC " );
+
+    NEUtilities::sSystemTime localTime{ };
+    NEUtilities::convToLocalTime( utcTime, localTime );
+    _checkTimeStruct( localTime, "Areg Local " );
+
+    struct tm conv { 0 };
+    NEUtilities::convToTm( localTime, conv );
+
+    _checkTimeStruct( conv, "struct tm Local " );
+
+    NEUtilities::sSystemTime sysTime;
+    NEUtilities::convToLocalTime( date.getTime( ), sysTime );
+
+    ASSERT_EQ( localTime.stYear, sysTime.stYear )   << "localTime.stYear = " << localTime.stYear    << ", sysTime.stYear = "  << sysTime.stYear << std::endl;
+    ASSERT_EQ( localTime.stMonth, sysTime.stMonth ) << "localTime.stMonth= " << localTime.stMonth   << ", sysTime.stMonth = " << sysTime.stMonth << std::endl;
+    ASSERT_EQ( localTime.stDay, sysTime.stDay )     << "localTime.stDay = "  << localTime.stDay     << ", sysTime.stDay = "   << sysTime.stDay << std::endl;
+    ASSERT_EQ( localTime.stDayOfWeek, sysTime.stDayOfWeek ) << "localTime.stDayOfWeek = " << localTime.stDayOfWeek << ", sysTime.stDayOfWeek = " << sysTime.stDayOfWeek << std::endl;
+    // ASSERT_EQ( localTime.stHour, sysTime.stHour ) << "localTime.stHour = " << localTime.stHour << ", sysTime.stHour = " << sysTime.stHour << std::endl;
+    ASSERT_EQ( localTime.stMinute, sysTime.stMinute ) << "localTime.stMinute = " << localTime.stMinute << ", sysTime.stMinute = " << sysTime.stMinute << std::endl;
+    ASSERT_EQ( localTime.stSecond, sysTime.stSecond ) << "localTime.stSecond = " << localTime.stSecond << ", sysTime.stSecond = " << sysTime.stSecond << std::endl;
+    ASSERT_EQ( localTime.stMillisecs, sysTime.stMillisecs ) << "localTime.stMillisecs = " << localTime.stMillisecs << ", sysTime.stMillisecs = " << sysTime.stMillisecs << std::endl;
+    ASSERT_EQ( localTime.stMicrosecs, sysTime.stMicrosecs ) << "localTime.stMicrosecs = " << localTime.stMicrosecs << ", sysTime.stMicrosecs = " << sysTime.stMicrosecs << std::endl;
+
+}
+
+/**
+ * brief    Gets current time in UTC, coverts to string of local time using ISO8601 format
+ *          and makes sure that the conversion is correct.
+ **/
 TEST( DateTimeTest, TestFormatISO8601 )
 {
     DateTime date( DateTime::getNow( ) );
@@ -186,115 +247,20 @@ TEST( DateTimeTest, TestFormatISO8601 )
 
     NEUtilities::sSystemTime utcTime;
     NEUtilities::convToSystemTime( date.getTime( ), utcTime );
-
-    EXPECT_GE( utcTime.stYear, 2023 )   << "UTC Year:   " << utcTime.stYear  << std::endl;
-
-    EXPECT_GE( utcTime.stMonth, 1 )     << "UTC Month:  " << utcTime.stMonth << std::endl;
-    EXPECT_LE( utcTime.stMonth, 12 )    << "UTC Month:  " << utcTime.stMonth << std::endl;
-
-    EXPECT_GE( utcTime.stDayOfWeek, 0 ) << "UTC DoF:    " << utcTime.stDayOfWeek << std::endl;
-    EXPECT_LE( utcTime.stDayOfWeek, 6 ) << "UTC DoF:    " << utcTime.stDayOfWeek << std::endl;
-
-    EXPECT_GE( utcTime.stDay, 1 )       << "UTC Day:    " << utcTime.stDay << std::endl;
-    EXPECT_LE( utcTime.stDay, 31)       << "UTC Day:    " << utcTime.stDay << std::endl;
-
-    EXPECT_GE( utcTime.stHour, 0 )      << "UTC Hour:   " << utcTime.stHour << std::endl;
-    EXPECT_LE( utcTime.stHour, 23 )     << "UTC Hour:   " << utcTime.stHour << std::endl;
-
-    EXPECT_GE( utcTime.stMinute, 0 )    << "UTC Minute: " << utcTime.stMinute << std::endl;
-    EXPECT_LE( utcTime.stMinute, 59 )   << "UTC Minute: " << utcTime.stMinute << std::endl;
-
-    EXPECT_GE( utcTime.stSecond, 0 )    << "UTC Second: " << utcTime.stSecond << std::endl;
-    EXPECT_LE( utcTime.stSecond, 59 )   << "UTC Second: " << utcTime.stSecond << std::endl;
-
-    EXPECT_GE( utcTime.stMillisecs, 0 ) << "UTC MSec:   " << utcTime.stMillisecs << std::endl;
-    EXPECT_LE( utcTime.stMillisecs, 999)<< "UTC MSec:   " << utcTime.stMillisecs << std::endl;
-
-    EXPECT_GE( utcTime.stMicrosecs, 0 ) << "UTC MuSec:  " << utcTime.stMicrosecs << std::endl;
-    EXPECT_LE( utcTime.stMicrosecs,999) << "UTC MuSec:  " << utcTime.stMicrosecs << std::endl;
+    _checkTimeStruct( utcTime, "Areg UTC " );
 
     NEUtilities::sSystemTime localTime{ };
     NEUtilities::convToLocalTime( utcTime, localTime );
-     
-    EXPECT_GE( localTime.stYear, 2023 )   << "Local Year:   " << localTime.stYear  << std::endl;
-
-    EXPECT_GE( localTime.stMonth, 1 )     << "Local Month:  " << localTime.stMonth << std::endl;
-    EXPECT_LE( localTime.stMonth, 12 )    << "Local Month:  " << localTime.stMonth << std::endl;
-
-    EXPECT_GE( localTime.stDayOfWeek, 0 ) << "Local DoF:    " << localTime.stDayOfWeek << std::endl;
-    EXPECT_LE( localTime.stDayOfWeek, 6 ) << "Local DoF:    " << localTime.stDayOfWeek << std::endl;
-
-    EXPECT_GE( localTime.stDay, 1 )       << "Local Day:    " << localTime.stDay << std::endl;
-    EXPECT_LE( localTime.stDay, 31)       << "Local Day:    " << localTime.stDay << std::endl;
-
-    EXPECT_GE( localTime.stHour, 0 )      << "Local Hour:   " << localTime.stHour << std::endl;
-    EXPECT_LE( localTime.stHour, 23 )     << "Local Hour:   " << localTime.stHour << std::endl;
-
-    EXPECT_GE( localTime.stMinute, 0 )    << "Local Minute: " << localTime.stMinute << std::endl;
-    EXPECT_LE( localTime.stMinute, 59 )   << "Local Minute: " << localTime.stMinute << std::endl;
-
-    EXPECT_GE( localTime.stSecond, 0 )    << "Local Second: " << localTime.stSecond << std::endl;
-    EXPECT_LE( localTime.stSecond, 59 )   << "Local Second: " << localTime.stSecond << std::endl;
-
-    EXPECT_GE( localTime.stMillisecs, 0 ) << "Local MSec:   " << localTime.stMillisecs << std::endl;
-    EXPECT_LE( localTime.stMillisecs, 999)<< "Local MSec:   " << localTime.stMillisecs << std::endl;
-
-    EXPECT_GE( localTime.stMicrosecs, 0 ) << "Local MuSec:  " << localTime.stMicrosecs << std::endl;
-    EXPECT_LE( localTime.stMicrosecs,999) << "Local MuSec:  " << localTime.stMicrosecs << std::endl;
+    _checkTimeStruct( localTime, "Areg Local " );
 
     struct tm conv { 0 };
     NEUtilities::convToTm( localTime, conv );
 
-    int year = 2023 - 1900;
-    EXPECT_GE( conv.tm_year, year ) << "TM Year:   " << conv.tm_year << std::endl;
-
-    EXPECT_GE( conv.tm_mon, 0 )     << "TM Month:  " << conv.tm_mon << std::endl;
-    EXPECT_LE( conv.tm_mon, 11 )    << "TM Month:  " << conv.tm_mon << std::endl;
-
-    EXPECT_GE( conv.tm_wday, 0 )    << "TM DoF:    " << conv.tm_wday << std::endl;
-    EXPECT_LE( conv.tm_wday, 6 )    << "TM DoF:    " << conv.tm_wday << std::endl;
-
-    EXPECT_GE( conv.tm_mday, 1 )    << "TM Day:    " << conv.tm_mday << std::endl;
-    EXPECT_LE( conv.tm_mday, 31)    << "TM Day:    " << conv.tm_mday << std::endl;
-
-    EXPECT_GE( conv.tm_hour, 0 )    << "TM Hour:   " << conv.tm_hour << std::endl;
-    EXPECT_LE( conv.tm_hour, 23 )   << "TM Hour:   " << conv.tm_hour << std::endl;
-
-    EXPECT_GE( conv.tm_min, 0 )     << "TM Minute: " << conv.tm_min << std::endl;
-    EXPECT_LE( conv.tm_min, 59 )    << "TM Minute: " << conv.tm_min << std::endl;
-
-    EXPECT_GE( conv.tm_sec, 0 )     << "TM Second: " << conv.tm_sec << std::endl;
-    EXPECT_LE( conv.tm_sec, 59 )    << "TM Second: " << conv.tm_sec << std::endl;
+    _checkTimeStruct( conv, "struct tm Local " );
 
 
     NEUtilities::sSystemTime sysTime;
     NEUtilities::convToLocalTime( date.getTime( ), sysTime );
-
-    EXPECT_GE( sysTime.stYear, 2023 )   << "Year:   " << sysTime.stYear  << std::endl;
-
-    EXPECT_GE( sysTime.stMonth, 1 )     << "Month:  " << sysTime.stMonth << std::endl;
-    EXPECT_LE( sysTime.stMonth, 12 )    << "Month:  " << sysTime.stMonth << std::endl;
-
-    EXPECT_GE( sysTime.stDayOfWeek, 0 ) << "DoF:    " << sysTime.stDayOfWeek << std::endl;
-    EXPECT_LE( sysTime.stDayOfWeek, 6 ) << "DoF:    " << sysTime.stDayOfWeek << std::endl;
-
-    EXPECT_GE( sysTime.stDay, 0 )       << "Day:    " << sysTime.stDay << std::endl;
-    EXPECT_LE( sysTime.stDay, 31)       << "Day:    " << sysTime.stDay << std::endl;
-
-    EXPECT_GE( sysTime.stHour, 0 )      << "Hour:   " << sysTime.stHour << std::endl;
-    EXPECT_LE( sysTime.stHour, 23 )     << "Hour:   " << sysTime.stHour << std::endl;
-
-    EXPECT_GE( sysTime.stMinute, 0 )    << "Minute: " << sysTime.stMinute << std::endl;
-    EXPECT_LE( sysTime.stMinute, 59 )   << "Minute: " << sysTime.stMinute << std::endl;
-
-    EXPECT_GE( sysTime.stSecond, 0 )    << "Second: " << sysTime.stSecond << std::endl;
-    EXPECT_LE( sysTime.stSecond, 59 )   << "Second: " << sysTime.stSecond << std::endl;
-
-    EXPECT_GE( sysTime.stMillisecs, 0 ) << "MSec:   " << sysTime.stMillisecs << std::endl;
-    EXPECT_LE( sysTime.stMillisecs, 999)<< "MSec:   " << sysTime.stMillisecs << std::endl;
-
-    EXPECT_GE( sysTime.stMicrosecs, 0 ) << "MuSec:  " << sysTime.stMicrosecs << std::endl;
-    EXPECT_LE( sysTime.stMicrosecs,999) << "MuSec:  " << sysTime.stMicrosecs << std::endl;
 
     String timestamp = date.formatTime( DateTime::TIME_FORMAT_ISO8601_OUTPUT );
     ASSERT_FALSE( timestamp.isEmpty( ) );

@@ -19,11 +19,18 @@
 #include "units/GUnitTest.hpp"
 #include "areg/base/String.hpp"
 
+/**
+ * \brief   A dummy test to run to make sure that Unit Tests are running.
+ **/
 TEST(DemoTest, BasicAssertion)
 {
     EXPECT_EQ(2*2, 4);
 }
 
+/**
+ * \brief   A dummy test using AREG library to make sure that the unit tests are
+ *          properly linked with AREG framework library.
+ **/
 TEST( DemoTest, BasicString )
 {
     constexpr std::string_view _hello{ "hello areg-sdk" };
