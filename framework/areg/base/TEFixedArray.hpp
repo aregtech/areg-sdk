@@ -275,6 +275,20 @@ public:
      **/
     inline void resize(uint32_t newLength );
 
+    /**
+     * \brief   Return the fist entry in the array. The array must not be empty.
+     *          Otherwise, it fails with the assertion.
+     **/
+    inline const VALUE & firstEntry( void ) const;
+    inline VALUE & firstEntry( void );
+
+    /**
+     * \brief   Return the last entry in the array. The array must not be empty.
+     *          Otherwise, it fails with the assertion.
+     **/
+    inline const VALUE & lastEntry( void ) const;
+    inline VALUE & lastEntry( void );
+
 //////////////////////////////////////////////////////////////////////////
 // Protected member variables
 //////////////////////////////////////////////////////////////////////////
@@ -523,6 +537,34 @@ inline void TEFixedArray<VALUE>::resize(uint32_t newLength)
 
     mValueList  = newList;
     mElemCount  = newLength;
+}
+
+template<typename VALUE>
+inline const VALUE & TEFixedArray<VALUE>::firstEntry( void ) const
+{
+    ASSERT( mElemCount != 0 );
+    return mValueList[ 0 ];
+}
+
+template<typename VALUE>
+inline VALUE & TEFixedArray<VALUE>::firstEntry( void )
+{
+    ASSERT( mElemCount != 0 );
+    return mValueList[ 0 ];
+}
+
+template<typename VALUE>
+inline const VALUE & TEFixedArray<VALUE>::lastEntry( void ) const
+{
+    ASSERT( mElemCount != 0 );
+    return mValueList[ mElemCount - 1 ];
+}
+
+template<typename VALUE>
+inline VALUE & TEFixedArray<VALUE>::lastEntry( void )
+{
+    ASSERT( mElemCount != 0 );
+    return mValueList[ mElemCount - 1 ];
 }
 
 //////////////////////////////////////////////////////////////////////////

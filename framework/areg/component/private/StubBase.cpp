@@ -339,7 +339,7 @@ void StubBase::sendUpdateEvent( unsigned int msgId, const EventDataStream & data
     StubBase::StubListenerList listeners;
     if (findListeners(msgId, listeners) > 0)
     {
-        const ProxyAddress & proxy = listeners.getFirstEntry( ).mProxy;
+        const ProxyAddress & proxy = listeners.firstEntry( ).mProxy;
         TRACE_WARN( "Sends busy message to proxy [ %s ] for the request [ %u ]", ProxyAddress::convAddressToPath( proxy).getString(), msgId);
 
         ResponseEvent* eventElem = createResponseEvent(proxy, msgId, result, data);
@@ -365,7 +365,7 @@ void StubBase::sendResponseEvent( unsigned int respId, const EventDataStream & d
     StubBase::StubListenerList listeners;
     if (findListeners(respId, listeners) > 0)
     {
-        ResponseEvent* eventElem = createResponseEvent(listeners.getFirstEntry().mProxy, respId, NEService::eResultType::RequestOK, data);
+        ResponseEvent* eventElem = createResponseEvent(listeners.firstEntry().mProxy, respId, NEService::eResultType::RequestOK, data);
         if (eventElem != nullptr)
         {
             sendResponseNotification(listeners, *eventElem);
