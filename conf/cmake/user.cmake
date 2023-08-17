@@ -143,7 +143,7 @@ endif()
 
 # Set build configuration. Set "Debug" for debug build, and "Release" for release build.
 if (NOT DEFINED AREG_BUILD_TYPE OR NOT ${AREG_BUILD_TYPE} STREQUAL "Debug")
-    set(AREG_BUILD_TYPE "Debug")
+    set(AREG_BUILD_TYPE "Release")
 endif()
 
 # Set the AREG binary library type to compile. Set "shared" if not "static"

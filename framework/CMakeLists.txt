@@ -62,6 +62,3 @@ if("${AREG_DEVELOP_ENV}" STREQUAL "Win32")
                        POST_BUILD
                        COMMAND cmd /c "${logger_RESOURCE}/logger_post_build.bat" "${logger_RESOURCE}" "${AREG_OUTPUT_BIN}")
 endif()
-
-# add_custom_command(TARGET areg POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${AREG_BASE}/areg/resources/log.ini ${AREG_OUTPUT_BIN}/config/log.ini)
-# add_custom_command(TARGET areg POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${AREG_BASE}/areg/resources/router.ini ${AREG_OUTPUT_BIN}/config/router.ini)

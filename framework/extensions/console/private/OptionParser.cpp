@@ -18,60 +18,118 @@
   ************************************************************************/
 #include "extensions/console/OptionParser.hpp"
 
-#ifdef WINDOWS
-
-    #ifndef WIN32_LEAN_AND_MEAN
-        #define WIN32_LEAN_AND_MEAN
-    #endif  // WIN32_LEAN_AND_MEAN
-    #include <Windows.h>
-    #include <tchar.h>
-
-#endif  // WINDOWS
 namespace
 {
     template<typename CharType>
-    inline char ** _convertArguments( const CharType ** argv, int argc )
+    inline void _convertArguments( const CharType ** argv, int argc, OptionParser::StrList & optList )
     {
-        char ** argvTemp = argc != 0 ? DEBUG_NEW char * [ argc ] : nullptr;
-        if ( argvTemp != nullptr )
+        if ( (argv != nullptr) && (argc > 1) )
         {
-            for ( int i = 0; i < static_cast<int>(argc); ++i )
+            for ( int i = 1; i < static_cast<int>(argc); ++i )
             {
-                const CharType * entry = argv[ i ];
-                uint32_t length = static_cast<uint32_t>(NEString::getStringLength<CharType>( entry ));
-                uint32_t size = length + 1u;
-                char * arg = DEBUG_NEW char[ size ];
-                NEString::copyString<char, CharType>( arg, size, entry );
-                argvTemp[ i ] = arg;
+                optList.push_back( String( argv[ i ] ) );
             }
         }
-        return argvTemp;
     }
 
     template<typename CharType>
-    inline void _deleteArguments( char ** argv, int argc )
+    inline void _splitOptions( const CharType * optLine, OptionParser::StrList & optList )
     {
-        if ( argv != nullptr )
+        constexpr CharType space{ ' ' };
+        constexpr CharType quote{ '\"' };
+        constexpr CharType eos{ static_cast<CharType>(NEString::EndOfString) };
+
+        if ( NEString::isEmpty<CharType>( optLine ) )
+            return;
+
+        const CharType * begin = optLine;
+        const CharType * src = optLine;
+        while ( *src != eos )
         {
-            for ( int i = 0; i < static_cast<int>(argc); ++i )
-                delete[ ] argv[ i ];
-            delete[ ] argv;
+            if ( *src == space )
+            {
+                if ( begin != src )
+                {
+                    String str( begin, MACRO_ELEM_COUNT( begin, src ) );
+                    optList.push_back( str );
+                }
+
+                while ( (*src == space) && (*src != eos) )
+                {
+                    ++ src;
+                }
+
+                begin = src;
+            }
+            else if ( *src == quote )
+            {
+                if ( begin != src )
+                {
+                    String str( begin, MACRO_ELEM_COUNT( begin, src ) );
+                    optList.push_back( str );
+                }
+
+                begin = src ++;
+
+                while ( (*src != quote) && (*src != eos) )
+                {
+                    ++ src;
+                }
+
+                if (*src == quote)
+                {
+                    if ( begin != src ++ )
+                    {
+                        String str( begin, MACRO_ELEM_COUNT( begin, src ) );
+                        optList.push_back( str );
+                    }
+                }
+                else if (begin != src)
+                {
+                    String str( begin, MACRO_ELEM_COUNT( begin, src ) );
+                    optList.push_back( str );
+                }
+
+                begin = src;
+            }
+            else
+            {
+                ++ src;
+            }
+        }
+
+        if ( begin != src )
+        {
+            String str( begin, MACRO_ELEM_COUNT( begin, src ) );
+            optList.push_back( str );
         }
     }
 }
 
-OptionParser::OptionParser( int reserve )
-    : mCmdLine      ( )
-    , mSetupOptions ( reserve )
-    , mInputOptions ( )
+const OptionParser::sOptionSetup OptionParser::getDefaultOptionSetup( void )
 {
+    static sOptionSetup _defaultSetup{ "", "", 0, STRING_NO_RANGE, { }, { }, { } };
+    return _defaultSetup;
 }
 
-OptionParser::OptionParser( const InitOptionList & optList )
+
+OptionParser::OptionParser( void )
+    : mCmdLine      ( )
+    , mSetupOptions ( )
+    , mInputOptions ( )
+{
+    mSetupOptions.add( OptionParser::getDefaultOptionSetup( ) );
+}
+
+OptionParser::OptionParser( const OptionSetupList & optList )
     : mCmdLine      ( )
     , mSetupOptions ( optList )
     , mInputOptions ( )
 {
+    if ( mSetupOptions.isEmpty( ) )
+    {
+        mSetupOptions.add( OptionParser::getDefaultOptionSetup( ) );
+    }
 }
 
 OptionParser::OptionParser( const std::vector<sOptionSetup> & initList )
@@ -79,32 +137,45 @@ OptionParser::OptionParser( const std::vector<sOptionSetup> & initList )
     , mSetupOptions ( initList )
     , mInputOptions ( )
 {
+    if ( mSetupOptions.isEmpty( ) )
+    {
+        mSetupOptions.add( OptionParser::getDefaultOptionSetup( ) );
+    }
 }
 
 OptionParser::OptionParser( std::vector<sOptionSetup> && initList ) noexcept
     : mCmdLine      ( )
-    , mSetupOptions  ( std::move(initList) )
+    , mSetupOptions ( std::move(initList) )
     , mInputOptions ( )
 {
+    if ( mSetupOptions.isEmpty( ) )
+    {
+        mSetupOptions.add( OptionParser::getDefaultOptionSetup( ) );
+    }
 }
 
 OptionParser::OptionParser( const sOptionSetup * initEntries, int count )
     : mCmdLine      ( )
-    , mSetupOptions ( count )
+    , mSetupOptions ( )
     , mInputOptions ( )
 {
     if ( initEntries != nullptr )
     {
         for ( int i = 0; i < count; ++ i )
         {
-            mSetupOptions[i] = initEntries[ i ];
+            mSetupOptions.add(initEntries[ i ]);
         }
+    }
+
+    if ( mSetupOptions.isEmpty( ) )
+    {
+        mSetupOptions.add( OptionParser::getDefaultOptionSetup( ) );
     }
 }
 
 OptionParser::OptionParser( const OptionParser & src )
     : mCmdLine      ( src.mCmdLine )
-    , mSetupOptions  ( src.mSetupOptions )
+    , mSetupOptions ( src.mSetupOptions )
     , mInputOptions ( src.mInputOptions)
 {
 }
@@ -142,33 +213,40 @@ OptionParser & OptionParser::operator=( OptionParser && src ) noexcept
 
 bool OptionParser::parseCommandLine( const char ** cmdLine, int count )
 {
-    char ** cmds = _convertArguments<char>( cmdLine, count );
-
-    bool result = _parseCommands( cmds, count );
-
-    _deleteArguments<char>( cmds, count );
-    return result;
+    StrList optList;
+    _convertArguments<char>( cmdLine, count, optList );
+    return parseOptions( optList );
 }
 
 bool OptionParser::parseCommandLine( const wchar_t ** cmdLine, int count )
 {
-    char ** cmds = _convertArguments<wchar_t>( cmdLine, count );
-
-    bool result = _parseCommands(cmds, count);
-
-    _deleteArguments<char>( cmds, count );
-    return result;
+    StrList optList;
+    _convertArguments<wchar_t>( cmdLine, count, optList );
+    return parseOptions( optList );
 }
 
-bool OptionParser::_parseCommands( char ** const cmdLine, int count )
+bool OptionParser::parseOptionLine( const char * optLine )
+{
+    StrList optList;
+    _splitOptions<char>( optLine, optList );
+    return parseOptions( optList );
+}
+
+bool OptionParser::parseOptionLine( const wchar_t * optLine )
+{
+    StrList optList;
+    _splitOptions<wchar_t>( optLine, optList );
+    return parseOptions( optList );
+}
+
+bool OptionParser::parseOptions( StrList & optList )
 {
     bool result{ true };
     mInputOptions.clear( );
     mCmdLine.clear( );
     int initSize = mSetupOptions.getSize( );
-    for ( int i = 1; (i < count) && result; ++ i )
+    for ( String & input : optList )
     {
-        String input{ cmdLine[ i ] };
         input.trimAll( );
 
         mCmdLine += input;
@@ -262,7 +340,7 @@ void OptionParser::_setInputValue( String & newValue, sOption & opt, int refSetu
         newValue.trimAll( );
     }
 
-    _cleanQuote( newValue );
+    bool cleaned = _cleanQuote( newValue );
 
     if ( newValue.isEmpty( ) == false )
     {
@@ -282,7 +360,7 @@ void OptionParser::_setInputValue( String & newValue, sOption & opt, int refSetu
         {
             const char * end = nullptr;
             float val = String::makeFloat( newValue.getString( ), &end );
-            _setValue( newValue.toFloat( ), opt, setup );
+            _setValue( val, opt, setup );
             if ( NEString::isEmpty<char>( end ) == false )
             {
                 opt.inField |= static_cast<uint32_t>(eValidFlags::ValidationError);
@@ -297,6 +375,11 @@ void OptionParser::_setInputValue( String & newValue, sOption & opt, int refSetu
             // should not happen
             ASSERT( false );
         }
+    }
+
+    if ( cleaned == false )
+    {
+        opt.inField |= static_cast<uint32_t>(eValidFlags::ValidationError);
     }
 }
 
@@ -344,15 +427,36 @@ inline void OptionParser::_setValue( const String & newValue, sOption & opt, con
 
 inline bool OptionParser::_matchOption( const String & input, const String & optCmd ) const
 {
-    return (input.startsWith( optCmd, true ) && (NEString::isAlphanumeric( input.getAt(optCmd.getLength()) ) == false));
+    bool result{ false };
+    if ( input.startsWith( optCmd, true ) )
+    {
+        constexpr char eos{ '\0' };
+        constexpr char equal{ '=' };
+        constexpr char space{ ' ' };
+
+        char sym = input.getAt( optCmd.getLength( ) );
+        result = (sym == eos) || (sym == equal) || (sym == space);
+    }
+
+    return result;
 }
 
-inline void OptionParser::_cleanQuote( String & data ) const
+inline bool OptionParser::_cleanQuote( String & data ) const
 {
+    bool result{ true };
     data.trimAll( );
-    if ( data.startsWith( DELIMITER_STRING ) && data.endsWith( DELIMITER_STRING ) )
+    if ( data.startsWith( DELIMITER_STRING ) )
     {
-        data.substring( 1, data.getLength( ) - 2 );
-        data.trimAll( );
+        if ( data.endsWith( DELIMITER_STRING ) )
+        {
+            data.substring( 1, data.getLength( ) - 2 );
+            data.trimAll( );
+        }
+        else
+        {
+            result = false;
+        }
     }
+
+    return result;
 }

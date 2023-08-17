@@ -2970,13 +2970,13 @@ inline bool TEString<CharType>::endsWith(const TEString<CharType>& phrase, bool 
 template<typename CharType>
 inline bool TEString<CharType>::endsWith(const std::basic_string<CharType>& phrase, bool isCaseSensitive /*= true*/) const
 {
-    return (phrase.length() <= mData.length() ? startsWith(phrase.c_str(), isCaseSensitive, static_cast<NEString::CharCount>(phrase.length())) : false);
+    return (phrase.length() <= mData.length() ? endsWith(phrase.c_str(), isCaseSensitive, static_cast<NEString::CharCount>(phrase.length())) : false);
 }
 
 template<typename CharType>
 inline bool TEString<CharType>::endsWith(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive /*= true*/) const
 {
-    return (phrase.length() <= mData.length() ? startsWith(phrase.data(), isCaseSensitive, static_cast<NEString::CharCount>(phrase.length())) : false);
+    return (phrase.length() <= mData.length() ? endsWith(phrase.data(), isCaseSensitive, static_cast<NEString::CharCount>(phrase.length())) : false);
 }
 
 template<typename CharType>
