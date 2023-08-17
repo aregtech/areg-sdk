@@ -27,12 +27,18 @@
     <ClCompile Include="extensions\console\private\win32\ConsoleWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="extensions\console\private\OptionParser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="extensions\Extensions.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="extensions\console\Console.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="extensions\console\OptionParser.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

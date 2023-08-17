@@ -271,15 +271,15 @@ public:
      * \brief   Returns value of head element in Linked List container.
      *          On call the Linked List should not be empty, otherwise assertion is raised.
      **/
-    inline const VALUE & getFirstEntry( void ) const;
-    inline VALUE & getFirstEntry(void);
+    inline const VALUE & firstEntry( void ) const;
+    inline VALUE & firstEntry(void);
 
     /**
      * \brief   Returns value of tail element in Linked List container.
      *          On call the Linked List should not be empty, otherwise assertion is raised.
      **/
-    inline const VALUE & getLastEntry( void ) const;
-    inline VALUE & getLastEntry(void);
+    inline const VALUE & lastEntry( void ) const;
+    inline VALUE & lastEntry(void);
 
     /**
      * \brief	Returns the value at the given position of the linked list and on output the value
@@ -670,28 +670,28 @@ inline void TELinkedList<VALUE>::release(void)
 }
 
 template <typename VALUE >
-inline const VALUE & TELinkedList<VALUE>::getFirstEntry( void ) const
+inline const VALUE & TELinkedList<VALUE>::firstEntry( void ) const
 {
     ASSERT(mValueList.empty() == false);
     return mValueList.front();
 }
 
 template <typename VALUE >
-inline VALUE& TELinkedList<VALUE>::getFirstEntry(void)
+inline VALUE& TELinkedList<VALUE>::firstEntry(void)
 {
     ASSERT(mValueList.empty() == false);
     return mValueList.front();
 }
 
 template <typename VALUE >
-inline const VALUE & TELinkedList<VALUE>::getLastEntry( void ) const	
+inline const VALUE & TELinkedList<VALUE>::lastEntry( void ) const	
 {
     ASSERT(mValueList.empty() == false);
     return mValueList.back();
 }
 
 template <typename VALUE >
-inline VALUE& TELinkedList<VALUE>::getLastEntry(void)
+inline VALUE& TELinkedList<VALUE>::lastEntry(void)
 {
     ASSERT(mValueList.empty() == false);
     return mValueList.back();

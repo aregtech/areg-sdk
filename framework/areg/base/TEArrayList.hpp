@@ -73,18 +73,20 @@ public:
      * \brief   Copies entries from given source.
      * \param   src     The source to copy data.
      **/
-    TEArrayList( const TEArrayList< VALUE > & src ) = default;
+    TEArrayList( const TEArrayList< VALUE > & src );
+    TEArrayList( const std::vector< VALUE > & src );
 
     /**
      * \brief   Moves entries from given source.
      * \param   src     The source to move data.
      **/
-    TEArrayList( TEArrayList< VALUE > && src ) noexcept = default;
+    TEArrayList( TEArrayList< VALUE > && src ) noexcept;
+    TEArrayList( std::vector< VALUE > && src ) noexcept;
 
     /**
      * \brief   Destructor.
      **/
-    ~TEArrayList( void ) = default;
+    ~TEArrayList( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -373,6 +375,20 @@ public:
      **/
     void shift( uint32_t startAt, int count);
 
+    /**
+     * \brief   Return the fist entry in the array. The array must not be empty.
+     *          Otherwise, it fails with the assertion.
+     **/
+    inline const VALUE & firstEntry( void ) const;
+    inline VALUE & firstEntry( void );
+
+    /**
+     * \brief   Return the last entry in the array. The array must not be empty.
+     *          Otherwise, it fails with the assertion.
+     **/
+    inline const VALUE & lastEntry( void ) const;
+    inline VALUE & lastEntry( void );
+
 //////////////////////////////////////////////////////////////////////////
 // Protected operations
 //////////////////////////////////////////////////////////////////////////
@@ -434,6 +450,39 @@ TEArrayList< VALUE >::TEArrayList( uint32_t resize /*= 0*/, uint32_t capacity /*
     }
 
     mValueList.resize( resize );
+}
+
+template<typename VALUE>
+inline TEArrayList<VALUE>::TEArrayList( const TEArrayList<VALUE> & src )
+    : Constless<std::vector<VALUE>>( )
+    , mValueList( src.mValueList )
+{
+}
+
+template<typename VALUE>
+inline TEArrayList<VALUE>::TEArrayList( const std::vector<VALUE> & src )
+    : Constless<std::vector<VALUE>>( )
+    , mValueList( src )
+{
+}
+
+template<typename VALUE>
+inline TEArrayList<VALUE>::TEArrayList( TEArrayList<VALUE> && src ) noexcept
+    : Constless<std::vector<VALUE>>( )
+    , mValueList( std::move(src.mValueList) )
+{
+}
+
+template<typename VALUE>
+inline TEArrayList<VALUE>::TEArrayList( std::vector<VALUE> && src ) noexcept
+    : Constless<std::vector<VALUE>>( )
+    , mValueList( std::move( src ) )
+{
+}
+
+template<typename VALUE>
+inline TEArrayList<VALUE>::~TEArrayList( void )
+{
 }
 
 template<typename VALUE >
@@ -842,6 +891,34 @@ void TEArrayList< VALUE >::shift(uint32_t startAt, int count)
             mValueList.resize(length);
         }
     }
+}
+
+template<typename VALUE>
+inline const VALUE & TEArrayList<VALUE>::firstEntry( void ) const
+{
+    ASSERT( mValueList.size( ) != 0 );
+    return mValueList[ 0 ];
+}
+
+template<typename VALUE>
+inline VALUE & TEArrayList<VALUE>::firstEntry( void )
+{
+    ASSERT( mValueList.size( ) != 0 );
+    return mValueList[ 0 ];
+}
+
+template<typename VALUE>
+inline const VALUE & TEArrayList<VALUE>::lastEntry( void ) const
+{
+    ASSERT( mValueList.size( ) != 0 );
+    return mValueList[ mValueList.size( ) - 1 ];
+}
+
+template<typename VALUE>
+inline VALUE & TEArrayList<VALUE>::lastEntry( void )
+{
+    ASSERT( mValueList.size( ) != 0 );
+    return mValueList[ mValueList.size( ) - 1 ];
 }
 
 template<typename VALUE >

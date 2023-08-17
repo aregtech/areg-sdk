@@ -33,10 +33,11 @@
 #include "areg/base/GEGlobal.h"
 #include "googletest/googletest/include/gtest/gtest.h"
 
-#ifdef _WIN32
+#ifdef WINDOWS
     #pragma comment(lib, "gtest.lib")
     #pragma comment(lib, "gtest_main.lib")
     #pragma comment(lib, "areg.lib")
-#endif // _WIN32
+    #pragma comment(lib, "areg-extensions.lib")
+#endif // WINDOWS
 
 #endif // !AREG_TESTS_UNITS_GUNITTESTS_HPP

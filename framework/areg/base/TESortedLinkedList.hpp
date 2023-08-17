@@ -285,15 +285,15 @@ public:
      * \brief   Returns value of head element in Linked List container.
      *          On call the Linked List should not be empty, otherwise assertion is raised.
      **/
-    inline const VALUE& getFirstEntry(void) const;
-    inline VALUE& getFirstEntry(void);
+    inline const VALUE& firstEntry(void) const;
+    inline VALUE& firstEntry(void);
 
     /**
      * \brief   Returns value of tail element in Linked List container.
      *          On call the Linked List should not be empty, otherwise assertion is raised.
      **/
-    inline const VALUE& getLastEntry(void) const;
-    inline VALUE& getLastEntry(void);
+    inline const VALUE& lastEntry(void) const;
+    inline VALUE& lastEntry(void);
 
     /**
      * \brief	Returns given position value and on exit position of next element in Linked List container.
@@ -746,28 +746,28 @@ void TESortedLinkedList<VALUE>::release(void)
 }
 
 template <typename VALUE >
-inline const VALUE& TESortedLinkedList<VALUE>::getFirstEntry(void) const
+inline const VALUE& TESortedLinkedList<VALUE>::firstEntry(void) const
 {
     ASSERT(mValueList.empty() == false);
     return mValueList.front();
 }
 
 template <typename VALUE >
-inline VALUE& TESortedLinkedList<VALUE>::getFirstEntry(void)
+inline VALUE& TESortedLinkedList<VALUE>::firstEntry(void)
 {
     ASSERT(mValueList.empty() == false);
     return mValueList.front();
 }
 
 template <typename VALUE >
-inline const VALUE& TESortedLinkedList<VALUE>::getLastEntry(void) const
+inline const VALUE& TESortedLinkedList<VALUE>::lastEntry(void) const
 {
     ASSERT(mValueList.empty() == false);
     return mValueList.back();
 }
 
 template <typename VALUE >
-inline VALUE& TESortedLinkedList<VALUE>::getLastEntry(void)
+inline VALUE& TESortedLinkedList<VALUE>::lastEntry(void)
 {
     ASSERT(mValueList.empty() == false);
     return mValueList.back();

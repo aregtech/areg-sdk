@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
-    <Import Project="$(SolutionDir)\msvc_setup.props"/>
+    <Import Project="$(SolutionDir)\msvc_setup.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="$(AregSdkRoot)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
@@ -42,9 +42,11 @@
     <ClCompile Include="extensions\console\private\Console.cpp" />
     <ClCompile Include="extensions\console\private\ansi\ConsoleAnsi.cpp" />
     <ClCompile Include="extensions\console\private\ncurses\ConsoleNcurses.cpp" />
+    <ClCompile Include="extensions\console\private\OptionParser.cpp" />
     <ClCompile Include="extensions\console\private\win32\ConsoleWin32.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="extensions\console\OptionParser.hpp" />
     <ClInclude Include="extensions\Extensions.hpp" />
     <ClInclude Include="extensions\console\Console.hpp" />
   </ItemGroup>

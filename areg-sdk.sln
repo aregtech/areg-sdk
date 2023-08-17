@@ -515,6 +515,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gtest_main", "thirdparty\gtest_main.vcxproj", "{11927EA9-1F1B-497D-8251-0C1EC93A770E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "areg-unit-tests", "tests\areg-unit-tests.vcxproj", "{E8BD18E5-EF07-42A0-BB98-461F3D9BCDE1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A3E5EE71-6F14-43FD-A80F-C7791FD64E9E} = {A3E5EE71-6F14-43FD-A80F-C7791FD64E9E}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{C485A89F-A149-4893-A023-253593403974}"
 	ProjectSection(SolutionItems) = preProject

@@ -1,8 +1,7 @@
 /************************************************************************
- * \file        tests/units/DemoTest.Cpp
+ * \file        units/LogScopeTest.Cpp
  * \ingroup     platform dependent files
- * \brief       AREG Framework, DemoTest to check the AREG engine and
- *              google test compilation
+ * \brief       AREG Framework, Logging tests.
  ************************************************************************/
  /************************************************************************
   * Include files.

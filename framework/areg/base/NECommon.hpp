@@ -195,7 +195,7 @@ namespace NECommon
      * \brief   NECommon::ARRAY_DEFAULT_CAPACITY
      *          The default capacity of the array.
      **/
-    constexpr unsigned int  ARRAY_DEFAULT_CAPACITY  { static_cast<unsigned int>(2048) };
+    constexpr unsigned int  ARRAY_DEFAULT_CAPACITY  { static_cast<unsigned int>(64) };
 
     /**
      * \brief   NECommon::RING_START_POSITION
