@@ -23,6 +23,7 @@
 #include "areg/appbase/NEApplication.hpp"
 
 #include "extensions/console/Console.hpp"
+#include "extensions/console/OptionParser.hpp"
 
 #include <string_view>
 
@@ -60,6 +61,7 @@ namespace NELoggerSettings
         , CMD_Service       //!< Command is to execute process as a system service (in background)
         , CMD_Console       //!< Command is to execute process as console application.
         , CMD_Verbose       //!< Command is to display the data rate when execute process as console application.
+        , CMD_Help          //!< Command is to display help on console
     };
 
     /**
@@ -83,14 +85,22 @@ namespace NELoggerSettings
     /**
      * \brief   List of the logger options passed in command line and related eServiceCommand.
      **/
-    constexpr NEApplication::ServiceCommand< NELoggerSettings::eServiceCommand> ServiceCommands[]
+    const OptionParser::sOptionSetup ServiceCommands[ ]
     {
-          {"--install"  , "-i", "Install Logger service"                    , eServiceCommand::CMD_Install}     //!< Command to install service. Valid for Windows OS.
-        , {"--uninstall", "-u", "Uninstall Logger service"                  , eServiceCommand::CMD_Uninstall}   //!< Command to uninstall service. Valid for Windows OS.
-        , {"--service"  , "-s", "Start Logger as a system service"          , eServiceCommand::CMD_Service}     //!< Command to run process as a system service process.
-        , {"--console"  , "-c", "Start Logger as a console application"     , eServiceCommand::CMD_Console}     //!< Command to run process as a console application.
-        , {"--verbose"  , "-v", "Display data rate information on console"  , eServiceCommand::CMD_Verbose}     //!< Command to display data rate when run as console application.
-        , {""           , ""  , "Use default command"                       , eServiceCommand::CMD_Console}     //!< Default command.
+        //!< Default command.
+        { ""  , ""         , static_cast<int>(eServiceCommand::CMD_Console)    , OptionParser::NO_DATA, {}, {}, {} }
+        //!< Command to install service. Valid for Windows OS, ignored in other cases.
+      , { "-i", "--install", static_cast<int>(eServiceCommand::CMD_Install)    , OptionParser::NO_DATA, {}, {}, {} }
+        //!< Command to uninstall service. Valid for Windows OS, ignored in other cases.
+      , { "-u", "--uninstall", static_cast<int>(eServiceCommand::CMD_Uninstall), OptionParser::NO_DATA, {}, {}, {} }
+        //!< Command to run process as a system service process.
+      , { "-s", "--service", static_cast<int>(eServiceCommand::CMD_Service)    , OptionParser::NO_DATA, {}, {}, {} }
+        //!< Command to run process as a console application.
+      , { "-c", "--console", static_cast<int>(eServiceCommand::CMD_Console)    , OptionParser::NO_DATA, {}, {}, {} }
+        //!< Command to display data rate when run as console application.
+      , { "-v", "--verbose", static_cast<int>(eServiceCommand::CMD_Verbose)    , OptionParser::NO_DATA, {}, {}, {} }
+        //!< Command to display help on console.
+      , { "-h", "--help"   , static_cast<int>(eServiceCommand::CMD_Help)       , OptionParser::NO_DATA, {}, {}, {} }
     };
 
     /**
@@ -117,15 +127,11 @@ namespace NELoggerSettings
     /**
      * \brief   Wait for user input command message format.
      **/
-    constexpr std::string_view  FORMAT_WAIT_QUIT{ "Type \'quit\' or \'q\' to quit the logger ...: " };
+    constexpr std::string_view  FORMAT_WAIT_QUIT{ "Type \'-q\' or \'--quit\' to quit the logger ...: " };
     /**
      * \brief   Message quit application.
      **/
     constexpr std::string_view  FORMAT_QUIT_APP{ "\nQuit the logger application ...\n" };
-    //!< Char command quit.
-    constexpr char              QUIT_CH{ 'q' };
-    //!< String command quit.
-    constexpr std::string_view  QUIT_STR{ "quit" };
 
     /**
      * \brief   Coordinate to start to display send data rate message.

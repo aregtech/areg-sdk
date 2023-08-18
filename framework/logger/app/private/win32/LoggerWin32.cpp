@@ -90,10 +90,14 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
     int result      = 0;
     char ** argvTemp = _convertArguments(argv, argc);
-    Logger & logger = Logger::getInstance();
-    if (logger.parseOptions(argc, argvTemp) == false)
+    Logger & logger = Logger::getInstance( );
+    if ( argvTemp != nullptr )
     {
-        logger.resetDefaultOptions();
+        const char * tmp = *argvTemp;
+        if ( logger.parseOptions( argc, static_cast<const char **>(&tmp) ) == false )
+        {
+            return result;
+        }
     }
 
     _deleteArguments(argvTemp, argc);

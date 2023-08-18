@@ -168,6 +168,16 @@ void Console::_osClearLine( void ) const
     }
 }
 
+void Console::_osClearScreen( void ) const
+{
+    Lock lock(mLock);
+
+    if (mContext != 0)
+    {
+        clear();
+    }
+}
+
 bool Console::_osReadInputList(const char* format, va_list varList) const
 {
     return (mContext != 0 ? vw_scanw(reinterpret_cast<WINDOW *>(mContext), format, varList) >= 0 : false);

@@ -35,6 +35,31 @@ class Console;
 class Logger
 {
 //////////////////////////////////////////////////////////////////////////
+// Internal types
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   The commands to handle the logger.
+     **/
+    enum eLogCommands : int32_t
+    {
+          CMD_LogUndefined  //!< Do nothing, should not happen
+        , CMD_LogPause      //!< Pause logger.
+        , CMD_LogRestart    //!< Restart logger.
+        , CMD_LogSetScope   //!< Set the scope priorities
+        , CMD_LogInstances  //!< Display the names of connected instances
+        , CMD_LogSaveLogs   //!< Logger save logs in the file
+        , CMD_LogSaveConfig //!< Save the log configuration
+        , CMD_LogPrintHelp  //!< Output help message
+        , CMD_LogQuit       //!< Quit logger
+    };
+
+    /**
+     * \brief   The setup to validate input options of the logger.
+     **/
+    static const OptionParser::sOptionSetup ValidOptions[ ];
+
+//////////////////////////////////////////////////////////////////////////
 // statics
 //////////////////////////////////////////////////////////////////////////
 public:
@@ -149,7 +174,7 @@ public:
      * \param   argc    The number of options to parse.
      * \param   argv    The options to parse.
      */
-    bool parseOptions(int argc, char** argv);
+    bool parseOptions(int argc, const char** argv);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.

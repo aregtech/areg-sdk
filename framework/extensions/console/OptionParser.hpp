@@ -158,13 +158,19 @@ public:
      **/
     enum class eValidFlags : unsigned int
     {
-          ValidationInvalid     = 0     //!< Invalid option,        Bits: 0000 0000
-        , ValidationError       = 1     //!< The option with error, Bits: 0000 0001
-        , ValidationInRange     = 2     //!< The option has range,  Bits: 0000 0010
-        , ValidationInteger     = 16    //!< The option is integer, Bits: 0001 0000
-        , ValidationFloat       = 32    //!< The option is float,   Bits: 0010 0000
-        , ValidationString      = 64    //!< The option is string,  Bits: 0100 0000
+          ValidationInvalid     = 0     //!< Invalid option,         Bits: 0000 0000
+        , ValidationError       = 1     //!< The option with error,  Bits: 0000 0001
+        , ValidationInRange     = 2     //!< The option has range,   Bits: 0000 0010
+        , ValidationNoData      = 16    //!< The option has no data, Bits: 0001 0000
+        , ValidationInteger     = 32    //!< The option is integer,  Bits: 0010 0000
+        , ValidationFloat       = 64    //!< The option is float,    Bits: 0100 0000
+        , ValidationString      = 128   //!< The option is string,   Bits: 1000 0000
     };
+
+    /**
+     * \brief   The Option setup or option has no data.
+     **/
+    static constexpr uint32_t   NO_DATA         { static_cast<uint32_t>(eValidFlags::ValidationNoData) };
 
     /**
      * \brief   The Option setup or option is any integer with sign.
@@ -278,6 +284,11 @@ public:
      * \brief   Returns true if the flag has value in range flag
      **/
     static inline bool hasRange( uint32_t flags );
+
+    /**
+     * \brief   Returns true if the flag indicates that option may have data.
+     **/
+    static inline bool isEmptyData( uint32_t flags );
 
     /**
      * \brief   Returns true if the flag as field of free-style string
@@ -494,6 +505,11 @@ inline bool OptionParser::hasInputError( uint32_t flags  )
 inline bool OptionParser::hasRange( uint32_t flags  )
 {
     return  ((flags & static_cast<uint32_t>(eValidFlags::ValidationInRange)) != 0);
+}
+
+inline bool OptionParser::isEmptyData( uint32_t flags )
+{
+    return  ((flags & static_cast<uint32_t>(eValidFlags::ValidationNoData)) != 0);
 }
 
 inline bool OptionParser::isFreestyle( uint32_t flags )
