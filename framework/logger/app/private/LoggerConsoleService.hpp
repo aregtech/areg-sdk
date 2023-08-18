@@ -87,13 +87,6 @@ public:
      **/
     static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry );
 
-    /**
-     * \brief   The callback to check the user input command.
-     *          If returns true, the command is recognized ant the application can 
-     *          stop working. Otherwise, display error and continue waiting for input.
-     **/
-    static bool checkCommand(const String& cmd);
-
 //////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////

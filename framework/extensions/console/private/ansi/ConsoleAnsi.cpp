@@ -178,6 +178,14 @@ void Console::_osClearLine( void ) const
 {
     Lock lock(mLock);
     printf("%s", CMD_CLEAR_LINE.data());
+    ::fflush(stdout);
+}
+
+void Console::_osClearScreen( void ) const
+{
+    Lock lock(mLock);
+    printf("%s", CMD_CLEAR_SCREEN.data());
+    ::fflush(stdout);
 }
 
 bool Console::_osReadInputList(const char* format, va_list varList) const

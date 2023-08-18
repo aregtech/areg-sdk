@@ -67,6 +67,9 @@ public:
         int16_t posY{ 0 };  //!< Console Y-coordinate (line)
     };
 
+    //!< The default buffer size to input on console.
+    static constexpr uint32_t INPUT_BUFFER_SIZE { 512 };
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor / destructor.
 //////////////////////////////////////////////////////////////////////////
@@ -242,6 +245,11 @@ public:
     inline void clearLine(Console::Coord pos) const;
 
     /**
+     * \brief   Clears the screen.
+     **/
+    inline void clearScreen( void ) const;
+
+    /**
      * \brief   Return the user input command.
      **/
     inline const String& getUserInput(void) const;
@@ -307,6 +315,11 @@ private:
      * \brief   Clears the line starting from the cursor position until the end of line. 
      **/
     void _osClearLine( void ) const;
+
+    /**
+     * \brief   Clears console screen.
+     **/
+    void _osClearScreen( void ) const;
 
     /**
      * \brief   Reads and converts formated inputs from console similar to 'vscanf' method
@@ -464,6 +477,11 @@ inline void Console::clearLine(Console::Coord pos) const
     setCursorCurPosition(pos);
     clearCurrentLine();
     restoreCursorPosition();
+}
+
+inline void Console::clearScreen( void ) const
+{
+    _osClearScreen();
 }
 
 #endif  // AREG_EXTENSIONS_CONSOLE_CONSOLE_HPP

@@ -139,22 +139,3 @@ inline void LoggerConsoleService::_outputDataRate(uint32_t bytesSend, uint32_t b
     console.restoreCursorPosition();
     console.refreshScreen();
 }
-
-bool LoggerConsoleService::checkCommand(const String& cmd)
-{
-    String command(cmd);
-    command.makeLower();
-    if ((command != NELoggerSettings::QUIT_CH) && (command != NELoggerSettings::QUIT_STR))
-    {
-        Console& console = Console::getInstance();
-
-        ASSERT(Logger::getInstance().isVerbose());
-        console.outputMsg(NELoggerSettings::COORD_ERROR_MSG, NELoggerSettings::FORMAT_MSG_ERROR.data(), cmd.getString());
-        console.outputTxt(NELoggerSettings::COORD_USER_INPUT, NELoggerSettings::FORMAT_WAIT_QUIT);
-        console.refreshScreen();
-
-        return false;
-    }
-
-    return true;
-}

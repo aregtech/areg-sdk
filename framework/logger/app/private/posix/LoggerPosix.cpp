@@ -31,12 +31,13 @@
 
 int main(int argc, char* argv[], char* envp[])
 {
-    int result      = 0;
+    int result{0};
     Logger & logger = Logger::getInstance();
+    const char * tmp = *argv;
 
-    if (logger.parseOptions(argc, argv) == false)
+    if (logger.parseOptions(argc, static_cast<const char **>(&tmp)) == false)
     {
-        logger.resetDefaultOptions();
+        return 0;
     }
 
     switch ( logger.getCurrentCommand() )

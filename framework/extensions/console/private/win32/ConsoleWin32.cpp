@@ -193,6 +193,18 @@ void Console::_osClearLine( void ) const
     WriteConsoleA(hStdOut, CMD_CLEAR_LINE.data(), static_cast<DWORD>(CMD_CLEAR_LINE.length()), &written, NULL);
 }
 
+void Console::_osClearScreen( void ) const
+{
+    Lock lock(mLock);
+
+    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (hStdOut != nullptr)
+    {
+        DWORD written = 0;
+        WriteConsoleA(hStdOut, CMD_CLEAR_SCREEN.data(), static_cast<DWORD>(CMD_CLEAR_SCREEN.length()), &written, NULL);
+    }
+}
+
 bool Console::_osReadInputList(const char* format, va_list varList) const
 {
     return (vscanf(format, varList) > 0);

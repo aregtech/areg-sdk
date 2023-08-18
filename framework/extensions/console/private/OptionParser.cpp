@@ -346,7 +346,13 @@ void OptionParser::_setInputValue( String & newValue, sOption & opt, int refSetu
     {
         ASSERT( (refSetup >= 0) && (refSetup < static_cast<int>(mSetupOptions.getSize( ))) );
         const sOptionSetup & setup = mSetupOptions[ refSetup ];
-        if ( OptionParser::isInteger( setup.optField ) )
+        if ( OptionParser::isEmptyData( setup.optField ) )
+        {
+            // the option should not have data. It is an error
+            opt.inField |= static_cast<uint32_t>(eValidFlags::ValidationError);
+            opt.inString.push_back( newValue );
+        }
+        else if ( OptionParser::isInteger( setup.optField ) )
         {
             const char * end = nullptr;
             int32_t val = String::makeInt32( newValue.getString( ), NEString::eRadix::RadixDecimal, &end );

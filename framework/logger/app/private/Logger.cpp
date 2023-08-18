@@ -68,6 +68,19 @@ DEF_TRACE_SCOPE(logger_app_logger_setState);
 //////////////////////////////////////////////////////////////////////////
 // Logger class implementation
 //////////////////////////////////////////////////////////////////////////
+
+const OptionParser::sOptionSetup Logger::ValidOptions[ ]
+{
+      {"-p", "--pause"      , static_cast<int>(Logger::eLogCommands::CMD_LogPause)     , OptionParser::NO_DATA         , {}, {}, {} }
+    , {"-r", "--restart"    , static_cast<int>(Logger::eLogCommands::CMD_LogRestart)   , OptionParser::NO_DATA         , {}, {}, {} }
+    , {"-s", "--scope"      , static_cast<int>(Logger::eLogCommands::CMD_LogSetScope)  , OptionParser::FREESTYLE_DATA  , {}, {}, {} }
+    , {"-i", "--instances"  , static_cast<int>(Logger::eLogCommands::CMD_LogInstances) , OptionParser::NO_DATA         , {}, {}, {} }
+    , {"-l", "--save-log"   , static_cast<int>(Logger::eLogCommands::CMD_LogSaveLogs)  , OptionParser::FREESTYLE_DATA  , {}, {}, {} }
+    , {"-c", "--config"     , static_cast<int>(Logger::eLogCommands::CMD_LogSaveConfig), OptionParser::FREESTYLE_DATA  , {}, {}, {} }
+    , {"-h", "--help"       , static_cast<int>(Logger::eLogCommands::CMD_LogPrintHelp) , OptionParser::NO_DATA         , {}, {}, {} }
+    , {"-q", "--quit"       , static_cast<int>(Logger::eLogCommands::CMD_LogQuit)      , OptionParser::NO_DATA         , {}, {}, {} }
+};
+
 Logger & Logger::getInstance(void)
 {
     static Logger _logger;
@@ -89,51 +102,65 @@ Logger::~Logger( void )
     _osFreeResources( );
 }
 
-bool Logger::parseOptions(int argc, char** argv)
+bool Logger::parseOptions(int argc, const char** argv)
 {
     using ServiceCmd = NELoggerSettings::eServiceCommand;
     bool result{ false };
     
     if (argc > 1)
     {
-        bool isValid{ true };
-
-        ServiceCmd foundCmd{ ServiceCmd::CMD_Undefined };
-        bool isVerbose{ false };
-
-        for (int i = 1; i < argc; ++i)
+        bool printHelp{ true };
+        OptionParser parser( NELoggerSettings::ServiceCommands, MACRO_ARRAYLEN( NELoggerSettings::ServiceCommands) );
+        if ( parser.parseCommandLine( static_cast<const char **>(argv), argc ) )
         {
-            const char* opt = argv[i];
-            if (opt != nullptr)
+            printHelp = false;
+            const OptionParser::InputOptionList & opts = parser.getOptions( );
+            for ( int i = 0; i < static_cast<int>(opts.getSize( )); ++i )
             {
-                ServiceCmd cmd = NEApplication::parseOption< ServiceCmd, ServiceCmd::CMD_Undefined>(opt, NELoggerSettings::ServiceCommands, MACRO_ARRAYLEN(NELoggerSettings::ServiceCommands));
-
-                if (cmd == ServiceCmd::CMD_Verbose)
+                const OptionParser::sOption & opt = opts[ i ];
+                switch ( static_cast<NELoggerSettings::eServiceCommand>(opt.inCommand) )
                 {
-                    isVerbose = true;   // Output verbose.
-                }
-                else if (cmd == ServiceCmd::CMD_Undefined)
-                {
-                    isValid = false;    // Invalid option, break and return false.
+                case NELoggerSettings::eServiceCommand::CMD_Install:
+                case NELoggerSettings::eServiceCommand::CMD_Uninstall:
+                case NELoggerSettings::eServiceCommand::CMD_Service:
+                case NELoggerSettings::eServiceCommand::CMD_Console:
+                    result = true;
+                    setCurrentCommand( static_cast<NELoggerSettings::eServiceCommand>(opt.inCommand) );
                     break;
-                }
-                else if (foundCmd == ServiceCmd::CMD_Undefined)
-                {
-                    foundCmd = cmd;     // No option was set, set current.
-                }
-                else
-                {
-                    isValid = false;    // Already has an option, break and return false.
+
+                case NELoggerSettings::eServiceCommand::CMD_Verbose:
+                    mRunVerbose = true;
+                    setCurrentCommand( NELoggerSettings::eServiceCommand::CMD_Console );
+                    result = true;
+                    break;
+
+                case NELoggerSettings::eServiceCommand::CMD_Help:
+                    printHelp = true;
+                    break;
+
+                default:
+                    setCurrentCommand( NELoggerSettings::eServiceCommand::CMD_Undefined );
+                    printHelp = true;
                     break;
                 }
             }
         }
 
-        if (isValid)
+        if ( printHelp )
         {
-            setCurrentCommand(foundCmd);
-            mRunVerbose = isVerbose;
-            result = true;
+            std::cout   
+                << "Usage of AREG Log Collector (logger) :" << std::endl
+                << "---------------------------------------------------------------------------------------------"  << std::endl
+                << "-i, --install   : Command to install service. Valid for Windows OS, ignored in other cases."    << std::endl
+                << "-u, --uninstall : Command to uninstall service. Valid for Windows OS, ignored in other cases."  << std::endl
+                << "-s, --service   : Command to run process as a system service process."                          << std::endl
+                << "-c, --console   : Command to run process as a console application."                             << std::endl
+                << "-v, --verbose   : Command to display data rate. Can be used in combination with \'--console\'"  << std::endl
+                << "-h, --help      : Command to display this message on console."                                  << std::endl
+                << "---------------------------------------------------------------------------------------------"  << std::endl
+                << "Quit application ..." << std::endl << std::ends;
+
+            result = false;
         }
     }
     else if (argc == 1)
@@ -178,7 +205,7 @@ void Logger::serviceMain( int argc, char ** argv )
                 console.enableConsoleInput(false);
                 Application::loadModel(_modelName);
                 // Blocked until user input
-                Console::CallBack callback(LoggerConsoleService::checkCommand);
+                Console::CallBack callback(Logger::_checkCommand);
                 console.waitForInput(callback);
                 Application::unloadModel(_modelName);
             }
@@ -198,19 +225,47 @@ void Logger::serviceMain( int argc, char ** argv )
 
 #else   // !AREG_EXTENDED
 
-            printf("Type \'quit\' or \'q\' to quit the logger ...: ");
-            const char quit = static_cast<int>('q');
-            char cmd[8] = { 0 };
-            int charRead = 0;
+            char cmd[512] { 0 };
+            bool quit{ false };
+            OptionParser parser( Logger::ValidOptions, MACRO_ARRAYLEN( Logger::ValidOptions ) );
 
             do
             {
-                if (MACRO_SCANF("%4s", cmd, 8) != 1)
+                printf( NELoggerSettings::FORMAT_WAIT_QUIT.data() );
+                MACRO_SCANF( "%512s", cmd, 512 );
+                if ( parser.parseOptionLine( cmd ) )
                 {
-                    printf("\nERROR: Unexpected choice of command, quit application ...\n");
+                    const OptionParser::InputOptionList & opts = parser.getOptions( );
+                    for ( int i = 0; i < static_cast<int>(opts.getSize( )); ++ i )
+                    {
+                        const OptionParser::sOption & opt = opts[ 0 ];
+                        switch ( static_cast<eLogCommands>(opt.inCommand) )
+                        {
+                        case eLogCommands::CMD_LogPause:
+                        case eLogCommands::CMD_LogRestart:
+                        case eLogCommands::CMD_LogSetScope:
+                        case eLogCommands::CMD_LogInstances:
+                        case eLogCommands::CMD_LogSaveLogs:
+                        case eLogCommands::CMD_LogSaveConfig:
+                        case eLogCommands::CMD_LogPrintHelp:
+                            break;
+
+                        case eLogCommands::CMD_LogQuit:
+                            quit = true;
+                            break;
+
+                        default:
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    printf( NELoggerSettings::FORMAT_MSG_ERROR.data(), cmd );
+                    printf( "\n" );
                 }
 
-            } while ((NEString::makeAsciiLower<char>(*cmd) != quit) && (charRead > 0));
+            } while ( quit == false );
 
 #endif  // !AREG_EXTENDED
 
@@ -323,21 +378,57 @@ bool Logger::setState( NELoggerSettings::eLoggerState newState )
 
 bool Logger::_checkCommand(const String& cmd)
 {
-    String command(cmd);
-    command.makeLower();
-    if ((command == NELoggerSettings::QUIT_CH) || (command == NELoggerSettings::QUIT_STR))
+    OptionParser parser( Logger::ValidOptions, MACRO_ARRAYLEN( Logger::ValidOptions ) );
+    bool quit{ false };
+    bool hasError {false};
+
+    if ( parser.parseOptionLine( cmd ) )
     {
-        return true; // interrupt, requested quit
+        const OptionParser::InputOptionList & opts = parser.getOptions( );
+        for ( int i = 0; i < static_cast<int>(opts.getSize( )); ++ i )
+        {
+            const OptionParser::sOption & opt = opts[ 0 ];
+            switch ( static_cast<eLogCommands>(opt.inCommand) )
+            {
+            case eLogCommands::CMD_LogPause:
+            case eLogCommands::CMD_LogRestart:
+            case eLogCommands::CMD_LogSetScope:
+            case eLogCommands::CMD_LogInstances:
+            case eLogCommands::CMD_LogSaveLogs:
+            case eLogCommands::CMD_LogSaveConfig:
+            case eLogCommands::CMD_LogPrintHelp:
+                break;
+
+            case eLogCommands::CMD_LogQuit:
+                quit = true;
+                break;
+
+            default:
+                break;
+            }
+        }
     }
     else
     {
+        hasError = true;
+    }
+
+    if (quit == false)
+    {
+        Logger & logger = Logger::getInstance();
         Console& console = Console::getInstance();
 
-        ASSERT(Logger::getInstance().mRunVerbose == false);
-        console.outputMsg(Console::Coord{ 0, 1 }, NELoggerSettings::FORMAT_MSG_ERROR.data(), cmd.getString());
-        console.outputTxt(Console::Coord{ 0, 0 }, NELoggerSettings::FORMAT_WAIT_QUIT);
-        console.refreshScreen();
+        console.clearScreen();
+        if (hasError)
+        {
+            console.outputMsg( logger.mRunVerbose ? NELoggerSettings::COORD_ERROR_MSG : Console::Coord{ 0, 1 }
+                             , NELoggerSettings::FORMAT_MSG_ERROR.data(), cmd.getString());
+        }
 
-        return false;
+        console.outputTxt( logger.mRunVerbose ? NELoggerSettings::COORD_USER_INPUT : Console::Coord{ 0, 0 }
+                         , NELoggerSettings::FORMAT_WAIT_QUIT);
+        console.refreshScreen();
     }
+
+    return quit;
 }
