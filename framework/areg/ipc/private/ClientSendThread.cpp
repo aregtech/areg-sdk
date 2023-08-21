@@ -17,13 +17,13 @@
 #include "areg/component/NEService.hpp"
 #include "areg/ipc/NEConnection.hpp"
 #include "areg/ipc/private/ClientConnection.hpp"
-#include "areg/ipc/IERemoteServiceMessageHandler.hpp"
+#include "areg/ipc/IERemoteMessageHandler.hpp"
 
 #include "areg/trace/GETrace.h"
 
 DEF_TRACE_SCOPE(areg_ipc_private_ClientSendThread_runDispatcher);
 
-ClientSendThread::ClientSendThread( IERemoteServiceMessageHandler & remoteService, ClientConnection & connection )
+ClientSendThread::ClientSendThread(IERemoteMessageHandler& remoteService, ClientConnection & connection )
     : DispatcherThread  ( NEConnection::CLIENT_SEND_MESSAGE_THREAD )
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
@@ -38,37 +38,27 @@ bool ClientSendThread::runDispatcher(void)
 
     removeAllEvents( );
     SendMessageEvent::addListener( static_cast<IESendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this));
-
     bool result = DispatcherThread::runDispatcher();
+    SendMessageEvent::removeListener(static_cast<IESendMessageEventConsumer&>(*this), static_cast<DispatcherThread&>(*this));
 
-    removeAllEvents( );
-    SendMessageEvent::removeListener( static_cast<IESendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this));
+    mConnection.sendMessage(mConnection.getDisconnectMessage());
+    mConnection.closeSocket();
+
     TRACE_DBG("Exiting client service dispatcher thread [ %s ] with result [ %s ]", getName().getString(), result ? "SUCCESS" : "FAILURE");
     return result;
 }
 
 void ClientSendThread::processEvent( const SendMessageEventData & data )
 {
-    if ( data.stayConnected( ) )
+    const RemoteMessage& msg = data.getRemoteMessage();
+    int sizeSend = mConnection.sendMessage(msg);
+    if (sizeSend > 0)
     {
-        const RemoteMessage & msg = data.getRemoteMessage( );
-        int sizeSend = mConnection.sendMessage( msg );
-        if ( sizeSend > 0 )
-        {
-            mBytesSend += static_cast<uint32_t>(sizeSend);
-        }
-        else
-        {
-            mRemoteService.failedSendMessage( msg, mConnection.getSocket( ) );
-        }
+        mBytesSend += static_cast<uint32_t>(sizeSend);
     }
     else
     {
-        RemoteMessage msg{ mConnection.getDisconnectMessage( ) };
-
-        mConnection.sendMessage( msg );
-        mConnection.closeSocket( );
-        DispatcherThread::triggerExitEvent( );
+        mRemoteService.failedSendMessage(msg, mConnection.getSocket());
     }
 }
 

@@ -33,21 +33,6 @@
     <ClInclude Include="mcrouter\tcp\ServerService.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\tcp\private\ServerConnection.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="mcrouter\tcp\private\ServerReceiveThread.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="mcrouter\tcp\private\ServerSendThread.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="mcrouter\tcp\private\ServerServiceEvent.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="mcrouter\tcp\private\IEServerConnectionHandler.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="mcrouter\tcp\private\ServiceRegistry.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -87,22 +72,7 @@
     <ClCompile Include="mcrouter\app\private\MulticastRouter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\tcp\private\ServerConnection.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="mcrouter\tcp\private\ServerReceiveThread.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="mcrouter\tcp\private\ServerSendThread.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="mcrouter\tcp\private\ServerService.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="mcrouter\tcp\private\ServerServiceEvent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="mcrouter\tcp\private\IEServerConnectionHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="mcrouter\tcp\private\ServiceRegistry.cpp">

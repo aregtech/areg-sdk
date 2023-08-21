@@ -7,27 +7,26 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        mcrouter/tcp/private/ServerReceiveThread.cpp
+ * \file        service/connectivity/private/ServerReceiveThread.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       AREG Platform Receive Message Thread of Server socket.
+ * \brief       AREG Platform, Service connectivity server receive message Thread
  ************************************************************************/
-#include "mcrouter/tcp/private/ServerReceiveThread.hpp"
+#include "service/connectivity/ServerReceiveThread.hpp"
 
-#include "mcrouter/app/MulticastRouter.hpp"
-#include "mcrouter/tcp/private/IEServerConnectionHandler.hpp"
-#include "mcrouter/tcp/private/ServerConnection.hpp"
+#include "service/connectivity/IEServiceConnectionHandler.hpp"
+#include "service/connectivity/ServerConnection.hpp"
 
-#include "areg/ipc/IERemoteServiceMessageHandler.hpp"
+#include "areg/ipc/IERemoteMessageHandler.hpp"
 #include "areg/ipc/NEConnection.hpp"
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/base/SocketAccepted.hpp"
 
 #include "areg/trace/GETrace.h"
 
-DEF_TRACE_SCOPE(areg_ipc_private_ServerReceiveThread_runDispatcher);
+DEF_TRACE_SCOPE(areg_service_connectivity_ServerReceiveThread_runDispatcher);
 
-ServerReceiveThread::ServerReceiveThread( IEServerConnectionHandler & connectHandler, IERemoteServiceMessageHandler & remoteService, ServerConnection & connection )
+ServerReceiveThread::ServerReceiveThread(IEServiceConnectionHandler& connectHandler, IERemoteMessageHandler& remoteService, ServerConnection & connection )
     : DispatcherThread  ( NEConnection::SERVER_RECEIVE_MESSAGE_THREAD )
     , mRemoteService    ( remoteService )
     , mConnectHandler   ( connectHandler )
@@ -38,7 +37,7 @@ ServerReceiveThread::ServerReceiveThread( IEServerConnectionHandler & connectHan
 
 bool ServerReceiveThread::runDispatcher(void)
 {
-    TRACE_SCOPE(areg_ipc_private_ServerReceiveThread_runDispatcher);
+    TRACE_SCOPE(areg_service_connectivity_ServerReceiveThread_runDispatcher);
     TRACE_DBG("Starting dispatcher [ %s ]", getName().getString());
 
     mEventStarted.setEvent();

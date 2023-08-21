@@ -23,11 +23,12 @@
 
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/private/ServiceManagerEvents.hpp"
+#include "areg/ipc/IEServiceConnectionConsumer.hpp"
+#include "areg/ipc/IEServiceRegisterConsumer.hpp"
 
 #include "areg/base/SynchObjects.hpp"
 #include "areg/component/private/ServiceManagerEventProcessor.hpp"
-#include "areg/ipc/private/ClientService.hpp"
-#include "areg/ipc/IERemoteServiceConsumer.hpp"
+#include "areg/ipc/private/ServiceClientConnection.hpp"
 
 /************************************************************************
  * Dependencies
@@ -65,7 +66,8 @@ class ServiceResponseEvent;
  **/
 class ServiceManager    : private   DispatcherThread
                         , private   IEServiceManagerEventConsumer
-                        , private   IERemoteServiceConsumer
+                        , private   IEServiceConnectionConsumer
+                        , private   IEServiceRegisterConsumer
 {
     friend class Application;
     friend class ServiceManagerEventProcessor;
@@ -334,7 +336,31 @@ private:
     virtual bool runDispatcher( void ) override;
 
 /************************************************************************/
-// IERemoteServiceConsumer
+// IEServiceConnectionConsumer overrides
+/************************************************************************/
+
+    /**
+     * \brief   Triggered when remote service connection and communication channel is established.
+     * \param   channel     The connection and communication channel of remote service.
+     **/
+    virtual void connectedRemoteServiceChannel( const Channel & channel ) override;
+
+    /**
+     * \brief   Triggered when disconnected remote service connection and communication channel.
+     * \param   channel     The connection and communication channel of remote service.
+     **/
+    virtual void disconnectedRemoteServiceChannel( const Channel & channel ) override;
+
+    /**
+     * \brief   Triggered when remote service connection and communication channel is lost.
+     *          The connection is considered lost if it not possible to read or
+     *          receive data, and it was not stopped by API call.
+     * \param   channel     The connection and communication channel of remote service.
+     **/
+    virtual void lostRemoteServiceChannel( const Channel & channel ) override;
+
+/************************************************************************/
+// IEServiceRegisterConsumer overrides
 /************************************************************************/
 
     /**
@@ -377,26 +403,6 @@ private:
      **/
     virtual void unregisteredRemoteServiceConsumer( const ProxyAddress & proxy, NEService::eDisconnectReason reason, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ ) override;
 
-    /**
-     * \brief   Triggered when remote service connection and communication channel is established.
-     * \param   channel     The connection and communication channel of remote service.
-     **/
-    virtual void connectedRemoteServiceChannel( const Channel & channel ) override;
-
-    /**
-     * \brief   Triggered when disconnected remote service connection and communication channel.
-     * \param   channel     The connection and communication channel of remote service.
-     **/
-    virtual void disconnectedRemoteServiceChannel( const Channel & channel ) override;
-
-    /**
-     * \brief   Triggered when remote service connection and communication channel is lost.
-     *          The connection is considered lost if it not possible to read or
-     *          receive data, and it was not stopped by API call.
-     * \param   channel     The connection and communication channel of remote service.
-     **/
-    virtual void lostRemoteServiceChannel( const Channel & channel ) override;
-
 //////////////////////////////////////////////////////////////////////////
 // Operations and attributes
 //////////////////////////////////////////////////////////////////////////
@@ -404,8 +410,12 @@ private:
     /**
      * \brief   Returns the instance of remote servicing handler.
      **/
-    inline IERemoteServiceConnection & getServiceConnection( void );
+    inline IEServiceConnectionProvider& getServiceConnectionProvider( void );
 
+    /**
+     * \brief   Returns the instance of remote servicing handler.
+     **/
+    inline IEServiceRegisterProvider& getServiceRegisterProvider(void);
 
     /**
      * \brief   Starts Service Manager Thread. If Thread is started, the Timer Server
@@ -434,7 +444,7 @@ private:
     /**
      * \brief   The connection service.
      **/
-    ClientService                   mConnectService;
+    ServiceClientConnection         mServiceClient;
     /**
      * \brief   Synchronization object, for multi-threading access.
      **/
@@ -451,9 +461,14 @@ private:
 // ServiceManager class inline functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline IERemoteServiceConnection & ServiceManager::getServiceConnection( void )
+inline IEServiceConnectionProvider& ServiceManager::getServiceConnectionProvider( void )
 {
-    return static_cast<IERemoteServiceConnection &>(mConnectService);
+    return static_cast<IEServiceConnectionProvider&>(mServiceClient);
+}
+
+inline IEServiceRegisterProvider& ServiceManager::getServiceRegisterProvider(void)
+{
+    return static_cast<IEServiceRegisterProvider&>(mServiceClient);
 }
 
 inline ServiceManager & ServiceManager::self( void )

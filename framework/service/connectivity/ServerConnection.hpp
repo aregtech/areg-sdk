@@ -1,5 +1,5 @@
-#ifndef AREG_MCROUTER_TCP_PRIVATE_SERVERCONNECTION_HPP
-#define AREG_MCROUTER_TCP_PRIVATE_SERVERCONNECTION_HPP
+#ifndef AREG_SERVICE_CONNECTIVITY_SERVERCONNECTION_HPP
+#define AREG_SERVICE_CONNECTIVITY_SERVERCONNECTION_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,10 +9,10 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        mcrouter/tcp/private/ServerConnection.hpp
+ * \file        service/connectivity/ServerConnection.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       AREG Platform Server Connection class declaration.
+ * \brief       AREG Platform, service server connection class.
  ************************************************************************/
 
 /************************************************************************
@@ -46,11 +46,13 @@ class ServerConnection  : public    ServerConnectionBase
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Creates instance of object with invalid socket object.
+     * \brief   Creates instance of object with invalid socket object and
+     *          sets the unique channel ID of the service in the system.
      *          Before sending or receiving data, the socket should be created
      *          and bound to socket address.
+     * \brief   The unique channel ID of the service connectivity in the system.
      **/
-    ServerConnection( void ) = default;
+    ServerConnection( ITEM_ID channelId );
 
     /**
      * \brief   Creates instance of object with invalid socket object.
@@ -61,18 +63,20 @@ public:
      *          it will set resolved IP-address and port number
      *          as socket address. If passed hostName is nullptr,
      *          it resolve connection for local host.
+     * \brief   The unique channel ID of the service connectivity in the system.
      * \param   hostName    Host name or IP-address of server.
      * \param   portNr      Port number of server.
      **/
-    ServerConnection( const char * hostName, unsigned short portNr );
+    ServerConnection(ITEM_ID channelId, const char * hostName, unsigned short portNr );
 
     /**
      * \brief   Creates instance of object with invalid socket object.
      *          Before sending or receiving data, the socket should be created 
      *          and bound to host and port. Specified remoteAddress will be set as server address.
+     * \brief   The unique channel ID of the service connectivity in the system.
      * \param   remoteAddress   Address of server.
      **/
-    explicit ServerConnection( const NESocket::SocketAddress & serverAddress );
+    explicit ServerConnection(ITEM_ID channelId, const NESocket::SocketAddress & serverAddress );
 
     /**
      * \brief   Destructor.
@@ -80,9 +84,14 @@ public:
     virtual ~ServerConnection( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
-// Operations
+// Attributes and operations
 //////////////////////////////////////////////////////////////////////////
 public:
+
+    /**
+     * \brief   Returns the unique service connectivity channel ID in the system.
+     **/
+    inline const ITEM_ID getChannelId(void) const;
 
     /**
      * \brief   Call to reject connection. When rejected, the socket connection will be closed and
@@ -175,15 +184,30 @@ public:
     inline int receiveMessage( RemoteMessage & out_message, ITEM_ID clientCookie ) const;
 
 //////////////////////////////////////////////////////////////////////////
+// Hidden member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+    /**
+     * \brief   The unique channel ID of the service connectivity in the system.
+     **/
+    const ITEM_ID       mChannelId;
+
+//////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
+    ServerConnection(void) = delete;
     DECLARE_NOCOPY_NOMOVE( ServerConnection );
 };
 
 //////////////////////////////////////////////////////////////////////////
 // ServerConnection class inline functions
 //////////////////////////////////////////////////////////////////////////
+
+inline const ITEM_ID ServerConnection::getChannelId(void) const
+{
+    return mChannelId;
+}
 
 inline int ServerConnection::sendMessage(const RemoteMessage & in_message, const SocketAccepted & clientSocket) const
 {
@@ -205,4 +229,4 @@ inline int ServerConnection::receiveMessage(RemoteMessage & out_message, ITEM_ID
     return SocketConnectionBase::receiveMessage(out_message,getClientByCookie(clientCookie));
 }
 
-#endif  // AREG_MCROUTER_TCP_PRIVATE_SERVERCONNECTION_HPP
+#endif  // AREG_SERVICE_CONNECTIVITY_SERVERCONNECTION_HPP

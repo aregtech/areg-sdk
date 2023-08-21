@@ -1,5 +1,5 @@
-#ifndef AREG_MCROUTER_TCP_PRIVATE_SERVERSENDTHREAD_HPP
-#define AREG_MCROUTER_TCP_PRIVATE_SERVERSENDTHREAD_HPP
+#ifndef AREG_SERVICE_CONNECTIVITY_SERVERSENDTHREAD_HPP
+#define AREG_SERVICE_CONNECTIVITY_SERVERSENDTHREAD_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,10 +9,10 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        mcrouter/tcp/private/ServerSendThread.hpp
+ * \file        service/connectivity/ServerSendThread.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       AREG Platform Server Send Message Thread
+ * \brief       AREG Platform, Service connectivity server send message thread
  ************************************************************************/
 
 /************************************************************************
@@ -20,14 +20,14 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/component/DispatcherThread.hpp"
-#include "areg/ipc/RemoteServiceEvent.hpp"
+#include "areg/ipc/SendMessageEvent.hpp"
 
 #include <atomic>
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IERemoteServiceMessageHandler;
+class IERemoteMessageHandler;
 class ServerConnection;
 
 //////////////////////////////////////////////////////////////////////////
@@ -48,7 +48,7 @@ public:
      * \param   remoteService   The instance of remote servicing handle to set.
      * \param   connection      The instance of server socket connection object.
      **/
-    ServerSendThread( IERemoteServiceMessageHandler & remoteService, ServerConnection & connection );
+    ServerSendThread(IERemoteMessageHandler& remoteService, ServerConnection & connection );
 
     /**
      * \brief   Destructor
@@ -107,13 +107,6 @@ private:
      **/
     virtual void processEvent( const SendMessageEventData & data ) override;
 
-    inline void _sendData( const SendMessageEventData & data );
-
-    /**
-     * \brief   Closes connections and triggers exit event.
-     **/
-    inline void _exitConnection( void );
-
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -121,15 +114,15 @@ private:
     /**
      * \brief   The instance of remote servicing interface object
      **/
-    IERemoteServiceMessageHandler &    mRemoteService;
+    IERemoteMessageHandler& mRemoteService;
     /**
      * \brief   The instance of server connection object
      **/
-    ServerConnection &          mConnection;
+    ServerConnection &      mConnection;
     /**
      * \brief   Accumulative value of sent data size.
      **/
-    std::atomic_uint             mBytesSend;
+    std::atomic_uint        mBytesSend;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -139,9 +132,13 @@ private:
     DECLARE_NOCOPY_NOMOVE( ServerSendThread );
 };
 
+//////////////////////////////////////////////////////////////////////////
+// ServerSendThread class inline methods
+//////////////////////////////////////////////////////////////////////////
+
 inline uint32_t ServerSendThread::extractDataSend(void)
 {
     return static_cast<uint32_t>(mBytesSend.exchange(0));
 }
 
-#endif  // AREG_MCROUTER_TCP_PRIVATE_SERVERSENDTHREAD_HPP
+#endif  // AREG_SERVICE_CONNECTIVITY_SERVERSENDTHREAD_HPP

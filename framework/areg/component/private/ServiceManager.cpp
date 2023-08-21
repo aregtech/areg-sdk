@@ -79,8 +79,8 @@ bool ServiceManager::isServiceManagerStarted( void )
 void ServiceManager::queryCommunicationData( unsigned int & OUT sizeSend, unsigned int & OUT sizeReceive )
 {
     ServiceManager & serviceManager = ServiceManager::getInstance( );
-    sizeSend    = serviceManager.mConnectService.queryBytesSent( );
-    sizeReceive = serviceManager.mConnectService.queryBytesReceived( );
+    sizeSend    = serviceManager.mServiceClient.queryBytesSent( );
+    sizeReceive = serviceManager.mServiceClient.queryBytesReceived( );
 }
 
 void ServiceManager::requestRegisterServer( const StubAddress & whichServer )
@@ -203,17 +203,17 @@ void ServiceManager::_routingServiceEnable( bool enable )
 
 bool ServiceManager::_isRoutingServiceStarted(void)
 {
-    return ServiceManager::getInstance().getServiceConnection().isServiceHostConnected( );
+    return ServiceManager::getInstance().getServiceConnectionProvider().isServiceHostConnected( );
 }
 
 bool ServiceManager::_isRoutingServiceConfigured(void)
 {
-    return ServiceManager::getInstance().getServiceConnection().isServiceHostSetup( );
+    return ServiceManager::getInstance().getServiceConnectionProvider().isServiceHostSetup( );
 }
 
 bool ServiceManager::_isRoutingServiceEnabled(void)
 {
-    return ServiceManager::getInstance().getServiceConnection().isRemoteServicingEnabled( );
+    return ServiceManager::getInstance().getServiceConnectionProvider().isRemoteServicingEnabled( );
 }
 
 void ServiceManager::_requestCreateThread(const String& componentThread)
@@ -230,10 +230,11 @@ void ServiceManager::_requestCreateThread(const String& componentThread)
 ServiceManager::ServiceManager( void )
     : DispatcherThread              ( SERVICE_MANAGER_THREAD_NAME )
     , IEServiceManagerEventConsumer ( )
-    , IERemoteServiceConsumer       ( )
+    , IEServiceConnectionConsumer   ( )
+    , IEServiceRegisterConsumer     ( )
 
     , mEventProcessor   ( self() )
-    , mConnectService   ( static_cast<IERemoteServiceConsumer &>(self()) )
+    , mServiceClient    ( static_cast<IEServiceConnectionConsumer&>(self()), static_cast<IEServiceRegisterConsumer&>(self()) )
     , mLock             (  )
 {
 }
@@ -248,7 +249,7 @@ void ServiceManager::processEvent( const ServiceManagerEventData & data )
     ServiceManagerEventData::eServiceManagerCommands cmdService { data.getCommand( ) };
     TRACE_DBG( "Service Manager is going to execute command [ %s ]", ServiceManagerEventData::getString( cmdService ) );
 
-    mEventProcessor.processServiceEvent( cmdService, data.getReadStream( ), getServiceConnection( ) );
+    mEventProcessor.processServiceEvent( cmdService, data.getReadStream( ), getServiceConnectionProvider( ), getServiceRegisterProvider() );
 }
 
 bool ServiceManager::postEvent(Event & eventElem)

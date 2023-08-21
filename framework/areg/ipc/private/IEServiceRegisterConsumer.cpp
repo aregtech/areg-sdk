@@ -7,10 +7,9 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        areg/ipc/private/IERemoteServiceConnection.cpp
+ * \file        areg/ipc/private/IEServiceRegisterConsumer.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       AREG Platform Connection Base class declaration.
+ * \brief       AREG Platform Remote service consumer interface
  ************************************************************************/
-
-#include "areg/ipc/IERemoteServiceConnection.hpp"
+#include "areg/ipc/IEServiceRegisterConsumer.hpp"

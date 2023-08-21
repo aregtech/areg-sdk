@@ -1,5 +1,5 @@
-#ifndef AREG_IPC_IEREMOTESERVICECONSUMER_HPP
-#define AREG_IPC_IEREMOTESERVICECONSUMER_HPP
+#ifndef AREG_IPC_IESERVICEREGISTERCONSUMER_HPP
+#define AREG_IPC_IESERVICEREGISTERCONSUMER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,7 +9,7 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        areg/ipc/IERemoteServiceConsumer.hpp
+ * \file        areg/ipc/IEServiceRegisterConsumer.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
  * \brief       AREG Platform, Remote service consumer interface
@@ -31,13 +31,13 @@ class StreamableEvent;
 class Channel;
 
 //////////////////////////////////////////////////////////////////////////
-// IERemoteServiceConsumer interface declaration
+// IEServiceRegisterConsumer interface declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   The remote servicing consumer interface with callbacks, which are
  *          triggered when servicing state update is requested.
  **/
-class AREG_API IERemoteServiceConsumer
+class AREG_API IEServiceRegisterConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Protected constructor / destructor
@@ -46,18 +46,18 @@ protected:
     /**
      * \brief   Default destructor
      **/
-    IERemoteServiceConsumer( void ) = default;
+    IEServiceRegisterConsumer( void ) = default;
     /**
      * \brief   Destructor
      **/
-    virtual ~IERemoteServiceConsumer( void ) = default;
+    virtual ~IEServiceRegisterConsumer( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
 public:
 /************************************************************************/
-// IERemoteServiceConsumer
+// IEServiceRegisterConsumer
 /************************************************************************/
 
     /**
@@ -100,31 +100,11 @@ public:
      **/
     virtual void unregisteredRemoteServiceConsumer( const ProxyAddress & proxy, NEService::eDisconnectReason reason, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ ) = 0;
 
-    /**
-     * \brief   Triggered when remote service connection and communication channel is established.
-     * \param   channel     The connection and communication channel of remote service.
-     **/
-    virtual void connectedRemoteServiceChannel( const Channel & channel ) = 0;
-
-    /**
-     * \brief   Triggered when disconnected remote service connection and communication channel.
-     * \param   channel     The connection and communication channel of remote service.
-     **/
-    virtual void disconnectedRemoteServiceChannel( const Channel & channel ) = 0;
-
-    /**
-     * \brief   Triggered when remote service connection and communication channel is lost.
-     *          The connection is considered lost if it not possible to read or
-     *          receive data, and it was not stopped by API call.
-     * \param   channel     The connection and communication channel of remote service.
-     **/
-    virtual void lostRemoteServiceChannel( const Channel & channel ) = 0;
-
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( IERemoteServiceConsumer );
+    DECLARE_NOCOPY_NOMOVE( IEServiceRegisterConsumer );
 };
 
-#endif  // AREG_IPC_IEREMOTESERVICECONSUMER_HPP
+#endif  // AREG_IPC_IESERVICEREGISTERCONSUMER_HPP

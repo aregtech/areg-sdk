@@ -7,25 +7,24 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        mcrouter/tcp/private/ServerSendThread.cpp
+ * \file        service/connectivity/private/ServerSendThread.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       AREG Platform Server Send Message Thread
+ * \brief       AREG Platform, Service connectivity server send message thread
  ************************************************************************/
-#include "mcrouter/tcp/private/ServerSendThread.hpp"
+#include "service/connectivity/ServerSendThread.hpp"
 
-#include "mcrouter/app/MulticastRouter.hpp"
-#include "mcrouter/tcp/private/ServerConnection.hpp"
+#include "service/connectivity/ServerConnection.hpp"
 
 #include "areg/ipc/NEConnection.hpp"
-#include "areg/ipc/IERemoteServiceMessageHandler.hpp"
+#include "areg/ipc/IERemoteMessageHandler.hpp"
 #include "areg/component/NEService.hpp"
 
 #include "areg/trace/GETrace.h"
 
-DEF_TRACE_SCOPE(mcrouter_tcp_private_ServerSendThread__sendData );
+DEF_TRACE_SCOPE(areg_service_connectivity_ServerSendThread_processEvent);
 
-ServerSendThread::ServerSendThread(IERemoteServiceMessageHandler & remoteService, ServerConnection & connection)
+ServerSendThread::ServerSendThread(IERemoteMessageHandler& remoteService, ServerConnection & connection)
     : DispatcherThread          ( NEConnection::SERVER_SEND_MESSAGE_THREAD )
     , IESendMessageEventConsumer( )
     , mRemoteService            ( remoteService )
@@ -36,37 +35,28 @@ ServerSendThread::ServerSendThread(IERemoteServiceMessageHandler & remoteService
 
 bool ServerSendThread::runDispatcher( void )
 {
+    removeAllEvents();
     SendMessageEvent::addListener( static_cast<IESendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this));
-
     bool result = DispatcherThread::runDispatcher();
+    SendMessageEvent::removeListener(static_cast<IESendMessageEventConsumer&>(*this), static_cast<DispatcherThread&>(*this));
 
-    SendMessageEvent::removeListener( static_cast<IESendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this));
+    mConnection.disableReceive();
+    mConnection.closeAllConnections();
+
     return result;
 }
 
 void ServerSendThread::processEvent( const SendMessageEventData & data )
 {
-    if ( data.stayConnected( ) )
-    {
-        _sendData( data );
-    }
-    else
-    {
-        _exitConnection( );
-    }
-}
-
-void ServerSendThread::_sendData( const SendMessageEventData & data )
-{
-    TRACE_SCOPE( mcrouter_tcp_private_ServerSendThread__sendData );
-    const RemoteMessage & msgSend = data.getRemoteMessage();
-    if ( msgSend.isValid() )
+    TRACE_SCOPE(areg_service_connectivity_ServerSendThread_processEvent);
+    const RemoteMessage& msgSend = data.getRemoteMessage();
+    if (msgSend.isValid())
     {
         ITEM_ID target = static_cast<ITEM_ID>(msgSend.getTarget());
         SocketAccepted client = mConnection.getClientByCookie(target);
 
         TRACE_DBG("Sending message [ %s ] (ID = [ %u ]) to client [ %s : %d ] of socket [ %u ]. The message sent from source [ %u ] to target [ %u ]"
-                    , NEService::getString( static_cast<NEService::eFuncIdRange>(msgSend.getMessageId()) )
+                    , NEService::getString(static_cast<NEService::eFuncIdRange>(msgSend.getMessageId()))
                     , static_cast<unsigned int>(msgSend.getMessageId())
                     , client.getAddress().getHostAddress().getString()
                     , client.getAddress().getHostPort()
@@ -75,14 +65,14 @@ void ServerSendThread::_sendData( const SendMessageEventData & data )
                     , static_cast<unsigned int>(msgSend.getTarget()));
 
         int sentBytes = 0;
-        if ( (client.isAlive() == false) || ((sentBytes = mConnection.sendMessage( msgSend, client )) <= 0) )
+        if ((client.isAlive() == false) || ((sentBytes = mConnection.sendMessage(msgSend, client)) <= 0))
         {
             TRACE_WARN("Failed to send message [ %u ] to target [ %u ], client is [ %s ]"
-                            , msgSend.getMessageId()
-                            , static_cast<unsigned int>(msgSend.getTarget())
-                            , client.isAlive() ? "IS ALIVE" : "IS NOT ALIVE");
+                        , msgSend.getMessageId()
+                        , static_cast<unsigned int>(msgSend.getTarget())
+                        , client.isAlive() ? "IS ALIVE" : "IS NOT ALIVE");
 
-            mRemoteService.failedSendMessage( msgSend, client );
+            mRemoteService.failedSendMessage(msgSend, client);
         }
         else
         {
@@ -93,18 +83,11 @@ void ServerSendThread::_sendData( const SendMessageEventData & data )
     else
     {
         TRACE_DBG("Message [ %s ] ( ID = %p ) from source [ %p ] to target [ %p ], ignoring to send message"
-                        , NEService::getString( static_cast<NEService::eFuncIdRange>(msgSend.getMessageId()) )
-                        , static_cast<id_type>(msgSend.getMessageId())
-                        , static_cast<id_type>(msgSend.getSource())
-                        , static_cast<id_type>(msgSend.getTarget()));
+                    , NEService::getString(static_cast<NEService::eFuncIdRange>(msgSend.getMessageId()))
+                    , static_cast<id_type>(msgSend.getMessageId())
+                    , static_cast<id_type>(msgSend.getSource())
+                    , static_cast<id_type>(msgSend.getTarget()));
     }
-}
-
-inline void ServerSendThread::_exitConnection( void )
-{
-    mConnection.disableReceive( );
-    mConnection.closeAllConnections( );
-    DispatcherThread::triggerExitEvent( );
 }
 
 bool ServerSendThread::postEvent(Event & eventElem)

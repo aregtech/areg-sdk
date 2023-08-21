@@ -1,5 +1,5 @@
-#ifndef AREG_IPC_IEREMOTESERVICEMESSAGEHANDLER_HPP
-#define AREG_IPC_IEREMOTESERVICEMESSAGEHANDLER_HPP
+#ifndef AREG_IPC_IEREMOTEMESSAGEHANDLER_HPP
+#define AREG_IPC_IEREMOTEMESSAGEHANDLER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,7 +9,7 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        areg/ipc/IERemoteServiceMessageHandler.hpp
+ * \file        areg/ipc/IERemoteMessageHandler.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
  * \brief       AREG Platform, Interface of remote Service Handler
@@ -27,14 +27,14 @@ class RemoteMessage;
 class Socket;
 
 //////////////////////////////////////////////////////////////////////////
-// IERemoteServiceMessageHandler interface declaration
+// IERemoteMessageHandler interface declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   The interface of object to handler remote servicing.
  *          It contains callbacks, which are triggered either then succeeded to send data
  *          or an error occurred when running.
  **/
-class AREG_API IERemoteServiceMessageHandler
+class AREG_API IERemoteMessageHandler
 {
 //////////////////////////////////////////////////////////////////////////
 // Protected constructor / destructor
@@ -43,18 +43,18 @@ protected:
     /**
      * \brief   Default constructor
      **/
-    IERemoteServiceMessageHandler( void ) = default;
+    IERemoteMessageHandler( void ) = default;
     /**
      * \brief   Destructor
      **/
-    virtual ~IERemoteServiceMessageHandler( void ) = default;
+    virtual ~IERemoteMessageHandler( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
 public:
 /************************************************************************/
-// IERemoteServiceMessageHandler interface overrides
+// IERemoteMessageHandler interface overrides
 /************************************************************************/
 
     /**
@@ -88,7 +88,7 @@ public:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( IERemoteServiceMessageHandler );
+    DECLARE_NOCOPY_NOMOVE( IERemoteMessageHandler );
 };
 
-#endif  // AREG_IPC_IEREMOTESERVICEMESSAGEHANDLER_HPP
+#endif  // AREG_IPC_IEREMOTEMESSAGEHANDLER_HPP

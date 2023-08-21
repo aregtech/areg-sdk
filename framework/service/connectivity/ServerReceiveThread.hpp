@@ -1,5 +1,5 @@
-#ifndef AREG_MCROUTER_TCP_PRIVATE_SERVERRECEIVETHREAD_HPP
-#define AREG_MCROUTER_TCP_PRIVATE_SERVERRECEIVETHREAD_HPP
+#ifndef AREG_SERVICE_CONNECTIVITY_SERVERRECEIVETHREAD_HPP
+#define AREG_SERVICE_CONNECTIVITY_SERVERRECEIVETHREAD_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,10 +9,10 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        mcrouter/tcp/private/ServerReceiveThread.hpp
+ * \file        service/connectivity/ServerReceiveThread.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       AREG Platform Receive Message Thread of Server socket.
+ * \brief       AREG Platform, Service connectivity server receive message Thread
  ************************************************************************/
 
 /************************************************************************
@@ -26,8 +26,8 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class IEServerConnectionHandler;
-class IERemoteServiceMessageHandler;
+class IEServiceConnectionHandler;
+class IERemoteMessageHandler;
 class ServerConnection;
 
 //////////////////////////////////////////////////////////////////////////
@@ -50,7 +50,7 @@ public:
      * \param   remoteService   The instance of remote servicing handler
      * \param   connection      The instance of server connection object.
      **/
-    ServerReceiveThread( IEServerConnectionHandler & connectHandler, IERemoteServiceMessageHandler & remoteService, ServerConnection & connection );
+    ServerReceiveThread( IEServiceConnectionHandler & connectHandler, IERemoteMessageHandler& remoteService, ServerConnection & connection );
     /**
      * \brief   Destructor
      **/
@@ -85,21 +85,21 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   The instance of remote servicing interface object
+     * \brief   The instance of remote service message handler.
      **/
-    IERemoteServiceMessageHandler &    mRemoteService;
+    IERemoteServiceMessageHandler & mRemoteService;
     /**
-     * \brief   The instance of connection handler interface object
+     * \brief   The instance of connection handler interface object.
      **/
-    IEServerConnectionHandler & mConnectHandler;
+    IEServiceConnectionHandler &    mConnectHandler;
     /**
      * \brief   The instance of server connection object
      **/
-    ServerConnection &          mConnection;
+    ServerConnection &              mConnection;
     /**
      * \brief   Accumulative value of received data size.
      */
-    std::atomic_uint            mBytesReceive;
+    std::atomic_uint                mBytesReceive;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -114,4 +114,4 @@ inline uint32_t ServerReceiveThread::extractDataReceive(void)
     return mBytesReceive.exchange(0);
 }
 
-#endif  // AREG_MCROUTER_TCP_PRIVATE_SERVERRECEIVETHREAD_HPP
+#endif  // AREG_SERVICE_CONNECTIVITY_SERVERRECEIVETHREAD_HPP

@@ -27,7 +27,8 @@
 #include "areg/component/private/ProxyConnectEvent.hpp"
 #include "areg/component/private/StubConnectEvent.hpp"
 #include "areg/component/private/ServiceManager.hpp"
-#include "areg/ipc/IERemoteServiceConnection.hpp"
+#include "areg/ipc/IEServiceConnectionConsumer.hpp"
+#include "areg/ipc/IEServiceRegisterProvider.hpp"
 
 #include "areg/trace/GETrace.h"
 
@@ -47,16 +48,17 @@ ServiceManagerEventProcessor::ServiceManagerEventProcessor( ServiceManager & ser
 {
 }
 
-void ServiceManagerEventProcessor::processServiceEvent( ServiceManagerEventData::eServiceManagerCommands cmdService
-                                              , const IEInStream & stream
-                                              , IERemoteServiceConnection & serviceConnection )
+void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventData::eServiceManagerCommands cmdService
+                                                        , const IEInStream& stream
+                                                        , IEServiceConnectionProvider& connectProvide
+                                                        , IEServiceRegisterProvider& registerProvider )
 {
     switch ( cmdService )
     {
     case ServiceManagerEventData::eServiceManagerCommands::CMD_ShutdownService:
         {
             mServerList.clear( );
-            serviceConnection.disconnectServiceHost( );
+            connectProvide.disconnectServiceHost( );
             mServiceManager.removeAllEvents( );
             mServiceManager.triggerExitEvent( );
         }
@@ -81,7 +83,7 @@ void ServiceManagerEventProcessor::processServiceEvent( ServiceManagerEventData:
             }
 
             mServerList.clear( );
-            serviceConnection.disconnectServiceHost( );
+            connectProvide.disconnectServiceHost( );
             mServiceManager.removeEvents( false );
             mServiceManager.pulseExit( );
         }
@@ -94,7 +96,7 @@ void ServiceManagerEventProcessor::processServiceEvent( ServiceManagerEventData:
             stream >> addrProxy;
             stream >> channel;
             addrProxy.setChannel( channel );
-            _registerClient( addrProxy, serviceConnection );
+            _registerClient( addrProxy, registerProvider);
         }
         break;
 
@@ -107,7 +109,7 @@ void ServiceManagerEventProcessor::processServiceEvent( ServiceManagerEventData:
             stream >> channel;
             stream >> reason;
             addrProxy.setChannel( channel );
-            _unregisterClient( addrProxy, reason, serviceConnection );
+            _unregisterClient( addrProxy, reason, registerProvider);
         }
         break;
 
@@ -118,7 +120,7 @@ void ServiceManagerEventProcessor::processServiceEvent( ServiceManagerEventData:
             stream >> addrstub;
             stream >> channel;
             addrstub.setChannel( channel );
-            _registerServer( addrstub, serviceConnection );
+            _registerServer( addrstub, registerProvider);
         }
         break;
 
@@ -131,7 +133,7 @@ void ServiceManagerEventProcessor::processServiceEvent( ServiceManagerEventData:
             stream >> channel;
             stream >> reason;
             addrstub.setChannel( channel );
-            _unregisterServer( addrstub, reason, serviceConnection );
+            _unregisterServer( addrstub, reason, registerProvider);
         }
         break;
 
@@ -139,14 +141,14 @@ void ServiceManagerEventProcessor::processServiceEvent( ServiceManagerEventData:
         {
             String   configFile;
             stream >> configFile;
-            serviceConnection.enableRemoteServicing( true );
+            connectProvide.enableRemoteServicing( true );
             if ( configFile.isEmpty( ) == false )
             {
-                serviceConnection.setupServiceConnectionHost( configFile );
+                connectProvide.setupServiceConnectionHost( configFile );
             }
-            else if ( serviceConnection.isServiceHostSetup( ) == false )
+            else if (connectProvide.isServiceHostSetup( ) == false )
             {
-                serviceConnection.setupServiceConnectionHost( String::getEmptyString( ) );
+                connectProvide.setupServiceConnectionHost( String::getEmptyString( ) );
             }
         }
         break;
@@ -156,14 +158,14 @@ void ServiceManagerEventProcessor::processServiceEvent( ServiceManagerEventData:
             String   configFile;
             stream >> configFile;
             bool isConfigured = false;
-            serviceConnection.enableRemoteServicing( true );
+            connectProvide.enableRemoteServicing( true );
             if ( configFile.isEmpty( ) == false )
             {
-                isConfigured = serviceConnection.setupServiceConnectionHost( configFile );
+                isConfigured = connectProvide.setupServiceConnectionHost( configFile );
             }
-            else if ( serviceConnection.isServiceHostSetup( ) == false )
+            else if (connectProvide.isServiceHostSetup( ) == false )
             {
-                isConfigured = serviceConnection.setupServiceConnectionHost( String::getEmptyString( ) );
+                isConfigured = connectProvide.setupServiceConnectionHost( String::getEmptyString( ) );
             }
             else
             {
@@ -172,7 +174,7 @@ void ServiceManagerEventProcessor::processServiceEvent( ServiceManagerEventData:
 
             if ( isConfigured )
             {
-                serviceConnection.connectServiceHost( );
+                connectProvide.connectServiceHost( );
             }
         }
         break;
@@ -184,18 +186,18 @@ void ServiceManagerEventProcessor::processServiceEvent( ServiceManagerEventData:
             stream >> ipAddress;
             stream >> portNr;
 
-            serviceConnection.enableRemoteServicing( true );
-            serviceConnection.applyServiceConnectionData( ipAddress, portNr );
-            if ( serviceConnection.isServiceHostSetup( ) )
+            connectProvide.enableRemoteServicing( true );
+            connectProvide.applyServiceConnectionData( ipAddress, portNr );
+            if (connectProvide.isServiceHostSetup( ) )
             {
-                serviceConnection.connectServiceHost( );
+                connectProvide.connectServiceHost( );
             }
         }
         break;
 
     case ServiceManagerEventData::eServiceManagerCommands::CMD_StopConnection:
         {
-            serviceConnection.disconnectServiceHost( );
+            connectProvide.disconnectServiceHost( );
         }
         break;
 
@@ -203,7 +205,7 @@ void ServiceManagerEventProcessor::processServiceEvent( ServiceManagerEventData:
         {
             bool enable = false;
             stream >> enable;
-            serviceConnection.enableRemoteServicing( enable );
+            connectProvide.enableRemoteServicing( enable );
         }
         break;
 
@@ -216,7 +218,7 @@ void ServiceManagerEventProcessor::processServiceEvent( ServiceManagerEventData:
 
                 if ( server.isServicePublic( ) && server.isLocalAddress( ) && server.isValid( ) )
                 {
-                    serviceConnection.registerServiceProvider( server );
+                    registerProvider.registerServiceProvider( server );
                 }
 
                 for ( ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
@@ -224,7 +226,7 @@ void ServiceManagerEventProcessor::processServiceEvent( ServiceManagerEventData:
                     const ProxyAddress & proxy = clientList.valueAtPosition( pos ).getAddress( );
                     if ( proxy.isServicePublic( ) && proxy.isLocalAddress( ) && proxy.isValid( ) )
                     {
-                        serviceConnection.registerServiceConsumer( proxy );
+                        registerProvider.registerServiceConsumer( proxy );
                     }
                 }
             }
@@ -267,12 +269,12 @@ void ServiceManagerEventProcessor::processServiceEvent( ServiceManagerEventData:
 
             for ( uint32_t i = 0; i < stubList.getSize( ); ++i )
             {
-                _unregisterServer( stubList[ i ], reason, serviceConnection );
+                _unregisterServer( stubList[ i ], reason, registerProvider);
             }
 
             for ( uint32_t i = 0; i < proxyList.getSize( ); ++i )
             {
-                _unregisterClient( proxyList[ i ], reason, serviceConnection );
+                _unregisterClient( proxyList[ i ], reason, registerProvider);
             }
         }
         break;
@@ -302,13 +304,13 @@ void ServiceManagerEventProcessor::processServiceEvent( ServiceManagerEventData:
     }
 }
 
-void ServiceManagerEventProcessor::_registerServer( const StubAddress & whichServer, IERemoteServiceConnection & serviceConnection )
+void ServiceManagerEventProcessor::_registerServer( const StubAddress & whichServer, IEServiceRegisterProvider& registerProvider)
 {
     TRACE_SCOPE( areg_component_private_ServiceManagerEventProcessor__registerServer );
 
     if ( whichServer.isLocalAddress( ) && whichServer.isServicePublic( ) )
     {
-        serviceConnection.registerServiceProvider( whichServer );
+        registerProvider.registerServiceProvider( whichServer );
     }
 
     ClientList clientList;
@@ -333,13 +335,13 @@ void ServiceManagerEventProcessor::_registerServer( const StubAddress & whichSer
     }
 }
 
-void ServiceManagerEventProcessor::_unregisterServer( const StubAddress & whichServer, const NEService::eDisconnectReason reason, IERemoteServiceConnection & serviceConnection )
+void ServiceManagerEventProcessor::_unregisterServer( const StubAddress & whichServer, const NEService::eDisconnectReason reason, IEServiceRegisterProvider& registerProvider)
 {
     TRACE_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterServer );
 
     if ( whichServer.isLocalAddress( ) && whichServer.isServicePublic( ) )
     {
-        serviceConnection.unregisterServiceProvider( whichServer, reason );
+        registerProvider.unregisterServiceProvider( whichServer, reason );
     }
 
     ClientList clientList;
@@ -369,13 +371,13 @@ void ServiceManagerEventProcessor::_unregisterServer( const StubAddress & whichS
     }
 }
 
-void ServiceManagerEventProcessor::_registerClient( const ProxyAddress & whichClient, IERemoteServiceConnection & serviceConnection )
+void ServiceManagerEventProcessor::_registerClient( const ProxyAddress & whichClient, IEServiceRegisterProvider& registerProvider)
 {
     TRACE_SCOPE( areg_component_private_ServiceManagerEventProcessor__registerClient );
 
     if ( whichClient.isLocalAddress( ) && whichClient.isServicePublic( ) )
     {
-        serviceConnection.registerServiceConsumer( whichClient );
+        registerProvider.registerServiceConsumer( whichClient );
     }
 
     ClientInfo client;
@@ -396,13 +398,13 @@ void ServiceManagerEventProcessor::_registerClient( const ProxyAddress & whichCl
     }
 }
 
-void ServiceManagerEventProcessor::_unregisterClient( const ProxyAddress & whichClient, const NEService::eDisconnectReason reason, IERemoteServiceConnection & serviceConnection )
+void ServiceManagerEventProcessor::_unregisterClient( const ProxyAddress & whichClient, const NEService::eDisconnectReason reason, IEServiceRegisterProvider& registerProvider)
 {
     TRACE_SCOPE( areg_component_private_ServiceManagerEventProcessor__unregisterClient );
 
     if ( whichClient.isLocalAddress( ) && whichClient.isServicePublic( ) )
     {
-        serviceConnection.unregisterServiceConsumer( whichClient, reason );
+        registerProvider.unregisterServiceConsumer( whichClient, reason );
     }
 
     ClientInfo client;

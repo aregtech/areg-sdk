@@ -7,10 +7,10 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        areg/ipc/private/ClientServiceEvent.cpp
+ * \file        areg/ipc/private/SendMessageEvent.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       AREG Platform Client Service Event
+ * \brief       AREG Platform, Send message events
  ************************************************************************/
 
-#include "areg/ipc/private/ClientServiceEvent.hpp"
+#include "areg/ipc/SendMessageEvent.hpp"

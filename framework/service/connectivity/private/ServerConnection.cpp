@@ -7,25 +7,34 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        mcrouter/tcp/private/ServerConnection.cpp
+ * \file        service/connectivity/private/ServerConnection.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       AREG Platform Server Connection class declaration.
+ * \brief       AREG Platform, service server connection class.
  ************************************************************************/
-#include "mcrouter/tcp/private/ServerConnection.hpp"
+#include "service/connectivity/ServerConnection.hpp"
 #include "areg/ipc/NEConnection.hpp"
 #include "areg/component/NEService.hpp"
 #include "areg/base/RemoteMessage.hpp"
 
-ServerConnection::ServerConnection(const char * hostName, unsigned short portNr)
-    : ServerConnectionBase  ( hostName, portNr)
+ServerConnection::ServerConnection(ITEM_ID channelId)
+    : ServerConnectionBase  ( )
     , SocketConnectionBase  ( )
+    , mChannelId            ( channelId )
 {
 }
 
-ServerConnection::ServerConnection(const NESocket::SocketAddress & serverAddress)
+ServerConnection::ServerConnection(ITEM_ID channelId, const char * hostName, unsigned short portNr)
+    : ServerConnectionBase  ( hostName, portNr)
+    , SocketConnectionBase  ( )
+    , mChannelId(channelId)
+{
+}
+
+ServerConnection::ServerConnection(ITEM_ID channelId, const NESocket::SocketAddress & serverAddress)
     : ServerConnectionBase  ( serverAddress )
     , SocketConnectionBase  ( )
+    , mChannelId(channelId)
 {
 }
 
@@ -44,7 +53,7 @@ void ServerConnection::closeAllConnections(void)
     if ( msgBeyClient.initMessage( NEConnection::getMessageByeClient().rbHeader ) != nullptr )
     {
         msgBeyClient.setSequenceNr( NEService::SEQUENCE_NUMBER_ANY );
-        msgBeyClient.setSource( NEService::COOKIE_ROUTER );
+        msgBeyClient.setSource( mChannelId );
         msgBeyClient.bufferCompletionFix();
     }
 

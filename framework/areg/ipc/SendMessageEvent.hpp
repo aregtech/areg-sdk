@@ -1,5 +1,5 @@
-#ifndef AREG_IPC_REMOTESERVICEEVENT_HPP
-#define AREG_IPC_REMOTESERVICEEVENT_HPP
+#ifndef AREG_IPC_SENDMESSAGEEVENT_HPP
+#define AREG_IPC_SENDMESSAGEEVENT_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,7 +9,7 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        areg/ipc/RemoteServiceEvent.hpp
+ * \file        areg/ipc/SendMessageEvent.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
  * \brief       AREG Platform, Send message events
@@ -21,6 +21,8 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/component/TEEvent.hpp"
 #include "areg/base/RemoteMessage.hpp"
+
+#include <utility>
 
 //////////////////////////////////////////////////////////////////////////
 // SendMessageEventData class declaration
@@ -46,22 +48,16 @@ public:
     explicit SendMessageEventData( const RemoteMessage & remoteMessage );
 
     /**
-     * \brief   Initializes the event without data to send and with the flag to close and exit connection.
-     * \param   stayAlive   Flag, indicating whether the connection should stay alive or close and exit.
-     **/
-    explicit SendMessageEventData( bool stayAlive );
-
-    /**
      * \brief   Copies remote message data from given source.
      * \param   source  The source, which contains remote message.
      **/
-    SendMessageEventData( const SendMessageEventData & source ) = default;
+    inline SendMessageEventData( const SendMessageEventData & source ) = default;
 
     /**
      * \brief   Moves remote message data from given source.
      * \param   source  The source, which contains remote message.
      **/
-    SendMessageEventData( SendMessageEventData && source ) noexcept;
+    inline SendMessageEventData( SendMessageEventData && source ) noexcept;
 
     /**
      * \brief   Destructor
@@ -76,23 +72,18 @@ public:
      * \brief   Empties existing message buffer and copies remote message data from given source.
      * \param   source  The source, which contains remote message.
      **/
-    SendMessageEventData & operator = ( const SendMessageEventData & source );
+    inline SendMessageEventData & operator = ( const SendMessageEventData & source );
 
     /**
      * \brief   Empties existing message buffer and moves remote message data from given source.
      * \param   source  The source, which contains remote message.
      **/
-    SendMessageEventData & operator = ( SendMessageEventData && source ) noexcept;
+    inline SendMessageEventData & operator = ( SendMessageEventData && source ) noexcept;
 
     /**
      * \brief   Returns instance of remote message.
      **/
     inline const RemoteMessage & getRemoteMessage( void ) const;
-
-    /**
-     * \brief   The send command value.
-     **/
-    inline bool stayConnected( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variable
@@ -102,10 +93,6 @@ private:
      * \brief   The instance of remote message
      **/
     RemoteMessage   mRemoteMessage;
-    /**
-     * \brief   The send command action
-     **/
-    bool            mStayConnected;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -124,14 +111,31 @@ DECLARE_EVENT(SendMessageEventData, SendMessageEvent, IESendMessageEventConsumer
 // SendMessageEventData class inline functions
 //////////////////////////////////////////////////////////////////////////
 
+inline SendMessageEventData::SendMessageEventData(const RemoteMessage& remoteMessage)
+    : mRemoteMessage(remoteMessage)
+{
+}
+
+inline SendMessageEventData::SendMessageEventData(SendMessageEventData&& source) noexcept
+    : mRemoteMessage(std::move(source.mRemoteMessage))
+{
+}
+
+inline SendMessageEventData& SendMessageEventData::operator = (const SendMessageEventData& source)
+{
+    mRemoteMessage = source.mRemoteMessage;
+    return (*this);
+}
+
+inline SendMessageEventData& SendMessageEventData::operator = (SendMessageEventData&& source) noexcept
+{
+    mRemoteMessage = std::move(source.mRemoteMessage);
+    return (*this);
+}
+
 inline const RemoteMessage & SendMessageEventData::getRemoteMessage( void ) const
 {
     return mRemoteMessage;
 }
 
-inline bool SendMessageEventData::stayConnected( void ) const
-{
-    return mStayConnected;
-}
-
-#endif  // AREG_IPC_REMOTESERVICEEVENT_HPP
+#endif  // AREG_IPC_SENDMESSAGEEVENT_HPP

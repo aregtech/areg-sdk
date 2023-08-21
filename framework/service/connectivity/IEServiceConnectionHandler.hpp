@@ -1,5 +1,5 @@
-#ifndef AREG_MCROUTER_TCP_PRIVATE_IESERVERCONNECTIONHANDLER_HPP
-#define AREG_MCROUTER_TCP_PRIVATE_IESERVERCONNECTIONHANDLER_HPP
+#ifndef AREG_SERVICE_CONNECTIVITY_IESERVICECONNECTIONHANDLER_HPP
+#define AREG_SERVICE_CONNECTIVITY_IESERVICECONNECTIONHANDLER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,10 +9,10 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        mcrouter/tcp/private/IEServerConnectionHandler.hpp
+ * \file        service/connectivity/IEServiceConnectionHandler.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       AREG Platform, Interface of server connection handler
+ * \brief       AREG Platform, Interface of service connection handler
  ************************************************************************/
 
 /************************************************************************
@@ -26,14 +26,14 @@
 class SocketAccepted;
 
 //////////////////////////////////////////////////////////////////////////
-// IEServerConnectionHandler interface declaration
+// IEServiceConnectionHandler interface declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   The interface of object to handler server side connection.
  *          It contains callbacks when needs to check client connection
  *          or when connection is lost.
  **/
-class IEServerConnectionHandler
+class IEServiceConnectionHandler
 {
 //////////////////////////////////////////////////////////////////////////
 // Protected constructor / destructor
@@ -42,18 +42,18 @@ protected:
     /**
      * \brief   Default constructor
      **/
-    IEServerConnectionHandler( void ) = default;
+    IEServiceConnectionHandler( void ) = default;
     /**
      * \brief   Destructor
      **/
-    virtual ~IEServerConnectionHandler( void ) = default;
+    virtual ~IEServiceConnectionHandler( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
 public:
 /************************************************************************/
-// IEServerConnectionHandler interface overrides
+// IEServiceConnectionHandler interface overrides
 /************************************************************************/
 
     /**
@@ -83,7 +83,7 @@ public:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE( IEServerConnectionHandler );
+    DECLARE_NOCOPY_NOMOVE( IEServiceConnectionHandler );
 };
 
-#endif  // AREG_MCROUTER_TCP_PRIVATE_IESERVERCONNECTIONHANDLER_HPP
+#endif  // AREG_SERVICE_CONNECTIVITY_IESERVICECONNECTIONHANDLER_HPP
