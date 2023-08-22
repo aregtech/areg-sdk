@@ -156,11 +156,9 @@ public:
 // Overrides
 //////////////////////////////////////////////////////////////////////////
 protected:
-
 /************************************************************************/
 // IERemoteServiceConnection interface overrides
 /************************************************************************/
-
     /**
      * \brief   Call to configure remote service. The passed file name
      *          can be either absolute or relative path.
