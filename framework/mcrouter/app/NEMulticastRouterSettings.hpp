@@ -37,6 +37,11 @@ namespace NEMulticastRouterSettings
      **/
     constexpr char      RouterThreadName[]  { "_AREG_SERVICEROUTER_THREAD_" };
 
+    /**
+     * \brief   The title to display on console when run application.
+     **/
+    constexpr std::string_view   APP_TITLE  { "AREG Message Router console application ..." };
+
 } // namespace NEMulticastRouterSettings
 
 //////////////////////////////////////////////////////////////////////////

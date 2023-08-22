@@ -34,7 +34,7 @@ TEST( OptionParserTest, CommandLineOptionSimpleNoData )
     ASSERT_TRUE(parser.parseCommandLine( cmdLine, optCount ));
 
     const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize( ), optCount - 1 );
+    ASSERT_EQ( static_cast<int>(opts.getSize( )), optCount - 1 );
     for ( int i = 1; i < optCount; ++i )
     {
         ASSERT_EQ( opts[ i - 1 ].inCommand, i );
@@ -138,7 +138,7 @@ TEST( OptionParserTest, CommandLineOptionMixedNoData )
     ASSERT_TRUE( parser.parseCommandLine( cmdLine, optCount ) );
 
     const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize( ), optCount - 1 );
+    ASSERT_EQ( static_cast<int>(opts.getSize( )), optCount - 1 );
     for ( int i = 1; i < optCount; ++i )
     {
         ASSERT_EQ( opts[ i - 1 ].inCommand, i );
@@ -226,7 +226,7 @@ TEST( OptionParserTest, CommandLineOptionLongDataInQuote )
     ASSERT_TRUE( parser.parseCommandLine( cmdLine, MACRO_ARRAYLEN( cmdLine ) ) );
 
     const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize( ), 1 );
+    ASSERT_EQ( static_cast<int>(opts.getSize( )), 1 );
 
     const OptionParser::sOption & opt = opts[ 0 ];
     ASSERT_EQ( opt.inCommand, 2 );
@@ -253,7 +253,7 @@ TEST( OptionParserTest, CommandLineOptionDefaultData )
     ASSERT_TRUE( parser.parseCommandLine( cmdLine, MACRO_ARRAYLEN( cmdLine ) ) );
 
     const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize( ), 2 );
+    ASSERT_EQ( static_cast<int>(opts.getSize( )), 2 );
 
     do
     {
@@ -296,7 +296,7 @@ TEST( OptionParserTest, OptionsSimpleNoData )
     ASSERT_TRUE( parser.parseOptionLine( optLine ) );
 
     const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize( ), 3 );
+    ASSERT_EQ( static_cast<int>(opts.getSize( )), 3 );
 
     do
     {
@@ -391,7 +391,7 @@ TEST( OptionParserTest, OptionWithDataNoAssignment )
     ASSERT_TRUE( parser.parseOptionLine( optLine ) );
 
     const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize( ), 3 );
+    ASSERT_EQ( static_cast<int>(opts.getSize( )), 3 );
 
     do
     {
@@ -441,7 +441,7 @@ TEST( OptionParserTest, OptionMixedWithData )
     ASSERT_TRUE( parser.parseOptionLine( optLine ) );
 
     const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize( ), 4 );
+    ASSERT_EQ( static_cast<int>(opts.getSize( )), 4 );
 
     do
     {
@@ -501,7 +501,7 @@ TEST( OptionParserTest, OptionLongDataInQuote )
     ASSERT_TRUE( parser.parseOptionLine( optLine ) );
 
     const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize( ), 1 );
+    ASSERT_EQ( static_cast<int>(opts.getSize( )), 1 );
 
     const OptionParser::sOption & opt = opts[ 0 ];
     ASSERT_EQ( opt.inCommand, 2 );
@@ -529,7 +529,7 @@ TEST( OptionParserTest, OptionLongDataInQuoteWithError )
     ASSERT_FALSE( parser.parseOptionLine( optLine ) );
 
     const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize( ), 1 );
+    ASSERT_EQ( static_cast<int>(opts.getSize( )), 1 );
 
     const OptionParser::sOption & opt = opts[ 0 ];
     ASSERT_EQ( opt.inCommand, 2 );
@@ -556,7 +556,7 @@ TEST( OptionParserTest, OptionMultipleParametersAsciiChar )
     ASSERT_TRUE( parser.parseOptionLine( optLine ) );
 
     const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize( ), 1 );
+    ASSERT_EQ( static_cast<int>(opts.getSize( )), 1 );
 
     const OptionParser::sOption & opt = opts[ 0 ];
     ASSERT_EQ( opt.inCommand, 1 );
@@ -591,7 +591,7 @@ TEST( OptionParserTest, OptionFiguresWithData )
     ASSERT_TRUE( parser2.parseOptionLine( optCase2 ) );
 
     ASSERT_EQ( parser1.getOptions().getSize(), parser2.getOptions().getSize() );
-    ASSERT_EQ( parser1.getOptions().getSize(), 2 );
+    ASSERT_EQ( parser1.getOptions().getSize(), static_cast<uint32_t>(2) );
 
     const OptionParser::InputOptionList & opts1 = parser1.getOptions( );
     const OptionParser::InputOptionList & opts2 = parser2.getOptions( );

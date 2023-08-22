@@ -37,6 +37,6 @@ void RouterConsoleService::DeleteComponent( Component & compObject, const NERegi
 // RouterConsoleService class implementation
 //////////////////////////////////////////////////////////////////////////
 RouterConsoleService::RouterConsoleService( const NERegistry::ComponentEntry & entry, ComponentThread & owner, NEMemory::uAlign OPT data )
-    : SystemServiceConsole( MulticastRouter::APP_TITLE, static_cast<SystemServiceBase &>(MulticastRouter::getInstance()), entry, owner, data )
+    : SystemServiceConsole( NEMulticastRouterSettings::APP_TITLE, static_cast<SystemServiceBase &>(MulticastRouter::getInstance()), entry, owner, data )
 {
 }

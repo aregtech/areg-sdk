@@ -54,7 +54,7 @@ String Console::waitForInput(Console::CallBack callback) const
         {
             result.clear();
             char buffer[INPUT_BUFFER_SIZE]{ 0 };
-            _osWaitInput(buffer, INPUT_BUFFER_SIZE);
+            _osWaitInput(buffer, INPUT_BUFFER_SIZE - 1);
             result = buffer;
             if ((static_cast<bool>(callback) == false) || callback(result))
             {

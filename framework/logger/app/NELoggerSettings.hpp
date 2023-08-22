@@ -41,6 +41,11 @@ namespace NELoggerSettings
      **/
     constexpr char      LoggerThreadName[]  { "_AREG_SERVICELOGGER_THREAD_" };
 
+    /**
+     * \brief   The title of application to output on console
+     **/
+    constexpr std::string_view  APP_TITLE   { "AREG Log Collector console application ..." };
+
 } // namespace NELoggerSettings
 
 #endif  // AREG_LOGGER_APP_NELOGGERSETTINGS_HPP

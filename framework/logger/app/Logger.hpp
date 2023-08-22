@@ -62,11 +62,6 @@ private:
      **/
     static const OptionParser::sOptionSetup ValidOptions[ ];
 
-public:
-
-    //!< The title of application to output on console
-    static constexpr std::string_view  APP_TITLE   { "AREG Log Collector console application ..." };
-
 //////////////////////////////////////////////////////////////////////////
 // statics
 //////////////////////////////////////////////////////////////////////////

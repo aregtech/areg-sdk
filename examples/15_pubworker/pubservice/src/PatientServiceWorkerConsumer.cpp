@@ -91,7 +91,7 @@ void PatientServiceWorkerConsumer::registerEventConsumers(WorkerThread & workThr
         /******************************************
          * Do you want to continue or exit application?
          ******************************************/
-        char cmd[2] = {0};
+        char cmd[8] = {0};
         printf("Do you want to continue? (y/n): ");
         if ( MACRO_SCANF( "%1s", cmd, 2 ) != 1 )
         {

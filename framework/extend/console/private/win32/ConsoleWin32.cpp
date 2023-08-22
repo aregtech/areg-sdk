@@ -173,6 +173,7 @@ void Console::_osSetCursorCurPosition(Console::Coord pos) const
 
 void Console::_osWaitInput(char* buffer, uint32_t size) const
 {
+    fmt.format( "%%%us", size );
     static_cast<void>(SCAN_S("%s", buffer, size));
 }
 

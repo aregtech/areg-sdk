@@ -67,10 +67,6 @@ public:
      **/
     static const OptionParser::sOptionSetup ValidOptions[ ];
 
-public:
-    //!< The title to display on console when run application
-    static constexpr std::string_view   APP_TITLE       { "AREG Message Router console application ..." };
-
 //////////////////////////////////////////////////////////////////////////
 // statics
 //////////////////////////////////////////////////////////////////////////

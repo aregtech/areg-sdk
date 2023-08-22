@@ -184,7 +184,7 @@ TEST( FileTest, FileOpenBasic )
 
     ASSERT_TRUE( File::existFile( fileName.getString( ) ) );
     ASSERT_TRUE( file.open( ) );
-    ASSERT_EQ( file.getPosition( ), 0 );
+    ASSERT_EQ( file.getPosition( ), static_cast<int>(0) );
 
     file.close( );
 }
