@@ -19,6 +19,8 @@
 
 #include "extend/console/Console.hpp"
 
+#include <stdio.h>
+
 #ifdef _WINDOWS
     #define MACRO_SCANF(fmt, data, len)     scanf_s(fmt, data, len)
 #else   // _POSIX
@@ -127,7 +129,9 @@ void Logger::runConsoleInputExtended( void )
         // No verbose mode.
         // Set local callback, output message and wait for user input.
         console.enableConsoleInput( true );
-        console.outputTxt( Console::Coord{ 0, 0 }, NESystemService::FORMAT_WAIT_QUIT );
+        console.outputTxt( NESystemService::COORD_TITLE, mTitle.getString( ) );
+        console.outputTxt( NESystemService::COORD_SUBTITLE, NESystemService::APP_SUBTITE.data( ) );
+        console.outputTxt( NESystemService::COORD_USER_INPUT, NESystemService::FORMAT_WAIT_QUIT );
         console.waitForInput( getOptionCheckCallback( ) );
     }
 
@@ -143,10 +147,16 @@ void Logger::runConsoleInputSimple( void )
     bool quit{ false };
     OptionParser parser( Logger::ValidOptions, MACRO_ARRAYLEN( Logger::ValidOptions ) );
 
+    printf( "%s\n", APP_TITLE.data() );
+    printf( "%s\n", NESystemService::APP_SUBTITE.data( ) );
+
     do
     {
-        printf( NESystemService::FORMAT_WAIT_QUIT.data( ) );
-        MACRO_SCANF( "%512s", cmd, 512 );
+        printf( "%s", NESystemService::FORMAT_WAIT_QUIT.data( ) );
+        int count = MACRO_SCANF( "%512s", cmd, 512 );
+        if ((count <= 0) || (count >= 512))
+            continue;
+
         if ( parser.parseOptionLine( cmd ) )
         {
             const OptionParser::InputOptionList & opts = parser.getOptions( );
@@ -287,7 +297,7 @@ bool Logger::setState( NESystemService::eSystemServiceState newState )
     return _osSetState( newState );
 }
 
-void Logger::printHelp( void )
+void Logger::printHelp( bool isCmdLine )
 {
     std::cout
         << "Usage of AREG Message Router (mcrouter) :" << std::endl

@@ -3,7 +3,7 @@
 # User sepcific settings
 # ###########################################################################
 include("${AREG_BASE}/areg/CMakeLists.txt")
-include("${AREG_BASE}/extensions/CMakeLists.txt")
+include("${AREG_BASE}/extend/CMakeLists.txt")
 include("${AREG_BASE}/mcrouter/CMakeLists.txt")
 include("${AREG_BASE}/logger/CMakeLists.txt")
 
@@ -39,8 +39,8 @@ target_link_libraries(areg PRIVATE ${AREG_LDFLAGS})
 # Library configuration
 set_target_properties(areg PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON )
 
-# build areg extensions static library
-addStaticLib(areg-extensions "${extensions_SRC}")
+# build areg extended static library
+addStaticLib(areg-extend "${extend_SRC}")
 
 # build mcrouter executable
 addExecutable(mcrouter "${mcrouter_SRC}")

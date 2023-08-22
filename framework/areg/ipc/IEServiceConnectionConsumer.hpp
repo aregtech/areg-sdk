@@ -29,8 +29,8 @@ class Channel;
 // IEServiceConnectionConsumer interface declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The remote servicing consumer interface with callbacks, which are
- *          triggered when servicing state update is requested.
+ * \brief   The remote service connection consumer interface with callbacks, which are
+ *          triggered when connection state update is requested.
  **/
 class AREG_API IEServiceConnectionConsumer
 {
@@ -42,9 +42,7 @@ protected:
      * \brief   Default destructor
      **/
     IEServiceConnectionConsumer(void) = default;
-    /**
-     * \brief   Destructor
-     **/
+
     virtual ~IEServiceConnectionConsumer(void) = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -75,9 +73,9 @@ public:
      **/
     virtual void lostRemoteServiceChannel(const Channel& channel) = 0;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Forbidden calls
-    //////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+// Forbidden calls
+//////////////////////////////////////////////////////////////////////////
 private:
     DECLARE_NOCOPY_NOMOVE(IEServiceConnectionConsumer);
 };

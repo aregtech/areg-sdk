@@ -26,7 +26,7 @@
 
 #ifdef WINDOWS
     #pragma comment(lib, "areg.lib")
-    #pragma comment(lib, "areg-extensions.lib")
+    #pragma comment(lib, "areg-extend.lib")
     #pragma comment(lib, "14_generated.lib")
 #endif // WINDOWS
 

@@ -28,8 +28,8 @@ class ProxyAddress;
 // IEServiceRegisterProvider interface
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   This is an interface of Public Service Registration to registering and
- *          unregistering public services providers and service consumer.
+ * \brief   This is an interface to register and register the public
+ *          service providers and service consumers.
  **/
 class AREG_API IEServiceRegisterProvider
 {
@@ -94,7 +94,6 @@ public:
 //////////////////////////////////////////////////////////////////////////
 private:
     DECLARE_NOCOPY_NOMOVE(IEServiceRegisterProvider);
-
 };
 
 #endif // AREG_IPC_IESERVICEREGISTERPROVIDER_HPP

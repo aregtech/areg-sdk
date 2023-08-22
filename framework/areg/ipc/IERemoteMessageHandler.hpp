@@ -44,9 +44,7 @@ protected:
      * \brief   Default constructor
      **/
     IERemoteMessageHandler( void ) = default;
-    /**
-     * \brief   Destructor
-     **/
+
     virtual ~IERemoteMessageHandler( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////

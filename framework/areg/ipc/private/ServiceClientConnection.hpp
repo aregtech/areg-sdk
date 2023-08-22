@@ -24,8 +24,8 @@
 #include "areg/ipc/IEServiceConnectionProvider.hpp"
 #include "areg/ipc/IEServiceRegisterProvider.hpp"
 #include "areg/ipc/IERemoteMessageHandler.hpp"
-
 #include "areg/ipc/ServiceEventConsumerBase.hpp"
+
 #include "areg/ipc/private/ClientReceiveThread.hpp"
 #include "areg/ipc/private/ClientSendThread.hpp"
 #include "areg/ipc/private/ClientConnection.hpp"
@@ -40,7 +40,6 @@
  ************************************************************************/
 class IEServiceConnectionConsumer;
 class IEServiceRegisterConsumer;
-class DispatcherThread;
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceClientConnection class declaration
@@ -55,7 +54,7 @@ class ServiceClientConnection   : public    IEServiceConnectionProvider
                                 , private   DispatcherThread
                                 , private   IERemoteMessageHandler
                                 , private   IERemoteEventConsumer
-                                , private   ServiceEventConsumerBase
+                                , private   IEServiceEventConsumerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants
@@ -251,7 +250,7 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 private:
 /************************************************************************/
-// ServiceEventConsumerBase interface overrides
+// IEServiceEventConsumerBase interface overrides
 /************************************************************************/
 
     /**

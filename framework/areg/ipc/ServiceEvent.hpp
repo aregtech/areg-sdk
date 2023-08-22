@@ -35,7 +35,7 @@ class AREG_API ServiceEventData
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   The list of events
+     * \brief   The list of service connections and communication events
      **/
     enum class eServiceEventCommands
     {

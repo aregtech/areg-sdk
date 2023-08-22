@@ -50,7 +50,7 @@ bool ClientSendThread::runDispatcher(void)
 
 void ClientSendThread::processEvent( const SendMessageEventData & data )
 {
-    if ( data.getCommand( ) == SendMessageEventData::eSendMessage::MessageForward )
+    if ( data.isForwardMessage() )
     {
         const RemoteMessage & msg = data.getRemoteMessage( );
         int sizeSend = mConnection.sendMessage( msg );
@@ -63,7 +63,7 @@ void ClientSendThread::processEvent( const SendMessageEventData & data )
             mRemoteService.failedSendMessage( msg, mConnection.getSocket( ) );
         }
     }
-    else
+    else if (data.isExitThreadMessage() )
     {
         mConnection.sendMessage( mConnection.getDisconnectMessage( ) );
         mConnection.closeSocket( );

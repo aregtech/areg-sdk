@@ -93,7 +93,7 @@ bool ServerReceiveThread::runDispatcher(void)
                             
                             mConnection.acceptConnection(clientSocket);
                         }
-                        else
+                        else if ( clientSocket.isAlive( ) )
                         {
                             TRACE_WARN("Rejecting new connection of socket [ %u ], client [ %s : %d ]"
                                             , hSocket
@@ -102,6 +102,15 @@ bool ServerReceiveThread::runDispatcher(void)
                             
                             mConnection.rejectConnection(clientSocket);
                             clientSocket.closeSocket();
+                            continue;
+                        }
+                        else
+                        {
+                            TRACE_WARN( "The connection of socket [ %u ] is not alive anymore, client [ %s : %d ], ignore connection."
+                                        , hSocket
+                                        , addrAccepted.getHostAddress( ).getString( )
+                                        , addrAccepted.getHostPort( ) );
+                            mConnection.closeConnection( clientSocket );
                             continue;
                         }
                     }

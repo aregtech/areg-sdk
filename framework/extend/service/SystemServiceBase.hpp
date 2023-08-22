@@ -9,7 +9,7 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        extend/service/SystemServiceBase.hpp
+ * \file        extend/service/private/SystemServiceBase.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
  * \brief       AREG Platform, base class to create system services.
@@ -171,16 +171,40 @@ protected:
 // SystemServiceBase protected overrides
 /************************************************************************/
 
-    virtual void printHelp( void ) = 0;
+    /**
+     * \brief   Triggered to print the help message on console.
+     * \param   isCmdLine   Flag indicating whether it should print the help
+     *                      of using service in command line or help of user input commands.
+     *                      If 'true', the printing message is about using the service in
+     *                      command line. Otherwise, if application expects user inputs, prints
+     *                      the help of command options.
+     **/
+    virtual void printHelp( bool isCmdLine ) = 0;
 
+    /**
+     * \brief   Triggered to start the console service.
+     **/
     virtual void startConsoleService( void ) = 0;
 
+    /**
+     * \brief   Stops the consoler service.
+     **/
     virtual void stopConsoleService( void ) = 0;
 
+    /**
+     * \brief   Triggered to receive a function to validate and check the input option values.
+     **/
     virtual Console::CallBack getOptionCheckCallback( void ) const = 0;
 
+    /**
+     * \brief   Triggered if need to run console with extended features.
+     *          In extended feature, the console can output message at any position on the screen.
+     **/
     virtual void runConsoleInputExtended( void ) = 0;
 
+    /**
+     * \brief   Triggered if need to run console with simple (not extended) features.
+     **/
     virtual void runConsoleInputSimple( void ) = 0;
 
 //////////////////////////////////////////////////////////////////////////

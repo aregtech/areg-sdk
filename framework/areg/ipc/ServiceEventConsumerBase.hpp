@@ -26,7 +26,7 @@
  /************************************************************************
  * Declared classes
  ************************************************************************/
-class ServiceEventConsumerBase;
+class IEServiceEventConsumerBase;
 class ReconnectTimerConsumer;
 class ServiceClientEventConsumer;
 class ServiceServerEventConsumer;
@@ -37,21 +37,21 @@ class ServiceServerEventConsumer;
 class RemoteMessage;
 
 //////////////////////////////////////////////////////////////////////////
-// ServiceEventConsumerBase class declaration
+// IEServiceEventConsumerBase class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   The base class for service event consumer. It is common for TCP/IP
  *          client and service objects. Each of them should implement only
  *          relevant part. This class contains empty implementations of the methods.
  **/
-class AREG_API ServiceEventConsumerBase
+class AREG_API IEServiceEventConsumerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
-    ServiceEventConsumerBase(void) = default;
-    virtual ~ServiceEventConsumerBase(void) = default;
+    IEServiceEventConsumerBase(void) = default;
+    virtual ~IEServiceEventConsumerBase(void) = default;
 
 public:
 
@@ -111,7 +111,7 @@ public:
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    DECLARE_NOCOPY_NOMOVE(ServiceEventConsumerBase);
+    DECLARE_NOCOPY_NOMOVE(IEServiceEventConsumerBase);
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -124,7 +124,11 @@ class AREG_API ReconnectTimerConsumer final : public IETimerConsumer
 // ReconnectTimerConsumer class declaration
 //////////////////////////////////////////////////////////////////////////
 public:
-    ReconnectTimerConsumer(ServiceEventConsumerBase& serviceEventConsumer);
+    /**
+     * \brief   Initializes the timer consumer object.
+     * \param   eventConsumer   The instance of event consumer to trigger timeout expired callback
+     **/
+    ReconnectTimerConsumer(IEServiceEventConsumerBase& eventConsumer);
 
     virtual ~ReconnectTimerConsumer(void) = default;
 
@@ -149,9 +153,9 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   The instance of service event consumer
+     * \brief   The instance of service event consumer to trigger timer expired callback.
      **/
-    ServiceEventConsumerBase &  mServiceEventConsumer;
+    IEServiceEventConsumerBase &  mServiceEventConsumer;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -171,9 +175,9 @@ class AREG_API ServiceClientEventConsumer : public    IEServiceClientEventConsum
 public:
     /**
      * \brief   Constructs and initializes a Event consumer object
-     * \param   serviceEventConsumer    The instance of the service event consumer.
+     * \param   eventConsumer   The instance of event consumer to trigger connection status changed callbacks
      **/
-    ServiceClientEventConsumer(ServiceEventConsumerBase& serviceEventConsumer);
+    ServiceClientEventConsumer(IEServiceEventConsumerBase& eventConsumer);
 
     virtual ~ServiceClientEventConsumer(void) = default;
 
@@ -198,9 +202,9 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   The instance of service event consumer
+     * \brief   The instance of event consumer to trigger connection status changed callbacks.
      **/
-    ServiceEventConsumerBase &  mServiceEventConsumer;
+    IEServiceEventConsumerBase &  mServiceEventConsumer;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -220,9 +224,9 @@ class AREG_API ServiceServerEventConsumer : public    IEServiceServerEventConsum
 public:
     /**
      * \brief   Constructs and initializes a Event consumer object
-     * \param   serviceEventConsumer    The instance of the service event consumer.
+     * \param   eventConsumer   The instance of event consumer to trigger connection status changed callbacks.
      **/
-    ServiceServerEventConsumer(ServiceEventConsumerBase& serviceEventConsumer);
+    ServiceServerEventConsumer(IEServiceEventConsumerBase& serviceEventConsumer);
 
     virtual ~ServiceServerEventConsumer(void) = default;
 
@@ -247,9 +251,9 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   The instance of service event consumer
+     * \brief   The instance of event consumer to trigger connection status changed callbacks.
      **/
-    ServiceEventConsumerBase &  mServiceEventConsumer;
+    IEServiceEventConsumerBase &  mServiceEventConsumer;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

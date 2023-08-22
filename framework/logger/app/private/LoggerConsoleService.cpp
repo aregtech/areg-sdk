@@ -37,6 +37,6 @@ void LoggerConsoleService::DeleteComponent( Component & compObject, const NERegi
 // LoggerConsoleService class implementation
 //////////////////////////////////////////////////////////////////////////
 LoggerConsoleService::LoggerConsoleService( const NERegistry::ComponentEntry & entry, ComponentThread & owner, NEMemory::uAlign OPT data )
-    : SystemServiceConsole( static_cast<SystemServiceBase &>(Logger::getInstance( )), entry, owner, data )
+    : SystemServiceConsole( Logger::APP_TITLE, static_cast<SystemServiceBase &>(Logger::getInstance( )), entry, owner, data )
 {
 }

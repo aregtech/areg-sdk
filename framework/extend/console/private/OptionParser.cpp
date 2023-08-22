@@ -9,8 +9,7 @@
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        extend/console/OptionParser.cpp
  * \author      Artak Avetyan
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework, extensions
- * \brief       Console option parser extension.
+ * \ingroup     AREG platform, Console option parser extension.
  ************************************************************************/
 
  /************************************************************************

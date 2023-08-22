@@ -11,8 +11,7 @@
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        extend/console/OptionParser.hpp
  * \author      Artak Avetyan
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework, extensions
- * \brief       Console option parser extension.
+ * \ingroup     AREG platform, Console option parser extension.
  ************************************************************************/
 
  /************************************************************************
@@ -243,25 +242,25 @@ public:
      **/
     struct sOptionSetup
     {
-        std::string_view    optShort        { };        //!< The short name of the option.
-        std::string_view    optLong         { };        //!< The long name of the option.
-        int                 optCmmand       { -1 };     //!< The digital value of the command.
-        uint32_t            optField        { 0 };      //!< The flag indicating the valid fields.
-        Range<int>          optRangeInt     { 0, 0 };   //!< Range of valid integer values, ignored if no range.
+        std::string_view    optShort        {        }; //!< The short name of the option.
+        std::string_view    optLong         {        }; //!< The long name of the option.
+        int                 optCmmand       { -1     }; //!< The digital value of the command.
+        uint32_t            optField        { 0      }; //!< The flag indicating the valid fields.
+        Range<int>          optRangeInt     { 0, 0   }; //!< Range of valid integer values, ignored if no range.
         Range<float>        optRangeFloat   { 0., 0. }; //!< Range of valid floating point values, ignored if no range
-        FixedStrList        optRangeStrings { };        //!< Range of valid strings, no case sensitive
+        FixedStrList        optRangeStrings {        }; //!< Range of valid strings, no case sensitive
     };
 
     /**
-     * \brief   The option
+     * \brief   The input option entry
      **/
     struct sOption
     {
         int     inCommand   { -1 }; //!< The digital value of the command.
-        int     inField     { 0 };  //!< The flag indicating the valid fields and values.
+        int     inField     { 0  }; //!< The flag indicating the valid fields and values.
         int     inRefSetup  { -1 }; //!< The reference index in the list of options setup, -1 is invalid index
-        uValues inValue     { 0 };  //!< Either integer or float value, depending on `inField`.
-        StrList inString    { };    //!< The list of the strings, the `inField` should indicate string value
+        uValues inValue     { 0  }; //!< Either integer or float value, depending on `inField`.
+        StrList inString    {    }; //!< The list of the strings, the `inField` should indicate string value
     };
 
     //!< The list of option validity setup.

@@ -10,6 +10,7 @@ logger_SRC  :=
 logger_OBJS := 
 
 include $(logger_BASE)/app/private/Makefile
+include $(logger_BASE)/service/private/Makefile
 
 logger_LDFLAGS  :=
 logger_CXXFLAGS :=
@@ -19,7 +20,7 @@ else
 	logger_CXXFLAGS += -DIMP_AREG_LIB
 endif
 
-logger_LDFLAGS  += $(AREG_LIB_INCLUDES) -lareg-extensions -lareg $(LDFLAGS) $(AREG_EXTENDED_LIBS)
+logger_LDFLAGS  += $(AREG_LIB_INCLUDES) -lareg-extend -lareg $(LDFLAGS) $(AREG_EXTENDED_LIBS)
 
 logger_TARGET_BIN := $(logger_PROJECT_NAME)$(AREG_BIN_EXT)
 

@@ -62,6 +62,11 @@ private:
      **/
     static const OptionParser::sOptionSetup ValidOptions[ ];
 
+public:
+
+    //!< The title of application to output on console
+    static constexpr std::string_view  APP_TITLE   { "AREG Log Collector console application ..." };
+
 //////////////////////////////////////////////////////////////////////////
 // statics
 //////////////////////////////////////////////////////////////////////////
@@ -157,16 +162,40 @@ protected:
 // SystemServiceBase overrides
 /************************************************************************/
 
-    virtual void printHelp( void ) override;
+    /**
+     * \brief   Triggered to print the help message on console.
+     * \param   isCmdLine   Flag indicating whether it should print the help
+     *                      of using service in command line or help of user input commands.
+     *                      If 'true', the printing message is about using the service in
+     *                      command line. Otherwise, if application expects user inputs, prints
+     *                      the help of command options.
+     **/
+    virtual void printHelp( bool isCmdLine ) override;
 
+    /**
+     * \brief   Triggered to start the console service.
+     **/
     virtual void startConsoleService( void ) override;
 
+    /**
+     * \brief   Stops the consoler service.
+     **/
     virtual void stopConsoleService( void ) override;
 
+    /**
+     * \brief   Triggered to receive a function to validate and check the input option values.
+     **/
     virtual Console::CallBack getOptionCheckCallback( void ) const override;
 
+    /**
+     * \brief   Triggered if need to run console with extended features.
+     *          In extended feature, the console can output message at any position on the screen.
+     **/
     virtual void runConsoleInputExtended( void ) override;
 
+    /**
+     * \brief   Triggered if need to run console with simple (not extended) features.
+     **/
     virtual void runConsoleInputSimple( void ) override;
 
 //////////////////////////////////////////////////////////////////////////
@@ -234,7 +263,9 @@ private:
 // Member variables.
 //////////////////////////////////////////////////////////////////////////
 private:
-
+    /**
+     * \brief   The service connection object to communicate with processes.
+     **/
     LoggerServerService mServiceServer;
 
 //////////////////////////////////////////////////////////////////////////

@@ -33,27 +33,28 @@ int main(int argc, char* argv[], char* envp[])
 {
     int result      = 0;
     MulticastRouter & router = MulticastRouter::getInstance();
-
-    if (router.parseOptions(argc, argv) == false)
+    const char * temp = static_cast<const char *>(*argv);
+    std::pair<const OptionParser::sOptionSetup *, int> opt{ MulticastRouter::getOptionSetup( ) };
+    if ( router.parseOptions( argc, &temp, opt.first, opt.second ) == false )
     {
-        router.resetDefaultOptions();
+        router.resetDefaultOptions( );
     }
 
-    switch ( router.getCurrentCommand() )
+    switch ( router.getCurrentOption() )
     {
-    case NEMulticastRouterSettings::eServiceCommand::CMD_Install:
+    case NESystemService::eServiceOption::CMD_Install:
         result = router.serviceInstall() ? 0 : -2;
         break;
 
-    case NEMulticastRouterSettings::eServiceCommand::CMD_Uninstall:
+    case NESystemService::eServiceOption::CMD_Uninstall:
         router.serviceUninstall();
         break;
 
-    case NEMulticastRouterSettings::eServiceCommand::CMD_Service:
-    case NEMulticastRouterSettings::eServiceCommand::CMD_Console:
-        router.setState(NEMulticastRouterSettings::eRouterState::RouterStarting);
+    case NESystemService::eServiceOption::CMD_Service:
+    case NESystemService::eServiceOption::CMD_Console:
+        router.setState(NESystemService::eSystemServiceState::ServiceStarting);
         router.serviceMain( static_cast<int>(argc), argv);
-        router.setState( NEMulticastRouterSettings::eRouterState::RouterStopped );
+        router.setState(NESystemService::eSystemServiceState::ServiceStopped);
         router.serviceStop();
         break;
 
@@ -103,40 +104,40 @@ void MulticastRouter::_osDeleteService( void )
 {
 }
 
-bool MulticastRouter::_osSetState( NEMulticastRouterSettings::eRouterState newState )
+bool MulticastRouter::_osSetState( NESystemService::eSystemServiceState newState )
 {
     bool result{ true };
 
-    if ( newState != mRouterState )
+    if ( newState != mSystemServiceState )
     {
         switch ( newState )
         {
-        case NEMulticastRouterSettings::eRouterState::RouterStopped:
+        case NESystemService::eSystemServiceState::ServiceStopped:
             break;
 
-        case NEMulticastRouterSettings::eRouterState::RouterStarting:
+        case NESystemService::eSystemServiceState::ServiceStarting:
             break;
 
-        case NEMulticastRouterSettings::eRouterState::RouterStopping:
+        case NESystemService::eSystemServiceState::ServiceStopping:
             break;
 
-        case NEMulticastRouterSettings::eRouterState::RouterRunning:
+        case NESystemService::eSystemServiceState::ServiceRunning:
             break;
 
-        case NEMulticastRouterSettings::eRouterState::RouterContinuing:
+        case NESystemService::eSystemServiceState::ServiceContinuing:
             break;
 
-        case NEMulticastRouterSettings::eRouterState::RouterPausing:
+        case NESystemService::eSystemServiceState::ServicePausing:
             break;
 
-        case NEMulticastRouterSettings::eRouterState::RouterPaused:
+        case NESystemService::eSystemServiceState::ServicePaused:
             break;
 
         default:
             ASSERT(false);
         }
 
-        mRouterState = newState;
+        mSystemServiceState = newState;
     }
 
     return result;

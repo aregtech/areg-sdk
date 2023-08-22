@@ -11,8 +11,7 @@
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        extend/console/Console.hpp
  * \author      Artak Avetyan
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework, extensions
- * \brief       Console extension.
+ * \ingroup     AREG platform, Console with or without extended features
  ************************************************************************/
 
  /************************************************************************

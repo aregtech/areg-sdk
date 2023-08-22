@@ -54,7 +54,6 @@ SystemServiceBase::SystemServiceBase( ServiceCommunicatonBase & commBase )
 
 bool SystemServiceBase::parseOptions( int argc, const char ** argv, const OptionParser::sOptionSetup * optSetup, int optCount )
 {
-    using ServiceCmd = NESystemService::eServiceOption;
     bool result{ false };
 
     if ( argc > 1 )
@@ -98,7 +97,7 @@ bool SystemServiceBase::parseOptions( int argc, const char ** argv, const Option
 
         if ( outHelp )
         {
-            printHelp( );
+            printHelp( true );
             result = false;
         }
     }

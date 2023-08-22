@@ -68,7 +68,7 @@ ServiceClientConnection::ServiceClientConnection(IEServiceConnectionConsumer& co
     , DispatcherThread              ( NEConnection::CLIENT_DISPATCH_MESSAGE_THREAD.data() )
     , IERemoteMessageHandler        ( )
     , IERemoteEventConsumer         ( )
-    , ServiceEventConsumerBase      ( )
+    , IEServiceEventConsumerBase    ( )
 
     , mClientConnection     ( )
     , mConnectionConsumer   (connectionConsumer)
@@ -80,8 +80,8 @@ ServiceClientConnection::ServiceClientConnection(IEServiceConnectionConsumer& co
     , mConfigFile           ( "" )
     , mChannel              ( )
     , mConnectionState      ( eConnectionState::ConnectionStopped )
-    , mEventConsumer        ( static_cast<ServiceEventConsumerBase &>(self()) )
-    , mTimerConsumer        ( static_cast<ServiceEventConsumerBase &>(self()) )
+    , mEventConsumer        ( static_cast<IEServiceEventConsumerBase &>(self()) )
+    , mTimerConsumer        ( static_cast<IEServiceEventConsumerBase &>(self()) )
     , mLock                 ( )
 {
 }
@@ -336,11 +336,16 @@ void ServiceClientConnection::onServiceConnectionStopped(void)
     mChannel.setSource( NEService::SOURCE_UNKNOWN );
     mChannel.setTarget( NEService::TARGET_UNKNOWN );
 
-    _cancelConnection();
+    _cancelConnection( );
 
     mThreadReceive.completionWait( NECommon::WAIT_INFINITE );
     mThreadSend.completionWait( NECommon::WAIT_INFINITE );
     mConnectionConsumer.disconnectedRemoteServiceChannel( channel );
+
+    if ( Application::isServicingReady( ) )
+    {
+        mTimerConnect.startTimer( NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT, static_cast<DispatcherThread &>(self( )), 1 );
+    }
 }
 
 void ServiceClientConnection::onServiceConnectionLost(void)
@@ -362,7 +367,7 @@ void ServiceClientConnection::onServiceConnectionLost(void)
         mThreadSend.completionWait( NECommon::WAIT_INFINITE );
         mConnectionConsumer.lostRemoteServiceChannel( channel );
 
-        _setConnectionState( ServiceClientConnection::eConnectionState::ConnectionStarting );
+        // _setConnectionState( ServiceClientConnection::eConnectionState::ConnectionStarting );
         mTimerConnect.startTimer( NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT, static_cast<DispatcherThread &>(self( )), 1 );
     }
     else
@@ -377,7 +382,7 @@ void ServiceClientConnection::onServiceConnectionLost(void)
 
 void ServiceClientConnection::onServiceExit( void )
 {
-    onServiceStop();
+    onServiceStop( );
     triggerExitEvent( );
 }
 

@@ -40,7 +40,7 @@ LogConfiguration::LogConfiguration( ScopeController & scopeController )
     : mScopeController  ( scopeController )
     , mFilePath         ( )
     , mIsConfigured     ( false )
-    , mProperties       ( NELogConfig::LOG_PROPERTY_COUNT )
+    , mProperties       ( NELogConfig::LOG_PROPERTY_COUNT, NELogConfig::LOG_PROPERTY_COUNT )
 {
 }
 

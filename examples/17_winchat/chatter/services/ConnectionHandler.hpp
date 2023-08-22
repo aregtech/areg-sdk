@@ -75,12 +75,12 @@ private:
 private:
     NECommon::ListConnections mListConnections;
     String        mNickName;
-    uint32_t        mCookie;
-    uint32_t        mConnectCookie;
+    uint32_t      mCookie;
+    uint32_t      mConnectCookie;
     DateTime      mTimeConnect;
     DateTime      mTimeConnected;
-    bool            mIsRegistered;
-    bool            mIsConnected;
+    bool          mIsRegistered;
+    bool          mIsConnected;
     mutable Mutex mLock;
 
 private:

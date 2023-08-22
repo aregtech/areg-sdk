@@ -19,9 +19,9 @@
 // ReconnectTimerConsumer class implementation
 //////////////////////////////////////////////////////////////////////////
 
-ReconnectTimerConsumer::ReconnectTimerConsumer(ServiceEventConsumerBase& serviceEventConsumer)
+ReconnectTimerConsumer::ReconnectTimerConsumer(IEServiceEventConsumerBase& eventConsumer )
     : IETimerConsumer       ( )
-    , mServiceEventConsumer ( serviceEventConsumer )
+    , mServiceEventConsumer ( eventConsumer )
 {
 }
 
@@ -34,9 +34,9 @@ void ReconnectTimerConsumer::processTimer(Timer& timer)
 // ServiceClientEventConsumer class implementation
 //////////////////////////////////////////////////////////////////////////
 
-ServiceClientEventConsumer::ServiceClientEventConsumer(ServiceEventConsumerBase& serviceEventConsumer)
+ServiceClientEventConsumer::ServiceClientEventConsumer(IEServiceEventConsumerBase& eventConsumer)
     : IEServiceClientEventConsumer  ( )
-    , mServiceEventConsumer         ( serviceEventConsumer )
+    , mServiceEventConsumer         ( eventConsumer )
 {
 }
 
@@ -90,7 +90,7 @@ void ServiceClientEventConsumer::processEvent(const ServiceEventData& data)
 // ServiceServerEventConsumer class implementation
 //////////////////////////////////////////////////////////////////////////
 
-ServiceServerEventConsumer::ServiceServerEventConsumer(ServiceEventConsumerBase& serviceEventConsumer)
+ServiceServerEventConsumer::ServiceServerEventConsumer(IEServiceEventConsumerBase& serviceEventConsumer)
     : IEServiceServerEventConsumer  ( )
     , mServiceEventConsumer         ( serviceEventConsumer )
 {

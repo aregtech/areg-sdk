@@ -52,11 +52,12 @@ SystemServiceConsole::DataRate::DataRate(uint32_t sizeBytes)
 //////////////////////////////////////////////////////////////////////////
 // SystemServiceConsole class implementation
 //////////////////////////////////////////////////////////////////////////
-SystemServiceConsole::SystemServiceConsole( SystemServiceBase & sysService, const NERegistry::ComponentEntry & entry, ComponentThread & owner, NEMemory::uAlign OPT data )
+SystemServiceConsole::SystemServiceConsole( const String & appTitle, SystemServiceBase & sysService, const NERegistry::ComponentEntry & entry, ComponentThread & owner, NEMemory::uAlign OPT data )
     : Component         ( entry, owner )
     , StubBase          ( self( ), NEService::getEmptyInterface( ) )
     , IETimerConsumer   ( )
 
+    , mTitle            ( appTitle )
     , mSystemService    ( sysService )
     , mTimer            ( self( ), "ConsoleServiceTimer" )
 {
@@ -68,6 +69,8 @@ void SystemServiceConsole::startupServiceInterface( Component & holder )
 
     Console& console = Console::getInstance();
 
+    console.outputTxt(NESystemService::COORD_TITLE, mTitle.getString());
+    console.outputTxt(NESystemService::COORD_SUBTITLE, NESystemService::APP_SUBTITE.data());
     console.outputMsg(NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data(), 0.0f, SystemServiceConsole::MSG_BYTES.data());
     console.outputMsg(NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data(), 0.0f, SystemServiceConsole::MSG_BYTES.data());
     console.outputTxt(NESystemService::COORD_USER_INPUT,NESystemService::FORMAT_WAIT_QUIT);

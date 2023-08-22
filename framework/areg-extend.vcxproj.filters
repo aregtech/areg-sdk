@@ -18,6 +18,7 @@
   <ItemGroup>
     <Text Include="extend\console\private\CMakeLists.txt" />
     <Text Include="extend\CMakeLists.txt" />
+    <Text Include="extend\service\private\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="extend\console\Console.hpp" />

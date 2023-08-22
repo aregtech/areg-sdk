@@ -19,6 +19,8 @@
 
 #include "extend/console/Console.hpp"
 
+#include <stdio.h>
+
 #ifdef _WINDOWS
     #define MACRO_SCANF(fmt, data, len)     scanf_s(fmt, data, len)
 #else   // _POSIX
@@ -128,7 +130,9 @@ void MulticastRouter::runConsoleInputExtended( void )
         // No verbose mode.
         // Set local callback, output message and wait for user input.
         console.enableConsoleInput( true );
-        console.outputTxt( Console::Coord{ 0, 0 }, NESystemService::FORMAT_WAIT_QUIT );
+        console.outputTxt( NESystemService::COORD_TITLE, mTitle.getString( ) );
+        console.outputTxt( NESystemService::COORD_SUBTITLE, NESystemService::APP_SUBTITE.data( ) );
+        console.outputTxt( NESystemService::COORD_USER_INPUT, NESystemService::FORMAT_WAIT_QUIT );
         console.waitForInput( getOptionCheckCallback( ) );
     }
 
@@ -144,10 +148,16 @@ void MulticastRouter::runConsoleInputSimple( void )
     bool quit{ false };
     OptionParser parser( MulticastRouter::ValidOptions, MACRO_ARRAYLEN( MulticastRouter::ValidOptions ) );
 
+    printf( "%s\n", APP_TITLE.data( ) );
+    printf( "%s\n", NESystemService::APP_SUBTITE.data( ) );
+
     do
     {
-        printf( NESystemService::FORMAT_WAIT_QUIT.data( ) );
-        MACRO_SCANF( "%512s", cmd, 512 );
+        printf( "%s", NESystemService::FORMAT_WAIT_QUIT.data( ) );
+        int count = MACRO_SCANF( "%512s", cmd, 512 );
+        if ((count <= 0) || (count >= 512))
+            continue;
+
         if ( parser.parseOptionLine( cmd ) )
         {
             const OptionParser::InputOptionList & opts = parser.getOptions( );
@@ -283,7 +293,7 @@ bool MulticastRouter::setState( NESystemService::eSystemServiceState newState )
     return _osSetState( newState );
 }
 
-void MulticastRouter::printHelp( void )
+void MulticastRouter::printHelp( bool isCmdLine )
 {
     std::cout
         << "Usage of AREG Message Router (mcrouter) :" << std::endl
@@ -344,13 +354,10 @@ bool MulticastRouter::_checkCommand(const String& cmd)
         console.clearScreen( );
         if ( hasError )
         {
-            console.outputMsg( router.mRunVerbose ? NESystemService::COORD_ERROR_MSG : Console::Coord{ 0, 1 }
-                             , NESystemService::FORMAT_MSG_ERROR.data( )
-                             , cmd.getString( ) );
+            console.outputMsg( NESystemService::COORD_ERROR_MSG, NESystemService::FORMAT_MSG_ERROR.data( ), cmd.getString( ) );
         }
 
-        console.outputTxt( router.mRunVerbose ? NESystemService::COORD_USER_INPUT : Console::Coord{ 0, 0 }
-                         , NESystemService::FORMAT_WAIT_QUIT );
+        console.outputTxt( NESystemService::COORD_USER_INPUT, NESystemService::FORMAT_WAIT_QUIT );
         console.refreshScreen( );
     }
 

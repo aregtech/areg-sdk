@@ -71,6 +71,9 @@ protected:
     // Members.
     //////////////////////////////////////////////////////////////////////////
     public:
+        /**
+         * \brief   Calculates and initializes the data rate.
+         **/
         DataRate(uint32_t sizeBytes = 0);
 
         //!< This pair contains size in bytes and message indicating MB, KB or Bytes.
@@ -89,7 +92,7 @@ protected:
      * \param   owner       The instance of component owner thread.
      * \param   data        The optional component data set in system. Can be empty / no data.
      **/
-    SystemServiceConsole( SystemServiceBase & sysService, const NERegistry::ComponentEntry & entry, ComponentThread & owner,  NEMemory::uAlign OPT data );
+    SystemServiceConsole( const String & appTitle, SystemServiceBase & sysService, const NERegistry::ComponentEntry & entry, ComponentThread & owner,  NEMemory::uAlign OPT data );
 
     /**
      * \brief   Destructor.
@@ -201,6 +204,7 @@ private:
 // Hidden member variables
 //////////////////////////////////////////////////////////////////////////
 private:
+    String              mTitle;         //!< The title to display on console.
     SystemServiceBase & mSystemService; //!< The instance of system service object.
     Timer               mTimer;         //!< The timer to run in component thread.
 

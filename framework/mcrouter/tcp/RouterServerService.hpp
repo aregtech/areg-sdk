@@ -169,7 +169,7 @@ protected:
     virtual void failedProcessMessage( const RemoteMessage & msgUnprocessed ) override;
 
 /************************************************************************/
-// ServiceEventConsumerBase overrides
+// IEServiceEventConsumerBase overrides
 /************************************************************************/
 
     /**

@@ -92,12 +92,12 @@ namespace NESystemService
     /**
      * \brief   The default option to run multicast System as a console application.
      **/
-    constexpr eServiceOption   DEFAULT_OPTION{ eServiceOption::CMD_Console };
+    constexpr eServiceOption   DEFAULT_OPTION   { eServiceOption::CMD_Console };
 
     /**
      * \brief   The default option to run the logger in verbose mode to output send and receive data rate.
      */
-    constexpr bool              DEFAULT_VERBOSE{ true };
+    constexpr bool              DEFAULT_VERBOSE { true };
 
     /**
      * \brief   Output send data rate message format.
@@ -114,28 +114,46 @@ namespace NESystemService
     /**
      * \brief   Wait for user input command message format.
      **/
-    constexpr std::string_view  FORMAT_WAIT_QUIT{ "Type \'-q\' or \'--quit\' to quit the logger ...: " };
+    constexpr std::string_view  FORMAT_WAIT_QUIT{ "Type \'-q\' or \'--quit\' to quit the application ...: " };
     /**
      * \brief   Message quit application.
      **/
-    constexpr std::string_view  FORMAT_QUIT_APP{ "\nQuit the logger application ...\n" };
+    constexpr std::string_view  FORMAT_QUIT_APP { "\nQuit the application ...\n" };
+
+    /**
+     * \brief   Underscore to output under the application title.
+     **/
+    constexpr std::string_view  APP_SUBTITE     { "--------------------------------------------" };
+
+    /**
+     * \brief   Coordinate to display the application title.
+     **/
+    constexpr Console::Coord    COORD_TITLE     { 0, 1 };
+    /**
+     * \brief   Coordinate to display the underscore.
+     **/
+    constexpr Console::Coord    COORD_SUBTITLE  { 0, 2 };
 
     /**
      * \brief   Coordinate to start to display send data rate message.
      **/
-    constexpr Console::Coord    COORD_SEND_RATE{ 0, 1 };
+    constexpr Console::Coord    COORD_SEND_RATE { 0, 3 };
     /**
      * \brief   Coordinate to start to display receive data rate message.
      **/
-    constexpr Console::Coord    COORD_RECV_RATE{ 0, 2 };
+    constexpr Console::Coord    COORD_RECV_RATE { 0, 4 };
     /**
      * \brief   Coordinate to start to display user input message.
      **/
-    constexpr Console::Coord    COORD_USER_INPUT{ 0, 3 };
+    constexpr Console::Coord    COORD_USER_INPUT{ 0, 5 };
     /**
      * \brief   Coordinate to start to display error message.
      **/
-    constexpr Console::Coord    COORD_ERROR_MSG{ 0, 4 };
+    constexpr Console::Coord    COORD_ERROR_MSG { 0, 6 };
+    /**
+     * \brief   Coordinate to start to display information message.
+     **/
+    constexpr Console::Coord    COORD_INFO_MSG  { 0, 7 };
 }
 
 //////////////////////////////////////////////////////////////////////////

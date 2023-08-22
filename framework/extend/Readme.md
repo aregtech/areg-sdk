@@ -1,6 +1,6 @@
 # Content
 
-This folder contains the extensions of ARE engine. The extensions may require additional libraries and resources, which are considered additional and optional features, that are not included in the AREG standard engine. The extensions are compiled as `areg-extensions` static library to link with projects that may use them. To compiler project with the extensions, define `AREG_EXTENDED=1`. Otherwise, ignore or specify `AREG_EXTENDED=0`. If specify `AREG_EXTENDED=0`, the project is compiled as a static library, which can be linked, but no guarantee that the features of extensions will be available or will work as it is initially designed and in some cases, the objects may contain `dummy` implementation just to support the API.
+This folder contains the AREG extended library that can is compiled with or without extended features, which may require additional libraries and resources, which are considered additional and optional features. The extensions are compiled as `areg-extend` static library to link with projects that may use them. To compile project with the additional features, define `AREG_EXTENDED=1`. Otherwise, ignore or specify `AREG_EXTENDED=0`. If specify `AREG_EXTENDED=0`, the project is compiled as a static library, which can be linked, but no guarantee that all extended features will be available or will work as it is initially designed.
 
 This project contains following folders:
 

@@ -2,15 +2,18 @@ list(APPEND areg_SRC
 	${areg_BASE}/ipc/private/ClientConnection.cpp
 	${areg_BASE}/ipc/private/ClientReceiveThread.cpp
 	${areg_BASE}/ipc/private/ClientSendThread.cpp
-	${areg_BASE}/ipc/private/ClientService.cpp
-	${areg_BASE}/ipc/private/ClientServiceEvent.cpp
 	${areg_BASE}/ipc/private/ConnectionConfiguration.cpp
-	${areg_BASE}/ipc/private/IERemoteServiceConnection.cpp
-	${areg_BASE}/ipc/private/IERemoteServiceConsumer.cpp
-	${areg_BASE}/ipc/private/IERemoteServiceMessageHandler.cpp
+	${areg_BASE}/ipc/private/IERemoteMessageHandler.cpp
+	${areg_BASE}/ipc/private/IEServiceConnectionConsumer.cpp
+	${areg_BASE}/ipc/private/IEServiceConnectionProvider.cpp
+	${areg_BASE}/ipc/private/IEServiceRegisterConsumer.cpp
+	${areg_BASE}/ipc/private/IEServiceRegisterProvider.cpp
 	${areg_BASE}/ipc/private/NEConnection.cpp
 	${areg_BASE}/ipc/private/NERemoteService.cpp
-	${areg_BASE}/ipc/private/RemoteServiceEvent.cpp
+	${areg_BASE}/ipc/private/SendMessageEvent.cpp
 	${areg_BASE}/ipc/private/ServerConnectionBase.cpp
+	${areg_BASE}/ipc/private/ServiceClientConnection.cpp
+	${areg_BASE}/ipc/private/ServiceEvent.cpp
+	${areg_BASE}/ipc/private/ServiceEventConsumerBase.cpp
 	${areg_BASE}/ipc/private/SocketConnectionBase.cpp
 )

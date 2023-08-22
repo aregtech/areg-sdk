@@ -39,8 +39,8 @@ bool ServerSendThread::runDispatcher( void )
     bool result = DispatcherThread::runDispatcher();
     SendMessageEvent::removeListener(static_cast<IESendMessageEventConsumer&>(*this), static_cast<DispatcherThread&>(*this));
 
-    mConnection.disableReceive();
     mConnection.closeAllConnections();
+    mConnection.disableSend( );
 
     return result;
 }
@@ -48,7 +48,7 @@ bool ServerSendThread::runDispatcher( void )
 void ServerSendThread::processEvent( const SendMessageEventData & data )
 {
     TRACE_SCOPE( areg_extend_service_ServerSendThread_processEvent );
-    if (data.getCommand() == SendMessageEventData::eSendMessage::MessageForward)
+    if (data.isForwardMessage())
     {
         const RemoteMessage & msgSend = data.getRemoteMessage( );
         ASSERT( msgSend.isValid( ) );
@@ -81,9 +81,10 @@ void ServerSendThread::processEvent( const SendMessageEventData & data )
             TRACE_DBG("Succeeded to send message [ %u ] to target [ %p ]", msgSend.getMessageId(), static_cast<id_type>(msgSend.getTarget()));
         }
     }
-    else
+    else if (data.isExitThreadMessage() )
     {
         TRACE_DBG("Going to quite send message thread");
+        triggerExitEvent( );
     }
 }
 

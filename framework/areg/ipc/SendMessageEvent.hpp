@@ -38,7 +38,7 @@ class AREG_API SendMessageEventData
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants
 //////////////////////////////////////////////////////////////////////////
-public:
+private:
     //!< The command to process when send message.
     enum eSendMessage
     {
@@ -62,7 +62,7 @@ public:
      *                          The message should already contain information and instructions
      *                          for remote process.
      **/
-    explicit inline SendMessageEventData( const RemoteMessage & remoteMessage );
+    inline explicit SendMessageEventData( const RemoteMessage & remoteMessage );
 
     /**
      * \brief   Copies remote message data from given source.
@@ -106,6 +106,16 @@ public:
      * \brief   Returns the command instruction to handle messages.
      **/
     inline SendMessageEventData::eSendMessage getCommand( void ) const;
+
+    /**
+     * \brief   Returns true if message is with instruction to forward the message.
+     **/
+    inline bool isForwardMessage( void ) const;
+
+    /**
+     * \brief   Returns true if message is with instruction to quit the thread.
+     **/
+    inline bool isExitThreadMessage( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variable
@@ -178,6 +188,16 @@ inline const RemoteMessage & SendMessageEventData::getRemoteMessage( void ) cons
 inline SendMessageEventData::eSendMessage SendMessageEventData::getCommand( void ) const
 {
     return mCmdSendMessage;
+}
+
+inline bool SendMessageEventData::isForwardMessage( void ) const
+{
+    return (mCmdSendMessage == eSendMessage::MessageForward);
+}
+
+inline bool SendMessageEventData::isExitThreadMessage( void ) const
+{
+    return (mCmdSendMessage == eSendMessage::ExitThread);
 }
 
 #endif  // AREG_IPC_SENDMESSAGEEVENT_HPP

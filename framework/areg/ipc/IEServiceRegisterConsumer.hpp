@@ -34,8 +34,8 @@ class Channel;
 // IEServiceRegisterConsumer interface declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The remote servicing consumer interface with callbacks, which are
- *          triggered when servicing state update is requested.
+ * \brief   The remote service provider and consumer interface with callbacks,
+ *          which are triggered when serves change the states.
  **/
 class AREG_API IEServiceRegisterConsumer
 {

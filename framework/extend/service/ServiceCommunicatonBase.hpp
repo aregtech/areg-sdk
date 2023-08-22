@@ -43,15 +43,15 @@ class IERemoteServiceConsumer;
 // ServiceCommunicatonBase class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The server side connection service. Used by message router to
+ * \brief   The server side base connection service. Used by message router to
  *          accept service connections.
  **/
 class ServiceCommunicatonBase   : public    IERemoteMessageHandler
                                 , public    IEServiceConnectionConsumer
                                 , public    IEServiceConnectionProvider
+                                , protected DispatcherThread
+                                , protected IEServiceEventConsumerBase
                                 , private   IEServiceConnectionHandler
-                                , private   DispatcherThread
-                                , private   ServiceEventConsumerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants
@@ -96,7 +96,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~ServiceCommunicatonBase( void )= default;
+    virtual ~ServiceCommunicatonBase( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -276,7 +276,7 @@ protected:
     virtual void processReceivedMessage( const RemoteMessage & msgReceived, Socket & whichSource ) override;
 
 /************************************************************************/
-// ServiceEventConsumerBase overrides
+// IEServiceEventConsumerBase overrides
 /************************************************************************/
 
     /**
@@ -324,8 +324,14 @@ protected:
      **/
     void stopConnection( void );
 
+    /**
+     * \brief   Starts the message sending thread and returns true if succeeded.
+     **/
     bool startSendThread( void );
 
+    /**
+     * \brief   Starts the message receiving thread and returns true if succeeded.
+     **/
     bool startReceiveThread( void );
 
     /**

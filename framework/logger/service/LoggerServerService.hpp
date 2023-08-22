@@ -12,7 +12,7 @@
  * \file        logger/service/LoggerServerService.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       AREG Platform, logger connection service
+ * \brief       AREG Platform, Log Collector server connection service
  ************************************************************************/
 
 /************************************************************************
@@ -42,7 +42,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~LoggerServerService( void )= default;
+    virtual ~LoggerServerService( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -81,7 +81,7 @@ protected:
     virtual void failedProcessMessage( const RemoteMessage & msgUnprocessed ) override;
 
 /************************************************************************/
-// ServiceEventConsumerBase overrides
+// IEServiceEventConsumerBase overrides
 /************************************************************************/
 
     /**

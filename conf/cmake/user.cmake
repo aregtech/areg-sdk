@@ -11,7 +11,7 @@
 #   4. AREG_BUILD_TYPE      -- build configurations ('Debug' or 'Release')
 #   5. AREG_BUILD_TESTS     -- Build AREG engine unit tests
 #   6. AREG_BUILD_EXAMPLES  -- Build AREG engine examples
-#   7. AREG_EXTENDED        -- Enables or disables the extensions, which might require additional libraries.
+#   7. AREG_EXTENDED        -- Enabled or disable extensions in AREG extended static library and it may require additional dependencies.
 #   8. AREG_LOGS            -- Enable or disable compilation with logs.
 #   9. AREG_BUILD_ROOT      -- The root directory for project(s) to build. By default is the "product" directory of areg-sdk root.
 #  10. AREG_OUTPUT_DIR      -- The output directory of build binaries
@@ -143,7 +143,11 @@ endif()
 
 # Set build configuration. Set "Debug" for debug build, and "Release" for release build.
 if (NOT DEFINED AREG_BUILD_TYPE OR NOT ${AREG_BUILD_TYPE} STREQUAL "Debug")
-    set(AREG_BUILD_TYPE "Release")
+    if (DEFINED CMAKE_BUILD_TYPE AND NOT ${CMAKE_BUILD_TYPE} STREQUAL "")
+        set(AREG_BUILD_TYPE "${CMAKE_BUILD_TYPE}")
+    else()
+        set(AREG_BUILD_TYPE "Release")
+    endif()
 endif()
 
 # Set the AREG binary library type to compile. Set "shared" if not "static"

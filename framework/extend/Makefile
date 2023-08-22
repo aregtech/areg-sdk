@@ -1,30 +1,30 @@
-extensions_PROJECT_NAME := areg-extensions
+extend_PROJECT_NAME := areg-extend
 
-extensions_TARGET_BIN   := $(AREG_LIB_PREFIX)$(extensions_PROJECT_NAME)$(AREG_STATIC_LIB)
-extensions_BASE         := $(AREG_BASE)/extensions
-extensions_OUTPUT_OBJ   := $(AREG_OUTPUT_OBJ)/$(extensions_PROJECT_NAME)
-extensions_TARGET_PATH  := $(AREG_OUTPUT_LIB)/$(extensions_TARGET_BIN)
+extend_TARGET_BIN   := $(AREG_LIB_PREFIX)$(extend_PROJECT_NAME)$(AREG_STATIC_LIB)
+extend_BASE         := $(AREG_BASE)/extend
+extend_OUTPUT_OBJ   := $(AREG_OUTPUT_OBJ)/$(extend_PROJECT_NAME)
+extend_TARGET_PATH  := $(AREG_OUTPUT_LIB)/$(extend_TARGET_BIN)
 
 ifeq ($(AREG_BINARY), shared)
-    extensions_CXXFLAGS += -DIMP_AREG_DLL
+    extend_CXXFLAGS += -DIMP_AREG_DLL
 else
-    extensions_CXXFLAGS += -DIMP_AREG_LIB
+    extend_CXXFLAGS += -DIMP_AREG_LIB
 endif
 
-extensions_SRC  :=
-extensions_OBJS :=
+extend_SRC  :=
+extend_OBJS :=
 
-include $(extensions_BASE)/console/private/Makefile
+include $(extend_BASE)/console/private/Makefile
 
-extensions: $(extensions_TARGET_PATH)
+extend: $(extend_TARGET_PATH)
 
 # define one target for each source file
-$(foreach cpp, $(extensions_SRC), $(eval $(call obj, $(cpp), $(extensions_OUTPUT_OBJ), extensions_OBJS, $(extensions_CXXFLAGS))))
+$(foreach cpp, $(extend_SRC), $(eval $(call obj, $(cpp), $(extend_OUTPUT_OBJ), extend_OBJS, $(extend_CXXFLAGS))))
 
-DEPS = $(extensions_OBJS:%.o=%.d)
+DEPS = $(extend_OBJS:%.o=%.d)
 -include $(DEPS)
 
-$(extensions_TARGET_PATH): $(extensions_OBJS)
-	@echo "Linking AREG extensions library ..."
+$(extend_TARGET_PATH): $(extend_OBJS)
+	@echo "Linking AREG extend static library ..."
 	@mkdir -p $(dir $@)
 	$(AREG_AR) -rcs $@ $^
