@@ -193,7 +193,7 @@ void TraceEventProcessor::_traceNetReceivedData( const SharedBuffer & stream )
 
     if ( cmdHeader->hdrCookieHost == NEService::COOKIE_REMOTE_SERVICE )
     {
-        if ( (cmdHeader->hdrCookieTarget == cookie) || (cookie == NEService::COOKIE_ANY && cmdData->dataCommand == NETrace::eLogCommands::LogResponseConnect) )
+        if ( (cmdHeader->hdrCookieTarget == cookie) || ((cookie == NEService::COOKIE_ANY) && (cmdData->dataCommand == NETrace::eLogCommands::LogResponseConnect)) )
         {
             // Past all checkups to make sure the correctness of the target.
             if ( cmdHeader->hdrLogType == NETrace::eLogType::LogResponse )
