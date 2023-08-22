@@ -15,50 +15,6 @@
 
 #include "areg/ipc/ServiceEventConsumerBase.hpp"
 
- //////////////////////////////////////////////////////////////////////////
- // ServiceEventConsumerBase class implementation
- //////////////////////////////////////////////////////////////////////////
-
-void ServiceEventConsumerBase::onServiceReconnectTimerExpired(void)
-{
-}
-
-void ServiceEventConsumerBase::onServiceStart(void)
-{
-}
-
-void ServiceEventConsumerBase::onServiceStop(void)
-{
-}
-
-void ServiceEventConsumerBase::onServiceRestart(void)
-{
-}
-
-void ServiceEventConsumerBase::onServiceConnectionStarted(void)
-{
-}
-
-void ServiceEventConsumerBase::onServiceConnectionStopped(void)
-{
-}
-
-void ServiceEventConsumerBase::onServiceConnectionLost(void)
-{
-}
-
-void ServiceEventConsumerBase::onServiceExit(void)
-{
-}
-
-void ServiceEventConsumerBase::onServiceMessageReceived(const RemoteMessage& /*msgReceived*/)
-{
-}
-
-void ServiceEventConsumerBase::onServiceMessageSend(const RemoteMessage& /*msgSend*/)
-{
-}
-
 //////////////////////////////////////////////////////////////////////////
 // ReconnectTimerConsumer class implementation
 //////////////////////////////////////////////////////////////////////////

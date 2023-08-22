@@ -289,16 +289,22 @@ void ServiceClientConnection::onServiceStop(void)
     mChannel.setSource( NEService::SOURCE_UNKNOWN );
     mChannel.setTarget( NEService::TARGET_UNKNOWN );
 
-    _stopReceiveData();
-
-    mThreadReceive.completionWait( NECommon::WAIT_INFINITE );
+    _stopReceiveData( );
+    _stopSendData( );
     mThreadSend.completionWait( NECommon::WAIT_INFINITE );
+    mThreadReceive.completionWait( NECommon::WAIT_INFINITE );
 
     mClientConnection.closeSocket();
     mConnectionConsumer.disconnectedRemoteServiceChannel( channel );
 
     mThreadReceive.destroyThread( NECommon::DO_NOT_WAIT );
     mThreadSend.destroyThread( NECommon::DO_NOT_WAIT );
+}
+
+void ServiceClientConnection::onServiceRestart( void )
+{
+    onServiceStop( );
+    onServiceStart( );
 }
 
 void ServiceClientConnection::onServiceConnectionStarted(void)
@@ -369,6 +375,20 @@ void ServiceClientConnection::onServiceConnectionLost(void)
     }
 }
 
+void ServiceClientConnection::onServiceExit( void )
+{
+    onServiceStop();
+    triggerExitEvent( );
+}
+
+void ServiceClientConnection::onServiceMessageReceived( const RemoteMessage & msgReceived )
+{
+}
+
+void ServiceClientConnection::onServiceMessageSend( const RemoteMessage & msgSend )
+{
+}
+
 inline bool ServiceClientConnection::_isStarted(void) const
 {
     ITEM_ID cookie = mClientConnection.getCookie();
@@ -435,7 +455,7 @@ inline void ServiceClientConnection::_stopSendData(void)
     TRACE_SCOPE(areg_ipc_private_ServiceClientConnection__stopSendData);
     TRACE_WARN("Stopping client service connection");
 
-    mThreadSend.triggerExitEvent();
+    _disconnectService( Event::eEventPriority::EventPriorityHigh );
 }
 
 inline void ServiceClientConnection::_cancelConnection(void)
@@ -830,14 +850,14 @@ void ServiceClientConnection::processRemoteResponseEvent(RemoteResponseEvent & r
 bool ServiceClientConnection::runDispatcher(void)
 {
     TRACE_SCOPE(areg_ipc_private_ServiceClientConnection_runDispatcher);
-    startEventListener();
+    ServiceClientEvent::addListener( static_cast<IEServiceClientEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self( )) );
     _sendCommand(ServiceEventData::eServiceEventCommands::CMD_StartService);
 
     _setConnectionState(ServiceClientConnection::eConnectionState::DisconnectState);
     bool result = DispatcherThread::runDispatcher();
     _setConnectionState(ServiceClientConnection::eConnectionState::ConnectionStopped);
 
-    stopEventListener();
+    ServiceClientEvent::removeListener( static_cast<IEServiceClientEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self( )) );
 
     return result;
 }
@@ -867,4 +887,12 @@ inline bool ServiceClientConnection::_sendMessage(const RemoteMessage & data, Ev
                                       , static_cast<IESendMessageEventConsumer &>(mThreadSend)
                                       , static_cast<DispatcherThread &>(mThreadSend)
                                       , eventPrio);
+}
+
+inline void ServiceClientConnection::_disconnectService( Event::eEventPriority eventPrio )
+{
+    SendMessageEvent::sendEvent( SendMessageEventData()
+                               , static_cast<IESendMessageEventConsumer &>(mThreadSend)
+                               , static_cast<DispatcherThread &>(mThreadSend)
+                               , eventPrio );
 }

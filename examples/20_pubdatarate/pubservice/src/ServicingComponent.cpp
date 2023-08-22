@@ -14,7 +14,7 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/trace/GETrace.h"
-#include "extensions/console/Console.hpp"
+#include "extend/console/Console.hpp"
 
 #include <chrono>
 

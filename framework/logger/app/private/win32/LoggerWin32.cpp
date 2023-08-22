@@ -17,16 +17,16 @@
 #ifdef WINDOWS
 
 #pragma comment(lib, "areg.lib")
-#pragma comment(lib, "areg-extensions.lib")
+#pragma comment(lib, "areg-extend.lib")
 #pragma comment(lib, "advapi32.lib")
 #pragma comment(lib, "kernel32.lib")
 
+#include "areg/appbase/Application.hpp"
+#include "areg/appbase/NEApplication.hpp"
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/String.hpp"
-#include "areg/appbase/Application.hpp"
-#include "areg/appbase/NEApplication.hpp"
 
 #ifndef WIN32_LEAN_AND_MEAN
     #define WIN32_LEAN_AND_MEAN
@@ -88,36 +88,34 @@ namespace
 
 int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
-    int result      = 0;
-    char ** argvTemp = _convertArguments(argv, argc);
+    int result = 0;
+    char ** argvTemp = _convertArguments( argv, argc );
+    const char * temp = *argvTemp;
     Logger & logger = Logger::getInstance( );
-    if ( argvTemp != nullptr )
+    std::pair<const OptionParser::sOptionSetup *, int> opt{ Logger::getOptionSetup( ) };
+    if ( logger.parseOptions( argc, &temp, opt.first, opt.second ) == false )
     {
-        const char * tmp = *argvTemp;
-        if ( logger.parseOptions( argc, static_cast<const char **>(&tmp) ) == false )
-        {
-            return result;
-        }
+        logger.resetDefaultOptions( );
     }
 
-    _deleteArguments(argvTemp, argc);
+    _deleteArguments( argvTemp, argc );
 
-    switch ( logger.getCurrentCommand() )
+    switch ( logger.getCurrentOption() )
     {
-    case NELoggerSettings::eServiceCommand::CMD_Install:
+    case NESystemService::eServiceOption::CMD_Install:
         result = logger.serviceInstall() ? 0 : -2;
         break;
 
-    case NELoggerSettings::eServiceCommand::CMD_Uninstall:
+    case NESystemService::eServiceOption::CMD_Uninstall:
         logger.serviceUninstall();
         break;
 
-    case NELoggerSettings::eServiceCommand::CMD_Console:
+    case NESystemService::eServiceOption::CMD_Console:
         ::_win32ServiceMain(argc, argv);
         logger.serviceStop();
         break;
 
-    case NELoggerSettings::eServiceCommand::CMD_Service:
+    case NESystemService::eServiceOption::CMD_Service:
         result = ::StartServiceCtrlDispatcher(_serviceTable) ? 0 : -1;
         break;
 
@@ -144,13 +142,13 @@ VOID WINAPI _win32ServiceMain( DWORD argc, LPTSTR * argv )
         _serviceStatus.dwWaitHint               = 0;
 
         Logger & logger = Logger::getInstance( );
-        logger.setState( NELoggerSettings::eLoggerState::LoggerStarting );
+        logger.setState( NESystemService::eSystemServiceState::ServiceStarting );
 
         char ** argvTemp = _convertArguments( argv, static_cast<int>(argc) );
         logger.serviceMain( static_cast<int>(argc), argvTemp );
         _deleteArguments( argvTemp, static_cast<int>(argc) );
 
-        logger.setState( NELoggerSettings::eLoggerState::LoggerStopped );
+        logger.setState( NESystemService::eSystemServiceState::ServiceStopped );
     }
     catch ( const std::exception& )
     {
@@ -310,7 +308,7 @@ void Logger::_osDeleteService( void )
 
 bool Logger::_osRegisterService( void )
 {
-    if ( mServiceCmd == NELoggerSettings::eServiceCommand::CMD_Service )
+    if ( mSystemServiceOption == NESystemService::eServiceOption::CMD_Service )
     {
         _statusHandle = ::RegisterServiceCtrlHandler( _serviceDescribe, _win32ServiceCtrlHandler );
     }
@@ -318,51 +316,51 @@ bool Logger::_osRegisterService( void )
     return (_statusHandle != nullptr);
 }
 
-bool Logger::_osSetState( NELoggerSettings::eLoggerState newState )
+bool Logger::_osSetState( NESystemService::eSystemServiceState newState )
 {
     bool result{ true };
 
     _serviceStatus.dwControlsAccepted   = 0;
     _serviceStatus.dwWin32ExitCode      = 0;
 
-    if ( newState != mLoggerState )
+    if ( newState != mSystemServiceState )
     {
         switch ( newState )
         {
-        case NELoggerSettings::eLoggerState::LoggerStopped:
+        case NESystemService::eSystemServiceState::ServiceStopped:
             _serviceStatus.dwCurrentState       = SERVICE_STOPPED;
             _serviceStatus.dwControlsAccepted   = 0;
             _serviceStatus.dwCheckPoint         = 7;
             _serviceStatus.dwWin32ExitCode      = ERROR_SUCCESS;
             break;
 
-        case NELoggerSettings::eLoggerState::LoggerStarting:
+        case NESystemService::eSystemServiceState::ServiceStarting:
             _serviceStatus.dwCurrentState       = SERVICE_START_PENDING;
             _serviceStatus.dwCheckPoint         = 1;
             break;
 
-        case NELoggerSettings::eLoggerState::LoggerStopping:
+        case NESystemService::eSystemServiceState::ServiceStopping:
             _serviceStatus.dwCurrentState       = SERVICE_STOP_PENDING;
             _serviceStatus.dwCheckPoint         = 6;
             break;
 
-        case NELoggerSettings::eLoggerState::LoggerRunning:
+        case NESystemService::eSystemServiceState::ServiceRunning:
             _serviceStatus.dwCurrentState       = SERVICE_RUNNING;
             _serviceStatus.dwControlsAccepted   = SERVICE_ACCEPT_PAUSE_CONTINUE | SERVICE_ACCEPT_STOP;
             _serviceStatus.dwCheckPoint         = 2;
             break;
 
-        case NELoggerSettings::eLoggerState::LoggerContinuing:
+        case NESystemService::eSystemServiceState::ServiceContinuing:
             _serviceStatus.dwCurrentState       = SERVICE_CONTINUE_PENDING;
             _serviceStatus.dwCheckPoint         = 5;
             break;
 
-        case NELoggerSettings::eLoggerState::LoggerPausing:
+        case NESystemService::eSystemServiceState::ServicePausing:
             _serviceStatus.dwCurrentState       = SERVICE_PAUSE_PENDING;
             _serviceStatus.dwCheckPoint         = 3;
             break;
 
-        case NELoggerSettings::eLoggerState::LoggerPaused:
+        case NESystemService::eSystemServiceState::ServicePaused:
             _serviceStatus.dwCurrentState       = SERVICE_PAUSED;
             _serviceStatus.dwControlsAccepted   = SERVICE_ACCEPT_PAUSE_CONTINUE | SERVICE_ACCEPT_STOP;
             _serviceStatus.dwCheckPoint         = 4;
@@ -371,7 +369,8 @@ bool Logger::_osSetState( NELoggerSettings::eLoggerState newState )
         default:
             ASSERT(false);
         }
-        mLoggerState = newState;
+
+        mSystemServiceState = newState;
         if ( _statusHandle != nullptr )
         {
             result = ::SetServiceStatus( _statusHandle, &_serviceStatus ) != FALSE;

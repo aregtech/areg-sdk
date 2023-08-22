@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
+    <Import Project="$(SolutionDir)\msvc_setup.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(AregSdkRoot)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+  </ImportGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}</ProjectGuid>
+    <ProjectName>areg-extend</ProjectName>
+    <RootNamespace>areg-extend</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(AregSdkRoot)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <OutDir>$(OutLibDir)\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
+    <ClCompile>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
+    <ClCompile>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="extend\console\private\ansi\ConsoleAnsi.cpp" />
+    <ClCompile Include="extend\console\private\Console.cpp" />
+    <ClCompile Include="extend\console\private\ncurses\ConsoleNcurses.cpp" />
+    <ClCompile Include="extend\console\private\OptionParser.cpp" />
+    <ClCompile Include="extend\console\private\win32\ConsoleWin32.cpp" />
+    <ClCompile Include="extend\console\private\SystemServiceConsole.cpp" />
+    <ClCompile Include="extend\service\private\NESystemService.cpp" />
+    <ClCompile Include="extend\service\private\SystemServiceBase.cpp" />
+    <ClCompile Include="extend\service\private\IEServiceConnectionHandler.cpp" />
+    <ClCompile Include="extend\service\private\ServerConnection.cpp" />
+    <ClCompile Include="extend\service\private\ServerReceiveThread.cpp" />
+    <ClCompile Include="extend\service\private\ServerSendThread.cpp" />
+    <ClCompile Include="extend\service\private\ServiceCommunicatonBase.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="extend\CMakeLists.txt" />
+    <Text Include="extend\console\private\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="extend\console\Console.hpp" />
+    <ClInclude Include="extend\console\OptionParser.hpp" />
+    <ClInclude Include="extend\service\NESystemService.hpp" />
+    <ClInclude Include="extend\console\SystemServiceConsole.hpp" />
+    <ClInclude Include="extend\service\SystemServiceBase.hpp" />
+    <ClInclude Include="extend\service\IEServiceConnectionHandler.hpp" />
+    <ClInclude Include="extend\service\ServerConnection.hpp" />
+    <ClInclude Include="extend\service\ServerReceiveThread.hpp" />
+    <ClInclude Include="extend\service\ServerSendThread.hpp" />
+    <ClInclude Include="extend\service\ServiceCommunicatonBase.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="extend\Readme.md" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

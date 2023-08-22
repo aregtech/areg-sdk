@@ -30,7 +30,7 @@
     <ClInclude Include="mcrouter\app\NEMulticastRouterSettings.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\tcp\ServerService.hpp">
+    <ClInclude Include="mcrouter\tcp\RouterServerService.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mcrouter\tcp\private\ServiceRegistry.hpp">
@@ -72,7 +72,7 @@
     <ClCompile Include="mcrouter\app\private\MulticastRouter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\tcp\private\ServerService.cpp">
+    <ClCompile Include="mcrouter\tcp\private\RouterServerService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="mcrouter\tcp\private\ServiceRegistry.cpp">

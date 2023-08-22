@@ -19,7 +19,7 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
-#include "extensions/console/Console.hpp"
+#include "extend/console/Console.hpp"
 
 #include "generated/src/NECommon.hpp"
 #include "pubservice/src/TrafficLightService.hpp"

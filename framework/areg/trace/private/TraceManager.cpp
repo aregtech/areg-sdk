@@ -175,7 +175,7 @@ unsigned int TraceManager::getScopePriority( const char * scopeName )
 void TraceManager::netConnectionLost( void )
 {
     TraceManager & traceManager = TraceManager::getInstance( );
-    traceManager.mCookie = NETrace::COOKIE_LOCAL;
+    traceManager.mCookie = NEService::COOKIE_LOCAL;
     traceManager.mLoggerTcp.closeConnection( );
     traceManager.sendLogEvent(TraceEventData( TraceEventData::eTraceAction::TraceNetConnectionLost), Event::eEventPriority::EventPriorityHigh);
 }
@@ -198,7 +198,7 @@ TraceManager::TraceManager(void)
     , mLogConfig        ( mScopeController )
 
     , mModuleId         ( Process::getInstance().getId() )
-    , mCookie           ( NETrace::COOKIE_LOCAL )
+    , mCookie           ( NEService::COOKIE_LOCAL )
 
     , mLoggerFile       ( mLogConfig )
     , mLoggerDebug      ( mLogConfig )
@@ -294,7 +294,7 @@ void TraceManager::processTimer( Timer & timer )
         {
             if ( mLoggerTcp.openLogger( ) )
             {
-                mCookie = NETrace::COOKIE_ANY;
+                mCookie = NEService::COOKIE_ANY;
                 sendLogEvent( TraceEventData( TraceEventData::eTraceAction::TraceNetConnectService ), Event::eEventPriority::EventPriorityHigh );
             }
             else
@@ -355,7 +355,7 @@ void TraceManager::traceStartLogs( void )
 
 void TraceManager::traceStopLogs(void)
 {
-    mCookie = NETrace::COOKIE_LOCAL;
+    mCookie = NEService::COOKIE_LOCAL;
     mTimerReconnect.stopTimer( );
     mScopeController.changeScopeActivityStatus( false );
     mLogStarted.resetEvent( );
@@ -420,7 +420,7 @@ void TraceManager::connectTcpLogService( void )
         {
             if ( mLoggerTcp.openLogger( ) == false )
             {
-                mCookie = NETrace::COOKIE_ANY;
+                mCookie = NEService::COOKIE_ANY;
                 mTimerReconnect.startTimer( LOG_RECONNECT_TIMEOUT, 1 );
             }
             else if ( mLoggerTcp.isActive( ) == false )
@@ -438,7 +438,7 @@ void TraceManager::connectTcpLogService( void )
 void TraceManager::reconnectTcpLogService( void )
 {
     ASSERT( mLogConfig.isNetLoggingEnabled() );
-    mCookie = NETrace::COOKIE_LOCAL;
+    mCookie = NEService::COOKIE_LOCAL;
     mLoggerTcp.closeLogger( );
     mTimerReconnect.startTimer( LOG_RECONNECT_TIMEOUT, static_cast<DispatcherThread &>(self( )), 1 );
 }
@@ -446,7 +446,7 @@ void TraceManager::reconnectTcpLogService( void )
 void TraceManager::disconnectTcpLogService( void )
 {
     ASSERT( mLogConfig.isNetLoggingEnabled( ) );
-    mCookie = NETrace::COOKIE_LOCAL;
+    mCookie = NEService::COOKIE_LOCAL;
     mLoggerTcp.closeLogger( );
 }
 

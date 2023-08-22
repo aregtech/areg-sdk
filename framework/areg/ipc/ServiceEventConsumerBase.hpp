@@ -58,54 +58,54 @@ public:
     /**
      * \brief   Triggered when Timer is expired.
      **/
-    virtual void onServiceReconnectTimerExpired(void);
+    virtual void onServiceReconnectTimerExpired(void) = 0;
 
     /**
      * \brief   Called when receive event to start service and connection.
      **/
-    virtual void onServiceStart(void);
+    virtual void onServiceStart(void) = 0;
 
     /**
      * \brief   Called when receive event to stop service and connection.
      **/
-    virtual void onServiceStop(void);
+    virtual void onServiceStop(void) = 0;
 
     /**
      * \brief   Called when receive event to restart service and connection.
      **/
-    virtual void onServiceRestart(void);
+    virtual void onServiceRestart(void) = 0;
 
     /**
      * \brief   Called when receive event the client connection is started.
      **/
-    virtual void onServiceConnectionStarted(void);
+    virtual void onServiceConnectionStarted(void) = 0;
 
     /**
      * \brief   Called when receive event the client connection is stopped.
      **/
-    virtual void onServiceConnectionStopped(void);
+    virtual void onServiceConnectionStopped(void) = 0;
 
     /**
      * \brief   Called when receive event the client connection is lost.
      **/
-    virtual void onServiceConnectionLost(void);
+    virtual void onServiceConnectionLost(void) = 0;
 
     /**
      * \brief   Triggered when need to quit the service.
      **/
-    virtual void onServiceExit(void);
+    virtual void onServiceExit(void) = 0;
 
     /**
      * \brief   Called when received a communication message to dispatch and process.
      * \param   msgReceived     The received the communication message.
      **/
-    virtual void onServiceMessageReceived(const RemoteMessage& msgReceived);
+    virtual void onServiceMessageReceived(const RemoteMessage& msgReceived) = 0;
 
     /**
      * \brief   Called when need to send a communication message.
      * \param   msgReceived     The received the communication message.
      **/
-    virtual void onServiceMessageSend(const RemoteMessage& msgSend);
+    virtual void onServiceMessageSend(const RemoteMessage& msgSend) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

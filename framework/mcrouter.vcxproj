@@ -44,7 +44,7 @@
     <ClCompile Include="mcrouter\app\private\RouterConsoleService.cpp" />
     <ClCompile Include="mcrouter\app\private\win32\MulticastRouterWin32.cpp" />
     <ClCompile Include="mcrouter\tcp\private\ListServiceProxies.cpp" />
-    <ClCompile Include="mcrouter\tcp\private\ServerService.cpp" />
+    <ClCompile Include="mcrouter\tcp\private\RouterServerService.cpp" />
     <ClCompile Include="mcrouter\tcp\private\ServiceProxy.cpp" />
     <ClCompile Include="mcrouter\tcp\private\ServiceRegistry.cpp" />
     <ClCompile Include="mcrouter\tcp\private\ServiceStub.cpp" />
@@ -55,7 +55,7 @@
     <ClInclude Include="mcrouter\tcp\private\ServiceProxy.hpp" />
     <ClInclude Include="mcrouter\tcp\private\ServiceRegistry.hpp" />
     <ClInclude Include="mcrouter\tcp\private\ServiceStub.hpp" />
-    <ClInclude Include="mcrouter\tcp\ServerService.hpp" />
+    <ClInclude Include="mcrouter\tcp\RouterServerService.hpp" />
     <ClInclude Include="system\GEPlatform.h" />
     <ClInclude Include="mcrouter\app\MulticastRouter.hpp" />
     <ClInclude Include="mcrouter\app\NEMulticastRouterSettings.hpp" />

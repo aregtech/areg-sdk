@@ -561,6 +561,9 @@
     <ClCompile Include="areg\ipc\private\ServiceEventConsumerBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="areg\ipc\private\ServiceEvent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\windows\GEWindows.h">

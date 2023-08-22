@@ -484,9 +484,10 @@ namespace NECommon
     {
           CookieInvalid     = 0     //!< Invalid cookie value
         , CookieLocal       = 1     //!< Valid cookie value of local services
-        , CookieService     = 2     //!< Valid cookie value of Routing Service
+        , CookieRouter      = 2     //!< Valid cookie value of the message routing system service
+        , CookieLogger      = 3     //!< Valid cookie value of the log collector system service
         , CookieAny         = 255   //!< Any valid cookie
-        , CookieFirstValid  = 256   //!< First valid cookie of any other remote service
+        , CookieFirstRemote = 256   //!< First valid cookie of any other remote service
     } eCookies;
 
 }

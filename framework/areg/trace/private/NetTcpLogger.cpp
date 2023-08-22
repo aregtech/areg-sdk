@@ -100,14 +100,14 @@ void NetTcpLogger::logMessage(const NETrace::sLogMessage& logMessage)
 {
     if (mSocket.isValid())
     {
-        if (logMessage.lmHeader.hdrCookieHost >= NETrace::COOKIE_FIRST_VALID)
+        if (logMessage.lmHeader.hdrCookieHost >= NEService::COOKIE_REMOTE_SERVICE)
         {
             if (mSocket.sendData(reinterpret_cast<const unsigned char*>(&logMessage), sizeof(NETrace::sLogMessage) ) == 0)
             {
                 TraceManager::netConnectionLost( );
             }
         }
-        else if (logMessage.lmHeader.hdrCookieHost == NETrace::COOKIE_ANY)
+        else if (logMessage.lmHeader.hdrCookieHost == NEService::COOKIE_ANY)
         {
             NETrace::sLogMessage* log = new NETrace::sLogMessage(logMessage);
             mRingStack.pushLast(log);

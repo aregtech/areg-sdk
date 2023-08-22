@@ -24,6 +24,7 @@
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/TEHashMap.hpp"
+#include "areg/component/NEService.hpp"
 
 /************************************************************************
  * Dependencies
@@ -142,31 +143,6 @@ namespace NETrace
      *          Constant, defines no scope ID. It is used to output message without scope
      **/
     constexpr unsigned int  TRACE_SCOPE_ID_NONE     { 0 };
-
-    /**
-     * \brief   Invalid cookie, indicating that there are no logs compiled with the project.
-     **/
-    constexpr ITEM_ID       INVALID_COOKIE          { 0 };
-
-    /**
-     * \brief   The cookie to indicate that messages are not for remote host.
-     **/
-    constexpr ITEM_ID       COOKIE_LOCAL            { static_cast<ITEM_ID>(NECommon::eCookies::CookieLocal) };
-
-    /**
-     * \brief   The cookie to indicate that messages are from logger service.
-     **/
-    constexpr ITEM_ID       COOKIE_SERVICE          { static_cast<ITEM_ID>(NECommon::eCookies::CookieService) };
-
-    /**
-     * \brief   The first valid cookie given by logging service.
-     **/
-    constexpr ITEM_ID       COOKIE_FIRST_VALID      { static_cast<ITEM_ID>(NECommon::eCookies::CookieFirstValid) };
-
-    /**
-     * \brief   The cookie to indicate that log can be either local or remote. It happens when the logger service initialization is not completed yet.
-     **/
-    constexpr ITEM_ID       COOKIE_ANY              { static_cast<ITEM_ID>(NECommon::eCookies::CookieAny) };
 
     /**
      * \brief   The string value of no priority
@@ -302,12 +278,12 @@ namespace NETrace
         /**
          * \brief   The cookie of the message host.
          *          If the message sent to remote logging service, this is the cookie of log host, set by remote logging service.
-         *          If the message sent to the log host (i.e. sent by service), this is the NETrace::COOKIE_SERVICE.
+         *          If the message sent to the log host (i.e. sent by service), this is the NEService::COOKIE_REMOTE_SERVICE.
          **/
         ITEM_ID         hdrCookieHost;
         /**
          * \brief   The cookie of the message target.
-         *          If the message sent to remote logging service, this is the NETrace::COOKIE_SERVICE.
+         *          If the message sent to remote logging service, this is the NEService::COOKIE_REMOTE_SERVICE.
          *          If the message sent to the log host (i.e. sent by service), this is the cookie set by logging service.
          **/
         ITEM_ID         hdrCookieTarget;
@@ -332,7 +308,7 @@ namespace NETrace
     struct sLogCommand
     {
         //!< The logging message header.
-        NETrace::sLogHeader         cmdHeader   { sizeof(NETrace::sLogCommandData), NETrace::eLogType::LogUndefined, NETrace::COOKIE_LOCAL, NETrace::COOKIE_LOCAL };
+        NETrace::sLogHeader         cmdHeader   { sizeof(NETrace::sLogCommandData), NETrace::eLogType::LogUndefined, NEService::COOKIE_LOCAL, NEService::COOKIE_LOCAL };
         //!< The data buffer of the command.
         NETrace::sLogCommandData    cmdData     { NETrace::eLogCommands::LogCommandUndefined };
     };
@@ -456,7 +432,7 @@ namespace NETrace
     struct sLogRequestConnect
     {
         //!< The logging message header.
-        NETrace::sLogHeader             reqConHeader { sizeof(NETrace::sLogRequestConnectData), NETrace::eLogType::LogRequest, NETrace::getCookie(), NETrace::COOKIE_SERVICE };
+        NETrace::sLogHeader             reqConHeader { sizeof(NETrace::sLogRequestConnectData), NETrace::eLogType::LogRequest, NETrace::getCookie(), NEService::COOKIE_LOGGER};
         //!< The list of names.
         NETrace::sLogRequestConnectData reqConData;
     };
@@ -472,7 +448,7 @@ namespace NETrace
         //!< The command for the host
         NETrace::eLogCommands   dataCommand { NETrace::eLogCommands::LogResponseConnect };
         //!< The cookie of a new connected target.
-        ITEM_ID                 dataCookie  { NETrace::COOKIE_ANY };
+        ITEM_ID                 dataCookie  { NEService::COOKIE_ANY };
         //!< The recognized IP-address of the host.
         char                    dataIpAddress[NETrace::IP_ADDRESS_SIZE]{ '0', '0', '0', '.', '0', '0', '0', '.', '0','0','0', '.', '0', '0', '0', '\0' };
     };
@@ -484,7 +460,7 @@ namespace NETrace
     struct sLogResponseConnect
     {
         //!< The logging message header.
-        NETrace::sLogHeader                 respConHeader { sizeof(NETrace::sLogResponseConnectData), NETrace::eLogType::LogResponse, NETrace::COOKIE_SERVICE, NETrace::COOKIE_ANY };
+        NETrace::sLogHeader                 respConHeader { sizeof(NETrace::sLogResponseConnectData), NETrace::eLogType::LogResponse, NEService::COOKIE_LOGGER, NEService::COOKIE_ANY };
         //!< The response data on connection request.
         NETrace::sLogResponseConnectData    respConHost;
     };
@@ -508,7 +484,7 @@ namespace NETrace
     struct sLogRequestDisconnect
     {
         //!< The logging message header.
-        NETrace::sLogHeader                 reqDisconHeader { sizeof(NETrace::sLogRequestDisconnectData), NETrace::eLogType::LogRequest, NETrace::getCookie(), NETrace::COOKIE_ANY };
+        NETrace::sLogHeader                 reqDisconHeader { sizeof(NETrace::sLogRequestDisconnectData), NETrace::eLogType::LogRequest, NETrace::getCookie(), NEService::COOKIE_ANY };
         //!< The command data
         NETrace::sLogRequestDisconnectData  reqDisconData   { NETrace::eLogCommands::LogRequestDisconnect, { '\0', '\0', '\0', '\0' } };
     };
@@ -544,7 +520,7 @@ namespace NETrace
     struct sLogRequestRegisterScopes
     {
         //!< The logging message header
-        NETrace::sLogHeader     reqScopeHeader  { sizeof(NETrace::sLogScopeInfo), NETrace::eLogType::LogRequest, NETrace::getCookie(), NETrace::COOKIE_ANY };
+        NETrace::sLogHeader     reqScopeHeader  { sizeof(NETrace::sLogScopeInfo), NETrace::eLogType::LogRequest, NETrace::getCookie(), NEService::COOKIE_ANY };
         //!< The log scope information. Also contains the number of entries and length of 'reqScopeList' buffer.
         NETrace::sLogScopeInfo  reqScopeInfo    { NETrace::eLogCommands::LogRequestRegisterScopeList, NETrace::eScopeAction::ScopesNoAction, 0, 0 };
         //!< The buffer to save {"scope name", "scope priority"} pair to register.
@@ -558,7 +534,7 @@ namespace NETrace
     struct sLogResponseRegisterScopes
     {
         //!< The logging message header.
-        NETrace::sLogHeader     resConHeader     { sizeof(NETrace::sLogScopeInfo), NETrace::eLogType::LogResponse, NETrace::COOKIE_SERVICE, NETrace::COOKIE_ANY };
+        NETrace::sLogHeader     resConHeader     { sizeof(NETrace::sLogScopeInfo), NETrace::eLogType::LogResponse, NEService::COOKIE_LOGGER, NEService::COOKIE_ANY };
         //!< The log scope information. Also contains the number of entries and length of 'resScopeList' buffer. There can be separate scope of group of scopes.
         NETrace::sLogScopeInfo  resScopeInfo     { NETrace::eLogCommands::LogRequestRegisterScopeList, NETrace::eScopeAction::ScopesNoAction, 0, 0 };
         //!< The buffer to save {"scope name", "scope priority"} pair to register.
@@ -579,7 +555,7 @@ namespace NETrace
     struct sLogNotifyLogPriority
     {
         //!< The logging message header
-        NETrace::sLogHeader     notifyScopeHeader   { sizeof(NETrace::sLogScopeInfo), NETrace::eLogType::LogNotify, NETrace::COOKIE_SERVICE, NETrace::COOKIE_ANY };
+        NETrace::sLogHeader     notifyScopeHeader   { sizeof(NETrace::sLogScopeInfo), NETrace::eLogType::LogNotify, NEService::COOKIE_LOGGER, NEService::COOKIE_ANY };
         //!< The log scope information. Also contains the number of entries and length of 'notifyScopeList' buffer.
         NETrace::sLogScopeInfo  notifyScopeInfo     { NETrace::eLogCommands::LogNotifyScopePriority, NETrace::eScopeAction::ScopesNoAction, 0, 0 };
         //!< The buffer to save {"scope name", "scope priority"} pair to register.
@@ -801,7 +777,7 @@ IMPLEMENT_STREAMABLE(NETrace::sLogScopeInfo)
 //////////////////////////////////////////////////////////////////////////////
 
 inline NETrace::sLogMessage::sLogMessage( NETrace::eMessageType msgType /* = NETrace::eMessageType::MsgUndefined */ )
-    : lmHeader  { sizeof(NETrace::sLogMessageData), NETrace::eLogType::LogMessage, NETrace::getCookie(), NETrace::COOKIE_SERVICE }
+    : lmHeader  { sizeof(NETrace::sLogMessageData), NETrace::eLogType::LogMessage, NETrace::getCookie(), NEService::COOKIE_LOGGER }
     , lmTrace   (msgType)
 {
 }
@@ -813,7 +789,7 @@ inline NETrace::sLogMessage::sLogMessage(const sLogMessage & src)
 }
 
 inline NETrace::sLogMessage::sLogMessage(NETrace::eMessageType msgType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message, unsigned int msgLen )
-    : lmHeader  { sizeof(NETrace::sLogMessageData), NETrace::eLogType::LogMessage, NETrace::getCookie(), NETrace::COOKIE_SERVICE }
+    : lmHeader  { sizeof(NETrace::sLogMessageData), NETrace::eLogType::LogMessage, NETrace::getCookie(), NEService::COOKIE_LOGGER }
     , lmTrace   ( msgType, scopeId, msgPrio, message, msgLen )
 {
 }

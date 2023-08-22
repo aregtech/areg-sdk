@@ -186,6 +186,7 @@
     <ClCompile Include="areg\ipc\private\SendMessageEvent.cpp" />
     <ClCompile Include="areg\ipc\private\ClientSendThread.cpp" />
     <ClCompile Include="areg\ipc\private\ServerConnectionBase.cpp" />
+    <ClCompile Include="areg\ipc\private\ServiceEvent.cpp" />
     <ClCompile Include="areg\ipc\private\ServiceEventConsumerBase.cpp" />
     <ClCompile Include="areg\ipc\private\SocketConnectionBase.cpp" />
     <ClCompile Include="areg\ipc\private\IEServiceConnectionProvider.cpp" />

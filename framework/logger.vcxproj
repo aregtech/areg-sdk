@@ -43,11 +43,13 @@
     <ClCompile Include="logger\app\private\NELoggerSettings.cpp" />
     <ClCompile Include="logger\app\private\posix\LoggerPosix.cpp" />
     <ClCompile Include="logger\app\private\win32\LoggerWin32.cpp" />
+    <ClCompile Include="logger\service\private\LoggerServerService.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="logger\app\Logger.hpp" />
     <ClInclude Include="logger\app\NELoggerSettings.hpp" />
     <ClInclude Include="logger\app\private\LoggerConsoleService.hpp" />
+    <ClInclude Include="logger\service\LoggerServerService.hpp" />
     <ClInclude Include="system\GEPlatform.h" />
     <ClInclude Include="logger\resources\resource.hpp" />
     <ClInclude Include="logger\resources\targetver.hpp" />

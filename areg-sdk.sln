@@ -8,7 +8,7 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mcrouter", "framework\mcrouter.vcxproj", "{24A4F250-C09B-40BF-A6F2-25BD8ABBED6F}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
-		{A3E5EE71-6F14-43FD-A80F-C7791FD64E9E} = {A3E5EE71-6F14-43FD-A80F-C7791FD64E9E}
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3} = {FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FD549A95-E734-4E26-A5B2-2330FC310C8D}"
@@ -302,14 +302,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "14_pubclient", "examples\14
 	ProjectSection(ProjectDependencies) = postProject
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
 		{5B38C49F-3C26-43CD-B457-75806BFE69EC} = {5B38C49F-3C26-43CD-B457-75806BFE69EC}
-		{A3E5EE71-6F14-43FD-A80F-C7791FD64E9E} = {A3E5EE71-6F14-43FD-A80F-C7791FD64E9E}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "14_pubservice", "examples\14_pubtraffic\14_pubservice.vcxproj", "{2BE2FB7A-E258-4AE1-A744-D52BD7ACC548}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
 		{5B38C49F-3C26-43CD-B457-75806BFE69EC} = {5B38C49F-3C26-43CD-B457-75806BFE69EC}
-		{A3E5EE71-6F14-43FD-A80F-C7791FD64E9E} = {A3E5EE71-6F14-43FD-A80F-C7791FD64E9E}
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "15_pubworker", "15_pubworker", "{5EE61717-AD86-46E4-B4D0-5AA9280B0E09}"
@@ -447,14 +445,12 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "20_pubclient", "examples\20_pubdatarate\20_pubclient.vcxproj", "{70307B6F-61D5-4015-8578-E0E3549B7AB9}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
-		{A3E5EE71-6F14-43FD-A80F-C7791FD64E9E} = {A3E5EE71-6F14-43FD-A80F-C7791FD64E9E}
 		{B8900569-8956-47AF-A2E7-50EB1DD788DD} = {B8900569-8956-47AF-A2E7-50EB1DD788DD}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "20_pubservice", "examples\20_pubdatarate\20_pubservice.vcxproj", "{2F18E4B1-966E-4A8D-B91E-8F216186A6E3}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
-		{A3E5EE71-6F14-43FD-A80F-C7791FD64E9E} = {A3E5EE71-6F14-43FD-A80F-C7791FD64E9E}
 		{B8900569-8956-47AF-A2E7-50EB1DD788DD} = {B8900569-8956-47AF-A2E7-50EB1DD788DD}
 	EndProjectSection
 EndProject
@@ -515,6 +511,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gtest_main", "thirdparty\gtest_main.vcxproj", "{11927EA9-1F1B-497D-8251-0C1EC93A770E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "areg-unit-tests", "tests\areg-unit-tests.vcxproj", "{E8BD18E5-EF07-42A0-BB98-461F3D9BCDE1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3} = {FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{C485A89F-A149-4893-A023-253593403974}"
 	ProjectSection(SolutionItems) = preProject
@@ -522,8 +521,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{C485A89F-A14
 		examples\21_pubunblock\res\generate.sh = examples\21_pubunblock\res\generate.sh
 		examples\21_pubunblock\res\HelloUnblock.siml = examples\21_pubunblock\res\HelloUnblock.siml
 	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "areg-extensions", "framework\areg-extensions.vcxproj", "{A3E5EE71-6F14-43FD-A80F-C7791FD64E9E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wiki", "wiki", "{D2A3A8BC-F3AC-499C-AE2C-19AC78F5EAFB}"
 	ProjectSection(SolutionItems) = preProject
@@ -541,8 +538,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wiki", "wiki", "{D2A3A8BC-F
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logger", "framework\logger.vcxproj", "{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3} = {FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}
+	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "areg-service", "framework\areg-service.vcxproj", "{ACA7BE98-6762-4B4A-9745-876C0C068D57}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "areg-extend", "framework\areg-extend.vcxproj", "{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -984,14 +985,6 @@ Global
 		{E8BD18E5-EF07-42A0-BB98-461F3D9BCDE1}.Release|Win32.Build.0 = Release|Win32
 		{E8BD18E5-EF07-42A0-BB98-461F3D9BCDE1}.Release|x64.ActiveCfg = Release|x64
 		{E8BD18E5-EF07-42A0-BB98-461F3D9BCDE1}.Release|x64.Build.0 = Release|x64
-		{A3E5EE71-6F14-43FD-A80F-C7791FD64E9E}.Debug|Win32.ActiveCfg = Debug|Win32
-		{A3E5EE71-6F14-43FD-A80F-C7791FD64E9E}.Debug|Win32.Build.0 = Debug|Win32
-		{A3E5EE71-6F14-43FD-A80F-C7791FD64E9E}.Debug|x64.ActiveCfg = Debug|x64
-		{A3E5EE71-6F14-43FD-A80F-C7791FD64E9E}.Debug|x64.Build.0 = Debug|x64
-		{A3E5EE71-6F14-43FD-A80F-C7791FD64E9E}.Release|Win32.ActiveCfg = Release|Win32
-		{A3E5EE71-6F14-43FD-A80F-C7791FD64E9E}.Release|Win32.Build.0 = Release|Win32
-		{A3E5EE71-6F14-43FD-A80F-C7791FD64E9E}.Release|x64.ActiveCfg = Release|x64
-		{A3E5EE71-6F14-43FD-A80F-C7791FD64E9E}.Release|x64.Build.0 = Release|x64
 		{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}.Debug|Win32.ActiveCfg = Debug|Win32
 		{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}.Debug|Win32.Build.0 = Debug|Win32
 		{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}.Debug|x64.ActiveCfg = Debug|x64
@@ -1000,14 +993,14 @@ Global
 		{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}.Release|Win32.Build.0 = Release|Win32
 		{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}.Release|x64.ActiveCfg = Release|x64
 		{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}.Release|x64.Build.0 = Release|x64
-		{ACA7BE98-6762-4B4A-9745-876C0C068D57}.Debug|Win32.ActiveCfg = Debug|Win32
-		{ACA7BE98-6762-4B4A-9745-876C0C068D57}.Debug|Win32.Build.0 = Debug|Win32
-		{ACA7BE98-6762-4B4A-9745-876C0C068D57}.Debug|x64.ActiveCfg = Debug|x64
-		{ACA7BE98-6762-4B4A-9745-876C0C068D57}.Debug|x64.Build.0 = Debug|x64
-		{ACA7BE98-6762-4B4A-9745-876C0C068D57}.Release|Win32.ActiveCfg = Release|Win32
-		{ACA7BE98-6762-4B4A-9745-876C0C068D57}.Release|Win32.Build.0 = Release|Win32
-		{ACA7BE98-6762-4B4A-9745-876C0C068D57}.Release|x64.ActiveCfg = Release|x64
-		{ACA7BE98-6762-4B4A-9745-876C0C068D57}.Release|x64.Build.0 = Release|x64
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}.Debug|Win32.Build.0 = Debug|Win32
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}.Debug|x64.ActiveCfg = Debug|x64
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}.Debug|x64.Build.0 = Debug|x64
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}.Release|Win32.ActiveCfg = Release|Win32
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}.Release|Win32.Build.0 = Release|Win32
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}.Release|x64.ActiveCfg = Release|x64
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

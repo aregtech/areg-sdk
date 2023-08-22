@@ -18,7 +18,7 @@
 #include "areg/component/IETimerConsumer.hpp"
 
 #include "areg/component/Timer.hpp"
-#include "extensions/console/Console.hpp"
+#include "extend/console/Console.hpp"
 
 #include "common/NELargeData.hpp"
 #include "common/SimpleBitmap.hpp"

@@ -294,9 +294,14 @@ namespace NEService
     constexpr ITEM_ID   COOKIE_LOCAL                { static_cast<ITEM_ID>(NECommon::eCookies::CookieLocal) };
     /**
      * \brief   NEService::COOKIE_ROUTER
-     *          Indicates Router cookie
+     *          Indicates message router cookie
      **/
-    constexpr ITEM_ID   COOKIE_ROUTER               { static_cast<ITEM_ID>(NECommon::eCookies::CookieService) };
+    constexpr ITEM_ID   COOKIE_ROUTER               { static_cast<ITEM_ID>(NECommon::eCookies::CookieRouter) };
+    /**
+     * \brief   NEService::COOKIE_LOGGER
+     *          Indicates log collector cookie
+     **/
+    constexpr ITEM_ID   COOKIE_LOGGER               { static_cast<ITEM_ID>(NECommon::eCookies::CookieLogger) };
     /**
      * \brief   NEService::COOKIE_ANY
      *          Indicates any valid cookie
@@ -323,10 +328,10 @@ namespace NEService
      **/
     constexpr ITEM_ID   SOURCE_LOCAL                { static_cast<ITEM_ID>(NECommon::eCookies::CookieLocal) };
     /**
-     * \brief   NEService::COOKIE_FIRST
+     * \brief   NEService::COOKIE_REMOTE_SERVICE
      *          The ID of first valid remote cookie.
      **/
-    constexpr ITEM_ID   COOKIE_FIRST                { static_cast<ITEM_ID>(NECommon::eCookies::CookieFirstValid) };
+    constexpr ITEM_ID   COOKIE_REMOTE_SERVICE       { static_cast<ITEM_ID>(NECommon::eCookies::CookieFirstRemote) };
 
     /**
      * \brief   NEService::eServiceCalls

@@ -270,6 +270,11 @@ private:
     virtual void onServiceStop(void) override;
 
     /**
+     * \brief   Called when receive event to restart service and connection.
+     **/
+    virtual void onServiceRestart( void ) override;
+
+    /**
      * \brief   Called when receive event the client connection is started.
      **/
     virtual void onServiceConnectionStarted(void) override;
@@ -283,6 +288,23 @@ private:
      * \brief   Called when receive event the client connection is lost.
      **/
     virtual void onServiceConnectionLost(void) override;
+
+    /**
+     * \brief   Triggered when need to quit the service.
+     **/
+    virtual void onServiceExit(void) override;
+
+    /**
+     * \brief   Called when received a communication message to dispatch and process.
+     * \param   msgReceived     The received the communication message.
+     **/
+    virtual void onServiceMessageReceived(const RemoteMessage& msgReceived) override;
+
+    /**
+     * \brief   Called when need to send a communication message.
+     * \param   msgReceived     The received the communication message.
+     **/
+    virtual void onServiceMessageSend(const RemoteMessage& msgSend) override;
 
 /************************************************************************/
 // IERemoteMessageHandler interface overrides
@@ -426,16 +448,6 @@ private:
      **/
     inline ServiceClientConnection & self( void );
 
-    /**
-     * \brief   Call when the dispatcher should start listening the events. 
-     **/
-    inline void startEventListener( void );
-    
-    /**
-     * \brief   Call when the dispatcher should stop listening the events. 
-     **/
-    inline void stopEventListener( void );
-
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -504,16 +516,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // ServiceClientConnection class inline methods implementation
 //////////////////////////////////////////////////////////////////////////
-
-inline void ServiceClientConnection::startEventListener( void )
-{
-    ServiceClientEvent::addListener( static_cast<IEServiceClientEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self()) );
-}
-
-inline void ServiceClientConnection::stopEventListener(void)
-{
-    ServiceClientEvent::removeListener( static_cast<IEServiceClientEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self()) );
-}
 
 inline ServiceClientConnection & ServiceClientConnection::self( void )
 {

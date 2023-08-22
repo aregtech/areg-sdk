@@ -221,7 +221,7 @@ public:
     inline static void forceEnableLogging( void );
 
     /**
-     * \brief   Returns the cookie ID. If NETrace::COOKIE_LOCAL there is no remote logging.
+     * \brief   Returns the cookie ID. If NEService::COOKIE_LOCAL there is no remote logging.
      **/
     inline static const ITEM_ID & getCookie(void);
 
