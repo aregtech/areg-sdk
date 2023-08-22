@@ -72,7 +72,7 @@ namespace   NEHelloWorld
      * \brief   The maximum number of messages to output.
      *          NEHelloWorld::MaxMessages
      **/
-    constexpr short           MaxMessages         = 100;
+    constexpr short           MaxMessages         = 50;
 
 /************************************************************************/
 // Service Interface data types
