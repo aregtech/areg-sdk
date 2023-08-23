@@ -39,6 +39,12 @@ namespace NEApplication
     constexpr std::string_view  DEFAULT_ROUTER_CONFIG_FILE      { "./config/router.init" };
 
     /**
+     * \brief   The default path of log collector configuration file.
+     *          The path is relative to the executable folder.
+     **/
+    constexpr std::string_view  DEFAULT_LOGGER_CONFIG_FILE      { "./config/logger.init" };
+
+    /**
      * \brief   ASCII version of service interface router service name.
      * "AREG TCP/IP connection Message Multicast Router Service"
      **/
@@ -67,38 +73,10 @@ namespace NEApplication
      **/
     constexpr std::string_view  DEFAULT_ROUTER_SERVICE_NAME     { "mcrouter" };
 
-    template<class CommandType>
-    struct ServiceCommand
-    {
-        const std::string_view  optLong;    // The long name of the option to process
-        const std::string_view  optShort;   // The short name of the option to process
-        const std::string_view  optDescr;   // The optional description
-        const CommandType       optCommand; // The digital value of the option to process
-    };
-
-    template<class CommandType, CommandType defaultValue>
-    inline CommandType parseOption(const char* const option, const NEApplication::ServiceCommand<CommandType> cmdList[], uint32_t count);
+    /**
+     * \brief   The default name of Log Collector.
+     **/
+    constexpr std::string_view  DEFAULT_LOGGER_SERVICE_NAME     { "logger" };
 }
-
-template<class CommandType, CommandType defaultValue>
-inline CommandType NEApplication::parseOption(const char* const option, const NEApplication::ServiceCommand<CommandType> cmdList[], uint32_t count)
-{
-    CommandType result = defaultValue;
-    if ((option != nullptr) && (*option != '\0'))
-    {
-        for (uint32_t i = 0; i < count; ++i)
-        {
-            const NEApplication::ServiceCommand<CommandType>& cmdOpt = cmdList[i];
-            if ((cmdOpt.optLong == option) || (cmdOpt.optShort == option))
-            {
-                result = cmdOpt.optCommand;
-                break;
-            }
-        }
-    }
-
-    return result;
-}
-
 
 #endif // AREG_APPBASE_NEAPPLICATION_HPP

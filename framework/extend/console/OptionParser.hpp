@@ -390,10 +390,14 @@ public:
 public:
 
     /**
-     * \brief   Parses the string passed as a command line.
-     *          The first entry is ignored, assuming that it is a binary name.
-     * \param   cmdLine The list of the strings passed as a command line entries.
-     * \param   count   The number of strings in the list.
+     * \brief   Parses the string passed as a command line. Because of this:
+     *           1. the first entry is ignored, assuming it is a binary name;
+     *           2. the parsing completes either when reach 'count' elements or
+     *              if any entry of 'cmdLine' is an empty string, assuming that
+     *              command line options may end with empty string like "".
+     * \param   cmdLine The list of the strings passed as a command line in the binary
+     *                  same as 'argv' parameter in 'main' function.
+     * \param   count   The number of strings in the 'cmdLine' list.
      * \return  Returns true if succeeded to parse without error.
      *          Otherwise, returns false.
      **/

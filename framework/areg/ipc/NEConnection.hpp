@@ -135,11 +135,11 @@ namespace NEConnection
      **/
     constexpr unsigned int      DEFAULT_RETRY_CONNECT_TIMEOUT   { NECommon::TIMEOUT_500_MS };  // 500 ms
     /**
-     * \brief   NEConnection::DEFAULT_REMOVE_SERVICE_ENABLED
+     * \brief   NEConnection::DEFAULT_REMOTE_SERVICE_ENABLED
      *          Message router enable / disable default flag. If true, by default it is enabled.
      *          The default values are used if failed to read and parse router configuration file.
      **/
-    constexpr  bool              DEFAULT_REMOVE_SERVICE_ENABLED { true };
+    constexpr  bool              DEFAULT_REMOTE_SERVICE_ENABLED { true };
 
     /**
      * \brief   NEConnection::CreateConnectRequest

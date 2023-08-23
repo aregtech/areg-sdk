@@ -197,8 +197,7 @@ bool Logger::serviceStart( void )
     TRACE_DBG( "Starting service [ %s ]", NELoggerSettings::SERVICE_NAME_ASCII );
     bool result = false;
 
-#if 0
-    if ( mServiceServer.setupServiceConnectionHost( NEApplication::DEFAULT_ROUTER_CONFIG_FILE.data( ) ) && mServiceServer.connectServiceHost( ) )
+    if ( getService().setupServiceConnectionHost( NEApplication::DEFAULT_LOGGER_CONFIG_FILE.data( ) ) && getService().connectServiceHost( ) )
     {
         result = setState( NESystemService::eSystemServiceState::ServiceRunning );
     }
@@ -206,7 +205,6 @@ bool Logger::serviceStart( void )
     {
         Application::signalAppQuit( );
     }
-#endif
 
     return result;
 }
@@ -216,7 +214,7 @@ void Logger::serviceStop(void)
     TRACE_SCOPE(logger_app_logger_serviceStop);
     TRACE_WARN("Stopping service [ %s ]", NELoggerSettings::SERVICE_NAME_ASCII);
     setState(NESystemService::eSystemServiceState::ServiceStopping);
-    // mServiceServer.disconnectServiceHost();
+    getService().disconnectServiceHost( );
     Application::signalAppQuit();
 }
 
@@ -226,7 +224,7 @@ void Logger::servicePause(void)
     TRACE_DBG("Pausing Router service");
 
     setState( NESystemService::eSystemServiceState::ServicePausing );
-    // mServiceServer.disconnectServiceHost();
+    getService( ).disconnectServiceHost();
     setState( NESystemService::eSystemServiceState::ServicePaused );
 }
 
@@ -237,8 +235,7 @@ bool Logger::serviceContinue(void)
 
     bool result = false;
     setState( NESystemService::eSystemServiceState::ServiceContinuing );
-#if 0
-    if ( mServiceServer.isServiceHostSetup() && mServiceServer.connectServiceHost() )
+    if ( getService( ).isServiceHostSetup() && getService( ).connectServiceHost() )
     {
         result = true;
         setState( NESystemService::eSystemServiceState::ServiceRunning );
@@ -248,7 +245,6 @@ bool Logger::serviceContinue(void)
         TRACE_ERR("Failed to restart remote servicing");
         Application::signalAppQuit();
     }
-#endif
 
     return result;
 }

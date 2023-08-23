@@ -70,6 +70,10 @@ private:
 
     } eConnectionProperty;
 
+    //!< The bit sets of connection property.
+    //!< There are only 4 main properties.
+    static constexpr uint32_t CONNECTION_PROPERTY_BITS  { 0b1111 };
+
     /**
      * \brief   By given property name, return the index of property in the property list.
      * \param   strProperty     The name of property.
@@ -118,7 +122,7 @@ public:
      *                      By default, it is NERemoteService::ConnectionTcpip section, which is simple TCP/IP connection.
      * \return  Returns true, if connection for specified section is enabled.
      *          Returns false, if connection for specified section is disabled.
-     *          Returns NEConnection::DEFAULT_REMOVE_SERVICE_ENABLED, if the property of specified connection does not exist, i.e. invalid.
+     *          Returns NEConnection::DEFAULT_REMOTE_SERVICE_ENABLED, if the property of specified connection does not exist, i.e. invalid.
      **/
     bool getConnectionEnableFlag( NERemoteService::eServiceConnection section = NERemoteService::eServiceConnection::ConnectionTcpip ) const;
 

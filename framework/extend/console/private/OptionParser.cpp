@@ -26,7 +26,11 @@ namespace
         {
             for ( int i = 1; i < static_cast<int>(argc); ++i )
             {
-                optList.push_back( String( argv[ i ] ) );
+                const CharType * opt = argv[i];
+                if (NEString::isEmpty<CharType>(opt))
+                    break;
+
+                optList.push_back(String(opt));
             }
         }
     }
