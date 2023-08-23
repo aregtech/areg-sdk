@@ -220,7 +220,7 @@ TEST( FileTest, FileReadBasic )
 
     char buffer[ 1025 ]{ 0 };
     uint32_t dwRead = static_cast<uint32_t>(file.readString( buffer, 1025 ));
-    ASSERT_EQ( dwRead, 1024 );
+    ASSERT_EQ( dwRead, static_cast<uint32_t>(1024) );
     ASSERT_EQ( buffer[ 0 ], '#' );
 
     file.close( );
@@ -244,7 +244,7 @@ TEST( FileTest, FileReadWriteBasic )
 
     char buffer[ 1025 ]{ 0 };
     uint32_t dwRead = static_cast<uint32_t>(fileRead.readString( buffer, 1025 ));
-    ASSERT_EQ( dwRead, 1024 );
+    ASSERT_EQ( dwRead, static_cast<uint32_t>(1024) );
     ASSERT_EQ( buffer[ 0 ], '#' );
     buffer[ 1024 ] = '\0';
     fileRead.close( );
@@ -294,7 +294,7 @@ TEST( FileTest, FileReadAndWriteInSubfolder )
 
     char buffer[ 1025 ]{ 0 };
     uint32_t dwRead = static_cast<uint32_t>(fileRead.readString(buffer, 1025));
-    ASSERT_EQ( dwRead, 1024 );
+    ASSERT_EQ( dwRead, static_cast<uint32_t>(1024) );
     ASSERT_EQ( buffer[ 0 ], '#' );
     buffer[ 1024 ] = '\0';
     fileRead.close( );
