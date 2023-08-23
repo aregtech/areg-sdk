@@ -76,7 +76,7 @@ TEST( OptionParserTest, CommandLineOptionSimpleWithData )
     ASSERT_EQ( opts[ 2 ].inCommand, 3 );
     ASSERT_TRUE(  OptionParser::isString( opts[ 2 ].inField ) );
     ASSERT_FALSE( OptionParser::hasRange( opts[ 2 ].inField ) );
-    ASSERT_EQ( opts[ 2 ].inString.size(), 1 );
+    ASSERT_EQ( opts[ 2 ].inString.size(), static_cast<uint32_t>(1) );
     ASSERT_EQ( opts[ 2 ].inString[0], "something" );
 }
 

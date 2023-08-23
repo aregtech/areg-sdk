@@ -39,6 +39,8 @@ LoggerServerService::LoggerServerService( void )
 
 void LoggerServerService::onServiceMessageReceived(const RemoteMessage &msgReceived)
 {
+#if AREG_LOGS
+
     TRACE_SCOPE(logger_service_LoggerServerService_onServiceMessageReceived);
 
     ASSERT( msgReceived.isValid() );
@@ -50,6 +52,8 @@ void LoggerServerService::onServiceMessageReceived(const RemoteMessage &msgRecei
                     , static_cast<uint32_t>(msgId)
                     , static_cast<uint32_t>(source)
                     , static_cast<uint32_t>(msgReceived.getTarget()));
+
+#endif // AREG_LOGS
 }
 
 void LoggerServerService::onServiceMessageSend(const RemoteMessage &msgSend)
