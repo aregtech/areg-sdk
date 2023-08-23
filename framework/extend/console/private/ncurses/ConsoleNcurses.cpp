@@ -140,13 +140,15 @@ void Console::_osSetCursorCurPosition(Console::Coord pos) const
     }
 }
 
-void Console::_osWaitInput(char* buffer, uint32_t size) const
+void Console::_osWaitInput(const char * fmt, char* buffer, uint32_t size) const
 {
+    ASSERT(buffer != nullptr);
     if (mContext != 0)
     {
-        String fmt;
-        fmt.format("%%%us", size);
-        wscanw(reinterpret_cast<WINDOW*>(mContext), fmt.getString(), buffer);
+        if (wscanw(reinterpret_cast<WINDOW*>(mContext), fmt, buffer) <= 0)
+        {
+            *buffer = '\0';
+        }
     }
 }
 

@@ -299,10 +299,13 @@ private:
     void _osSetCursorCurPosition(Console::Coord pos) const;
 
     /**
-     * \brief   A blocking call to wait for user input on the console.
+     * \brief   A blocking call to wait for user input of string on the console.
      *          OS specific implementation.
+     * \brief   fmt     The format of string, should contains the limited size.
+     * \brief   buffer  The buffer to fill in input, should be big enough.
+     * \brief   size    The size of buffer.
      **/
-    void _osWaitInput(char * buffer, uint32_t size) const;
+    void _osWaitInput(const char * fmt, char * buffer, uint32_t size) const;
 
     /**
      * \brief   Refreshes the screen to display output messages.

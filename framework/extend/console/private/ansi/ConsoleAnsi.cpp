@@ -159,10 +159,10 @@ void Console::_osSetCursorCurPosition(Console::Coord pos) const
     printf("\x1B[%d;%dH", pos.posY, pos.posX);
 }
 
-void Console::_osWaitInput(char* buffer, uint32_t size) const
+void Console::_osWaitInput(const char * fmt, char* buffer, uint32_t size) const
 {
-    int result = SCAN_S("%s", buffer, size);
-    if ((result < 0) && (buffer != nullptr))
+    ASSERT(buffer != nullptr);
+    if (SCAN_S(fmt, buffer, size) <= 0)
     {
         *buffer = '\0';
     }
