@@ -19,6 +19,7 @@
 #include "areg/base/DateTime.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/Thread.hpp"
+#include "areg/component/NEService.hpp"
 #include "areg/trace/TraceScope.hpp"
 #include "areg/trace/private/TraceManager.hpp"
 
@@ -450,6 +451,6 @@ AREG_API_IMPL const ITEM_ID& NETrace::getCookie(void)
 #if AREG_LOGS
     return TraceManager::getCookie();
 #else   // !AREG_LOGS
-    return NETrace::INVALID_COOKIE;
+    return NEService::COOKIE_UNKNOWN;
 #endif  // AREG_LOGS
 }

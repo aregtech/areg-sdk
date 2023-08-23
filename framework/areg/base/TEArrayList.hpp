@@ -64,10 +64,10 @@ protected:
 public:
     /**
      * \brief   Constructs object and sets the initial capacity of the ArrayList.
-     * \param   resize      Initial size of array.
      * \param   capacity    Initial reserved space of array, it must be not less than the 'resize'.
+     * \param   resize      Initial size of array.
      **/
-    TEArrayList( uint32_t resize = 0, uint32_t capacity = NECommon::ARRAY_DEFAULT_CAPACITY);
+    TEArrayList( uint32_t capacity = NECommon::ARRAY_DEFAULT_CAPACITY, uint32_t resize = 0 );
 
     /**
      * \brief   Copies entries from given source.
@@ -439,7 +439,7 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 
 template<typename VALUE >
-TEArrayList< VALUE >::TEArrayList( uint32_t resize /*= 0*/, uint32_t capacity /*= NECommon::ARRAY_DEFAULT_CAPACITY*/)
+TEArrayList< VALUE >::TEArrayList( uint32_t capacity /*= NECommon::ARRAY_DEFAULT_CAPACITY*/, uint32_t resize /*= 0*/ )
     : Constless<std::vector<VALUE>>( )
     , mValueList( )
 {
@@ -449,7 +449,10 @@ TEArrayList< VALUE >::TEArrayList( uint32_t resize /*= 0*/, uint32_t capacity /*
         mValueList.reserve(capacity > NECommon::MAX_CONTAINER_SIZE ? NECommon::MAX_CONTAINER_SIZE : capacity);
     }
 
-    mValueList.resize( resize );
+    if ( resize > 0 )
+    {
+        mValueList.resize( resize );
+    }
 }
 
 template<typename VALUE>

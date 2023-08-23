@@ -18,37 +18,7 @@
  ************************************************************************/
 #include "logger/app/private/LoggerConsoleService.hpp"
 
-#include "areg/component/ComponentThread.hpp"
-#include "areg/appbase/Application.hpp"
-#include "extensions/console/Console.hpp"
-
 #include "logger/app/Logger.hpp"
-#include "logger/app/NELoggerSettings.hpp"
-
- //////////////////////////////////////////////////////////////////////////
- // LoggerConsoleService::DataRate helper class implementation
- //////////////////////////////////////////////////////////////////////////
-LoggerConsoleService::DataRate::DataRate(uint32_t sizeBytes)
-    : mRate ( )
-{
-    if (sizeBytes >= ONE_MEGABYTE)
-    {
-        double rate = static_cast<double>(sizeBytes) / ONE_MEGABYTE;
-        mRate.first = static_cast<float>(rate);
-        mRate.second= LoggerConsoleService::MSG_MEGABYTES;
-    }
-    else if (sizeBytes >= ONE_KILOBYTE)
-    {
-        double rate = static_cast<double>(sizeBytes) / ONE_KILOBYTE;
-        mRate.first = static_cast<float>(rate);
-        mRate.second= LoggerConsoleService::MSG_KILOBYTES;
-    }
-    else
-    {
-        mRate.first = static_cast<float>(sizeBytes);
-        mRate.second = LoggerConsoleService::MSG_BYTES;
-    }
-}
 
 //////////////////////////////////////////////////////////////////////////
 // LoggerConsoleService class implementation, static methods
@@ -67,75 +37,6 @@ void LoggerConsoleService::DeleteComponent( Component & compObject, const NERegi
 // LoggerConsoleService class implementation
 //////////////////////////////////////////////////////////////////////////
 LoggerConsoleService::LoggerConsoleService( const NERegistry::ComponentEntry & entry, ComponentThread & owner, NEMemory::uAlign OPT data )
-    : Component         ( entry, owner )
-    , StubBase          ( self( ), NEService::getEmptyInterface( ) )
-    , IETimerConsumer   ( )
-
-    , mTimer            ( self( ), "ServicingTimer" )
+    : SystemServiceConsole( NELoggerSettings::APP_TITLE, static_cast<SystemServiceBase &>(Logger::getInstance( )), entry, owner, data )
 {
-}
-
-void LoggerConsoleService::startupServiceInterface( Component & holder )
-{
-    StubBase::startupServiceInterface( holder );
-
-    Console& console = Console::getInstance();
-
-    console.outputMsg(NELoggerSettings::COORD_SEND_RATE, NELoggerSettings::FORMAT_SEND_DATA.data(), 0.0f, LoggerConsoleService::MSG_BYTES.data());
-    console.outputMsg(NELoggerSettings::COORD_RECV_RATE, NELoggerSettings::FORMAT_RECV_DATA.data(), 0.0f, LoggerConsoleService::MSG_BYTES.data());
-    console.outputTxt(NELoggerSettings::COORD_USER_INPUT, NELoggerSettings::FORMAT_WAIT_QUIT);
-
-    mTimer.startTimer(NECommon::TIMEOUT_1_SEC, Timer::CONTINUOUSLY);
-
-    console.enableConsoleInput(true);
-    console.refreshScreen();
-}
-
-void LoggerConsoleService::shutdownServiceIntrface( Component & holder )
-{
-    mTimer.stopTimer( );
-    StubBase::shutdownServiceIntrface( holder );
-}
-
-void LoggerConsoleService::processTimer( Timer & timer )
-{
-    ASSERT( &timer == &mTimer );
-    if ( mTimer.isActive( ) )
-    {
-        _outputDataRate(Logger::getInstance().queryDataSent(), Logger::getInstance().queryDataReceived());
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-// These methods must exist, but can have empty body
-//////////////////////////////////////////////////////////////////////////
-void LoggerConsoleService::sendNotification( unsigned int msgId )
-{
-}
-
-void LoggerConsoleService::errorRequest( unsigned int msgId, bool msgCancel )
-{
-}
-
-void LoggerConsoleService::processRequestEvent( ServiceRequestEvent & eventElem )
-{
-}
-
-void LoggerConsoleService::processAttributeEvent( ServiceRequestEvent & eventElem )
-{
-}
-
-inline void LoggerConsoleService::_outputDataRate(uint32_t bytesSend, uint32_t bytesRecv)
-{
-    Console& console = Console::getInstance();
-
-    console.saveCursorPosition();
-    LoggerConsoleService::DataRate rateSend(bytesSend);
-    LoggerConsoleService::DataRate rateRecv(bytesRecv);
-
-    console.outputMsg(NELoggerSettings::COORD_SEND_RATE, NELoggerSettings::FORMAT_SEND_DATA.data(), rateSend.mRate.first, rateSend.mRate.second.c_str());
-    console.outputMsg(NELoggerSettings::COORD_RECV_RATE, NELoggerSettings::FORMAT_RECV_DATA.data(), rateRecv.mRate.first, rateRecv.mRate.second.c_str());
-
-    console.restoreCursorPosition();
-    console.refreshScreen();
 }

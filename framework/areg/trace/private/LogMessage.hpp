@@ -135,14 +135,14 @@ public:
     inline const DateTime getTimestamp( void ) const;
 
     /**
-     * \brief   Returns the ID of the host set by logging service, or NETrace::COOKIE_LOCAL if
+     * \brief   Returns the ID of the host set by logging service, or NEService::COOKIE_LOCAL if
      *          not connected to the logging service.
      **/
     inline const ITEM_ID & getHostId( void ) const;
 
     /**
      * \brief   Sets the ID of the log host (log source).
-     *          Should be 'NETrace::COOKIE_LOCAL' if not connected to logging service.
+     *          Should be 'NEService::COOKIE_LOCAL' if not connected to logging service.
      * \param   hostId  The ID of the host of the logs.
      **/
     inline void setHostId(const ITEM_ID & hostId);
@@ -166,9 +166,9 @@ public:
 
     /**
      * \brief   Returns the cookie value set by logger service.
-     *          If equal NETrace::COOKIE_LOCAL, the log messages should not be sent to remote host.
-     *          If equal NETrace::COOKIE_ANY, the log message should be queued to wait to complete remote logging service setup.
-     *          If equal or more than NETrace::COOKIE_FIRST_VALID, the log message can be forwarded to remote host.
+     *          If equal NEService::COOKIE_LOCAL, the log messages should not be sent to remote host.
+     *          If equal NEService::COOKIE_ANY, the log message should be queued to wait to complete remote logging service setup.
+     *          If equal or more than NEService::COOKIE_REMOTE_SERVICE, the log message can be forwarded to remote host.
      **/
     inline const ITEM_ID & getCookie(void) const;
 

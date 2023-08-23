@@ -33,30 +33,31 @@ int main(int argc, char* argv[], char* envp[])
 {
     int result{0};
     Logger & logger = Logger::getInstance();
-    const char * tmp = *argv;
-
-    if (logger.parseOptions(argc, static_cast<const char **>(&tmp)) == false)
+    const char * temp = static_cast<const char *>(*argv);
+    std::pair<const OptionParser::sOptionSetup *, int> opt{ Logger::getOptionSetup( ) };
+    if ( logger.parseOptions( argc, &temp, opt.first, opt.second ) == false )
     {
-        return 0;
+        logger.resetDefaultOptions( );
     }
 
-    switch ( logger.getCurrentCommand() )
+    switch ( logger.getCurrentOption() )
     {
-    case NELoggerSettings::eServiceCommand::CMD_Install:
+    case NESystemService::eServiceOption::CMD_Install:
         result = logger.serviceInstall() ? 0 : -2;
         break;
 
-    case NELoggerSettings::eServiceCommand::CMD_Uninstall:
+    case NESystemService::eServiceOption::CMD_Uninstall:
         logger.serviceUninstall();
         break;
 
-    case NELoggerSettings::eServiceCommand::CMD_Service:
-    case NELoggerSettings::eServiceCommand::CMD_Console:
-        logger.setState(NELoggerSettings::eLoggerState::LoggerStarting);
+    case NESystemService::eServiceOption::CMD_Service:
+    case NESystemService::eServiceOption::CMD_Console:
+        logger.setState(NESystemService::eSystemServiceState::ServiceStarting);
         logger.serviceMain( static_cast<int>(argc), argv);
-        logger.setState( NELoggerSettings::eLoggerState::LoggerStopped );
+        logger.setState( NESystemService::eSystemServiceState::ServiceStopped );
         logger.serviceStop();
         break;
+
 
     default:
         ASSERT(false);  // unexpected
@@ -104,40 +105,40 @@ void Logger::_osDeleteService( void )
 {
 }
 
-bool Logger::_osSetState( NELoggerSettings::eLoggerState newState )
+bool Logger::_osSetState( NESystemService::eSystemServiceState newState )
 {
     bool result{ true };
 
-    if ( newState != mLoggerState )
+    if ( newState != mSystemServiceState )
     {
         switch ( newState )
         {
-        case NELoggerSettings::eLoggerState::LoggerStopped:
+        case NESystemService::eSystemServiceState::ServiceStopped:
             break;
 
-        case NELoggerSettings::eLoggerState::LoggerStarting:
+        case NESystemService::eSystemServiceState::ServiceStarting:
             break;
 
-        case NELoggerSettings::eLoggerState::LoggerStopping:
+        case NESystemService::eSystemServiceState::ServiceStopping:
             break;
 
-        case NELoggerSettings::eLoggerState::LoggerRunning:
+        case NESystemService::eSystemServiceState::ServiceRunning:
             break;
 
-        case NELoggerSettings::eLoggerState::LoggerContinuing:
+        case NESystemService::eSystemServiceState::ServiceContinuing:
             break;
 
-        case NELoggerSettings::eLoggerState::LoggerPausing:
+        case NESystemService::eSystemServiceState::ServicePausing:
             break;
 
-        case NELoggerSettings::eLoggerState::LoggerPaused:
+        case NESystemService::eSystemServiceState::ServicePaused:
             break;
 
         default:
             ASSERT(false);
         }
 
-        mLoggerState = newState;
+        mSystemServiceState = newState;
     }
 
     return result;

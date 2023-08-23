@@ -18,7 +18,7 @@
 
 ServerConnectionBase::ServerConnectionBase( void )
     : mServerSocket         ( )
-    , mCookieGenerator      ( NEService::COOKIE_FIRST )
+    , mCookieGenerator      ( NEService::COOKIE_REMOTE_SERVICE )
     , mAcceptedConnections  ( )
     , mCookieToSocket       ( )
     , mSocketToCookie       ( )
@@ -29,7 +29,7 @@ ServerConnectionBase::ServerConnectionBase( void )
 
 ServerConnectionBase::ServerConnectionBase(const String & hostName, unsigned short portNr)
     : mServerSocket         ( hostName, portNr )
-    , mCookieGenerator      ( NEService::COOKIE_FIRST )
+    , mCookieGenerator      ( NEService::COOKIE_REMOTE_SERVICE )
     , mAcceptedConnections  ( )
     , mCookieToSocket       ( )
     , mSocketToCookie       ( )
@@ -40,7 +40,7 @@ ServerConnectionBase::ServerConnectionBase(const String & hostName, unsigned sho
 
 ServerConnectionBase::ServerConnectionBase(const NESocket::SocketAddress & serverAddress)
     : mServerSocket         ( serverAddress )
-    , mCookieGenerator      ( NEService::COOKIE_FIRST )
+    , mCookieGenerator      ( NEService::COOKIE_REMOTE_SERVICE )
     , mAcceptedConnections  ( )
     , mCookieToSocket       ( )
     , mSocketToCookie       ( )
@@ -68,7 +68,7 @@ void ServerConnectionBase::closeSocket(void)
     mCookieToSocket.clear();
     mSocketToCookie.clear();
     mAcceptedConnections.clear();
-    mCookieGenerator = NEService::COOKIE_FIRST;
+    mCookieGenerator = NEService::COOKIE_REMOTE_SERVICE;
 
     mServerSocket.closeSocket();
 }
@@ -101,7 +101,7 @@ bool ServerConnectionBase::acceptConnection(SocketAccepted & clientConnection)
                 ASSERT(mSocketToCookie.contains(hSocket) == false);
 
                 ITEM_ID cookie = mCookieGenerator ++;
-                ASSERT(cookie >= NEService::COOKIE_FIRST);
+                ASSERT(cookie >= NEService::COOKIE_REMOTE_SERVICE);
 
                 mAcceptedConnections.setAt(hSocket, clientConnection);
                 mCookieToSocket.setAt(cookie, hSocket);

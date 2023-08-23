@@ -17,16 +17,16 @@
 #ifdef WINDOWS
 
 #pragma comment(lib, "areg.lib")
-#pragma comment(lib, "areg-extensions.lib")
+#pragma comment(lib, "areg-extend.lib")
 #pragma comment(lib, "advapi32.lib")
 #pragma comment(lib, "kernel32.lib")
 
+#include "areg/appbase/Application.hpp"
+#include "areg/appbase/NEApplication.hpp"
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/String.hpp"
-#include "areg/appbase/Application.hpp"
-#include "areg/appbase/NEApplication.hpp"
 
 #ifndef WIN32_LEAN_AND_MEAN
     #define WIN32_LEAN_AND_MEAN
@@ -90,31 +90,37 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
     int result      = 0;
     char ** argvTemp = _convertArguments(argv, argc);
+    const char * temp = *argvTemp;
     MulticastRouter & router = MulticastRouter::getInstance();
-    if (router.parseOptions(argc, argvTemp) == false)
+    std::pair<const OptionParser::sOptionSetup *, int> opt{ MulticastRouter::getOptionSetup( ) };
+    if (router.parseOptions(argc, &temp, opt.first, opt.second) == false)
     {
         router.resetDefaultOptions();
     }
 
     _deleteArguments(argvTemp, argc);
 
-    switch ( router.getCurrentCommand() )
+    switch ( router.getCurrentOption() )
     {
-    case NEMulticastRouterSettings::eServiceCommand::CMD_Install:
+    case NESystemService::eServiceOption::CMD_Install:
         result = router.serviceInstall() ? 0 : -2;
         break;
 
-    case NEMulticastRouterSettings::eServiceCommand::CMD_Uninstall:
+    case NESystemService::eServiceOption::CMD_Uninstall:
         router.serviceUninstall();
         break;
 
-    case NEMulticastRouterSettings::eServiceCommand::CMD_Console:
+    case NESystemService::eServiceOption::CMD_Console:
         ::_win32ServiceMain(argc, argv);
         router.serviceStop();
         break;
 
-    case NEMulticastRouterSettings::eServiceCommand::CMD_Service:
+    case NESystemService::eServiceOption::CMD_Service:
         result = ::StartServiceCtrlDispatcher(_serviceTable) ? 0 : -1;
+        break;
+
+    case NESystemService::eServiceOption::CMD_Verbose:
+    case NESystemService::eServiceOption::CMD_Help:
         break;
 
     default:
@@ -140,13 +146,13 @@ VOID WINAPI _win32ServiceMain( DWORD argc, LPTSTR * argv )
         _serviceStatus.dwWaitHint               = 0;
 
         MulticastRouter & router = MulticastRouter::getInstance( );
-        router.setState( NEMulticastRouterSettings::eRouterState::RouterStarting );
+        router.setState( NESystemService::eSystemServiceState::ServiceStarting );
 
         char ** argvTemp = _convertArguments( argv, static_cast<int>(argc) );
         router.serviceMain( static_cast<int>(argc), argvTemp );
         _deleteArguments( argvTemp, static_cast<int>(argc) );
 
-        router.setState( NEMulticastRouterSettings::eRouterState::RouterStopped );
+        router.setState( NESystemService::eSystemServiceState::ServiceStopped );
     }
     catch ( const std::exception& )
     {
@@ -306,7 +312,7 @@ void MulticastRouter::_osDeleteService( void )
 
 bool MulticastRouter::_osRegisterService( void )
 {
-    if ( mServiceCmd == NEMulticastRouterSettings::eServiceCommand::CMD_Service )
+    if ( mSystemServiceOption == NESystemService::eServiceOption::CMD_Service )
     {
         _statusHandle = ::RegisterServiceCtrlHandler( _serviceDescribe, _win32ServiceCtrlHandler );
     }
@@ -314,51 +320,51 @@ bool MulticastRouter::_osRegisterService( void )
     return (_statusHandle != nullptr);
 }
 
-bool MulticastRouter::_osSetState( NEMulticastRouterSettings::eRouterState newState )
+bool MulticastRouter::_osSetState( NESystemService::eSystemServiceState newState )
 {
     bool result{ true };
 
     _serviceStatus.dwControlsAccepted   = 0;
     _serviceStatus.dwWin32ExitCode      = 0;
 
-    if ( newState != mRouterState )
+    if ( newState != mSystemServiceState )
     {
         switch ( newState )
         {
-        case NEMulticastRouterSettings::eRouterState::RouterStopped:
+        case NESystemService::eSystemServiceState::ServiceStopped:
             _serviceStatus.dwCurrentState       = SERVICE_STOPPED;
             _serviceStatus.dwControlsAccepted   = 0;
             _serviceStatus.dwCheckPoint         = 7;
             _serviceStatus.dwWin32ExitCode      = ERROR_SUCCESS;
             break;
 
-        case NEMulticastRouterSettings::eRouterState::RouterStarting:
+        case NESystemService::eSystemServiceState::ServiceStarting:
             _serviceStatus.dwCurrentState       = SERVICE_START_PENDING;
             _serviceStatus.dwCheckPoint         = 1;
             break;
 
-        case NEMulticastRouterSettings::eRouterState::RouterStopping:
+        case NESystemService::eSystemServiceState::ServiceStopping:
             _serviceStatus.dwCurrentState       = SERVICE_STOP_PENDING;
             _serviceStatus.dwCheckPoint         = 6;
             break;
 
-        case NEMulticastRouterSettings::eRouterState::RouterRunning:
+        case NESystemService::eSystemServiceState::ServiceRunning:
             _serviceStatus.dwCurrentState       = SERVICE_RUNNING;
             _serviceStatus.dwControlsAccepted   = SERVICE_ACCEPT_PAUSE_CONTINUE | SERVICE_ACCEPT_STOP;
             _serviceStatus.dwCheckPoint         = 2;
             break;
 
-        case NEMulticastRouterSettings::eRouterState::RouterContinuing:
+        case NESystemService::eSystemServiceState::ServiceContinuing:
             _serviceStatus.dwCurrentState       = SERVICE_CONTINUE_PENDING;
             _serviceStatus.dwCheckPoint         = 5;
             break;
 
-        case NEMulticastRouterSettings::eRouterState::RouterPausing:
+        case NESystemService::eSystemServiceState::ServicePausing:
             _serviceStatus.dwCurrentState       = SERVICE_PAUSE_PENDING;
             _serviceStatus.dwCheckPoint         = 3;
             break;
 
-        case NEMulticastRouterSettings::eRouterState::RouterPaused:
+        case NESystemService::eSystemServiceState::ServicePaused:
             _serviceStatus.dwCurrentState       = SERVICE_PAUSED;
             _serviceStatus.dwControlsAccepted   = SERVICE_ACCEPT_PAUSE_CONTINUE | SERVICE_ACCEPT_STOP;
             _serviceStatus.dwCheckPoint         = 4;
@@ -367,7 +373,8 @@ bool MulticastRouter::_osSetState( NEMulticastRouterSettings::eRouterState newSt
         default:
             ASSERT(false);
         }
-        mRouterState = newState;
+
+        mSystemServiceState = newState;
         if ( _statusHandle != nullptr )
         {
             result = ::SetServiceStatus( _statusHandle, &_serviceStatus ) != FALSE;

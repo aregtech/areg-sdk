@@ -501,7 +501,7 @@ private:
 protected:
 
     /**
-     * \breif   Loads all models, which are not loaded yet.
+     * \brief   Loads all models, which are not loaded yet.
      * \return  Returns true if succeeded to load models.
      **/
     bool loadAllModels( void );

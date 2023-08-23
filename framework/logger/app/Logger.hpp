@@ -19,8 +19,11 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "logger/app/NELoggerSettings.hpp"
+#include "extend/service/SystemServiceBase.hpp"
+
 #include "areg/base/SynchObjects.hpp"
+#include "logger/app/NELoggerSettings.hpp"
+#include "logger/service/LoggerServerService.hpp"
 
 class Console;
 
@@ -32,7 +35,7 @@ class Console;
  *          and collects the log messages from the running applications.
  *          It may save logs in the file or forward to log viewer application..
  **/
-class Logger
+class Logger    : public SystemServiceBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types
@@ -41,7 +44,7 @@ private:
     /**
      * \brief   The commands to handle the logger.
      **/
-    enum eLogCommands : int32_t
+    enum class eLogCommands : int32_t
     {
           CMD_LogUndefined  //!< Do nothing, should not happen
         , CMD_LogPause      //!< Pause logger.
@@ -68,6 +71,13 @@ public:
      **/
     static Logger& getInstance( void );
 
+    /**
+     * \brief   Returns list of the options to validate contained in the pair object,
+     *          where the first entry is the pointer to the list and second entry is
+     *          the number of elements in the list
+     **/
+    static std::pair<const OptionParser::sOptionSetup *, int> getOptionSetup( void );
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor / destructor
 //////////////////////////////////////////////////////////////////////////
@@ -76,110 +86,122 @@ private:
      * \brief   Default constructor and destructor.
      **/
     Logger( void );
-    ~Logger(void);
+
+    virtual ~Logger(void);
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Call to install (register) logger service in the system.
-     * \return  Returns true if registration succeeded.
-     **/
-    bool serviceInstall( void );
+/************************************************************************/
+// SystemServiceBase overrides
+/************************************************************************/
 
     /**
-     * \brief   Call to uninstall (unregister) logger service in the system.
-     **/
-    void serviceUninstall( void );
-
-    /**
-     * \brief   Called from main to start execution of logger service.
+     * \brief   Called from main to start execution of  message router service.
      * \param   argc    The 'argc' parameter passed from 'main', indicates the number of parameters passed to executable.
      * \param   argv    The 'argv' parameter passed from 'main', indicated parameters passed to executable.
      **/
-    void serviceMain( int argc, char ** argv );
+    virtual void serviceMain( int argc, char ** argv ) override;
 
     /**
-     * \brief   Called to start logger service.
-     * \return  Returns true, if started with success.
+     * \brief   Call to install (register) message router service in the system.
+     * \return  Returns true if registration succeeded.
      **/
-    bool serviceStart( void );
+    virtual bool serviceInstall( void ) override;
 
     /**
-     * \brief   Called to pause logger service.
+     * \brief   Call to uninstall (unregister) message router service in the system.
      **/
-    void servicePause( void );
+    virtual void serviceUninstall( void ) override;
 
     /**
-     * \brief   Called to resume paused logger  service.
+     * \brief   Registers system service in the system.
      **/
-    bool serviceContinue( void );
-
-    /**
-     * \brief   Called to stop logger  service.
-     **/
-    void serviceStop( void );
+    virtual bool registerService( void ) override;
 
     /**
      * \brief   Opens operating system service DB for further processing.
      * \return  Returns true if succeeded.
      **/
-    inline bool serviceOpen( void );
+    virtual bool serviceOpen( void ) override;
 
     /**
-     * \brief   Returns current command of the logger service.
+     * \brief   Called to start message router service.
+     * \return  Returns true, if started with success.
      **/
-    inline NELoggerSettings::eServiceCommand getCurrentCommand( void ) const;
+    virtual bool serviceStart( void ) override;
 
     /**
-     * \brief   Sets the current command of the logger service.
-     * \param   cmdService  The logger  service command to set.
+     * \brief   Called to pause message router service.
      **/
-    inline void setCurrentCommand(NELoggerSettings::eServiceCommand cmdService );
+    virtual void servicePause( void ) override;
 
     /**
-     * \brief   Returns the state of logger service.
+     * \brief   Called to resume paused message router service.
      **/
-    inline NELoggerSettings::eLoggerState getState( void ) const;
+    virtual bool serviceContinue( void ) override;
 
     /**
-     * \brief   Resets default options.
+     * \brief   Called to stop message router service.
      **/
-    inline void resetDefaultOptions(void);
+    virtual void serviceStop( void ) override;
 
     /**
-     * \brief   Call to query the size in bytes of data sent.
+     * \brief   Sets the state of message router service.
      **/
-    inline uint32_t queryDataReceived(void);
+    virtual bool setState( NESystemService::eSystemServiceState newState ) override;
+
+protected:
+/************************************************************************/
+// SystemServiceBase overrides
+/************************************************************************/
 
     /**
-     * \brief   Call to query the size in bytes of data received.
+     * \brief   Triggered to print the help message on console.
+     * \param   isCmdLine   Flag indicating whether it should print the help
+     *                      of using service in command line or help of user input commands.
+     *                      If 'true', the printing message is about using the service in
+     *                      command line. Otherwise, if application expects user inputs, prints
+     *                      the help of command options.
      **/
-    inline uint32_t queryDataSent(void);
+    virtual void printHelp( bool isCmdLine ) override;
 
     /**
-     * \brief   Returns true if verbose flag is set.
-     *          If verbose flag is set, it outputs the data rate in console.
+     * \brief   Triggered to start the console service.
      **/
-    inline bool isVerbose( void ) const;
+    virtual void startConsoleService( void ) override;
 
     /**
-     * \brief   Sets the state of logger  service.
+     * \brief   Stops the consoler service.
      **/
-    bool setState(NELoggerSettings::eLoggerState newState );
+    virtual void stopConsoleService( void ) override;
 
     /**
-     * \brief   Parses the options and returns true if succeeded.
-     * \param   argc    The number of options to parse.
-     * \param   argv    The options to parse.
-     */
-    bool parseOptions(int argc, const char** argv);
+     * \brief   Triggered to receive a function to validate and check the input option values.
+     **/
+    virtual Console::CallBack getOptionCheckCallback( void ) const override;
+
+    /**
+     * \brief   Triggered if need to run console with extended features.
+     *          In extended feature, the console can output message at any position on the screen.
+     **/
+    virtual void runConsoleInputExtended( void ) override;
+
+    /**
+     * \brief   Triggered if need to run console with simple (not extended) features.
+     **/
+    virtual void runConsoleInputSimple( void ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief   Returns the instance of the remote servicing object.
+     **/
+    inline IEServiceConnectionProvider & getService( void );
+
     /**
      * \brief   Returns instance of the logger service.
      **/
@@ -230,32 +252,16 @@ private:
     /**
      * \brief   OS specific implementation of changing the state of the mcrouter service.
      **/
-    bool _osSetState(NELoggerSettings::eLoggerState newState );
+    bool _osSetState(NESystemService::eSystemServiceState newState );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   The logger service state.
+     * \brief   The service connection object to communicate with processes.
      **/
-    NELoggerSettings::eLoggerState      mLoggerState;
-    /**
-     * \brief   The current command to execute by logger service.
-     **/
-    NELoggerSettings::eServiceCommand   mServiceCmd;
-    /**
-     * \brief   Flag, indicating whether the process should run verbose or not. Valid only if process runs as console application.
-     */
-    bool            mRunVerbose;
-    /**
-     * \brief   OS specific service handle
-     **/
-    void *          mSvcHandle;
-    /**
-     * \brief   OS specific service manager handle.
-     **/
-    void *          mSeMHandle;
+    LoggerServerService mServiceServer;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -268,45 +274,9 @@ private:
 // Logger class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline NELoggerSettings::eLoggerState Logger::getState( void ) const
+inline IEServiceConnectionProvider & Logger::getService( void )
 {
-    return mLoggerState;
-}
-
-inline bool Logger::serviceOpen(void)
-{
-    return _osOpenService();
-}
-
-inline NELoggerSettings::eServiceCommand Logger::getCurrentCommand(void) const
-{
-    return mServiceCmd;
-}
-
-inline void Logger::setCurrentCommand( NELoggerSettings::eServiceCommand cmdService)
-{
-    mServiceCmd = cmdService;
-}
-
-inline void Logger::resetDefaultOptions(void)
-{
-    mServiceCmd = NELoggerSettings::DEFAULT_OPTION;
-    mRunVerbose = NELoggerSettings::DEFAULT_VERBOSE;
-}
-
-inline uint32_t Logger::queryDataReceived(void)
-{
-    return 0; // mServiceServer.queryBytesReceived();
-}
-
-inline uint32_t Logger::queryDataSent(void)
-{
-    return 0; // mServiceServer.queryBytesSent();
-}
-
-inline bool Logger::isVerbose(void) const
-{
-    return mRunVerbose;
+    return static_cast<IEServiceConnectionProvider &>(mServiceServer);
 }
 
 inline Logger & Logger::self( void )

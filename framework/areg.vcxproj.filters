@@ -84,13 +84,13 @@
     <ClCompile Include="areg\component\private\TEEvent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\ipc\private\IERemoteServiceConnection.cpp">
+    <ClCompile Include="areg\ipc\private\IEServiceConnectionProvider.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\ipc\private\IERemoteServiceConsumer.cpp">
+    <ClCompile Include="areg\ipc\private\IEServiceRegisterConsumer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\ipc\private\IERemoteServiceMessageHandler.cpp">
+    <ClCompile Include="areg\ipc\private\IERemoteMessageHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\ipc\private\NEConnection.cpp">
@@ -420,10 +420,7 @@
     <ClCompile Include="areg\ipc\private\ClientSendThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\ipc\private\ClientService.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\ipc\private\ClientServiceEvent.cpp">
+    <ClCompile Include="areg\ipc\private\ServiceClientConnection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\ipc\private\ConnectionConfiguration.cpp">
@@ -432,7 +429,7 @@
     <ClCompile Include="areg\ipc\private\SocketConnectionBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\ipc\private\RemoteServiceEvent.cpp">
+    <ClCompile Include="areg\ipc\private\SendMessageEvent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\persist\private\PersistenceManager.cpp">
@@ -553,6 +550,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\trace\private\ScopeNodes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\ipc\private\IEServiceRegisterProvider.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\ipc\private\IEServiceConnectionConsumer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\ipc\private\ServiceEventConsumerBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\ipc\private\ServiceEvent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -686,10 +695,10 @@
     <ClInclude Include="areg\component\TEEvent.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\ipc\IERemoteServiceConnection.hpp">
+    <ClInclude Include="areg\ipc\IEServiceConnectionProvider.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\ipc\IERemoteServiceConsumer.hpp">
+    <ClInclude Include="areg\ipc\IEServiceRegisterConsumer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\ipc\NERemoteService.hpp">
@@ -974,9 +983,6 @@
     <ClInclude Include="areg\ipc\private\ClientSendThread.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\ipc\private\ClientServiceEvent.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="areg\ipc\ConnectionConfiguration.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1031,13 +1037,13 @@
     <ClInclude Include="areg\component\IETimerConsumer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\ipc\IERemoteServiceMessageHandler.hpp">
+    <ClInclude Include="areg\ipc\IERemoteMessageHandler.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\ipc\NEConnection.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\ipc\RemoteServiceEvent.hpp">
+    <ClInclude Include="areg\ipc\SendMessageEvent.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\ipc\ServerConnectionBase.hpp">
@@ -1046,7 +1052,7 @@
     <ClInclude Include="areg\ipc\SocketConnectionBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\ipc\private\ClientService.hpp">
+    <ClInclude Include="areg\ipc\private\ServiceClientConnection.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\private\win32\SpinLockWin32.hpp">
@@ -1098,6 +1104,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\trace\private\ScopeNodes.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\ipc\IEServiceRegisterProvider.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\ipc\IEServiceConnectionConsumer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\ipc\ServiceEvent.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\ipc\ServiceEventConsumerBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -17,7 +17,9 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
 
-#include "extensions/console/Console.hpp"
+#include "extend/console/Console.hpp"
+
+#include <stdio.h>
 
 #ifdef _WINDOWS
     #define MACRO_SCANF(fmt, data, len)     scanf_s(fmt, data, len)
@@ -33,24 +35,27 @@
 // This model defines a Console Service to run to make data rate outputs.
 // The Console Service runs only in verbose mode.
 
-static String _modelName("MCRouterModel");
+namespace
+{
+    static String _modelName("MCRouterModel");
 
-// Describe mode, set model name
-BEGIN_MODEL(_modelName)
+    // Describe mode, set model name
+    BEGIN_MODEL(_modelName)
 
-    // define console service thread.
-    BEGIN_REGISTER_THREAD( "RouterConsoleServiceThread", NECommon::WATCHDOG_IGNORE)
-        // Define the console service
-        BEGIN_REGISTER_COMPONENT(RouterConsoleService::SERVICE_NAME, RouterConsoleService)
-            // register dummy 'empty service'.
-            REGISTER_IMPLEMENT_SERVICE( NEService::EmptyServiceName, NEService::EmptyServiceVersion )
-        // end of component description
-        END_REGISTER_COMPONENT(RouterConsoleService::SERVICE_NAME )
-    // end of thread description
-    END_REGISTER_THREAD( "RouterConsoleServiceThread" )
+        // define console service thread.
+        BEGIN_REGISTER_THREAD( "RouterConsoleServiceThread", NECommon::WATCHDOG_IGNORE)
+            // Define the console service
+            BEGIN_REGISTER_COMPONENT(RouterConsoleService::SERVICE_NAME, RouterConsoleService)
+                // register dummy 'empty service'.
+                REGISTER_IMPLEMENT_SERVICE( NEService::EmptyServiceName, NEService::EmptyServiceVersion )
+            // end of component description
+            END_REGISTER_COMPONENT(RouterConsoleService::SERVICE_NAME )
+        // end of thread description
+        END_REGISTER_THREAD( "RouterConsoleServiceThread" )
 
-// end of model description
-END_MODEL(_modelName)
+    // end of model description
+    END_MODEL(_modelName)
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Traces.
@@ -68,19 +73,31 @@ DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_setState);
 //////////////////////////////////////////////////////////////////////////
 // MulticastRouter class implementation
 //////////////////////////////////////////////////////////////////////////
+
+const OptionParser::sOptionSetup MulticastRouter::ValidOptions[ ]
+{
+      { "-p", "--pause"     , static_cast<int>(eRouterOptions::CMD_RouterPause)     , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-r", "--restart"   , static_cast<int>(eRouterOptions::CMD_RouterRestart)   , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-i", "--instances" , static_cast<int>(eRouterOptions::CMD_RouterInstances) , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-h", "--help"      , static_cast<int>(eRouterOptions::CMD_RouterPrintHelp) , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-q", "--quit"      , static_cast<int>(eRouterOptions::CMD_RouterQuit)      , OptionParser::NO_DATA , {}, {}, {} }
+};
+
 MulticastRouter & MulticastRouter::getInstance(void)
 {
     static MulticastRouter _messageRouter;
     return _messageRouter;
 }
 
+std::pair<const OptionParser::sOptionSetup *, int> MulticastRouter::getOptionSetup( void )
+{
+    return std::pair< const OptionParser::sOptionSetup *, int>(MulticastRouter::ValidOptions, static_cast<int>(MACRO_ARRAYLEN( MulticastRouter::ValidOptions )));
+}
+
+
 MulticastRouter::MulticastRouter( void )
-    : mRouterState  ( NEMulticastRouterSettings::eRouterState::RouterStopped )
-    , mServiceCmd   ( NEMulticastRouterSettings::eServiceCommand::CMD_Undefined )
-    , mRunVerbose   ( false )
-    , mServiceServer( )
-    , mSvcHandle    ( nullptr )
-    , mSeMHandle    ( nullptr )
+    : SystemServiceBase ( mServiceServer )
+    , mServiceServer    ( )
 {
 }
 
@@ -89,140 +106,90 @@ MulticastRouter::~MulticastRouter( void )
     _osFreeResources( );
 }
 
-bool MulticastRouter::parseOptions(int argc, char** argv)
+Console::CallBack MulticastRouter::getOptionCheckCallback( void ) const
 {
-    using ServiceCmd = NEMulticastRouterSettings::eServiceCommand;
-    bool result{ false };
-    
-    if (argc > 1)
+    return Console::CallBack( MulticastRouter::_checkCommand );
+}
+
+void MulticastRouter::runConsoleInputExtended( void )
+{
+#if AREG_EXTENDED
+    Console & console = Console::getInstance( );
+
+    if ( mRunVerbose )
     {
-        bool isValid{ true };
+        // Disable to block user input until Console Service is up and running.
+        console.enableConsoleInput( false );
+        startConsoleService( );
+        // Blocked until user input
+        console.waitForInput( getOptionCheckCallback( ) );
+        stopConsoleService( );
+    }
+    else
+    {
+        // No verbose mode.
+        // Set local callback, output message and wait for user input.
+        console.enableConsoleInput( true );
+        console.outputTxt( NESystemService::COORD_TITLE, NEMulticastRouterSettings::APP_TITLE.data() );
+        console.outputTxt( NESystemService::COORD_SUBTITLE, NESystemService::APP_SUBTITE.data( ) );
+        console.outputTxt( NESystemService::COORD_USER_INPUT, NESystemService::FORMAT_WAIT_QUIT );
+        console.waitForInput( getOptionCheckCallback( ) );
+    }
 
-        ServiceCmd foundCmd{ ServiceCmd::CMD_Undefined };
-        bool isVerbose{ false };
+    console.moveCursorOneLineDown( );
+    console.printTxt( NESystemService::FORMAT_QUIT_APP );
+    console.uninitialize( );
+#endif   // !AREG_EXTENDED
+}
 
-        for (int i = 1; i < argc; ++i)
+void MulticastRouter::runConsoleInputSimple( void )
+{
+    char cmd[ 512 ]{ 0 };
+    bool quit{ false };
+    OptionParser parser( MulticastRouter::ValidOptions, MACRO_ARRAYLEN( MulticastRouter::ValidOptions ) );
+
+    printf( "%s\n", NEMulticastRouterSettings::APP_TITLE.data( ) );
+    printf( "%s\n", NESystemService::APP_SUBTITE.data( ) );
+
+    do
+    {
+        printf( "%s", NESystemService::FORMAT_WAIT_QUIT.data( ) );
+        int count = MACRO_SCANF( "%510s", cmd, 512 );
+        if ((count <= 0) || (count >= 512))
+            continue;
+
+        if ( parser.parseOptionLine( cmd ) )
         {
-            const char* opt = argv[i];
-            if (opt != nullptr)
+            const OptionParser::InputOptionList & opts = parser.getOptions( );
+            for ( int i = 0; i < static_cast<int>(opts.getSize( )); ++ i )
             {
-                ServiceCmd cmd = NEApplication::parseOption< ServiceCmd, ServiceCmd::CMD_Undefined>(opt, NEMulticastRouterSettings::ServiceCommands, MACRO_ARRAYLEN(NEMulticastRouterSettings::ServiceCommands));
-
-                if (cmd == ServiceCmd::CMD_Verbose)
+                const OptionParser::sOption & opt = opts[ 0 ];
+                switch ( static_cast<MulticastRouter::eRouterOptions>(opt.inCommand) )
                 {
-                    isVerbose = true;   // Output verbose.
-                }
-                else if (cmd == ServiceCmd::CMD_Undefined)
-                {
-                    isValid = false;    // Invalid option, break and return false.
+                case MulticastRouter::eRouterOptions::CMD_RouterQuit:
+                    quit = true;
                     break;
-                }
-                else if (foundCmd == ServiceCmd::CMD_Undefined)
-                {
-                    foundCmd = cmd;     // No option was set, set current.
-                }
-                else
-                {
-                    isValid = false;    // Already has an option, break and return false.
+
+                default:
                     break;
                 }
             }
         }
-
-        if (isValid)
+        else
         {
-            setCurrentCommand(foundCmd);
-            mRunVerbose = isVerbose;
-            result = true;
+            printf( NESystemService::FORMAT_MSG_ERROR.data( ), cmd );
+            printf( "\n" );
         }
-    }
-    else if (argc == 1)
-    {
-        resetDefaultOptions();
-        result = true;
-    }
 
-    return result;
+    } while ( quit == false );
 }
 
 void MulticastRouter::serviceMain( int argc, char ** argv )
 {
     // Start only tracing and timer manager.
     Application::initApplication(true, true, false, true, false, NEApplication::DEFAULT_TRACING_CONFIG_FILE.data(), nullptr );
-
-    do 
-    {
-        TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceMain);
-        TRACE_DBG("Starting service. There are [ %d ] arguments in the list...", argc);
-
-#ifdef  DEBUG
-        for ( int i = 0; i < argc; ++ i )
-            TRACE_DBG("... Command argument [ %d ]: [ %s ]", i, argv[i]);
-#endif  // DEBUG
-
-        if ( _osRegisterService() || (mServiceCmd == NEMulticastRouterSettings::eServiceCommand::CMD_Console) )
-        {
-            TRACE_DBG("Starting service");
-            serviceStart();
-        }
-
-        if ( mServiceCmd == NEMulticastRouterSettings::eServiceCommand::CMD_Console )
-        {
-#if AREG_EXTENDED
-
-            Console& console = Console::getInstance();
-
-            if (mRunVerbose)
-            {
-                // Disable to block user input until Console Service is up and running.
-                console.enableConsoleInput(false);
-                Application::loadModel(_modelName);
-                // Blocked until user input
-                Console::CallBack callback(RouterConsoleService::checkCommand);
-                console.waitForInput(callback);
-                Application::unloadModel(_modelName);
-            }
-            else
-            {
-                // No verbose mode.
-                // Set local callback, output message and wait for user input.
-                Console::CallBack callback(MulticastRouter::_checkCommand);
-                console.enableConsoleInput(true);
-                console.outputTxt(Console::Coord{ 0, 0 }, NEMulticastRouterSettings::FORMAT_WAIT_QUIT);
-                console.waitForInput(callback);
-            }
-
-            console.moveCursorOneLineDown();
-            console.printTxt(NEMulticastRouterSettings::FORMAT_QUIT_APP);
-            console.uninitialize();
-
-#else   // !AREG_EXTENDED
-
-            printf("Type \'quit\' or \'q\' to quit message router ...: ");
-            const char quit = static_cast<int>('q');
-            char cmd[8] = { 0 };
-            int charRead = 0;
-
-            do
-            {
-                if (MACRO_SCANF("%4s", cmd, 8) != 1)
-                {
-                    printf("\nERROR: Unexpected choice of command, quit application ...\n");
-                }
-
-            } while ((NEString::makeAsciiLower<char>(*cmd) != quit) && (charRead > 0));
-
-#endif  // !AREG_EXTENDED
-
-            Application::signalAppQuit();
-        }
-
-        serviceStop();
-        TRACE_WARN("Service Stopped and not running anymore");
-
-        Application::releaseApplication();
-
-    } while (false);
+    SystemServiceBase::serviceMain( argc, argv );
+    Application::releaseApplication( );
 }
 
 bool MulticastRouter::serviceStart(void)
@@ -232,7 +199,7 @@ bool MulticastRouter::serviceStart(void)
     bool result{ false };
     if ( getService().setupServiceConnectionHost( NEApplication::DEFAULT_ROUTER_CONFIG_FILE.data( ) ) && getService( ).connectServiceHost( ) )
     {
-        result = setState(NEMulticastRouterSettings::eRouterState::RouterRunning);
+        result = setState(NESystemService::eSystemServiceState::ServiceRunning);
     }
     else
     {
@@ -246,7 +213,7 @@ void MulticastRouter::serviceStop(void)
 {
     TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceStop);
     TRACE_WARN("Stopping service [ %s ]", NEMulticastRouterSettings::SERVICE_NAME_ASCII);
-    setState(NEMulticastRouterSettings::eRouterState::RouterStopping);
+    setState(NESystemService::eSystemServiceState::ServiceStopping);
     getService( ).disconnectServiceHost();
     Application::signalAppQuit();
 }
@@ -256,9 +223,9 @@ void MulticastRouter::servicePause(void)
     TRACE_SCOPE(mcrouter_app_MulticastRouter_servicePause);
     TRACE_DBG("Pausing Router service");
 
-    setState( NEMulticastRouterSettings::eRouterState::RouterPausing );
+    setState( NESystemService::eSystemServiceState::ServicePausing );
     getService( ).disconnectServiceHost();
-    setState( NEMulticastRouterSettings::eRouterState::RouterPaused );
+    setState( NESystemService::eSystemServiceState::ServicePaused );
 }
 
 bool MulticastRouter::serviceContinue(void)
@@ -267,11 +234,11 @@ bool MulticastRouter::serviceContinue(void)
     TRACE_DBG("Continuing Router service");
 
     bool result = false;
-    setState( NEMulticastRouterSettings::eRouterState::RouterContinuing );
+    setState( NESystemService::eSystemServiceState::ServiceContinuing );
     if ( getService( ).isServiceHostSetup() && getService( ).connectServiceHost() )
     {
         result = true;
-        setState( NEMulticastRouterSettings::eRouterState::RouterRunning );
+        setState( NESystemService::eSystemServiceState::ServiceRunning );
     }
     else
     {
@@ -306,33 +273,92 @@ void MulticastRouter::serviceUninstall(void)
     _osFreeResources();
 }
 
-bool MulticastRouter::setState( NEMulticastRouterSettings::eRouterState newState )
+bool MulticastRouter::registerService( void )
+{
+    return _osRegisterService();
+}
+
+bool MulticastRouter::serviceOpen( void )
+{
+    return _osOpenService( );
+}
+
+bool MulticastRouter::setState( NESystemService::eSystemServiceState newState )
 {
     TRACE_SCOPE( mcrouter_app_MulticastRouter_setState );
     TRACE_DBG( "Changing Service Router state. Old state [ %s ], new state [ %s ]"
-                , NEMulticastRouterSettings::getString( mRouterState )
-                , NEMulticastRouterSettings::getString( newState ) );
+                , NESystemService::getString( mSystemServiceState )
+                , NESystemService::getString( newState ) );
 
     return _osSetState( newState );
 }
 
+void MulticastRouter::printHelp( bool isCmdLine )
+{
+    std::cout
+        << "Usage of AREG Message Router (mcrouter) :" << std::endl
+        << "---------------------------------------------------------------------------------------------" << std::endl
+        << "-i, --install   : Command to install service. Valid for Windows OS, ignored in other cases." << std::endl
+        << "-u, --uninstall : Command to uninstall service. Valid for Windows OS, ignored in other cases." << std::endl
+        << "-s, --service   : Command to run process as a system service process." << std::endl
+        << "-c, --console   : Command to run process as a console application." << std::endl
+        << "-v, --verbose   : Command to display data rate. Can be used in combination with \'--console\'" << std::endl
+        << "-h, --help      : Command to display this message on console." << std::endl
+        << "---------------------------------------------------------------------------------------------" << std::endl
+        << "Quit application ..." << std::endl << std::ends;
+}
+
+void MulticastRouter::startConsoleService( void )
+{
+    Application::loadModel( _modelName );
+}
+
+void MulticastRouter::stopConsoleService( void )
+{
+    Application::unloadModel( _modelName );
+}
+
 bool MulticastRouter::_checkCommand(const String& cmd)
 {
-    String command(cmd);
-    command.makeLower();
-    if ((command == NEMulticastRouterSettings::QUIT_CH) || (command == NEMulticastRouterSettings::QUIT_STR))
+    OptionParser parser( MulticastRouter::ValidOptions, static_cast<int>(MACRO_ARRAYLEN( MulticastRouter::ValidOptions )) );
+    bool quit{ false };
+    bool hasError{ false };
+
+    if ( parser.parseOptionLine( cmd ) )
     {
-        return true; // interrupt, requested quit
+        const OptionParser::InputOptionList & opts = parser.getOptions( );
+        for ( int i = 0; i < static_cast<int>(opts.getSize( )); ++ i )
+        {
+            const OptionParser::sOption & opt = opts[ 0 ];
+            switch ( static_cast<eRouterOptions>(opt.inCommand) )
+            {
+            case eRouterOptions::CMD_RouterQuit:
+                quit = true;
+                break;
+
+            default:
+                break;
+            }
+        }
     }
     else
     {
-        Console& console = Console::getInstance();
-
-        ASSERT(MulticastRouter::getInstance().mRunVerbose == false);
-        console.outputMsg(Console::Coord{ 0, 1 }, NEMulticastRouterSettings::FORMAT_MSG_ERROR.data(), cmd.getString());
-        console.outputTxt(Console::Coord{ 0, 0 }, NEMulticastRouterSettings::FORMAT_WAIT_QUIT);
-        console.refreshScreen();
-
-        return false;
+        hasError = true;
     }
+
+    if ( quit == false )
+    {
+        Console & console = Console::getInstance( );
+        console.clearScreen( );
+        
+        if ( hasError )
+        {
+            console.outputMsg( NESystemService::COORD_ERROR_MSG, NESystemService::FORMAT_MSG_ERROR.data( ), cmd.getString( ) );
+        }
+
+        console.outputTxt( NESystemService::COORD_USER_INPUT, NESystemService::FORMAT_WAIT_QUIT );
+        console.refreshScreen( );
+    }
+
+    return quit;
 }

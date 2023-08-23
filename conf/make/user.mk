@@ -16,7 +16,7 @@
 # AREG_BINARY			-- The binary type of AREG library. Possible values: 'shared' or 'static'. The default is 'shared'.
 # AREG_BUILD_ROOT		-- The root directory for project(s) to build. By default is the "product" directory of areg-sdk root.
 # AREG_BUILD_TYPE		-- 'Debug' or 'Release' build types of codes. The default is 'Release'. The default is 'Release'
-# AREG_EXTENDED			-- Enabled or disable AREG extensions, which may create additional library dependencies. By default is OFF.
+# AREG_EXTENDED			-- Enabled or disable extensions in AREG extended static library and it may require additional dependencies. By default is OFF.
 # AREG_LOGS				-- Enable or disable compilation with logs.
 #
 # The following is a list of preprocessor directives, depending on the settings above:
@@ -129,7 +129,7 @@ AREG_BINARY := $(if $(AREG_BINARY),$(AREG_BINARY),shared)
 AREG_BUILD_TYPE := $(if $(AREG_BUILD_TYPE),$(AREG_BUILD_TYPE),Release)
 
 # Compile AREG extended features if set 1. By default, it is 0.
-# Otherwise, disable extensions by setting 1
+# Otherwise, enable extensions by setting 1.
 AREG_EXTENDED := $(if $(AREG_EXTENDED),$(AREG_EXTENDED),0)
 
 # Modify 'AREG_LOGS' to enable or disable compilation with logs.

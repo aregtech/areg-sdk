@@ -54,7 +54,7 @@
         <!-- Add preprocessor defines here to set for all projects.                                                                         -->
         <!-- ****************************************************************************************************************************** -->
         <!-- AREG_LOGS 	        : enable compilation with logging; remove if no logging required.                                           -->
-        <!-- AREG_EXTENDED      : enable AREG extensions, which contain additional features.                                                -->
+        <!-- AREG_EXTENDED      : enable or disable extensions in AREG extended static library, which contain additional features.          -->
         <AregCommonDefines>AREG_LOGS=$(AregLogs);AREG_EXTENDED=$(AregExtended);$(AregCommonDefines)</AregCommonDefines>
 
         <!-- ****************************************************************************************************************************** -->

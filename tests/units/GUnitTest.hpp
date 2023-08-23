@@ -37,7 +37,7 @@
     #pragma comment(lib, "gtest.lib")
     #pragma comment(lib, "gtest_main.lib")
     #pragma comment(lib, "areg.lib")
-    #pragma comment(lib, "areg-extensions.lib")
+    #pragma comment(lib, "areg-extend.lib")
 #endif // WINDOWS
 
 #endif // !AREG_TESTS_UNITS_GUNITTESTS_HPP

@@ -19,14 +19,14 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
 #include "areg/base/NEUtilities.hpp"
-#include "extensions/console/Console.hpp"
+#include "extend/console/Console.hpp"
 
 #include "generated/src/NECommon.hpp"
 #include "pubclient/src/TrafficLightClient.hpp"
 
 #ifdef WIN32
     #pragma comment(lib, "areg.lib")
-    #pragma comment(lib, "areg-extensions.lib")
+    #pragma comment(lib, "areg-extend.lib")
     #pragma comment(lib, "14_generated.lib")
 #endif // WIN32
 

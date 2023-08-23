@@ -139,7 +139,7 @@ namespace NEConnection
      *          Message router enable / disable default flag. If true, by default it is enabled.
      *          The default values are used if failed to read and parse router configuration file.
      **/
-    constexpr  bool              DEFAULT_REMOVE_SERVICE_ENABLED  { true };
+    constexpr  bool              DEFAULT_REMOVE_SERVICE_ENABLED { true };
 
     /**
      * \brief   NEConnection::CreateConnectRequest

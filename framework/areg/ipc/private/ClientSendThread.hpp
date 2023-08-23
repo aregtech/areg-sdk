@@ -20,14 +20,14 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/component/DispatcherThread.hpp"
-#include "areg/ipc/RemoteServiceEvent.hpp"
+#include "areg/ipc/SendMessageEvent.hpp"
 
 #include <atomic>
 
  /************************************************************************
  * Dependencies
  ************************************************************************/
-class IERemoteServiceMessageHandler;
+class IERemoteMessageHandler;
 class ClientConnection;
 
 //////////////////////////////////////////////////////////////////////////
@@ -49,7 +49,7 @@ public:
      * \param   remoteService   The instance of remote service to process messages.
      * \param   connection      The instance of client connection object to send messages.
      **/
-    ClientSendThread( IERemoteServiceMessageHandler & remoteService, ClientConnection & connection );
+    ClientSendThread(IERemoteMessageHandler& remoteService, ClientConnection & connection );
     /**
      * \brief   Destructor
      **/
@@ -114,16 +114,16 @@ private:
     /**
      * \brief   The instance of remote service handler to dispatch messages.
      **/
-    IERemoteServiceMessageHandler &    mRemoteService;
+    IERemoteMessageHandler& mRemoteService;
     /**
      * \brief   The instance of connection to send messages from remote routing service.
      **/
-    ClientConnection &          mConnection;
+    ClientConnection &      mConnection;
 
     /**
      * \brief   Accumulative value of sent data size.
      **/
-    std::atomic_uint             mBytesSend;
+    std::atomic_uint        mBytesSend;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

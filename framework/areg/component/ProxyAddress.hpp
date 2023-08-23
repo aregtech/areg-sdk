@@ -446,7 +446,7 @@ inline bool ProxyAddress::isLocalAddress(void) const
 
 inline bool ProxyAddress::isRemoteAddress(void) const
 {
-    return (mChannel.getCookie() > NEService::COOKIE_ROUTER );
+    return (mChannel.getCookie() >= NEService::COOKIE_ANY);
 }
 
 inline const String & ProxyAddress::getThread(void) const

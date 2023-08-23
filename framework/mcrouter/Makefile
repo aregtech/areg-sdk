@@ -20,7 +20,7 @@ else
 	mcrouter_CXXFLAGS += -DIMP_AREG_LIB
 endif
 
-mcrouter_LDFLAGS  += $(AREG_LIB_INCLUDES) -lareg-extensions -lareg $(LDFLAGS) $(AREG_EXTENDED_LIBS)
+mcrouter_LDFLAGS  += $(AREG_LIB_INCLUDES) -lareg-extend -lareg $(LDFLAGS) $(AREG_EXTENDED_LIBS)
 
 mcrouter_TARGET_BIN := $(mcrouter_PROJECT_NAME)$(AREG_BIN_EXT)
 

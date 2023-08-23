@@ -19,9 +19,14 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "mcrouter/app/NEMulticastRouterSettings.hpp"
-#include "mcrouter/tcp/ServerService.hpp"
+#include "extend/service/SystemServiceBase.hpp"
+
 #include "areg/base/SynchObjects.hpp"
+#include "mcrouter/app/NEMulticastRouterSettings.hpp"
+#include "mcrouter/tcp/RouterServerService.hpp"
+#include "extend/console/OptionParser.hpp"
+
+#include <utility>
 
 class Console;
 
@@ -37,8 +42,31 @@ class Console;
  *          Normally, for every connection channel type there should one instance of 
  *          message routing service also called as Multi-casting router (MCR).
  **/
-class MulticastRouter
+class MulticastRouter final : public SystemServiceBase
 {
+//////////////////////////////////////////////////////////////////////////
+// internal types and constants
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   MulticastRouter::eRouterOptions
+     *          The message router commands
+     **/
+    enum class eRouterOptions   : int32_t
+    {
+          CMD_Undefined         //!< Undefined command.
+        , CMD_RouterPause       //!< Pause router.
+        , CMD_RouterRestart     //!< Restart router.
+        , CMD_RouterInstances   //!< Display list of connected instances.
+        , CMD_RouterPrintHelp   //!< Print help.
+        , CMD_RouterQuit        //!< Quit router.
+    };
+
+    /**
+     * \brief   The setup to validate input options of the message router.
+     **/
+    static const OptionParser::sOptionSetup ValidOptions[ ];
+
 //////////////////////////////////////////////////////////////////////////
 // statics
 //////////////////////////////////////////////////////////////////////////
@@ -48,6 +76,13 @@ public:
      **/
     static MulticastRouter & getInstance( void );
 
+    /**
+     * \brief   Returns list of the options to validate contained in the pair object,
+     *          where the first entry is the pointer to the list and second entry is
+     *          the number of elements in the list
+     **/
+    static std::pair<const OptionParser::sOptionSetup *, int> getOptionSetup( void );
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor / destructor
 //////////////////////////////////////////////////////////////////////////
@@ -56,118 +91,122 @@ private:
      * \brief   Initializes instance of message router service.
      **/
     MulticastRouter( void );
-    /**
-     * \brief   Destructor.
-     **/
-    ~MulticastRouter( void );
+
+    virtual ~MulticastRouter( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
 //////////////////////////////////////////////////////////////////////////
 public:
-    /**
-     * \brief   Call to install (register) message router service in the system.
-     * \return  Returns true if registration succeeded.
-     **/
-    bool serviceInstall( void );
-
-    /**
-     * \brief   Call to uninstall (unregister) message router service in the system.
-     **/
-    void serviceUninstall( void );
+/************************************************************************/
+// SystemServiceBase overrides
+/************************************************************************/
 
     /**
      * \brief   Called from main to start execution of  message router service.
      * \param   argc    The 'argc' parameter passed from 'main', indicates the number of parameters passed to executable.
      * \param   argv    The 'argv' parameter passed from 'main', indicated parameters passed to executable.
      **/
-    void serviceMain( int argc, char ** argv );
+    virtual void serviceMain( int argc, char ** argv ) override;
 
     /**
-     * \brief   Called to start message router service.
-     * \return  Returns true, if started with success.
+     * \brief   Call to install (register) message router service in the system.
+     * \return  Returns true if registration succeeded.
      **/
-    bool serviceStart( void );
+    virtual bool serviceInstall( void ) override;
 
     /**
-     * \brief   Called to pause message router service.
+     * \brief   Call to uninstall (unregister) message router service in the system.
      **/
-    void servicePause( void );
+    virtual void serviceUninstall( void ) override;
 
     /**
-     * \brief   Called to resume paused message router service.
+     * \brief   Registers system service in the system.
      **/
-    bool serviceContinue( void );
-
-    /**
-     * \brief   Called to stop message router service.
-     **/
-    void serviceStop( void );
+    virtual bool registerService( void ) override;
 
     /**
      * \brief   Opens operating system service DB for further processing.
      * \return  Returns true if succeeded.
      **/
-    inline bool serviceOpen( void );
+    virtual bool serviceOpen( void ) override;
 
     /**
-     * \brief   Returns current command of message router service.
+     * \brief   Called to start message router service.
+     * \return  Returns true, if started with success.
      **/
-    inline NEMulticastRouterSettings::eServiceCommand getCurrentCommand( void ) const;
+    virtual bool serviceStart( void ) override;
 
     /**
-     * \brief   Sets the current command of message router service.
-     * \param   cmdService  The message router service command to set.
+     * \brief   Called to pause message router service.
      **/
-    inline void setCurrentCommand( NEMulticastRouterSettings::eServiceCommand cmdService );
+    virtual void servicePause( void ) override;
 
     /**
-     * \brief   Returns the state of message router service.
+     * \brief   Called to resume paused message router service.
      **/
-    inline NEMulticastRouterSettings::eRouterState getState( void ) const;
+    virtual bool serviceContinue( void ) override;
 
     /**
-     * \brief   Resets default options.
+     * \brief   Called to stop message router service.
      **/
-    inline void resetDefaultOptions(void);
-
-    /**
-     * \brief   Call to query the size in bytes of data sent.
-     **/
-    inline uint32_t queryDataReceived(void);
-
-    /**
-     * \brief   Call to query the size in bytes of data received.
-     **/
-    inline uint32_t queryDataSent(void);
-
-    /**
-     * \brief   Returns true if verbose flag is set.
-     *          If verbose flag is set, it outputs the data rate in console.
-     **/
-    inline bool isVerbose( void ) const;
+    virtual void serviceStop( void ) override;
 
     /**
      * \brief   Sets the state of message router service.
      **/
-    bool setState( NEMulticastRouterSettings::eRouterState newState );
+    virtual bool setState( NESystemService::eSystemServiceState newState ) override;
+
+protected:
+    /************************************************************************/
+    // SystemServiceBase protected overrides
+    /************************************************************************/
+
+        /**
+         * \brief   Triggered to print the help message on console.
+         * \param   isCmdLine   Flag indicating whether it should print the help
+         *                      of using service in command line or help of user input commands.
+         *                      If 'true', the printing message is about using the service in
+         *                      command line. Otherwise, if application expects user inputs, prints
+         *                      the help of command options.
+         **/
+    virtual void printHelp( bool isCmdLine ) override;
 
     /**
-     * \brief   Parses the options and returns true if succeeded.
-     * \param   argc    The number of options to parse.
-     * \param   argv    The options to parse.
-     */
-    bool parseOptions(int argc, char** argv);
-
-    /**
-     * \brief   Returns the instance of the remote servicing object.
+     * \brief   Triggered to start the console service.
      **/
-    inline IERemoteServiceConnection & getService( void );
+    virtual void startConsoleService( void ) override;
+
+    /**
+     * \brief   Stops the consoler service.
+     **/
+    virtual void stopConsoleService( void ) override;
+
+    /**
+     * \brief   Triggered to receive a function to validate and check the input option values.
+     **/
+    virtual Console::CallBack getOptionCheckCallback( void ) const override;
+
+    /**
+     * \brief   Triggered if need to run console with extended features.
+     *          In extended feature, the console can output message at any position on the screen.
+     **/
+    virtual void runConsoleInputExtended( void ) override;
+
+    /**
+     * \brief   Triggered if need to run console with simple (not extended) features.
+     **/
+    virtual void runConsoleInputSimple( void ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.
 //////////////////////////////////////////////////////////////////////////
 private:
+    /**
+     * \brief   Returns the instance of the remote servicing object.
+     **/
+    inline IEServiceConnectionProvider & getService( void );
+
     /**
      * \brief   Returns instance of message router service.
      **/
@@ -218,36 +257,16 @@ private:
     /**
      * \brief   OS specific implementation of changing the state of the mcrouter service.
      **/
-    bool _osSetState( NEMulticastRouterSettings::eRouterState newState );
+    bool _osSetState( NESystemService::eSystemServiceState newState );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   The message router service state.
-     **/
-    NEMulticastRouterSettings::eRouterState     mRouterState;
-    /**
-     * \brief   The current command to execute by message router service.
-     **/
-    NEMulticastRouterSettings::eServiceCommand  mServiceCmd;
-    /**
-     * \brief   Flag, indicating whether the process should run verbose or not. Valid only if process runs as console application.
-     */
-    bool            mRunVerbose;
-    /**
      * \brief   The instance of message router service server to accept connections from applications.
      **/
-    ServerService   mServiceServer;
-    /**
-     * \brief   OS specific service handle
-     **/
-    void *          mSvcHandle;
-    /**
-     * \brief   OS specific service manager handle.
-     **/
-    void *          mSeMHandle;
+    RouterServerService mServiceServer;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -260,50 +279,9 @@ private:
 // MulticastRouter class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline NEMulticastRouterSettings::eRouterState MulticastRouter::getState( void ) const
+inline IEServiceConnectionProvider & MulticastRouter::getService( void )
 {
-    return mRouterState;
-}
-
-inline bool MulticastRouter::serviceOpen(void)
-{
-    return _osOpenService();
-}
-
-inline NEMulticastRouterSettings::eServiceCommand MulticastRouter::getCurrentCommand(void) const
-{
-    return mServiceCmd;
-}
-
-inline void MulticastRouter::setCurrentCommand( NEMulticastRouterSettings::eServiceCommand cmdService)
-{
-    mServiceCmd = cmdService;
-}
-
-inline void MulticastRouter::resetDefaultOptions(void)
-{
-    mServiceCmd = NEMulticastRouterSettings::DEFAULT_OPTION;
-    mRunVerbose = NEMulticastRouterSettings::DEFAULT_VERBOSE;
-}
-
-inline uint32_t MulticastRouter::queryDataReceived(void)
-{
-    return mServiceServer.queryBytesReceived();
-}
-
-inline uint32_t MulticastRouter::queryDataSent(void)
-{
-    return mServiceServer.queryBytesSent();
-}
-
-inline bool MulticastRouter::isVerbose(void) const
-{
-    return mRunVerbose;
-}
-
-inline IERemoteServiceConnection & MulticastRouter::getService( void )
-{
-    return static_cast<IERemoteServiceConnection &>(mServiceServer);
+    return static_cast<IEServiceConnectionProvider &>(mServiceServer);
 }
 
 inline MulticastRouter & MulticastRouter::self( void )

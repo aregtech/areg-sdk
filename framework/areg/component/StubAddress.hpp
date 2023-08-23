@@ -476,7 +476,7 @@ inline bool StubAddress::isLocalAddress(void) const
 
 inline bool StubAddress::isRemoteAddress(void) const
 {
-    return (mChannel.getCookie() > NEService::COOKIE_ROUTER );
+    return (mChannel.getCookie() >= NEService::COOKIE_ANY);
 }
 
 inline const String & StubAddress::getThread( void ) const

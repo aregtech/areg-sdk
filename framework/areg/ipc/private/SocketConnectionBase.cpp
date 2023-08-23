@@ -74,8 +74,7 @@ int SocketConnectionBase::receiveMessage(RemoteMessage & out_message, const Sock
     int result = -1;
     if ( clientSocket.isValid() && clientSocket.isAlive() )
     {
-        NEMemory::sRemoteMessageHeader msgHeader;
-        DBG_ZERO_MEM(&msgHeader, sizeof(NEMemory::sRemoteMessageHeader));
+        NEMemory::sRemoteMessageHeader msgHeader{};
 
         out_message.invalidate();
         TRACE_DBG("Going to receive [ %d ] bytes of message header data.", sizeof(NEMemory::sRemoteMessageHeader));
