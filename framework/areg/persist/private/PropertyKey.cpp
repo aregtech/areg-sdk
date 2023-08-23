@@ -126,7 +126,7 @@ PropertyKey::operator unsigned int (void) const
 bool PropertyKey::parseKey( const String & key )
 {
     String temp(key);
-    temp.trimAll(temp);
+    temp.trimAll();
     if ( temp.isEmpty() == false )
     {
         _parseKey(temp);
@@ -138,7 +138,7 @@ bool PropertyKey::parseKey( const String & key )
 bool PropertyKey::parseKey( String && key )
 {
     String temp(std::move(key));
-    temp.trimAll(temp);
+    temp.trimAll();
     if ( temp.isEmpty() == false )
     {
         _parseKey(temp);

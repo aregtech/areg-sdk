@@ -23,15 +23,25 @@
 ConnectionConfiguration::eConnectionProperty ConnectionConfiguration::getPosition(const String & strProperty)
 {
     if ( strProperty == NERemoteService::CONFIG_KEY_PROP_ENABLE )
+    {
         return eConnectionProperty::PropertyEnabled;
+    }
     else if ( strProperty == NERemoteService::CONFIG_KEY_PROP_NAME )
+    {
         return eConnectionProperty::PropertyName;
-    else if (strProperty == NERemoteService::CONFIG_KEY_PROP_ADDRESS )
+    }
+    else if ( strProperty == NERemoteService::CONFIG_KEY_PROP_ADDRESS )
+    {
         return eConnectionProperty::PropertyHost;
-    else if (strProperty == NERemoteService::CONFIG_KEY_PROP_PORT )
+    }
+    else if ( strProperty == NERemoteService::CONFIG_KEY_PROP_PORT )
+    {
         return eConnectionProperty::PropertyPort;
+    }
     else
+    {
         return eConnectionProperty::PropertyInvalid;
+    }
 }
 
 bool ConnectionConfiguration::loadConfiguration(const char * filePath /* = nullptr */)
@@ -61,13 +71,19 @@ bool ConnectionConfiguration::loadConfiguration(FileBase & file)
             if (section != NERemoteService::eServiceConnection::ConnectionUndefined)
             {
                 ListProperties  listProp;
-                if ( _parseConnectionConfig(listProp, file, line, prop.getValue().getString()) )
-                    mMapConfig.setAt(section, listProp);
+                if ( _parseConnectionConfig( listProp, file, line, prop.getValue( ).getString( ) ) )
+                {
+                    mMapConfig.setAt( section, listProp );
+                }
                 else
+                {
                     section = NERemoteService::eServiceConnection::ConnectionUndefined;
+                }
             }
+
         } while (section != NERemoteService::eServiceConnection::ConnectionUndefined);
     }
+
     return (mMapConfig.isEmpty() == false);
 }
 
@@ -89,9 +105,12 @@ NERemoteService::eServiceConnection ConnectionConfiguration::_parseConnectionPro
             {
                 result = NERemoteService::getServiceConnectionType(prop.getValue().getString(), false);
             }
+
             break;
         }
+
     } while (file.readLine( inLine ) > 0 );
+
     return result;
 }
 
@@ -100,6 +119,7 @@ bool ConnectionConfiguration::_parseConnectionConfig(ListProperties & listProp, 
     listProp.clear();
     listProp.resize( static_cast<int>(ConnectionConfiguration::PropertyLen) );
 
+    uint32_t propBits{ 0 };
     Property prop;
     while ( (file.readLine( inLine ) > 0) && (_parseConnectionProperty(file, inLine, prop) == NERemoteService::eServiceConnection::ConnectionUndefined) )
     {
@@ -109,13 +129,15 @@ bool ConnectionConfiguration::_parseConnectionConfig(ListProperties & listProp, 
             eConnectionProperty pos = getPosition( key.getProperty( ) );
             if ( pos != eConnectionProperty::PropertyInvalid )
             {
+                propBits |= (1 << static_cast<uint32_t>(pos));
                 listProp[static_cast<uint32_t>(pos)] = prop;
             }
         }
+
         prop.resetData();
     }
 
-    return (listProp.isEmpty() == false);
+    return ((CONNECTION_PROPERTY_BITS & propBits) != 0);
 }
 
 String ConnectionConfiguration::_getPropertyValue( NERemoteService::eServiceConnection key, ConnectionConfiguration::eConnectionProperty entryIndex, const char * defaultValue ) const
@@ -148,7 +170,7 @@ bool ConnectionConfiguration::getConnectionEnableFlag( NERemoteService::eService
 {
     String enabled = _getPropertyValue( section
                                       , ConnectionConfiguration::eConnectionProperty::PropertyEnabled
-                                      , NEConnection::DEFAULT_REMOVE_SERVICE_ENABLED ? NECommon::BOOLEAN_TRUE.data() : NECommon::BOOLEAN_FALSE.data());
+                                      , NEConnection::DEFAULT_REMOTE_SERVICE_ENABLED ? NECommon::BOOLEAN_TRUE.data() : NECommon::BOOLEAN_FALSE.data());
     return enabled.toBool();
 }
 
@@ -198,5 +220,6 @@ bool ConnectionConfiguration::getConnectionHostIpAddress( unsigned char & OUT fi
             }
         }
     }
+
     return result;
 }

@@ -68,7 +68,7 @@ ServiceCommunicatonBase::ServiceCommunicatonBase( ITEM_ID serviceId
 bool ServiceCommunicatonBase::setupServiceConnectionHost(const String &configFile)
 {
     ConnectionConfiguration configConnect;
-     if ( configConnect.loadConfiguration(configFile) )
+    if ( configConnect.loadConfiguration(configFile) )
     {
         mConfigFile             = configConnect.getConfigFileName();
         mIsServiceEnabled       = configConnect.getConnectionEnableFlag(CONNECT_TYPE);
@@ -79,7 +79,7 @@ bool ServiceCommunicatonBase::setupServiceConnectionHost(const String &configFil
     }
     else
     {
-        mIsServiceEnabled       = NEConnection::DEFAULT_REMOVE_SERVICE_ENABLED;
+        mIsServiceEnabled       = NEConnection::DEFAULT_REMOTE_SERVICE_ENABLED;
         return mServerConnection.setAddress( NEConnection::DEFAULT_REMOTE_SERVICE_HOST.data( ), NEConnection::DEFAULT_REMOTE_SERVICE_PORT );
     }
 }

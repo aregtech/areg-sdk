@@ -415,6 +415,7 @@
     <None Include="areg\Readme.md" />
     <None Include="areg\resources\areg_post_build.bat" />
     <None Include="areg\resources\log.init" />
+    <None Include="areg\resources\logger.init" />
     <None Include="areg\resources\router.init" />
   </ItemGroup>
   <ItemGroup>

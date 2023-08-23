@@ -76,7 +76,7 @@ ServiceClientConnection::ServiceClientConnection(IEServiceConnectionConsumer& co
     , mTimerConnect         ( static_cast<IETimerConsumer &>(mTimerConsumer), NEConnection::CLIENT_CONNECT_TIMER_NAME )
     , mThreadReceive        ( static_cast<IERemoteMessageHandler&>(self()), mClientConnection )
     , mThreadSend           ( static_cast<IERemoteMessageHandler&>(self()), mClientConnection )
-    , mIsServiceEnabled     ( NEConnection::DEFAULT_REMOVE_SERVICE_ENABLED )    // TODO: by default, should be false and read out from configuration file.
+    , mIsServiceEnabled     ( NEConnection::DEFAULT_REMOTE_SERVICE_ENABLED )    // TODO: by default, should be false and read out from configuration file.
     , mConfigFile           ( "" )
     , mChannel              ( )
     , mConnectionState      ( eConnectionState::ConnectionStopped )
@@ -101,7 +101,7 @@ bool ServiceClientConnection::setupServiceConnectionHost( const String & configF
     }
     else
     {
-        mIsServiceEnabled       = NEConnection::DEFAULT_REMOVE_SERVICE_ENABLED;
+        mIsServiceEnabled       = NEConnection::DEFAULT_REMOTE_SERVICE_ENABLED;
         return mClientConnection.setAddress( NEConnection::DEFAULT_REMOTE_SERVICE_HOST.data(), NEConnection::DEFAULT_REMOTE_SERVICE_PORT );
     }
 }

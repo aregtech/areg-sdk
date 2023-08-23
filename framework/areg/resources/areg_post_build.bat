@@ -19,6 +19,7 @@ echo copying %PROJECT_RESOUR_DIR%\log.init and %PROJECT_RESOUR_DIR%\router.init
 IF NOT EXIST %TARGET_DIR%\config mkdir      %TARGET_DIR%\config
 copy /D /y %PROJECT_RESOUR_DIR%\log.init    %TARGET_DIR%\config\log.init
 copy /D /y %PROJECT_RESOUR_DIR%\router.init %TARGET_DIR%\config\router.init
+copy /D /y %PROJECT_RESOUR_DIR%\logger.init %TARGET_DIR%\config\logger.init
 
 set PATH=%OLDPATH%
 
