@@ -615,7 +615,7 @@ private:
 
     /**
      * \brief   OS specific implementation to set thread new priority.
-     *          returns the previos priority of the thread.
+     *          returns the previous priority of the thread.
      **/
     Thread::eThreadPriority _osSetPriority( eThreadPriority newPriority );
 

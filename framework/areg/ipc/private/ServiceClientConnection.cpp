@@ -341,6 +341,8 @@ void ServiceClientConnection::onServiceConnectionStopped(void)
     mThreadReceive.completionWait( NECommon::WAIT_INFINITE );
     mThreadSend.completionWait( NECommon::WAIT_INFINITE );
     mConnectionConsumer.disconnectedRemoteServiceChannel( channel );
+    mThreadReceive.destroyThread( NECommon::DO_NOT_WAIT );
+    mThreadSend.destroyThread( NECommon::DO_NOT_WAIT );
 
     if ( Application::isServicingReady( ) )
     {
@@ -698,8 +700,8 @@ void ServiceClientConnection::processReceivedMessage( const RemoteMessage & msgR
         case NEService::eFuncIdRange::ServiceLastId:            // fall through
         case NEService::eFuncIdRange::ServiceRouterQuery:       // fall through
         case NEService::eFuncIdRange::ServiceRouterRegister:    // fall through
-        case NEService::eFuncIdRange::ServiceRouterDisconnect:  // fall through
-        case NEService::eFuncIdRange::ServiceRouterConnect:     // fall through
+        case NEService::eFuncIdRange::SystemServiceDisconnect:  // fall through
+        case NEService::eFuncIdRange::SystemServiceConnect:     // fall through
         case NEService::eFuncIdRange::ServiceNotifyConnection:  // fall through
         case NEService::eFuncIdRange::ServiceRequestConnection: // fall through
         case NEService::eFuncIdRange::ServiceNotifyVersion:     // fall through

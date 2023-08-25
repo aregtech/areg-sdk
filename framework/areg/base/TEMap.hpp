@@ -632,6 +632,8 @@ inline std::pair<typename TEMap<KEY, VALUE>::MAPPOS, bool> TEMap<KEY, VALUE>::ad
         ASSERT( result.first != mValueList.end( ) );
         result.first->second = newValue;
     }
+
+    return result;
 }
 
 template < typename KEY, typename VALUE >
@@ -643,6 +645,8 @@ inline std::pair<typename TEMap<KEY, VALUE>::MAPPOS, bool> TEMap<KEY, VALUE>::ad
         ASSERT( result.first != mValueList.end( ) );
         result.first->second = newValue;
     }
+
+    return result;
 }
 
 template < typename KEY, typename VALUE >

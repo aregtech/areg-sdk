@@ -13,7 +13,7 @@ Before using services, the clients should be registered.</Description>
             <Location>areg\component\ServiceAddress.hpp</Location>
         </DataType>
         <DataType ID="3" Name="sClientRegister" Type="Structure">
-            <Description>Describes the client registery entry.</Description>
+            <Description>Describes the client registry entry.</Description>
             <FieldList>
                 <Field DataType="uint32" ID="4" Name="crID">
                     <Value IsDefault="true">0</Value>

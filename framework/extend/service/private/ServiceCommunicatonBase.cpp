@@ -60,6 +60,7 @@ ServiceCommunicatonBase::ServiceCommunicatonBase( ITEM_ID serviceId
     , mBlackList        ( )
     , mEventConsumer    ( self() )
     , mTimerConsumer    ( self() )
+    , mInstanceMap      (  )
     , mEventSendStop    ( false, false )
     , mLock             ( )
 {
@@ -95,22 +96,22 @@ bool ServiceCommunicatonBase::connectServiceHost(void)
 
     Lock lock(mLock);
 
-    bool result = true;
+    bool result{ false };
     if ( mServerConnection.isValid() == false && isRunning() == false )
     {
         if ( createThread( NECommon::WAIT_INFINITE ) && waitForDispatcherStart(NECommon::WAIT_INFINITE) )
         {
+            result = true;
             sendCommand( ServiceEventData::eServiceEventCommands::CMD_StartService );
         }
 
         TRACE_DBG( "Created remote servicing thread with [ %s ]", result ? "SUCCESS" : "FAIL" );
     }
-#ifdef DEBUG
     else
     {
+        result = isRunning( ) && mServerConnection.isValid( );
         ASSERT(isRunning());
     }
-#endif // DEBUG
 
     return result;
 }
@@ -207,6 +208,7 @@ void ServiceCommunicatonBase::connectionLost( SocketAccepted & clientSocket )
     mServerConnection.closeConnection(clientSocket);
     if ( cookie != NEService::COOKIE_UNKNOWN )
     {
+        mInstanceMap.removeAt( cookie );
         RemoteMessage msgDisconnect = NEConnection::createDisconnectRequest(cookie);
         sendCommunicationMessage(ServiceEventData::eServiceEventCommands::CMD_ServiceReceivedMsg, msgDisconnect, Event::eEventPriority::EventPriorityHigh);
     }
@@ -218,6 +220,11 @@ void ServiceCommunicatonBase::connectionFailure(void)
     {
         reconnectServiceHost();
     }
+}
+
+void ServiceCommunicatonBase::disconnectServices( void )
+{
+    mInstanceMap.release( );
 }
 
 void ServiceCommunicatonBase::onServiceReconnectTimerExpired( void )
@@ -429,13 +436,21 @@ void ServiceCommunicatonBase::processReceivedMessage(const RemoteMessage & msgRe
                 sendMessage(msgReceived);
             }
         }
-        else if ( (source == cookie) && (msgId != NEService::eFuncIdRange::ServiceRouterConnect) )
+        else if ( (source == cookie) && (msgId != NEService::eFuncIdRange::SystemServiceConnect) )
         {
             TRACE_DBG("Going to process received message [ 0x%X ]", static_cast<uint32_t>(msgId));
+            if ( msgId == NEService::eFuncIdRange::SystemServiceDisconnect )
+            {
+                mInstanceMap.removeAt( cookie );
+            }
+
             sendCommunicationMessage( ServiceEventData::eServiceEventCommands::CMD_ServiceReceivedMsg, msgReceived );
         }
-        else if ( (source == NEService::SOURCE_UNKNOWN) && (msgId == NEService::eFuncIdRange::ServiceRouterConnect) )
+        else if ( (source == NEService::SOURCE_UNKNOWN) && (msgId == NEService::eFuncIdRange::SystemServiceConnect) )
         {
+            String instance;
+            msgReceived >> instance;
+            mInstanceMap.addIfUnique( cookie, instance, true );
             RemoteMessage msgConnect = NEConnection::createConnectNotify(cookie);
             TRACE_DBG("Received request connect message, sending response [ %s ] of id [ 0x%X ], to new target [ %u ], connection socket [ %u ], checksum [ %u ]"
                         , NEService::getString( static_cast<NEService::eFuncIdRange>(msgConnect.getMessageId()))
@@ -452,7 +467,6 @@ void ServiceCommunicatonBase::processReceivedMessage(const RemoteMessage & msgRe
                         , NEService::getString(msgId)
                         , static_cast<uint32_t>(msgId)
                         , static_cast<uint32_t>(source));
-            ASSERT(false);
         }
     }
     else

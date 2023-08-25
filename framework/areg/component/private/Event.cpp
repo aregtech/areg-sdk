@@ -48,8 +48,7 @@ bool Event::addListener( const RuntimeClassID & classId, IEEventConsumer & event
 
 bool Event::addListener( const RuntimeClassID & classId, IEEventConsumer & eventConsumer, DispatcherThread & dispThread )
 {
-    ASSERT( dispThread.isValid() );
-    return dispThread.registerEventConsumer(classId, eventConsumer);
+    return ( dispThread.isRunning() ? dispThread.registerEventConsumer(classId, eventConsumer) : false );
 }
 
 bool Event::removeListener( const RuntimeClassID & classId, IEEventConsumer & eventConsumer, const String & whichThread )

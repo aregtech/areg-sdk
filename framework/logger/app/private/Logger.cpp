@@ -1,8 +1,16 @@
 /************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        logger/app/private/Logger.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       Logger common part
+ * \brief       AREG Platform, logger to run as a console application process or service.
  ************************************************************************/
 
 #include "logger/app/Logger.hpp"
@@ -35,24 +43,27 @@
 // This model defines a Console Service to run to make data rate outputs.
 // The Console Service runs only in verbose mode.
 
-static String _modelName("LoggerModel");
+namespace
+{
+    static String _modelName("LoggerModel");
 
-// Describe mode, set model name
-BEGIN_MODEL(_modelName)
+    // Describe mode, set model name
+    BEGIN_MODEL(_modelName)
 
-    // define console service thread.
-    BEGIN_REGISTER_THREAD( "LoggerConsoleServiceThread", NECommon::WATCHDOG_IGNORE)
-        // Define the console service
-        BEGIN_REGISTER_COMPONENT( LoggerConsoleService::SERVICE_NAME, LoggerConsoleService)
-            // register dummy 'empty service'.
-            REGISTER_IMPLEMENT_SERVICE( NEService::EmptyServiceName, NEService::EmptyServiceVersion )
-        // end of component description
-        END_REGISTER_COMPONENT(LoggerConsoleService::SERVICE_NAME )
-    // end of thread description
-    END_REGISTER_THREAD( "LoggerConsoleServiceThread" )
+        // define console service thread.
+        BEGIN_REGISTER_THREAD( "LoggerConsoleServiceThread", NECommon::WATCHDOG_IGNORE)
+            // Define the console service
+            BEGIN_REGISTER_COMPONENT( LoggerConsoleService::SERVICE_NAME, LoggerConsoleService)
+                // register dummy 'empty service'.
+                REGISTER_IMPLEMENT_SERVICE( NEService::EmptyServiceName, NEService::EmptyServiceVersion )
+            // end of component description
+            END_REGISTER_COMPONENT(LoggerConsoleService::SERVICE_NAME )
+        // end of thread description
+        END_REGISTER_THREAD( "LoggerConsoleServiceThread" )
 
-// end of model description
-END_MODEL(_modelName)
+    // end of model description
+    END_MODEL(_modelName)
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Traces.
@@ -73,14 +84,16 @@ DEF_TRACE_SCOPE(logger_app_logger_setState);
 
 const OptionParser::sOptionSetup Logger::ValidOptions[ ]
 {
-      {"-p", "--pause"      , static_cast<int>(Logger::eLogCommands::CMD_LogPause)     , OptionParser::NO_DATA         , {}, {}, {} }
-    , {"-r", "--restart"    , static_cast<int>(Logger::eLogCommands::CMD_LogRestart)   , OptionParser::NO_DATA         , {}, {}, {} }
-    , {"-s", "--scope"      , static_cast<int>(Logger::eLogCommands::CMD_LogSetScope)  , OptionParser::FREESTYLE_DATA  , {}, {}, {} }
-    , {"-i", "--instances"  , static_cast<int>(Logger::eLogCommands::CMD_LogInstances) , OptionParser::NO_DATA         , {}, {}, {} }
-    , {"-l", "--save-log"   , static_cast<int>(Logger::eLogCommands::CMD_LogSaveLogs)  , OptionParser::FREESTYLE_DATA  , {}, {}, {} }
-    , {"-c", "--config"     , static_cast<int>(Logger::eLogCommands::CMD_LogSaveConfig), OptionParser::FREESTYLE_DATA  , {}, {}, {} }
-    , {"-h", "--help"       , static_cast<int>(Logger::eLogCommands::CMD_LogPrintHelp) , OptionParser::NO_DATA         , {}, {}, {} }
-    , {"-q", "--quit"       , static_cast<int>(Logger::eLogCommands::CMD_LogQuit)      , OptionParser::NO_DATA         , {}, {}, {} }
+      {"-p", "--pause"      , static_cast<int>(eLogCommands::CMD_LogPause)      , OptionParser::NO_DATA         , {}, {}, {} }
+    , {"-r", "--restart"    , static_cast<int>(eLogCommands::CMD_LogRestart)    , OptionParser::NO_DATA         , {}, {}, {} }
+    , {"-s", "--scope"      , static_cast<int>(eLogCommands::CMD_LogSetScope)   , OptionParser::FREESTYLE_DATA  , {}, {}, {} }
+    , {"-i", "--instances"  , static_cast<int>(eLogCommands::CMD_LogInstances)  , OptionParser::NO_DATA         , {}, {}, {} }
+    , {"-l", "--save-log"   , static_cast<int>(eLogCommands::CMD_LogSaveLogs)   , OptionParser::FREESTYLE_DATA  , {}, {}, {} }
+    , {"-c", "--config"     , static_cast<int>(eLogCommands::CMD_LogSaveConfig) , OptionParser::FREESTYLE_DATA  , {}, {}, {} }
+    , {"-v", "--verbose"    , static_cast<int>(eLogCommands::CMD_LogVerbose)    , OptionParser::NO_DATA         , {}, {}, {} }
+    , {"-n", "--silent"     , static_cast<int>(eLogCommands::CMD_LogSilent)     , OptionParser::NO_DATA         , {}, {}, {} }
+    , {"-h", "--help"       , static_cast<int>(eLogCommands::CMD_LogPrintHelp)  , OptionParser::NO_DATA         , {}, {}, {} }
+    , {"-q", "--quit"       , static_cast<int>(eLogCommands::CMD_LogQuit)       , OptionParser::NO_DATA         , {}, {}, {} }
 };
 
 Logger & Logger::getInstance(void)
@@ -114,6 +127,7 @@ void Logger::runConsoleInputExtended( void )
 {
 #if AREG_EXTENDED
     Console & console = Console::getInstance( );
+    Logger::_outputTitle( );
 
     if ( mRunVerbose )
     {
@@ -129,14 +143,12 @@ void Logger::runConsoleInputExtended( void )
         // No verbose mode.
         // Set local callback, output message and wait for user input.
         console.enableConsoleInput( true );
-        console.outputTxt( NESystemService::COORD_TITLE, NELoggerSettings::APP_TITLE.data() );
-        console.outputTxt( NESystemService::COORD_SUBTITLE, NESystemService::APP_SUBTITE.data( ) );
         console.outputTxt( NESystemService::COORD_USER_INPUT, NESystemService::FORMAT_WAIT_QUIT );
         console.waitForInput( getOptionCheckCallback( ) );
     }
 
     console.moveCursorOneLineDown( );
-    console.printTxt( NESystemService::FORMAT_QUIT_APP );
+    console.clearScreen( );
     console.uninitialize( );
 #endif   // !AREG_EXTENDED
 }
@@ -147,8 +159,7 @@ void Logger::runConsoleInputSimple( void )
     bool quit{ false };
     OptionParser parser( Logger::ValidOptions, MACRO_ARRAYLEN( Logger::ValidOptions ) );
 
-    printf( "%s\n", NELoggerSettings::APP_TITLE.data() );
-    printf( "%s\n", NESystemService::APP_SUBTITE.data( ) );
+    Logger::_outputTitle( );
 
     do
     {
@@ -157,28 +168,7 @@ void Logger::runConsoleInputSimple( void )
         if ((count <= 0) || (count >= 512))
             continue;
 
-        if ( parser.parseOptionLine( cmd ) )
-        {
-            const OptionParser::InputOptionList & opts = parser.getOptions( );
-            for ( int i = 0; i < static_cast<int>(opts.getSize( )); ++ i )
-            {
-                const OptionParser::sOption & opt = opts[ 0 ];
-                switch ( static_cast<Logger::eLogCommands>(opt.inCommand) )
-                {
-                case Logger::eLogCommands::CMD_LogQuit:
-                    quit = true;
-                    break;
-
-                default:
-                    break;
-                }
-            }
-        }
-        else
-        {
-            printf( NESystemService::FORMAT_MSG_ERROR.data( ), cmd );
-            printf( "\n" );
-        }
+        quit = Logger::_checkCommand( cmd );
 
     } while ( quit == false );
 }
@@ -188,22 +178,24 @@ void Logger::serviceMain( int argc, char ** argv )
     // Start only tracing and timer manager.
     Application::initApplication(true, true, false, true, false, NEApplication::DEFAULT_TRACING_CONFIG_FILE.data(), nullptr );
     SystemServiceBase::serviceMain( argc, argv );
+#if  AREG_EXTENDED
+    Application::waitAppQuit( );
+#endif // AREG_EXTENDED
     Application::releaseApplication( );
 }
 
-bool Logger::serviceStart( void )
+bool Logger::serviceStart(void)
 {
     TRACE_SCOPE( logger_app_logger_serviceStart );
     TRACE_DBG( "Starting service [ %s ]", NELoggerSettings::SERVICE_NAME_ASCII );
-    bool result = false;
-
+    bool result{ false };
     if ( getService().setupServiceConnectionHost( NEApplication::DEFAULT_LOGGER_CONFIG_FILE.data( ) ) && getService().connectServiceHost( ) )
     {
-        result = setState( NESystemService::eSystemServiceState::ServiceRunning );
+        result = setState(NESystemService::eSystemServiceState::ServiceRunning);
     }
     else
     {
-        Application::signalAppQuit( );
+        Application::signalAppQuit();
     }
 
     return result;
@@ -214,14 +206,14 @@ void Logger::serviceStop(void)
     TRACE_SCOPE(logger_app_logger_serviceStop);
     TRACE_WARN("Stopping service [ %s ]", NELoggerSettings::SERVICE_NAME_ASCII);
     setState(NESystemService::eSystemServiceState::ServiceStopping);
-    getService().disconnectServiceHost( );
+    getService().disconnectServiceHost();
     Application::signalAppQuit();
 }
 
 void Logger::servicePause(void)
 {
     TRACE_SCOPE(logger_app_logger_servicePause);
-    TRACE_DBG("Pausing Router service");
+    TRACE_DBG("Pausing Log Collector service");
 
     setState( NESystemService::eSystemServiceState::ServicePausing );
     getService( ).disconnectServiceHost();
@@ -231,7 +223,7 @@ void Logger::servicePause(void)
 bool Logger::serviceContinue(void)
 {
     TRACE_SCOPE(logger_app_logger_serviceContinue);
-    TRACE_DBG("Continuing Logger service");
+    TRACE_DBG("Continuing Log Collector service");
 
     bool result = false;
     setState( NESystemService::eSystemServiceState::ServiceContinuing );
@@ -275,7 +267,7 @@ void Logger::serviceUninstall(void)
 
 bool Logger::registerService( void )
 {
-    return _osRegisterService( );
+    return _osRegisterService();
 }
 
 bool Logger::serviceOpen( void )
@@ -286,7 +278,7 @@ bool Logger::serviceOpen( void )
 bool Logger::setState( NESystemService::eSystemServiceState newState )
 {
     TRACE_SCOPE( logger_app_logger_setState );
-    TRACE_DBG( "Changing Service Router state. Old state [ %s ], new state [ %s ]"
+    TRACE_DBG( "Changing Log Collector service state. Old state [ %s ], new state [ %s ]"
                , NESystemService::getString( mSystemServiceState )
                , NESystemService::getString( newState ) );
 
@@ -296,7 +288,7 @@ bool Logger::setState( NESystemService::eSystemServiceState newState )
 void Logger::printHelp( bool isCmdLine )
 {
     std::cout
-        << "Usage of AREG Message Router (mcrouter) :" << std::endl
+        << "Usage of AREG Log Collector (logger) :" << std::endl
         << "---------------------------------------------------------------------------------------------" << std::endl
         << "-i, --install   : Command to install service. Valid for Windows OS, ignored in other cases." << std::endl
         << "-u, --uninstall : Command to uninstall service. Valid for Windows OS, ignored in other cases." << std::endl
@@ -320,12 +312,13 @@ void Logger::stopConsoleService( void )
 
 bool Logger::_checkCommand(const String& cmd)
 {
-    OptionParser parser( Logger::ValidOptions, MACRO_ARRAYLEN( Logger::ValidOptions ) );
+    OptionParser parser( Logger::ValidOptions, static_cast<int>(MACRO_ARRAYLEN( Logger::ValidOptions )) );
     bool quit{ false };
     bool hasError {false};
 
     if ( parser.parseOptionLine( cmd ) )
     {
+        Logger & logger = Logger::getInstance( );
         const OptionParser::InputOptionList & opts = parser.getOptions( );
         for ( int i = 0; i < static_cast<int>(opts.getSize( )); ++ i )
         {
@@ -333,19 +326,43 @@ bool Logger::_checkCommand(const String& cmd)
             switch ( static_cast<eLogCommands>(opt.inCommand) )
             {
             case eLogCommands::CMD_LogPause:
+                Logger::_outputInfo( "Pausing log collector ..." );
+                logger.getService().disconnectServiceHost( );
+                Logger::_outputInfo( "Log collector is paused ..." );
+                break;
+
             case eLogCommands::CMD_LogRestart:
-            case eLogCommands::CMD_LogSetScope:
+                Logger::_outputInfo( "Restarting log collector ..." );
+                logger.getService( ).connectServiceHost( );
+                Logger::_outputInfo( "Log collector is restarted ..." );
+                break;
+
             case eLogCommands::CMD_LogInstances:
-            case eLogCommands::CMD_LogSaveLogs:
-            case eLogCommands::CMD_LogSaveConfig:
+                Logger::_outputInstances( logger.getConnetedInstances() );
+                break;
+
+            case eLogCommands::CMD_LogVerbose:
+                Logger::_setVerboseMode( true );
+                break;
+
+            case eLogCommands::CMD_LogSilent:
+                Logger::_setVerboseMode( false );
+                break;
+
             case eLogCommands::CMD_LogPrintHelp:
+                logger.printHelp( false );
                 break;
 
             case eLogCommands::CMD_LogQuit:
                 quit = true;
                 break;
 
+            case eLogCommands::CMD_LogSetScope:
+            case eLogCommands::CMD_LogSaveLogs:
+            case eLogCommands::CMD_LogSaveConfig:
+
             default:
+                hasError = true;
                 break;
             }
         }
@@ -355,19 +372,176 @@ bool Logger::_checkCommand(const String& cmd)
         hasError = true;
     }
 
-    if (quit == false)
+#if AREG_EXTENDED
+    
+    Console & console = Console::getInstance( );
+    console.lockConsole();
+    if ( quit == false )
     {
-        Console& console = Console::getInstance();
-        console.clearScreen();
-
-        if (hasError)
+        if ( hasError )
         {
+            console.clearLine( NESystemService::COORD_ERROR_MSG );
+            console.clearLine( NESystemService::COORD_INFO_MSG );
             console.outputMsg( NESystemService::COORD_ERROR_MSG, NESystemService::FORMAT_MSG_ERROR.data( ), cmd.getString( ) );
         }
+        else
+        {
+            console.clearLine( NESystemService::COORD_ERROR_MSG );
+        }
 
+        console.clearLine( NESystemService::COORD_USER_INPUT );
         console.outputTxt( NESystemService::COORD_USER_INPUT, NESystemService::FORMAT_WAIT_QUIT );
-        console.refreshScreen();
+    }
+    else
+    {
+        console.outputTxt( NESystemService::COORD_INFO_MSG, NESystemService::FORMAT_QUIT_APP );
     }
 
+    console.refreshScreen( );
+    console.unlockConsole( );
+
+#else   // !AREG_EXTENDED
+
+    if ( quit == false )
+    {
+        if ( hasError )
+        {
+            printf( NESystemService::FORMAT_MSG_ERROR.data( ), cmd.getString() );
+            printf( "\n" );
+        }
+    }
+    else
+    {
+        printf( "%s\n", NESystemService::FORMAT_WAIT_QUIT.data( ) );
+    }
+
+#endif  // AREG_EXTENDED
+
     return quit;
+}
+
+void Logger::_outputTitle( void )
+{
+#if AREG_EXTENDED
+    Console & console = Console::getInstance( );
+    console.outputTxt( NESystemService::COORD_TITLE, NELoggerSettings::APP_TITLE.data( ) );
+    console.outputTxt( NESystemService::COORD_SUBTITLE, NESystemService::MSG_SEPARATOR.data( ) );
+#else   // !AREG_EXTENDED
+    printf( "%s\n", NELoggerSettings::APP_TITLE.data( ) );
+    printf( "%s\n", NESystemService::MSG_SEPARATOR.data( ) );
+#endif  // AREG_EXTENDED
+}
+
+void Logger::_outputInfo( const String & info )
+{
+#if AREG_EXTENDED
+    Console & console = Console::getInstance( );
+    Console::Coord coord{NESystemService::COORD_INFO_MSG};
+    console.lockConsole( );
+
+    console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
+    ++ coord.posY;
+    console.outputStr( coord, info );
+
+    console.unlockConsole( );
+#else   // !AREG_EXTENDED
+    printf( "%s\n", info.getString() );
+#endif  // AREG_EXTENDED
+}
+
+void Logger::_outputInstances( const ServiceCommunicatonBase::InstanceMap & instances )
+{
+    static constexpr std::string_view _table{ "Nr.   |  Instance ID  |  Name " };
+    static constexpr std::string_view _empty{ "There are no connected instances ..." };
+
+#if AREG_EXTENDED
+    Console & console = Console::getInstance( );
+    Console::Coord coord{NESystemService::COORD_INFO_MSG};
+    console.lockConsole( );
+#endif // AREG_EXTENDED
+
+    if ( instances.isEmpty( ) )
+    {
+#if AREG_EXTENDED
+        console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
+        ++ coord.posY;
+        console.outputStr( coord, _empty );
+#else   // !AREG_EXTENDED
+        printf( "%s\n", _empty.data() );
+#endif  // AREG_EXTENDED
+    }
+    else
+    {
+#if AREG_EXTENDED
+        console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
+        ++ coord.posY;
+        console.outputTxt( coord, _table );
+        ++ coord.posY;
+        console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
+        ++ coord.posY;
+#else   // !AREG_EXTENDED
+        printf( "%s\n", NESystemService::MSG_SEPARATOR.data( ) );
+        printf( "%s\n", _table.data() );
+        printf( "%s\n", NESystemService::MSG_SEPARATOR.data( ) );
+#endif  // AREG_EXTENDED
+
+        int i{ 1 };
+        for ( auto pos = instances.firstPosition( ); instances.isValidPosition( pos ); pos = instances.nextPosition( pos ) )
+        {
+            ITEM_ID cookie{ 0 };
+            String name;
+            instances.getAtPosition( pos, cookie, name );
+#if AREG_EXTENDED
+            console.outputMsg( coord, " % 3d. |  % 6u       |  %s ", i ++, static_cast<unsigned int>(cookie), name.getString( ) );
+            ++ coord.posY;
+#else   // !AREG_EXTENDED
+            printf( " % 3d. |  % 6u       |  %s \n", i ++, static_cast<unsigned int>(cookie), name.getString( ) );
+#endif  // AREG_EXTENDED
+        }
+    }
+
+#if AREG_EXTENDED
+    console.unlockConsole( );
+#else   // !AREG_EXTENDED
+    printf( "%s\n", NESystemService::FORMAT_WAIT_QUIT.data( ) );
+#endif  // AREG_EXTENDED
+}
+
+void Logger::_setVerboseMode( bool makeVerbose )
+{
+#if AREG_EXTENDED
+
+    static constexpr std::string_view _verbose{ "Switching to verbose mode to output data rate ..." };
+    static constexpr std::string_view _silence{ "Switching to silent mode, no data rate output ..." };
+    Logger & logger = Logger::getInstance( );
+    Console & console = Console::getInstance( );
+    console.lockConsole( );
+    if ( logger.mRunVerbose != makeVerbose )
+    {
+        logger.mRunVerbose = makeVerbose;
+
+        if ( makeVerbose == false )
+        {
+            console.clearLine( NESystemService::COORD_SEND_RATE );
+            console.clearLine( NESystemService::COORD_RECV_RATE );
+            console.outputTxt( NESystemService::COORD_INFO_MSG, _silence );
+        }
+        else
+        {
+            console.outputMsg( NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data( ), 0.0f, SystemServiceConsole::MSG_BYTES.data( ) );
+            console.outputMsg( NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data( ), 0.0f, SystemServiceConsole::MSG_BYTES.data( ) );
+            console.outputTxt( NESystemService::COORD_INFO_MSG, _verbose);
+        }
+
+        console.refreshScreen( );
+    }
+
+    console.unlockConsole( );
+
+#else   // !AREG_EXTENDED
+
+    static constexpr std::string_view _unsupported{"This option is available only with extended features"};
+    printf( "%s\n", _unsupported.data( ) );
+
+#endif  // AREG_EXTENDED
 }

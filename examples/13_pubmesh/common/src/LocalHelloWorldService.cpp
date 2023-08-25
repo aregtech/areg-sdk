@@ -52,6 +52,6 @@ void LocalHelloWorldService::requestHelloWorld( const String & roleName )
     }
 
     // use printf() because of multithreading environment.
-    printf( "\"Hello Local client [ %s ]!\", processed [ %u ] requests.\n\r", roleName.getString( ), ++mNumRequests );
+    printf( "\"Hello Local [ %s ]!\", processed [ %u ] requests.\n\r", roleName.getString( ), ++mNumRequests );
     responseHelloWorld( theClient );
 }

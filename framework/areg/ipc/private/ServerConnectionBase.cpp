@@ -88,33 +88,30 @@ bool ServerConnectionBase::acceptConnection(SocketAccepted & clientConnection)
     Lock lock(mLock);
     bool result = false;
 
-    if ( mServerSocket.isValid() )
+    if ( mServerSocket.isValid() && clientConnection.isValid( ) )
     {
-        if ( clientConnection.isValid() )
+        const SOCKETHANDLE hSocket = clientConnection.getHandle();
+        ASSERT(hSocket != NESocket::InvalidSocketHandle);
+
+        if ( mMasterList.find(hSocket) == -1)
         {
-            const SOCKETHANDLE hSocket = clientConnection.getHandle();
-            ASSERT(hSocket != NESocket::InvalidSocketHandle);
+            ASSERT(mAcceptedConnections.contains( hSocket ) == false);
+            ASSERT(mSocketToCookie.contains(hSocket) == false);
 
-            if ( mMasterList.find(hSocket) == -1)
-            {
-                ASSERT(mAcceptedConnections.contains( hSocket ) == false);
-                ASSERT(mSocketToCookie.contains(hSocket) == false);
+            ITEM_ID cookie = mCookieGenerator ++;
+            ASSERT(cookie >= NEService::COOKIE_REMOTE_SERVICE);
 
-                ITEM_ID cookie = mCookieGenerator ++;
-                ASSERT(cookie >= NEService::COOKIE_REMOTE_SERVICE);
-
-                mAcceptedConnections.setAt(hSocket, clientConnection);
-                mCookieToSocket.setAt(cookie, hSocket);
-                mSocketToCookie.setAt(hSocket, cookie);
-                mMasterList.add( hSocket );
-                result = true;
-            }
-            else
-            {
-                ASSERT(mAcceptedConnections.contains( hSocket ));
-                ASSERT(mSocketToCookie.contains(hSocket));
-                result = true;
-            }
+            mAcceptedConnections.setAt(hSocket, clientConnection);
+            mCookieToSocket.setAt(cookie, hSocket);
+            mSocketToCookie.setAt(hSocket, cookie);
+            mMasterList.add( hSocket );
+            result = true;
+        }
+        else
+        {
+            ASSERT(mAcceptedConnections.contains( hSocket ));
+            ASSERT(mSocketToCookie.contains(hSocket));
+            result = true;
         }
     }
 

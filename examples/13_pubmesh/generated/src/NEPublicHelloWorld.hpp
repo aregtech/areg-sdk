@@ -85,7 +85,7 @@ namespace   NEPublicHelloWorld
 
 
     /**
-     * \brief   Describes the client registery entry.
+     * \brief   Describes the client registry entry.
      *          Every field of structure should have default constructor.
      *          NEPublicHelloWorld::sClientRegister
      **/

@@ -24,6 +24,9 @@
 #include "areg/base/SynchObjects.hpp"
 #include "logger/app/NELoggerSettings.hpp"
 #include "logger/service/LoggerServerService.hpp"
+#include "extend/console/OptionParser.hpp"
+
+#include <utility>
 
 class Console;
 
@@ -46,13 +49,15 @@ private:
      **/
     enum class eLogCommands : int32_t
     {
-          CMD_LogUndefined  //!< Do nothing, should not happen
+          CMD_LogUndefined  //!< Undefined command.
         , CMD_LogPause      //!< Pause logger.
         , CMD_LogRestart    //!< Restart logger.
         , CMD_LogSetScope   //!< Set the scope priorities
         , CMD_LogInstances  //!< Display the names of connected instances
         , CMD_LogSaveLogs   //!< Logger save logs in the file
         , CMD_LogSaveConfig //!< Save the log configuration
+        , CMD_LogVerbose    //!< Display data rate information if possible. Functions only with extended features
+        , CMD_LogSilent     //!< Silent mode, no data rate is displayed.
         , CMD_LogPrintHelp  //!< Output help message
         , CMD_LogQuit       //!< Quit logger
     };
@@ -154,7 +159,7 @@ public:
 
 protected:
 /************************************************************************/
-// SystemServiceBase overrides
+// SystemServiceBase protected overrides
 /************************************************************************/
 
     /**
@@ -203,6 +208,11 @@ private:
     inline IEServiceConnectionProvider & getService( void );
 
     /**
+     * \brief   Returns the list of connected instances.
+     **/
+    inline const ServiceCommunicatonBase::InstanceMap & getConnetedInstances( void ) const;
+
+    /**
      * \brief   Returns instance of the logger service.
      **/
     inline Logger & self( void );
@@ -214,10 +224,33 @@ private:
      **/
     static bool _checkCommand(const String& cmd);
 
+    /**
+     * \brief   Output on console the title.
+     **/
+    static void _outputTitle( void );
+
+    /**
+     * \brief   Prints info on console.
+     **/
+    static void _outputInfo( const String & info );
+
+    /**
+     * \brief   Outputs on console the information about connected instances.
+     **/
+    static void _outputInstances( const ServiceCommunicatonBase::InstanceMap & instances );
+
+    /**
+     * \brief   Sets verbose or silent mode to output data rate.
+     *          The feature is available only if compile with enabled extended features.
+     *          Otherwise, it outputs error message and nothing happens.
+     **/
+    static void _setVerboseMode( bool makeVerbose );
+
 //////////////////////////////////////////////////////////////////////////
 // OS specific hidden methods.
 //////////////////////////////////////////////////////////////////////////
 private:
+    
     /**
      * \brief   OS specific validity check of logger service.
      **/
@@ -252,7 +285,7 @@ private:
     /**
      * \brief   OS specific implementation of changing the state of the mcrouter service.
      **/
-    bool _osSetState(NESystemService::eSystemServiceState newState );
+    bool _osSetState( NESystemService::eSystemServiceState newState );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -277,6 +310,11 @@ private:
 inline IEServiceConnectionProvider & Logger::getService( void )
 {
     return static_cast<IEServiceConnectionProvider &>(mServiceServer);
+}
+
+inline const ServiceCommunicatonBase::InstanceMap & Logger::getConnetedInstances( void ) const
+{
+    return mServiceServer.getInstances( );
 }
 
 inline Logger & Logger::self( void )

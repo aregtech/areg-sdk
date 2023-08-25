@@ -452,10 +452,10 @@ namespace NEService
         , ServiceRequestConnection
         //!< Sent by service manager to targets (client or stub) to notify connection status update.
         , ServiceNotifyConnection
-        //!< Called by service manager when connecting Routing Service (handshake procedure)
-        , ServiceRouterConnect
-        //!< Called by service manager when disconnecting Routing Service (graceful shutdown procedure)
-        , ServiceRouterDisconnect
+        //!< Called by service manager when connecting Remove Service like message router or logger (handshake procedure)
+        , SystemServiceConnect
+        //!< Called by service manager when disconnecting Remove Service like message router or logger (graceful shutdown procedure)
+        , SystemServiceDisconnect
         //!< Sent by Routing Service to service manager to notify request connect status
         , ServiceRouterNotify
         //!< Called by service manager to register available client or stub services
@@ -1467,10 +1467,10 @@ inline const char * NEService::getString( NEService::eFuncIdRange funcId )
         return "NEService::eFuncIdRange::ServiceRequestConnection";
     case NEService::eFuncIdRange::ServiceNotifyConnection:
         return "NEService::eFuncIdRange::ServiceNotifyConnection";
-    case NEService::eFuncIdRange::ServiceRouterConnect:
-        return "NEService::eFuncIdRange::ServiceRouterConnect";
-    case NEService::eFuncIdRange::ServiceRouterDisconnect:
-        return "NEService::eFuncIdRange::ServiceRouterDisconnect";
+    case NEService::eFuncIdRange::SystemServiceConnect:
+        return "NEService::eFuncIdRange::SystemServiceConnect";
+    case NEService::eFuncIdRange::SystemServiceDisconnect:
+        return "NEService::eFuncIdRange::SystemServiceDisconnect";
     case NEService::eFuncIdRange::ServiceRouterNotify:
         return "NEService::eFuncIdRange::ServiceRouterNotify";
     case NEService::eFuncIdRange::ServiceRouterRegister:
