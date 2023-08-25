@@ -54,10 +54,12 @@ public:
      **/
     enum class eRouterOptions   : int32_t
     {
-          CMD_Undefined         //!< Undefined command.
+          CMD_RouterUndefined   //!< Undefined command.
         , CMD_RouterPause       //!< Pause router.
         , CMD_RouterRestart     //!< Restart router.
         , CMD_RouterInstances   //!< Display list of connected instances.
+        , CMD_RouterVerbose     //!< Display data rate information if possible. Functions only with extended features
+        , CMD_RouterSilent      //!< Silent mode, no data rate is displayed.
         , CMD_RouterPrintHelp   //!< Print help.
         , CMD_RouterQuit        //!< Quit router.
     };
@@ -158,18 +160,18 @@ public:
     virtual bool setState( NESystemService::eSystemServiceState newState ) override;
 
 protected:
-    /************************************************************************/
-    // SystemServiceBase protected overrides
-    /************************************************************************/
+/************************************************************************/
+// SystemServiceBase protected overrides
+/************************************************************************/
 
-        /**
-         * \brief   Triggered to print the help message on console.
-         * \param   isCmdLine   Flag indicating whether it should print the help
-         *                      of using service in command line or help of user input commands.
-         *                      If 'true', the printing message is about using the service in
-         *                      command line. Otherwise, if application expects user inputs, prints
-         *                      the help of command options.
-         **/
+    /**
+     * \brief   Triggered to print the help message on console.
+     * \param   isCmdLine   Flag indicating whether it should print the help
+     *                      of using service in command line or help of user input commands.
+     *                      If 'true', the printing message is about using the service in
+     *                      command line. Otherwise, if application expects user inputs, prints
+     *                      the help of command options.
+     **/
     virtual void printHelp( bool isCmdLine ) override;
 
     /**
@@ -208,6 +210,11 @@ private:
     inline IEServiceConnectionProvider & getService( void );
 
     /**
+     * \brief   Returns the list of connected instances.
+     **/
+    inline const ServiceCommunicatonBase::InstanceMap & getConnetedInstances( void ) const;
+
+    /**
      * \brief   Returns instance of message router service.
      **/
     inline MulticastRouter & self( void );
@@ -219,10 +226,33 @@ private:
      **/
     static bool _checkCommand(const String& cmd);
 
+    /**
+     * \brief   Output on console the title.
+     **/
+    static void _outputTitle( void );
+
+    /**
+     * \brief   Prints info on console.
+     **/
+    static void _outputInfo( const String & info );
+
+    /**
+     * \brief   Outputs on console the information about connected instances.
+     **/
+    static void _outputInstances( const ServiceCommunicatonBase::InstanceMap & instances );
+
+    /**
+     * \brief   Sets verbose or silent mode to output data rate.
+     *          The feature is available only if compile with enabled extended features.
+     *          Otherwise, it outputs error message and nothing happens.
+     **/
+    static void _setVerboseMode( bool makeVerbose );
+
 //////////////////////////////////////////////////////////////////////////
 // OS specific hidden methods.
 //////////////////////////////////////////////////////////////////////////
 private:
+    
     /**
      * \brief   OS specific validity check of message router service.
      **/
@@ -282,6 +312,11 @@ private:
 inline IEServiceConnectionProvider & MulticastRouter::getService( void )
 {
     return static_cast<IEServiceConnectionProvider &>(mServiceServer);
+}
+
+inline const ServiceCommunicatonBase::InstanceMap & MulticastRouter::getConnetedInstances( void ) const
+{
+    return mServiceServer.getInstances( );
 }
 
 inline MulticastRouter & MulticastRouter::self( void )

@@ -273,6 +273,13 @@ int Thread::_threadEntry( void )
         onPostExitThread();
 
         Thread::getCurrentThreadStorage().removeStoragteItem(STORAGE_THREAD_CONSUMER.data());
+
+        if ( mSynchObject.tryLock( ) )
+        {
+            _unregisterThread( );
+            _cleanResources( );
+            mSynchObject.unlock( );
+        }
     }
     else
     {

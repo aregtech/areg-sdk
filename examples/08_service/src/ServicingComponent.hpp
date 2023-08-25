@@ -63,7 +63,7 @@ protected:
     virtual ~ServicingComponent(void) = default;
 
 /************************************************************************/
-// CEStubBase overrides. Triggered by Component on startup.
+// StubBase overrides. Triggered by Component on startup.
 /************************************************************************/
 
     /**

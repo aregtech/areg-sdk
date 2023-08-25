@@ -50,9 +50,10 @@ void PublicServiceComponent::requestHelloWorld( unsigned int clientID )
     TRACE_SCOPE( examples_13_pubmesh_pubservice_PublicServiceComponent_requestHelloWorld );
     PublicHelloWorldService::requestHelloWorld( clientID );
 
-    if ( mNumMessages == NEPublicHelloWorld::MaximumOutputs )
+    if ( mNumMessages >= NEPublicHelloWorld::MaximumOutputs )
     {
         TRACE_WARN( "Reached maximum outputs [ %d ], preparing to shutdown", mNumMessages );
+        printf( ">>> Reached maximum outputs [ %d ] <<< ", mNumMessages );
         // Notify the service unavailable state, so that the clients stop sending requests
         SystemShutdownStub::setServiceState( NESystemShutdown::eServiceState::ServiceShutdown );
     }

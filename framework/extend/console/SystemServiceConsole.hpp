@@ -46,7 +46,7 @@ class SystemServiceConsole  : public    Component
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants.
 //////////////////////////////////////////////////////////////////////////
-protected:
+public:
 
     //!< Bytes in 1 Kilobyte.
     static constexpr uint32_t           ONE_KILOBYTE    { NECommon::ONE_KILOBYTE };
@@ -92,7 +92,7 @@ protected:
      * \param   owner       The instance of component owner thread.
      * \param   data        The optional component data set in system. Can be empty / no data.
      **/
-    SystemServiceConsole( const String & appTitle, SystemServiceBase & sysService, const NERegistry::ComponentEntry & entry, ComponentThread & owner,  NEMemory::uAlign OPT data );
+    SystemServiceConsole( SystemServiceBase & sysService, const NERegistry::ComponentEntry & entry, ComponentThread & owner,  NEMemory::uAlign OPT data );
 
     /**
      * \brief   Destructor.
@@ -100,7 +100,7 @@ protected:
     virtual ~SystemServiceConsole( void ) = default;
 
 /************************************************************************/
-// CEStubBase overrides. Triggered by Component on startup.
+// StubBase overrides. Triggered by Component on startup.
 /************************************************************************/
 
     /**
@@ -198,13 +198,12 @@ private:
     /**
      * \brief   Called to output sent and received data rate messages.
      **/
-    inline void _outputDataRate(uint32_t bytesSend, uint32_t bytesRecv);
+    inline void _outputDataRate(void);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    String              mTitle;         //!< The title to display on console.
     SystemServiceBase & mSystemService; //!< The instance of system service object.
     Timer               mTimer;         //!< The timer to run in component thread.
 

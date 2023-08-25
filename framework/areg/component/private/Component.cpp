@@ -272,7 +272,7 @@ void Component::waitComponentCompletion( unsigned int waitTimeout )
     WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
     while (workerThread != nullptr)
     {
-        workerThread->completionWait(waitTimeout);
+        workerThread->destroyThread(waitTimeout);
         workerThread = mComponentInfo.getNextWorkerThread(addrThread);
     }
 }

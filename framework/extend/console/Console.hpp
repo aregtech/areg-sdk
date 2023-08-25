@@ -259,6 +259,17 @@ public:
      **/
     inline void refreshScreen(void) const;
 
+    /**
+     * \brief   Locks the console to prevent other threads to output or change cursor position.
+     * \return  Returns true if succeeded to lock. Otherwise, returns false.
+     **/
+    inline bool lockConsole( void );
+
+    /**
+     * \brief   Unlocks previously locked console.
+     **/
+    inline void unlockConsole( void );
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden, OS specific methods.
 //////////////////////////////////////////////////////////////////////////
@@ -466,6 +477,16 @@ inline const String & Console::getUserInput( void ) const
 inline void Console::refreshScreen( void ) const
 {
     _osRefreshScreen( );
+}
+
+inline bool Console::lockConsole( void )
+{
+    return mLock.lock(NECommon::WAIT_INFINITE);
+}
+
+inline void Console::unlockConsole( void )
+{
+    mLock.unlock( );
 }
 
 inline void Console::clearCurrentLine( void ) const

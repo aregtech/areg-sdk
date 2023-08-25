@@ -14,10 +14,11 @@
  ************************************************************************/
 #include "areg/ipc/NEConnection.hpp"
 
+#include "areg/base/Process.hpp"
+#include "areg/base/RemoteMessage.hpp"
 #include "areg/component/NEService.hpp"
 #include "areg/component/StubAddress.hpp"
 #include "areg/component/ProxyAddress.hpp"
-#include "areg/base/RemoteMessage.hpp"
 
 AREG_API const NEMemory::sRemoteMessage & NEConnection::getMessageHelloServer( void )
 {
@@ -34,7 +35,7 @@ AREG_API const NEMemory::sRemoteMessage & NEConnection::getMessageHelloServer( v
             , NEService::COOKIE_ROUTER                      // rbhTarget
             , NEMemory::INVALID_VALUE                       // rbhChecksum
             , NEMemory::INVALID_VALUE                       // rbhSource
-            , static_cast<uint32_t>(NEService::eFuncIdRange::ServiceRouterConnect) // rbhMessageId
+            , static_cast<uint32_t>(NEService::eFuncIdRange::SystemServiceConnect) // rbhMessageId
             , NEMemory::MESSAGE_SUCCESS                     // rbhResult
             , NEService::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
         }
@@ -59,7 +60,7 @@ AREG_API const NEMemory::sRemoteMessage & NEConnection::getMessageByeServer( voi
             , NEService::COOKIE_ROUTER                      // rbhTarget
             , NEMemory::INVALID_VALUE                       // rbhChecksum
             , NEMemory::INVALID_VALUE                       // rbhSource
-            , static_cast<uint32_t>(NEService::eFuncIdRange::ServiceRouterDisconnect) // rbhMessageId
+            , static_cast<uint32_t>(NEService::eFuncIdRange::SystemServiceDisconnect) // rbhMessageId
             , NEMemory::MESSAGE_SUCCESS                     // rbhResult
             , NEService::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
         }
@@ -335,7 +336,7 @@ AREG_API_IMPL bool NEConnection::isMessageHelloServer(const RemoteMessage & msgH
     bool result = false;
     if ( msgHelloServer.isChecksumValid() )
     {
-        result = (msgHelloServer.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceRouterConnect)) &&
+        result = (msgHelloServer.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::SystemServiceConnect)) &&
                  (msgHelloServer.getSource()    == NEService::COOKIE_UNKNOWN);
     }
 
@@ -347,7 +348,7 @@ AREG_API_IMPL bool NEConnection::isMessageByeServer(const RemoteMessage & msgBye
     bool result = false;
     if ( msgByeServer.isChecksumValid() )
     {
-        result = (msgByeServer.getMessageId()   == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceRouterDisconnect)) &&
+        result = (msgByeServer.getMessageId()   == static_cast<uint32_t>(NEService::eFuncIdRange::SystemServiceDisconnect)) &&
                  (msgByeServer.getSource()      != NEService::COOKIE_UNKNOWN);
     }
 
@@ -431,8 +432,10 @@ AREG_API_IMPL RemoteMessage NEConnection::createConnectRequest(void)
     RemoteMessage msgHelloServer;
     if ( msgHelloServer.initMessage( NEConnection::getMessageHelloServer().rbHeader ) != nullptr )
     {
+        String instance (Process::getInstance( ).getAppName( ));
         msgHelloServer.setSource( NEService::SOURCE_UNKNOWN );
         msgHelloServer.setSequenceNr( NEService::SEQUENCE_NUMBER_NOTIFY );
+        msgHelloServer << instance;
 
         msgHelloServer.bufferCompletionFix();
     }

@@ -52,12 +52,11 @@ SystemServiceConsole::DataRate::DataRate(uint32_t sizeBytes)
 //////////////////////////////////////////////////////////////////////////
 // SystemServiceConsole class implementation
 //////////////////////////////////////////////////////////////////////////
-SystemServiceConsole::SystemServiceConsole( const String & appTitle, SystemServiceBase & sysService, const NERegistry::ComponentEntry & entry, ComponentThread & owner, NEMemory::uAlign OPT data )
+SystemServiceConsole::SystemServiceConsole( SystemServiceBase & sysService, const NERegistry::ComponentEntry & entry, ComponentThread & owner, NEMemory::uAlign OPT data )
     : Component         ( entry, owner )
     , StubBase          ( self( ), NEService::getEmptyInterface( ) )
     , IETimerConsumer   ( )
 
-    , mTitle            ( appTitle )
     , mSystemService    ( sysService )
     , mTimer            ( self( ), "ConsoleServiceTimer" )
 {
@@ -67,18 +66,22 @@ void SystemServiceConsole::startupServiceInterface( Component & holder )
 {
     StubBase::startupServiceInterface( holder );
 
-    Console& console = Console::getInstance();
+    Console & console = Console::getInstance( );
+    console.lockConsole( );
 
-    console.outputTxt(NESystemService::COORD_TITLE, mTitle.getString());
-    console.outputTxt(NESystemService::COORD_SUBTITLE, NESystemService::APP_SUBTITE.data());
-    console.outputMsg(NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data(), 0.0f, SystemServiceConsole::MSG_BYTES.data());
-    console.outputMsg(NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data(), 0.0f, SystemServiceConsole::MSG_BYTES.data());
-    console.outputTxt(NESystemService::COORD_USER_INPUT,NESystemService::FORMAT_WAIT_QUIT);
+    if ( mSystemService.isVerbose( ) )
+    {
 
-    mTimer.startTimer(NECommon::TIMEOUT_1_SEC, Timer::CONTINUOUSLY);
+        console.outputMsg( NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data( ), 0.0f, SystemServiceConsole::MSG_BYTES.data( ) );
+        console.outputMsg( NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data( ), 0.0f, SystemServiceConsole::MSG_BYTES.data( ) );
+    }
 
-    console.enableConsoleInput(true);
-    console.refreshScreen();
+    mTimer.startTimer( NECommon::TIMEOUT_1_SEC, Timer::CONTINUOUSLY );
+
+    console.outputTxt( NESystemService::COORD_USER_INPUT, NESystemService::FORMAT_WAIT_QUIT );
+    console.enableConsoleInput( true );
+    console.refreshScreen( );
+    console.unlockConsole( );
 }
 
 void SystemServiceConsole::shutdownServiceIntrface( Component & holder )
@@ -92,7 +95,7 @@ void SystemServiceConsole::processTimer( Timer & timer )
     ASSERT( &timer == &mTimer );
     if ( mTimer.isActive( ) )
     {
-        _outputDataRate( mSystemService.queryDataSent(), mSystemService.queryDataReceived());
+        _outputDataRate( );
     }
 }
 
@@ -115,17 +118,21 @@ void SystemServiceConsole::processAttributeEvent( ServiceRequestEvent & eventEle
 {
 }
 
-inline void SystemServiceConsole::_outputDataRate(uint32_t bytesSend, uint32_t bytesRecv)
+inline void SystemServiceConsole::_outputDataRate(void)
 {
     Console& console = Console::getInstance();
+    console.lockConsole( );
+    if ( mSystemService.isVerbose( ) )
+    {
+        SystemServiceConsole::DataRate rateSend( mSystemService.queryDataSent( ) );
+        SystemServiceConsole::DataRate rateRecv( mSystemService.queryDataReceived( ) );
 
-    console.saveCursorPosition();
-    SystemServiceConsole::DataRate rateSend(bytesSend);
-    SystemServiceConsole::DataRate rateRecv(bytesRecv);
+        console.saveCursorPosition( );
+        console.outputMsg( NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data( ), rateSend.mRate.first, rateSend.mRate.second.c_str( ) );
+        console.outputMsg( NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data( ), rateRecv.mRate.first, rateRecv.mRate.second.c_str( ) );
+        console.restoreCursorPosition( );
+        console.refreshScreen( );
+    }
 
-    console.outputMsg(NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data(), rateSend.mRate.first, rateSend.mRate.second.c_str());
-    console.outputMsg(NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data(), rateRecv.mRate.first, rateRecv.mRate.second.c_str());
-
-    console.restoreCursorPosition();
-    console.refreshScreen();
+    console.unlockConsole( );
 }

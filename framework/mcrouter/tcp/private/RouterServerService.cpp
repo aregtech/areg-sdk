@@ -136,10 +136,11 @@ void RouterServerService::onServiceMessageReceived(const RemoteMessage &msgRecei
         }
         break;
 
-    case NEService::eFuncIdRange::ServiceRouterDisconnect:
+    case NEService::eFuncIdRange::SystemServiceDisconnect:
         {
             ITEM_ID cookie = NEService::COOKIE_UNKNOWN;
             msgReceived >> cookie;
+            mInstanceMap.removeAt( cookie );
             mServerConnection.closeConnection(cookie);
 
             TEArrayList<StubAddress>  listStubs;
@@ -165,7 +166,7 @@ void RouterServerService::onServiceMessageReceived(const RemoteMessage &msgRecei
 
     case NEService::eFuncIdRange::ServiceLastId:
     case NEService::eFuncIdRange::ServiceRouterQuery:
-    case NEService::eFuncIdRange::ServiceRouterConnect:
+    case NEService::eFuncIdRange::SystemServiceConnect:
     case NEService::eFuncIdRange::ServiceRequestConnection:
     case NEService::eFuncIdRange::ServiceNotifyVersion:
     case NEService::eFuncIdRange::ServiceRequestVersion:
@@ -235,6 +236,8 @@ void RouterServerService::onServiceMessageSend(const RemoteMessage &msgSend)
 
 void RouterServerService::disconnectServices(void)
 {
+    ServiceCommunicatonBase::disconnectServices( );
+
     TEArrayList<StubAddress>  stubList;
     TEArrayList<ProxyAddress> proxyList;
     extractRemoteServiceAddresses(NEService::COOKIE_ANY, stubList, proxyList);

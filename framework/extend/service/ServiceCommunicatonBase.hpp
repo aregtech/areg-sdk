@@ -80,6 +80,9 @@ public:
         , DefaultReject //!< The default behavior is to reject the connection.
     } eConnectionBehavior;
 
+    //!< The map of connected instances.
+    using InstanceMap   = TEMap<ITEM_ID, String>;
+
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
@@ -151,6 +154,24 @@ public:
      *          the value after last query.
      **/
     inline uint32_t queryBytesReceived(void);
+
+    /**
+     * \brief   Returns the list of connected instances.
+     **/
+    inline const InstanceMap & getInstances( void ) const;
+
+    /**
+     * \brief   Adds an entry into the list of connected instances.
+     * \param   cookie      The cookie of connected instance.
+     * \param   instance    The name of the connected instance.
+     **/
+    inline void addInstance( ITEM_ID cookie, const String & instance );
+
+    /**
+     * \brief   Removes connected instance.
+     * \param   cookie      The cookie of connected instance.
+     **/
+    inline void removeInstance( ITEM_ID cookie );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -248,6 +269,11 @@ protected:
      * \brief   Triggered, when there is a connection failure. Normally, this should restart the connection.
      **/
     virtual void connectionFailure( void ) override;
+
+    /**
+     * \brief   Called when need to disconnect and unregister all service providers and service consumers.
+     **/
+    virtual void disconnectServices( void ) override;
 
 /************************************************************************/
 // IERemoteMessageHandler interface overrides
@@ -412,6 +438,7 @@ protected:
     StringArray                 mBlackList;         //!< The list of disabled fixes client hosts.
     ServiceServerEventConsumer  mEventConsumer;     //!< The custom event consumer object
     ReconnectTimerConsumer      mTimerConsumer;     //!< The timer consumer object.
+    InstanceMap                 mInstanceMap;       //!< The map of connected instance.
     SynchEvent                  mEventSendStop;     //!< The event set when cannot send and receive data anymore.
     mutable ResourceLock        mLock;              //!< The synchronization object to be accessed from different threads.
 
@@ -471,6 +498,21 @@ inline uint32_t ServiceCommunicatonBase::queryBytesSent(void)
 inline uint32_t ServiceCommunicatonBase::queryBytesReceived(void)
 {
     return mThreadReceive.extractDataReceive();
+}
+
+inline const ServiceCommunicatonBase::InstanceMap & ServiceCommunicatonBase::getInstances( void ) const
+{
+    return mInstanceMap;
+}
+
+inline void ServiceCommunicatonBase::addInstance( ITEM_ID cookie, const String & instance )
+{
+    mInstanceMap.addIfUnique( cookie, instance );
+}
+
+inline void ServiceCommunicatonBase::removeInstance( ITEM_ID cookie )
+{
+    mInstanceMap.removeAt( cookie );
 }
 
 inline bool ServiceCommunicatonBase::sendCommand( ServiceEventData::eServiceEventCommands cmd, Event::eEventPriority eventPrio /*= Event::eEventPriority::EventPriorityNormal*/ )
