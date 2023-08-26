@@ -101,7 +101,7 @@ void PublicHelloWorldService::requestHelloWorld( unsigned int clientID )
     if ( mClientList.isValidPosition( pos ) )
     {
         // use printf() because of multithreading environment.
-        printf( "\">>> Hello Public [ %s ]!\", processed [ %u ] requests.\n\r", theClient.crName.getString( ), ++mNumMessages );
+        printf( "\">>> Public [ %s ]!\", processed [ %u ] requests.\n\r", theClient.crName.getString( ), ++mNumMessages );
     }
 
     responseHelloWorld( theClient.crID );

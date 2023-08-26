@@ -32,17 +32,20 @@ ServerSendThread::ServerSendThread(IERemoteMessageHandler& remoteService, Server
 {
 }
 
-bool ServerSendThread::runDispatcher( void )
+void ServerSendThread::readyForEvents( bool isReady )
 {
-    removeAllEvents();
-    SendMessageEvent::addListener( static_cast<IESendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this));
-    bool result = DispatcherThread::runDispatcher();
-    SendMessageEvent::removeListener(static_cast<IESendMessageEventConsumer&>(*this), static_cast<DispatcherThread&>(*this));
-
-    mConnection.closeAllConnections();
-    mConnection.disableSend( );
-
-    return result;
+    if ( isReady )
+    {
+        SendMessageEvent::addListener( static_cast<IESendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
+        DispatcherThread::readyForEvents( true );
+    }
+    else
+    {
+        DispatcherThread::readyForEvents( false );
+        SendMessageEvent::removeListener( static_cast<IESendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
+        mConnection.closeAllConnections( );
+        mConnection.disableSend( );
+    }
 }
 
 void ServerSendThread::processEvent( const SendMessageEventData & data )

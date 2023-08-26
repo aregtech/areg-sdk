@@ -40,9 +40,8 @@ bool ServerReceiveThread::runDispatcher(void)
     TRACE_SCOPE( areg_extend_service_ServerReceiveThread_runDispatcher );
     TRACE_DBG("Starting dispatcher [ %s ]", getName().getString());
 
-    mEventStarted.setEvent();
-
-    int whichEvent  = static_cast<int>(EventDispatcherBase::eEventOrder::EventError);
+    readyForEvents(true);
+    int whichEvent{ static_cast<int>(EventDispatcherBase::eEventOrder::EventError) };
     if ( mConnection.serverListen( NESocket::MAXIMUM_LISTEN_QUEUE_SIZE) )
     {
         IESynchObject* syncObjects[2] = {&mEventExit, &mEventQueue};
@@ -156,10 +155,8 @@ bool ServerReceiveThread::runDispatcher(void)
         } while (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue));
     }
 
-    mHasStarted = false;
-    removeEvents(false);
-
-    mEventStarted.resetEvent();
+    readyForEvents(false);
+    removeAllEvents();
 
     TRACE_DBG("Dispatcher [ %s ] completed job and stopping running.", mDispatcherName.getString());
     return (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventExit));

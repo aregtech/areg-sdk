@@ -116,6 +116,7 @@ BEGIN_MODEL( _modelName )
             REGISTER_DEPENDENCY(NECommon::PublicControllerService)
         // end of component description
         END_REGISTER_COMPONENT( NECommon::LocalService )
+
     // end of thread description
     END_REGISTER_THREAD( "TestMainServiceThread" )
 

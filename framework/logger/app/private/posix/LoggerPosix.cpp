@@ -54,8 +54,6 @@ int main(int argc, char* argv[], char* envp[])
     case NESystemService::eServiceOption::CMD_Console:
         logger.setState(NESystemService::eSystemServiceState::ServiceStarting);
         logger.serviceMain( static_cast<int>(argc), argv);
-        logger.setState( NESystemService::eSystemServiceState::ServiceStopped );
-        logger.serviceStop();
         break;
 
 

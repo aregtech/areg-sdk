@@ -100,8 +100,9 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief   Triggered before dispatcher starts to dispatch events and when event dispatching just finished.
-     * \param   hasStarted  The flag to indicate whether the dispatcher is ready for events.
+     * \brief   Call to enable or disable event dispatching threads to receive events.
+     *          Override if need to make event dispatching preparation job.
+     * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
      **/
     virtual void readyForEvents( bool isReady ) override;
 
@@ -177,6 +178,7 @@ void HelloDispatcher::readyForEvents(bool isReady )
     TRACE_SCOPE( main_HelloDispatcher_readyForEvents );
     TRACE_DBG( "The dispatcher is running. The custom business logic can be set here ..." );
 
+    DispatcherThread::readyForEvents( isReady );
     if (isReady)
     {
         mTimer.startTimer(100);

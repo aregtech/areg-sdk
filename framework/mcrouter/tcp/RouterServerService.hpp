@@ -48,7 +48,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~RouterServerService( void )= default;
+    virtual ~RouterServerService( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides

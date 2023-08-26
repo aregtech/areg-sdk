@@ -55,15 +55,8 @@ void EventDispatcherBase::signalEvent( uint32_t eventCount )
 
 bool EventDispatcherBase::startDispatcher( void )
 {
-    bool result = true;
-    if (mHasStarted == false)
-    {
-        mHasStarted = true;
-        mEventExit.resetEvent();
-        result      = runDispatcher();
-    }
-
-    return result;
+    mEventExit.resetEvent( );
+    return runDispatcher( );
 }
 
 void EventDispatcherBase::stopDispatcher( void )
@@ -71,7 +64,6 @@ void EventDispatcherBase::stopDispatcher( void )
     mExternaEvents.lockQueue();
     removeEvents(false);
     mExternaEvents.pushEvent(ExitEvent::getExitEvent());
-    mHasStarted = false;
     mExternaEvents.unlockQueue();
     mEventExit.setEvent();
 }
@@ -81,20 +73,18 @@ void EventDispatcherBase::exitDispatcher(void)
     mInternalEvents.removeAllEvents();
     mExternaEvents.removeAllEvents();
 
-    mHasStarted = false;
     mEventExit.setEvent();
 }
 
 void EventDispatcherBase::shutdownDispatcher( void )
 {
+    mExternaEvents.lockQueue( );
     if ( mHasStarted )
     {
-        mExternaEvents.lockQueue();
         removeEvents( true );
         mExternaEvents.pushEvent(ExitEvent::getExitEvent());
-        mHasStarted = false;
-        mExternaEvents.unlockQueue();
     }
+    mExternaEvents.unlockQueue( );
 }
 
 bool EventDispatcherBase::queueEvent( Event& eventElem )
@@ -256,13 +246,12 @@ int EventDispatcherBase::removeConsumer( IEEventConsumer & whichConsumer )
 
 bool EventDispatcherBase::runDispatcher( void )
 {
-    IESynchObject* syncObjects[2] = {&mEventExit, &mEventQueue};
-    MultiLock multiLock(syncObjects, 2, false);
+    readyForEvents( true );
 
+    IESynchObject* syncObjects[2] {&mEventExit, &mEventQueue};
+    MultiLock multiLock(syncObjects, 2, false);
     int whichEvent  = static_cast<int>(EventDispatcherBase::eEventOrder::EventError);
     const ExitEvent& exitEvent = ExitEvent::getExitEvent();
-
-    readyForEvents(true);
 
     do 
     {
@@ -314,7 +303,6 @@ bool EventDispatcherBase::runDispatcher( void )
     } while (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue));
 
     readyForEvents(false);
-    mHasStarted = false;
     removeAllEvents( );
     _clean();
 
@@ -323,8 +311,11 @@ bool EventDispatcherBase::runDispatcher( void )
     return (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventExit));
 }
 
-void EventDispatcherBase::readyForEvents( bool /* isReady */ )
+void EventDispatcherBase::readyForEvents( bool isReady )
 {
+    mExternaEvents.lockQueue( );
+    mHasStarted = isReady;
+    mExternaEvents.unlockQueue( );
 }
 
 Event* EventDispatcherBase::pickEvent( void )

@@ -404,7 +404,7 @@ inline const char * NETrafficController::getString( NETrafficController::ePedest
 }
 
 /************************************************************************
- * NETrafficController::sTrafficLight strcuture inline implementation
+ * NETrafficController::sTrafficLight structure inline implementation
  ************************************************************************/
 /**
  * Every field of structure should have default constructor.

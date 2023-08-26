@@ -54,8 +54,6 @@ int main(int argc, char* argv[], char* envp[])
     case NESystemService::eServiceOption::CMD_Console:
         router.setState(NESystemService::eSystemServiceState::ServiceStarting);
         router.serviceMain( static_cast<int>(argc), argv);
-        router.setState(NESystemService::eSystemServiceState::ServiceStopped);
-        router.serviceStop();
         break;
 
     default:

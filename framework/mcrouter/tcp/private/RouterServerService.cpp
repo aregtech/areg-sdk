@@ -251,6 +251,8 @@ void RouterServerService::disconnectServices(void)
     {
         unregisteredRemoteServiceConsumer( proxyList[i], NEService::eDisconnectReason::ReasonRouterDisconnected, NEService::COOKIE_ANY );
     }
+
+    mServiceRegistry.clear( );
 }
 
 void RouterServerService::extractRemoteServiceAddresses( ITEM_ID cookie, TEArrayList<StubAddress> & OUT out_listStubs, TEArrayList<ProxyAddress> & OUT out_lisProxies ) const
@@ -411,8 +413,7 @@ void RouterServerService::unregisteredRemoteServiceProvider(const StubAddress & 
                 // no need to send message to unregistered stub, only to proxy side
                 if (sendList.addIfUnique(addrProxy.getSource()) )
                 {
-                    RemoteMessage msgRegisterStub = NEConnection::createServiceUnregisteredNotification( stub, reason, addrProxy.getSource( ) );
-                    sendMessage(msgRegisterStub, Event::eEventPriority::EventPriorityHigh);
+                    sendMessage( NEConnection::createServiceUnregisteredNotification( stub, reason, addrProxy.getSource( ) ) );
 
                     TRACE_INFO("Send stub [ %s ] disconnect message to proxy [ %s ]"
                                     , stub.convToString().getString()
@@ -465,8 +466,7 @@ void RouterServerService::unregisteredRemoteServiceConsumer(const ProxyAddress &
 
     if ((svcStub->getServiceStatus() == NEService::eServiceConnection::ServiceConnected) && (proxy.getSource() != addrStub.getSource()))
     {
-        msgRegisterProxy = NEConnection::createServiceClientUnregisteredNotification(proxy, reason, addrStub.getSource());
-        sendMessage(msgRegisterProxy, Event::eEventPriority::EventPriorityHigh);
+        sendMessage( NEConnection::createServiceClientUnregisteredNotification( proxy, reason, addrStub.getSource( ) ) );
 
         TRACE_INFO("Send proxy [ %s ] disconnect message to stub [ %s ]"
                         , proxy.convToString().getString()

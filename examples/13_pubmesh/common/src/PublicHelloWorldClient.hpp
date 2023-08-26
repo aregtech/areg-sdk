@@ -35,7 +35,7 @@ public:
      * \brief   Instantiates the component object.
      * \param   dependency  The entry of registry describing the dependency service.
      * \param   owner       The component owning thread.
-     * \param   timeout The timeout in milliseconds to trigger the request to output message
+     * \param   timeout     The timeout in milliseconds to trigger the request to output message
      **/
     PublicHelloWorldClient( const NERegistry::DependencyEntry & dependency, Component & owner, unsigned int timeout );
 

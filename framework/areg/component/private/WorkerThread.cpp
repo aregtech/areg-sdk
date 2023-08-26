@@ -66,12 +66,18 @@ bool WorkerThread::postEvent( Event& eventElem )
     return result;
 }
 
-bool WorkerThread::runDispatcher( void )
+void WorkerThread::readyForEvents( bool isReady )
 {
-    mWorkerThreadConsumer.registerEventConsumers(self(), mBindingComponent.getMasterThread());
-    bool result = DispatcherThread::runDispatcher();
-    mWorkerThreadConsumer.unregisterEventConsumers(self());
-    return result;
+    if ( isReady )
+    {
+        mWorkerThreadConsumer.registerEventConsumers( self( ), mBindingComponent.getMasterThread( ) );
+    }
+    else
+    {
+        mWorkerThreadConsumer.unregisterEventConsumers( self( ) );
+    }
+
+    DispatcherThread::readyForEvents(isReady);
 }
 
 DispatcherThread* WorkerThread::getEventConsumerThread( const RuntimeClassID& whichClass )
