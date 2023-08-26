@@ -517,6 +517,7 @@ void Logger::_outputInstances( const ServiceCommunicatonBase::InstanceMap & inst
 
 #if AREG_EXTENDED
 
+    console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
     console.unlockConsole( );
 
 #endif  // AREG_EXTENDED

@@ -453,40 +453,48 @@ void MulticastRouter::_outputInstances( const ServiceCommunicatonBase::InstanceM
     Console::Coord coord{NESystemService::COORD_INFO_MSG};
     console.lockConsole( );
 
-#endif // AREG_EXTENDED
-
     if ( instances.isEmpty( ) )
     {
-#if AREG_EXTENDED
-
         console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
         ++ coord.posY;
         console.outputStr( coord, _empty );
-
-#else   // !AREG_EXTENDED
-
-        printf( "%s\n", _empty.data() );
-
-#endif  // AREG_EXTENDED
+        ++ coord.posY;
     }
     else
     {
-#if AREG_EXTENDED
-
         console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
         ++ coord.posY;
         console.outputTxt( coord, _table );
         ++ coord.posY;
         console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
         ++ coord.posY;
+        int i{ 1 };
+        for ( auto pos = instances.firstPosition( ); instances.isValidPosition( pos ); pos = instances.nextPosition( pos ) )
+        {
+            ITEM_ID cookie{ 0 };
+            String name;
+            instances.getAtPosition( pos, cookie, name );
+            unsigned int id{ static_cast<unsigned int>(cookie) };
+
+            console.outputMsg( coord, " %4d. |  %11u  |  %s ", i ++, id, name.getString( ) );
+            ++ coord.posY;
+        }
+    }
+
+    console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
+    console.unlockConsole( );
 
 #else   // !AREG_EXTENDED
 
+    if ( instances.isEmpty( ) )
+    {
+        printf( "%s\n", _empty.data() );
+    }
+    else
+    {
         printf( "%s\n", NESystemService::MSG_SEPARATOR.data( ) );
         printf( "%s\n", _table.data() );
         printf( "%s\n", NESystemService::MSG_SEPARATOR.data( ) );
-
-#endif  // AREG_EXTENDED
 
         int i{ 1 };
         for ( auto pos = instances.firstPosition( ); instances.isValidPosition( pos ); pos = instances.nextPosition( pos ) )
@@ -496,24 +504,11 @@ void MulticastRouter::_outputInstances( const ServiceCommunicatonBase::InstanceM
             instances.getAtPosition( pos, cookie, name );
             unsigned int id{ static_cast<unsigned int>(cookie) };
 
-#if AREG_EXTENDED
-
-            console.outputMsg( coord, " %4d. |  %11u  |  %s ", i ++, id, name.getString( ) );
-            ++ coord.posY;
-
-#else   // !AREG_EXTENDED
-
             printf( " %4d. |  %11u  |  %s \n", i ++, id, name.getString( ) );
-
-#endif  // AREG_EXTENDED
         }
-
-        console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
     }
 
-#if AREG_EXTENDED
-
-    console.unlockConsole( );
+    printf( "%s\n", NESystemService::MSG_SEPARATOR.data( ) );
 
 #endif  // AREG_EXTENDED
 }
