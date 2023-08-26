@@ -251,7 +251,7 @@ namespace   NEHelloWorld
 IMPLEMENT_STREAMABLE( NEHelloWorld::eMessageIDs );
 
 /************************************************************************
- * NEHelloWorld::sConnectedClient strcuture inline implementation
+ * NEHelloWorld::sConnectedClient structure inline implementation
  ************************************************************************/
 /**
  * Every field of structure should have default constructor.

@@ -253,8 +253,8 @@ void ServiceCommunicatonBase::onServiceStop(void)
 
     mThreadReceive.completionWait( NECommon::DO_NOT_WAIT);
     mThreadSend.completionWait( NECommon::DO_NOT_WAIT);
-    mThreadReceive.shutdownThread();
-    mThreadSend.shutdownThread();
+    mThreadReceive.destroyThread();
+    mThreadSend.destroyThread();
 
     mEventSendStop.setEvent();
 }
@@ -276,8 +276,8 @@ void ServiceCommunicatonBase::onServiceExit( void )
 
     mThreadReceive.completionWait( NECommon::DO_NOT_WAIT );
     mThreadSend.completionWait( NECommon::DO_NOT_WAIT );
-    mThreadReceive.shutdownThread( );
-    mThreadSend.shutdownThread( );
+    mThreadReceive.destroyThread( );
+    mThreadSend.destroyThread( );
 
     mEventSendStop.setEvent( );
     triggerExitEvent( );
@@ -353,7 +353,7 @@ void ServiceCommunicatonBase::stopConnection(void)
     mServerConnection.disableReceive( );
 
     disconnectServices( );
-    disconnectService( Event::eEventPriority::EventPriorityHigh );
+    disconnectService( Event::eEventPriority::EventPriorityNormal );
 
     mThreadSend.destroyThread( NECommon::WAIT_INFINITE );
     mServerConnection.closeSocket();
@@ -379,7 +379,7 @@ void ServiceCommunicatonBase::failedSendMessage(const RemoteMessage & msgFailed,
 
     ITEM_ID cookie = msgFailed.getTarget( );
     SocketAccepted client = mServerConnection.getClientByCookie( cookie );
-    ASSERT( whichTarget.getHandle( ) == client.getHandle( ) );
+    ASSERT( (client.isValid() == false) || (whichTarget.getHandle( ) == client.getHandle( )) );
 
 #endif // DEBUG
 
@@ -475,14 +475,18 @@ void ServiceCommunicatonBase::processReceivedMessage(const RemoteMessage & msgRe
     }
 }
 
-bool ServiceCommunicatonBase::runDispatcher(void)
+void ServiceCommunicatonBase::readyForEvents( bool isReady )
 {
-    removeAllEvents( );
-    ServiceServerEvent::addListener( static_cast<IEServiceServerEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self( )) );
-    bool result = DispatcherThread::runDispatcher();
-    ServiceServerEvent::removeListener( static_cast<IEServiceServerEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self( )) );
-
-    return result;
+    if ( isReady )
+    {
+        ServiceServerEvent::addListener( static_cast<IEServiceServerEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self( )) );
+        DispatcherThread::readyForEvents( true );
+    }
+    else
+    {
+        DispatcherThread::readyForEvents( false );
+        ServiceServerEvent::removeListener( static_cast<IEServiceServerEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self( )) );
+    }
 }
 
 bool ServiceCommunicatonBase::postEvent( Event & eventElem )

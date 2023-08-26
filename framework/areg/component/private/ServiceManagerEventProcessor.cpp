@@ -224,7 +224,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
                 for ( ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
                 {
                     const ProxyAddress & proxy = clientList.valueAtPosition( pos ).getAddress( );
-                    if ( proxy.isServicePublic( ) && proxy.isLocalAddress( ) && proxy.isValid( ) )
+                    if ( proxy.isServicePublic( ) && (proxy.isTargetLocal( ) == false) && proxy.isValid( ) )
                     {
                         registerProvider.registerServiceConsumer( proxy );
                     }

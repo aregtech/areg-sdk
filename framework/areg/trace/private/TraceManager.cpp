@@ -310,18 +310,22 @@ void TraceManager::processEvent( const TimerEventData & data )
     IETimerConsumer::processEvent( data );
 }
 
-bool TraceManager::runDispatcher(void)
+void TraceManager::readyForEvents( bool isReady )
 {
-    TraceEvent::addListener(static_cast<IETraceEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));
-    bool result = DispatcherThread::runDispatcher();
+    if ( isReady )
+    {
+        TraceEvent::addListener( static_cast<IETraceEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
+        DispatcherThread::readyForEvents( true );
+    }
+    else
+    {
+        DispatcherThread::readyForEvents( false );
+        TraceEvent::removeListener( static_cast<IETraceEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
 
-    mLoggerFile.closeLogger();
-    mLoggerDebug.closeLogger();
-    mLoggerTcp.closeLogger();
-
-    TraceEvent::removeListener(static_cast<IETraceEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));
-
-    return result;
+        mLoggerFile.closeLogger( );
+        mLoggerDebug.closeLogger( );
+        mLoggerTcp.closeLogger( );
+    }
 }
 
 void TraceManager::processEvent( const TraceEventData & data )

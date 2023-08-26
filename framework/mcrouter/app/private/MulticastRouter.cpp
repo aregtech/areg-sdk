@@ -176,9 +176,8 @@ void MulticastRouter::serviceMain( int argc, char ** argv )
     // Start only tracing and timer manager.
     Application::initApplication(true, true, false, true, false, NEApplication::DEFAULT_TRACING_CONFIG_FILE.data(), nullptr );
     SystemServiceBase::serviceMain( argc, argv );
-#if  AREG_EXTENDED
-    Application::waitAppQuit( );
-#endif // AREG_EXTENDED
+    setState(NESystemService::eSystemServiceState::ServiceStopped);
+    mServiceServer.waitToComplete( );
     Application::releaseApplication( );
 }
 
@@ -406,7 +405,7 @@ bool MulticastRouter::_checkCommand(const String& cmd)
     }
     else
     {
-        printf( "%s\n", NESystemService::FORMAT_WAIT_QUIT.data( ) );
+        printf( "%s\n", NESystemService::FORMAT_QUIT_APP.data( ) );
     }
 
 #endif  // AREG_EXTENDED
@@ -445,38 +444,48 @@ void MulticastRouter::_outputInfo( const String & info )
 
 void MulticastRouter::_outputInstances( const ServiceCommunicatonBase::InstanceMap & instances )
 {
-    static constexpr std::string_view _table{ "Nr.   |  Instance ID  |  Name " };
+    static constexpr std::string_view _table{ "   Nr. |  Instance ID  |  Name " };
     static constexpr std::string_view _empty{ "There are no connected instances ..." };
 
 #if AREG_EXTENDED
+
     Console & console = Console::getInstance( );
     Console::Coord coord{NESystemService::COORD_INFO_MSG};
     console.lockConsole( );
+
 #endif // AREG_EXTENDED
 
     if ( instances.isEmpty( ) )
     {
 #if AREG_EXTENDED
+
         console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
         ++ coord.posY;
         console.outputStr( coord, _empty );
+
 #else   // !AREG_EXTENDED
+
         printf( "%s\n", _empty.data() );
+
 #endif  // AREG_EXTENDED
     }
     else
     {
 #if AREG_EXTENDED
+
         console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
         ++ coord.posY;
         console.outputTxt( coord, _table );
         ++ coord.posY;
         console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
         ++ coord.posY;
+
 #else   // !AREG_EXTENDED
+
         printf( "%s\n", NESystemService::MSG_SEPARATOR.data( ) );
         printf( "%s\n", _table.data() );
         printf( "%s\n", NESystemService::MSG_SEPARATOR.data( ) );
+
 #endif  // AREG_EXTENDED
 
         int i{ 1 };
@@ -485,19 +494,27 @@ void MulticastRouter::_outputInstances( const ServiceCommunicatonBase::InstanceM
             ITEM_ID cookie{ 0 };
             String name;
             instances.getAtPosition( pos, cookie, name );
+            unsigned int id{ static_cast<unsigned int>(cookie) };
+
 #if AREG_EXTENDED
-            console.outputMsg( coord, " % 3d. |  % 6u       |  %s ", i ++, static_cast<unsigned int>(cookie), name.getString( ) );
+
+            console.outputMsg( coord, " %4d. |  %11u  |  %s ", i ++, id, name.getString( ) );
             ++ coord.posY;
+
 #else   // !AREG_EXTENDED
-            printf( " % 3d. |  % 6u       |  %s \n", i ++, static_cast<unsigned int>(cookie), name.getString( ) );
+
+            printf( " %4d. |  %11u  |  %s \n", i ++, id, name.getString( ) );
+
 #endif  // AREG_EXTENDED
         }
+
+        console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
     }
 
 #if AREG_EXTENDED
+
     console.unlockConsole( );
-#else   // !AREG_EXTENDED
-    printf( "%s\n", NESystemService::FORMAT_WAIT_QUIT.data( ) );
+
 #endif  // AREG_EXTENDED
 }
 

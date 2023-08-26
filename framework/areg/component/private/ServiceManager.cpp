@@ -268,15 +268,18 @@ bool ServiceManager::postEvent(Event & eventElem)
     return result;
 }
 
-bool ServiceManager::runDispatcher( void )
+void ServiceManager::readyForEvents( bool isReady )
 {
-    ServiceManagerEvent::addListener(static_cast<IEServiceManagerEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));
+    if ( isReady )
+    {
+        ServiceManagerEvent::addListener( static_cast<IEServiceManagerEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
+    }
+    else
+    {
+        ServiceManagerEvent::removeListener( static_cast<IEServiceManagerEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
+    }
 
-    bool result = DispatcherThread::runDispatcher();
-
-    ServiceManagerEvent::removeListener(static_cast<IEServiceManagerEventConsumer &>(self()), static_cast<DispatcherThread &>(self()));
-
-    return result;
+    DispatcherThread::readyForEvents( isReady );
 }
 
 bool ServiceManager::_startServiceManagerThread( void )

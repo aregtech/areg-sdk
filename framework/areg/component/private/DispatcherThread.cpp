@@ -22,7 +22,6 @@
 
 DEF_TRACE_SCOPE( areg_component_private_DispatcherThread_destroyThread);
 DEF_TRACE_SCOPE( areg_component_private_DispatcherThread_shutdownThread);
-DEF_TRACE_SCOPE( areg_component_private_DispatcherThread_runDispatcher);
 DEF_TRACE_SCOPE( areg_component_private_DispatcherThread_triggerExitEvent);
 
 //////////////////////////////////////////////////////////////////////////
@@ -254,17 +253,18 @@ void DispatcherThread::shutdownThread( void )
     shutdownDispatcher();
 }
 
-bool DispatcherThread::runDispatcher( void )
+void DispatcherThread::readyForEvents( bool isReady )
 {
-    TRACE_SCOPE( areg_component_private_DispatcherThread_runDispatcher);
-
-    mEventStarted.setEvent();
-    bool result = EventDispatcher::runDispatcher();
-    mEventStarted.resetEvent();
-
-    TRACE_DBG("The dispatcher [ %s ] with ID [ %p ] is stopping.", getName().getString( ), static_cast<id_type>(getId( )));
-
-    return result;
+    if ( isReady )
+    {
+        EventDispatcher::readyForEvents( true );
+        mEventStarted.setEvent( );
+    }
+    else
+    {
+        mEventStarted.resetEvent( );
+        EventDispatcher::readyForEvents( false );
+    }
 }
 
 bool DispatcherThread::waitForDispatcherStart( unsigned int waitTimeout /*= NECommon::WAIT_INFINITE */ )
@@ -280,10 +280,12 @@ void DispatcherThread::triggerExitEvent( void )
                 , static_cast<id_type>(getId( ))
                 , mHasStarted ? "STARTED" : "NOT STARTED");
 
+    mExternaEvents.lockQueue( );
     if ( mHasStarted )
     {
         mExternaEvents.pushEvent(ExitEvent::getExitEvent());
     }
+    mExternaEvents.unlockQueue( );
 }
 
 bool DispatcherThread::isExitEvent(const Event * checkEvent) const

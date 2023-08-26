@@ -239,6 +239,26 @@ public:
     inline bool isRemoteAddress( void ) const;
 
     /**
+     * \brief   Returns true if the source of communication channel is local, i.e. it is the same process.
+     **/
+    inline bool isSourceLocal( void ) const;
+
+    /**
+     * \brief   Returns true if the source of communication channel is public, i.e. it is external process.
+     **/
+    inline bool isSourcePublic( void ) const;
+
+    /**
+     * \brief   Returns true if the target of communication channel is local, i.e. it is the same process.
+     **/
+    inline bool isTargetLocal( void ) const;
+
+    /**
+     * \brief   Returns true if the target of communication channel is public, i.e. it is external process.
+     **/
+    inline bool isTargetPublic( void ) const;
+
+    /**
      * \brief   Returns stub communication channel
      **/
     inline const Channel & getChannel( void ) const;
@@ -477,6 +497,26 @@ inline bool StubAddress::isLocalAddress(void) const
 inline bool StubAddress::isRemoteAddress(void) const
 {
     return (mChannel.getCookie() >= NEService::COOKIE_ANY);
+}
+
+inline bool StubAddress::isSourceLocal( void ) const
+{
+    return (mChannel.getCookie( ) == NEService::COOKIE_LOCAL) && (mChannel.getSource( ) != 0);
+}
+
+inline bool StubAddress::isSourcePublic( void ) const
+{
+    return (mChannel.getCookie( ) >= NEService::COOKIE_REMOTE_SERVICE) && (mChannel.getSource( ) != 0);
+}
+
+inline bool StubAddress::isTargetLocal( void ) const
+{
+    return (mChannel.getCookie( ) == NEService::COOKIE_LOCAL) && (mChannel.getTarget( ) != 0);
+}
+
+inline bool StubAddress::isTargetPublic( void ) const
+{
+    return (mChannel.getCookie( ) >= NEService::COOKIE_LOCAL) && (mChannel.getTarget( ) != 0);
 }
 
 inline const String & StubAddress::getThread( void ) const

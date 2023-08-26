@@ -21,7 +21,7 @@
 
 #include "areg/trace/GETrace.h"
 
-DEF_TRACE_SCOPE(areg_ipc_private_ClientSendThread_runDispatcher);
+DEF_TRACE_SCOPE(areg_ipc_private_ClientSendThread_readyForEvents);
 
 ClientSendThread::ClientSendThread(IERemoteMessageHandler& remoteService, ClientConnection & connection )
     : DispatcherThread  ( NEConnection::CLIENT_SEND_MESSAGE_THREAD )
@@ -31,21 +31,24 @@ ClientSendThread::ClientSendThread(IERemoteMessageHandler& remoteService, Client
 {
 }
 
-bool ClientSendThread::runDispatcher(void)
+void ClientSendThread::readyForEvents( bool isReady )
 {
-    TRACE_SCOPE(areg_ipc_private_ClientSendThread_runDispatcher);
-    TRACE_DBG("Starting client service dispatcher thread [ %s ]", getName().getString());
+    TRACE_SCOPE(areg_ipc_private_ClientSendThread_readyForEvents);
 
-    removeAllEvents( );
-    SendMessageEvent::addListener( static_cast<IESendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this));
-    bool result = DispatcherThread::runDispatcher();
-    SendMessageEvent::removeListener(static_cast<IESendMessageEventConsumer&>(*this), static_cast<DispatcherThread&>(*this));
-
-    mConnection.sendMessage(mConnection.getDisconnectMessage());
-    mConnection.closeSocket();
-
-    TRACE_DBG("Exiting client service dispatcher thread [ %s ] with result [ %s ]", getName().getString(), result ? "SUCCESS" : "FAILURE");
-    return result;
+    if ( isReady )
+    {
+        TRACE_DBG( "Starting client service dispatcher thread [ %s ]", getName( ).getString( ) );
+        SendMessageEvent::addListener( static_cast<IESendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
+        DispatcherThread::readyForEvents( true );
+    }
+    else
+    {
+        DispatcherThread::readyForEvents( false );
+        SendMessageEvent::removeListener( static_cast<IESendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
+        mConnection.sendMessage( mConnection.getDisconnectMessage( ) );
+        mConnection.closeSocket( );
+        TRACE_DBG( "Exiting client service dispatcher thread [ %s ], stopping receiving events", getName( ).getString( ) );
+    }
 }
 
 void ClientSendThread::processEvent( const SendMessageEventData & data )

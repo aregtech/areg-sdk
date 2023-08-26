@@ -71,13 +71,11 @@ protected:
 /************************************************************************/
 
     /**
-     * \brief	Triggered when dispatcher starts running.
-     *          In this function runs main dispatching loop.
-     *          Events are picked and dispatched here.
-     *          Override if logic should be changed.
-     * \return	Returns true if Exit Event is signaled.
+     * \brief   Call to enable or disable event dispatching threads to receive events.
+     *          Override if need to make event dispatching preparation job.
+     * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
      **/
-    virtual bool runDispatcher( void ) override;
+    virtual void readyForEvents( bool isReady ) override;
 
 /************************************************************************/
 // IEEventRouter interface overrides

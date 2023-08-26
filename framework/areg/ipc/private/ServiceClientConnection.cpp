@@ -51,7 +51,7 @@ DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnection_processReceivedMessage)
 DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnection_processRemoteRequestEvent);
 DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnection_processRemoteResponseEvent);
 DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnection_processRemoteNotifyRequestEvent);
-DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnection_runDispatcher);
+DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnection_readyFoEvents );
 
 DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnection_registerServiceProvider);
 DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnection_unregisterServiceProvider);
@@ -198,7 +198,7 @@ bool ServiceClientConnection::registerServiceProvider( const StubAddress & stubS
 {
     TRACE_SCOPE(areg_ipc_private_ServiceClientConnection_registerServiceProvider);
     Lock lock( mLock );
-    bool result = false;
+    bool result{ false };
     if ( _isStarted() )
     {
         TRACE_DBG("Queuing to send register [ %s ] service message by connection [ %d ]"
@@ -207,6 +207,7 @@ bool ServiceClientConnection::registerServiceProvider( const StubAddress & stubS
 
         result = _sendMessage( NEConnection::createRouterRegisterService(stubService, mClientConnection.getCookie()), Event::eEventPriority::EventPriorityHigh );
     }
+
     return result;
 }
 
@@ -221,7 +222,7 @@ void ServiceClientConnection::unregisterServiceProvider(const StubAddress & stub
                    , StubAddress::convAddressToPath(stubService).getString()
                    , mClientConnection.getCookie());
 
-        _sendMessage( NEConnection::createRouterUnregisterService(stubService, reason, mClientConnection.getCookie()), Event::eEventPriority::EventPriorityHigh);
+        _sendMessage( NEConnection::createRouterUnregisterService( stubService, reason, mClientConnection.getCookie( ) ) );
     }
 }
 
@@ -229,7 +230,7 @@ bool ServiceClientConnection::registerServiceConsumer(const ProxyAddress & proxy
 {
     TRACE_SCOPE(areg_ipc_private_ServiceClientConnection_registerServiceConsumer );
     Lock lock( mLock );
-    bool result = false;
+    bool result { false };
     if ( _isStarted() )
     {
         TRACE_DBG("Queuing to send register [ %s ] service client message by connection [ %d ]"
@@ -253,7 +254,7 @@ void ServiceClientConnection::unregisterServiceConsumer(const ProxyAddress & pro
                    , ProxyAddress::convAddressToPath(proxyService).getString()
                    , mClientConnection.getCookie());
 
-        _sendMessage( NEConnection::createRouterUnregisterClient(proxyService, reason, mClientConnection.getCookie()), Event::eEventPriority::EventPriorityHigh);
+        _sendMessage( NEConnection::createRouterUnregisterClient( proxyService, reason, mClientConnection.getCookie( ) ) );
     }
 }
 
@@ -854,19 +855,24 @@ void ServiceClientConnection::processRemoteResponseEvent(RemoteResponseEvent & r
     }
 }
 
-bool ServiceClientConnection::runDispatcher(void)
+void ServiceClientConnection::readyForEvents( bool isReady )
 {
-    TRACE_SCOPE(areg_ipc_private_ServiceClientConnection_runDispatcher);
-    ServiceClientEvent::addListener( static_cast<IEServiceClientEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self( )) );
-    _sendCommand(ServiceEventData::eServiceEventCommands::CMD_StartService);
-
-    _setConnectionState(ServiceClientConnection::eConnectionState::DisconnectState);
-    bool result = DispatcherThread::runDispatcher();
-    _setConnectionState(ServiceClientConnection::eConnectionState::ConnectionStopped);
-
-    ServiceClientEvent::removeListener( static_cast<IEServiceClientEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self( )) );
-
-    return result;
+    TRACE_SCOPE( areg_ipc_private_ServiceClientConnection_readyFoEvents );
+    if ( isReady )
+    {
+        TRACE_DBG( "The service client connection is ready for events" );
+        ServiceClientEvent::addListener( static_cast<IEServiceClientEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self( )) );
+        DispatcherThread::readyForEvents( true );
+        _setConnectionState( ServiceClientConnection::eConnectionState::DisconnectState );
+        _sendCommand( ServiceEventData::eServiceEventCommands::CMD_StartService );
+    }
+    else
+    {
+        TRACE_DBG( "The service client connection is stopping to receive events" );
+        DispatcherThread::readyForEvents( false );
+        _setConnectionState( ServiceClientConnection::eConnectionState::ConnectionStopped );
+        ServiceClientEvent::removeListener( static_cast<IEServiceClientEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self( )) );
+    }
 }
 
 bool ServiceClientConnection::postEvent(Event & eventElem)

@@ -79,9 +79,10 @@ bool ComponentThread::postEvent( Event& eventElem )
 
 bool ComponentThread::runDispatcher( void )
 {
-    bool result = false;
+    bool result{ false };
     if (createComponents() > 0)
     {
+        readyForEvents( true );
         startComponents();
         result = DispatcherThread::runDispatcher();
     }

@@ -244,7 +244,7 @@ namespace   NEPatientInformation
 IMPLEMENT_STREAMABLE( NEPatientInformation::eMessageIDs );
 
 /************************************************************************
- * NEPatientInformation::PatientInfo strcuture inline implementation
+ * NEPatientInformation::PatientInfo structure inline implementation
  ************************************************************************/
 /**
  * Every field of structure should have default constructor.

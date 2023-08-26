@@ -63,5 +63,6 @@ void PublicServiceComponent::requestSystemShutdown( void )
 {
     TRACE_SCOPE( examples_13_pubmesh_pubservice_PublicServiceComponent_requestSystemShutdown );
     TRACE_WARN( "Processing the request to shutdown the system!" );
+    printf( "Processing the request to shutdown the system!\n" );
     Application::signalAppQuit( );
 }

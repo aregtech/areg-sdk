@@ -45,13 +45,13 @@ bool TimerManagerBase::postEvent(Event& eventElem)
 
 bool TimerManagerBase::runDispatcher(void)
 {
+    readyForEvents( true );
+
     IESynchObject* synchObjects[] = { &mEventExit, &mEventQueue };
     MultiLock multiLock(synchObjects, 2, false);
-
     int whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventError);
     const ExitEvent& exitEvent = ExitEvent::getExitEvent();
 
-    readyForEvents(true);
     do
     {
         whichEvent = multiLock.lock(NECommon::WAIT_INFINITE, false, true);
@@ -92,17 +92,13 @@ void TimerManagerBase::readyForEvents(bool isReady)
     if (isReady)
     {
         TimerManagerEvent::addListener(static_cast<IETimerManagerEventConsumer&>(self()), static_cast<DispatcherThread&>(self()));
-
-        mHasStarted = true;
-        mEventStarted.setEvent();
     }
     else
     {
         TimerManagerEvent::removeListener(static_cast<IETimerManagerEventConsumer&>(self()), static_cast<DispatcherThread&>(self()));
-
-        mHasStarted = false;
-        mEventStarted.resetEvent();
     }
+
+    DispatcherThread::readyForEvents( true );
 }
 
 bool TimerManagerBase::startTimerManagerThread(void)

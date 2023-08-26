@@ -35,14 +35,15 @@ bool ClientReceiveThread::runDispatcher(void)
 {
     TRACE_SCOPE(areg_ipc_private_ClientReceiveThread_runDispatcher);
     TRACE_DBG("Starting client service dispatcher thread [ %s ]", getName().getString());
-    mEventStarted.setEvent();
+    
+    readyForEvents( true );
 
-    IESynchObject* syncObjects[2] = {&mEventExit, &mEventQueue};
+    IESynchObject* syncObjects[2] {&mEventExit, &mEventQueue};
     MultiLock multiLock(syncObjects, 2, false);
-
     RemoteMessage msgReceived;
-    int whichEvent  = static_cast<int>(EventDispatcherBase::eEventOrder::EventError);
-    do 
+    int whichEvent{ static_cast<int>(EventDispatcherBase::eEventOrder::EventError) };
+
+    do
     {
         whichEvent = multiLock.lock(NECommon::DO_NOT_WAIT, false);
         if ( whichEvent == MultiLock::LOCK_INDEX_TIMEOUT )
@@ -70,13 +71,10 @@ bool ClientReceiveThread::runDispatcher(void)
 
     } while (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue));
 
-    mHasStarted = false;
+    readyForEvents(false);
     removeAllEvents( );
 
     OUTPUT_WARN("The Dispatcher [ %s ] completed job and stopping running.", mDispatcherName.getString());
-
-    mEventStarted.resetEvent();
-
     TRACE_DBG("Exiting client service dispatcher thread [ %s ] with result [ %s ]"
                 , getName().getString()
                 , whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventExit) ? "SUCCESS" : "FAILURE");

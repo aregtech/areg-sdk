@@ -273,7 +273,7 @@ namespace   NEPublicHelloWorld
 IMPLEMENT_STREAMABLE( NEPublicHelloWorld::eMessageIDs );
 
 /************************************************************************
- * NEPublicHelloWorld::sClientRegister strcuture inline implementation
+ * NEPublicHelloWorld::sClientRegister structure inline implementation
  ************************************************************************/
 /**
  * Every field of structure should have default constructor.

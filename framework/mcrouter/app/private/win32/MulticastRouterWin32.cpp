@@ -112,7 +112,6 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 
     case NESystemService::eServiceOption::CMD_Console:
         ::_win32ServiceMain(argc, argv);
-        router.serviceStop();
         break;
 
     case NESystemService::eServiceOption::CMD_Service:
