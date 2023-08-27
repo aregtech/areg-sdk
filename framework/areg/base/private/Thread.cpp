@@ -194,20 +194,27 @@ bool Thread::createThread(unsigned int waitForStartMs /* = NECommon::DO_NOT_WAIT
     return result;
 }
 
-
-Thread::eCompletionStatus Thread::destroyThread( unsigned int waitForStopMs /* = NECommon::DO_NOT_WAIT */ )
+void Thread::triggerExit( void )
 {
-    return _osDestroyThread( waitForStopMs );
 }
 
-void Thread::shutdownThread( void )
+Thread::eCompletionStatus Thread::shutdownThread( unsigned int waitForStopMs /* = NECommon::DO_NOT_WAIT */ )
 {
-    destroyThread(NECommon::WAIT_INFINITE);
+    Thread::eCompletionStatus result{ _osDestroyThread( waitForStopMs ) };
+
+    if ( mSynchObject.tryLock( ) )
+    {
+        _unregisterThread( );
+        _cleanResources( );
+        mSynchObject.unlock( );
+    }
+
+    return result;
 }
 
 Thread::eCompletionStatus Thread::terminateThread( void )
 {
-    return destroyThread( NECommon::WAIT_10_MILLISECONDS );
+    return shutdownThread( NECommon::WAIT_10_MILLISECONDS );
 }
 
 bool Thread::completionWait( unsigned int waitForCompleteMs /*= NECommon::WAIT_INFINITE*/ )
@@ -273,13 +280,6 @@ int Thread::_threadEntry( void )
         onPostExitThread();
 
         Thread::getCurrentThreadStorage().removeStoragteItem(STORAGE_THREAD_CONSUMER.data());
-
-        if ( mSynchObject.tryLock( ) )
-        {
-            _unregisterThread( );
-            _cleanResources( );
-            mSynchObject.unlock( );
-        }
     }
     else
     {

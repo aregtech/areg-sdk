@@ -45,9 +45,14 @@ bool TimerManager::startTimerManager( void )
     return getInstance().startTimerManagerThread( );
 }
 
-void TimerManager::stopTimerManager( void )
+void TimerManager::stopTimerManager(bool waitComplete)
 {
-    getInstance().stopTimerManagerThread();
+    getInstance().stopTimerManagerThread(waitComplete);
+}
+
+void TimerManager::waitTimerManager(void)
+{
+    return getInstance().waitCompletion();
 }
 
 bool TimerManager::isTimerManagerStarted( void )

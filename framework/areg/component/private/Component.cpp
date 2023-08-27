@@ -180,7 +180,7 @@ void Component::deleteWorkerThread( const String & threadName )
     if (workThread != nullptr)
     {
         OUTPUT_DBG("Unregistering and deleting WorkerThread [ %s ]", threadName.getString());
-        workThread->destroyThread(NECommon::WAIT_INFINITE);
+        workThread->shutdownThread(NECommon::WAIT_INFINITE);
         mComponentInfo.unregisterWorkerThread(*workThread);
         delete workThread;
     }
@@ -209,7 +209,7 @@ void Component::shutdownComponent( ComponentThread& /* comThread */ )
                         , workerThread->getName().getString()
                         , getRoleName().getString());
 
-        workerThread->shutdownThread();
+        workerThread->shutdownThread( NECommon::WAIT_INFINITE );
         workerThread = mComponentInfo.getNextWorkerThread(addrThread);
     }
 }
@@ -223,7 +223,7 @@ void Component::notifyComponentShutdown( ComponentThread& /*comThread */ )
         OUTPUT_INFO("Shutting down worker thread [ %s ] of component [ %s ]"
                         , workerThread->getName().getString()
                         , getRoleName().getString());
-        workerThread->shutdownThread();
+        workerThread->shutdownThread( NECommon::WAIT_INFINITE );
         workerThread = mComponentInfo.getNextWorkerThread(addrThread);
     }
 }
@@ -272,7 +272,7 @@ void Component::waitComponentCompletion( unsigned int waitTimeout )
     WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
     while (workerThread != nullptr)
     {
-        workerThread->destroyThread(waitTimeout);
+        workerThread->shutdownThread(waitTimeout);
         workerThread = mComponentInfo.getNextWorkerThread(addrThread);
     }
 }

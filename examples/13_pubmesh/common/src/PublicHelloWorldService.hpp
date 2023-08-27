@@ -69,6 +69,14 @@ protected:
      **/
     virtual void requestHelloWorld( unsigned int clientID ) override;
 
+    /**
+     * \brief   Triggered when proxy client either connected or disconnected to stub.
+     * \param   client  The address of proxy client, which connection status is changed.
+     * \param   status  The service consumer connection status.
+     * \return  Returns true if connected service consumer is relevant to the provider.
+     **/
+    virtual bool clientConnected( const ProxyAddress & client, NEService::eServiceConnection status ) override;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////

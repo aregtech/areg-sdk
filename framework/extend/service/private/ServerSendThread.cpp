@@ -74,7 +74,7 @@ void ServerSendThread::processEvent( const SendMessageEventData & data )
             TRACE_WARN("Failed to send message [ %u ] to target [ %u ], client is [ %s ]"
                         , msgSend.getMessageId()
                         , static_cast<unsigned int>(msgSend.getTarget())
-                        , client.isAlive() ? "IS ALIVE" : "IS NOT ALIVE");
+                        , client.isAlive() ? "ALIVE" : "DEAD");
 
             mRemoteService.failedSendMessage(msgSend, client);
         }
@@ -87,7 +87,9 @@ void ServerSendThread::processEvent( const SendMessageEventData & data )
     else if (data.isExitThreadMessage() )
     {
         TRACE_DBG("Going to quite send message thread");
-        triggerExitEvent( );
+        mConnection.closeAllConnections( );
+        mConnection.closeSocket( );
+        triggerExit( );
     }
 }
 

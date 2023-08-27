@@ -157,12 +157,6 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
         ASSERT (waitForStopMs != NECommon::WAIT_INFINITE || isRunning() == false);
     }
 
-    do
-    {
-        Lock lock(mSynchObject);
-        _cleanResources();
-    } while(false);
-
     return result;
 }
 

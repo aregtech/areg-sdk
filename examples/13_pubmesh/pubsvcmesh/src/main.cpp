@@ -239,9 +239,6 @@ int main()
         // wait until Application quit signal is set.
         Application::waitAppQuit(NECommon::WAIT_INFINITE);
 
-        // stop and unload components
-        Application::unloadModel( _modelName );
-
         std::cout
             << (Application::findModel( _modelName ).getAliveDuration( ) / NECommon::DURATION_1_MILLI)
             << " ms passed. Model is unloaded, releasing resources to exit application ..."

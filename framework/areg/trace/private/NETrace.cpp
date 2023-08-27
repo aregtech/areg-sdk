@@ -229,10 +229,17 @@ AREG_API_IMPL bool NETrace::startLogging(const char * fileConfig /*= nullptr */ 
 #endif  // AREG_LOGS
 }
 
-AREG_API_IMPL void NETrace::stopLogging(void)
+AREG_API_IMPL void NETrace::stopLogging(bool waitComplete)
 {
 #if AREG_LOGS
-    TraceManager::stopLogging();
+    TraceManager::stopLogging(waitComplete);
+#endif  // AREG_LOGS
+}
+
+AREG_API_IMPL void NETrace::waitLoggingEnd(void)
+{
+#if AREG_LOGS
+    TraceManager::waitLoggingEnd();
 #endif  // AREG_LOGS
 }
 

@@ -204,6 +204,7 @@ void MulticastRouter::serviceStop(void)
     TRACE_WARN("Stopping service [ %s ]", NEMulticastRouterSettings::SERVICE_NAME_ASCII);
     setState(NESystemService::eSystemServiceState::ServiceStopping);
     getService().disconnectServiceHost();
+    mServiceServer.waitToComplete( );
     Application::signalAppQuit();
 }
 
@@ -214,6 +215,7 @@ void MulticastRouter::servicePause(void)
 
     setState( NESystemService::eSystemServiceState::ServicePausing );
     getService( ).disconnectServiceHost();
+    mServiceServer.waitToComplete( );
     setState( NESystemService::eSystemServiceState::ServicePaused );
 }
 
@@ -325,6 +327,7 @@ bool MulticastRouter::_checkCommand(const String& cmd)
             case eRouterOptions::CMD_RouterPause:
                 MulticastRouter::_outputInfo( "Pausing message router ..." );
                 router.getService().disconnectServiceHost( );
+                router.mServiceServer.waitToComplete( );
                 MulticastRouter::_outputInfo( "Message router is paused ..." );
                 break;
 

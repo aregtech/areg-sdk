@@ -104,7 +104,7 @@ void WorkerThread::terminateSelf(void)
     mHasStarted = false;
     removeAllEvents();
     mEventExit.setEvent();
-    Thread::destroyThread(NECommon::TIMEOUT_10_MS);
+    Thread::shutdownThread(NECommon::TIMEOUT_10_MS);
 
     delete this;
 }

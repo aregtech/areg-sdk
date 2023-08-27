@@ -276,13 +276,23 @@ bool TraceManager::startLoggingThread( void )
     return mIsStarted;
 }
 
-void TraceManager::stopLoggingThread( void )
+void TraceManager::stopLoggingThread(bool waitComplete)
 {
-    // RemoveAllEvents(false);
     sendLogEvent( TraceEventData(TraceEventData::eTraceAction::TraceStopLogs) );
-    completionWait( NECommon::WAIT_INFINITE );
     mIsStarted = false;
-    destroyThread( NECommon::DO_NOT_WAIT );
+
+    if (waitComplete)
+    {
+        completionWait(NECommon::WAIT_INFINITE);
+        shutdownThread(NECommon::DO_NOT_WAIT);
+    }
+}
+
+void TraceManager::waitLoggingThreadEnd(void)
+{
+    mIsStarted = false;
+    completionWait(NECommon::WAIT_INFINITE);
+    shutdownThread(NECommon::DO_NOT_WAIT);
 }
 
 void TraceManager::processTimer( Timer & timer )
@@ -369,7 +379,7 @@ void TraceManager::traceStopLogs(void)
     mLoggerDebug.closeLogger( );
     mLoggerFile.closeLogger( );
     mLoggerTcp.closeLogger( );
-    triggerExitEvent( );
+    triggerExit( );
 }
 
 void TraceManager::writeLogMessage( const NETrace::sLogMessage & logMessage )

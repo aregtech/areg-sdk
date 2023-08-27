@@ -616,10 +616,21 @@ namespace NETrace
     AREG_API bool initAndStartLogging( const char * fileConfig = nullptr );
 
     /**
-     * \brief   Stops logging. No message will be logged anymore
-     *          until it is not started again.
+     * \brief   This stops Logging and exits the thread.
+     *          If 'waitComplete' is set to true, the calling thread is
+     *          blocked until logging completes jobs and cleans resources.
+     *          Otherwise, this triggers stop and exit events, and immediately returns.
+     * \param   waitComplete    If true, waits for logging to complete the jobs
+     *                          and exit threads. Otherwise, it triggers exit and returns.
      **/
-    AREG_API void stopLogging( void );
+    AREG_API void stopLogging( bool waitComplete);
+
+    /**
+     * \brief   The calling thread is blocked until logging did not
+     *          complete the job and exit. This should be called if previously
+     *          it was requested to stop the logging without waiting for completion.
+     **/
+    AREG_API void waitLoggingEnd(void);
 
     /**
      * \brief   Marks specified scope as active, so that message related with scope can be logged.

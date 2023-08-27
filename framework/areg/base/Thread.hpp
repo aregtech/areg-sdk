@@ -176,13 +176,18 @@ public:
     virtual bool createThread( unsigned int waitForStartMs = NECommon::DO_NOT_WAIT );
 
     /**
-     * \brief	Destroys thread and frees resources. Once thread is destroyed,
-     *          it can be re-created again. The calling thread (current thread)
-     *          may be blocked until target thread is destroyed.
+     * \brief   Override the method to trigger exist event for the threads.
+     **/
+    virtual void triggerExit( void );
+
+    /**
+     * \brief	Shuts down the thread and frees resources. If waiting timeout is not 'DO_NOT_WAIT and it expires,
+     *          the function terminates the thread. The shutdown thread can be re-created again.
+     *          The calling thread (current thread) may be blocked until target thread completes the job.
      * \param	waitForStopMs	Waiting time out in milliseconds until target thread is finis run.
-     *                          -   Set DO_NOT_WAIT to trigger exit thread and immediately return
-     *                              without waiting for thread to complete job.
-     *                          -   Set WAIT_INFINITE to wait until thread completes job and exit.
+     *                          -   Set DO_NOT_WAIT to trigger exit and immediately return
+     *                              without waiting for thread to complete the job.
+     *                          -   Set WAIT_INFINITE to trigger exit and wait until thread completes the job.
      *                          -   Set any other value in milliseconds to specify waiting time
      *                              until thread completes the job or timeout expires.
      * \return	Returns the thread completion status. The following statuses are defined:
@@ -190,13 +195,7 @@ public:
      *              Thread::ThreadCompleted   -- The thread was valid and completed normally;
      *              Thread::ThreadInvalid     -- The thread was not valid and was not running, nothing was done.
      **/
-    virtual Thread::eCompletionStatus destroyThread( unsigned int waitForStopMs = NECommon::DO_NOT_WAIT );
-
-    /**
-     * \brief   It calls destroyThread() with infinite timeout. In each thread class the shutdown procedure may differ.
-     *          For more details see description in each class derived from Thread.
-     **/
-    virtual void shutdownThread( void );
+    virtual Thread::eCompletionStatus shutdownThread( unsigned int waitForStopMs = NECommon::DO_NOT_WAIT );
 
     /**
      * \brief   Wait for thread completion. It will neither sent exit message, nor terminate thread.
@@ -209,7 +208,7 @@ public:
     virtual bool completionWait( unsigned int waitForCompleteMs = NECommon::WAIT_INFINITE );
 
     /**
-     * \brief   It calls destroyThread() with waiting timeout 10 ms. If waiting time is expired, 
+     * \brief   It calls shutdownThread() with waiting timeout 10 ms. If waiting time is expired, 
      *          it immediately terminates the thread and returns completion status 'terminated'.
      *          Use this function only if thread does not react anymore and immediate termination
      *          is required. By calling this method, the system does not guarantee the graceful

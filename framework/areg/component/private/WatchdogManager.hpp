@@ -67,9 +67,21 @@ public:
     static bool startWatchdogManager( void );
 
     /**
-     * \brief   Stops Watchdog Manager and destroys Watchdog Thread.
+     * \brief   Stops Watchdog Manager and the Thread. Cancels and stops all timers.
+     *          If 'waitComplete' is set to true, the calling thread is
+     *          blocked until Watchdog Manager completes jobs and cleans resources.
+     *          Otherwise, this triggers stop and exit events, and immediately returns.
+     * \param   waitComplete    If true, waits for Watchdog Manager to complete the jobs
+     *                          and exit threads. Otherwise, it triggers exit and returns.
      **/
-    static void stopWatchdogManager( void );
+    static void stopWatchdogManager( bool waitComplete);
+
+    /**
+     * \brief   The calling thread is blocked until Watchdog Manager did not
+     *          complete the jobs and exit. This should be called if previously
+     *          it was requested to stop the Watchdog Manager without waiting for completion.
+     **/
+    static void waitWatchdogManager(void);
 
     /**
      * \brief   Returns true if Watchdog Manager has been started and ready to process Watchdogs.

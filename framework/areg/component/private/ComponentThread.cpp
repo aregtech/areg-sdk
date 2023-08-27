@@ -215,7 +215,7 @@ void ComponentThread::terminateSelf(void)
         proxy->terminateSelf();
     }
 
-    Thread::destroyThread(NECommon::TIMEOUT_10_MS);
+    DispatcherThread::shutdownThread(NECommon::TIMEOUT_10_MS);
 
     delete this;
 }
@@ -246,20 +246,21 @@ inline void ComponentThread::_shutdownComponents(void)
     }
 }
 
-void ComponentThread::shutdownThread( void )
+Thread::eCompletionStatus ComponentThread::shutdownThread( unsigned int waitForStopMs /*= NECommon::DO_NOT_WAIT*/ )
 {
-    ListComponent::LISTPOS pos = mListComponent.firstPosition();
-    while (mListComponent.isValidPosition(pos))
+    ListComponent::LISTPOS pos = mListComponent.firstPosition( );
+    while ( mListComponent.isValidPosition( pos ) )
     {
-        Component* comObj = mListComponent.getNext(pos);
-        ASSERT(comObj != nullptr);
-        comObj->notifyComponentShutdown(self());
-        OUTPUT_DBG("The component [ %s ] is notified thread [ %s ] is going to shutdown!"
-                        , comObj->getRoleName().getString()
-                        , getName().getString());
+        Component * comObj = mListComponent.getNext( pos );
+        ASSERT( comObj != nullptr );
+        comObj->notifyComponentShutdown( self( ) );
+
+        OUTPUT_DBG( "The component [ %s ] is notified thread [ %s ] is going to shutdown!"
+                    , comObj->getRoleName( ).getString( )
+                    , getName( ).getString( ) );
     }
 
-    DispatcherThread::shutdownThread();
+    return DispatcherThread::shutdownThread( waitForStopMs );
 }
 
 bool ComponentThread::completionWait( unsigned int waitForCompleteMs /*= NECommon::WAIT_INFINITE */ )
@@ -277,12 +278,10 @@ bool ComponentThread::completionWait( unsigned int waitForCompleteMs /*= NECommo
 
 int ComponentThread::onThreadExit(void)
 {
-    int result = DispatcherThread::onThreadExit();
-
     shutdownComponents();
     destroyComponents();
 
-    return result;
+    return DispatcherThread::onThreadExit( );
 }
 
 bool ComponentThread::dispatchEvent(Event& eventElem)

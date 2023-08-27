@@ -231,10 +231,10 @@ int main()
 
         // stop and destroy thread, clean resources. Wait until thread ends.
         TRACE_INFO("Going to stop and destroy [ %s ] thread.", helloDispatcher.getName().getString());
-        helloDispatcher.destroyThread(NECommon::WAIT_INFINITE);
+        helloDispatcher.shutdownThread(NECommon::WAIT_INFINITE);
 
         TRACE_INFO("Going to stop and destroy [ %s ] thread.", helloThread.getName().getString());
-        helloThread.destroyThread(NECommon::WAIT_INFINITE);
+        helloThread.shutdownThread(NECommon::WAIT_INFINITE);
 
     } while (false);
 

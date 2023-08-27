@@ -174,15 +174,18 @@ inline bool TimerPosix::_startTimer( TimerBase * context, id_type contextId )
                 interval.it_interval.tv_nsec= interval.it_value.tv_nsec;
             }
 
-            ::clock_gettime(CLOCK_MONOTONIC, &mDueTime);
-            NESynchTypesIX::convTimeout(mDueTime, msTimeout);
-
-            if (RETURNED_OK != ::timer_settime(mTimerId, 0, &interval, nullptr))
+            if (RETURNED_OK == ::clock_gettime(CLOCK_MONOTONIC, &mDueTime))
             {
-                result          = false;
-                mDueTime.tv_sec = 0;
-                mDueTime.tv_nsec= 0;
-                mContextId 		= 0;
+                NESynchTypesIX::convTimeout(mDueTime, msTimeout);
+                result = true;
+
+                if (RETURNED_OK != ::timer_settime(mTimerId, 0, &interval, nullptr))
+                {
+                    result          = false;
+                    mDueTime.tv_sec = 0;
+                    mDueTime.tv_nsec= 0;
+                    mContextId 		= 0;
+                }
             }
         }
     }

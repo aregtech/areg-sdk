@@ -142,7 +142,6 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
         }
 
         mSynchObject.lock(NECommon::WAIT_INFINITE);
-        _cleanResources();
     }
     else
     {

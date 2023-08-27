@@ -220,7 +220,7 @@ void PageChat::OnDestroy( )
 
     const NEDirectConnection::sInitiator & initiator = GetInitiator();
     String modelName = NEDistributedApp::PREFIX_MODEL + GetServiceName();
-    ComponentLoader::unloadComponentModel( modelName );
+    ComponentLoader::unloadComponentModel(true, modelName );
     
     ChatPrticipantHandler::Invalidate();
     
@@ -242,7 +242,7 @@ void PageChat::OnClickedButtonCloseChat( )
 
     const NEDirectConnection::sInitiator & initiator = GetInitiator();
     String modelName = NEDistributedApp::PREFIX_MODEL + GetServiceName();
-    ComponentLoader::unloadComponentModel( modelName );
+    ComponentLoader::unloadComponentModel(true, modelName );
 
     ChatPrticipantHandler::Invalidate();
 

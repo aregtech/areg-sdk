@@ -206,6 +206,7 @@ void Logger::serviceStop(void)
     TRACE_WARN("Stopping service [ %s ]", NELoggerSettings::SERVICE_NAME_ASCII);
     setState(NESystemService::eSystemServiceState::ServiceStopping);
     getService().disconnectServiceHost();
+    mServiceServer.waitToComplete( );
     Application::signalAppQuit();
 }
 
@@ -216,6 +217,7 @@ void Logger::servicePause(void)
 
     setState( NESystemService::eSystemServiceState::ServicePausing );
     getService( ).disconnectServiceHost();
+    mServiceServer.waitToComplete( );
     setState( NESystemService::eSystemServiceState::ServicePaused );
 }
 
@@ -327,6 +329,7 @@ bool Logger::_checkCommand(const String& cmd)
             case eLogCommands::CMD_LogPause:
                 Logger::_outputInfo( "Pausing log collector ..." );
                 logger.getService().disconnectServiceHost( );
+                logger.mServiceServer.waitToComplete( );
                 Logger::_outputInfo( "Log collector is paused ..." );
                 break;
 

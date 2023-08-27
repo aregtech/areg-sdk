@@ -44,7 +44,7 @@ When creating a service provider and service consumer, it is important to keep i
 5. Instances of the service provider and its consumer can be in the same thread.
 6. The _Role Names_ of the _Local_ services are unique within the same process, and the _Role Names_ of the _Public_ services are unique within the same network.
 7. Service consumers know the availability of the service via the notification callback `void serviceConnected(NEService::eNetConnection status, ProxyBase& proxy)`, where `status` parameter indicates the connection status.
-8. Service providers know a new consumer connection via the notification callback `void clientConnected(const ProxyAddress& client, NEService::eServiceConnection connectionStatus)`, where `connectionStatus` parameter indicates the connection status.
+8. Service providers know a new consumer connection via the notification callback `bool clientConnected(const ProxyAddress& client, NEService::eServiceConnection connectionStatus)`, where `connectionStatus` parameter indicates the connection status.
 
 ---
 

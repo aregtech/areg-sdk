@@ -130,10 +130,21 @@ public:
     static bool saveLogConfig( FileBase & file );
 
     /**
-     * \brief   Call to stop logging. This call will stop all loggers and exit thread.
-     *          The call will be blocked until logging thread is stopped.
+     * \brief   Call to stop Logging Manager and exits the thread.
+     *          If 'waitComplete' is set to true, the calling thread is
+     *          blocked until logging Manager completes jobs and cleans resources.
+     *          Otherwise, this triggers stop and exit events, and immediately returns.
+     * \param   waitComplete    If true, waits for Logging Manager to complete the jobs
+     *                          and exit threads. Otherwise, it triggers exit and returns.
      **/
-    inline static void stopLogging( void );
+    inline static void stopLogging(bool waitComplete);
+
+    /**
+     * \brief   The calling thread is blocked until Logging Manager did not
+     *          complete the job and exit. This should be called if previously
+     *          it was requested to stop the Logging Manager without waiting for completion.
+     **/
+    inline static void waitLoggingEnd(void);
 
     /**
      * \brief   Registers instance of trace scope object in trace manager.
@@ -332,14 +343,23 @@ private:
      * \return  Returns true if started with success.
      **/
     bool startLoggingThread( void );
+     
+     /**
+      * \brief   Call to stop Logging Manager and exits the thread.
+      *          If 'waitComplete' is set to true, the calling thread is
+      *          blocked until logging Manager completes jobs and cleans resources.
+      *          Otherwise, this triggers stop and exit events, and immediately returns.
+      * \param   waitComplete    If true, waits for Logging Manager to complete the jobs
+      *                          and exit threads. Otherwise, it triggers exit and returns.
+      **/
+    void stopLoggingThread(bool waitComplete);
 
     /**
-     * \brief   Stops logging thread. If needed, it will wait for completion.
-     * \param   waitTimeout     Timeout to wait in milliseconds. If zero, it will not wait
-     *                          and immediately returns from method. If INFINITE (value 0xFFFFFFFF),
-     *                          it will wait until thread completes job and exits.
+     * \brief   The calling thread is blocked until Logging Manager did not
+     *          complete the job and exit. This should be called if previously
+     *          it was requested to stop the Logging Manager without waiting for completion.
      **/
-    void stopLoggingThread( void );
+    void waitLoggingThreadEnd(void);
 
     /**
      * \brief   Returns true, if settings to log traces on remote host are valid.
@@ -499,10 +519,15 @@ private:
 // TraceManager class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline void TraceManager::stopLogging( void )
+inline void TraceManager::stopLogging(bool waitComplete)
 {
-    getInstance().stopLoggingThread( );
+    getInstance().stopLoggingThread(waitComplete);
     getInstance( ).unloadConfiguration( );
+}
+
+inline void TraceManager::waitLoggingEnd(void)
+{
+    getInstance().waitLoggingThreadEnd();
 }
 
 inline void TraceManager::registerTraceScope(TraceScope& scope)

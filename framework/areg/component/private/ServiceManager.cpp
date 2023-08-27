@@ -65,10 +65,15 @@ bool ServiceManager::_startServiceManager( void )
     return getInstance()._startServiceManagerThread( );
 }
 
-void ServiceManager::_stopServiceManager( void )
+void ServiceManager::_stopServiceManager(bool waitComplete)
 {
     OUTPUT_DBG( "Stopping Service Manager" );
-    getInstance()._stopServiceManagerThread();
+    getInstance()._stopServiceManagerThread(waitComplete);
+}
+
+void ServiceManager::_waitServiceManager(void)
+{
+    getInstance()._waitServiceManagerThread();
 }
 
 bool ServiceManager::isServiceManagerStarted( void )
@@ -305,12 +310,23 @@ bool ServiceManager::_startServiceManagerThread( void )
     return result;
 }
 
-void ServiceManager::_stopServiceManagerThread( void )
+void ServiceManager::_stopServiceManagerThread(bool waitComplete)
 {
     ServiceManagerEvent::sendEvent( ServiceManagerEventData::shutdownServiceManager()
                                   , static_cast<IEServiceManagerEventConsumer &>(self())
                                   , static_cast<DispatcherThread &>(self()));
-    completionWait( NECommon::WAIT_INFINITE );
+
+    if (waitComplete)
+    {
+        completionWait(NECommon::WAIT_INFINITE);
+        shutdownThread(NECommon::DO_NOT_WAIT);
+    }
+}
+
+void ServiceManager::_waitServiceManagerThread(void)
+{
+    completionWait(NECommon::WAIT_INFINITE);
+    shutdownThread(NECommon::DO_NOT_WAIT);
 }
 
 void ServiceManager::extractRemoteServiceAddresses( ITEM_ID cookie, TEArrayList<StubAddress> & OUT out_listStubs, TEArrayList<ProxyAddress> & OUT out_lisProxies ) const

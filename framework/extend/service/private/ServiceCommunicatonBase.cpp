@@ -27,6 +27,7 @@ DEF_TRACE_SCOPE(areg_extend_service_ServiceCommunicatonBase_processReceivedMessa
 DEF_TRACE_SCOPE(areg_extend_service_ServiceCommunicatonBase_onServiceStart);
 DEF_TRACE_SCOPE(areg_extend_service_ServiceCommunicatonBase_onServiceStop);
 DEF_TRACE_SCOPE(areg_extend_service_ServiceCommunicatonBase_onServiceRestart);
+DEF_TRACE_SCOPE(areg_extend_service_ServiceCommunicatonBase_onServiceExit);
 
 DEF_TRACE_SCOPE(areg_extend_service_ServiceCommunicatonBase_startConnection);
 DEF_TRACE_SCOPE(areg_extend_service_ServiceCommunicatonBase_restartConnection);
@@ -210,7 +211,7 @@ void ServiceCommunicatonBase::connectionLost( SocketAccepted & clientSocket )
     {
         mInstanceMap.removeAt( cookie );
         RemoteMessage msgDisconnect = NEConnection::createDisconnectRequest(cookie);
-        sendCommunicationMessage(ServiceEventData::eServiceEventCommands::CMD_ServiceReceivedMsg, msgDisconnect, Event::eEventPriority::EventPriorityHigh);
+        sendCommunicationMessage(ServiceEventData::eServiceEventCommands::CMD_ServiceReceivedMsg, msgDisconnect, Event::eEventPriority::EventPriorityNormal);
     }
 }
 
@@ -224,7 +225,7 @@ void ServiceCommunicatonBase::connectionFailure(void)
 
 void ServiceCommunicatonBase::disconnectServices( void )
 {
-    mInstanceMap.release( );
+    removeAllInstances();
 }
 
 void ServiceCommunicatonBase::onServiceReconnectTimerExpired( void )
@@ -251,36 +252,20 @@ void ServiceCommunicatonBase::onServiceStop(void)
         stopConnection();
     } while (false);
 
-    mThreadReceive.completionWait( NECommon::DO_NOT_WAIT);
-    mThreadSend.completionWait( NECommon::DO_NOT_WAIT);
-    mThreadReceive.destroyThread();
-    mThreadSend.destroyThread();
-
     mEventSendStop.setEvent();
 }
 
 void ServiceCommunicatonBase::onServiceRestart( void )
 {
     TRACE_SCOPE(areg_extend_service_ServiceCommunicatonBase_onServiceRestart);
-    Lock lock(mLock);
     restartConnection();
 }
 
 void ServiceCommunicatonBase::onServiceExit( void )
 {
-    do
-    {
-        Lock lock( mLock );
-        stopConnection( );
-    } while ( false );
-
-    mThreadReceive.completionWait( NECommon::DO_NOT_WAIT );
-    mThreadSend.completionWait( NECommon::DO_NOT_WAIT );
-    mThreadReceive.destroyThread( );
-    mThreadSend.destroyThread( );
-
-    mEventSendStop.setEvent( );
-    triggerExitEvent( );
+    TRACE_SCOPE( areg_extend_service_ServiceCommunicatonBase_onServiceExit );
+    onServiceStop( );
+    triggerExit( );
 }
 
 bool ServiceCommunicatonBase::startConnection(void)
@@ -335,11 +320,6 @@ bool ServiceCommunicatonBase::restartConnection( void )
                 , mServerConnection.getAddress().getHostPort());
 
     stopConnection();
-    mThreadReceive.completionWait(NECommon::WAIT_INFINITE);
-    mThreadSend.completionWait(NECommon::WAIT_INFINITE);
-    mThreadReceive.destroyThread(NECommon::DO_NOT_WAIT);
-    mThreadSend.destroyThread(NECommon::DO_NOT_WAIT);
-
     return startConnection();
 }
 
@@ -348,15 +328,18 @@ void ServiceCommunicatonBase::stopConnection(void)
     TRACE_SCOPE(areg_extend_service_ServiceCommunicatonBase_stopConnection);
     TRACE_WARN("Stopping remote servicing connection");
 
-    mThreadReceive.triggerExitEvent();
-    mThreadReceive.destroyThread( NECommon::DO_NOT_WAIT );
+    mThreadReceive.triggerExit();
     mServerConnection.disableReceive( );
 
     disconnectServices( );
-    disconnectService( Event::eEventPriority::EventPriorityNormal );
+    disconnectService( Event::eEventPriority::EventPriorityNormal);
 
-    mThreadSend.destroyThread( NECommon::WAIT_INFINITE );
-    mServerConnection.closeSocket();
+    // Wait without triggering exit.
+    mThreadSend.completionWait( NECommon::WAIT_INFINITE );
+    mServerConnection.closeSocket( );
+    // Trigger exit and clean resources.
+    mThreadSend.shutdownThread( NECommon::WAIT_INFINITE );
+    mThreadReceive.shutdownThread( NECommon::WAIT_INFINITE );
 }
 
 bool ServiceCommunicatonBase::startSendThread( void )
@@ -441,7 +424,7 @@ void ServiceCommunicatonBase::processReceivedMessage(const RemoteMessage & msgRe
             TRACE_DBG("Going to process received message [ 0x%X ]", static_cast<uint32_t>(msgId));
             if ( msgId == NEService::eFuncIdRange::SystemServiceDisconnect )
             {
-                mInstanceMap.removeAt( cookie );
+                removeInstance( cookie );
             }
 
             sendCommunicationMessage( ServiceEventData::eServiceEventCommands::CMD_ServiceReceivedMsg, msgReceived );
@@ -450,7 +433,7 @@ void ServiceCommunicatonBase::processReceivedMessage(const RemoteMessage & msgRe
         {
             String instance;
             msgReceived >> instance;
-            mInstanceMap.addIfUnique( cookie, instance, true );
+            addInstance(cookie, instance);
             RemoteMessage msgConnect = NEConnection::createConnectNotify(cookie);
             TRACE_DBG("Received request connect message, sending response [ %s ] of id [ 0x%X ], to new target [ %u ], connection socket [ %u ], checksum [ %u ]"
                         , NEService::getString( static_cast<NEService::eFuncIdRange>(msgConnect.getMessageId()))
