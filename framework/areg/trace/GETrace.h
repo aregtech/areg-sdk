@@ -134,9 +134,9 @@
     #define TRACER_CONFIGURE_AND_START(configFile)      NETrace::initAndStartLogging((configFile))
 
     /**
-     * \brief   Use this macro to stop logging
+     * \brief   Use this macro to stop logging. This blocks the calling thread until logging thread completes the job.
      **/
-    #define TRACER_STOP_LOGGING()                       NETrace::stopLogging( )
+    #define TRACER_STOP_LOGGING()                       NETrace::stopLogging( true )
 
     /**
      * \brief   Use this macro to define scope in source code. This will create scope variable and set name

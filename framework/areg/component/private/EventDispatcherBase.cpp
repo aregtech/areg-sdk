@@ -48,6 +48,12 @@ EventDispatcherBase::~EventDispatcherBase( void )
 //////////////////////////////////////////////////////////////////////////
 // EventDispatcherBase class, methods
 //////////////////////////////////////////////////////////////////////////
+
+bool EventDispatcherBase::isExitEvent( Event * anEvent ) const
+{
+    return (anEvent == static_cast<Event *>(&ExitEvent::getExitEvent( )));
+}
+
 void EventDispatcherBase::signalEvent( uint32_t eventCount )
 {
     eventCount != 0 ? mEventQueue.setEvent() : mEventQueue.resetEvent();
@@ -61,11 +67,15 @@ bool EventDispatcherBase::startDispatcher( void )
 
 void EventDispatcherBase::stopDispatcher( void )
 {
-    mExternaEvents.lockQueue();
-    removeEvents(false);
-    mExternaEvents.pushEvent(ExitEvent::getExitEvent());
-    mExternaEvents.unlockQueue();
-    mEventExit.setEvent();
+    mExternaEvents.lockQueue( );
+    if ( mHasStarted )
+    {
+        removeEvents( true );
+        mExternaEvents.pushEvent( ExitEvent::getExitEvent( ) );
+    }
+
+    mEventExit.setEvent( );
+    mExternaEvents.unlockQueue( );
 }
 
 void EventDispatcherBase::exitDispatcher(void)
@@ -84,6 +94,8 @@ void EventDispatcherBase::shutdownDispatcher( void )
         removeEvents( true );
         mExternaEvents.pushEvent(ExitEvent::getExitEvent());
     }
+
+    mEventExit.setEvent( );
     mExternaEvents.unlockQueue( );
 }
 

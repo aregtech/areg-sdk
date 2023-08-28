@@ -129,6 +129,8 @@ public:
      **/
     inline void removeExternalEventType(const RuntimeClassID & eventClassId);
 
+    bool isExitEvent( Event * anEvent ) const;
+
 /************************************************************************/
 // IEEventDispatcher overrides
 /************************************************************************/
@@ -142,7 +144,7 @@ public:
      * \brief   Call to stop running dispatcher.
      **/
     virtual void stopDispatcher( void ) override;
-    
+
     /**
      * \brief   Called when dispatcher completed the job and exit.
      *          The cleanups should be done here.

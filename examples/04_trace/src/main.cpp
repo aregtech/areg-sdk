@@ -106,7 +106,7 @@ int main()
         TRACE_DBG("[ %s ] to create thread [ %s ]", aThread.isValid() ? "SUCCEEDED" : "FAILED", aThread.getName().getString());
 
         TRACE_INFO("Going to stop and destroy [ %s ] thread.", aThread.getName().getString());
-        aThread.destroyThread(NECommon::WAIT_INFINITE);
+        aThread.shutdownThread(NECommon::WAIT_INFINITE);
 
     } while (false);
 

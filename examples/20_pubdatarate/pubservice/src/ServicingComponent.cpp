@@ -135,17 +135,19 @@ void ServicingComponent::shutdownServiceIntrface(Component& holder)
     mPauseEvent.setEvent();
 
     mBitmap.release();
-    mInputThread.destroyThread(NECommon::WAIT_INFINITE);
-    mImageThread.destroyThread(NECommon::WAIT_INFINITE);
+    mInputThread.shutdownThread(NECommon::WAIT_INFINITE);
+    mImageThread.shutdownThread(NECommon::WAIT_INFINITE);
 
     LargeDataStub::shutdownServiceIntrface(holder);
 }
 
-void ServicingComponent::clientConnected(const ProxyAddress& client, NEService::eServiceConnection connectionStatus )
+bool ServicingComponent::clientConnected(const ProxyAddress& client, NEService::eServiceConnection connectionStatus )
 {
-    LargeDataStub::clientConnected(client, connectionStatus );
+    bool result = LargeDataStub::clientConnected(client, connectionStatus );
     mClients += (NEService::isServiceConnected( connectionStatus ) ? 1 : -1);
     _printInfo();
+
+    return result;
 }
 
 void ServicingComponent::onTimerExpired( void )

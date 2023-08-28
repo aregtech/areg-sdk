@@ -43,9 +43,14 @@ bool WatchdogManager::startWatchdogManager(void)
     return getInstance().startTimerManagerThread();
 }
 
-void WatchdogManager::stopWatchdogManager(void)
+void WatchdogManager::stopWatchdogManager(bool waitComplete)
 {
-    return getInstance().stopTimerManagerThread();
+    return getInstance().stopTimerManagerThread(waitComplete);
+}
+
+void WatchdogManager::waitWatchdogManager(void)
+{
+    return getInstance().waitCompletion();
 }
 
 bool WatchdogManager::isWatchdogManagerStarted(void)

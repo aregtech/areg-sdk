@@ -159,9 +159,9 @@ void ServiceClientConnection::disconnectServiceHost(void)
     TRACE_DBG( "Stopping remote servicing client connection, current state is [ %s ]", isRunning() ? "RUNNING" : "NOT RUNNING" );
     if ( isRunning() )
     {
-        _sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceExit, Event::eEventPriority::EventPriorityCritical);
+        _sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceExit, Event::eEventPriority::EventPriorityNormal);
         completionWait(NECommon::WAIT_INFINITE);
-        destroyThread( NECommon::DO_NOT_WAIT );
+        shutdownThread(NECommon::DO_NOT_WAIT);
     }
 }
 
@@ -285,21 +285,24 @@ void ServiceClientConnection::onServiceStop(void)
 
     _setConnectionState(ServiceClientConnection::eConnectionState::ConnectionStopping);
 
+    mTimerConnect.stopTimer( );
+
     Channel channel = mChannel;
     mChannel.setCookie( NEService::COOKIE_UNKNOWN );
     mChannel.setSource( NEService::SOURCE_UNKNOWN );
     mChannel.setTarget( NEService::TARGET_UNKNOWN );
 
-    _stopReceiveData( );
-    _stopSendData( );
+    mThreadReceive.triggerExit( );
+    mClientConnection.disableReceive( );
+
+    _disconnectService( Event::eEventPriority::EventPriorityNormal );
+
     mThreadSend.completionWait( NECommon::WAIT_INFINITE );
-    mThreadReceive.completionWait( NECommon::WAIT_INFINITE );
+    mThreadSend.shutdownThread( NECommon::DO_NOT_WAIT );
+    mClientConnection.closeSocket( );
+    mThreadReceive.shutdownThread( NECommon::WAIT_INFINITE );
 
-    mClientConnection.closeSocket();
     mConnectionConsumer.disconnectedRemoteServiceChannel( channel );
-
-    mThreadReceive.destroyThread( NECommon::DO_NOT_WAIT );
-    mThreadSend.destroyThread( NECommon::DO_NOT_WAIT );
 }
 
 void ServiceClientConnection::onServiceRestart( void )
@@ -339,11 +342,9 @@ void ServiceClientConnection::onServiceConnectionStopped(void)
 
     _cancelConnection( );
 
-    mThreadReceive.completionWait( NECommon::WAIT_INFINITE );
-    mThreadSend.completionWait( NECommon::WAIT_INFINITE );
+    mThreadReceive.shutdownThread( NECommon::WAIT_INFINITE );
+    mThreadSend.shutdownThread( NECommon::WAIT_INFINITE );
     mConnectionConsumer.disconnectedRemoteServiceChannel( channel );
-    mThreadReceive.destroyThread( NECommon::DO_NOT_WAIT );
-    mThreadSend.destroyThread( NECommon::DO_NOT_WAIT );
 
     if ( Application::isServicingReady( ) )
     {
@@ -366,11 +367,10 @@ void ServiceClientConnection::onServiceConnectionLost(void)
     {
         TRACE_DBG( "Restarting lost connection with remote service" );
 
-        mThreadReceive.completionWait( NECommon::WAIT_INFINITE );
-        mThreadSend.completionWait( NECommon::WAIT_INFINITE );
+        mThreadReceive.shutdownThread( NECommon::WAIT_INFINITE );
+        mThreadSend.shutdownThread( NECommon::WAIT_INFINITE );
         mConnectionConsumer.lostRemoteServiceChannel( channel );
 
-        // _setConnectionState( ServiceClientConnection::eConnectionState::ConnectionStarting );
         mTimerConnect.startTimer( NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT, static_cast<DispatcherThread &>(self( )), 1 );
     }
     else
@@ -386,7 +386,7 @@ void ServiceClientConnection::onServiceConnectionLost(void)
 void ServiceClientConnection::onServiceExit( void )
 {
     onServiceStop( );
-    triggerExitEvent( );
+    triggerExit( );
 }
 
 void ServiceClientConnection::onServiceMessageReceived( const RemoteMessage & msgReceived )
@@ -439,31 +439,13 @@ inline bool ServiceClientConnection::_startConnection( void )
     if ( result == false )
     {
         TRACE_WARN("Client service failed to start connection, going to repeat connection in [ %u ] ms", NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT);
-        mThreadSend.destroyThread( NECommon::DO_NOT_WAIT );
-        mThreadReceive.destroyThread( NECommon::DO_NOT_WAIT );
+        mThreadSend.shutdownThread( NECommon::DO_NOT_WAIT );
+        mThreadReceive.shutdownThread( NECommon::DO_NOT_WAIT );
         mClientConnection.closeSocket();
         mTimerConnect.startTimer( NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT, static_cast<DispatcherThread &>(self()), 1);
     }
 
     return result;
-}
-
-inline void ServiceClientConnection::_stopReceiveData(void)
-{
-    TRACE_SCOPE(areg_ipc_private_ServiceClientConnection__stopReceiveData);
-    TRACE_WARN("Stopping service client to receive");
-    mTimerConnect.stopTimer();
-
-    mThreadReceive.triggerExitEvent();
-    mClientConnection.disableReceive();
-}
-
-inline void ServiceClientConnection::_stopSendData(void)
-{
-    TRACE_SCOPE(areg_ipc_private_ServiceClientConnection__stopSendData);
-    TRACE_WARN("Stopping client service connection");
-
-    _disconnectService( Event::eEventPriority::EventPriorityHigh );
 }
 
 inline void ServiceClientConnection::_cancelConnection(void)
@@ -474,11 +456,8 @@ inline void ServiceClientConnection::_cancelConnection(void)
     mClientConnection.closeSocket();
     mClientConnection.setCookie( NEService::COOKIE_UNKNOWN );
 
-    mThreadReceive.triggerExitEvent();
-    mThreadSend.triggerExitEvent();
-
-    mThreadReceive.destroyThread( NECommon::DO_NOT_WAIT );
-    mThreadSend.destroyThread( NECommon::DO_NOT_WAIT );
+    mThreadReceive.shutdownThread( NECommon::DO_NOT_WAIT );
+    mThreadSend.shutdownThread( NECommon::DO_NOT_WAIT );
 }
 
 void ServiceClientConnection::failedSendMessage(const RemoteMessage & msgFailed, Socket & whichTarget )
@@ -502,10 +481,14 @@ void ServiceClientConnection::failedSendMessage(const RemoteMessage & msgFailed,
                 eventError->deliverEvent();
             }
 
-            if ( whichTarget.isValid( ) )
+        TRACE_WARN("The target socket is [ %s ] and [ %s ], [ %s ] to stop the service"
+                  , whichTarget.isValid() ? "VALID" : "INVALID"
+                  , whichTarget.isAlive() ? "ALIVE" : "DEAD"
+                  , whichTarget.isValid() && (whichTarget.isAlive() == false) ? "GOING" : "IGNORING");
+            if ( whichTarget.isValid() && (whichTarget.isAlive() == false))
             {
                 _cancelConnection( );
-                _sendCommand( ServiceEventData::eServiceEventCommands::CMD_ServiceLost, Event::eEventPriority::EventPriorityHigh );
+                _sendCommand( ServiceEventData::eServiceEventCommands::CMD_ServiceLost, Event::eEventPriority::EventPriorityNormal );
             }
         }
         else
@@ -527,8 +510,16 @@ void ServiceClientConnection::failedReceiveMessage( Socket & whichSource )
 
     if (Application::isServicingReady())
     {
-        _cancelConnection( );
-        _sendCommand( ServiceEventData::eServiceEventCommands::CMD_ServiceLost, Event::eEventPriority::EventPriorityHigh );
+        TRACE_WARN("The source socket is [ %s ] and [ %s ], [ %s ] to stop the service"
+                  , whichSource.isValid() ? "VALID" : "INVALID"
+                  , whichSource.isAlive() ? "ALIVE" : "DEAD"
+                  , whichSource.isValid() && (whichSource.isAlive() == false) ? "GOING" : "IGNORING");
+
+        if (whichSource.isValid() && (whichSource.isAlive() == false))
+        {
+            _cancelConnection();
+            _sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceLost, Event::eEventPriority::EventPriorityNormal);
+        }
     }
     else
     {

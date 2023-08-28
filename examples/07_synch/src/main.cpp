@@ -267,8 +267,8 @@ int main()
 
         // stop and destroy thread, clean resources. Wait until thread ends.
         TRACE_INFO("The threads completed jobs, wait threads to shutdown to exit application");
-        helloThread.destroyThread(NECommon::WAIT_INFINITE);
-        goodbyeThread.destroyThread(NECommon::WAIT_INFINITE);
+        helloThread.shutdownThread(NECommon::WAIT_INFINITE);
+        goodbyeThread.shutdownThread(NECommon::WAIT_INFINITE);
 
     } while (false);
 

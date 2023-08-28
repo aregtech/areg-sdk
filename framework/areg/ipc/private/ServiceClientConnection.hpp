@@ -398,14 +398,6 @@ private:
      **/
     inline bool _startConnection( void );
     /**
-     * \brief   Called to stop client socket receiving data.
-     **/
-    inline void _stopReceiveData( void );
-    /**
-     * \brief   Called to stop client socket sending data.
-     **/
-    inline void _stopSendData(void);
-    /**
      * \brief   Called when connection is lost and should be immediately canceled.
      **/
     inline void _cancelConnection( void );

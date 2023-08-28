@@ -33,6 +33,7 @@ DEF_TRACE_SCOPE( areg_component_StubBase_shutdownServiceIntrface );
 DEF_TRACE_SCOPE( areg_component_StubBase_errorAllRequests );
 DEF_TRACE_SCOPE( areg_component_StubBase_sendBusyRespone );
 DEF_TRACE_SCOPE( areg_component_StubBase_clientConnected );
+DEF_TRACE_SCOPE( areg_component_StubBase_addNotificationListener );
 
 //////////////////////////////////////////////////////////////////////////
 // StubBase class statics
@@ -421,12 +422,13 @@ bool StubBase::existNotificationListener( unsigned int msgId, const ProxyAddress
 
 bool StubBase::addNotificationListener(unsigned int msgId, const ProxyAddress & notifySource)
 {
-    bool result = false;
+    TRACE_SCOPE(areg_component_StubBase_addNotificationListener);
 
+    bool result { false };
     if (notifySource.isValid())
     {
-        bool hasEntry   = false;
-        StubListenerList::LISTPOS pos     = mListListener.firstPosition();
+        bool hasEntry{ false };
+        auto pos = mListListener.firstPosition();
         for ( ; (hasEntry == false) && mListListener.isValidPosition(pos); pos = mListListener.nextPosition(pos) )
         {
             const StubBase::Listener & listener = mListListener.valueAtPosition(pos);
@@ -435,8 +437,23 @@ bool StubBase::addNotificationListener(unsigned int msgId, const ProxyAddress & 
                        (notifySource == listener.mProxy);
         }
 
-        mListListener.pushLast(StubBase::Listener(msgId, NEService::SEQUENCE_NUMBER_NOTIFY, notifySource));
-        result = (hasEntry == false);
+        if ( hasEntry == false)
+        {
+            TRACE_DBG("For the message [ %u ] new listener [ %s ] is added"
+                        , msgId
+                        , ProxyAddress::convAddressToPath(notifySource).getString());
+
+            mListListener.pushLast(StubBase::Listener(msgId, NEService::SEQUENCE_NUMBER_NOTIFY, notifySource));
+            result = true;
+        }
+#if AREG_LOGS
+        else
+        {
+            TRACE_WARN("For the message [ %u ] there is already registered client [ %s ]"
+                       , msgId
+                       , ProxyAddress::convAddressToPath(notifySource).getString());
+        }
+#endif  // AREG_LOGS
     }
 
     return result;
@@ -455,17 +472,24 @@ void StubBase::removeNotificationListener( unsigned int msgId, const ProxyAddres
     }
 }
 
-void StubBase::clientConnected(const ProxyAddress & client, NEService::eServiceConnection status )
+bool StubBase::clientConnected(const ProxyAddress & client, NEService::eServiceConnection status )
 {
-    TRACE_SCOPE( areg_component_StubBase_clientConnected );
-    TRACE_DBG( "Service consumer [ %s ] connection event with status [ %s ]"
-               , ProxyAddress::convAddressToPath( client ).getString( )
-               , NEService::getString( status ) );
-
-    if ( NEService::isServiceDisconnected( status ) )
+    bool result{ false };
+    if (mAddress == client)
     {
-        clearAllListeners( client );
+        TRACE_SCOPE(areg_component_StubBase_clientConnected);
+        TRACE_DBG("Service consumer [ %s ] connection event with status [ %s ]"
+                  , ProxyAddress::convAddressToPath(client).getString()
+                  , NEService::getString(status));
+
+        result = true;
+        if (NEService::isServiceDisconnected(status))
+        {
+            clearAllListeners(client);
+        }
     }
+
+    return result;
 }
 
 void StubBase::processClientConnectEvent( const ProxyAddress & proxyAddress, NEService::eServiceConnection status )

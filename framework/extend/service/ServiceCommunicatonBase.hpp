@@ -174,6 +174,11 @@ public:
     inline void removeInstance( ITEM_ID cookie );
 
     /**
+     * \brief   Removes all connected instances from the map.
+     **/
+    inline void removeAllInstances(void);
+
+    /**
      * \brief   Call to wait the service communication thread to complete the job.
      *          The method should be called when exit the process.
      **/
@@ -519,9 +524,15 @@ inline void ServiceCommunicatonBase::removeInstance( ITEM_ID cookie )
     mInstanceMap.removeAt( cookie );
 }
 
+inline void ServiceCommunicatonBase::removeAllInstances(void)
+{
+    mInstanceMap.release();
+}
+
 inline void ServiceCommunicatonBase::waitToComplete( )
 {
-    DispatcherThread::destroyThread( );
+    completionWait( NECommon::WAIT_INFINITE );
+    shutdownThread( NECommon::DO_NOT_WAIT );
 }
 
 inline bool ServiceCommunicatonBase::sendCommand( ServiceEventData::eServiceEventCommands cmd, Event::eEventPriority eventPrio /*= Event::eEventPriority::EventPriorityNormal*/ )

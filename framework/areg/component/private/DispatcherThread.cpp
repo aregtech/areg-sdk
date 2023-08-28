@@ -22,7 +22,7 @@
 
 DEF_TRACE_SCOPE( areg_component_private_DispatcherThread_destroyThread);
 DEF_TRACE_SCOPE( areg_component_private_DispatcherThread_shutdownThread);
-DEF_TRACE_SCOPE( areg_component_private_DispatcherThread_triggerExitEvent);
+DEF_TRACE_SCOPE( areg_component_private_DispatcherThread_triggerExit);
 
 //////////////////////////////////////////////////////////////////////////
 // class NullDispatcherThread declarations
@@ -224,16 +224,35 @@ bool DispatcherThread::postEvent( Event& eventElem )
     return true;
 }
 
-Thread::eCompletionStatus DispatcherThread::destroyThread( unsigned int waitForStopMs /*= NECommon::DO_NOT_WAIT*/ )
+void DispatcherThread::triggerExit( void )
+{
+    TRACE_SCOPE( areg_component_private_DispatcherThread_triggerExit );
+    TRACE_DBG( "Requesting to exit thread [ %s ] with ID [ %p ] and status [ %s ]."
+               , getName( ).getString( )
+               , static_cast<id_type>(getId( ))
+               , mHasStarted ? "STARTED" : "NOT STARTED" );
+
+    mExternaEvents.lockQueue( );
+    if ( mHasStarted )
+    {
+        removeEvents( true );
+        mExternaEvents.pushEvent( ExitEvent::getExitEvent( ) );
+    }
+
+    mEventExit.setEvent( );
+    mExternaEvents.unlockQueue( );
+}
+
+Thread::eCompletionStatus DispatcherThread::shutdownThread( unsigned int waitForStopMs /*= NECommon::DO_NOT_WAIT*/ )
 {
     TRACE_SCOPE( areg_component_private_DispatcherThread_destroyThread);
-    TRACE_DBG("Destroying the thread [ %s ] with ID [ %p ]. The current state is [ %s ]"
+    TRACE_DBG("Shutting down the thread [ %s ] with ID [ %p ]. The current state is [ %s ]"
                 , getName().getString( )
                 , static_cast<id_type>(getId( ))
                 , isRunning() ? "RUNNING" : "NOT RUNNING" );
 
     stopDispatcher( );
-    Thread::eCompletionStatus result = Thread::destroyThread(waitForStopMs);
+    Thread::eCompletionStatus result = Thread::shutdownThread(waitForStopMs);
     removeAllEvents( );
     return result;
 }
@@ -241,16 +260,6 @@ Thread::eCompletionStatus DispatcherThread::destroyThread( unsigned int waitForS
 DispatcherThread* DispatcherThread::getEventConsumerThread( const RuntimeClassID& whichClass )
 {
     return (hasRegisteredConsumer(whichClass) ? this : nullptr);
-}
-
-void DispatcherThread::shutdownThread( void )
-{
-    TRACE_SCOPE( areg_component_private_DispatcherThread_shutdownThread);
-    TRACE_DBG("Shutting down the thread [ %s ] with ID [ %p ]."
-                , getName().getString( )
-                , static_cast<id_type>(getId( )));
-
-    shutdownDispatcher();
 }
 
 void DispatcherThread::readyForEvents( bool isReady )
@@ -270,22 +279,6 @@ void DispatcherThread::readyForEvents( bool isReady )
 bool DispatcherThread::waitForDispatcherStart( unsigned int waitTimeout /*= NECommon::WAIT_INFINITE */ )
 {
     return mEventStarted.lock(waitTimeout);
-}
-
-void DispatcherThread::triggerExitEvent( void )
-{
-    TRACE_SCOPE( areg_component_private_DispatcherThread_triggerExitEvent);
-    TRACE_DBG("Requesting to exit thread [ %s ] with ID [ %p ] and status [ %s ]."
-                , getName().getString( )
-                , static_cast<id_type>(getId( ))
-                , mHasStarted ? "STARTED" : "NOT STARTED");
-
-    mExternaEvents.lockQueue( );
-    if ( mHasStarted )
-    {
-        mExternaEvents.pushEvent(ExitEvent::getExitEvent());
-    }
-    mExternaEvents.unlockQueue( );
 }
 
 bool DispatcherThread::isExitEvent(const Event * checkEvent) const

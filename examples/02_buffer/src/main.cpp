@@ -117,7 +117,7 @@ int main()
     aThread.createThread(NECommon::WAIT_INFINITE);
 
     // stop and destroy thread, clean resources. Wait until thread ends.
-    aThread.destroyThread(NECommon::WAIT_INFINITE);
+    aThread.shutdownThread(NECommon::WAIT_INFINITE);
 
     std::cout << "Exit application!" << std::endl;
     return 0;

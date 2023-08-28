@@ -74,6 +74,14 @@ protected:
     virtual void startupComponent( ComponentThread & comThread ) override;
 
     /**
+     * \brief   Triggered when proxy client either connected or disconnected to stub.
+     * \param   client  The address of proxy client, which connection status is changed.
+     * \param   status  The service consumer connection status.
+     * \return  Returns true if connected service consumer is relevant to the provider.
+     **/
+    virtual bool clientConnected(const ProxyAddress & client, NEService::eServiceConnection status) override;
+
+    /**
      * \brief   Request call.
      *          Outputs message on console. If additional message is not empty, outputs the additional message as well.
      * \param   clientID    The ID of registered client to make message output

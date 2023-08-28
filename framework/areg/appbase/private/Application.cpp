@@ -107,11 +107,17 @@ void Application::releaseApplication(void)
 
     Application & theApp  = Application::getInstance();
 
-    WatchdogManager::stopWatchdogManager();
-    TimerManager::stopTimerManager();
-    ComponentLoader::unloadComponentModel();
-    ServiceManager::_stopServiceManager(); // the message routing client is automatically stopped.
-    NETrace::stopLogging();
+    WatchdogManager::stopWatchdogManager(false);
+    TimerManager::stopTimerManager(false);
+    ComponentLoader::unloadComponentModel(false, String::EmptyString);
+    ServiceManager::_stopServiceManager(false); // the message routing client is automatically stopped.
+    NETrace::stopLogging(false);
+
+    WatchdogManager::waitWatchdogManager();
+    TimerManager::waitTimerManager();
+    ComponentLoader::waitModelUnload(String::EmptyString);
+    ServiceManager::_waitServiceManager();
+    NETrace::waitLoggingEnd();
 
     theApp.mConfigTracer    = String::getEmptyString();
     theApp.mConfigService   = String::getEmptyString();
@@ -127,7 +133,7 @@ bool Application::loadModel(const char * modelName /*= nullptr */)
 
 void Application::unloadModel(const char * modelName /*= nullptr */)
 {
-    ComponentLoader::unloadComponentModel(modelName);
+    ComponentLoader::unloadComponentModel(true, modelName);
 }
 
 bool Application::isModelLoaded(const char * modelName)
@@ -233,7 +239,7 @@ bool Application::startTracer(const char * configFile /*= nullptr*/, bool force 
 
 void Application::stopTracer(void)
 {
-    NETrace::stopLogging();
+    NETrace::stopLogging(true);
 }
 
 bool Application::isTracerStarted(void)
@@ -257,7 +263,7 @@ void Application::stopServiceManager( void )
     
     if ( ServiceManager::isServiceManagerStarted() )
     {
-        ServiceManager::_stopServiceManager();
+        ServiceManager::_stopServiceManager(true);
     }
     
     Application::_setAppState(Application::eAppState::AppStateStopped);
@@ -303,7 +309,7 @@ bool Application::startTimerManager( void )
 void Application::stopTimerManager(void)
 {
     Application::_osReleaseHandlers();
-    TimerManager::stopTimerManager();
+    TimerManager::stopTimerManager(true);
 }
 
 bool Application::startWatchdogManager(void)
@@ -313,7 +319,7 @@ bool Application::startWatchdogManager(void)
 
 void Application::stopWatchdogManager(void)
 {
-    WatchdogManager::stopWatchdogManager();
+    WatchdogManager::stopWatchdogManager(true);
 }
 
 bool Application::startMessageRouting(const char * configFile /*= nullptr*/ )

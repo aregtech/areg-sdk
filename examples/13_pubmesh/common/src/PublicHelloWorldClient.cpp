@@ -54,12 +54,20 @@ bool PublicHelloWorldClient::serviceConnected( NEService::eServiceConnection sta
         }
         else
         {
+            TRACE_DBG( "Disconnected [ %s : %s ]"
+                    , proxy.getStubAddress( ).isSourcePublic( ) ? "LOCAL PUBLIC" : "REMOTE PUBLIC"
+                    , StubAddress::convAddressToPath( proxy.getStubAddress()).getString());
+            printf("----- Disconnected %s service consumer -----\n", proxy.getStubAddress().isSourcePublic() ? "LOCAL PUBLIC" : "REMOTE PUBLIC");
             mTimer.stopTimer( );
         }
     }
     else if (SystemShutdownClientBase::serviceConnected(status, proxy))
     {
-        TRACE_DBG("Client [ %p ]-[ %s ]subscribes on service unavailable and service state update messages", this, mTimer.getName().getString());
+        bool connected = SystemShutdownClientBase::isConnected();
+        TRACE_DBG("Consumer [ %p : %s ] is [ %s ]"
+                  , this
+                  , ProxyAddress::convAddressToPath(proxy.getProxyAddress()).getString()
+                  , connected ? "CONNECTED" : "DISCONNECTED");
         notifyOnServiceStateUpdate( SystemShutdownClientBase::isConnected( ) );
     }
     else
@@ -123,9 +131,10 @@ void PublicHelloWorldClient::onServiceStateUpdate( NESystemShutdown::eServiceSta
     {
         if (ServiceState == NESystemShutdown::eServiceState::ServiceShutdown)
         {
-
             if ( SystemShutdownClientBase::getProxy()->getStubAddress( ).isSourcePublic( ) )
             {
+                mTimer.stopTimer( );
+                TRACE_DBG( "External source of message, going to shutdown the application" );
                 // disable assign on notification if the service is in the same process.
                 printf( ">>>>>>>>>> Shutting down the application <<<<<<<<<<\n" );
                 mTimer.stopTimer( );
@@ -137,12 +146,26 @@ void PublicHelloWorldClient::onServiceStateUpdate( NESystemShutdown::eServiceSta
 
                 requestSystemShutdown( );
                 Application::signalAppQuit( );
+                Thread::switchThread();
+            }
+            else
+            {
+                TRACE_DBG( "Internal source of message, ignoring to shutdown the application" );
             }
         }
         else if ( (mClient.crID != 0) && (mTimer.isActive() == false) )
         {
+            TRACE_DBG( "Starting timer to send requests" );
             mTimer.startTimer(mMsTimeout);
         }
+        else
+        {
+            TRACE_WARN( "Ignoring the message, either the client is [ %d ] or timer is [ %s ]", mClient.crID, mTimer.isActive( ) ? "ACTIVE" : "INACTIVE" );
+        }
+    }
+    else
+    {
+        TRACE_DBG( "Ignoring the system state change, the data is unavailable" );
     }
 }
 
@@ -153,7 +176,7 @@ void PublicHelloWorldClient::processTimer(Timer & timer)
 
     TRACE_DBG("Timer [ %s ] of client ID [ %d ] has expired, send request to output message.", timer.getName().getString(), mClient.crID);
 
-    NEService::eDataStateType dataState = NEService::eDataStateType::DataIsInvalid;
+    NEService::eDataStateType dataState { NEService::eDataStateType::DataIsUndefined };
     NESystemShutdown::eServiceState serviceState = getServiceState( dataState );
     if ( dataState == NEService::eDataStateType::DataIsOK )
     {

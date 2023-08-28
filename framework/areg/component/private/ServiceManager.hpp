@@ -218,8 +218,22 @@ private:
      * \brief   This function called, when Service Manager should stop activities.
      *          The function is called from application manager when all
      *          Component Threads are stopped and completed.
+     *          If 'waitComplete' is set to true, the calling thread is
+     *          blocked until Service Manager thread completes jobs and cleans resources.
+     *          Otherwise, this triggers stop event and immediately returns.
+     * \param   waitComplete    If true, waits for service manager to complete the jobs
+     *                          and exit threads. Otherwise, it triggers exit and
+     *                          returns.
      **/
-    static void _stopServiceManager( void );
+    static void _stopServiceManager( bool waitComplete);
+
+    /**
+     * \brief   The calling thread is blocked until Service Manager Thread did not
+     *          complete the job and exit. This should be called if previously
+     *          it was requested to stop the Service Manager Thread without
+     *          waiting for completion.
+     **/
+    static void _waitServiceManager(void);
 
 /************************************************************************/
 // Message router client start / stop functions
@@ -423,11 +437,22 @@ private:
     bool _startServiceManagerThread( void );
 
     /**
-     * \brief   Starts Service Manager Thread. This call will stop Timer Server, all
+     * \brief   Stops Service Manager Thread. This call will stop Timer Server, all
      *          pending server and client Service Interface will receive disconnect
      *          notification, and the Service Manager Thread will stop and complete job.
+     * \param   waitComplete    If true, the calling thread is blocked until Service Manager
+     *                          completes the jobs. Otherwise, the method triggers
+     *                          stop service message and immediately returns.
      **/
-    void _stopServiceManagerThread( void );
+    void _stopServiceManagerThread( bool waitComplete);
+
+    /**
+     * \brief   The calling thread is blocked until Service Manager Thread did not
+     *          complete the job and exit. This should be called if previously
+     *          it was requested to stop the Service Manager Thread without
+     *          waiting for completion.
+     **/
+    void _waitServiceManagerThread(void);
 
     /**
      * \brief   Returns reference to ServiceManager object

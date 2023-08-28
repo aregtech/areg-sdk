@@ -123,7 +123,19 @@ bool TimerManagerBase::startTimerManagerThread(void)
     return result;
 }
 
-void TimerManagerBase::stopTimerManagerThread(void)
+void TimerManagerBase::stopTimerManagerThread(bool waitComplete)
 {
-    destroyThread(NECommon::WAIT_INFINITE);
+    if (waitComplete)
+    {
+        shutdownThread(NECommon::WAIT_INFINITE);
+    }
+    else
+    {
+        triggerExit();
+    }
+}
+
+void TimerManagerBase::waitCompletion(void)
+{
+    shutdownThread(NECommon::WAIT_INFINITE);
 }

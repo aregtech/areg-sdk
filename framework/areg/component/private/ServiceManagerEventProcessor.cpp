@@ -60,7 +60,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
             mServerList.clear( );
             connectProvide.disconnectServiceHost( );
             mServiceManager.removeAllEvents( );
-            mServiceManager.triggerExitEvent( );
+            mServiceManager.triggerExit( );
         }
         break;
 

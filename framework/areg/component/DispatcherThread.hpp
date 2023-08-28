@@ -155,12 +155,6 @@ public:
     inline EventDispatcher & getEventDispatcher( void );
 
     /**
-     * \brief   This call does not stop dispatcher, but sets exit event in the queue
-     *          and when all messages are dispatched, the dispatcher will be stopped and exit loop.
-     **/
-    void triggerExitEvent( void );
-
-    /**
      * \brief   Returns true if specified event is special exit event.
      **/
     bool isExitEvent( const Event * checkEvent ) const;
@@ -181,30 +175,27 @@ public:
 /************************************************************************/
 
     /**
-     * \brief	Destroys thread and free resources. Once thread is destroyed,
-     *          it can be re-created again. The calling thread (current thread)
-     *          may be blocked until target thread is not destroyed.
-     * \param	waitForStopMs	Waiting time out in milliseconds until
-     *                          target thread is not finished running.
-     *                          If DO_NOT_WAIT, calling thread (current thread)
-     *                          will not be blocked and will not wait until target
-     *                          thread finished running. It will immediately
-     *                          close thread handle and free resources.
-     *                          If WAIT_INFINITE, calling (current) thread will wait
-     *                          until target thread completes running.
-     *                          Any other value may cause thread termination if 
-     *                          waiting time is expired and the target thread still runs.
+     * \brief   This call does not stop dispatcher, but sets exit event in the queue
+     *          and when all messages are dispatched, the dispatcher will be stopped and exit loop.
+     **/
+    virtual void triggerExit( void ) override;
+
+    /**
+     * \brief	Shuts down the thread and frees resources. If waiting timeout is not 'DO_NOT_WAIT and it expires,
+     *          the function terminates the thread. The shutdown thread can be re-created again.
+     *          The calling thread (current thread) may be blocked until target thread completes the job.
+     * \param	waitForStopMs	Waiting time out in milliseconds until target thread is finis run.
+     *                          -   Set DO_NOT_WAIT to trigger exit and immediately return
+     *                              without waiting for thread to complete the job.
+     *                          -   Set WAIT_INFINITE to trigger exit and wait until thread completes the job.
+     *                          -   Set any other value in milliseconds to specify waiting time
+     *                              until thread completes the job or timeout expires.
      * \return	Returns the thread completion status. The following statuses are defined:
      *              Thread::ThreadTerminated  -- The waiting timeout expired and thread was terminated;
      *              Thread::ThreadCompleted   -- The thread was valid and completed normally;
      *              Thread::ThreadInvalid     -- The thread was not valid and was not running, nothing was done.
      **/
-    virtual Thread::eCompletionStatus destroyThread(unsigned int waitForStopMs = NECommon::DO_NOT_WAIT) override;
-
-    /**
-     * \brief   Stops Dispatcher and exists Dispatcher Thread without terminating
-     **/
-    virtual void shutdownThread( void ) override;
+    virtual Thread::eCompletionStatus shutdownThread( unsigned int waitForStopMs = NECommon::DO_NOT_WAIT ) override;
 
 protected:
 /************************************************************************/

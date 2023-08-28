@@ -157,7 +157,7 @@ bool PowerControllerClient::serviceConnected( NEService::eServiceConnection stat
     else
     {
         TRACE_DBG( "Remove listener and stop worker thread" );
-        mConsole.destroyThread( NECommon::WAIT_INFINITE );
+        mConsole.shutdownThread( NECommon::WAIT_INFINITE );
         PowerControllerEvent::removeListener( static_cast<IEPowerControllerEventConsumer &>(self( )) );
     }
 

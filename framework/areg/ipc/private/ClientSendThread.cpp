@@ -70,7 +70,7 @@ void ClientSendThread::processEvent( const SendMessageEventData & data )
     {
         mConnection.sendMessage( mConnection.getDisconnectMessage( ) );
         mConnection.closeSocket( );
-        DispatcherThread::triggerExitEvent( );
+        triggerExit( );
     }
 }
 

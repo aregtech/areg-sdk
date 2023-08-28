@@ -84,7 +84,7 @@ void NetTcpLogger::closeLogger(void)
 
     mEventExit.setEvent( );
     _closeConnection( );
-    mRecvThread.destroyThread( NECommon::WAIT_INFINITE );
+    mRecvThread.shutdownThread( NECommon::WAIT_INFINITE );
     mEventExit.resetEvent( );
 
     while (mRingStack.isEmpty() == false)

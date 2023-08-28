@@ -14,6 +14,7 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/trace/GETrace.h"
 
+DEF_TRACE_SCOPE(examples_13_pubmesh_pubservice_PublicServiceComponent_clientConnected);
 DEF_TRACE_SCOPE( examples_13_pubmesh_pubservice_PublicServiceComponent_requestHelloWorld );
 DEF_TRACE_SCOPE( examples_13_pubmesh_pubservice_PublicServiceComponent_requestSystemShutdown );
 
@@ -45,6 +46,35 @@ void PublicServiceComponent::startupComponent( ComponentThread & comThread )
     SystemShutdownStub::setServiceState( NESystemShutdown::eServiceState::ServiceReady );
 }
 
+bool PublicServiceComponent::clientConnected(const ProxyAddress & client, NEService::eServiceConnection status)
+{
+    TRACE_SCOPE(examples_13_pubmesh_pubservice_PublicServiceComponent_clientConnected);
+    TRACE_INFO("The consumer [ %s ] is [ %s ]", ProxyAddress::convAddressToPath(client).getString(), NEService::getString(status));
+
+    bool result{ true };
+    if (SystemShutdownStub::clientConnected(client, status))
+    {
+        if (status == NEService::eServiceConnection::ServiceConnected)
+        {
+            if (SystemShutdownStub::isServiceStateValid() == false)
+            {
+                NESystemShutdown::eServiceState state = mNumMessages >= NEPublicHelloWorld::MaximumOutputs ?
+                    NESystemShutdown::eServiceState::ServiceShutdown :
+                    NESystemShutdown::eServiceState::ServiceReady;
+                TRACE_INFO("The service state is invalid, updating to the state [ %s ]", NESystemShutdown::getString(state));
+                SystemShutdownStub::setServiceState(state);
+            }
+        }
+    }
+    else if (PublicHelloWorldService::clientConnected(client, status) == false)
+    {
+        TRACE_WARN("Unexpected service consumer is connected!");
+        result = false;
+    }
+
+    return result;
+}
+
 void PublicServiceComponent::requestHelloWorld( unsigned int clientID )
 {
     TRACE_SCOPE( examples_13_pubmesh_pubservice_PublicServiceComponent_requestHelloWorld );
@@ -53,7 +83,7 @@ void PublicServiceComponent::requestHelloWorld( unsigned int clientID )
     if ( mNumMessages >= NEPublicHelloWorld::MaximumOutputs )
     {
         TRACE_WARN( "Reached maximum outputs [ %d ], preparing to shutdown", mNumMessages );
-        printf( ">>> Reached maximum outputs [ %d ] <<< ", mNumMessages );
+        printf( ">>> Reached maximum outputs [ %d ] <<<\n", mNumMessages );
         // Notify the service unavailable state, so that the clients stop sending requests
         SystemShutdownStub::setServiceState( NESystemShutdown::eServiceState::ServiceShutdown );
     }
@@ -62,7 +92,8 @@ void PublicServiceComponent::requestHelloWorld( unsigned int clientID )
 void PublicServiceComponent::requestSystemShutdown( void )
 {
     TRACE_SCOPE( examples_13_pubmesh_pubservice_PublicServiceComponent_requestSystemShutdown );
-    TRACE_WARN( "Processing the request to shutdown the system!" );
-    printf( "Processing the request to shutdown the system!\n" );
-    Application::signalAppQuit( );
+    TRACE_WARN( "No more service connected consumers. Processing the request to shutdown the system!" );
+    printf("Processing the system shutdown!\n");
+    Application::signalAppQuit();
+    Thread::switchThread();
 }

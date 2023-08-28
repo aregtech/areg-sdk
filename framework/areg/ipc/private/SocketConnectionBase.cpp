@@ -61,7 +61,9 @@ int SocketConnectionBase::sendMessage(const RemoteMessage & in_message, const So
     }
     else
     {
-        TRACE_ERR("Either socket is invalid or the remote buffer to send");
+        TRACE_ERR("Either socket is [ %s ] or the remote buffer is [ %s ] to send"
+                    , clientSocket.isValid() ? "VALID" : "INVALID"
+                    , in_message.isValid() ? "VALID" : "INVALID");
     }
 
     return result;
@@ -117,6 +119,12 @@ int SocketConnectionBase::receiveMessage(RemoteMessage & out_message, const Sock
             TRACE_WARN("Failed to receive remote message data. Probably the connection is closed, received [ %d ] bytes.", result);
             result = (result > 0) && (result != sizeof(NEMemory::sRemoteMessageHeader)) ? 0 : result;
         }
+    }
+    else
+    {
+        TRACE_WARN("Ignore processing message, the client socket is [ %s : %s ]"
+                    , clientSocket.isValid() ? "VALID" : "INVALID"
+                    , clientSocket.isAlive() ? "ALIVE" : "DEAD");
     }
 
     return result;

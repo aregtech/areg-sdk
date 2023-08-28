@@ -140,7 +140,7 @@ void RouterServerService::onServiceMessageReceived(const RemoteMessage &msgRecei
         {
             ITEM_ID cookie = NEService::COOKIE_UNKNOWN;
             msgReceived >> cookie;
-            mInstanceMap.removeAt( cookie );
+            removeInstance(cookie);
             mServerConnection.closeConnection(cookie);
 
             TEArrayList<StubAddress>  listStubs;

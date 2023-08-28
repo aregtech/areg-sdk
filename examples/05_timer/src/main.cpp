@@ -124,8 +124,8 @@ namespace
         aThread.stopTimers( );
 
         TRACE_DBG( "Completed demo, going to stop and exit dispatcher thread [ %s ]", aThread.getName( ).getString( ) );
-        aThread.triggerExitEvent( );
-        aThread.completionWait( NECommon::WAIT_INFINITE );
+        aThread.triggerExit( );
+        aThread.shutdownThread( NECommon::WAIT_INFINITE );
 
         TRACE_WARN( "The [ %s ] thread has completed job...", aThread.getName( ).getString( ) );
     }
