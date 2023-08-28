@@ -332,7 +332,7 @@ void ServiceCommunicatonBase::stopConnection(void)
     mServerConnection.disableReceive( );
 
     disconnectServices( );
-    disconnectService( Event::eEventPriority::EventPriorityNormal);
+    disconnectService( Event::eEventPriority::EventPriorityNormal );
 
     // Wait without triggering exit.
     mThreadSend.completionWait( NECommon::WAIT_INFINITE );
