@@ -1,9 +1,13 @@
+# Configure examples
+
+examples_CXXFLAGS :=
 ifeq ($(AREG_BINARY), shared)
-    examples_CXXFLAGS += -DIMP_AREG_DLL
+    examples_CXXFLAGS := -DIMP_AREG_DLL
 else
-    examples_CXXFLAGS += -DIMP_AREG_LIB
+    examples_CXXFLAGS := -DIMP_AREG_LIB
 endif
-examples_LDFLAGS  += $(AREG_LIB_INCLUDES) -lareg -lareg-extend $(LDFLAGS)
+
+examples_LDFLAGS := $(AREG_TOOL_FLAGS)
 
 include $(AREG_EXAMPLES)/00_helloservice/Makefile
 include $(AREG_EXAMPLES)/01_hello/Makefile

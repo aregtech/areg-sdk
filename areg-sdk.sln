@@ -16,6 +16,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		CMakeLists.txt = CMakeLists.txt
 		CONTRIBUTING.md = CONTRIBUTING.md
 		LICENSE.txt = LICENSE.txt
+		Makefile = Makefile
 		msvc_setup.props = msvc_setup.props
 		README.md = README.md
 		Releases.md = Releases.md
@@ -89,6 +90,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{07BFF46A-D4BC-4FAD-9727-D959755BFBAC}"
 	ProjectSection(SolutionItems) = preProject
 		examples\CMakeLists.txt = examples\CMakeLists.txt
+		examples\Makefile = examples\Makefile
 		examples\README.md = examples\README.md
 	EndProjectSection
 EndProject

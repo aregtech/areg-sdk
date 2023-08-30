@@ -16,7 +16,7 @@ extend_CXXFLAGS		:=
 ifeq ($(AREG_BINARY), shared)
     extend_CXXFLAGS := -I$(AREG_BASE) -DIMP_AREG_DLL
 else
-    extend_CXXFLAGS := -I$(AREG_BASE) -DIMP_AREG_LIB
+    extend_CXXFLAGS := -I$(AREG_BASE) -DIMP_AREG_LIB -lareg
 endif
 
 extend: $(extend_TARGET_PATH)

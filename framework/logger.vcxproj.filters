@@ -57,6 +57,7 @@
     <None Include="logger\resources\logger.init">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="logger\Makefile" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="logger\app\private\Logger.cpp">
@@ -84,7 +85,6 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="CMakeLists.txt" />
     <Text Include="logger\CMakeLists.txt" />
   </ItemGroup>
 </Project>

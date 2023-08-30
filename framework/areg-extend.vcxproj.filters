@@ -34,5 +34,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="extend\Readme.md" />
+    <None Include="extend\Makefile" />
   </ItemGroup>
 </Project>

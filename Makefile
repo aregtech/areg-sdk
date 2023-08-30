@@ -10,6 +10,8 @@ AREG_SDK_ROOT       := $(patsubst %/,%,$(dir $(MAKEFILE_ROOT)))
 AREG_MAKE_CONFIG_DIR:= $(AREG_SDK_ROOT)/conf/make
 AREG_BASE           := $(AREG_SDK_ROOT)/framework
 AREG_EXAMPLES       := $(AREG_SDK_ROOT)/examples
+AREG_EXTEND         := $(AREG_BASE)/extend
+AREG_THIRDPARTY     := $(AREG_SDK_ROOT)/thirdparty
 
 # 'all' must be defined first before include project's makefiles
 all: framework examples

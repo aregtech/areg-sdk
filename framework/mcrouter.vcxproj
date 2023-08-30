@@ -64,6 +64,7 @@
     <ResourceCompile Include="mcrouter\resources\mcrouter.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="mcrouter\Makefile" />
     <None Include="mcrouter\Readme.md" />
     <None Include="mcrouter\resources\mcrouter.ico" />
     <None Include="mcrouter\resources\router.init" />
@@ -73,7 +74,6 @@
     <None Include="mcrouter\resources\mcrouter_post_build.bat" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="CMakeLists.txt" />
     <Text Include="mcrouter\app\private\CMakeLists.txt" />
     <Text Include="mcrouter\CMakeLists.txt" />
     <Text Include="mcrouter\tcp\private\CMakeLists.txt" />
