@@ -91,10 +91,10 @@ jobs:
         if: matrix.config.extend == '1'
         working-directory: ${{github.workspace}}
         # Build your program with the given configuration
-        run: make AREG_COMPILER_FAMILY=${{matrix.config.family}} AREG_BUILD_TYPE=${{env.BUILD_TYPE}} AREG_BINARY=${{matrix.config.lib}} AREG_EXTENDED=${{matrix.config.extend}} AREG_LOGS=${{matrix.config.logs}} all -j10
+        run: make AREG_COMPILER_FAMILY=${{matrix.config.family}} AREG_BUILD_TYPE=${{env.BUILD_TYPE}} AREG_BINARY=${{matrix.config.lib}} AREG_EXTENDED=${{matrix.config.extend}} AREG_LOGS=${{matrix.config.logs}} all -j18
 
       - name: Build with selected compiler and disabled extensions
         if: matrix.config.extend == '0'
         working-directory: ${{github.workspace}}
         # Build your program with the given configuration
-        run: make AREG_COMPILER=${{matrix.config.cc}} AREG_BUILD_TYPE=${{env.BUILD_TYPE}} AREG_BINARY=${{matrix.config.lib}} AREG_EXTENDED=${{matrix.config.extend}} AREG_LOGS=${{matrix.config.logs}} all -j10
+        run: make AREG_COMPILER=${{matrix.config.cc}} AREG_BUILD_TYPE=${{env.BUILD_TYPE}} AREG_BINARY=${{matrix.config.lib}} AREG_EXTENDED=${{matrix.config.extend}} AREG_LOGS=${{matrix.config.logs}} all -j18
