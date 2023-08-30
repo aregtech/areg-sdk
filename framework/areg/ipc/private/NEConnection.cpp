@@ -437,9 +437,6 @@ AREG_API_IMPL RemoteMessage NEConnection::createConnectRequest(void)
         msgHelloServer.setSequenceNr( NEService::SEQUENCE_NUMBER_NOTIFY );
         msgHelloServer << instance;
 
-        uint32_t msgId = msgHelloServer.getMessageId();
-        ASSERT( msgId == static_cast<uint32_t>(NEService::eFuncIdRange::SystemServiceConnect));
-
         msgHelloServer.bufferCompletionFix();
     }
 
