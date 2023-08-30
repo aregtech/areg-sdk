@@ -99,22 +99,6 @@ public:
      **/
     virtual ~Timer( void );
 
-/************************************************************************/
-// TimerBase class overrides
-/************************************************************************/
-public:
-    /**
-     * \brief   Call to start timer. The timer should have valid timeout.
-     * 
-     * \return  Returns true if succeeded to start timer.
-     */
-    virtual bool startTimer( void ) override;
-
-    /**
-     * \brief   Call to stop previously started timer.
-     **/
-    virtual void stopTimer( void ) override;
-
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
@@ -162,6 +146,11 @@ public:
      * \return  Returns true if Timer was successfully started.
      **/
     bool startTimer(unsigned int timeoutInMs, DispatcherThread & whichThread, unsigned int eventCount = TimerBase::CONTINUOUSLY);
+
+    /**
+     * \brief   Call to stop previously started timer.
+     **/
+    void stopTimer( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes

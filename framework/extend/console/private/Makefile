@@ -1,4 +1,4 @@
-extend_SRC  +=  \
+extend_SRC += \
     ${extend_BASE}/console/private/Console.cpp                  \
     ${extend_BASE}/console/private/OptionParser.cpp             \
     ${extend_BASE}/console/private/SystemServiceConsole.cpp     \

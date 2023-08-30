@@ -30,8 +30,8 @@
 #include "areg/base/File.hpp"
 #include "areg/trace/GETrace.h"
 
-DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnection_startRemotingService);
-DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnection_stopRemotingService);
+DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnection_connectServiceHost);
+DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnection_disconnectServiceHost);
 
 DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnection_onServiceReconnectTimerExpired);
 DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnection_onServiceConnectionStart);
@@ -114,7 +114,7 @@ void ServiceClientConnection::applyServiceConnectionData( const String & hostNam
 
 bool ServiceClientConnection::connectServiceHost(void)
 {
-    TRACE_SCOPE(areg_ipc_private_ServiceClientConnection_startRemotingService);
+    TRACE_SCOPE(areg_ipc_private_ServiceClientConnection_connectServiceHost);
     Lock lock( mLock );
     bool result = true;
     if ( mClientConnection.isValid() == false && isRunning() == false )
@@ -155,7 +155,7 @@ bool ServiceClientConnection::reconnectServiceHost(void)
 
 void ServiceClientConnection::disconnectServiceHost(void)
 {
-    TRACE_SCOPE(areg_ipc_private_ServiceClientConnection_stopRemotingService);
+    TRACE_SCOPE(areg_ipc_private_ServiceClientConnection_disconnectServiceHost);
     TRACE_DBG( "Stopping remote servicing client connection, current state is [ %s ]", isRunning() ? "RUNNING" : "NOT RUNNING" );
     if ( isRunning() )
     {
@@ -515,7 +515,7 @@ void ServiceClientConnection::failedReceiveMessage( Socket & whichSource )
                   , whichSource.isAlive() ? "ALIVE" : "DEAD"
                   , whichSource.isValid() && (whichSource.isAlive() == false) ? "GOING" : "IGNORING");
 
-        if (whichSource.isValid() && (whichSource.isAlive() == false))
+        if (whichSource.isValid())
         {
             _cancelConnection();
             _sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceLost, Event::eEventPriority::EventPriorityNormal);

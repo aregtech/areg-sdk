@@ -57,16 +57,6 @@ Timer::~Timer(void)
 // Operations
 //////////////////////////////////////////////////////////////////////////
 
-bool Timer::startTimer( void )
-{
-    return startTimer(mTimeoutInMs, 1);
-}
-
-void Timer::stopTimer(void)
-{
-    _stopTimer();
-}
-
 bool Timer::startTimer( unsigned int timeoutInMs, unsigned int eventCount /*= Timer::CONTINUOUSLY*/ )
 {
     return startTimer(timeoutInMs, DispatcherThread::getCurrentDispatcherThread(), eventCount);
@@ -115,6 +105,11 @@ bool Timer::startTimer(unsigned int timeoutInMs, DispatcherThread & whichThread,
     }
 }
 
+void Timer::stopTimer(void)
+{
+    _stopTimer();
+}
+
 bool Timer::timerIsExpired(unsigned int highValue, unsigned int lowValue, ptr_type /*context*/ )
 {
     Lock lock(mLock);
@@ -139,7 +134,6 @@ bool Timer::timerIsExpired(unsigned int highValue, unsigned int lowValue, ptr_ty
 
     return mActive;
 }
-
 
 void Timer::timerStarting(unsigned int highValue, unsigned int lowValue, ptr_type /*context*/)
 {

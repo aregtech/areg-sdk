@@ -7,7 +7,7 @@ areg_SRC += \
 	${areg_BASE}/ipc/private/IEServiceConnectionConsumer.cpp	\
 	${areg_BASE}/ipc/private/IEServiceConnectionProvider.cpp	\
 	${areg_BASE}/ipc/private/IEServiceRegisterConsumer.cpp		\
-	${areg_BASE}/ipc/private/IEServiceRegisterProvider.hpp		\
+	${areg_BASE}/ipc/private/IEServiceRegisterProvider.cpp		\
 	${areg_BASE}/ipc/private/NEConnection.cpp					\
 	${areg_BASE}/ipc/private/NERemoteService.cpp				\
 	${areg_BASE}/ipc/private/SendMessageEvent.cpp				\

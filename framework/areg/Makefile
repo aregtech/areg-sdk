@@ -3,8 +3,6 @@ areg_PROJECT_NAME := areg
 areg_TARGET_PATH :=
 areg_BASE        := $(AREG_BASE)/areg
 areg_OUTPUT_OBJ  := $(AREG_OUTPUT_OBJ)/$(areg_PROJECT_NAME)
-areg_OUTPUT_LIB  := $(AREG_OUTPUT_LIB)
-areg_OUTPUT_BIN  := $(AREG_OUTPUT_BIN)
 
 areg_SRC  :=
 areg_OBJS :=
@@ -19,10 +17,10 @@ include $(areg_BASE)/trace/private/Makefile
 areg_CXXFLAGS :=
 ifeq ($(AREG_BINARY), shared)
 	areg_CXXFLAGS += -fPIC -DEXP_AREG_DLL
-	areg_TARGET_PATH := $(areg_OUTPUT_BIN)/$(AREG_LIB_PREFIX)$(areg_PROJECT_NAME)$(AREG_LIB_EXT)
+	areg_TARGET_PATH := $(AREG_OUTPUT_BIN)/$(AREG_LIB_PREFIX)$(areg_PROJECT_NAME)$(AREG_LIB_EXT)
 else
 	areg_CXXFLAGS += -DEXP_AREG_LIB
-	areg_TARGET_PATH := $(areg_OUTPUT_LIB)/$(AREG_LIB_PREFIX)$(areg_PROJECT_NAME)$(AREG_LIB_EXT)
+	areg_TARGET_PATH := $(AREG_OUTPUT_LIB)/$(AREG_LIB_PREFIX)$(areg_PROJECT_NAME)$(AREG_LIB_EXT)
 endif
 
 areg: $(areg_TARGET_PATH)
