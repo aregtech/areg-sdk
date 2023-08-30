@@ -169,14 +169,6 @@ CXXFLAGS    += $(AREG_COMPILER_OPTIONS)
 # set linker flags, include AREG_OUTPUT_BIN to the library search path
 LDFLAGS     += $(AREG_LDFLAGS) -Wl,-R$(AREG_OUTPUT_BIN)
 
-# AREG_TOOL_FLAGS :=
-# ifeq ($(AREG_BINARY), shared)
-#     AREG_TOOL_FLAGS := $(AREG_LIB_INCLUDES) -lareg -lareg-extend $(LDFLAGS) $(AREG_EXTENDED_LIBS)
-# else
-#     AREG_TOOL_FLAGS := $(AREG_LIB_INCLUDES) -lareg-extend -lareg -lareg-extend $(LDFLAGS) $(AREG_EXTENDED_LIBS)
-#     # AREG_TOOL_FLAGS := $(AREG_LIB_INCLUDES) -lareg -lareg-extend $(LDFLAGS) $(AREG_EXTENDED_LIBS)
-# endif
-
 AREG_TOOL_FLAGS := $(AREG_LIB_INCLUDES) -lareg-extend -lareg -lareg-extend $(LDFLAGS) $(AREG_EXTENDED_LIBS)
 
 $(info -------------------- Makefile Status Report Begin --------------------)
