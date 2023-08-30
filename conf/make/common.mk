@@ -132,7 +132,7 @@ else
 endif
 
 # The source code build relative path
-AREG_PRODUCT_PATH   := $(shell echo build/$(AREG_COMPILER_FAMILY)-$(AREG_TOOLCHAIN)/$(AREG_OS)-$(AREG_BITNESS)-$(AREG_PLATFORM)-$(AREG_BUILD_TYPE) | tr '[:upper:]' '[:lower:]')
+AREG_PRODUCT_PATH := $(shell echo build/$(AREG_COMPILER_FAMILY)-$(AREG_TOOLCHAIN)/$(AREG_OS)-$(AREG_BITNESS)-$(AREG_PLATFORM)-$(AREG_BUILD_TYPE)-$(AREG_BINARY) | tr '[:upper:]' '[:lower:]')
 
 # If 'AREG_OUTPUT_DIR' is not set, build and set the default path.
 AREG_OUTPUT_DIR := $(if $(AREG_OUTPUT_DIR),$(AREG_OUTPUT_DIR),$(AREG_BUILD_ROOT)/$(AREG_PRODUCT_PATH))
@@ -168,6 +168,8 @@ endif
 CXXFLAGS    += $(AREG_COMPILER_OPTIONS)
 # set linker flags, include AREG_OUTPUT_BIN to the library search path
 LDFLAGS     += $(AREG_LDFLAGS) -Wl,-R$(AREG_OUTPUT_BIN)
+
+AREG_TOOL_FLAGS := $(AREG_LIB_INCLUDES) -lareg-extend -lareg -lareg-extend $(LDFLAGS) $(AREG_EXTENDED_LIBS)
 
 $(info -------------------- Makefile Status Report Begin --------------------)
 $(info >>> Build for '$(AREG_OS)' '$(AREG_BITNESS)'-bit platform '$(AREG_PLATFORM)' with compiler '$(AREG_CXX_COMPILER)', ID '$(AREG_COMPILER_FAMILY)', and build type '$(AREG_BUILD_TYPE)')

@@ -55,48 +55,43 @@ RemoteMessage::RemoteMessage(const unsigned char * buffer, unsigned int size, un
 
 unsigned int RemoteMessage::initBuffer(unsigned char *newBuffer, unsigned int bufLength, bool makeCopy) const
 {
-    unsigned int result = IECursorPosition::INVALID_CURSOR_POSITION;
+    unsigned int result{ IECursorPosition::INVALID_CURSOR_POSITION };
 
     if (newBuffer != nullptr)
     {
-        result                  = 0;
-        unsigned int dataOffset = getDataOffset();
-        unsigned int dataLength = bufLength - dataOffset;
+        result = 0;
+        unsigned int dataOffset { getDataOffset() };
+        unsigned int dataLength { bufLength - dataOffset };
 
         NEMemory::memZero(newBuffer, sizeof(NEMemory::sRemoteMessage));
         NEMemory::sRemoteMessageHeader & header = NEMemory::constructElems<NEMemory::sRemoteMessage>(newBuffer, 1)->rbHeader;
+
         header.rbhBufHeader.biBufSize   = bufLength;
         header.rbhBufHeader.biLength    = dataLength;
         header.rbhBufHeader.biOffset    = dataOffset;
         header.rbhBufHeader.biBufType   = NEMemory::eBufferType::BufferRemote;
+        header.rbhBufHeader.biUsed      = 0;
+
+        if (isValid())
+        {
+            const NEMemory::sRemoteMessageHeader & hdrSrc = { _getHeader() };
+            header.rbhTarget    = hdrSrc.rbhTarget;
+            header.rbhSource    = hdrSrc.rbhSource;
+            header.rbhMessageId = hdrSrc.rbhMessageId;
+            header.rbhResult    = hdrSrc.rbhResult;
+            header.rbhSequenceNr= hdrSrc.rbhSequenceNr;
+        }
 
         if ( makeCopy )
         {
-            unsigned char* dstBuf       = NEMemory::getBufferDataWrite(reinterpret_cast<NEMemory::sByteBuffer *>(&header.rbhBufHeader));
-            const unsigned char* srcBuf = NEMemory::getBufferDataRead(mByteBuffer.get());
-            unsigned int srcCount       = getSizeUsed();
-            srcCount                    = MACRO_MIN(srcCount, dataLength);
-            result                      = srcCount;
+            unsigned char * dstBuf{ NEMemory::getBufferDataWrite(reinterpret_cast<NEMemory::sByteBuffer *>(&header.rbhBufHeader)) };
+            const unsigned char* srcBuf { NEMemory::getBufferDataRead(mByteBuffer.get()) };
+            unsigned int srcCount { getSizeUsed() };
+            srcCount = MACRO_MIN(srcCount, dataLength);
+            result   = srcCount;
 
             header.rbhBufHeader.biUsed  = srcCount;
-            header.rbhTarget            = getTarget();
-            header.rbhChecksum          = getChecksum();
-            header.rbhSource            = getSource();
-            header.rbhMessageId         = getMessageId();
-            header.rbhResult            = getResult();
-            header.rbhSequenceNr        = getSequenceNr();
-
-            NEMemory::memCopy( dstBuf, bufLength, srcBuf, srcCount );
-        }
-        else
-        {
-            header.rbhBufHeader.biUsed  = 0;
-            header.rbhTarget            = NEMemory::IGNORE_VALUE;
-            header.rbhChecksum          = NEMemory::IGNORE_VALUE;
-            header.rbhSource            = NEMemory::IGNORE_VALUE;
-            header.rbhMessageId         = NEMemory::IGNORE_VALUE;
-            header.rbhResult            = NEMemory::MESSAGE_SUCCESS;
-            header.rbhSequenceNr        = NEMemory::IGNORE_VALUE;;
+            NEMemory::memCopy( dstBuf, dataLength, srcBuf, srcCount );
         }
     }
     else

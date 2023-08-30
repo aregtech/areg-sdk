@@ -21,6 +21,7 @@ include(${AREG_EXAMPLES}/18_locwatchdog/CMakeLists.txt)
 include(${AREG_EXAMPLES}/19_pubwatchdog/CMakeLists.txt)
 include(${AREG_EXAMPLES}/20_pubdatarate/CMakeLists.txt)
 include(${AREG_EXAMPLES}/21_pubunblock/CMakeLists.txt)
+include(${AREG_EXAMPLES}/22_pubsub/CMakeLists.txt)
 
 if (AREG_DEVELOP_ENV MATCHES "Win32")
     # This projects are based either on MFC (Microsoft Foundation Classes)

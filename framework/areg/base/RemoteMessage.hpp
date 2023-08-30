@@ -320,8 +320,10 @@ inline uint64_t RemoteMessage::getSource( void ) const
 
 inline void RemoteMessage::setSource( uint64_t idSource )
 {
-    if ( isValid() )
+    if (isValid())
+    {
         _getHeader().rbhSource = idSource;
+    }
 }
 
 inline uint64_t RemoteMessage::getTarget( void ) const
@@ -331,8 +333,10 @@ inline uint64_t RemoteMessage::getTarget( void ) const
 
 inline void RemoteMessage::setTarget( uint64_t idTarget )
 {
-    if ( isValid() )
+    if (isValid())
+    {
         _getHeader().rbhTarget = idTarget;
+    }
 }
 
 inline unsigned int RemoteMessage::getMessageId( void ) const
@@ -342,8 +346,10 @@ inline unsigned int RemoteMessage::getMessageId( void ) const
 
 inline void RemoteMessage::setMessageId( unsigned int newMessageId )
 {
-    if ( isValid() )
+    if (isValid())
+    {
         _getHeader().rbhMessageId = newMessageId;
+    }
 }
 
 inline unsigned int RemoteMessage::getResult( void ) const
@@ -353,8 +359,10 @@ inline unsigned int RemoteMessage::getResult( void ) const
 
 inline void RemoteMessage::setResult( unsigned int newResult )
 {
-    if ( isValid() )
+    if (isValid())
+    {
         _getHeader().rbhResult = newResult;
+    }
 }
 
 inline unsigned int RemoteMessage::getSequenceNr(void) const

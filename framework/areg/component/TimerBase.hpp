@@ -99,22 +99,6 @@ public:
      **/
     virtual ~TimerBase( void );
 
-/************************************************************************/
-// TimerBase class overrides
-/************************************************************************/
-public:
-    /**
-     * \brief   Call to start timer. The timer should have valid timeout.
-     * 
-     * \return  Returns true if succeeded to start timer.
-     */
-    virtual bool startTimer( void ) = 0;
-
-    /**
-     * \brief   Call to stop previously started timer.
-     **/
-    virtual void stopTimer( void ) = 0;
-
 //////////////////////////////////////////////////////////////////////////
 // Attributes
 //////////////////////////////////////////////////////////////////////////

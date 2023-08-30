@@ -48,17 +48,6 @@ Watchdog::~Watchdog(void)
     WatchdogManager::stopTimer(*this);
 }
 
-bool Watchdog::startTimer(void)
-{
-    startGuard();
-    return true;
-}
-
-void Watchdog::stopTimer(void)
-{
-    stopGuard();
-}
-
 void Watchdog::startGuard(void)
 {
     if (mTimeoutInMs != NECommon::WATCHDOG_IGNORE)

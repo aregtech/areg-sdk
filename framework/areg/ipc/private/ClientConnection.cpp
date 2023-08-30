@@ -18,6 +18,11 @@
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/component/NEService.hpp"
 
+#include "areg/trace/GETrace.h"
+
+DEF_TRACE_SCOPE(areg_ipc_private_ClientConnection_requestConnectServer);
+DEF_TRACE_SCOPE(areg_ipc_private_ClientConnection_requestDisconnectServer);
+
 ClientConnection::ClientConnection( void )
     : SocketConnectionBase    ( )
     , mClientSocket ( )
@@ -60,12 +65,14 @@ void ClientConnection::closeSocket(void)
 
 bool ClientConnection::requestConnectServer(void)
 {
+    TRACE_SCOPE(areg_ipc_private_ClientConnection_requestConnectServer);
     bool result = false;
     if ( isValid() )
     {
         if ( getCookie() == NEService::COOKIE_LOCAL )
         {
             RemoteMessage msgHelloServer = NEConnection::createConnectRequest();
+            TRACE_DBG("Sending hello message to the service.");
             result = msgHelloServer.isValid() ? sendMessage(msgHelloServer) > 0 : false;
         }
         else
@@ -78,9 +85,12 @@ bool ClientConnection::requestConnectServer(void)
 
 bool ClientConnection::requestDisconnectServer(void)
 {
+    TRACE_SCOPE(areg_ipc_private_ClientConnection_requestDisconnectServer);
+
     bool result = false;
     if ( isValid() )
     {
+        TRACE_DBG("Sending goodbye message to the service.");
         RemoteMessage msgBeyServer = NEConnection::createDisconnectRequest(getCookie());
         result = msgBeyServer.isValid() ? sendMessage(msgBeyServer) > 0 : false;
         closeSocket();

@@ -16,6 +16,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		CMakeLists.txt = CMakeLists.txt
 		CONTRIBUTING.md = CONTRIBUTING.md
 		LICENSE.txt = LICENSE.txt
+		Makefile = Makefile
 		msvc_setup.props = msvc_setup.props
 		README.md = README.md
 		Releases.md = Releases.md
@@ -89,6 +90,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{07BFF46A-D4BC-4FAD-9727-D959755BFBAC}"
 	ProjectSection(SolutionItems) = preProject
 		examples\CMakeLists.txt = examples\CMakeLists.txt
+		examples\Makefile = examples\Makefile
 		examples\README.md = examples\README.md
 	EndProjectSection
 EndProject
@@ -544,6 +546,30 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logger", "framework\logger.
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "areg-extend", "framework\areg-extend.vcxproj", "{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "22_generated", "examples\22_pubsub\22_generated.vcxproj", "{73EC875E-F233-4FA9-B3AF-E2981EA59B3A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "22_pubsub", "22_pubsub", "{285E5D8D-7561-4FA9-9B90-89054E8EE93F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{29121F55-3BA7-4701-9C44-2B1BA5103A5F}"
+	ProjectSection(SolutionItems) = preProject
+		examples\22_pubsub\res\generate.bat = examples\22_pubsub\res\generate.bat
+		examples\22_pubsub\res\generate.sh = examples\22_pubsub\res\generate.sh
+		examples\22_pubsub\res\PubSub.siml = examples\22_pubsub\res\PubSub.siml
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "22_pubsubclient", "examples\22_pubsub\22_pubsubclient.vcxproj", "{2AC5EE08-C6FC-4224-8250-F3586B81E2E5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
+		{73EC875E-F233-4FA9-B3AF-E2981EA59B3A} = {73EC875E-F233-4FA9-B3AF-E2981EA59B3A}
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3} = {FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "22_pubsubservice", "examples\22_pubsub\22_pubsubservice.vcxproj", "{DFA66387-8E95-4745-9DEB-AC4A82165F9A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
+		{73EC875E-F233-4FA9-B3AF-E2981EA59B3A} = {73EC875E-F233-4FA9-B3AF-E2981EA59B3A}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1001,6 +1027,30 @@ Global
 		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}.Release|Win32.Build.0 = Release|Win32
 		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}.Release|x64.ActiveCfg = Release|x64
 		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}.Release|x64.Build.0 = Release|x64
+		{73EC875E-F233-4FA9-B3AF-E2981EA59B3A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{73EC875E-F233-4FA9-B3AF-E2981EA59B3A}.Debug|Win32.Build.0 = Debug|Win32
+		{73EC875E-F233-4FA9-B3AF-E2981EA59B3A}.Debug|x64.ActiveCfg = Debug|x64
+		{73EC875E-F233-4FA9-B3AF-E2981EA59B3A}.Debug|x64.Build.0 = Debug|x64
+		{73EC875E-F233-4FA9-B3AF-E2981EA59B3A}.Release|Win32.ActiveCfg = Release|Win32
+		{73EC875E-F233-4FA9-B3AF-E2981EA59B3A}.Release|Win32.Build.0 = Release|Win32
+		{73EC875E-F233-4FA9-B3AF-E2981EA59B3A}.Release|x64.ActiveCfg = Release|x64
+		{73EC875E-F233-4FA9-B3AF-E2981EA59B3A}.Release|x64.Build.0 = Release|x64
+		{2AC5EE08-C6FC-4224-8250-F3586B81E2E5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2AC5EE08-C6FC-4224-8250-F3586B81E2E5}.Debug|Win32.Build.0 = Debug|Win32
+		{2AC5EE08-C6FC-4224-8250-F3586B81E2E5}.Debug|x64.ActiveCfg = Debug|x64
+		{2AC5EE08-C6FC-4224-8250-F3586B81E2E5}.Debug|x64.Build.0 = Debug|x64
+		{2AC5EE08-C6FC-4224-8250-F3586B81E2E5}.Release|Win32.ActiveCfg = Release|Win32
+		{2AC5EE08-C6FC-4224-8250-F3586B81E2E5}.Release|Win32.Build.0 = Release|Win32
+		{2AC5EE08-C6FC-4224-8250-F3586B81E2E5}.Release|x64.ActiveCfg = Release|x64
+		{2AC5EE08-C6FC-4224-8250-F3586B81E2E5}.Release|x64.Build.0 = Release|x64
+		{DFA66387-8E95-4745-9DEB-AC4A82165F9A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DFA66387-8E95-4745-9DEB-AC4A82165F9A}.Debug|Win32.Build.0 = Debug|Win32
+		{DFA66387-8E95-4745-9DEB-AC4A82165F9A}.Debug|x64.ActiveCfg = Debug|x64
+		{DFA66387-8E95-4745-9DEB-AC4A82165F9A}.Debug|x64.Build.0 = Debug|x64
+		{DFA66387-8E95-4745-9DEB-AC4A82165F9A}.Release|Win32.ActiveCfg = Release|Win32
+		{DFA66387-8E95-4745-9DEB-AC4A82165F9A}.Release|Win32.Build.0 = Release|Win32
+		{DFA66387-8E95-4745-9DEB-AC4A82165F9A}.Release|x64.ActiveCfg = Release|x64
+		{DFA66387-8E95-4745-9DEB-AC4A82165F9A}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1097,6 +1147,11 @@ Global
 		{E8BD18E5-EF07-42A0-BB98-461F3D9BCDE1} = {48E60088-F431-4FFB-A170-31DAF8EC2DC8}
 		{C485A89F-A149-4893-A023-253593403974} = {967610F9-FBB0-4793-9E76-F500C4167FCE}
 		{D2A3A8BC-F3AC-499C-AE2C-19AC78F5EAFB} = {1D3709F1-9915-4CEA-A9F6-4D3FDFD79965}
+		{73EC875E-F233-4FA9-B3AF-E2981EA59B3A} = {285E5D8D-7561-4FA9-9B90-89054E8EE93F}
+		{285E5D8D-7561-4FA9-9B90-89054E8EE93F} = {07BFF46A-D4BC-4FAD-9727-D959755BFBAC}
+		{29121F55-3BA7-4701-9C44-2B1BA5103A5F} = {285E5D8D-7561-4FA9-9B90-89054E8EE93F}
+		{2AC5EE08-C6FC-4224-8250-F3586B81E2E5} = {285E5D8D-7561-4FA9-9B90-89054E8EE93F}
+		{DFA66387-8E95-4745-9DEB-AC4A82165F9A} = {285E5D8D-7561-4FA9-9B90-89054E8EE93F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1034084F-74DD-4B33-86E3-D8038C748F48}

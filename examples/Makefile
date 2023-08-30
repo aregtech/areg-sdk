@@ -1,9 +1,13 @@
+# Configure examples
+
+examples_CXXFLAGS :=
 ifeq ($(AREG_BINARY), shared)
-    examples_CXXFLAGS += -DIMP_AREG_DLL
+    examples_CXXFLAGS := -DIMP_AREG_DLL
 else
-    examples_CXXFLAGS += -DIMP_AREG_LIB
+    examples_CXXFLAGS := -DIMP_AREG_LIB
 endif
-examples_LDFLAGS  += $(AREG_LIB_INCLUDES) -lareg $(LDFLAGS)
+
+examples_LDFLAGS := $(AREG_TOOL_FLAGS)
 
 include $(AREG_EXAMPLES)/00_helloservice/Makefile
 include $(AREG_EXAMPLES)/01_hello/Makefile
@@ -26,6 +30,7 @@ include $(AREG_EXAMPLES)/18_locwatchdog/Makefile
 include $(AREG_EXAMPLES)/19_pubwatchdog/Makefile
 include $(AREG_EXAMPLES)/20_pubdatarate/Makefile
 include $(AREG_EXAMPLES)/21_pubunblock/Makefile
+include $(AREG_EXAMPLES)/22_pubsub/Makefile
 
 examples:               \
     00_helloservice     \
@@ -48,6 +53,7 @@ examples:               \
     18_locwatchdog      \
     19_pubwatchdog      \
     20_pubdatarate      \
-    21_pubunblock
+    21_pubunblock		\
+    22_pubsub
 
 .PHONY: examples

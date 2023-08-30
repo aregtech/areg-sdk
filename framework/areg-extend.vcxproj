@@ -71,6 +71,7 @@
     <ClInclude Include="extend\service\ServiceCommunicatonBase.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="extend\Makefile" />
     <None Include="extend\Readme.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

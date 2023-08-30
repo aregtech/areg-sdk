@@ -68,7 +68,7 @@ bool PublicHelloWorldClient::serviceConnected( NEService::eServiceConnection sta
                   , this
                   , ProxyAddress::convAddressToPath(proxy.getProxyAddress()).getString()
                   , connected ? "CONNECTED" : "DISCONNECTED");
-        notifyOnServiceStateUpdate( SystemShutdownClientBase::isConnected( ) );
+        notifyOnServiceStateUpdate( connected );
     }
     else
     {

@@ -54,6 +54,7 @@ bool ClientReceiveThread::runDispatcher(void)
             {
                 msgReceived.invalidate();
                 mRemoteService.failedReceiveMessage( mConnection.getSocket() );
+                whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventError);
             }
             else
             {

@@ -67,6 +67,7 @@
     </None>
     <None Include="mcrouter\Readme.md" />
     <None Include="mcrouter\resources\router.init" />
+    <None Include="mcrouter\Makefile" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mcrouter\app\private\MulticastRouter.cpp">
@@ -106,7 +107,6 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="CMakeLists.txt" />
     <Text Include="mcrouter\CMakeLists.txt" />
     <Text Include="mcrouter\app\private\CMakeLists.txt" />
     <Text Include="mcrouter\tcp\private\CMakeLists.txt" />

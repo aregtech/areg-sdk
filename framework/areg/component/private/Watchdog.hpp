@@ -105,26 +105,6 @@ public:
     virtual ~Watchdog( void );
 
 //////////////////////////////////////////////////////////////////////////
-// Overrides
-//////////////////////////////////////////////////////////////////////////
-protected:
-/************************************************************************/
-// TimerBase class overrides
-/************************************************************************/
-
-    /**
-     * \brief   Call to start timer. The timer should have valid timeout.
-     *
-     * \return  Returns true if succeeded to start timer.
-     */
-    virtual bool startTimer(void) override;
-
-    /**
-     * \brief   Call to stop previously started timer.
-     **/
-    virtual void stopTimer(void) override;
-
-//////////////////////////////////////////////////////////////////////////
 // Operations and attributes
 //////////////////////////////////////////////////////////////////////////
 public:

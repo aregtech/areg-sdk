@@ -431,6 +431,11 @@ public:
      **/
     inline const InputOptionList & getOptions( void ) const;
 
+    /**
+     * \brief   Returns the input string, which was parsed.
+     **/
+    inline const String & getInput(void) const;
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
@@ -545,6 +550,11 @@ inline bool OptionParser::isString( uint32_t flags )
 inline const OptionParser::InputOptionList & OptionParser::getOptions( void ) const
 {
     return mInputOptions;
+}
+
+inline const String & OptionParser::getInput(void) const
+{
+    return mCmdLine;
 }
 
 #endif  // AREG_UTILITIES_CONSOLE_OPTIONPARSER_HPP
