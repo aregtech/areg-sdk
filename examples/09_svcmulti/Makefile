@@ -20,7 +20,7 @@ $(foreach cpp, $(09_svcmulti_SRC), $(eval $(call obj, $(cpp), $(09_svcmulti_OUTP
 DEPS = $(09_svcmulti_OBJS:%.o=%.d)
 -include $(DEPS)
 
-$(AREG_OUTPUT_BIN)/$(09_svcmulti_TARGET_BIN): $(areg_TARGET_PATH) $(09_svcmulti_OBJS)
+$(AREG_OUTPUT_BIN)/$(09_svcmulti_TARGET_BIN): $(areg_TARGET_PATH) $(09_svcmulti_OBJS) $(AREG_DEPEND)
 	@echo "Linking $(09_svcmulti_PROJECT_NAME) ..."
 	@mkdir -p $(dir $@)
 	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(examples_CXXFLAGS) $(09_svcmulti_OBJS) $(examples_LDFLAGS) -o $@

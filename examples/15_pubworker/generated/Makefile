@@ -1,6 +1,3 @@
-15_generated_PROJECT_NAME := 15_generated
-
-15_generated_TARGET_BIN := $(AREG_LIB_PREFIX)$(15_generated_PROJECT_NAME)$(AREG_STATIC_LIB)
 15_generated_OUTPUT_OBJ := $(15_pubworker_OUTPUT_OBJ)/generated
 
 15_generated_SRC  :=

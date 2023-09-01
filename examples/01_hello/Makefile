@@ -16,7 +16,7 @@ include $(01_hello_BASE)/src/Makefile
 # define one target for each source file
 $(foreach cpp, $(01_hello_SRC), $(eval $(call obj, $(cpp), $(01_hello_OUTPUT_OBJ), 01_hello_OBJS, $(examples_CXXFLAGS))))
 
-$(AREG_OUTPUT_BIN)/$(01_hello_TARGET_BIN): $(areg_TARGET_PATH) $(01_hello_OBJS)
+$(AREG_OUTPUT_BIN)/$(01_hello_TARGET_BIN): $(areg_TARGET_PATH) $(01_hello_OBJS) $(AREG_DEPEND)
 	@echo "Linking $(01_hello_PROJECT_NAME) ..."
 	@mkdir -p $(dir $@)
 	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(examples_CXXFLAGS) $(01_hello_OBJS) $(examples_LDFLAGS) -o $@

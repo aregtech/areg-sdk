@@ -1,6 +1,3 @@
-20_generated_PROJECT_NAME := 20_generated
-
-20_generated_TARGET_BIN := $(AREG_LIB_PREFIX)$(20_generated_PROJECT_NAME)$(AREG_STATIC_LIB)
 20_generated_OUTPUT_OBJ := $(20_pubdatarate_OUTPUT_OBJ)/generated
 
 20_generated_SRC  :=

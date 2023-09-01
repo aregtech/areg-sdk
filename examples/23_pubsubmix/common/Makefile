@@ -1,6 +1,3 @@
-23_common_PROJECT_NAME := 23_common
-
-23_common_TARGET_BIN := $(AREG_LIB_PREFIX)$(23_common_PROJECT_NAME)$(AREG_STATIC_LIB)
 23_common_OUTPUT_OBJ := $(23_pubsubmix_OUTPUT_OBJ)/common
 
 23_common_SRC  :=

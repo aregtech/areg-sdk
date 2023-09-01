@@ -1,6 +1,3 @@
-11_generated_PROJECT_NAME := 11_generated
-
-11_generated_TARGET_BIN := $(AREG_LIB_PREFIX)$(11_generated_PROJECT_NAME)$(AREG_STATIC_LIB)
 11_generated_OUTPUT_OBJ := $(11_locmesh_OUTPUT_OBJ)/generated
 
 11_generated_SRC  :=

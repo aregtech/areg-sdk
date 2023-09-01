@@ -182,6 +182,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "10_locsvc", "10_locsvc", "{F99F67DA-37F9-46DD-A416-64C930758DE5}"
 	ProjectSection(SolutionItems) = preProject
 		examples\10_locsvc\CMakeLists.txt = examples\10_locsvc\CMakeLists.txt
+		examples\10_locsvc\Makefile = examples\10_locsvc\Makefile
 		examples\10_locsvc\ReadMe.md = examples\10_locsvc\ReadMe.md
 	EndProjectSection
 EndProject
@@ -349,6 +350,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "16_pubfsm", "16_pubfsm", "{
 	ProjectSection(SolutionItems) = preProject
 		examples\16_pubfsm\CMakeLists.txt = examples\16_pubfsm\CMakeLists.txt
 		examples\16_pubfsm\Makefile = examples\16_pubfsm\Makefile
+		examples\16_pubfsm\ReadMe.md = examples\16_pubfsm\ReadMe.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{58982601-1D8A-4F81-A69E-1D148C667937}"

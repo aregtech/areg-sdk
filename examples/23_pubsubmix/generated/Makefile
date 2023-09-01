@@ -1,6 +1,3 @@
-23_generated_PROJECT_NAME := 23_generated
-
-23_generated_TARGET_BIN := $(AREG_LIB_PREFIX)$(23_generated_PROJECT_NAME)$(AREG_STATIC_LIB)
 23_generated_OUTPUT_OBJ := $(23_pubsubmix_OUTPUT_OBJ)/generated
 
 23_generated_SRC  :=

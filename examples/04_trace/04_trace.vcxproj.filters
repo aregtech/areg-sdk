@@ -20,11 +20,12 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
     <Text Include="CMakeLists.txt" />
     <Text Include="src\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="config\log.init" />
+    <None Include="Makefile" />
+    <None Include="ReadMe.md" />
   </ItemGroup>
 </Project>

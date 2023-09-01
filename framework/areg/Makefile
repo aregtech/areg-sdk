@@ -1,4 +1,4 @@
-areg_PROJECT_NAME := areg
+areg_PROJECT_NAME := $(AREG_PROJECT)
 
 areg_TARGET_PATH :=
 areg_BASE        := $(AREG_BASE)/areg

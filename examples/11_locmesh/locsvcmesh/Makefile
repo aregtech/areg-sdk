@@ -1,6 +1,3 @@
-11_locsvcmesh_PROJECT_NAME := 11_locmesh
-
-11_locsvcmesh_TARGET_BIN := $(11_locsvcmesh_PROJECT_NAME)$(AREG_BIN_EXT)
 11_locsvcmesh_OUTPUT_OBJ := $(11_locmesh_OUTPUT_OBJ)/locsvcmesh
 
 11_locsvcmesh_SRC  :=
@@ -14,7 +11,7 @@ $(foreach cpp, $(11_locsvcmesh_SRC), $(eval $(call obj, $(cpp), $(11_locsvcmesh_
 DEPS = $(11_locsvcmesh_OBJS:%.o=%.d)
 -include $(DEPS)
 
-$(AREG_OUTPUT_BIN)/$(11_locsvcmesh_TARGET_BIN): $(areg_TARGET_PATH) $(11_locsvcmesh_OBJS)
+$(AREG_OUTPUT_BIN)/$(11_locsvcmesh_TARGET_BIN): $(areg_TARGET_PATH) $(11_locsvcmesh_OBJS) $(11_locmesh_DEPEND)
 	@echo "Linking $@ ..."
 	@mkdir -p $(dir $@)
 	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(11_locmesh_CXXFLAGS) $(11_locsvcmesh_OBJS) -o $@ $(11_locmesh_LDFLAGS)

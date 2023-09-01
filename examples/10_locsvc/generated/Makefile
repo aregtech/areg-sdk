@@ -1,6 +1,3 @@
-10_generated_PROJECT_NAME := 10_generated
-
-10_generated_TARGET_BIN := $(AREG_LIB_PREFIX)$(10_generated_PROJECT_NAME)$(AREG_STATIC_LIB)
 10_generated_OUTPUT_OBJ := $(10_locsvc_OUTPUT_OBJ)/generated
 
 10_generated_SRC  :=

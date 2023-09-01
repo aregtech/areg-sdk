@@ -1,6 +1,3 @@
-18_generated_PROJECT_NAME := 18_generated
-
-18_generated_TARGET_BIN := $(AREG_LIB_PREFIX)$(18_generated_PROJECT_NAME)$(AREG_STATIC_LIB)
 18_generated_OUTPUT_OBJ := $(18_locwatchdog_OUTPUT_OBJ)/generated
 
 18_generated_SRC  :=
