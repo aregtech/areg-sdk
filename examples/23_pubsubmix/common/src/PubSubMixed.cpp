@@ -1,5 +1,4 @@
 /************************************************************************
-/************************************************************************
  * \file        common/src/PubSubMixed.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
  * \author      Artak Avetyan
