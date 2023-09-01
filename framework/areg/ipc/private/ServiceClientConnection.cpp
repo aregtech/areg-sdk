@@ -317,7 +317,7 @@ void ServiceClientConnection::onServiceConnectionStarted(void)
     ASSERT(_isStarted());
     if ( mClientConnection.getCookie() != NEService::COOKIE_LOCAL )
     {
-        TRACE_DBG("Client service succeeded to start, client cookie is [ 0x%X ]", static_cast<unsigned int>(mClientConnection.getCookie()));
+        TRACE_DBG("Succeeded to start router service client, cookie [ %llu ]", mClientConnection.getCookie());
 
         _setConnectionState(ServiceClientConnection::eConnectionState::ConnectionStarted);
         mChannel.setCookie( mClientConnection.getCookie() );
@@ -463,37 +463,38 @@ inline void ServiceClientConnection::_cancelConnection(void)
 void ServiceClientConnection::failedSendMessage(const RemoteMessage & msgFailed, Socket & whichTarget )
 {
     TRACE_SCOPE(areg_ipc_private_ServiceClientConnection_failedSendMessage);
-    TRACE_WARN("Failed to send message [ 0x%X ] to target [ %u ], source is [ %u ]"
-                    , static_cast<uint32_t>(msgFailed.getMessageId())
-                    , static_cast<uint32_t>(msgFailed.getTarget())
-                    , static_cast<uint32_t>(msgFailed.getSource()));
 
     if (Application::isServicingReady())
     {
-        unsigned int msgId = msgFailed.getMessageId();
+        unsigned int msgId{ msgFailed.getMessageId() };
         if ( NEService::isExecutableId(msgId) || NEService::isConnectNotifyId(msgId) )
         {
-            TRACE_DBG("Failed message [ %u ] is executable or connection notification", msgId);
+            TRACE_WARN("Failed to send message [ %u ] to target [ %llu ], source is [ %llu ], the target socket [ %u ] is [ %s : %s ]"
+                       , msgId
+                       , msgFailed.getTarget()
+                       , msgFailed.getSource()
+                       , static_cast<uint32_t>(whichTarget.getHandle())
+                       , whichTarget.isValid() ? "VALID" : "INVALID"
+                       , whichTarget.isAlive() ? "ALIVE" : "DEAD");
+
             msgFailed.moveToBegin();
             StreamableEvent * eventError = RemoteEventFactory::createRequestFailedEvent(msgFailed, mChannel);
             if ( eventError != nullptr )
             {
+                TRACE_DBG("Replying with failure event [ %s ]", eventError->getRuntimeClassName().getString());
                 eventError->deliverEvent();
             }
 
-        TRACE_WARN("The target socket is [ %s ] and [ %s ], [ %s ] to stop the service"
-                  , whichTarget.isValid() ? "VALID" : "INVALID"
-                  , whichTarget.isAlive() ? "ALIVE" : "DEAD"
-                  , whichTarget.isValid() && (whichTarget.isAlive() == false) ? "GOING" : "IGNORING");
             if ( whichTarget.isValid() && (whichTarget.isAlive() == false))
             {
+                TRACE_DBG("Trying to reconnect");
                 _cancelConnection( );
                 _sendCommand( ServiceEventData::eServiceEventCommands::CMD_ServiceLost, Event::eEventPriority::EventPriorityNormal );
             }
         }
         else
         {
-            TRACE_WARN("The failed message is neither executable, nor connection notification. Ignoring to generate request failed event.");
+            TRACE_WARN("The failed message, it is neither executable, nor connection notification. Ignoring to generate request failed event.");
         }
     }
     else
@@ -505,20 +506,21 @@ void ServiceClientConnection::failedSendMessage(const RemoteMessage & msgFailed,
 void ServiceClientConnection::failedReceiveMessage( Socket & whichSource )
 {
     TRACE_SCOPE(areg_ipc_private_ServiceClientConnection_failedReceiveMessage);
-    TRACE_WARN( "Failed to receive message from socket [ %u ]. Going to stop service", static_cast<uint32_t>(whichSource.getHandle( )) );
-    ASSERT( (mClientConnection.isValid( ) == false) || (whichSource.getHandle( ) == mClientConnection.getSocket( ).getHandle( )) );
 
     if (Application::isServicingReady())
     {
-        TRACE_WARN("The source socket is [ %s ] and [ %s ], [ %s ] to stop the service"
-                  , whichSource.isValid() ? "VALID" : "INVALID"
-                  , whichSource.isAlive() ? "ALIVE" : "DEAD"
-                  , whichSource.isValid() && (whichSource.isAlive() == false) ? "GOING" : "IGNORING");
-
         if (whichSource.isValid())
         {
+            TRACE_WARN("Failed to receive message from socket [ %lu ], which [ %s : %s ], going to reconnect"
+                       , static_cast<uint32_t>(whichSource.getHandle())
+                       , whichSource.isValid() ? "VALID" : "INVALID"
+                       , whichSource.isAlive() ? "ALIVE" : "DEAD");
             _cancelConnection();
             _sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceLost, Event::eEventPriority::EventPriorityNormal);
+        }
+        else
+        {
+            TRACE_WARN("Ignoring sending reconnect event, the socket is invalid");
         }
     }
     else
@@ -530,16 +532,17 @@ void ServiceClientConnection::failedReceiveMessage( Socket & whichSource )
 void ServiceClientConnection::failedProcessMessage( const RemoteMessage & msgUnprocessed )
 {
     TRACE_SCOPE(areg_ipc_private_ServiceClientConnection_failedProcessMessage);
-    TRACE_DBG("The message [ 0x%X ] for target [ %u ] and from source [ %u ] is unprocessed, going to create failed event"
-                    , static_cast<uint32_t>(msgUnprocessed.getMessageId())
-                    , static_cast<uint32_t>(msgUnprocessed.getTarget())
-                    , static_cast<uint32_t>(msgUnprocessed.getSource()));
 
     if (Application::isServicingReady())
     {
-        unsigned int msgId = msgUnprocessed.getMessageId();
+        unsigned int msgId{ msgUnprocessed.getMessageId() };
         if ( NEService::isExecutableId(msgId) )
         {
+            TRACE_DBG("The message [ %u ] for target [ %llu ] and from source [ %llu ] is unprocessed, replying with failed message"
+                      , msgId
+                      , msgUnprocessed.getTarget()
+                      , msgUnprocessed.getSource());
+
             msgUnprocessed.moveToBegin();
             StreamableEvent * eventError = RemoteEventFactory::createRequestFailedEvent(msgUnprocessed, mChannel);
             if ( eventError != nullptr )
@@ -569,10 +572,7 @@ void ServiceClientConnection::processReceivedMessage( const RemoteMessage & msgR
     {
         NEService::eFuncIdRange msgId = static_cast<NEService::eFuncIdRange>( msgReceived.getMessageId());
         NEMemory::eMessageResult result = static_cast<NEMemory::eMessageResult>(msgReceived.getResult());
-        TRACE_DBG("Processing received message [ %s ] with id [ 0x%X ], received message is valid, message result [ %s ]"
-                        , NEService::getString( msgId)
-                        , static_cast<uint32_t>(msgId)
-                        , NEMemory::getString(result));
+        TRACE_DBG("Processing received valid message [ %u ], result [ %s ]", msgId, NEMemory::getString(result));
 
         switch ( msgId )
         {
@@ -582,7 +582,7 @@ void ServiceClientConnection::processReceivedMessage( const RemoteMessage & msgR
                 ITEM_ID cookie = NEService::COOKIE_UNKNOWN;
                 msgReceived >> connection;
                 msgReceived >> cookie;
-                TRACE_DBG("Router connection notification. Connection status [ %s ], cookie [ %u ]", NEService::getString(connection), static_cast<uint32_t>(cookie));
+                TRACE_DBG("Router connection notification. Connection status [ %s ], cookie [ %llu ]", NEService::getString(connection), cookie);
 
                 switch ( connection )
                 {
@@ -713,7 +713,6 @@ void ServiceClientConnection::processReceivedMessage( const RemoteMessage & msgR
             {
                 if ( NEService::isExecutableId(static_cast<unsigned int>(msgId)) )
                 {
-                    TRACE_DBG("Processing executable remote message with ID [ 0x%X ]", static_cast<unsigned int>(msgId));
                     StreamableEvent * eventRemote = RemoteEventFactory::createEventFromStream(msgReceived, mChannel);
                     if ( eventRemote != nullptr )
                     {
@@ -726,7 +725,7 @@ void ServiceClientConnection::processReceivedMessage( const RemoteMessage & msgR
                 }
                 else
                 {
-                    TRACE_WARN("The message [ %s ] with id [ 0x%X ] was not processed on client service side", NEService::getString(msgId), static_cast<unsigned int>(msgId));
+                    TRACE_WARN("The message [ %u ] was not processed on client service side", msgId);
                 }
             }
             break;
@@ -743,71 +742,56 @@ void ServiceClientConnection::processReceivedMessage( const RemoteMessage & msgR
 void ServiceClientConnection::processRemoteRequestEvent( RemoteRequestEvent & requestEvent)
 {
     TRACE_SCOPE(areg_ipc_private_ServiceClientConnection_processRemoteRequestEvent);
-    TRACE_DBG("Processing request event [ %s ] with message id [ 0x%X ] of runtime object [ %s ], target stub [ %s ], source proxy [ %s ], request type [ %s ]"
-                , Event::getString( requestEvent.getEventType() )
-                , static_cast<uint32_t>(requestEvent.getRequestId())
-                , requestEvent.getRuntimeClassName().getString()
-                , StubAddress::convAddressToPath(requestEvent.getTargetStub()).getString()
-                , ProxyAddress::convAddressToPath(requestEvent.getEventSource()).getString()
-                , NEService::getString(requestEvent.getRequestType()) );
 
     if ( requestEvent.isRemote() )
     {
         RemoteMessage data;
         if ( RemoteEventFactory::createStreamFromEvent( data, requestEvent, mChannel) )
         {
-            TRACE_DBG("Send request, remote message of id [ 0x%X ] ( %s ) from source [ %u ] to target [ %u ]"
-                            , static_cast<uint32_t>(data.getMessageId())
-                            , NEService::getString( static_cast<NEService::eFuncIdRange>(data.getMessageId()))
-                            , data.getSource()
-                            , data.getTarget());
+            TRACE_DBG("Sending [ %s ] event: remote message [ %u ] from source [ %llu ] to target [ %llu ]"
+                      , requestEvent.getRuntimeClassName().getString()
+                      , data.getMessageId()
+                      , data.getSource()
+                      , data.getTarget());
 
             _sendMessage(data);
         }
         else
         {
-            TRACE_ERR("Failed to create remote request message data with ID [ 0x%X ]", static_cast<uint32_t>(requestEvent.getRequestId()) );
+            TRACE_ERR("Failed to create remote request data with message [ %u ]", requestEvent.getRequestId() );
         }
     }
     else
     {
-        TRACE_WARN("Request event with ID [ 0x%X ] is not remote, ignoring sending event", static_cast<uint32_t>(requestEvent.getRequestId()));
+        TRACE_WARN("Request event with message [ %u ] is not remote, ignoring sending event", requestEvent.getRequestId());
     }
 }
 
 void ServiceClientConnection::processRemoteNotifyRequestEvent( RemoteNotifyRequestEvent & requestNotifyEvent )
 {
     TRACE_SCOPE(areg_ipc_private_ServiceClientConnection_processRemoteNotifyRequestEvent);
-    TRACE_DBG("Processing notify request event [ %s ] with message id [ 0x%X ] of runtime object [ %s ], target stub [ %s ], source proxy [ %s ], request type [ %s ]"
-                , Event::getString( requestNotifyEvent.getEventType() )
-                , static_cast<uint32_t>(requestNotifyEvent.getRequestId())
-                , requestNotifyEvent.getRuntimeClassName().getString()
-                , StubAddress::convAddressToPath(requestNotifyEvent.getTargetStub()).getString()
-                , ProxyAddress::convAddressToPath(requestNotifyEvent.getEventSource()).getString()
-                , NEService::getString(requestNotifyEvent.getRequestType()) );
-
 
     if ( requestNotifyEvent.isRemote() )
     {
         RemoteMessage data;
         if ( RemoteEventFactory::createStreamFromEvent( data, requestNotifyEvent, mChannel) )
         {
-            TRACE_DBG("Send notify request remote message of id [ 0x%X ] ( %s ) from source [ %p ] to target [ %p ]"
-                            , static_cast<uint32_t>(data.getMessageId())
-                            , NEService::getString( static_cast<NEService::eFuncIdRange>(data.getMessageId()))
-                            , static_cast<uint32_t>(data.getSource())
-                            , static_cast<uint32_t>(data.getTarget()));
+            TRACE_DBG("Send [ %s ] event: remote message [ %u ] from source [ %llu ] to target [ %llu ]"
+                      , requestNotifyEvent.getRuntimeClassName().getString()
+                      , data.getMessageId()
+                      , data.getSource()
+                      , data.getTarget());
 
             _sendMessage(data);
         }
         else
         {
-            TRACE_ERR("Failed to create remote notify request message data with ID [ 0x%X ]", static_cast<uint32_t>(requestNotifyEvent.getRequestId()) );
+            TRACE_ERR("Failed to create remote notify request message [ %u ]", requestNotifyEvent.getRequestId() );
         }
     }
     else
     {
-        TRACE_WARN("Notify request event with id [ 0x%X ] is not remote, ignoring sending event", static_cast<uint32_t>(requestNotifyEvent.getRequestId()));
+        TRACE_WARN("Notify request [ %u ] is not remote, ignoring sending event", requestNotifyEvent.getRequestId());
     }
 }
 
@@ -815,34 +799,28 @@ void ServiceClientConnection::processRemoteNotifyRequestEvent( RemoteNotifyReque
 void ServiceClientConnection::processRemoteResponseEvent(RemoteResponseEvent & responseEvent)
 {
     TRACE_SCOPE(areg_ipc_private_ServiceClientConnection_processRemoteResponseEvent);
-    TRACE_DBG("Processing response event [ %s ] with message ID [ 0x%X ] of runtime object [ %s ], target proxy [ %s ], data type [ %s ]"
-                , Event::getString( responseEvent.getEventType() )
-                , static_cast<uint32_t>(responseEvent.getResponseId())
-                , responseEvent.getRuntimeClassName().getString()
-                , ProxyAddress::convAddressToPath(responseEvent.getTargetProxy()).getString()
-                , NEService::getString(responseEvent.getDataType()) );
 
     if ( responseEvent.isRemote() )
     {
         RemoteMessage data;
         if ( RemoteEventFactory::createStreamFromEvent( data, responseEvent, mChannel) )
         {
-            TRACE_DBG("Send response remote message of ID [ 0x%X ] ( %s ) from source [ 0x%X ] to target [ 0x%X ]"
-                            , static_cast<uint32_t>(data.getMessageId())
-                            , NEService::getString( static_cast<NEService::eFuncIdRange>(data.getMessageId()))
-                            , static_cast<uint32_t>(data.getSource())
-                            , static_cast<uint32_t>(data.getTarget()));
+            TRACE_DBG("Forwarding [ %s ] message [ %u ] from source [ %llu ] to target [ %llu ]"
+                      , responseEvent.getRuntimeClassName().getString()
+                      , data.getMessageId()
+                      , data.getSource()
+                      , data.getTarget());
 
             _sendMessage(data);
         }
         else
         {
-            TRACE_ERR("Failed to create remote response message data with ID [ 0x%X ]", static_cast<uint32_t>(responseEvent.getResponseId()) );
+            TRACE_ERR("Failed to create remote response message [ %u ]", responseEvent.getResponseId() );
         }
     }
     else
     {
-        TRACE_WARN("Response event with ID [ 0x%X ] is not remote, ignoring sending event", static_cast<uint32_t>(responseEvent.getResponseId()));
+        TRACE_WARN("Response event with message [ %u ] is not remote, ignoring", responseEvent.getResponseId());
     }
 }
 

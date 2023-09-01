@@ -31,6 +31,7 @@
 DEF_TRACE_SCOPE( areg_component_StubBase_startupServiceInterface );
 DEF_TRACE_SCOPE( areg_component_StubBase_shutdownServiceIntrface );
 DEF_TRACE_SCOPE( areg_component_StubBase_errorAllRequests );
+DEF_TRACE_SCOPE( areg_component_StubBase_sendUpdateEvent);
 DEF_TRACE_SCOPE( areg_component_StubBase_sendBusyRespone );
 DEF_TRACE_SCOPE( areg_component_StubBase_clientConnected );
 DEF_TRACE_SCOPE( areg_component_StubBase_addNotificationListener );
@@ -336,7 +337,7 @@ void StubBase::invalidateAttribute( unsigned int attrId )
 
 void StubBase::sendUpdateEvent( unsigned int msgId, const EventDataStream & data, NEService::eResultType result ) const
 {
-    TRACE_SCOPE( areg_component_StubBase_sendBusyRespone );
+    TRACE_SCOPE( areg_component_StubBase_sendUpdateEvent);
     StubBase::StubListenerList listeners;
     if (findListeners(msgId, listeners) > 0)
     {
@@ -377,9 +378,16 @@ void StubBase::sendResponseEvent( unsigned int respId, const EventDataStream & d
 
 void StubBase::sendBusyRespone( const Listener & whichListener )
 {
+    TRACE_SCOPE(areg_component_StubBase_sendBusyRespone);
     ResponseEvent* eventElem = createResponseEvent(whichListener.mProxy, whichListener.mMessageId, NEService::eResultType::RequestBusy, EventDataStream::EmptyData);
     if (eventElem != nullptr)
     {
+        TRACE_WARN("Sending busy response for request message [ %p ] from source [ %p ] to target [ %p ], sequence [ %u ]"
+                    , whichListener.mMessageId
+                    , whichListener.mProxy.getTarget()
+                    , whichListener.mProxy.getSource()
+                    , whichListener.mSequenceNr);
+
         eventElem->setSequenceNumber(whichListener.mSequenceNr);
         sendServiceResponse(*eventElem);
     }

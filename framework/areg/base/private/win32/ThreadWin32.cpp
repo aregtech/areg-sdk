@@ -57,7 +57,7 @@ void Thread::_osSetThreadName( id_type threadId, const char* threadName)
     } THREADNAME_INFO;
 #pragma pack(pop)
 
-    THREADNAME_INFO info;
+    THREADNAME_INFO info{};
     info.dwType     = 0x1000;
     info.szName     = threadName;
     info.dwThreadID = static_cast<DWORD>(threadId);

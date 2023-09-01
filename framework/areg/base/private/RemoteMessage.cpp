@@ -107,11 +107,8 @@ bool RemoteMessage::isChecksumValid(void) const
     return isValid() ? getChecksum() == RemoteMessage::_checksumCalculate( _getRemoteMessage() ) : false;
 }
 
-DEF_TRACE_SCOPE(areg_base_RemoteMessage_bufferCompletionFix);
 void RemoteMessage::bufferCompletionFix(void)
 {
-    TRACE_SCOPE(areg_base_RemoteMessage_bufferCompletionFix);
-
     if ( isValid() )
     {
         NEMemory::sRemoteMessage & msg = _getRemoteMessage();
@@ -133,11 +130,6 @@ void RemoteMessage::bufferCompletionFix(void)
         header.rbhBufHeader.biBufSize   = bufSize;
         header.rbhBufHeader.biLength    = dataLen;
         header.rbhChecksum              = checksum;
-
-        TRACE_INFO("Remote message completion: bufSize [ %u ], msg.biBufSize = [ %u ]; dataLen [ %u ], msg.biLength = [ %u ], dataUsed [ %u ], checksum [ %u ]"
-                        , bufSize, header.rbhBufHeader.biBufSize
-                        , dataLen, header.rbhBufHeader.biLength
-                        , dataUsed, checksum);
     }
 }
 

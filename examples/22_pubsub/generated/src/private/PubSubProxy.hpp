@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     29.08.2023  00:22:24 GMT+02:00
+ * Generated at     31.08.2023  12:27:59 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PubSub.
  *
  * \file            generated/src/private/PubSubProxy.hpp
@@ -38,8 +38,8 @@ class PubSubResponseEvent;
  *              to each client running in the thread instance.
  *
  *              This is an interface to test the PubSub features (data-driven communication) of the
- *              AREG framework, where service consumers connect to the service provider,
- *              subscribe on data update and get notified.
+ *              AREG framework, where service provider is a Publisher and service consumer is a Subscriber that dynamically
+ *              subscribes on data update and get notified.
  **/
 class PubSubProxy   : public ProxyBase
 {

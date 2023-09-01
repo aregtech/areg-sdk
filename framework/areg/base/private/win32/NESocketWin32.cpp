@@ -58,8 +58,6 @@ namespace NESocket
             ::memset(&wsaData, 0, sizeof(WSADATA));
             if (::WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
             {
-                OUTPUT_ERR("Failed to initialize Windows Socket of version 2.2, error code [ %p ]", static_cast<id_type>(::WSAGetLastError()));
-
                 result = false;
                 _instanceCount.fetch_sub(1);
             }
@@ -72,7 +70,6 @@ namespace NESocket
     {
         if (_instanceCount.fetch_sub(1) == 1)
         {
-            OUTPUT_INFO("Releasing socket, no more instances are created");
             ::WSACleanup();
         }
     }

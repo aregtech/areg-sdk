@@ -115,7 +115,7 @@ void Console::_osOutputText(Console::Coord pos, const String& text) const
 
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleCursorPosition(hStdOut, COORD{pos.posX, pos.posY});
+    SetConsoleCursorPosition(hStdOut, COORD{static_cast<int16_t>(pos.posX), static_cast<int16_t>(pos.posY)});
     WriteConsoleA(hStdOut, CMD_CLEAR_LINE.data(), static_cast<DWORD>(CMD_CLEAR_LINE.length()), &written, NULL);
     WriteConsoleA(hStdOut, text.getString(), static_cast<DWORD>(text.getLength()), &written, NULL);
 }
@@ -126,7 +126,7 @@ void Console::_osOutputText(Console::Coord pos, const std::string_view& text) co
 
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleCursorPosition(hStdOut, COORD{ pos.posX, pos.posY });
+    SetConsoleCursorPosition(hStdOut, COORD{ static_cast<int16_t>(pos.posX), static_cast<int16_t>(pos.posY) });
     WriteConsoleA(hStdOut, CMD_CLEAR_LINE.data(), static_cast<DWORD>(CMD_CLEAR_LINE.length()), &written, NULL);
     WriteConsoleA(hStdOut, text.data(), static_cast<DWORD>(text.length()), &written, NULL);
 }
@@ -168,7 +168,7 @@ void Console::_osSetCursorCurPosition(Console::Coord pos) const
     Lock lock(mLock);
 
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleCursorPosition(hStdOut, COORD{ pos.posX, pos.posY });
+    SetConsoleCursorPosition(hStdOut, COORD{ static_cast<int16_t>(pos.posX), static_cast<int16_t>(pos.posY) });
 }
 
 void Console::_osWaitInput(const char * fmt, char* buffer, uint32_t size) const

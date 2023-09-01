@@ -99,7 +99,7 @@ void ServiceComponent::processTimer( Timer & timer )
         TRACE_DBG( "Succeeded to send response to client [ %u ], sequence [ %u ]", entry.clientId, entry.seqNr );
 
         std::cout << "<<< Response at [ " << timestamp << " ]: "
-                  << " Clinet = " << entry.clientId
+                  << " Client = " << entry.clientId
                   << " Sequence = " << entry.seqNr << std::endl;
     }
     else

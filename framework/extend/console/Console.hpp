@@ -19,6 +19,7 @@
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
+#include "areg/base/NEMath.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/SynchObjects.hpp"
 
@@ -52,7 +53,7 @@ public:
      *          Used when waits the user input on console.
      *          If returns true, stops waiting. If returns false, continues waiting.
      **/
-    using CallBack = std::function<bool(const String &)>;
+    using CallBack  = std::function<bool(const String &)>;
 
     /**
      * \brief   Console::Coord
@@ -60,11 +61,7 @@ public:
      *          The lines on console are Y-coordinates.
      *          The columns on console are X-coordinates.
      **/
-    struct Coord
-    {
-        int16_t posX{ 0 };  //!< Console X-coordinate (column)
-        int16_t posY{ 0 };  //!< Console Y-coordinate (line)
-    };
+    using Coord     = NEMath::sCoord;
 
     //!< The default buffer size to input on console.
     static constexpr uint32_t INPUT_BUFFER_SIZE { 512 };

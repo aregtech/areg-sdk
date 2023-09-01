@@ -14,7 +14,7 @@ $(foreach cpp, $(18_locservice_SRC), $(eval $(call obj, $(cpp), $(18_locservice_
 DEPS = $(18_locservice_OBJS:%.o=%.d)
 -include $(DEPS)
 
-$(AREG_OUTPUT_BIN)/$(18_locservice_TARGET_BIN): $(areg_TARGET_PATH) $(AREG_OUTPUT_LIB)/$(18_generated_TARGET_BIN) $(18_locservice_OBJS)
+$(AREG_OUTPUT_BIN)/$(18_locservice_TARGET_BIN): $(areg_TARGET_PATH) $(18_locservice_OBJS)
 	@echo "Linking $@ ..."
 	@mkdir -p $(dir $@)
-	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(18_locwatchdog_CXXFLAGS) $(18_locservice_OBJS) $(18_locwatchdog_LDFLAGS) -o $@
+	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(18_locwatchdog_CXXFLAGS) $(18_locservice_OBJS) -o $@ $(18_locwatchdog_LDFLAGS)
