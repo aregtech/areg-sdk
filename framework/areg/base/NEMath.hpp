@@ -58,6 +58,32 @@ namespace NEMath
         , Bigger    =  1    //!< Comparing result is greater
     } eCompare;
 
+    typedef struct S_Rect
+    {
+        int32_t     x       { 0 };
+        int32_t     y       { 0 };
+        uint32_t    width   { 0 };
+        uint32_t    height  { 0 };
+    } sRect;
+
+    typedef struct S_Size
+    {
+        uint32_t    width   { 0 };
+        uint32_t    height  { 0 };
+    } sSize;
+
+    typedef struct S_Posint
+    {
+        int32_t     x;
+        int32_t     y;
+    } sPoint;
+
+    typedef struct S_Coord
+    {
+        int32_t     posX;
+        int32_t     posY;
+    } sCoord;
+
 /************************************************************************/
 // NEMath constants
 /************************************************************************/

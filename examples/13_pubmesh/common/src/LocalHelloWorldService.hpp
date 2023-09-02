@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PUBMESH_COMMON_SRC_LOCALHELLOWORLDSERVICE_HPP
+#define PUBMESH_COMMON_SRC_LOCALHELLOWORLDSERVICE_HPP
 
 /************************************************************************
  * \file        common/src/LocalHelloWorldService.hpp
@@ -61,3 +62,5 @@ private:
     LocalHelloWorldService( void ) = delete;
     DECLARE_NOCOPY_NOMOVE( LocalHelloWorldService );
 };
+
+#endif  // PUBMESH_COMMON_SRC_LOCALHELLOWORLDSERVICE_HPP

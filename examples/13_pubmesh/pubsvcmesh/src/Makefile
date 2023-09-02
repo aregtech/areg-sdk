@@ -1,2 +1,2 @@
 13_pubsvcmesh_SRC += \
-	$(13_pubsvcmesh_BASE)/src/main.cpp
+    $(13_pubmesh_BASE)/pubsvcmesh/src/main.cpp

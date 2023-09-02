@@ -11,7 +11,9 @@ AREG_LIB_INCLUDES       :=
 AREG_DEFINITIONS        := $(AREG_USER_DEFINES) -DUNICODE -D_UNICODE
 AREG_AR                 := ar
 AREG_TOOLCHAIN          = $(CXX)
-
+AREG_PROJECT            := areg
+AREG_EXTENDED_PROJECT   := areg-extend
+AREG_DEPEND             :=
 
 ifeq ($(AREG_BUILD_TYPE), Release)
     AREG_DEFINITIONS    += -DNDEBUG
@@ -170,6 +172,18 @@ CXXFLAGS    += $(AREG_COMPILER_OPTIONS)
 LDFLAGS     += $(AREG_LDFLAGS) -Wl,-R$(AREG_OUTPUT_BIN)
 
 AREG_TOOL_FLAGS := $(AREG_LIB_INCLUDES) -lareg-extend -lareg -lareg-extend $(LDFLAGS) $(AREG_EXTENDED_LIBS)
+
+# AREG extended library
+AREG_EXTEND_LIB := $(AREG_LIB_PREFIX)$(AREG_EXTENDED_PROJECT)$(AREG_STATIC_LIB)
+# AREG dependencies
+AREG_DEPEND     := 
+ifeq ($(AREG_BINARY), shared)
+    AREG_DEPEND = $(AREG_OUTPUT_BIN)/$(AREG_LIB_PREFIX)$(AREG_PROJECT)$(AREG_LIB_EXT)
+else
+    AREG_DEPEND = $(AREG_OUTPUT_LIB)/$(AREG_LIB_PREFIX)$(AREG_PROJECT)$(AREG_LIB_EXT)
+endif
+
+AREG_DEPEND     += $(AREG_OUTPUT_LIB)/$(AREG_EXTEND_LIB) 
 
 $(info -------------------- Makefile Status Report Begin --------------------)
 $(info >>> Build for '$(AREG_OS)' '$(AREG_BITNESS)'-bit platform '$(AREG_PLATFORM)' with compiler '$(AREG_CXX_COMPILER)', ID '$(AREG_COMPILER_FAMILY)', and build type '$(AREG_BUILD_TYPE)')

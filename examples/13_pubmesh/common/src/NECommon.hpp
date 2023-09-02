@@ -1,7 +1,8 @@
-#pragma once
+#ifndef PUBMESH_COMMON_SRC_NECOMMON_HPP
+#define PUBMESH_COMMON_SRC_NECOMMON_HPP
 
 /************************************************************************
- * \file        generated/src/NECommon.hpp
+ * \file        common/src/NECommon.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
@@ -36,3 +37,5 @@ namespace NECommon
     constexpr char  LocalService[]              { "LocalService" };
 
 }
+
+#endif // PUBMESH_COMMON_SRC_NECOMMON_HPP

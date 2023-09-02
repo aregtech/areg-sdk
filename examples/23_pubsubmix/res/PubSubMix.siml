@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<ServiceInterface FormatVersion="1.0.0">
+    <Overview ID="1" Name="PubSubMix" Version="1.0.0" isRemote="true">
+        <Description>This is an interface to test the PubSub features (data-driven communication) of the
+AREG framework, where each service provider is a Publisher and each service consumer is a Subscriber that dynamically
+subscribes on data update and get notified. The agenda of this example to demonstrate mixture of Publishers and Subscribers
+and testing the correct behavior of notifications when Subscribers run in the same or different processes.
+</Description>
+    </Overview>
+    <DataTypeList>
+        <DataType ID="8" Name="eServiceState" Type="Enumerate" Values="default">
+            <Description>The state of the Publisher (service provider)</Description>
+            <FieldList>
+                <EnumEntry ID="11" Name="Uninitialized">
+                    <Value/>
+                    <Description>The service provider state is initialized. The values are in invalid states.</Description>
+                </EnumEntry>
+                <EnumEntry ID="9" Name="Stopped">
+                    <Value/>
+                    <Description>The service provider state is stopped, values are initialized and valid.</Description>
+                </EnumEntry>
+                <EnumEntry ID="10" Name="Running">
+                    <Value/>
+                    <Description>The service provider state is running, the values should change values.</Description>
+                </EnumEntry>
+                <EnumEntry ID="17" Name="Shutdown">
+                    <Value/>
+                    <Description>The service provider shuts down and quits.</Description>
+                </EnumEntry>
+            </FieldList>
+        </DataType>
+        <DataType ID="18" Name="sInteger" Type="Structure">
+            <Description>The named structure for integer, 
+which contains integer as a value and name of a service, which updates the value.</Description>
+            <FieldList>
+                <Field DataType="uint32" ID="19" Name="value">
+                    <Value IsDefault="true">0</Value>
+                    <Description>The integer value.</Description>
+                </Field>
+                <Field DataType="String" ID="20" Name="name">
+                    <Value IsDefault="true"/>
+                    <Description>The name of the service that updated value.</Description>
+                </Field>
+            </FieldList>
+        </DataType>
+        <DataType ID="21" Name="sString" Type="Structure">
+            <Description>The named structure for string, 
+which contains string as a value and name of a service, which updates the value.</Description>
+            <FieldList>
+                <Field DataType="String" ID="22" Name="value">
+                    <Value IsDefault="true"/>
+                    <Description>The value</Description>
+                </Field>
+                <Field DataType="String" ID="23" Name="name">
+                    <Value IsDefault="true"/>
+                    <Description>The name of the service that updated value.</Description>
+                </Field>
+            </FieldList>
+        </DataType>
+    </DataTypeList>
+    <AttributeList>
+        <Attribute DataType="sString" ID="3" Name="StringOnChange" Notify="OnChange">
+            <Description>This string should send update notification only on change.</Description>
+        </Attribute>
+        <Attribute DataType="sInteger" ID="4" Name="IntegerAlways" Notify="Always">
+            <Description>This  integer should send update notification always when set.</Description>
+        </Attribute>
+        <Attribute DataType="eServiceState" ID="12" Name="ServiceProviderState" Notify="OnChange">
+            <Description>The state of service provider. The value is always valid, updated on change.</Description>
+        </Attribute>
+    </AttributeList>
+    <ConstantList>
+        <Constant DataType="uint32" ID="14" Name="TimeoutOnChange">
+            <Value>150</Value>
+            <Description>The timeout to make updates on change</Description>
+        </Constant>
+        <Constant DataType="uint32" ID="15" Name="TimeoutAlways">
+            <Value>300</Value>
+            <Description>The timeout to update on always.</Description>
+        </Constant>
+        <Constant DataType="uint16" ID="16" Name="CycleAlways">
+            <Value>3</Value>
+            <Description>The number of cycles to change the value when updating values.</Description>
+        </Constant>
+    </ConstantList>
+</ServiceInterface>

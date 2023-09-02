@@ -1,7 +1,4 @@
-10_locservice_PROJECT_NAME := 10_locservice
-
-10_locservice_TARGET_BIN := $(10_locservice_PROJECT_NAME)$(AREG_BIN_EXT)
-10_locservice_OUTPUT_OBJ := $(10_locsvc_OUTPUT_OBJ)/$(10_locservice_PROJECT_NAME)
+10_locservice_OUTPUT_OBJ := $(10_locsvc_OUTPUT_OBJ)/locservice
 
 10_locservice_SRC  :=
 10_locservice_OBJS :=
@@ -14,7 +11,7 @@ $(foreach cpp, $(10_locservice_SRC), $(eval $(call obj, $(cpp), $(10_locservice_
 DEPS = $(10_locservice_OBJS:%.o=%.d)
 -include $(DEPS)
 
-$(AREG_OUTPUT_BIN)/$(10_locservice_TARGET_BIN): $(areg_TARGET_PATH) $(AREG_OUTPUT_LIB)/$(10_generated_TARGET_BIN) $(10_locservice_OBJS)
+$(AREG_OUTPUT_BIN)/$(10_locservice_TARGET_BIN): $(areg_TARGET_PATH) $(10_locservice_OBJS) $(10_locsvc_DEPEND)
 	@echo "Linking $@ ..."
 	@mkdir -p $(dir $@)
-	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(10_locsvc_CXXFLAGS) $(10_locservice_OBJS) $(10_locsvc_LDFLAGS) -o $@
+	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(10_locsvc_CXXFLAGS) $(10_locservice_OBJS) -o $@ $(10_locsvc_LDFLAGS)

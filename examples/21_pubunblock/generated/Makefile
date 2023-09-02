@@ -1,6 +1,3 @@
-21_generated_PROJECT_NAME := 21_generated
-
-21_generated_TARGET_BIN := $(AREG_LIB_PREFIX)$(21_generated_PROJECT_NAME)$(AREG_STATIC_LIB)
 21_generated_OUTPUT_OBJ := $(21_pubunblock_OUTPUT_OBJ)/generated
 
 21_generated_SRC  :=

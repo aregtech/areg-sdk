@@ -28,7 +28,7 @@ $(foreach cpp, $(logger_SRC), $(eval $(call obj, $(cpp), $(logger_OUTPUT_OBJ), l
 DEPS = $(logger_OBJS:%.o=%.d)
 -include $(DEPS)
 
-$(AREG_OUTPUT_BIN)/$(logger_TARGET_BIN): $(areg_TARGET_PATH) $(logger_OBJS)
+$(AREG_OUTPUT_BIN)/$(logger_TARGET_BIN): $(areg_TARGET_PATH) $(logger_OBJS) $(AREG_DEPEND)
 	@echo "Linking logger ..."
 	@mkdir -p $(dir $@)
 	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(logger_CXXFLAGS) $(logger_OBJS) -o $@ $(logger_LDFLAGS)

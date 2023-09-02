@@ -48,7 +48,6 @@ void Mutex::_osCreateMutex( bool initLock )
     mSynchObject = synchObj;
     if ( initLock )
     {
-        // _osLockMutex( NECommon::WAIT_INFINITE );
         mOwnerThreadId.store( Thread::getCurrentThreadId( ) );
     }
 }
@@ -306,8 +305,8 @@ bool SynchTimer::_osSetTimer( void )
 {
     constexpr int NANOSECONDS_COEF_100  { 10'000 };
 
-    LARGE_INTEGER dueTime;
-    dueTime.QuadPart = -(static_cast<int64_t>(mTimeout) * NANOSECONDS_COEF_100);
+    LARGE_INTEGER dueTime{};
+    dueTime.QuadPart = -(static_cast<LONGLONG>(mTimeout) * NANOSECONDS_COEF_100);
     LONG lPeriod = mIsPeriodic ? static_cast<LONG>(mTimeout) : 0;
     return (SetWaitableTimer( static_cast<HANDLE>(mSynchObject), &dueTime, lPeriod, nullptr, nullptr, FALSE ) != FALSE);
 }
@@ -323,7 +322,7 @@ bool SynchTimer::_osCancelTimer( void )
 
 int MultiLock::_osLock( unsigned int timeout /* = NECommon::WAIT_INFINITE */, bool waitForAll /* = false */, bool isAlertable /*= false*/ )
 {
-    void * syncHandles[NECommon::MAXIMUM_WAITING_OBJECTS];
+    void * syncHandles[NECommon::MAXIMUM_WAITING_OBJECTS] { };
     for ( int i = 0; i < mSizeCount; ++ i)
     {
         syncHandles[i] = mSyncObjArray[i]->getHandle( );
@@ -399,7 +398,7 @@ Wait::eWaitResult Wait::_osWaitFor(const Wait::Duration& timeout) const
     Wait::eWaitResult result {Wait::eWaitResult::WaitInvalid};
     if (timeout >= Wait::MIN_WAIT)
     {
-        LARGE_INTEGER dueTime;
+        LARGE_INTEGER dueTime{};
         dueTime.QuadPart = static_cast<int64_t>(timeout.count() / ONE_MS.count()) * _COEF;
         ::SetWaitableTimer(mTimer, &dueTime, 0, nullptr, nullptr, FALSE);
         if (::WaitForSingleObject(mTimer, INFINITE) == WAIT_OBJECT_0)

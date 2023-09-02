@@ -28,7 +28,7 @@ $(foreach cpp, $(mcrouter_SRC), $(eval $(call obj, $(cpp), $(mcrouter_OUTPUT_OBJ
 DEPS = $(mcrouter_OBJS:%.o=%.d)
 -include $(DEPS)
 
-$(AREG_OUTPUT_BIN)/$(mcrouter_TARGET_BIN): $(areg_TARGET_PATH) $(mcrouter_OBJS)
+$(AREG_OUTPUT_BIN)/$(mcrouter_TARGET_BIN): $(areg_TARGET_PATH) $(mcrouter_OBJS) $(AREG_DEPEND)
 	@echo "Linking mcrouter ..."
 	@mkdir -p $(dir $@)
 	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(mcrouter_CXXFLAGS) $(mcrouter_OBJS) -o $@ $(mcrouter_LDFLAGS)

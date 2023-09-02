@@ -2,8 +2,8 @@
 <ServiceInterface FormatVersion="1.0.0">
     <Overview ID="1" Name="PubSub" Version="1.0.0" isRemote="true">
         <Description>This is an interface to test the PubSub features (data-driven communication) of the
-AREG framework, where service consumers connect to the service provider,
-subscribe on data update and get notified.</Description>
+AREG framework, where service provider is a Publisher and service consumer is a Subscriber that dynamically
+subscribes on data update and get notified.</Description>
     </Overview>
     <DataTypeList>
         <DataType ID="8" Name="eServiceState" Type="Enumerate" Values="default">

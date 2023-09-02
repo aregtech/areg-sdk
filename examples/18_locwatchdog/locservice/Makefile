@@ -1,6 +1,3 @@
-18_locwatchdog_PROJECT_NAME := 18_locservice
-
-18_locservice_TARGET_BIN := $(18_locwatchdog_PROJECT_NAME)$(AREG_BIN_EXT)
 18_locservice_OUTPUT_OBJ := $(18_locwatchdog_OUTPUT_OBJ)/locservice
 
 18_locservice_SRC  :=
@@ -14,7 +11,7 @@ $(foreach cpp, $(18_locservice_SRC), $(eval $(call obj, $(cpp), $(18_locservice_
 DEPS = $(18_locservice_OBJS:%.o=%.d)
 -include $(DEPS)
 
-$(AREG_OUTPUT_BIN)/$(18_locservice_TARGET_BIN): $(areg_TARGET_PATH) $(AREG_OUTPUT_LIB)/$(18_generated_TARGET_BIN) $(18_locservice_OBJS)
+$(AREG_OUTPUT_BIN)/$(18_locservice_TARGET_BIN): $(areg_TARGET_PATH) $(18_locservice_OBJS) $(18_locwatchdog_DEPEND)
 	@echo "Linking $@ ..."
 	@mkdir -p $(dir $@)
-	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(18_locwatchdog_CXXFLAGS) $(18_locservice_OBJS) $(18_locwatchdog_LDFLAGS) -o $@
+	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(18_locwatchdog_CXXFLAGS) $(18_locservice_OBJS) -o $@ $(18_locwatchdog_LDFLAGS)

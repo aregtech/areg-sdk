@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PUBMESH_COMMON_SRC_PUBLICHELLOWORLDCLIENT_HPP
+#define PUBMESH_COMMON_SRC_PUBLICHELLOWORLDCLIENT_HPP
 
 /************************************************************************
  * \file        common/src/PublicHelloWorldClient.hpp
@@ -128,3 +129,5 @@ private:
     PublicHelloWorldClient( void ) = delete;
     DECLARE_NOCOPY_NOMOVE( PublicHelloWorldClient );
 };
+
+#endif // PUBMESH_COMMON_SRC_PUBLICHELLOWORLDCLIENT_HPP

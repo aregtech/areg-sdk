@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PUBMESH_COMMON_SRC_PUBLICHELLOWORLDSERVICE_HPP
+#define PUBMESH_COMMON_SRC_PUBLICHELLOWORLDSERVICE_HPP
 
 /************************************************************************
  * \file        common/src/PublicHelloWorldService.hpp
@@ -90,3 +91,5 @@ protected:
     PublicHelloWorldService( void ) = delete;
     DECLARE_NOCOPY_NOMOVE( PublicHelloWorldService );
 };
+
+#endif // PUBMESH_COMMON_SRC_PUBLICHELLOWORLDSERVICE_HPP

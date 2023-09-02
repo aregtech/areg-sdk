@@ -1,7 +1,4 @@
-13_generated_PROJECT_NAME := 13_generated
-
-13_generated_TARGET_BIN := $(AREG_LIB_PREFIX)$(13_generated_PROJECT_NAME)$(AREG_STATIC_LIB)
-13_generated_OUTPUT_OBJ := $(13_pubmesh_OUTPUT_OBJ)/$(13_generated_PROJECT_NAME)
+13_generated_OUTPUT_OBJ := $(13_pubmesh_OUTPUT_OBJ)/generated
 
 13_generated_SRC  :=
 13_generated_OBJS :=

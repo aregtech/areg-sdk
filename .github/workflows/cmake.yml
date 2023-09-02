@@ -293,11 +293,10 @@ jobs:
         run: |
             c:\setup.exe -qgnO -s http://mirrors.kernel.org/sourceware/cygwin/ -l C:\cygwin-packages\ -P ^
             cmake,^
+            make,^
             dos2unix,^
-            extra-cmake-modules,^
             flexdll,^
             gcc-g++,^
-            make,^
             ncurses,^
             libncurses-devel
 

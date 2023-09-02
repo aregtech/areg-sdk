@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     29.08.2023  00:22:24 GMT+02:00
+ * Generated at     31.08.2023  12:27:59 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PubSub.
  *
  * \file            generated/src/NEPubSub.hpp
@@ -49,8 +49,8 @@
  *          types and structures message IDs, global static methods.
  *
  *          This is an interface to test the PubSub features (data-driven communication) of the
- *          AREG framework, where service consumers connect to the service provider,
- *          subscribe on data update and get notified.
+ *          AREG framework, where service provider is a Publisher and service consumer is a Subscriber that dynamically
+ *          subscribes on data update and get notified.
  *
  **/
 namespace   NEPubSub
@@ -74,19 +74,19 @@ namespace   NEPubSub
      * \brief   The timeout to make updates on change
      *          NEPubSub::TimeoutOnChange
      **/
-    constexpr unsigned int    TimeoutOnChange     = 300;
+    constexpr unsigned int    TimeoutOnChange     = 150;
 
     /**
      * \brief   The timeout to update on always.
      *          NEPubSub::TimeoutAlways
      **/
-    constexpr unsigned int    TimeoutAlways       = 450;
+    constexpr unsigned int    TimeoutAlways       = 300;
 
     /**
      * \brief   The number of cycles to change the value when updating values.
      *          NEPubSub::CycleAlways
      **/
-    constexpr unsigned short  CycleAlways         = 5;
+    constexpr unsigned short  CycleAlways         = 3;
 
 /************************************************************************/
 // Service Interface data types

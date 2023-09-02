@@ -185,10 +185,7 @@ unsigned int File::_osWriteFile(const unsigned char* buffer, unsigned int size)
     ASSERT((buffer != nullptr) && (size != 0));
 
     DWORD sizeWrite{ 0 };
-    if (::WriteFile(static_cast<HANDLE>(mFileHandle), buffer, static_cast<unsigned long>(size), &sizeWrite, nullptr) == FALSE)
-    {
-        OUTPUT_ERR("Failed to write [ %d ] bytes of data to file [ %s ]. Error code [ %p ].", size, mFileName.getString(), static_cast<id_type>(GetLastError()));
-    }
+    ::WriteFile(static_cast<HANDLE>(mFileHandle), buffer, static_cast<unsigned long>(size), &sizeWrite, nullptr);
 
     return static_cast<unsigned int>(sizeWrite);
 }

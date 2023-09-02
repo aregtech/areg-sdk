@@ -1,7 +1,4 @@
-00_generated_PROJECT_NAME := 00_generated
-
-00_generated_TARGET_BIN := $(AREG_LIB_PREFIX)$(00_generated_PROJECT_NAME)$(AREG_STATIC_LIB)
-00_generated_OUTPUT_OBJ := $(00_helloservice_OUTPUT_OBJ)/$(00_generated_PROJECT_NAME)
+00_generated_OUTPUT_OBJ := $(00_helloservice_OUTPUT_OBJ)/generated
 
 00_generated_SRC  :=
 00_generated_OBJS :=

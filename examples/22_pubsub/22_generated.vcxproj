@@ -56,8 +56,6 @@
     <ClInclude Include="generated\src\PubSubStub.hpp" />
   </ItemGroup>
   <ItemGroup>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="res\generate.bat" />
     <None Include="res\generate.sh" />
     <None Include="res\PubSub.siml" />

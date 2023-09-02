@@ -16,7 +16,7 @@ include $(04_trace_BASE)/src/Makefile
 # define one target for each source file
 $(foreach cpp, $(04_trace_SRC), $(eval $(call obj, $(cpp), $(04_trace_OUTPUT_OBJ), 04_trace_OBJS, $(examples_CXXFLAGS))))
 
-$(AREG_OUTPUT_BIN)/$(04_trace_TARGET_BIN): $(areg_TARGET_PATH) $(04_trace_OBJS)
+$(AREG_OUTPUT_BIN)/$(04_trace_TARGET_BIN): $(areg_TARGET_PATH) $(04_trace_OBJS) $(AREG_DEPEND)
 	@echo "Linking $(04_trace_PROJECT_NAME) ..."
 	@mkdir -p $(dir $@)
 	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(examples_CXXFLAGS) $(04_trace_OBJS) $(examples_LDFLAGS) -o $@
