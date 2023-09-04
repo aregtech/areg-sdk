@@ -16,10 +16,10 @@
 
 #include <string_view>
 
-DEF_TRACE_SCOPE(examples_22_publisher_Subscriber_serviceConnected);
-DEF_TRACE_SCOPE(examples_22_publisher_Subscriber_onStringOnChangeUpdate);
-DEF_TRACE_SCOPE(examples_22_publisher_Subscriber_onIntegerAlwaysUpdate);
-DEF_TRACE_SCOPE(examples_22_publisher_Subscriber_onServiceProviderStateUpdate);
+DEF_TRACE_SCOPE(examples_22_subscriber_Subscriber_serviceConnected);
+DEF_TRACE_SCOPE(examples_22_subscriber_Subscriber_onStringOnChangeUpdate);
+DEF_TRACE_SCOPE(examples_22_subscriber_Subscriber_onIntegerAlwaysUpdate);
+DEF_TRACE_SCOPE(examples_22_subscriber_Subscriber_onServiceProviderStateUpdate);
 
 namespace
 {
@@ -63,7 +63,7 @@ Subscriber::Subscriber( const NERegistry::ComponentEntry & entry, ComponentThrea
 
 bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
 {
-    TRACE_SCOPE(examples_22_publisher_Subscriber_serviceConnected);
+    TRACE_SCOPE(examples_22_subscriber_Subscriber_serviceConnected);
     PubSubClientBase::serviceConnected( status, proxy );
 
     TRACE_DBG("Service connection with status [ %s ]. If connected assign on provider state change", NEService::getString(status));
@@ -95,7 +95,7 @@ bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBa
 
 void Subscriber::onStringOnChangeUpdate(const String & StringOnChange, NEService::eDataStateType state)
 {
-    TRACE_SCOPE(examples_22_publisher_Subscriber_onStringOnChangeUpdate);
+    TRACE_SCOPE(examples_22_subscriber_Subscriber_onStringOnChangeUpdate);
     Console & console = Console::getInstance();
     if (state == NEService::eDataStateType::DataIsOK)
     {
@@ -122,7 +122,7 @@ void Subscriber::onStringOnChangeUpdate(const String & StringOnChange, NEService
 
 void Subscriber::onIntegerAlwaysUpdate(unsigned int IntegerAlways, NEService::eDataStateType state)
 {
-    TRACE_SCOPE(examples_22_publisher_Subscriber_onIntegerAlwaysUpdate);
+    TRACE_SCOPE(examples_22_subscriber_Subscriber_onIntegerAlwaysUpdate);
     Console & console = Console::getInstance();
     String oldInt = mOldState ? String::toString(mOldInteger) : _invalid;
     if (state == NEService::eDataStateType::DataIsOK)
@@ -140,7 +140,7 @@ void Subscriber::onIntegerAlwaysUpdate(unsigned int IntegerAlways, NEService::eD
     {
         TRACE_DBG("The INTEGER (ALWAYS) have got invalidated, old value [ %s ]", oldInt.getString());
 
-        console.outputMsg(_coordInteger, "%s%s => INVALID { invalid }", _txtInteger.data(), mOldString.getString());
+        console.outputMsg(_coordInteger, "%s%s => INVALID { invalid }", _txtInteger.data(), oldInt.getString());
         mOldInteger = 0;
         mOldState = false;
 
@@ -156,7 +156,7 @@ void Subscriber::onIntegerAlwaysUpdate(unsigned int IntegerAlways, NEService::eD
 
 void Subscriber::onServiceProviderStateUpdate(NEPubSub::eServiceState ServiceProviderState, NEService::eDataStateType state)
 {
-    TRACE_SCOPE(examples_22_publisher_Subscriber_onServiceProviderStateUpdate);
+    TRACE_SCOPE(examples_22_subscriber_Subscriber_onServiceProviderStateUpdate);
     if (state == NEService::eDataStateType::DataIsOK)
     {
         if (isIntegerAlwaysValid() == false)

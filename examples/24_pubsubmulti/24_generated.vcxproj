@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
+    <Import Project="$(SolutionDir)\msvc_setup.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(AregSdkRoot)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+  </ImportGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{76479E1B-8BD5-4143-897F-F1E93DC1C64B}</ProjectGuid>
+    <ProjectName>24_generated</ProjectName>
+    <RootNamespace>24_generated</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(AregSdkRoot)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <OutDir>$(OutLibDir)\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
+    <ClCompile>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
+    <ClCompile>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="generated\src\private\NEPubSub.cpp" />
+    <ClCompile Include="generated\src\private\PubSubClientBase.cpp" />
+    <ClCompile Include="generated\src\private\PubSubEvents.cpp" />
+    <ClCompile Include="generated\src\private\PubSubProxy.cpp" />
+    <ClCompile Include="generated\src\private\PubSubStub.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="generated\src\NEPubSub.hpp" />
+    <ClInclude Include="generated\src\private\PubSubEvents.hpp" />
+    <ClInclude Include="generated\src\private\PubSubProxy.hpp" />
+    <ClInclude Include="generated\src\PubSubClientBase.hpp" />
+    <ClInclude Include="generated\src\PubSubStub.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\generate.bat" />
+    <None Include="res\generate.sh" />
+    <None Include="res\PubSub.siml" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

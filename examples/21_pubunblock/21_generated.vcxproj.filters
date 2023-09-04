@@ -53,6 +53,8 @@
     <Text Include="generated\src\private\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\HelloUnblock.siml" />
+    <None Include="res\HelloUnblock.siml">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

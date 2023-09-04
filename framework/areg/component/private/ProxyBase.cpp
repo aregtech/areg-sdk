@@ -128,7 +128,7 @@ ProxyBase::Listener & ProxyBase::Listener::operator = ( ProxyBase::Listener && s
 bool ProxyBase::Listener::operator == ( const ProxyBase::Listener& other ) const
 {
     bool result = this == &other ? true : false;
-    if (result == false && other.mMessageId == mMessageId)
+    if ((result == false) && (other.mMessageId == mMessageId))
     {
         if (other.mSequenceNr == NEService::SEQUENCE_NUMBER_ANY)
             result = true;
@@ -207,7 +207,7 @@ std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const String & roleName
 
                 static_cast<void>(proxy->addListener( static_cast<unsigned int>(NEService::eFuncIdRange::ServiceNotifyConnection)
                                                     , NEService::SEQUENCE_NUMBER_NOTIFY
-                                                    , static_cast<IENotificationEventConsumer *>(&connect) ));
+                                                    , static_cast<IENotificationEventConsumer *>(&connect), true ));
                 ++ proxy->mProxyInstCount;
                 proxy->mIsStopped = false;
 
@@ -273,12 +273,13 @@ ProxyBase::ProxyBase(const String & roleName, const NEService::SInterfaceData & 
     , mListConnect      (   )
     , mProxyInstCount   ( 0 )
 
-    , mConnectionStatus ( NEService::eServiceConnection::ServiceConnectionUnknown )
     , mIsStopped        ( false )
 
     , mProxyData        ( serviceIfData )
 
     , mDispatcherThread ( (ownerThread != nullptr) && (ownerThread->isValid()) ? *ownerThread : DispatcherThread::getDispatcherThread( mProxyAddress.getThread()) )
+    , mConnectionStatus ( NEService::eServiceConnection::ServiceConnectionUnknown )
+    , mIsConnected      ( false )
 {
     ASSERT(mDispatcherThread.isValid());
 }
@@ -329,7 +330,7 @@ void ProxyBase::freeProxy( IEProxyListener & connect )
             mDispatcherThread.removeConsumer( *this );
         }
 
-        mConnectionStatus = NEService::eServiceConnection::ServiceDisconnected;
+        setConnectionStatus( NEService::eServiceConnection::ServiceDisconnected );
         mIsStopped   = true;
 
         mProxyInstCount = 0;
@@ -352,7 +353,7 @@ void ProxyBase::terminateSelf(void)
             ServiceManager::requestUnregisterClient(getProxyAddress(), NEService::eDisconnectReason::ReasonConsumerDisconnected );
         }
 
-        mConnectionStatus = NEService::eServiceConnection::ServiceDisconnected;
+        setConnectionStatus( NEService::eServiceConnection::ServiceDisconnected );
         mIsStopped      = true;
         mProxyInstCount = 0;
 
@@ -374,8 +375,9 @@ void ProxyBase::serviceConnectionUpdated( const StubAddress & server, const Chan
 
         ASSERT(channel.getTarget() == server.getSource() || status != NEService::eServiceConnection::ServiceConnected);
         mProxyAddress.setChannel(channel);
-        mConnectionStatus = status;
-        if ( isConnected() )
+        setConnectionStatus( status );
+        bool proxyConnected{ isConnected() };
+        if ( proxyConnected )
         {
             mStubAddress = server;
         }
@@ -401,7 +403,6 @@ void ProxyBase::serviceConnectionUpdated( const StubAddress & server, const Chan
 
         TRACE_DBG("Notifying [ %d ] clients the service connection", conListeners.getSize());
 
-        bool proxyConnected{ isConnected( ) };
         for (index = 0 ; index < conListeners.getSize(); ++ index)
         {
             ProxyBase::Listener& listener = conListeners[index];
@@ -409,12 +410,12 @@ void ProxyBase::serviceConnectionUpdated( const StubAddress & server, const Chan
             if ( proxyConnected )
             {
                 mListConnect.addIfUnique(consumer);
-                consumer->serviceConnected( mConnectionStatus, *this );
+                consumer->serviceConnected( status, *this );
             }
             else
             {
                 mListConnect.removeElem(consumer, 0);
-                consumer->serviceConnected( mConnectionStatus, *this );
+                consumer->serviceConnected( status, *this );
                 mListenerList.addIfUnique(listener);
             }
         }
@@ -425,9 +426,22 @@ void ProxyBase::setNotification( unsigned int msgId, IENotificationEventConsumer
 {
     if (isConnected())
     {
-        if ( addListener(msgId, NEService::SEQUENCE_NUMBER_NOTIFY, caller) )
+        bool hasListener{ hasNotificationListener(msgId) };
+        if ( addListener(msgId, NEService::SEQUENCE_NUMBER_NOTIFY, caller, hasListener) )
         {
-            startNotification(msgId);
+            // new listener, if attribute, send actual data.
+            if (NEService::isAttributeId(msgId))
+            {
+                sendNotificationEvent( msgId
+                                     , mProxyData.getAttributeState(msgId) == NEService::eDataStateType::DataIsOK ? NEService::eResultType::DataOK : NEService::eResultType::DataInvalid
+                                     , NEService::SEQUENCE_NUMBER_NOTIFY, caller);
+            }
+
+            // assign only if there was no listener
+            if (hasListener == false)
+            {
+                startNotification(msgId);
+            }
         }
         else if ( alwaysNotify )
         {
@@ -578,7 +592,7 @@ void ProxyBase::sendRequestEvent( unsigned int reqId, const EventDataStream& arg
 
         if (respId != NEService::RESPONSE_ID_NONE)
         {
-            static_cast<void>( addListener(respId, ++ mSequenceCount, caller) );
+            static_cast<void>( addListener(respId, ++ mSequenceCount, caller, true) );
             evenElem->setSequenceNumber(mSequenceCount);
         }
 
@@ -626,7 +640,7 @@ void ProxyBase::processServiceAvailableEvent( IENotificationEventConsumer & cons
 {
     if (isConnected() && isServiceListenerRegistered( consumer ) )
     {
-        static_cast<IEProxyListener&>(consumer).serviceConnected(mConnectionStatus, self());
+        static_cast<IEProxyListener&>(consumer).serviceConnected(getConnectionStatus(), self());
     }
 }
 
@@ -660,7 +674,7 @@ void ProxyBase::stopProxy(void)
 
         mListConnect.clear();
 
-        mConnectionStatus = NEService::eServiceConnection::ServiceDisconnected;
+        setConnectionStatus( NEService::eServiceConnection::ServiceDisconnected );
         mIsStopped = true;
 
         stopAllServiceNotifications( );
