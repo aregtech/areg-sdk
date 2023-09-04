@@ -41,7 +41,7 @@ class HelloUnblockResponseEvent;
  *              In this example the client sends a request each 200 ms and the service replies each 500,
  *              so that when the client sends next request, there is always a pending request on the service.
  *              To process the request and make correct reply, the service manually unblocks the request
- *              and when timeout is expired, sends the respons.
+ *              and when timeout is expired, sends the response.
  *              The service is stopped and the application is shutdown when there is no more pending request.
  **/
 class HelloUnblockProxy   : public ProxyBase

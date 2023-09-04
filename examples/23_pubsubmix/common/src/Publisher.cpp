@@ -21,12 +21,12 @@
 // Log scopes
 //////////////////////////////////////////////////////////////////////////
 
-DEF_TRACE_SCOPE(examples_22_pubsubmix_Publisher_clientConnected);
-DEF_TRACE_SCOPE(examples_22_pubsubmix_Publisher_start);
-DEF_TRACE_SCOPE(examples_22_pubsubmix_Publisher_stop);
-DEF_TRACE_SCOPE(examples_22_pubsubmix_Publisher_invalidate);
-DEF_TRACE_SCOPE(examples_22_pubsubmix_Publisher_quit);
-DEF_TRACE_SCOPE(examples_22_pubsubmix_Publisher_processTimer);
+DEF_TRACE_SCOPE(examples_23_pubsubmix_common_Publisher_clientConnected);
+DEF_TRACE_SCOPE(examples_23_pubsubmix_common_Publisher_start);
+DEF_TRACE_SCOPE(examples_23_pubsubmix_common_Publisher_stop);
+DEF_TRACE_SCOPE(examples_23_pubsubmix_common_Publisher_invalidate);
+DEF_TRACE_SCOPE(examples_23_pubsubmix_common_Publisher_quit);
+DEF_TRACE_SCOPE(examples_23_pubsubmix_common_Publisher_processTimer);
 
 
 namespace
@@ -62,7 +62,7 @@ Publisher::Publisher( Component & owner )
 
 bool Publisher::clientConnected(const ProxyAddress & client, NEService::eServiceConnection status)
 {
-    TRACE_SCOPE(examples_22_pubsubmix_Publisher_clientConnected);
+    TRACE_SCOPE(examples_23_pubsubmix_common_Publisher_clientConnected);
     bool result = PubSubMixStub::clientConnected(client, status);
 
     TRACE_DBG("Connection status [ %s ] of the consumer [ %s ]", NEService::getString(status), ProxyAddress::convAddressToPath(client).getString());
@@ -79,7 +79,7 @@ bool Publisher::clientConnected(const ProxyAddress & client, NEService::eService
 
 void Publisher::start(void)
 {
-    TRACE_SCOPE(examples_22_pubsubmix_Publisher_start);
+    TRACE_SCOPE(examples_23_pubsubmix_common_Publisher_start);
 
     Lock lock(mLock);
     TRACE_DBG("Requested to re-start the service run. Reset values and re-start timers, there are [ %d ] connected clients",  mClientCount);
@@ -108,7 +108,7 @@ void Publisher::start(void)
 
 void Publisher::stop(void)
 {
-    TRACE_SCOPE(examples_22_pubsubmix_Publisher_stop);
+    TRACE_SCOPE(examples_23_pubsubmix_common_Publisher_stop);
 
     Lock lock(mLock);
     TRACE_DBG("Stopped servicing, resets data, wait for further instructions. There are [ %d ] connected clients", mClientCount);
@@ -121,7 +121,7 @@ void Publisher::stop(void)
 
 void Publisher::invalidate(void)
 {
-    TRACE_SCOPE(examples_22_pubsubmix_Publisher_invalidate);
+    TRACE_SCOPE(examples_23_pubsubmix_common_Publisher_invalidate);
 
     Lock lock(mLock);
     TRACE_DBG("Invalidating all data. There are [ %d ] connected clients", mClientCount);
@@ -139,7 +139,7 @@ void Publisher::invalidate(void)
 
 void Publisher::quit(void)
 {
-    TRACE_SCOPE(examples_22_pubsubmix_Publisher_quit);
+    TRACE_SCOPE(examples_23_pubsubmix_common_Publisher_quit);
 
     Lock lock(mLock);
     TRACE_DBG("Requested to quit.There are[% d] connected clients", mClientCount);
@@ -153,7 +153,7 @@ void Publisher::quit(void)
 
 void Publisher::processTimer(Timer & timer)
 {
-    TRACE_SCOPE(examples_22_pubsubmix_Publisher_processTimer);
+    TRACE_SCOPE(examples_23_pubsubmix_common_Publisher_processTimer);
 
     const String roleName = getServiceRole();
 

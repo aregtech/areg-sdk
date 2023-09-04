@@ -76,7 +76,7 @@ END_MODEL( _modelName )
 //////////////////////////////////////////////////////////////////////////
 // main method.
 //////////////////////////////////////////////////////////////////////////
-DEF_TRACE_SCOPE(example_22_pubsub_pubsubservice_main_main);
+DEF_TRACE_SCOPE(example_23_pubsubmix_pubsubctrl_main);
 /**
  * \brief   The main method enables logging, service manager and timer.
  *          it loads and unloads the services, releases application.
@@ -93,7 +93,7 @@ int main( )
 
     do
     {
-        TRACE_SCOPE( example_22_pubsub_pubsubservice_main_main );
+        TRACE_SCOPE(example_23_pubsubmix_pubsubctrl_main);
         TRACE_DBG( "The application has been initialized, loading model [ %s ]", _modelName );
 
         // Output the title of the application.

@@ -613,10 +613,7 @@ bool NERegistry::ComponentEntry::removeWorkerThread( const String & workerName )
 
 void NERegistry::ComponentEntry::addDependencyService( const NERegistry::DependencyEntry& entry )
 {
-    if (findDependencyService(entry) < 0)
-    {
-        mDependencyServices.mListDependencies.add(entry);
-    }
+    mDependencyServices.mListDependencies.add(entry);
 }
 
 void NERegistry::ComponentEntry::addDependencyService( const NERegistry::DependencyList & dependencyList )
@@ -629,13 +626,8 @@ void NERegistry::ComponentEntry::addDependencyService( const NERegistry::Depende
 
 NERegistry::DependencyEntry & NERegistry::ComponentEntry::addDependencyService(const String & roleName)
 {
-    int index = findDependencyService(roleName);
-    if ( index == NECommon::INVALID_INDEX )
-    {
-        index = static_cast<int>(mDependencyServices.mListDependencies.getSize());
-        mDependencyServices.mListDependencies.add(NERegistry::DependencyEntry(roleName));
-    }
-
+    int index = static_cast<int>(mDependencyServices.mListDependencies.getSize());
+    mDependencyServices.mListDependencies.add(NERegistry::DependencyEntry(roleName));
     return mDependencyServices.mListDependencies.getAt(index);
 }
 

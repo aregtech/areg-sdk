@@ -18,10 +18,10 @@
 
 #include <string_view>
 
-DEF_TRACE_SCOPE(examples_22_pubsubmix_Subscriber_serviceConnected);
-DEF_TRACE_SCOPE(examples_22_pubsubmix_Subscriber_onStringOnChangeUpdate);
-DEF_TRACE_SCOPE(examples_22_pubsubmix_Subscriber_onIntegerAlwaysUpdate);
-DEF_TRACE_SCOPE(examples_22_pubsubmix_Subscriber_onServiceProviderStateUpdate);
+DEF_TRACE_SCOPE(examples_23_pubsubmix_common_Subscriber_serviceConnected);
+DEF_TRACE_SCOPE(examples_23_pubsubmix_common_Subscriber_onStringOnChangeUpdate);
+DEF_TRACE_SCOPE(examples_23_pubsubmix_common_Subscriber_onIntegerAlwaysUpdate);
+DEF_TRACE_SCOPE(examples_23_pubsubmix_common_Subscriber_onServiceProviderStateUpdate);
 
 Subscriber::Subscriber(const NERegistry::DependencyEntry & entry, Component & owner, int position)
     : PubSubMixClientBase   ( entry, owner )
@@ -37,7 +37,7 @@ Subscriber::Subscriber(const NERegistry::DependencyEntry & entry, Component & ow
 
 bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
 {
-    TRACE_SCOPE(examples_22_pubsubmix_Subscriber_serviceConnected);
+    TRACE_SCOPE(examples_23_pubsubmix_common_Subscriber_serviceConnected);
     PubSubMixClientBase::serviceConnected( status, proxy );
 
     TRACE_DBG("Service connection with status [ %s ]. If connected assign on provider state change", NEService::getString(status));
@@ -77,7 +77,7 @@ bool Subscriber::serviceConnected( NEService::eServiceConnection status, ProxyBa
 
 void Subscriber::onStringOnChangeUpdate(const NEPubSubMix::sString & StringOnChange, NEService::eDataStateType state)
 {
-    TRACE_SCOPE(examples_22_pubsubmix_Subscriber_onStringOnChangeUpdate);
+    TRACE_SCOPE(examples_23_pubsubmix_common_Subscriber_onStringOnChangeUpdate);
     Console & console = Console::getInstance();
     console.lockConsole();
     console.saveCursorPosition();
@@ -132,7 +132,7 @@ void Subscriber::onStringOnChangeUpdate(const NEPubSubMix::sString & StringOnCha
 
 void Subscriber::onIntegerAlwaysUpdate(const NEPubSubMix::sInteger & IntegerAlways, NEService::eDataStateType state)
 {
-    TRACE_SCOPE(examples_22_pubsubmix_Subscriber_onIntegerAlwaysUpdate);
+    TRACE_SCOPE(examples_23_pubsubmix_common_Subscriber_onIntegerAlwaysUpdate);
     Console & console = Console::getInstance();
     console.lockConsole();
     String oldInt = mOldState ? String::toString(mOldInteger.value) : NECommon::Invalid;
@@ -188,7 +188,7 @@ void Subscriber::onIntegerAlwaysUpdate(const NEPubSubMix::sInteger & IntegerAlwa
 
 void Subscriber::onServiceProviderStateUpdate(NEPubSubMix::eServiceState ServiceProviderState, NEService::eDataStateType state)
 {
-    TRACE_SCOPE(examples_22_pubsubmix_Subscriber_onServiceProviderStateUpdate);
+    TRACE_SCOPE(examples_23_pubsubmix_common_Subscriber_onServiceProviderStateUpdate);
     if (state == NEService::eDataStateType::DataIsOK)
     {
         if (isIntegerAlwaysValid() == false)

@@ -25,7 +25,7 @@
 
 constexpr char const _modelName[]  { "PubSub_model" };  //!< The name of model
 constexpr char const _serviceName[]{ "Publisher" };     //!< The name of the service
-const String        _subscriber (NEUtilities::generateName("Subscriber")); //!< Generated name of service client component
+const String         _subscriber (NEUtilities::generateName("Subscriber")); //!< Generated name of service client component
 
 //////////////////////////////////////////////////////////////////////////
 //

@@ -155,8 +155,13 @@ private:
 private:
     uint32_t        mClientId;      //!< The ID of the client given by service.
     uint32_t        mSequenceId;    //!< Current sequence ID.
+    uint32_t        mRespReceived;  //!< The total number of requests sent
     SequenceList    mSequenceList;  //!< The list of generated sequences.
     Timer           mTimer;         //!< The timer to send requests.
+#ifdef DEBUG
+    uint32_t        mReqCount;      //!< The number of requests. Test only in Debug build.
+#endif // DEBUG
+
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

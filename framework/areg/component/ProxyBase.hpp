@@ -447,11 +447,17 @@ public:
      **/
     static RemoteResponseEvent * createRequestFailureEvent(const ProxyAddress & target, unsigned int msgId, NEService::eResultType errCode, unsigned int seqNr);
 
+    /**
+     * \brief   Locks the resources of proxy object. Use if need to search and access cached resource.
+     **/
     static inline void lockProxyResource( void )
     {
         ProxyBase::_mapRegisteredProxies.lock();
     }
 
+    /**
+     * \brief   Unlocks the resources of proxy object. Use if need to unlock the access of cached resource.
+     **/
     static inline void unlockProxyResource( void )
     {
         ProxyBase::_mapRegisteredProxies.unlock();
@@ -477,6 +483,67 @@ public:
      * \brief   Destructor.
      **/
     virtual ~ProxyBase( void ) = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Attributes
+//////////////////////////////////////////////////////////////////////////
+public:
+
+    /**
+     * \brief   Returns the address of Proxy.
+     **/
+    inline const ProxyAddress & getProxyAddress(void) const;
+
+    /**
+     * \brief   Returns the address of target Stub object.
+     **/
+    inline const StubAddress & getStubAddress(void) const;
+
+    /**
+     * \brief   Returns true if Proxy have got server connected notification.
+     **/
+    inline bool isConnected(void) const;
+
+    /**
+     * \brief   Returns the connection status of the proxy.
+     **/
+    inline NEService::eServiceConnection getConnectionStatus(void) const;
+
+    /**
+     * \brief   Checks whether there are more listener objects
+     *          assigned for specified message ID.
+     *          The sequence number will be ignored.
+     * \param   msgId   The message ID to check.
+     * \return  Returns true if there are more listeners assigned.
+     *          for specified message ID.
+     **/
+    inline bool hasAnyListener(unsigned int msgId) const;
+
+    /**
+     * \brief   Checks whether there are more listener objects
+     *          assigned for specified attribute update message ID.
+     *          Only sequence number equal to zero, i.e. only
+     *          attribute update notifications.
+     * \param   msgId       The message ID to check.
+     * \return  Returns true if there are more listeners assigned.
+     *          for specified message ID.
+     **/
+    inline bool hasNotificationListener(unsigned int msgId) const;
+
+    /**
+     * \brief   Returns the Proxy dispatcher thread.
+     **/
+    inline DispatcherThread & getProxyDispatcherThread(void) const;
+
+#ifdef DEBUG
+
+    /**
+     * \brief   Returns the number of assigned listener in the list.
+     **/
+    inline unsigned int getListenerCount(void) const;
+
+#endif // DEBUG
+
 
 //////////////////////////////////////////////////////////////////////////
 // Public Operations
@@ -508,9 +575,6 @@ public:
      **/
     void terminateSelf( void );
 
-//////////////////////////////////////////////////////////////////////////
-// Pure virtual methods to implement
-//////////////////////////////////////////////////////////////////////////
 protected:
 /************************************************************************/
 // IEProxyEventConsumer interface overrides. Should be implemented
@@ -604,10 +668,6 @@ protected:
      **/
     virtual RemoteResponseEvent * createRemoteRequestFailedEvent( const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, unsigned int seqNr ) const;
 
-//////////////////////////////////////////////////////////////////////////
-// Overrides.
-//////////////////////////////////////////////////////////////////////////
-protected:
 /************************************************************************/
 // IEProxyEventConsumer interface overrides.
 /************************************************************************/
@@ -700,52 +760,6 @@ protected:
     virtual void unregisterServiceListeners( void );
 
 //////////////////////////////////////////////////////////////////////////
-// Attributes
-//////////////////////////////////////////////////////////////////////////
-public:
-
-    /**
-     * \brief   Returns the address of Proxy.
-     **/
-    inline const ProxyAddress & getProxyAddress( void ) const;
-
-    /**
-     * \brief   Returns the address of target Stub object.
-     **/
-    inline const StubAddress & getStubAddress( void ) const;
-
-    /**
-     * \brief   Returns true if Proxy have got server connected notification.
-     **/
-    inline bool isConnected( void ) const;
-
-    /**
-     * \brief   Checks whether there are more listener objects
-     *          assigned for specified message ID.
-     *          The sequence number will be ignored.
-     * \param   msgId   The message ID to check.
-     * \return  Returns true if there are more listeners assigned.
-     *          for specified message ID.
-     **/
-    inline bool hasAnyListener( unsigned int msgId ) const;
-
-    /**
-     * \brief   Checks whether there are more listener objects
-     *          assigned for specified attribute update message ID.
-     *          Only sequence number equal to zero, i.e. only
-     *          attribute update notifications.
-     * \param   msgId       The message ID to check.
-     * \return  Returns true if there are more listeners assigned.
-     *          for specified message ID.
-     **/
-    inline bool hasNotificationListener( unsigned int msgId ) const;
-
-    /**
-     * \brief   Returns the Proxy dispatcher thread.
-     **/
-    inline DispatcherThread & getProxyDispatcherThread( void ) const;
-
-//////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
 protected:
@@ -813,10 +827,13 @@ protected:
      * \param   msgId       Message ID of listener
      * \param   seqNr       Sequence number of listener
      * \param   consumer    Pointer to Notification Event consumer object.
+     * \param   unique      If true, it checks whether the same listener already exists or not,
+     *                      and adds listener only if it is not existing. Otherwise, if false,
+     *                      it add the listener at the end without checking.
      * \return  Returns true if new listener has been added.
      *          If listener already exists, returns false.
      **/
-    inline bool addListener( unsigned int msgId, unsigned int seqNr, IENotificationEventConsumer * caller );
+    inline bool addListener( unsigned int msgId, unsigned int seqNr, IENotificationEventConsumer * caller, bool unique );
 
     /**
      * \brief   Sets Data state of specified message ID in Proxy Data object
@@ -824,6 +841,11 @@ protected:
      * \param   newState    The state to set.
      **/
     inline void setState( unsigned int msgId, NEService::eDataStateType newState );
+
+    /**
+     * \brief   Sets the connection status of the proxy
+     **/
+    inline void setConnectionStatus(NEService::eServiceConnection status);
 
     /**
      * \brief   Checks whether there is already listener of Notification Event
@@ -953,11 +975,6 @@ protected:
 #endif  // _MSC_VER
 
     /**
-     * \brief   Indicates the Service connection status.
-     **/
-    NEService::eServiceConnection mConnectionStatus;
-
-    /**
      * \brief   Flag, indicating whether the proxy is stopped or not.
      *          Stopped proxy is inactive and cannot neither receive, nor respond on message.
      *          The stopped proxy should be recreated again. This flag for internal use.
@@ -976,6 +993,17 @@ protected:
     DispatcherThread &      mDispatcherThread;
 
 private:
+
+    /**
+     * \brief   Indicates the Service connection status.
+     **/
+    NEService::eServiceConnection   mConnectionStatus;
+
+    /**
+     * \brief   Flag, indicating whether the proxy is connected or not.
+     **/
+    bool                            mIsConnected;
+
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(disable: 4251)
 #endif  // _MSC_VER
@@ -1031,7 +1059,18 @@ inline const StubAddress& ProxyBase::getStubAddress( void ) const
 
 inline bool ProxyBase::isConnected( void ) const
 {
-    return (NEService::isServiceConnected(mConnectionStatus));
+    return mIsConnected;
+}
+
+inline void ProxyBase::setConnectionStatus(NEService::eServiceConnection status)
+{
+    mConnectionStatus = status;
+    mIsConnected = NEService::isServiceConnected(status);
+}
+
+inline NEService::eServiceConnection ProxyBase::getConnectionStatus(void) const
+{
+    return mConnectionStatus;
 }
 
 inline bool ProxyBase::hasAnyListener(unsigned int msgId) const
@@ -1046,7 +1085,7 @@ inline bool ProxyBase::hasNotificationListener(unsigned int msgId) const
 
 inline void ProxyBase::startNotification( unsigned int msgId )
 {
-    if (isConnected()) 
+    if (isConnected())
     {
         sendNotificationRequestEvent( msgId, NEService::eRequestType::StartNotify );
     }
@@ -1086,10 +1125,18 @@ inline NEService::ProxyData & ProxyBase::getProxyData( void )
     return mProxyData;
 }
 
-inline bool ProxyBase::addListener( unsigned int msgId, unsigned int seqNr, IENotificationEventConsumer* caller )
+inline bool ProxyBase::addListener( unsigned int msgId, unsigned int seqNr, IENotificationEventConsumer* caller, bool unique)
 {
     ProxyBase::Listener listener( msgId, seqNr, caller );
-    return mListenerList.addIfUnique( listener );
+    if (unique)
+    {
+        return mListenerList.addIfUnique(listener);
+    }
+    else
+    {
+        mListenerList.add(listener);
+        return true;
+    }
 }
 
 inline void ProxyBase::removeListener( unsigned int msgId, unsigned int seqNr, IENotificationEventConsumer* caller )
@@ -1117,5 +1164,14 @@ inline DispatcherThread & ProxyBase::getProxyDispatcherThread( void ) const
 {
     return mDispatcherThread;
 }
+
+#ifdef DEBUG
+
+inline unsigned int ProxyBase::getListenerCount(void) const
+{
+    return mListenerList.getSize();
+}
+
+#endif // DEBUG
 
 #endif  // AREG_COMPONENT_PROXYBASE_HPP

@@ -32,6 +32,7 @@ include $(AREG_EXAMPLES)/20_pubdatarate/Makefile
 include $(AREG_EXAMPLES)/21_pubunblock/Makefile
 include $(AREG_EXAMPLES)/22_pubsub/Makefile
 include $(AREG_EXAMPLES)/23_pubsubmix/Makefile
+include $(AREG_EXAMPLES)/24_pubsubmulti/Makefile
 
 examples:               \
     00_helloservice     \
@@ -56,6 +57,7 @@ examples:               \
     20_pubdatarate      \
     21_pubunblock		\
     22_pubsub           \
-    23_pubsubmix
+    23_pubsubmix        \
+    24_pubsubmulti
 
 .PHONY: examples
