@@ -1,18 +1,21 @@
 # Contribution
 
-We would be happy if you join the project or make feature suggestions. We need developers with following skills:
+We would be glad if you join AREG IoT SDK project or make feature suggestions. The project need people with following skills:
 
-1. Developers with good skills of C++17
-    - to continue migration to modern C++;
-    - to optimize logging;
-    - to implement logging service;
-    - to implement features from scratch;
+1. Any developers with C++17 skills to develop AREG Framework and services:
+    - Junior developers may start with unit test implementation. There are many open issues.
+    - Midlevel developers can take small tasks.
+    - Experienced developers can join to discuss design and implementation of complex features.
+    - Any bug discovery is welcomed, when report, please be precise describing how to reproduce.
+    - Any new unit test especially those, which discover bugs, are welcomed.
+2. Any develope with C# skills to develop UI Tools (see [`areg-sdk-toos`](https://github.com/aregtech/areg-sdk-tools/) repo).
+3. Developers with CMake and/or Makefile skills to optimize build tools.
+4. UI designers to improve UI tools.
+5. Technical writers to improve documentation.
 
-2. Developers with good skills of Electron (typeScript) or C# to develop UI tool.
+If you have these skills and have nothing against current license, please drop a message. Contributions in this repository are under the [Apache 2 License](http://www.apache.org/licenses/LICENSE-2.0.html).
 
-If you have these skills and have nothing against current license, please drop a message. 
-
-For free software, any contribution that you make to this repository will be under the Apache 2 License, as dictated by that [license](http://www.apache.org/licenses/LICENSE-2.0.html):
+If modify or create a file, please do not forget to specify your name (or nick-name) as an author / co-author. You may as well leave your contacts if you want.
 
 ```
 5. Submission of Contributions. Unless You explicitly state otherwise,
