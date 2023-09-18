@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:03:49 GMT+02:00
+ * Generated at     17.09.2023  00:33:56 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloService.
  *
  * \file            generated/src/HelloServiceClientBase.hpp
@@ -142,7 +142,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseHelloService
      **/
-    inline unsigned int requestHelloService( const String & client );
+    inline SequenceNumber requestHelloService( const String & client );
     /**
      * \brief   Overwrite to handle error of HelloService request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -227,7 +227,7 @@ protected:
     /**
      * \brief   Returns the current sequence number
      **/
-    inline unsigned int getCurrentSequenceNr( void ) const;
+    inline const SequenceNumber & getCurrentSequenceNr( void ) const;
 
     /**
      * \brief  Returns instance of proxy object.
@@ -250,7 +250,7 @@ private:
     /**
      * \brief   The counter of sequence number
      **/
-    unsigned int        mCurrSequenceNr;
+    SequenceNumber      mCurrSequenceNr;
     /**
      * \brief   Pointer of Proxy object providing communication
      **/
@@ -321,7 +321,7 @@ inline HelloServiceClientBase & HelloServiceClientBase::self( void )
     return (*this);
 }
 
-inline unsigned int HelloServiceClientBase::getCurrentSequenceNr( void ) const
+inline const SequenceNumber & HelloServiceClientBase::getCurrentSequenceNr( void ) const
 {
     return mCurrSequenceNr;
 }
@@ -360,7 +360,7 @@ inline const Version & HelloServiceClientBase::getServiceVersion( void ) const
  * Request calls
  ************************************************************************/
 
-inline unsigned int HelloServiceClientBase::requestHelloService( const String & client )
+inline SequenceNumber HelloServiceClientBase::requestHelloService( const String & client )
 {
     ASSERT(mProxy != nullptr);
     return mProxy->requestHelloService( static_cast<IENotificationEventConsumer &>(self()), client );

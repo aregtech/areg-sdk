@@ -88,7 +88,7 @@ public:
      * \param   stream  The streaming object, where the text message should be written.
      * \note    Every layout object should overwrite this message to make layout specific outputs.
      **/
-    virtual void logMessage( const NETrace::sLogMessageData & msgLog, IEOutStream & stream ) const = 0;
+    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Attribute
@@ -179,7 +179,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NETrace::sLogMessageData & msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -245,7 +245,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NETrace::sLogMessageData& msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -311,7 +311,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NETrace::sLogMessageData& msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -377,7 +377,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NETrace::sLogMessageData& msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -443,7 +443,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NETrace::sLogMessageData& msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -509,7 +509,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NETrace::sLogMessageData& msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -575,7 +575,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NETrace::sLogMessageData& msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -641,7 +641,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NETrace::sLogMessageData & msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -707,7 +707,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NETrace::sLogMessageData & msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -773,7 +773,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NETrace::sLogMessageData & msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -839,7 +839,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NETrace::sLogMessageData & msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -917,7 +917,7 @@ public:
      * \param   msgLog  The log message data structure that contains information to output message.
      * \param   stream  The streaming object, where the text message should be written.
      **/
-    virtual void logMessage( const NETrace::sLogMessageData & msgLog, IEOutStream & stream ) const override;
+    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variable

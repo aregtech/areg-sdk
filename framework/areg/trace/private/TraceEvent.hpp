@@ -57,11 +57,6 @@ public:
         , TraceSetDisableLogs           //!< Action to notify to stop logging
         , TraceSaveScopes               //!< Action to notify to save scope list
         , TraceLogMessage               //!< Action to output logging message
-        , TraceNetConnectService        //!< Action to take to perform network connection to logging service
-        , TraceNetDisconnectService     //!< Action to take to disconnect from logging service
-        , TraceNetConnectionLost        //!< Action to take when connection lost.
-        , TraceNetRegisterScopes        //!< Action to take to register log scopes.
-        , TraceNetReceivedData          //!< Action to take when received data from remote logging service.
     } eTraceAction;
 
     /**
@@ -199,11 +194,6 @@ inline const char * TraceEventData::getString( TraceEventData::eTraceAction acti
     CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceSetDisableLogs);
     CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceSaveScopes);
     CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceLogMessage);
-    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceNetConnectService);
-    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceNetDisconnectService);
-    CASE_MAKE_STRING( TraceEventData::eTraceAction::TraceNetConnectionLost );
-    CASE_MAKE_STRING( TraceEventData::eTraceAction::TraceNetRegisterScopes );
-    CASE_MAKE_STRING( TraceEventData::eTraceAction::TraceNetReceivedData );
     CASE_DEFAULT("ERR: Undefined TraceEventData::eTraceAction value!");
     }
 }

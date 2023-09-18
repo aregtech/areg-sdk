@@ -20,20 +20,17 @@
 #include "areg/trace/private/NetTcpLogger.hpp"
 #include "areg/trace/private/TraceManager.hpp"
 
-#include "areg/base/SharedBuffer.hpp"
+#include "areg/base/RemoteMessage.hpp"
 #include "areg/base/SynchObjects.hpp"
 
-NetTcpLogger::NetTcpLogger(LogConfiguration& tracerConfig)
-    : LoggerBase        (tracerConfig)
-    , IEThreadConsumer  ( )
+NetTcpLogger::NetTcpLogger(LogConfiguration & tracerConfig, DispatcherThread & dispatchThread)
+    : LoggerBase                    (tracerConfig)
+    , ServiceClientConnectionBase   ( NEService::COOKIE_LOGGER, static_cast<IEServiceConnectionConsumer &>(self()), static_cast<IERemoteMessageHandler &>(self()), dispatchThread)
+    , IEServiceConnectionConsumer   ( )
+    , IERemoteMessageHandler        ( )
 
-    , mSocket           ( )
+    , mIsEnabled        ( false )
     , mRingStack        ( NetTcpLogger::RING_STACK_MAX_SIZE, NECommon::eRingOverlap::ShiftOnOverlap )
-    , mHostIpAddr       ( )
-    , mConnectionState  ( eConnectionStates::StateInactive )
-    , mRecvThread       ( static_cast<IEThreadConsumer &>(self()), LOG_RECEIVE_THREAD_NAME )
-    , mEventExit        ( true, false )
-    , mLock             ( false )
 {
 }
 
@@ -42,37 +39,28 @@ bool NetTcpLogger::openLogger(void)
     Lock lock( mLock );
     bool result{ false };
 
-    if (mSocket.isValid() == false)
+    if (mClientConnection.isValid() == false)
     {
-        const LogConfiguration& logConfig   = getTraceConfiguration();
-        const TraceProperty& propTcpHost    = logConfig.getRemoteTcpHost();
-        const TraceProperty& propTcpPort    = logConfig.getRemoteTcpPort();
-        if (propTcpHost.isValid() && propTcpPort.isValid())
+        mIsEnabled = false;
+        if (mTracerConfiguration.isNetLoggingEnabled())
         {
-            String host(static_cast<const String&>(propTcpHost.getValue()));
-            uint16_t port(static_cast<const uint16_t>(propTcpPort.getValue()));
-
-            if (mSocket.createSocket(host, port))
+            const LogConfiguration & logConfig = getTraceConfiguration();
+            const TraceProperty & propTcpHost = logConfig.getRemoteTcpHost();
+            const TraceProperty & propTcpPort = logConfig.getRemoteTcpPort();
+            if (propTcpHost.isValid() && propTcpPort.isValid())
             {
-                mConnectionState = eConnectionStates::StateConnected;
-                result = true;
-                mRecvThread.createThread( NECommon::WAIT_INFINITE );
+                mIsEnabled = true;
+                String host(static_cast<const String &>(propTcpHost.getValue()));
+                uint16_t port(static_cast<const uint16_t>(propTcpPort.getValue()));
+                applyServiceConnectionData(host, port);
+                mLock.unlock();
+                result = connectServiceHost();
             }
-            else
-            {
-                OUTPUT_WARN( "Failed to establish TCP/IP connection with remote logging service." );
-                closeConnection( );
-            }
-        }
-        else
-        {
-            OUTPUT_DBG("Ignore to establish TCP/IP remote connection, no property is set.");
-            result = false;
         }
     }
     else
     {
-        result = true;
+        result = isConnectState();
     }
 
     return result;
@@ -80,147 +68,86 @@ bool NetTcpLogger::openLogger(void)
 
 void NetTcpLogger::closeLogger(void)
 {
-    Lock lock( mLock );
-
-    mEventExit.setEvent( );
-    _closeConnection( );
-    mRecvThread.shutdownThread( NECommon::WAIT_INFINITE );
-    mEventExit.resetEvent( );
-
-    while (mRingStack.isEmpty() == false)
-    {
-        NETrace::sLogMessage * header = mRingStack.popFirst();
-        delete header;
-    }
-
+    disconnectServiceHost();
     mRingStack.clear();
 }
 
 void NetTcpLogger::logMessage(const NETrace::sLogMessage& logMessage)
 {
-    if (mSocket.isValid())
+    if (mIsEnabled)
     {
-        if (logMessage.lmHeader.hdrCookieHost >= NEService::COOKIE_REMOTE_SERVICE)
+        RemoteMessage log(NETrace::messageLog(logMessage));
+
+        if (isConnectedState())
         {
-            if (mSocket.sendData(reinterpret_cast<const unsigned char*>(&logMessage), sizeof(NETrace::sLogMessage) ) == 0)
-            {
-                TraceManager::netConnectionLost( );
-            }
-        }
-        else if (logMessage.lmHeader.hdrCookieHost == NEService::COOKIE_ANY)
-        {
-            NETrace::sLogMessage* log = new NETrace::sLogMessage(logMessage);
-            mRingStack.pushLast(log);
+            sendMessage(log, Event::eEventPriority::EventPriorityNormal);
         }
         else
         {
-            ASSERT(false);
+            mRingStack.pushLast(log);
         }
-    }
-}
-
-void NetTcpLogger::writeData( const SharedBuffer & data )
-{
-    if ( mSocket.isValid( ) && (sendData(data) == false))
-    {
-        TraceManager::netConnectionLost( );
-    }
-}
-
-void NetTcpLogger::flushLogs(void)
-{
-    while (mRingStack.isEmpty() == false)
-    {
-        NETrace::sLogMessage* log = mRingStack.popFirst();
-        ASSERT(log != nullptr);
-        mSocket.sendData(reinterpret_cast<const unsigned char*>(log), sizeof(NETrace::sLogMessage));
-        delete log;
     }
 }
 
 bool NetTcpLogger::isLoggerOpened(void) const
 {
     Lock lock( mLock );
-    return (mConnectionState != eConnectionStates::StateInactive);
+    return isConnectedState();
 }
 
-bool NetTcpLogger::sendData(const SharedBuffer & data)
+RemoteMessage NetTcpLogger::createServiceConnectMessage( const ITEM_ID & /*source*/, const ITEM_ID & /*target*/) const
 {
-    const int size{ static_cast<int>(data.getSizeUsed()) };
-    return (mSocket.isValid() && (mSocket.sendData(data.getBuffer(), size) == size));
+    return NETrace::messageConnectLogService();
 }
 
-void NetTcpLogger::closeConnection( void )
+RemoteMessage NetTcpLogger::createServiceDisconnectMessage(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/) const
 {
-    Lock lock( mLock );
-    _closeConnection( );
+    return NETrace::messageDisconnectLogService();
 }
 
-void NetTcpLogger::setActive( bool isActive )
+void NetTcpLogger::connectedRemoteServiceChannel(const Channel & channel)
 {
-    Lock lock( mLock );
-    mConnectionState = eConnectionStates::StateActive;
-}
+    ASSERT(channel.isValid());
+    ASSERT(channel.getSource() == NEService::COOKIE_LOGGER);
+    ASSERT(channel.getCookie() >= NEService::COOKIE_REMOTE_SERVICE);
 
-bool NetTcpLogger::isActive( void ) const
-{
-    Lock lock( mLock );
-    return (mConnectionState == eConnectionStates::StateActive);
-}
+    mIsEnabled = true;
+    mChannel = channel;
+    mClientConnection.setCookie(channel.getCookie());
 
-void NetTcpLogger::setHostIpAddress( const String & ipAddr )
-{
-    mHostIpAddr = ipAddr;
-}
-
-inline void NetTcpLogger::_closeConnection( void )
-{
-    mConnectionState = eConnectionStates::StateInactive;
-    mHostIpAddr      = "";
-    mSocket.closeSocket( );
-}
-
-void NetTcpLogger::onThreadRuns( void )
-{
-    Lock checkExit( mEventExit, false );
-    bool lostConnection{ false };
-
-    while ( true )
+    while (mRingStack.isEmpty() == false)
     {
-        if ( checkExit.lock(NECommon::DO_NOT_WAIT) == false)
-        {
-            NETrace::sLogHeader logHeader{ };
-            int sizeReceived = mSocket.receiveData( reinterpret_cast<unsigned char *>(&logHeader), sizeof( NETrace::sLogHeader ) );
-
-            if ( sizeReceived <= 0 )
-            {
-                lostConnection = true;
-                break;
-            }
-            else
-            {
-                SharedBuffer data( logHeader.hdrDataLen + sizeof( logHeader ) );
-                data << logHeader;
-                unsigned char * buffer = data.getBuffer( ) + sizeof( logHeader );
-                if ( mSocket.receiveData( buffer, logHeader.hdrDataLen ) < static_cast<int>(logHeader.hdrDataLen) )
-                {
-                    lostConnection = true;
-                    break;
-                }
-
-                TraceManager::netReceivedData( data );
-            }
-        }
-        else
-        {
-            mEventExit.resetEvent( );
-            break;
-        }
-    };
-
-    if ( lostConnection && isLoggerOpened( ) )
-    {
-        closeConnection( );
-        TraceManager::netConnectionLost( );
+        RemoteMessage msg{ mRingStack.popFirst() };
+        msg.setSource(channel.getCookie());
+        sendMessage(msg, Event::eEventPriority::EventPriorityNormal);
     }
+}
+
+void NetTcpLogger::disconnectedRemoteServiceChannel(const Channel & channel)
+{
+    mIsEnabled = false;
+    mChannel.invalidate();
+    mClientConnection.setCookie(NEService::COOKIE_UNKNOWN);
+}
+
+void NetTcpLogger::lostRemoteServiceChannel(const Channel & channel)
+{
+    mChannel.invalidate();
+    mClientConnection.setCookie(NEService::COOKIE_UNKNOWN);
+}
+
+void NetTcpLogger::failedSendMessage(const RemoteMessage & msgFailed, Socket & whichTarget)
+{
+}
+
+void NetTcpLogger::failedReceiveMessage(Socket & whichSource)
+{
+}
+
+void NetTcpLogger::failedProcessMessage(const RemoteMessage & msgUnprocessed)
+{
+}
+
+void NetTcpLogger::processReceivedMessage(const RemoteMessage & msgReceived, Socket & whichSource)
+{
 }

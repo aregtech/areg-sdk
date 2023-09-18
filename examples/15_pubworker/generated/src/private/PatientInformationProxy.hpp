@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:04:51 GMT+02:00
+ * Generated at     17.09.2023  00:33:58 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PatientInformation.
  *
  * \file            generated/src/private/PatientInformationProxy.hpp
@@ -42,7 +42,7 @@ class PatientInformationResponseEvent;
 class PatientInformationProxy   : public ProxyBase
 {
     friend class PatientInformationClientBase;
-    
+
 private:
     //////////////////////////////////////////////////////////////////////////
     // PatientInformationProxy::PatientInformationServiceAvailableEvent class declaration
@@ -146,7 +146,7 @@ public:
  * Parameters
  ************************************************************************/
 /************************************************************************
- * Requests
+ * Requests.
  ************************************************************************/
 //////////////////////////////////////////////////////////////////////////
 // Operations.
@@ -254,7 +254,7 @@ protected:
      * \param   reason      Failure reason set by system
      * \param   seqNr       The sequence number of processing message.
      **/
-    virtual RemoteResponseEvent * createRemoteRequestFailedEvent( const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, unsigned int seqNr ) const override;
+    virtual RemoteResponseEvent * createRemoteRequestFailedEvent( const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, SequenceNumber seqNr ) const override;
 
     /**
      * \brief   Overwrite this method to create service available event to new instantiated clients.

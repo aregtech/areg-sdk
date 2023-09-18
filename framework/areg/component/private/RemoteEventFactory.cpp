@@ -195,7 +195,6 @@ bool RemoteEventFactory::createStreamFromEvent( RemoteMessage & stream, const St
                     stream.setMessageId( stubEvent->getRequestId() );
                     stream.setResult( NEMemory::MESSAGE_SUCCESS );
                     stream.setSequenceNr( stubEvent->getSequenceNumber() );
-                    stream.bufferCompletionFix();
                 }
             }
             else
@@ -219,7 +218,6 @@ bool RemoteEventFactory::createStreamFromEvent( RemoteMessage & stream, const St
                     stream.setMessageId( stubEvent->getRequestId() );
                     stream.setResult( NEMemory::MESSAGE_SUCCESS );
                     stream.setSequenceNr( stubEvent->getSequenceNumber() );
-                    stream.bufferCompletionFix();
                 }
             }
             else
@@ -243,7 +241,6 @@ bool RemoteEventFactory::createStreamFromEvent( RemoteMessage & stream, const St
                     stream.setMessageId( proxyEvent->getResponseId() );
                     stream.setResult( NEMemory::MESSAGE_SUCCESS );
                     stream.setSequenceNr( proxyEvent->getSequenceNumber() );
-                    stream.bufferCompletionFix();
                 }
             }
             else

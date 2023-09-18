@@ -32,7 +32,7 @@ ResponseEvent::ResponseEvent( const ProxyAddress & proxyTarget
                             , NEService::eResultType result
                             , unsigned int respId
                             , Event::eEventType eventType
-                            , unsigned int seqNr  /*= NEService::SEQUENCE_NUMBER_NOTIFY*/ )
+                            , SequenceNumber seqNr  /*= NEService::SEQUENCE_NUMBER_NOTIFY*/ )
     : ServiceResponseEvent(proxyTarget, result, respId, eventType, seqNr)
     , mData (respId, Event::isExternal(eventType) ? EventDataStream::eEventData::EventDataExternal : EventDataStream::eEventData::EventDataInternal)
 {
@@ -43,7 +43,7 @@ ResponseEvent::ResponseEvent( const EventDataStream & args
                             , NEService::eResultType result
                             , unsigned int respId
                             , Event::eEventType eventType
-                            , unsigned int seqNr  /*= NEService::SEQUENCE_NUMBER_NOTIFY*/
+                            , SequenceNumber seqNr  /*= NEService::SEQUENCE_NUMBER_NOTIFY*/
                             , const String & name /*= String::getEmptyString()*/ )
     : ServiceResponseEvent(proxyTarget, result, respId, eventType, seqNr)
     , mData (respId, args, name)
@@ -91,7 +91,7 @@ IMPLEMENT_RUNTIME_EVENT(LocalResponseEvent, ResponseEvent)
 LocalResponseEvent::LocalResponseEvent( const ProxyAddress & proxyTarget
                                       , NEService::eResultType result
                                       , unsigned int respId
-                                      , unsigned int seqNr    /*= NEService::SEQUENCE_NUMBER_NOTIFY*/)
+                                      , SequenceNumber seqNr    /*= NEService::SEQUENCE_NUMBER_NOTIFY*/)
     : ResponseEvent(proxyTarget, result, respId, Event::eEventType::EventLocalServiceResponse, seqNr)
 {
 }
@@ -100,7 +100,7 @@ LocalResponseEvent::LocalResponseEvent( const EventDataStream & args
                                       , const ProxyAddress & proxyTarget
                                       , NEService::eResultType result
                                       , unsigned int respId
-                                      , unsigned int seqNr  /*= NEService::SEQUENCE_NUMBER_NOTIFY*/
+                                      , SequenceNumber seqNr  /*= NEService::SEQUENCE_NUMBER_NOTIFY*/
                                       , const String & name /*= String::getEmptyString()*/ )
     : ResponseEvent(args, proxyTarget, result, respId, Event::eEventType::EventLocalServiceResponse, seqNr, name)
 {
@@ -131,7 +131,7 @@ IMPLEMENT_RUNTIME_EVENT(RemoteResponseEvent, ResponseEvent)
 RemoteResponseEvent::RemoteResponseEvent( const ProxyAddress & proxyTarget
                                         , NEService::eResultType result
                                         , unsigned int respId
-                                        , unsigned int seqNr  /*= NEService::SEQUENCE_NUMBER_NOTIFY*/)
+                                        , SequenceNumber seqNr  /*= NEService::SEQUENCE_NUMBER_NOTIFY*/)
     : ResponseEvent(proxyTarget, result, respId, Event::eEventType::EventRemoteServiceResponse, seqNr)
 {
     ASSERT(getData().getDataStream().isExternalDataStream());
@@ -141,7 +141,7 @@ RemoteResponseEvent::RemoteResponseEvent( const EventDataStream & args
                                         , const ProxyAddress & proxyTarget
                                         , NEService::eResultType result
                                         , unsigned int respId
-                                        , unsigned int seqNr  /*= NEService::SEQUENCE_NUMBER_NOTIFY*/
+                                        , SequenceNumber seqNr  /*= NEService::SEQUENCE_NUMBER_NOTIFY*/
                                         , const String & name /*= String::getEmptyString()*/ )
     : ResponseEvent(args, proxyTarget, result, respId, Event::eEventType::EventRemoteServiceResponse, seqNr, name)
 {

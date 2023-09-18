@@ -1,5 +1,5 @@
-#ifndef AREG_IPC_PRIVATE_SERVICECLIENTCONNECTION_HPP
-#define AREG_IPC_PRIVATE_SERVICECLIENTCONNECTION_HPP
+#ifndef AREG_IPC_SERVICECLIENTCONNECTIONBASE_HPP
+#define AREG_IPC_SERVICECLIENTCONNECTIONBASE_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,7 +9,7 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        areg/ipc/private/ServiceClientConnection.hpp
+ * \file        areg/ipc/private/ServiceClientConnectionBase.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
  * \brief       AREG Platform, Service client connection 
@@ -19,16 +19,12 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/component/DispatcherThread.hpp"
-#include "areg/component/IERemoteEventConsumer.hpp"
 #include "areg/ipc/IEServiceConnectionProvider.hpp"
-#include "areg/ipc/IEServiceRegisterProvider.hpp"
-#include "areg/ipc/IERemoteMessageHandler.hpp"
 #include "areg/ipc/ServiceEventConsumerBase.hpp"
 
+#include "areg/ipc/ClientConnection.hpp"
 #include "areg/ipc/private/ClientReceiveThread.hpp"
 #include "areg/ipc/private/ClientSendThread.hpp"
-#include "areg/ipc/private/ClientConnection.hpp"
 #include "areg/ipc/NERemoteService.hpp"
 #include "areg/component/Channel.hpp"
 #include "areg/component/Timer.hpp"
@@ -39,34 +35,29 @@
  * Dependencies
  ************************************************************************/
 class IEServiceConnectionConsumer;
-class IEServiceRegisterConsumer;
-
+class IERemoteMessageHandler;
 //////////////////////////////////////////////////////////////////////////
-// ServiceClientConnection class declaration
+// ServiceClientConnectionBase class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
  * \brief   The connected client servicing object to handle connections,
  *          to read and send message, to dispatch messages and
  *          communicate with service manager.
  **/
-class ServiceClientConnection   : public    IEServiceConnectionProvider
-                                , public    IEServiceRegisterProvider
-                                , private   DispatcherThread
-                                , private   IERemoteMessageHandler
-                                , private   IERemoteEventConsumer
-                                , private   IEServiceEventConsumerBase
+class ServiceClientConnectionBase   : public    IEServiceConnectionProvider
+                                    , public    IEServiceEventConsumerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants
 //////////////////////////////////////////////////////////////////////////
-private:
+protected:
     /**
      * \brief   Supported connection type. It is TCP/IP connection
      **/
     static constexpr    NERemoteService::eServiceConnection   CONNECT_TYPE  = NERemoteService::eServiceConnection::ConnectionTcpip;
 
     /**
-     * \brief   ServiceClientConnection::eConnectionState
+     * \brief   ServiceClientConnectionBase::eConnectionState
      *          Defines connection state values
      **/
     enum class eConnectionState : unsigned short
@@ -80,9 +71,9 @@ private:
     };
 
     /**
-     * \brief   Returns the string value of ServiceClientConnection::eConnectionState type
+     * \brief   Returns the string value of ServiceClientConnectionBase::eConnectionState type
      **/
-    static inline const char * getString(ServiceClientConnection::eConnectionState val);
+    static inline const char * getString(ServiceClientConnectionBase::eConnectionState val);
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -91,13 +82,12 @@ public:
     /**
      * \brief   Initializes client servicing object, sets remote service consumer object.
      * \param   connectionConsumer  The instance of remote service connection consumer object to handle service connection notifications.
-     * \param   registerConsumer    The instance of remote service registration consumer to handle service register notification.
      **/
-    ServiceClientConnection(IEServiceConnectionConsumer& connectionConsumer, IEServiceRegisterConsumer & registerConsumer);
+    ServiceClientConnectionBase(const ITEM_ID & target, IEServiceConnectionConsumer& connectionConsumer, IERemoteMessageHandler & messageHandler, DispatcherThread & messageDispatcher);
     /**
      * \brief   Destructor
      **/
-    virtual ~ServiceClientConnection( void ) = default;
+    virtual ~ServiceClientConnectionBase( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attribute
@@ -106,7 +96,7 @@ public:
     /**
      * \brief   Returns the value of cookie set in connection.
      **/
-    ITEM_ID getConnectionCookie( void ) const;
+    const ITEM_ID & getConnectionCookie( void ) const;
 
     /**
      * \brief   Each time querying the bytes sent via network connection returns
@@ -207,48 +197,26 @@ protected:
      **/
     virtual void enableRemoteServicing( bool enable ) override;
 
-/************************************************************************/
-// IEServiceRegisterProvider interface overrides
-/************************************************************************/
+    /**
+     * \brief   Creates the service connect request message, sets the message target and the source.
+     * \param   source  The ID of the source that sends connection message request.
+     * \param   target  The ID of the target to send the connection message request.
+     * \return  Returns the created message for remote communication.
+     **/
+    virtual RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target ) const override;
 
     /**
-     * \brief   Call to register the remote service provider in the system and connect with service consumers.
-     *          When service provider is registered, the service provider and all waiting service consumers
-     *          receive appropriate connection notifications.
-     * \param   stubService     The address of service provider to register in the system.
-     * \return  Returns true if succeeded registration.
+     * \brief   Creates the service disconnect request message, sets the message target and the source.
+     * \param   source  The ID of the source that sends the disconnect message request.
+     * \param   target  The ID of the target to send the disconnection message request.
+     * \return  Returns the created message for remote communication.
      **/
-    virtual bool registerServiceProvider( const StubAddress & stubService ) override;
-
-    /**
-     * \brief   Call to unregister the service provider from the system and disconnect service consumers.
-     *          All connected service consumers automatically receive disconnect notifications.
-     * \param   stubService     The address of service provider to unregister in the system.
-     * \param   reason          The reason to unregister and disconnect the service provider.
-     **/
-    virtual void unregisterServiceProvider( const StubAddress & stubService, const NEService::eDisconnectReason reason ) override;
-
-    /**
-     * \brief   Call to register the remote service consumer in the system and connect to service provider.
-     *          If the service provider is already available, the service consumer and the service provider
-     *          receive a connection notification.
-     * \param   proxyService    The address of the service consumer to register in system.
-     * \return  Returns true if registration process started with success. Otherwise, it returns false.
-     **/
-    virtual bool registerServiceConsumer( const ProxyAddress & proxyService ) override;
-
-    /**
-     * \brief   Call to unregister the service consumer from the system and disconnect service provider.
-     *          Both, the service provider and the service consumer receive appropriate disconnect notification.
-     * \param   proxyService    The address of the service consumer to unregister from the system.
-     * \param   reason          The reason to unregister and disconnect the service consumer.
-     **/
-    virtual void unregisterServiceConsumer( const ProxyAddress & proxyService, const NEService::eDisconnectReason reason ) override;
+    virtual RemoteMessage createServiceDisconnectMessage( const ITEM_ID & source, const ITEM_ID & target ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
-private:
+protected:
 /************************************************************************/
 // IEServiceEventConsumerBase interface overrides
 /************************************************************************/
@@ -305,88 +273,51 @@ private:
      **/
     virtual void onServiceMessageSend(const RemoteMessage& msgSend) override;
 
-/************************************************************************/
-// IERemoteMessageHandler interface overrides
-/************************************************************************/
+//////////////////////////////////////////////////////////////////////////
+// Protected operations and attributes
+//////////////////////////////////////////////////////////////////////////
+protected:
+    /**
+     * \brief   Returns true if client socket connection is started.
+     **/
+    inline bool isConnectionStarted(void) const;
 
     /**
-     * \brief   Triggered, when failed to send message.
-     * \param   msgFailed   The message, which failed to send.
-     * \param   whichTarget The target socket to send message.
-     **/
-    virtual void failedSendMessage( const RemoteMessage & msgFailed, Socket & whichTarget ) override;
+     * \brief   Call to send an event with the command to process.
+     * \param   cmd         The command to send and process.
+     * \param   eventPrio   The priority of the event. By default, the priority is normal.
+     */
+    inline void sendCommand(ServiceEventData::eServiceEventCommands cmd, Event::eEventPriority eventPrio = Event::eEventPriority::EventPriorityNormal );
 
     /**
-     * \brief   Triggered, when failed to receive message.
-     * \param   whichSource Indicates the failed source socket to receive message.
+     * \brief   Queues the message for sending
+     * \param   data        The data of the message.
+     * \param   eventPrio   The priority of the message to set.
      **/
-    virtual void failedReceiveMessage( Socket & whichSource ) override;
+    inline bool sendMessage(const RemoteMessage & data, Event::eEventPriority eventPrio = Event::eEventPriority::EventPriorityNormal );
 
     /**
-     * \brief   Triggered, when failed to process message, i.e. the target for message processing was not found.
-     *          In case of request message processing, the source should receive error notification.
-     * \param   msgUnprocessed  Unprocessed message data.
+     * \brief   Called to start client socket connection. Returns true if connected.
      **/
-    virtual void failedProcessMessage( const RemoteMessage & msgUnprocessed ) override;
-
+    bool startConnection( void );
     /**
-     * \brief   Triggered, when need to process received message.
-     * \param   msgReceived Received message to process.
-     * \param   whichSource The source socket, which received message.
+     * \brief   Called when connection is lost and should be immediately canceled.
      **/
-    virtual void processReceivedMessage( const RemoteMessage & msgReceived, Socket & whichSource ) override;
-
-/************************************************************************/
-// DispatcherThread overrides
-/************************************************************************/
-
+    void cancelConnection( void );
     /**
-     * \brief   Call to enable or disable event dispatching threads to receive events.
-     *          Override if need to make event dispatching preparation job.
-     * \param   isReady     The flag to indicate whether the dispatcher is ready for events.
+     * \brief   Sets client socket connection state.
+     * \param   newState    The connection state to set.
      **/
-    virtual void readyForEvents( bool isReady ) override;
-
-/************************************************************************/
-// IEEventRouter interface overrides
-/************************************************************************/
-
+    inline void setConnectionState( ServiceClientConnectionBase::eConnectionState newState );
     /**
-     * \brief	Posts event and delivers to its target.
-     *          Since the Dispatcher Thread is a Base object for
-     *          Worker and Component threads, it does nothing
-     *          and only destroys event object without processing.
-     *          Override this method or use Worker / Component thread.
-     * \param	eventElem	Event object to post
-     * \return	In this class it always returns true.
+     * \brief   Returns current client socket connection state.
      **/
-    virtual bool postEvent( Event & eventElem ) override;
-
-/************************************************************************/
-// IERemoteEventConsumer interface overrides
-/************************************************************************/
-
+    inline ServiceClientConnectionBase::eConnectionState getConnectionState( void ) const;
     /**
-     * \brief   Triggered when the Stub receives remote request event to process.
-     * \param   requestEvent        The remote request event to be processed.
+     * \brief   Call to send the disconnect event. It disconnects the socket  and exits the thread.
+     * \param   eventPrio   The priority of set to the event.
      **/
-    virtual void processRemoteRequestEvent( RemoteRequestEvent & requestEvent ) override;
-
-    /**
-     * \brief   Triggered when the Stub receives remote notification request event to process.
-     *          For example, send by Proxy and processed by Stub when need to start or stop
-     *          sending attribute update notifications.
-     * \param   requestNotifyEvent  The remote notification request event to be processed.
-     **/
-    virtual void processRemoteNotifyRequestEvent( RemoteNotifyRequestEvent & requestNotifyEvent ) override;
-
-    /**
-     * \brief   Triggered when the Stub receives remote response request event to process.
-     *          For example, send by Proxy and processed by Stub when need to start or stop
-     *          to subscribe on information or response sent by Stub.
-     * \param   requestNotifyEvent  The remote response request event to be processed.
-     **/
-    virtual void processRemoteResponseEvent( RemoteResponseEvent & responseEvent ) override;
+    inline void disconnectService( Event::eEventPriority eventPrio );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden operations and attributes
@@ -394,53 +325,15 @@ private:
 private:
 
     /**
-     * \brief   Called to start client socket connection. Returns true if connected.
-     **/
-    inline bool _startConnection( void );
-    /**
-     * \brief   Called when connection is lost and should be immediately canceled.
-     **/
-    inline void _cancelConnection( void );
-    /**
-     * \brief   Returns true if client socket connection is started.
-     **/
-    inline bool _isStarted( void ) const;
-    /**
-     * \brief   Sets client socket connection state.
-     * \param   newState    The connection state to set.
-     **/
-    inline void _setConnectionState( ServiceClientConnection::eConnectionState newState );
-    /**
-     * \brief   Returns current client socket connection state.
-     **/
-    inline ServiceClientConnection::eConnectionState _getConnectionState( void ) const;
-    /**
-     * \brief   Call to send an event with the command to process.
-     * \param   cmd         The command to send and process.
-     * \param   eventPrio   The priority of the event. By default, the priority is normal.
-     */
-    inline void _sendCommand(ServiceEventData::eServiceEventCommands cmd, Event::eEventPriority eventPrio = Event::eEventPriority::EventPriorityNormal );
-    /**
-     * \brief   Queues the message for sending
-     * \param   data        The data of the message.
-     * \param   eventPrio   The priority of the message to set.
-     **/
-    inline bool _sendMessage(const RemoteMessage & data, Event::eEventPriority eventPrio = Event::eEventPriority::EventPriorityNormal );
-    /**
-     * \brief   Call to send the disconnect event. It disconnects the socket  and exits the thread.
-     * \param   eventPrio   The priority of set to the event.
-     **/
-    inline void _disconnectService( Event::eEventPriority eventPrio );
-
-    /**
      * \brief   Returns instance of client servicing object.
      **/
-    inline ServiceClientConnection & self( void );
+    inline ServiceClientConnectionBase & self( void );
 
 //////////////////////////////////////////////////////////////////////////
-// Member variables
+// Protected member variables
 //////////////////////////////////////////////////////////////////////////
-private:
+protected:
+    const ITEM_ID                   mTarget;
     /**
      * \brief   Client connection object
      **/
@@ -449,10 +342,46 @@ private:
      * \brief   Instance of remote servicing consumer to handle message.
      **/
     IEServiceConnectionConsumer &   mConnectionConsumer;
+
     /**
-     * \brief   The instance of service register consumer.
+     * \brief   The thread that makes message dispatching.
      **/
-    IEServiceRegisterConsumer &     mRegisterConsumer;
+    DispatcherThread &              mMessageDispatcher;
+
+    /**
+     * \brief   Flag, indicates whether the remote servicing is enabled or not.
+     **/
+    bool                            mIsServiceEnabled;
+
+    /**
+     * \brief   The path of configuration file name.
+     **/
+    String                          mConfigFile;
+
+    /**
+     * \brief   The connection channel.
+     **/
+    Channel                         mChannel;
+
+    /**
+     * \brief   The sate of connection
+     **/
+    eConnectionState                mConnectionState;
+
+    /**
+     * \brief   The Client Service event consumer
+     **/
+    ServiceClientEventConsumer      mEventConsumer;
+
+    /**
+     * \brief   Data access synchronization object
+     **/
+    mutable ResourceLock            mLock;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden member variables
+//////////////////////////////////////////////////////////////////////////
+private:
     /**
      * \brief   Connection retry timer object.
      **/
@@ -466,96 +395,114 @@ private:
      **/
     ClientSendThread                mThreadSend;
     /**
-     * \brief   Flag, indicates whether the remote servicing is enabled or not.
-     **/
-    bool                            mIsServiceEnabled;
-    /**
-     * \brief   The path of configuration file name.
-     **/
-    String                          mConfigFile;
-    /**
-     * \brief   The connection channel.
-     **/
-    Channel                         mChannel;
-    /**
-     * \brief   The sate of connection
-     **/
-    eConnectionState                mConnectionState;
-    /**
-     * \brief   The Client Service event consumer
-     **/
-    ServiceClientEventConsumer      mEventConsumer;
-    /**
      * \brief   The Client Service event consumer
      **/
     ReconnectTimerConsumer          mTimerConsumer;
-    /**
-     * \brief   Data access synchronization object
-     **/
-    mutable ResourceLock            mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
-    ServiceClientConnection( void ) = delete;
-    DECLARE_NOCOPY_NOMOVE( ServiceClientConnection );
+    ServiceClientConnectionBase( void ) = delete;
+    DECLARE_NOCOPY_NOMOVE( ServiceClientConnectionBase );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// ServiceClientConnection class inline methods implementation
+// ServiceClientConnectionBase class inline methods implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline ServiceClientConnection & ServiceClientConnection::self( void )
+inline ServiceClientConnectionBase & ServiceClientConnectionBase::self( void )
 {
     return (*this);
 }
 
-inline ITEM_ID ServiceClientConnection::getConnectionCookie( void ) const
+inline const ITEM_ID & ServiceClientConnectionBase::getConnectionCookie( void ) const
 {
     return mClientConnection.getCookie();
 }
 
-inline uint32_t ServiceClientConnection::queryBytesSent( void )
+inline uint32_t ServiceClientConnectionBase::queryBytesSent( void )
 {
     return mThreadSend.extractDataSend();
 }
 
-inline uint32_t ServiceClientConnection::queryBytesReceived( void )
+inline uint32_t ServiceClientConnectionBase::queryBytesReceived( void )
 {
     return mThreadReceive.extractDataReceive();
 }
 
-inline bool ServiceClientConnection::isConnectState( void ) const
+inline bool ServiceClientConnectionBase::isConnectState( void ) const
 {
-    return (static_cast<uint16_t>(mConnectionState) & static_cast<uint16_t>(ServiceClientConnection::eConnectionState::ConnectState));
+    return (static_cast<uint16_t>(mConnectionState) & static_cast<uint16_t>(ServiceClientConnectionBase::eConnectionState::ConnectState));
 }
 
-inline bool ServiceClientConnection::isConnectedState( void ) const
+inline bool ServiceClientConnectionBase::isConnectedState( void ) const
 {
-    return (mConnectionState == ServiceClientConnection::eConnectionState::ConnectionStarted);
+    return (mConnectionState == ServiceClientConnectionBase::eConnectionState::ConnectionStarted);
 }
 
-inline bool ServiceClientConnection::isDisconnectState( void ) const
+inline bool ServiceClientConnectionBase::isDisconnectState( void ) const
 {
-    return (static_cast<uint16_t>(mConnectionState) & static_cast<uint16_t>(ServiceClientConnection::eConnectionState::DisconnectState));
+    return (static_cast<uint16_t>(mConnectionState) & static_cast<uint16_t>(ServiceClientConnectionBase::eConnectionState::DisconnectState));
 }
 
-inline const char * ServiceClientConnection::getString(ServiceClientConnection::eConnectionState val)
+inline const char * ServiceClientConnectionBase::getString(ServiceClientConnectionBase::eConnectionState val)
 {
     switch (val)
     {
-    case ServiceClientConnection::eConnectionState::ConnectionStopped:
-        return "ServiceClientConnection::ConnectionStopped";
-    case ServiceClientConnection::eConnectionState::ConnectionStarting:
-        return "ServiceClientConnection::ConnectionStarting";
-    case ServiceClientConnection::eConnectionState::ConnectionStarted:
-        return "ServiceClientConnection::ConnectionStarted";
-    case ServiceClientConnection::eConnectionState::ConnectionStopping:
-        return "ServiceClientConnection::ConnectionStopping";
+    case ServiceClientConnectionBase::eConnectionState::ConnectionStopped:
+        return "ServiceClientConnectionBase::ConnectionStopped";
+    case ServiceClientConnectionBase::eConnectionState::ConnectionStarting:
+        return "ServiceClientConnectionBase::ConnectionStarting";
+    case ServiceClientConnectionBase::eConnectionState::ConnectionStarted:
+        return "ServiceClientConnectionBase::ConnectionStarted";
+    case ServiceClientConnectionBase::eConnectionState::ConnectionStopping:
+        return "ServiceClientConnectionBase::ConnectionStopping";
     default:
-        return "ERR: Invalid value of ServiceClientConnection::eConnectionState type";
+        return "ERR: Invalid value of ServiceClientConnectionBase::eConnectionState type";
     }
 }
 
-#endif  // AREG_IPC_PRIVATE_SERVICECLIENTCONNECTION_HPP
+inline bool ServiceClientConnectionBase::isConnectionStarted(void) const
+{
+    ITEM_ID cookie = mClientConnection.getCookie();
+    return (mClientConnection.isValid() && (cookie != NEService::COOKIE_LOCAL) && (cookie != NEService::COOKIE_UNKNOWN));
+}
+
+inline void ServiceClientConnectionBase::setConnectionState(const ServiceClientConnectionBase::eConnectionState newState)
+{
+    mConnectionState = newState;
+}
+
+inline ServiceClientConnectionBase::eConnectionState ServiceClientConnectionBase::getConnectionState(void) const
+{
+    return mConnectionState;
+}
+
+inline void ServiceClientConnectionBase::sendCommand( ServiceEventData::eServiceEventCommands cmd
+                                                    , Event::eEventPriority eventPrio /*= Event::eEventPriority::EventPriorityNormal*/ )
+{
+    ServiceClientEvent::sendEvent( ServiceEventData( cmd )
+                                 , static_cast<IEServiceClientEventConsumer &>(mEventConsumer)
+                                 , mMessageDispatcher
+                                 , eventPrio );
+}
+
+inline bool ServiceClientConnectionBase::sendMessage(const RemoteMessage & data, Event::eEventPriority eventPrio /*= Event::eEventPriority::EventPriorityNormal*/ )
+{
+    return SendMessageEvent::sendEvent( SendMessageEventData(data)
+                                      , static_cast<IESendMessageEventConsumer &>(mThreadSend)
+                                      , static_cast<DispatcherThread &>(mThreadSend)
+                                      , eventPrio);
+}
+
+inline void ServiceClientConnectionBase::disconnectService( Event::eEventPriority eventPrio )
+{
+    SendMessageEvent::sendEvent( SendMessageEventData()
+                               , static_cast<IESendMessageEventConsumer &>(mThreadSend)
+                               , static_cast<DispatcherThread &>(mThreadSend)
+                               , eventPrio );
+}
+
+
+#endif  // AREG_IPC_SERVICECLIENTCONNECTIONBASE_HPP

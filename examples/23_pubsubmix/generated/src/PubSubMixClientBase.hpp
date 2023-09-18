@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     31.08.2023  12:34:15 GMT+02:00
+ * Generated at     17.09.2023  00:34:02 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PubSubMix.
  *
  * \file            generated/src/PubSubMixClientBase.hpp
@@ -310,7 +310,7 @@ protected:
     /**
      * \brief   Returns the current sequence number
      **/
-    inline unsigned int getCurrentSequenceNr( void ) const;
+    inline const SequenceNumber & getCurrentSequenceNr( void ) const;
 
     /**
      * \brief  Returns instance of proxy object.
@@ -333,7 +333,7 @@ private:
     /**
      * \brief   The counter of sequence number
      **/
-    unsigned int        mCurrSequenceNr;
+    SequenceNumber      mCurrSequenceNr;
     /**
      * \brief   Pointer of Proxy object providing communication
      **/
@@ -404,7 +404,7 @@ inline PubSubMixClientBase & PubSubMixClientBase::self( void )
     return (*this);
 }
 
-inline unsigned int PubSubMixClientBase::getCurrentSequenceNr( void ) const
+inline const SequenceNumber & PubSubMixClientBase::getCurrentSequenceNr( void ) const
 {
     return mCurrSequenceNr;
 }

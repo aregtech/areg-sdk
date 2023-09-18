@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  02:59:03 GMT+02:00
+ * Generated at     17.09.2023  00:33:56 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/HelloWorldClientBase.hpp
@@ -142,7 +142,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseHelloWorld
      **/
-    inline unsigned int requestHelloWorld( const String & roleName );
+    inline SequenceNumber requestHelloWorld( const String & roleName );
     /**
      * \brief   Overwrite to handle error of HelloWorld request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -260,7 +260,7 @@ protected:
     /**
      * \brief   Returns the current sequence number
      **/
-    inline unsigned int getCurrentSequenceNr( void ) const;
+    inline const SequenceNumber & getCurrentSequenceNr( void ) const;
 
     /**
      * \brief  Returns instance of proxy object.
@@ -283,7 +283,7 @@ private:
     /**
      * \brief   The counter of sequence number
      **/
-    unsigned int        mCurrSequenceNr;
+    SequenceNumber      mCurrSequenceNr;
     /**
      * \brief   Pointer of Proxy object providing communication
      **/
@@ -354,7 +354,7 @@ inline HelloWorldClientBase & HelloWorldClientBase::self( void )
     return (*this);
 }
 
-inline unsigned int HelloWorldClientBase::getCurrentSequenceNr( void ) const
+inline const SequenceNumber & HelloWorldClientBase::getCurrentSequenceNr( void ) const
 {
     return mCurrSequenceNr;
 }
@@ -393,7 +393,7 @@ inline const Version & HelloWorldClientBase::getServiceVersion( void ) const
  * Request calls
  ************************************************************************/
 
-inline unsigned int HelloWorldClientBase::requestHelloWorld( const String & roleName )
+inline SequenceNumber HelloWorldClientBase::requestHelloWorld( const String & roleName )
 {
     ASSERT(mProxy != nullptr);
     return mProxy->requestHelloWorld( static_cast<IENotificationEventConsumer &>(self()), roleName );

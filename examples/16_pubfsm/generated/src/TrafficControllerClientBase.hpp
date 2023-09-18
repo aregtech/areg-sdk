@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:05:04 GMT+02:00
+ * Generated at     17.09.2023  00:34:00 GMT+02:00
  *                  Create by AREG SDK code generator tool from source TrafficController.
  *
  * \file            generated/src/TrafficControllerClientBase.hpp
@@ -308,7 +308,7 @@ protected:
     /**
      * \brief   Returns the current sequence number
      **/
-    inline unsigned int getCurrentSequenceNr( void ) const;
+    inline const SequenceNumber & getCurrentSequenceNr( void ) const;
 
     /**
      * \brief  Returns instance of proxy object.
@@ -331,7 +331,7 @@ private:
     /**
      * \brief   The counter of sequence number
      **/
-    unsigned int        mCurrSequenceNr;
+    SequenceNumber      mCurrSequenceNr;
     /**
      * \brief   Pointer of Proxy object providing communication
      **/
@@ -402,7 +402,7 @@ inline TrafficControllerClientBase & TrafficControllerClientBase::self( void )
     return (*this);
 }
 
-inline unsigned int TrafficControllerClientBase::getCurrentSequenceNr( void ) const
+inline const SequenceNumber & TrafficControllerClientBase::getCurrentSequenceNr( void ) const
 {
     return mCurrSequenceNr;
 }

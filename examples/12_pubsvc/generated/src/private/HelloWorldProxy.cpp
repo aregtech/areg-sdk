@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:04:14 GMT+02:00
+ * Generated at     17.09.2023  00:33:57 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/private/HelloWorldProxy.hpp
@@ -107,7 +107,7 @@ RemoteResponseEvent * HelloWorldProxy::createRemoteResponseEvent(const IEInStrea
     return static_cast<RemoteResponseEvent *>( DEBUG_NEW HelloWorldResponseEvent(stream) );
 }
 
-RemoteResponseEvent * HelloWorldProxy::createRemoteRequestFailedEvent(const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, unsigned int seqNr) const
+RemoteResponseEvent * HelloWorldProxy::createRemoteRequestFailedEvent(const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, SequenceNumber seqNr) const
 {
     return static_cast<RemoteResponseEvent *>( DEBUG_NEW HelloWorldResponseEvent( addrProxy, reason, msgId, seqNr ) );
 }
@@ -134,7 +134,7 @@ void HelloWorldProxy::unregisterServiceListeners( void )
  * Requests.
  ************************************************************************/
 
-unsigned int HelloWorldProxy::requestHelloWorld( IENotificationEventConsumer & caller, const String & roleName )
+SequenceNumber HelloWorldProxy::requestHelloWorld( IENotificationEventConsumer & caller, const String & roleName )
 {
     static const NEHelloWorld::eMessageIDs msgId = NEHelloWorld::eMessageIDs::MsgId_requestHelloWorld;
     EventDataStream args(EventDataStream::eEventData::EventDataExternal);

@@ -103,61 +103,6 @@ private:
     void _traceLogMessage( const SharedBuffer & data );
 
     /**
-     * \brief   Sends connect request message to the remote logging service.
-     **/
-    void _traceNetConnectService( void );
-
-    /**
-     * \brief   Sends disconnect request message to the remote logging service.
-     **/
-    void _traceNetDisconnectService( void );
-
-    /**
-     * \brief   Sends connection lost event to reconnect again.
-     **/
-    void _traceNetConnectionLost( void );
-
-    /**
-     * \brief   Sends message to register logs at remote logging service.
-     **/
-    void _traceNetRegisterScopes( void );
-
-    /**
-     * \brief   Sends empty list of scopes and scope 'set' action to reset the list of scopes on the service side.
-     **/
-    bool _traceNetRegisterScopesStart( void );
-
-    /**
-     * \brief   Sends empty list of scopes and scope 'no action' action to notify the end of scope list.
-     **/
-    bool _traceNetRegisterScopesEnd( void );
-
-    /**
-     * \brief   Received data from remote logging service, which should be processed.
-     * \param   stream  The data, which first is converted into type NETrace::sLogCommand
-     *                  to figure out the information of 'NETrace::eLogCommands'.
-     **/
-    void _traceNetReceivedData( const SharedBuffer & stream );
-
-    /**
-     * \brief   Called when receive the response from remote logging service.
-     * \param   cmdData     The command data received from remote logging service.
-     * \param   stream      The streaming object where the data is serialized.
-     *                      Depending on the command, the stream object may contain
-     *                      additional information or no information at all.
-     **/
-    void _traceNetResponseData( const NETrace::sLogCommandData & cmdData, const SharedBuffer & stream );
-
-    /**
-     * \brief   Called when receive the notification from remote logging service.
-     * \param   cmdData     The command data received from remote logging service.
-     * \param   stream      The streaming object where the data is serialized.
-     *                      Depending on the command, the stream object may contain
-     *                      additional information or no information at all.
-     **/
-    void _traceNetNotifyData( const NETrace::sLogCommandData & cmdData, const SharedBuffer & stream );
-
-    /**
      * \brief   Changes the priority of the scopes. The streaming object contains the list of scopes
      *          with ID and priority to change. Each scope entry can be either a single scope
      *          or scope group. In case of scope group, the scope ID is ignored (should be 0).

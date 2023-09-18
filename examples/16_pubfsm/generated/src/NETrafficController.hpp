@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:05:04 GMT+02:00
+ * Generated at     17.09.2023  00:34:00 GMT+02:00
  *                  Create by AREG SDK code generator tool from source TrafficController.
  *
  * \file            generated/src/NETrafficController.hpp
@@ -404,7 +404,7 @@ inline const char * NETrafficController::getString( NETrafficController::ePedest
 }
 
 /************************************************************************
- * NETrafficController::sTrafficLight structure inline implementation
+ * NETrafficController::sTrafficLight strcuture inline implementation
  ************************************************************************/
 /**
  * Every field of structure should have default constructor.

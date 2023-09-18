@@ -24,7 +24,7 @@
 //////////////////////////////////////////////////////////////////////////
 // NotificationEventData class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
-NotificationEventData::NotificationEventData( const ProxyBase & proxy, NEService::eResultType notifyType, unsigned int notifyId, unsigned int seqNr )
+NotificationEventData::NotificationEventData( const ProxyBase & proxy, NEService::eResultType notifyType, unsigned int notifyId, SequenceNumber seqNr )
     : mProxy        (&proxy)
     , mNotifyType   (notifyType)
     , mNotifyId     (notifyId)

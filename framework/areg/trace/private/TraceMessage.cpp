@@ -118,6 +118,6 @@ void TraceMessage::logTrace( NETrace::eLogPriority logPrio, const char * format,
 inline void TraceMessage::_sendLog( unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * format, va_list args )
 {
     LogMessage logData(NETrace::MsgText, scopeId, msgPrio, nullptr, 0);
-    logData.lmTrace.dataMessageLen = String::formatStringList( logData.lmTrace.dataMessage, NETrace::LOG_MESSAGE_BUFFER_SIZE, format, args );
+    logData.logMessageLen = String::formatStringList( logData.logMessage, NETrace::LOG_MESSAGE_BUFFER_SIZE - 1, format, args );
     TraceManager::sendLogMessage( logData );
 }

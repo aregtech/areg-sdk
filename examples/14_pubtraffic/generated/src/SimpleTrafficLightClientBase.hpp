@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:04:40 GMT+02:00
+ * Generated at     17.09.2023  00:33:58 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SimpleTrafficLight.
  *
  * \file            generated/src/SimpleTrafficLightClientBase.hpp
@@ -268,7 +268,7 @@ protected:
     /**
      * \brief   Returns the current sequence number
      **/
-    inline unsigned int getCurrentSequenceNr( void ) const;
+    inline const SequenceNumber & getCurrentSequenceNr( void ) const;
 
     /**
      * \brief  Returns instance of proxy object.
@@ -291,7 +291,7 @@ private:
     /**
      * \brief   The counter of sequence number
      **/
-    unsigned int        mCurrSequenceNr;
+    SequenceNumber      mCurrSequenceNr;
     /**
      * \brief   Pointer of Proxy object providing communication
      **/
@@ -362,7 +362,7 @@ inline SimpleTrafficLightClientBase & SimpleTrafficLightClientBase::self( void )
     return (*this);
 }
 
-inline unsigned int SimpleTrafficLightClientBase::getCurrentSequenceNr( void ) const
+inline const SequenceNumber & SimpleTrafficLightClientBase::getCurrentSequenceNr( void ) const
 {
     return mCurrSequenceNr;
 }

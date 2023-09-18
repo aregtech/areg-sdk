@@ -10,9 +10,10 @@ list(APPEND areg_SRC
 	${areg_BASE}/ipc/private/IEServiceRegisterProvider.cpp
 	${areg_BASE}/ipc/private/NEConnection.cpp
 	${areg_BASE}/ipc/private/NERemoteService.cpp
+	${areg_BASE}/ipc/private/RouterClient.cpp
 	${areg_BASE}/ipc/private/SendMessageEvent.cpp
 	${areg_BASE}/ipc/private/ServerConnectionBase.cpp
-	${areg_BASE}/ipc/private/ServiceClientConnection.cpp
+	${areg_BASE}/ipc/private/ServiceClientConnectionBase.cpp
 	${areg_BASE}/ipc/private/ServiceEvent.cpp
 	${areg_BASE}/ipc/private/ServiceEventConsumerBase.cpp
 	${areg_BASE}/ipc/private/SocketConnectionBase.cpp

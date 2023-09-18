@@ -349,7 +349,7 @@ namespace NEMemory
          * \brief   An ID of target object, receiving message.
          *          In remote messaging, this is Cookie of target
          **/
-        uint64_t       rbhTarget;
+        ITEM_ID         rbhTarget;
         /**
          * \brief   Data checksum value for validation check-up.
          *          Should be ignored if value is NEMemory::IGNORE_CHECKSUM
@@ -359,7 +359,7 @@ namespace NEMemory
          * \brief   An ID of source object, sending message.
          *          In remote messaging, this is Cookie of source
          **/
-        uint64_t       rbhSource;
+        ITEM_ID         rbhSource;
         /**
          * \brief   The Remote message ID registered in the system
          **/
@@ -371,7 +371,7 @@ namespace NEMemory
         /**
          * \brief   The Remote message sequence number set during messaging
          **/
-        unsigned int    rbhSequenceNr;
+        SequenceNumber  rbhSequenceNr;
     } sRemoteMessageHeader;
 
     //////////////////////////////////////////////////////////////////////////

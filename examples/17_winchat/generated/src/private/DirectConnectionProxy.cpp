@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:05:22 GMT+02:00
+ * Generated at     17.09.2023  00:34:02 GMT+02:00
  *                  Create by AREG SDK code generator tool from source DirectConnection.
  *
  * \file            generated/src/private/DirectConnectionProxy.hpp
@@ -110,7 +110,7 @@ RemoteResponseEvent * DirectConnectionProxy::createRemoteResponseEvent(const IEI
     return static_cast<RemoteResponseEvent *>( DEBUG_NEW DirectConnectionResponseEvent(stream) );
 }
 
-RemoteResponseEvent * DirectConnectionProxy::createRemoteRequestFailedEvent(const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, unsigned int seqNr) const
+RemoteResponseEvent * DirectConnectionProxy::createRemoteRequestFailedEvent(const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, SequenceNumber seqNr) const
 {
     return static_cast<RemoteResponseEvent *>( DEBUG_NEW DirectConnectionResponseEvent( addrProxy, reason, msgId, seqNr ) );
 }
@@ -137,7 +137,7 @@ void DirectConnectionProxy::unregisterServiceListeners( void )
  * Requests.
  ************************************************************************/
 
-unsigned int DirectConnectionProxy::requestConnectoinSetup( IENotificationEventConsumer & caller, const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
+SequenceNumber DirectConnectionProxy::requestConnectoinSetup( IENotificationEventConsumer & caller, const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
 {
     static const NEDirectConnection::eMessageIDs msgId = NEDirectConnection::eMessageIDs::MsgId_requestConnectoinSetup;
     EventDataStream args(EventDataStream::eEventData::EventDataExternal);
@@ -148,7 +148,7 @@ unsigned int DirectConnectionProxy::requestConnectoinSetup( IENotificationEventC
     return mSequenceCount;
 }
 
-unsigned int DirectConnectionProxy::requestAddParticipant( IENotificationEventConsumer & caller, const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
+SequenceNumber DirectConnectionProxy::requestAddParticipant( IENotificationEventConsumer & caller, const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
 {
     static const NEDirectConnection::eMessageIDs msgId = NEDirectConnection::eMessageIDs::MsgId_requestAddParticipant;
     EventDataStream args(EventDataStream::eEventData::EventDataExternal);
@@ -159,7 +159,7 @@ unsigned int DirectConnectionProxy::requestAddParticipant( IENotificationEventCo
     return mSequenceCount;
 }
 
-unsigned int DirectConnectionProxy::requestRemoveParticipant( IENotificationEventConsumer & caller, const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
+SequenceNumber DirectConnectionProxy::requestRemoveParticipant( IENotificationEventConsumer & caller, const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
 {
     static const NEDirectConnection::eMessageIDs msgId = NEDirectConnection::eMessageIDs::MsgId_requestRemoveParticipant;
     EventDataStream args(EventDataStream::eEventData::EventDataExternal);

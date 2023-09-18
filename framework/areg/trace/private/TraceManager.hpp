@@ -20,7 +20,6 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/component/DispatcherThread.hpp"
-#include "areg/component/IETimerConsumer.hpp"
 #include "areg/trace/private/TraceEvent.hpp"
 
 #include "areg/base/Containers.hpp"
@@ -58,9 +57,8 @@ class IELogger;
  *          when destroyed. Before system is able to log, the tracing should 
  *          be started (trace thread) and the configuration should be loaded.
  **/
-class TraceManager  : private   DispatcherThread
+class TraceManager  : public    DispatcherThread
                     , private   IETraceEventConsumer
-                    , private   IETimerConsumer
 {
     friend class TraceEventProcessor;
 
@@ -217,29 +215,14 @@ public:
     static unsigned int getScopePriority( const char * scopeName );
 
     /**
-     * \brief   Call if connection lost.
-     **/
-    static void netConnectionLost( void );
-
-    /**
-     * \brief   Call if received data from logging service.
-     **/
-    static void netReceivedData( const SharedBuffer & data );
-
-    /**
      * \brief   Forces to enable logging.
      **/
     inline static void forceEnableLogging( void );
 
     /**
-     * \brief   Returns the cookie ID. If NEService::COOKIE_LOCAL there is no remote logging.
-     **/
-    inline static const ITEM_ID & getCookie(void);
-
-    /**
-     * \brief   Returns the module ID set by the system. Normally, it is the process ID.
-     **/
-    inline static const ITEM_ID & getModuleId(void);
+     * \brief   Returns the logger service connection cookie.
+     */
+    inline static const ITEM_ID & getConnectionCookie(void);
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor. Protected
@@ -294,25 +277,11 @@ protected:
 /************************************************************************/
 // IETraceEventConsumer interface overrides
 /************************************************************************/
+    /**
+     * \brief   Called by event dispatcher when processes the logging event data.
+     * \param   data    The logging event data to process.
+     **/
     virtual void processEvent( const TraceEventData & data ) override;
-
-/************************************************************************/
-// IETimerConsumer interface overrides.
-/************************************************************************/
-
-    /**
-     * \brief   Triggered when Timer is expired. 
-     *          The passed Timer parameter is indicating object, which has been expired.
-     *          Overwrite method to receive messages.
-     * \param   timer   The timer object that is expired.
-     **/
-    virtual void processTimer( Timer & timer ) override;
-
-    /**
-     * \brief   Automatically triggered when event is dispatched by thread.
-     * \param   data    The Timer Event Data object containing Timer object.
-     **/
-    virtual void processEvent( const TimerEventData & data ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -405,37 +374,10 @@ private:
     void writeLogMessage( const NETrace::sLogMessage & logMessage );
 
     /**
-     * \brief   Sends a binary data to the remote log service.
-     * \param   logData     The binary log data to send to remote log service.
-     * \return  Returns true if succeeded to send. Otherwise, returns false.
-     **/
-    bool sendLogData( const SharedBuffer & logData );
-
-    /**
      * \brief   Sends log event with the preferred priority.
      *          By default, it the priority is Normal.
      **/
     void sendLogEvent( const TraceEventData & data, Event::eEventPriority eventPrio = Event::eEventPriority::EventPriorityNormal);
-
-    /**
-     * \brief   Establishes TCP/IP connection with the remote log service.
-     **/
-    void connectTcpLogService( void );
-
-    /**
-     * \brief   Triggers a timer to reconnect with the TCP/IP remote logging service.
-     **/
-    void reconnectTcpLogService( void );
-
-    /**
-     * \brief   Disconnects from the TCP/IP remote logging service.
-     **/
-    void disconnectTcpLogService( void );
-
-    /**
-     * \brief   Sets and activates new Cookie set by remote logging service.
-     **/
-    void activateCookie( ITEM_ID newCookie );
 
     /**
      * \brief   Changes the scope priority. It can be either a single scope or scope group.
@@ -472,14 +414,6 @@ private:
      **/
     LogConfiguration    mLogConfig;
     /**
-     * \brief   The unique ID of the module.
-     **/
-    ITEM_ID             mModuleId;
-    /**
-     * \brief   The cookie set by logger service, if there is any.
-     **/
-    ITEM_ID             mCookie;
-    /**
      * \brief   The file logger object, to output logs in the file.
      **/
     FileLogger          mLoggerFile;
@@ -491,10 +425,6 @@ private:
      * \brief   The remote TCP/IP logging service.
      **/
     NetTcpLogger        mLoggerTcp;
-    /**
-     * \brief   The timer to reconnect with remote logging service
-     **/
-    Timer               mTimerReconnect;
     /**
      * \brief   The log event processor helper object.
      **/
@@ -555,19 +485,14 @@ inline bool TraceManager::readLogConfig( const FileBase & file )
     return TraceManager::getInstance( ).mLogConfig.loadConfig( file );
 }
 
-inline const ITEM_ID & TraceManager::getCookie(void)
-{
-    return TraceManager::getInstance().mCookie;
-}
-
-inline const ITEM_ID& TraceManager::getModuleId(void)
-{
-    return TraceManager::getInstance().mModuleId;
-}
-
 inline void TraceManager::forceEnableLogging(void)
 {
     TraceManager::getInstance().mLogConfig.getStatus().parseProperty(NELogConfig::DEFAULT_LOG_ENABLE.data());
+}
+
+inline const ITEM_ID & TraceManager::getConnectionCookie(void)
+{
+    return TraceManager::getInstance().mLoggerTcp.getConnectionCookie();
 }
 
 inline const TEHashMap<unsigned int, TraceScope *> & TraceManager::getScopeList( void ) const

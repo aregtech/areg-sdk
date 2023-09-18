@@ -113,12 +113,12 @@ public:
     /**
      * \brief   Returns sequence number set in info.
      **/
-    inline unsigned int getSequenceNumber( void ) const;
+    inline SequenceNumber getSequenceNumber( void ) const;
 
     /**
      * \brief   Sets new sequence number.
      **/
-    inline void setSequenceNumber(unsigned int newSeqNr);
+    inline void setSequenceNumber(SequenceNumber newSeqNr);
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -163,7 +163,7 @@ protected:
     /**
      * \brief   Sequence number.
      **/
-    unsigned int                mSequenceNr;
+    SequenceNumber              mSequenceNr;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls
@@ -197,12 +197,12 @@ inline NEService::eRequestType ServiceRequestEvent::getRequestType( void ) const
     return mRequestType;
 }
 
-inline unsigned int ServiceRequestEvent::getSequenceNumber( void ) const
+inline SequenceNumber ServiceRequestEvent::getSequenceNumber( void ) const
 {
     return mSequenceNr;
 }
 
-inline void ServiceRequestEvent::setSequenceNumber( unsigned int newSeqNr )
+inline void ServiceRequestEvent::setSequenceNumber(SequenceNumber newSeqNr )
 {
     mSequenceNr = newSeqNr;
 }

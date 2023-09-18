@@ -80,7 +80,7 @@ protected:
                         , NEService::eResultType result
                         , unsigned int responseId
                         , Event::eEventType eventType
-                        , unsigned int seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
+                        , SequenceNumber seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
 
     /**
      * \brief   Copies all data from given source, except the target proxy address. This is used if proxy needs to clone
@@ -120,12 +120,12 @@ public:
     /**
      * \brief   Returns sequence number of call.
      **/
-    inline unsigned int getSequenceNumber( void ) const;
+    inline SequenceNumber getSequenceNumber( void ) const;
 
     /**
      * \brief   Sets sequence number of call.
      **/
-    inline void setSequenceNumber( unsigned int newSeqNr );
+    inline void setSequenceNumber( SequenceNumber newSeqNr );
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -180,7 +180,7 @@ protected:
     /**
      * \brief   The sequence number.
      **/
-    unsigned int            mSequenceNr;
+    SequenceNumber          mSequenceNr;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -204,12 +204,12 @@ inline NEService::eResultType ServiceResponseEvent::getResult( void ) const
     return mResult;
 }
 
-inline unsigned int ServiceResponseEvent::getSequenceNumber( void ) const
+inline SequenceNumber ServiceResponseEvent::getSequenceNumber( void ) const
 {
     return mSequenceNr;
 }
 
-inline void ServiceResponseEvent::setSequenceNumber( unsigned int newSeqNr )
+inline void ServiceResponseEvent::setSequenceNumber( SequenceNumber newSeqNr )
 {
     mSequenceNr = newSeqNr;
 }

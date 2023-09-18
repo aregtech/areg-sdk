@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:05:03 GMT+02:00
+ * Generated at     17.09.2023  00:33:59 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PowerManager.
  *
  * \file            generated/src/private/PowerManagerProxy.hpp
@@ -42,7 +42,7 @@ class PowerManagerResponseEvent;
 class PowerManagerProxy   : public ProxyBase
 {
     friend class PowerManagerClientBase;
-    
+
 private:
     //////////////////////////////////////////////////////////////////////////
     // PowerManagerProxy::PowerManagerServiceAvailableEvent class declaration
@@ -156,7 +156,7 @@ public:
     inline bool getParamSuccess( void ) const;
 
 /************************************************************************
- * Requests
+ * Requests.
  ************************************************************************/
     /**
      * \brief   Request call.
@@ -179,7 +179,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseStartTrafficLight
      **/
-    unsigned int requestStartTrafficLight( IENotificationEventConsumer & caller );
+    SequenceNumber requestStartTrafficLight( IENotificationEventConsumer & caller );
 
     /**
      * \brief   Request call.
@@ -188,7 +188,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseStopTrafficLight
      **/
-    unsigned int requestStopTrafficLight( IENotificationEventConsumer & caller );
+    SequenceNumber requestStopTrafficLight( IENotificationEventConsumer & caller );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations.

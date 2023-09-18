@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:04:27 GMT+02:00
+ * Generated at     17.09.2023  00:33:59 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PublicHelloWorld.
  *
  * \file            generated/src/NEPublicHelloWorld.hpp
@@ -273,7 +273,7 @@ namespace   NEPublicHelloWorld
 IMPLEMENT_STREAMABLE( NEPublicHelloWorld::eMessageIDs );
 
 /************************************************************************
- * NEPublicHelloWorld::sClientRegister structure inline implementation
+ * NEPublicHelloWorld::sClientRegister strcuture inline implementation
  ************************************************************************/
 /**
  * Every field of structure should have default constructor.

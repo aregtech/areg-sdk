@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:06:04 GMT+02:00
+ * Generated at     17.09.2023  00:34:01 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloUnblock.
  *
  * \file            generated/src/HelloUnblockClientBase.hpp
@@ -185,7 +185,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseIdentifier
      **/
-    inline unsigned int requestIdentifier( void );
+    inline SequenceNumber requestIdentifier( void );
     /**
      * \brief   Overwrite to handle error of Identifier request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -204,7 +204,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseHelloUnblock
      **/
-    inline unsigned int requestHelloUblock( unsigned int clientId, unsigned int seqNr );
+    inline SequenceNumber requestHelloUblock( unsigned int clientId, unsigned int seqNr );
     /**
      * \brief   Overwrite to handle error of HelloUblock request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -311,7 +311,7 @@ protected:
     /**
      * \brief   Returns the current sequence number
      **/
-    inline unsigned int getCurrentSequenceNr( void ) const;
+    inline const SequenceNumber & getCurrentSequenceNr( void ) const;
 
     /**
      * \brief  Returns instance of proxy object.
@@ -334,7 +334,7 @@ private:
     /**
      * \brief   The counter of sequence number
      **/
-    unsigned int        mCurrSequenceNr;
+    SequenceNumber      mCurrSequenceNr;
     /**
      * \brief   Pointer of Proxy object providing communication
      **/
@@ -405,7 +405,7 @@ inline HelloUnblockClientBase & HelloUnblockClientBase::self( void )
     return (*this);
 }
 
-inline unsigned int HelloUnblockClientBase::getCurrentSequenceNr( void ) const
+inline const SequenceNumber & HelloUnblockClientBase::getCurrentSequenceNr( void ) const
 {
     return mCurrSequenceNr;
 }
@@ -464,13 +464,13 @@ inline void HelloUnblockClientBase::notifyOnHelloServiceStateUpdate( bool notify
  * Request calls
  ************************************************************************/
 
-inline unsigned int HelloUnblockClientBase::requestIdentifier( void )
+inline SequenceNumber HelloUnblockClientBase::requestIdentifier( void )
 {
     ASSERT(mProxy != nullptr);
     return mProxy->requestIdentifier( static_cast<IENotificationEventConsumer &>(self()) );
 }
 
-inline unsigned int HelloUnblockClientBase::requestHelloUblock( unsigned int clientId, unsigned int seqNr )
+inline SequenceNumber HelloUnblockClientBase::requestHelloUblock( unsigned int clientId, unsigned int seqNr )
 {
     ASSERT(mProxy != nullptr);
     return mProxy->requestHelloUblock( static_cast<IENotificationEventConsumer &>(self()), clientId, seqNr );

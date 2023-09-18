@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:04:27 GMT+02:00
+ * Generated at     17.09.2023  00:33:59 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PublicHelloWorld.
  *
  * \file            generated/src/private/PublicHelloWorldProxy.hpp
@@ -107,7 +107,7 @@ RemoteResponseEvent * PublicHelloWorldProxy::createRemoteResponseEvent(const IEI
     return static_cast<RemoteResponseEvent *>( DEBUG_NEW PublicHelloWorldResponseEvent(stream) );
 }
 
-RemoteResponseEvent * PublicHelloWorldProxy::createRemoteRequestFailedEvent(const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, unsigned int seqNr) const
+RemoteResponseEvent * PublicHelloWorldProxy::createRemoteRequestFailedEvent(const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, SequenceNumber seqNr) const
 {
     return static_cast<RemoteResponseEvent *>( DEBUG_NEW PublicHelloWorldResponseEvent( addrProxy, reason, msgId, seqNr ) );
 }
@@ -134,7 +134,7 @@ void PublicHelloWorldProxy::unregisterServiceListeners( void )
  * Requests.
  ************************************************************************/
 
-unsigned int PublicHelloWorldProxy::requestRegister( IENotificationEventConsumer & caller, const String & name, const ServiceAddress & service, const String & thread, const String & process )
+SequenceNumber PublicHelloWorldProxy::requestRegister( IENotificationEventConsumer & caller, const String & name, const ServiceAddress & service, const String & thread, const String & process )
 {
     static const NEPublicHelloWorld::eMessageIDs msgId = NEPublicHelloWorld::eMessageIDs::MsgId_requestRegister;
     EventDataStream args(EventDataStream::eEventData::EventDataExternal);
@@ -155,7 +155,7 @@ void PublicHelloWorldProxy::requestUnregister( const NEPublicHelloWorld::sClient
     stream << client;
     sendRequestEvent( static_cast<unsigned int>(msgId), args, nullptr );
 }
-unsigned int PublicHelloWorldProxy::requestHelloWorld( IENotificationEventConsumer & caller, unsigned int clientID )
+SequenceNumber PublicHelloWorldProxy::requestHelloWorld( IENotificationEventConsumer & caller, unsigned int clientID )
 {
     static const NEPublicHelloWorld::eMessageIDs msgId = NEPublicHelloWorld::eMessageIDs::MsgId_requestHelloWorld;
     EventDataStream args(EventDataStream::eEventData::EventDataExternal);

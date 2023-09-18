@@ -34,7 +34,7 @@ void LogMessage::setMessage(const char * message, int msgLen )
 {
     if ( (message != nullptr) && (msgLen > 0) )
     {
-        int len = NEMemory::memCopy( this->lmTrace.dataMessage, NETrace::LOG_MESSAGE_BUFFER_SIZE - 1, message, msgLen);
-        this->lmTrace.dataMessage[len] = String::EmptyChar;
+        int len = NEMemory::memCopy( this->logMessage, NETrace::LOG_MESSAGE_BUFFER_SIZE - 1, message, msgLen);
+        this->logMessage[len] = String::EmptyChar;
     }
 }

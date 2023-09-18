@@ -51,7 +51,7 @@ protected:
      **/
     static constexpr std::string_view   FOMAT_MESSAGE_HELLO     { "Starting logging of [ %s ] process [ %s ] with ID [ %d ]\n" };
     /**
-     * \brief   The format of logger end ('bey' message) to display in console
+     * \brief   The format of logger end ('bye' message) to display in console
      **/
     static constexpr std::string_view   FORMAT_MESSAGE_BYE      { "Completed logging of [ %s ] process [ %s ] with ID [ %d ]\n" };
 
@@ -105,17 +105,6 @@ public:
      *          Every logger should implement method to process logger specific logging.
      **/
     virtual void logMessage( const NETrace::sLogMessage & logMessage ) = 0;
-
-    /**
-     * \brief   Called to write raw log data.
-     * \param   data    The data to write.
-     **/
-    virtual void writeData( const SharedBuffer & data ) = 0;
-
-    /**
-     * \brief   Call to flush logs, if they are queued. Some loggers might ignore this.
-     **/
-    virtual void flushLogs( void ) = 0;
 
     /**
      * \brief   Returns true if logger is initialized (opened).
@@ -172,11 +161,13 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
-private:
+protected:
     /**
      * \brief   The instance of tracer configurations object.
      **/
     LogConfiguration &  mTracerConfiguration;
+
+private:
     /**
      * \brief   Message layouts to create messages
      **/

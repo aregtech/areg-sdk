@@ -46,7 +46,7 @@ bool WatchdogManager::_osSystemTimerStart(Watchdog& watchdog)
     long period = 0;
     int64_t dueTime = static_cast<int64_t>(watchdog.getTimeout()) * NEUtilities::MILLISEC_TO_100NS;  // timer from now
     dueTime *= -1;
-    LARGE_INTEGER timeTrigger;
+    LARGE_INTEGER timeTrigger{ };
     timeTrigger.LowPart  = static_cast<unsigned long>(MACRO_64_LO_BYTE32(dueTime));
     timeTrigger.HighPart = static_cast<signed   long>(MACRO_64_HI_BYTE32(dueTime));
 

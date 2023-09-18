@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:05:03 GMT+02:00
+ * Generated at     17.09.2023  00:33:59 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PowerManager.
  *
  * \file            generated/src/private/PowerManagerEvents.hpp
@@ -80,12 +80,12 @@ IMPLEMENT_RUNTIME_EVENT( PowerManagerResponseEvent, LocalResponseEvent )
 // PowerManagerResponseEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-PowerManagerResponseEvent::PowerManagerResponseEvent( const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, unsigned int seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
+PowerManagerResponseEvent::PowerManagerResponseEvent( const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, SequenceNumber seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
     : LocalResponseEvent( proxyTarget, result, responseId, seqNr )
 {
 }
 
-PowerManagerResponseEvent::PowerManagerResponseEvent( const EventDataStream & args, const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, unsigned int seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
+PowerManagerResponseEvent::PowerManagerResponseEvent( const EventDataStream & args, const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, SequenceNumber seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
     : LocalResponseEvent( args, proxyTarget, result, responseId, seqNr, NEPowerManager::getString(static_cast<NEPowerManager::eMessageIDs>(responseId)) )
 {
 }

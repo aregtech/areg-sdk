@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:04:27 GMT+02:00
+ * Generated at     17.09.2023  00:33:59 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PublicHelloWorld.
  *
  * \file            generated/src/PublicHelloWorldClientBase.hpp
@@ -149,7 +149,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseRegister
      **/
-    inline unsigned int requestRegister( const String & name, const ServiceAddress & service, const String & thread, const String & process );
+    inline SequenceNumber requestRegister( const String & name, const ServiceAddress & service, const String & thread, const String & process );
     /**
      * \brief   Overwrite to handle error of Register request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -182,7 +182,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseHelloWorld
      **/
-    inline unsigned int requestHelloWorld( unsigned int clientID );
+    inline SequenceNumber requestHelloWorld( unsigned int clientID );
     /**
      * \brief   Overwrite to handle error of HelloWorld request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -287,7 +287,7 @@ protected:
     /**
      * \brief   Returns the current sequence number
      **/
-    inline unsigned int getCurrentSequenceNr( void ) const;
+    inline const SequenceNumber & getCurrentSequenceNr( void ) const;
 
     /**
      * \brief  Returns instance of proxy object.
@@ -310,7 +310,7 @@ private:
     /**
      * \brief   The counter of sequence number
      **/
-    unsigned int        mCurrSequenceNr;
+    SequenceNumber      mCurrSequenceNr;
     /**
      * \brief   Pointer of Proxy object providing communication
      **/
@@ -381,7 +381,7 @@ inline PublicHelloWorldClientBase & PublicHelloWorldClientBase::self( void )
     return (*this);
 }
 
-inline unsigned int PublicHelloWorldClientBase::getCurrentSequenceNr( void ) const
+inline const SequenceNumber & PublicHelloWorldClientBase::getCurrentSequenceNr( void ) const
 {
     return mCurrSequenceNr;
 }
@@ -420,7 +420,7 @@ inline const Version & PublicHelloWorldClientBase::getServiceVersion( void ) con
  * Request calls
  ************************************************************************/
 
-inline unsigned int PublicHelloWorldClientBase::requestRegister( const String & name, const ServiceAddress & service, const String & thread, const String & process )
+inline SequenceNumber PublicHelloWorldClientBase::requestRegister( const String & name, const ServiceAddress & service, const String & thread, const String & process )
 {
     ASSERT(mProxy != nullptr);
     return mProxy->requestRegister( static_cast<IENotificationEventConsumer &>(self()), name, service, thread, process );
@@ -432,7 +432,7 @@ inline void PublicHelloWorldClientBase::requestUnregister( const NEPublicHelloWo
     mProxy->requestUnregister( client );
 }
 
-inline unsigned int PublicHelloWorldClientBase::requestHelloWorld( unsigned int clientID )
+inline SequenceNumber PublicHelloWorldClientBase::requestHelloWorld( unsigned int clientID )
 {
     ASSERT(mProxy != nullptr);
     return mProxy->requestHelloWorld( static_cast<IENotificationEventConsumer &>(self()), clientID );

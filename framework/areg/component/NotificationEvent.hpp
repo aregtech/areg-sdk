@@ -80,7 +80,7 @@ public:
      *                      If request fails, also request ID.
      * \param	seqNr	    The call sequence number.
      **/
-    NotificationEventData( const ProxyBase & proxy, NEService::eResultType notifyType, unsigned int notifyId, unsigned int seqNr );
+    NotificationEventData( const ProxyBase & proxy, NEService::eResultType notifyType, unsigned int notifyId, SequenceNumber seqNr );
 
     /**
      * \brief   Copies data from given source.
@@ -145,11 +145,11 @@ public:
     /**
      * \brief   Returns the sequence number of a caller.
      **/
-    inline unsigned int getSequenceNr( void ) const;
+    inline SequenceNumber getSequenceNr( void ) const;
     /**
      * \brief   Sets sequence number of a caller.
      **/
-    inline void setSequenceNr( unsigned int seqNr );
+    inline void setSequenceNr(SequenceNumber seqNr );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -170,7 +170,7 @@ private:
     /**
      * \brief   Call sequence number.
      **/
-    unsigned int            mSequenceNr;
+    SequenceNumber          mSequenceNr;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden / Forbidden method calls.
@@ -380,12 +380,12 @@ inline void NotificationEventData::setNotifyId( unsigned int notifyId )
     mNotifyId = notifyId;
 }
 
-inline unsigned int NotificationEventData::getSequenceNr( void ) const
+inline SequenceNumber NotificationEventData::getSequenceNr( void ) const
 {
     return mSequenceNr;
 }
 
-inline void NotificationEventData::setSequenceNr( unsigned int seqNr )
+inline void NotificationEventData::setSequenceNr( SequenceNumber seqNr )
 {
     mSequenceNr = seqNr;
 }

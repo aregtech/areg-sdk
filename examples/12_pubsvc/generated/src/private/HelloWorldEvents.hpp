@@ -8,7 +8,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:04:14 GMT+02:00
+ * Generated at     17.09.2023  00:33:57 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/private/HelloWorldEvents.hpp
@@ -179,7 +179,7 @@ public:
      * \param   responseId  The response message ID. Normally either attribute, broadcast or response ID.
      * \param   seqNr       The sequence number of response call. By default it is NEService::SEQUENCE_NUMBER_NOTIFY.
      **/
-    HelloWorldResponseEvent( const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, unsigned int seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
+    HelloWorldResponseEvent( const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, SequenceNumber seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
     /**
      * \brief   Used to send response messages from Stub to Proxy with arguments.
      *
@@ -189,7 +189,7 @@ public:
      * \param   responseId  The response message ID. Normally either attribute, broadcast or response ID.
      * \param   seqNr       The sequence number of response call. By default it is NEService::SEQUENCE_NUMBER_NOTIFY.
      **/
-    HelloWorldResponseEvent( const EventDataStream & args, const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, unsigned int seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
+    HelloWorldResponseEvent( const EventDataStream & args, const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, SequenceNumber seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
     /**
      * \brief   Initialization constructor. Used to clone same message for different Proxy objects.
      * \param   proxyTarget The target Proxy address to deliver message

@@ -172,38 +172,20 @@ unsigned int TraceManager::getScopePriority( const char * scopeName )
     return (scope != nullptr ? scope->getPriority() : static_cast<unsigned int>(NETrace::eLogPriority::PrioInvalid));
 }
 
-void TraceManager::netConnectionLost( void )
-{
-    TraceManager & traceManager = TraceManager::getInstance( );
-    traceManager.mCookie = NEService::COOKIE_LOCAL;
-    traceManager.mLoggerTcp.closeConnection( );
-    traceManager.sendLogEvent(TraceEventData( TraceEventData::eTraceAction::TraceNetConnectionLost), Event::eEventPriority::EventPriorityHigh);
-}
-
-void TraceManager::netReceivedData( const SharedBuffer & data )
-{
-    TraceManager::getInstance( ).sendLogEvent( TraceEventData( TraceEventData::eTraceAction::TraceNetReceivedData, data ), Event::eEventPriority::EventPriorityHigh );
-}
-
 //////////////////////////////////////////////////////////////////////////
 // TraceManager class constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 TraceManager::TraceManager(void)
     : DispatcherThread      ( TraceManager::TRACER_THREAD_NAME.data() )
     , IETraceEventConsumer  ( )
-    , IETimerConsumer       ( )
 
     , mScopeController  ( )
 	, mIsStarted		( false )
     , mLogConfig        ( mScopeController )
 
-    , mModuleId         ( Process::getInstance().getId() )
-    , mCookie           ( NEService::COOKIE_LOCAL )
-
     , mLoggerFile       ( mLogConfig )
     , mLoggerDebug      ( mLogConfig )
-    , mLoggerTcp        ( mLogConfig )
-    , mTimerReconnect   ( static_cast<IETimerConsumer &>(self()) )
+    , mLoggerTcp        ( mLogConfig, static_cast<DispatcherThread &>(self()) )
     , mEventProcessor   ( self() )
 
     , mLogStarted       ( false, false )
@@ -295,31 +277,6 @@ void TraceManager::waitLoggingThreadEnd(void)
     shutdownThread(NECommon::DO_NOT_WAIT);
 }
 
-void TraceManager::processTimer( Timer & timer )
-{
-    if ( &timer == &mTimerReconnect )
-    {
-        mTimerReconnect.stopTimer( );
-        if ( (mLoggerTcp.isLoggerOpened( ) == false) && isNetLoggingEnabled( ))
-        {
-            if ( mLoggerTcp.openLogger( ) )
-            {
-                mCookie = NEService::COOKIE_ANY;
-                sendLogEvent( TraceEventData( TraceEventData::eTraceAction::TraceNetConnectService ), Event::eEventPriority::EventPriorityHigh );
-            }
-            else
-            {
-                mTimerReconnect.startTimer( LOG_RECONNECT_TIMEOUT, 1 );
-            }
-        }
-    }
-}
-
-void TraceManager::processEvent( const TimerEventData & data )
-{
-    IETimerConsumer::processEvent( data );
-}
-
 void TraceManager::readyForEvents( bool isReady )
 {
     if ( isReady )
@@ -360,7 +317,10 @@ void TraceManager::traceStartLogs( void )
         }
 #endif // !defined(OUTPUT_DEBUG)
 
-        connectTcpLogService( );
+        if (mLoggerTcp.isLoggerOpened() == false)
+        {
+            mLoggerTcp.openLogger();
+        }
     }
 
     mIsStarted = true;
@@ -369,8 +329,6 @@ void TraceManager::traceStartLogs( void )
 
 void TraceManager::traceStopLogs(void)
 {
-    mCookie = NEService::COOKIE_LOCAL;
-    mTimerReconnect.stopTimer( );
     mScopeController.changeScopeActivityStatus( false );
     mLogStarted.resetEvent( );
 
@@ -394,18 +352,6 @@ void TraceManager::writeLogMessage( const NETrace::sLogMessage & logMessage )
     }
 }
 
-bool TraceManager::sendLogData( const SharedBuffer & logData )
-{
-    bool result{ true };
-    if ( mLoggerTcp.sendData( logData ) == false )
-    {
-        result = false;
-        reconnectTcpLogService( );
-    }
-
-    return result;
-}
-
 bool TraceManager::postEvent(Event & eventElem)
 {
     bool result = false;
@@ -424,50 +370,6 @@ bool TraceManager::postEvent(Event & eventElem)
 inline void TraceManager::sendLogEvent( const TraceEventData & data, Event::eEventPriority eventPrio /*= Event::eEventPriority::EventPriorityNormal*/ )
 {
     TraceEvent::sendEvent( data, static_cast<IETraceEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )), eventPrio );
-}
-
-void TraceManager::connectTcpLogService( void )
-{
-    if ( mLoggerTcp.isLoggerOpened( ) == false )
-    {
-        if ( isNetLoggingEnabled( ) )
-        {
-            if ( mLoggerTcp.openLogger( ) == false )
-            {
-                mCookie = NEService::COOKIE_ANY;
-                mTimerReconnect.startTimer( LOG_RECONNECT_TIMEOUT, 1 );
-            }
-            else if ( mLoggerTcp.isActive( ) == false )
-            {
-                sendLogEvent( TraceEventData( TraceEventData::eTraceAction::TraceNetConnectService ), Event::eEventPriority::EventPriorityHigh );
-            }
-            else
-            {
-                ; // do nothing, just ignore.
-            }
-        }
-    }
-}
-
-void TraceManager::reconnectTcpLogService( void )
-{
-    ASSERT( mLogConfig.isNetLoggingEnabled() );
-    mCookie = NEService::COOKIE_LOCAL;
-    mLoggerTcp.closeLogger( );
-    mTimerReconnect.startTimer( LOG_RECONNECT_TIMEOUT, static_cast<DispatcherThread &>(self( )), 1 );
-}
-
-void TraceManager::disconnectTcpLogService( void )
-{
-    ASSERT( mLogConfig.isNetLoggingEnabled( ) );
-    mCookie = NEService::COOKIE_LOCAL;
-    mLoggerTcp.closeLogger( );
-}
-
-void TraceManager::activateCookie( ITEM_ID newCookie )
-{
-    mCookie = newCookie;
-    mLoggerTcp.setActive( true );
 }
 
 void TraceManager::changeScopePriority( const String & scopeName, unsigned int scopeId, unsigned int scopePrio )
