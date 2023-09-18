@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:04:27 GMT+02:00
+ * Generated at     17.09.2023  00:33:59 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PublicHelloWorld.
  *
  * \file            generated/src/private/PublicHelloWorldProxy.hpp
@@ -46,7 +46,7 @@ class PublicHelloWorldResponseEvent;
 class PublicHelloWorldProxy   : public ProxyBase
 {
     friend class PublicHelloWorldClientBase;
-    
+
 private:
     //////////////////////////////////////////////////////////////////////////
     // PublicHelloWorldProxy::PublicHelloWorldServiceAvailableEvent class declaration
@@ -151,7 +151,7 @@ public:
     inline unsigned int getParamclientID( void ) const;
 
 /************************************************************************
- * Requests
+ * Requests.
  ************************************************************************/
     /**
      * \brief   Request call.
@@ -164,7 +164,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseRegister
      **/
-    unsigned int requestRegister( IENotificationEventConsumer & caller, const String & name, const ServiceAddress & service, const String & thread, const String & process );
+    SequenceNumber requestRegister( IENotificationEventConsumer & caller, const String & name, const ServiceAddress & service, const String & thread, const String & process );
 
     /**
      * \brief   Request call.
@@ -182,7 +182,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseHelloWorld
      **/
-    unsigned int requestHelloWorld( IENotificationEventConsumer & caller, unsigned int clientID );
+    SequenceNumber requestHelloWorld( IENotificationEventConsumer & caller, unsigned int clientID );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations.
@@ -290,7 +290,7 @@ protected:
      * \param   reason      Failure reason set by system
      * \param   seqNr       The sequence number of processing message.
      **/
-    virtual RemoteResponseEvent * createRemoteRequestFailedEvent( const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, unsigned int seqNr ) const override;
+    virtual RemoteResponseEvent * createRemoteRequestFailedEvent( const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, SequenceNumber seqNr ) const override;
 
     /**
      * \brief   Overwrite this method to create service available event to new instantiated clients.

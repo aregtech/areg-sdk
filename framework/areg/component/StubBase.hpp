@@ -105,7 +105,7 @@ protected:
         /**
          * \brief   Initialize message ID and sequence number. The target Proxy Address should be set manually.
          **/
-        inline Listener(unsigned int reqId, unsigned int seqId);
+        inline Listener(unsigned int reqId, SequenceNumber seqId);
 
         /**
          * \brief   Creates Listener from given parameters.
@@ -113,7 +113,7 @@ protected:
          * \param   seqId   The Sequence number.
          * \param   proxy   The target proxy address.
          **/
-        inline Listener(unsigned int reqId, unsigned int seqId, const ProxyAddress & proxy);
+        inline Listener(unsigned int reqId, SequenceNumber seqId, const ProxyAddress & proxy);
 
         /**
          * \brief   Copies listener data from given source.
@@ -163,7 +163,7 @@ protected:
         /**
          * \brief   Sequence number of Listener
          **/
-        unsigned int    mSequenceNr;
+        SequenceNumber  mSequenceNr;
         /**
          * \brief   The address of target Proxy object.
          **/
@@ -184,7 +184,7 @@ protected:
     /**
      * \brief   StubBase::StubSessionMap class defines list of Session IDs and unblocked requests.
      **/
-    using MapStubSession     = TEIntegerHashMap<StubBase::Listener>;
+    using MapStubSession     = TEIntegerMap<StubBase::Listener>;
 
     //////////////////////////////////////////////////////////////////////////
     // StubBase resource tracking
@@ -491,7 +491,7 @@ protected:
      * \param   seqNr       The sequence number of call request.
      * \param   requestId   The triggered request ID .
      **/
-    void prepareRequest(StubBase::Listener & listener, unsigned int seqNr, unsigned int requestId);
+    void prepareRequest(StubBase::Listener & listener, SequenceNumber seqNr, unsigned int requestId);
 
     /**
      * \brief   Search and add all listeners, which have same specified request ID 
@@ -646,7 +646,7 @@ protected:
      * \param   seqNr           The sequence number of call.
      * \return  Returns true if request can be executed and the appropriate response is prepared.
      **/
-    bool canExecuteRequest( StubBase::Listener & whichListener, unsigned int whichResponse, unsigned int seqNr);
+    bool canExecuteRequest( StubBase::Listener & whichListener, unsigned int whichResponse, SequenceNumber seqNr);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -702,7 +702,7 @@ private:
     /**
      * \brief   Session map object, contains list of unblock requests
      **/
-    MapStubSession                  mMapSessions;
+    MapStubSession                      mMapSessions;
 
     /**
      * \brief   Stub object resource map.
@@ -754,14 +754,14 @@ inline StubBase::Listener::Listener( unsigned int reqId )
 {
 }
 
-inline StubBase::Listener::Listener( unsigned int reqId, unsigned int seqId )
+inline StubBase::Listener::Listener( unsigned int reqId, SequenceNumber seqId )
     : mMessageId ( reqId )
     , mSequenceNr( seqId )
     , mProxy     ( ProxyAddress::getInvalidProxyAddress() )
 {
 }
 
-inline StubBase::Listener::Listener( unsigned int reqId, unsigned int seqId, const ProxyAddress& proxy )
+inline StubBase::Listener::Listener( unsigned int reqId, SequenceNumber seqId, const ProxyAddress& proxy )
     : mMessageId ( reqId )
     , mSequenceNr( seqId )
     , mProxy     ( proxy )

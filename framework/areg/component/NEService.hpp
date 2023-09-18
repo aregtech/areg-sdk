@@ -275,12 +275,12 @@ namespace NEService
      * \brief   NEService::SEQUENCE_NUMBER_NOTIFY
      *          Sequence number predefining notification message ID
      **/
-    constexpr unsigned int  SEQUENCE_NUMBER_NOTIFY  { static_cast<unsigned int>(0) };    /*0x00000000*/
+    constexpr SequenceNumber    SEQUENCE_NUMBER_NOTIFY  { static_cast<SequenceNumber>(0) };    /*0x00000000*/
     /**
      * \brief   NEService::SEQUENCE_NUMBER_ANY
      *          Any sequence number, used in messages. "Any sequence number" used to find any listener object with same message ID.
      **/
-    constexpr unsigned int  SEQUENCE_NUMBER_ANY     { static_cast<unsigned int>(~0) };    /*0xFFFFFFFF*/
+    constexpr SequenceNumber    SEQUENCE_NUMBER_ANY     { static_cast<SequenceNumber>(~0) };    /*0xFFFFFFFF*/
 
     /**
      * \brief   NEService::COOKIE_UNKNOWN
@@ -464,6 +464,12 @@ namespace NEService
         , ServiceRouterQuery
         //!< Sent by Routing Service as a reply to register service and notifies the registered service availability
         , ServiceRouterNotifyRegister
+        //!< Sent by logger service or client applications to register the scopes. This resets and overwrites all scope states.
+        , ServiceLogRegisterScopes
+        //!< Sent by logger service or client applications to update the scopes. This updates only given scopes.
+        , ServiceLogUpdateScopes
+        //!< Sent by logger service or client applications to log the messages.
+        , ServiceLogMessage
         //!< The last ID of service calls.
         , ServiceLastId         = SERVICE_ID_LAST  //!< Servicing call last ID
 

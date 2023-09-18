@@ -22,7 +22,7 @@ ServiceResponseEvent::ServiceResponseEvent( const ProxyAddress & target
                                           , NEService::eResultType result
                                           , unsigned int responseId
                                           , Event::eEventType eventType
-                                          , unsigned int seqNr    /*= NEService::SEQUENCE_NUMBER_NOTIFY*/)
+                                          , SequenceNumber seqNr    /*= NEService::SEQUENCE_NUMBER_NOTIFY*/)
     : ProxyEvent    (target, eventType)
     , mResponseId   (responseId)
     , mResult       (result)

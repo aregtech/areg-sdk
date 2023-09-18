@@ -66,6 +66,11 @@ public:
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
 
+    /**
+     * \brief   Invalid time.
+     **/
+    static constexpr TIME64             INVALID_TIME                        { 0 };
+
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
@@ -294,7 +299,7 @@ inline const TIME64 & DateTime::getTime( void ) const
 
 inline bool DateTime::isValid( void ) const
 {
-    return (mDateTime != 0);
+    return (mDateTime != INVALID_TIME);
 }
 
 inline const IEInStream & operator >> ( const IEInStream & stream, DateTime & input )

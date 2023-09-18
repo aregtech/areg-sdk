@@ -89,14 +89,14 @@ ProxyBase::Listener::Listener( unsigned int msgId )
 {
 }
 
-ProxyBase::Listener::Listener( unsigned int msgId, unsigned int seqNr )
+ProxyBase::Listener::Listener( unsigned int msgId, SequenceNumber seqNr )
     : mMessageId    (msgId)
     , mSequenceNr   (seqNr)
     , mListener     (nullptr)
 {
 }
 
-ProxyBase::Listener::Listener( unsigned int msgId, unsigned int seqNr, IENotificationEventConsumer* caller )
+ProxyBase::Listener::Listener( unsigned int msgId, SequenceNumber seqNr, IENotificationEventConsumer* caller )
     : mMessageId    (msgId)
     , mSequenceNr   (seqNr)
     , mListener     (caller)
@@ -244,7 +244,7 @@ int ProxyBase::findThreadProxies(DispatcherThread & ownerThread, TEArrayList<std
     return result;
 }
 
-RemoteResponseEvent * ProxyBase::createRequestFailureEvent(const ProxyAddress & target, unsigned int msgId, NEService::eResultType errCode, unsigned int seqNr)
+RemoteResponseEvent * ProxyBase::createRequestFailureEvent(const ProxyAddress & target, unsigned int msgId, NEService::eResultType errCode, SequenceNumber seqNr)
 {
     TRACE_SCOPE(areg_component_ProxyBase_createRequestFailureEvent);
 
@@ -506,7 +506,7 @@ void ProxyBase::unregisterListener( IENotificationEventConsumer *consumer )
     }
 }
 
-int ProxyBase::prepareListeners( ProxyBase::ProxyListenerList& out_listenerList, unsigned int msgId, unsigned int seqNrToSearch )
+int ProxyBase::prepareListeners( ProxyBase::ProxyListenerList& out_listenerList, unsigned int msgId, SequenceNumber seqNrToSearch )
 {
     TRACE_SCOPE(areg_component_ProxyBase_prepareListeners);
     ProxyBase::Listener searchListener(msgId, NEService::SEQUENCE_NUMBER_ANY);
@@ -527,12 +527,12 @@ int ProxyBase::prepareListeners( ProxyBase::ProxyListenerList& out_listenerList,
         }
     }
 
-    TRACE_DBG("Prepared [ %d ] proxy clients for message [ %u ] and sequence number [ %u ]", out_listenerList.getSize(), msgId, seqNrToSearch);
+    TRACE_DBG("Prepared [ %d ] proxy clients for message [ %u ] and sequence number [ %llu ]", out_listenerList.getSize(), msgId, seqNrToSearch);
 
     return out_listenerList.getSize();
 }
 
-void ProxyBase::notifyListeners( unsigned int respId, NEService::eResultType result, unsigned int seqNrToSearch )
+void ProxyBase::notifyListeners( unsigned int respId, NEService::eResultType result, SequenceNumber seqNrToSearch )
 {
     ProxyBase::ProxyListenerList listenerList;
     prepareListeners(listenerList, respId, seqNrToSearch);
@@ -543,7 +543,7 @@ void ProxyBase::notifyListeners( unsigned int respId, NEService::eResultType res
     }
 }
 
-void ProxyBase::sendNotificationEvent( unsigned int msgId, NEService::eResultType resType, unsigned int seqNr, IENotificationEventConsumer* caller )
+void ProxyBase::sendNotificationEvent( unsigned int msgId, NEService::eResultType resType, SequenceNumber seqNr, IENotificationEventConsumer* caller )
 {
     NotificationEventData data(self(), resType, msgId, seqNr);
     NotificationEvent* eventElem = createNotificationEvent(data);
@@ -652,7 +652,7 @@ RemoteResponseEvent * ProxyBase::createRemoteResponseEvent(const IEInStream & /*
 RemoteResponseEvent * ProxyBase::createRemoteRequestFailedEvent(  const ProxyAddress &  /* addrProxy */
                                                                 , unsigned int          /* msgId */
                                                                 , NEService::eResultType/* reason */
-                                                                , unsigned int          /* seqNr */ ) const
+                                                                , SequenceNumber        /* seqNr */ ) const
 {
     return nullptr;
 }

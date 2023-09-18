@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:05:23 GMT+02:00
+ * Generated at     17.09.2023  00:34:04 GMT+02:00
  *                  Create by AREG SDK code generator tool from source DirectMessager.
  *
  * \file            generated/src/DirectMessagerClientBase.hpp
@@ -182,7 +182,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseChatJoin
      **/
-    inline unsigned int requestChatJoin( const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect );
+    inline SequenceNumber requestChatJoin( const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect );
     /**
      * \brief   Overwrite to handle error of ChatJoin request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -421,7 +421,7 @@ protected:
     /**
      * \brief   Returns the current sequence number
      **/
-    inline unsigned int getCurrentSequenceNr( void ) const;
+    inline const SequenceNumber & getCurrentSequenceNr( void ) const;
 
     /**
      * \brief  Returns instance of proxy object.
@@ -444,7 +444,7 @@ private:
     /**
      * \brief   The counter of sequence number
      **/
-    unsigned int        mCurrSequenceNr;
+    SequenceNumber      mCurrSequenceNr;
     /**
      * \brief   Pointer of Proxy object providing communication
      **/
@@ -515,7 +515,7 @@ inline DirectMessagerClientBase & DirectMessagerClientBase::self( void )
     return (*this);
 }
 
-inline unsigned int DirectMessagerClientBase::getCurrentSequenceNr( void ) const
+inline const SequenceNumber & DirectMessagerClientBase::getCurrentSequenceNr( void ) const
 {
     return mCurrSequenceNr;
 }
@@ -574,7 +574,7 @@ inline void DirectMessagerClientBase::notifyOnChatParticipantsUpdate( bool notif
  * Request calls
  ************************************************************************/
 
-inline unsigned int DirectMessagerClientBase::requestChatJoin( const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect )
+inline SequenceNumber DirectMessagerClientBase::requestChatJoin( const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect )
 {
     ASSERT(mProxy != nullptr);
     return mProxy->requestChatJoin( static_cast<IENotificationEventConsumer &>(self()), participant, timeConnect );

@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:05:03 GMT+02:00
+ * Generated at     17.09.2023  00:33:59 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PowerManager.
  *
  * \file            generated/src/PowerManagerClientBase.hpp
@@ -210,7 +210,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseStartTrafficLight
      **/
-    inline unsigned int requestStartTrafficLight( void );
+    inline SequenceNumber requestStartTrafficLight( void );
     /**
      * \brief   Overwrite to handle error of StartTrafficLight request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -226,7 +226,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseStopTrafficLight
      **/
-    inline unsigned int requestStopTrafficLight( void );
+    inline SequenceNumber requestStopTrafficLight( void );
     /**
      * \brief   Overwrite to handle error of StopTrafficLight request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -335,7 +335,7 @@ protected:
     /**
      * \brief   Returns the current sequence number
      **/
-    inline unsigned int getCurrentSequenceNr( void ) const;
+    inline const SequenceNumber & getCurrentSequenceNr( void ) const;
 
     /**
      * \brief  Returns instance of proxy object.
@@ -358,7 +358,7 @@ private:
     /**
      * \brief   The counter of sequence number
      **/
-    unsigned int        mCurrSequenceNr;
+    SequenceNumber      mCurrSequenceNr;
     /**
      * \brief   Pointer of Proxy object providing communication
      **/
@@ -429,7 +429,7 @@ inline PowerManagerClientBase & PowerManagerClientBase::self( void )
     return (*this);
 }
 
-inline unsigned int PowerManagerClientBase::getCurrentSequenceNr( void ) const
+inline const SequenceNumber & PowerManagerClientBase::getCurrentSequenceNr( void ) const
 {
     return mCurrSequenceNr;
 }
@@ -500,13 +500,13 @@ inline void PowerManagerClientBase::requestPowerOff( void )
     mProxy->requestPowerOff(  );
 }
 
-inline unsigned int PowerManagerClientBase::requestStartTrafficLight( void )
+inline SequenceNumber PowerManagerClientBase::requestStartTrafficLight( void )
 {
     ASSERT(mProxy != nullptr);
     return mProxy->requestStartTrafficLight( static_cast<IENotificationEventConsumer &>(self()) );
 }
 
-inline unsigned int PowerManagerClientBase::requestStopTrafficLight( void )
+inline SequenceNumber PowerManagerClientBase::requestStopTrafficLight( void )
 {
     ASSERT(mProxy != nullptr);
     return mProxy->requestStopTrafficLight( static_cast<IENotificationEventConsumer &>(self()) );

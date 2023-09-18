@@ -28,7 +28,7 @@
 
 #include "areg/base/SynchObjects.hpp"
 #include "areg/component/private/ServiceManagerEventProcessor.hpp"
-#include "areg/ipc/private/ServiceClientConnection.hpp"
+#include "areg/ipc/private/RouterClient.hpp"
 
 /************************************************************************
  * Dependencies
@@ -467,7 +467,7 @@ private:
     /**
      * \brief   The connection service.
      **/
-    ServiceClientConnection         mServiceClient;
+    RouterClient                    mServiceClient;
     /**
      * \brief   Synchronization object, for multi-threading access.
      **/

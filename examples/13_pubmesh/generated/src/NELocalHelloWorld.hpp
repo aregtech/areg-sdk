@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:04:26 GMT+02:00
+ * Generated at     17.09.2023  00:33:58 GMT+02:00
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
  *
  * \file            generated/src/NELocalHelloWorld.hpp
@@ -235,7 +235,7 @@ namespace   NELocalHelloWorld
 IMPLEMENT_STREAMABLE( NELocalHelloWorld::eMessageIDs );
 
 /************************************************************************
- * NELocalHelloWorld::sConnectedClient structure inline implementation
+ * NELocalHelloWorld::sConnectedClient strcuture inline implementation
  ************************************************************************/
 /**
  * Every field of structure should have default constructor.

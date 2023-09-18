@@ -7,21 +7,18 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        areg/ipc/ClientConnection.hpp
+ * \file        areg/ipc/private/ClientConnection.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
  * \brief       AREG Platform Client Connection class declaration
  ************************************************************************/
-#include "areg/ipc/private/ClientConnection.hpp"
+#include "areg/ipc/ClientConnection.hpp"
 
 #include "areg/ipc/NEConnection.hpp"
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/component/NEService.hpp"
 
 #include "areg/trace/GETrace.h"
-
-DEF_TRACE_SCOPE(areg_ipc_private_ClientConnection_requestConnectServer);
-DEF_TRACE_SCOPE(areg_ipc_private_ClientConnection_requestDisconnectServer);
 
 ClientConnection::ClientConnection( void )
     : SocketConnectionBase    ( )
@@ -61,44 +58,4 @@ void ClientConnection::closeSocket(void)
 {
     setCookie(NEService::COOKIE_UNKNOWN);
     mClientSocket.closeSocket();
-}
-
-bool ClientConnection::requestConnectServer(void)
-{
-    TRACE_SCOPE(areg_ipc_private_ClientConnection_requestConnectServer);
-    bool result = false;
-    if ( isValid() )
-    {
-        if ( getCookie() == NEService::COOKIE_LOCAL )
-        {
-            RemoteMessage msgHelloServer = NEConnection::createConnectRequest();
-            TRACE_DBG("Sending hello message to the service.");
-            result = msgHelloServer.isValid() ? sendMessage(msgHelloServer) > 0 : false;
-        }
-        else
-        {
-            result = true;  // nothing to set, valid connection
-        }
-    }
-    return result;
-}
-
-bool ClientConnection::requestDisconnectServer(void)
-{
-    TRACE_SCOPE(areg_ipc_private_ClientConnection_requestDisconnectServer);
-
-    bool result = false;
-    if ( isValid() )
-    {
-        TRACE_DBG("Sending goodbye message to the service.");
-        RemoteMessage msgBeyServer = NEConnection::createDisconnectRequest(getCookie());
-        result = msgBeyServer.isValid() ? sendMessage(msgBeyServer) > 0 : false;
-        closeSocket();
-    }
-    return result;
-}
-
-RemoteMessage ClientConnection::getDisconnectMessage(void) const
-{
-    return (isValid( ) ? NEConnection::createDisconnectRequest( getCookie( ) ) : RemoteMessage( ));
 }

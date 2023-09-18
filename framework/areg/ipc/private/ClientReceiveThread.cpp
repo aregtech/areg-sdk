@@ -16,7 +16,7 @@
 
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/ipc/NEConnection.hpp"
-#include "areg/ipc/private/ClientConnection.hpp"
+#include "areg/ipc/ClientConnection.hpp"
 #include "areg/ipc/IERemoteMessageHandler.hpp"
 
 #include "areg/trace/GETrace.h"

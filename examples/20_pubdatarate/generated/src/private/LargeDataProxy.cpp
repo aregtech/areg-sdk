@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:05:54 GMT+02:00
+ * Generated at     17.09.2023  00:34:01 GMT+02:00
  *                  Create by AREG SDK code generator tool from source LargeData.
  *
  * \file            generated/src/private/LargeDataProxy.hpp
@@ -106,7 +106,7 @@ RemoteResponseEvent * LargeDataProxy::createRemoteResponseEvent(const IEInStream
     return static_cast<RemoteResponseEvent *>( DEBUG_NEW LargeDataResponseEvent(stream) );
 }
 
-RemoteResponseEvent * LargeDataProxy::createRemoteRequestFailedEvent(const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, unsigned int seqNr) const
+RemoteResponseEvent * LargeDataProxy::createRemoteRequestFailedEvent(const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, SequenceNumber seqNr) const
 {
     return static_cast<RemoteResponseEvent *>( DEBUG_NEW LargeDataResponseEvent( addrProxy, reason, msgId, seqNr ) );
 }

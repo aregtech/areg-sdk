@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:05:19 GMT+02:00
+ * Generated at     17.09.2023  00:33:59 GMT+02:00
  *                  Create by AREG SDK code generator tool from source CentralMessager.
  *
  * \file            generated/src/private/CentralMessagerProxy.hpp
@@ -110,7 +110,7 @@ RemoteResponseEvent * CentralMessagerProxy::createRemoteResponseEvent(const IEIn
     return static_cast<RemoteResponseEvent *>( DEBUG_NEW CentralMessagerResponseEvent(stream) );
 }
 
-RemoteResponseEvent * CentralMessagerProxy::createRemoteRequestFailedEvent(const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, unsigned int seqNr) const
+RemoteResponseEvent * CentralMessagerProxy::createRemoteRequestFailedEvent(const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, SequenceNumber seqNr) const
 {
     return static_cast<RemoteResponseEvent *>( DEBUG_NEW CentralMessagerResponseEvent( addrProxy, reason, msgId, seqNr ) );
 }

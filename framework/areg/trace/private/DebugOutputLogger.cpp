@@ -176,12 +176,3 @@ unsigned int DebugOutputLogger::getSizeWritable(void) const
 {
     return static_cast<unsigned int>(0xFFFF);
 }
-
-void DebugOutputLogger::writeData( const SharedBuffer & data )
-{
-}
-
-void DebugOutputLogger::flushLogs(void)
-{
-    flush( );
-}

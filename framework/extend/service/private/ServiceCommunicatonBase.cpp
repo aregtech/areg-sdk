@@ -198,7 +198,8 @@ bool ServiceCommunicatonBase::canAcceptConnection(const SocketAccepted & clientS
 void ServiceCommunicatonBase::connectionLost( SocketAccepted & clientSocket )
 {
     TRACE_SCOPE(areg_extend_service_ServiceCommunicatonBase_connectionLost);
-    ITEM_ID cookie = mServerConnection.getCookie(clientSocket);
+    ITEM_ID cookie { mServerConnection.getCookie(clientSocket) };
+    ITEM_ID channel{ mServerConnection.getChannelId() };
 
     TRACE_WARN("Client lost connection: cookie [ %u ], socket [ %d ], host [ %s : %d ], closing connection"
                 , static_cast<uint32_t>(cookie)
@@ -210,7 +211,7 @@ void ServiceCommunicatonBase::connectionLost( SocketAccepted & clientSocket )
     if ( cookie != NEService::COOKIE_UNKNOWN )
     {
         mInstanceMap.removeAt( cookie );
-        RemoteMessage msgDisconnect = NEConnection::createDisconnectRequest(cookie);
+        RemoteMessage msgDisconnect = NEConnection::createDisconnectRequest(cookie, channel);
         sendCommunicationMessage(ServiceEventData::eServiceEventCommands::CMD_ServiceReceivedMsg, msgDisconnect, Event::eEventPriority::EventPriorityNormal);
     }
 }
@@ -411,7 +412,7 @@ void ServiceCommunicatonBase::processReceivedMessage(const RemoteMessage & msgRe
                         , static_cast<int>(whichSource.getAddress().getHostPort( ))
                         , static_cast<id_type>(target));
 
-        if ( (source > NEService::COOKIE_ROUTER) && NEService::isExecutableId(static_cast<uint32_t>(msgId)) )
+        if ( (source >= NEService::COOKIE_REMOTE_SERVICE) && NEService::isExecutableId(static_cast<uint32_t>(msgId)) )
         {
             TRACE_DBG("Forwarding message [ 0x%X ] to send to target [ %u ]", static_cast<uint32_t>(msgId), static_cast<uint32_t>(target));
             if ( target != NEService::TARGET_UNKNOWN )
@@ -434,7 +435,7 @@ void ServiceCommunicatonBase::processReceivedMessage(const RemoteMessage & msgRe
             String instance;
             msgReceived >> instance;
             addInstance(cookie, instance);
-            RemoteMessage msgConnect = NEConnection::createConnectNotify(cookie);
+            RemoteMessage msgConnect(createServiceConnectMessage(mServerConnection.getChannelId(), cookie));
             TRACE_DBG("Received request connect message, sending response [ %s ] of id [ 0x%X ], to new target [ %u ], connection socket [ %u ], checksum [ %u ]"
                         , NEService::getString( static_cast<NEService::eFuncIdRange>(msgConnect.getMessageId()))
                         , static_cast<uint32_t>(msgConnect.getMessageId())
@@ -476,3 +477,14 @@ bool ServiceCommunicatonBase::postEvent( Event & eventElem )
 {
     return EventDispatcher::postEvent( eventElem );
 }
+
+RemoteMessage ServiceCommunicatonBase::createServiceConnectMessage(const ITEM_ID & source, const ITEM_ID & target) const
+{
+    return NEConnection::createConnectNotify(source, target);
+}
+
+RemoteMessage ServiceCommunicatonBase::createServiceDisconnectMessage( const ITEM_ID & source, const ITEM_ID & target ) const
+{
+    return RemoteMessage();
+}
+

@@ -35,7 +35,7 @@ class TraceScope;
 // ScopeController::TraceScopeMap class declaration
 //////////////////////////////////////////////////////////////////////////
 //!< Scope hash map
-using MapTraceScope     = TEHashMap<unsigned int, TraceScope *>;
+using MapTraceScope     = NETrace::ScopeList;
 //!< Scope resource map helper
 using ImplTraceScope    = TEResourceMapImpl<unsigned int, TraceScope *>;
 //!< The trace scope key-value pair.

@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:05:22 GMT+02:00
+ * Generated at     17.09.2023  00:34:02 GMT+02:00
  *                  Create by AREG SDK code generator tool from source DirectConnection.
  *
  * \file            generated/src/private/DirectConnectionEvents.hpp
@@ -88,12 +88,12 @@ IMPLEMENT_RUNTIME_EVENT( DirectConnectionResponseEvent, RemoteResponseEvent )
 // DirectConnectionResponseEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-DirectConnectionResponseEvent::DirectConnectionResponseEvent( const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, unsigned int seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
+DirectConnectionResponseEvent::DirectConnectionResponseEvent( const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, SequenceNumber seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
     : RemoteResponseEvent( proxyTarget, result, responseId, seqNr )
 {
 }
 
-DirectConnectionResponseEvent::DirectConnectionResponseEvent( const EventDataStream & args, const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, unsigned int seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
+DirectConnectionResponseEvent::DirectConnectionResponseEvent( const EventDataStream & args, const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, SequenceNumber seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
     : RemoteResponseEvent( args, proxyTarget, result, responseId, seqNr, NEDirectConnection::getString(static_cast<NEDirectConnection::eMessageIDs>(responseId)) )
 {
 }

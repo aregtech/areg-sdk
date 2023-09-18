@@ -188,13 +188,13 @@ public:
     /**
      * \brief   Returns Sequence number value set in Remote Buffer.
      **/
-    inline unsigned int getSequenceNr( void ) const;
+    inline const SequenceNumber & getSequenceNr( void ) const;
 
     /**
      * \brief   Sets new Sequence number value in Remote Buffer.
      * \param   newSequenceNr   New Sequence number value set in Remote Buffer
      **/
-    inline void setSequenceNr( unsigned int newSequenceNr );
+    inline void setSequenceNr(const SequenceNumber & newSequenceNr );
 
     /**
      * \brief   Returns true if marked checksum value is valid. Otherwise, it returns false
@@ -210,7 +210,7 @@ public:
      *          It is strongly recommended to call method again if the buffer was changed
      *          or before transferring buffer to remote target.
      **/
-    void bufferCompletionFix( void );
+    void bufferCompletionFix( void ) const;
 
     /**
      * \brief   Initializes new buffer based on given Byte Buffer Header data.
@@ -365,12 +365,12 @@ inline void RemoteMessage::setResult( unsigned int newResult )
     }
 }
 
-inline unsigned int RemoteMessage::getSequenceNr(void) const
+inline const SequenceNumber & RemoteMessage::getSequenceNr(void) const
 {
     return _getHeader().rbhSequenceNr;
 }
 
-inline void RemoteMessage::setSequenceNr( unsigned int newSequenceNr )
+inline void RemoteMessage::setSequenceNr(const SequenceNumber & newSequenceNr )
 {
     if ( isValid() )
     {

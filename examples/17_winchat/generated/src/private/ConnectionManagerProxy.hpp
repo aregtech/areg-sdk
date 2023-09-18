@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:05:20 GMT+02:00
+ * Generated at     17.09.2023  00:34:01 GMT+02:00
  *                  Create by AREG SDK code generator tool from source ConnectionManager.
  *
  * \file            generated/src/private/ConnectionManagerProxy.hpp
@@ -42,7 +42,7 @@ class ConnectionManagerResponseEvent;
 class ConnectionManagerProxy   : public ProxyBase
 {
     friend class ConnectionManagerClientBase;
-    
+
 private:
     //////////////////////////////////////////////////////////////////////////
     // ConnectionManagerProxy::ConnectionManagerServiceAvailableEvent class declaration
@@ -226,7 +226,7 @@ public:
     inline const NEConnectionManager::sConnection & getParamclientLeft( void ) const;
 
 /************************************************************************
- * Requests
+ * Requests.
  ************************************************************************/
     /**
      * \brief   Request call.
@@ -237,7 +237,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseConnect
      **/
-    unsigned int requestConnect( IENotificationEventConsumer & caller, const String & nickName, const DateTime & dateTime );
+    SequenceNumber requestConnect( IENotificationEventConsumer & caller, const String & nickName, const DateTime & dateTime );
 
     /**
      * \brief   Request call.
@@ -250,7 +250,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseRegisterConnection
      **/
-    unsigned int requestRegisterConnection( IENotificationEventConsumer & caller, const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister );
+    SequenceNumber requestRegisterConnection( IENotificationEventConsumer & caller, const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister );
 
     /**
      * \brief   Request call.
@@ -368,7 +368,7 @@ protected:
      * \param   reason      Failure reason set by system
      * \param   seqNr       The sequence number of processing message.
      **/
-    virtual RemoteResponseEvent * createRemoteRequestFailedEvent( const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, unsigned int seqNr ) const override;
+    virtual RemoteResponseEvent * createRemoteRequestFailedEvent( const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, SequenceNumber seqNr ) const override;
 
     /**
      * \brief   Overwrite this method to create service available event to new instantiated clients.

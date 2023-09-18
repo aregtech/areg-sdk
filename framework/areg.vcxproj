@@ -180,7 +180,8 @@
     <ClCompile Include="areg\component\private\NEService.cpp" />
     <ClCompile Include="areg\component\private\TEEvent.cpp" />
     <ClCompile Include="areg\ipc\private\ClientConnection.cpp" />
-    <ClCompile Include="areg\ipc\private\ServiceClientConnection.cpp" />
+    <ClCompile Include="areg\ipc\private\RouterClient.cpp" />
+    <ClCompile Include="areg\ipc\private\ServiceClientConnectionBase.cpp" />
     <ClCompile Include="areg\ipc\private\ClientReceiveThread.cpp" />
     <ClCompile Include="areg\ipc\private\ConnectionConfiguration.cpp" />
     <ClCompile Include="areg\ipc\private\SendMessageEvent.cpp" />
@@ -358,13 +359,14 @@
     <ClInclude Include="areg\component\IERemoteEventConsumer.hpp" />
     <ClInclude Include="areg\component\ServiceAddress.hpp" />
     <ClInclude Include="areg\component\private\StubConnectEvent.hpp" />
-    <ClInclude Include="areg\ipc\private\ServiceClientConnection.hpp" />
+    <ClInclude Include="areg\ipc\private\RouterClient.hpp" />
+    <ClInclude Include="areg\ipc\ServiceClientConnectionBase.hpp" />
     <ClInclude Include="areg\ipc\IEServiceConnectionProvider.hpp" />
     <ClInclude Include="areg\ipc\IEServiceRegisterConsumer.hpp" />
     <ClInclude Include="areg\ipc\IERemoteMessageHandler.hpp" />
     <ClInclude Include="areg\ipc\NEConnection.hpp" />
     <ClInclude Include="areg\ipc\NERemoteService.hpp" />
-    <ClInclude Include="areg\ipc\private\ClientConnection.hpp" />
+    <ClInclude Include="areg\ipc\ClientConnection.hpp" />
     <ClInclude Include="areg\ipc\private\ClientReceiveThread.hpp" />
     <ClInclude Include="areg\ipc\ConnectionConfiguration.hpp" />
     <ClInclude Include="areg\ipc\private\ClientSendThread.hpp" />

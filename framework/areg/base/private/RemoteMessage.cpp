@@ -107,12 +107,12 @@ bool RemoteMessage::isChecksumValid(void) const
     return isValid() ? getChecksum() == RemoteMessage::_checksumCalculate( _getRemoteMessage() ) : false;
 }
 
-void RemoteMessage::bufferCompletionFix(void)
+void RemoteMessage::bufferCompletionFix(void) const
 {
     if ( isValid() )
     {
-        NEMemory::sRemoteMessage & msg = _getRemoteMessage();
-        NEMemory::sRemoteMessageHeader & header = msg.rbHeader;
+        const NEMemory::sRemoteMessage & msg = _getRemoteMessage();
+        const NEMemory::sRemoteMessageHeader & header = msg.rbHeader;
 
         unsigned int checksum   = RemoteMessage::_checksumCalculate( msg );
         unsigned int dataUsed   = header.rbhBufHeader.biUsed;
@@ -127,9 +127,9 @@ void RemoteMessage::bufferCompletionFix(void)
 
         ASSERT(dataLen <= header.rbhBufHeader.biLength);
 
-        header.rbhBufHeader.biBufSize   = bufSize;
-        header.rbhBufHeader.biLength    = dataLen;
-        header.rbhChecksum              = checksum;
+        const_cast<NEMemory::sRemoteMessageHeader &>(header).rbhBufHeader.biBufSize   = bufSize;
+        const_cast<NEMemory::sRemoteMessageHeader &>(header).rbhBufHeader.biLength    = dataLen;
+        const_cast<NEMemory::sRemoteMessageHeader &>(header).rbhChecksum              = checksum;
     }
 }
 

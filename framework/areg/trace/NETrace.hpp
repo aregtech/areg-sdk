@@ -21,7 +21,7 @@
 
 #include "areg/base/IEIOStream.hpp"
 #include "areg/base/NECommon.hpp"
-#include "areg/base/SharedBuffer.hpp"
+#include "areg/base/RemoteMessage.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/TEHashMap.hpp"
 #include "areg/component/NEService.hpp"
@@ -194,19 +194,6 @@ namespace NETrace
     constexpr uint32_t  IP_ADDRESS_SIZE         { 16 };
 
     /**
-     * \brief   NETrace::eLogType
-     *          The logging type IDs. Should be set when sending log message
-     **/
-    enum eLogType : unsigned int
-    {
-          LogUndefined  = 0 //!< Undefined log message
-        , LogMessage        //!< The message type is a logging message.
-        , LogRequest        //!< Any generic request sent from the host application to target logger service.
-        , LogResponse       //!< Any generic response sent from target logger service to the host application.
-        , LogNotify         //!< Any generic notification sent from target logger service to the host application.
-    };
-
-    /**
      * \brief   NETrace::eMessageType
      *          The logging message type.
      **/
@@ -219,155 +206,16 @@ namespace NETrace
     };
 
     /**
-     * \brief   NETrace::eLogCommands
-     *          The logging command type.
-     **/
-    enum eLogCommands : unsigned int
-    {
-          LogCommandUndefined           = 0x00000000    //!< The log request is undefined and invalid
-        , LogRequestFirst               = 0x00000001    //!< The first ID of the request sent by host to the remote logger service.
-        , LogRequestConnect                             //!< The log request to connect to the remote logger service.
-        , LogRequestDisconnect                          //!< The log request to disconnection from the remote logger service
-        , LogRequestRegisterScopeList                   //!< The log request to register list of scopes
-        , LogResponseFirst              = 0x00001000    //!< The first ID of the response sent by remote logger service to the host
-        , LogResponseConnect                            //!< The log response to connect to remote logger service
-        , LogResponseRegisterScopes
-        , LogNotificationFirst          = 0x00002000    //!< The first ID of the log notification
-        , LogNotifyScopePriority                        //!< The notification to set the scope priority
-    };
-
-    /**
-     * \brief   NETrace::eLogModuleType
-     *          The type of logging module.
-     **/
-    enum eLogModuleType : unsigned int
-    {
-          LogModuleUndefien     = 0 //!< Undefined log module.
-        , LogModuleGenerator        //!< The module generates logging data.
-        , LogModuleService          //!< The module is logging service.
-        , LogModuleCollector        //!< The module collects logs. For example, is a log viewer.
-    };
-
-    /**
-     * \brief   NETrace::eScopeAction
-     *          The actions take on scope list.
-     **/
-    enum eScopeAction   : unsigned int
-    {
-          ScopesNoAction
-        , ScopesSet
-        , ScopesAppend
-        , ScopesUpdate
-    };
-
-    /**
-     * \brief   NETrace::sLogHeader
-     *          Structure of logging message header.
-     * 
-     **/
-    struct sLogHeader
-    {
-        /**
-         * \brief   The length in bytes of complete log object.
-         **/
-        unsigned int    hdrDataLen;
-        /**
-         * \brief   The type of log message.
-         **/
-        eLogType        hdrLogType;
-        /**
-         * \brief   The cookie of the message host.
-         *          If the message sent to remote logging service, this is the cookie of log host, set by remote logging service.
-         *          If the message sent to the log host (i.e. sent by service), this is the NEService::COOKIE_REMOTE_SERVICE.
-         **/
-        ITEM_ID         hdrCookieHost;
-        /**
-         * \brief   The cookie of the message target.
-         *          If the message sent to remote logging service, this is the NEService::COOKIE_REMOTE_SERVICE.
-         *          If the message sent to the log host (i.e. sent by service), this is the cookie set by logging service.
-         **/
-        ITEM_ID         hdrCookieTarget;
-    };
-
-    /**
-     *\brief    NETrace::sLogCommandData
-     *          The generic message structure to send communication message data between host and logging service.
-     **/
-    struct sLogCommandData
-    {
-        //!< The ID of action to perform
-        eLogCommands    dataCommand;
-        //!< The data buffer related with action.
-        unsigned char   dataBuffer[4];
-    };
-
-    /**
-     *\brief    NETrace::sLogCommand
-     *          The generic message structure to send communication message between host and logging service.
-     **/
-    struct sLogCommand
-    {
-        //!< The logging message header.
-        NETrace::sLogHeader         cmdHeader   { sizeof(NETrace::sLogCommandData), NETrace::eLogType::LogUndefined, NEService::COOKIE_LOCAL, NEService::COOKIE_LOCAL };
-        //!< The data buffer of the command.
-        NETrace::sLogCommandData    cmdData     { NETrace::eLogCommands::LogCommandUndefined };
-    };
-
-    /**
-     * \brief   NETrace::sLogMessageData
-     *          The structure of output logging message.
-     **/
-    struct AREG_API sLogMessageData
-    {
-        /**
-         * \brief   Initializes empty log tracing object, set message type.
-         * \param   msgType The type of message. It can be scope enter, scope exit or text.
-         **/
-        sLogMessageData(NETrace::eMessageType msgType = NETrace::eMessageType::MsgUndefined);
-
-        /**
-         * \brief   Initializes log tracing object, sets scope ID, priority and optional message.
-         * \param   msgType     The logging message type.
-         * \param   scopeId     The ID scope, which is calculated from name.
-         * \param   msgPrio     The priority of output message.
-         * \param   message     The message to output. Can be nullptr or empty.
-         **/
-        sLogMessageData(NETrace::eMessageType msgType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message, unsigned int msgLen );
-
-        /**
-         * \brief   Copies log tracing data from given source.
-         * \param   src     The source of data to copy.
-         **/
-        sLogMessageData( const sLogMessageData & src );
-
-        /**
-         * \brief   Copies data from given source.
-         * \param   src     The source of data to copy.
-         **/
-        sLogMessageData & operator = ( const sLogMessageData & src );
-
-        NETrace::eMessageType   dataMsgType;       //!< The type of the logging message.
-        ITEM_ID                 dataHostId;        //!< The ID of the host, same as 'hdrCookieTarget' in the header.
-        ITEM_ID                 dataModuleId;      //!< The ID of the application module that generated log message
-        ITEM_ID                 dataThreadId;      //!< The ID of thread that generated log message
-        TIME64                  dataTimestamp;     //!< The time-stamp of log message
-        unsigned int            dataScopeId;       //!< The ID of trace scope that generated log message
-        NETrace::eLogPriority   dataMessagePrio;   //!< The log message priority
-        unsigned int            dataMessageLen;    //!< The actual length of the log message
-        char                    dataMessage[LOG_MESSAGE_BUFFER_SIZE];  //!< The message text to output, with maximum NETrace::LOG_MESSAGE_BUFFER_SIZE characters
-    };
-
-    /**
      * \brief   NETrace::sLogMessage
      *          The structure of logging message object to trace in output target.
      **/
-    struct sLogMessage
+    struct AREG_API sLogMessage
     {
         /**
          * \brief   Initializes logging message of specified type.
          * \param   msgType     The logging message type.
          **/
-        inline sLogMessage( NETrace::eMessageType msgType = NETrace::eMessageType::MsgUndefined );
+        sLogMessage( NETrace::eMessageType msgType = NETrace::eMessageType::MsgUndefined );
         /**
          * \brief   Initializes logging message and sets specified data.
          * \param   msgType     The logging message type.
@@ -375,216 +223,31 @@ namespace NETrace
          * \param   mstPrio     The priority of logging message.
          * \param   message     The message text to output on target. Can be empty.
          **/
-        inline sLogMessage(NETrace::eMessageType msgType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message, unsigned int msgLen);
+        sLogMessage(NETrace::eMessageType msgType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message, unsigned int msgLen);
         /**
          * \brief   Copies data from given source.
          * \param   src     The source to copy data.
          **/
-        inline sLogMessage( const sLogMessage & src );
-
-        //!< The logging message header.
-        NETrace::sLogHeader         lmHeader;
-        //!< The logging message data with text to output on target.
-        NETrace::sLogMessageData    lmTrace;
-    };
-
-    /**
-     * \brief   NETrace::sLogRequestConnectData
-     *          The structure of request to connect to remote logging service.
-     **/
-    struct AREG_API sLogRequestConnectData
-    {
-        DECLARE_NOMOVE(sLogRequestConnectData);
+        sLogMessage( const sLogMessage & src );
 
         /**
-         * \brief   Set default values:
-         *              - The command is the request to connect;
-         *              - The type module is the log generator;
-         *              - The name of the host machine;
-         *              - The name of executable application.
+         * \brief   Copies data from given source.
+         * \param   src     The source to copy data.
          **/
-        sLogRequestConnectData(void);
+        sLogMessage & operator = (const sLogMessage & src);
 
-        /**
-         * \brief   Copy data from given source.
-         **/
-        sLogRequestConnectData(const sLogRequestConnectData & src);
-
-        /**
-         * \brief   Assign values from given source.
-         **/
-        sLogRequestConnectData & operator = (const sLogRequestConnectData & src);
-
-        //!< The command to execute.
-        NETrace::eLogCommands   dataCommand;
-        //!< The type of module that requests to connect.
-        NETrace::eLogModuleType dataModuleType;
-        //!< The name of the host that requested to connect.
-        char                    dataHost[NETrace::LOG_NAMES_SIZE];
-        //!< The name of the application that requested connect.
-        char                    dataModule[NETrace::LOG_NAMES_SIZE];
+        NETrace::eMessageType   logMsgType;     //!< The type of the logging message.
+        ITEM_ID                 logSource;      //!< The ID of the source that generated logging message.
+        ITEM_ID                 logTarget;      //!< The ID of the target to send logging message, valid only in case of TCP/IP logging.
+        ITEM_ID                 logCookie;      //!< The cookie set by the networking service, i.e. the log collector. Valid only in case of TCP/IP logging.
+        ITEM_ID                 logModuleId;    //!< The ID of the process in the local machine.
+        ITEM_ID                 logThreadId;    //!< The ID the thread in the local process.
+        TIME64                  logTimestamp;   //!< The timestamp of generated log.
+        unsigned int            logScopeId;     //!< The ID of trace scope that generated log message
+        NETrace::eLogPriority   logMessagePrio; //!< The log message priority
+        unsigned int            logMessageLen;  //!< The actual length of the log message
+        char                    logMessage[LOG_MESSAGE_BUFFER_SIZE];  //!< The message text to output, with maximum NETrace::LOG_MESSAGE_BUFFER_SIZE characters
     };
-
-    /**
-     *\brief    NETrace::sLogRequestConnect
-     *          The message structure to send a connection request to the logger service.
-     **/
-    struct sLogRequestConnect
-    {
-        //!< The logging message header.
-        NETrace::sLogHeader             reqConHeader { sizeof(NETrace::sLogRequestConnectData), NETrace::eLogType::LogRequest, NETrace::getCookie(), NEService::COOKIE_LOGGER};
-        //!< The list of names.
-        NETrace::sLogRequestConnectData reqConData;
-    };
-
-    /**
-     *\brief    NETrace::sLogResponseConnectData
-     *          The structure of response message on the request to connect to the log service.
-     **/
-    struct sLogResponseConnectData
-    {
-        DECLARE_NOMOVE(sLogResponseConnectData);
-
-        //!< The command for the host
-        NETrace::eLogCommands   dataCommand { NETrace::eLogCommands::LogResponseConnect };
-        //!< The cookie of a new connected target.
-        ITEM_ID                 dataCookie  { NEService::COOKIE_ANY };
-        //!< The recognized IP-address of the host.
-        char                    dataIpAddress[NETrace::IP_ADDRESS_SIZE]{ '0', '0', '0', '.', '0', '0', '0', '.', '0','0','0', '.', '0', '0', '0', '\0' };
-    };
-
-    /**
-     *\brief    NETrace::sLogResponseConnect
-     *          The message structure of the response to the request to connect to the logger service.
-     **/
-    struct sLogResponseConnect
-    {
-        //!< The logging message header.
-        NETrace::sLogHeader                 respConHeader { sizeof(NETrace::sLogResponseConnectData), NETrace::eLogType::LogResponse, NEService::COOKIE_LOGGER, NEService::COOKIE_ANY };
-        //!< The response data on connection request.
-        NETrace::sLogResponseConnectData    respConHost;
-    };
-
-    /**
-     *\brief    NETrace::sLogRequestDisconnectData
-     *          The message structure to request to disconnect from the logger service.
-     **/
-    struct sLogRequestDisconnectData
-    {
-        DECLARE_NOMOVE(sLogRequestDisconnectData);
-
-        //!< The command data
-        NETrace::sLogCommandData  dataData{ NETrace::eLogCommands::LogRequestDisconnect, { '\0', '\0', '\0', '\0' } };
-    };
-
-    /**
-     *\brief    NETrace::sLogRequestDisconnect
-     *          The message structure to send disconnect request to the logger service.
-     **/
-    struct sLogRequestDisconnect
-    {
-        //!< The logging message header.
-        NETrace::sLogHeader                 reqDisconHeader { sizeof(NETrace::sLogRequestDisconnectData), NETrace::eLogType::LogRequest, NETrace::getCookie(), NEService::COOKIE_ANY };
-        //!< The command data
-        NETrace::sLogRequestDisconnectData  reqDisconData   { NETrace::eLogCommands::LogRequestDisconnect, { '\0', '\0', '\0', '\0' } };
-    };
-
-    /**
-     *\brief    NETrace::sLogScopeInfo
-     *          The structure of the scope information.
-     **/
-    struct sLogScopeInfo
-    {
-        DECLARE_NOMOVE(sLogScopeInfo);
-
-        //!< The type of the command.
-        NETrace::eLogCommands   dataCommand     { NETrace::eLogCommands::LogCommandUndefined };
-        //!< The action take on scope list.
-        NETrace::eScopeAction   dataScopeAction { NETrace::eScopeAction::ScopesNoAction };
-        //!< The length of allocated buffer size in bytes to write data.
-        uint32_t                dataBufferLen   { 0 };
-        //!< The number of entries in the buffer.
-        uint32_t                dataScopeCount  { 0 };
-    };
-
-    /**
-     *\brief    NETrace::sLogRequestRegisterScopes
-     *          The structure of the message to request register scopes.
-     *          The buffer of 'reqScopeList' should be allocated enough to write data in a row.
-     *          The 'reqScopeList' buffer structure must be a pair {"scope name", "scope priority"}
-     *              - Each scope name should end with null-terminated character '\0'.
-     *              - Each scope name follows the logging priority value.
-     *              - The number of scope pairs entries must be specified in the 'reqScopeInfo.dataScopeCount.
-     *              - The total length of 'reqScopeList' buffer must be equal to 'reqScopeInfo.dataBufferLen'.
-     **/
-    struct sLogRequestRegisterScopes
-    {
-        //!< The logging message header
-        NETrace::sLogHeader     reqScopeHeader  { sizeof(NETrace::sLogScopeInfo), NETrace::eLogType::LogRequest, NETrace::getCookie(), NEService::COOKIE_ANY };
-        //!< The log scope information. Also contains the number of entries and length of 'reqScopeList' buffer.
-        NETrace::sLogScopeInfo  reqScopeInfo    { NETrace::eLogCommands::LogRequestRegisterScopeList, NETrace::eScopeAction::ScopesNoAction, 0, 0 };
-        //!< The buffer to save {"scope name", "scope priority"} pair to register.
-        unsigned char           reqScopeList[1] { };
-    };
-
-    /**
-     *\brief    NETrace::sLogResponseRegisterScopes
-     *          The message structure of the response to the request to register scopes.
-     **/
-    struct sLogResponseRegisterScopes
-    {
-        //!< The logging message header.
-        NETrace::sLogHeader     resConHeader     { sizeof(NETrace::sLogScopeInfo), NETrace::eLogType::LogResponse, NEService::COOKIE_LOGGER, NEService::COOKIE_ANY };
-        //!< The log scope information. Also contains the number of entries and length of 'resScopeList' buffer. There can be separate scope of group of scopes.
-        NETrace::sLogScopeInfo  resScopeInfo     { NETrace::eLogCommands::LogRequestRegisterScopeList, NETrace::eScopeAction::ScopesNoAction, 0, 0 };
-        //!< The buffer to save {"scope name", "scope priority"} pair to register.
-        unsigned char           resScopeList[ 1 ]{ };
-    };
-
-    /**
-     *\brief    NETrace::sLogNotifyLogPriority
-     *          The structure of message sent by log service to change the log priority.
-     *          The buffer 'notifyScopeList' should be long enough to save all entries
-     *          of {"scope name", "scope priority"} pairs.
-     *              - Each entry is either a single scope or scope group ending with '*'.
-     *              - Each name should end with null-terminated character '\0'.
-     *              - Each scope name (or scope group) follows the scope priority.
-     *              - The number of scope pairs entries must be specified in the 'reqScopeInfo.dataScopeCount.
-     *              - The total length of 'reqScopeList' buffer must be equal to 'reqScopeInfo.dataBufferLen'.
-     **/
-    struct sLogNotifyLogPriority
-    {
-        //!< The logging message header
-        NETrace::sLogHeader     notifyScopeHeader   { sizeof(NETrace::sLogScopeInfo), NETrace::eLogType::LogNotify, NEService::COOKIE_LOGGER, NEService::COOKIE_ANY };
-        //!< The log scope information. Also contains the number of entries and length of 'notifyScopeList' buffer.
-        NETrace::sLogScopeInfo  notifyScopeInfo     { NETrace::eLogCommands::LogNotifyScopePriority, NETrace::eScopeAction::ScopesNoAction, 0, 0 };
-        //!< The buffer to save {"scope name", "scope priority"} pair to register.
-        unsigned char           notifyScopeList[1]  { };
-    };
-
-    /**
-     * \brief   Returns true if the log header object indicates on log message.
-     * \param   logHeader   The log header object, which has indication of message type.
-     **/
-    inline bool isLogMessage(const NETrace::sLogHeader& logHeader);
-
-    /**
-     * \brief   Returns true if the log header object indicates on request message.
-     * \param   logHeader   The log header object, which has indication of message type.
-     **/
-    inline bool isLogRequest(const NETrace::sLogHeader & logHeader);
-
-    /**
-     * \brief   Returns true if the log header object indicates on response message.
-     * \param   logHeader   The log header object, which has indication of message type.
-     **/
-    inline bool isLogResponse(const NETrace::sLogHeader& logHeader);
-
-    /**
-     * \brief   Returns true if the log header object indicates on notification message.
-     * \param   logHeader   The log header object, which has indication of message type.
-     **/
-    inline bool isLogNotify(const NETrace::sLogHeader& logHeader);
 
     /**
      * \brief   Start logging. If specified file is not nullptr, it configures logging first, then starts logging.
@@ -728,28 +391,73 @@ namespace NETrace
     AREG_API unsigned int getScopePriority( const char * scopeName );
 
     /**
+     * \brief   NETrace::eLogMessageSource
+     *          Defines the source of log communication messages.
+     **/
+    typedef enum E_LogMessageSource : unsigned char
+    {
+          MessageSourceUndefined    //!< The source of the message is undefined.
+        , MessageSourceGenerator    //!< The source of the message is the log generator.
+        , MessageSourceCollector    //!< The source of the message is the log collector (i.e. the logging service).
+        , MessageSourceViewer       //!< The source of the message is the log viewer.
+    } eLogMessageSource;
+
+    /**
+     * \brief   NETrace::eScopeList
+     *          Defines the state of registering logging scopes.
+     **/
+    typedef enum E_ScopeList        : unsigned char
+    {
+          ScopeListUndefined    //!< The state is undefined.
+        , ScopeListStart        //!< Indicates the begin to register the logging scopes
+        , ScopeListContinue     //!< Indicates the continuation to register the logging scopes.
+        , ScopeListEnd          //!< Indicates the end to register the logging scopes.
+    } eScopeList;
+
+    /**
+     * \brief   NETrace::eLogMessageType
+     *          Indicates the origin of the log.
+     **/
+    typedef enum E_LogMessageType   : unsigned char
+    {
+          LogMessageUndefined   //!< The log origin is undefined.
+        , LogMessageScopeEnter  //!< Indicates the begin of the logging scope.
+        , LogMessageText        //!< Indicates the message to log.
+        , LogMessageScopeExit   //!< Indicates the end of the logging scope.
+    } eLogMessageType;
+
+    /**
      * \brief   Creates a message for logging service to get connection registration.
      * \return  Returns generated message.
      **/
-    AREG_API SharedBuffer messageConnectLogService( void );
+    AREG_API RemoteMessage messageConnectLogService( void );
 
     /**
      * \brief   Creates a message for logging service to get connection unregistration.
      * \return  Returns generated message.
      **/
-    AREG_API SharedBuffer messageDisconnectLogService( void );
+    AREG_API RemoteMessage messageDisconnectLogService( void );
 
     /**
      * \brief   Creates a message for logging service to start registering application logging scopes.
+     * \param   scopeCount  The number of scopes to send to register.
      * \return  Returns generated message.
      **/
-    AREG_API SharedBuffer messageRegisterScopesStart( void );
+    AREG_API RemoteMessage messageRegisterScopesStart( unsigned int scopeCount );
 
     /**
      * \brief   Creates a message for logging service to end registering application logging scopes.
      * \return  Returns generated message.
      **/
-    AREG_API SharedBuffer messageRegisterScopesEnd( void );
+    AREG_API RemoteMessage messageRegisterScopesEnd( void );
+
+    AREG_API RemoteMessage messageLog( const NETrace::sLogMessage & logMessage);
+
+    //!< The list of the scopes. It is a pair, where the key is the ID of the scope
+    //!< and the value is the pointer to the scope.
+    using ScopeList = TEHashMap<unsigned int, TraceScope *>;
+    //!< Alias of the map position.
+    using SCOPEPOS = ScopeList::MAPPOS;
 
     /**
      * \brief   Creates a message for logging service to register scopes with message priority.
@@ -764,46 +472,22 @@ namespace NETrace
      *                      If the value is 0xFFFFFFFF, it registers all entries.
      * \return  Returns generated message.
      **/
-    AREG_API SharedBuffer messageRegisterScopes( const TEHashMap<unsigned int, TraceScope *> & scopeList
-                                               , TEHashMap<unsigned int, TraceScope *>::MAPPOS & startAt
-                                               , unsigned int maxEntries );
+    AREG_API RemoteMessage messageRegisterScopes( const ScopeList & scopeList, SCOPEPOS & startAt, unsigned int maxEntries = 0xFFFFFFFF );
+
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // NETrace namespace streamable types
 //////////////////////////////////////////////////////////////////////////////
 IMPLEMENT_STREAMABLE(NETrace::eLogPriority)
-IMPLEMENT_STREAMABLE(NETrace::eLogType)
 IMPLEMENT_STREAMABLE(NETrace::eMessageType)
-IMPLEMENT_STREAMABLE(NETrace::eLogCommands)
-IMPLEMENT_STREAMABLE(NETrace::sLogHeader)
-IMPLEMENT_STREAMABLE(NETrace::sLogMessageData)
-IMPLEMENT_STREAMABLE(NETrace::sLogRequestConnectData)
-IMPLEMENT_STREAMABLE(NETrace::sLogResponseConnectData)
-IMPLEMENT_STREAMABLE(NETrace::sLogRequestDisconnectData)
-IMPLEMENT_STREAMABLE(NETrace::sLogScopeInfo)
+IMPLEMENT_STREAMABLE(NETrace::eLogMessageSource)
+IMPLEMENT_STREAMABLE(NETrace::eScopeList)
+IMPLEMENT_STREAMABLE(NETrace::eLogMessageType)
 
 //////////////////////////////////////////////////////////////////////////////
 // NETrace namespace objects
 //////////////////////////////////////////////////////////////////////////////
-
-inline NETrace::sLogMessage::sLogMessage( NETrace::eMessageType msgType /* = NETrace::eMessageType::MsgUndefined */ )
-    : lmHeader  { sizeof(NETrace::sLogMessageData), NETrace::eLogType::LogMessage, NETrace::getCookie(), NEService::COOKIE_LOGGER }
-    , lmTrace   (msgType)
-{
-}
-
-inline NETrace::sLogMessage::sLogMessage(const sLogMessage & src)
-    : lmHeader  { src.lmHeader.hdrDataLen, src.lmHeader.hdrLogType, src.lmHeader.hdrCookieHost, src.lmHeader.hdrCookieTarget }
-    , lmTrace   ( src.lmTrace )
-{
-}
-
-inline NETrace::sLogMessage::sLogMessage(NETrace::eMessageType msgType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message, unsigned int msgLen )
-    : lmHeader  { sizeof(NETrace::sLogMessageData), NETrace::eLogType::LogMessage, NETrace::getCookie(), NEService::COOKIE_LOGGER }
-    , lmTrace   ( msgType, scopeId, msgPrio, message, msgLen )
-{
-}
 
 //////////////////////////////////////////////////////////////////////////////
 // Operators
@@ -814,10 +498,10 @@ inline NETrace::sLogMessage::sLogMessage(NETrace::eMessageType msgType, unsigned
  * \param   stream  The source of log message data.
  * \param   input   On output this contains structured logging message.
  **/
-inline const IEInStream& operator >> (const IEInStream& stream, NETrace::sLogMessage& input)
+inline const IEInStream & operator >> (const IEInStream& stream, NETrace::sLogMessage& input)
 {
-    stream >> input.lmHeader;
-    stream >> input.lmTrace;
+    stream.read(reinterpret_cast<unsigned char *>(&input), offsetof(NETrace::sLogMessage, logMessage));
+    stream.read(reinterpret_cast<unsigned char *>(input.logMessage), input.logMessageLen + 1);
     return stream;
 }
 
@@ -828,144 +512,14 @@ inline const IEInStream& operator >> (const IEInStream& stream, NETrace::sLogMes
  **/
 inline IEOutStream& operator << (IEOutStream& stream, const NETrace::sLogMessage& output)
 {
-    stream << output.lmHeader;
-    stream << output.lmTrace;
-    return stream;
-}
-
-/**
- * \brief   Deserializes log message from the stream.
- * \param   stream  The source of log message data.
- * \param   input   On output this contains structured logging message.
- **/
-inline const IEInStream& operator >> (const IEInStream& stream, NETrace::sLogRequestConnect& input)
-{
-    stream >> input.reqConHeader;
-    stream >> input.reqConData;
-    return stream;
-}
-
-/**
- * \brief   Serializes log message to the stream.
- * \param   stream  The streaming object to save log message.
- * \param   output  The source of log message to serialize message.
- **/
-inline IEOutStream& operator << (IEOutStream& stream, const NETrace::sLogRequestConnect& output)
-{
-    stream << output.reqConHeader;
-    stream << output.reqConData;
-    return stream;
-}
-
-/**
- * \brief   Deserializes log message from the stream.
- * \param   stream  The source of log message data.
- * \param   input   On output this contains structured logging message.
- **/
-inline const IEInStream& operator >> (const IEInStream& stream, NETrace::sLogRequestDisconnect & input)
-{
-    stream >> input.reqDisconHeader;
-    stream >> input.reqDisconData;
-    return stream;
-}
-
-/**
- * \brief   Serializes log message to the stream.
- * \param   stream  The streaming object to save log message.
- * \param   output  The source of log message to serialize message.
- **/
-inline IEOutStream& operator << (IEOutStream& stream, const NETrace::sLogRequestDisconnect & output)
-{
-    stream << output.reqDisconHeader;
-    stream << output.reqDisconData;
-    return stream;
-}
-
-/**
- * \brief   Deserializes structure to register logging scopes to the stream.
- * \param   stream  The source of {"scope name", "scope priority"} pairs.
- * \param   input   On output this contains structured data.
- *                  The size of the allocated buffer should be enough to save
- *                  header, scope information and the list of scopes.
- **/
-inline const IEInStream& operator >> (const IEInStream& stream, NETrace::sLogRequestRegisterScopes& input)
-{
-    stream >> input.reqScopeHeader;
-    stream >> input.reqScopeInfo;
-    stream.read(input.reqScopeList, input.reqScopeInfo.dataBufferLen);
-
-    return stream;
-}
-
-/**
- * \brief   Serializes message to register scopes in the stream.
- * \param   stream  The streaming object to save header, scope information and
- *                  the {"scope name", "scope priority"} pairs.
- * \param   output  The source of log scopes.
- **/
-inline IEOutStream& operator << (IEOutStream& stream, const NETrace::sLogRequestRegisterScopes& output)
-{
-    stream << output.reqScopeHeader;
-    stream << output.reqScopeInfo;
-    stream.write(output.reqScopeList, output.reqScopeInfo.dataBufferLen);
-
-    return stream;
-}
-
-/**
- * \brief   Deserializes structure to change logging scope priorities to send log messages.
- * \param   stream  The source of {"scope name", "scope priority"} pairs.
- * \param   input   On output this contains structured data.
- *                  The size of the allocated buffer should be enough to save
- *                  header, scope information and the list of scopes.
- **/
-inline const IEInStream& operator >> (const IEInStream& stream, NETrace::sLogNotifyLogPriority& input)
-{
-    stream >> input.notifyScopeHeader;
-    stream >> input.notifyScopeInfo;
-    stream.read(input.notifyScopeList, input.notifyScopeInfo.dataBufferLen);
-
-    return stream;
-}
-
-/**
- * \brief   Serializes message to register scopes in the stream.
- * \param   stream  The streaming object to save header, scope information and
- *                  the {"scope name", "scope priority"} pairs.
- * \param   output  The source of log scopes.
- **/
-inline IEOutStream& operator << (IEOutStream& stream, const NETrace::sLogNotifyLogPriority& output)
-{
-    stream << output.notifyScopeHeader;
-    stream << output.notifyScopeInfo;
-    stream.write(output.notifyScopeList, output.notifyScopeInfo.dataBufferLen);
-
+    stream.write(reinterpret_cast<const unsigned char *>(&output), offsetof(NETrace::sLogMessage, logMessage));
+    stream.write(reinterpret_cast<const unsigned char *>(output.logMessage), output.logMessageLen + 1);
     return stream;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // NETrace namespace inline methods
 //////////////////////////////////////////////////////////////////////////////
-
-inline bool NETrace::isLogMessage(const NETrace::sLogHeader& logHeader)
-{
-    return (logHeader.hdrLogType == NETrace::eLogType::LogMessage);
-}
-
-inline bool NETrace::isLogRequest(const NETrace::sLogHeader& logHeader)
-{
-    return (logHeader.hdrLogType == NETrace::eLogType::LogRequest);
-}
-
-inline bool NETrace::isLogResponse(const NETrace::sLogHeader& logHeader)
-{
-    return (logHeader.hdrLogType == NETrace::eLogType::LogResponse);
-}
-
-inline bool NETrace::isLogNotify(const NETrace::sLogHeader& logHeader)
-{
-    return (logHeader.hdrLogType == NETrace::eLogType::LogNotify);
-}
 
 inline const char* NETrace::getString(NETrace::eLogPriority prio)
 {

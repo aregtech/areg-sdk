@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:05:34 GMT+02:00
+ * Generated at     17.09.2023  00:34:00 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloWatchdog.
  *
  * \file            generated/src/HelloWatchdogClientBase.hpp
@@ -182,7 +182,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseStartSleep
      **/
-    inline unsigned int requestStartSleep( unsigned int timeoutSleep );
+    inline SequenceNumber requestStartSleep( unsigned int timeoutSleep );
     /**
      * \brief   Overwrite to handle error of StartSleep request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -267,7 +267,7 @@ protected:
     /**
      * \brief   Returns the current sequence number
      **/
-    inline unsigned int getCurrentSequenceNr( void ) const;
+    inline const SequenceNumber & getCurrentSequenceNr( void ) const;
 
     /**
      * \brief  Returns instance of proxy object.
@@ -290,7 +290,7 @@ private:
     /**
      * \brief   The counter of sequence number
      **/
-    unsigned int        mCurrSequenceNr;
+    SequenceNumber      mCurrSequenceNr;
     /**
      * \brief   Pointer of Proxy object providing communication
      **/
@@ -361,7 +361,7 @@ inline HelloWatchdogClientBase & HelloWatchdogClientBase::self( void )
     return (*this);
 }
 
-inline unsigned int HelloWatchdogClientBase::getCurrentSequenceNr( void ) const
+inline const SequenceNumber & HelloWatchdogClientBase::getCurrentSequenceNr( void ) const
 {
     return mCurrSequenceNr;
 }
@@ -420,7 +420,7 @@ inline void HelloWatchdogClientBase::notifyOnServiceStateUpdate( bool notify /* 
  * Request calls
  ************************************************************************/
 
-inline unsigned int HelloWatchdogClientBase::requestStartSleep( unsigned int timeoutSleep )
+inline SequenceNumber HelloWatchdogClientBase::requestStartSleep( unsigned int timeoutSleep )
 {
     ASSERT(mProxy != nullptr);
     return mProxy->requestStartSleep( static_cast<IENotificationEventConsumer &>(self()), timeoutSleep );

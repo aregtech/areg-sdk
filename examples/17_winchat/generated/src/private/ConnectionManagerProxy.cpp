@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:05:20 GMT+02:00
+ * Generated at     17.09.2023  00:34:01 GMT+02:00
  *                  Create by AREG SDK code generator tool from source ConnectionManager.
  *
  * \file            generated/src/private/ConnectionManagerProxy.hpp
@@ -116,7 +116,7 @@ RemoteResponseEvent * ConnectionManagerProxy::createRemoteResponseEvent(const IE
     return static_cast<RemoteResponseEvent *>( DEBUG_NEW ConnectionManagerResponseEvent(stream) );
 }
 
-RemoteResponseEvent * ConnectionManagerProxy::createRemoteRequestFailedEvent(const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, unsigned int seqNr) const
+RemoteResponseEvent * ConnectionManagerProxy::createRemoteRequestFailedEvent(const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, SequenceNumber seqNr) const
 {
     return static_cast<RemoteResponseEvent *>( DEBUG_NEW ConnectionManagerResponseEvent( addrProxy, reason, msgId, seqNr ) );
 }
@@ -143,7 +143,7 @@ void ConnectionManagerProxy::unregisterServiceListeners( void )
  * Requests.
  ************************************************************************/
 
-unsigned int ConnectionManagerProxy::requestConnect( IENotificationEventConsumer & caller, const String & nickName, const DateTime & dateTime )
+SequenceNumber ConnectionManagerProxy::requestConnect( IENotificationEventConsumer & caller, const String & nickName, const DateTime & dateTime )
 {
     static const NEConnectionManager::eMessageIDs msgId = NEConnectionManager::eMessageIDs::MsgId_requestConnect;
     EventDataStream args(EventDataStream::eEventData::EventDataExternal);
@@ -154,7 +154,7 @@ unsigned int ConnectionManagerProxy::requestConnect( IENotificationEventConsumer
     return mSequenceCount;
 }
 
-unsigned int ConnectionManagerProxy::requestRegisterConnection( IENotificationEventConsumer & caller, const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister )
+SequenceNumber ConnectionManagerProxy::requestRegisterConnection( IENotificationEventConsumer & caller, const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister )
 {
     static const NEConnectionManager::eMessageIDs msgId = NEConnectionManager::eMessageIDs::MsgId_requestRegisterConnection;
     EventDataStream args(EventDataStream::eEventData::EventDataExternal);

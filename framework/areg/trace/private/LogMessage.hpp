@@ -135,19 +135,6 @@ public:
     inline const DateTime getTimestamp( void ) const;
 
     /**
-     * \brief   Returns the ID of the host set by logging service, or NEService::COOKIE_LOCAL if
-     *          not connected to the logging service.
-     **/
-    inline const ITEM_ID & getHostId( void ) const;
-
-    /**
-     * \brief   Sets the ID of the log host (log source).
-     *          Should be 'NEService::COOKIE_LOCAL' if not connected to logging service.
-     * \param   hostId  The ID of the host of the logs.
-     **/
-    inline void setHostId(const ITEM_ID & hostId);
-
-    /**
      * \brief   Returns message log module ID. By default, it is process ID.
      *          The module ID is an unique identifier set by system.
      **/
@@ -226,18 +213,7 @@ inline LogMessage::LogMessage( NETrace::eMessageType msgType, unsigned int scope
 inline LogMessage::LogMessage( const IEInStream & stream )
     : NETrace::sLogMessage( )
 {
-    stream >> lmHeader;
-    stream >> lmTrace;
-}
-
-inline const ITEM_ID& LogMessage::getHostId(void) const
-{
-    return lmTrace.dataHostId;
-}
-
-inline void LogMessage::setHostId(const ITEM_ID& hostId)
-{
-    lmTrace.dataHostId = hostId;
+    stream >> static_cast<NETrace::sLogMessage &>(*this);
 }
 
 inline const NETrace::sLogMessage & LogMessage::getLogData(void) const
@@ -247,57 +223,57 @@ inline const NETrace::sLogMessage & LogMessage::getLogData(void) const
 
 inline NETrace::eMessageType LogMessage::getMessageType(void) const
 {
-    return lmTrace.dataMsgType;
+    return this->logMsgType;
 }
 
 inline id_type LogMessage::getThreadId(void) const
 {
-    return static_cast<id_type>(lmTrace.dataThreadId);
+    return static_cast<id_type>(this->logThreadId);
 }
 
 inline unsigned int LogMessage::getScopeId(void) const
 {
-    return lmTrace.dataScopeId;
+    return this->logScopeId;
 }
 
 inline const DateTime LogMessage::getTimestamp(void) const
 {
-    return static_cast<DateTime>(lmTrace.dataTimestamp);
+    return static_cast<DateTime>(this->logTimestamp);
 }
 
 inline const ITEM_ID & LogMessage::getModuleId(void) const
 {
-    return lmTrace.dataModuleId;
+    return this->logModuleId;
 }
 
 inline void LogMessage::setModuleId(const ITEM_ID & moduleId)
 {
-    lmTrace.dataModuleId = moduleId;
+    this->logModuleId = moduleId;
 }
 
 inline NETrace::eLogPriority LogMessage::getMessagePrio(void) const
 {
-    return lmTrace.dataMessagePrio;
+    return this->logMessagePrio;
 }
 
 inline void LogMessage::setMessagePrio(const NETrace::eLogPriority msgPrio)
 {
-    lmTrace.dataMessagePrio = msgPrio;
+    this->logMessagePrio = msgPrio;
 }
 
 inline const char * LogMessage::getMessage(void) const
 {
-    return lmTrace.dataMessage;
+    return this->logMessage;
 }
 
 inline const ITEM_ID & LogMessage::getCookie(void) const
 {
-    return lmHeader.hdrCookieHost;
+    return this->logCookie;
 }
 
 inline void LogMessage::setCookie(const ITEM_ID & newCookie)
 {
-    lmHeader.hdrCookieHost = newCookie;
+    this->logCookie = newCookie;
 }
 
 #endif  // AREG_TRACE_PRIVATE_LOGMESSAGE_HPP

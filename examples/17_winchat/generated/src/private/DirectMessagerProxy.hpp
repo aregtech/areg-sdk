@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:05:23 GMT+02:00
+ * Generated at     17.09.2023  00:34:04 GMT+02:00
  *                  Create by AREG SDK code generator tool from source DirectMessager.
  *
  * \file            generated/src/private/DirectMessagerProxy.hpp
@@ -42,7 +42,7 @@ class DirectMessagerResponseEvent;
 class DirectMessagerProxy   : public ProxyBase
 {
     friend class DirectMessagerClientBase;
-    
+
 private:
     //////////////////////////////////////////////////////////////////////////
     // DirectMessagerProxy::DirectMessagerServiceAvailableEvent class declaration
@@ -226,7 +226,7 @@ public:
     inline const DateTime & getParamtimeLeft( void ) const;
 
 /************************************************************************
- * Requests
+ * Requests.
  ************************************************************************/
     /**
      * \brief   Request call.
@@ -237,7 +237,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseChatJoin
      **/
-    unsigned int requestChatJoin( IENotificationEventConsumer & caller, const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect );
+    SequenceNumber requestChatJoin( IENotificationEventConsumer & caller, const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect );
 
     /**
      * \brief   Request call.
@@ -373,7 +373,7 @@ protected:
      * \param   reason      Failure reason set by system
      * \param   seqNr       The sequence number of processing message.
      **/
-    virtual RemoteResponseEvent * createRemoteRequestFailedEvent( const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, unsigned int seqNr ) const override;
+    virtual RemoteResponseEvent * createRemoteRequestFailedEvent( const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, SequenceNumber seqNr ) const override;
 
     /**
      * \brief   Overwrite this method to create service available event to new instantiated clients.

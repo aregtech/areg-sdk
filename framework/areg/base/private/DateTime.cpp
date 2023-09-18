@@ -28,7 +28,7 @@ namespace
 
 
 DateTime::DateTime( void )
-    : mDateTime ( 0 )
+    : mDateTime ( INVALID_TIME )
 {
 }
 

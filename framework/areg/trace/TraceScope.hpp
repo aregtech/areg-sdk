@@ -77,6 +77,13 @@ public:
     TraceScope( const char * scopeName, NETrace::eLogPriority priority = NETrace::PrioNotset );
 
     /**
+     * \brief   Initializes the trace scope object from the stream.
+     *          Unlike the previous initializer, this trace scope object is not inserted into the map.
+     * \param   stream  The streaming object that contains the information of name, ID and priority.
+     **/
+    TraceScope(const IEInStream & stream);
+
+    /**
      * \brief   Destructor.
      **/
     ~TraceScope( void );
@@ -93,10 +100,18 @@ public:
 
     /**
      * \brief   Writes the scope data into the stream.
+     *          Note, the class does not have operator to deserialize
+     *          the scope object, because of 2 reasons:
+     *              1.  The default of TraceScope is deleted, so that there is
+     *                  no possibility to create scope with empty name;
+     *              2.  The name and the ID of the scope are declared as a constants
+     *                  and cannot be changed, because they are inserted in the map
+     *                  when they are created, the key of the TraceScope object in the
+     *                  map is the ID and the location in the map is fixed.
      * \param   stream  The stream object to write data.
      * \param   output  The scope to write into the stream object.
      **/
-    inline friend IEOutStream & operator << ( IEOutStream & stream, TraceScope & output );
+    inline friend IEOutStream & operator << ( IEOutStream & stream, const TraceScope & output );
 
 //////////////////////////////////////////////////////////////////////////////
 // Attributes and operations
@@ -220,7 +235,7 @@ namespace std
 // inline functions implementation
 //////////////////////////////////////////////////////////////////////////////
 
-inline IEOutStream & operator << ( IEOutStream & stream, TraceScope & output )
+inline IEOutStream & operator << ( IEOutStream & stream, const TraceScope & output )
 {
     stream << output.mScopeName;
     stream << output.mScopeId;

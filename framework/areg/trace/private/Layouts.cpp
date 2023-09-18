@@ -48,9 +48,9 @@ TickCountLayout::TickCountLayout( TickCountLayout && /*src*/ ) noexcept
 {
 }
 
-void TickCountLayout::logMessage( const NETrace::sLogMessageData & /*msgLog*/, IEOutStream & stream ) const
+void TickCountLayout::logMessage( const NETrace::sLogMessage & /*msgLog*/, IEOutStream & stream ) const
 {
-    char buffer[128];    
+    char buffer[128];
     int len = String::formatString(buffer, 128, "%llu", static_cast<uint64_t>( DateTime::getProcessTickCount() ));
     stream.write(reinterpret_cast<const unsigned char *>(buffer), len > 0 ? len : 0);
 }
@@ -75,11 +75,11 @@ DayTimeLaytout::DayTimeLaytout( DayTimeLaytout && /*src*/ ) noexcept
 {
 }
 
-void DayTimeLaytout::logMessage( const NETrace::sLogMessageData & msgLog, IEOutStream & stream ) const
+void DayTimeLaytout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const
 {
-    if ( msgLog.dataTimestamp != 0 )
+    if ( msgLog.logTimestamp != 0 )
     {
-        DateTime timestamp( msgLog.dataTimestamp );
+        DateTime timestamp( msgLog.logTimestamp);
         stream.write( timestamp.formatTime( DateTime::TIME_FORMAT_ISO8601_OUTPUT) );
     }
 }
@@ -103,12 +103,12 @@ ModuleIdLayout::ModuleIdLayout( ModuleIdLayout && /*src*/ ) noexcept
 {
 }
 
-void ModuleIdLayout::logMessage( const NETrace::sLogMessageData & msgLog, IEOutStream & stream ) const
+void ModuleIdLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const
 {
-    if (msgLog.dataModuleId != 0)
+    if (msgLog.logModuleId != 0)
     {
         char buffer[128];
-        int len = String::formatString(buffer, 128, "0x%llX", msgLog.dataModuleId);
+        int len = String::formatString(buffer, 128, "0x%llX", msgLog.logModuleId);
         stream.write( reinterpret_cast<const unsigned char *>(buffer), len > 0 ? len : 0 );
     }
 }
@@ -132,9 +132,9 @@ MessageLayout::MessageLayout( MessageLayout && /*src*/ ) noexcept
 {
 }
 
-void MessageLayout::logMessage( const NETrace::sLogMessageData & msgLog, IEOutStream & stream ) const
+void MessageLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const
 {
-    stream.write(msgLog.dataMessage);
+    stream.write(msgLog.logMessage);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -156,7 +156,7 @@ EndOfLineLayout::EndOfLineLayout( EndOfLineLayout && /*src*/ ) noexcept
 {
 }
 
-void EndOfLineLayout::logMessage( const NETrace::sLogMessageData & /*msgLog*/, IEOutStream & stream ) const
+void EndOfLineLayout::logMessage( const NETrace::sLogMessage & /*msgLog*/, IEOutStream & stream ) const
 {
     constexpr char const END_OF_LINE[] { NEString::EndOfLine, NEString::EndOfString };
     stream.write( END_OF_LINE );
@@ -181,9 +181,9 @@ PriorityLayout::PriorityLayout( PriorityLayout && /*src*/ ) noexcept
 {
 }
 
-void PriorityLayout::logMessage( const NETrace::sLogMessageData & msgLog, IEOutStream & stream ) const
+void PriorityLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const
 {
-    stream.write( NETrace::convToString( msgLog.dataMessagePrio ) );
+    stream.write( NETrace::convToString( msgLog.logMessagePrio ) );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -205,12 +205,12 @@ ScopeIdLayout::ScopeIdLayout( ScopeIdLayout && /*src*/ ) noexcept
 {
 }
 
-void ScopeIdLayout::logMessage( const NETrace::sLogMessageData & msgLog, IEOutStream & stream ) const
+void ScopeIdLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const
 {
-    if ( msgLog.dataScopeId != 0 )
+    if ( msgLog.logScopeId != 0 )
     {
         char buffer[128];
-        int len = String::formatString(buffer, 128, "%u", msgLog.dataScopeId);
+        int len = String::formatString(buffer, 128, "%u", msgLog.logScopeId);
         stream.write( reinterpret_cast<const unsigned char *>(buffer), len > 0 ? len : 0 );
     }
 }
@@ -234,16 +234,16 @@ ThreadIdLayout::ThreadIdLayout( ThreadIdLayout && /*src*/ ) noexcept
 {
 }
 
-void ThreadIdLayout::logMessage( const NETrace::sLogMessageData & msgLog, IEOutStream & stream ) const
+void ThreadIdLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const
 {
-    if ( msgLog.dataThreadId != 0 )
+    if ( msgLog.logThreadId != 0 )
     {
         char buffer[128];
 
 #ifdef _BIT64
-        int len = String::formatString(buffer, 128, "0x%016llX", static_cast<uint64_t>(msgLog.dataThreadId));
+        int len = String::formatString(buffer, 128, "0x%016llX", static_cast<uint64_t>(msgLog.logThreadId));
 #else   // _BIT32
-        int lent = String::formatString(buffer, 128, "0x%08X", static_cast<uint32_t>(msgLog.dataThreadId));
+        int lent = String::formatString(buffer, 128, "0x%08X", static_cast<uint32_t>(msgLog.logThreadId));
 #endif  // _BIT64
 
         stream.write( reinterpret_cast<const unsigned char *>(buffer), len > 0 ? len : 0 );
@@ -269,7 +269,7 @@ ModuleNameLayout::ModuleNameLayout( ModuleNameLayout && /*src*/ ) noexcept
 {
 }
 
-void ModuleNameLayout::logMessage( const NETrace::sLogMessageData & /*msgLog*/, IEOutStream & stream ) const
+void ModuleNameLayout::logMessage( const NETrace::sLogMessage & /*msgLog*/, IEOutStream & stream ) const
 {
     stream.write( Process::getInstance().getAppName() );
 }
@@ -293,11 +293,11 @@ ThreadNameLayout::ThreadNameLayout( ThreadNameLayout && /*src*/ ) noexcept
 {
 }
 
-void ThreadNameLayout::logMessage( const NETrace::sLogMessageData & msgLog, IEOutStream & stream ) const
+void ThreadNameLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const
 {
     static const String _unknownThread("Unknown Thread");
 
-    id_type id = static_cast<id_type>(msgLog.dataThreadId);
+    id_type id = static_cast<id_type>(msgLog.logThreadId);
     Thread * thread = Thread::findThreadById( id );
     stream.write( thread != nullptr ? thread->getName() : _unknownThread );
 }
@@ -321,9 +321,9 @@ ScopeNameLayout::ScopeNameLayout( ScopeNameLayout && /*src*/ ) noexcept
 {
 }
 
-void ScopeNameLayout::logMessage( const NETrace::sLogMessageData & msgLog, IEOutStream & stream ) const
+void ScopeNameLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const
 {
-    stream.write( msgLog.dataMessage );
+    stream.write( msgLog.logMessage );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -360,7 +360,7 @@ AnyTextLayout::AnyTextLayout(const char * anyMessage)
 {
 }
 
-void AnyTextLayout::logMessage( const NETrace::sLogMessageData & /*msgLog*/, IEOutStream & stream ) const
+void AnyTextLayout::logMessage( const NETrace::sLogMessage & /*msgLog*/, IEOutStream & stream ) const
 {
     stream.write( mTextMessage.getString() );
 }

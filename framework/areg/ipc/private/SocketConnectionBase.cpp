@@ -30,6 +30,7 @@ int SocketConnectionBase::sendMessage(const RemoteMessage & in_message, const So
     int result = -1;
     if ( in_message.isValid() && clientSocket.isValid() )
     {
+        in_message.bufferCompletionFix();
         const NEMemory::sRemoteMessageHeader & buffer = reinterpret_cast<const NEMemory::sRemoteMessageHeader &>( *in_message.getByteBuffer() );
 
         TRACE_DBG("Sending message with ID [ %u ] from source [ %llu ] to target [ %llu ] via socket [ %llu ], data length [ %u ], checksum [ %u ]"

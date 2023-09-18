@@ -1,5 +1,5 @@
-#ifndef AREG_IPC_PRIVATE_CLIENTCONNECTION_HPP
-#define AREG_IPC_PRIVATE_CLIENTCONNECTION_HPP
+#ifndef AREG_IPC_CLIENTCONNECTION_HPP
+#define AREG_IPC_CLIENTCONNECTION_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,7 +9,7 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        areg/ipc/private/ClientConnection.hpp
+ * \file        areg/ipc/ClientConnection.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
  * \brief       AREG Platform Client Connection class declaration
@@ -81,14 +81,14 @@ public:
      *          Cookie is checked when sending or receiving data as
      *          source or target in Remote Buffer.
      **/
-    ITEM_ID getCookie( void ) const;
+    const ITEM_ID & getCookie( void ) const;
 
     /**
      * \brief   Sets cookie of client connection set by server
      *          Cookie is checked when sending or receiving data as
      *          source or target in Remote Buffer.
      **/
-    void setCookie( ITEM_ID newCookie );
+    void setCookie(const ITEM_ID & newCookie );
 
     /**
      * \brief   Return Socket Address object.
@@ -205,26 +205,6 @@ public:
      **/
     bool disableReceive( void );
 
-    /**
-     * \brief   Called by connection service to start connection with routing service.
-     * \return  Returns true if succeeded to connect to routing service.
-     **/
-    bool requestConnectServer( void );
-
-    /**
-     * \brief   Called by connection service to disconnect from routing service.
-     *          Once disconnected, all services receive disconnect notification and stop communication
-     *          via routing service.
-     * \return  Returns true if there was an active connection and the system succeeded to disconnect.
-     *          Returns false, if there was no active connection.
-     **/
-    bool requestDisconnectServer( void );
-
-    /**
-     * \brief   Generates client disconnected message to broadcast.
-     **/
-    RemoteMessage getDisconnectMessage( void ) const;
-
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
 //////////////////////////////////////////////////////////////////////////
@@ -255,12 +235,12 @@ inline bool ClientConnection::setAddress(const String & hostName, unsigned short
     return mClientSocket.setAddress(hostName, portNr, false);
 }
 
-inline ITEM_ID ClientConnection::getCookie( void ) const
+inline const ITEM_ID & ClientConnection::getCookie( void ) const
 {
     return mCookie;
 }
 
-inline void ClientConnection::setCookie( ITEM_ID newCookie )
+inline void ClientConnection::setCookie(const ITEM_ID & newCookie )
 {
     mCookie = newCookie;
 }
@@ -305,4 +285,4 @@ inline int ClientConnection::receiveMessage(RemoteMessage & out_message) const
     return SocketConnectionBase::receiveMessage(out_message, mClientSocket);
 }
 
-#endif  // AREG_IPC_PRIVATE_CLIENTCONNECTION_HPP
+#endif  // AREG_IPC_CLIENTCONNECTION_HPP

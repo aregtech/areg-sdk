@@ -55,12 +55,12 @@ bool FileLogger::openLogger( void )
                     
                     Process & curProcess = Process::getInstance();
                     NETrace::sLogMessage logMsgHello(NETrace::eMessageType::MsgText, 0, NETrace::eLogPriority::PrioIgnoreLayout, nullptr, 0);
-                    String::formatString( logMsgHello.lmTrace.dataMessage
+                    String::formatString( logMsgHello.logMessage
                                         , NETrace::LOG_MESSAGE_BUFFER_SIZE
                                         , LoggerBase::FOMAT_MESSAGE_HELLO.data()
                                         , Process::getString(curProcess.getEnvironment())
                                         , curProcess.getFullPath().getString()
-                                        , logMsgHello.lmTrace.dataModuleId);
+                                        , logMsgHello.logModuleId);
 
                     logMessage(logMsgHello);
                 }
@@ -85,12 +85,12 @@ void FileLogger::closeLogger(void)
     {
         Process & curProcess = Process::getInstance();
         NETrace::sLogMessage logMsgGoodbye(NETrace::eMessageType::MsgText, 0, NETrace::eLogPriority::PrioIgnoreLayout, nullptr, 0);
-        String::formatString(logMsgGoodbye.lmTrace.dataMessage
+        String::formatString(logMsgGoodbye.logMessage
                             , NETrace::LOG_MESSAGE_BUFFER_SIZE
                             , LoggerBase::FORMAT_MESSAGE_BYE.data()
                             , Process::getString(curProcess.getEnvironment())
                             , curProcess.getFullPath().getString()
-                            , logMsgGoodbye.lmTrace.dataModuleId);
+                            , logMsgGoodbye.logModuleId);
 
         logMessage(logMsgGoodbye);
     }
@@ -101,9 +101,9 @@ void FileLogger::closeLogger(void)
 
 void FileLogger::logMessage( const NETrace::sLogMessage & logMessage )
 {
-    if (mLogFile.isOpened() && NETrace::isLogMessage(logMessage.lmHeader))
+    if (mLogFile.isOpened())
     {
-        switch (logMessage.lmTrace.dataMsgType)
+        switch (logMessage.logMsgType)
         {
         case NETrace::eMessageType::MsgText:
             getLayoutMessage().logMessage(logMessage, static_cast<IEOutStream&>(mLogFile));
@@ -127,11 +127,6 @@ void FileLogger::logMessage( const NETrace::sLogMessage & logMessage )
 bool FileLogger::isLoggerOpened(void) const
 {
     return mLogFile.isOpened();
-}
-
-void FileLogger::writeData( const SharedBuffer & data )
-{
-    mLogFile.write(data);
 }
 
 void FileLogger::flushLogs(void)

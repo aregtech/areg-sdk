@@ -21,15 +21,20 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/trace/private/LoggerBase.hpp"
-#include "areg/base/IEThreadConsumer.hpp"
+#include "areg/ipc/ServiceClientConnectionBase.hpp"
+#include "areg/ipc/IEServiceConnectionConsumer.hpp"
+#include "areg/ipc/IERemoteMessageHandler.hpp"
 
 #include "areg/base/IEIOStream.hpp"
 #include "areg/base/TERingStack.hpp"
 #include "areg/base/Thread.hpp"
-#include "areg/base/SocketClient.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/SynchObjects.hpp"
+#include "areg/ipc/ClientConnection.hpp"
 
+#include <string_view>
+
+class LogConfiguration;
 class SharedBuffer;
 
 //////////////////////////////////////////////////////////////////////////
@@ -41,14 +46,16 @@ class SharedBuffer;
  *          and any Unicode character might output wrong.
  **/
 class NetTcpLogger  : public    LoggerBase
-                    , private   IEThreadConsumer
+                    , public    ServiceClientConnectionBase
+                    , private   IEServiceConnectionConsumer
+                    , private   IERemoteMessageHandler
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants.
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< The ring buffer of logging message to queue if logging service is not available.
-    using RingStack = TENolockRingStack<NETrace::sLogMessage *>;
+    using RingStack = TENolockRingStack<RemoteMessage>;
     //!< The state of the TCP logger
     enum eConnectionStates
     {
@@ -74,8 +81,9 @@ public:
      *                          which contains configuration values,
      *                          required by logger during initialization (open)
      *                          and when outputs message.
+     * \param   dispatchThread  The thread to dispatch the messages.
      **/
-    explicit NetTcpLogger(LogConfiguration& tracerConfig);
+    explicit NetTcpLogger(LogConfiguration& tracerConfig, DispatcherThread & dispatchThread);
 
     /**
      * \brief   Destructor.
@@ -113,76 +121,96 @@ public:
     virtual void logMessage( const NETrace::sLogMessage & logMessage ) override;
 
     /**
-     * \brief   Called to write raw log data.
-     * \param   data    The data to write.
-     **/
-    virtual void writeData( const SharedBuffer & data ) override;
-
-    /**
-     * \brief   Call to flush logs, if they are queued. Some loggers might ignore this.
-     **/
-    virtual void flushLogs( void ) override;
-
-    /**
      * \brief   Returns true if logger is initialized (opened).
      **/
     virtual bool isLoggerOpened( void ) const override;
 
 //////////////////////////////////////////////////////////////////////////
-// Operations:
+// Overrides
 //////////////////////////////////////////////////////////////////////////
-public:
+private:
+
+/************************************************************************/
+// IEServiceConnectionProvider overrides
+/************************************************************************/
     /**
-     * \brief   Sends the specified data over opened TCP/IP connection.
-     * \param   data    The data to send.
-     * \return  Returns true if succeeded to send the data. Otherwise, returns false.
+     * \brief   Creates the service connect request message, sets the message target and the source.
+     * \param   source  The ID of the source that sends connection message request.
+     * \param   target  The ID of the target to send the connection message request.
+     * \return  Returns the created message for remote communication.
      **/
-    bool sendData(const SharedBuffer & data);
+    virtual RemoteMessage createServiceConnectMessage(  const ITEM_ID & source, const ITEM_ID & target  ) const override;
 
     /**
-     * \brief   Closes the connection socket. And does not remote the logs from the pending stacks.
+     * \brief   Creates the service disconnect request message, sets the message target and the source.
+     * \param   source  The ID of the source that sends the disconnect message request.
+     * \param   target  The ID of the target to send the disconnection message request.
+     * \return  Returns the created message for remote communication.
      **/
-    void closeConnection( void );
+    virtual RemoteMessage createServiceDisconnectMessage(  const ITEM_ID & source, const ITEM_ID & target  ) const override;
+
+/************************************************************************/
+// IEServiceConnectionConsumer overrides
+/************************************************************************/
 
     /**
-     * \brief   Sets the active state of the TCP logger.
+     * \brief   Triggered when remote service connection and communication channel is established.
+     * \param   channel     The connection and communication channel of remote service.
      **/
-    void setActive( bool isActive );
+    virtual void connectedRemoteServiceChannel(const Channel& channel) override;
 
     /**
-     * \brief   Returns true if connection state is not Inactive
+     * \brief   Triggered when disconnected remote service connection and communication channel.
+     * \param   channel     The connection and communication channel of remote service.
      **/
-    bool isActive( void ) const;
+    virtual void disconnectedRemoteServiceChannel(const Channel& channel) override;
 
     /**
-     * \brief   Sets the IP-address of the log host sent by remote logging service.
-     * \param   ipAddr      The identified IP-address of the logs host.
+     * \brief   Triggered when remote service connection and communication channel is lost.
+     *          The connection is considered lost if it not possible to read or
+     *          receive data, and it was not stopped by API call.
+     * \param   channel     The connection and communication channel of remote service.
      **/
-    void setHostIpAddress( const String & ipAddr );
+    virtual void lostRemoteServiceChannel(const Channel& channel) override;
+
+/************************************************************************/
+// IERemoteMessageHandler interface overrides
+/************************************************************************/
+
+    /**
+     * \brief   Triggered, when failed to send message.
+     * \param   msgFailed   The message, which failed to send.
+     * \param   whichTarget The target socket to send message.
+     **/
+    virtual void failedSendMessage( const RemoteMessage & msgFailed, Socket & whichTarget ) override;
+
+    /**
+     * \brief   Triggered, when failed to receive message.
+     * \param   whichSource Indicates the failed source socket to receive message.
+     **/
+    virtual void failedReceiveMessage( Socket & whichSource ) override;
+
+    /**
+     * \brief   Triggered, when failed to process message, i.e. the target for message processing was not found.
+     *          In case of request message processing, the source should receive error notification.
+     * \param   msgUnprocessed  Unprocessed message data.
+     **/
+    virtual void failedProcessMessage( const RemoteMessage & msgUnprocessed ) override;
+
+    /**
+     * \brief   Triggered, when need to process received message.
+     * \param   msgReceived Received message to process.
+     * \param   whichSource The source socket, which received message.
+     **/
+    virtual void processReceivedMessage( const RemoteMessage & msgReceived, Socket & whichSource ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
 /************************************************************************/
-// IEThreadConsumer interface overrides
-/************************************************************************/
-
-    /**
-     * \brief   This callback function is called from Thread object, when it is 
-     *          running and fully operable. If thread needs run in loop, the loop 
-     *          should be implemented here. When consumer exits this function, 
-     *          the thread will complete work. To restart thread running, 
-     *          createThread() method should be called again.
-     **/
-    virtual void onThreadRuns( void ) override;
-
-/************************************************************************/
 // Internal methods
 /************************************************************************/
-
-    //!< Closes connection
-    void _closeConnection( void );
 
     //!< Wrapper of 'this' pointer.
     inline NetTcpLogger& self(void);
@@ -191,20 +219,10 @@ private:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    //!< The TCP/IP client socket to connect to remote host.
-    SocketClient        mSocket;
+    //!< The flag, indicating whether the TPC/IP network logging is enabled or not.
+    bool                mIsEnabled;
     //!< The ring stack to queue log messages if the connection setup did not complete yet.
     RingStack           mRingStack;
-    //!< The IP-address of the host. This is set by remote logging service.
-    String              mHostIpAddr;
-    //!< The connection states.
-    eConnectionStates   mConnectionState;
-    //!< brief   The data receiver thread.
-    Thread              mRecvThread;
-    //!< The synchronization event to trigger exit of receive thread.
-    SynchEvent          mEventExit;
-    //!< Synchronization object.
-    mutable Mutex       mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

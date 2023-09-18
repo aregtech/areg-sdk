@@ -62,20 +62,31 @@
  * \brief   The type defining ID. It is 64-bit in 64-bit systems.
  **/
 #ifdef BIT64
+
     #ifdef _UINTPTR_T_DEFINED
         typedef uintptr_t   id_type;
     #else   // !_UINTPTR_T_DEFINED
         typedef uint64_t    id_type;
-#endif  // _UINTPTR_T_DEFINED
+    #endif  // _UINTPTR_T_DEFINED
+    
 #else   // defined(BIT32)
+
     #ifdef _UINTPTR_T_DEFINED
         typedef uintptr_t   id_type;
     #else   // !_UINTPTR_T_DEFINED
         typedef uint32_t    id_type;
     #endif  // _UINTPTR_T_DEFINED
+
 #endif  // id_type
 
-typedef id_type    ptr_type;
+//! The digital value type of the pointer.
+typedef id_type     ptr_type;
+
+//! The sequence number type.
+typedef uint64_t    SequenceNumber;
+
+//!< The signed sequence type.
+typedef int64_t     SignedSequence;
 
 /**
  * \brief   The type defines an item ID.

@@ -420,7 +420,7 @@
     <ClCompile Include="areg\ipc\private\ClientSendThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\ipc\private\ServiceClientConnection.cpp">
+    <ClCompile Include="areg\ipc\private\ServiceClientConnectionBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\ipc\private\ConnectionConfiguration.cpp">
@@ -562,6 +562,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\ipc\private\ServiceEvent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\ipc\private\RouterClient.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -974,7 +977,7 @@
     <ClInclude Include="areg\component\ProxyEvent.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\ipc\private\ClientConnection.hpp">
+    <ClInclude Include="areg\ipc\ClientConnection.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\ipc\private\ClientReceiveThread.hpp">
@@ -1052,7 +1055,7 @@
     <ClInclude Include="areg\ipc\SocketConnectionBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\ipc\private\ServiceClientConnection.hpp">
+    <ClInclude Include="areg\ipc\ServiceClientConnectionBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\private\win32\SpinLockWin32.hpp">
@@ -1116,6 +1119,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\ipc\ServiceEventConsumerBase.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\ipc\private\RouterClient.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

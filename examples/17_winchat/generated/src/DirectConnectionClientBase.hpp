@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:05:22 GMT+02:00
+ * Generated at     17.09.2023  00:34:02 GMT+02:00
  *                  Create by AREG SDK code generator tool from source DirectConnection.
  *
  * \file            generated/src/DirectConnectionClientBase.hpp
@@ -185,7 +185,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseConnectoinSetup
      **/
-    inline unsigned int requestConnectoinSetup( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
+    inline SequenceNumber requestConnectoinSetup( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
     /**
      * \brief   Overwrite to handle error of ConnectoinSetup request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -203,7 +203,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseAddParticipant
      **/
-    inline unsigned int requestAddParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
+    inline SequenceNumber requestAddParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
     /**
      * \brief   Overwrite to handle error of AddParticipant request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -221,7 +221,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseRemoveParticipant
      **/
-    inline unsigned int requestRemoveParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
+    inline SequenceNumber requestRemoveParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
     /**
      * \brief   Overwrite to handle error of RemoveParticipant request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -367,7 +367,7 @@ protected:
     /**
      * \brief   Returns the current sequence number
      **/
-    inline unsigned int getCurrentSequenceNr( void ) const;
+    inline const SequenceNumber & getCurrentSequenceNr( void ) const;
 
     /**
      * \brief  Returns instance of proxy object.
@@ -390,7 +390,7 @@ private:
     /**
      * \brief   The counter of sequence number
      **/
-    unsigned int        mCurrSequenceNr;
+    SequenceNumber      mCurrSequenceNr;
     /**
      * \brief   Pointer of Proxy object providing communication
      **/
@@ -461,7 +461,7 @@ inline DirectConnectionClientBase & DirectConnectionClientBase::self( void )
     return (*this);
 }
 
-inline unsigned int DirectConnectionClientBase::getCurrentSequenceNr( void ) const
+inline const SequenceNumber & DirectConnectionClientBase::getCurrentSequenceNr( void ) const
 {
     return mCurrSequenceNr;
 }
@@ -520,19 +520,19 @@ inline void DirectConnectionClientBase::notifyOnInitiatedConnectionsUpdate( bool
  * Request calls
  ************************************************************************/
 
-inline unsigned int DirectConnectionClientBase::requestConnectoinSetup( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
+inline SequenceNumber DirectConnectionClientBase::requestConnectoinSetup( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
 {
     ASSERT(mProxy != nullptr);
     return mProxy->requestConnectoinSetup( static_cast<IENotificationEventConsumer &>(self()), initiator, listParticipants );
 }
 
-inline unsigned int DirectConnectionClientBase::requestAddParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
+inline SequenceNumber DirectConnectionClientBase::requestAddParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
 {
     ASSERT(mProxy != nullptr);
     return mProxy->requestAddParticipant( static_cast<IENotificationEventConsumer &>(self()), initiator, listParticipants );
 }
 
-inline unsigned int DirectConnectionClientBase::requestRemoveParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
+inline SequenceNumber DirectConnectionClientBase::requestRemoveParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
 {
     ASSERT(mProxy != nullptr);
     return mProxy->requestRemoveParticipant( static_cast<IENotificationEventConsumer &>(self()), initiator, listParticipants );

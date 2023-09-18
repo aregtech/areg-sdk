@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:05:23 GMT+02:00
+ * Generated at     17.09.2023  00:34:04 GMT+02:00
  *                  Create by AREG SDK code generator tool from source DirectMessager.
  *
  * \file            generated/src/private/DirectMessagerProxy.hpp
@@ -116,7 +116,7 @@ RemoteResponseEvent * DirectMessagerProxy::createRemoteResponseEvent(const IEInS
     return static_cast<RemoteResponseEvent *>( DEBUG_NEW DirectMessagerResponseEvent(stream) );
 }
 
-RemoteResponseEvent * DirectMessagerProxy::createRemoteRequestFailedEvent(const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, unsigned int seqNr) const
+RemoteResponseEvent * DirectMessagerProxy::createRemoteRequestFailedEvent(const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, SequenceNumber seqNr) const
 {
     return static_cast<RemoteResponseEvent *>( DEBUG_NEW DirectMessagerResponseEvent( addrProxy, reason, msgId, seqNr ) );
 }
@@ -143,7 +143,7 @@ void DirectMessagerProxy::unregisterServiceListeners( void )
  * Requests.
  ************************************************************************/
 
-unsigned int DirectMessagerProxy::requestChatJoin( IENotificationEventConsumer & caller, const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect )
+SequenceNumber DirectMessagerProxy::requestChatJoin( IENotificationEventConsumer & caller, const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect )
 {
     static const NEDirectMessager::eMessageIDs msgId = NEDirectMessager::eMessageIDs::MsgId_requestChatJoin;
     EventDataStream args(EventDataStream::eEventData::EventDataExternal);

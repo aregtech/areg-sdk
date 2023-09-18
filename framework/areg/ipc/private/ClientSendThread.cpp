@@ -16,7 +16,7 @@
 
 #include "areg/component/NEService.hpp"
 #include "areg/ipc/NEConnection.hpp"
-#include "areg/ipc/private/ClientConnection.hpp"
+#include "areg/ipc/ClientConnection.hpp"
 #include "areg/ipc/IERemoteMessageHandler.hpp"
 
 #include "areg/trace/GETrace.h"
@@ -45,7 +45,6 @@ void ClientSendThread::readyForEvents( bool isReady )
     {
         DispatcherThread::readyForEvents( false );
         SendMessageEvent::removeListener( static_cast<IESendMessageEventConsumer &>(*this), static_cast<DispatcherThread &>(*this) );
-        mConnection.sendMessage( mConnection.getDisconnectMessage( ) );
         mConnection.closeSocket( );
         TRACE_DBG( "Exiting client service dispatcher thread [ %s ], stopping receiving events", getName( ).getString( ) );
     }
@@ -68,7 +67,6 @@ void ClientSendThread::processEvent( const SendMessageEventData & data )
     }
     else if (data.isExitThreadMessage() )
     {
-        mConnection.sendMessage( mConnection.getDisconnectMessage( ) );
         mConnection.closeSocket( );
         triggerExit( );
     }

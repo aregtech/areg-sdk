@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:06:04 GMT+02:00
+ * Generated at     17.09.2023  00:34:01 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloUnblock.
  *
  * \file            generated/src/private/HelloUnblockProxy.hpp
@@ -108,7 +108,7 @@ RemoteResponseEvent * HelloUnblockProxy::createRemoteResponseEvent(const IEInStr
     return static_cast<RemoteResponseEvent *>( DEBUG_NEW HelloUnblockResponseEvent(stream) );
 }
 
-RemoteResponseEvent * HelloUnblockProxy::createRemoteRequestFailedEvent(const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, unsigned int seqNr) const
+RemoteResponseEvent * HelloUnblockProxy::createRemoteRequestFailedEvent(const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, SequenceNumber seqNr) const
 {
     return static_cast<RemoteResponseEvent *>( DEBUG_NEW HelloUnblockResponseEvent( addrProxy, reason, msgId, seqNr ) );
 }
@@ -135,14 +135,14 @@ void HelloUnblockProxy::unregisterServiceListeners( void )
  * Requests.
  ************************************************************************/
 
-unsigned int HelloUnblockProxy::requestIdentifier( IENotificationEventConsumer & caller )
+SequenceNumber HelloUnblockProxy::requestIdentifier( IENotificationEventConsumer & caller )
 {
     static const NEHelloUnblock::eMessageIDs msgId = NEHelloUnblock::eMessageIDs::MsgId_requestIdentifier;
     sendRequestEvent( static_cast<unsigned int>(msgId), EventDataStream::EmptyData, &caller );
     return mSequenceCount;
 }
 
-unsigned int HelloUnblockProxy::requestHelloUblock( IENotificationEventConsumer & caller, unsigned int clientId, unsigned int seqNr )
+SequenceNumber HelloUnblockProxy::requestHelloUblock( IENotificationEventConsumer & caller, unsigned int clientId, unsigned int seqNr )
 {
     static const NEHelloUnblock::eMessageIDs msgId = NEHelloUnblock::eMessageIDs::MsgId_requestHelloUblock;
     EventDataStream args(EventDataStream::eEventData::EventDataExternal);

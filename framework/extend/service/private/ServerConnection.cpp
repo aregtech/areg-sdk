@@ -41,7 +41,7 @@ ServerConnection::ServerConnection(ITEM_ID channelId, const NESocket::SocketAddr
 void ServerConnection::rejectConnection(SocketAccepted & clientConnection)
 {
     ITEM_ID cookie = getCookie(clientConnection.getHandle());
-    RemoteMessage msgReject = NEConnection::createRejectNotify(cookie);
+    RemoteMessage msgReject = NEConnection::createRejectNotify(mChannelId, cookie);
     sendMessage(msgReject, clientConnection);
     closeConnection(clientConnection);
 }
@@ -49,19 +49,18 @@ void ServerConnection::rejectConnection(SocketAccepted & clientConnection)
 void ServerConnection::closeAllConnections(void)
 {
     Lock lock( mLock );
-    RemoteMessage msgBeyClient;
-    if ( msgBeyClient.initMessage( NEConnection::getMessageByeClient().rbHeader ) != nullptr )
+    RemoteMessage msgByeClient;
+    if ( msgByeClient.initMessage( NEConnection::getMessageByeClient().rbHeader ) != nullptr )
     {
-        msgBeyClient.setSequenceNr( NEService::SEQUENCE_NUMBER_ANY );
-        msgBeyClient.setSource( mChannelId );
-        msgBeyClient.bufferCompletionFix();
+        msgByeClient.setSequenceNr( NEService::SEQUENCE_NUMBER_ANY );
+        msgByeClient.setSource( mChannelId );
     }
 
     for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.firstPosition(); mAcceptedConnections.isValidPosition(pos); pos = mAcceptedConnections.nextPosition(pos) )
     {
         SocketAccepted clientConnection = mAcceptedConnections.valueAtPosition(pos);
-        msgBeyClient.setTarget( getCookie(clientConnection) );
-        sendMessage(msgBeyClient, clientConnection);
+        msgByeClient.setTarget( getCookie(clientConnection) );
+        sendMessage(msgByeClient, clientConnection);
     }
 
     mMasterList.clear();

@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:05:04 GMT+02:00
+ * Generated at     17.09.2023  00:34:00 GMT+02:00
  *                  Create by AREG SDK code generator tool from source TrafficController.
  *
  * \file            generated/src/private/TrafficControllerProxy.hpp
@@ -42,7 +42,7 @@ class TrafficControllerResponseEvent;
 class TrafficControllerProxy   : public ProxyBase
 {
     friend class TrafficControllerClientBase;
-    
+
 private:
     //////////////////////////////////////////////////////////////////////////
     // TrafficControllerProxy::TrafficControllerServiceAvailableEvent class declaration
@@ -177,7 +177,7 @@ public:
     inline NETrafficController::ePedestrianTrafficLight getParamLightPedestrian( void ) const;
 
 /************************************************************************
- * Requests
+ * Requests.
  ************************************************************************/
 //////////////////////////////////////////////////////////////////////////
 // Operations.
@@ -285,7 +285,7 @@ protected:
      * \param   reason      Failure reason set by system
      * \param   seqNr       The sequence number of processing message.
      **/
-    virtual RemoteResponseEvent * createRemoteRequestFailedEvent( const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, unsigned int seqNr ) const override;
+    virtual RemoteResponseEvent * createRemoteRequestFailedEvent( const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, SequenceNumber seqNr ) const override;
 
     /**
      * \brief   Overwrite this method to create service available event to new instantiated clients.

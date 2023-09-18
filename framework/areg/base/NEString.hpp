@@ -504,7 +504,7 @@ namespace NEString
     inline bool isPrintable( CharType ch );
 
     /**
-     * \brief   Checks whether the give character is one of matches in the sequence.
+     * \brief   Checks whether the character is one of matches in the sequence.
      * \param   ch          The character to check.
      * \param   chSequence  The sequence of characters to have at least one match.
      * \tparam  The type of ASCII range character. Expecting 8-bit or 16-bit character in range 0 - 0xFF

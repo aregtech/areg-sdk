@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:05:44 GMT+02:00
+ * Generated at     17.09.2023  00:34:00 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloWatchdog.
  *
  * \file            generated/src/private/HelloWatchdogProxy.hpp
@@ -107,7 +107,7 @@ RemoteResponseEvent * HelloWatchdogProxy::createRemoteResponseEvent(const IEInSt
     return static_cast<RemoteResponseEvent *>( DEBUG_NEW HelloWatchdogResponseEvent(stream) );
 }
 
-RemoteResponseEvent * HelloWatchdogProxy::createRemoteRequestFailedEvent(const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, unsigned int seqNr) const
+RemoteResponseEvent * HelloWatchdogProxy::createRemoteRequestFailedEvent(const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, SequenceNumber seqNr) const
 {
     return static_cast<RemoteResponseEvent *>( DEBUG_NEW HelloWatchdogResponseEvent( addrProxy, reason, msgId, seqNr ) );
 }
@@ -134,7 +134,7 @@ void HelloWatchdogProxy::unregisterServiceListeners( void )
  * Requests.
  ************************************************************************/
 
-unsigned int HelloWatchdogProxy::requestStartSleep( IENotificationEventConsumer & caller, unsigned int timeoutSleep )
+SequenceNumber HelloWatchdogProxy::requestStartSleep( IENotificationEventConsumer & caller, unsigned int timeoutSleep )
 {
     static const NEHelloWatchdog::eMessageIDs msgId = NEHelloWatchdog::eMessageIDs::MsgId_requestStartSleep;
     EventDataStream args(EventDataStream::eEventData::EventDataExternal);

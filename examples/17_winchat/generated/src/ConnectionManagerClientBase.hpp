@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:05:20 GMT+02:00
+ * Generated at     17.09.2023  00:34:01 GMT+02:00
  *                  Create by AREG SDK code generator tool from source ConnectionManager.
  *
  * \file            generated/src/ConnectionManagerClientBase.hpp
@@ -182,7 +182,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseConnect
      **/
-    inline unsigned int requestConnect( const String & nickName, const DateTime & dateTime );
+    inline SequenceNumber requestConnect( const String & nickName, const DateTime & dateTime );
     /**
      * \brief   Overwrite to handle error of Connect request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -202,7 +202,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseRegisterConnection
      **/
-    inline unsigned int requestRegisterConnection( const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister );
+    inline SequenceNumber requestRegisterConnection( const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister );
     /**
      * \brief   Overwrite to handle error of RegisterConnection request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -387,7 +387,7 @@ protected:
     /**
      * \brief   Returns the current sequence number
      **/
-    inline unsigned int getCurrentSequenceNr( void ) const;
+    inline const SequenceNumber & getCurrentSequenceNr( void ) const;
 
     /**
      * \brief  Returns instance of proxy object.
@@ -410,7 +410,7 @@ private:
     /**
      * \brief   The counter of sequence number
      **/
-    unsigned int        mCurrSequenceNr;
+    SequenceNumber      mCurrSequenceNr;
     /**
      * \brief   Pointer of Proxy object providing communication
      **/
@@ -481,7 +481,7 @@ inline ConnectionManagerClientBase & ConnectionManagerClientBase::self( void )
     return (*this);
 }
 
-inline unsigned int ConnectionManagerClientBase::getCurrentSequenceNr( void ) const
+inline const SequenceNumber & ConnectionManagerClientBase::getCurrentSequenceNr( void ) const
 {
     return mCurrSequenceNr;
 }
@@ -540,13 +540,13 @@ inline void ConnectionManagerClientBase::notifyOnConnectionListUpdate( bool noti
  * Request calls
  ************************************************************************/
 
-inline unsigned int ConnectionManagerClientBase::requestConnect( const String & nickName, const DateTime & dateTime )
+inline SequenceNumber ConnectionManagerClientBase::requestConnect( const String & nickName, const DateTime & dateTime )
 {
     ASSERT(mProxy != nullptr);
     return mProxy->requestConnect( static_cast<IENotificationEventConsumer &>(self()), nickName, dateTime );
 }
 
-inline unsigned int ConnectionManagerClientBase::requestRegisterConnection( const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister )
+inline SequenceNumber ConnectionManagerClientBase::requestRegisterConnection( const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister )
 {
     ASSERT(mProxy != nullptr);
     return mProxy->requestRegisterConnection( static_cast<IENotificationEventConsumer &>(self()), nickName, cookie, connectCookie, dateRegister );

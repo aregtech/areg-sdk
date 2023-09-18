@@ -76,7 +76,7 @@ Service interfaces can include specific data types to declare variables, service
 
 #### Structures
 
-Structures are declared using the `<DataType>` tag with the attribute `Type="Structure"`. Each field refers to a predefined type and must support default values, assignment, comparison, copying, and serialization/deserialization in the [IEIOStream](../framework/areg/base/IEIOStream.hpp) object. 
+The structures are declared using the `<DataType>` tag with the attribute `Type="Structure"`. Each field refers to a predefined type and must support default values, assignment, comparison, copying, and serialization/deserialization in the [IEIOStream](../framework/areg/base/IEIOStream.hpp) object. 
 
 **Example:**
 ```xml
@@ -104,7 +104,7 @@ Structures are declared using the `<DataType>` tag with the attribute `Type="Str
 
 #### Enumerations
 
-Enumerations are declared using the `<DataType>` tag with the attribute `Type="Enumerate"`. Each field can have a value and is automatically streamable.
+The enumerations are declared using the `<DataType>` tag with the attribute `Type="Enumerate"`. Each field can have a value and is automatically streamable.
 
 **Example:**
 ```xml
@@ -134,7 +134,7 @@ Enumerations are declared using the `<DataType>` tag with the attribute `Type="E
 
 #### Imported Types
 
-Imported types are declared using the `<DataType>` tag with the attribute `Type="Imported"`. These types may have a namespace and a relative path to the header file where the type is declared. They should support default values, assignment, comparison, copying, and serialization/deserialization in the [IEIOStream](../framework/areg/base/IEIOStream.hpp) object.
+The imported types are declared using the `<DataType>` tag with the attribute `Type="Imported"`. These types may have a namespace and a relative path to the header file where the type is declared. They should support default values, assignment, comparison, copying, and serialization/deserialization in the [IEIOStream](../framework/areg/base/IEIOStream.hpp) object.
 
 **Example:**
 ```xml
@@ -147,7 +147,7 @@ Imported types are declared using the `<DataType>` tag with the attribute `Type=
 
 #### Containers
 
-Containers, or defined types, are declared using the `<DataType>` tag with the attribute `Type="DefinedType"`. The `<Container>` tag specifies the type of container, the `<BaseTypeValue>` specifies the type of values, and in the case of maps, the `<BaseTypeKey>` specifies the type of keys. All types should support streaming in the [IEIOStream](../framework/areg/base/IEIOStream.hpp).
+The containers, or defined types, are declared using the `<DataType>` tag with the attribute `Type="DefinedType"`. The `<Container>` tag specifies the type of container, the `<BaseTypeValue>` specifies the type of values, and in the case of maps, the `<BaseTypeKey>` specifies the type of keys. All types should support streaming in the [IEIOStream](../framework/areg/base/IEIOStream.hpp).
 
 **Example 1:** Array of uint32 values
 ```xml
@@ -183,7 +183,7 @@ Containers, or defined types, are declared using the `<DataType>` tag with the a
 
 ### Attributes
 
-Attributes in services are data elements that can be exchanged with service consumers (clients). Clients have the ability to dynamically subscribe or unsubscribe to receive notifications on data updates. The attributes are listed in the `<AttributeList>` section and should be serializable in the [IEIOStream](../framework/areg/base/IEIOStream.hpp) object.
+The attributes in services are data elements that can be exchanged with service consumers (clients). Clients have the ability to dynamically subscribe or unsubscribe to receive notifications on data updates. The attributes are listed in the `<AttributeList>` section and should be serializable in the [IEIOStream](../framework/areg/base/IEIOStream.hpp) object.
 
 When a *Service Consumer* subscribes to an attribute, it receives a notification containing the cached value and a validation flag. If the data has not been cached or is invalid, the first notification may indicate an *"Invalid"* state. Shortly after, the server sends a second notification with the actual value and data state. It is important to check the data state to respond correctly.
 
@@ -215,7 +215,7 @@ In Services, there are three types of methods: requests, responses, and broadcas
 
 #### Requests
 
-Requests are actions initiated by clients and executed on the *Service Provider* (server) side. They follow a request-reply pattern, where clients send requests and the server replies with a response. Requests can either have no response or be linked to a specific response. When a request has a linked response, the processing of the request is blocked until the server replies. Multiple requests can be linked to the same response. All parameters of a request must be serializable.
+The requests are actions initiated by clients and executed on the *Service Provider* (server) side. They follow a request-reply pattern, where clients send requests and the server replies with a response. Requests can either have no response or be linked to a specific response. When a request has a linked response, the processing of the request is blocked until the server replies. Multiple requests can be linked to the same response. All parameters of a request must be serializable.
 
 **Example:** A request with no parameter linked to a response:
 ```xml
@@ -229,7 +229,7 @@ Requests are actions initiated by clients and executed on the *Service Provider*
 
 #### Responses
 
-Responses are the *Service Providers's* (server's) replies to requests. Each response is linked to at least one request. When the server calls a response, it triggers a remote callback on the client side. Clients can also manually subscribe and unsubscribe from responses without making a request. It allows clients to receive the result of an action without concerning themselves with which component triggered the action.
+The responses are the *Service Providers's* (server's) replies to requests. Each response is linked to at least one request. When the server calls a response, it triggers a remote callback on the client side. Clients can also manually subscribe and unsubscribe from responses without making a request. It allows clients to receive the result of an action without concerning themselves with which component triggered the action.
 
 **Example:** Declaration of responses:
 ```xml
@@ -246,7 +246,7 @@ Responses are the *Service Providers's* (server's) replies to requests. Each res
 
 #### Broadcasts
 
-Broadcasts are special service methods used to fire events and pass multiple data simultaneously. They do not have linked methods and act as events triggered by the *Service Provider* (server). Clients need to manually subscribe to broadcasts during runtime to receive the data. Broadcast data is only available during the call and is not stored beyond that point. Unlike attributes, which provide cached and actual data, broadcasts only notify clients when the server calls the broadcast.
+The broadcasts are special service methods used to fire events and pass multiple data simultaneously. They do not have linked methods and act as events triggered by the *Service Provider* (server). Clients need to manually subscribe to broadcasts during runtime to receive the data. Broadcast data is only available during the call and is not stored beyond that point. Unlike attributes, which provide cached and actual data, broadcasts only notify clients when the server calls the broadcast.
 
 **Example:** Declaration of a broadcast with parameters:
 ```xml
@@ -267,7 +267,7 @@ Note: It is important to ensure unique parameter names in responses and broadcas
 
 ### Constants
 
-Constants in the Service Interface XML document facilitate the sharing of read-only values between service providers and clients. These values can be used for various purposes, such as defining timeouts or other configuration parameters. Constants are listed in the `<ConstantList>` section of the document.
+The constants in the Service Interface XML document facilitate the sharing of read-only values between service providers and clients. These values can be used for various purposes, such as defining timeouts or other configuration parameters. Constants are listed in the `<ConstantList>` section of the document.
 
 Example: Declaration of a constant:
 ```xml

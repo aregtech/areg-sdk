@@ -133,10 +133,10 @@ bool StubBase::prepareResponse( SessionID sessionId )
     return result;
 }
 
-void StubBase::prepareRequest( Listener & listener, unsigned int seqNr, unsigned int responseId )
+void StubBase::prepareRequest( Listener & listener, SequenceNumber seqNr, unsigned int responseId )
 {
     listener.mMessageId = responseId;
-    listener.mSequenceNr= mListListener.isInvalidPosition(mListListener.find(listener)) ? seqNr : static_cast<unsigned int>(-1 * static_cast<int>(seqNr));
+    listener.mSequenceNr= mListListener.isInvalidPosition(mListListener.find(listener)) ? seqNr : static_cast<SequenceNumber>(-1 * static_cast<SignedSequence>(seqNr));
     mListListener.pushFirst(listener);
     mCurrListener = mListListener.firstPosition();
 }
@@ -203,7 +203,7 @@ void StubBase::sendResponseNotification( const StubListenerList & whichListeners
             }
             else
             {
-                eventResp->setSequenceNumber(static_cast<unsigned int>(-1 * static_cast<int>(listener.mSequenceNr)));
+                eventResp->setSequenceNumber(static_cast<SequenceNumber>(-1 * static_cast<SignedSequence>(listener.mSequenceNr)));
                 StubBase::Listener removed(masterEvent.getResponseId(), 0, listener.mProxy);
                 mListListener.removeEntry(removed);
             }
@@ -229,7 +229,7 @@ void StubBase::sendErrorNotification( const StubListenerList & whichListeners, c
             }
             else
             {
-                eventError->setSequenceNumber(static_cast<unsigned int>(-1 * static_cast<int>(listener.mSequenceNr)));
+                eventError->setSequenceNumber(static_cast<SequenceNumber>(-1 * static_cast<SignedSequence>(listener.mSequenceNr)));
             }
 
             sendServiceResponse(*eventError);
@@ -382,7 +382,7 @@ void StubBase::sendBusyRespone( const Listener & whichListener )
     ResponseEvent* eventElem = createResponseEvent(whichListener.mProxy, whichListener.mMessageId, NEService::eResultType::RequestBusy, EventDataStream::EmptyData);
     if (eventElem != nullptr)
     {
-        TRACE_WARN("Sending busy response for request message [ %p ] from source [ %p ] to target [ %p ], sequence [ %u ]"
+        TRACE_WARN("Sending busy response for request message [ %p ] from source [ %p ] to target [ %p ], sequence [ %llu ]"
                     , whichListener.mMessageId
                     , whichListener.mProxy.getTarget()
                     , whichListener.mProxy.getSource()
@@ -393,7 +393,7 @@ void StubBase::sendBusyRespone( const Listener & whichListener )
     }
 }
 
-bool StubBase::canExecuteRequest( Listener & whichListener, unsigned int whichResponse, unsigned int seqNr )
+bool StubBase::canExecuteRequest( Listener & whichListener, unsigned int whichResponse, SequenceNumber seqNr )
 {
     bool result = false;
     if (isBusy(whichResponse))

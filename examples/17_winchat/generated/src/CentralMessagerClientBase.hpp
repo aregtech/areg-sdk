@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:05:19 GMT+02:00
+ * Generated at     17.09.2023  00:33:59 GMT+02:00
  *                  Create by AREG SDK code generator tool from source CentralMessager.
  *
  * \file            generated/src/CentralMessagerClientBase.hpp
@@ -293,7 +293,7 @@ protected:
     /**
      * \brief   Returns the current sequence number
      **/
-    inline unsigned int getCurrentSequenceNr( void ) const;
+    inline const SequenceNumber & getCurrentSequenceNr( void ) const;
 
     /**
      * \brief  Returns instance of proxy object.
@@ -316,7 +316,7 @@ private:
     /**
      * \brief   The counter of sequence number
      **/
-    unsigned int        mCurrSequenceNr;
+    SequenceNumber      mCurrSequenceNr;
     /**
      * \brief   Pointer of Proxy object providing communication
      **/
@@ -387,7 +387,7 @@ inline CentralMessagerClientBase & CentralMessagerClientBase::self( void )
     return (*this);
 }
 
-inline unsigned int CentralMessagerClientBase::getCurrentSequenceNr( void ) const
+inline const SequenceNumber & CentralMessagerClientBase::getCurrentSequenceNr( void ) const
 {
     return mCurrSequenceNr;
 }

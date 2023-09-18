@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     23.07.2023  03:05:34 GMT+02:00
+ * Generated at     17.09.2023  00:34:00 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloWatchdog.
  *
  * \file            generated/src/private/HelloWatchdogProxy.hpp
@@ -43,7 +43,7 @@ class HelloWatchdogResponseEvent;
 class HelloWatchdogProxy   : public ProxyBase
 {
     friend class HelloWatchdogClientBase;
-    
+
 private:
     //////////////////////////////////////////////////////////////////////////
     // HelloWatchdogProxy::HelloWatchdogServiceAvailableEvent class declaration
@@ -155,7 +155,7 @@ public:
     inline unsigned int getParamtimeoutSleep( void ) const;
 
 /************************************************************************
- * Requests
+ * Requests.
  ************************************************************************/
     /**
      * \brief   Request call.
@@ -165,7 +165,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseStartSleep
      **/
-    unsigned int requestStartSleep( IENotificationEventConsumer & caller, unsigned int timeoutSleep );
+    SequenceNumber requestStartSleep( IENotificationEventConsumer & caller, unsigned int timeoutSleep );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations.

@@ -20,6 +20,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/component/NEService.hpp"
+#include "areg/base/RemoteMessage.hpp"
 
 /************************************************************************
  * Dependencies
@@ -121,6 +122,22 @@ public:
      * \param   enable  If true, the service is enabled. Otherwise, it is disabled.
      **/
     virtual void enableRemoteServicing( bool enable ) = 0;
+
+    /**
+     * \brief   Creates the service connect request message, sets the message target and the source.
+     * \param   source  The ID of the source that sends connection message request.
+     * \param   target  The ID of the target to send the connection message request.
+     * \return  Returns the created message for remote communication.
+     **/
+    virtual RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target ) const = 0;
+
+    /**
+     * \brief   Creates the service disconnect request message, sets the message target and the source.
+     * \param   source  The ID of the source that sends the disconnect message request.
+     * \param   target  The ID of the target to send the disconnection message request.
+     * \return  Returns the created message for remote communication.
+     **/
+    virtual RemoteMessage createServiceDisconnectMessage( const ITEM_ID & source, const ITEM_ID & target ) const = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

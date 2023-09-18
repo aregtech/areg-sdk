@@ -35,6 +35,13 @@ TraceScope::TraceScope( const char * scopeName, NETrace::eLogPriority priority /
     TraceManager::registerTraceScope( self() );
 }
 
+TraceScope::TraceScope(const IEInStream & stream)
+    : mScopeName    (stream)
+    , mScopeId      (stream.read32Bits())
+    , mScopePrio    (stream.read32Bits())
+{
+}
+
 TraceScope::~TraceScope( void )
 {
     TraceManager::unregisterTraceScope( self() );
