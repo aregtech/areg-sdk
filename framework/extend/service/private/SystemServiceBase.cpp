@@ -64,7 +64,7 @@ bool SystemServiceBase::parseOptions( int argc, const char ** argv, const Option
         {
             outHelp = false;
             const OptionParser::InputOptionList & opts = parser.getOptions( );
-            for ( int i = 0; i < static_cast<int>(opts.getSize( )); ++i )
+            for (uint32_t i = 0; i < opts.getSize(); ++i )
             {
                 const OptionParser::sOption & opt = opts[ i ];
                 switch ( static_cast<NESystemService::eServiceOption>(opt.inCommand) )

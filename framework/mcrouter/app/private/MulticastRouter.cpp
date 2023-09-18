@@ -319,9 +319,9 @@ bool MulticastRouter::_checkCommand(const String& cmd)
     {
         MulticastRouter & router = MulticastRouter::getInstance( );
         const OptionParser::InputOptionList & opts = parser.getOptions( );
-        for ( int i = 0; i < static_cast<int>(opts.getSize( )); ++ i )
+        for (uint32_t i = 0; i < opts.getSize( ); ++ i )
         {
-            const OptionParser::sOption & opt = opts[ 0 ];
+            const OptionParser::sOption & opt = opts[ i ];
             switch ( static_cast<eRouterOptions>(opt.inCommand) )
             {
             case eRouterOptions::CMD_RouterPause:

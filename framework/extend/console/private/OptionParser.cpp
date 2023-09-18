@@ -247,7 +247,7 @@ bool OptionParser::parseOptions( StrList & optList )
     bool result{ true };
     mInputOptions.clear( );
     mCmdLine.clear( );
-    int initSize = mSetupOptions.getSize( );
+    uint32_t initSize = mSetupOptions.getSize( );
     for ( String & input : optList )
     {
         input.trimAll( );
@@ -257,7 +257,7 @@ bool OptionParser::parseOptions( StrList & optList )
         sOption opt;
         ASSERT( opt.inRefSetup == NECommon::INVALID_INDEX );
 
-        for ( int j = 0; j < initSize; ++ j )
+        for (uint32_t j = 0; j < initSize; ++ j )
         {
             const sOptionSetup & entry = mSetupOptions[ j ];
             if ( _matchOption(input, entry.optLong) )
@@ -283,7 +283,7 @@ bool OptionParser::parseOptions( StrList & optList )
             }
             else if ( mSetupOptions.isEmpty() == false)
             {
-                const sOptionSetup & setup = mSetupOptions[ 0 ];
+                const sOptionSetup & setup = mSetupOptions[ 0u ];
                 if ( setup.optShort.empty( ) && setup.optLong.empty( ) )
                 {
                     // default option
@@ -315,9 +315,9 @@ bool OptionParser::parseOptions( StrList & optList )
     return result;
 }
 
-OptionParser::sOption OptionParser::_setupInput( bool isShort, String cmdLine, int refSetup )
+OptionParser::sOption OptionParser::_setupInput( bool isShort, String cmdLine, uint32_t refSetup )
 {
-    ASSERT( (refSetup >= 0) && (refSetup < static_cast<int>(mSetupOptions.getSize())) );
+    ASSERT( (refSetup >= 0) && (refSetup < mSetupOptions.getSize()) );
 
     const sOptionSetup & setup = mSetupOptions[ refSetup ];
     OptionParser::sOption opt;
@@ -335,7 +335,7 @@ OptionParser::sOption OptionParser::_setupInput( bool isShort, String cmdLine, i
     return opt;
 }
 
-void OptionParser::_setInputValue( String & newValue, sOption & opt, int refSetup )
+void OptionParser::_setInputValue( String & newValue, sOption & opt, uint32_t refSetup )
 {
     if ( newValue.startsWith( DELIMITER_EQUAL, true ) )
     {
@@ -347,7 +347,7 @@ void OptionParser::_setInputValue( String & newValue, sOption & opt, int refSetu
 
     if ( newValue.isEmpty( ) == false )
     {
-        ASSERT( (refSetup >= 0) && (refSetup < static_cast<int>(mSetupOptions.getSize( ))) );
+        ASSERT( (refSetup >= 0) && (refSetup < mSetupOptions.getSize( )) );
         const sOptionSetup & setup = mSetupOptions[ refSetup ];
         if ( OptionParser::isEmptyData( setup.optField ) )
         {

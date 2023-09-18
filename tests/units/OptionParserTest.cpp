@@ -26,16 +26,16 @@ TEST( OptionParserTest, CommandLineOptionSimpleNoData )
 
     const wchar_t * cmdLine[]{ L"OptionParserTest", L"-a", L"-b", L"-c" };
 
-    int setupCount = MACRO_ARRAYLEN( setup );
-    int optCount = MACRO_ARRAYLEN( cmdLine );
+    uint32_t setupCount = MACRO_ARRAYLEN( setup );
+    uint32_t optCount = MACRO_ARRAYLEN( cmdLine );
 
     OptionParser parser( setup, setupCount );
 
     ASSERT_TRUE(parser.parseCommandLine( cmdLine, optCount ));
 
     const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize(), static_cast<uint32_t>(optCount - 1) );
-    for ( int i = 1; i < optCount; ++i )
+    ASSERT_EQ( opts.getSize(), optCount - 1 );
+    for (uint32_t i = 1; i < optCount; ++i)
     {
         ASSERT_EQ( opts[ i - 1 ].inCommand, i );
         ASSERT_TRUE( OptionParser::isFreestyle( opts[ i - 1 ].inField ) );
@@ -63,21 +63,21 @@ TEST( OptionParserTest, CommandLineOptionSimpleWithData )
     const OptionParser::InputOptionList & opts = parser.getOptions( );
     ASSERT_EQ( opts.getSize( ), MACRO_ARRAYLEN( setup ) );
 
-    ASSERT_EQ( opts[ 0 ].inCommand, 1 );
-    ASSERT_TRUE(  OptionParser::isInteger(opts[ 0 ].inField) );
-    ASSERT_FALSE( OptionParser::hasRange( opts[ 0 ].inField ) );
-    ASSERT_EQ( opts[ 0 ].inValue.valInt, 1 );
+    ASSERT_EQ( opts[ 0u ].inCommand, 1 );
+    ASSERT_TRUE(  OptionParser::isInteger(opts[ 0u ].inField) );
+    ASSERT_FALSE( OptionParser::hasRange( opts[ 0u ].inField ) );
+    ASSERT_EQ( opts[ 0u ].inValue.valInt, 1 );
 
-    ASSERT_EQ( opts[ 1 ].inCommand, 2 );
-    ASSERT_TRUE(  OptionParser::isFloat( opts[ 1 ].inField ) );
-    ASSERT_FALSE( OptionParser::hasRange( opts[ 1 ].inField ) );
-    ASSERT_EQ( opts[ 1 ].inValue.valFloat, 2.3f );
+    ASSERT_EQ( opts[ 1u ].inCommand, 2 );
+    ASSERT_TRUE(  OptionParser::isFloat( opts[ 1u ].inField ) );
+    ASSERT_FALSE( OptionParser::hasRange( opts[ 1u ].inField ) );
+    ASSERT_EQ( opts[ 1u ].inValue.valFloat, 2.3f );
 
-    ASSERT_EQ( opts[ 2 ].inCommand, 3 );
-    ASSERT_TRUE(  OptionParser::isString( opts[ 2 ].inField ) );
-    ASSERT_FALSE( OptionParser::hasRange( opts[ 2 ].inField ) );
-    ASSERT_EQ( opts[ 2 ].inString.size(), static_cast<uint32_t>(1) );
-    ASSERT_EQ( opts[ 2 ].inString[0], "something" );
+    ASSERT_EQ( opts[ 2u ].inCommand, 3 );
+    ASSERT_TRUE(  OptionParser::isString( opts[ 2u ].inField ) );
+    ASSERT_FALSE( OptionParser::hasRange( opts[ 2u ].inField ) );
+    ASSERT_EQ( opts[ 2u ].inString.size(), 1u );
+    ASSERT_EQ( opts[ 2u ].inString[0], "something" );
 }
 
 //!< Options with data, but no assignment symbol passed as a command line strings
@@ -99,22 +99,22 @@ TEST( OptionParserTest, CommandLineOptionWithDataNoAssignment )
     const OptionParser::InputOptionList & opts = parser.getOptions( );
     ASSERT_EQ( opts.getSize( ), MACRO_ARRAYLEN( setup ) );
 
-    ASSERT_EQ( opts[ 0 ].inCommand, 1 );
-    ASSERT_TRUE( OptionParser::isInteger( opts[ 0 ].inField ) );
-    ASSERT_FALSE( OptionParser::hasRange( opts[ 0 ].inField ) );
-    ASSERT_EQ( opts[ 0 ].inValue.valInt, 1 );
+    ASSERT_EQ( opts[ 0u ].inCommand, 1 );
+    ASSERT_TRUE( OptionParser::isInteger( opts[ 0u ].inField ) );
+    ASSERT_FALSE( OptionParser::hasRange( opts[ 0u ].inField ) );
+    ASSERT_EQ( opts[ 0u ].inValue.valInt, 1 );
 
-    ASSERT_EQ( opts[ 1 ].inCommand, 2 );
-    ASSERT_TRUE( OptionParser::isFloat( opts[ 1 ].inField ) );
-    ASSERT_FALSE( OptionParser::hasRange( opts[ 1 ].inField ) );
-    ASSERT_EQ( opts[ 1 ].inValue.valFloat, 2.3f );
+    ASSERT_EQ( opts[ 1u ].inCommand, 2 );
+    ASSERT_TRUE( OptionParser::isFloat( opts[ 1u ].inField ) );
+    ASSERT_FALSE( OptionParser::hasRange( opts[ 1u ].inField ) );
+    ASSERT_EQ( opts[ 1u ].inValue.valFloat, 2.3f );
 
-    ASSERT_EQ( opts[ 2 ].inCommand, 3 );
-    ASSERT_TRUE( OptionParser::isString( opts[ 2 ].inField ) );
-    ASSERT_FALSE( OptionParser::hasRange( opts[ 2 ].inField ) );
-    ASSERT_EQ( opts[ 2 ].inString.size( ), static_cast<uint32_t>(2) );
-    ASSERT_EQ( opts[ 2 ].inString[ 0 ], "some" );
-    ASSERT_EQ( opts[ 2 ].inString[ 1 ], "thing" );
+    ASSERT_EQ( opts[ 2u ].inCommand, 3 );
+    ASSERT_TRUE( OptionParser::isString( opts[ 2u ].inField ) );
+    ASSERT_FALSE( OptionParser::hasRange( opts[ 2u ].inField ) );
+    ASSERT_EQ( opts[ 2u ].inString.size( ), 2u );
+    ASSERT_EQ( opts[ 2u ].inString[ 0u ], "some" );
+    ASSERT_EQ( opts[ 2u ].inString[ 1u ], "thing" );
 }
 
 //!< Options with short and long names and no data, passed as a command line strings
@@ -130,21 +130,21 @@ TEST( OptionParserTest, CommandLineOptionMixedNoData )
 
     const wchar_t * cmdLine[ ]{ L"OptionParserTest", L"-a", L"-bc", L"-def", L"--blah-blah"};
 
-    int setupCount = MACRO_ARRAYLEN( setup );
-    int optCount = MACRO_ARRAYLEN( cmdLine );
+    uint32_t setupCount = MACRO_ARRAYLEN( setup );
+    uint32_t optCount = MACRO_ARRAYLEN( cmdLine );
 
     OptionParser parser( setup, setupCount );
 
     ASSERT_TRUE( parser.parseCommandLine( cmdLine, optCount ) );
 
     const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize(), static_cast<uint32_t>(optCount - 1) );
-    for ( int i = 1; i < optCount; ++i )
+    ASSERT_EQ( opts.getSize(), optCount - 1u );
+    for (uint32_t i = 1; i < optCount; ++i )
     {
-        ASSERT_EQ( opts[ i - 1 ].inCommand, i );
-        ASSERT_TRUE( OptionParser::isFreestyle( opts[ i - 1 ].inField ) );
-        ASSERT_TRUE( OptionParser::isString( opts[ i - 1 ].inField ) );
-        ASSERT_FALSE( OptionParser::hasRange( opts[ i - 1 ].inField ) );
+        ASSERT_EQ( opts[ i - 1u ].inCommand, i );
+        ASSERT_TRUE( OptionParser::isFreestyle( opts[ i - 1u ].inField ) );
+        ASSERT_TRUE( OptionParser::isString( opts[ i - 1u ].inField ) );
+        ASSERT_FALSE( OptionParser::hasRange( opts[ i - 1u ].inField ) );
     }
 }
 
@@ -170,7 +170,7 @@ TEST( OptionParserTest, CommandLineOptionMixedWithData )
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 0 ];
+        const OptionParser::sOption & opt = opts[ 0u ];
         ASSERT_EQ( opt.inCommand, 1 );
         ASSERT_TRUE( OptionParser::isInteger( opt.inField ) );
         ASSERT_TRUE( OptionParser::hasRange( opt.inField ) );
@@ -179,7 +179,7 @@ TEST( OptionParserTest, CommandLineOptionMixedWithData )
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 1 ];
+        const OptionParser::sOption & opt = opts[ 1u ];
         ASSERT_EQ( opt.inCommand, 2 );
         ASSERT_TRUE( OptionParser::isFloat( opt.inField ) );
         ASSERT_TRUE( OptionParser::hasRange( opt.inField ) );
@@ -188,21 +188,21 @@ TEST( OptionParserTest, CommandLineOptionMixedWithData )
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 2 ];
+        const OptionParser::sOption & opt = opts[ 2u ];
         ASSERT_EQ( opt.inCommand, 3 );
         ASSERT_TRUE( OptionParser::isString( opt.inField ) );
         ASSERT_TRUE( OptionParser::hasRange( opt.inField ) );
-        ASSERT_EQ( opt.inString.size( ), static_cast<uint32_t>(1) );
+        ASSERT_EQ( opt.inString.size( ), 1u );
         ASSERT_EQ( opt.inString[ 0 ], "some" );
     } while ( false );
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 3 ];
+        const OptionParser::sOption & opt = opts[ 3u ];
         ASSERT_EQ( opt.inCommand, 4 );
         ASSERT_TRUE( OptionParser::isString( opt.inField ) );
         ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
-        ASSERT_EQ( opt.inString.size( ), static_cast<uint32_t>(3) );
+        ASSERT_EQ( opt.inString.size( ), 3u );
         ASSERT_EQ( opt.inString[ 0 ], "thing" );
         ASSERT_EQ( opt.inString[ 1 ], "and" );
         ASSERT_EQ( opt.inString[ 2 ], "somethingelse" );
@@ -226,13 +226,13 @@ TEST( OptionParserTest, CommandLineOptionLongDataInQuote )
     ASSERT_TRUE( parser.parseCommandLine( cmdLine, MACRO_ARRAYLEN( cmdLine ) ) );
 
     const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize(), static_cast<uint32_t>(1) );
+    ASSERT_EQ( opts.getSize(), 1u );
 
-    const OptionParser::sOption & opt = opts[ 0 ];
+    const OptionParser::sOption & opt = opts[ 0u ];
     ASSERT_EQ( opt.inCommand, 2 );
     ASSERT_TRUE( OptionParser::isString( opt.inField ) );
     ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
-    ASSERT_EQ( opt.inString.size( ), static_cast<uint32_t>(1) );
+    ASSERT_EQ( opt.inString.size( ), 1u );
     ASSERT_EQ( opt.inString[ 0 ], scope );
 }
 
@@ -253,26 +253,26 @@ TEST( OptionParserTest, CommandLineOptionDefaultData )
     ASSERT_TRUE( parser.parseCommandLine( cmdLine, MACRO_ARRAYLEN( cmdLine ) ) );
 
     const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize(), static_cast<uint32_t>(2) );
+    ASSERT_EQ( opts.getSize(), 2u );
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 0 ];
+        const OptionParser::sOption & opt = opts[ 0u ];
         ASSERT_EQ( opt.inCommand, 0 );
         ASSERT_TRUE( OptionParser::isFreestyle( opt.inField ) );
         ASSERT_TRUE( OptionParser::isString( opt.inField ) );
         ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
-        ASSERT_EQ( opt.inString.size( ), static_cast<uint32_t>(1) );
-        ASSERT_EQ( opt.inString[ 0 ], "freestyle" );
+        ASSERT_EQ( opt.inString.size( ), 1u );
+        ASSERT_EQ( opt.inString[ 0u ], "freestyle" );
     } while ( false );
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 1 ];
+        const OptionParser::sOption & opt = opts[ 1u ];
         ASSERT_EQ( opt.inCommand, 2 );
         ASSERT_TRUE( OptionParser::isString( opt.inField ) );
         ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
-        ASSERT_EQ( opt.inString.size( ), static_cast<uint32_t>(1) );
+        ASSERT_EQ( opt.inString.size( ), 1u );
         ASSERT_EQ( opt.inString[ 0 ], scope );
     } while ( false );
 }
@@ -296,11 +296,11 @@ TEST( OptionParserTest, OptionsSimpleNoData )
     ASSERT_TRUE( parser.parseOptionLine( optLine ) );
 
     const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ(opts.getSize(), static_cast<uint32_t>(3) );
+    ASSERT_EQ(opts.getSize(), 3u );
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 0 ];
+        const OptionParser::sOption & opt = opts[ 0u ];
         ASSERT_EQ( opt.inCommand, 1 );
         ASSERT_TRUE( OptionParser::isFreestyle( opt.inField ) );
         ASSERT_TRUE( OptionParser::isString( opt.inField ) );
@@ -309,7 +309,7 @@ TEST( OptionParserTest, OptionsSimpleNoData )
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 1 ];
+        const OptionParser::sOption & opt = opts[ 1u ];
         ASSERT_EQ( opt.inCommand, 2 );
         ASSERT_TRUE( OptionParser::isFreestyle( opt.inField ) );
         ASSERT_TRUE( OptionParser::isString( opt.inField ) );
@@ -318,7 +318,7 @@ TEST( OptionParserTest, OptionsSimpleNoData )
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 2 ];
+        const OptionParser::sOption & opt = opts[ 2u ];
         ASSERT_EQ( opt.inCommand, 3 );
         ASSERT_TRUE( OptionParser::isFreestyle( opt.inField ) );
         ASSERT_TRUE( OptionParser::isString( opt.inField ) );
@@ -347,7 +347,7 @@ TEST( OptionParserTest, OptionSimpleWithData )
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 0 ];
+        const OptionParser::sOption & opt = opts[ 0u ];
         ASSERT_EQ( opt.inCommand, 1 );
         ASSERT_TRUE( OptionParser::isInteger( opt.inField ) );
         ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
@@ -356,7 +356,7 @@ TEST( OptionParserTest, OptionSimpleWithData )
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 1 ];
+        const OptionParser::sOption & opt = opts[ 1u ];
         ASSERT_EQ( opt.inCommand, 2 );
         ASSERT_TRUE( OptionParser::isFloat( opt.inField ) );
         ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
@@ -365,11 +365,11 @@ TEST( OptionParserTest, OptionSimpleWithData )
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 2 ];
+        const OptionParser::sOption & opt = opts[ 2u ];
         ASSERT_EQ( opt.inCommand, 3 );
         ASSERT_TRUE( OptionParser::isString( opt.inField ) );
         ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
-        ASSERT_EQ( opt.inString.size( ), static_cast<uint32_t>(1) );
+        ASSERT_EQ( opt.inString.size( ), 1u );
         ASSERT_EQ( opt.inString[ 0 ], "something" );
     } while ( false );
 }
@@ -391,11 +391,11 @@ TEST( OptionParserTest, OptionWithDataNoAssignment )
     ASSERT_TRUE( parser.parseOptionLine( optLine ) );
 
     const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize(), static_cast<uint32_t>(3) );
+    ASSERT_EQ( opts.getSize(), 3u );
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 0 ];
+        const OptionParser::sOption & opt = opts[ 0u ];
         ASSERT_EQ( opt.inCommand, 1 );
         ASSERT_TRUE( OptionParser::isInteger( opt.inField ) );
         ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
@@ -404,7 +404,7 @@ TEST( OptionParserTest, OptionWithDataNoAssignment )
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 1 ];
+        const OptionParser::sOption & opt = opts[ 1u ];
         ASSERT_EQ( opt.inCommand, 2 );
         ASSERT_TRUE( OptionParser::isFloat( opt.inField ) );
         ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
@@ -413,11 +413,11 @@ TEST( OptionParserTest, OptionWithDataNoAssignment )
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 2 ];
+        const OptionParser::sOption & opt = opts[ 2u ];
         ASSERT_EQ( opt.inCommand, 3 );
         ASSERT_TRUE( OptionParser::isString( opt.inField ) );
         ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
-        ASSERT_EQ( opt.inString.size( ), static_cast<uint32_t>(2) );
+        ASSERT_EQ( opt.inString.size( ), 2u );
         ASSERT_EQ( opt.inString[ 0 ], "some" );
         ASSERT_EQ( opt.inString[ 1 ], "thing" );
     } while ( false );
@@ -441,11 +441,11 @@ TEST( OptionParserTest, OptionMixedWithData )
     ASSERT_TRUE( parser.parseOptionLine( optLine ) );
 
     const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize(), static_cast<uint32_t>(4) );
+    ASSERT_EQ( opts.getSize(), 4u );
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 0 ];
+        const OptionParser::sOption & opt = opts[ 0u ];
         ASSERT_EQ( opt.inCommand, 1 );
         ASSERT_TRUE( OptionParser::isInteger( opt.inField ) );
         ASSERT_TRUE( OptionParser::hasRange( opt.inField ) );
@@ -454,7 +454,7 @@ TEST( OptionParserTest, OptionMixedWithData )
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 1 ];
+        const OptionParser::sOption & opt = opts[ 1u ];
         ASSERT_EQ( opt.inCommand, 2 );
         ASSERT_TRUE( OptionParser::isFloat( opt.inField ) );
         ASSERT_TRUE( OptionParser::hasRange( opt.inField ) );
@@ -463,21 +463,21 @@ TEST( OptionParserTest, OptionMixedWithData )
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 2 ];
+        const OptionParser::sOption & opt = opts[ 2u ];
         ASSERT_EQ( opt.inCommand, 3 );
         ASSERT_TRUE( OptionParser::isString( opt.inField ) );
         ASSERT_TRUE( OptionParser::hasRange( opt.inField ) );
-        ASSERT_EQ( opt.inString.size( ), static_cast<uint32_t>(1) );
-        ASSERT_EQ( opt.inString[ 0 ], "some" );
+        ASSERT_EQ( opt.inString.size( ), 1 );
+        ASSERT_EQ( opt.inString[ 0u ], "some" );
     } while ( false );
 
     do
     {
-        const OptionParser::sOption & opt = opts[ 3 ];
+        const OptionParser::sOption & opt = opts[ 3u ];
         ASSERT_EQ( opt.inCommand, 4 );
         ASSERT_TRUE( OptionParser::isString( opt.inField ) );
         ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
-        ASSERT_EQ( opt.inString.size( ), static_cast<uint32_t>(3) );
+        ASSERT_EQ( opt.inString.size( ), 3u );
         ASSERT_EQ( opt.inString[ 0 ], "thing" );
         ASSERT_EQ( opt.inString[ 1 ], "and" );
         ASSERT_EQ( opt.inString[ 2 ], "somethingelse" );
@@ -501,13 +501,13 @@ TEST( OptionParserTest, OptionLongDataInQuote )
     ASSERT_TRUE( parser.parseOptionLine( optLine ) );
 
     const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize(), static_cast<uint32_t>(1) );
+    ASSERT_EQ( opts.getSize(), 1u );
 
-    const OptionParser::sOption & opt = opts[ 0 ];
+    const OptionParser::sOption & opt = opts[ 0u ];
     ASSERT_EQ( opt.inCommand, 2 );
     ASSERT_TRUE( OptionParser::isString( opt.inField ) );
     ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
-    ASSERT_EQ( opt.inString.size( ), static_cast<uint32_t>(1) );
+    ASSERT_EQ( opt.inString.size( ), 1u );
     ASSERT_EQ( opt.inString[ 0 ], scope );
 }
 
@@ -529,13 +529,13 @@ TEST( OptionParserTest, OptionLongDataInQuoteWithError )
     ASSERT_FALSE( parser.parseOptionLine( optLine ) );
 
     const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize(), static_cast<uint32_t>(1) );
+    ASSERT_EQ( opts.getSize(), 1u );
 
-    const OptionParser::sOption & opt = opts[ 0 ];
+    const OptionParser::sOption & opt = opts[ 0u ];
     ASSERT_EQ( opt.inCommand, 2 );
     ASSERT_TRUE( OptionParser::isString( opt.inField ) );
     ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
-    ASSERT_EQ( opt.inString.size( ), static_cast<uint32_t>(1) );
+    ASSERT_EQ( opt.inString.size( ), 1u );
     ASSERT_NE( opt.inString[0], scope );
     ASSERT_TRUE( opt.inString[0].endsWith(error) );
 }
@@ -556,13 +556,13 @@ TEST( OptionParserTest, OptionMultipleParametersAsciiChar )
     ASSERT_TRUE( parser.parseOptionLine( optLine ) );
 
     const OptionParser::InputOptionList & opts = parser.getOptions( );
-    ASSERT_EQ( opts.getSize(), static_cast<uint32_t>(1) );
+    ASSERT_EQ( opts.getSize(), 1u );
 
-    const OptionParser::sOption & opt = opts[ 0 ];
+    const OptionParser::sOption & opt = opts[ 0u ];
     ASSERT_EQ( opt.inCommand, 1 );
     ASSERT_TRUE( OptionParser::isString( opt.inField ) );
     ASSERT_FALSE( OptionParser::hasRange( opt.inField ) );
-    ASSERT_EQ( opt.inString.size( ), static_cast<uint32_t>(2) );
+    ASSERT_EQ( opt.inString.size( ), 2u );
     ASSERT_EQ( opt.inString[ 0 ], "./file.txt" );
     ASSERT_EQ( opt.inString[ 1 ], "./some/" );
 }
@@ -591,42 +591,42 @@ TEST( OptionParserTest, OptionFiguresWithData )
     ASSERT_TRUE( parser2.parseOptionLine( optCase2 ) );
 
     ASSERT_EQ( parser1.getOptions().getSize(), parser2.getOptions().getSize() );
-    ASSERT_EQ( parser1.getOptions().getSize(), static_cast<uint32_t>(2) );
+    ASSERT_EQ( parser1.getOptions().getSize(), 2u );
 
     const OptionParser::InputOptionList & opts1 = parser1.getOptions( );
     const OptionParser::InputOptionList & opts2 = parser2.getOptions( );
 
     do
     {
-        const OptionParser::sOption & opt1 = opts1[ 0 ];
-        const OptionParser::sOption & opt2 = opts2[ 0 ];
+        const OptionParser::sOption & opt1 = opts1[ 0u ];
+        const OptionParser::sOption & opt2 = opts2[ 0u ];
         ASSERT_EQ( opt1.inCommand , static_cast<int>(Figure::Triangle) );
         ASSERT_EQ( opt1.inCommand , opt2.inCommand );
         ASSERT_EQ( opt1.inField   , opt2.inField );
         ASSERT_EQ( opt1.inRefSetup, opt2.inRefSetup );
 
-        ASSERT_EQ( opt1.inString.size( ), static_cast<uint32_t>(1) );
-        ASSERT_EQ( opt1.inString[ 0 ], "{1, 1}, { 5, 10 }, { 20, 3 }" );
+        ASSERT_EQ( opt1.inString.size( ), 1u );
+        ASSERT_EQ( opt1.inString[ 0u ], "{1, 1}, { 5, 10 }, { 20, 3 }" );
 
-        ASSERT_EQ( opt2.inString.size( ), static_cast<uint32_t>(3) );
-        ASSERT_EQ( opt2.inString[ 0 ], "{1,1}");
-        ASSERT_EQ( opt2.inString[ 1 ], "{5,10}");
-        ASSERT_EQ( opt2.inString[ 2 ], "{20,3}");
+        ASSERT_EQ( opt2.inString.size( ), 3u );
+        ASSERT_EQ( opt2.inString[ 0u ], "{1,1}");
+        ASSERT_EQ( opt2.inString[ 1u ], "{5,10}");
+        ASSERT_EQ( opt2.inString[ 2u ], "{20,3}");
     } while ( false );
 
     do
     {
-        const OptionParser::sOption & opt1 = opts1[ 1 ];
-        const OptionParser::sOption & opt2 = opts2[ 1 ];
+        const OptionParser::sOption & opt1 = opts1[ 1u ];
+        const OptionParser::sOption & opt2 = opts2[ 1u ];
         ASSERT_EQ( opt1.inCommand , static_cast<int>(Figure::Rectangle) );
         ASSERT_EQ( opt1.inCommand , opt2.inCommand );
         ASSERT_EQ( opt1.inField   , opt2.inField );
         ASSERT_EQ( opt1.inRefSetup, opt2.inRefSetup );
 
-        ASSERT_EQ( opt1.inString.size( ), static_cast<uint32_t>(1) );
+        ASSERT_EQ( opt1.inString.size( ), 1u );
         ASSERT_EQ( opt1.inString[ 0 ], "{1, 10}, 5, 3" );
 
-        ASSERT_EQ( opt2.inString.size( ), static_cast<uint32_t>(3) );
+        ASSERT_EQ( opt2.inString.size( ), 3u );
         ASSERT_EQ( opt2.inString[ 0 ], "{1,10}" );
         ASSERT_EQ( opt2.inString[ 1 ], "5" );
         ASSERT_EQ( opt2.inString[ 2 ], "3" );

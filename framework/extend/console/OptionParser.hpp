@@ -449,7 +449,7 @@ private:
      *                      Otherwise, it should contain only the option string.
      * \param   refSetup    The index of option validation entries that had matching.
      **/
-    OptionParser::sOption _setupInput( bool isShort, String cmdLine, int refSetup );
+    OptionParser::sOption _setupInput( bool isShort, String cmdLine, uint32_t refSetup );
 
     /**
      * \brief   Called to set value in the option. Depending on the flags and the validation range
@@ -458,7 +458,7 @@ private:
      * \param   opt         The option to set the value.
      * \param   refSetup    The index in the option validation setup to look for validation.
      **/
-    void _setInputValue( String & newValue, sOption & opt, int refSetup );
+    void _setInputValue( String & newValue, sOption & opt, uint32_t refSetup );
 
     /**
      * \brief   Sets the integer value in the option. If needed, checks the validation in the range.

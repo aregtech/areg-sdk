@@ -321,9 +321,9 @@ bool Logger::_checkCommand(const String& cmd)
     {
         Logger & logger = Logger::getInstance( );
         const OptionParser::InputOptionList & opts = parser.getOptions( );
-        for ( int i = 0; i < static_cast<int>(opts.getSize( )); ++ i )
+        for ( uint32_t i = 0; i < opts.getSize( ); ++ i )
         {
-            const OptionParser::sOption & opt = opts[ 0 ];
+            const OptionParser::sOption & opt = opts[ i ];
             switch ( static_cast<eLogCommands>(opt.inCommand) )
             {
             case eLogCommands::CMD_LogPause:

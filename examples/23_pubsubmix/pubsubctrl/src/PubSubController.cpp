@@ -110,7 +110,7 @@ void PubSubController::onThreadRuns(void)
         if (parser.parseOptionLine(usrInput.getString()))
         {
             const OptionParser::InputOptionList & opts = parser.getOptions();
-            cmd = opts.getSize() == 1 ? static_cast<eCommands>(opts[0].inCommand) : eCommands::CMD_Error;
+            cmd = opts.getSize() == 1u ? static_cast<eCommands>(opts[0u].inCommand) : eCommands::CMD_Error;
             switch (cmd)
             {
             case eCommands::CMD_Invalidate:
