@@ -8,7 +8,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     17.09.2023  00:34:02 GMT+02:00
+ * Generated at     18.09.2023  09:14:53 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PubSubMix.
  *
  * \file            generated/src/private/PubSubMixEvents.hpp
@@ -179,7 +179,7 @@ public:
      * \param   responseId  The response message ID. Normally either attribute, broadcast or response ID.
      * \param   seqNr       The sequence number of response call. By default it is NEService::SEQUENCE_NUMBER_NOTIFY.
      **/
-    PubSubMixResponseEvent( const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, SequenceNumber seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
+    PubSubMixResponseEvent( const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, const SequenceNumber &  seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
     /**
      * \brief   Used to send response messages from Stub to Proxy with arguments.
      *
@@ -189,7 +189,7 @@ public:
      * \param   responseId  The response message ID. Normally either attribute, broadcast or response ID.
      * \param   seqNr       The sequence number of response call. By default it is NEService::SEQUENCE_NUMBER_NOTIFY.
      **/
-    PubSubMixResponseEvent( const EventDataStream & args, const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, SequenceNumber seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
+    PubSubMixResponseEvent( const EventDataStream & args, const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, const SequenceNumber &  seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
     /**
      * \brief   Initialization constructor. Used to clone same message for different Proxy objects.
      * \param   proxyTarget The target Proxy address to deliver message

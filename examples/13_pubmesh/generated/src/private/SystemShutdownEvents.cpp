@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     17.09.2023  00:34:00 GMT+02:00
+ * Generated at     18.09.2023  09:14:51 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SystemShutdown.
  *
  * \file            generated/src/private/SystemShutdownEvents.hpp
@@ -88,12 +88,12 @@ IMPLEMENT_RUNTIME_EVENT( SystemShutdownResponseEvent, RemoteResponseEvent )
 // SystemShutdownResponseEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-SystemShutdownResponseEvent::SystemShutdownResponseEvent( const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, SequenceNumber seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
+SystemShutdownResponseEvent::SystemShutdownResponseEvent( const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, const SequenceNumber &  seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
     : RemoteResponseEvent( proxyTarget, result, responseId, seqNr )
 {
 }
 
-SystemShutdownResponseEvent::SystemShutdownResponseEvent( const EventDataStream & args, const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, SequenceNumber seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
+SystemShutdownResponseEvent::SystemShutdownResponseEvent( const EventDataStream & args, const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, const SequenceNumber &  seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
     : RemoteResponseEvent( args, proxyTarget, result, responseId, seqNr, NESystemShutdown::getString(static_cast<NESystemShutdown::eMessageIDs>(responseId)) )
 {
 }

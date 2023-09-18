@@ -465,7 +465,7 @@ inline const char * ServiceClientConnectionBase::getString(ServiceClientConnecti
 
 inline bool ServiceClientConnectionBase::isConnectionStarted(void) const
 {
-    ITEM_ID cookie = mClientConnection.getCookie();
+    const ITEM_ID & cookie = mClientConnection.getCookie();
     return (mClientConnection.isValid() && (cookie != NEService::COOKIE_LOCAL) && (cookie != NEService::COOKIE_UNKNOWN));
 }
 

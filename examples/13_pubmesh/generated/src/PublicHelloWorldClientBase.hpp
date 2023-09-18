@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     17.09.2023  00:33:59 GMT+02:00
+ * Generated at     18.09.2023  09:14:50 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PublicHelloWorld.
  *
  * \file            generated/src/PublicHelloWorldClientBase.hpp
@@ -149,7 +149,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseRegister
      **/
-    inline SequenceNumber requestRegister( const String & name, const ServiceAddress & service, const String & thread, const String & process );
+    inline const SequenceNumber &  requestRegister( const String & name, const ServiceAddress & service, const String & thread, const String & process );
     /**
      * \brief   Overwrite to handle error of Register request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -182,7 +182,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseHelloWorld
      **/
-    inline SequenceNumber requestHelloWorld( unsigned int clientID );
+    inline const SequenceNumber &  requestHelloWorld( unsigned int clientID );
     /**
      * \brief   Overwrite to handle error of HelloWorld request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -420,7 +420,7 @@ inline const Version & PublicHelloWorldClientBase::getServiceVersion( void ) con
  * Request calls
  ************************************************************************/
 
-inline SequenceNumber PublicHelloWorldClientBase::requestRegister( const String & name, const ServiceAddress & service, const String & thread, const String & process )
+inline const SequenceNumber &  PublicHelloWorldClientBase::requestRegister( const String & name, const ServiceAddress & service, const String & thread, const String & process )
 {
     ASSERT(mProxy != nullptr);
     return mProxy->requestRegister( static_cast<IENotificationEventConsumer &>(self()), name, service, thread, process );
@@ -432,7 +432,7 @@ inline void PublicHelloWorldClientBase::requestUnregister( const NEPublicHelloWo
     mProxy->requestUnregister( client );
 }
 
-inline SequenceNumber PublicHelloWorldClientBase::requestHelloWorld( unsigned int clientID )
+inline const SequenceNumber &  PublicHelloWorldClientBase::requestHelloWorld( unsigned int clientID )
 {
     ASSERT(mProxy != nullptr);
     return mProxy->requestHelloWorld( static_cast<IENotificationEventConsumer &>(self()), clientID );

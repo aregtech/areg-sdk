@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     17.09.2023  00:34:01 GMT+02:00
+ * Generated at     18.09.2023  09:14:52 GMT+02:00
  *                  Create by AREG SDK code generator tool from source ConnectionManager.
  *
  * \file            generated/src/private/ConnectionManagerEvents.hpp
@@ -88,12 +88,12 @@ IMPLEMENT_RUNTIME_EVENT( ConnectionManagerResponseEvent, RemoteResponseEvent )
 // ConnectionManagerResponseEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-ConnectionManagerResponseEvent::ConnectionManagerResponseEvent( const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, SequenceNumber seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
+ConnectionManagerResponseEvent::ConnectionManagerResponseEvent( const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, const SequenceNumber &  seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
     : RemoteResponseEvent( proxyTarget, result, responseId, seqNr )
 {
 }
 
-ConnectionManagerResponseEvent::ConnectionManagerResponseEvent( const EventDataStream & args, const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, SequenceNumber seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
+ConnectionManagerResponseEvent::ConnectionManagerResponseEvent( const EventDataStream & args, const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, const SequenceNumber &  seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
     : RemoteResponseEvent( args, proxyTarget, result, responseId, seqNr, NEConnectionManager::getString(static_cast<NEConnectionManager::eMessageIDs>(responseId)) )
 {
 }

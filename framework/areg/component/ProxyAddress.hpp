@@ -265,27 +265,27 @@ public:
     /**
      * \brief   Returns Proxy cookie value
      **/
-    inline ITEM_ID getCookie( void ) const;
+    inline const ITEM_ID & getCookie( void ) const;
     /**
      * \brief   Sets Proxy cookie value
      **/
-    inline void setCookie( ITEM_ID cookie );
+    inline void setCookie(const ITEM_ID & cookie );
     /**
      * \brief   Returns Proxy source ID
      **/
-    inline ITEM_ID getSource( void ) const;
+    inline const ITEM_ID & getSource( void ) const;
     /**
      * \brief   Sets Proxy source ID
      **/
-    inline void setSource( ITEM_ID source );
+    inline void setSource(const ITEM_ID & source );
     /**
      * \brief   Returns Proxy target ID
      **/
-    inline ITEM_ID getTarget( void ) const;
+    inline const ITEM_ID & getTarget( void ) const;
     /**
      * \brief   Sets Proxy target ID
      **/
-    inline void setTarget( ITEM_ID target);
+    inline void setTarget(const ITEM_ID & target);
 
     /**
      * \brief   Returns true if proxy address is valid.
@@ -360,7 +360,7 @@ private:
      * \param   serviceEvent    The service event to deliver
      * \param   idTarget        The ID of target service to deliver event
      **/
-    static bool _deliverEvent( Event & serviceEvent, ITEM_ID idTarget );
+    static bool _deliverEvent( Event & serviceEvent, const ITEM_ID & idTarget );
 
     /**
      * \brief   Returns the calculated hash-key value of specified proxy address object.
@@ -504,32 +504,32 @@ inline void ProxyAddress::setChannel( const Channel & channel )
     mChannel = channel;
 }
 
-inline ITEM_ID ProxyAddress::getCookie( void ) const
+inline const ITEM_ID & ProxyAddress::getCookie( void ) const
 {
     return mChannel.getCookie();
 }
 
-inline void ProxyAddress::setCookie( ITEM_ID cookie )
+inline void ProxyAddress::setCookie(const ITEM_ID & cookie )
 {
     mChannel.setCookie(cookie);
 }
 
-inline ITEM_ID ProxyAddress::getSource( void ) const
+inline const ITEM_ID & ProxyAddress::getSource( void ) const
 {
     return mChannel.getSource();
 }
 
-inline void ProxyAddress::setSource( ITEM_ID source )
+inline void ProxyAddress::setSource(const ITEM_ID & source )
 {
     return mChannel.setSource(source);
 }
 
-inline ITEM_ID ProxyAddress::getTarget( void ) const
+inline const ITEM_ID & ProxyAddress::getTarget( void ) const
 {
     return mChannel.getTarget();
 }
 
-inline void ProxyAddress::setTarget( ITEM_ID target )
+inline void ProxyAddress::setTarget(const ITEM_ID & target )
 {
     return mChannel.setTarget(target);
 }

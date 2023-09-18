@@ -30,7 +30,7 @@ Channel::Channel( void )
 {
 }
 
-Channel::Channel( ITEM_ID source, ITEM_ID target /*= NEService::TARGET_UNKNOWN*/, ITEM_ID cookie /*= NEService::COOKIE_UNKNOWN*/ )
+Channel::Channel(const ITEM_ID & source, const ITEM_ID & target /*= NEService::TARGET_UNKNOWN*/, const ITEM_ID & cookie /*= NEService::COOKIE_UNKNOWN*/ )
     : mSource( source )
     , mTarget( target )
     , mCookie( cookie )

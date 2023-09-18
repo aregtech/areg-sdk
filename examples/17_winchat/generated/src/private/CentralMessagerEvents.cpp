@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     17.09.2023  00:33:59 GMT+02:00
+ * Generated at     18.09.2023  09:14:50 GMT+02:00
  *                  Create by AREG SDK code generator tool from source CentralMessager.
  *
  * \file            generated/src/private/CentralMessagerEvents.hpp
@@ -88,12 +88,12 @@ IMPLEMENT_RUNTIME_EVENT( CentralMessagerResponseEvent, RemoteResponseEvent )
 // CentralMessagerResponseEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-CentralMessagerResponseEvent::CentralMessagerResponseEvent( const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, SequenceNumber seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
+CentralMessagerResponseEvent::CentralMessagerResponseEvent( const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, const SequenceNumber &  seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
     : RemoteResponseEvent( proxyTarget, result, responseId, seqNr )
 {
 }
 
-CentralMessagerResponseEvent::CentralMessagerResponseEvent( const EventDataStream & args, const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, SequenceNumber seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
+CentralMessagerResponseEvent::CentralMessagerResponseEvent( const EventDataStream & args, const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, const SequenceNumber &  seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
     : RemoteResponseEvent( args, proxyTarget, result, responseId, seqNr, NECentralMessager::getString(static_cast<NECentralMessager::eMessageIDs>(responseId)) )
 {
 }

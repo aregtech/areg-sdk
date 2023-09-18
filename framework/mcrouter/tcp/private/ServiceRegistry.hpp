@@ -164,7 +164,7 @@ public:
      * \param   out_listStubs   On output this will contain list of remote stub addresses connected with specified cookie value.
      * \param   out_lisProxies  On output this will contain list of remote proxy addresses connected with specified cookie value.
      **/
-    void getServiceList( ITEM_ID cookie, TEArrayList<StubAddress> & OUT out_listStubs, TEArrayList<ProxyAddress> & OUT out_lisProxies ) const;
+    void getServiceList(const ITEM_ID & cookie, TEArrayList<StubAddress> & OUT out_listStubs, TEArrayList<ProxyAddress> & OUT out_lisProxies ) const;
 
     /**
      * \brief   Call to get list of registered remote stub and proxy services of specified cookie source.
@@ -173,7 +173,7 @@ public:
      * \param   stubSource      On output the list contains stub address objects that have sources of specified cookie.
      * \param   proxySources    On output the list contains proxy address objects that have sources of specified cookie.
      **/
-    void getServiceSources( ITEM_ID cookie, TEArrayList<StubAddress> & OUT stubSource, TEArrayList<ProxyAddress> & OUT proxySources);
+    void getServiceSources(const ITEM_ID & cookie, TEArrayList<StubAddress> & OUT stubSource, TEArrayList<ProxyAddress> & OUT proxySources);
 
     /**
      * \brief   Call to disconnect proxy service specified by proxy address.

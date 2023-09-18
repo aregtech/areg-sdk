@@ -200,8 +200,8 @@ void StubAddress::setThread(const String & threadName)
 
 bool StubAddress::deliverServiceEvent( ServiceRequestEvent & serviceEvent ) const
 {
-    bool result = false;
-    ITEM_ID target = mChannel.getSource();
+    bool result{ false };
+    const ITEM_ID & target{ mChannel.getSource() };
     if ( target != NEService::TARGET_UNKNOWN )
     {
         Thread * thread = Thread::findThreadById(static_cast<id_type>(target));

@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     17.09.2023  00:33:56 GMT+02:00
+ * Generated at     18.09.2023  09:14:47 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloService.
  *
  * \file            generated/src/NEHelloService.hpp

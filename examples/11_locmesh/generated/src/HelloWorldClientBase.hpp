@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     17.09.2023  00:33:57 GMT+02:00
+ * Generated at     18.09.2023  09:14:48 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloWorld.
  *
  * \file            generated/src/HelloWorldClientBase.hpp
@@ -142,7 +142,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseHelloWorld
      **/
-    inline SequenceNumber requestHelloWorld( const String & roleName );
+    inline const SequenceNumber &  requestHelloWorld( const String & roleName );
     /**
      * \brief   Overwrite to handle error of HelloWorld request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -397,7 +397,7 @@ inline const Version & HelloWorldClientBase::getServiceVersion( void ) const
  * Request calls
  ************************************************************************/
 
-inline SequenceNumber HelloWorldClientBase::requestHelloWorld( const String & roleName )
+inline const SequenceNumber &  HelloWorldClientBase::requestHelloWorld( const String & roleName )
 {
     ASSERT(mProxy != nullptr);
     return mProxy->requestHelloWorld( static_cast<IENotificationEventConsumer &>(self()), roleName );

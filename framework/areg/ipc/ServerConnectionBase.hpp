@@ -165,7 +165,7 @@ public:
      *          source or target in Remote Buffer.
      * \param   clientSocket    Accepted client socket connection
      **/
-    inline ITEM_ID getCookie( const SocketAccepted & clientSocket ) const;
+    inline const ITEM_ID & getCookie( const SocketAccepted & clientSocket ) const;
 
     /**
      * \brief   Returns cookie of client connection set by server.
@@ -173,7 +173,7 @@ public:
      *          source or target in Remote Buffer.
      * \param   socketHandle    Socket handle of accepted client connection
      **/
-    inline ITEM_ID getCookie( SOCKETHANDLE socketHandle ) const;
+    inline const ITEM_ID & getCookie( SOCKETHANDLE socketHandle ) const;
 
     /**
      * \brief   Returns accepted socket object, which is matching passed cookie.
@@ -183,7 +183,7 @@ public:
      * \return  If there is registered accepted client socket object, which matches client cookie,
      *          the returned object is valid accepted client object. Otherwise, the object is invalid.
      **/
-    inline SocketAccepted getClientByCookie( ITEM_ID clientCookie ) const;
+    inline SocketAccepted getClientByCookie(const ITEM_ID & clientCookie ) const;
 
     /**
      * \brief   Returns accepted socket object, with same unique socket handle.
@@ -270,7 +270,7 @@ public:
      * \brief   Call to close connection by cookie.
      * \param   cookie      The cookie of client set by routing service.
      **/
-    void closeConnection(ITEM_ID cookie);
+    void closeConnection(const ITEM_ID & cookie);
 
     /**
      * \brief   Sets socket in the read-only mode, i.e. no send message is possible anymore.
@@ -385,12 +385,12 @@ inline bool ServerConnectionBase::isConnectionAccepted( SOCKETHANDLE connection 
     return mAcceptedConnections.contains(connection);
 }
 
-inline ITEM_ID ServerConnectionBase::getCookie(const SocketAccepted & clientSocket) const
+inline const ITEM_ID & ServerConnectionBase::getCookie(const SocketAccepted & clientSocket) const
 {
     return getCookie(clientSocket.getHandle());
 }
 
-inline ITEM_ID ServerConnectionBase::getCookie(SOCKETHANDLE socketHandle) const
+inline const ITEM_ID & ServerConnectionBase::getCookie(SOCKETHANDLE socketHandle) const
 {
     Lock lock( mLock );
 
@@ -398,7 +398,7 @@ inline ITEM_ID ServerConnectionBase::getCookie(SOCKETHANDLE socketHandle) const
     return (mSocketToCookie.isValidPosition(pos) ? mSocketToCookie.valueAtPosition(pos) : NEService::COOKIE_UNKNOWN );
 }
 
-inline SocketAccepted ServerConnectionBase::getClientByCookie(ITEM_ID clientCookie) const
+inline SocketAccepted ServerConnectionBase::getClientByCookie(const ITEM_ID & clientCookie) const
 {
     Lock lock( mLock );
     MapCookieToSocket::MAPPOS pos = mCookieToSocket.find(clientCookie);

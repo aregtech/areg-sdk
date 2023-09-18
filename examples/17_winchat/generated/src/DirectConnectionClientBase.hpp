@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     17.09.2023  00:34:02 GMT+02:00
+ * Generated at     18.09.2023  09:14:53 GMT+02:00
  *                  Create by AREG SDK code generator tool from source DirectConnection.
  *
  * \file            generated/src/DirectConnectionClientBase.hpp
@@ -185,7 +185,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseConnectoinSetup
      **/
-    inline SequenceNumber requestConnectoinSetup( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
+    inline const SequenceNumber &  requestConnectoinSetup( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
     /**
      * \brief   Overwrite to handle error of ConnectoinSetup request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -203,7 +203,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseAddParticipant
      **/
-    inline SequenceNumber requestAddParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
+    inline const SequenceNumber &  requestAddParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
     /**
      * \brief   Overwrite to handle error of AddParticipant request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -221,7 +221,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseRemoveParticipant
      **/
-    inline SequenceNumber requestRemoveParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
+    inline const SequenceNumber &  requestRemoveParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
     /**
      * \brief   Overwrite to handle error of RemoveParticipant request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -520,19 +520,19 @@ inline void DirectConnectionClientBase::notifyOnInitiatedConnectionsUpdate( bool
  * Request calls
  ************************************************************************/
 
-inline SequenceNumber DirectConnectionClientBase::requestConnectoinSetup( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
+inline const SequenceNumber &  DirectConnectionClientBase::requestConnectoinSetup( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
 {
     ASSERT(mProxy != nullptr);
     return mProxy->requestConnectoinSetup( static_cast<IENotificationEventConsumer &>(self()), initiator, listParticipants );
 }
 
-inline SequenceNumber DirectConnectionClientBase::requestAddParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
+inline const SequenceNumber &  DirectConnectionClientBase::requestAddParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
 {
     ASSERT(mProxy != nullptr);
     return mProxy->requestAddParticipant( static_cast<IENotificationEventConsumer &>(self()), initiator, listParticipants );
 }
 
-inline SequenceNumber DirectConnectionClientBase::requestRemoveParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
+inline const SequenceNumber &  DirectConnectionClientBase::requestRemoveParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
 {
     ASSERT(mProxy != nullptr);
     return mProxy->requestRemoveParticipant( static_cast<IENotificationEventConsumer &>(self()), initiator, listParticipants );

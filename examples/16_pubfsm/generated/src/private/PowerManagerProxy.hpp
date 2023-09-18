@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     17.09.2023  00:33:59 GMT+02:00
+ * Generated at     18.09.2023  09:14:50 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PowerManager.
  *
  * \file            generated/src/private/PowerManagerProxy.hpp
@@ -179,7 +179,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseStartTrafficLight
      **/
-    SequenceNumber requestStartTrafficLight( IENotificationEventConsumer & caller );
+    const SequenceNumber &  requestStartTrafficLight( IENotificationEventConsumer & caller );
 
     /**
      * \brief   Request call.
@@ -188,7 +188,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseStopTrafficLight
      **/
-    SequenceNumber requestStopTrafficLight( IENotificationEventConsumer & caller );
+    const SequenceNumber &  requestStopTrafficLight( IENotificationEventConsumer & caller );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations.

@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     17.09.2023  00:33:59 GMT+02:00
+ * Generated at     18.09.2023  09:14:50 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PowerManager.
  *
  * \file            generated/src/private/PowerManagerProxy.hpp
@@ -134,14 +134,14 @@ void PowerManagerProxy::requestPowerOff( void )
     static const NEPowerManager::eMessageIDs msgId = NEPowerManager::eMessageIDs::MsgId_requestPowerOff;
     sendRequestEvent( static_cast<unsigned int>(msgId), EventDataStream::EmptyData, nullptr );
 }
-SequenceNumber PowerManagerProxy::requestStartTrafficLight( IENotificationEventConsumer & caller )
+const SequenceNumber &  PowerManagerProxy::requestStartTrafficLight( IENotificationEventConsumer & caller )
 {
     static const NEPowerManager::eMessageIDs msgId = NEPowerManager::eMessageIDs::MsgId_requestStartTrafficLight;
     sendRequestEvent( static_cast<unsigned int>(msgId), EventDataStream::EmptyData, &caller );
     return mSequenceCount;
 }
 
-SequenceNumber PowerManagerProxy::requestStopTrafficLight( IENotificationEventConsumer & caller )
+const SequenceNumber &  PowerManagerProxy::requestStopTrafficLight( IENotificationEventConsumer & caller )
 {
     static const NEPowerManager::eMessageIDs msgId = NEPowerManager::eMessageIDs::MsgId_requestStopTrafficLight;
     sendRequestEvent( static_cast<unsigned int>(msgId), EventDataStream::EmptyData, &caller );

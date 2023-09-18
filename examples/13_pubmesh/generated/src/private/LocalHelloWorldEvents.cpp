@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     17.09.2023  00:33:58 GMT+02:00
+ * Generated at     18.09.2023  09:14:48 GMT+02:00
  *                  Create by AREG SDK code generator tool from source LocalHelloWorld.
  *
  * \file            generated/src/private/LocalHelloWorldEvents.hpp
@@ -80,12 +80,12 @@ IMPLEMENT_RUNTIME_EVENT( LocalHelloWorldResponseEvent, LocalResponseEvent )
 // LocalHelloWorldResponseEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-LocalHelloWorldResponseEvent::LocalHelloWorldResponseEvent( const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, SequenceNumber seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
+LocalHelloWorldResponseEvent::LocalHelloWorldResponseEvent( const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, const SequenceNumber &  seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
     : LocalResponseEvent( proxyTarget, result, responseId, seqNr )
 {
 }
 
-LocalHelloWorldResponseEvent::LocalHelloWorldResponseEvent( const EventDataStream & args, const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, SequenceNumber seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
+LocalHelloWorldResponseEvent::LocalHelloWorldResponseEvent( const EventDataStream & args, const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, const SequenceNumber &  seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
     : LocalResponseEvent( args, proxyTarget, result, responseId, seqNr, NELocalHelloWorld::getString(static_cast<NELocalHelloWorld::eMessageIDs>(responseId)) )
 {
 }

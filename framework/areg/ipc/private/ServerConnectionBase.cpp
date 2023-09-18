@@ -98,7 +98,7 @@ bool ServerConnectionBase::acceptConnection(SocketAccepted & clientConnection)
             ASSERT(mAcceptedConnections.contains( hSocket ) == false);
             ASSERT(mSocketToCookie.contains(hSocket) == false);
 
-            ITEM_ID cookie = mCookieGenerator ++;
+            ITEM_ID cookie{ mCookieGenerator ++ };
             ASSERT(cookie >= NEService::COOKIE_REMOTE_SERVICE);
 
             mAcceptedConnections.setAt(hSocket, clientConnection);
@@ -122,9 +122,9 @@ void ServerConnectionBase::closeConnection(SocketAccepted & clientConnection)
 {
     Lock lock( mLock );
 
-    SOCKETHANDLE hSocket= clientConnection.getHandle();
-    MapSocketToCookie::MAPPOS pos = mSocketToCookie.find(hSocket);
-    ITEM_ID cookie = mSocketToCookie.isValidPosition(pos) ? mSocketToCookie.valueAtPosition(pos) : NEService::COOKIE_UNKNOWN;
+    SOCKETHANDLE hSocket{ clientConnection.getHandle() };
+    MapSocketToCookie::MAPPOS pos{ mSocketToCookie.find(hSocket) };
+    ITEM_ID cookie{ mSocketToCookie.isValidPosition(pos) ? static_cast<ITEM_ID>(mSocketToCookie.valueAtPosition(pos)) : NEService::COOKIE_UNKNOWN };
 
     mSocketToCookie.removeAt(hSocket);
     mCookieToSocket.removeAt(cookie);
@@ -134,7 +134,7 @@ void ServerConnectionBase::closeConnection(SocketAccepted & clientConnection)
     clientConnection.closeSocket();
 }
 
-void ServerConnectionBase::closeConnection( ITEM_ID cookie )
+void ServerConnectionBase::closeConnection( const ITEM_ID & cookie )
 {
     Lock lock(mLock);
 

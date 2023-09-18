@@ -93,7 +93,7 @@ public:
      * \param   dispatcher  The name of the message dispatcher thread.
      * \param   behavior    Connection default behavior. By default, all connections are accepted.
      **/
-    ServiceCommunicatonBase( ITEM_ID serviceId
+    ServiceCommunicatonBase(const ITEM_ID & serviceId
                            , const String & dispatcher
                            , ServiceCommunicatonBase::eConnectionBehavior behavior = ServiceCommunicatonBase::eConnectionBehavior::DefaultAccept );
     /**
@@ -165,13 +165,13 @@ public:
      * \param   cookie      The cookie of connected instance.
      * \param   instance    The name of the connected instance.
      **/
-    inline void addInstance( ITEM_ID cookie, const String & instance );
+    inline void addInstance(const ITEM_ID & cookie, const String & instance );
 
     /**
      * \brief   Removes connected instance.
      * \param   cookie      The cookie of connected instance.
      **/
-    inline void removeInstance( ITEM_ID cookie );
+    inline void removeInstance(const ITEM_ID & cookie );
 
     /**
      * \brief   Removes all connected instances from the map.
@@ -530,12 +530,12 @@ inline const ServiceCommunicatonBase::InstanceMap & ServiceCommunicatonBase::get
     return mInstanceMap;
 }
 
-inline void ServiceCommunicatonBase::addInstance( ITEM_ID cookie, const String & instance )
+inline void ServiceCommunicatonBase::addInstance(const ITEM_ID & cookie, const String & instance )
 {
     mInstanceMap.addIfUnique( cookie, instance );
 }
 
-inline void ServiceCommunicatonBase::removeInstance( ITEM_ID cookie )
+inline void ServiceCommunicatonBase::removeInstance(const ITEM_ID & cookie )
 {
     mInstanceMap.removeAt( cookie );
 }

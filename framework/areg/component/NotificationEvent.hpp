@@ -80,7 +80,7 @@ public:
      *                      If request fails, also request ID.
      * \param	seqNr	    The call sequence number.
      **/
-    NotificationEventData( const ProxyBase & proxy, NEService::eResultType notifyType, unsigned int notifyId, SequenceNumber seqNr );
+    NotificationEventData( const ProxyBase & proxy, NEService::eResultType notifyType, unsigned int notifyId, const SequenceNumber & seqNr );
 
     /**
      * \brief   Copies data from given source.
@@ -145,11 +145,11 @@ public:
     /**
      * \brief   Returns the sequence number of a caller.
      **/
-    inline SequenceNumber getSequenceNr( void ) const;
+    inline const SequenceNumber & getSequenceNr( void ) const;
     /**
      * \brief   Sets sequence number of a caller.
      **/
-    inline void setSequenceNr(SequenceNumber seqNr );
+    inline void setSequenceNr(const SequenceNumber & seqNr );
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
@@ -380,12 +380,12 @@ inline void NotificationEventData::setNotifyId( unsigned int notifyId )
     mNotifyId = notifyId;
 }
 
-inline SequenceNumber NotificationEventData::getSequenceNr( void ) const
+inline const SequenceNumber & NotificationEventData::getSequenceNr( void ) const
 {
     return mSequenceNr;
 }
 
-inline void NotificationEventData::setSequenceNr( SequenceNumber seqNr )
+inline void NotificationEventData::setSequenceNr(const SequenceNumber & seqNr )
 {
     mSequenceNr = seqNr;
 }

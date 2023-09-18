@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     17.09.2023  00:34:00 GMT+02:00
+ * Generated at     18.09.2023  09:14:51 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloWatchdog.
  *
  * \file            generated/src/HelloWatchdogClientBase.hpp
@@ -182,7 +182,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseStartSleep
      **/
-    inline SequenceNumber requestStartSleep( unsigned int timeoutSleep );
+    inline const SequenceNumber &  requestStartSleep( unsigned int timeoutSleep );
     /**
      * \brief   Overwrite to handle error of StartSleep request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -450,7 +450,7 @@ inline void HelloWatchdogClientBase::notifyOnServiceStateUpdate( bool notify /* 
  * Request calls
  ************************************************************************/
 
-inline SequenceNumber HelloWatchdogClientBase::requestStartSleep( unsigned int timeoutSleep )
+inline const SequenceNumber &  HelloWatchdogClientBase::requestStartSleep( unsigned int timeoutSleep )
 {
     ASSERT(mProxy != nullptr);
     return mProxy->requestStartSleep( static_cast<IENotificationEventConsumer &>(self()), timeoutSleep );

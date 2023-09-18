@@ -105,7 +105,7 @@ protected:
         /**
          * \brief   Initialize message ID and sequence number. The target Proxy Address should be set manually.
          **/
-        inline Listener(unsigned int reqId, SequenceNumber seqId);
+        inline Listener(unsigned int reqId, const SequenceNumber & seqId);
 
         /**
          * \brief   Creates Listener from given parameters.
@@ -113,7 +113,7 @@ protected:
          * \param   seqId   The Sequence number.
          * \param   proxy   The target proxy address.
          **/
-        inline Listener(unsigned int reqId, SequenceNumber seqId, const ProxyAddress & proxy);
+        inline Listener(unsigned int reqId, const SequenceNumber & seqId, const ProxyAddress & proxy);
 
         /**
          * \brief   Copies listener data from given source.
@@ -491,7 +491,7 @@ protected:
      * \param   seqNr       The sequence number of call request.
      * \param   requestId   The triggered request ID .
      **/
-    void prepareRequest(StubBase::Listener & listener, SequenceNumber seqNr, unsigned int requestId);
+    void prepareRequest(StubBase::Listener & listener, const SequenceNumber & seqNr, unsigned int requestId);
 
     /**
      * \brief   Search and add all listeners, which have same specified request ID 
@@ -646,7 +646,7 @@ protected:
      * \param   seqNr           The sequence number of call.
      * \return  Returns true if request can be executed and the appropriate response is prepared.
      **/
-    bool canExecuteRequest( StubBase::Listener & whichListener, unsigned int whichResponse, SequenceNumber seqNr);
+    bool canExecuteRequest( StubBase::Listener & whichListener, unsigned int whichResponse, const SequenceNumber & seqNr);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -754,14 +754,14 @@ inline StubBase::Listener::Listener( unsigned int reqId )
 {
 }
 
-inline StubBase::Listener::Listener( unsigned int reqId, SequenceNumber seqId )
+inline StubBase::Listener::Listener( unsigned int reqId, const SequenceNumber & seqId )
     : mMessageId ( reqId )
     , mSequenceNr( seqId )
     , mProxy     ( ProxyAddress::getInvalidProxyAddress() )
 {
 }
 
-inline StubBase::Listener::Listener( unsigned int reqId, SequenceNumber seqId, const ProxyAddress& proxy )
+inline StubBase::Listener::Listener( unsigned int reqId, const SequenceNumber & seqId, const ProxyAddress& proxy )
     : mMessageId ( reqId )
     , mSequenceNr( seqId )
     , mProxy     ( proxy )

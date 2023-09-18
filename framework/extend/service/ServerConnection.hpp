@@ -53,7 +53,7 @@ public:
      *          and bound to socket address.
      * \param   channelId   The unique channel ID of the service connectivity in the system.
      **/
-    explicit ServerConnection( ITEM_ID channelId );
+    explicit ServerConnection(const ITEM_ID & channelId );
 
     /**
      * \brief   Creates instance of object with invalid socket object.
@@ -68,7 +68,7 @@ public:
      * \param   hostName    Host name or IP-address of server.
      * \param   portNr      Port number of server.
      **/
-    ServerConnection(ITEM_ID channelId, const char * hostName, unsigned short portNr );
+    ServerConnection(const ITEM_ID & channelId, const char * hostName, unsigned short portNr );
 
     /**
      * \brief   Creates instance of object with invalid socket object.
@@ -77,7 +77,7 @@ public:
      * \param   channelId       The unique channel ID of the service connectivity in the system.
      * \param   remoteAddress   Address of server.
      **/
-    ServerConnection(ITEM_ID channelId, const NESocket::SocketAddress & serverAddress );
+    ServerConnection(const ITEM_ID & channelId, const NESocket::SocketAddress & serverAddress );
 
     /**
      * \brief   Destructor.
@@ -92,7 +92,7 @@ public:
     /**
      * \brief   Returns the unique service connectivity channel ID in the system.
      **/
-    inline const ITEM_ID getChannelId(void) const;
+    inline const ITEM_ID & getChannelId(void) const;
 
     /**
      * \brief   Call to reject connection. When rejected, the socket connection will be closed and
@@ -164,7 +164,7 @@ public:
      *          Returns negative number if socket is not valid of failed to send.
      *          Returns zero, if checksum in Remote Buffer was not validated or Remote Buffer object is empty.
      **/
-    inline int sendMessage( const RemoteMessage & in_message, ITEM_ID clientCookie ) const;
+    inline int sendMessage( const RemoteMessage & in_message, const ITEM_ID & clientCookie ) const;
 
     /**
      * \brief   If socket is valid, receives data using existing socket connection and returns length in bytes
@@ -182,7 +182,7 @@ public:
      *          Returns negative number if socket is not valid of failed to send.
      *          Returns zero, if checksum in Remote Buffer was not validated or data in Remote Buffer object is empty.
      **/
-    inline int receiveMessage( RemoteMessage & out_message, ITEM_ID clientCookie ) const;
+    inline int receiveMessage( RemoteMessage & out_message, const ITEM_ID & clientCookie ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables
@@ -205,7 +205,7 @@ private:
 // ServerConnection class inline functions
 //////////////////////////////////////////////////////////////////////////
 
-inline const ITEM_ID ServerConnection::getChannelId(void) const
+inline const ITEM_ID & ServerConnection::getChannelId(void) const
 {
     return mChannelId;
 }
@@ -215,7 +215,7 @@ inline int ServerConnection::sendMessage(const RemoteMessage & in_message, const
     return SocketConnectionBase::sendMessage(in_message, clientSocket);
 }
 
-inline int ServerConnection::sendMessage(const RemoteMessage & in_message, ITEM_ID clientCookie) const
+inline int ServerConnection::sendMessage(const RemoteMessage & in_message, const ITEM_ID & clientCookie) const
 {
     return SocketConnectionBase::sendMessage(in_message, getClientByCookie(clientCookie) );
 }
@@ -225,7 +225,7 @@ inline int ServerConnection::receiveMessage(RemoteMessage & out_message, const S
     return SocketConnectionBase::receiveMessage(out_message, clientSocket);
 }
 
-inline int ServerConnection::receiveMessage(RemoteMessage & out_message, ITEM_ID clientCookie) const
+inline int ServerConnection::receiveMessage(RemoteMessage & out_message, const ITEM_ID & clientCookie) const
 {
     return SocketConnectionBase::receiveMessage(out_message,getClientByCookie(clientCookie));
 }

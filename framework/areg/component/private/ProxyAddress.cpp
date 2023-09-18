@@ -202,7 +202,7 @@ bool ProxyAddress::deliverServiceEvent(ServiceResponseEvent & proxyEvent) const
     return ProxyAddress::_deliverEvent( static_cast<Event &>(proxyEvent), mChannel.getSource());
 }
 
-bool ProxyAddress::_deliverEvent(Event & serviceEvent, ITEM_ID idTarget)
+bool ProxyAddress::_deliverEvent(Event & serviceEvent, const ITEM_ID & idTarget)
 {
     bool result = false;
     if ( idTarget != NEService::TARGET_UNKNOWN )

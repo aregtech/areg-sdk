@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     17.09.2023  00:34:01 GMT+02:00
+ * Generated at     18.09.2023  09:14:52 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloUnblock.
  *
  * \file            generated/src/private/HelloUnblockProxy.hpp
@@ -177,7 +177,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseIdentifier
      **/
-    SequenceNumber requestIdentifier( IENotificationEventConsumer & caller );
+    const SequenceNumber &  requestIdentifier( IENotificationEventConsumer & caller );
 
     /**
      * \brief   Request call.
@@ -189,7 +189,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseHelloUnblock
      **/
-    SequenceNumber requestHelloUblock( IENotificationEventConsumer & caller, unsigned int clientId, unsigned int seqNr );
+    const SequenceNumber &  requestHelloUblock( IENotificationEventConsumer & caller, unsigned int clientId, unsigned int seqNr );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations.
@@ -297,7 +297,7 @@ protected:
      * \param   reason      Failure reason set by system
      * \param   seqNr       The sequence number of processing message.
      **/
-    virtual RemoteResponseEvent * createRemoteRequestFailedEvent( const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, SequenceNumber seqNr ) const override;
+    virtual RemoteResponseEvent * createRemoteRequestFailedEvent( const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, const SequenceNumber &  seqNr ) const override;
 
     /**
      * \brief   Overwrite this method to create service available event to new instantiated clients.

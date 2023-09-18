@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     17.09.2023  00:33:59 GMT+02:00
+ * Generated at     18.09.2023  09:14:50 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PowerManager.
  *
  * \file            generated/src/PowerManagerClientBase.hpp
@@ -210,7 +210,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseStartTrafficLight
      **/
-    inline SequenceNumber requestStartTrafficLight( void );
+    inline const SequenceNumber &  requestStartTrafficLight( void );
     /**
      * \brief   Overwrite to handle error of StartTrafficLight request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -226,7 +226,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseStopTrafficLight
      **/
-    inline SequenceNumber requestStopTrafficLight( void );
+    inline const SequenceNumber &  requestStopTrafficLight( void );
     /**
      * \brief   Overwrite to handle error of StopTrafficLight request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -500,13 +500,13 @@ inline void PowerManagerClientBase::requestPowerOff( void )
     mProxy->requestPowerOff(  );
 }
 
-inline SequenceNumber PowerManagerClientBase::requestStartTrafficLight( void )
+inline const SequenceNumber &  PowerManagerClientBase::requestStartTrafficLight( void )
 {
     ASSERT(mProxy != nullptr);
     return mProxy->requestStartTrafficLight( static_cast<IENotificationEventConsumer &>(self()) );
 }
 
-inline SequenceNumber PowerManagerClientBase::requestStopTrafficLight( void )
+inline const SequenceNumber &  PowerManagerClientBase::requestStopTrafficLight( void )
 {
     ASSERT(mProxy != nullptr);
     return mProxy->requestStopTrafficLight( static_cast<IENotificationEventConsumer &>(self()) );

@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     17.09.2023  00:34:03 GMT+02:00
+ * Generated at     18.09.2023  09:14:54 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PubSub.
  *
  * \file            generated/src/private/PubSubProxy.hpp
@@ -108,7 +108,7 @@ RemoteResponseEvent * PubSubProxy::createRemoteResponseEvent(const IEInStream & 
     return static_cast<RemoteResponseEvent *>( DEBUG_NEW PubSubResponseEvent(stream) );
 }
 
-RemoteResponseEvent * PubSubProxy::createRemoteRequestFailedEvent(const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, SequenceNumber seqNr) const
+RemoteResponseEvent * PubSubProxy::createRemoteRequestFailedEvent(const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, const SequenceNumber &  seqNr) const
 {
     return static_cast<RemoteResponseEvent *>( DEBUG_NEW PubSubResponseEvent( addrProxy, reason, msgId, seqNr ) );
 }

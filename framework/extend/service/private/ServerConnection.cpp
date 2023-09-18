@@ -17,21 +17,21 @@
 #include "areg/component/NEService.hpp"
 #include "areg/base/RemoteMessage.hpp"
 
-ServerConnection::ServerConnection(ITEM_ID channelId )
+ServerConnection::ServerConnection(const ITEM_ID & channelId )
     : ServerConnectionBase  ( )
     , SocketConnectionBase  ( )
     , mChannelId            ( channelId )
 {
 }
 
-ServerConnection::ServerConnection(ITEM_ID channelId, const char * hostName, unsigned short portNr)
+ServerConnection::ServerConnection(const ITEM_ID & channelId, const char * hostName, unsigned short portNr)
     : ServerConnectionBase  ( hostName, portNr)
     , SocketConnectionBase  ( )
     , mChannelId            ( channelId )
 {
 }
 
-ServerConnection::ServerConnection(ITEM_ID channelId, const NESocket::SocketAddress & serverAddress)
+ServerConnection::ServerConnection(const ITEM_ID & channelId, const NESocket::SocketAddress & serverAddress)
     : ServerConnectionBase  ( serverAddress )
     , SocketConnectionBase  ( )
     , mChannelId            ( channelId )
@@ -40,7 +40,7 @@ ServerConnection::ServerConnection(ITEM_ID channelId, const NESocket::SocketAddr
 
 void ServerConnection::rejectConnection(SocketAccepted & clientConnection)
 {
-    ITEM_ID cookie = getCookie(clientConnection.getHandle());
+    const ITEM_ID & cookie = getCookie(clientConnection.getHandle());
     RemoteMessage msgReject = NEConnection::createRejectNotify(mChannelId, cookie);
     sendMessage(msgReject, clientConnection);
     closeConnection(clientConnection);

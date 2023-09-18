@@ -113,12 +113,12 @@ public:
     /**
      * \brief   Returns sequence number set in info.
      **/
-    inline SequenceNumber getSequenceNumber( void ) const;
+    inline const SequenceNumber & getSequenceNumber( void ) const;
 
     /**
      * \brief   Sets new sequence number.
      **/
-    inline void setSequenceNumber(SequenceNumber newSeqNr);
+    inline void setSequenceNumber(const SequenceNumber & newSeqNr);
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -197,12 +197,12 @@ inline NEService::eRequestType ServiceRequestEvent::getRequestType( void ) const
     return mRequestType;
 }
 
-inline SequenceNumber ServiceRequestEvent::getSequenceNumber( void ) const
+inline const SequenceNumber & ServiceRequestEvent::getSequenceNumber( void ) const
 {
     return mSequenceNr;
 }
 
-inline void ServiceRequestEvent::setSequenceNumber(SequenceNumber newSeqNr )
+inline void ServiceRequestEvent::setSequenceNumber(const SequenceNumber & newSeqNr )
 {
     mSequenceNr = newSeqNr;
 }
