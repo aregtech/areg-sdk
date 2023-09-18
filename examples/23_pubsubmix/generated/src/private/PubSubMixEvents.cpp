@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     17.09.2023  00:34:02 GMT+02:00
+ * Generated at     18.09.2023  09:14:53 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PubSubMix.
  *
  * \file            generated/src/private/PubSubMixEvents.hpp
@@ -88,12 +88,12 @@ IMPLEMENT_RUNTIME_EVENT( PubSubMixResponseEvent, RemoteResponseEvent )
 // PubSubMixResponseEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-PubSubMixResponseEvent::PubSubMixResponseEvent( const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, SequenceNumber seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
+PubSubMixResponseEvent::PubSubMixResponseEvent( const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, const SequenceNumber &  seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
     : RemoteResponseEvent( proxyTarget, result, responseId, seqNr )
 {
 }
 
-PubSubMixResponseEvent::PubSubMixResponseEvent( const EventDataStream & args, const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, SequenceNumber seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
+PubSubMixResponseEvent::PubSubMixResponseEvent( const EventDataStream & args, const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, const SequenceNumber &  seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
     : RemoteResponseEvent( args, proxyTarget, result, responseId, seqNr, NEPubSubMix::getString(static_cast<NEPubSubMix::eMessageIDs>(responseId)) )
 {
 }

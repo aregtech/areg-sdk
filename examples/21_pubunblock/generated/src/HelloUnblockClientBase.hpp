@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     17.09.2023  00:34:01 GMT+02:00
+ * Generated at     18.09.2023  09:14:52 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloUnblock.
  *
  * \file            generated/src/HelloUnblockClientBase.hpp
@@ -185,7 +185,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseIdentifier
      **/
-    inline SequenceNumber requestIdentifier( void );
+    inline const SequenceNumber &  requestIdentifier( void );
     /**
      * \brief   Overwrite to handle error of Identifier request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -204,7 +204,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseHelloUnblock
      **/
-    inline SequenceNumber requestHelloUblock( unsigned int clientId, unsigned int seqNr );
+    inline const SequenceNumber &  requestHelloUblock( unsigned int clientId, unsigned int seqNr );
     /**
      * \brief   Overwrite to handle error of HelloUblock request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -464,13 +464,13 @@ inline void HelloUnblockClientBase::notifyOnHelloServiceStateUpdate( bool notify
  * Request calls
  ************************************************************************/
 
-inline SequenceNumber HelloUnblockClientBase::requestIdentifier( void )
+inline const SequenceNumber &  HelloUnblockClientBase::requestIdentifier( void )
 {
     ASSERT(mProxy != nullptr);
     return mProxy->requestIdentifier( static_cast<IENotificationEventConsumer &>(self()) );
 }
 
-inline SequenceNumber HelloUnblockClientBase::requestHelloUblock( unsigned int clientId, unsigned int seqNr )
+inline const SequenceNumber &  HelloUnblockClientBase::requestHelloUblock( unsigned int clientId, unsigned int seqNr )
 {
     ASSERT(mProxy != nullptr);
     return mProxy->requestHelloUblock( static_cast<IENotificationEventConsumer &>(self()), clientId, seqNr );

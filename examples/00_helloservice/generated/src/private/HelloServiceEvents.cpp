@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     17.09.2023  00:33:56 GMT+02:00
+ * Generated at     18.09.2023  09:14:47 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloService.
  *
  * \file            generated/src/private/HelloServiceEvents.hpp
@@ -88,12 +88,12 @@ IMPLEMENT_RUNTIME_EVENT( HelloServiceResponseEvent, RemoteResponseEvent )
 // HelloServiceResponseEvent class, Constructors / Destructor
 //////////////////////////////////////////////////////////////////////////
 
-HelloServiceResponseEvent::HelloServiceResponseEvent( const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, SequenceNumber seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
+HelloServiceResponseEvent::HelloServiceResponseEvent( const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, const SequenceNumber &  seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
     : RemoteResponseEvent( proxyTarget, result, responseId, seqNr )
 {
 }
 
-HelloServiceResponseEvent::HelloServiceResponseEvent( const EventDataStream & args, const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, SequenceNumber seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
+HelloServiceResponseEvent::HelloServiceResponseEvent( const EventDataStream & args, const ProxyAddress & proxyTarget, NEService::eResultType result, unsigned int responseId, const SequenceNumber &  seqNr /* = NEService::SEQUENCE_NUMBER_NOTIFY */ )
     : RemoteResponseEvent( args, proxyTarget, result, responseId, seqNr, NEHelloService::getString(static_cast<NEHelloService::eMessageIDs>(responseId)) )
 {
 }

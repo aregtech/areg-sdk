@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     17.09.2023  00:33:56 GMT+02:00
+ * Generated at     18.09.2023  09:14:47 GMT+02:00
  *                  Create by AREG SDK code generator tool from source HelloService.
  *
  * \file            generated/src/HelloServiceClientBase.hpp
@@ -142,7 +142,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseHelloService
      **/
-    inline SequenceNumber requestHelloService( const String & client );
+    inline const SequenceNumber &  requestHelloService( const String & client );
     /**
      * \brief   Overwrite to handle error of HelloService request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -360,7 +360,7 @@ inline const Version & HelloServiceClientBase::getServiceVersion( void ) const
  * Request calls
  ************************************************************************/
 
-inline SequenceNumber HelloServiceClientBase::requestHelloService( const String & client )
+inline const SequenceNumber &  HelloServiceClientBase::requestHelloService( const String & client )
 {
     ASSERT(mProxy != nullptr);
     return mProxy->requestHelloService( static_cast<IENotificationEventConsumer &>(self()), client );

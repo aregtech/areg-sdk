@@ -56,8 +56,8 @@ void ServerSendThread::processEvent( const SendMessageEventData & data )
         const RemoteMessage & msgSend = data.getRemoteMessage( );
         ASSERT( msgSend.isValid( ) );
 
-        ITEM_ID target = static_cast<ITEM_ID>(msgSend.getTarget());
-        SocketAccepted client = mConnection.getClientByCookie(target);
+        const ITEM_ID & target{ msgSend.getTarget() };
+        SocketAccepted client{ mConnection.getClientByCookie(target) };
 
         TRACE_DBG("Sending message [ %s ] (ID = [ %u ]) to client [ %s : %d ] of socket [ %u ]. The message sent from source [ %u ] to target [ %u ]"
                     , NEService::getString(static_cast<NEService::eFuncIdRange>(msgSend.getMessageId()))

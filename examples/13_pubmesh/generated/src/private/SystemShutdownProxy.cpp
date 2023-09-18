@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     17.09.2023  00:34:00 GMT+02:00
+ * Generated at     18.09.2023  09:14:51 GMT+02:00
  *                  Create by AREG SDK code generator tool from source SystemShutdown.
  *
  * \file            generated/src/private/SystemShutdownProxy.hpp
@@ -106,7 +106,7 @@ RemoteResponseEvent * SystemShutdownProxy::createRemoteResponseEvent(const IEInS
     return static_cast<RemoteResponseEvent *>( DEBUG_NEW SystemShutdownResponseEvent(stream) );
 }
 
-RemoteResponseEvent * SystemShutdownProxy::createRemoteRequestFailedEvent(const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, SequenceNumber seqNr) const
+RemoteResponseEvent * SystemShutdownProxy::createRemoteRequestFailedEvent(const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, const SequenceNumber &  seqNr) const
 {
     return static_cast<RemoteResponseEvent *>( DEBUG_NEW SystemShutdownResponseEvent( addrProxy, reason, msgId, seqNr ) );
 }

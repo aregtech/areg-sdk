@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     17.09.2023  00:34:04 GMT+02:00
+ * Generated at     18.09.2023  09:14:55 GMT+02:00
  *                  Create by AREG SDK code generator tool from source DirectMessager.
  *
  * \file            generated/src/DirectMessagerClientBase.hpp
@@ -182,7 +182,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseChatJoin
      **/
-    inline SequenceNumber requestChatJoin( const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect );
+    inline const SequenceNumber &  requestChatJoin( const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect );
     /**
      * \brief   Overwrite to handle error of ChatJoin request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -574,7 +574,7 @@ inline void DirectMessagerClientBase::notifyOnChatParticipantsUpdate( bool notif
  * Request calls
  ************************************************************************/
 
-inline SequenceNumber DirectMessagerClientBase::requestChatJoin( const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect )
+inline const SequenceNumber &  DirectMessagerClientBase::requestChatJoin( const NEDirectMessager::sParticipant & participant, const DateTime & timeConnect )
 {
     ASSERT(mProxy != nullptr);
     return mProxy->requestChatJoin( static_cast<IENotificationEventConsumer &>(self()), participant, timeConnect );

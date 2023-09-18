@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     17.09.2023  00:34:02 GMT+02:00
+ * Generated at     18.09.2023  09:14:53 GMT+02:00
  *                  Create by AREG SDK code generator tool from source PubSubMix.
  *
  * \file            generated/src/private/PubSubMixProxy.hpp
@@ -287,7 +287,7 @@ protected:
      * \param   reason      Failure reason set by system
      * \param   seqNr       The sequence number of processing message.
      **/
-    virtual RemoteResponseEvent * createRemoteRequestFailedEvent( const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, SequenceNumber seqNr ) const override;
+    virtual RemoteResponseEvent * createRemoteRequestFailedEvent( const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, const SequenceNumber &  seqNr ) const override;
 
     /**
      * \brief   Overwrite this method to create service available event to new instantiated clients.

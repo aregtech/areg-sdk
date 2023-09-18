@@ -4,7 +4,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     17.09.2023  00:34:04 GMT+02:00
+ * Generated at     18.09.2023  09:14:55 GMT+02:00
  *                  Create by AREG SDK code generator tool from source DirectMessager.
  *
  * \file            generated/src/DirectMessagerClientBase.hpp

@@ -75,8 +75,8 @@ void RouterServerService::onServiceMessageReceived(const RemoteMessage &msgRecei
     TRACE_SCOPE(mcrouter_tcp_RouterServerService_onServiceMessageReceived);
 
     ASSERT( msgReceived.isValid() );
-    NEService::eFuncIdRange msgId = static_cast<NEService::eFuncIdRange>( msgReceived.getMessageId() );
-    ITEM_ID source= static_cast<ITEM_ID>(msgReceived.getSource());
+    NEService::eFuncIdRange msgId { static_cast<NEService::eFuncIdRange>(msgReceived.getMessageId()) };
+    const ITEM_ID & source{ msgReceived.getSource() };
 
     TRACE_DBG("Processing received valid message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
                     , NEService::getString(msgId)
@@ -255,7 +255,7 @@ void RouterServerService::disconnectServices(void)
     mServiceRegistry.clear( );
 }
 
-void RouterServerService::extractRemoteServiceAddresses( ITEM_ID cookie, TEArrayList<StubAddress> & OUT out_listStubs, TEArrayList<ProxyAddress> & OUT out_lisProxies ) const
+void RouterServerService::extractRemoteServiceAddresses( const ITEM_ID & cookie, TEArrayList<StubAddress> & OUT out_listStubs, TEArrayList<ProxyAddress> & OUT out_lisProxies ) const
 {
     mServiceRegistry.getServiceList(cookie, out_listStubs, out_lisProxies);
 }
@@ -389,7 +389,7 @@ void RouterServerService::registeredRemoteServiceConsumer(const ProxyAddress & p
     }
 }
 
-void RouterServerService::unregisteredRemoteServiceProvider(const StubAddress & stub, NEService::eDisconnectReason reason, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ )
+void RouterServerService::unregisteredRemoteServiceProvider(const StubAddress & stub, NEService::eDisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ )
 {
     TRACE_SCOPE(mcrouter_tcp_RouterServerService_unregisteredRemoteServiceProvider);
     if ( mServiceRegistry.getServiceStatus(stub) == NEService::eServiceConnection::ServiceConnected )
@@ -441,7 +441,7 @@ void RouterServerService::unregisteredRemoteServiceProvider(const StubAddress & 
     }
 }
 
-void RouterServerService::unregisteredRemoteServiceConsumer(const ProxyAddress & proxy, NEService::eDisconnectReason reason, ITEM_ID cookie /*= NEService::COOKIE_ANY*/ )
+void RouterServerService::unregisteredRemoteServiceConsumer(const ProxyAddress & proxy, NEService::eDisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ )
 {
     TRACE_SCOPE(mcrouter_tcp_RouterServerService_unregisteredRemoteServiceConsumer);
     TRACE_DBG("Unregistering services of proxy [ %s ] related to cookie [ %u ]"

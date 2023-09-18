@@ -133,7 +133,7 @@ bool StubBase::prepareResponse( SessionID sessionId )
     return result;
 }
 
-void StubBase::prepareRequest( Listener & listener, SequenceNumber seqNr, unsigned int responseId )
+void StubBase::prepareRequest( Listener & listener, const SequenceNumber & seqNr, unsigned int responseId )
 {
     listener.mMessageId = responseId;
     listener.mSequenceNr= mListListener.isInvalidPosition(mListListener.find(listener)) ? seqNr : static_cast<SequenceNumber>(-1 * static_cast<SignedSequence>(seqNr));
@@ -393,7 +393,7 @@ void StubBase::sendBusyRespone( const Listener & whichListener )
     }
 }
 
-bool StubBase::canExecuteRequest( Listener & whichListener, unsigned int whichResponse, SequenceNumber seqNr )
+bool StubBase::canExecuteRequest( Listener & whichListener, unsigned int whichResponse, const SequenceNumber & seqNr )
 {
     bool result = false;
     if (isBusy(whichResponse))

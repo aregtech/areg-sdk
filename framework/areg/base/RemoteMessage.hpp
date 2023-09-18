@@ -145,24 +145,24 @@ public:
     /**
      * \brief   Returns the ID of remote source set in Remote Buffer header.
      **/
-    inline uint64_t getSource( void ) const;
+    inline const ITEM_ID & getSource( void ) const;
 
     /**
      * \brief   Sets the ID of source in Remote Buffer.
      * \param   idSource    The ID of source to set in Remote Buffer
      **/
-    inline void setSource( uint64_t idSource );
+    inline void setSource(const ITEM_ID & idSource);
 
     /**
      * \brief   Returns the ID of remote target set in Remote Buffer header.
      **/
-    inline uint64_t getTarget( void ) const;
+    inline const ITEM_ID & getTarget( void ) const;
 
     /**
      * \brief   Sets the ID of target in Remote Buffer.
      * \param   idTarget    The ID of target to set in Remote Buffer
      **/
-    inline void setTarget( uint64_t idTarget );
+    inline void setTarget(const ITEM_ID & idTarget);
 
     /**
      * \brief   Returns the message ID value set in remote buffer
@@ -313,12 +313,12 @@ inline unsigned int RemoteMessage::getChecksum( void ) const
     return _getHeader().rbhChecksum;
 }
 
-inline uint64_t RemoteMessage::getSource( void ) const
+inline const ITEM_ID & RemoteMessage::getSource( void ) const
 {
     return _getHeader().rbhSource;
 }
 
-inline void RemoteMessage::setSource( uint64_t idSource )
+inline void RemoteMessage::setSource(const ITEM_ID & idSource )
 {
     if (isValid())
     {
@@ -326,12 +326,12 @@ inline void RemoteMessage::setSource( uint64_t idSource )
     }
 }
 
-inline uint64_t RemoteMessage::getTarget( void ) const
+inline const ITEM_ID & RemoteMessage::getTarget( void ) const
 {
     return _getHeader().rbhTarget;
 }
 
-inline void RemoteMessage::setTarget( uint64_t idTarget )
+inline void RemoteMessage::setTarget(const ITEM_ID & idTarget )
 {
     if (isValid())
     {

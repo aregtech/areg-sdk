@@ -394,7 +394,7 @@ AREG_API_IMPL RemoteMessage NETrace::messageDisconnectLogService( )
     RemoteMessage msgByeLog;
     if (msgByeLog.initMessage(NEConnection::getMessageByeServer().rbHeader) != nullptr)
     {
-        ITEM_ID cookie{ NETrace::getCookie() };
+        const ITEM_ID & cookie{ NETrace::getCookie() };
         msgByeLog.setSource(cookie);
         msgByeLog << NETrace::eLogMessageSource::MessageSourceGenerator;
         msgByeLog << cookie;
@@ -408,7 +408,7 @@ AREG_API_IMPL RemoteMessage NETrace::messageRegisterScopesStart(unsigned int sco
     RemoteMessage msgScope;
     if (msgScope.initMessage(_getLogRegisterScopes().rbHeader) != nullptr)
     {
-        ITEM_ID cookie{ NETrace::getCookie() };
+        const ITEM_ID & cookie{ NETrace::getCookie() };
         msgScope.setSource(cookie);
         msgScope << NETrace::eLogMessageSource::MessageSourceGenerator;
         msgScope << NETrace::eScopeList::ScopeListStart;
@@ -423,7 +423,7 @@ AREG_API_IMPL RemoteMessage NETrace::messageRegisterScopesEnd( )
     RemoteMessage msgScope;
     if (msgScope.initMessage(_getLogRegisterScopes().rbHeader) != nullptr)
     {
-        ITEM_ID cookie{ NETrace::getCookie() };
+        const ITEM_ID & cookie{ NETrace::getCookie() };
         msgScope.setSource(cookie);
         msgScope << NETrace::eLogMessageSource::MessageSourceGenerator;
         msgScope << NETrace::eScopeList::ScopeListEnd;
@@ -450,7 +450,7 @@ AREG_API_IMPL RemoteMessage NETrace::messageRegisterScopes(const ScopeList & sco
     RemoteMessage msgScope;
     if (msgScope.initMessage(_getLogRegisterScopes().rbHeader) != nullptr)
     {
-        ITEM_ID cookie{ NETrace::getCookie() };
+        const ITEM_ID & cookie{ NETrace::getCookie() };
         msgScope.setSource(cookie);
         msgScope << NETrace::eLogMessageSource::MessageSourceGenerator;
         msgScope << NETrace::eScopeList::ScopeListContinue;
@@ -514,7 +514,7 @@ AREG_API_IMPL bool NETrace::initAndStartLogging(const char * fileConfig /*= null
 #endif  // AREG_LOGS
 }
 
-AREG_API_IMPL const ITEM_ID& NETrace::getCookie(void)
+AREG_API_IMPL const ITEM_ID & NETrace::getCookie(void)
 {
 #if AREG_LOGS
     return TraceManager::getConnectionCookie();

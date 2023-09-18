@@ -174,7 +174,7 @@ public:
      * \return  Returns number of entries found in the list. If no entry found, 
      *          return value is zero.
      **/
-    int getSpecificService( ListServiceProxies & out_listProxies, ITEM_ID cookie );
+    int getSpecificService( ListServiceProxies & out_listProxies, const ITEM_ID & cookie );
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

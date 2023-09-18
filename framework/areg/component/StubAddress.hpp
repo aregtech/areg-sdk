@@ -271,22 +271,22 @@ public:
     /**
      * \brief   Returns stub cookies value
      **/
-    inline ITEM_ID getCookie( void ) const;
+    inline const ITEM_ID & getCookie( void ) const;
 
     /**
      * \brief   Sets stub cookie value
      **/
-    inline void setCookie( ITEM_ID cookie );
+    inline void setCookie(const ITEM_ID & cookie );
 
     /**
      * \brief   Returns the ID of source set in communication channel
      **/
-    inline ITEM_ID getSource( void ) const;
+    inline const ITEM_ID & getSource( void ) const;
 
     /**
      * \brief   Sets the ID of source in communication channel.
      **/
-    inline void setSource( ITEM_ID source );
+    inline void setSource(const ITEM_ID & source );
 
     /**
      * \brief   Returns the service owner thread name.
@@ -534,22 +534,22 @@ inline void StubAddress::setChannel(const Channel & channel)
     mChannel = channel;
 }
 
-inline ITEM_ID StubAddress::getCookie( void ) const
+inline const ITEM_ID & StubAddress::getCookie( void ) const
 {
     return mChannel.getCookie();
 }
 
-inline void StubAddress::setCookie( ITEM_ID cookie )
+inline void StubAddress::setCookie(const ITEM_ID & cookie )
 {
     mChannel.setCookie(cookie);
 }
 
-inline ITEM_ID StubAddress::getSource( void ) const
+inline const ITEM_ID & StubAddress::getSource( void ) const
 {
     return mChannel.getSource();
 }
 
-inline void StubAddress::setSource( ITEM_ID source )
+inline void StubAddress::setSource(const ITEM_ID & source )
 {
     return mChannel.setSource(source);
 }

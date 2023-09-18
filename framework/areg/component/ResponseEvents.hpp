@@ -78,7 +78,7 @@ protected:
                  , const NEService::eResultType result
                  , unsigned int respId
                  , Event::eEventType eventType
-                 , SequenceNumber seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
+                 , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
 
     /**
      * \brief	Initializes event. Sets buffer of serialized arguments, event target address, result type and response ID.
@@ -95,7 +95,7 @@ protected:
                  , NEService::eResultType result
                  , unsigned int respId
                  , Event::eEventType eventType
-                 , SequenceNumber seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
+                 , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
                  , const String & name = String::getEmptyString() );
 
     /**
@@ -219,7 +219,7 @@ protected:
     LocalResponseEvent( const ProxyAddress & proxyTarget
                       , NEService::eResultType result
                       , unsigned int respId
-                      , SequenceNumber seqNr = NEService::SEQUENCE_NUMBER_NOTIFY);
+                      , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY);
 
     /**
      * \brief	Initializes local event. Sets buffer of serialized arguments, event target address, result type and response ID.
@@ -235,7 +235,7 @@ protected:
                       , const ProxyAddress & proxyTarget
                       , NEService::eResultType result
                       , unsigned int respId
-                      , SequenceNumber seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
+                      , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
                       , const String & name = String::getEmptyString() );
 
     /**
@@ -298,7 +298,7 @@ protected:
     RemoteResponseEvent( const ProxyAddress & proxyTarget
                        , NEService::eResultType result
                        , unsigned int respId
-                       , SequenceNumber seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
+                       , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY );
 
     /**
      * \brief	Initializes remote event. Sets buffer of serialized arguments, event target address, result type and response ID.
@@ -314,7 +314,7 @@ protected:
                        , const ProxyAddress & proxyTarget
                        , NEService::eResultType result
                        , unsigned int respId
-                       , SequenceNumber seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
+                       , const SequenceNumber & seqNr = NEService::SEQUENCE_NUMBER_NOTIFY
                        , const String & name = String::getEmptyString() );
 
     /**

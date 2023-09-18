@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     17.09.2023  00:34:01 GMT+02:00
+ * Generated at     18.09.2023  09:14:52 GMT+02:00
  *                  Create by AREG SDK code generator tool from source ConnectionManager.
  *
  * \file            generated/src/ConnectionManagerClientBase.hpp
@@ -182,7 +182,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseConnect
      **/
-    inline SequenceNumber requestConnect( const String & nickName, const DateTime & dateTime );
+    inline const SequenceNumber &  requestConnect( const String & nickName, const DateTime & dateTime );
     /**
      * \brief   Overwrite to handle error of Connect request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -202,7 +202,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseRegisterConnection
      **/
-    inline SequenceNumber requestRegisterConnection( const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister );
+    inline const SequenceNumber &  requestRegisterConnection( const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister );
     /**
      * \brief   Overwrite to handle error of RegisterConnection request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -540,13 +540,13 @@ inline void ConnectionManagerClientBase::notifyOnConnectionListUpdate( bool noti
  * Request calls
  ************************************************************************/
 
-inline SequenceNumber ConnectionManagerClientBase::requestConnect( const String & nickName, const DateTime & dateTime )
+inline const SequenceNumber &  ConnectionManagerClientBase::requestConnect( const String & nickName, const DateTime & dateTime )
 {
     ASSERT(mProxy != nullptr);
     return mProxy->requestConnect( static_cast<IENotificationEventConsumer &>(self()), nickName, dateTime );
 }
 
-inline SequenceNumber ConnectionManagerClientBase::requestRegisterConnection( const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister )
+inline const SequenceNumber &  ConnectionManagerClientBase::requestRegisterConnection( const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister )
 {
     ASSERT(mProxy != nullptr);
     return mProxy->requestRegisterConnection( static_cast<IENotificationEventConsumer &>(self()), nickName, cookie, connectCookie, dateRegister );

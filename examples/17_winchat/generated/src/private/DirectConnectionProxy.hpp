@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     17.09.2023  00:34:02 GMT+02:00
+ * Generated at     18.09.2023  09:14:53 GMT+02:00
  *                  Create by AREG SDK code generator tool from source DirectConnection.
  *
  * \file            generated/src/private/DirectConnectionProxy.hpp
@@ -192,7 +192,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseConnectoinSetup
      **/
-    SequenceNumber requestConnectoinSetup( IENotificationEventConsumer & caller, const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
+    const SequenceNumber &  requestConnectoinSetup( IENotificationEventConsumer & caller, const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
 
     /**
      * \brief   Request call.
@@ -203,7 +203,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseAddParticipant
      **/
-    SequenceNumber requestAddParticipant( IENotificationEventConsumer & caller, const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
+    const SequenceNumber &  requestAddParticipant( IENotificationEventConsumer & caller, const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
 
     /**
      * \brief   Request call.
@@ -214,7 +214,7 @@ public:
      * \return  The sequence count number of call
      * \see     responseRemoveParticipant
      **/
-    SequenceNumber requestRemoveParticipant( IENotificationEventConsumer & caller, const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
+    const SequenceNumber &  requestRemoveParticipant( IENotificationEventConsumer & caller, const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
 
     /**
      * \brief   Request call.
@@ -330,7 +330,7 @@ protected:
      * \param   reason      Failure reason set by system
      * \param   seqNr       The sequence number of processing message.
      **/
-    virtual RemoteResponseEvent * createRemoteRequestFailedEvent( const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, SequenceNumber seqNr ) const override;
+    virtual RemoteResponseEvent * createRemoteRequestFailedEvent( const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, const SequenceNumber &  seqNr ) const override;
 
     /**
      * \brief   Overwrite this method to create service available event to new instantiated clients.

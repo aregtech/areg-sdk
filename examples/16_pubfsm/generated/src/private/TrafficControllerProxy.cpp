@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     17.09.2023  00:34:00 GMT+02:00
+ * Generated at     18.09.2023  09:14:51 GMT+02:00
  *                  Create by AREG SDK code generator tool from source TrafficController.
  *
  * \file            generated/src/private/TrafficControllerProxy.hpp
@@ -109,7 +109,7 @@ RemoteResponseEvent * TrafficControllerProxy::createRemoteResponseEvent(const IE
     return static_cast<RemoteResponseEvent *>( DEBUG_NEW TrafficControllerResponseEvent(stream) );
 }
 
-RemoteResponseEvent * TrafficControllerProxy::createRemoteRequestFailedEvent(const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, SequenceNumber seqNr) const
+RemoteResponseEvent * TrafficControllerProxy::createRemoteRequestFailedEvent(const ProxyAddress & addrProxy, unsigned int msgId, NEService::eResultType reason, const SequenceNumber &  seqNr) const
 {
     return static_cast<RemoteResponseEvent *>( DEBUG_NEW TrafficControllerResponseEvent( addrProxy, reason, msgId, seqNr ) );
 }

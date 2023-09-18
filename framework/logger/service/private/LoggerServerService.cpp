@@ -45,7 +45,7 @@ void LoggerServerService::onServiceMessageReceived(const RemoteMessage &msgRecei
 
     ASSERT( msgReceived.isValid() );
     NEService::eFuncIdRange msgId = static_cast<NEService::eFuncIdRange>( msgReceived.getMessageId() );
-    ITEM_ID source= static_cast<ITEM_ID>(msgReceived.getSource());
+    const ITEM_ID & source = msgReceived.getSource();
 
     TRACE_DBG("Processing received valid message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
                     , NEService::getString(msgId)

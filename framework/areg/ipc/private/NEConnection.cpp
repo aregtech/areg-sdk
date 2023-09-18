@@ -221,7 +221,7 @@ AREG_API const NEMemory::sRemoteMessage & NEConnection::getMessageRegisterNotify
     return _messageRegisterNotify;
 }
 
-inline static bool _isValidSource( ITEM_ID client )
+inline static bool _isValidSource(const ITEM_ID & client )
 {
     return ((client != NEService::COOKIE_UNKNOWN) && client != (NEService::COOKIE_LOCAL));
 }

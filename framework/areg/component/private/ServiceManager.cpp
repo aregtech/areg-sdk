@@ -329,7 +329,7 @@ void ServiceManager::_waitServiceManagerThread(void)
     shutdownThread(NECommon::DO_NOT_WAIT);
 }
 
-void ServiceManager::extractRemoteServiceAddresses( ITEM_ID cookie, TEArrayList<StubAddress> & OUT out_listStubs, TEArrayList<ProxyAddress> & OUT out_lisProxies ) const
+void ServiceManager::extractRemoteServiceAddresses(const ITEM_ID & cookie, TEArrayList<StubAddress> & OUT out_listStubs, TEArrayList<ProxyAddress> & OUT out_lisProxies ) const
 {
     TRACE_SCOPE(areg_component_private_ServiceManager_extractRemoteServiceAddresses);
     Lock lock( mLock );
@@ -374,12 +374,12 @@ void ServiceManager::registeredRemoteServiceConsumer(const ProxyAddress & proxy)
     ServiceManager::requestRegisterClient(proxy);
 }
 
-void ServiceManager::unregisteredRemoteServiceProvider(const StubAddress & stub, NEService::eDisconnectReason reason, ITEM_ID /*cookie*/ /*= NEService::COOKIE_ANY*/ )
+void ServiceManager::unregisteredRemoteServiceProvider(const StubAddress & stub, NEService::eDisconnectReason reason, const ITEM_ID & /*cookie*/ /*= NEService::COOKIE_ANY*/ )
 {
     ServiceManager::requestUnregisterServer(stub, reason);
 }
 
-void ServiceManager::unregisteredRemoteServiceConsumer(const ProxyAddress & proxy, NEService::eDisconnectReason reason, ITEM_ID /* cookie */ /*= NEService::COOKIE_ANY*/ )
+void ServiceManager::unregisteredRemoteServiceConsumer(const ProxyAddress & proxy, NEService::eDisconnectReason reason, const ITEM_ID & /* cookie */ /*= NEService::COOKIE_ANY*/ )
 {
     ServiceManager::requestUnregisterClient(proxy, reason);
 }

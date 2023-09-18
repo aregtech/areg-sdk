@@ -40,7 +40,7 @@ DEF_TRACE_SCOPE(areg_extend_service_ServiceCommunicatonBase_failedReceiveMessage
 // ServiceCommunicatonBase class implementation
 //////////////////////////////////////////////////////////////////////////
 
-ServiceCommunicatonBase::ServiceCommunicatonBase( ITEM_ID serviceId
+ServiceCommunicatonBase::ServiceCommunicatonBase( const ITEM_ID & serviceId
                                                 , const String & dispatcher
                                                 , ServiceCommunicatonBase::eConnectionBehavior behavior /*= ServiceCommunicatonBase::eConnectionBehavior::DefaultAccept*/ )
     : IERemoteMessageHandler        ( )
@@ -198,8 +198,8 @@ bool ServiceCommunicatonBase::canAcceptConnection(const SocketAccepted & clientS
 void ServiceCommunicatonBase::connectionLost( SocketAccepted & clientSocket )
 {
     TRACE_SCOPE(areg_extend_service_ServiceCommunicatonBase_connectionLost);
-    ITEM_ID cookie { mServerConnection.getCookie(clientSocket) };
-    ITEM_ID channel{ mServerConnection.getChannelId() };
+    const ITEM_ID & cookie { mServerConnection.getCookie(clientSocket) };
+    const ITEM_ID & channel{ mServerConnection.getChannelId() };
 
     TRACE_WARN("Client lost connection: cookie [ %u ], socket [ %d ], host [ %s : %d ], closing connection"
                 , static_cast<uint32_t>(cookie)
@@ -361,7 +361,7 @@ void ServiceCommunicatonBase::failedSendMessage(const RemoteMessage & msgFailed,
 
 #ifdef DEBUG
 
-    ITEM_ID cookie = msgFailed.getTarget( );
+    const ITEM_ID & cookie = msgFailed.getTarget( );
     SocketAccepted client = mServerConnection.getClientByCookie( cookie );
     ASSERT( (client.isValid() == false) || (whichTarget.getHandle( ) == client.getHandle( )) );
 
@@ -398,9 +398,9 @@ void ServiceCommunicatonBase::processReceivedMessage(const RemoteMessage & msgRe
     TRACE_SCOPE(areg_extend_service_ServiceCommunicatonBase_processReceivedMessage);
     if ( msgReceived.isValid() )
     {
-        ITEM_ID cookie = mServerConnection.getCookie(whichSource.getHandle());
-        ITEM_ID source = static_cast<ITEM_ID>(msgReceived.getSource());
-        ITEM_ID target = static_cast<ITEM_ID>(msgReceived.getTarget());
+        const ITEM_ID & cookie = mServerConnection.getCookie(whichSource.getHandle());
+        const ITEM_ID & source = msgReceived.getSource();
+        const ITEM_ID & target = msgReceived.getTarget();
         NEService::eFuncIdRange msgId  = static_cast<NEService::eFuncIdRange>( msgReceived.getMessageId() );
 
         TRACE_DBG("Received message [ %s ] of id [ 0x%X ] from source [ %u ] ( connection cookie = %u ) of client host [ %s : %d ] for target [ %u ]"

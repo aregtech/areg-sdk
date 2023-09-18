@@ -107,7 +107,7 @@ int ListServiceProxies::stubServiceUnavailable( void )
     return result;
 }
 
-int ListServiceProxies::getSpecificService(ListServiceProxies & out_listProxies, ITEM_ID cookie)
+int ListServiceProxies::getSpecificService(ListServiceProxies & out_listProxies, const ITEM_ID & cookie)
 {
     int result = 0;
     for ( LISTPOS pos = firstPosition( ); isValidPosition(pos); pos = nextPosition(pos) )

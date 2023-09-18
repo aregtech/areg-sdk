@@ -59,9 +59,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
                 if ( eventRequest != nullptr )
                 {
                     Channel chTarget( stub->getAddress().getChannel() );
-                    Channel chSource( static_cast<ITEM_ID>(comChannel.getSource())
-                                    , static_cast<ITEM_ID>(chTarget.getSource())
-                                    , static_cast<ITEM_ID>(stream.getSource()) );
+                    Channel chSource( comChannel.getSource(), chTarget.getSource(), stream.getSource() );
                     eventRequest->setTargetChannel(chTarget);
                     eventRequest->setSourceChannel(chSource);
 
@@ -92,9 +90,7 @@ StreamableEvent * RemoteEventFactory::createEventFromStream( const RemoteMessage
                 if ( eventNotify != nullptr )
                 {
                     Channel chTarget( stub->getAddress().getChannel() );
-                    Channel chSource( static_cast<ITEM_ID>(comChannel.getSource())
-                                    , static_cast<ITEM_ID>(chTarget.getSource())
-                                    , static_cast<ITEM_ID>(stream.getSource()) );
+                    Channel chSource( comChannel.getSource(), chTarget.getSource(), stream.getSource() );
                     eventNotify->setTargetChannel(chTarget);
                     eventNotify->setSourceChannel(chSource);
 
