@@ -273,7 +273,7 @@ void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, So
 
         switch ( msgId )
         {
-        case NEService::eFuncIdRange::ServiceRouterNotify:
+        case NEService::eFuncIdRange::SystemServiceNotifyConnection:
             {
                 NEService::eServiceConnection connection = NEService::eServiceConnection::ServiceConnectionUnknown;
                 ITEM_ID cookie = NEService::COOKIE_UNKNOWN;
@@ -318,7 +318,7 @@ void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, So
             }
             break;
 
-        case NEService::eFuncIdRange::ServiceRouterNotifyRegister:
+        case NEService::eFuncIdRange::SystemServiceNotifyRegister:
             {
                 ASSERT( mClientConnection.getCookie() == msgReceived.getTarget() );
                 NEService::eServiceRequestType reqType;
@@ -386,16 +386,16 @@ void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, So
             }
             break;
 
-        case NEService::eFuncIdRange::ServiceLastId:            // fall through
-        case NEService::eFuncIdRange::ServiceRouterQuery:       // fall through
-        case NEService::eFuncIdRange::ServiceRouterRegister:    // fall through
-        case NEService::eFuncIdRange::SystemServiceDisconnect:  // fall through
-        case NEService::eFuncIdRange::SystemServiceConnect:     // fall through
-        case NEService::eFuncIdRange::ServiceNotifyConnection:  // fall through
-        case NEService::eFuncIdRange::ServiceRequestConnection: // fall through
-        case NEService::eFuncIdRange::ServiceNotifyVersion:     // fall through
-        case NEService::eFuncIdRange::ServiceRequestVersion:    // fall through
-        case NEService::eFuncIdRange::ServiceRequestRegister:   // fall through
+        case NEService::eFuncIdRange::ServiceLastId:                    // fall through
+        case NEService::eFuncIdRange::SystemServiceQueryInstances:      // fall through
+        case NEService::eFuncIdRange::SystemServiceRequestRegister:     // fall through
+        case NEService::eFuncIdRange::SystemServiceDisconnect:          // fall through
+        case NEService::eFuncIdRange::SystemServiceConnect:             // fall through
+        case NEService::eFuncIdRange::ResponseServiceProviderConnection:// fall through
+        case NEService::eFuncIdRange::RequestServiceProviderConnection: // fall through
+        case NEService::eFuncIdRange::ResponseServiceProviderVersion:   // fall through
+        case NEService::eFuncIdRange::RequestServiceProviderVersion:    // fall through
+        case NEService::eFuncIdRange::RequestRegisterService:           // fall through
         case NEService::eFuncIdRange::ComponentCleanup:
             break;
 

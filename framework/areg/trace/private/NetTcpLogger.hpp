@@ -131,25 +131,6 @@ public:
 private:
 
 /************************************************************************/
-// IEServiceConnectionProvider overrides
-/************************************************************************/
-    /**
-     * \brief   Creates the service connect request message, sets the message target and the source.
-     * \param   source  The ID of the source that sends connection message request.
-     * \param   target  The ID of the target to send the connection message request.
-     * \return  Returns the created message for remote communication.
-     **/
-    virtual RemoteMessage createServiceConnectMessage(  const ITEM_ID & source, const ITEM_ID & target  ) const override;
-
-    /**
-     * \brief   Creates the service disconnect request message, sets the message target and the source.
-     * \param   source  The ID of the source that sends the disconnect message request.
-     * \param   target  The ID of the target to send the disconnection message request.
-     * \return  Returns the created message for remote communication.
-     **/
-    virtual RemoteMessage createServiceDisconnectMessage(  const ITEM_ID & source, const ITEM_ID & target  ) const override;
-
-/************************************************************************/
 // IEServiceConnectionConsumer overrides
 /************************************************************************/
 

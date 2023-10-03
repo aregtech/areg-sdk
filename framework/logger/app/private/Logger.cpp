@@ -451,7 +451,7 @@ void Logger::_outputInfo( const String & info )
 #endif  // AREG_EXTENDED
 }
 
-void Logger::_outputInstances( const ServiceCommunicatonBase::InstanceMap & instances )
+void Logger::_outputInstances( const ServiceCommunicatonBase::MapInstances & instances )
 {
     static constexpr std::string_view _table{ "   Nr. |  Instance ID  |  Name " };
     static constexpr std::string_view _empty{ "There are no connected instances ..." };
@@ -501,8 +501,8 @@ void Logger::_outputInstances( const ServiceCommunicatonBase::InstanceMap & inst
         for ( auto pos = instances.firstPosition( ); instances.isValidPosition( pos ); pos = instances.nextPosition( pos ) )
         {
             ITEM_ID cookie{ 0 };
-            String name;
-            instances.getAtPosition( pos, cookie, name );
+            ServiceCommunicatonBase::sConnectedInstance instance;
+            instances.getAtPosition( pos, cookie, instance);
             unsigned int id{ static_cast<unsigned int>(cookie) };
 
 #if AREG_EXTENDED
@@ -512,7 +512,7 @@ void Logger::_outputInstances( const ServiceCommunicatonBase::InstanceMap & inst
 
 #else   // !AREG_EXTENDED
 
-            printf( " %4d. |  %11u  |  %s \n", i ++, id, name.getString( ) );
+            printf( " %4d. |  %11u  |  %s \n", i ++, id, instance.ciInstance.getString( ) );
 
 #endif  // AREG_EXTENDED
         }

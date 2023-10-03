@@ -155,7 +155,10 @@ void ServiceClientConnectionBase::enableRemoteServicing( bool enable )
 
 RemoteMessage ServiceClientConnectionBase::createServiceConnectMessage(  const ITEM_ID & /*source*/, const ITEM_ID & target) const
 {
-    return NEConnection::createConnectRequest(target);
+    RemoteMessage result{ std::move(NEConnection::createConnectRequest(target)) };
+    result.moveToEnd();
+    result << NEService::eMessageSource::MessageSourceClient;
+    return result;
 }
 
 RemoteMessage ServiceClientConnectionBase::createServiceDisconnectMessage(const ITEM_ID & source, const ITEM_ID & target) const

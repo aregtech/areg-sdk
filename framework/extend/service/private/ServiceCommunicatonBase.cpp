@@ -67,6 +67,24 @@ ServiceCommunicatonBase::ServiceCommunicatonBase( const ITEM_ID & serviceId
 {
 }
 
+void ServiceCommunicatonBase::addInstance(const ITEM_ID & cookie, const sConnectedInstance & instance)
+{
+    Lock lock(mLock);
+    mInstanceMap.addIfUnique(cookie, instance);
+}
+
+void ServiceCommunicatonBase::removeInstance(const ITEM_ID & cookie)
+{
+    Lock lock(mLock);
+    mInstanceMap.removeAt(cookie);
+}
+
+void ServiceCommunicatonBase::removeAllInstances(void)
+{
+    Lock lock(mLock);
+    mInstanceMap.release();
+}
+
 bool ServiceCommunicatonBase::setupServiceConnectionHost(const String &configFile)
 {
     ConnectionConfiguration configConnect;
@@ -210,7 +228,7 @@ void ServiceCommunicatonBase::connectionLost( SocketAccepted & clientSocket )
     mServerConnection.closeConnection(clientSocket);
     if ( cookie != NEService::COOKIE_UNKNOWN )
     {
-        mInstanceMap.removeAt( cookie );
+        removeInstance(cookie);
         RemoteMessage msgDisconnect = NEConnection::createDisconnectRequest(cookie, channel);
         sendCommunicationMessage(ServiceEventData::eServiceEventCommands::CMD_ServiceReceivedMsg, msgDisconnect, Event::eEventPriority::EventPriorityNormal);
     }
@@ -432,8 +450,9 @@ void ServiceCommunicatonBase::processReceivedMessage(const RemoteMessage & msgRe
         }
         else if ( (source == NEService::SOURCE_UNKNOWN) && (msgId == NEService::eFuncIdRange::SystemServiceConnect) )
         {
-            String instance;
-            msgReceived >> instance;
+            sConnectedInstance instance{};
+            msgReceived >> instance.ciSource;
+            msgReceived >> instance.ciInstance;
             addInstance(cookie, instance);
             RemoteMessage msgConnect(createServiceConnectMessage(mServerConnection.getChannelId(), cookie));
             TRACE_DBG("Received request connect message, sending response [ %s ] of id [ 0x%X ], to new target [ %u ], connection socket [ %u ], checksum [ %u ]"
@@ -480,11 +499,13 @@ bool ServiceCommunicatonBase::postEvent( Event & eventElem )
 
 RemoteMessage ServiceCommunicatonBase::createServiceConnectMessage(const ITEM_ID & source, const ITEM_ID & target) const
 {
-    return NEConnection::createConnectNotify(source, target);
+    RemoteMessage result{ NEConnection::createConnectNotify(source, target) };
+    result.moveToEnd();
+    result << NEService::eMessageSource::MessageSourceService;
+    return result;
 }
 
 RemoteMessage ServiceCommunicatonBase::createServiceDisconnectMessage( const ITEM_ID & source, const ITEM_ID & target ) const
 {
-    return RemoteMessage();
+    return NEConnection::createDisconnectNotify(source, target);
 }
-

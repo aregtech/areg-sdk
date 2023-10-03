@@ -210,7 +210,7 @@ private:
     /**
      * \brief   Returns the list of connected instances.
      **/
-    inline const ServiceCommunicatonBase::InstanceMap & getConnetedInstances( void ) const;
+    inline const ServiceCommunicatonBase::MapInstances & getConnetedInstances( void ) const;
 
     /**
      * \brief   Returns instance of the logger service.
@@ -237,7 +237,7 @@ private:
     /**
      * \brief   Outputs on console the information about connected instances.
      **/
-    static void _outputInstances( const ServiceCommunicatonBase::InstanceMap & instances );
+    static void _outputInstances( const ServiceCommunicatonBase::MapInstances & instances );
 
     /**
      * \brief   Sets verbose or silent mode to output data rate.
@@ -312,7 +312,7 @@ inline IEServiceConnectionProvider & Logger::getService( void )
     return static_cast<IEServiceConnectionProvider &>(mServiceServer);
 }
 
-inline const ServiceCommunicatonBase::InstanceMap & Logger::getConnetedInstances( void ) const
+inline const ServiceCommunicatonBase::MapInstances & Logger::getConnetedInstances( void ) const
 {
     return mServiceServer.getInstances( );
 }

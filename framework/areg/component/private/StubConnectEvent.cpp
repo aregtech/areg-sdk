@@ -23,7 +23,7 @@ IMPLEMENT_RUNTIME_EVENT(StubConnectEvent, ServiceRequestEvent)
 StubConnectEvent::StubConnectEvent(const StubAddress & stubTarget, NEService::eServiceConnection connectStatus)
     : ServiceRequestEvent   ( ProxyAddress::getInvalidProxyAddress()
                             , stubTarget
-                            , static_cast<unsigned int>(NEService::eFuncIdRange::ServiceNotifyConnection)
+                            , static_cast<unsigned int>(NEService::eFuncIdRange::ResponseServiceProviderConnection)
                             , NEService::eRequestType::ServiceConnection
                             , Event::eEventType::EventLocalStubConnect)
     , mConnectionStatus     ( connectStatus )
@@ -33,7 +33,7 @@ StubConnectEvent::StubConnectEvent(const StubAddress & stubTarget, NEService::eS
 StubConnectEvent::StubConnectEvent(const ProxyAddress & proxyClient, const StubAddress & stubTarget, NEService::eServiceConnection connectStatus)
     : ServiceRequestEvent   ( proxyClient
                             , stubTarget
-                            , static_cast<unsigned int>(NEService::eFuncIdRange::ServiceNotifyConnection)
+                            , static_cast<unsigned int>(NEService::eFuncIdRange::ResponseServiceProviderConnection)
                             , NEService::eRequestType::ClientConnection
                             , Event::eEventType::EventLocalStubConnect)
     , mConnectionStatus     ( connectStatus )

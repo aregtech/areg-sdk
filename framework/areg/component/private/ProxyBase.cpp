@@ -205,7 +205,7 @@ std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const String & roleName
             {
                 TRACE_DBG("Add Service Connect notification for client [ %p ]", &connect);
 
-                static_cast<void>(proxy->addListener( static_cast<unsigned int>(NEService::eFuncIdRange::ServiceNotifyConnection)
+                static_cast<void>(proxy->addListener( static_cast<unsigned int>(NEService::eFuncIdRange::ResponseServiceProviderConnection)
                                                     , NEService::SEQUENCE_NUMBER_NOTIFY
                                                     , static_cast<IENotificationEventConsumer *>(&connect), true ));
                 ++ proxy->mProxyInstCount;
@@ -308,7 +308,7 @@ void ProxyBase::freeProxy( IEProxyListener & connect )
         connect.serviceConnected(NEService::eServiceConnection::ServiceDisconnected, self());
     }
 
-    removeListener( static_cast<unsigned int>(NEService::eFuncIdRange::ServiceNotifyConnection)
+    removeListener( static_cast<unsigned int>(NEService::eFuncIdRange::ResponseServiceProviderConnection)
                   , NEService::SEQUENCE_NUMBER_NOTIFY
                   , static_cast<IENotificationEventConsumer *>(&connect));
 

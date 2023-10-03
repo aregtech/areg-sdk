@@ -95,16 +95,6 @@ bool NetTcpLogger::isLoggerOpened(void) const
     return isConnectedState();
 }
 
-RemoteMessage NetTcpLogger::createServiceConnectMessage( const ITEM_ID & /*source*/, const ITEM_ID & /*target*/) const
-{
-    return NETrace::messageConnectLogService();
-}
-
-RemoteMessage NetTcpLogger::createServiceDisconnectMessage(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/) const
-{
-    return NETrace::messageDisconnectLogService();
-}
-
 void NetTcpLogger::connectedRemoteServiceChannel(const Channel & channel)
 {
     ASSERT(channel.isValid());

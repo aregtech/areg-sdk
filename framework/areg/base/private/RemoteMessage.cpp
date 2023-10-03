@@ -133,14 +133,14 @@ void RemoteMessage::bufferCompletionFix(void) const
     }
 }
 
-unsigned char * RemoteMessage::initMessage(const NEMemory::sRemoteMessageHeader & rmHeader )
+unsigned char * RemoteMessage::initMessage(const NEMemory::sRemoteMessageHeader & rmHeader, unsigned int reserve /*= 0*/ )
 {
     invalidate();
 
     unsigned int sizeUsed   = MACRO_MAX(rmHeader.rbhBufHeader.biUsed, 1);
     unsigned int sizeData   = MACRO_ALIGN_SIZE(sizeUsed, mBlockSize);
     unsigned int sizeBuffer = getHeaderSize() + sizeData;
-    unsigned char * result  = DEBUG_NEW unsigned char[sizeBuffer];
+    unsigned char * result  = DEBUG_NEW unsigned char[sizeBuffer + reserve];
     if ( result != nullptr )
     {
         NEMemory::memZero(result, sizeof(NEMemory::sRemoteMessage));
@@ -163,6 +163,35 @@ unsigned char * RemoteMessage::initMessage(const NEMemory::sRemoteMessageHeader 
     }
 
     return getBuffer();
+}
+
+RemoteMessage RemoteMessage::clone(const ITEM_ID & source /*= 0*/, const ITEM_ID & target /*= 0*/) const
+{
+    RemoteMessage result;
+    unsigned int reserved{ getSizeUsed() };
+    unsigned char * dst{ result.initMessage(getRemoteMessage()->rbHeader, reserved) };
+
+    if (dst != nullptr)
+    {
+        if (source != NEService::COOKIE_UNKNOWN)
+        {
+            result.setSource(source);
+        }
+
+        if (target != NEService::COOKIE_UNKNOWN)
+        {
+            result.setTarget(target);
+        }
+
+        if (reserved != 0u)
+        {
+            const unsigned char * src{ getBuffer() };
+            NEMemory::memCopy(dst, reserved, src, reserved);
+            result.setSizeUsed(reserved);
+        }
+    }
+
+    return result;
 }
 
 unsigned int RemoteMessage::getDataOffset(void) const

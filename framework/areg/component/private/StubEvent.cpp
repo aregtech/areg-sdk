@@ -131,7 +131,7 @@ inline void IEStubEventConsumer::_localProcessNotifyRequestEvent( NotifyRequestE
 
 inline void IEStubEventConsumer::_localProcessConnectEvent( StubConnectEvent & notifyConnect )
 {
-    if ( notifyConnect.getRequestId() == static_cast<unsigned int>(NEService::eFuncIdRange::ServiceNotifyConnection) )
+    if ( notifyConnect.getRequestId() == static_cast<unsigned int>(NEService::eFuncIdRange::ResponseServiceProviderConnection) )
     {
         if (notifyConnect.getRequestType() == NEService::eRequestType::ServiceConnection)
         {
