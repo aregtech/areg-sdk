@@ -62,7 +62,8 @@ void LoggerServerService::removeInstance(const ITEM_ID & cookie)
     sConnectedInstance instance;
     bool exists{ mInstanceMap.find(cookie, instance) };
     ServiceCommunicatonBase::removeInstance(cookie);
-    if (instance.ciSource != NEService::eMessageSource::MessageSourceObserver)
+    
+    if (exists && (instance.ciSource != NEService::eMessageSource::MessageSourceObserver))
     {
         if (mObservers.isEmpty() == false)
         {

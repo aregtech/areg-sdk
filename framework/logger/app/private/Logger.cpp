@@ -507,7 +507,7 @@ void Logger::_outputInstances( const ServiceCommunicatonBase::MapInstances & ins
 
 #if AREG_EXTENDED
 
-            console.outputMsg( coord, " %4d. |  %11u  |  %s ", i ++, id, name.getString( ) );
+            console.outputMsg( coord, " %4d. |  %11u  |  %s ", i ++, id, instance.ciInstance.getString( ) );
             ++ coord.posY;
 
 #else   // !AREG_EXTENDED

@@ -475,11 +475,11 @@ void MulticastRouter::_outputInstances( const ServiceCommunicatonBase::MapInstan
         for ( auto pos = instances.firstPosition( ); instances.isValidPosition( pos ); pos = instances.nextPosition( pos ) )
         {
             ITEM_ID cookie{ 0 };
-            String name;
-            instances.getAtPosition( pos, cookie, name );
+            ServiceCommunicatonBase::sConnectedInstance instance;
+            instances.getAtPosition( pos, cookie, instance);
             unsigned int id{ static_cast<unsigned int>(cookie) };
 
-            console.outputMsg( coord, " %4d. |  %11u  |  %s ", i ++, id, name.getString( ) );
+            console.outputMsg( coord, " %4d. |  %11u  |  %s ", i ++, id, instance.ciInstance.getString( ) );
             ++ coord.posY;
         }
     }
