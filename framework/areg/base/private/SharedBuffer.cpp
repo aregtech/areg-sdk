@@ -171,6 +171,21 @@ const unsigned char* SharedBuffer::getBufferAtCurrentPosition( void ) const
     return result;
 }
 
+SharedBuffer SharedBuffer::clone(void) const
+{
+    unsigned int reserved{ getSizeUsed() };
+    SharedBuffer result;
+    if ((result.reserve(reserved, false) >= reserved) && (reserved != 0))
+    {
+        unsigned char * dst = result.getBuffer();
+        const unsigned char * src = getBuffer();
+        NEMemory::memCopy(dst, reserved, src, reserved);
+        result.setSizeUsed(reserved);
+    }
+
+    return result;
+}
+
 bool SharedBuffer::canShare( void ) const
 {
     return true;

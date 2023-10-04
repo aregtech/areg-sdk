@@ -69,9 +69,13 @@ namespace NEConnection
      **/
     AREG_API const NEMemory::sRemoteMessage & getMessageRegisterService( void );
     /**
-     * \brief   Fixed message to query available services
+     * \brief   Fixed message to query service the connected instances. Only observers can query.
      **/
-    AREG_API const NEMemory::sRemoteMessage & getMessageQueryService( void );
+    AREG_API const NEMemory::sRemoteMessage & getMessageQueryInstances( void );
+    /**
+     * \brief   Fixed message to notify observers the connected instances. Only observers receive the message.
+     **/
+    AREG_API const NEMemory::sRemoteMessage & getMessageNotifyInstances(void);
     /**
      * \brief   Fixed message to register notification
      **/

@@ -191,7 +191,7 @@ namespace NEService
     /**
      * \brief   Returns true if the service connection status is connected.
      **/
-    inline bool isServiceConnected( NEService::eServiceConnection connectionStatus );
+    inline bool isServiceConnected(NEService::eServiceConnection connectionStatus);
 
     /**
      * \brief   Returns true if the service connection status is connected.
@@ -272,6 +272,25 @@ namespace NEService
     inline const char * getString( NEService::eServiceType srvcType );
 
     /**
+     * \brief   NEService::eMessageSource
+     *          The source of the communication message
+     **/
+    typedef enum class E_MessageSource : uint16_t
+    {
+          MessageSourceUndefined    = 0     //!< The source of the message is undefined.
+        , MessageSourceClient       = 1     //!< The source of the message is connected client application.
+        , MessageSourceService      = 2     //!< The source of the message is the system service.
+        , MessageSourceObserver     = 4     //!< The source of the message is any observer, including viewer.
+        , MessageSourceTest         = 8     //!< The source of the message is a testing application.
+        , MessageSourceSimulation   = 16    //!< The source of the message is a simulation application.
+    } eMessageSource;
+
+    /**
+     * \brief   Returns string value of NEService::eServiceType type
+     **/
+    inline const char * getString(NEService::eMessageSource msgSource);
+
+    /**
      * \brief   NEService::SEQUENCE_NUMBER_NOTIFY
      *          Sequence number predefining notification message ID
      **/
@@ -343,7 +362,7 @@ namespace NEService
         , ServiceCallRequest    = static_cast<uint16_t>(eMessageDataType::RequestDataType  ) //!< Call of service request function
         , ServiceCallResponse   = static_cast<uint16_t>(eMessageDataType::ResponseDataType ) //!< Call of service response function
         , ServiceCallAttribute  = static_cast<uint16_t>(eMessageDataType::AttributeDataType) //!< Call of service attribute update function
-        , ServiceCallRegister   = static_cast<uint16_t>(eMessageDataType::ServiceDataType  ) //!< Call of service registration
+        , ServiceCallRegistery  = static_cast<uint16_t>(eMessageDataType::ServiceDataType  ) //!< Call of service registration
     } eServiceCalls;
 
     /**
@@ -393,7 +412,7 @@ namespace NEService
      * \brief   NEService::SERVICE_ID_FIRST
      *          The last ID in service call.
      **/
-    constexpr unsigned int  SERVICE_ID_FIRST    { static_cast<uint32_t>(NEService::eServiceCalls::ServiceCallRegister) };
+    constexpr unsigned int  SERVICE_ID_FIRST    { static_cast<uint32_t>(NEService::eServiceCalls::ServiceCallRegistery) };
     /**
      * \brief   NEService::SERVICE_ID_LAST
      *          The last ID in service call.
@@ -443,31 +462,35 @@ namespace NEService
         // Reserved system calls.
 
         //!< The service registration call. Service calls should start from this ID.
-        , ServiceRequestRegister= SERVICE_ID_FIRST
+        , RequestRegisterService= SERVICE_ID_FIRST
         //!< Sent by client to Stub to get supported version information
-        , ServiceRequestVersion
+        , RequestServiceProviderVersion
         //!< Sent by Stub to clients as a reply to get service version and notifies interface implemented version
-        , ServiceNotifyVersion
+        , ResponseServiceProviderVersion
         //!< Sent by client or stub to request service manager connection.
-        , ServiceRequestConnection
+        , RequestServiceProviderConnection
         //!< Sent by service manager to targets (client or stub) to notify connection status update.
-        , ServiceNotifyConnection
+        , ResponseServiceProviderConnection
         //!< Called by service manager when connecting Remove Service like message router or logger (handshake procedure)
         , SystemServiceConnect
         //!< Called by service manager when disconnecting Remove Service like message router or logger (graceful shutdown procedure)
         , SystemServiceDisconnect
-        //!< Sent by Routing Service to service manager to notify request connect status
-        , ServiceRouterNotify
+        //!< Sent by System Service executable to notify the connection status
+        , SystemServiceNotifyConnection
+        //!< Called by connected observer applications to the system service application to query the connected instances.
+        , SystemServiceQueryInstances
+        //!< Triggered by system service application to notify the observers about the connected instances.
+        , SystemServiceNotifyInstances
         //!< Called by service manager to register available client or stub services
-        , ServiceRouterRegister
-        //!< Called by service manager to routing service to query registration status of services.
-        , ServiceRouterQuery
+        , SystemServiceRequestRegister
         //!< Sent by Routing Service as a reply to register service and notifies the registered service availability
-        , ServiceRouterNotifyRegister
+        , SystemServiceNotifyRegister
         //!< Sent by logger service or client applications to register the scopes. This resets and overwrites all scope states.
         , ServiceLogRegisterScopes
-        //!< Sent by logger service or client applications to update the scopes. This updates only given scopes.
+        //!< Sent by observer, logger service or client applications to update the scopes. This updates only given scopes.
         , ServiceLogUpdateScopes
+        //!< Sent by observer or logger service to the client application to query the list of scopes
+        , ServiceLogQueryScopes
         //!< Sent by logger service or client applications to log the messages.
         , ServiceLogMessage
         //!< The last ID of service calls.
@@ -498,7 +521,7 @@ namespace NEService
     /**
      * \brief   Returns true if message ID is a registration call
      **/
-    inline bool isRegistrationId( unsigned int msgId );
+    inline bool isServiceRegistryId( unsigned int msgId );
 
     /**
      * \brief   Returns true if message ID is version notification
@@ -1014,18 +1037,19 @@ IMPLEMENT_STREAMABLE(NEService::eServiceConnection)
 IMPLEMENT_STREAMABLE(NEService::eDisconnectReason)
 IMPLEMENT_STREAMABLE(NEService::eServiceRequestType)
 IMPLEMENT_STREAMABLE(NEService::eServiceType)
+IMPLEMENT_STREAMABLE(NEService::eMessageSource)
 IMPLEMENT_STREAMABLE(NEService::eFuncIdRange)
 
 //////////////////////////////////////////////////////////////////////////
 // namespace NEService inline function implementation
 //////////////////////////////////////////////////////////////////////////
 
-inline bool NEService::isServiceConnected( NEService::eServiceConnection connectionStatus )
+inline bool NEService::isServiceConnected(NEService::eServiceConnection connectionStatus)
 {
     return (connectionStatus == NEService::eServiceConnection::ServiceConnected);
 }
 
-bool NEService::isServiceConnectionPending( NEService::eServiceConnection connectionStatus )
+inline bool NEService::isServiceConnectionPending( NEService::eServiceConnection connectionStatus )
 {
     return (connectionStatus == NEService::eServiceConnection::ServicePending);
 }
@@ -1090,9 +1114,9 @@ inline bool NEService::isAttributeId(unsigned int msgId)
     return ((msgId & static_cast<unsigned int>(NEService::eServiceCalls::ServiceCallAttribute)) != 0);
 }
 
-inline bool NEService::isRegistrationId( unsigned int msgId )
+inline bool NEService::isServiceRegistryId( unsigned int msgId )
 {
-    return ((msgId & static_cast<unsigned int>(NEService::eServiceCalls::ServiceCallRegister)) != 0);
+    return ((msgId & static_cast<unsigned int>(NEService::eServiceCalls::ServiceCallRegistery)) != 0);
 }
 
 inline bool NEService::isEmptyFunctionId(unsigned int msgId)
@@ -1102,12 +1126,12 @@ inline bool NEService::isEmptyFunctionId(unsigned int msgId)
 
 inline bool NEService::isVersionNotifyId( unsigned int msgId )
 {
-    return (msgId == static_cast<unsigned int>(NEService::eFuncIdRange::ServiceNotifyVersion));
+    return (msgId == static_cast<unsigned int>(NEService::eFuncIdRange::ResponseServiceProviderVersion));
 }
 
 inline bool NEService::isConnectNotifyId( unsigned int msgId )
 {
-    return (msgId == static_cast<unsigned int>(NEService::eFuncIdRange::ServiceNotifyConnection));
+    return (msgId == static_cast<unsigned int>(NEService::eFuncIdRange::ResponseServiceProviderConnection));
 }
 
 inline bool NEService::isExecutableId(unsigned int msgId)
@@ -1127,7 +1151,7 @@ inline NEService::eMessageDataType NEService::getMessageDataType( unsigned int m
         return NEService::eMessageDataType::ResponseDataType;
     else if (NEService::isAttributeId(msgId))
         return NEService::eMessageDataType::AttributeDataType;
-    else if (NEService::isRegistrationId(msgId))
+    else if (NEService::isServiceRegistryId(msgId))
         return NEService::eMessageDataType::ServiceDataType;
     else
         return NEService::eMessageDataType::UndefinedDataType;
@@ -1456,6 +1480,27 @@ inline const char * NEService::getString( NEService::eServiceType srvcType )
     }
 }
 
+const char * NEService::getString(NEService::eMessageSource msgSource)
+{
+    switch (msgSource)
+    {
+    case NEService::eMessageSource::MessageSourceUndefined:
+        return "NEService::eMessageSource::MessageSourceUndefined";
+    case NEService::eMessageSource::MessageSourceClient:
+        return "NEService::eMessageSource::MessageSourceClient";
+    case NEService::eMessageSource::MessageSourceService:
+        return "NEService::eMessageSource::MessageSourceService";
+    case NEService::eMessageSource::MessageSourceObserver:
+        return "NEService::eMessageSource::MessageSourceObserver";
+    case NEService::eMessageSource::MessageSourceTest:
+        return "NEService::eMessageSource::MessageSourceTest";
+    case NEService::eMessageSource::MessageSourceSimulation:
+        return "NEService::eMessageSource::MessageSourceSimulation";
+    default:
+        return "ERR: Unexpected NEService::eMessageSource value!!!";
+    }
+}
+
 
 inline const char * NEService::getString( NEService::eFuncIdRange funcId )
 {
@@ -1465,39 +1510,45 @@ inline const char * NEService::getString( NEService::eFuncIdRange funcId )
         return "NEService::eFuncIdRange::EmptyFunctionId";
     case NEService::eFuncIdRange::ComponentCleanup:
         return "NEService::eFuncIdRange::ComponentCleanup";
-    case NEService::eFuncIdRange::ServiceRequestVersion:
-        return "NEService::eFuncIdRange::ServiceRequestVersion";
-    case NEService::eFuncIdRange::ServiceNotifyVersion:
-        return "NEService::eFuncIdRange::ServiceNotifyVersion";
-    case NEService::eFuncIdRange::ServiceRequestConnection:
-        return "NEService::eFuncIdRange::ServiceRequestConnection";
-    case NEService::eFuncIdRange::ServiceNotifyConnection:
-        return "NEService::eFuncIdRange::ServiceNotifyConnection";
+    case NEService::eFuncIdRange::RequestRegisterService:
+        return "NEService::eFuncIdRange::RequestRegisterService";
+    case NEService::eFuncIdRange::RequestServiceProviderVersion:
+        return "NEService::eFuncIdRange::RequestServiceProviderVersion";
+    case NEService::eFuncIdRange::ResponseServiceProviderVersion:
+        return "NEService::eFuncIdRange::ResponseServiceProviderVersion";
+    case NEService::eFuncIdRange::RequestServiceProviderConnection:
+        return "NEService::eFuncIdRange::RequestServiceProviderConnection";
+    case NEService::eFuncIdRange::ResponseServiceProviderConnection:
+        return "NEService::eFuncIdRange::ResponseServiceProviderConnection";
     case NEService::eFuncIdRange::SystemServiceConnect:
         return "NEService::eFuncIdRange::SystemServiceConnect";
     case NEService::eFuncIdRange::SystemServiceDisconnect:
         return "NEService::eFuncIdRange::SystemServiceDisconnect";
-    case NEService::eFuncIdRange::ServiceRouterNotify:
-        return "NEService::eFuncIdRange::ServiceRouterNotify";
-    case NEService::eFuncIdRange::ServiceRouterRegister:
-        return "NEService::eFuncIdRange::ServiceRouterRegister";
-    case NEService::eFuncIdRange::ServiceRouterQuery:
-        return "NEService::eFuncIdRange::ServiceRouterQuery";
-    case NEService::eFuncIdRange::ServiceRouterNotifyRegister:
-        return "NEService::eFuncIdRange::ServiceRouterNotifyRegister";
+    case NEService::eFuncIdRange::SystemServiceNotifyConnection:
+        return "NEService::eFuncIdRange::SystemServiceNotifyConnection";
+    case NEService::eFuncIdRange::SystemServiceQueryInstances:
+        return "NEService::eFuncIdRange::SystemServiceQueryInstances";
+    case NEService::eFuncIdRange::SystemServiceNotifyInstances:
+        return "NEService::eFuncIdRange::SystemServiceNotifyInstances";
+    case NEService::eFuncIdRange::SystemServiceRequestRegister:
+        return "NEService::eFuncIdRange::SystemServiceRequestRegister";
+    case NEService::eFuncIdRange::SystemServiceNotifyRegister:
+        return "NEService::eFuncIdRange::SystemServiceNotifyRegister";
+    case NEService::eFuncIdRange::ServiceLogRegisterScopes:
+        return "NEService::eFuncIdRange::ServiceLogRegisterScopes";
+    case NEService::eFuncIdRange::ServiceLogUpdateScopes:
+        return "NEService::eFuncIdRange::ServiceLogUpdateScopes";
+    case NEService::eFuncIdRange::ServiceLogQueryScopes:
+        return "NEService::eFuncIdRange::ServiceLogQueryScopes";
+    case NEService::eFuncIdRange::ServiceLogMessage:
+        return "NEService::eFuncIdRange::ServiceLogMessage";
     case NEService::eFuncIdRange::RequestFirstId:
         return "NEService::eFuncIdRange::RequestFirstId";
     case NEService::eFuncIdRange::ResponseFirstId:
         return "NEService::eFuncIdRange::ResponseFirstId";
     case NEService::eFuncIdRange::AttributeFirstId:
         return "NEService::eFuncIdRange::AttributeFirstId";
-    case NEService::eFuncIdRange::ServiceRequestRegister:
-        return "NEService::eFuncIdRange::ServiceRequestRegister";
 
-    case NEService::eFuncIdRange::RequestLastId:    // fall through
-    case NEService::eFuncIdRange::ResponseLastId:   // fall through
-    case NEService::eFuncIdRange::AttributeLastId:  // fall through
-    case NEService::eFuncIdRange::ServiceLastId:    // fall through
     default:
         if ( (funcId > NEService::eFuncIdRange::RequestFirstId) && (funcId <= NEService::eFuncIdRange::RequestLastId) )
             return "Request ID range";
@@ -1505,7 +1556,7 @@ inline const char * NEService::getString( NEService::eFuncIdRange funcId )
             return "Response ID range";
         else if ( (funcId > NEService::eFuncIdRange::AttributeFirstId) && (funcId <= NEService::eFuncIdRange::AttributeLastId) )
             return "Attribute ID range";
-        else if ( (funcId > NEService::eFuncIdRange::ServiceRequestRegister) && (funcId <= NEService::eFuncIdRange::ServiceLastId) )
+        else if ( (funcId > NEService::eFuncIdRange::RequestRegisterService) && (funcId <= NEService::eFuncIdRange::ServiceLastId) )
             return "Service registration ID";
         else
             return "ERR: Unexpected ID";

@@ -86,7 +86,7 @@ void RouterServerService::onServiceMessageReceived(const RemoteMessage &msgRecei
 
     switch( msgId )
     {
-    case NEService::eFuncIdRange::ServiceRouterRegister:
+    case NEService::eFuncIdRange::SystemServiceRequestRegister:
         {
             NEService::eServiceRequestType reqType;
             msgReceived >> reqType;
@@ -165,18 +165,18 @@ void RouterServerService::onServiceMessageReceived(const RemoteMessage &msgRecei
         break;
 
     case NEService::eFuncIdRange::ServiceLastId:
-    case NEService::eFuncIdRange::ServiceRouterQuery:
+    case NEService::eFuncIdRange::SystemServiceQueryInstances:
     case NEService::eFuncIdRange::SystemServiceConnect:
-    case NEService::eFuncIdRange::ServiceRequestConnection:
-    case NEService::eFuncIdRange::ServiceNotifyVersion:
-    case NEService::eFuncIdRange::ServiceRequestVersion:
-    case NEService::eFuncIdRange::ServiceRequestRegister:
+    case NEService::eFuncIdRange::RequestServiceProviderConnection:
+    case NEService::eFuncIdRange::ResponseServiceProviderVersion:
+    case NEService::eFuncIdRange::RequestServiceProviderVersion:
+    case NEService::eFuncIdRange::RequestRegisterService:
     case NEService::eFuncIdRange::ComponentCleanup:
-    case NEService::eFuncIdRange::ServiceRouterNotifyRegister:
-    case NEService::eFuncIdRange::ServiceRouterNotify:
+    case NEService::eFuncIdRange::SystemServiceNotifyRegister:
+    case NEService::eFuncIdRange::SystemServiceNotifyConnection:
         break;
 
-    case NEService::eFuncIdRange::ServiceNotifyConnection:
+    case NEService::eFuncIdRange::ResponseServiceProviderConnection:
     case NEService::eFuncIdRange::AttributeLastId:
     case NEService::eFuncIdRange::AttributeFirstId:
     case NEService::eFuncIdRange::ResponseLastId:

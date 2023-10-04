@@ -217,10 +217,19 @@ public:
      *          If succeeds to allocate new buffer, sets reference counter to 1,
      *          sets data used size to the value specified in header.
      *          The method expects that allocated data will be manually filled.
-     * \param   rmHeader    Instance of Remote Buffer Header containing buffer information
+     * \param   rmHeader    Instance of Remote Buffer Header containing buffer information.
+     * \param   reserve     The size in bytes to reserve in the buffer
      * \return  Returns pointer to allocated data buffer to copy data.
      **/
-    unsigned char * initMessage( const NEMemory::sRemoteMessageHeader & rmHeader );
+    unsigned char * initMessage( const NEMemory::sRemoteMessageHeader & rmHeader, unsigned int reserve = 0 );
+
+    /**
+     * \brief   Clones the message buffer with the data.
+     * \param   source  The ID of the source to set. Ignored if 0
+     * \param   target  The ID of the target to set. Ignored if 0
+     * \return  Returns the cloned message buffer.
+     **/
+    RemoteMessage clone(const ITEM_ID & source = 0, const ITEM_ID & target = 0) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides

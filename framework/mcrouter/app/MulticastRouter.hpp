@@ -212,7 +212,7 @@ private:
     /**
      * \brief   Returns the list of connected instances.
      **/
-    inline const ServiceCommunicatonBase::InstanceMap & getConnetedInstances( void ) const;
+    inline const ServiceCommunicatonBase::MapInstances & getConnetedInstances( void ) const;
 
     /**
      * \brief   Returns instance of message router service.
@@ -239,7 +239,7 @@ private:
     /**
      * \brief   Outputs on console the information about connected instances.
      **/
-    static void _outputInstances( const ServiceCommunicatonBase::InstanceMap & instances );
+    static void _outputInstances( const ServiceCommunicatonBase::MapInstances & instances );
 
     /**
      * \brief   Sets verbose or silent mode to output data rate.
@@ -314,7 +314,7 @@ inline IEServiceConnectionProvider & MulticastRouter::getService( void )
     return static_cast<IEServiceConnectionProvider &>(mServiceServer);
 }
 
-inline const ServiceCommunicatonBase::InstanceMap & MulticastRouter::getConnetedInstances( void ) const
+inline const ServiceCommunicatonBase::MapInstances & MulticastRouter::getConnetedInstances( void ) const
 {
     return mServiceServer.getInstances( );
 }

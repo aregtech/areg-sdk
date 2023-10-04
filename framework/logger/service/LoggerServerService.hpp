@@ -21,6 +21,7 @@
 #include "areg/base/GEGlobal.h"
 
 #include "extend/service/ServiceCommunicatonBase.hpp"
+#include "logger/service/private/LoggerMessageProcessor.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // LoggerServerService class declaration
@@ -31,6 +32,11 @@
  **/
 class LoggerServerService : public    ServiceCommunicatonBase
 {
+//////////////////////////////////////////////////////////////////////////
+// Friend classes to access internals
+//////////////////////////////////////////////////////////////////////////
+    friend class LoggerMessageProcessor;
+
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
@@ -43,6 +49,37 @@ public:
      * \brief   Destructor
      **/
     virtual ~LoggerServerService( void ) = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Attributes
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Returns the list of log observers.
+     */
+    inline const ServiceCommunicatonBase::MapInstances & getObservers(void) const;
+
+public:
+/************************************************************************/
+// ServiceCommunicatonBase overrides
+/************************************************************************/
+    /**
+     * \brief   Adds an entry into the list of connected instances.
+     * \param   cookie      The cookie of connected instance.
+     * \param   instance    The name of the connected instance.
+     **/
+    virtual void addInstance(const ITEM_ID & cookie, const sConnectedInstance & instance ) override;
+
+    /**
+     * \brief   Removes connected instance.
+     * \param   cookie      The cookie of connected instance.
+     **/
+    virtual void removeInstance(const ITEM_ID & cookie ) override;
+
+    /**
+     * \brief   Removes all connected instances from the map.
+     **/
+    virtual void removeAllInstances(void) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -111,15 +148,6 @@ protected:
      **/
     virtual void onServiceMessageSend(const RemoteMessage & msgSend) override;
 
-/************************************************************************/
-// IEServiceConnectionHandler overrides
-/************************************************************************/
-
-    /**
-     * \brief   Called when need to disconnect and unregister all service providers and service consumers.
-     **/
-    virtual void disconnectServices( void ) override;
-
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.
 //////////////////////////////////////////////////////////////////////////
@@ -133,6 +161,10 @@ private:
 // Member variables
 //////////////////////////////////////////////////////////////////////////////
 private:
+    //!< The logger message processor
+    LoggerMessageProcessor                  mLoggerProcessor;
+    //!< List of log observers (log viewers)
+    ServiceCommunicatonBase::MapInstances   mObservers;
 
 //////////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -144,6 +176,11 @@ private:
 //////////////////////////////////////////////////////////////////////////////
 // LoggerServerService class inline functions implementation
 //////////////////////////////////////////////////////////////////////////////
+
+inline const ServiceCommunicatonBase::MapInstances & LoggerServerService::getObservers(void) const
+{
+    return mObservers;
+}
 
 inline LoggerServerService & LoggerServerService::self( void )
 {

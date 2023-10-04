@@ -374,35 +374,6 @@ AREG_API_IMPL unsigned int NETrace::getScopePriority( const char * scopeName )
 #endif  // AREG_LOGS
 }
 
-AREG_API_IMPL RemoteMessage NETrace::messageConnectLogService( void )
-{
-    RemoteMessage msgHelloLog;
-    if (msgHelloLog.initMessage(NEConnection::getMessageHelloServer().rbHeader) != nullptr)
-    {
-        String instance(Process::getInstance().getAppName());
-        msgHelloLog.setSource(NEService::SOURCE_UNKNOWN);
-        msgHelloLog.setSequenceNr(NEService::SEQUENCE_NUMBER_NOTIFY);
-        msgHelloLog << NETrace::eLogMessageSource::MessageSourceGenerator;
-        msgHelloLog << instance;
-    }
-
-    return msgHelloLog;
-}
-
-AREG_API_IMPL RemoteMessage NETrace::messageDisconnectLogService( )
-{
-    RemoteMessage msgByeLog;
-    if (msgByeLog.initMessage(NEConnection::getMessageByeServer().rbHeader) != nullptr)
-    {
-        const ITEM_ID & cookie{ NETrace::getCookie() };
-        msgByeLog.setSource(cookie);
-        msgByeLog << NETrace::eLogMessageSource::MessageSourceGenerator;
-        msgByeLog << cookie;
-    }
-
-    return msgByeLog;
-}
-
 AREG_API_IMPL RemoteMessage NETrace::messageRegisterScopesStart(unsigned int scopeCount)
 {
     RemoteMessage msgScope;
@@ -410,7 +381,6 @@ AREG_API_IMPL RemoteMessage NETrace::messageRegisterScopesStart(unsigned int sco
     {
         const ITEM_ID & cookie{ NETrace::getCookie() };
         msgScope.setSource(cookie);
-        msgScope << NETrace::eLogMessageSource::MessageSourceGenerator;
         msgScope << NETrace::eScopeList::ScopeListStart;
         msgScope << scopeCount;
     }
@@ -425,7 +395,6 @@ AREG_API_IMPL RemoteMessage NETrace::messageRegisterScopesEnd( )
     {
         const ITEM_ID & cookie{ NETrace::getCookie() };
         msgScope.setSource(cookie);
-        msgScope << NETrace::eLogMessageSource::MessageSourceGenerator;
         msgScope << NETrace::eScopeList::ScopeListEnd;
     }
 
@@ -438,7 +407,6 @@ AREG_API_IMPL RemoteMessage NETrace::messageLog(const NETrace::sLogMessage & log
     if (msgLog.initMessage(_getLogMessage().rbHeader) != nullptr)
     {
         msgLog.setSource(NETrace::getCookie());
-        msgLog << NETrace::eLogMessageSource::MessageSourceGenerator;
         msgLog << logMessage;
     }
 
@@ -452,7 +420,6 @@ AREG_API_IMPL RemoteMessage NETrace::messageRegisterScopes(const ScopeList & sco
     {
         const ITEM_ID & cookie{ NETrace::getCookie() };
         msgScope.setSource(cookie);
-        msgScope << NETrace::eLogMessageSource::MessageSourceGenerator;
         msgScope << NETrace::eScopeList::ScopeListContinue;
 
         SCOPEPOS end = scopeList.invalidPosition();

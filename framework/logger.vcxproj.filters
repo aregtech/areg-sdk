@@ -36,6 +36,9 @@
     <ClInclude Include="logger\service\LoggerServerService.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="logger\service\private\LoggerMessageProcessor.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="logger\resources\logger.ico">
@@ -76,6 +79,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="logger\service\private\LoggerServerService.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="logger\service\private\LoggerMessageProcessor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

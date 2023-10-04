@@ -121,7 +121,7 @@ inline void IEProxyEventConsumer::_localProcessResponseEvent(ResponseEvent & eve
 
 inline void IEProxyEventConsumer::_localProcessConnectEvent( ProxyConnectEvent & eventConnect )
 {
-    if ( eventConnect.getResponseId() == static_cast<unsigned int>(NEService::eFuncIdRange::ServiceNotifyConnection) )
+    if ( eventConnect.getResponseId() == static_cast<unsigned int>(NEService::eFuncIdRange::ResponseServiceProviderConnection) )
     {
         serviceConnectionUpdated( eventConnect.getStubAddress(), eventConnect.getTargetProxy().getChannel(), eventConnect.getConnectionStatus() );
     }

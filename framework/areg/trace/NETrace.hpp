@@ -391,18 +391,6 @@ namespace NETrace
     AREG_API unsigned int getScopePriority( const char * scopeName );
 
     /**
-     * \brief   NETrace::eLogMessageSource
-     *          Defines the source of log communication messages.
-     **/
-    typedef enum E_LogMessageSource : unsigned char
-    {
-          MessageSourceUndefined    //!< The source of the message is undefined.
-        , MessageSourceGenerator    //!< The source of the message is the log generator.
-        , MessageSourceCollector    //!< The source of the message is the log collector (i.e. the logging service).
-        , MessageSourceViewer       //!< The source of the message is the log viewer.
-    } eLogMessageSource;
-
-    /**
      * \brief   NETrace::eScopeList
      *          Defines the state of registering logging scopes.
      **/
@@ -427,18 +415,6 @@ namespace NETrace
     } eLogMessageType;
 
     /**
-     * \brief   Creates a message for logging service to get connection registration.
-     * \return  Returns generated message.
-     **/
-    AREG_API RemoteMessage messageConnectLogService( void );
-
-    /**
-     * \brief   Creates a message for logging service to get connection unregistration.
-     * \return  Returns generated message.
-     **/
-    AREG_API RemoteMessage messageDisconnectLogService( void );
-
-    /**
      * \brief   Creates a message for logging service to start registering application logging scopes.
      * \param   scopeCount  The number of scopes to send to register.
      * \return  Returns generated message.
@@ -451,6 +427,10 @@ namespace NETrace
      **/
     AREG_API RemoteMessage messageRegisterScopesEnd( void );
 
+    /**
+     * \brief   Creates a communication message to make a log.
+     * \param   logMessage  The message to log.
+     **/
     AREG_API RemoteMessage messageLog( const NETrace::sLogMessage & logMessage);
 
     //!< The list of the scopes. It is a pair, where the key is the ID of the scope
@@ -473,7 +453,6 @@ namespace NETrace
      * \return  Returns generated message.
      **/
     AREG_API RemoteMessage messageRegisterScopes( const ScopeList & scopeList, SCOPEPOS & startAt, unsigned int maxEntries = 0xFFFFFFFF );
-
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -481,7 +460,6 @@ namespace NETrace
 //////////////////////////////////////////////////////////////////////////////
 IMPLEMENT_STREAMABLE(NETrace::eLogPriority)
 IMPLEMENT_STREAMABLE(NETrace::eMessageType)
-IMPLEMENT_STREAMABLE(NETrace::eLogMessageSource)
 IMPLEMENT_STREAMABLE(NETrace::eScopeList)
 IMPLEMENT_STREAMABLE(NETrace::eLogMessageType)
 

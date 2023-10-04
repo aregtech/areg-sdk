@@ -80,8 +80,19 @@ public:
         , DefaultReject //!< The default behavior is to reject the connection.
     } eConnectionBehavior;
 
+    /**
+     * \brief   Connected instance of application.
+     **/
+    struct sConnectedInstance
+    {
+        //!< The type of the application
+        NEService::eMessageSource   ciSource    { NEService::eMessageSource::MessageSourceUndefined };
+        //!< The name of the application
+        String                      ciInstance  { "" };
+    };
+
     //!< The map of connected instances.
-    using InstanceMap   = TEMap<ITEM_ID, String>;
+    using MapInstances  = TEMap<ITEM_ID, sConnectedInstance>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -158,31 +169,38 @@ public:
     /**
      * \brief   Returns the list of connected instances.
      **/
-    inline const InstanceMap & getInstances( void ) const;
-
-    /**
-     * \brief   Adds an entry into the list of connected instances.
-     * \param   cookie      The cookie of connected instance.
-     * \param   instance    The name of the connected instance.
-     **/
-    inline void addInstance(const ITEM_ID & cookie, const String & instance );
-
-    /**
-     * \brief   Removes connected instance.
-     * \param   cookie      The cookie of connected instance.
-     **/
-    inline void removeInstance(const ITEM_ID & cookie );
-
-    /**
-     * \brief   Removes all connected instances from the map.
-     **/
-    inline void removeAllInstances(void);
+    inline const MapInstances & getInstances( void ) const;
 
     /**
      * \brief   Call to wait the service communication thread to complete the job.
      *          The method should be called when exit the process.
      **/
     inline void waitToComplete( );
+
+//////////////////////////////////////////////////////////////////////////
+// overrides
+//////////////////////////////////////////////////////////////////////////
+public:
+/************************************************************************/
+// ServiceCommunicatonBase overrides
+/************************************************************************/
+    /**
+     * \brief   Adds an entry into the list of connected instances.
+     * \param   cookie      The cookie of connected instance.
+     * \param   instance    The name of the connected instance.
+     **/
+    virtual void addInstance(const ITEM_ID & cookie, const sConnectedInstance & instance );
+
+    /**
+     * \brief   Removes connected instance.
+     * \param   cookie      The cookie of connected instance.
+     **/
+    virtual void removeInstance(const ITEM_ID & cookie );
+
+    /**
+     * \brief   Removes all connected instances from the map.
+     **/
+    virtual void removeAllInstances(void);
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -463,7 +481,7 @@ protected:
     StringArray                 mBlackList;         //!< The list of disabled fixes client hosts.
     ServiceServerEventConsumer  mEventConsumer;     //!< The custom event consumer object
     ReconnectTimerConsumer      mTimerConsumer;     //!< The timer consumer object.
-    InstanceMap                 mInstanceMap;       //!< The map of connected instance.
+    MapInstances                mInstanceMap;       //!< The map of connected instance.
     SynchEvent                  mEventSendStop;     //!< The event set when cannot send and receive data anymore.
     mutable ResourceLock        mLock;              //!< The synchronization object to be accessed from different threads.
 
@@ -525,24 +543,9 @@ inline uint32_t ServiceCommunicatonBase::queryBytesReceived(void)
     return mThreadReceive.extractDataReceive();
 }
 
-inline const ServiceCommunicatonBase::InstanceMap & ServiceCommunicatonBase::getInstances( void ) const
+inline const ServiceCommunicatonBase::MapInstances & ServiceCommunicatonBase::getInstances( void ) const
 {
     return mInstanceMap;
-}
-
-inline void ServiceCommunicatonBase::addInstance(const ITEM_ID & cookie, const String & instance )
-{
-    mInstanceMap.addIfUnique( cookie, instance );
-}
-
-inline void ServiceCommunicatonBase::removeInstance(const ITEM_ID & cookie )
-{
-    mInstanceMap.removeAt( cookie );
-}
-
-inline void ServiceCommunicatonBase::removeAllInstances(void)
-{
-    mInstanceMap.release();
 }
 
 inline void ServiceCommunicatonBase::waitToComplete( )
@@ -583,6 +586,30 @@ inline void ServiceCommunicatonBase::disconnectService( Event::eEventPriority ev
                                  , static_cast<IESendMessageEventConsumer &>(mThreadSend)
                                  , static_cast<DispatcherThread &>(mThreadSend)
                                  , eventPrio );
+}
+
+/**
+ * \brief   Serializes the instance structure to the stream.
+ * \param   stream  The streaming object to serialize.
+ * \param   output  The single structure of instance to serialize.
+ **/
+inline IEOutStream & operator << (IEOutStream & stream, const ServiceCommunicatonBase::sConnectedInstance & output)
+{
+    stream << output.ciSource;
+    stream << output.ciInstance;
+    return stream;
+}
+
+/**
+ * \brief   De-serializes the instance structure from the stream.
+ * \param   stream  The streaming object that contains the information of the connected instance.
+ * \param   output  The single structure of instance to initialize.
+ **/
+inline const IEInStream & operator >> (const IEInStream & stream, ServiceCommunicatonBase::sConnectedInstance & input)
+{
+    stream >> input.ciSource;
+    stream >> input.ciInstance;
+    return stream;
 }
 
 #endif  // AREG_EXTEND_SERVICE_SERVICECOMMUNICATONBASE_HPP
