@@ -207,8 +207,7 @@ public:
     inline unsigned int getBlockSize( void ) const;
 
     /**
-     * \brief   Clones the shared buffer.
-     * \return  Returns cloned shared buffer.
+     * \brief   Clones and returns the cloned shared buffer. The existing buffer has no change.
      **/
     SharedBuffer clone(void) const;
 
