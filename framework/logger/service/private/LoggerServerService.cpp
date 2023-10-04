@@ -94,12 +94,11 @@ void LoggerServerService::onServiceMessageReceived(const RemoteMessage &msgRecei
 
     ASSERT( msgReceived.isValid() );
     NEService::eFuncIdRange msgId = static_cast<NEService::eFuncIdRange>( msgReceived.getMessageId() );
-    const ITEM_ID & source = msgReceived.getSource();
 
     TRACE_DBG("Processing received valid message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
                     , NEService::getString(msgId)
                     , static_cast<uint32_t>(msgId)
-                    , static_cast<uint32_t>(source)
+                    , static_cast<uint32_t>(msgReceived.getSource())
                     , static_cast<uint32_t>(msgReceived.getTarget()));
 
     switch (msgId)
@@ -118,6 +117,7 @@ void LoggerServerService::onServiceMessageReceived(const RemoteMessage &msgRecei
 
     case NEService::eFuncIdRange::ServiceLogQueryScopes:
         mLoggerProcessor.queryScopes(msgReceived);
+        break;
 
     case NEService::eFuncIdRange::ServiceLogMessage:
         mLoggerProcessor.logMessage(msgReceived);

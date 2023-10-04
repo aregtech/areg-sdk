@@ -1510,6 +1510,8 @@ inline const char * NEService::getString( NEService::eFuncIdRange funcId )
         return "NEService::eFuncIdRange::EmptyFunctionId";
     case NEService::eFuncIdRange::ComponentCleanup:
         return "NEService::eFuncIdRange::ComponentCleanup";
+    case NEService::eFuncIdRange::RequestRegisterService:
+        return "NEService::eFuncIdRange::RequestRegisterService";
     case NEService::eFuncIdRange::RequestServiceProviderVersion:
         return "NEService::eFuncIdRange::RequestServiceProviderVersion";
     case NEService::eFuncIdRange::ResponseServiceProviderVersion:
@@ -1524,27 +1526,29 @@ inline const char * NEService::getString( NEService::eFuncIdRange funcId )
         return "NEService::eFuncIdRange::SystemServiceDisconnect";
     case NEService::eFuncIdRange::SystemServiceNotifyConnection:
         return "NEService::eFuncIdRange::SystemServiceNotifyConnection";
-    case NEService::eFuncIdRange::SystemServiceRequestRegister:
-        return "NEService::eFuncIdRange::SystemServiceRequestRegister";
     case NEService::eFuncIdRange::SystemServiceQueryInstances:
         return "NEService::eFuncIdRange::SystemServiceQueryInstances";
     case NEService::eFuncIdRange::SystemServiceNotifyInstances:
         return "NEService::eFuncIdRange::SystemServiceNotifyInstances";
+    case NEService::eFuncIdRange::SystemServiceRequestRegister:
+        return "NEService::eFuncIdRange::SystemServiceRequestRegister";
     case NEService::eFuncIdRange::SystemServiceNotifyRegister:
         return "NEService::eFuncIdRange::SystemServiceNotifyRegister";
+    case NEService::eFuncIdRange::ServiceLogRegisterScopes:
+        return "NEService::eFuncIdRange::ServiceLogRegisterScopes";
+    case NEService::eFuncIdRange::ServiceLogUpdateScopes:
+        return "NEService::eFuncIdRange::ServiceLogUpdateScopes";
+    case NEService::eFuncIdRange::ServiceLogQueryScopes:
+        return "NEService::eFuncIdRange::ServiceLogQueryScopes";
+    case NEService::eFuncIdRange::ServiceLogMessage:
+        return "NEService::eFuncIdRange::ServiceLogMessage";
     case NEService::eFuncIdRange::RequestFirstId:
         return "NEService::eFuncIdRange::RequestFirstId";
     case NEService::eFuncIdRange::ResponseFirstId:
         return "NEService::eFuncIdRange::ResponseFirstId";
     case NEService::eFuncIdRange::AttributeFirstId:
         return "NEService::eFuncIdRange::AttributeFirstId";
-    case NEService::eFuncIdRange::RequestRegisterService:
-        return "NEService::eFuncIdRange::RequestRegisterService";
 
-    case NEService::eFuncIdRange::RequestLastId:    // fall through
-    case NEService::eFuncIdRange::ResponseLastId:   // fall through
-    case NEService::eFuncIdRange::AttributeLastId:  // fall through
-    case NEService::eFuncIdRange::ServiceLastId:    // fall through
     default:
         if ( (funcId > NEService::eFuncIdRange::RequestFirstId) && (funcId <= NEService::eFuncIdRange::RequestLastId) )
             return "Request ID range";
