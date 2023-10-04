@@ -68,18 +68,18 @@ public:
      * \param   cookie      The cookie of connected instance.
      * \param   instance    The name of the connected instance.
      **/
-    virtual void addInstance(const ITEM_ID & cookie, const sConnectedInstance & instance );
+    virtual void addInstance(const ITEM_ID & cookie, const sConnectedInstance & instance ) override;
 
     /**
      * \brief   Removes connected instance.
      * \param   cookie      The cookie of connected instance.
      **/
-    virtual void removeInstance(const ITEM_ID & cookie );
+    virtual void removeInstance(const ITEM_ID & cookie ) override;
 
     /**
      * \brief   Removes all connected instances from the map.
      **/
-    virtual void removeAllInstances(void);
+    virtual void removeAllInstances(void) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
