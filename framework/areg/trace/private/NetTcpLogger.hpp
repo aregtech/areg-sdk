@@ -58,16 +58,10 @@ class NetTcpLogger  : public    LoggerBase
 private:
     //!< The ring buffer of logging message to queue if logging service is not available.
     using RingStack = TENolockRingStack<RemoteMessage>;
-    //!< The state of the TCP logger
-    enum eConnectionStates
-    {
-          StateInactive     = 0 //!< The logger is inactive.
-        , StateConnected    = 1 //!< The logger is connected.
-        , StateActive       = 3 //!< The logger is active and can send-receive message.
-    };
 
     //!< The number of messages to queue until logging service is available.
     static constexpr uint32_t           RING_STACK_MAX_SIZE     { 100 };
+
     //!< The name of logging thread, which receive messages from logging service.
     static constexpr std::string_view   LOG_RECEIVE_THREAD_NAME { "_LOG_NET_RECEIVE_THREAD_" };
 
@@ -76,11 +70,11 @@ private:
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Instantiates logger and sets tracer configuration object,
-     *          which contains methods to get property values after
-     *          configuring tracer.
-     * \param   tracerManager   The instance trace manager, which has functionalities
-     *                          to configure logs and set priorities.
+     * \brief   Initializes logger base objects and logger service client object to
+     *          communicate via TCP/IP protocol to forward logs to observers.
+     * \param   logConfig       The log configuration object, which contains information about log state.
+     * \param   scopeController The scope controller object, which contains and controls the scopes in application.
+     * \param   dispatchThread  The dispatcher thread to dispatch events and messages.
      **/
     NetTcpLogger(LogConfiguration & logConfig, ScopeController & scopeController, DispatcherThread & dispatchThread);
 
@@ -199,6 +193,7 @@ private:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
+    //!< The instance of scope controller
     ScopeController &   mScopeController;
     //!< The flag, indicating whether the TPC/IP network logging is enabled or not.
     bool                mIsEnabled;

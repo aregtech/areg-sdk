@@ -146,8 +146,7 @@ void NetTcpLogger::processReceivedMessage(const RemoteMessage & msgReceived, Soc
     {
         ASSERT(msgReceived.getTarget() == mChannel.getCookie());
 
-        NEService::eFuncIdRange msgId = static_cast<NEService::eFuncIdRange>(msgReceived.getMessageId());
-        NEMemory::eMessageResult result = static_cast<NEMemory::eMessageResult>(msgReceived.getResult());
+        const NEService::eFuncIdRange msgId { static_cast<NEService::eFuncIdRange>(msgReceived.getMessageId()) };
         ITEM_ID target{ NEService::COOKIE_ANY };
         msgReceived >> target;
 
