@@ -415,29 +415,34 @@ namespace NETrace
     } eLogMessageType;
 
     /**
+     * \brief   Creates a communication message to make a log.
+     * \param   logMessage  The message to log.
+     **/
+    AREG_API RemoteMessage messageLog(const NETrace::sLogMessage & logMessage);
+
+    /**
      * \brief   Creates a message for logging service to start registering application logging scopes.
      * \param   scopeCount  The number of scopes to send to register.
      * \return  Returns generated message.
      **/
-    AREG_API RemoteMessage messageRegisterScopesStart( unsigned int scopeCount );
+    AREG_API RemoteMessage messageRegisterScopesStart( const ITEM_ID & target, unsigned int scopeCount );
 
     /**
      * \brief   Creates a message for logging service to end registering application logging scopes.
      * \return  Returns generated message.
      **/
-    AREG_API RemoteMessage messageRegisterScopesEnd( void );
-
-    /**
-     * \brief   Creates a communication message to make a log.
-     * \param   logMessage  The message to log.
-     **/
-    AREG_API RemoteMessage messageLog( const NETrace::sLogMessage & logMessage);
+    AREG_API RemoteMessage messageRegisterScopesEnd(const ITEM_ID & target);
 
     //!< The list of the scopes. It is a pair, where the key is the ID of the scope
     //!< and the value is the pointer to the scope.
     using ScopeList = TEHashMap<unsigned int, TraceScope *>;
     //!< Alias of the map position.
     using SCOPEPOS = ScopeList::MAPPOS;
+
+    /**
+     * \brief   The maximum scope entries in one message.
+     **/
+    constexpr uint32_t  SCOPE_ENTRIES_MAX_COUNT     { 1'000u };
 
     /**
      * \brief   Creates a message for logging service to register scopes with message priority.
@@ -452,7 +457,7 @@ namespace NETrace
      *                      If the value is 0xFFFFFFFF, it registers all entries.
      * \return  Returns generated message.
      **/
-    AREG_API RemoteMessage messageRegisterScopes( const ScopeList & scopeList, SCOPEPOS & startAt, unsigned int maxEntries = 0xFFFFFFFF );
+    AREG_API RemoteMessage messageRegisterScopes(const ITEM_ID & target, const ScopeList & scopeList, SCOPEPOS & startAt, unsigned int maxEntries = 0xFFFFFFFF );
 }
 
 //////////////////////////////////////////////////////////////////////////////

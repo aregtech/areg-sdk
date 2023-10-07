@@ -107,6 +107,15 @@ public:
     void queryScopes(const RemoteMessage & msgReceived) const;
 
     /**
+     * \brief   Called when a connected instance of observer requests the clients to save log configuration,
+     *          so that on next start clients start with the actual state (list of active scopes and log priorities).
+     *          The message is forwarded either to all connected non-observer instances
+     *          or to the certain application to save the log configuration.
+     * \param   msgReceived     The message to process.
+     **/
+    void saveLogConfiguration(const RemoteMessage & msgReceived) const;
+
+    /**
      * \brief   Called to forward the log message to the observer application.
      * \param   msgReceived     The message to process.
      **/

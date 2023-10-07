@@ -119,6 +119,10 @@ void LoggerServerService::onServiceMessageReceived(const RemoteMessage &msgRecei
         mLoggerProcessor.queryScopes(msgReceived);
         break;
 
+    case NEService::eFuncIdRange::ServiceSaveLogConfiguration:
+        mLoggerProcessor.saveLogConfiguration(msgReceived);
+        break;
+
     case NEService::eFuncIdRange::ServiceLogMessage:
         mLoggerProcessor.logMessage(msgReceived);
         break;

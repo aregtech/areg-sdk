@@ -34,7 +34,9 @@
 
 #include <string_view>
 
+class DispatcherThread;
 class LogConfiguration;
+class ScopeController;
 class SharedBuffer;
 
 //////////////////////////////////////////////////////////////////////////
@@ -77,13 +79,10 @@ public:
      * \brief   Instantiates logger and sets tracer configuration object,
      *          which contains methods to get property values after
      *          configuring tracer.
-     * \param   tracerConfig    The instance tracer configuration object,
-     *                          which contains configuration values,
-     *                          required by logger during initialization (open)
-     *                          and when outputs message.
-     * \param   dispatchThread  The thread to dispatch the messages.
+     * \param   tracerManager   The instance trace manager, which has functionalities
+     *                          to configure logs and set priorities.
      **/
-    explicit NetTcpLogger(LogConfiguration& tracerConfig, DispatcherThread & dispatchThread);
+    NetTcpLogger(LogConfiguration & logConfig, ScopeController & scopeController, DispatcherThread & dispatchThread);
 
     /**
      * \brief   Destructor.
@@ -200,6 +199,7 @@ private:
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 private:
+    ScopeController &   mScopeController;
     //!< The flag, indicating whether the TPC/IP network logging is enabled or not.
     bool                mIsEnabled;
     //!< The ring stack to queue log messages if the connection setup did not complete yet.

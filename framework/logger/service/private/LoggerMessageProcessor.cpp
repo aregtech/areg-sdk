@@ -191,9 +191,44 @@ void LoggerMessageProcessor::queryScopes(const RemoteMessage & msgReceived) cons
     }
 }
 
+void LoggerMessageProcessor::saveLogConfiguration(const RemoteMessage & msgReceived) const
+{
+    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceSaveLogConfiguration));
+
+    ITEM_ID source{ msgReceived.getSource() };
+    ITEM_ID target{ NEService::COOKIE_ANY };
+    msgReceived >> target;
+
+    const ServiceCommunicatonBase::MapInstances & instances = mLoggerService.getInstances();
+
+    auto srcPos = instances.find(source);
+    auto dstPos = instances.find(target);
+    if (instances.isValidPosition(srcPos))
+    {
+        if (instances.isValidPosition(dstPos))
+        {
+            RemoteMessage msg{ msgReceived.clone(source, target) };
+            mLoggerService.sendMessage(msg);
+        }
+        else if (instances.valueAtPosition(srcPos).ciSource == NEService::eMessageSource::MessageSourceObserver)
+        {
+            for (auto pos = instances.firstPosition(); instances.isInvalidPosition(pos); pos = instances.nextPosition(pos))
+            {
+                const ServiceCommunicatonBase::sConnectedInstance & value{ instances.valueAtPosition(pos) };
+                if (value.ciSource != NEService::eMessageSource::MessageSourceObserver)
+                {
+                    const ITEM_ID & key{ instances.keyAtPosition(pos) };
+                    RemoteMessage msg{ msgReceived.clone(source, key) };
+                    mLoggerService.sendMessage(msg);
+                }
+            }
+        }
+    }
+}
+
 void LoggerMessageProcessor::logMessage(const RemoteMessage & msgReceived) const
 {
-    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogQueryScopes));
+    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogMessage));
 
     ITEM_ID source{ msgReceived.getSource() };
     const ServiceCommunicatonBase::MapInstances & instances = mLoggerService.getInstances();

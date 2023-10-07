@@ -48,6 +48,7 @@ using ListScopes        = StringToIntegerHashMap;
  **/
 class TraceScopeMap   : public TELockResourceMap<unsigned int, TraceScope *, MapTraceScope, ImplTraceScope>
 {
+    friend class NetTcpLogger;
     friend class ScopeController;
     friend class TraceManager;
 
@@ -330,6 +331,11 @@ public:
      *          Call this method if making new configuration.
      **/
     inline void clearConfigScopes( void );
+
+    /**
+     * \brief   Call to reset and disable any message priority of scopes.
+     **/
+    void resetScopes(void);
 
     /**
      * \brief   Activates default scopes listed in the internally.

@@ -126,7 +126,7 @@ public:
      * \param   atIndex     The valid zero-based index.
      * \return  Returns Value of Element at given index, the value can be modified
      **/
-    inline VALUE& operator [] (int atIndex);
+    inline VALUE& operator [] (uint32_t atIndex);
     /**
      * \brief   Subscript operator. Returns reference to value of element
      *          by given valid Position. May be used on either the right
@@ -143,7 +143,7 @@ public:
      * \param   atIndex     The valid zero-based index.
      * \return  Returns Value of Element at given index, the value should not be modified
      **/
-    inline const VALUE& operator [] (int atIndex) const;
+    inline const VALUE& operator [] (uint32_t atIndex) const;
     /**
      * \brief   Subscript operator. Returns value of element by given
      *          valid Position. May be used only on the right.
@@ -540,11 +540,11 @@ public:
 
     /**
      * \brief	Returns valid index of element by given valid position.
-     *          Otherwise returns -1.
+     *          Otherwise returns 0xFFFFFFFF.
      * \param	atPosition  The position of element, which index should be returned.
      * \return	The index of element by given position
      **/
-    int makeIndex(LISTPOS atPosition) const;
+    uint32_t makeIndex(LISTPOS atPosition) const;
 
     /**
      * \brief   Call to resort the linked list.
@@ -626,7 +626,7 @@ bool TESortedLinkedList<VALUE>::operator != (const TESortedLinkedList<VALUE>& ot
 }
 
 template <typename VALUE >
-inline VALUE& TESortedLinkedList<VALUE>::operator [](int atIndex)
+inline VALUE& TESortedLinkedList<VALUE>::operator [](uint32_t atIndex)
 {
     return getAt(atIndex);
 }
@@ -638,7 +638,7 @@ inline VALUE& TESortedLinkedList<VALUE>::operator [](TESortedLinkedList<VALUE>::
 }
 
 template <typename VALUE >
-inline const VALUE& TESortedLinkedList<VALUE>::operator [](int atIndex) const
+inline const VALUE& TESortedLinkedList<VALUE>::operator [](uint32_t atIndex) const
 {
     return getAt(atIndex);
 }
@@ -1141,15 +1141,15 @@ typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::findIndex
 }
 
 template <typename VALUE >
-int TESortedLinkedList<VALUE>::makeIndex(LISTPOS atPosition) const
+uint32_t TESortedLinkedList<VALUE>::makeIndex(LISTPOS atPosition) const
 {
-    int result = 0;
+    uint32_t result{ 0 };
     LISTPOS pos = mValueList.begin();
     LISTPOS end = mValueList.end();
     for (; (pos != end) && (pos != atPosition); ++pos, ++result)
         ;
 
-    return (pos != end ? result : NECommon::INVALID_INDEX);
+    return (pos != end ? result : static_cast<uint32_t>(NECommon::INVALID_INDEX));
 }
 
 template <typename VALUE >

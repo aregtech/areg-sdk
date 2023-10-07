@@ -105,7 +105,7 @@ public:
     /**
      * \brief	Returns the size of Resource Map
      **/
-    inline int getSize(void) const;
+    inline uint32_t getSize(void) const;
 
     /**
      * \brief   Returns true if resource map is empty.
@@ -583,7 +583,7 @@ template < typename RESOURCE_KEY
          , class ResourceList   /*= TELinkedList<RESOURCE_OBJECT>*/
          , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
-inline int TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::getSize( void ) const
+inline uint32_t TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::getSize( void ) const
 {
     Lock lock( mSynchObj );
     return HashMap::getSize( );
