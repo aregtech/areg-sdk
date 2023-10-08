@@ -94,13 +94,13 @@ public:
      * \brief   Subscript operator. Returns reference to value of element by given valid zero-based index.
      *          May be used on either the right (r-value) or the left (l-value) of an assignment statement.
      **/
-    inline VALUE& operator [] (int atIndex);
+    inline VALUE& operator [] (uint32_t atIndex);
     /**
      * \brief   Subscript operator. Returns reference to value of element by given valid zero-based index.
      *          The index should be valid number between 0 and (mSize -1).
      *          May be used on the right (r-value).
      **/
-    inline const VALUE& operator [] (int atIndex) const;
+    inline const VALUE& operator [] (uint32_t atIndex) const;
 
     /**
      * \brief   Subscript operator. Returns reference to value of element by given valid position value.
@@ -498,10 +498,10 @@ public:
 
     /**
      * \brief	Returns valid zero-based index of the element by given valid position.
-     *          Returns invalid index (-1) if the position is invalid.
+     *          Returns invalid index (0xFFFFFFFF) if the position is invalid.
      * \param	atPosition  The valid position in the linked list to return index.
      **/
-    inline int makeIndex( LISTPOS atPosition ) const;
+    inline uint32_t makeIndex( LISTPOS atPosition ) const;
 
     /**
      * \brief   Extracts elements from the given source and inserts into the linked list.
@@ -561,7 +561,7 @@ inline bool TELinkedList<VALUE>::operator != (const TELinkedList<VALUE>& other) 
 }
 
 template <typename VALUE >
-inline VALUE & TELinkedList<VALUE>::operator []( int atIndex )
+inline VALUE & TELinkedList<VALUE>::operator [](uint32_t atIndex )
 {
     return getAt(atIndex);
 }
@@ -573,7 +573,7 @@ inline VALUE & TELinkedList<VALUE>::operator []( LISTPOS atPosition )
 }
 
 template <typename VALUE >
-inline const VALUE & TELinkedList<VALUE>::operator []( int atIndex ) const
+inline const VALUE & TELinkedList<VALUE>::operator [](uint32_t atIndex ) const
 {
     return getAt(atIndex);
 }
@@ -1095,15 +1095,15 @@ inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::findIndex(uint
 }
 
 template <typename VALUE >
-inline int TELinkedList<VALUE>::makeIndex(LISTPOS atPosition) const
+inline uint32_t TELinkedList<VALUE>::makeIndex(LISTPOS atPosition) const
 {
-    int result  = 0;
+    uint32_t result{ 0 };
     LISTPOS pos = mValueList.begin();
     LISTPOS end = mValueList.end();
     for (; (pos != end) && (pos != atPosition); ++pos, ++result)
         ;
 
-    return (pos != end ? result : NECommon::INVALID_INDEX);
+    return (pos != end ? result : static_cast<uint32_t>(NECommon::INVALID_INDEX));
 }
 
 template <typename VALUE >

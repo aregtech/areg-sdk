@@ -57,6 +57,8 @@ public:
         , TraceSetDisableLogs           //!< Action to notify to stop logging
         , TraceSaveScopes               //!< Action to notify to save scope list
         , TraceLogMessage               //!< Action to output logging message
+        , TraceUpdateScopes
+        , TraceQueryScopes
     } eTraceAction;
 
     /**

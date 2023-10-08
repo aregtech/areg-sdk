@@ -74,7 +74,7 @@ public:
      *                      From given name it creates scope ID.
      * \param   priority    The logging message priority of trace scope
      **/
-    TraceScope( const char * scopeName, NETrace::eLogPriority priority = NETrace::PrioNotset );
+    TraceScope( const char * scopeName, NETrace::eLogPriority priority = NETrace::eLogPriority::PrioNotset );
 
     /**
      * \brief   Initializes the trace scope object from the stream.

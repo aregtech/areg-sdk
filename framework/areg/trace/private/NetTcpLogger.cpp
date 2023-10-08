@@ -19,16 +19,18 @@
   ************************************************************************/
 #include "areg/trace/private/NetTcpLogger.hpp"
 #include "areg/trace/private/TraceManager.hpp"
+#include "areg/trace/private/ScopeController.hpp"
 
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/base/SynchObjects.hpp"
 
-NetTcpLogger::NetTcpLogger(LogConfiguration & tracerConfig, DispatcherThread & dispatchThread)
-    : LoggerBase                    (tracerConfig)
+NetTcpLogger::NetTcpLogger(LogConfiguration & logConfig, ScopeController & scopeController, DispatcherThread & dispatchThread)
+    : LoggerBase                    (logConfig)
     , ServiceClientConnectionBase   ( NEService::COOKIE_LOGGER, static_cast<IEServiceConnectionConsumer &>(self()), static_cast<IERemoteMessageHandler &>(self()), dispatchThread)
     , IEServiceConnectionConsumer   ( )
     , IERemoteMessageHandler        ( )
 
+    , mScopeController  (scopeController)
     , mIsEnabled        ( false )
     , mRingStack        ( NetTcpLogger::RING_STACK_MAX_SIZE, NECommon::eRingOverlap::ShiftOnOverlap )
 {
@@ -140,4 +142,67 @@ void NetTcpLogger::failedProcessMessage(const RemoteMessage & msgUnprocessed)
 
 void NetTcpLogger::processReceivedMessage(const RemoteMessage & msgReceived, Socket & whichSource)
 {
+    if (msgReceived.isValid() && whichSource.isValid())
+    {
+        ASSERT(msgReceived.getTarget() == mChannel.getCookie());
+
+        const NEService::eFuncIdRange msgId { static_cast<NEService::eFuncIdRange>(msgReceived.getMessageId()) };
+        ITEM_ID target{ NEService::COOKIE_ANY };
+        msgReceived >> target;
+
+        switch (msgId)
+        {
+        case NEService::eFuncIdRange::ServiceLogUpdateScopes:
+            {
+                uint32_t scopeCount{ 0 };
+                String scopeName;
+                uint32_t scopeId{ 0 };
+                uint32_t scopePrio{ 0 };
+
+                msgReceived >> scopeCount;
+                for ( uint32_t i = 0; i < scopeCount; ++ i)
+                {
+                    msgReceived >> scopeName;
+                    msgReceived >> scopeId;
+                    msgReceived >> scopePrio;
+
+                    TraceManager::updateScopes(scopeName, scopeId, scopePrio);
+                }
+            }
+            break;
+
+        case NEService::eFuncIdRange::ServiceLogQueryScopes:
+            {
+                const TraceScopeMap & scopes{ mScopeController.getScopeList() };
+                const uint32_t scopeCount{ scopes.getSize() };
+                const ITEM_ID & targetId{ msgReceived.getSource() };
+
+                RemoteMessage msgScopeBegin{ NETrace::messageRegisterScopesStart(targetId, scopeCount) };
+                sendMessage(msgScopeBegin);
+                uint32_t scopesSent{ 0 };
+                NETrace::SCOPEPOS scopePos = scopes.invalidPosition();
+                while (scopeCount > scopesSent)
+                {
+                    RemoteMessage msgScope{ NETrace::messageRegisterScopes(targetId, static_cast<const NETrace::ScopeList &>(scopes), scopePos, NETrace::SCOPE_ENTRIES_MAX_COUNT) };
+                    if (msgScope.isValid())
+                    {
+                        sendMessage(msgScope);
+                    }
+
+                    scopesSent += NETrace::SCOPE_ENTRIES_MAX_COUNT;
+                }
+
+                RemoteMessage msgScopeEnd{ NETrace::messageRegisterScopesEnd(targetId) };
+                sendMessage(msgScopeEnd);
+            }
+            break;
+
+        case NEService::eFuncIdRange::ServiceSaveLogConfiguration:
+            TraceManager::saveLogConfig(nullptr);
+            break;
+
+        default:
+            ASSERT(false);
+        }
+    }
 }

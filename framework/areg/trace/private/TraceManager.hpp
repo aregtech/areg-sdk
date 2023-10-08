@@ -201,10 +201,19 @@ public:
     /**
      * \brief   Call to change the scope log priority.
      * \param   scopeName   The name of the existing scope. Ignored if scope does not exit.
-     * \param   newPrio     The new priority to set. Can be bitwise combination with scopes.
+     * \param   newPrio     The new priority to set. Can be bitwise combination of priorities.
      * \return  Returns true if scope found and priority changed.
      **/
     static bool setScopePriority( const char * scopeName, unsigned int newPrio );
+
+    /**
+     * \brief   Call to change the scope log priority.
+     * \param   scopeName   The name of a single scope or scope group ended with '*' to change priority.
+     * \param   scopeId     The ID of the scope, ignored in case of scope group.
+     * \param   newPrio     The new priority to set. Can be bitwise combination of priorities.
+     * \return  Returns true if scope found and priority changed.
+     **/
+    static void updateScopes(const String & scopeName, unsigned int scopeId, unsigned int newPrio);
 
     /**
      * \brief   Returns the scope priority if found. Otherwise, returns invalid priority.
@@ -350,11 +359,15 @@ private:
      **/
     bool isDebugOutputValid( void ) const;
 
-
     /**
      * \brief   Clears logging configuration data.
      **/
     void clearConfigData( void );
+
+    /**
+     * \brief   Resets the scopes.
+     **/
+    void resetScopes(void);
 
     /**
      * \brief   Loads scopes and sets priorities specified in configuration.

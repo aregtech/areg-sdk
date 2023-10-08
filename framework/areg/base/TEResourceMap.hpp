@@ -100,7 +100,7 @@ public:
     /**
      * \brief	Returns the size of Resource Map
      **/
-    inline int getSize(void) const;
+    inline uint32_t getSize(void) const;
 
     /**
      * \brief   Returns true if resource map is empty.
@@ -411,7 +411,7 @@ inline bool TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::tryL
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
-inline int TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::getSize( void ) const
+inline uint32_t TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::getSize( void ) const
 {
     Lock lock(mSynchObj);
     return HashMap::getSize();

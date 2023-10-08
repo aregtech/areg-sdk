@@ -374,33 +374,6 @@ AREG_API_IMPL unsigned int NETrace::getScopePriority( const char * scopeName )
 #endif  // AREG_LOGS
 }
 
-AREG_API_IMPL RemoteMessage NETrace::messageRegisterScopesStart(unsigned int scopeCount)
-{
-    RemoteMessage msgScope;
-    if (msgScope.initMessage(_getLogRegisterScopes().rbHeader) != nullptr)
-    {
-        const ITEM_ID & cookie{ NETrace::getCookie() };
-        msgScope.setSource(cookie);
-        msgScope << NETrace::eScopeList::ScopeListStart;
-        msgScope << scopeCount;
-    }
-
-    return msgScope;
-}
-
-AREG_API_IMPL RemoteMessage NETrace::messageRegisterScopesEnd( )
-{
-    RemoteMessage msgScope;
-    if (msgScope.initMessage(_getLogRegisterScopes().rbHeader) != nullptr)
-    {
-        const ITEM_ID & cookie{ NETrace::getCookie() };
-        msgScope.setSource(cookie);
-        msgScope << NETrace::eScopeList::ScopeListEnd;
-    }
-
-    return msgScope;
-}
-
 AREG_API_IMPL RemoteMessage NETrace::messageLog(const NETrace::sLogMessage & logMessage)
 {
     RemoteMessage msgLog;
@@ -413,13 +386,43 @@ AREG_API_IMPL RemoteMessage NETrace::messageLog(const NETrace::sLogMessage & log
     return msgLog;
 }
 
-AREG_API_IMPL RemoteMessage NETrace::messageRegisterScopes(const ScopeList & scopeList, SCOPEPOS & startAt, unsigned int maxEntries /*= 0xFFFFFFFF*/)
+AREG_API_IMPL RemoteMessage NETrace::messageRegisterScopesStart(const ITEM_ID & target, unsigned int scopeCount)
 {
     RemoteMessage msgScope;
     if (msgScope.initMessage(_getLogRegisterScopes().rbHeader) != nullptr)
     {
         const ITEM_ID & cookie{ NETrace::getCookie() };
         msgScope.setSource(cookie);
+        msgScope << target;
+        msgScope << NETrace::eScopeList::ScopeListStart;
+        msgScope << scopeCount;
+    }
+
+    return msgScope;
+}
+
+AREG_API_IMPL RemoteMessage NETrace::messageRegisterScopesEnd(const ITEM_ID & target)
+{
+    RemoteMessage msgScope;
+    if (msgScope.initMessage(_getLogRegisterScopes().rbHeader) != nullptr)
+    {
+        const ITEM_ID & cookie{ NETrace::getCookie() };
+        msgScope.setSource(cookie);
+        msgScope << target;
+        msgScope << NETrace::eScopeList::ScopeListEnd;
+    }
+
+    return msgScope;
+}
+
+AREG_API_IMPL RemoteMessage NETrace::messageRegisterScopes(const ITEM_ID & target, const ScopeList & scopeList, SCOPEPOS & startAt, unsigned int maxEntries /*= 0xFFFFFFFF*/)
+{
+    RemoteMessage msgScope;
+    if (msgScope.initMessage(_getLogRegisterScopes().rbHeader) != nullptr)
+    {
+        const ITEM_ID & cookie{ NETrace::getCookie() };
+        msgScope.setSource(cookie);
+        msgScope << target;
         msgScope << NETrace::eScopeList::ScopeListContinue;
 
         SCOPEPOS end = scopeList.invalidPosition();

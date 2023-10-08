@@ -148,6 +148,23 @@ int ScopeController::removeScopeGroupPriority( const String & scopeGroupName, NE
     return result;
 }
 
+void ScopeController::resetScopes(void)
+{
+    mMapTraceScope.lock();
+
+    for (TraceScopeMap::MAPPOS pos = mMapTraceScope.firstPosition(); mMapTraceScope.isValidPosition(pos); pos = mMapTraceScope.nextPosition(pos))
+    {
+        TraceScope * scope = mMapTraceScope.valueAtPosition(pos);
+        ASSERT(scope != nullptr);
+        scope->setPriority(static_cast<unsigned int>(NETrace::eLogPriority::PrioNotset));
+    }
+
+    mConfigScopeList.clear();
+    mConfigScopeGroup.clear();
+
+    mMapTraceScope.unlock();
+}
+
 void ScopeController::activateDefaults( void )
 {
     int i = 0;

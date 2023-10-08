@@ -164,6 +164,13 @@ bool TraceManager::setScopePriority( const char * scopeName, unsigned int newPri
     return result;
 }
 
+void TraceManager::updateScopes(const String & scopeName, unsigned int scopeId, unsigned int newPrio)
+{
+    ScopeController & ctrScope = TraceManager::getInstance().mScopeController;
+    ctrScope.clearConfigScopes();
+    ctrScope.changeScopeActivityStatus(scopeName, scopeId, newPrio);
+}
+
 unsigned int TraceManager::getScopePriority( const char * scopeName )
 {
     ScopeController & ctrScope = TraceManager::getInstance( ).mScopeController;
@@ -185,7 +192,7 @@ TraceManager::TraceManager(void)
 
     , mLoggerFile       ( mLogConfig )
     , mLoggerDebug      ( mLogConfig )
-    , mLoggerTcp        ( mLogConfig, static_cast<DispatcherThread &>(self()) )
+    , mLoggerTcp        (mLogConfig, mScopeController, static_cast<DispatcherThread &>(self()) )
     , mEventProcessor   ( self() )
 
     , mLogStarted       ( false, false )
@@ -215,6 +222,12 @@ void TraceManager::clearConfigData( void )
 
     mLogConfig.clearProperties();
     mScopeController.clearConfigScopes( );
+}
+
+void TraceManager::resetScopes(void)
+{
+    Lock lock(mLock);
+    mScopeController.resetScopes();
 }
 
 bool TraceManager::isNetConfigValid(void) const
