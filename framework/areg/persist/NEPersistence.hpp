@@ -41,11 +41,6 @@ namespace NEPersistence
     constexpr std::string_view  CONFIG_VERSION              { "2.0.0" };
 
     /**
-     * \brief   Symbol of object separator in configuration file
-     **/
-    constexpr char              SYNTAX_OBJECT_SEPARATOR     { '.' };
-
-    /**
      * \brief   White space delimiter
      **/
     constexpr char              SYNTAX_WHITESPACE_DELIMITER { ' ' };
@@ -70,6 +65,12 @@ namespace NEPersistence
      * \brief   Syntax, which indicates any value.
      **/
     constexpr char              SYNTAX_ANY_VALUE            { '*' };
+
+    /**
+     * \brief   Symbol of object separator in configuration file
+     **/
+    constexpr std::string_view  SYNTAX_OBJECT_SEPARATOR     { "::" };
+
 
     /**
      * \brief   End of line symbol in configuration file

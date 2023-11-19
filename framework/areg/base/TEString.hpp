@@ -947,6 +947,13 @@ public:
      **/
     inline std::vector<TEString<CharType>> split(CharType delim) const;
 
+    /**
+     * \brief   Splits the given string into multiple parts considering specified delimiter.
+     * \param   delimiter   The delimiter string that should be searched to split the string.
+     * \return  Returns list of strings that are split be specified delimiter.
+     **/
+    inline std::vector<TEString<CharType>> split(const TEString<CharType> & delim) const;
+
 /************************************************************************/
 // Protected methods, can be assessed only from derived class
 /************************************************************************/
@@ -2955,6 +2962,36 @@ inline std::vector<TEString<CharType>> TEString<CharType>::split(CharType delimi
             result.push_back(TEString<CharType>(mData.c_str() + start));
             break;
         }
+    }
+
+    return result;
+}
+
+template<typename CharType>
+inline std::vector<TEString<CharType>> TEString<CharType>::split(const TEString<CharType> & delimiter) const
+{
+    std::vector<TEString<CharType>> result;
+    if (delimiter.isEmpty() == false)
+    {
+        const size_t skip   { static_cast<size_t>(delimiter.getLength()) };
+        const size_t len    { mData.length() };
+        size_t start        { 0 };
+        size_t pos = mData.find(delimiter.mData, start);
+        while (pos != std::basic_string<CharType>::npos)
+        {
+            result.push_back(TEString<CharType>(mData.c_str() + start, static_cast<NEString::CharCount>(pos - start)));
+            start = pos + skip;
+            pos = (start < len ? mData.find(delimiter.mData, start) : std::basic_string<CharType>::npos);
+        }
+
+        if (start < len)
+        {
+            result.push_back(TEString<CharType>(mData.c_str() + start, static_cast<NEString::CharCount>(len - start)));
+        }
+    }
+    else
+    {
+        result.push_back(*this);
     }
 
     return result;

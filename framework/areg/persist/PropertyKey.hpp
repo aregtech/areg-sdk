@@ -295,7 +295,7 @@ public:
 private:
 
     //! Parses the passed key value and sets property key data.
-    inline void _parseKey(String & key);
+    inline void _parseKey(const String & key);
 
     /**
      * \return  Returns true if the 'right' position is compatible with the 'left'. 

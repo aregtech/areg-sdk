@@ -146,7 +146,7 @@ if (NOT DEFINED AREG_BUILD_TYPE OR NOT ${AREG_BUILD_TYPE} STREQUAL "Debug")
     if (DEFINED CMAKE_BUILD_TYPE AND NOT ${CMAKE_BUILD_TYPE} STREQUAL "")
         set(AREG_BUILD_TYPE "${CMAKE_BUILD_TYPE}")
     else()
-        set(AREG_BUILD_TYPE "Release")
+        set(AREG_BUILD_TYPE "Debug")
     endif()
 endif()
 
@@ -157,7 +157,7 @@ endif()
 
 # Build tests. By default it is disabled. To enable, set ON
 if (NOT DEFINED AREG_BUILD_TESTS)
-    option(AREG_BUILD_TESTS     "Build unit tests" OFF)
+    option(AREG_BUILD_TESTS     "Build unit tests" ON)
 endif()
 
 # Build examples. By default it is disabled. To enable, set ON
@@ -167,7 +167,7 @@ endif()
 
 # Set AREG extended features enable or disable flag to compiler additional optional features. By default, it is disabled.
 if (NOT DEFINED AREG_EXTENDED)
-    option(AREG_EXTENDED      "Enable extensions" OFF)
+    option(AREG_EXTENDED      "Enable extensions" ON)
 endif()
 
 # Modify 'AREG_LOGS' to enable or disable compilation with logs. By default, compile with logs

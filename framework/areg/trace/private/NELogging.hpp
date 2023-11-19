@@ -95,64 +95,9 @@ namespace NELogging
 //////////////////////////////////////////////////////////////////////////
 
     /**
-     * \brief   Symbol of comment in configuration file
-     **/
-    constexpr char              SYNTAX_COMMENT                      { '#' };
-
-    /**
-     * \brief   Symbol of equal operation in configuration file
-     **/
-    constexpr char              SYNTAX_EQUAL                        { '=' };
-
-    /**
-     * \brief   End of line symbol in configuration file
-     **/
-    constexpr char              SYNTAX_LINEEND                      { NEString::EndOfLine };
-
-    /**
-     * \brief   Symbol of object separator in configuration file
-     **/
-    constexpr char              SYNTAX_OBJECT_SEPARATOR             { '.' };
-
-    /**
-     * \brief   White space delimiter
-     **/
-    constexpr char              SYNTAX_WHITESPACE_DELIMITER         { ' ' };
-
-    /**
-     * \brief   Tab delimiter
-     **/
-    constexpr char              SYNTAX_TAB_DELIMITER                { '\t' };
-
-    /**
-     * \brief   End of command delimiter, optional. Might be skipped
-     **/
-    constexpr char              SYNTAX_END_COMMAND_DELIMITER        { ';' };
-
-    /**
      * \brief   The special character meaning formating
      **/
     constexpr char              SYNTAX_SPECIAL_FORMAT               { '%' };
-
-    /**
-     * \brief   List of valid delimiters
-     **/
-    constexpr std::string_view  SYNTAX_DELIMITERS                   { " \t" };
-
-    /**
-     * \brief   Boolean syntax 'true'
-     **/
-    constexpr std::string_view  SYNTAX_TRUE                         { NECommon::BOOLEAN_TRUE };
-
-    /**
-     * \brief   Boolean syntax 'false'
-     **/
-    constexpr std::string_view  SYNTAX_FALSE                        { NECommon::BOOLEAN_FALSE };
-
-    /**
-     * \brief   The logical OR operation used setting scope priorities only
-     **/
-    constexpr std::string_view  SYNTAX_LOGICAL_OR                   { "|" };
 
 //////////////////////////////////////////////////////////////////////////
 // Syntax of commands in configuration file

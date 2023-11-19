@@ -358,42 +358,41 @@ void PropertyKey::resetKey(void)
     mKeyType = NEPersistence::eConfigKeys::EntryInvalid;
 }
 
-inline void PropertyKey::_parseKey(String& key)
+inline void PropertyKey::_parseKey(const String& key)
 {
-    NEString::CharPos pos = key.findFirst(NEPersistence::SYNTAX_OBJECT_SEPARATOR);
-    NEString::CharPos oldPos = NEString::START_POS;
-    if (key.isValidPosition(pos))
+    std::vector<TEString<char>> list = key.split(NEPersistence::SYNTAX_OBJECT_SEPARATOR);
+    resetKey();
+
+    if (list.size() != 0)
     {
-        key.substring(mSection, oldPos, pos - oldPos);
-
-        oldPos = pos + 1;
-        pos = key.findFirst(NEPersistence::SYNTAX_OBJECT_SEPARATOR, oldPos);
-        if (key.isValidPosition(pos))
+        mSection = list[0];
+        if (list.size() > 1)
         {
-            key.substring(mModule, oldPos, pos - oldPos);
-            oldPos = pos + 1;
-            pos = key.findFirst(NEPersistence::SYNTAX_OBJECT_SEPARATOR, oldPos);
-            if (key.isValidPosition(pos))
+            mModule = list[1];
+            if (list.size() > 2)
             {
-                key.substring(mProperty, oldPos, pos - oldPos);
-                oldPos = pos + 1;
-                pos = key.findFirst(NEPersistence::SYNTAX_OBJECT_SEPARATOR, oldPos);
-
-                key.substring(mPosition, oldPos, key.isValidPosition(pos) ? pos - oldPos : NEString::COUNT_ALL);
+                mProperty = list[2];
+                if (list.size() > 3)
+                {
+                    mPosition = list[3];
+                }
+                else
+                {
+                    mPosition = String::EmptyString;
+                }
             }
             else
             {
-                mProperty = key.substring(oldPos);
+                mProperty = NEPersistence::SYNTAX_ALL_MODULES;
             }
         }
         else
         {
             mModule = NEPersistence::SYNTAX_ALL_MODULES;
-            mProperty = key.substring(oldPos);
         }
-    }
 
-    mKeyType = isValid() ? PropertyKey::_findKey(mSection, mModule, mProperty, mPosition) : NEPersistence::eConfigKeys::EntryInvalid;
+        mKeyType = PropertyKey::_findKey(mSection, mModule, mProperty, mPosition);
+    }
 }
 
 inline bool PropertyKey::_isCompatible(const String& left, const String& right) 

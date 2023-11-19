@@ -183,13 +183,12 @@ std::pair<ScopeNodeBase &, bool>  ScopeNode::addChildNode( String & scopePath, u
 
 String ScopeNode::makeScopePath( const String & prefix ) const
 {
-    String result{ prefix };
-    ASSERT( mNodeName.isEmpty( ) == false );
-    ASSERT( isValid( ) );
+    ASSERT(mNodeName.isEmpty() == false);
+    ASSERT(isValid());
+    char scope[NETrace::LOG_MESSAGE_BUFFER_SIZE];
+    int len = String::formatString(scope, NETrace::LOG_MESSAGE_BUFFER_SIZE, "%s%s%c", prefix.getString(), mNodeName.getString(), NELogging::SYNTAX_SCOPE_SEPARATOR);
 
-    result += mNodeName;
-    result += NELogging::SYNTAX_SCOPE_SEPARATOR;
-    return result;
+    return String(scope, len > 0 ? len : 0);
 }
 
 unsigned int ScopeNode::groupChildNodes( void )
@@ -297,8 +296,13 @@ unsigned int ScopeNode::groupRecursive( void )
 String ScopeNode::makeConfigString( const String & parent ) const
 {
     char scope[NETrace::LOG_MESSAGE_BUFFER_SIZE];
-    int len = String::formatString(scope, NETrace::LOG_MESSAGE_BUFFER_SIZE, "%s%s_*", parent.getString(), mNodeName.getString());
-    return String(scope, len);
+    int len = String::formatString( scope, NETrace::LOG_MESSAGE_BUFFER_SIZE
+                                  , "%s%s%c%c"
+                                  , parent.getString()
+                                  , mNodeName.getString()
+                                  , NELogging::SYNTAX_SCOPE_SEPARATOR
+                                  , NELogging::SYNTAX_SCOPE_GROUP);
+    return String(scope, len > 0 ? len : 0);
 }
 
 unsigned int ScopeNode::removePriorityNodesRecursive( unsigned int prioRemove )

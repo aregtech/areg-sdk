@@ -6,197 +6,180 @@
 # 
 # How to configure logging?
 # 
-#   There are at least 2 ways to log traces.
+#   There are at least 4 ways to log traces.
 #   1. Log on File System
 #   2. Log on Remote Host (via TCP/IP connection)
-#   3, Log on Database (in planning)
+#   3. Log on Database (in planning)
+#   4. Log on output console
 #
-#   Logging to file system: To log traces into file, specify 'log.file' parameter and give file name. 
-#                           The file name can be given either absolute or relative.
-#                           Specifying file name, make sure that permissions are granted.
-#                           If file name contains '%appdata%' mark in the path, the logging file is stored
-#                           in system special folder "APPDATA_Roaming" (in Win7 system "C:\Users\<user_name>\AppData\Roaming").
-#                           If file name contains '%timestamp%' mark, it will add special time-stamp into the file name.
-#                           If file name contains symbol of current folder './', the path is relative to the folder of executable.
+#   Logging to file system: To log to file, enable in the setting 'log::*::enable::file'
+#                           and specify the file location in the 'log::*::file::location'. 
+#                           The file location can be absolute or relative, and may contain mask.
+#                           For example, the location './logs/%appname%_%time%.log' means to create
+#                           files in the subfolder 'logs' where each log file starts with the name of
+#                           the module (process) and timestamp. The path is relative.
+#                           The 'log::*::enable::file' should be enabled to save logs in the file.
 #
-#   Logging to remote host: To log traces to remote host (by further saving), specify host name and the port number.
+#   Logging to remote host: To log to remote host, specify the IP-address and the port number listed
+#                           in the section of service specified in 'log::*::remote::service'.
+#                           For example, if 'log::*::remote::service = logger', change the settings
+#                           in the section 'logger' to set IP-address and port number.
+#                           The 'log::*::enable::remote' should be enabled to make remote logging.
 #
-#   Meaning of fields in configuration:
-#       1. log.version      -- the logging version
-#       2. log.file         -- name of log file, should be either relative or absolute path. if it contains '%time%' key in the name, then will add time-stamp every time when creates log. If file path contains '%appdata%', logs are saved in user APPDATA_Roaming folder
-#       3. log.append       -- create new file or adds at the end of existing log file. If file name contains '%time%', it will always create new file. If the file name is fixed, it will either overwrite or add logs at the end of file.
-#       4. log.host         -- used for remote logging, specify either IP-address or host name
-#       5. log.port         -- specify port number on remote host to connect.
-#       6. log.layout       -- the logging layout as text. How the message output should look in file or debug output window
-#       7. log.enable       -- Enable / disable log file. If 'false', no log will be created.
-#       8. log.debug        -- Enable / disable logs in Debug output window. Valid only for Debug version.
-#       9. scope.App.XXX    -- The name of scope to apply and filter logging priority.
+#   Log scopes and prio:    To set the logging priority, use logging scopes specified in the 'log' section.
+#                           You may specify single scope or group of scopes to set the priority.
+#                           For example, the 'log::*::scope::*' refers to all scopes of all modules (processes).
+#                           The 'log::*::scope::areg_*' refers to all scopes that start with 'areg_'.
+#                           The 'log::*::scope::areg_bases_File_open' refers to a single scope
+#                           'areg_bases_File_open' in all applications.
+#                           The 'log::my_app::scope::areg_*' refers to log scopes that start with 'areg_' 
+#                           in the 'my_app' module (process)
 #
-#   REMARK Nr. 1:    By specifying module name, it is possible to describe the logging parameter for every module separately.
-#                   If module name is not specified, as displayed above, the parameters are applied to all modules, which load configuration.
-#
-#   Example of setting parameter for modules separately:
-#       log.file.AppExample1        = ./logs/app_example1.log       <== set logging file name for module 'AppExample1'
-#       log.file.AppExample2        = ./logs/app_example2.log       <== set logging file name for module 'AppExample2'
-#       log.file.AppExample3        = ./logs/app_example1.log       <== set logging file name for module 'AppExample3'
-#       log.append                  = true                          <== for all other modules append at the end of log file
-#       log.append.AppExample1      = false                         <== always create file, overwrite if already created
-#       log.enable                  = true                          <== the logging is enabled for all applications, except (see next line)
-#       log.debug                   = false                         <== disable logging to Debug output window
-#       log.enable.AppExample4      = false                         <== disable logging only for application 'AppExample4', no log file is created
-# 
-#   REMARK Nr. 2:    Setting individual settings for a single module must be set after global setting, if it exists
-#
-#   Example of wrong settings:
-#       log.enable.AppExample       = true                          <== enable logging only for application 'AppExample'
-#       log.enable                  = false                         <== this value will overwrite the previous settings and will disable logging for application 'AppExample'
-#
-#   Example of correct settings:
-#       log.enable                  = false                         <== disable logging for all applications
-#       log.enable.AppExample       = true                          <== enable logging only for application 'AppExample', overwrite previously 'disable' flag
-#
-#   Meaning of scopes:
-#       Every scope must start with keyword 'scope.', followed by process name and by scope name or scope group name.
+#   Meaning of log scope priorities:
+#       The value of scopes is a priority or a combination of priority and the scope message.
+#       The priority specifies what type of messages should be logged. The priorities can be changed during runtime.
 #       Every single scope should have specified logging priority to log. There are following valid logging priority values
 #           1.  DEBUG       -- Debug level priority. Has lowest logging priority, all logs will be logged: DEBUG, INFO, WARN, ERROR, FATAL
 #           2.  INFO        -- Information level priority. The priority is higher than DEBUG and will log following logs: INFO, WARN, ERROR, FATAL
 #           3.  WARN        -- Warning level priority. The priority is higher than INFO and will log following logs: WARN, ERROR, FATAL
 #           4.  ERROR       -- Error  level priority. The priority is higher than WARN and will log following logs: ERROR, FATAL
 #           5.  FATAL       -- Fatal errors, abnormal run. The highest priority level. It will log only FATAL logs
-#           6.  NOTSET      -- Disable any tracing of concrete scope or group of scopes.
+#           6.  SCOPE       -- Display scope 'enter' and 'exit' message. Normally this priority is used with combination of others, but can be as well used alone.
+#           7.  NOTSET      -- Disable any tracing of concrete scope or group of scopes.
+#       The scope priorities are combined with logical OR ( '|' ) symbol like "WARN | SCOPE"
 #
-#       The scopes are possible to specify either one-by-one (single scope) or group of scopes by specifying start ('*') at the end.
-#       If group of scope is specified, the underline symbol is separating every scope group.
-#       The group scope priority is applied to the entire group.
-#
-#       Example specifying scope:
+#       Example specifying scope priority:
 #
 #       Example 1:  In this example the logging level 'WARN' is applied to the single scope
-#       scope.AppName.project_applications_components_graphics_MyClass_FunctionName   = WARN
+#       log::AppName::scope::project_applications_components_graphics_MyClass_FunctionName   = WARN
 #
-#       Example 2:  In this example the logging level 'DEBUG' is applied to the entire scope group (symbol '_' before '*')
-#       scope.AppName.project_applications_components_graphics_ui_*  = DEBUG
+#       Example 2:  In this example the logging level 'DEBUG' is applied to the entire scope group that start with 'project_applications_components_graphics_ui_'
+#       log::AppName::scope::project_applications_components_graphics_ui_*  = DEBUG
 #
-#       Example 3: In this example, the logging level 'WARN' is applied to the scope group, which is a part of previously (Example 2) defined scope group and in that group only "WARN" message will be logged
-#       scope.AppName.project_applications_components_graphics_ui_controls_*  = WARN
+#       Example 3: In this example, the logging level 'ERROR' with combination of 'SCOPE' is applied to the scope group
+#       scope::AppName::project_applications_components_graphics_ui_controls_*  = ERROR | SCOPE
+#       In this example, the scope 'enter' and 'exit' message is displayed independent whether there was a log with ERROR priority or not.
 #
-#       Example 4: In this example the logging level 'ERROR' is applied to the entire module (process) (no scope name after process name)
-#       scope.AppName.*     = ERROR
-# 
-#       These 3 examples can be combined together like this (the sequence does not play role):
-#       scope.AppName.*                                                             = NOTSET    # disable trace output for complete application, except those bellow
-#       scope.AppName.project_applications_components_*                             = ERROR
-#       scope.AppName.project_applications_components_graphics_ui_*                 = DEBUG
-#       scope.AppName.project_applications_components_graphics_ui_controls_*        = WARN
-#       scope.AppName.project_applications_components_graphics_MyClass_FunctionName = WARN
-# 
 #   Meaning of Layout format:
-#       The Layout Format is relevant only for output as a text message. These are outputs in file and debug output.
+#       The Layout Format is relevant only when logs the messages in the plain text file.
 #       The Layout Format specification fields are following:
-#           %c      -- the tick clocks, since the application has been started
-#           %d      -- the day-time format output
-#           %e      -- the executable module ID, which is logging
-#           %m      -- the text message to log. The %m and %z are mutually exclusive.
-#           %n      -- the end of line symbol
-#           %p      -- the logging priority
-#           %s      -- the scope ID, which is tracing message
-#           %t      -- the thread ID, where message was triggered
-#           %x      -- the name of executable module
-#           %y      -- the name of tracing thread
-#           %z      -- the name of tracing scope. The %m and %z are mutually exclusive.
+#           %c      -- output tick-count value since process start
+#           %d      -- output day and time data
+#           %e      -- output module (process) ID
+#           %m      -- output logging message (text). The '%m' and '%z' are mutually exclusive.
+#           %n      -- output end-of-line character
+#           %p      -- output message priority
+#           %s      -- output message scope ID
+#           %t      -- output thread ID
+#           %x      -- output module (process) name
+#           %y      -- output thread name
+#           %z      -- output scope name
 #
-#       The specification '%m' and '%z' are mutually exclusive, because they are using same data to fill information
-#       Do not use these 2 specifications in same layout. Otherwise, only the first matching will be used and the other will be ignored.
-#       The symbol '%%' outputs percent symbol.
+#       The layouts are specified in the properties 'log::*::layout::enter', 'log::*::layout::message' and 'log::*::layout::exit'.
+#       Example of enter scope layout: log::*::layout::enter   = %d: [ %t  %x.%z: Enter -->]%n
+#       Example of log message layout: log::*::layout::message = %d: [ %t  %p >>> ] %m%n
+#       Example of exit scope layout : log::*::layout::exit    = %d: [ %t  %x.%z: Exit <-- ]%n
+#       If layout is not set, the message will not be printed.
 #
-#       There are 3 types of main logging Layouts
-#           1.  Scope Enter Layout      (layout.enter)
-#           2.  Scope Exit Layout       (layout.exit)
-#           3.  Trace Message Layout    (layout.message)
+#   Meaning of mask in the file names:
+#       The paths in the configuration and the file names may contain masks.
+#       For example, the path %user%/logs/%appname%_%time%.log will create a file, where:
+#           1. The file name contains the name of the application and the timestamp;
+#           2. The file is located in the 'logs' subfolder of the user profile folder.
 #
-#       If one of those layouts is not set, the appropriate message will not be printed.
-#       For example, if user is not interested in scope enter / exit message, but only in
-#       message text, then he may specify message output layout only (log.layout.message)
-#       and skip scope enter / exit layouts. In this case, only message logs will be printed
-#       and no scope message will be output.
-#
-#       Example specifying Layouts:
-#       log.layout.enter    = %d: [ %c.%t  %x.%z: Enter --> ]%n
-#       log.layout.message  = %d: [ %c.%t  %p >>> ] %m%n
-#       log.layout.exit     = %d: [ %c.%t  %x.%z: Exit <-- ]%n
-#
-#       Example specifying logging settings:
-#       log.version         = 1.0.0     <== Logging version number
-#       log.enable          = true      <== If 'true', the logging is enabled (by default it is disabled)
-#       log.file            = %appdata%/logs/trace_%time%.log   <== create log file in user's AppData\Roaming folder and set time-stamp on the name of every log file
-#       log.append          = false     <== always create if not existing or overwrite file in case of existing file. In this particular configuration this is not playing any role since the file name always changes
-#       log.layout.message  = %d: [ %u.%t %p >>> ] %m %n      <== logging layout (trace message format)
-#
-# Where to copy this areg.init file to be able to log information to file?
-#
-#       Destination folder must be subfolder 'config' of Patterning -> Product folder, e.g.
-#
-#       .\product\build\debug\exe\config
-#   or  .\product\build\release\exe\config
+#   NOTE: The database logging is not implemented yet.
 #
 # ###########################################################################
 
 # ###########################################################################
-# Logging configuration
+# Begin of global configuration
 # ###########################################################################
 
-
+# ---------------------------------------------------------------------------
 # Configuration file version
-config.*.version            = 2.0.0
+# ---------------------------------------------------------------------------
+config::*::version          = 2.0.0
 
 # Application logging settings
-log.*.version               = 2.0.0
-log.*.target                = remote | file | debug | db    # valid logging options -- remote, file, debug output, database
-log.*.enable                = true
-log.*.enable.remote         = false # Logging to remote log collector
-log.*.enable.file           = true  # Logging to file
-log.*.enable.debug          = false # Logging to debug output console
-log.*.enable.db             = false # logging to database
-log.*.file.location         = ./logs/%appname%_%time%.log
-log.*.file.append           = false
-log.*.stack                 = 100   # the queue stack size of log messages, the value 0 means do not queue
 
-# Logging file and message view
-log.*.layout.enter          = %d: [ %t  %x.%z: Enter -->]%n
-log.*.layout.message        = %d: [ %t  %p >>> ] %m%n
-log.*.layout.exit           = %d: [ %t  %x.%z: Exit <-- ]%n
+# ---------------------------------------------------------------------------
+# Global logging settings
+# ---------------------------------------------------------------------------
+log::*::version             = 2.0.0                         # Logging version
+log::*::target              = remote | file | debug | db    # Log targets: remote, file, debug output, database
+log::*::enable              = true                          # Global logging enable / disable flag
+log::*::enable::remote      = false                         # Remote logging enable / disable flag
+log::*::enable::file        = true                          # File logging enable / disable flag
+log::*::enable::debug       = false                         # Debug output console logging enable / disable flag
+log::*::enable::db          = false                         # Database logging enable / disable flag
+log::*::file::location      = ./logs/%appname%_%time%.log   # Log file location and masks
+log::*::file::append        = false                         # Append logs at the end of file
+log::*::remote::stack       = 100                           # Queue stack size in remote logging, 0 means no queuing
+log::*::remote::service     = logger                        # The service name of the remote logging
 
-# Logging to database
-log.*.db.location           = 
-log.*.db.append             = true
-log.*.db.driver             = 
-log.*.db.address            = 127.0.0.1
-log.*.db.port               = 1234
-log.*.db.username           = areg
-log.*.db,password           = areg
-log.*.db.name               = 
+# ---------------------------------------------------------------------------
+# Database logging settings (not supported at the moment!!!)
+# ---------------------------------------------------------------------------
+log::*::db::location        =                               # Database location
+log::*::db::append          = true                          # Append logs
+log::*::db::driver          =                               # Database driver
+log::*::db::address         = 127.0.0.1                     # Database connection IP-address
+log::*::db::port            = 1234                          # Database connection IP-port
+log::*::db::username        = areg                          # Database connection user name
+log::*::db::password        = areg                          # Database connection password
+log::*::db::name            =                               # Database name
 
+# ---------------------------------------------------------------------------
+# Log message layout in the file
+# ---------------------------------------------------------------------------
+log::*::layout::enter       = %d: [ %t  %x.%z: Enter -->]%n # Enter scope layout
+log::*::layout::message     = %d: [ %t  %p >>> ] %m%n       # Log message layout
+log::*::layout::exit        = %d: [ %t  %x.%z: Exit <-- ]%n # Exit scope layout
+
+# ###########################################################################
+# Remote services
+# ###########################################################################
+
+# ---------------------------------------------------------------------------
 # List of remote services
-service.*.list              = router | logger
+# ---------------------------------------------------------------------------
+service::*::list            = router | logger               # The list of available remote services
 
-# Router communication settings
-router.*.service            = mcrouter      # the name of the router service process
-router.*.connect            = tcpip			# protocol, right now it supports only 'tcpip' (TCP/IP)
-router.*.enable.tcpip       = true			# if 'true' the service mcrouter connection is enabled
-router.*.address.tcpip      = 127.0.0.1	    # the address of service mcrouter host
-router.*.port.tcpip         = 8181			# service mcrouter connection port
+# ---------------------------------------------------------------------------
+# Message router settings
+# ---------------------------------------------------------------------------
+router::*::service          = mcrouter                      # The name of the router service (process name)
+router::*::connect          = tcpip			                # The list of supported communication protocols
+router::*::enable::tcpip    = true			                # Communication protocol enable / disable flag
+router::*::address::tcpip   = 127.0.0.1	                    # Protocol specific connection IP-address
+router::*::port::tcpip      = 8181			                # Protocol specific connection port number
 
-# Logger communication settings
-logger.*.service            = logger        # the name of the remote logging service process
-logger.*.connect            = tcpip			# protocol, right now it supports only 'tcpip' (TCP/IP)
-logger.*.enable.tcpip       = true			# if 'true' the service logger connection is enabled
-logger.*.address.tcpip      = 127.0.0.1	    # the address of service logger host
-logger.*.port.tcpip         = 8282			# service logger connection port
+# ---------------------------------------------------------------------------
+# Remote logger settings
+# ---------------------------------------------------------------------------
+logger::*::service          = logger                        # The name of the router service (process name)
+logger::*::connect          = tcpip			                # The list of supported communication protocols
+logger::*::enable::tcpip    = true			                # Communication protocol enable / disable flag
+logger::*::address::tcpip   = 127.0.0.1	                    # Protocol specific connection IP-address
+logger::*::port::tcpip      = 8282			                # Protocol specific connection port number
 
 # #######################################
 # Application(s) Scopes
 # #######################################
 
-log.*.scope.*				= DEBUG | SCOPE ;
-# log.*.scope.areg_*          = NOTSET ;
-log.mcrouter.scope.*        = DEBUG | SCOPE ;
+# ###########################################################################
+# Logging scopes
+# ###########################################################################
+
+log::*::scope::*			= DEBUG | SCOPE ;
+# log::*::scope::areg_*       = NOTSET ;
+log::mcrouter::scope::*     = DEBUG | SCOPE ;
+log::logger::scope::*       = NOTSET ;
+
+# ###########################################################################
+# End of global configuration
+# ###########################################################################
+
+# ###########################################################################
+# Module specific settings
+# ###########################################################################

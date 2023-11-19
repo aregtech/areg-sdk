@@ -196,7 +196,7 @@ String ScopeNodeBase::makeConfigString( const String & parent ) const
     {
         char scope[NETrace::LOG_MESSAGE_BUFFER_SIZE];
         int len = String::formatString(scope, NETrace::LOG_MESSAGE_BUFFER_SIZE, "%s%s", parent.getString(), mNodeName.getString());
-        return String(scope, len);
+        return String(scope, len > 0 ? len : 0);
     }
     else
     {
