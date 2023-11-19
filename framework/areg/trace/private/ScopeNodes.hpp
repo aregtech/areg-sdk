@@ -28,6 +28,7 @@
 class ScopeLeaf;
 class ScopeNode;
 class ScopeRoot;
+class ConfigManager;
 
 //////////////////////////////////////////////////////////////////////////
 // ScopeLeaf class declaration
@@ -47,14 +48,23 @@ public:
      **/
     explicit ScopeLeaf( const ScopeNodeBase & base );
 
-    ScopeLeaf( const ScopeLeaf & src );
-    
+    /**
+     * \brief   Copies or moves data from the given source
+     **/
+    ScopeLeaf( const ScopeLeaf & src );    
     ScopeLeaf( ScopeLeaf && src ) noexcept;
 
     virtual ~ScopeLeaf( void ) = default;
 
-    ScopeLeaf & operator = ( const ScopeLeaf & src ) = default;
+//////////////////////////////////////////////////////////////////////////
+// Operators
+//////////////////////////////////////////////////////////////////////////
+public:
 
+    /**
+     * \brief   Assigns data from the given source. Default implementation
+     **/
+    ScopeLeaf & operator = ( const ScopeLeaf & src ) = default;
     ScopeLeaf & operator = ( ScopeLeaf && src ) = default;
 
 //////////////////////////////////////////////////////////////////////////
@@ -76,20 +86,15 @@ public:
     virtual String makeScopePath( const String & prefix ) const override;
 
     /**
-     * \brief   Generates the scope setting and saves in the file.
-     *          -   If the entry is a leaf, it generates the scope configuration setting and saves
-     *              the setting in the file.
-     *          -   If the entry is a node and it has a grouping flag, it generates the scope group
-     *              configuration setting and saves in file. Otherwise, it generates scope path and
-     *              calls the method of child entries.
-     *          -   If the entry is the root and has no child entries, it generates application
-     *              scope group entry and sets a configuration for entire application.
-     * \param   file        The file object to write the generated configuration. The file should
-     *                      be already opened for writing.
+     * \brief   Generates the scope setting and updates in the configuration.
+     *          -   If the entry is a leaf, it generates the full scope name to save in configuration.
+     *          -   If the entry is a node and it has a grouping flag, it generates the scope group to save in configuration.
+     *          -   If the entry is the root and has no child entries, it generates application scope group entry to save in configuration.
+     * \param   config      The instance of ConfigManager to set the scope and priorities to save.
      * \param   parentPath  The path name of the parent node. The nodes contain '_' at the end.
      * \return  Returns the number of nodes that have been saved.
      **/
-    virtual unsigned int saveNodeConfig( FileBase & file, const String & parentPath ) const override;
+    virtual unsigned int updateConfigNode( ConfigManager & config, const String & parentPath ) const override;
 
 };
 
@@ -120,8 +125,10 @@ public:
      **/
     explicit ScopeNode( const ScopeNodeBase & base );
 
-    ScopeNode( const ScopeNode & src );
-    
+    /**
+     * \brief   Copies or moves data from the given source
+     **/
+    ScopeNode( const ScopeNode & src );    
     ScopeNode( ScopeNode && src ) noexcept;
     
     virtual ~ScopeNode( void ) = default;
@@ -222,20 +229,15 @@ public:
     virtual unsigned int groupChildNodes( void ) override;
 
     /**
-     * \brief   Generates the scope setting and saves in the file.
-     *          -   If the entry is a leaf, it generates the scope configuration setting and saves
-     *              the setting in the file.
-     *          -   If the entry is a node and it has a grouping flag, it generates the scope group
-     *              configuration setting and saves in file. Otherwise, it generates scope path and
-     *              calls the method of child entries.
-     *          -   If the entry is the root and has no child entries, it generates application
-     *              scope group entry and sets a configuration for entire application.
-     * \param   file        The file object to write the generated configuration. The file should
-     *                      be already opened for writing.
+     * \brief   Generates the scope setting and updates in the configuration.
+     *          -   If the entry is a leaf, it generates the full scope name to save in configuration.
+     *          -   If the entry is a node and it has a grouping flag, it generates the scope group to save in configuration.
+     *          -   If the entry is the root and has no child entries, it generates application scope group entry to save in configuration.
+     * \param   config      The instance of ConfigManager to set the scope and priorities to save.
      * \param   parentPath  The path name of the parent node. The nodes contain '_' at the end.
      * \return  Returns the number of nodes that have been saved.
      **/
-    virtual unsigned int saveNodeConfig( FileBase & file, const String & parentPath ) const override;
+    virtual unsigned int updateConfigNode(ConfigManager& config, const String & parentPath ) const override;
 
     /**
      * \brief   Recursively groups child nodes. The grouping starts from the last node in the
@@ -332,20 +334,15 @@ public:
     virtual String makeConfigString( const String & parent ) const override;
 
     /**
-     * \brief   Generates the scope setting and saves in the file.
-     *          -   If the entry is a leaf, it generates the scope configuration setting and saves
-     *              the setting in the file.
-     *          -   If the entry is a node and it has a grouping flag, it generates the scope group
-     *              configuration setting and saves in file. Otherwise, it generates scope path and
-     *              calls the method of child entries.
-     *          -   If the entry is the root and has no child entries, it generates application
-     *              scope group entry and sets a configuration for entire application.
-     * \param   file        The file object to write the generated configuration. The file should
-     *                      be already opened for writing.
+     * \brief   Generates the scope setting and updates in the configuration.
+     *          -   If the entry is a leaf, it generates the full scope name to save in configuration.
+     *          -   If the entry is a node and it has a grouping flag, it generates the scope group to save in configuration.
+     *          -   If the entry is the root and has no child entries, it generates application scope group entry to save in configuration.
+     * \param   config      The instance of ConfigManager to set the scope and priorities to save.
      * \param   parentPath  The path name of the parent node. The nodes contain '_' at the end.
      * \return  Returns the number of nodes that have been saved.
      **/
-    virtual unsigned int saveNodeConfig( FileBase & file, const String & parentPath ) const override;
+    virtual unsigned int updateConfigNode(ConfigManager& config, const String & parentPath ) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

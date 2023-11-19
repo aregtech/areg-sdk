@@ -81,7 +81,7 @@ The [AREG Logging System](https://github.com/aregtech/areg-sdk/wiki/05.-AREG-Log
 
 ## How to use multicast router
 
-Multicast Router (MCR) is a part of AREG SDK and it is used for inter-process communication (IPC). The multicast router can run as a stand-alone application or as a service managed by operating system. The multicast should be configured and all applications should contain [router.init](https://github.com/aregtech/areg-sdk/blob/master/framework/areg/resources/router.init) configuration file, so that they can connect to router to send and receive messages in real-time mode.
+Multicast Router (MCR) is a part of AREG SDK and it is used for inter-process communication (IPC). The multicast router can run as a stand-alone application or as a service managed by operating system. The multicast should be configured and all applications should contain [areg.init](https://github.com/aregtech/areg-sdk/blob/master/framework/areg/resources/areg.init) configuration file, so that they can connect to router to send and receive messages in real-time mode.
 
 The [Message-Router](https://github.com/aregtech/areg-sdk/wiki/06.-Message-Router) page of the AREG SDK Wiki page provides a detailed explanation and examples on how to configure the message router as well as how to initialize in the applications.
 

@@ -66,7 +66,6 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="mcrouter\Readme.md" />
-    <None Include="mcrouter\resources\router.init" />
     <None Include="mcrouter\Makefile" />
   </ItemGroup>
   <ItemGroup>

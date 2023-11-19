@@ -73,11 +73,6 @@ private:
 /************************************************************************/
 
     /**
-     * \brief   Configures the logging
-     **/
-    void _traceConfigure( const SharedBuffer & data );
-
-    /**
      * \brief   Start the logging.
      **/
     void _traceStartLogs( void );

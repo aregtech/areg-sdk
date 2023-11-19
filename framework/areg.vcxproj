@@ -180,6 +180,7 @@
     <ClCompile Include="areg\component\private\NEService.cpp" />
     <ClCompile Include="areg\component\private\TEEvent.cpp" />
     <ClCompile Include="areg\ipc\private\ClientConnection.cpp" />
+    <ClCompile Include="areg\ipc\private\NEConnection.cpp" />
     <ClCompile Include="areg\ipc\private\RouterClient.cpp" />
     <ClCompile Include="areg\ipc\private\ServiceClientConnectionBase.cpp" />
     <ClCompile Include="areg\ipc\private\ClientReceiveThread.cpp" />
@@ -193,7 +194,6 @@
     <ClCompile Include="areg\ipc\private\IEServiceConnectionProvider.cpp" />
     <ClCompile Include="areg\ipc\private\IEServiceRegisterConsumer.cpp" />
     <ClCompile Include="areg\ipc\private\IERemoteMessageHandler.cpp" />
-    <ClCompile Include="areg\ipc\private\NEConnection.cpp" />
     <ClCompile Include="areg\ipc\private\NERemoteService.cpp" />
     <ClCompile Include="areg\persist\private\PersistenceManager.cpp" />
     <ClCompile Include="areg\persist\private\Property.cpp" />
@@ -215,13 +215,11 @@
     <ClCompile Include="areg\trace\private\TraceScope.cpp" />
     <ClCompile Include="areg\trace\private\NETrace.cpp" />
     <ClCompile Include="areg\trace\private\TraceEvent.cpp" />
-    <ClCompile Include="areg\trace\private\TraceProperty.cpp" />
-    <ClCompile Include="areg\trace\private\TracePropertyKey.cpp" />
-    <ClCompile Include="areg\trace\private\TracePropertyValue.cpp" />
-    <ClCompile Include="areg\trace\private\NELogConfig.cpp" />
+    <ClCompile Include="areg\trace\private\NELogging.cpp" />
     <ClCompile Include="areg\trace\private\FileLogger.cpp" />
     <ClCompile Include="areg\trace\private\LoggerBase.cpp" />
     <ClCompile Include="areg\component\private\WatchdogManager.cpp" />
+    <ClCompile Include="areg\persist\private\ConfigManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="areg\base\DateTime.hpp" />
@@ -359,12 +357,12 @@
     <ClInclude Include="areg\component\IERemoteEventConsumer.hpp" />
     <ClInclude Include="areg\component\ServiceAddress.hpp" />
     <ClInclude Include="areg\component\private\StubConnectEvent.hpp" />
+    <ClInclude Include="areg\ipc\private\NEConnection.hpp" />
     <ClInclude Include="areg\ipc\private\RouterClient.hpp" />
     <ClInclude Include="areg\ipc\ServiceClientConnectionBase.hpp" />
     <ClInclude Include="areg\ipc\IEServiceConnectionProvider.hpp" />
     <ClInclude Include="areg\ipc\IEServiceRegisterConsumer.hpp" />
     <ClInclude Include="areg\ipc\IERemoteMessageHandler.hpp" />
-    <ClInclude Include="areg\ipc\NEConnection.hpp" />
     <ClInclude Include="areg\ipc\NERemoteService.hpp" />
     <ClInclude Include="areg\ipc\ClientConnection.hpp" />
     <ClInclude Include="areg\ipc\private\ClientReceiveThread.hpp" />
@@ -375,10 +373,11 @@
     <ClInclude Include="areg\ipc\ServiceEvent.hpp" />
     <ClInclude Include="areg\ipc\ServiceEventConsumerBase.hpp" />
     <ClInclude Include="areg\ipc\SocketConnectionBase.hpp" />
+    <ClInclude Include="areg\persist\ConfigManager.hpp" />
     <ClInclude Include="areg\persist\Property.hpp" />
     <ClInclude Include="areg\persist\PropertyValue.hpp" />
-    <ClInclude Include="areg\persist\private\PersistenceManager.hpp" />
-    <ClInclude Include="areg\persist\private\NEPersistence.hpp" />
+    <ClInclude Include="areg\persist\PersistenceManager.hpp" />
+    <ClInclude Include="areg\persist\NEPersistence.hpp" />
     <ClInclude Include="areg\trace\private\LogConfiguration.hpp" />
     <ClInclude Include="areg\trace\private\NetTcpLogger.hpp" />
     <ClInclude Include="areg\trace\private\ScopeController.hpp" />
@@ -398,11 +397,8 @@
     <ClInclude Include="areg\base\TEProperty.hpp" />
     <ClInclude Include="areg\trace\private\TraceEvent.hpp" />
     <ClInclude Include="areg\trace\private\TraceManager.hpp" />
-    <ClInclude Include="areg\trace\private\TraceProperty.hpp" />
-    <ClInclude Include="areg\trace\private\TracePropertyKey.hpp" />
-    <ClInclude Include="areg\trace\private\TracePropertyValue.hpp" />
     <ClInclude Include="areg\trace\private\LoggerBase.hpp" />
-    <ClInclude Include="areg\trace\private\NELogConfig.hpp" />
+    <ClInclude Include="areg\trace\private\NELogging.hpp" />
     <ClInclude Include="areg\persist\PropertyKey.hpp" />
     <ClInclude Include="system\posix\GEPosix.h" />
     <ClInclude Include="system\windows\GEWindows.h" />
@@ -416,10 +412,8 @@
   <ItemGroup>
     <None Include="areg\Makefile" />
     <None Include="areg\Readme.md" />
+    <None Include="areg\resources\areg.init" />
     <None Include="areg\resources\areg_post_build.bat" />
-    <None Include="areg\resources\log.init" />
-    <None Include="areg\resources\logger.init" />
-    <None Include="areg\resources\router.init" />
     <None Include="Makefile" />
   </ItemGroup>
   <ItemGroup>

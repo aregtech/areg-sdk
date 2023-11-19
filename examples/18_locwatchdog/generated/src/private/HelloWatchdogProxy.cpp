@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     18.09.2023  09:14:51 GMT+02:00
+ * Generated at     15.11.2023  14:52:06 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloWatchdog.
  *
  * \file            generated/src/private/HelloWatchdogProxy.hpp
@@ -21,6 +21,7 @@
 #include "generated/src/private/HelloWatchdogEvents.hpp"
 #include "areg/component/IEProxyListener.hpp"
 #include "areg/base/Thread.hpp"
+#include "areg/component/DispatcherThread.hpp"
 #include "areg/trace/GETrace.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -104,7 +105,16 @@ ServiceRequestEvent* HelloWatchdogProxy::createNotificationRequestEvent( unsigne
 
 ProxyBase::ServiceAvailableEvent * HelloWatchdogProxy::createServiceAvailableEvent( IENotificationEventConsumer & consumer )
 {
-    return static_cast<ProxyBase::ServiceAvailableEvent *>( DEBUG_NEW HelloWatchdogProxy::HelloWatchdogServiceAvailableEvent(consumer) );
+    ProxyBase::ServiceAvailableEvent* event = static_cast<ProxyBase::ServiceAvailableEvent *>( DEBUG_NEW HelloWatchdogProxy::HelloWatchdogServiceAvailableEvent(consumer) );
+    if (event != nullptr)
+    {
+        if (mDispatcherThread.getId() != Thread::getCurrentThreadId())
+        {
+            event->setEventDelay(ProxyBase::MINIMAL_DELAY_TIME_MS);
+        }
+    }
+
+    return event;
 }
 
 void HelloWatchdogProxy::registerServiceListeners( void )

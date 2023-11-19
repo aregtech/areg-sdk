@@ -54,7 +54,7 @@ END_MODEL(_modelName)
 int main()
 {
     // Initialize application, enable servicing, routing, timer and watchdog.
-    Application::initApplication(false, true, true, true, true, nullptr, nullptr );
+    Application::initApplication(false, true, true, true, true, nullptr );
 
 
     // load model to initialize components

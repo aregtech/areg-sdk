@@ -23,7 +23,7 @@
 #
 #   Meaning of fields in configuration:
 #       1. log.version      -- the logging version
-#       2. log.file         -- name of log file, should be either relative or absolute path. if it contains '%time%' key in the name, then will add timestamp every time when creates log. If file path contains '%appdata%', logs are saved in user APPDATA_Roaming folder
+#       2. log.file         -- name of log file, should be either relative or absolute path. if it contains '%time%' key in the name, then will add time-stamp every time when creates log. If file path contains '%appdata%', logs are saved in user APPDATA_Roaming folder
 #       3. log.append       -- create new file or adds at the end of existing log file. If file name contains '%time%', it will always create new file. If the file name is fixed, it will either overwrite or add logs at the end of file.
 #       4. log.host         -- used for remote logging, specify either IP-address or host name
 #       5. log.port         -- specify port number on remote host to connect.
@@ -128,11 +128,11 @@
 #       Example specifying logging settings:
 #       log.version         = 1.0.0     <== Logging version number
 #       log.enable          = true      <== If 'true', the logging is enabled (by default it is disabled)
-#       log.file            = %appdata%/logs/trace_%time%.log   <== create log file in user's AppData\Roaming folder and set timestamp on the name of every log file
+#       log.file            = %appdata%/logs/trace_%time%.log   <== create log file in user's AppData\Roaming folder and set time-stamp on the name of every log file
 #       log.append          = false     <== always create if not existing or overwrite file in case of existing file. In this particular configuration this is not playing any role since the file name always changes
 #       log.layout.message  = %d: [ %u.%t %p >>> ] %m %n      <== logging layout (trace message format)
 #
-# Where to copy this log.init file to be able to log information to file?
+# Where to copy this areg.init file to be able to log information to file?
 #
 #       Destination folder must be subfolder 'config' of Patterning -> Product folder, e.g.
 #
@@ -145,28 +145,58 @@
 # Logging configuration
 # ###########################################################################
 
-log.version                 = 1.0.0
-log.enable                  = true
-# log.file                    = %appdata%/logs/trace_%time%.log
-log.file                    = ./logs/%appname%_%time%.log
-log.append                  = false
-log.layout.enter            = %d: [ %t  %x.%z: Enter --> ]%n
-log.layout.message          = %d: [ %t  %p >>> ] %m%n
-log.layout.exit             = %d: [ %t  %x.%z: Exit <-- ]%n
-log.debug                   = false
 
-# log.enable.mcrouter       = true
-# log.file.mcrouter         = ./logs/%appname%_%time%.log
+# Configuration file version
+config.*.version            = 2.0.0
 
-connection.port.LastTest[mcrouter]  = localhost
-connection.host.LastTest[mcrouter]  = 8181
-connection.host.LastTest[trace]     = localhost
-connection.port.LastTest[trace]     = 8080
+# Application logging settings
+log.*.version               = 2.0.0
+log.*.target                = remote | file | debug | db    # valid logging options -- remote, file, debug output, database
+log.*.enable                = true
+log.*.enable.remote         = false # Logging to remote log collector
+log.*.enable.file           = true  # Logging to file
+log.*.enable.debug          = false # Logging to debug output console
+log.*.enable.db             = false # logging to database
+log.*.file.location         = ./logs/%appname%_%time%.log
+log.*.file.append           = false
+log.*.stack                 = 100   # the queue stack size of log messages, the value 0 means do not queue
+
+# Logging file and message view
+log.*.layout.enter          = %d: [ %t  %x.%z: Enter -->]%n
+log.*.layout.message        = %d: [ %t  %p >>> ] %m%n
+log.*.layout.exit           = %d: [ %t  %x.%z: Exit <-- ]%n
+
+# Logging to database
+log.*.db.location           = 
+log.*.db.append             = true
+log.*.db.driver             = 
+log.*.db.address            = 127.0.0.1
+log.*.db.port               = 1234
+log.*.db.username           = areg
+log.*.db,password           = areg
+log.*.db.name               = 
+
+# List of remote services
+service.*.list              = router | logger
+
+# Router communication settings
+router.*.service            = mcrouter      # the name of the router service process
+router.*.connect            = tcpip			# protocol, right now it supports only 'tcpip' (TCP/IP)
+router.*.enable.tcpip       = true			# if 'true' the service mcrouter connection is enabled
+router.*.address.tcpip      = 127.0.0.1	    # the address of service mcrouter host
+router.*.port.tcpip         = 8181			# service mcrouter connection port
+
+# Logger communication settings
+logger.*.service            = logger        # the name of the remote logging service process
+logger.*.connect            = tcpip			# protocol, right now it supports only 'tcpip' (TCP/IP)
+logger.*.enable.tcpip       = true			# if 'true' the service logger connection is enabled
+logger.*.address.tcpip      = 127.0.0.1	    # the address of service logger host
+logger.*.port.tcpip         = 8282			# service logger connection port
 
 # #######################################
 # Application(s) Scopes
 # #######################################
 
-scope.mcrouter.*    = DEBUG | SCOPE ;
-scope.*             = DEBUG | SCOPE ;
-scope.*.areg_*      = NOTSET ;
+log.*.scope.*				= DEBUG | SCOPE ;
+# log.*.scope.areg_*          = NOTSET ;
+log.mcrouter.scope.*        = DEBUG | SCOPE ;

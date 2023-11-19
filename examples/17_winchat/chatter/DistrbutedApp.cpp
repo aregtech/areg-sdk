@@ -77,7 +77,10 @@ BOOL DistrbutedApp::InitInstance()
     // such as the name of your company or organization
     SetRegistryKey(_T("Local AppWizard-Generated Applications"));
 
-    do 
+    // Don't start connection with the router, this will be started on UI
+    Application::initApplication(true, true, false, true, true, nullptr);
+
+    do
     {
         DistributedDialog dlg;
         m_pMainWnd = &dlg;

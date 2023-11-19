@@ -23,6 +23,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
+#include "areg/base/NECommon.hpp"
 #include "areg/base/TEHashMap.hpp"
 #include "areg/base/TEArrayList.hpp"
 #include "areg/base/TELinkedList.hpp"
@@ -306,6 +307,20 @@ private:
 
 protected:
     //////////////////////////////////////////////////////////////////////////
+    // ProxyBase::ServiceAvailableEvent constants
+    //////////////////////////////////////////////////////////////////////////
+    /**
+     * \brief   Internal constant defining the minimum delay in milliseconds
+     *          when processing service available event. The event delay is used
+     *          in the cases if a thread already has a proxy, and the new instance
+     *          of a client is created in other thread, but for the thread
+     *          where the proxy runs. This triggers service available event, which may
+     *          processed earlier than the client object is created, so that the
+     *          wrong service available method can be called.
+     **/
+    static constexpr unsigned int MINIMAL_DELAY_TIME_MS { NECommon::WAIT_5_MILLISECONDS };
+
+    //////////////////////////////////////////////////////////////////////////
     // ProxyBase::ServiceAvailableEvent internal class declaration
     //////////////////////////////////////////////////////////////////////////
     /**
@@ -346,6 +361,35 @@ protected:
             return mConsumer;
         }
 
+        /**
+         * \brief   Sets the timeout to delay service available event.
+         * \param   msDelay     Timeout in milliseconds to delay, the value should
+         *                      not be big, because this puts the thread in sleep,
+         *                      but should be big enough that the client object is created.
+         *                      By default, the minimum waiting time is MINIMAL_DELAY_TIME_MS (10 ms).
+         *                      If 0, there is no delay and the event is immediately processed.
+         **/
+        inline void setEventDelay(unsigned int msDelay)
+        {
+            mDelayConnectEvent = (msDelay == 0) || (msDelay >= MINIMAL_DELAY_TIME_MS) ? msDelay : MINIMAL_DELAY_TIME_MS;
+        }
+
+        /**
+         * \brief   Returns service available event delay timeout value.
+         **/
+        inline unsigned int getEventDalay(void) const
+        {
+            return mDelayConnectEvent;
+        }
+
+        /**
+         * \brief   Returns true if the service available should be delayed.
+         **/
+        inline bool shouldDelayEvent(void) const
+        {
+            return (mDelayConnectEvent != 0u);
+        }
+
     //////////////////////////////////////////////////////////////////////////
     // Attributes
     //////////////////////////////////////////////////////////////////////////
@@ -353,7 +397,12 @@ protected:
         /**
          * \brief   Instance of consumer to send service available notification.
          **/
-        IENotificationEventConsumer & mConsumer;
+        IENotificationEventConsumer &   mConsumer;
+
+        /**
+         * \brief   The time in milliseconds to delay service available event.
+         **/
+        unsigned int                    mDelayConnectEvent;
 
     //////////////////////////////////////////////////////////////////////////
     // Forbidden calls
@@ -703,8 +752,10 @@ protected:
      * \brief   Triggered when service available event is processed.
      *          The system checks validity of consumer and trigger appropriate
      *          service available method with appropriated availability flag.
+     * \param   consumer    The instance of consumer to process service available event.
+     * \param   delayEvent  The timeout in milliseconds to delay when processing the service available event.
      **/
-    virtual void processServiceAvailableEvent( IENotificationEventConsumer & consumer );
+    virtual void processServiceAvailableEvent( IENotificationEventConsumer & consumer, unsigned int delayEvent );
 
     /**
      * \brief	Unregisters listener and removes from list, clear all

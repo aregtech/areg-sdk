@@ -21,15 +21,15 @@
 #include "areg/base/TEResourceMap.hpp"
 
 #include "areg/trace/NETrace.hpp"
-#include "areg/trace/private/NELogConfig.hpp"
+#include "areg/trace/private/NELogging.hpp"
 
 #include <string_view>
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class TraceProperty;
 class TraceScope;
+class Property;
 
 //////////////////////////////////////////////////////////////////////////
 // ScopeController::TraceScopeMap class declaration
@@ -74,27 +74,6 @@ private:
  **/
 class ScopeController
 {
-//////////////////////////////////////////////////////////////////////////
-// Internal types and constants
-//////////////////////////////////////////////////////////////////////////
-private:
-
-    //!< Structure of default enabled scopes and priorities.
-    typedef struct S_LogEnabling
-    {
-        const char * const  logScope;   //!< Name of the scope or scope group
-        const unsigned int  logPrio;    //!< The logging priority for that scope or scope group
-    } sLogEnabling;
-
-    //!< The list scopes or group of scopes and enabled logging priority.
-    //!< The last entry in the list must have nullptr instead of name.
-    static constexpr sLogEnabling   DEFAULT_LOG_ENABLED_SCOPES[ ]
-    {
-          { NELogConfig::LOG_SCOPES_GRPOUP.data( )  , static_cast<unsigned int>(NETrace::eLogPriority::PrioDebug) | static_cast<unsigned int>(NETrace::eLogPriority::PrioScope) }
-        , { NELogConfig::LOG_SCOPES_SELF.data( )    , static_cast<unsigned int>(NETrace::eLogPriority::PrioNotset)                                                              }
-        , { nullptr /* must end with nullptr */     , static_cast<unsigned int>(NETrace::eLogPriority::PrioInvalid)                                                             }
-    };
-
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
@@ -347,7 +326,7 @@ public:
      * \param   prop    The trace property object initialized when read configuration file.
      *                  It contains the scope name and scope priority information.
      **/
-    void configureScopes( const TraceProperty & prop );
+    void configureScopes( const Property & prop );
 
     /**
      * \brief   Configures defined scope or scope group.
@@ -355,6 +334,12 @@ public:
      * \param   scopePrio   The priority to set to scope or scope group.
      **/
     void configureScopes( const String & scopeName, unsigned int scopePrio );
+
+    /**
+     * \brief   Picks up the list of configured scopes and log priorities and sets the scope priorties,
+     *          so that they are activated or deactivated.
+     **/
+    void configureScopes(void);
 
     /**
      * \brief   Activates specified scope. The system cannot log if a scope is inactive.
@@ -447,7 +432,7 @@ inline bool ScopeController::isScopeRegistered( const char * scopeName ) const
 
 inline void ScopeController::setScopePriority( unsigned int scopeId, const String & newPrio )
 {
-    setScopePriority( scopeId, NETrace::convFromString( newPrio ) );
+    setScopePriority( scopeId, NETrace::stringToLogPrio( newPrio ) );
 }
 
 inline void ScopeController::setScopePriority( const String & scopeName, unsigned int newPrio )
@@ -457,12 +442,12 @@ inline void ScopeController::setScopePriority( const String & scopeName, unsigne
 
 inline void ScopeController::setScopePriority( const String & scopeName, const String & newPrio )
 {
-    setScopePriority( NETrace::makeScopeId( scopeName ), NETrace::convFromString( newPrio ) );
+    setScopePriority( NETrace::makeScopeId( scopeName ), NETrace::stringToLogPrio( newPrio ) );
 }
 
 inline void ScopeController::addScopePriority( unsigned int scopeId, const String & addPrio )
 {
-    addScopePriority( scopeId, NETrace::convFromString( addPrio ) );
+    addScopePriority( scopeId, NETrace::stringToLogPrio( addPrio ) );
 }
 
 inline void ScopeController::addScopePriority( const String & scopeName, NETrace::eLogPriority addPrio )
@@ -472,12 +457,12 @@ inline void ScopeController::addScopePriority( const String & scopeName, NETrace
 
 inline void ScopeController::addScopePriority( const String & scopeName, const String & addPrio )
 {
-    addScopePriority( NETrace::makeScopeId( scopeName ), NETrace::convFromString( addPrio ) );
+    addScopePriority( NETrace::makeScopeId( scopeName ), NETrace::stringToLogPrio( addPrio ) );
 }
 
 inline void ScopeController::removeScopePriority( unsigned int scopeId, const String & remPrio )
 {
-    removeScopePriority( scopeId, NETrace::convFromString( remPrio ) );
+    removeScopePriority( scopeId, NETrace::stringToLogPrio( remPrio ) );
 }
 
 inline void ScopeController::removeScopePriority( const String & scopeName, NETrace::eLogPriority remPrio )
@@ -487,22 +472,22 @@ inline void ScopeController::removeScopePriority( const String & scopeName, NETr
 
 inline void ScopeController::removeScopePriority( const String & scopeName, const String & remPrio )
 {
-    removeScopePriority( NETrace::makeScopeId( scopeName ), NETrace::convFromString( remPrio ) );
+    removeScopePriority( NETrace::makeScopeId( scopeName ), NETrace::stringToLogPrio( remPrio ) );
 }
 
 inline int ScopeController::setScopeGroupPriority( const String & scopeGroupName, const String & newPrio )
 {
-    return setScopeGroupPriority( scopeGroupName, NETrace::convFromString( newPrio ) );
+    return setScopeGroupPriority( scopeGroupName, NETrace::stringToLogPrio( newPrio ) );
 }
 
 inline int ScopeController::addScopeGroupPriority( const String & scopeGroupName, const String & addPrio )
 {
-    return addScopeGroupPriority( scopeGroupName, NETrace::convFromString( addPrio ) );
+    return addScopeGroupPriority( scopeGroupName, NETrace::stringToLogPrio( addPrio ) );
 }
 
 inline int ScopeController::removeScopeGroupPriority( const String & scopeGroupName, const String & remPrio )
 {
-    return removeScopeGroupPriority( scopeGroupName, NETrace::convFromString( remPrio ) );
+    return removeScopeGroupPriority( scopeGroupName, NETrace::stringToLogPrio( remPrio ) );
 }
 
 inline void ScopeController::clearConfigScopes( void )

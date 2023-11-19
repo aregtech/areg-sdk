@@ -216,6 +216,11 @@ public:
      **/
     inline void removeAllResources( void );
 
+    /**
+     * \brief   Returns the vector object where the data are stored.
+     **/
+    inline const std::unordered_map<RESOURCE_KEY, ResourceList>& getData(void) const;
+
 //////////////////////////////////////////////////////////////////////////
 // Protected methods.
 //////////////////////////////////////////////////////////////////////////
@@ -576,6 +581,16 @@ inline void TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashM
     }
 
     HashMap::clear( );
+}
+
+template < typename RESOURCE_KEY
+         , typename RESOURCE_OBJECT
+         , class ResourceList   /*= TELinkedList<RESOURCE_OBJECT>*/
+         , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
+         , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
+inline const std::unordered_map<RESOURCE_KEY, ResourceList>& TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::getData(void) const
+{
+    return HashMap::getData();
 }
 
 template < typename RESOURCE_KEY

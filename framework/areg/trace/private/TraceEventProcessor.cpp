@@ -35,10 +35,6 @@ void TraceEventProcessor::processLogEvent( TraceEventData::eTraceAction cmdLog, 
 
     switch ( cmdLog )
     {
-    case TraceEventData::eTraceAction::TraceConfigure:
-        _traceConfigure( stream );
-        break;
-
     case TraceEventData::eTraceAction::TraceStartLogs:
         _traceStartLogs( );
         break;
@@ -68,12 +64,6 @@ void TraceEventProcessor::processLogEvent( TraceEventData::eTraceAction cmdLog, 
     }
 }
 
-inline void TraceEventProcessor::_traceConfigure( const SharedBuffer & data )
-{
-    FileBuffer file( data, "TraceConfigure" );
-    mTraceManager.mLogConfig.loadConfig( file );
-}
-
 inline void TraceEventProcessor::_traceStartLogs( void )
 {
     mTraceManager.traceStartLogs( );
@@ -86,12 +76,12 @@ inline void TraceEventProcessor::_traceStopLogs( void )
 
 inline void TraceEventProcessor::_traceSetEnableLogs( bool logsEnable )
 {
-    static_cast<TracePropertyValue &>(mTraceManager.mLogConfig.getStatus( ).getValue( )) = logsEnable;
+    mTraceManager.mLogConfig.setRemoteTcpEnable(logsEnable);
 }
 
 inline void TraceEventProcessor::_traceSaveScopes( void )
 {
-    mTraceManager.mLogConfig.saveConfig( );
+    mTraceManager.mLogConfig.saveConfiguration( );
 }
 
 inline void TraceEventProcessor::_traceLogMessage( const SharedBuffer & data )

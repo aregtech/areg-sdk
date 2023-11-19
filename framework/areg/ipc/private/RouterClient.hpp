@@ -44,6 +44,9 @@ class RouterClient  : public    ServiceClientConnectionBase
                     , private   IERemoteMessageHandler
                     , private   IERemoteEventConsumer
 {
+private:
+    //! The prefix to add to the send and receive message threads.
+    static constexpr std::string_view   PREFIX_THREAD{ "router_" };
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////

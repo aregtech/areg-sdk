@@ -40,4 +40,4 @@ $(areg_TARGET_PATH): $(areg_OBJS)
 		$(AREG_AR) -rcs $@ $^; \
 	fi
 	@mkdir -p $(AREG_OUTPUT_BIN)/config
-	@cp $(areg_BASE)/resources/log.init $(areg_BASE)/resources/router.init $(areg_BASE)/resources/logger.init $(AREG_OUTPUT_BIN)/config/
+	@cp $(areg_BASE)/resources/areg.init $(AREG_OUTPUT_BIN)/config/

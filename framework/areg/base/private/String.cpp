@@ -72,11 +72,14 @@ namespace
         *dst    = static_cast<char>(NEString::EndOfString);
         int32_t count = static_cast<int32_t>(dst - buffer);
         NEString::swapString<char>(buffer, count);
-        result = String::EmptyChar;
         if ( isNegative )
         {
             result = '-';
             ++ count;
+        }
+        else
+        {
+            result = String::EmptyChar;
         }
 
         result  += buffer;
@@ -101,13 +104,13 @@ namespace
     {
         char buffer[ CharCount ]{ 0 };
 
-        int32_t count = -1;
+        int32_t count{ -1 };
 #ifdef WINDOWS
         count = ::sprintf_s(buffer, CharCount, format, number);
 #else   // !WINDOWS
         count = ::snprintf( buffer, CharCount, format, number);
 #endif  // WINDOWS
-        result = buffer;
+        result.assign(buffer, count > 0 ? count : 0);
         return count;
     }
 
@@ -121,18 +124,11 @@ namespace
      **/
     inline int _formatStringList( char * buffer, int count, const char * format, va_list argptr )
     {
-        int result { -1 };
-        if ( buffer != nullptr )
-        {
-            *buffer = String::EmptyChar;
 #ifdef  WINDOWS
-            result = vsprintf_s( buffer, static_cast<size_t>(count), format, argptr );
+        return vsprintf_s( buffer, static_cast<size_t>(count), format, argptr );
 #else   // !WINDOWS
-            result = vsnprintf( buffer, count, format, argptr );
+        return vsnprintf( buffer, count, format, argptr );
 #endif  // WINDOWS
-        }
-
-        return result;
     }
 
     /**
@@ -147,7 +143,7 @@ namespace
     template<int const CharCount = NEString::MSG_BUF_SIZE>
     inline int32_t _formatStringList( String & result, const char * format, va_list argptr )
     {
-        char buffer[ CharCount ] { 0 };
+        char buffer[ CharCount ];
         int32_t count = _formatStringList( buffer, CharCount, format, argptr );
         result.assign( buffer, count > 0 ? count : 0 );
         return count;
@@ -547,17 +543,17 @@ int String::formatString( char * strDst, int count, const char * format, ... )
 {
     va_list argptr;
     va_start( argptr, format );
-    int result = String::formatStringList( strDst, count, format, argptr );
+    int result{ strDst != nullptr ? _formatStringList( strDst, count, format, argptr ) : -1};
     va_end( argptr );
     return result;
 }
 
 int String::formatStringList( char * strDst, int count, const char * format, va_list argptr )
 {
-    return _formatStringList(strDst, count, format, argptr);
+    return (strDst != nullptr ? _formatStringList( strDst, count, format, argptr ) : -1);
 }
 
-const String & String::format(const char * format, ...)
+String & String::format(const char * format, ...)
 {
     va_list argptr;
     va_start(argptr, format);
@@ -569,7 +565,7 @@ const String & String::format(const char * format, ...)
     return (*this);
 }
 
-const String & String::formatList(const char * format, va_list argptr)
+String & String::formatList(const char * format, va_list argptr)
 {
     clear();
     if (format != nullptr)
@@ -579,19 +575,19 @@ const String & String::formatList(const char * format, va_list argptr)
         switch ( count )
         {
         case NEString::MSG_MIN_BUF_SIZE:
-            _formatStringList< NEString::MSG_MIN_BUF_SIZE>( *this, format, argptr );
+            _formatStringList<NEString::MSG_MIN_BUF_SIZE>( *this, format, argptr );
             break;
 
         case NEString::MSG_BUF_SIZE:
-            _formatStringList< NEString::MSG_BUF_SIZE>( *this, format, argptr );
+            _formatStringList<NEString::MSG_BUF_SIZE>( *this, format, argptr );
             break;
 
         case NEString::MSG_BIG_BUF_SIZE:
-            _formatStringList< NEString::MSG_BIG_BUF_SIZE>( *this, format, argptr );
+            _formatStringList<NEString::MSG_BIG_BUF_SIZE>( *this, format, argptr );
             break;
 
         case NEString::MSG_EXTRA_BUF_SIZE:
-            _formatStringList< NEString::MSG_EXTRA_BUF_SIZE>( *this, format, argptr );
+            _formatStringList<NEString::MSG_EXTRA_BUF_SIZE>( *this, format, argptr );
             break;
 
         default:

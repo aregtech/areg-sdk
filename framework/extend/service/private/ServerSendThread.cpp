@@ -15,7 +15,7 @@
 #include "extend/service/ServerSendThread.hpp"
 
 #include "areg/component/NEService.hpp"
-#include "areg/ipc/NEConnection.hpp"
+#include "areg/ipc/private/NEConnection.hpp"
 #include "areg/ipc/IERemoteMessageHandler.hpp"
 #include "areg/trace/GETrace.h"
 #include "extend/service/ServerConnection.hpp"

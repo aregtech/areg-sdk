@@ -20,20 +20,19 @@
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/component/IETimerConsumer.hpp"
-#include "areg/ipc/NEConnection.hpp"
 #include "areg/ipc/ServiceEvent.hpp"
 
  /************************************************************************
- * Declared classes
- ************************************************************************/
+  * Declared classes
+  ************************************************************************/
 class IEServiceEventConsumerBase;
 class ReconnectTimerConsumer;
 class ServiceClientEventConsumer;
 class ServiceServerEventConsumer;
 
 /************************************************************************
-  * Dependencies.
-  ************************************************************************/
+ * Dependencies.
+ ************************************************************************/
 class RemoteMessage;
 
 //////////////////////////////////////////////////////////////////////////

@@ -248,6 +248,11 @@ public:
     inline bool contains(const VALUE& elemSearch) const;
     inline bool contains( const VALUE & elemSearch, LISTPOS startAt) const;
 
+    /**
+     * \brief   Returns the vector object where the data are stored.
+     **/
+    inline const std::list<VALUE>& getData(void) const;
+
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
@@ -1086,6 +1091,12 @@ template <typename VALUE >
 inline bool TELinkedList<VALUE>::contains(const VALUE& elemSearch, LISTPOS startAt) const
 {
     return (startAt != mValueList.end() ? std::find(startAt, invalidPosition(), elemSearch) != mValueList.end() : false);
+}
+
+template<typename VALUE>
+inline const std::list<VALUE>& TELinkedList<VALUE>::getData(void) const
+{
+    return mValueList;
 }
 
 template <typename VALUE >

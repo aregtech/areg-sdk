@@ -26,6 +26,7 @@
 #include <iostream>
 #include <locale>
 #include <string>
+#include <vector>
 
 /************************************************************************
  * Dependencies
@@ -938,6 +939,13 @@ public:
                                         , NEString::CharCount count
                                         , const CharType * strReplace
                                         , NEString::CharCount lenReplace);
+
+    /**
+     * \brief   Splits the given string into multiple parts considering specified delimiter.
+     * \param   delimiter   The delimiter character that should be searched to split the string.
+     * \return  Returns list of strings that are split be specified delimiter.
+     **/
+    inline std::vector<TEString<CharType>> split(CharType delim) const;
 
 /************************************************************************/
 // Protected methods, can be assessed only from derived class
@@ -2927,6 +2935,29 @@ inline bool TEString<CharType>::isValidNameChar(const CharType checkChar, std::l
     // initialize list of symbols for the valid names.
     constexpr CharType symbols[] = { '_', '\0' };
     return std::isalnum(checkChar, loc) || NEString::isOneOf<CharType>(checkChar, symbols);
+}
+
+template<typename CharType>
+inline std::vector<TEString<CharType>> TEString<CharType>::split(CharType delimiter) const
+{
+    std::vector<TEString<CharType>> result;
+    size_t start{ 0 };
+    while (mData.at(start) != static_cast<CharType>('\0'))
+    {
+        size_t pos = mData.find_first_of(delimiter, start);
+        if (pos != std::basic_string<CharType>::npos)
+        {
+            result.push_back(TEString<CharType>(mData.c_str() + start, static_cast<NEString::CharCount>(pos - start)));
+            start = pos + 1;
+        }
+        else
+        {
+            result.push_back(TEString<CharType>(mData.c_str() + start));
+            break;
+        }
+    }
+
+    return result;
 }
 
 template<typename CharType>

@@ -16,7 +16,7 @@
 namespace
 {
     //!< The default config file
-    constexpr   std::string_view    DEFAULT_CONFIG_FILE { NEApplication::DEFAULT_TRACING_CONFIG_FILE };
+    constexpr   std::string_view    DEFAULT_CONFIG_FILE { NEApplication::DEFAULT_CONFIG_FILE };
 
     //!< Config file for testing
     constexpr   std::string_view    TEST_CONFIG_FILE    { "./logs/test_log.init" };
@@ -98,6 +98,10 @@ TEST( LogScopeTest, LoadSavedLogConfiguration )
 
     do
     {
+        ConfigManager config;
+        config.readConfig(testConfig);
+        Application::getConfigManager().replaceModuleProperty(config.getModuleProperties());
+
         if ( TRACER_START_LOGGING( testConfig ) )
         {
             TRACE_SCOPE( areg_unit_tests_LogScopeTest_LoadSavedLogConfiguration_part2 );
@@ -130,6 +134,7 @@ DEF_TRACE_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_error
 DEF_TRACE_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_fatal );
 DEF_TRACE_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_noscope );
 DEF_TRACE_SCOPE( areg_unit_tests_LogScopeTest_ChangeScopePrioAndSaveConfig_nolog );
+
 TEST( LogScopeTest, ChangeScopePrioAndSaveConfig )
 {
     Application::setWorkingDirectory( nullptr );
@@ -295,8 +300,8 @@ TEST( LogScopeTest, ScopePriorityGroupping )
         TRACE_DBG( "This log should be invisible" );
         TRACE_INFO( "This log should be invisible" );
         TRACE_WARN( "This log should be invisible" );
-        TRACE_ERR( "This log should visible!" );
-        TRACE_FATAL( "This log should visible!" );
+        TRACE_ERR( "This log should be visible!" );
+        TRACE_FATAL( "This log should be visible!" );
     } while ( false );
 
     do
@@ -306,7 +311,7 @@ TEST( LogScopeTest, ScopePriorityGroupping )
         TRACE_INFO( "This log should be invisible" );
         TRACE_WARN( "This log should be invisible" );
         TRACE_ERR( "This log should be invisible" );
-        TRACE_FATAL( "This log should visible!" );
+        TRACE_FATAL( "This log should be visible!" );
     } while ( false );
 
     do
@@ -314,19 +319,19 @@ TEST( LogScopeTest, ScopePriorityGroupping )
         TRACE_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_warnNode1_leaf );
         TRACE_DBG( "This log should be invisible" );
         TRACE_INFO( "This log should be invisible" );
-        TRACE_WARN( "This log should visible!" );
-        TRACE_ERR( "This log should visible!" );
-        TRACE_FATAL( "This log should visible!" );
+        TRACE_WARN( "This log should be visible!" );
+        TRACE_ERR( "This log should be visible!" );
+        TRACE_FATAL( "This log should be visible!" );
     } while ( false );
 
     do
     {
         TRACE_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_infoNode1_noScope );
         TRACE_DBG( "This log should be invisible" );
-        TRACE_INFO( "This log should visible without scopes!" );
-        TRACE_WARN( "This log should visible without scopes!" );
-        TRACE_ERR( "This log should visible without scopes!" );
-        TRACE_FATAL( "This log should visible without scopes!" );
+        TRACE_INFO( "This log should be visible without scopes!" );
+        TRACE_WARN( "This log should be visible without scopes!" );
+        TRACE_ERR( "This log should be visible without scopes!" );
+        TRACE_FATAL( "This log should be visible without scopes!" );
     } while ( false );
 
 
@@ -337,13 +342,13 @@ TEST( LogScopeTest, ScopePriorityGroupping )
         TRACE_INFO( ">>>>>>>>    Store scope priority  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
         TRACE_INFO( ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" );
 
-        information = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_information );
-        errLeaf1    = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_errLeaf1 );
-        errLeaf2    = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_errLeaf2 );
-        fatalNode1_leaf = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_fatalNode1_leaf );
-        fatalNode2_leaf = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_fatalNode2_leaf );
-        warnNode1_leaf  = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_warnNode1_leaf );
-        warnNode2_leaf  = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_warnNode2_leaf );
+        information         = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_information );
+        errLeaf1            = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_errLeaf1 );
+        errLeaf2            = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_errLeaf2 );
+        fatalNode1_leaf     = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_fatalNode1_leaf );
+        fatalNode2_leaf     = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_fatalNode2_leaf );
+        warnNode1_leaf      = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_warnNode1_leaf );
+        warnNode2_leaf      = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_warnNode2_leaf );
         infoNode1_noScope   = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_infoNode1_noScope );
         infoNode2_noScope   = SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_infoNode2_noScope );
 
@@ -366,6 +371,10 @@ TEST( LogScopeTest, ScopePriorityGroupping )
 
     } while ( false );
 
+    ConfigManager config;
+    config.readConfig(testConfig);
+    Application::getConfigManager().replaceModuleProperty(config.getModuleProperties());
+
     TRACER_START_LOGGING( testConfig );
 
     do
@@ -384,8 +393,8 @@ TEST( LogScopeTest, ScopePriorityGroupping )
         TRACE_DBG( "This log should be invisible" );
         TRACE_INFO( "This log should be invisible" );
         TRACE_WARN( "This log should be invisible" );
-        TRACE_ERR( "This log should visible!" );
-        TRACE_FATAL( "This log should visible!" );
+        TRACE_ERR( "This log should be visible!" );
+        TRACE_FATAL( "This log should be visible!" );
     } while ( false );
 
     do
@@ -395,7 +404,7 @@ TEST( LogScopeTest, ScopePriorityGroupping )
         TRACE_INFO( "This log should be invisible" );
         TRACE_WARN( "This log should be invisible" );
         TRACE_ERR( "This log should be invisible" );
-        TRACE_FATAL( "This log should visible!" );
+        TRACE_FATAL( "This log should be visible!" );
     } while ( false );
 
     do
@@ -403,28 +412,28 @@ TEST( LogScopeTest, ScopePriorityGroupping )
         TRACE_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_warnNode1_leaf );
         TRACE_DBG( "This log should be invisible" );
         TRACE_INFO( "This log should be invisible" );
-        TRACE_WARN( "This log should visible!" );
-        TRACE_ERR( "This log should visible!" );
-        TRACE_FATAL( "This log should visible!" );
+        TRACE_WARN( "This log should be visible!" );
+        TRACE_ERR( "This log should be visible!" );
+        TRACE_FATAL( "This log should be visible!" );
     } while ( false );
 
     do
     {
         TRACE_SCOPE( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_infoNode1_noScope );
         TRACE_DBG( "This log should be invisible" );
-        TRACE_INFO( "This log should visible without scopes!" );
-        TRACE_WARN( "This log should visible without scopes!" );
-        TRACE_ERR( "This log should visible without scopes!" );
-        TRACE_FATAL( "This log should visible without scopes!" );
+        TRACE_INFO( "This log should be visible without scopes!" );
+        TRACE_WARN( "This log should be visible without scopes!" );
+        TRACE_ERR( "This log should be visible without scopes!" );
+        TRACE_FATAL( "This log should be visible without scopes!" );
     } while ( false );
 
-    ASSERT_EQ( information, SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_information ));
-    ASSERT_EQ( errLeaf1, SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_errLeaf1 ));
-    ASSERT_EQ( errLeaf2, SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_errLeaf2 ));
-    ASSERT_EQ( fatalNode1_leaf, SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_fatalNode1_leaf ));
-    ASSERT_EQ( fatalNode2_leaf, SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_fatalNode2_leaf ));
-    ASSERT_EQ( warnNode1_leaf, SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_warnNode1_leaf ));
-    ASSERT_EQ( warnNode2_leaf, SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_warnNode2_leaf ));
+    ASSERT_EQ( information      , SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_information ));
+    ASSERT_EQ( errLeaf1         , SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_errLeaf1 ));
+    ASSERT_EQ( errLeaf2         , SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_errLeaf2 ));
+    ASSERT_EQ( fatalNode1_leaf  , SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_fatalNode1_leaf ));
+    ASSERT_EQ( fatalNode2_leaf  , SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_fatalNode2_leaf ));
+    ASSERT_EQ( warnNode1_leaf   , SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_warnNode1_leaf ));
+    ASSERT_EQ( warnNode2_leaf   , SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_warnNode2_leaf ));
     ASSERT_EQ( infoNode1_noScope, SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_infoNode1_noScope ));
     ASSERT_EQ( infoNode2_noScope, SCOPE_PRIORITY_GET( areg_unit_tests_LogScopeTest_ScopePriorityGroupping_infoNode2_noScope ));
 

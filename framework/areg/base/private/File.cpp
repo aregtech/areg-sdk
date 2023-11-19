@@ -182,25 +182,22 @@ inline bool File::_nameHasParentFolder(const char * filePath, bool skipSep)
 
 String File::genTempFileName(const char* prefix, bool unique, bool inTempFolder)
 {
-    String result;
-
-    result.reserve(File::MAXIMUM_PATH);
+    char buffer[File::MAXIMUM_PATH];
     unsigned int space{ 0 };
-    if (result.getCapacity() != 0)
+    unsigned int ticks = unique ? static_cast<unsigned int>(DateTime::getSystemTickCount()) : 0u;
+    if (prefix == nullptr)
     {
-        char* buffer = result.getBuffer();
-        unsigned int ticks = unique ? 0 : static_cast<unsigned int>(DateTime::getSystemTickCount());
-        prefix = prefix == nullptr ? File::TEMP_FILE_PREFIX.data() : prefix;
-        String dir = inTempFolder ? File::getTempDir() : File::getCurrentDir();
-        if (dir.isEmpty() == false)
-        {
-            space = _osCreateTempFile(buffer, dir.getString(), prefix, ticks);
-        }
+        String::formatString(buffer, 256, "%s%u", File::TEMP_FILE_PREFIX.data(), static_cast<uint32_t>(Process::getInstance().getId()));
+        prefix = buffer;
     }
 
-    result.resize(space);
+    String dir = inTempFolder ? File::getTempDir() : File::getCurrentDir();
+    if (dir.isEmpty() == false)
+    {
+        space = _osCreateTempFile(buffer, dir.getString(), prefix, ticks);
+    }
 
-    return result;
+    return String(buffer, space);
 }
 
 String File::genTempFileName()
@@ -633,11 +630,8 @@ String File::getFileFullPath(const char* filePath)
 
 String File::getSpecialDir(File::eSpecialFolder specialFolder)
 {
-    String result;
-    
-    result.reserve(File::MAXIMUM_PATH);
-    unsigned int space = result.getCapacity() != 0 ? _osGetSpecialDir(result.getBuffer(), File::MAXIMUM_PATH, specialFolder) : 0;
-    result.resize(space);
+    char buffer[File::MAXIMUM_PATH];
+    unsigned int space = _osGetSpecialDir(buffer, File::MAXIMUM_PATH, specialFolder);
 
-    return result;
+    return String(buffer, space);
 }

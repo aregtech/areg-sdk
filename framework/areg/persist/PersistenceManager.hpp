@@ -1,5 +1,5 @@
-#ifndef AREG_PERSIST_PRIVATE_PERSISTENMANAGER_HPP
-#define AREG_PERSIST_PRIVATE_PERSISTENMANAGER_HPP
+#ifndef AREG_PERSIST_PERSISTENMANAGER_HPP
+#define AREG_PERSIST_PERSISTENMANAGER_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,7 +9,7 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        areg/persist/private/PersistenceManager.hpp
+ * \file        areg/persist/PersistenceManager.hpp
  * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Persistence manager to save and read data
@@ -30,7 +30,7 @@
  * \brief   The Persistence manager to read and write data into the storage.
  *          Each saved data is property, which consists of key and value pairs.
  **/
-class PersistenceManager
+class AREG_API PersistenceManager
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants
@@ -120,4 +120,4 @@ private:
     DECLARE_NOCOPY_NOMOVE( PersistenceManager );
 };
 
-#endif  // AREG_PERSIST_PRIVATE_PERSISTENMANAGER_HPP
+#endif  // AREG_PERSIST_PERSISTENMANAGER_HPP

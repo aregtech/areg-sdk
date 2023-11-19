@@ -50,7 +50,6 @@ public:
     typedef enum class E_TraceAction
     {
           TraceUndefined                //!< Action is undefined, do nothing
-        , TraceConfigure                //!< Action to notify to configure logging
         , TraceStartLogs                //!< Action to notify to start logging
         , TraceStopLogs                 //!< Action to notify to stop logging
         , TraceSetEnableLogs            //!< Action to notify to enable logging
@@ -189,7 +188,6 @@ inline const char * TraceEventData::getString( TraceEventData::eTraceAction acti
     switch ( action )
     {
     CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceUndefined);
-    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceConfigure);
     CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceStartLogs);
     CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceStopLogs);
     CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceSetEnableLogs);

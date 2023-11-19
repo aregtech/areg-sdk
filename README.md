@@ -335,7 +335,7 @@ These steps will guide you in creating your own services using the AREG SDK.
 
 <details open><summary title="Click to show/hide details">Click to show / hide <code>Configuring the Multicast Router</code>.</summary><br/>
 
-To configure the _Multicast Router_, you need to adjust the [_router.init_](https://github.com/aregtech/areg-sdk/blob/master/framework/areg/resources/router.init) file. Open the file and modify the following properties to specify the IP address and port of the `mcrouter`:
+To configure the _Multicast Router_, you need to adjust the [_areg.init_](https://github.com/aregtech/areg-sdk/blob/master/framework/areg/resources/areg.init) file. Open the file and modify the following properties to specify the IP address and port of the `mcrouter`:
 
 ```
 connection.address.tcpip    = 127.0.0.1	# IP address of the mcrouter host
@@ -352,7 +352,7 @@ The Multicast Router can run on any machine with a General Purpose Operating Sys
 
 <details open><summary title="Click to show/hide details">Click to show / hide <code>Configuring Logging</code>.</summary><br/>
 
-To configure logging for applications based on the AREG framework, you can compile them with or without logging. If you choose to compile with logging, you'll need to configure the [_log.init_](https://github.com/aregtech/areg-sdk/blob/master/framework/areg/resources/log.init) file to set logging scopes, priorities, and file names.
+To configure logging for applications based on the AREG framework, you can compile them with or without logging. If you choose to compile with logging, you'll need to configure the [_areg.init_](https://github.com/aregtech/areg-sdk/blob/master/framework/areg/resources/areg.init) file to set logging scopes, priorities, and file names.
 
 Here's an example configuration for the log file:
 ```
@@ -364,9 +364,9 @@ scope.my_app.ignore_this_scope   = NOTSET ;        # disables logs for a certain
 scope.my_app.ignore_this_group_* = NOTSET ;        # disables logs for a certain scope group in my_app
 ```
 
-Please refer to the [AREG Logging System](https://github.com/aregtech/areg-sdk/wiki/05.-AREG-Logging-System) Wiki page for detailed instructions on compiling applications with enabled or disabled logging, starting and stopping logs during runtime, creating and using logging scopes, and configuring the `log.init` file.
+Please refer to the [AREG Logging System](https://github.com/aregtech/areg-sdk/wiki/05.-AREG-Logging-System) Wiki page for detailed instructions on compiling applications with enabled or disabled logging, starting and stopping logs during runtime, creating and using logging scopes, and configuring the `areg.init` file.
 
-> 💡 By default, the `router.init` and `log.init` files are located in the `config` subfolder of the binaries.<br/>
+> 💡 By default, the `areg.init` files are located in the `config` subfolder of the binaries.<br/>
 > 💡 To enable logging for all applications, use `scope.*  = DEBUG | SCOPE ;`.<br/>
 > 💡 Currently, logging is only possible in the file.
 

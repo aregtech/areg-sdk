@@ -215,6 +215,16 @@ namespace NESocket
      **/
     constexpr std::string_view          LocalAddress                { "127.0.0.1" };
     /**
+     * \brief   NESocket::IP_SEPARATOR
+     *          The property separator
+     **/
+    constexpr char              IP_SEPARATOR                        { '.' };
+    /**
+     * \brief   NESocket::IP_ADDRESS_SIZE
+     *          The size of buffer to reserve for IP address, like "255.255.255.255"
+     **/
+    constexpr uint32_t  IP_ADDRESS_SIZE                             { 16 };
+    /**
      * \brief   NESocket::DEFAULT_SEGMENT_SIZE
      *          The default size of segment when sends or receives data.
      **/

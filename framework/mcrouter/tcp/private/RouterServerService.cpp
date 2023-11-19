@@ -14,8 +14,9 @@
  ************************************************************************/
 #include "mcrouter/tcp/RouterServerService.hpp"
 
-#include "areg/ipc/NEConnection.hpp"
+#include "areg/ipc/private/NEConnection.hpp"
 #include "areg/ipc/ConnectionConfiguration.hpp"
+#include "areg/ipc/NERemoteService.hpp"
 #include "areg/trace/GETrace.h"
 
 DEF_TRACE_SCOPE(mcrouter_tcp_RouterServerService_registerServiceProvider);
@@ -36,7 +37,7 @@ DEF_TRACE_SCOPE(mcrouter_tcp_RouterServerService_onServiceMessageSend);
 //////////////////////////////////////////////////////////////////////////
 
 RouterServerService::RouterServerService( void )
-    : ServiceCommunicatonBase   ( NEService::COOKIE_ROUTER, NEConnection::SERVER_DISPATCH_MESSAGE_THREAD, ServiceCommunicatonBase::eConnectionBehavior::DefaultAccept )
+    : ServiceCommunicatonBase   ( NEService::COOKIE_ROUTER, NERemoteService::eRemoteServices::ServiceRouter, static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip), NEConnection::SERVER_DISPATCH_MESSAGE_THREAD, ServiceCommunicatonBase::eConnectionBehavior::DefaultAccept )
     , IEServiceRegisterConsumer ( )
     , IEServiceRegisterProvider ( )
 
@@ -283,7 +284,7 @@ void RouterServerService::registeredRemoteServiceProvider(const StubAddress & st
                 const ProxyAddress & addrProxy    = proxyService.getServiceAddress();
                 if ( (proxyService.getServiceStatus() == NEService::eServiceConnection::ServiceConnected) && (addrProxy.getSource() != stub.getSource()) )
                 {
-                    RemoteMessage msgRegisterProxy = NEConnection::createServiceClientRegisteredNotification(addrProxy, mServerConnection.getChannelId(), stub.getSource());
+                    RemoteMessage msgRegisterProxy = NERemoteService::createServiceClientRegisteredNotification(addrProxy, mServerConnection.getChannelId(), stub.getSource());
                     sendMessage(msgRegisterProxy);
 
                     TRACE_DBG("Send to stub [ %s ] the proxy [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
@@ -296,7 +297,7 @@ void RouterServerService::registeredRemoteServiceProvider(const StubAddress & st
 
                     if ( sendList.addIfUnique(addrProxy.getSource()) )
                     {
-                        RemoteMessage msgRegisterStub  = NEConnection::createServiceRegisteredNotification(stub, mServerConnection.getChannelId(), addrProxy.getSource());
+                        RemoteMessage msgRegisterStub  = NERemoteService::createServiceRegisteredNotification(stub, mServerConnection.getChannelId(), addrProxy.getSource());
                         sendMessage(msgRegisterStub);
 
                         TRACE_DBG("Send to proxy [ %s ] the stub [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
@@ -353,7 +354,7 @@ void RouterServerService::registeredRemoteServiceConsumer(const ProxyAddress & p
 
         if ( (proxyService.getServiceStatus() == NEService::eServiceConnection::ServiceConnected) && (proxy.getSource() != addrStub.getSource()) )
         {
-            RemoteMessage msgRegisterProxy = NEConnection::createServiceClientRegisteredNotification(proxy, mServerConnection.getChannelId(), addrStub.getSource());
+            RemoteMessage msgRegisterProxy = NERemoteService::createServiceClientRegisteredNotification(proxy, mServerConnection.getChannelId(), addrStub.getSource());
             sendMessage(msgRegisterProxy);
 
             TRACE_DBG("Send to stub [ %s ] the proxy [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
@@ -364,7 +365,7 @@ void RouterServerService::registeredRemoteServiceConsumer(const ProxyAddress & p
                         , static_cast<uint32_t>(msgRegisterProxy.getSource())
                         , static_cast<uint32_t>(msgRegisterProxy.getTarget()));
 
-            RemoteMessage msgRegisterStub  = NEConnection::createServiceRegisteredNotification(addrStub, mServerConnection.getChannelId(), proxy.getSource());
+            RemoteMessage msgRegisterStub  = NERemoteService::createServiceRegisteredNotification(addrStub, mServerConnection.getChannelId(), proxy.getSource());
             sendMessage(msgRegisterStub);
 
             TRACE_DBG("Send to proxy [ %s ] the stub [ %s ] registration notification. Send message [ %s ] of id [ 0x%X ] from source [ %u ] to target [ %u ]"
@@ -413,7 +414,7 @@ void RouterServerService::unregisteredRemoteServiceProvider(const StubAddress & 
                 // no need to send message to unregistered stub, only to proxy side
                 if (sendList.addIfUnique(addrProxy.getSource()) )
                 {
-                    sendMessage( NEConnection::createServiceUnregisteredNotification( stub, reason, mServerConnection.getChannelId(), addrProxy.getSource( ) ) );
+                    sendMessage(NERemoteService::createServiceUnregisteredNotification( stub, reason, mServerConnection.getChannelId(), addrProxy.getSource( ) ) );
 
                     TRACE_INFO("Send stub [ %s ] disconnect message to proxy [ %s ]"
                                     , stub.convToString().getString()
@@ -466,7 +467,7 @@ void RouterServerService::unregisteredRemoteServiceConsumer(const ProxyAddress &
 
     if ((svcStub->getServiceStatus() == NEService::eServiceConnection::ServiceConnected) && (proxy.getSource() != addrStub.getSource()))
     {
-        sendMessage( NEConnection::createServiceClientUnregisteredNotification( proxy, reason, mServerConnection.getChannelId(), addrStub.getSource( ) ) );
+        sendMessage(NERemoteService::createServiceClientUnregisteredNotification( proxy, reason, mServerConnection.getChannelId(), addrStub.getSource( ) ) );
 
         TRACE_INFO("Send proxy [ %s ] disconnect message to stub [ %s ]"
                         , proxy.convToString().getString()

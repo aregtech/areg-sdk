@@ -67,7 +67,7 @@ public:
      * \brief   String::EmptyString
      *          The empty string.
      **/
-    static constexpr char EmptyString[] { "" };
+    static constexpr char EmptyString[ ]{ "" };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -159,6 +159,7 @@ public:
     inline String & operator = (const wchar_t * src );
     inline String & operator = (const wchar_t src );
     inline String & operator = (String && src) noexcept;
+    inline String & operator = (std::string && src) noexcept;
     String & operator = ( const WideString & src );
 
     /**
@@ -182,7 +183,7 @@ public:
     inline bool operator != (const std::string& other) const;
     inline bool operator != (const std::string_view& other) const;
     inline bool operator != (const char* other) const;
-    inline bool operator != ( const char ch ) const;
+    inline bool operator != (const char ch) const;
     bool operator != (const wchar_t* other) const;
     bool operator != (const std::wstring& other) const;
     bool operator != (const WideString& other) const;
@@ -430,7 +431,7 @@ public:
      * \note    By default, it will be 128 character space allocated to format string.
      *          If fails, will try repeat operation with 512 chars
      **/
-    const String& format(const char* format, ...);
+    String& format(const char* format, ...);
 
     /**
      * \brief   Formats the string. The classic rules similar of 'vsprintf' are applied.
@@ -440,7 +441,7 @@ public:
      * \note    By default, it will be 128 character space allocated to format string.
      *          If fails, will try repeat operation with 512 chars
      **/
-    const String& formatList(const char* format, va_list argptr);
+    String& formatList(const char* format, va_list argptr);
 
     /**
      * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
@@ -732,6 +733,12 @@ inline String& String::operator = (String&& src) noexcept
     return (*this);
 }
 
+inline String& String::operator = (std::string&& src) noexcept
+{
+    Base::mData = std::move(src);
+    return (*this);
+}
+
 inline String& String::operator = (const char src)
 {
     Base::operator = (src);
@@ -957,7 +964,7 @@ inline double String::toDouble( void ) const
 
 inline bool String::toBool( void ) const
 {
-    return (NEString::compareIgnoreCase<char, char>( getString(), NECommon::BOOLEAN_TRUE.data() ) == NEMath::eCompare::Equal);
+    return (isEmpty() || NEString::compareIgnoreCase<char, char>(getString(), NECommon::BOOLEAN_FALSE.data()) == NEMath::eCompare::Equal ? false : true);
 }
 
 inline String & String::fromInt32( int32_t value, NEString::eRadix radix /*= NEString::RadixDecimal */ )

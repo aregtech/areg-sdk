@@ -6,7 +6,7 @@ list(APPEND areg_SRC
 	${areg_BASE}/trace/private/LogMessage.cpp
 	${areg_BASE}/trace/private/LoggerBase.cpp
 	${areg_BASE}/trace/private/Layouts.cpp
-	${areg_BASE}/trace/private/NELogConfig.cpp
+	${areg_BASE}/trace/private/NELogging.cpp
 	${areg_BASE}/trace/private/NETrace.cpp
 	${areg_BASE}/trace/private/NetTcpLogger.cpp
 	${areg_BASE}/trace/private/ScopeController.cpp
@@ -16,8 +16,5 @@ list(APPEND areg_SRC
 	${areg_BASE}/trace/private/TraceEventProcessor.cpp
 	${areg_BASE}/trace/private/TraceManager.cpp
 	${areg_BASE}/trace/private/TraceMessage.cpp
-	${areg_BASE}/trace/private/TraceProperty.cpp
-	${areg_BASE}/trace/private/TracePropertyKey.cpp
-	${areg_BASE}/trace/private/TracePropertyValue.cpp
 	${areg_BASE}/trace/private/TraceScope.cpp
 )

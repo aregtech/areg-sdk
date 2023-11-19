@@ -16,13 +16,15 @@
 #include "areg/trace/NETrace.hpp"
 
 #include "areg/appbase/Application.hpp"
+#include "areg/appbase/NEApplication.hpp"
 #include "areg/base/DateTime.hpp"
+#include "areg/base/Identifier.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/component/NEService.hpp"
 #include "areg/trace/TraceScope.hpp"
 #include "areg/trace/private/TraceManager.hpp"
-#include "areg/ipc/NEConnection.hpp"
+#include "areg/ipc/private/NEConnection.hpp"
 
 #include <string.h>
 
@@ -149,102 +151,6 @@ NETrace::sLogMessage & NETrace::sLogMessage::operator = (const NETrace::sLogMess
     return (*this);
 }
 
-
-AREG_API_IMPL const String& NETrace::convToString( NETrace::eLogPriority prio )
-{
-    switch ( prio )
-    {
-    case NETrace::eLogPriority::PrioNotset:
-        return NETrace::PRIO_NOTSET_STR;
-    case NETrace::eLogPriority::PrioFatal:
-        return NETrace::PRIO_FATAL_STR;
-    case NETrace::eLogPriority::PrioError:
-        return NETrace::PRIO_ERROR_STR;
-    case NETrace::eLogPriority::PrioWarning:
-        return NETrace::PRIO_WARNING_STR;
-    case NETrace::eLogPriority::PrioInfo:
-        return NETrace::PRIO_INFO_STR;
-    case NETrace::eLogPriority::PrioDebug:
-        return NETrace::PRIO_DEBUG_STR;
-    case NETrace::eLogPriority::PrioScope:
-        return NETrace::PRIO_SCOPE_STR;
-    case NETrace::eLogPriority::PrioInvalid:
-    case NETrace::eLogPriority::PrioValidLogs:
-    case NETrace::eLogPriority::PrioIgnore:
-    case NETrace::eLogPriority::PrioIgnoreLayout:
-    case NETrace::eLogPriority::PrioLogs:
-    case NETrace::eLogPriority::PrioAny:
-    case NETrace::eLogPriority::PrioValid:
-        return NETrace::PRIO_NO_PRIO;
-    default:
-        ASSERT(false);
-        return NETrace::PRIO_NO_PRIO;
-    }
-}
-
-AREG_API_IMPL NETrace::eLogPriority NETrace::convFromString( const String& strPrio )
-{
-    if ( strPrio.isEmpty() == false )
-    {
-        if ( strPrio.compare( NETrace::PRIO_NOTSET_STR, false ) == NEMath::eCompare::Equal)
-            return NETrace::eLogPriority::PrioNotset;
-        else if (strPrio.compare( NETrace::PRIO_SCOPE_STR, false ) == NEMath::eCompare::Equal)
-            return NETrace::eLogPriority::PrioScope;
-        else if (strPrio.compare( NETrace::PRIO_DEBUG_STR, false ) == NEMath::eCompare::Equal)
-            return NETrace::eLogPriority::PrioDebug;
-        else if (strPrio.compare( NETrace::PRIO_INFO_STR, false ) == NEMath::eCompare::Equal)
-            return NETrace::eLogPriority::PrioInfo;
-        else if (strPrio.compare( NETrace::PRIO_WARNING_STR, false ) == NEMath::eCompare::Equal)
-            return NETrace::eLogPriority::PrioWarning;
-        else if (strPrio.compare( NETrace::PRIO_ERROR_STR, false ) == NEMath::eCompare::Equal)
-            return NETrace::eLogPriority::PrioError;
-        else if (strPrio.compare( NETrace::PRIO_FATAL_STR, false ) == NEMath::eCompare::Equal)
-            return NETrace::eLogPriority::PrioFatal;
-    }
-
-    return NETrace::eLogPriority::PrioInvalid;
-}
-
-AREG_API_IMPL String NETrace::makePrioString( unsigned int priorities )
-{
-    String result;
-#if AREG_LOGS
-    NETrace::eLogPriority prio1{NETrace::eLogPriority::PrioInvalid};
-    NETrace::eLogPriority prio2{NETrace::eLogPriority::PrioInvalid};
-
-    if ( (priorities & static_cast<unsigned int>(NETrace::eLogPriority::PrioValidLogs)) != 0 )
-    {
-        prio1 = static_cast<NETrace::eLogPriority>(priorities & static_cast<unsigned int>(NETrace::eLogPriority::PrioLogs));
-        if ( prio1 != NETrace::eLogPriority::PrioInvalid )
-        {
-            priorities &= ~static_cast<unsigned int>(NETrace::eLogPriority::PrioLogs);
-            prio2 = static_cast<NETrace::eLogPriority>(priorities) == NETrace::eLogPriority::PrioScope ? NETrace::eLogPriority::PrioScope : prio2;
-        }
-        else
-        {
-            prio1 = static_cast<NETrace::eLogPriority>(priorities);
-        }
-    }
-
-    if ( NETrace::isValidLogPriority( prio1 ) && NETrace::isValidLogPriority( prio2 ) )
-    {
-        if ( NETrace::isLogScope( prio1 ) || NETrace::isLogScope( prio2 ) )
-        {
-            constexpr int size{ 0xFF + 1 };
-            char buffer[ size ];
-            String::formatString( buffer, size, "%s | %s", NETrace::convToString( prio1 ).getString( ), NETrace::convToString( prio2 ).getString() );
-            result = buffer;
-        }
-    }
-    else if ( NETrace::isValidLogPriority( prio1 ) )
-    {
-        result = NETrace::convToString( prio1 );
-    }
-#endif  //     String result;
-
-    return result;
-}
-
 AREG_API_IMPL bool NETrace::startLogging(const char * fileConfig /*= nullptr */ )
 {
 #if AREG_LOGS
@@ -311,37 +217,10 @@ AREG_API_IMPL bool NETrace::isEnabled(void)
 #endif  // AREG_LOGS
 }
 
-AREG_API_IMPL const String& NETrace::getConfigFile(void)
-{
-#if AREG_LOGS
-    return TraceManager::getConfigFile();
-#else   // !AREG_LOGS
-    return String::getEmptyString();
-#endif  // AREG_LOGS
-}
-
 AREG_API_IMPL bool NETrace::saveLogging( const char * configFile )
 {
 #if AREG_LOGS
-    return TraceManager::saveLogConfig( configFile );
-#else   // !AREG_LOGS
-    return true;
-#endif  // AREG_LOGS
-}
-
-AREG_API_IMPL bool NETrace::readConfiguration( const FileBase & file )
-{
-#if AREG_LOGS
-    return TraceManager::readLogConfig( file );
-#else   // !AREG_LOGS
-    return true;
-#endif  // AREG_LOGS
-}
-
-AREG_API_IMPL bool NETrace::saveConfiguration( FileBase & file )
-{
-#if AREG_LOGS
-    return TraceManager::saveLogConfig( file );
+    return TraceManager::saveLogConfig(configFile);
 #else   // !AREG_LOGS
     return true;
 #endif  // AREG_LOGS
@@ -461,6 +340,8 @@ AREG_API_IMPL RemoteMessage NETrace::messageRegisterScopes(const ITEM_ID & targe
 AREG_API_IMPL bool NETrace::forceStartLogging(void)
 {
 #if AREG_LOGS
+    TraceManager::setDefaultConfiguration(false);
+    TraceManager::forceEnableLogging();
     return TraceManager::forceActivateLogging();
 #else   // !AREG_LOGS
     return true;
@@ -491,4 +372,14 @@ AREG_API_IMPL const ITEM_ID & NETrace::getCookie(void)
 #else   // !AREG_LOGS
     return NEService::COOKIE_UNKNOWN;
 #endif  // AREG_LOGS
+}
+
+AREG_API_IMPL String NETrace::makePrioString(unsigned int priorities)
+{
+    return Identifier::convToString(priorities, NEApplication::LogScopePriorityIndentifiers, static_cast<unsigned int>(NETrace::eLogPriority::PrioNotset));
+}
+
+AREG_API_IMPL unsigned int NETrace::makePriorities(const String& prioString)
+{
+    return static_cast<NETrace::eLogPriority>(Identifier::convFromString(prioString, NEApplication::LogScopePriorityIndentifiers, static_cast<unsigned int>(NETrace::eLogPriority::PrioNotset)));
 }

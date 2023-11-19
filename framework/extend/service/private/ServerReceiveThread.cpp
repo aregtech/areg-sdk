@@ -16,8 +16,8 @@
 
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/base/SocketAccepted.hpp"
+#include "areg/ipc/private/NEConnection.hpp"
 #include "areg/ipc/IERemoteMessageHandler.hpp"
-#include "areg/ipc/NEConnection.hpp"
 #include "areg/trace/GETrace.h"
 
 #include "extend/service/IEServiceConnectionHandler.hpp"

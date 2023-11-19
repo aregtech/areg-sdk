@@ -50,7 +50,7 @@ ServiceManagerEventProcessor::ServiceManagerEventProcessor( ServiceManager & ser
 
 void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventData::eServiceManagerCommands cmdService
                                                         , const IEInStream& stream
-                                                        , IEServiceConnectionProvider& connectProvide
+                                                        , IEServiceConnectionProvider& connectProvider
                                                         , IEServiceRegisterProvider& registerProvider )
 {
     switch ( cmdService )
@@ -58,7 +58,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
     case ServiceManagerEventData::eServiceManagerCommands::CMD_ShutdownService:
         {
             mServerList.clear( );
-            connectProvide.disconnectServiceHost( );
+            connectProvider.disconnectServiceHost( );
             mServiceManager.removeAllEvents( );
             mServiceManager.triggerExit( );
         }
@@ -83,7 +83,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
             }
 
             mServerList.clear( );
-            connectProvide.disconnectServiceHost( );
+            connectProvider.disconnectServiceHost( );
             mServiceManager.removeEvents( false );
             mServiceManager.pulseExit( );
         }
@@ -139,42 +139,25 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
 
     case ServiceManagerEventData::eServiceManagerCommands::CMD_ConfigureConnection:
         {
-            String   configFile;
-            stream >> configFile;
-            connectProvide.enableRemoteServicing( true );
-            if ( configFile.isEmpty( ) == false )
-            {
-                connectProvide.setupServiceConnectionHost( configFile );
-            }
-            else if (connectProvide.isServiceHostSetup( ) == false )
-            {
-                connectProvide.setupServiceConnectionHost( String::getEmptyString( ) );
-            }
+            NERemoteService::eRemoteServices service{ NERemoteService::eRemoteServices::ServiceUnknown };
+            uint32_t connectTypes{ static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectUndefined) };
+            stream >> service;
+            stream >> connectTypes;
+
+            connectProvider.setupServiceConnectionData(service, connectTypes);
         }
         break;
 
     case ServiceManagerEventData::eServiceManagerCommands::CMD_StartConnection:
         {
-            String   configFile;
-            stream >> configFile;
-            bool isConfigured = false;
-            connectProvide.enableRemoteServicing( true );
-            if ( configFile.isEmpty( ) == false )
-            {
-                isConfigured = connectProvide.setupServiceConnectionHost( configFile );
-            }
-            else if (connectProvide.isServiceHostSetup( ) == false )
-            {
-                isConfigured = connectProvide.setupServiceConnectionHost( String::getEmptyString( ) );
-            }
-            else
-            {
-                isConfigured = true;
-            }
+            NERemoteService::eRemoteServices service{ NERemoteService::eRemoteServices::ServiceUnknown };
+            uint32_t connectTypes{ static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectUndefined) };
+            stream >> service;
+            stream >> connectTypes;
 
-            if ( isConfigured )
+            if (connectProvider.setupServiceConnectionData(service, connectTypes))
             {
-                connectProvide.connectServiceHost( );
+                connectProvider.connectServiceHost();
             }
         }
         break;
@@ -186,26 +169,17 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
             stream >> ipAddress;
             stream >> portNr;
 
-            connectProvide.enableRemoteServicing( true );
-            connectProvide.applyServiceConnectionData( ipAddress, portNr );
-            if (connectProvide.isServiceHostSetup( ) )
+            connectProvider.applyServiceConnectionData( ipAddress, portNr );
+            if (connectProvider.isServiceHostSetup( ) )
             {
-                connectProvide.connectServiceHost( );
+                connectProvider.connectServiceHost( );
             }
         }
         break;
 
     case ServiceManagerEventData::eServiceManagerCommands::CMD_StopConnection:
         {
-            connectProvide.disconnectServiceHost( );
-        }
-        break;
-
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_SetEnableService:
-        {
-            bool enable = false;
-            stream >> enable;
-            connectProvide.enableRemoteServicing( enable );
+            connectProvider.disconnectServiceHost( );
         }
         break;
 

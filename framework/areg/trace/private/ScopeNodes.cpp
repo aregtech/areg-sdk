@@ -16,10 +16,11 @@
   * Include files.
   ************************************************************************/
 #include "areg/trace/private/ScopeNodes.hpp"
-#include "areg/trace/private/NELogConfig.hpp"
+#include "areg/trace/private/NELogging.hpp"
 #include "areg/trace/TraceScope.hpp"
 #include "areg/base/FileBase.hpp"
 #include "areg/base/Process.hpp"
+#include "areg/persist/ConfigManager.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // ScopeLeaf class implementation
@@ -52,9 +53,9 @@ String ScopeLeaf::makeScopePath( const String & prefix ) const
     return result;
 }
 
-unsigned int ScopeLeaf::saveNodeConfig( FileBase & file, const String & parentPath ) const
+unsigned int ScopeLeaf::updateConfigNode(ConfigManager& config, const String & parentPath ) const
 {
-    file.write( makeConfigString( parentPath ) );
+    config.addModuleLogScope(makeConfigString(parentPath), mPrioStates);
     return 1;
 }
 
@@ -187,7 +188,7 @@ String ScopeNode::makeScopePath( const String & prefix ) const
     ASSERT( isValid( ) );
 
     result += mNodeName;
-    result += NELogConfig::SYNTAX_SCOPE_SEPARATOR;
+    result += NELogging::SYNTAX_SCOPE_SEPARATOR;
     return result;
 }
 
@@ -251,7 +252,7 @@ unsigned int ScopeNode::groupChildNodes( void )
     return result;
 }
 
-unsigned int ScopeNode::saveNodeConfig( FileBase & file, const String & parentPath ) const
+unsigned int ScopeNode::updateConfigNode( ConfigManager & config, const String & parentPath ) const
 {
     unsigned int result{ 0 };
     if ( hasLogsEneabled( ) == false )
@@ -262,20 +263,20 @@ unsigned int ScopeNode::saveNodeConfig( FileBase & file, const String & parentPa
     String thisScope = makeScopePath( parentPath );
     if ( (mGroupping & static_cast<unsigned int>(ScopeNodeBase::eGroupping::GrouppingAll)) != 0 )
     {
-        file.write( makeConfigString(parentPath) );
+        config.addModuleLogScope(makeConfigString(parentPath), mPrioStates);
         result = 1;
     }
 
     for ( auto pos = mChildNodes.firstPosition( ); mChildNodes.isValidPosition( pos ); pos = mChildNodes.nextPosition( pos ) )
     {
         const ScopeNode & node = mChildNodes.valueAtPosition( pos );
-        result += node.saveNodeConfig( file, thisScope );
+        result += node.updateConfigNode( config, thisScope );
     }
 
     for ( auto pos = mChildLeafs.firstPosition( ); mChildLeafs.isValidPosition( pos ); pos = mChildLeafs.nextPosition( pos ) )
     {
         const ScopeLeaf & leaf = mChildLeafs.valueAtPosition( pos );
-        result += leaf.saveNodeConfig( file, thisScope );
+        result += leaf.updateConfigNode( config, thisScope );
     }
 
     return result;
@@ -295,9 +296,9 @@ unsigned int ScopeNode::groupRecursive( void )
 
 String ScopeNode::makeConfigString( const String & parent ) const
 {
-    String result;
-    result.format( "%s%s_* = %s\n", parent.getString( ), mNodeName.getString( ), makePrioString( ).getString( ) );
-    return result;
+    char scope[NETrace::LOG_MESSAGE_BUFFER_SIZE];
+    int len = String::formatString(scope, NETrace::LOG_MESSAGE_BUFFER_SIZE, "%s%s_*", parent.getString(), mNodeName.getString());
+    return String(scope, len);
 }
 
 unsigned int ScopeNode::removePriorityNodesRecursive( unsigned int prioRemove )
@@ -374,11 +375,10 @@ ScopeRoot::ScopeRoot( void )
 
 String ScopeRoot::makeScopePath( const String & /*prefix*/ ) const
 {
-    String result;
-    return result.format( "%s.%s.", NELogConfig::SYNTAX_CMD_LOG_SCOPE.data( ), Process::getInstance( ).getAppName( ).getString( ) );
+    return String::EmptyString;
 }
 
-unsigned int ScopeRoot::saveNodeConfig( FileBase & file, const String & /*parentPath*/ ) const
+unsigned int ScopeRoot::updateConfigNode( ConfigManager & config, const String & /*parentPath*/ ) const
 {
     unsigned int result{ 0 };
 
@@ -389,7 +389,7 @@ unsigned int ScopeRoot::saveNodeConfig( FileBase & file, const String & /*parent
         const ScopeLeaf & leaf = mChildLeafs.valueAtPosition( pos );
         if ( leaf.hasLogsEneabled( ) )
         {
-            result += leaf.saveNodeConfig( file, thisScope );
+            result += leaf.updateConfigNode( config, thisScope );
         }
     }
 
@@ -398,21 +398,20 @@ unsigned int ScopeRoot::saveNodeConfig( FileBase & file, const String & /*parent
         const ScopeNode & node = mChildNodes.valueAtPosition( pos );
         if ( node.hasLogsEneabled( ) )
         {
-            result += node.saveNodeConfig( file, thisScope );
+            result += node.updateConfigNode( config, thisScope );
         }
     }
 
     if ( result == 0 )
     {
-        file.write( makeConfigString( thisScope) );
+        config.addModuleLogScope(makeConfigString(thisScope), mPrioStates);
         result = 1;
     }
 
     return result;
 }
 
-String ScopeRoot::makeConfigString( const String & parent ) const
+String ScopeRoot::makeConfigString(const String& parent) const
 {
-    String result;
-    return result.format( "%s* = %s\n", parent.getString(), makePrioString( ).getString() );
+    return (parent + NELogging::SYNTAX_SCOPE_GROUP);
 }

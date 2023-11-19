@@ -213,6 +213,12 @@ public:
      **/
     inline RESOURCE_OBJECT resourceNextKey( RESOURCE_KEY & IN OUT nextKey ) const;
 
+    /**
+     * \brief   Returns the vector object where the data are stored.
+     **/
+    inline const std::unordered_map<RESOURCE_KEY, RESOURCE_OBJECT>& getData(void) const;
+
+
 //////////////////////////////////////////////////////////////////////////
 // Override operations
 //////////////////////////////////////////////////////////////////////////
@@ -502,6 +508,12 @@ inline RESOURCE_OBJECT TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Del
     }
 
     return result;
+}
+
+template<typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>
+inline const std::unordered_map<RESOURCE_KEY, RESOURCE_OBJECT>& TEResourceMap<RESOURCE_KEY, RESOURCE_OBJECT, HashMap, Deleter>::getData(void) const
+{
+    return HashMap::getData();
 }
 
 template <typename RESOURCE_KEY, typename RESOURCE_OBJECT, class HashMap, class Deleter>

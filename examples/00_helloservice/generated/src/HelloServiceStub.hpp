@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     18.09.2023  09:14:47 GMT+02:00
+ * Generated at     15.11.2023  14:51:34 GMT+01:00
  *                  Create by AREG SDK code generator tool from source HelloService.
  *
  * \file            generated/src/HelloServiceStub.hpp

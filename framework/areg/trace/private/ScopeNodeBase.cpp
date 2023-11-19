@@ -18,9 +18,9 @@
 
 #include "areg/trace/private/ScopeNodeBase.hpp"
 
-#include "areg/base/FileBase.hpp"
+#include "areg/persist/ConfigManager.hpp"
 #include "areg/trace/TraceScope.hpp"
-#include "areg/trace/private/NELogConfig.hpp"
+#include "areg/trace/private/NELogging.hpp"
 
 ScopeNodeBase & ScopeNodeBase::invalidNode( void )
 {
@@ -76,12 +76,12 @@ String ScopeNodeBase::extractNodeName( String & scopeName )
 
     // move position forward if a node starts with '_', which should
     // be included in the node name.
-    while ( *(str + startPos) == NELogConfig::SYNTAX_SCOPE_SEPARATOR )
+    while ( *(str + startPos) == NELogging::SYNTAX_SCOPE_SEPARATOR )
     {
         ++ startPos;
     }
 
-    NEString::CharPos pos = scopeName.findFirst( NELogConfig::SYNTAX_SCOPE_SEPARATOR, startPos );
+    NEString::CharPos pos = scopeName.findFirst(NELogging::SYNTAX_SCOPE_SEPARATOR, startPos );
     if ( NEString::isPositionValid(pos) )
     {
         result.substring( 0, pos );
@@ -168,7 +168,7 @@ unsigned int ScopeNodeBase::groupChildNodes( void )
     return 0;
 }
 
-unsigned int ScopeNodeBase::saveNodeConfig( FileBase & file, const String & parentPath ) const
+unsigned int ScopeNodeBase::updateConfigNode(ConfigManager& /*config*/, const String& /*parentPath*/) const
 {
     return 0;
 }
@@ -192,8 +192,16 @@ unsigned int ScopeNodeBase::groupRecursive( void )
 
 String ScopeNodeBase::makeConfigString( const String & parent ) const
 {
-    String result(parent);
-    return (isValid() ? result.format("%s%s = %s\n", parent.getString( ), mNodeName.getString( ), makePrioString( ).getString( )) : result);
+    if (isValid())
+    {
+        char scope[NETrace::LOG_MESSAGE_BUFFER_SIZE];
+        int len = String::formatString(scope, NETrace::LOG_MESSAGE_BUFFER_SIZE, "%s%s", parent.getString(), mNodeName.getString());
+        return String(scope, len);
+    }
+    else
+    {
+        return parent;
+    }
 }
 
 unsigned int ScopeNodeBase::removePriorityNodesRecursive( unsigned int prioRemove )
@@ -204,44 +212,4 @@ unsigned int ScopeNodeBase::removePriorityNodesRecursive( unsigned int prioRemov
 bool ScopeNodeBase::isEmpty( void ) const
 {
     return true;
-}
-
-String ScopeNodeBase::makePrioString( void ) const
-{
-    String result( NETrace::PRIO_NOTSET_STR );
-    if ( hasLogsEneabled( ) )
-    {
-        if ( hasPrioDebug( ) )
-        {
-            result = NETrace::PRIO_DEBUG_STR;
-        }
-        else if ( hasPrioInfo( ) )
-        {
-            result = NETrace::PRIO_INFO_STR;
-        }
-        else if ( hasPrioWarning( ) )
-        {
-            result = NETrace::PRIO_WARNING_STR;
-        }
-        else if ( hasPrioError( ) )
-        {
-            result = NETrace::PRIO_ERROR_STR;
-        }
-        else if ( hasPrioFatal( ) )
-        {
-            result = NETrace::PRIO_FATAL_STR;
-        }
-        else
-        {
-            ASSERT( false );
-        }
-
-        if ( hasLogScopes( ) )
-        {
-            String temp( result );
-            result.format("%s | %s", temp.getString() , NETrace::PRIO_SCOPE_STR.getString());
-        }
-    }
-
-    return result;
 }

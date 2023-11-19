@@ -12,7 +12,7 @@
  * \author      Artak Avetyan
  * \brief       Data persistency manager
  ************************************************************************/
-#include "areg/persist/private/PersistenceManager.hpp"
+#include "areg/persist/PersistenceManager.hpp"
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/File.hpp"

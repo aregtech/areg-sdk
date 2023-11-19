@@ -21,10 +21,13 @@
 
 #include "areg/base/IEIOStream.hpp"
 #include "areg/base/NECommon.hpp"
+#include "areg/base/NESocket.hpp"
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/TEHashMap.hpp"
 #include "areg/component/NEService.hpp"
+
+#include <string_view>
 
 /************************************************************************
  * Dependencies
@@ -42,7 +45,20 @@ class FileBase;
  **/
 namespace NETrace
 {
-    constexpr std::string_view LOG_VERSION  { "1.1.0" };
+    constexpr std::string_view LOG_VERSION                  { "2.0.0" };
+
+    /**
+     * \brief   NETrace::eLogingTypes
+     *          The logging types in AREG framework
+     **/
+    enum eLogingTypes
+    {
+          LogTypeUndefined  = 0 //!< Logging is undefined
+        , LogTypeRemote     = 1 //!< Logging is to remote log collector
+        , LogTypeFile       = 2 //!< Logging is directly in file as plain text
+        , LogTypeDebug      = 4 //!< Logging is on debug output console
+        , LogTypeDatabase   = 8 //!< Logging is in database, not implemented yet.
+    };
 
     /**
      * \brief   NETrace::eLogPriority
@@ -55,7 +71,7 @@ namespace NETrace
         , PrioScope         = 0x0010  //!< Output scopes priority,    bit set:  0000 0001 0000
         , PrioFatal         = 0x0020  //!< Fatal error log priority,  bit set:  0000 0010 0000
         , PrioError         = 0x0040  //!< Error log priority,        bit set:  0000 0100 0000
-        , PrioWarning       = 0x0080  //!< Warning log priority,      bit set:  0000 1000 1000
+        , PrioWarning       = 0x0080  //!< Warning log priority,      bit set:  0000 1000 0000
         , PrioInfo          = 0x0100  //!< Information log priority,  bit set:  0001 0000 0000
         , PrioDebug         = 0x0200  //!< Debug log priority,        bit set:  0010 0000 0000
         , PrioLogs          = 0x03E0  //!< Log is enabled priority,   bit set:  0011 1110 0000
@@ -96,35 +112,6 @@ namespace NETrace
      * \brief   Returns true if the specified priority does not log messages.
      **/
     inline bool isDisablingLog( NETrace::eLogPriority prio );
-
-    /**
-     * \brief   NETrace::ToString
-     *          Returns string value of NETrace::eLogPriority.
-     *          There are following valid string priority values:
-     *          NOTSET, SCOPE, FATAL, ERROR, WARNING, INFO, DEBUG.
-     * \param   prio    The priority to get string value.
-     * \return  Returns string priority value
-     * \see     NETrace::FromString
-     **/
-    AREG_API const String& convToString( NETrace::eLogPriority prio );
-
-    /**
-     * \brief   NETrace::FromString
-     *          From given string value returns log priority value.
-     *          The string values should be followings:
-     *          NOTSET, SCOPE, FATAL, ERROR, WARNING, INFO, DEBUG.
-     * \param   strPrio The priority string value to convert.
-     *                  The given string is not case sensitive.
-     * \return  Returns appropriate logging priority value.
-     **/
-    AREG_API NETrace::eLogPriority convFromString( const String& strPrio );
-
-    /**
-     * \brief   Converts the bitwise set of priority into the human readable string.
-     * \param   priorities      The priorities to convert. Set bitwise.
-     * \return  Returns converted string that may contain logical OR ('|') if more than one priority is set.
-     **/
-    AREG_API String makePrioString( unsigned int priorities );
 
     /**
      * \brief   Returns the cookie of the logger.
@@ -178,6 +165,41 @@ namespace NETrace
     const String  PRIO_NO_PRIO        { "" };
 
     /**
+     * \brief   Returns string value of NETrace::eLogPriority.
+     *          There are following valid string priority values:
+     *          NOTSET, SCOPE, FATAL, ERROR, WARNING, INFO, DEBUG.
+     * \param   prio    The priority to get string value.
+     * \return  Returns string priority value
+     **/
+    inline const String& logPrioToString(NETrace::eLogPriority prio);
+
+    /**
+     * \brief   From given string value returns log priority value.
+     *          The string values should be followings:
+     *          NOTSET, SCOPE, FATAL, ERROR, WARNING, INFO, DEBUG.
+     * \param   strPrio The priority string value to convert.
+     *                  The given string is not case sensitive.
+     * \return  Returns appropriate logging priority value.
+     **/
+    inline const NETrace::eLogPriority stringToLogPrio(const String& prio);
+
+    /**
+     * \brief   Converts the bitwise set of priority into the human readable string.
+     * \param   priorities      The bitwise set of priorities integer value to convert to string.
+     * \return  Returns converted string that may contain logical OR ('|') if more than one priority is set.
+     **/
+    AREG_API String makePrioString(unsigned int priorities);
+
+    /**
+     * \brief   Converts the human readable string with priorities separate by logical OR ('|')
+     *          into bitwise set of integer value with priorities.
+     * \param   priorities      The human readable string with priorities separated by logical OR ('|')
+     *                          to convert into integer.
+     * \return  Returns converted integer value where the priorities are set bitwise.
+     **/
+    AREG_API unsigned int makePriorities(const String& prioString);
+
+    /**
      * \brief   NETrace::LOG_MESSAGE_BUFFER_SIZE
      *          The maximum size of text in log message
      **/
@@ -187,11 +209,6 @@ namespace NETrace
      *          The maximum length of the names in logging objects
      **/
     constexpr uint32_t   LOG_NAMES_SIZE         { LOG_MESSAGE_BUFFER_SIZE / 2 };
-    /**
-     * \brief   NETrace::IP_ADDRESS_SIZE
-     *          The size of buffer to reserve for IP address, like "255.255.255.255"
-     **/
-    constexpr uint32_t  IP_ADDRESS_SIZE         { 16 };
 
     /**
      * \brief   NETrace::eMessageType
@@ -329,11 +346,6 @@ namespace NETrace
     AREG_API bool isEnabled( void );
 
     /**
-     * \brief   Returns the logging config file name.
-     **/
-    AREG_API const String& getConfigFile( void );
-
-    /**
      * \brief   Initializes the logging by reading and configuration instructions
      *          from given logging file.
      * \param   fileConfig  The relative or absolute path of logging file.
@@ -348,22 +360,6 @@ namespace NETrace
      * \return  Returns true if succeeded to save the current state of the logging.
      **/
     AREG_API bool saveLogging( const char * configFile = nullptr );
-
-    /**
-     * \brief   Reads the log configuration and initializes logging from the specified file.
-     *          The file should be opened for reading.
-     **/
-    AREG_API bool readConfiguration( const FileBase & file );
-
-    /**
-     * \brief   Saves the current state of the logging in the configuration file.
-     *          It keeps the existing configurations and modifies only
-     *          part relevant to current module. In all other cases, nothing is changes.
-     * \param   file    The file to save log configuration.
-     *                  The file should be opened for writing.
-     * \return  Returns true if succeeded to save current state of logging.
-     **/
-    AREG_API bool saveConfiguration( FileBase & file );
 
     /**
      * \brief   Returns the ID of given scope name.
@@ -565,6 +561,52 @@ inline bool NETrace::isLogScope( NETrace::eLogPriority prio )
 inline bool NETrace::isDisablingLog( NETrace::eLogPriority prio )
 {
     return (prio == NETrace::eLogPriority::PrioNotset) || (prio == NETrace::eLogPriority::PrioInvalid);
+}
+
+inline const String& NETrace::logPrioToString(NETrace::eLogPriority prio)
+{
+    switch (prio)
+    {
+    case NETrace::eLogPriority::PrioNotset:
+        return NETrace::PRIO_NOTSET_STR;
+    case NETrace::eLogPriority::PrioScope:
+        return NETrace::PRIO_SCOPE_STR;
+    case NETrace::eLogPriority::PrioFatal:
+        return NETrace::PRIO_FATAL_STR;
+    case NETrace::eLogPriority::PrioError:
+        return NETrace::PRIO_ERROR_STR;
+    case NETrace::eLogPriority::PrioWarning:
+        return NETrace::PRIO_WARNING_STR;
+    case NETrace::eLogPriority::PrioInfo:
+        return NETrace::PRIO_INFO_STR;
+    case NETrace::eLogPriority::PrioDebug:
+        return NETrace::PRIO_DEBUG_STR;
+
+    case NETrace::eLogPriority::PrioLogs:           // fall through
+    case NETrace::eLogPriority::PrioValidLogs:      // fall through
+    case NETrace::eLogPriority::PrioIgnore:         // fall through
+    case NETrace::eLogPriority::PrioIgnoreLayout:   // fall through
+    case NETrace::eLogPriority::PrioAny:            // fall through
+    case NETrace::eLogPriority::PrioValid:          // fall through
+    default:
+        return NETrace::PRIO_NO_PRIO;
+    }
+}
+
+inline const NETrace::eLogPriority NETrace::stringToLogPrio(const String& prio)
+{
+    if (NETrace::PRIO_DEBUG_STR == prio)
+        return NETrace::eLogPriority::PrioDebug;
+    else if (NETrace::PRIO_INFO_STR == prio)
+        return NETrace::eLogPriority::PrioInfo;
+    else if (NETrace::PRIO_WARNING_STR == prio)
+        return NETrace::eLogPriority::PrioWarning;
+    else if (NETrace::PRIO_ERROR_STR == prio)
+        return NETrace::eLogPriority::PrioError;
+    else if (NETrace::PRIO_FATAL_STR == prio)
+        return NETrace::eLogPriority::PrioFatal;
+    else
+        return NETrace::eLogPriority::PrioIgnoreLayout;
 }
 
 #endif  // AREG_TRACE_NETRACE_HPP

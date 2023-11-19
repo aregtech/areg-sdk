@@ -46,3 +46,13 @@ TraceScope::~TraceScope( void )
 {
     TraceManager::unregisterTraceScope( self() );
 }
+
+void TraceScope::setPriority(const char* newPrio)
+{
+    setPriority(NETrace::stringToLogPrio(newPrio));
+}
+
+void TraceScope::setPriority(const String& newPrio)
+{
+    setPriority(NETrace::stringToLogPrio(newPrio));
+}

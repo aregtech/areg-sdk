@@ -77,6 +77,13 @@ public:
     TEArrayList( const std::vector< VALUE > & src );
 
     /**
+     * \brief   Compiles entries from the given array of objects.
+     * \param   list    The list of entries to copy.
+     * \param   count   The number of entries in the array.
+     **/
+    TEArrayList( const VALUE * list, uint32_t count );
+
+    /**
      * \brief   Moves entries from given source.
      * \param   src     The source to move data.
      **/
@@ -201,6 +208,11 @@ public:
      * \return	Returns true if could find element starting at given position.
      **/
     inline bool contains( const VALUE & elemSearch, uint32_t startAt = 0 ) const;
+
+    /**
+     * \brief   Returns the vector object where the data are stored.
+     **/
+    inline const std::vector<VALUE>& getData(void) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -466,6 +478,13 @@ template<typename VALUE>
 inline TEArrayList<VALUE>::TEArrayList( const std::vector<VALUE> & src )
     : Constless<std::vector<VALUE>>( )
     , mValueList( src )
+{
+}
+
+template<typename VALUE>
+inline TEArrayList<VALUE>::TEArrayList(const VALUE* list, uint32_t count)
+    : Constless<std::vector<VALUE>>( )
+    , mValueList( list, list != nullptr ? count : 0)
 {
 }
 
@@ -755,7 +774,7 @@ inline VALUE TEArrayList< VALUE >::removePosition(uint32_t index)
 {
     ASSERT(isValidIndex(index));
     ARRAYPOS first = getPosition(index);
-    *(mValueList.erase(first));
+    return *(mValueList.erase(first));
 }
 
 template<typename VALUE >
@@ -841,6 +860,12 @@ template<typename VALUE >
 inline bool TEArrayList< VALUE >::contains( const VALUE & elemSearch, uint32_t startAt /*= 0*/ ) const
 {
     return (startAt < static_cast<uint32_t>(mValueList.size()) ? std::find(mValueList.begin() + startAt, mValueList.end(), elemSearch) != mValueList.end() : false);
+}
+
+template<typename VALUE>
+inline const std::vector<VALUE>& TEArrayList<VALUE>::getData(void) const
+{
+    return mValueList;
 }
 
 template<typename VALUE >

@@ -7,7 +7,7 @@
 //               logging requires source code compilation with AREG_LOGS=1
 //               preprocessor directive to enable logging macro. It as well
 //               requires log enabling in the configuration file (by default 
-//               "./config/log.init" file). If there is no configuration file,
+//               "./config/areg.init" file). If there is no configuration file,
 //               the logging can be forced to be enabled to apply default
 //               logging settings.
 // 

@@ -21,36 +21,17 @@
 // Identifier class implementation
 //////////////////////////////////////////////////////////////////////////
 
-namespace 
-{
-    /**
-     * \brief   Identifier::BAD_IDENTIFIER_VALUE
-     *          Bad Identifier integer value.
-     *          The values is reserved and should not be used
-     *          at least together with BAD_IDENTIFIER_NAME
-     **/
-    constexpr unsigned int       BAD_IDENTIFIER_VALUE   { static_cast<unsigned int>(0x80000000) };
-
-    /**
-     * \brief   Identifier::BAD_IDENTIFIER_NAME
-     *          Bad Identifier name. The name is reserved and
-     *          should not be used at leas together with BAD_IDENTIFIER_VALUE
-     **/
-    constexpr std::string_view   BAD_IDENTIFIER_NAME     { "_BAD_IDENTIFIER" };
-
-}
-
 //////////////////////////////////////////////////////////////////////////
 // Types and constants
 //////////////////////////////////////////////////////////////////////////
-const Identifier    Identifier::BAD_IDENTIFIER( BAD_IDENTIFIER_VALUE, BAD_IDENTIFIER_NAME );
+const Identifier    Identifier::BAD_IDENTIFIER{ Identifier::BAD_IDENTIFIER_VALUE, Identifier::BAD_IDENTIFIER_NAME };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 Identifier::Identifier( void )
-    : mValue    (BAD_IDENTIFIER_VALUE)
-    , mName     (BAD_IDENTIFIER_NAME)
+    : mValue    (Identifier::BAD_IDENTIFIER_VALUE)
+    , mName     (Identifier::BAD_IDENTIFIER_NAME)
 {
 }
 

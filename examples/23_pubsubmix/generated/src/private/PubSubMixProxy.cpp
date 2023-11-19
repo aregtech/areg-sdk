@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     18.09.2023  09:14:53 GMT+02:00
+ * Generated at     15.11.2023  14:52:21 GMT+01:00
  *                  Create by AREG SDK code generator tool from source PubSubMix.
  *
  * \file            generated/src/private/PubSubMixProxy.hpp
@@ -21,6 +21,7 @@
 #include "generated/src/private/PubSubMixEvents.hpp"
 #include "areg/component/IEProxyListener.hpp"
 #include "areg/base/Thread.hpp"
+#include "areg/component/DispatcherThread.hpp"
 #include "areg/trace/GETrace.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -115,7 +116,16 @@ RemoteResponseEvent * PubSubMixProxy::createRemoteRequestFailedEvent(const Proxy
 
 ProxyBase::ServiceAvailableEvent * PubSubMixProxy::createServiceAvailableEvent( IENotificationEventConsumer & consumer )
 {
-    return static_cast<ProxyBase::ServiceAvailableEvent *>( DEBUG_NEW PubSubMixProxy::PubSubMixServiceAvailableEvent(consumer) );
+    ProxyBase::ServiceAvailableEvent* event = static_cast<ProxyBase::ServiceAvailableEvent *>( DEBUG_NEW PubSubMixProxy::PubSubMixServiceAvailableEvent(consumer) );
+    if (event != nullptr)
+    {
+        if (mDispatcherThread.getId() != Thread::getCurrentThreadId())
+        {
+            event->setEventDelay(ProxyBase::MINIMAL_DELAY_TIME_MS);
+        }
+    }
+
+    return event;
 }
 
 void PubSubMixProxy::registerServiceListeners( void )

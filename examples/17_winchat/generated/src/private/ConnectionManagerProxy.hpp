@@ -7,7 +7,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     18.09.2023  09:14:52 GMT+02:00
+ * Generated at     15.11.2023  14:52:01 GMT+01:00
  *                  Create by AREG SDK code generator tool from source ConnectionManager.
  *
  * \file            generated/src/private/ConnectionManagerProxy.hpp

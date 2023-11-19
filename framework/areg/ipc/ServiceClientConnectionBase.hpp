@@ -52,11 +52,6 @@ class ServiceClientConnectionBase   : public    IEServiceConnectionProvider
 //////////////////////////////////////////////////////////////////////////
 protected:
     /**
-     * \brief   Supported connection type. It is TCP/IP connection
-     **/
-    static constexpr    NERemoteService::eServiceConnection   CONNECT_TYPE  = NERemoteService::eServiceConnection::ConnectionTcpip;
-
-    /**
      * \brief   ServiceClientConnectionBase::eConnectionState
      *          Defines connection state values
      **/
@@ -81,9 +76,23 @@ protected:
 public:
     /**
      * \brief   Initializes client servicing object, sets remote service consumer object.
+     * \param   target              The ID of remote target service to send messages.
+     * \param   service             The type of remote service.
+     * \param   connectTypes        The bitwise set of connection types.
+     * \param   msgSource           The type of message source application that sends messages.
      * \param   connectionConsumer  The instance of remote service connection consumer object to handle service connection notifications.
+     * \param   messageHandler      The instance of message handler.
+     * \param   messageDispatcher   The instance of message dispatcher.
+     * \param   prefixName          The prefix to add to the names of message receive and send threads.
      **/
-    ServiceClientConnectionBase(const ITEM_ID & target, IEServiceConnectionConsumer& connectionConsumer, IERemoteMessageHandler & messageHandler, DispatcherThread & messageDispatcher);
+    ServiceClientConnectionBase(  const ITEM_ID & target
+                                , NERemoteService::eRemoteServices service
+                                , unsigned int connectTypes
+                                , NEService::eMessageSource msgSource
+                                , IEServiceConnectionConsumer& connectionConsumer
+                                , IERemoteMessageHandler & messageHandler
+                                , DispatcherThread & messageDispatcher
+                                , const String & prefixName);
     /**
      * \brief   Destructor
      **/
@@ -96,7 +105,7 @@ public:
     /**
      * \brief   Returns the value of cookie set in connection.
      **/
-    const ITEM_ID & getConnectionCookie( void ) const;
+    inline const ITEM_ID & getConnectionCookie( void ) const;
 
     /**
      * \brief   Each time querying the bytes sent via network connection returns
@@ -144,7 +153,7 @@ protected:
      *                      If nullptr or empty, it will use default settings.
      * \return  Returns true if system could configure. Otherwise, it returns false.
      **/
-    virtual bool setupServiceConnectionHost( const String & configFile ) override;
+    virtual bool setupServiceConnectionData(NERemoteService::eRemoteServices service, uint32_t connectTypes) override;
 
     /**
      * \brief   Call manually to set router service host name and port number.
@@ -185,25 +194,13 @@ protected:
     virtual bool isServiceHostSetup( void ) const override;
 
     /**
-     * \brief   Returns true if remote service is enabled.
-     **/
-    virtual bool isRemoteServicingEnabled( void ) const override;
-
-    /**
-     * \brief   Enables or disables remote service.
-     *          The method should be implemented to set business logic of enabling and disabling
-     *          remote service in case if it is already started.
-     * \param   enable  If true, the service is enabled. Otherwise, it is disabled.
-     **/
-    virtual void enableRemoteServicing( bool enable ) override;
-
-    /**
      * \brief   Creates the service connect request message, sets the message target and the source.
-     * \param   source  The ID of the source that sends connection message request.
-     * \param   target  The ID of the target to send the connection message request.
+     * \param   source      The ID of the source that sends connection message request.
+     * \param   target      The ID of the target to send the connection message request.
+     * \param   msgSource   The message source type of the connected client.
      * \return  Returns the created message for remote communication.
      **/
-    virtual RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target ) const override;
+    virtual RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target, NEService::eMessageSource msgSource) const override;
 
     /**
      * \brief   Creates the service disconnect request message, sets the message target and the source.
@@ -300,19 +297,23 @@ protected:
      * \brief   Called to start client socket connection. Returns true if connected.
      **/
     bool startConnection( void );
+
     /**
      * \brief   Called when connection is lost and should be immediately canceled.
      **/
     void cancelConnection( void );
+
     /**
      * \brief   Sets client socket connection state.
      * \param   newState    The connection state to set.
      **/
     inline void setConnectionState( ServiceClientConnectionBase::eConnectionState newState );
+
     /**
      * \brief   Returns current client socket connection state.
      **/
     inline ServiceClientConnectionBase::eConnectionState getConnectionState( void ) const;
+
     /**
      * \brief   Call to send the disconnect event. It disconnects the socket  and exits the thread.
      * \param   eventPrio   The priority of set to the event.
@@ -333,50 +334,59 @@ private:
 // Protected member variables
 //////////////////////////////////////////////////////////////////////////
 protected:
-    const ITEM_ID                   mTarget;
+    /**
+     * \brief   The ID of the target to send messages.
+     **/
+    const ITEM_ID                           mTarget;
+    
+    /**
+     * \brief   The remote target service to communicate.
+     **/
+    const NERemoteService::eRemoteServices  mService;
+
+    /**
+     * \brief   The bitwise set of connection types supported by remote service.
+     **/
+    const unsigned int                      mConnectTypes;
+
+    /**
+     * \brief   The type of messaging source application.
+     **/
+    const NEService::eMessageSource         mMessageSource;
+
     /**
      * \brief   Client connection object
      **/
-    ClientConnection                mClientConnection;
+    ClientConnection                        mClientConnection;
     /**
      * \brief   Instance of remote servicing consumer to handle message.
      **/
-    IEServiceConnectionConsumer &   mConnectionConsumer;
+    IEServiceConnectionConsumer &           mConnectionConsumer;
 
     /**
      * \brief   The thread that makes message dispatching.
      **/
-    DispatcherThread &              mMessageDispatcher;
-
-    /**
-     * \brief   Flag, indicates whether the remote servicing is enabled or not.
-     **/
-    bool                            mIsServiceEnabled;
-
-    /**
-     * \brief   The path of configuration file name.
-     **/
-    String                          mConfigFile;
+    DispatcherThread &                      mMessageDispatcher;
 
     /**
      * \brief   The connection channel.
      **/
-    Channel                         mChannel;
+    Channel                                 mChannel;
 
     /**
      * \brief   The sate of connection
      **/
-    eConnectionState                mConnectionState;
+    eConnectionState                        mConnectionState;
 
     /**
      * \brief   The Client Service event consumer
      **/
-    ServiceClientEventConsumer      mEventConsumer;
+    ServiceClientEventConsumer              mEventConsumer;
 
     /**
      * \brief   Data access synchronization object
      **/
-    mutable ResourceLock            mLock;
+    mutable ResourceLock                    mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables
@@ -385,19 +395,19 @@ private:
     /**
      * \brief   Connection retry timer object.
      **/
-    Timer                           mTimerConnect;
+    Timer                                   mTimerConnect;
     /**
      * \brief   Message receiver thread
      **/
-    ClientReceiveThread             mThreadReceive;
+    ClientReceiveThread                     mThreadReceive;
     /**
      * \brief   Message sender thread
      **/
-    ClientSendThread                mThreadSend;
+    ClientSendThread                        mThreadSend;
     /**
      * \brief   The Client Service event consumer
      **/
-    ReconnectTimerConsumer          mTimerConsumer;
+    ReconnectTimerConsumer                  mTimerConsumer;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

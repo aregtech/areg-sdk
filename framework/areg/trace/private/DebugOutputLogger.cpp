@@ -16,7 +16,6 @@
 #include "areg/trace/private/DebugOutputLogger.hpp"
 
 #include "areg/trace/private/LogConfiguration.hpp"
-#include "areg/trace/private/TraceProperty.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/DateTime.hpp"
 #include "areg/base/IEByteBuffer.hpp"
@@ -40,32 +39,24 @@ bool DebugOutputLogger::openLogger(void)
 #if defined(OUTPUT_DEBUG)
     if ( mIsOpened == false )
     {
-        const LogConfiguration & traceConfig = getTraceConfiguration();
-        ASSERT( static_cast<bool>(traceConfig.getStatus().getValue()) );
-        
-        const TraceProperty & prop = traceConfig.getDebugOutput();
-        if ( prop.isValid() && static_cast<bool>(prop.getValue()) )
+        const LogConfiguration& traceConfig = getTraceConfiguration();
+        if (traceConfig.isDebugOutputLoggingEnabled())
         {
+            mIsOpened = createLayouts();
 
-            mIsOpened = createLayouts( );
-
-            if ( mIsOpened )
+            if (mIsOpened)
             {
-                Process & curProcess = Process::getInstance();
+                Process& curProcess = Process::getInstance();
                 NETrace::sLogMessage logMsgHello(NETrace::eMessageType::MsgText, 0, NETrace::eLogPriority::PrioIgnoreLayout, nullptr, 0);
-                String::formatString( logMsgHello.lmTrace.dataMessage
+                String::formatString( logMsgHello.logMessage
                                     , NETrace::LOG_MESSAGE_BUFFER_SIZE
                                     , LoggerBase::FOMAT_MESSAGE_HELLO.data()
                                     , Process::getString(curProcess.getEnvironment())
                                     , curProcess.getFullPath().getString()
-                                    , logMsgHello.lmTrace.dataModuleId);
+                                    , logMsgHello.logModuleId);
 
                 logMessage(logMsgHello);
             }
-        }
-        else
-        {
-            ; // no property was set
         }
     }
 #endif  // !defined(OUTPUT_DEBUG)
@@ -80,12 +71,12 @@ void DebugOutputLogger::closeLogger(void)
     {
         Process & curProcess = Process::getInstance();
         NETrace::sLogMessage logMsgGoodbye(NETrace::eMessageType::MsgText, 0, NETrace::eLogPriority::PrioIgnoreLayout, nullptr, 0);
-        String::formatString( logMsgGoodbye.lmTrace.dataMessage
+        String::formatString( logMsgGoodbye.logMessage
                             , NETrace::LOG_MESSAGE_BUFFER_SIZE
                             , LoggerBase::FORMAT_MESSAGE_BYE.data()
                             , Process::getString(curProcess.getEnvironment())
                             , curProcess.getFullPath().getString()
-                            , logMsgGoodbye.lmTrace.dataModuleId);
+                            , logMsgGoodbye.logModuleId);
         logMessage(logMsgGoodbye);
     }
 #endif  // !defined(OUTPUT_DEBUG)
@@ -98,19 +89,19 @@ void DebugOutputLogger::closeLogger(void)
 
 void DebugOutputLogger::logMessage(const NETrace::sLogMessage & logMessage)
 {
-    if ( mIsOpened && NETrace::isLogMessage(logMessage.lmHeader) )
+    if ( mIsOpened )
     {
-        switch (logMessage.lmHeader.hdrLogType)
+        switch (logMessage.logMsgType)
         {
-        case NETrace::eMessageType::LogMessage:
-            getLayoutMessage().logMessage(logMessage, static_cast<IEOutStream &>(*this));
+        case NETrace::eMessageType::MsgText:
+            getLayoutMessage().logMessage(logMessage, static_cast<IEOutStream&>(*this));
             break;
 
-        case NETrace::eMessageType::LogScopeEnter:
-            getLayoutEnterScope().logMessage( logMessage, static_cast<IEOutStream &>(*this) );
+        case NETrace::eMessageType::MsgScopeEnter:
+            getLayoutEnterScope().logMessage(logMessage, static_cast<IEOutStream&>(*this));
             break;
 
-        case NETrace::eMessageType::LogScopeExit:
+        case NETrace::eMessageType::MsgScopeExit:
             getLayoutExitScope().logMessage( logMessage, static_cast<IEOutStream &>(*this) );
             break;
 
@@ -137,14 +128,17 @@ bool DebugOutputLogger::isLoggerOpened(void) const
     return mIsOpened;
 }
 
-unsigned int DebugOutputLogger::write(const unsigned char * /*buffer*/, unsigned int size)
+unsigned int DebugOutputLogger::write(const unsigned char * buffer, unsigned int size)
 {
+#if defined(OUTPUT_DEBUG)
+    mOutputMessageA.append(reinterpret_cast<const char *>(buffer), size);
+#endif  // defined(OUTPUT_DEBUG)
     return size;
 }
 
 unsigned int DebugOutputLogger::write(const IEByteBuffer & buffer)
 {
-    return buffer.getSizeUsed();
+    return write(buffer.getBuffer(), buffer.getSizeUsed());
 }
 
 unsigned int DebugOutputLogger::write( const String & asciiString )

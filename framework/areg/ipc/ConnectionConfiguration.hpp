@@ -9,7 +9,7 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        areg/ipc/ConnectionConfigurator.hpp
+ * \file        areg/ipc/ConnectionConfigManager.hpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
  * \brief       AREG Platform, Remote service connection configuration
@@ -19,15 +19,8 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/base/Containers.hpp"
-#include "areg/base/String.hpp"
-#include "areg/persist/Property.hpp"
 #include "areg/ipc/NERemoteService.hpp"
 
-/************************************************************************
- * Dependencies
- ************************************************************************/
-class FileBase;
 
 //////////////////////////////////////////////////////////////////////////
 // ConnectionConfiguration class declaration
@@ -40,56 +33,25 @@ class FileBase;
 class AREG_API ConnectionConfiguration
 {
 //////////////////////////////////////////////////////////////////////////
-// Internal types and constants
-//////////////////////////////////////////////////////////////////////////
-private:
-    /**
-     * \brief   List of configuration properties
-     **/
-    using ListProperties        = TEArrayList<Property>;
-    /**
-     * \brief   Map of configuration type and list of configuration properties.
-     * \tparam  NERemoteService::eServiceConnection         The section / type of configuration.
-     * \tparam  ConnectionConfiguration::ListProperties   The list of configuration properties.
-     **/
-    using MapConfiguration		= TEMap<NERemoteService::eServiceConnection, ListProperties>;
-
-    /**
-     * \brief   Connection configuration property indexes.
-     *          Each of property has fixed index.
-     **/
-    typedef enum E_ConnectionProperty : int
-    {
-          PropertyInvalid   = NECommon::INVALID_INDEX
-        , PropertyEnabled   = 0 //!< Index of property remote connection is enabled / disabled
-        , PropertyName          //!< Index of property remote connection service name
-        , PropertyHost          //!< Index of property remote connection host address
-        , PropertyPort          //!< Index of property remote connection port number
-
-        , PropertyLen           //!< Total length of connection properties list. Not used as property index.
-
-    } eConnectionProperty;
-
-    //!< The bit sets of connection property.
-    //!< There are only 4 main properties.
-    static constexpr uint32_t CONNECTION_PROPERTY_BITS  { 0b1111 };
-
-    /**
-     * \brief   By given property name, return the index of property in the property list.
-     * \param   strProperty     The name of property.
-     * \return  If passed property name is recognized and valid, returns valid property entry index
-     *          in the list. Otherwise, returns NECommon::INVALID_INDEX value.
-     **/
-    static eConnectionProperty getPosition( const String & strProperty );
-
-//////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Initializes connection configuration object and internals.
+     * \brief   Initializes connection configuration object to use properties based
+     *          on specified service and connection type.
+     * \param   service     The name of the service to read configuration properties.
+     * \param   connectType The name of the connection type to read configuration properties.
      **/
-    ConnectionConfiguration( void ) = default;
+    ConnectionConfiguration( const String & service, const String & connectType );
+
+    /**
+     * \brief   Initializes connection configuration object to use properties based
+     *          on specified service and connection type.
+     * \param   service     The type of the service to read configuration properties.
+     * \param   connectType The type of the connection to read configuration properties.
+     **/
+    ConnectionConfiguration(NERemoteService::eRemoteServices service, NERemoteService::eConnectionTypes connectType);
+
     /**
      * \brief   Destructor.
      **/
@@ -101,141 +63,95 @@ public:
 public:
 
     /**
-     * \brief   Loads configuration from given file path.
-     * \param   filePath    The relative or absolute file path of configuration file to load properties.
-     *                      If nullptr or empty, loads default configuration file (NEApplication::DEFAULT_ROUTER_CONFIG_FILE)
-     *\return   Returns true if succeeded to load file and configure properties.
+     * \brief   Returns the optional name of the remote service.
      **/
-    bool loadConfiguration( const char * filePath = nullptr );
+    inline const String& getRemoteServiceName(void) const;
 
     /**
-     * \brief   Loads configuration from given opened file.
-     * \param   file        The file object to read data. The file should exist and be opened for reading.
-     *\return   Returns true, if succeeded to load file and configure properties.
-     *          Returns false, if file was not opened for reading or the could not parse configuration file.
+     * \brief   Returns the name of the connection type of the remote service.
      **/
-    bool loadConfiguration( FileBase & file );
+    inline const String& getConnectionType(void) const;
 
     /**
-     * \brief   Returns connection enabled / disabled flag of given connection section.
-     * \param   section     The connection section, which property is requested.
-     *                      By default, it is NERemoteService::ConnectionTcpip section, which is simple TCP/IP connection.
-     * \return  Returns true, if connection for specified section is enabled.
-     *          Returns false, if connection for specified section is disabled.
-     *          Returns NEConnection::DEFAULT_REMOTE_SERVICE_ENABLED, if the property of specified connection does not exist, i.e. invalid.
+     * \brief   Returns true if the application already configured by reading configuration file or by default configuration.
      **/
-    bool getConnectionEnableFlag( NERemoteService::eServiceConnection section = NERemoteService::eServiceConnection::ConnectionTcpip ) const;
+    bool isConfigured(void) const;
 
     /**
-     * \brief   Returns connection port number of given connection section.
-     * \param   section     The connection section, which property is requested.
-     *                      By default, it is NERemoteService::ConnectionTcpip section, which is simple TCP/IP connection.
-     * \return  Returns the port number of specified connection section.
-     *          Returns NEConnection::DEFAULT_REMOTE_SERVICE_PORT, if the property of specified connection does not exist, i.e. invalid.
-     *          If returns invalid port, the remote connection port number is set, but the connection is disabled.
+     * \brief   Returns connection enabled / disabled flag of the remote service and type.
      **/
-    unsigned short getConnectionPort( NERemoteService::eServiceConnection section = NERemoteService::eServiceConnection::ConnectionTcpip ) const;
+    bool getConnectionEnableFlag( void ) const;
 
     /**
-     * \brief   Returns connection name of given connection section. The property is optional and is used to differentiate
-     *          different connection sections by name.
-     * \param   section     The connection section, which property is requested.
-     *                      By default, it is NERemoteService::ConnectionTcpip section, which is simple TCP/IP connection.
-     * \return  Returns connection name of specified connection section.
-     *          Returns empty string, if the property of specified connection does not exist, i.e. invalid.
+     * \brief   Set service connection enable flag of the remote service and type.
      **/
-    String getConnectionName( NERemoteService::eServiceConnection section = NERemoteService::eServiceConnection::ConnectionTcpip ) const;
+    void setConnectionEnableFlag(bool isEnabled);
 
     /**
-     * \brief   Returns connection host address (IP address of host name) of given connection section.
-     * \param   section     The connection section, which property is requested.
-     *                      By default, it is NERemoteService::ConnectionTcpip section, which is simple TCP/IP connection.
-     * \return  Returns connection host name of specified connection section.
-     *          Returns NEConnection::DEFAULT_REMOTE_SERVICE_HOST, if the property of specified connection does not exist, i.e. invalid.
+     * \brief   Returns the connection port number of the remote service and type.
      **/
-    String getConnectionHost( NERemoteService::eServiceConnection section = NERemoteService::eServiceConnection::ConnectionTcpip ) const;
+    unsigned short getConnectionPort( void ) const;
+
+    /**
+     * \brief   Sets the connection port number of the remote service and type.
+     **/
+    void setConnectionPort(unsigned short portNr);
+
+    /**
+     * \brief   Returns the connection address of the remote service and type.
+     **/
+    String getConnectionAddress( void ) const;
+
+    /**
+     * \brief   Sets the connection address of the remote service and type.
+     **/
+    void setConnectionAddress(const String& address);
+
+    /**
+     * \brief   Sets the connection address and port number of the remote service and type.
+     * \param   address     The connection address.
+     * \param   portNr      The connection port number.
+     **/
+    void setConnectionData(const String& address, unsigned short portNr);
 
     /**
      * \brief   Returns byte sets of connection host IP address of given connection section.
-     * \param   section     The connection section, which property is requested.
-     *                      By default, it is NERemoteService::ConnectionTcpip section, which is simple TCP/IP connection.
-     * \return  Returns true if the property of specified section is valid and all 4 bytes of IP address are set.
-     *          Returns IP address of NEConnection::DEFAULT_REMOTE_SERVICE_HOST, if the property of specified connection does not exist, i.e. invalid.
      **/
-    bool getConnectionHostIpAddress( unsigned char & OUT field0
-                                   , unsigned char & OUT field1
-                                   , unsigned char & OUT field2
-                                   , unsigned char & OUT field3
-                                   , NERemoteService::eServiceConnection section = NERemoteService::eServiceConnection::ConnectionTcpip);
-
-    /**
-     * \brief   Returns configuration file full path.
-     **/
-    inline const String & getConfigFileName( void ) const;
-
-//////////////////////////////////////////////////////////////////////////
-// Hidden methods.
-//////////////////////////////////////////////////////////////////////////
-private:
-
-    /**
-     * \brief   Parses single line of connection configuration. Returns valid section type
-     *          if could find appropriate property entry.
-     * \param   file        The file object, which is opened for reading.
-     * \param   inLine      The line of configuration to parse. The passed parameter is modified,
-     *                      until could not find the appropriate section type entry in configuration.
-     * \param   outProp     On output, this parameter contains appropriate connection section property data.
-     *\return   Returns connection section type if found any entry. Otherwise, returns invalid section value.
-     **/
-    NERemoteService::eServiceConnection _parseConnectionProperty( FileBase & file, String & inLine, Property & outProp );
-
-    /**
-     * \brief   Parses single line of connection configuration and initializes appropriate property data.
-     * \param   listProp    The list of properties to modify.
-     * \param   file        The file object, which is opened for reading.
-     * \param   inLine      The line of configuration to parse. Continues in the loop until succeeded to find valid property entry.
-     * \param   headModule  The name of module (executable) to parse configuration.
-     **/
-    bool _parseConnectionConfig(ListProperties & listProp, FileBase & file, String & inLine, const String & headModule );
-
-    /**
-     * \brief   Returns the value as string of appropriate property index of specified section.
-     * \param   key             The section type to return value.
-     * \param   entryIndex      The index of requested property. See eConnectionProperty.
-     * \param   defaultValue    The default value to return, in case if property is not set and invalid.
-     * \return  Returns the value of specified property or specified default value if configuration is invalid.
-     **/
-    String _getPropertyValue( NERemoteService::eServiceConnection key, ConnectionConfiguration::eConnectionProperty entryIndex, const char * defaultValue ) const;
+    bool getConnectionIpAddress( unsigned char & OUT field0
+                               , unsigned char & OUT field1
+                               , unsigned char & OUT field2
+                               , unsigned char & OUT field3);
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations.
 //////////////////////////////////////////////////////////////////////////
 private:
-    String            mConfigFile;    //!< The full path of configuration file
+    //! The name of the remote connection service name to look in configuration.
+    const String    mServiceName;
 
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(disable: 4251)
-#endif  // _MSC_VER
-
-    MapConfiguration    mMapConfig;     //!< The configuration map where the keys are configuration section types and value is property list.
-
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
-#endif  // _MSC_VER
+    //! The name of the connection type to look in configuration.
+    const String    mConnectType;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
 private:
+    ConnectionConfiguration(void) = delete;
     DECLARE_NOCOPY_NOMOVE( ConnectionConfiguration );
 };
 
 //////////////////////////////////////////////////////////////////////////
-// ConnectionConfiguration class inline methods
+// ConnectionConfiguration inline methods.
 //////////////////////////////////////////////////////////////////////////
-inline const String & ConnectionConfiguration::getConfigFileName( void ) const
+
+inline const String& ConnectionConfiguration::getRemoteServiceName(void) const
 {
-    return mConfigFile;
+    return mServiceName;
+}
+
+inline const String& ConnectionConfiguration::getConnectionType(void) const
+{
+    return mConnectType;
 }
 
 #endif  // AREG_IPC_CONNECTIONCONFIGURATION_HPP

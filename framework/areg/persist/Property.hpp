@@ -48,7 +48,23 @@ public:
     /**
      * \brief   Default constructor
      **/
-    Property( void ) = default;
+    Property( void );
+
+    /**
+     * \brief   Initializes the property, sets the key, value, comment and the optional flag to indicate whether the
+     *          property can be saved in the configuration for the next session or not.
+     * \param   key         The key of the property.
+     * \param   value       The value of the property.
+     * \param   comment     The comment to add to the property.
+     * \param   isTemporary The flag to indicate whether the property can be saved in the configuration file or not.
+     **/
+    Property(const PropertyKey& key, const PropertyValue& value, const String & comment = String::EmptyString, bool isTemporary = false);
+
+    /**
+     * \brief   Moves objects during initialization.
+     **/
+    Property(PropertyKey && key, PropertyValue && value, String && comment);
+    Property(PropertyKey&& key, PropertyValue&& value);
 
     /**
      * \brief   Parses and initializes Key-Value and the comment data from given parameters.
@@ -56,27 +72,61 @@ public:
      * \param   valueSet    The Value as a string to parse.
      * \param   comment     The optional comment for the property.
      **/
-    Property( const String & keySet, const String & valueSet, const String & comment = String::getEmptyString() );
+    Property( const String & keySet, const String & valueSet, const String & comment = String::EmptyString, bool isTemporary = false);
+
+    /**
+     * \brief   Initializes the property, sets the key, value, comment and the optional flag to indicate whether the
+     *          property can be saved in the configuration for the next session or not.
+     * \param   keySet      The key of the property.
+     * \param   valueSet    The value of the property.
+     * \param   comment     The comment to add to the property.
+     * \param   isTemporary The flag to indicate whether the property can be saved in the configuration file or not.
+     **/
+    Property(const char* keySet, const char* valueSet, const char* comment = nullptr, bool isTemporary = false);
+    Property(const std::string_view& keySet, const std::string_view& valueSet, const std::string_view& comment = String::EmptyString, bool isTemporary = false);
+
+    /**
+     * \brief   Initializes the property, sets all data and the optional flag to indicate whether the
+     *          property can be saved in the configuration for the next session or not.
+     * \param   section     The section part of the property key.
+     * \param   module      The module part of the property key.
+     * \param   property    The property part of the property key.
+     * \param   position    The position part of the property key.
+     * \param   value       The value of the property.
+     * \param   comment     The comment to add to the property.
+     * \param   isTemporary The flag to indicate whether the property can be saved in the configuration file or not.
+     **/
+    Property( const std::string_view& section
+            , const std::string_view& module
+            , const std::string_view& property
+            , const std::string_view& position
+            , const std::string_view& value
+            , const std::string_view& comment = String::EmptyString
+            , bool isTemporary = false);
+
     /**
      * \brief   Initializes Key, value and the comment.
      * \param   newProperty The property as a key and value pair to set.
      * \param   comment     The optional comment for the property.
      **/
-    Property( const Property::Entry & newProperty, const String & comment = String::getEmptyString() );
+    Property( const Property::Entry & newProperty, const String & comment = String::EmptyString, bool isTemporary = false);
+
     /**
      * \brief   Copies data from given source
      * \param   source  The source to copy data
      **/
     Property( const Property & source );
+
     /**
      * \brief   Moves data from given source
      * \param   source  The source to move data
      **/
     Property( Property && source ) noexcept;
+
     /**
      * \brief   Destructor
      **/
-    virtual ~Property( void ) = default;
+    ~Property( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -168,6 +218,7 @@ public:
      * \brief   Returns Value of the property
      **/
     const PropertyValue & getValue( void ) const;
+    PropertyValue& getValue(void);
 
     /**
      * \brief   Returns Value of Property as a string.
@@ -219,7 +270,7 @@ public:
      * \param   strProperties   The string, which contains data to set for Key and Value.
      * \return  Returns true if parsing succeeded and could extract property data.
      **/
-    bool parseProperty( String strProperties );
+    bool parseProperty( const String & strProperties );
 
     /**
      * \brief   Converts Key-Value pair data to the string.
@@ -231,10 +282,38 @@ public:
      **/
     void resetData( void );
 
+    /**
+     * \brief   Returns true if the property is applicable to the specified module (process),
+     *          i.e. either it is global and belongs to all modules or it belongs
+     *          only to the specified module.
+     * \param   module  The name of the module to check the property.
+     * \return  Returns true if the property is global or the module of the property key is equal
+     *          to the specified module. Otherwise, returns false.
+     **/
+    bool isModuleProperty(const String& module) const;
+
+    /**
+     * \brief   Sets or resets the temporary flag of the property.
+     *          The properties with the temporary flag are not saved in the configuration file.
+     *          Only properties with the specified module names are saved in the configuration file.
+     * \param   isTemporary     If true, the property is temporary.
+     **/
+    void setTemporary(bool isTemporary);
+
+    /**
+     * \brief   Returns true if the property is temporary.
+     **/
+    bool isTemporary(void) const;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
 protected:
+    /**
+     * \brief   The flag indicating whether the property is temporary or not.
+     **/
+    bool                mIsTemporary;
+
     /**
      * \brief   Comment of Property
      **/

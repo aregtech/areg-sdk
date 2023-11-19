@@ -516,7 +516,7 @@ private:
     bool _osLock( unsigned int timeout );
 
     /**
-     * \brief   Unlocks previousely locked semaphore, so that the other waiting threads
+     * \brief   Unlocks previously locked semaphore, so that the other waiting threads
      *          can take the ownership and continue execution.
      **/
     bool _osUnlock( void );
@@ -640,7 +640,7 @@ private:
     void _osCreateCriticalSection( void );
 
     /**
-     * \brief   The OS specific call to release critical secion.
+     * \brief   The OS specific call to release critical section.
      **/
     void _osReleaseCriticalSection( void );
 
@@ -846,7 +846,7 @@ private:
     bool _osLock( unsigned int timeout );
 
     /**
-     * \brief   Call to unlock previosely locked resources. It releases resource lock and lets the other threads
+     * \brief   Call to unlock previously locked resources. It releases resource lock and lets the other threads
      *          to lock and take the ownership.
      **/
     bool _osUnlock( void );
@@ -1339,14 +1339,14 @@ public:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   The OS specific call to lock multipe synchronization objects.
+     * \brief   The OS specific call to lock multiple synchronization objects.
      *          It returns the index of locking object, that the thread has
      *          taken the ownership.
-     * \pram    timeout     Timeout in milliseconds to wait. If expired,
-     *                      returns timeout expired value withoud locking.
+     * \pram    timeout     The timeout in milliseconds to wait. If expired,
+     *                      returns timeout expired value without locking.
      * \param   waitForAll  It true, waits for all objects.
      * \param   isAlertable If true and thread is locked it returns the
-     *                      complition routine index.
+     *                      completion routine index.
      **/
     int _osLock( unsigned int timeout, bool waitForAll, bool isAlertable );
 

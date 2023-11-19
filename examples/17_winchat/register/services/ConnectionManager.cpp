@@ -79,8 +79,7 @@ void ConnectionManager::startupServiceInterface( Component & holder )
     ConnectionManagerStub::startupServiceInterface( holder );
     CentralMessagerStub::startupServiceInterface( holder );
 
-    srand( static_cast<unsigned int>( DateTime::getNow().getTime() ) );
-    mCookies = rand();
+    mCookies = 1;
 
     setConnectionList( NEConnectionManager::MapConnection( ) );
 }
@@ -101,8 +100,13 @@ void ConnectionManager::requestConnect( const String & nickName, const DateTime 
         {
             if ( FindConnection(nickName, connection) == false )
             {
-                TRACE_DBG( "The connection [ %s ] at time [ %s ] can be registered with recommended cookie [ %u ]", static_cast<const char *>(nickName), static_cast<const char *>(connection.connectedTime.formatTime( )), mCookies + 1 );
-                responseConnect(nickName, getNextCookie(), dateTime, NEConnectionManager::eConnectionResult::ConnectionAccepted);
+                uint32_t cookie = getNextCookie();
+                TRACE_DBG( "The connection [ %s ] at time [ %s / %u] is accepted and can be registered with recommended cookie [ %u ]"
+                        , nickName.getString()
+                        , connection.connectTime.formatTime( ).getString()
+                        , static_cast<uint32_t>(connection.connectTime.getTime())
+                        , cookie);
+                responseConnect(nickName, cookie, dateTime, NEConnectionManager::eConnectionResult::ConnectionAccepted);
             }
             else
             {
@@ -145,11 +149,11 @@ void ConnectionManager::requestRegisterConnection( const String & nickName, unsi
                 NEConnectionManager::MapConnection & mapConnections = getConnectionList( );
                 listConnections.resize(mapConnections.getSize( ));
                 int count = 0;
-                for ( MAPPOS pos = mapConnections.firstPosition(); mapConnections.isValidPosition(pos); pos = mapConnections.nextPosition( pos ) )
+                const auto& map = mapConnections.getData();
+                for (const auto& entry : map)
                 {
-                    const NEConnectionManager::sConnection & entry = mapConnections.valueAtPosition( pos );
-                    ASSERT(connection != entry);
-                    listConnections.setAt(count ++, entry);
+                    ASSERT(entry.second != connection);
+                    listConnections.setAt(count++, entry.second);
                 }
 
                 uint32_t cookie = connection.cookie != NEConnectionManager::InvalidCookie ? connection.cookie : connectCookie;
@@ -322,15 +326,16 @@ bool ConnectionManager::FindConnection( const String & nickName, NEConnectionMan
 
     bool result = false;
     const NEConnectionManager::MapConnection & mapClients = getConnectionList();
-    for ( MAPPOS pos = mapClients.firstPosition(); (result == false) && mapClients.isValidPosition(pos); pos = mapClients.nextPosition(pos) )
+    const auto& map = mapClients.getData();
+    for (const auto& entry : map)
     {
-        const NEConnectionManager::sConnection & temp = mapClients.valueAtPosition(pos);
-        if ( nickName == temp.nickName )
+        if (nickName == entry.second.nickName)
         {
-            result      = true;
-            connection  = temp;
+            result = true;
+            connection = entry.second;
         }
     }
+
     return result;
 }
 

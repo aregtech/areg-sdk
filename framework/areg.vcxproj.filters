@@ -93,9 +93,6 @@
     <ClCompile Include="areg\ipc\private\IERemoteMessageHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\ipc\private\NEConnection.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\ipc\private\NERemoteService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -105,7 +102,7 @@
     <ClCompile Include="areg\trace\private\Layouts.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\trace\private\NELogConfig.cpp">
+    <ClCompile Include="areg\trace\private\NELogging.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\trace\private\NETrace.cpp">
@@ -468,15 +465,6 @@
     <ClCompile Include="areg\trace\private\TraceMessage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\trace\private\TraceProperty.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\trace\private\TracePropertyKey.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="areg\trace\private\TracePropertyValue.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\trace\private\TraceScope.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -565,6 +553,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="areg\ipc\private\RouterClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\persist\private\ConfigManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\ipc\private\NEConnection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -707,13 +701,13 @@
     <ClInclude Include="areg\ipc\NERemoteService.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\persist\private\NEPersistence.hpp">
+    <ClInclude Include="areg\persist\NEPersistence.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\trace\private\Layouts.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\trace\private\NELogConfig.hpp">
+    <ClInclude Include="areg\trace\private\NELogging.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\trace\GETrace.h">
@@ -989,7 +983,7 @@
     <ClInclude Include="areg\ipc\ConnectionConfiguration.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\persist\private\PersistenceManager.hpp">
+    <ClInclude Include="areg\persist\PersistenceManager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\persist\Property.hpp">
@@ -1022,15 +1016,6 @@
     <ClInclude Include="areg\trace\private\TraceManager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\trace\private\TraceProperty.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\trace\private\TracePropertyKey.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\trace\private\TracePropertyValue.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="areg\trace\TraceMessage.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1041,9 +1026,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\ipc\IERemoteMessageHandler.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\ipc\NEConnection.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\ipc\SendMessageEvent.hpp">
@@ -1124,23 +1106,23 @@
     <ClInclude Include="areg\ipc\private\RouterClient.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="areg\persist\ConfigManager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\ipc\private\NEConnection.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="areg\resources\areg_post_build.bat">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="areg\resources\log.init">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="areg\resources\router.init">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="areg\Readme.md" />
-    <None Include="areg\resources\logger.init">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="areg\Makefile" />
     <None Include="Makefile" />
+    <None Include="areg\resources\areg.init">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="areg\resources\areg.rc">

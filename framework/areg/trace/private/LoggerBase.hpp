@@ -165,7 +165,7 @@ protected:
     /**
      * \brief   The instance of tracer configurations object.
      **/
-    LogConfiguration &  mTracerConfiguration;
+    LogConfiguration &  mLogConfiguration;
 
 private:
     /**
@@ -200,7 +200,7 @@ inline bool LoggerBase::reopenLogger(void)
 
 inline const LogConfiguration & LoggerBase::getTraceConfiguration( void ) const
 {
-    return mTracerConfiguration;
+    return mLogConfiguration;
 }
 
 inline const LayoutManager & LoggerBase::getLayoutMessage(void) const
