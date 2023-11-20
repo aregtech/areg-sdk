@@ -687,7 +687,7 @@ private:
      * \param   unique  If true, the name of the file is unique.
      * \return  Returns the length of data in the buffer.
      */
-    static unsigned int _osCreateTempFile(char* buffer, const char* folder, const char * prefix, unsigned int unique);
+    static unsigned int _osCreateTempFileName(char* buffer, const char* folder, const char * prefix, unsigned int unique);
 
     /**
      * \brief   OS specific method to retrieve the OS specific methods.

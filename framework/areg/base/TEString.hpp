@@ -357,7 +357,7 @@ public:
     /**
      * \brief   Returns the string object.
      **/
-    inline const std::basic_string<CharType>& getObject(void) const;
+    inline const std::basic_string<CharType>& getData(void) const;
 
     /**
      * \brief   Returns true if specified character position is valid in the string.
@@ -1538,7 +1538,7 @@ inline const CharType* TEString<CharType>::getString(void) const
 }
 
 template<typename CharType>
-inline const std::basic_string<CharType>& TEString<CharType>::getObject(void) const
+inline const std::basic_string<CharType>& TEString<CharType>::getData(void) const
 {
     return mData;
 }
@@ -3170,13 +3170,13 @@ inline IEOutStream& operator << (IEOutStream& stream, const TEString<CT>& output
 template<typename CT>
 inline std::ostream & operator << ( std::ostream & stream, const TEString<CT> & output )
 {
-    return (stream << output.getObject( ));
+    return (stream << output.getData( ));
 }
 
 template<typename CT>
 inline const std::istream & operator >> ( const std::istream & stream, TEString<CT> & input )
 {
-    return (stream >> input.getObject( ));
+    return (stream >> input.getData( ));
 }
 
 #endif  // AREG_BASE_TESTRING_HPP

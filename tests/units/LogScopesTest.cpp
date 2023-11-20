@@ -13,6 +13,8 @@
 #include "areg/appbase/NEApplication.hpp"
 #include "areg/base/Thread.hpp"
 
+#include <string_view>
+
 namespace
 {
     //!< The default config file

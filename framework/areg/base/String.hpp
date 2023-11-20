@@ -618,7 +618,7 @@ namespace std
         //! An operator to convert String object to unsigned int.
         inline unsigned int operator()(const String& key) const
         {
-            return static_cast<unsigned int>(std::hash<std::string>{}(key.getObject()));
+            return static_cast<unsigned int>(std::hash<std::string>{}(key.getData()));
         }
     };
 }

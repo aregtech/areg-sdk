@@ -618,7 +618,7 @@ namespace std
         //! An operator to convert String object to unsigned int.
         inline unsigned int operator()(const WideString& key) const
         {
-            return static_cast<unsigned int>(std::hash<std::wstring>{}(key.getObject()));
+            return static_cast<unsigned int>(std::hash<std::wstring>{}(key.getData()));
         }
     };
 }

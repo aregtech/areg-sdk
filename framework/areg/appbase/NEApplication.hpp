@@ -234,6 +234,7 @@ namespace NEApplication
             , { {"log"      , "*"   , "file"    , "location"}, DEFAULT_LOG_FILE                 }   //!< The log file location and file name mask.
             , { {"log"      , "*"   , "file"    , "append"  }, "false"                          }   //!< The flag to append logs into the file.
             , { {"log"      , "*"   , "remote"  , "size"    }, "100"                            }   //!< The queue size of remote logging.
+            , { {"log"      , "*"   , "remote"  , "service" }, "logger"                         }   //!< The service name of the remote logging.
             , { {"log"      , "*"   , "layout"  , "enter"   }, DEFAULT_LAYOUT_SCOPE_EXIT        }   //!< The layout of enter scope message.
             , { {"log"      , "*"   , "layout"  , "message" }, DEFAULT_LAYOUT_LOG_MESSAGE       }   //!< The layout of log message.
             , { {"log"      , "*"   , "layout"  , "exit"    }, DEFAULT_LAYOUT_SCOPE_EXIT        }   //!< The layout of exit scope message.

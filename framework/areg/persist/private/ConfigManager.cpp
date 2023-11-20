@@ -383,7 +383,16 @@ bool ConfigManager::readConfig(const String& filePath /*= String::EmptyString*/)
     if (mIsConfigured == false)
     {
         ASSERT(mFilePath.isEmpty());
-        String path = filePath.isEmpty() ? NEApplication::DEFAULT_CONFIG_FILE : filePath;
+        String path;
+        if (filePath.isEmpty())
+        {
+            path = NEApplication::DEFAULT_CONFIG_FILE;
+        }
+        else
+        {
+            path = filePath;
+        }
+
         path = File::getFileFullPath(File::normalizePath(path));
         File fileConfig(path, FileBase::FO_MODE_EXIST | FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_SHARE_READ);
         if (fileConfig.open() && readConfig(fileConfig))
@@ -418,10 +427,10 @@ bool ConfigManager::saveConfig(const String& filePath)
                                         File::FO_MODE_CREATE    |
                                         File::FO_MODE_SHARE_READ};
 
-    constexpr unsigned int modeWrite{   File::FO_MODE_WRITE |
-                                        File::FO_MODE_READ  |
-                                        File::FO_MODE_TEXT  |
-                                        File::FO_MODE_CREATE};
+    constexpr unsigned int modeWrite{   FileBase::FO_MODE_READ       | 
+                                        FileBase::FO_MODE_TEXT       | 
+                                        FileBase::FO_MODE_CREATE     | 
+                                        FileBase::FO_MODE_WRITE };
 
     bool saveAll{ false };
 
@@ -454,7 +463,7 @@ bool ConfigManager::saveConfig(const String& filePath)
         {
             srcFile.close();
             dstFile.close();
-            result = File::moveFile(tempFile, dstPath);
+            result = File::copyFile(tempFile, dstPath, true);
             File::deleteFile(tempFile);
         }
     }
@@ -476,7 +485,18 @@ Version ConfigManager::getConfigVersion(void) const
     const NEPersistence::sPropertyKey& key = NEPersistence::getConfigVersion();
 
     const Property* prop = _getProperty(mReadonlyProperties, key.section, NEPersistence::SYNTAX_ALL_MODULES, key.property, key.position, confKey, true);
-    return Version(prop != nullptr ? prop->getValueString() : NEPersistence::CONFIG_VERSION);
+
+    Version result;
+    if (prop != nullptr)
+    {
+        result = prop->getValueString();
+    }
+    else
+    {
+        result = NEPersistence::CONFIG_VERSION;
+    }
+
+    return result;
 }
 
 std::vector<Identifier> ConfigManager::getServiceList(void) const
@@ -533,7 +553,16 @@ Version ConfigManager::getLogVersion(void) const
     const NEPersistence::sPropertyKey& key = NEPersistence::getLogVersion();
 
     const PropertyValue* value = getPropertyValue(key.section, key.property, key.position, confKey);
-    return Version(value != nullptr ? value->getString() : NEPersistence::CONFIG_VERSION);
+    Version result;
+    if (value != nullptr)
+    {
+        result = value->getString();
+    }
+    else
+    {
+        result = NEPersistence::CONFIG_VERSION;
+    }
+    return result;
 }
 
 bool ConfigManager::getLogEnabled(const String& logType) const
@@ -576,7 +605,18 @@ String ConfigManager::getLogFileLocation(void) const
     constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogFileLocation;
     const NEPersistence::sPropertyKey& key = NEPersistence::getLogFileLocation();
     const PropertyValue* value = getPropertyValue(key.section, key.property, key.position, confKey);
-    return (value != nullptr ? value->getString() : NEApplication::DEFAULT_LOG_FILE);
+
+    String result;
+    if (value != nullptr)
+    {
+        result = value->getString();
+    }
+    else
+    {
+        result = NEApplication::DEFAULT_LOG_FILE;
+    }
+
+    return result;
 }
 
 bool ConfigManager::getLogFileAppend(void) const
@@ -600,7 +640,7 @@ uint32_t ConfigManager::getLogRemoteQueueSize(void) const
 {
     Lock lock(mLock);
 
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogQueueSize;
+    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogRemoteQueue;
     const NEPersistence::sPropertyKey& key = NEPersistence::getLogRemoteQueueSize();
     const PropertyValue* value = getPropertyValue(key.section, key.property, key.position, confKey);
     return (value != nullptr ? value->getInteger() : NEApplication::DEFAULT_LOG_QUEUE_SIZE);
@@ -610,7 +650,7 @@ void ConfigManager::setLogRemoteQueueSize(uint32_t newValue, bool isTemporary /*
 {
     Lock lock(mLock);
 
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogQueueSize;
+    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogRemoteQueue;
     const NEPersistence::sPropertyKey& key = NEPersistence::getLogRemoteQueueSize();
     setModuleProperty(key.section, key.property, key.position, String::toString(newValue), confKey, isTemporary);
 }
@@ -622,7 +662,18 @@ String ConfigManager::getLogLayoutEnter(void) const
     constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogLayoutEnter;
     const NEPersistence::sPropertyKey& key = NEPersistence::getLogLayoutEnter();
     const PropertyValue* value = getPropertyValue(key.section, key.property, key.position, confKey);
-    return (value != nullptr ? value->getString() : NEApplication::DEFAULT_LAYOUT_SCOPE_ENTER);
+
+    String result;
+    if (value != nullptr)
+    {
+        result = value->getString();
+    }
+    else
+    {
+        result = NEApplication::DEFAULT_LAYOUT_SCOPE_ENTER;
+    }
+
+    return result;
 }
 
 void ConfigManager::setLogLayoutEnter(const String& newValue, bool isTemporary /*= false*/)
@@ -641,7 +692,18 @@ String ConfigManager::getLogLayoutMessage(void) const
     constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogLayoutMessage;
     const NEPersistence::sPropertyKey& key = NEPersistence::getLogLayoutMessage();
     const PropertyValue* value = getPropertyValue(key.section, key.property, key.position, confKey);
-    return (value != nullptr ? value->getString() : NEApplication::DEFAULT_LAYOUT_LOG_MESSAGE);
+
+    String result;
+    if (value != nullptr)
+    {
+        result = value->getString();
+    }
+    else
+    {
+        result = NEApplication::DEFAULT_LAYOUT_LOG_MESSAGE;
+    }
+    
+    return result;
 }
 
 void ConfigManager::setLogLayoutMessage(const String& newValue, bool isTemporary /*= false*/)
@@ -660,7 +722,18 @@ String ConfigManager::getLogLayoutExit(void) const
     constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogLayoutExit;
     const NEPersistence::sPropertyKey& key = NEPersistence::getLogLayoutExit();
     const PropertyValue* value = getPropertyValue(key.section, key.property, key.position, confKey);
-    return (value != nullptr ? value->getString() : NEApplication::DEFAULT_LAYOUT_SCOPE_EXIT);
+
+    String result;
+    if (value != nullptr)
+    {
+        result = value->getString();
+    }
+    else
+    {
+        result = NEApplication::DEFAULT_LAYOUT_SCOPE_EXIT;
+    }
+    
+    return result;
 }
 
 void ConfigManager::setLogLayoutExit(const String& newValue, bool isTemporary /*= false*/)
@@ -841,7 +914,18 @@ String ConfigManager::getRemoteServiceAddress(const String& service, const Strin
     constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryServiceAddress;
     const NEPersistence::sPropertyKey& key = NEPersistence::getServiceAddress();
     const PropertyValue* value = getPropertyValue(service, key.property, connectType, confKey);
-    return (value != nullptr ? value->getString() : NEApplication::DEFAULT_SERVICE_HOST);
+
+    String result;
+    if (value != nullptr)
+    {
+        result = value->getString();
+    }
+    else
+    {
+        result = NEApplication::DEFAULT_SERVICE_HOST;
+    }
+    
+    return result;
 }
 
 String ConfigManager::getRemoteServiceAddress(NERemoteService::eRemoteServices serviceType, NERemoteService::eConnectionTypes connectType) const
