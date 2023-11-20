@@ -15,6 +15,7 @@
 #include "areg/ipc/private/RouterClient.hpp"
 
 #include "areg/ipc/IEServiceRegisterConsumer.hpp"
+#include "areg/ipc/private/NEConnection.hpp"
 
 #include "areg/component/RemoteEventFactory.hpp"
 #include "areg/component/DispatcherThread.hpp"
@@ -46,9 +47,16 @@ DEF_TRACE_SCOPE(areg_ipc_private_RouterClient_unregisterServiceConsumer);
 //////////////////////////////////////////////////////////////////////////
 
 RouterClient::RouterClient(IEServiceConnectionConsumer& connectionConsumer, IEServiceRegisterConsumer& registerConsumer)
-    : ServiceClientConnectionBase   (NEService::COOKIE_ROUTER, connectionConsumer, static_cast<IERemoteMessageHandler &>(self()), static_cast<DispatcherThread &>(self()))
+    : ServiceClientConnectionBase   ( NEService::COOKIE_ROUTER
+                                    , NERemoteService::eRemoteServices::ServiceRouter
+                                    , static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip)
+                                    , NEService::eMessageSource::MessageSourceClient
+                                    , connectionConsumer
+                                    , static_cast<IERemoteMessageHandler &>(self())
+                                    , static_cast<DispatcherThread &>(self())
+                                    , RouterClient::PREFIX_THREAD)
     , IEServiceRegisterProvider     ( )
-    , DispatcherThread              (NEConnection::CLIENT_DISPATCH_MESSAGE_THREAD.data())
+    , DispatcherThread              (String(RouterClient::PREFIX_THREAD) + NEConnection::CLIENT_DISPATCH_MESSAGE_THREAD)
     , IERemoteEventConsumer         ( )
 
     , mRegisterConsumer (registerConsumer)
@@ -104,7 +112,7 @@ bool RouterClient::registerServiceProvider( const StubAddress & stubService )
                    , StubAddress::convAddressToPath(stubService).getString()
                    , mClientConnection.getCookie());
 
-        result = sendMessage( NEConnection::createRouterRegisterService(stubService, mClientConnection.getCookie(), NEService::COOKIE_ROUTER), Event::eEventPriority::EventPriorityHigh );
+        result = sendMessage(NERemoteService::createRouterRegisterService(stubService, mClientConnection.getCookie(), NEService::COOKIE_ROUTER), Event::eEventPriority::EventPriorityHigh );
     }
 
     return result;
@@ -121,7 +129,7 @@ void RouterClient::unregisterServiceProvider(const StubAddress & stubService, co
                    , StubAddress::convAddressToPath(stubService).getString()
                    , mClientConnection.getCookie());
 
-        sendMessage( NEConnection::createRouterUnregisterService(stubService, reason, mClientConnection.getCookie(), NEService::COOKIE_ROUTER) );
+        sendMessage(NERemoteService::createRouterUnregisterService(stubService, reason, mClientConnection.getCookie(), NEService::COOKIE_ROUTER) );
     }
 }
 
@@ -136,7 +144,7 @@ bool RouterClient::registerServiceConsumer(const ProxyAddress & proxyService)
                    , ProxyAddress::convAddressToPath(proxyService).getString()
                    , mClientConnection.getCookie());
 
-        result = sendMessage( NEConnection::createRouterRegisterClient(proxyService, mClientConnection.getCookie(), NEService::COOKIE_ROUTER), Event::eEventPriority::EventPriorityHigh);
+        result = sendMessage(NERemoteService::createRouterRegisterClient(proxyService, mClientConnection.getCookie(), NEService::COOKIE_ROUTER), Event::eEventPriority::EventPriorityHigh);
     }
 
     return result;
@@ -153,7 +161,7 @@ void RouterClient::unregisterServiceConsumer(const ProxyAddress & proxyService, 
                    , ProxyAddress::convAddressToPath(proxyService).getString()
                    , mClientConnection.getCookie());
 
-        sendMessage( NEConnection::createRouterUnregisterClient(proxyService, reason, mClientConnection.getCookie(), NEService::COOKIE_ROUTER) );
+        sendMessage(NERemoteService::createRouterUnregisterClient(proxyService, reason, mClientConnection.getCookie(), NEService::COOKIE_ROUTER) );
     }
 }
 

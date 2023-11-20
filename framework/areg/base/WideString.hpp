@@ -431,7 +431,7 @@ public:
      * \note    By default, it will be 128 character space allocated to format string.
      *          If fails, will try repeat operation with 512 chars
      **/
-    const WideString& format(const wchar_t* format, ...);
+    WideString& format(const wchar_t* format, ...);
 
     /**
      * \brief   Formats the string. The classic rules similar of 'vsprintf' are applied.
@@ -441,7 +441,7 @@ public:
      * \note    By default, it will be 128 character space allocated to format string.
      *          If fails, will try repeat operation with 512 chars
      **/
-    const WideString& formatList(const wchar_t* format, va_list argptr);
+    WideString& formatList(const wchar_t* format, va_list argptr);
 
     /**
      * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
@@ -604,7 +604,6 @@ protected:
     #pragma warning(default: 4251)
 #endif  // _MSC_VER
 
-
 //////////////////////////////////////////////////////////////////////////
 // Hasher of WideString class
 //////////////////////////////////////////////////////////////////////////
@@ -619,7 +618,7 @@ namespace std
         //! An operator to convert String object to unsigned int.
         inline unsigned int operator()(const WideString& key) const
         {
-            return static_cast<unsigned int>(std::hash<std::wstring>{}(key.getObject()));
+            return static_cast<unsigned int>(std::hash<std::wstring>{}(key.getData()));
         }
     };
 }
@@ -965,7 +964,7 @@ inline double WideString::toDouble( void ) const
 
 inline bool WideString::toBool( void ) const
 {
-    return (NEString::compareIgnoreCase<wchar_t, char>( getString(), NECommon::BOOLEAN_TRUE.data() ) == NEMath::eCompare::Equal);
+    return (isEmpty() || NEString::compareIgnoreCase<wchar_t, char>(getString(), NECommon::BOOLEAN_FALSE.data()) == NEMath::eCompare::Equal ? false : true);
 }
 
 inline WideString & WideString::fromInt32( int32_t value, NEString::eRadix radix /*= NEString::RadixDecimal */ )

@@ -19,8 +19,10 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/component/NEService.hpp"
+
 #include "areg/base/RemoteMessage.hpp"
+#include "areg/component/NEService.hpp"
+#include "areg/ipc/NERemoteService.hpp"
 
 /************************************************************************
  * Dependencies
@@ -66,11 +68,11 @@ public:
      *          The function will read configuration file and initialize settings.
      *          If file path is nullptr or empty, Remote Service will have default 
      *          configuration settings.
-     * \param   configFile  Relative or absolute path of remote service configuration file.
-     *                      If nullptr or empty, it will use default settings.
+     * \param   service     The service module name of the configuration to extract connection information.
+     * \param   connectType The bitwise set of connection types like 'tcpip' or 'udp'.
      * \return  Returns true if system could configure. Otherwise, it returns false.
      **/
-    virtual bool setupServiceConnectionHost( const String & configFile ) = 0;
+    virtual bool setupServiceConnectionData( NERemoteService::eRemoteServices service, uint32_t connectTypes ) = 0;
 
     /**
      * \brief   Call manually to set router service host name and port number.
@@ -111,25 +113,13 @@ public:
     virtual bool isServiceHostSetup( void ) const = 0;
 
     /**
-     * \brief   Returns true if remote service is enabled.
-     **/
-    virtual bool isRemoteServicingEnabled( void ) const = 0;
-
-    /**
-     * \brief   Enables or disables remote service.
-     *          The method should be implemented to set business logic of enabling and disabling
-     *          remote service in case if it is already started.
-     * \param   enable  If true, the service is enabled. Otherwise, it is disabled.
-     **/
-    virtual void enableRemoteServicing( bool enable ) = 0;
-
-    /**
      * \brief   Creates the service connect request message, sets the message target and the source.
-     * \param   source  The ID of the source that sends connection message request.
-     * \param   target  The ID of the target to send the connection message request.
+     * \param   source      The ID of the source that sends connection message request.
+     * \param   target      The ID of the target to send the connection message request.
+     * \param   msgSource   The message source type of the connected client.
      * \return  Returns the created message for remote communication.
      **/
-    virtual RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target ) const = 0;
+    virtual RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target, NEService::eMessageSource msgSource) const = 0;
 
     /**
      * \brief   Creates the service disconnect request message, sets the message target and the source.

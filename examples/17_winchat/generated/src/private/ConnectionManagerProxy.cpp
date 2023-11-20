@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     18.09.2023  09:14:52 GMT+02:00
+ * Generated at     15.11.2023  14:52:01 GMT+01:00
  *                  Create by AREG SDK code generator tool from source ConnectionManager.
  *
  * \file            generated/src/private/ConnectionManagerProxy.hpp
@@ -21,6 +21,7 @@
 #include "generated/src/private/ConnectionManagerEvents.hpp"
 #include "areg/component/IEProxyListener.hpp"
 #include "areg/base/Thread.hpp"
+#include "areg/component/DispatcherThread.hpp"
 #include "areg/trace/GETrace.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -123,7 +124,16 @@ RemoteResponseEvent * ConnectionManagerProxy::createRemoteRequestFailedEvent(con
 
 ProxyBase::ServiceAvailableEvent * ConnectionManagerProxy::createServiceAvailableEvent( IENotificationEventConsumer & consumer )
 {
-    return static_cast<ProxyBase::ServiceAvailableEvent *>( DEBUG_NEW ConnectionManagerProxy::ConnectionManagerServiceAvailableEvent(consumer) );
+    ProxyBase::ServiceAvailableEvent* event = static_cast<ProxyBase::ServiceAvailableEvent *>( DEBUG_NEW ConnectionManagerProxy::ConnectionManagerServiceAvailableEvent(consumer) );
+    if (event != nullptr)
+    {
+        if (mDispatcherThread.getId() != Thread::getCurrentThreadId())
+        {
+            event->setEventDelay(ProxyBase::MINIMAL_DELAY_TIME_MS);
+        }
+    }
+
+    return event;
 }
 
 void ConnectionManagerProxy::registerServiceListeners( void )

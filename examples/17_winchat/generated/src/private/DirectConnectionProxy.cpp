@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     18.09.2023  09:14:53 GMT+02:00
+ * Generated at     15.11.2023  14:52:02 GMT+01:00
  *                  Create by AREG SDK code generator tool from source DirectConnection.
  *
  * \file            generated/src/private/DirectConnectionProxy.hpp
@@ -21,6 +21,7 @@
 #include "generated/src/private/DirectConnectionEvents.hpp"
 #include "areg/component/IEProxyListener.hpp"
 #include "areg/base/Thread.hpp"
+#include "areg/component/DispatcherThread.hpp"
 #include "areg/trace/GETrace.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -117,7 +118,16 @@ RemoteResponseEvent * DirectConnectionProxy::createRemoteRequestFailedEvent(cons
 
 ProxyBase::ServiceAvailableEvent * DirectConnectionProxy::createServiceAvailableEvent( IENotificationEventConsumer & consumer )
 {
-    return static_cast<ProxyBase::ServiceAvailableEvent *>( DEBUG_NEW DirectConnectionProxy::DirectConnectionServiceAvailableEvent(consumer) );
+    ProxyBase::ServiceAvailableEvent* event = static_cast<ProxyBase::ServiceAvailableEvent *>( DEBUG_NEW DirectConnectionProxy::DirectConnectionServiceAvailableEvent(consumer) );
+    if (event != nullptr)
+    {
+        if (mDispatcherThread.getId() != Thread::getCurrentThreadId())
+        {
+            event->setEventDelay(ProxyBase::MINIMAL_DELAY_TIME_MS);
+        }
+    }
+
+    return event;
 }
 
 void DirectConnectionProxy::registerServiceListeners( void )

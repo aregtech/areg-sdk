@@ -14,7 +14,6 @@
  ************************************************************************/
 #include "areg/ipc/ClientConnection.hpp"
 
-#include "areg/ipc/NEConnection.hpp"
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/component/NEService.hpp"
 

@@ -25,6 +25,7 @@
 #include "areg/base/NEString.hpp"
 #include "areg/base/Containers.hpp"
 
+#include <filesystem>
 
 //////////////////////////////////////////////////////////////////////////
 // File class implementation
@@ -94,7 +95,7 @@ unsigned int File::getSizeReadable( void ) const
     if (isOpened())
     {
         std::error_code err;
-        std::uintmax_t sz = std::filesystem::file_size(mFileName.getObject(), err);
+        std::uintmax_t sz = std::filesystem::file_size(mFileName.getData(), err);
 
         lenRead = _osGetPositionFile();
         lenUsed = !err ? static_cast<unsigned int>(sz) : 0;
@@ -111,7 +112,7 @@ unsigned int File::getSizeWritable( void ) const
     if (isOpened())
     {
         std::error_code err;
-        std::uintmax_t sz = std::filesystem::file_size(mFileName.getObject(), err);
+        std::uintmax_t sz = std::filesystem::file_size(mFileName.getData(), err);
 
         lenWritten  = _osGetPositionFile();
         lenAvailable = !err ? static_cast<unsigned int>(sz) : 0;
@@ -131,7 +132,7 @@ bool File::remove( void )
 
         close();
         std::error_code err;
-        result = std::filesystem::remove(mFileName.getObject(), err);
+        result = std::filesystem::remove(mFileName.getData(), err);
     }
 
     mFileHandle = File::_osGetInvalidHandle();
@@ -182,25 +183,47 @@ inline bool File::_nameHasParentFolder(const char * filePath, bool skipSep)
 
 String File::genTempFileName(const char* prefix, bool unique, bool inTempFolder)
 {
-    String result;
-
-    result.reserve(File::MAXIMUM_PATH);
-    unsigned int space{ 0 };
-    if (result.getCapacity() != 0)
+    char buffer[File::MAXIMUM_PATH];
+    String pref(prefix == nullptr ? Process::getInstance().getAppName().getString() : prefix);
+    String name;
+    if (unique)
     {
-        char* buffer = result.getBuffer();
-        unsigned int ticks = unique ? 0 : static_cast<unsigned int>(DateTime::getSystemTickCount());
-        prefix = prefix == nullptr ? File::TEMP_FILE_PREFIX.data() : prefix;
-        String dir = inTempFolder ? File::getTempDir() : File::getCurrentDir();
-        if (dir.isEmpty() == false)
-        {
-            space = _osCreateTempFile(buffer, dir.getString(), prefix, ticks);
-        }
+        unsigned int ticks = unique ? static_cast<unsigned int>(DateTime::getSystemTickCount()) : 0u;
+        DateTime timestamp{ DateTime::getNow() };
+        int len = String::formatString( buffer, File::MAXIMUM_PATH, "%s%u%u%llu"
+                                      , pref.getString()
+                                      , static_cast<uint32_t>(Process::getInstance().getId())
+                                      , ticks
+                                      , timestamp.getTime());
+        name.assign(buffer, len > 0 ? len : 0);
+    }
+    else
+    {
+        name = pref;
     }
 
-    result.resize(space);
+    if (inTempFolder)
+    {
+        String dir = File::getTempDir();
+        int len = _osCreateTempFileName(buffer, dir.getString(), name.getString(), unique);
+        if (len > 0)
+        {
+            name.assign(buffer, len);
+        }
+        else
+        {
+            std::filesystem::path filePath = std::filesystem::path(dir.getString()) / name.getData();
+            name = filePath.string();
+        }
+    }
+    else
+    {
+        String dir = File::getCurrentDir();
+        std::filesystem::path filePath = std::filesystem::path(dir.getString()) / name.getData();
+        name = filePath.string();
+    }
 
-    return result;
+    return name;
 }
 
 String File::genTempFileName()
@@ -292,7 +315,7 @@ String File::normalizePath(const char* fileName)
         result = fileName;
         FileBase::normalizeName(result);
         std::error_code err;
-        std::filesystem::path fp = std::filesystem::absolute(result.getObject(), err);
+        std::filesystem::path fp = std::filesystem::absolute(result.getData(), err);
         if (!err)
         {
             result = fp.string();
@@ -471,7 +494,7 @@ unsigned int File::getLength(void) const
     if (isOpened())
     {
         std::error_code err;
-        std::uintmax_t sz = std::filesystem::file_size(mFileName.getObject(), err);
+        std::uintmax_t sz = std::filesystem::file_size(mFileName.getData(), err);
         result = !err ? static_cast<unsigned int>(sz) : 0;
     }
     return result;
@@ -487,7 +510,7 @@ unsigned int File::reserve(unsigned int newSize)
         close();
 
         std::error_code err;
-        std::filesystem::resize_file(mFileName.getObject(), newSize, err);
+        std::filesystem::resize_file(mFileName.getData(), newSize, err);
         if (open() && !err)
         {
             if (newSize == 0)
@@ -633,11 +656,8 @@ String File::getFileFullPath(const char* filePath)
 
 String File::getSpecialDir(File::eSpecialFolder specialFolder)
 {
-    String result;
-    
-    result.reserve(File::MAXIMUM_PATH);
-    unsigned int space = result.getCapacity() != 0 ? _osGetSpecialDir(result.getBuffer(), File::MAXIMUM_PATH, specialFolder) : 0;
-    result.resize(space);
+    char buffer[File::MAXIMUM_PATH];
+    unsigned int space = _osGetSpecialDir(buffer, File::MAXIMUM_PATH, specialFolder);
 
-    return result;
+    return String(buffer, space);
 }

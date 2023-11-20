@@ -50,9 +50,7 @@ addExecutable(logger "${logger_SRC}")
 
 # copying log and router init files to 'bin/config'
 file(MAKE_DIRECTORY ${AREG_OUTPUT_BIN}/config)
-file(COPY ${AREG_BASE}/areg/resources/log.init DESTINATION ${AREG_OUTPUT_BIN}/config)
-file(COPY ${AREG_BASE}/areg/resources/router.init DESTINATION ${AREG_OUTPUT_BIN}/config)
-file(COPY ${AREG_BASE}/areg/resources/logger.init DESTINATION ${AREG_OUTPUT_BIN}/config)
+file(COPY ${AREG_BASE}/areg/resources/areg.init DESTINATION ${AREG_OUTPUT_BIN}/config)
 
 if("${AREG_DEVELOP_ENV}" STREQUAL "Win32")
     add_custom_command(TARGET mcrouter

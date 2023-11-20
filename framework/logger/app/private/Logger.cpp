@@ -176,7 +176,7 @@ void Logger::runConsoleInputSimple( void )
 void Logger::serviceMain( int argc, char ** argv )
 {
     // Start only tracing and timer manager.
-    Application::initApplication(true, true, false, true, false, NEApplication::DEFAULT_TRACING_CONFIG_FILE.data(), nullptr );
+    Application::initApplication(true, true, false, true, false, NEApplication::DEFAULT_CONFIG_FILE.data());
     SystemServiceBase::serviceMain( argc, argv );
     setState( NESystemService::eSystemServiceState::ServiceStopped );
     mServiceServer.waitToComplete( );
@@ -188,7 +188,9 @@ bool Logger::serviceStart(void)
     TRACE_SCOPE( logger_app_logger_serviceStart );
     TRACE_DBG( "Starting service [ %s ]", NELoggerSettings::SERVICE_NAME_ASCII );
     bool result{ false };
-    if ( getService().setupServiceConnectionHost( NEApplication::DEFAULT_LOGGER_CONFIG_FILE.data( ) ) && getService().connectServiceHost( ) )
+    IEServiceConnectionProvider& service{ getService() };
+    if ( service.setupServiceConnectionData( NERemoteService::eRemoteServices::ServiceLogger, static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip) ) && 
+         service.connectServiceHost( ) )
     {
         result = setState(NESystemService::eSystemServiceState::ServiceRunning);
     }

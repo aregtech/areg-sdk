@@ -54,15 +54,6 @@ class ServiceCommunicatonBase   : public    IERemoteMessageHandler
                                 , private   IEServiceConnectionHandler
 {
 //////////////////////////////////////////////////////////////////////////
-// Internal types and constants
-//////////////////////////////////////////////////////////////////////////
-protected:
-    /**
-     * \brief   The default connection type of server service.
-     **/
-    static constexpr NERemoteService::eServiceConnection    CONNECT_TYPE    { NERemoteService::eServiceConnection::ConnectionTcpip };
-
-//////////////////////////////////////////////////////////////////////////
 // The internal types and constants
 //////////////////////////////////////////////////////////////////////////
 public:
@@ -104,7 +95,9 @@ public:
      * \param   dispatcher  The name of the message dispatcher thread.
      * \param   behavior    Connection default behavior. By default, all connections are accepted.
      **/
-    ServiceCommunicatonBase(const ITEM_ID & serviceId
+    ServiceCommunicatonBase( const ITEM_ID & serviceId
+                           , NERemoteService::eRemoteServices service
+                           , unsigned int connectTypes
                            , const String & dispatcher
                            , ServiceCommunicatonBase::eConnectionBehavior behavior = ServiceCommunicatonBase::eConnectionBehavior::DefaultAccept );
     /**
@@ -219,7 +212,7 @@ protected:
      *                      If nullptr or empty, it will use default settings.
      * \return  Returns true if system could configure. Otherwise, it returns false.
      **/
-    virtual bool setupServiceConnectionHost( const String & configFile ) override;
+    virtual bool setupServiceConnectionData(NERemoteService::eRemoteServices service, uint32_t connectTypes) override;
 
     /**
      * \brief   Call manually to set router service host name and port number.
@@ -260,25 +253,13 @@ protected:
     virtual bool isServiceHostSetup( void ) const override;
 
     /**
-     * \brief   Returns true if remote service is enabled.
-     **/
-    virtual bool isRemoteServicingEnabled( void ) const override;
-
-    /**
-     * \brief   Enables or disables remote service.
-     *          The method should be implemented to set business logic of enabling and disabling
-     *          remote service in case if it is already started.
-     * \param   enable  If true, the service is enabled. Otherwise, it is disabled.
-     **/
-    virtual void enableRemoteServicing( bool enable ) override;
-
-    /**
      * \brief   Creates the service connect request message, sets the message target and the source.
-     * \param   source  The ID of the source that sends connection message request.
-     * \param   target  The ID of the target to send the connection message request.
+     * \param   source      The ID of the source that sends connection message request.
+     * \param   target      The ID of the target to send the connection message request.
+     * \param   msgSource   The message source type of the connected client.
      * \return  Returns the created message for remote communication.
      **/
-    virtual RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target ) const override;
+    virtual RemoteMessage createServiceConnectMessage( const ITEM_ID & source, const ITEM_ID & target, NEService::eMessageSource msgSource) const override;
 
     /**
      * \brief   Creates the service disconnect request message, sets the message target and the source.
@@ -470,25 +451,26 @@ private:
 // Member variables
 //////////////////////////////////////////////////////////////////////////////
 protected:
-    const eConnectionBehavior   mConnectBehavior;   //!< The default connection behavior.
-    ServerConnection            mServerConnection;  //!< The instance of server connection object.
-    Timer                       mTimerConnect;      //!< The timer object to trigger in case if failed to create server socket.
-    ServerSendThread            mThreadSend;        //!< The thread to send messages to clients
-    ServerReceiveThread         mThreadReceive;     //!< The thread to receive messages from clients
-    bool                        mIsServiceEnabled;  //!< The flag indicating whether the server servicing is enabled or not.
-    String                      mConfigFile;        //!< The full path of connection configuration file.
-    StringArray                 mWhiteList;         //!< The list of enabled fixed client hosts.
-    StringArray                 mBlackList;         //!< The list of disabled fixes client hosts.
-    ServiceServerEventConsumer  mEventConsumer;     //!< The custom event consumer object
-    ReconnectTimerConsumer      mTimerConsumer;     //!< The timer consumer object.
-    MapInstances                mInstanceMap;       //!< The map of connected instance.
-    SynchEvent                  mEventSendStop;     //!< The event set when cannot send and receive data anymore.
-    mutable ResourceLock        mLock;              //!< The synchronization object to be accessed from different threads.
+    const eConnectionBehavior               mConnectBehavior;   //!< The default connection behavior.
+    const NERemoteService::eRemoteServices  mService;           //!< The remote service type.
+    const unsigned int                      mConnectTypes;      //!< The bitwise flags of remote service connections.
+    ServerConnection                        mServerConnection;  //!< The instance of server connection object.
+    Timer                                   mTimerConnect;      //!< The timer object to trigger in case if failed to create server socket.
+    ServerSendThread                        mThreadSend;        //!< The thread to send messages to clients
+    ServerReceiveThread                     mThreadReceive;     //!< The thread to receive messages from clients
+    StringArray                             mWhiteList;         //!< The list of enabled fixed client hosts.
+    StringArray                             mBlackList;         //!< The list of disabled fixes client hosts.
+    ServiceServerEventConsumer              mEventConsumer;     //!< The custom event consumer object
+    ReconnectTimerConsumer                  mTimerConsumer;     //!< The timer consumer object.
+    MapInstances                            mInstanceMap;       //!< The map of connected instance.
+    SynchEvent                              mEventSendStop;     //!< The event set when cannot send and receive data anymore.
+    mutable ResourceLock                    mLock;              //!< The synchronization object to be accessed from different threads.
 
 //////////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////////
 private:
+    ServiceCommunicatonBase(void) = delete;
     DECLARE_NOCOPY_NOMOVE( ServiceCommunicatonBase );
 };
 

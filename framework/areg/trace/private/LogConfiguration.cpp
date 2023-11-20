@@ -15,294 +15,210 @@
 
 #include "areg/trace/private/LogConfiguration.hpp"
 
-#include "areg/appbase/NEApplication.hpp"
+#include "areg/appbase/Application.hpp"
 #include "areg/base/Containers.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/Process.hpp"
+#include "areg/persist/ConfigManager.hpp"
 #include "areg/trace/TraceScope.hpp"
-#include "areg/trace/private/NELogConfig.hpp"
+#include "areg/trace/private/NELogging.hpp"
 #include "areg/trace/private/ScopeController.hpp"
 #include "areg/trace/private/ScopeNodes.hpp"
-
-namespace
-{
-    String _getDefaultConfigFile( void )
-    {
-        return (Process::getInstance( ).getPath( ) + File::PATH_SEPARATOR + NEApplication::DEFAULT_TRACING_CONFIG_FILE);
-    }
-}
 
 //////////////////////////////////////////////////////////////////////////
 // LogConfiguration class implementation
 //////////////////////////////////////////////////////////////////////////
 
-LogConfiguration::LogConfiguration( ScopeController & scopeController )
-    : mScopeController  ( scopeController )
-    , mFilePath         ( )
-    , mIsConfigured     ( false )
-    , mProperties       ( NELogConfig::LOG_PROPERTY_COUNT, NELogConfig::LOG_PROPERTY_COUNT )
+bool LogConfiguration::isLoggingEnabled(void) const
 {
+    return Application::getConfigManager().getLoggingStatus();
 }
 
-bool LogConfiguration::loadConfig( const String & filePath )
+bool LogConfiguration::isRemoteLoggingEnabled(void) const
 {
-    if ( mIsConfigured == false )
-    {
-        ASSERT( mFilePath.isEmpty( ) );
-        String path = filePath.isEmpty( ) ? _getDefaultConfigFile( ) : filePath;
-        path = File::getFileFullPath( File::normalizePath( path ) );
-        File fileConfig( path, FileBase::FO_MODE_EXIST | FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_SHARE_READ );
-        fileConfig.open( );
-
-        if ( loadConfig( fileConfig ) )
-        {
-            mFilePath = fileConfig.getName( );
-        }
-    }
-
-    return mIsConfigured;
+    ConfigManager& config = Application::getConfigManager();
+    return config.getLogEnabled(NETrace::eLogingTypes::LogTypeRemote);
 }
 
-bool LogConfiguration::loadConfig( const FileBase & file )
+bool LogConfiguration::isFileLoggingEnabled(void) const
 {
-    clearProperties( );
-    if ( file.isOpened( ) )
-    {
-        file.moveToBegin( );
-
-        const String & moduleName = Process::getInstance( ).getAppName( );
-        String line;
-        TraceProperty newProperty;
-        while ( file.readLine( line ) > 0 )
-        {
-            if ( newProperty.parseProperty( line ) )
-            {
-                // add new entry if unique. otherwise, update existing.
-                const TracePropertyKey & Key = newProperty.getKey( );
-                if ( Key.isModuleKeySet( moduleName ) )
-                {
-                    updateProperty( newProperty );
-                }
-
-                newProperty.clearProperty( );
-            }
-        }
-
-        mIsConfigured = true;
-    }
-
-    return mIsConfigured;
+    ConfigManager& config = Application::getConfigManager();
+    return config.getLogEnabled(NETrace::eLogingTypes::LogTypeFile);
 }
 
-void LogConfiguration::unloadConfig( void )
+bool LogConfiguration::isDatabaseLoggingEnabled(void) const
 {
-    clearProperties( );
-    mScopeController.clearConfigScopes( );
-    mIsConfigured = false;
-    mFilePath.clear( );
+    ConfigManager& config = Application::getConfigManager();
+    return config.getLogEnabled(NETrace::eLogingTypes::LogTypeDatabase);
 }
 
-bool LogConfiguration::saveConfig( void ) const
+bool LogConfiguration::isDebugOutputLoggingEnabled(void) const
 {
-    return saveConfig( mFilePath );
+    ConfigManager& config = Application::getConfigManager();
+    return config.getLogEnabled(NETrace::eLogingTypes::LogTypeDebug);
 }
 
-bool LogConfiguration::saveConfig( const String & filePath ) const
+void LogConfiguration::setLogEnabled(NETrace::eLogingTypes logType, bool isEnabled)
 {
-    constexpr unsigned int mode {   File::FO_MODE_WRITE     |
-                                    File::FO_MODE_READ      |
-                                    File::FO_MODE_TEXT      |
-                                    File::FO_MODE_CREATE    |
-                                    File::FO_MODE_SHARE_READ};
+    ConfigManager& config = Application::getConfigManager();
+    if (isEnabled && config.getLoggingStatus() == false)
+    {
+        config.setLoggingStatus(true);
+    }
 
-    String path = filePath.isEmpty( ) ? mFilePath : filePath;
-    path = File::getFileFullPath( File::normalizePath( path ) );
-    File fileConfig( path, mode );
-    
-    fileConfig.open( );
-
-    return saveConfig( fileConfig );
+    if (config.getLogEnabled(logType) != isEnabled)
+    {
+        config.setLogEnabled(logType, isEnabled);
+    }
 }
 
-bool LogConfiguration::saveConfig( FileBase & file ) const
+Version LogConfiguration::getVersion(void) const
 {
-    constexpr unsigned int mode{ FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_EXIST | FileBase::FO_MODE_SHARE_READ };
-    File fileConfig( mFilePath, mode);
+    return Application::getConfigManager().getLogVersion();
+}
 
-    if ( fileConfig.open( ) == false )
-    {
-        return false;
-    }
+String LogConfiguration::getLayoutEnter(void) const
+{
+    return Application::getConfigManager().getLogLayoutEnter();
+}
 
-    if ( file.isOpened( ) == false )
-    {
-        return false;
-    }
+void LogConfiguration::setLayoutEnter(const String & prop)
+{
+    Application::getConfigManager().setLogLayoutEnter(prop);
+}
 
-    if ( file.canWrite( ) == false )
-    {
-        return false;
-    }
+String LogConfiguration::getLayoutMessage(void) const
+{
+    return Application::getConfigManager().getLogLayoutMessage();
+}
 
-    PropertyList scopes;
-    PropertyList properties;
+void LogConfiguration::setLayoutMessage(const String & prop)
+{
+    Application::getConfigManager().setLogLayoutMessage(prop);
+}
 
-    const String & moduleName = Process::getInstance( ).getAppName( );
-    String line;
-    TraceProperty newProperty;
-    while ( fileConfig.readLine( line ) > 0 )
-    {
-        if ( newProperty.parseProperty( line ) )
-        {
-            // add new entry if unique. otherwise, update existing.
-            const TracePropertyKey & Key = newProperty.getKey( );
-            if ( Key.getLogConfig( ) != NELogConfig::eLogConfig::ConfigScope )
-            {
-                if ( Key.getLogConfig( ) == NELogConfig::eLogConfig::ConfigLogVersion )
-                {
-                    newProperty.setData( NELogConfig::SYNTAX_CMD_LOG_VERSION.data( ), NETrace::LOG_VERSION.data( ) );
-                }
-                else
-                {
-                    const TraceProperty & prop{ getProperty( Key.getLogConfig( ) ) };
-                    if ( prop.isValid( ) )
-                    {
-                        newProperty.setProperty( prop.getProperty( ) );
-                    }
-                }
+String LogConfiguration::getLayoutExit(void) const
+{
+    return Application::getConfigManager().getLogLayoutExit();
+}
 
-                properties.addIfUnique( newProperty, false );
-            }
-            else if ( Key.isExactModule( moduleName ) == false )
-            {
-                scopes.addIfUnique( newProperty, true );
-            }
+void LogConfiguration::setLayoutExit(const String& prop)
+{
+    Application::getConfigManager().setLogLayoutExit(prop);
+}
 
-            newProperty.clearProperty( true );
-        }
-    }
+uint32_t LogConfiguration::getStackSize(void) const
+{
+    return Application::getConfigManager().getLogRemoteQueueSize();
+}
 
-    if ( newProperty.isEmpty( ) == false )
-    {
-        properties.add( newProperty );
-    }
+void LogConfiguration::setStackSize(uint32_t prop)
+{
+    Application::getConfigManager().setLogRemoteQueueSize(prop);
+}
 
-    fileConfig.close( );
-    file.moveToBegin( );
+bool LogConfiguration::getStatus(void) const
+{
+    return Application::getConfigManager().getLoggingStatus();
+}
 
-    for ( unsigned int i = 0; i < properties.getSize( ); ++ i )
-    {
-        if ( properties[ i ].isValid( ) )
-        {
-            file.write( properties[ i ].makeConfigString( ) );
-        }
-    }
+void LogConfiguration::setStatus(bool prop)
+{
+    Application::getConfigManager().setLoggingStatus(prop);
+}
 
-    for ( unsigned int i = 0; i < scopes.getSize( ); ++ i )
-    {
-        file.write( scopes[ i ].makeConfigString( ) );
-    }
+bool LogConfiguration::getAppendData(void) const
+{
+    return Application::getConfigManager().getLogFileAppend();
+}
 
-    const auto & scopeList = mScopeController.getScopeList( );
+void LogConfiguration::setAppendData(bool prop)
+{
+    Application::getConfigManager().setLogFileAppend(prop);
+}
+
+String LogConfiguration::getLogFile(void) const
+{
+    return Application::getConfigManager().getLogFileLocation();
+}
+
+void LogConfiguration::setLogFile(const String& prop)
+{
+    Application::getConfigManager().setLogFileLocation(prop);
+}
+
+bool LogConfiguration::getRemoteTcpEnable(void) const
+{
+    return (Application::getConfigManager().getLogEnabled(NETrace::eLogingTypes::LogTypeRemote) &&
+            Application::getConfigManager().getRemoteServiceEnable(NERemoteService::eRemoteServices::ServiceLogger, NERemoteService::eConnectionTypes::ConnectTcpip));
+}
+
+void LogConfiguration::setRemoteTcpEnable(bool prop, bool isTemporary /*= false*/)
+{
+    Application::getConfigManager().setRemoteServiceEnable(NERemoteService::eRemoteServices::ServiceLogger, NERemoteService::eConnectionTypes::ConnectTcpip, prop, isTemporary);
+}
+
+String LogConfiguration::getRemoteTcpAddress(void) const
+{
+    return Application::getConfigManager().getRemoteServiceAddress(NERemoteService::eRemoteServices::ServiceLogger, NERemoteService::eConnectionTypes::ConnectTcpip);
+}
+
+void LogConfiguration::setRemoteTcpAddress(const String & prop, bool isTemporary /*= false*/)
+{
+    Application::getConfigManager().setRemoteServiceAddress(NERemoteService::eRemoteServices::ServiceLogger, NERemoteService::eConnectionTypes::ConnectTcpip, prop, isTemporary);
+}
+
+uint16_t LogConfiguration::getRemoteTcpPort(void) const
+{
+    return Application::getConfigManager().getRemoteServicePort(NERemoteService::eRemoteServices::ServiceLogger, NERemoteService::eConnectionTypes::ConnectTcpip);
+}
+
+void LogConfiguration::setRemoteTcpPort(uint16_t prop, bool isTemporary /*= false*/)
+{
+    Application::getConfigManager().setRemoteServicePort(NERemoteService::eRemoteServices::ServiceLogger, NERemoteService::eConnectionTypes::ConnectTcpip, prop, isTemporary);
+}
+
+bool LogConfiguration::getDatabaseEnable(void) const
+{
+    return Application::getConfigManager().getLogEnabled(NETrace::eLogingTypes::LogTypeDatabase);
+}
+
+void LogConfiguration::setDatabaseEnable(bool prop, bool isTemporary /*= false*/)
+{
+    Application::getConfigManager().setLogEnabled(NETrace::eLogingTypes::LogTypeDatabase, prop, isTemporary);
+}
+
+uint32_t LogConfiguration::getModuleScopes(std::vector<Property>& scopeList)
+{
+    scopeList = Application::getConfigManager().getModuleLogScopes();
+    return static_cast<uint32_t>(scopeList.size());
+}
+
+void LogConfiguration::setModuleScopes(const std::vector<Property>& scopeList)
+{
+    Application::getConfigManager().removeModuleScopes();
+    Application::getConfigManager().addModuletLogScopes(scopeList, true);
+}
+
+void LogConfiguration::saveConfiguration(void)
+{
+    Application::getConfigManager().saveConfig();
+}
+
+void LogConfiguration::updateScopeConfiguration(const ScopeController& scopeController) const
+{
+    const auto& scopeList = scopeController.getScopeList();
     unsigned int key{ 0 };
-    TraceScope * scope = scopeList.resourceFirstKey( key );
+    TraceScope* scope = scopeList.resourceFirstKey(key);
     ScopeRoot root;
-    while ( scope != nullptr )
+    while (scope != nullptr)
     {
-        root.addChildRecursive( *scope );
-        scope = scopeList.resourceNextKey( key );
+        root.addChildRecursive(*scope);
+        scope = scopeList.resourceNextKey(key);
     }
 
-    root.groupRecursive( );
-    return (root.saveNodeConfig( file, String::EmptyString ) != 0);
-}
-
-void LogConfiguration::setDefaultValues( void )
-{
-    getVersion().parseProperty( NELogConfig::DEFAULT_LOG_VERSION.data() );
-    getLayoutEnter().parseProperty( NELogConfig::DEFAULT_LOG_LAYOUT_ENTER.data( ) );
-    getLayoutMessage().parseProperty( NELogConfig::DEFAULT_LOG_LAYOUT_MESSAGE.data( ) );
-    getLayoutExit().parseProperty( NELogConfig::DEFAULT_LOG_LAYOUT_EXIT.data( ) );
-    getDebugOutput().parseProperty( NELogConfig::DEFAULT_LOG_LAYOUT_DEBUG.data( ) );
-    getStatus().parseProperty( NELogConfig::DEFAULT_LOG_ENABLE.data( ) );
-    getAppendData().parseProperty( NELogConfig::DEFAULT_LOG_APPEND.data( ) );
-    getLogFile().parseProperty( NELogConfig::DEFAULT_LOG_FILE.data( ) );
-    getRemoteTcpEnable( ).parseProperty( NELogConfig::DEFAULT_LOG_REMOTE_TCP_ENABLE.data( ) );
-
-    getStackSize().clearProperty( );
-    getRemoteTcpHost().clearProperty( );
-    getRemoteTcpPort().clearProperty( );
-    getDatabaseHost().clearProperty( );
-    getDatabaseName().clearProperty( );
-    getDatabaseDriver().clearProperty( );
-    getDatabaseUser( ).clearProperty( );
-    getDatabasePassword().clearProperty( );
-}
-
-bool LogConfiguration::updateProperty( const TraceProperty & prop )
-{
-    bool result{ true };
-    const TracePropertyKey &  Key     = prop.getKey( );
-    const NELogConfig::eLogConfig whichConfig = Key.getLogConfig();
-    
-    switch ( whichConfig )
-    {
-    case NELogConfig::eLogConfig::ConfigLogVersion:
-        {
-            setVersion( prop );
-        }
-        break;
-
-    case NELogConfig::eLogConfig::ConfigLogFile:
-        {
-            const TracePropertyKey & propKey = getLogFile().getKey( );
-            if ( (propKey.isLocalKey( ) == false) || (propKey.getModule( ) == Key.getModule( )) )
-            {
-                setLogFile( prop );
-                TracePropertyValue & value = getLogFile().getValue( );
-                if ( value.isValid( ) == false )
-                {
-                    value = NELogConfig::DEFAULT_LOG_FILE_NAME.data( );
-                }
-            }
-        }
-        break;
-
-    case NELogConfig::eLogConfig::ConfigLogRemoteTcpEnable: // fall through
-    case NELogConfig::eLogConfig::ConfigLogRemoteTcpHost:   // fall through
-    case NELogConfig::eLogConfig::ConfigLogRemoteTcpPort:   // fall through
-    case NELogConfig::eLogConfig::ConfigLogDatabaseEnable:  // fall through
-    case NELogConfig::eLogConfig::ConfigLogDatabaseDriver:  // fall through
-    case NELogConfig::eLogConfig::ConfigLogDatabaseHost:    // fall through
-    case NELogConfig::eLogConfig::ConfigLogDatabaseUser:    // fall through
-    case NELogConfig::eLogConfig::ConfigLogDatabasePwd:     // fall through
-    case NELogConfig::eLogConfig::ConfigLogDebug:           // fall through
-    case NELogConfig::eLogConfig::ConfigLogAppend:          // fall through
-    case NELogConfig::eLogConfig::ConfigLogStack:           // fall through
-    case NELogConfig::eLogConfig::ConfigLogEnable:          // fall through
-    case NELogConfig::eLogConfig::ConfigLogLayoutEnter:     // fall through
-    case NELogConfig::eLogConfig::ConfigLogLayoutMessage:   // fall through
-    case NELogConfig::eLogConfig::ConfigLogLayoutExit:
-    {
-        const TracePropertyKey & propKey = getProperty(whichConfig).getKey( );
-        if ( (propKey.isLocalKey( ) == false) || (propKey.getModule( ) == Key.getModule( )) )
-        {
-            setProperty(whichConfig, prop);
-        }
-    }
-    break;
-
-    case NELogConfig::eLogConfig::ConfigScope:
-        {
-            mScopeController.configureScopes( prop );
-        }
-        break;
-
-    default:
-        result = false;
-        ASSERT( false );
-        break;  // do nothing
-    }
-    
-    return result;
+    root.groupRecursive();
+    ConfigManager & config = Application::getConfigManager();
+    config.removeModuleScopes();
+    root.updateConfigNode(config, String::EmptyString);
 }

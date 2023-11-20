@@ -154,6 +154,7 @@ IMPLEMENT_RUNTIME_EVENT(ProxyBase::ServiceAvailableEvent, ThreadEventBase)
 ProxyBase::ServiceAvailableEvent::ServiceAvailableEvent( IENotificationEventConsumer & consumer )
     : ThreadEventBase   ( Event::eEventType::EventExternal )
     , mConsumer         ( consumer )
+    , mDelayConnectEvent( 0 )
 {
 }
 
@@ -405,17 +406,17 @@ void ProxyBase::serviceConnectionUpdated( const StubAddress & server, const Chan
 
         for (index = 0 ; index < conListeners.getSize(); ++ index)
         {
-            ProxyBase::Listener& listener = conListeners[index];
-            IEProxyListener * consumer = static_cast<IEProxyListener *>(listener.mListener);
+            const ProxyBase::Listener& listener = conListeners[index];
+            IEProxyListener * connect = static_cast<IEProxyListener *>(listener.mListener);
             if ( proxyConnected )
             {
-                mListConnect.addIfUnique(consumer);
-                consumer->serviceConnected( status, *this );
+                mListConnect.addIfUnique(connect);
+                connect->serviceConnected( status, *this );
             }
             else
             {
-                mListConnect.removeElem(consumer, 0);
-                consumer->serviceConnected( status, *this );
+                mListConnect.removeElem(connect, 0);
+                connect->serviceConnected( status, *this );
                 mListenerList.addIfUnique(listener);
             }
         }
@@ -573,7 +574,7 @@ void ProxyBase::processGenericEvent( Event& eventElem )
     ProxyBase::ServiceAvailableEvent * serviceEvent = RUNTIME_CAST( &eventElem, ProxyBase::ServiceAvailableEvent );
     if ( serviceEvent != nullptr )
     {
-        processServiceAvailableEvent( serviceEvent->getConsumer() );
+        processServiceAvailableEvent( serviceEvent->getConsumer(), serviceEvent->getEventDalay() );
     }
 }
 
@@ -636,10 +637,15 @@ bool ProxyBase::isServiceListenerRegistered( IENotificationEventConsumer & calle
     return result;
 }
 
-void ProxyBase::processServiceAvailableEvent( IENotificationEventConsumer & consumer )
+void ProxyBase::processServiceAvailableEvent( IENotificationEventConsumer & consumer, unsigned int delayEvent)
 {
     if (isConnected() && isServiceListenerRegistered( consumer ) )
     {
+        if (delayEvent != NECommon::DO_NOT_WAIT)
+        {
+            Thread::sleep(delayEvent);
+        }
+
         static_cast<IEProxyListener&>(consumer).serviceConnected(getConnectionStatus(), self());
     }
 }

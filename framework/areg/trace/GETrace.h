@@ -119,7 +119,7 @@
 
     /**
      * \brief   Use this macro to load configuration file and start tracer.
-     *          If config file name is nullptr, it will load from default folder "./config/log.init"
+     *          If config file name is nullptr, it will load from default folder "./config/areg.init"
      **/
     #define TRACER_START_LOGGING(configFile)            NETrace::startLogging((configFile))
 

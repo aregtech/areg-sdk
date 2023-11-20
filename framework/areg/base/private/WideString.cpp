@@ -72,11 +72,14 @@ namespace
         *dst    = static_cast<wchar_t>(NEString::EndOfString);
         int32_t count = static_cast<int32_t>(dst - buffer);
         NEString::swapString<wchar_t>(buffer, count);
-        result = WideString::EmptyChar;
         if ( isNegative )
         {
             result = L'-';
             ++ count;
+        }
+        else
+        {
+            result = WideString::EmptyChar;
         }
 
         result  += buffer;
@@ -107,7 +110,7 @@ namespace
 #else   // WINDOWS
         count = ::swprintf( buffer, CharCount, format, number);
 #endif  // WINDOWS
-        result = buffer;
+        result.assign(buffer, count > 0 ? count : 0);
         return count;
     }
 
@@ -121,18 +124,11 @@ namespace
      **/
     inline int _formatStringList( wchar_t * buffer, int count, const wchar_t * format, va_list argptr )
     {
-        int result { -1 };
-        if ( buffer != nullptr )
-        {
-            *buffer = WideString::EmptyChar;
 #ifdef  WINDOWS
-            result = vswprintf_s( buffer, static_cast<size_t>(count), format, argptr );
+        return vswprintf_s( buffer, static_cast<size_t>(count), format, argptr );
 #else   // !WINDOWS
-            result = vswprintf( buffer, count, format, argptr );
+        return vswprintf( buffer, count, format, argptr );
 #endif  // WINDOWS
-        }
-
-        return result;
     }
 
     /**
@@ -173,7 +169,7 @@ namespace
     /**
      * \brief   Compare 2 strings of different char-set and returns true if they are equal.
      **/
-    inline bool _isEqua(const wchar_t* str, const char* wstr)
+    inline bool _isEqual(const wchar_t* str, const char* wstr)
     {
         while ((*str != TEString<wchar_t>::EmptyChar) && (*wstr++ == static_cast<char>(*str++)))
             ;
@@ -221,7 +217,7 @@ bool WideString::operator == (const String& other) const
     bool result = false;
     if (getLength() == other.getLength())
     {
-        result = _isEqua(getString(), other.getString());
+        result = _isEqual(getString(), other.getString());
     }
 
     return result;
@@ -232,7 +228,7 @@ bool WideString::operator == (const std::string& other) const
     bool result = false;
     if (getLength() == static_cast<NEString::CharCount>(other.length()))
     {
-        result = _isEqua(getString(), other.c_str());
+        result = _isEqual(getString(), other.c_str());
     }
 
     return result;
@@ -243,7 +239,7 @@ bool WideString::operator == (const char* other) const
     bool result = false;
     if (getLength() == static_cast<NEString::CharCount>(strlen(other)))
     {
-        result = _isEqua(getString(), other);
+        result = _isEqual(getString(), other);
     }
 
     return result;
@@ -254,7 +250,7 @@ bool WideString::operator != (const char* other) const
     bool result = true;
     if (getLength() == static_cast<NEString::CharCount>(strlen(other)))
     {
-        result = _isEqua(getString(), other) == false;
+        result = _isEqual(getString(), other) == false;
     }
 
     return result;
@@ -265,7 +261,7 @@ bool WideString::operator != (const std::string& other) const
     bool result = true;
     if (getLength() == static_cast<NEString::CharCount>(other.length()))
     {
-        result = _isEqua(getString(), other.c_str()) == false;
+        result = _isEqual(getString(), other.c_str()) == false;
     }
 
     return result;
@@ -276,7 +272,7 @@ bool WideString::operator != (const String& other) const
     bool result = true;
     if (getLength() == other.getLength())
     {
-        result = _isEqua(getString(), other.getString()) == false;
+        result = _isEqual(getString(), other.getString()) == false;
     }
 
     return result;
@@ -547,17 +543,17 @@ int WideString::formatString( wchar_t * strDst, int count, const wchar_t * forma
 {
     va_list argptr;
     va_start( argptr, format );
-    int result = WideString::formatStringList( strDst, count, format, argptr );
+    int result{ strDst != nullptr ? _formatStringList( strDst, count, format, argptr ) : -1};
     va_end( argptr );
     return result;
 }
 
 int WideString::formatStringList( wchar_t * strDst, int count, const wchar_t * format, va_list argptr )
 {
-    return _formatStringList(strDst, count, format, argptr);
+    return (strDst != nullptr ? _formatStringList( strDst, count, format, argptr ) : -1);
 }
 
-const WideString & WideString::format(const wchar_t * format, ...)
+WideString & WideString::format(const wchar_t * format, ...)
 {
     va_list argptr;
     va_start(argptr, format);
@@ -569,7 +565,7 @@ const WideString & WideString::format(const wchar_t * format, ...)
     return (*this);
 }
 
-const WideString & WideString::formatList(const wchar_t * format, va_list argptr)
+WideString & WideString::formatList(const wchar_t * format, va_list argptr)
 {
     clear();
     if (format != nullptr)
@@ -579,19 +575,19 @@ const WideString & WideString::formatList(const wchar_t * format, va_list argptr
         switch ( count )
         {
         case NEString::MSG_MIN_BUF_SIZE:
-            _formatStringList< NEString::MSG_MIN_BUF_SIZE>( *this, format, argptr );
+            _formatStringList<NEString::MSG_MIN_BUF_SIZE>( *this, format, argptr );
             break;
 
         case NEString::MSG_BUF_SIZE:
-            _formatStringList< NEString::MSG_BUF_SIZE>( *this, format, argptr );
+            _formatStringList<NEString::MSG_BUF_SIZE>( *this, format, argptr );
             break;
 
         case NEString::MSG_BIG_BUF_SIZE:
-            _formatStringList< NEString::MSG_BIG_BUF_SIZE>( *this, format, argptr );
+            _formatStringList<NEString::MSG_BIG_BUF_SIZE>( *this, format, argptr );
             break;
 
         case NEString::MSG_EXTRA_BUF_SIZE:
-            _formatStringList< NEString::MSG_EXTRA_BUF_SIZE>( *this, format, argptr );
+            _formatStringList<NEString::MSG_EXTRA_BUF_SIZE>( *this, format, argptr );
             break;
 
         default:

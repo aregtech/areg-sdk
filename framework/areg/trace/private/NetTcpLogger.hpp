@@ -59,11 +59,8 @@ private:
     //!< The ring buffer of logging message to queue if logging service is not available.
     using RingStack = TENolockRingStack<RemoteMessage>;
 
-    //!< The number of messages to queue until logging service is available.
-    static constexpr uint32_t           RING_STACK_MAX_SIZE     { 100 };
-
-    //!< The name of logging thread, which receive messages from logging service.
-    static constexpr std::string_view   LOG_RECEIVE_THREAD_NAME { "_LOG_NET_RECEIVE_THREAD_" };
+    //!< A prefix to add in front of thread and timer names.
+    static constexpr std::string_view   PREFIX_THREAD{ "logger" };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -188,6 +185,11 @@ private:
 
     //!< Wrapper of 'this' pointer.
     inline NetTcpLogger& self(void);
+
+    //! Resize the ring stack, set new capacity.
+    //! The newCapacity capacity value 0 will delete the ring stack
+    //! and disable queuing the messages.
+    inline void resizeStack(uint32_t newCapacity);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables

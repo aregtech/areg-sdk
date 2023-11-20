@@ -18,7 +18,8 @@
 
 #include "areg/ipc/IEServiceConnectionConsumer.hpp"
 #include "areg/ipc/ConnectionConfiguration.hpp"
-#include "areg/ipc/NEConnection.hpp"
+#include "areg/ipc/NERemoteService.hpp"
+#include "areg/ipc/private/NEConnection.hpp"
 
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/component/StreamableEvent.hpp"
@@ -38,8 +39,6 @@ DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnection
 DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionLost);
 
 DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_startConnection);
-DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase__stopReceiveData);
-DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase__stopSendData);
 DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_cancelConnection);
 
 //////////////////////////////////////////////////////////////////////////
@@ -47,49 +46,56 @@ DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_cancelConnection);
 //////////////////////////////////////////////////////////////////////////
 
 ServiceClientConnectionBase::ServiceClientConnectionBase( const ITEM_ID & target
+                                                        , NERemoteService::eRemoteServices service
+                                                        , unsigned int connectTypes
+                                                        , NEService::eMessageSource msgSource
                                                         , IEServiceConnectionConsumer& connectionConsumer
                                                         , IERemoteMessageHandler & messageHandler
-                                                        , DispatcherThread & messageDispatcher)
+                                                        , DispatcherThread & messageDispatcher
+                                                        , const String & prefixName)
     : IEServiceConnectionProvider   ( )
     , IEServiceEventConsumerBase    ( )
 
     , mTarget               (target)
+    , mService              (service)
+    , mConnectTypes         (connectTypes)
+    , mMessageSource        (msgSource)
     , mClientConnection     ( )
     , mConnectionConsumer   (connectionConsumer)
     , mMessageDispatcher    (messageDispatcher)
-    , mIsServiceEnabled     ( NEConnection::DEFAULT_REMOTE_SERVICE_ENABLED )    // TODO: by default, should be false and read out from configuration file.
-    , mConfigFile           ( "" )
     , mChannel              ( )
     , mConnectionState      ( eConnectionState::ConnectionStopped )
     , mEventConsumer        ( static_cast<IEServiceEventConsumerBase &>(self()) )
     , mLock                 ( )
 
-    , mTimerConnect         ( static_cast<IETimerConsumer &>(mTimerConsumer), NEConnection::CLIENT_CONNECT_TIMER_NAME )
-    , mThreadReceive        (messageHandler, mClientConnection )
-    , mThreadSend           (messageHandler, mClientConnection )
+    , mTimerConnect         ( static_cast<IETimerConsumer &>(mTimerConsumer), prefixName + NEConnection::CLIENT_CONNECT_TIMER_NAME )
+    , mThreadReceive        (messageHandler, mClientConnection, prefixName)
+    , mThreadSend           (messageHandler, mClientConnection, prefixName)
     , mTimerConsumer        ( static_cast<IEServiceEventConsumerBase &>(self()) )
 {
     ASSERT((target > NEService::TARGET_LOCAL) && (target < NEService::COOKIE_REMOTE_SERVICE));
 }
 
-bool ServiceClientConnectionBase::setupServiceConnectionHost( const String & configFile )
+bool ServiceClientConnectionBase::setupServiceConnectionData(NERemoteService::eRemoteServices service, uint32_t connectTypes)
 {
     Lock lock( mLock );
-    ConnectionConfiguration configConnect;
-    if ( configConnect.loadConfiguration( configFile ) )
-    {
-        mConfigFile             = configConnect.getConfigFileName( );
-        mIsServiceEnabled       = configConnect.getConnectionEnableFlag( CONNECT_TYPE );
-        String hostName         = configConnect.getConnectionHost( CONNECT_TYPE );
-        unsigned short hostPort = configConnect.getConnectionPort( CONNECT_TYPE );
 
-        return mClientConnection.setAddress( hostName, hostPort );
-    }
-    else
+    bool result{ false };
+    if ((mService == service) && ((mConnectTypes & connectTypes) != 0))
     {
-        mIsServiceEnabled       = NEConnection::DEFAULT_REMOTE_SERVICE_ENABLED;
-        return mClientConnection.setAddress( NEConnection::DEFAULT_REMOTE_SERVICE_HOST.data(), NEConnection::DEFAULT_REMOTE_SERVICE_PORT );
+        if ((mConnectTypes & static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip)) != 0)
+        {
+            ConnectionConfiguration config(service, NERemoteService::eConnectionTypes::ConnectTcpip);
+            if (config.isConfigured() && config.getConnectionEnableFlag())
+            {
+                String address{ config.getConnectionAddress() };
+                unsigned short port{ config.getConnectionPort() };
+                result = mClientConnection.setAddress(address, port);
+            }
+        }
     }
+
+    return result;
 }
 
 void ServiceClientConnectionBase::applyServiceConnectionData( const String & hostName, unsigned short portNr )
@@ -102,10 +108,17 @@ bool ServiceClientConnectionBase::connectServiceHost(void)
 {
     Lock lock( mLock );
     bool result{ false };
-    if ( (mClientConnection.isValid() == false) && isRemoteServicingEnabled())
+    if (mClientConnection.isValid() == false)
     {
-        result = true;
-        sendCommand(ServiceEventData::eServiceEventCommands::CMD_StartService);
+        if ((mConnectTypes & static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectTcpip)) != 0)
+        {
+            ConnectionConfiguration config(mService, NERemoteService::eConnectionTypes::ConnectTcpip);
+            if (config.isConfigured() && config.getConnectionEnableFlag())
+            {
+                result = true;
+                sendCommand(ServiceEventData::eServiceEventCommands::CMD_StartService);
+            }
+        }
     }
 
     return result;
@@ -136,34 +149,14 @@ bool ServiceClientConnectionBase::isServiceHostSetup( void ) const
     return mClientConnection.getAddress().isValid();
 }
 
-bool ServiceClientConnectionBase::isRemoteServicingEnabled(void) const
+RemoteMessage ServiceClientConnectionBase::createServiceConnectMessage(const ITEM_ID & /*source*/, const ITEM_ID & target, NEService::eMessageSource msgSource) const
 {
-    Lock lock(mLock);
-    return mIsServiceEnabled;
-}
-
-void ServiceClientConnectionBase::enableRemoteServicing( bool enable )
-{
-    Lock lock( mLock );
-    if (enable == false)
-    {
-        disconnectServiceHost( );
-    }
-
-    mIsServiceEnabled = enable;
-}
-
-RemoteMessage ServiceClientConnectionBase::createServiceConnectMessage(  const ITEM_ID & /*source*/, const ITEM_ID & target) const
-{
-    RemoteMessage result{ NEConnection::createConnectRequest(target) };
-    result.moveToEnd();
-    result << NEService::eMessageSource::MessageSourceClient;
-    return result;
+    return NERemoteService::createConnectRequest(target, msgSource);
 }
 
 RemoteMessage ServiceClientConnectionBase::createServiceDisconnectMessage(const ITEM_ID & source, const ITEM_ID & target) const
 {
-    return NEConnection::createDisconnectRequest(source, target);
+    return NERemoteService::createDisconnectRequest(source, target);
 }
 
 void ServiceClientConnectionBase::onServiceReconnectTimerExpired( void )
@@ -202,7 +195,6 @@ void ServiceClientConnectionBase::onServiceStop(void)
     mChannel.setTarget( NEService::TARGET_UNKNOWN );
 
     mThreadReceive.triggerExit( );
-    // mClientConnection.disableReceive( );
 
     if ((channel.getTarget() > NEService::COOKIE_LOCAL) && (channel.getTarget() < NEService::COOKIE_REMOTE_SERVICE))
     {
@@ -262,7 +254,7 @@ void ServiceClientConnectionBase::onServiceConnectionStopped(void)
 
     if ( Application::isServicingReady( ) )
     {
-        mTimerConnect.startTimer( NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1 );
+        mTimerConnect.startTimer(NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1 );
     }
 }
 
@@ -285,7 +277,7 @@ void ServiceClientConnectionBase::onServiceConnectionLost(void)
         mThreadSend.shutdownThread( NECommon::WAIT_INFINITE );
         mConnectionConsumer.lostRemoteServiceChannel( channel );
 
-        mTimerConnect.startTimer( NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1 );
+        mTimerConnect.startTimer(NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1 );
     }
     else
     {
@@ -310,7 +302,7 @@ void ServiceClientConnectionBase::onServiceMessageSend( const RemoteMessage & ms
 {
 }
 
-inline bool ServiceClientConnectionBase::startConnection( void )
+bool ServiceClientConnectionBase::startConnection(void)
 {
     TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_startConnection);
 
@@ -329,7 +321,7 @@ inline bool ServiceClientConnectionBase::startConnection( void )
             VERIFY( mThreadReceive.waitForDispatcherStart( NECommon::WAIT_INFINITE ) );
             VERIFY( mThreadSend.waitForDispatcherStart( NECommon::WAIT_INFINITE ) );
             TRACE_DBG("Client service starting connection with remote routing service.");
-            result = mClientConnection.sendMessage(createServiceConnectMessage(NEService::COOKIE_UNKNOWN, mTarget));
+            result = mClientConnection.sendMessage(createServiceConnectMessage(NEService::COOKIE_UNKNOWN, mTarget, mMessageSource));
         }
     }
 
@@ -339,7 +331,7 @@ inline bool ServiceClientConnectionBase::startConnection( void )
         mThreadSend.shutdownThread( NECommon::DO_NOT_WAIT );
         mThreadReceive.shutdownThread( NECommon::DO_NOT_WAIT );
         mClientConnection.closeSocket();
-        mTimerConnect.startTimer( NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1);
+        mTimerConnect.startTimer(NEConnection::DEFAULT_RETRY_CONNECT_TIMEOUT, mMessageDispatcher, 1);
     }
 
     return result;

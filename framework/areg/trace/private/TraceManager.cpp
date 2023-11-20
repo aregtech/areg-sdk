@@ -15,18 +15,18 @@
  ************************************************************************/
 #include "areg/trace/private/TraceManager.hpp"
 
-#include "areg/trace/TraceScope.hpp"
-#include "areg/trace/private/LogMessage.hpp"
-#include "areg/trace/private/TraceEvent.hpp"
-#include "areg/trace/private/TraceProperty.hpp"
-
+#include "areg/appbase/Application.hpp"
 #include "areg/base/Containers.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/FileBuffer.hpp"
 #include "areg/base/NEString.hpp"
 #include "areg/base/Process.hpp"
 
-//////////////////////////////////////////////////////////////////////////
+#include "areg/trace/TraceScope.hpp"
+#include "areg/trace/private/LogMessage.hpp"
+#include "areg/trace/private/TraceEvent.hpp"
+
+ //////////////////////////////////////////////////////////////////////////
 // TraceManager::TraceScopeMap class implementation
 //////////////////////////////////////////////////////////////////////////
 
@@ -54,100 +54,74 @@ void TraceManager::sendLogMessage( LogMessage & logData )
     tracer.sendLogEvent( TraceEventData(TraceEventData::eTraceAction::TraceLogMessage, logData) );
 }
 
-bool TraceManager::startLogging( const char * configFile /*= nullptr*/ )
+bool TraceManager::readLogConfig( const char* configFile /*= nullptr*/ )
 {
-    TraceManager & traceManager = TraceManager::getInstance();
+    return Application::loadConfiguration(configFile);
+}
 
-    do
+bool TraceManager::startLogging(const char* configFile /*= nullptr*/ )
+{
+    Application::loadConfiguration(configFile);
+
+    TraceManager& traceManager = TraceManager::getInstance();
+    Lock lock(traceManager.mLock);
+    if (traceManager.isReady() == false)
     {
-        Lock lock(traceManager.mLock);
-        if ( traceManager.isReady( ) == false )
-        {
-            if ( TraceManager::isLoggingConfigured( ) == false )
-            {
-                traceManager.loadConfiguration( configFile );
-            }
-
-            lock.unlock( );
-            VERIFY( traceManager.startLoggingThread( ) );
-            lock.lock( );
-        }
-
-    } while (false);
+        lock.unlock();
+        VERIFY(traceManager.startLoggingThread());
+        lock.lock();
+    }
 
     return traceManager.mIsStarted;
 }
 
-bool TraceManager::saveLogConfig( const char * configFile )
+bool TraceManager::saveLogConfig(const char* configFile /*= nullptr*/ )
 {
-    TraceManager & traceManager = TraceManager::getInstance( );
-    if ( NEString::isEmpty( configFile ) )
-    {
-        Lock lock( traceManager.mLock );
-        return traceManager.mLogConfig.saveConfig( );
-    }
-    else
-    {
-        Lock lock( traceManager.mLock );
-        return traceManager.mLogConfig.saveConfig( configFile );
-    }
+    TraceManager::updateScopeConfiguration();
+    return Application::saveConfiguration(configFile);
 }
 
-bool TraceManager::saveLogConfig( FileBase & file )
+void TraceManager::updateScopeConfiguration(void)
 {
-    TraceManager & traceManager = TraceManager::getInstance( );
-    Lock lock( traceManager.mLock );
-    return traceManager.mLogConfig.saveConfig( file );
-}
+    TraceManager& traceManager = TraceManager::getInstance();
+    Lock lock(traceManager.mLock);
 
-bool TraceManager::isLoggingConfigured(void)
-{
-    bool result{ false };
-    TraceManager & traceManager = TraceManager::getInstance();
-    do 
-    {
-        Lock lock(traceManager.mLock);
-        result = traceManager.mLogConfig.isConfigured();
-    } while (false);
-
-    return result;
+    LogConfiguration config;
+    config.updateScopeConfiguration(traceManager.mScopeController);
 }
 
 bool TraceManager::isLoggingEnabled(void)
 {
-    TraceManager & traceManager = TraceManager::getInstance();
-    Lock lock(traceManager.mLock);
-    return traceManager.mLogConfig.isLoggingEnabled();
+    return TraceManager::getInstance().mLogConfig.isLoggingEnabled();
 }
 
-bool TraceManager::isNetLoggingEnabled(void)
+bool TraceManager::isLoggingConfigured(void)
 {
-    TraceManager& traceManager = TraceManager::getInstance();
-    Lock lock(traceManager.mLock);
-    return traceManager.mLogConfig.isNetLoggingEnabled();
-}
-
-const String& TraceManager::getConfigFile(void)
-{
-    TraceManager& traceManager = TraceManager::getInstance();
-    Lock lock(traceManager.mLock);
-    return traceManager.mLogConfig.getConfigFile();
+    return Application::isConfigured();
 }
 
 bool TraceManager::forceActivateLogging(void)
 {
     bool result = false;
     TraceManager & traceManager = TraceManager::getInstance();
-    if ( (traceManager.isLoggingConfigured() == false) && (traceManager.isLoggingStarted() == false) )
+    if ( traceManager.isLoggingStarted() == false )
     {
         Lock lock( traceManager.mLock );
-
-        traceManager.mLogConfig.setDefaultValues( );
+        traceManager.mLogConfig.setStatus(true);
+        traceManager.mLogConfig.setLogEnabled(NETrace::eLogingTypes::LogTypeFile, true);
         traceManager.mScopeController.activateDefaults( );
         result = traceManager.startLoggingThread( );
     }
 
     return result;
+}
+
+void TraceManager::setDefaultConfiguration(bool overwriteExisting)
+{
+    if (overwriteExisting || Application::isConfigured() == false)
+    {
+        Application::setupDefaultConfiguration();
+    }
 }
 
 bool TraceManager::setScopePriority( const char * scopeName, unsigned int newPrio )
@@ -179,6 +153,13 @@ unsigned int TraceManager::getScopePriority( const char * scopeName )
     return (scope != nullptr ? scope->getPriority() : static_cast<unsigned int>(NETrace::eLogPriority::PrioInvalid));
 }
 
+void TraceManager::forceEnableLogging(void)
+{
+    TraceManager& traceManager = TraceManager::getInstance();
+    traceManager.mLogConfig.setStatus(true);
+    traceManager.mLogConfig.setLogEnabled(NETrace::eLogingTypes::LogTypeFile, true);
+}
+
 //////////////////////////////////////////////////////////////////////////
 // TraceManager class constructor / destructor
 //////////////////////////////////////////////////////////////////////////
@@ -188,7 +169,7 @@ TraceManager::TraceManager(void)
 
     , mScopeController  ( )
 	, mIsStarted		( false )
-    , mLogConfig        ( mScopeController )
+    , mLogConfig        ( )
 
     , mLoggerFile       ( mLogConfig )
     , mLoggerDebug      ( mLogConfig )
@@ -203,24 +184,9 @@ TraceManager::TraceManager(void)
 //////////////////////////////////////////////////////////////////////////
 // TraceManager class methods
 //////////////////////////////////////////////////////////////////////////
-bool TraceManager::loadConfiguration( const char * filePath /*= nullptr */ )
-{
-    Lock lock(mLock);
-    return mLogConfig.loadConfig( filePath );
-}
-
-void TraceManager::unloadConfiguration( void )
-{
-    Lock lock( mLock );
-    mScopeController.clearConfigScopes( );
-    mLogConfig.unloadConfig( );
-}
-
 void TraceManager::clearConfigData( void )
 {
     Lock lock(mLock);
-
-    mLogConfig.clearProperties();
     mScopeController.clearConfigScopes( );
 }
 
@@ -230,24 +196,24 @@ void TraceManager::resetScopes(void)
     mScopeController.resetScopes();
 }
 
-bool TraceManager::isNetConfigValid(void) const
+bool TraceManager::isRemoteLoggingEnabled(void) const
 {
-    return (mLogConfig.getRemoteTcpHost().isValid() && mLogConfig.getRemoteTcpPort().isValid());
+    return mLogConfig.isRemoteLoggingEnabled();
 }
 
-bool TraceManager::isDatabaseValid(void) const
+bool TraceManager::isDatabaseLoggingEnabled(void) const
 {
-    return (mLogConfig.getDatabaseHost().isValid() && mLogConfig.getDatabaseName().isValid() && mLogConfig.getDatabaseDriver().isValid() );
+    return mLogConfig.isDatabaseLoggingEnabled();
 }
 
-bool TraceManager::isFileValid(void) const
+bool TraceManager::isFileLoggingEnabled(void) const
 {
-    return mLogConfig.getLogFile().isValid();
+    return mLogConfig.isFileLoggingEnabled();
 }
 
-bool TraceManager::isDebugOutputValid(void) const
+bool TraceManager::isDebugOutputLoggingEnabled(void) const
 {
-    return mLogConfig.getDebugOutput().isValid();
+    return mLogConfig.isDebugOutputLoggingEnabled();
 }
 
 bool TraceManager::startLoggingThread( void )
@@ -317,6 +283,7 @@ void TraceManager::traceStartLogs( void )
 {
     if ( mLogConfig.isLoggingEnabled() )
     {
+        mScopeController.configureScopes();
         mScopeController.changeScopeActivityStatus( true );
         if (mLoggerFile.isLoggerOpened() == false)
         {

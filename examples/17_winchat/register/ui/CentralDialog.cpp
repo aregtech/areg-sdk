@@ -162,9 +162,6 @@ BOOL CentralDialog::OnInitDialog()
     SetIcon(m_hIcon, TRUE);			// Set big icon
     SetIcon(m_hIcon, FALSE);		// Set small icon
 
-    // Initialize application, enable logging, servicing, timer and watchdog.
-    Application::initApplication( true, true, false, true, true );
-
     SetActivePage(&mPageConnections);
     SetActivePage(&mPageSetupNetwork);
 

@@ -16,7 +16,7 @@
 #include "logger/service/private/LoggerMessageProcessor.hpp"
 
 #include "logger/service/LoggerServerService.hpp"
-#include "areg/ipc/NEConnection.hpp"
+#include "areg/ipc/NERemoteService.hpp"
 
 LoggerMessageProcessor::LoggerMessageProcessor(LoggerServerService & loggerService)
     : mLoggerService    ( loggerService )
@@ -42,7 +42,7 @@ void LoggerMessageProcessor::queryInstances(const RemoteMessage & msgReceived) c
 void LoggerMessageProcessor::notifyInstances(void) const
 {
     RemoteMessage msgInstances;
-    if (msgInstances.initMessage(NEConnection::getMessageQueryInstances().rbHeader) != nullptr)
+    if (msgInstances.initMessage(NERemoteService::getMessageQueryInstances().rbHeader) != nullptr)
     {
         const ServiceCommunicatonBase::MapInstances & instances = mLoggerService.getInstances();
         ServiceCommunicatonBase::MapInstances clients;
@@ -71,7 +71,7 @@ void LoggerMessageProcessor::notifyInstances(void) const
 void LoggerMessageProcessor::notifyTargetInstances(const ITEM_ID & target) const
 {
     RemoteMessage msgInstances;
-    if (msgInstances.initMessage(NEConnection::getMessageQueryInstances().rbHeader) != nullptr)
+    if (msgInstances.initMessage(NERemoteService::getMessageQueryInstances().rbHeader) != nullptr)
     {
         const ServiceCommunicatonBase::MapInstances & instances = mLoggerService.getInstances();
         ServiceCommunicatonBase::MapInstances clients;

@@ -263,29 +263,19 @@ inline void TraceScope::setPriority( unsigned int newPrio )
     mScopePrio  = newPrio;
 }
 
-inline void TraceScope::setPriority( const char * newPrio )
-{
-    setPriority( NETrace::convFromString(newPrio) );
-}
-
-inline void TraceScope::setPriority( const String & newPrio )
-{
-    setPriority( NETrace::convFromString(newPrio) );
-}
-
 inline void TraceScope::addPriority( NETrace::eLogPriority addPrio )
 {
     mScopePrio  |= static_cast<unsigned int>(addPrio);
 }
 
-inline void TraceScope::addPriority( const char * addPrio )
+void TraceScope::addPriority( const char * addPrio )
 {
-    addPriority( NETrace::convFromString(addPrio) );
+    addPriority( NETrace::stringToLogPrio(addPrio) );
 }
 
-inline void TraceScope::addPriority( const String & addPrio )
+void TraceScope::addPriority( const String & addPrio )
 {
-    addPriority( NETrace::convFromString(addPrio) );
+    addPriority( NETrace::stringToLogPrio(addPrio) );
 }
 
 inline void TraceScope::removePriority( NETrace::eLogPriority remPrio )
@@ -293,14 +283,14 @@ inline void TraceScope::removePriority( NETrace::eLogPriority remPrio )
     mScopePrio  &= ~static_cast<unsigned int>(remPrio);
 }
 
-inline void TraceScope::removePriority( const char * remPrio )
+void TraceScope::removePriority( const char * remPrio )
 {
-    removePriority( NETrace::convFromString(remPrio) );
+    removePriority( NETrace::stringToLogPrio(remPrio) );
 }
 
-inline void TraceScope::removePriority( const String & remPrio )
+void TraceScope::removePriority( const String & remPrio )
 {
-    removePriority( NETrace::convFromString(remPrio) );
+    removePriority( NETrace::stringToLogPrio(remPrio) );
 }
 
 inline unsigned int TraceScope::getPriority( void ) const

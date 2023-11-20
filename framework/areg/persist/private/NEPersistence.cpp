@@ -16,4 +16,4 @@
  /************************************************************************
   * Include files.
   ************************************************************************/
-#include "areg/persist/private/NEPersistence.hpp"
+#include "areg/persist/NEPersistence.hpp"

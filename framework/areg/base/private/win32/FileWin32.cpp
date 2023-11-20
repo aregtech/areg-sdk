@@ -250,7 +250,7 @@ void File::_osFlushFile( void )
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 
-unsigned int File::_osCreateTempFile(char* buffer, const char* folder, const char* prefix, unsigned int unique)
+unsigned int File::_osCreateTempFileName(char* buffer, const char* folder, const char* prefix, unsigned int unique)
 {
     ASSERT(buffer != nullptr);
     ASSERT(folder != nullptr);

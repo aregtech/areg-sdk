@@ -240,29 +240,20 @@ private:
 /************************************************************************/
 
     /**
-     * \brief   Call to configure router client. If passed nullptr, it will use
-     *          default router configuration file. This call will not start client
-     *          automatically. To start router client, call _routingServiceStart()
-     *          manually.
-     * \param   configFile  The configuration file of router client.
-     *                      If nullptr, it will load default configuration file.
-     * \return  Returns true if succeeded to load configuration file.
+     * \brief   Call to configure router client. This method gets configuration properties
+     *          to setup connection client.
+     * \return  Returns true if succeeded to setup and configure the connection client.
      *          Otherwise, it returns false.
      * \see     _routingServiceStart
      **/
-    static bool _routingServiceConfigure( const String & configFile = String::getEmptyString() );
+    static bool _routingServiceConfigure( void );
 
     /**
-     * \brief   Call to start the client part of remove Routing Service.
-     * \param   configFile  If not nullptr, the router will be first configured.
-     *                      If nullptr and router was not configured, it will use
-     *                      default configuration file.
-     *                      If nullptr and router was configured, it will ignore configuration.
+     * \brief   Call to start the client connection of remote Routing Service.
      * \return  Returns true if succeeded to start router client.
      * \see     _routingServiceConfigure, _routingServiceStop
      **/
-    static bool _routingServiceStart( const String & configFile = String::getEmptyString() );
-
+    static bool _routingServiceStart(unsigned int connectTypes);
 
     /**
      * \brief   Call to start connection to remote Routing Service. If called, it overwrites IP-Address and
@@ -281,14 +272,6 @@ private:
     static void _routingServiceStop( void );
 
     /**
-     * \brief   Call to enable or disable remote Routing Service client.
-     *          If client is already running and it is requested to disable, it will be stopped first.
-     * \param   enable  Flag, which is indicating whether the remote Routing Service client should be enabled or disabled.
-     *                  If true, it is enabled. Otherwise, it is disabled.
-     **/
-    static void _routingServiceEnable( bool enable );
-
-    /**
      * \brief   Returns true if Routing Service client is started and ready to operate.
      **/
     static bool _isRoutingServiceStarted( void );
@@ -297,11 +280,6 @@ private:
      * \brief   Returns true if Routing Service client is configured and ready to start.
      **/
     static bool _isRoutingServiceConfigured( void );
-
-    /**
-     * \brief   Returns true if remote Routing Service is enabled.
-     **/
-    static bool _isRoutingServiceEnabled( void );
 
     /**
      * \brief   The function generates an event to create and start component thread.

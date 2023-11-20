@@ -15,7 +15,6 @@
 #include "areg/trace/private/FileLogger.hpp"
 
 #include "areg/trace/private/LogConfiguration.hpp"
-#include "areg/trace/private/TraceProperty.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/DateTime.hpp"
 
@@ -31,48 +30,41 @@ bool FileLogger::openLogger( void )
     if ( mLogFile.isOpened() == false )
     {
         const LogConfiguration & traceConfig = getTraceConfiguration();
-        ASSERT( static_cast<bool>(traceConfig.getStatus().getValue()) );
-        const TraceProperty & prop = traceConfig.getLogFile();
-        if ( prop.isValid() )
+        ASSERT(traceConfig.isFileLoggingEnabled());
+
+        String fileName( traceConfig.getLogFile() );
+        if ( fileName.isEmpty() == false )
         {
-            String fileName(File::normalizePath(static_cast<const char *>(prop.getValue())) );
-            if ( fileName.isEmpty() == false )
+            bool newFile      = static_cast<bool>(traceConfig.getAppendData()) == false;
+            unsigned int mode = File::FO_MODE_WRITE | File::FO_MODE_READ | File::FO_MODE_SHARE_READ | File::FO_MODE_SHARE_WRITE | File::FO_MODE_TEXT;
+
+            if (File::existFile(fileName))
             {
-                bool newFile      = static_cast<bool>(traceConfig.getAppendData()) == false;
-                unsigned int mode = File::FO_MODE_WRITE | File::FO_MODE_READ | File::FO_MODE_SHARE_READ | File::FO_MODE_SHARE_WRITE | File::FO_MODE_TEXT;
-
-                if (File::existFile(fileName))
-                {
-                    mode |= newFile ? File::FO_MODE_TRUNCATE : File::FO_MODE_EXIST;
-                }
-                else
-                {
-                    mode |= FileBase::FO_MODE_CREATE;
-                }
-
-                if ( mLogFile.open( fileName, mode) && createLayouts() )
-                {
-                    
-                    Process & curProcess = Process::getInstance();
-                    NETrace::sLogMessage logMsgHello(NETrace::eMessageType::MsgText, 0, NETrace::eLogPriority::PrioIgnoreLayout, nullptr, 0);
-                    String::formatString( logMsgHello.logMessage
-                                        , NETrace::LOG_MESSAGE_BUFFER_SIZE
-                                        , LoggerBase::FOMAT_MESSAGE_HELLO.data()
-                                        , Process::getString(curProcess.getEnvironment())
-                                        , curProcess.getFullPath().getString()
-                                        , logMsgHello.logModuleId);
-
-                    logMessage(logMsgHello);
-                }
+                mode |= newFile ? File::FO_MODE_TRUNCATE : File::FO_MODE_EXIST;
             }
             else
             {
-                ; // no file specified
+                mode |= FileBase::FO_MODE_CREATE;
+            }
+
+            if ( mLogFile.open( fileName, mode) && createLayouts() )
+            {
+                    
+                Process & curProcess = Process::getInstance();
+                NETrace::sLogMessage logMsgHello(NETrace::eMessageType::MsgText, 0, NETrace::eLogPriority::PrioIgnoreLayout, nullptr, 0);
+                String::formatString( logMsgHello.logMessage
+                                    , NETrace::LOG_MESSAGE_BUFFER_SIZE
+                                    , LoggerBase::FOMAT_MESSAGE_HELLO.data()
+                                    , Process::getString(curProcess.getEnvironment())
+                                    , curProcess.getFullPath().getString()
+                                    , logMsgHello.logModuleId);
+
+                logMessage(logMsgHello);
             }
         }
         else
         {
-            ; // no property was set
+            ; // no file specified
         }
     }
 

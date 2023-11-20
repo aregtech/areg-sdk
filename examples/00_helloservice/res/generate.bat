@@ -1,9 +1,11 @@
-echo off
+echo on
 cls
 
 :: set the AREG_SDK_ROOT directory here
 if (%AREG_SDK_ROOT%=="") (set AREG_SDK_ROOT="E:\Projects\aregtech\areg-sdk")
 
+
+echo %AREG_SDK_ROOT%
    
 :: .bat file directory
 set BATCH_ROOT=%~dp0

@@ -23,6 +23,7 @@
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/component/NEService.hpp"
 #include "areg/component/TEEvent.hpp"
+#include "areg/ipc/NERemoteService.hpp"
 
 /************************************************************************
  * Dependencies
@@ -60,7 +61,6 @@ public:
         , CMD_StartConnection           //!< Requested to start connection, the data is configuration file
         , CMD_StartNetConnection        //!< Requested to start network connection, the data is IP-address and port number
         , CMD_StopConnection            //!< Requested to stop connection
-        , CMD_SetEnableService          //!< Requested to enables or disables remote service
         , CMD_RegisterConnection        //!< Requested to register connection
         , CMD_UnregisterConnection      //!< Requested to unregister connection
         , CMD_LostConnection            //!< Requested to send notifications to components that connection is lost.
@@ -114,14 +114,20 @@ public:
     static ServiceManagerEventData unregisterStub( const StubAddress & addrStub, NEService::eDisconnectReason reason );
 
     /**
-     * \brief   Creates and returns Service Manager event data with command to configure connection
+     * \brief   Creates and returns Service Manager event data with command to configure connection.
+     * \param   service         The remote service, which connection should be configured.
+     * \param   connectTypes    The bitwise set of connections to configure.
+     * \return  Returns  event data to send to the target.
      **/
-    static ServiceManagerEventData configureConnection( const String & configFile );
+    static ServiceManagerEventData configureConnection(NERemoteService::eRemoteServices service, unsigned int connectTypes );
 
     /**
      * \brief   Creates and returns Service Manager event data with command to start router client connection
+     * \param   service         The remote service, which connection should be started.
+     * \param   connectTypes    The bitwise set of connections to start.
+     * \return  Returns  event data to send to the target.
      **/
-    static ServiceManagerEventData startConnection( const String & configFile );
+    static ServiceManagerEventData startConnection(NERemoteService::eRemoteServices service, unsigned int connectTypes);
 
     /**
      * \brief   Creates and returns Service Manager event data with command to start router client connection.
@@ -134,16 +140,6 @@ public:
      * \brief   Creates and returns Service Manager event data with command to stop connection
      **/
     static ServiceManagerEventData stopConnection( void );
-
-    /**
-     * \brief   Creates Service Manager event data with command to enable or disable remote service.
-     *          If disabled, services cannot be accessed outside of process.
-     *          If remote service is already running and it is requested to disable, it will be stopped.
-     * \param  enable   If true, the remote services are accessed from outside of process.
-     *                  If false, all services run and accessed only within process.
-     * \return  Returns Service Manager Event data object with command to enable or disable remote service.
-     **/
-    static ServiceManagerEventData enableRemoteService( bool enable );
 
     /**
      * \brief   Creates and returns Service Manager event data with command to register connection
@@ -328,8 +324,6 @@ inline const char * ServiceManagerEventData::getString( ServiceManagerEventData:
         return "ServiceManagerEventData::eServiceManagerCommands::CMD_StartNetConnection";
     case ServiceManagerEventData::eServiceManagerCommands::CMD_StopConnection:
         return "ServiceManagerEventData::eServiceManagerCommands::CMD_StopConnection";
-    case ServiceManagerEventData::eServiceManagerCommands::CMD_SetEnableService:
-        return "ServiceManagerEventData::eServiceManagerCommands::CMD_SetEnableService";
     case ServiceManagerEventData::eServiceManagerCommands::CMD_RegisterConnection:
         return "ServiceManagerEventData::eServiceManagerCommands::CMD_RegisterConnection";
     case ServiceManagerEventData::eServiceManagerCommands::CMD_UnregisterConnection:

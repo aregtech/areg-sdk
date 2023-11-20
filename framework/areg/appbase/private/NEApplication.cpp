@@ -40,3 +40,40 @@ AREG_API_IMPL char NEApplication::LOGGER_SERVICE_NAME_ASCII[]    { "AREG TCP/IP 
  **/
 AREG_API_IMPL wchar_t NEApplication::LOGGER_SERVICE_NAME_WIDE[]  { L"AREG TCP/IP TCP/IP Logs collection Service" };
 // { 'A', 'R', 'E', 'G', ' ', 'T', 'C', 'P', '/', 'I', 'P', ' ', 'L', 'o', 'g', 's', ' ', 'c', 'o', 'l', 'l', 'e', 'c', 't', 'i', 'o', 'n', ' ', 'S', 'e', 'r', 'v', 'i', 'c', 'e', '\0' };
+
+AREG_API_IMPL const std::vector<Identifier>     NEApplication::LogTypeIdentifiers =
+{
+      {static_cast<unsigned int>(NETrace::eLogingTypes::LogTypeUndefined)               , NEApplication::DefaultLogTypes[0].ltIdName        }
+    , {static_cast<unsigned int>(NETrace::eLogingTypes::LogTypeRemote)                  , NEApplication::DefaultLogTypes[1].ltIdName        }
+    , {static_cast<unsigned int>(NETrace::eLogingTypes::LogTypeFile)                    , NEApplication::DefaultLogTypes[2].ltIdName        }
+    , {static_cast<unsigned int>(NETrace::eLogingTypes::LogTypeDebug)                   , NEApplication::DefaultLogTypes[3].ltIdName        }
+    , {static_cast<unsigned int>(NETrace::eLogingTypes::LogTypeDatabase)                , NEApplication::DefaultLogTypes[4].ltIdName        }
+};
+
+AREG_API_IMPL const std::vector<Identifier>   NEApplication::ConnectionIdentifiers
+{
+      { static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectUndefined)  , NEApplication::DefaultConnections[0].ltIdName     }
+    , { static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectTcpip)      , NEApplication::DefaultConnections[1].ltIdName     }
+    , { static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectUdp)        , NEApplication::DefaultConnections[2].ltIdName     }
+    , { static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectWeb)        , NEApplication::DefaultConnections[3].ltIdName     }
+    , { static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectSM)         , NEApplication::DefaultConnections[4].ltIdName     }
+};
+
+AREG_API_IMPL const std::vector<Identifier>   NEApplication::RemoteServiceIdentifiers
+{
+      { static_cast<unsigned int>(NERemoteService::eRemoteServices::ServiceUnknown)     , NEApplication::DefaultRemotetServices[0].ltIdName }
+    , { static_cast<unsigned int>(NERemoteService::eRemoteServices::ServiceRouter)      , NEApplication::DefaultRemotetServices[1].ltIdName }
+    , { static_cast<unsigned int>(NERemoteService::eRemoteServices::ServiceLogger)      , NEApplication::DefaultRemotetServices[2].ltIdName }
+};
+
+AREG_API_IMPL const std::vector<Identifier>   NEApplication::LogScopePriorityIndentifiers
+{
+      { static_cast<unsigned int>(NETrace::eLogPriority::PrioInvalid)                   , NETrace::PRIO_NO_PRIO                             }
+    , { static_cast<unsigned int>(NETrace::eLogPriority::PrioNotset)                    , NETrace::PRIO_NOTSET_STR                          }
+    , { static_cast<unsigned int>(NETrace::eLogPriority::PrioScope)                     , NETrace::PRIO_SCOPE_STR                           }
+    , { static_cast<unsigned int>(NETrace::eLogPriority::PrioFatal)                     , NETrace::PRIO_FATAL_STR                           }
+    , { static_cast<unsigned int>(NETrace::eLogPriority::PrioError)                     , NETrace::PRIO_ERROR_STR                           }
+    , { static_cast<unsigned int>(NETrace::eLogPriority::PrioWarning)                   , NETrace::PRIO_WARNING_STR                         }
+    , { static_cast<unsigned int>(NETrace::eLogPriority::PrioInfo)                      , NETrace::PRIO_INFO_STR                            }
+    , { static_cast<unsigned int>(NETrace::eLogPriority::PrioDebug)                     , NETrace::PRIO_DEBUG_STR                           }
+};

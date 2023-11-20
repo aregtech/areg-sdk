@@ -26,6 +26,7 @@
 #include <iostream>
 #include <locale>
 #include <string>
+#include <vector>
 
 /************************************************************************
  * Dependencies
@@ -356,7 +357,7 @@ public:
     /**
      * \brief   Returns the string object.
      **/
-    inline const std::basic_string<CharType>& getObject(void) const;
+    inline const std::basic_string<CharType>& getData(void) const;
 
     /**
      * \brief   Returns true if specified character position is valid in the string.
@@ -938,6 +939,20 @@ public:
                                         , NEString::CharCount count
                                         , const CharType * strReplace
                                         , NEString::CharCount lenReplace);
+
+    /**
+     * \brief   Splits the given string into multiple parts considering specified delimiter.
+     * \param   delimiter   The delimiter character that should be searched to split the string.
+     * \return  Returns list of strings that are split be specified delimiter.
+     **/
+    inline std::vector<TEString<CharType>> split(CharType delim) const;
+
+    /**
+     * \brief   Splits the given string into multiple parts considering specified delimiter.
+     * \param   delimiter   The delimiter string that should be searched to split the string.
+     * \return  Returns list of strings that are split be specified delimiter.
+     **/
+    inline std::vector<TEString<CharType>> split(const TEString<CharType> & delim) const;
 
 /************************************************************************/
 // Protected methods, can be assessed only from derived class
@@ -1523,7 +1538,7 @@ inline const CharType* TEString<CharType>::getString(void) const
 }
 
 template<typename CharType>
-inline const std::basic_string<CharType>& TEString<CharType>::getObject(void) const
+inline const std::basic_string<CharType>& TEString<CharType>::getData(void) const
 {
     return mData;
 }
@@ -2930,6 +2945,59 @@ inline bool TEString<CharType>::isValidNameChar(const CharType checkChar, std::l
 }
 
 template<typename CharType>
+inline std::vector<TEString<CharType>> TEString<CharType>::split(CharType delimiter) const
+{
+    std::vector<TEString<CharType>> result;
+    size_t start{ 0 };
+    while (mData.at(start) != static_cast<CharType>('\0'))
+    {
+        size_t pos = mData.find_first_of(delimiter, start);
+        if (pos != std::basic_string<CharType>::npos)
+        {
+            result.push_back(TEString<CharType>(mData.c_str() + start, static_cast<NEString::CharCount>(pos - start)));
+            start = pos + 1;
+        }
+        else
+        {
+            result.push_back(TEString<CharType>(mData.c_str() + start));
+            break;
+        }
+    }
+
+    return result;
+}
+
+template<typename CharType>
+inline std::vector<TEString<CharType>> TEString<CharType>::split(const TEString<CharType> & delimiter) const
+{
+    std::vector<TEString<CharType>> result;
+    if (delimiter.isEmpty() == false)
+    {
+        const size_t skip   { static_cast<size_t>(delimiter.getLength()) };
+        const size_t len    { mData.length() };
+        size_t start        { 0 };
+        size_t pos = mData.find(delimiter.mData, start);
+        while (pos != std::basic_string<CharType>::npos)
+        {
+            result.push_back(TEString<CharType>(mData.c_str() + start, static_cast<NEString::CharCount>(pos - start)));
+            start = pos + skip;
+            pos = (start < len ? mData.find(delimiter.mData, start) : std::basic_string<CharType>::npos);
+        }
+
+        if (start < len)
+        {
+            result.push_back(TEString<CharType>(mData.c_str() + start, static_cast<NEString::CharCount>(len - start)));
+        }
+    }
+    else
+    {
+        result.push_back(*this);
+    }
+
+    return result;
+}
+
+template<typename CharType>
 inline bool TEString<CharType>::startsWith(const TEString<CharType>& phrase, bool isCaseSensitive /*= true*/) const
 {
     return startsWith(phrase.mData);
@@ -3102,13 +3170,13 @@ inline IEOutStream& operator << (IEOutStream& stream, const TEString<CT>& output
 template<typename CT>
 inline std::ostream & operator << ( std::ostream & stream, const TEString<CT> & output )
 {
-    return (stream << output.getObject( ));
+    return (stream << output.getData( ));
 }
 
 template<typename CT>
 inline const std::istream & operator >> ( const std::istream & stream, TEString<CT> & input )
 {
-    return (stream >> input.getObject( ));
+    return (stream >> input.getData( ));
 }
 
 #endif  // AREG_BASE_TESTRING_HPP

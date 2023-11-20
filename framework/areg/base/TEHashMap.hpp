@@ -249,6 +249,11 @@ public:
      */
     inline bool contains(const KEY& Key) const;
 
+    /**
+     * \brief   Returns the vector object where the data are stored.
+     **/
+    inline const std::unordered_map<KEY, VALUE>& getData(void) const;
+
 /************************************************************************/
 // Operations
 /************************************************************************/
@@ -600,6 +605,12 @@ template < typename KEY, typename VALUE >
 inline bool TEHashMap<KEY, VALUE>::contains(const KEY& Key) const
 {
     return (mValueList.find(Key) != mValueList.end());
+}
+
+template<typename KEY, typename VALUE>
+inline const std::unordered_map<KEY, VALUE>& TEHashMap<KEY, VALUE>::getData(void) const
+{
+    return mValueList;
 }
 
 template < typename KEY, typename VALUE >

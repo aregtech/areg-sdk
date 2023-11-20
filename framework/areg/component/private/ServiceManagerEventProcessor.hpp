@@ -67,12 +67,12 @@ public:
      * \brief   Called to process Service Manager event.
      * \param   cmdService          The command of Service Manager event to process.
      * \param   stream              The streaming object to de-serialize data of objects.
-     * \param   connectProvide      The instance of service connection provider to forward connection requests.
+     * \param   connectProvider     The instance of service connection provider to forward connection requests.
      * \param   registerProvider    The instance of service register provider to forward register requests
      **/
     void processServiceEvent( ServiceManagerEventData::eServiceManagerCommands cmdService
                             , const IEInStream & stream
-                            , IEServiceConnectionProvider& connectProvide
+                            , IEServiceConnectionProvider& connectProvider
                             , IEServiceRegisterProvider & registerProvider );
 
 //////////////////////////////////////////////////////////////////////////

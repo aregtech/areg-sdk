@@ -175,7 +175,7 @@ bool File::_osOpenFile( void )
             String dirName(File::getFileDirectory(mFileName));
             if ( (flag & O_CREAT) != 0 )
             {
-                if (std::filesystem::exists(mFileName.getObject(), err))
+                if (std::filesystem::exists(mFileName.getData(), err))
                 {
                     if (dirName == mFileName)
                     {
@@ -323,15 +323,26 @@ void File::_osFlushFile( void )
 // Static methods
 //////////////////////////////////////////////////////////////////////////
 
-unsigned int File::_osCreateTempFile(char* buffer, const char* folder, const char* prefix, unsigned int unique)
+unsigned int File::_osCreateTempFileName(char* buffer, const char* folder, const char* prefix, unsigned int /*unique*/)
 {
     ASSERT(buffer != nullptr);
     ASSERT(folder != nullptr);
     ASSERT(prefix != nullptr);
 
-    sprintf(buffer, "%s%c%s%d.tmp", folder, File::PATH_SEPARATOR, prefix, unique);
+    constexpr char fmtFileName[]{ "%s%c%sXXXXXX" };
+    constexpr char fmtFdName[]{ "/proc/self/fd/%d" };
+    sprintf(buffer, fmtFileName, folder, File::PATH_SEPARATOR, prefix);
+    int fno = ::mkstemp(buffer);
+    if (fno > 1)
+    {
+        char temp[128];
+        sprintf(temp, fmtFdName, fno);
+        int count = readlink(temp, buffer, File::MAXIMUM_PATH);
+        buffer[count > 0 ? count : 0] = String::EmptyChar;
+        ::close(fno);
+    }
 
-    return static_cast<unsigned int>(::mkdtemp(buffer) == buffer ? strlen(buffer) : 0);
+    return static_cast<unsigned int>(strlen(buffer));
 }
 
 unsigned int File::_osGetSpecialDir(char* buffer, unsigned int /*length*/, const eSpecialFolder specialFolder)

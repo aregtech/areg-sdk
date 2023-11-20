@@ -18,7 +18,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/trace/private/NELogConfig.hpp"
+#include "areg/trace/private/NELogging.hpp"
 #include "areg/base/String.hpp"
 
 /************************************************************************
@@ -66,7 +66,7 @@ protected:
     /**
      * \brief   Initializes the layout type
      **/
-    IELayout( NELogConfig::eLayouts layout );
+    IELayout( NELogging::eLayouts layout );
 
 public:
     /**
@@ -97,7 +97,7 @@ public:
     /**
      * \brief   Returns the layout type
      **/
-    inline NELogConfig::eLayouts getLayoutType( void ) const;
+    inline NELogging::eLayouts getLayoutType( void ) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -106,7 +106,7 @@ protected:
     /**
      * \brief   Layout type. Cannot be modified.
      **/
-    const NELogConfig::eLayouts  mLayout;
+    const NELogging::eLayouts  mLayout;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -937,7 +937,7 @@ private:
 // IELayout interface inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline NELogConfig::eLayouts IELayout::getLayoutType( void ) const
+inline NELogging::eLayouts IELayout::getLayoutType( void ) const
 {
     return mLayout;
 }

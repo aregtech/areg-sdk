@@ -61,7 +61,6 @@
     <None Include="logger\Makefile" />
     <None Include="logger\Readme.md" />
     <None Include="logger\resources\logger.ico" />
-    <None Include="logger\resources\logger.init" />
     <None Include="logger\resources\small.ico" />
     <None Include="logger\resources\logger_install.bat" />
     <None Include="logger\resources\logger_uninstall.bat" />

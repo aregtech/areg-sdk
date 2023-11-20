@@ -397,7 +397,7 @@ namespace   NEUtilities
      *          std::cout << "Time passed " << stopWatch.passedMillisecond() << " ms" << std::endl;
      * 
      *          std::cout << "Started new timer at epoch time " << stopWatch.start() << std::endl;
-     *          std::cout << "Stoppedn timer at epoch time " << stopWatch.stop() << std::endl;
+     *          std::cout << "Stopped timer at epoch time " << stopWatch.stop() << std::endl;
      *          std::cout << "Time passed: " << stopWatch.passedNanoseconds() << " ns" << std::endl;
      **/
     class AREG_API Duration
@@ -435,12 +435,12 @@ namespace   NEUtilities
         inline TIME64 stop( void );
 
         /**
-         * \bief    Returns the starting time in nanoseconds since epoch.
+         * \brief   Returns the starting time in nanoseconds since epoch.
          **/
         inline TIME64 getStart( void ) const;
 
         /**
-         * \bief    Returns the stopping time in nanoseconds since epoch.
+         * \brief   Returns the stopping time in nanoseconds since epoch.
          **/
         inline TIME64 getStop( void ) const;
 
@@ -470,7 +470,7 @@ namespace   NEUtilities
         inline uint64_t passedMinutes( void ) const;
 
         /**
-         * \bried   Returns the duration in nanoseconds since watch timer started.
+         * \brief   Returns the duration in nanoseconds since watch timer started.
          *          If the stop was called before, it returns the duration between start and stop calls.
          *          If the stop was not called, it returns the duration since last time started. 
          **/

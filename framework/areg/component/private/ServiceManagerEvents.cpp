@@ -72,19 +72,21 @@ ServiceManagerEventData ServiceManagerEventData::unregisterStub( const StubAddre
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::configureConnection(const String & configFile)
+ServiceManagerEventData ServiceManagerEventData::configureConnection(NERemoteService::eRemoteServices service, unsigned int connectTypes)
 {
     ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_ConfigureConnection );
     IEOutStream & stream = data.getWriteStream();
-    stream << configFile;
+    stream << service;
+    stream << connectTypes;
     return data;
 }
 
-ServiceManagerEventData ServiceManagerEventData::startConnection(const String & configFile)
+ServiceManagerEventData ServiceManagerEventData::startConnection(NERemoteService::eRemoteServices service, unsigned int connectTypes)
 {
     ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_StartConnection );
     IEOutStream & stream = data.getWriteStream();
-    stream << configFile;
+    stream << service;
+    stream << connectTypes;
     return data;
 }
 
@@ -100,14 +102,6 @@ ServiceManagerEventData ServiceManagerEventData::startNetConnection( const Strin
 ServiceManagerEventData ServiceManagerEventData::stopConnection(void)
 {
     return ServiceManagerEventData( ServiceManagerEventData::eServiceManagerCommands::CMD_StopConnection );
-}
-
-ServiceManagerEventData ServiceManagerEventData::enableRemoteService( bool enable )
-{
-    ServiceManagerEventData data( ServiceManagerEventData::eServiceManagerCommands::CMD_SetEnableService );
-    IEOutStream & stream = data.getWriteStream( );
-    stream << enable;
-    return data;
 }
 
 ServiceManagerEventData ServiceManagerEventData::registerConnection(const Channel & channel)

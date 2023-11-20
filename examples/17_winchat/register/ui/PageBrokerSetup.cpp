@@ -157,7 +157,7 @@ void PageBrokerSetup::OnKickIdle( )
 }
 
 BOOL PageBrokerSetup::OnInitDialog( )
-{    
+{
     CPropertyPage::OnInitDialog( );
 
     CButton * btnConnect = reinterpret_cast<CButton *>(GetDlgItem( IDC_BROKER_CONNECT ));
@@ -167,18 +167,16 @@ BOOL PageBrokerSetup::OnInitDialog( )
     mCtrlAddress.SetAddress( 127, 0, 0, 1 );
     mCtrlPort.SetWindowText( _T( "8181" ) );
 
-    ConnectionConfiguration config;
-    if ( config.loadConfiguration(NEApplication::DEFAULT_ROUTER_CONFIG_FILE.data()) )
+    ConnectionConfiguration config(NERemoteService::eRemoteServices::ServiceRouter, NERemoteService::eConnectionTypes::ConnectTcpip);
+    unsigned char field0, field1, field2, field3;
+    if (config.getConnectionIpAddress(field0, field1, field2, field3))
     {
-        unsigned char field0, field1, field2, field3;
-        if ( config.getConnectionHostIpAddress(field0, field1, field2, field3, NERemoteService::eServiceConnection::ConnectionTcpip) )
-        {
-            mBrokerPort = static_cast<USHORT>( config.getConnectionPort(NERemoteService::eServiceConnection::ConnectionTcpip) );
-            CString port ( String::toString(mBrokerPort).getString() );
-            mCtrlAddress.SetAddress(field0, field1, field2, field3);
-            mCtrlPort.SetWindowText( port );
-        }
+        mBrokerPort = static_cast<USHORT>(config.getConnectionPort());
+        CString port(String::toString(mBrokerPort).getString());
+        mCtrlAddress.SetAddress(field0, field1, field2, field3);
+        mCtrlPort.SetWindowText(port);
     }
+
     UpdateDialogControls( this, FALSE );
 
     return TRUE;  // return TRUE unless you set the focus to a control

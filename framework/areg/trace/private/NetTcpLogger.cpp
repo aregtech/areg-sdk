@@ -18,21 +18,31 @@
   * Include files.
   ************************************************************************/
 #include "areg/trace/private/NetTcpLogger.hpp"
+
+#include "areg/appbase/Application.hpp"
+#include "areg/base/RemoteMessage.hpp"
+#include "areg/base/SynchObjects.hpp"
+#include "areg/persist/ConfigManager.hpp"
 #include "areg/trace/private/TraceManager.hpp"
 #include "areg/trace/private/ScopeController.hpp"
 
-#include "areg/base/RemoteMessage.hpp"
-#include "areg/base/SynchObjects.hpp"
 
 NetTcpLogger::NetTcpLogger(LogConfiguration & logConfig, ScopeController & scopeController, DispatcherThread & dispatchThread)
     : LoggerBase                    (logConfig)
-    , ServiceClientConnectionBase   ( NEService::COOKIE_LOGGER, static_cast<IEServiceConnectionConsumer &>(self()), static_cast<IERemoteMessageHandler &>(self()), dispatchThread)
+    , ServiceClientConnectionBase   ( NEService::COOKIE_LOGGER
+                                    , NERemoteService::eRemoteServices::ServiceLogger
+                                    , static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip)
+                                    , NEService::eMessageSource::MessageSourceClient
+                                    , static_cast<IEServiceConnectionConsumer &>(self())
+                                    , static_cast<IERemoteMessageHandler &>(self())
+                                    , dispatchThread
+                                    , NetTcpLogger::PREFIX_THREAD)
     , IEServiceConnectionConsumer   ( )
     , IERemoteMessageHandler        ( )
 
     , mScopeController  (scopeController)
     , mIsEnabled        ( false )
-    , mRingStack        ( NetTcpLogger::RING_STACK_MAX_SIZE, NECommon::eRingOverlap::ShiftOnOverlap )
+    , mRingStack        ( NEApplication::DEFAULT_LOG_QUEUE_SIZE, NECommon::eRingOverlap::ShiftOnOverlap)
 {
 }
 
@@ -44,20 +54,19 @@ bool NetTcpLogger::openLogger(void)
     if (mClientConnection.isValid() == false)
     {
         mIsEnabled = false;
-        if (mTracerConfiguration.isNetLoggingEnabled())
+        if (mLogConfiguration.isRemoteLoggingEnabled())
         {
-            const LogConfiguration & logConfig = getTraceConfiguration();
-            const TraceProperty & propTcpHost = logConfig.getRemoteTcpHost();
-            const TraceProperty & propTcpPort = logConfig.getRemoteTcpPort();
-            if (propTcpHost.isValid() && propTcpPort.isValid())
-            {
-                mIsEnabled = true;
-                String host(static_cast<const String &>(propTcpHost.getValue()));
-                uint16_t port(static_cast<const uint16_t>(propTcpPort.getValue()));
-                applyServiceConnectionData(host, port);
-                mLock.unlock();
-                result = connectServiceHost();
-            }
+            String host{ mLogConfiguration.getRemoteTcpAddress()};
+            uint16_t port{ mLogConfiguration.getRemoteTcpPort() };
+            mIsEnabled = true;
+            resizeStack(mLogConfiguration.getStackSize());
+            applyServiceConnectionData(host, port);
+            mLock.unlock();
+            result = connectServiceHost();
+        }
+        else
+        {
+            resizeStack(0);
         }
     }
     else
@@ -198,11 +207,28 @@ void NetTcpLogger::processReceivedMessage(const RemoteMessage & msgReceived, Soc
             break;
 
         case NEService::eFuncIdRange::ServiceSaveLogConfiguration:
-            TraceManager::saveLogConfig(nullptr);
+            Application::getConfigManager().saveConfig();
             break;
 
         default:
             ASSERT(false);
         }
+    }
+}
+
+inline void NetTcpLogger::resizeStack(uint32_t newCapacity)
+{
+    if (newCapacity > mRingStack.capacity())
+    {
+        mRingStack.reserve(newCapacity);
+    }
+    else if (newCapacity < mRingStack.capacity())
+    {
+        while(newCapacity < mRingStack.getSize())
+        {
+            static_cast<void>(mRingStack.popFirst());
+        }
+
+        mRingStack.reserve(newCapacity);
     }
 }

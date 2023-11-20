@@ -174,7 +174,7 @@ void MulticastRouter::runConsoleInputSimple( void )
 void MulticastRouter::serviceMain( int argc, char ** argv )
 {
     // Start only tracing and timer manager.
-    Application::initApplication(true, true, false, true, false, NEApplication::DEFAULT_TRACING_CONFIG_FILE.data(), nullptr );
+    Application::initApplication(true, true, false, true, false, NEApplication::DEFAULT_CONFIG_FILE.data() );
     SystemServiceBase::serviceMain( argc, argv );
     setState(NESystemService::eSystemServiceState::ServiceStopped);
     mServiceServer.waitToComplete( );
@@ -186,7 +186,9 @@ bool MulticastRouter::serviceStart(void)
     TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceStart);
     TRACE_DBG("Starting service [ %s ]", NEMulticastRouterSettings::SERVICE_NAME_ASCII);
     bool result{ false };
-    if ( getService().setupServiceConnectionHost( NEApplication::DEFAULT_ROUTER_CONFIG_FILE.data( ) ) && getService( ).connectServiceHost( ) )
+    IEServiceConnectionProvider& service{ getService() };
+    if (service.setupServiceConnectionData(NERemoteService::eRemoteServices::ServiceRouter, static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip)) &&
+        service.connectServiceHost())
     {
         result = setState(NESystemService::eSystemServiceState::ServiceRunning);
     }

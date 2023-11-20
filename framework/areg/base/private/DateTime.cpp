@@ -78,6 +78,39 @@ uint64_t DateTime::getProcessTickCount(void)
 
 }
 
+void DateTime::formatTime(const DateTime& dateTime, String& OUT result, const std::string_view& formatName)
+{
+    char buffer[128] = { 0 };
+
+    if (dateTime.mDateTime != 0)
+    {
+        NEUtilities::sSystemTime sysTime{ 0 };
+        struct tm conv { 0 };
+
+        NEUtilities::convToLocalTime(dateTime.mDateTime, sysTime);
+        NEUtilities::convToTm(sysTime, conv);
+
+        unsigned int milli{ static_cast<unsigned int>(sysTime.stMillisecs) };
+
+        String str(formatName.empty() == false ? formatName : DateTime::TIME_FORMAT_ISO8601_OUTPUT);
+        NEString::CharPos ms = str.findFirst(FORMAT_MILLISECOND.data());
+        if (str.isValidPosition(ms))
+        {
+            char buf[128];
+            String::formatString(buf, 128, "%03u", milli);
+            str.replace(ms, static_cast<NEString::CharCount>(FORMAT_MILLISECOND.length()), buf);
+        }
+
+        std::size_t count{ std::strftime(buffer, 128, str.getString(), &conv) };
+
+        result.assign(buffer, static_cast<NEString::CharCount>(count));
+    }
+    else
+    {
+        result = String::EmptyChar;
+    }
+}
+
 uint64_t DateTime::getSystemTickCount( void )
 {
     return NEUtilities::getTickCount();
@@ -136,33 +169,7 @@ void DateTime::getNow( NEUtilities::sSystemTime & OUT timeData, bool localTime )
 
 String DateTime::formatTime( const std::string_view & formatName /*= DateTime::TIME_FORMAT_ISO8601_OUTPUT */ ) const
 {
-    char buffer[128] = {0};
-    
-    if ( mDateTime != 0 )
-    {
-        NEUtilities::sSystemTime sysTime{ 0 };
-        struct tm conv { 0 };
-
-        NEUtilities::convToLocalTime( mDateTime, sysTime);
-        NEUtilities::convToTm(sysTime, conv);
-
-        unsigned short milli = sysTime.stMillisecs;
-
-        String str(formatName.empty() == false ? formatName : DateTime::TIME_FORMAT_ISO8601_OUTPUT);
-        NEString::CharPos ms = str.findFirst( FORMAT_MILLISECOND.data() );
-        if ( str.isValidPosition(ms) )
-        {
-            char buf[128];
-            String::formatString( buf, 128, "%03u", milli );
-            str.replace( ms, static_cast<NEString::CharCount>(FORMAT_MILLISECOND.length()), buf);
-        }
-
-        strftime( buffer, 128, str.getString(), &conv );
-    }
-    else
-    {
-        *buffer = String::EmptyChar;
-    }
-
-    return String(buffer);
+    String result;
+    DateTime::formatTime(*this, result, formatName);
+    return result;
 }

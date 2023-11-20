@@ -13,7 +13,7 @@
  * \brief       AREG Platform, service server connection class.
  ************************************************************************/
 #include "extend/service/ServerConnection.hpp"
-#include "areg/ipc/NEConnection.hpp"
+#include "areg/ipc/NERemoteService.hpp"
 #include "areg/component/NEService.hpp"
 #include "areg/base/RemoteMessage.hpp"
 
@@ -41,7 +41,7 @@ ServerConnection::ServerConnection(const ITEM_ID & channelId, const NESocket::So
 void ServerConnection::rejectConnection(SocketAccepted & clientConnection)
 {
     const ITEM_ID & cookie = getCookie(clientConnection.getHandle());
-    RemoteMessage msgReject = NEConnection::createRejectNotify(mChannelId, cookie);
+    RemoteMessage msgReject = NERemoteService::createRejectNotify(mChannelId, cookie);
     sendMessage(msgReject, clientConnection);
     closeConnection(clientConnection);
 }
@@ -50,7 +50,7 @@ void ServerConnection::closeAllConnections(void)
 {
     Lock lock( mLock );
     RemoteMessage msgByeClient;
-    if ( msgByeClient.initMessage( NEConnection::getMessageByeClient().rbHeader ) != nullptr )
+    if ( msgByeClient.initMessage(NERemoteService::getMessageByeClient().rbHeader ) != nullptr )
     {
         msgByeClient.setSequenceNr( NEService::SEQUENCE_NUMBER_ANY );
         msgByeClient.setSource( mChannelId );

@@ -53,7 +53,7 @@ int main()
 
     // force to start logging with default settings
     TRACER_CONFIGURE_AND_START( nullptr );
-    Application::initApplication(true, true, false, true, true, nullptr, nullptr );
+    Application::initApplication(true, true, false, true, true, nullptr );
 
     do 
     {

@@ -26,6 +26,7 @@
 #include "areg/base/String.hpp"
 
 #include <string_view>
+#include <vector>
 
 //////////////////////////////////////////////////////////////////////////
 // Identifier class declaration
@@ -41,6 +42,27 @@ class AREG_API Identifier
 // Types and constants
 //////////////////////////////////////////////////////////////////////////
 public:
+    /**
+     * \brief   Identifier::BAD_IDENTIFIER_VALUE
+     *          Bad Identifier integer value.
+     *          The values is reserved and should not be used
+     *          at least together with BAD_IDENTIFIER_NAME
+     **/
+    static constexpr unsigned int       BAD_IDENTIFIER_VALUE    { static_cast<unsigned int>(0x80000000) };
+
+    /**
+     * \brief   Identifier::BAD_IDENTIFIER_NAME
+     *          Bad Identifier name. The name is reserved and
+     *          should not be used at leas together with BAD_IDENTIFIER_VALUE
+     **/
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+    static constexpr std::string_view   BAD_IDENTIFIER_NAME     { "_BAD_IDENTIFIER" };
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
+
     /**
      * \brief   Identifier::BAD_IDENTIFIER
      *          Bad Identifier object, which integer value is BAD_IDENTIFIER_VALUE
@@ -84,6 +106,39 @@ public:
      * \brief   Destructor
      **/
     ~Identifier( void ) = default;
+
+//////////////////////////////////////////////////////////////////////////
+// static methods
+//////////////////////////////////////////////////////////////////////////
+public:
+
+    /**
+     * \brief   Converts given integer value of the identifier into the string.
+     *          It uses lookup table to make conversion.
+     * \param   idValue     The digital value of the identifier to convert.
+     * \param   lookupList  The lookup table to search identifier to return string value.
+     * \param   defIndex    The index of the value to return in case if did not find the identifier.
+     *                      Pass NECommon::INVALID_POSITION value to ignore and return empty string
+     *                      if no identifier entry exists.
+     * \return  Returns the string value of the identifier it found.
+     *          Return the string value of the given default identifier entry index if identifier not found and default index is valid.
+     *          Returns empty string if identifier not found and the index is invalid.
+     **/
+    inline static const String& convToString(unsigned int idValue, const std::vector<Identifier>& lookupList, unsigned int defIndex);
+
+    /**
+     * \brief   Converts given string value of the identifier into the digital value.
+     *          It uses lookup table make conversion.
+     * \param   idName      The string value of the identifier to convert.
+     * \param   lookupList  The lookup table to search identifier to return integer value.
+     * \param   defIndex    The index of the value to return in case if did not find the identifier.
+     *                      Pass NECommon::INVALID_POSITION value to ignore and return 0xFFFFFFFF
+     *                      if no identifier entry exists.
+     * \return  Returns the integer value of the identifier it found.
+     *          Return the integer value of the given default identifier entry index if identifier not found and default index is valid.
+     *          Returns 0xFFFF'FFFF if identifier not found and the index is invalid.
+     **/
+    inline static unsigned int convFromString(const String& idName, const std::vector<Identifier>& lookupList, unsigned int defIndex);
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -191,6 +246,34 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Identifier class inline function implementation
 //////////////////////////////////////////////////////////////////////////
+
+inline const String& Identifier::convToString(unsigned int idValue, const std::vector<Identifier>& lookupList, unsigned int defIndex)
+{
+    ASSERT(defIndex < lookupList.size());
+    for (const Identifier& entry : lookupList)
+    {
+        if (entry.mValue == idValue)
+        {
+            return entry.mName;
+        }
+    }
+
+    return ((defIndex >= 0) && (defIndex < static_cast<uint32_t>(lookupList.size()))? lookupList[defIndex].mName : String::getEmptyString());
+}
+
+inline unsigned int Identifier::convFromString(const String& idName, const std::vector<Identifier>& lookupList, unsigned int defIndex)
+{
+    ASSERT(defIndex < lookupList.size());
+    for (const Identifier& entry : lookupList)
+    {
+        if (entry.mName == idName)
+        {
+            return entry.mValue;
+        }
+    }
+
+    return ((defIndex >= 0) && (defIndex < static_cast<uint32_t>(lookupList.size())) ? lookupList[defIndex].mValue : static_cast<uint32_t>(~0));
+}
 
 inline bool Identifier::operator == ( const Identifier & other ) const
 {

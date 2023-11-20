@@ -93,7 +93,7 @@ int SynchLockAndWaitIX::eventSignaled( IEWaitableBaseIX & synchWaitable )
     if ( waitList != nullptr)
     {
         ASSERT( waitList->isEmpty( ) == false );
-        OUTPUT_DBG("Waitable [ %s ] ID [ %p ] is signaled, there are [ %d ] locks accosiated with it."
+        OUTPUT_DBG("Waitable [ %s ] ID [ %p ] is signaled, there are [ %d ] locks associated with it."
                     , synchWaitable.getName().getString()
                     , &synchWaitable
                     , waitList->getSize());

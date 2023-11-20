@@ -89,14 +89,7 @@ public:
      *          full or relative path to configuration file. If passed nullptr,
      *          the default configuration file will be loaded.
      **/
-    inline static bool readLogConfig( const char * configFile = nullptr );
-
-    /**
-     * \brief   Call to read the configuration instructions from the given file opened for reading.
-     * \param   file    The file with configuration instructions opened for reading.
-     * \return  Returns true if succeeded to read and configure the logging.
-     **/
-    inline static bool readLogConfig( const FileBase & file );
+    static bool readLogConfig( const char * configFile = nullptr );
 
     /**
      * \brief   Call to initialize and start logging.
@@ -110,7 +103,7 @@ public:
      *          If logging was already started, the call will be ignored and return true.
      *          If starting fails, returns false.
      **/
-    static bool startLogging( const char * configFile = nullptr);
+    static bool startLogging( const char * configFile = nullptr );
 
     /**
      * \brief   Saves the current logging state in the configuration file.
@@ -120,12 +113,7 @@ public:
      **/
     static bool saveLogConfig( const char * configFile = nullptr );
 
-    /**
-     * \brief   Saves the current logging state in the given file opened to write.
-     * \param   file    The opened file to save configuration.
-     * \return  Returns true if succeeded to save the current logging state in the file.
-     **/
-    static bool saveLogConfig( FileBase & file );
+    static void updateScopeConfiguration( void );
 
     /**
      * \brief   Call to stop Logging Manager and exits the thread.
@@ -181,22 +169,40 @@ public:
     static bool isLoggingEnabled( void );
 
     /**
-     * \brief   Returns true if logging via network is enabled.
-     **/
-    static bool isNetLoggingEnabled(void);
-
-    /**
-     * \brief   Returns the logging config file name set in the system.
-     **/
-    static const String& getConfigFile( void );
-
-    /**
      * \brief   Call to force to activate logging with default settings.
      *          The logging will be activated only if logging is not running and
      *          only in debug build. For release, please use real logging configuration.
      * \return  Returns true if could activate logging. For non-debug builds, the function always returns false.
      **/
     static bool forceActivateLogging( void );
+
+    /**
+     * \brief   Forces to enable logging.
+     *          If logging is not configured, it will set default configuration,
+     *          then it will enable and start logging. If logging is configured,
+     *          it will enable and start logging with the existing configuration.
+     *          To overwrite the existing configuration and use default, call
+     *          method setDefaultConfiguration()
+     * \see     setDefaultConfiguration
+     **/
+    static void forceEnableLogging(void);
+
+    /**
+     * \brief   Call to set the default configuration of logging if it is not
+     *          configured or overwrite the existing configuration, depending
+     *          on the passed overwriteExisting parameter.
+     * \param   overwriteExisting   Flag, indicating whether the existing configuration
+     *                              should be overwritten or not.
+     *                              If the parameter is true, then independent whether
+     *                              whether the configuration was already loaded or not
+     *                              the function will reset the existing configuration
+     *                              and set default parameters. Otherwise, the default
+     *                              configuration is used only if not configured.
+     *                              Note, that after calling this method, the application
+     *                              ignores to load configuration from the file.
+     *                              Reset configuration to load from file.
+     **/
+    static void setDefaultConfiguration(bool overwriteExisting);
 
     /**
      * \brief   Call to change the scope log priority.
@@ -222,11 +228,6 @@ public:
      *          Otherwise, returns invalid priority (NETrace::eLogPriority::PrioInvalid).
      **/
     static unsigned int getScopePriority( const char * scopeName );
-
-    /**
-     * \brief   Forces to enable logging.
-     **/
-    inline static void forceEnableLogging( void );
 
     /**
      * \brief   Returns the logger service connection cookie.
@@ -298,22 +299,8 @@ protected:
 private:
 
 /************************************************************************/
-// Logging configuration, start / stop
+// Logging initialization, start / stop
 /************************************************************************/
-
-    /**
-     * \brief   Loads specified logging configuration file. If specified file is nullptr or empty,
-     *          the system will use default path to load configuration and scopes.
-     * \param   filePath    Relative or absolute path of configuration file.
-     * \return  Returns true if succeeded to load configuration file. Otherwise, returns false.
-     *          The valid configuration should contain at least one tracing, even if it is disabled.
-     **/
-    bool loadConfiguration( const char * filePath = nullptr );
-
-    /**
-     * \brief   Unloads the configuration, resets all logging.
-     **/
-    void unloadConfiguration( void );
 
     /**
      * \brief   Starts logging thread, loads scopes and sets up all tracers.
@@ -342,22 +329,22 @@ private:
     /**
      * \brief   Returns true, if settings to log traces on remote host are valid.
      **/
-    bool isNetConfigValid( void ) const;
+    bool isRemoteLoggingEnabled( void ) const;
 
     /**
      * \brief   Returns true, if settings to log traces in database are valid.
      **/
-    bool isDatabaseValid( void ) const;
+    bool isDatabaseLoggingEnabled( void ) const;
 
     /**
      * \brief   Returns true, if settings to log traces in file are valid.
      **/
-    bool isFileValid( void ) const;
+    bool isFileLoggingEnabled( void ) const;
 
     /**
      * \brief   Returns true, if settings to log traces in debugging output window are valid.
      **/
-    bool isDebugOutputValid( void ) const;
+    bool isDebugOutputLoggingEnabled( void ) const;
 
     /**
      * \brief   Clears logging configuration data.
@@ -465,7 +452,6 @@ private:
 inline void TraceManager::stopLogging(bool waitComplete)
 {
     getInstance().stopLoggingThread(waitComplete);
-    getInstance( ).unloadConfiguration( );
 }
 
 inline void TraceManager::waitLoggingEnd(void)
@@ -486,21 +472,6 @@ inline void TraceManager::unregisterTraceScope( TraceScope & scope )
 inline void TraceManager::activateTraceScope(TraceScope& scope)
 {
     getInstance().mScopeController.activateScope(scope);
-}
-
-inline bool TraceManager::readLogConfig(const char* configFile /*= nullptr */)
-{
-    return TraceManager::getInstance().loadConfiguration(configFile);
-}
-
-inline bool TraceManager::readLogConfig( const FileBase & file )
-{
-    return TraceManager::getInstance( ).mLogConfig.loadConfig( file );
-}
-
-inline void TraceManager::forceEnableLogging(void)
-{
-    TraceManager::getInstance().mLogConfig.getStatus().parseProperty(NELogConfig::DEFAULT_LOG_ENABLE.data());
 }
 
 inline const ITEM_ID & TraceManager::getConnectionCookie(void)

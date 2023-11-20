@@ -63,13 +63,14 @@ DEF_TRACE_SCOPE(example_12_pubclient_main_main);
 int main()
 {
     printf("Testing remote servicing ultra-small client...\n");
-    // force to start logging with default settings
-    TRACER_CONFIGURE_AND_START( nullptr );
     // Initialize application, enable logging, servicing, routing, timer and watchdog.
     // Use default settings.
     Application::initApplication( );
 
-    do 
+    // force to start logging with default settings
+    TRACER_CONFIGURE_AND_START(nullptr);
+
+    do
     {
         TRACE_SCOPE(example_12_pubclient_main_main);
         TRACE_DBG("The application has been initialized, loading model [ %s ]", _modelName);

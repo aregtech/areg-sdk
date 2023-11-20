@@ -14,7 +14,7 @@
  ************************************************************************/
 #include "logger/service/LoggerServerService.hpp"
 
-#include "areg/ipc/NEConnection.hpp"
+#include "areg/ipc/private/NEConnection.hpp"
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/trace/GETrace.h"
 
@@ -33,7 +33,7 @@ DEF_TRACE_SCOPE(logger_service_LoggerServerService_failedReceiveMessage);
 //////////////////////////////////////////////////////////////////////////
 
 LoggerServerService::LoggerServerService( void )
-    : ServiceCommunicatonBase   ( NEService::COOKIE_LOGGER, NEConnection::SERVER_DISPATCH_MESSAGE_THREAD, ServiceCommunicatonBase::eConnectionBehavior::DefaultAccept )
+    : ServiceCommunicatonBase   ( NEService::COOKIE_LOGGER, NERemoteService::eRemoteServices::ServiceLogger, static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip), NEConnection::SERVER_DISPATCH_MESSAGE_THREAD, ServiceCommunicatonBase::eConnectionBehavior::DefaultAccept )
     , mLoggerProcessor          ( self() )
     , mObservers                ( )
 {

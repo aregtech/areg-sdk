@@ -230,6 +230,15 @@ public:
      **/
     static uint64_t getProcessTickCount( void );
 
+    /**
+     * \brief   Formats time and outputs as a string. The caller should specify the
+     *          the time format name for output.
+     * \param   dateTime    The DateTime object to convert to string.
+     * \param   result      On output this contains formated string of DateTime.
+     * \param   formatName  The formating to convert DateTime.
+     **/
+    static void formatTime(const DateTime &dateTime, String& OUT result, const std::string_view& formatName = DateTime::TIME_FORMAT_ISO8601_OUTPUT);
+
 /************************************************************************/
 // Non-static operations
 /************************************************************************/

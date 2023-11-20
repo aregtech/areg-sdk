@@ -5,7 +5,7 @@
 /************************************************************************
  * (c) copyright    2023
  *
- * Generated at     18.09.2023  09:14:49 GMT+02:00
+ * Generated at     15.11.2023  14:51:53 GMT+01:00
  *                  Create by AREG SDK code generator tool from source PatientInformation.
  *
  * \file            generated/src/private/PatientInformationProxy.hpp
@@ -21,6 +21,7 @@
 #include "generated/src/private/PatientInformationEvents.hpp"
 #include "areg/component/IEProxyListener.hpp"
 #include "areg/base/Thread.hpp"
+#include "areg/component/DispatcherThread.hpp"
 #include "areg/trace/GETrace.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -113,7 +114,16 @@ RemoteResponseEvent * PatientInformationProxy::createRemoteRequestFailedEvent(co
 
 ProxyBase::ServiceAvailableEvent * PatientInformationProxy::createServiceAvailableEvent( IENotificationEventConsumer & consumer )
 {
-    return static_cast<ProxyBase::ServiceAvailableEvent *>( DEBUG_NEW PatientInformationProxy::PatientInformationServiceAvailableEvent(consumer) );
+    ProxyBase::ServiceAvailableEvent* event = static_cast<ProxyBase::ServiceAvailableEvent *>( DEBUG_NEW PatientInformationProxy::PatientInformationServiceAvailableEvent(consumer) );
+    if (event != nullptr)
+    {
+        if (mDispatcherThread.getId() != Thread::getCurrentThreadId())
+        {
+            event->setEventDelay(ProxyBase::MINIMAL_DELAY_TIME_MS);
+        }
+    }
+
+    return event;
 }
 
 void PatientInformationProxy::registerServiceListeners( void )

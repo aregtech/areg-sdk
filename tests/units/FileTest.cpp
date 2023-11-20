@@ -38,7 +38,7 @@ TEST( FileTest, StlFileRead )
 {
     Application::setWorkingDirectory( nullptr );
 
-    constexpr char fileName[]{ "./config/log.init" };
+    constexpr char fileName[]{ "./config/areg.init" };
     std::error_code err{};
     ASSERT_TRUE( std::filesystem::is_regular_file( fileName, err ) );
     ASSERT_FALSE( static_cast<bool>(err) );
@@ -62,7 +62,7 @@ TEST( FileTest, StlFileReadWrite )
     Application::setWorkingDirectory( nullptr );
 
     std::fstream fileRead, fileWrite;
-    constexpr char fileNameRead[ ]{ "./config/log.init" };
+    constexpr char fileNameRead[ ]{ "./config/areg.init" };
     constexpr char fileNameWrite[ ]{ "./write_with_stl.txt" };
 
     fileRead.open( fileNameRead, std::ios::in );
@@ -93,7 +93,7 @@ TEST( FileTest, Win32FileRead )
 
     Application::setWorkingDirectory( nullptr );
 
-    constexpr char fileName[ ]{ "./config/log.init" };
+    constexpr char fileName[ ]{ "./config/areg.init" };
     ASSERT_TRUE( PathFileExistsA(fileName) );
 
     HANDLE hFile = ::CreateFileA( fileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_READONLY, NULL );
@@ -120,7 +120,7 @@ TEST( FileTest, Win32FileReadWrite )
 
     Application::setWorkingDirectory( nullptr );
 
-    constexpr char fileNameRead[ ]{ "./config/log.init" };
+    constexpr char fileNameRead[ ]{ "./config/areg.init" };
     constexpr char fileNameWrite[ ]{ "./write_with_win32.txt" };
 
     HANDLE hFileRead = ::CreateFileA( fileNameRead, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_READONLY, NULL );
@@ -152,7 +152,7 @@ TEST( FileTest, CheckFileExistence )
 {
     Application::setWorkingDirectory( nullptr );
 
-    const String fileName{ "./config/log.init" };
+    const String fileName{ "./config/areg.init" };
     const String fileWrong{ "./config/blah-blah.init" };
     ASSERT_TRUE( File::existFile( fileName.getString( ) ) );
     ASSERT_FALSE( File::existFile( fileWrong ) );
@@ -165,10 +165,10 @@ TEST( FileTest, NormalizeFilePathBasic )
 {
     Application::setWorkingDirectory( nullptr );
 
-    const String fileName{ "./config/log.init" };
+    const String fileName{ "./config/areg.init" };
     String normalized = File::normalizePath( fileName );
     ASSERT_TRUE( normalized.getLength( ) > fileName.getLength( ) );
-    ASSERT_TRUE( normalized.endsWith( "log.init" ) );
+    ASSERT_TRUE( normalized.endsWith( "areg.init" ) );
 }
 
 /**
@@ -178,7 +178,7 @@ TEST( FileTest, FileOpenBasic )
 {
     Application::setWorkingDirectory( nullptr );
 
-    const String fileName{ "./config/log.init" };
+    const String fileName{ "./config/areg.init" };
     constexpr unsigned int mode{ FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_EXIST | FileBase::FO_MODE_SHARE_READ };
     File file( fileName, mode );
 
@@ -211,7 +211,7 @@ TEST( FileTest, FileReadBasic )
 {
     Application::setWorkingDirectory( nullptr );
 
-    const String fileName{ "./config/log.init" };
+    const String fileName{ "./config/areg.init" };
     constexpr unsigned int mode{ FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_EXIST | FileBase::FO_MODE_SHARE_READ };
     File file( fileName, mode );
 
@@ -233,7 +233,7 @@ TEST( FileTest, FileReadWriteBasic )
 {
     Application::setWorkingDirectory( nullptr );
 
-    const String fileNameRead{ "./config/log.init" };
+    const String fileNameRead{ "./config/areg.init" };
     const String fileNameWrite{ "./write_with_areg.txt" };
 
     constexpr unsigned int modeRead{ FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_EXIST | FileBase::FO_MODE_SHARE_READ };
@@ -283,8 +283,8 @@ TEST( FileTest, FileReadAndWriteInSubfolder )
 {
     Application::setWorkingDirectory( nullptr );
 
-    const String fileNameRead { "./config/log.init" };
-    const String fileNameWrite{ "./log/write_with_areg.txt" };
+    const String fileNameRead { "./config/areg.init" };
+    const String fileNameWrite{ "./logs/write_with_areg.txt" };
 
     constexpr unsigned int modeRead { FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_EXIST | FileBase::FO_MODE_SHARE_READ };
     constexpr unsigned int modeWrite{ FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_CREATE | FileBase::FO_MODE_SHARE_READ | FileBase::FO_MODE_WRITE };

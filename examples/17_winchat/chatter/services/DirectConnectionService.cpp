@@ -11,24 +11,24 @@
 
 #include <Windows.h>
 
-DEF_TRACE_SCOPE( distrbutedapp_DirectConnectionService_CreateComponent );
-DEF_TRACE_SCOPE( distrbutedapp_DirectConnectionService_DeleteComponent );
-DEF_TRACE_SCOPE( distrbutedapp_DirectConnectionService_requestConnectoinSetup );
-DEF_TRACE_SCOPE( distrbutedapp_DirectConnectionService_requestAddParticipant );
-DEF_TRACE_SCOPE( distrbutedapp_DirectConnectionService_requestRemoveParticipant );
-DEF_TRACE_SCOPE( distrbutedapp_DirectConnectionService_requestCloseConnection );
+DEF_TRACE_SCOPE( chatter_DirectConnectionService_CreateComponent );
+DEF_TRACE_SCOPE( chatter_DirectConnectionService_DeleteComponent );
+DEF_TRACE_SCOPE( chatter_DirectConnectionService_requestConnectoinSetup );
+DEF_TRACE_SCOPE( chatter_DirectConnectionService_requestAddParticipant );
+DEF_TRACE_SCOPE( chatter_DirectConnectionService_requestRemoveParticipant );
+DEF_TRACE_SCOPE( chatter_DirectConnectionService_requestCloseConnection );
 
 DirectConnectionService * DirectConnectionService::mService = nullptr;
 
 Component * DirectConnectionService::CreateComponent( const NERegistry::ComponentEntry & entry, ComponentThread & owner )
 {
-    TRACE_SCOPE( distrbutedapp_DirectConnectionService_CreateComponent );
+    TRACE_SCOPE( chatter_DirectConnectionService_CreateComponent );
     return new DirectConnectionService( entry, owner, entry.getComponentData() );
 }
 
 void DirectConnectionService::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry )
 {
-    TRACE_SCOPE( distrbutedapp_DirectConnectionService_DeleteComponent );
+    TRACE_SCOPE( chatter_DirectConnectionService_DeleteComponent );
     delete (&compObject);
 }
 
@@ -104,7 +104,7 @@ uint64_t DirectConnectionService::getSession( const NEDirectConnection::ListPart
 
 void DirectConnectionService::requestConnectoinSetup( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
 {
-    TRACE_SCOPE( distrbutedapp_DirectConnectionService_requestConnectoinSetup );
+    TRACE_SCOPE( chatter_DirectConnectionService_requestConnectoinSetup );
 
     ASSERT(mNickName.isEmpty() == false);
     ASSERT(mCookie != NEDirectConnection::InvalidCookie);
@@ -166,7 +166,7 @@ void DirectConnectionService::requestConnectoinSetup( const NEDirectConnection::
 
 void DirectConnectionService::requestAddParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
 {
-    TRACE_SCOPE( distrbutedapp_DirectConnectionService_requestAddParticipant );
+    TRACE_SCOPE( chatter_DirectConnectionService_requestAddParticipant );
 
     if ( isInitiatorValid(initiator) )
     {
@@ -203,7 +203,7 @@ void DirectConnectionService::requestAddParticipant( const NEDirectConnection::s
 
 void DirectConnectionService::requestRemoveParticipant( const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
 {
-    TRACE_SCOPE( distrbutedapp_DirectConnectionService_requestRemoveParticipant );
+    TRACE_SCOPE( chatter_DirectConnectionService_requestRemoveParticipant );
 
     if ( isInitiatorValid(initiator) )
     {
@@ -259,7 +259,7 @@ void DirectConnectionService::requestRemoveParticipant( const NEDirectConnection
 
 void DirectConnectionService::requestCloseConnection( const NEDirectConnection::sInitiator & initiator )
 {
-    TRACE_SCOPE( distrbutedapp_DirectConnectionService_requestCloseConnection );
+    TRACE_SCOPE( chatter_DirectConnectionService_requestCloseConnection );
     NEDirectConnection::MapParticipants & mapParticipants = getInitiatedConnections( );
     mapParticipants.removeAt(initiator);
     NEDirectConnection::sInitiator      * wParam = new NEDirectConnection::sInitiator( initiator );

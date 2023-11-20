@@ -16,34 +16,18 @@
 #include "areg/trace/private/TraceManager.hpp"
 
 LoggerBase::LoggerBase( LogConfiguration & tracerConfig )
-    : mTracerConfiguration  ( tracerConfig )
-    , mLayoutsMessage       ( )
-    , mLayoutsScopeEnter    ( )
-    , mLayoutsScopeExit     ( )
+    : mLogConfiguration ( tracerConfig )
+    , mLayoutsMessage   ( )
+    , mLayoutsScopeEnter( )
+    , mLayoutsScopeExit ( )
 {
 }
 
 bool LoggerBase::createLayouts(void)
 {
-    bool result = false;
-    const TraceProperty & propMessage = mTracerConfiguration.getLayoutMessage();
-    const TraceProperty & propEnter   = mTracerConfiguration.getLayoutEnter();
-    const TraceProperty & propExit    = mTracerConfiguration.getLayoutExit();
-
-    if (propMessage.isValid() )
-    {
-        result |= mLayoutsMessage.createLayouts( static_cast<const String&>(propMessage.getValue( )) );
-    }
-
-    if ( propEnter.isValid() )
-    {
-        result |= mLayoutsScopeEnter.createLayouts( static_cast<const String&>(propEnter.getValue( )) );
-    }
-
-    if ( propExit.isValid() )
-    {
-        result |= mLayoutsScopeExit.createLayouts( static_cast<const String&>(propExit.getValue( )) );
-    }
+    bool result = mLayoutsMessage.createLayouts(mLogConfiguration.getLayoutMessage());
+    result |= mLayoutsScopeEnter.createLayouts(mLogConfiguration.getLayoutEnter());
+    result |= mLayoutsScopeExit.createLayouts(mLogConfiguration.getLayoutExit());
 
     return result;
 }

@@ -161,18 +161,21 @@ void ServiceManager::requestRecreateThread(const ComponentThread& whichThread)
                                   , static_cast<DispatcherThread &>(serviceManager));
 }
 
-bool ServiceManager::_routingServiceConfigure( const String & configFile /*= String::getEmptyString()*/ )
+bool ServiceManager::_routingServiceConfigure( void )
 {
     ServiceManager & serviceManager = ServiceManager::getInstance();
-    return ServiceManagerEvent::sendEvent( ServiceManagerEventData::configureConnection(configFile)
+    ServiceManagerEventData data(ServiceManagerEventData::configureConnection(NERemoteService::eRemoteServices::ServiceRouter, static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectTcpip)));
+
+    return ServiceManagerEvent::sendEvent( data
                                          , static_cast<IEServiceManagerEventConsumer &>(serviceManager) 
                                          , static_cast<DispatcherThread &>(serviceManager));
 }
 
-bool ServiceManager::_routingServiceStart(const String & configFile /*= String::getEmptyString() */)
+bool ServiceManager::_routingServiceStart( unsigned int connectTypes )
 {
     ServiceManager & serviceManager = ServiceManager::getInstance();
-    return ServiceManagerEvent::sendEvent( ServiceManagerEventData::startConnection(configFile)
+    ServiceManagerEventData data(ServiceManagerEventData::startConnection(NERemoteService::eRemoteServices::ServiceRouter, connectTypes));
+    return ServiceManagerEvent::sendEvent( data
                                          , static_cast<IEServiceManagerEventConsumer &>(serviceManager)
                                          , static_cast<DispatcherThread &>(serviceManager));
 }
@@ -198,14 +201,6 @@ void ServiceManager::_routingServiceStop(void)
                                   , static_cast<DispatcherThread &>(serviceManager));
 }
 
-void ServiceManager::_routingServiceEnable( bool enable )
-{
-    ServiceManager & serviceManager = ServiceManager::getInstance( );
-    ServiceManagerEvent::sendEvent( ServiceManagerEventData::enableRemoteService(enable)
-                                  , static_cast<IEServiceManagerEventConsumer &>(serviceManager)
-                                  , static_cast<DispatcherThread &>(serviceManager) );
-}
-
 bool ServiceManager::_isRoutingServiceStarted(void)
 {
     return ServiceManager::getInstance().getServiceConnectionProvider().isServiceHostConnected( );
@@ -214,11 +209,6 @@ bool ServiceManager::_isRoutingServiceStarted(void)
 bool ServiceManager::_isRoutingServiceConfigured(void)
 {
     return ServiceManager::getInstance().getServiceConnectionProvider().isServiceHostSetup( );
-}
-
-bool ServiceManager::_isRoutingServiceEnabled(void)
-{
-    return ServiceManager::getInstance().getServiceConnectionProvider().isRemoteServicingEnabled( );
 }
 
 void ServiceManager::_requestCreateThread(const String& componentThread)

@@ -204,6 +204,21 @@ public:
      */
     inline bool checkPosition(const STACKPOS pos) const;
 
+    /**
+     * \brief	Checks whether given element exist in the linked list or not. The elements of type
+     *          VALUE should have comparing operators.
+     * \param	elemSearch  The element to search.
+     * \param	startAt	    The position to start searching.
+     * \return	Returns true if could find element starting at given position.
+     **/
+    inline bool contains(const VALUE& elemSearch) const;
+    inline bool contains(const VALUE& elemSearch, STACKPOS startAt) const;
+
+    /**
+     * \brief   Returns the vector object where the data are stored.
+     **/
+    inline const std::deque<VALUE>& getData(void) const;
+
 /************************************************************************/
 // Operations
 /************************************************************************/
@@ -641,6 +656,24 @@ inline bool TEStack<VALUE>::checkPosition(STACKPOS pos) const
         ++it;
 
     return (it != mValueList.end());
+}
+
+template<typename VALUE>
+inline bool TEStack<VALUE>::contains(const VALUE& elemSearch) const
+{
+    return contains(elemSearch, mValueList.begin());
+}
+
+template<typename VALUE>
+inline bool TEStack<VALUE>::contains(const VALUE& elemSearch, STACKPOS startAt) const
+{
+    return (startAt != mValueList.end() ? std::find(startAt, invalidPosition(), elemSearch) != mValueList.end() : false);
+}
+
+template<typename VALUE>
+inline const std::deque<VALUE>& TEStack<VALUE>::getData(void) const
+{
+    return mValueList;
 }
 
 template <typename VALUE>
