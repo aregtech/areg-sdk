@@ -299,11 +299,6 @@ bool NESocket::SocketAddress::operator != ( const NESocket::SocketAddress & othe
 // NESocket namespace functions implementation
 //////////////////////////////////////////////////////////////////////////
 
-AREG_API_IMPL bool NESocket::isSocketHandleValid(SOCKETHANDLE hSocket)
-{
-    return (hSocket != NESocket::InvalidSocketHandle);
-}
-
 AREG_API_IMPL SOCKETHANDLE NESocket::socketCreate( void )
 {
     return static_cast<SOCKETHANDLE>( socket(AF_INET, SOCK_STREAM, IPPROTO_TCP) );
@@ -311,7 +306,7 @@ AREG_API_IMPL SOCKETHANDLE NESocket::socketCreate( void )
 
 AREG_API_IMPL unsigned int NESocket::getMaxSendSize( SOCKETHANDLE hSocket )
 {
-    ASSERT(hSocket != NESocket::InvalidSocketHandle);
+    ASSERT(isSocketHandleValid(hSocket));
 
     unsigned long maxData= NESocket::DEFAULT_SEGMENT_SIZE;
     return (_osGetOption(hSocket, SOL_SOCKET, SO_SNDBUF, maxData) ? static_cast<unsigned int>(maxData) : NESocket::DEFAULT_SEGMENT_SIZE);
@@ -319,7 +314,7 @@ AREG_API_IMPL unsigned int NESocket::getMaxSendSize( SOCKETHANDLE hSocket )
 
 AREG_API_IMPL unsigned int NESocket::setMaxSendSize(SOCKETHANDLE hSocket, unsigned int sendSize)
 {
-    ASSERT(hSocket != NESocket::InvalidSocketHandle);
+    ASSERT(isSocketHandleValid(hSocket));
 
     if (sendSize == 0)
     {
@@ -339,14 +334,14 @@ AREG_API_IMPL unsigned int NESocket::setMaxSendSize(SOCKETHANDLE hSocket, unsign
 
 AREG_API_IMPL unsigned int NESocket::getMaxReceiveSize( SOCKETHANDLE hSocket )
 {
-    ASSERT(hSocket != NESocket::InvalidSocketHandle);
+    ASSERT(isSocketHandleValid(hSocket));
     unsigned long maxData = NESocket::DEFAULT_SEGMENT_SIZE;
     return (_osGetOption(hSocket, SOL_SOCKET, SO_RCVBUF, maxData) ? static_cast<unsigned int>(maxData) : NESocket::DEFAULT_SEGMENT_SIZE);
 }
 
 AREG_API_IMPL unsigned int NESocket::setMaxReceiveSize(SOCKETHANDLE hSocket, unsigned int recvSize)
 {
-    ASSERT(hSocket != NESocket::InvalidSocketHandle);
+    ASSERT(isSocketHandleValid(hSocket));
 
     if (recvSize == 0)
     {
@@ -642,13 +637,13 @@ AREG_API_IMPL SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverS
 AREG_API_IMPL bool NESocket::isSocketAlive(SOCKETHANDLE hSocket)
 {
     unsigned long error = 0;
-    return ((hSocket != NESocket::InvalidSocketHandle) && _osGetOption(hSocket, SOL_SOCKET, SO_ERROR, error) && (error == 0));
+    return (isSocketHandleValid(hSocket) && _osGetOption(hSocket, SOL_SOCKET, SO_ERROR, error) && (error == 0));
 }
 
 AREG_API_IMPL unsigned int NESocket::pendingRead(SOCKETHANDLE hSocket)
 {
     unsigned long result = 0;
-    return ((hSocket != NESocket::InvalidSocketHandle) && _osControl(hSocket, FIONREAD, result) ? static_cast<unsigned int>(result) : 0);
+    return (isSocketHandleValid(hSocket) && _osControl(hSocket, FIONREAD, result) ? static_cast<unsigned int>(result) : 0);
 }
 
 AREG_API_IMPL bool NESocket::socketInitialize(void)
@@ -663,7 +658,7 @@ AREG_API_IMPL void NESocket::socketRelease(void)
 
 AREG_API_IMPL void NESocket::socketClose(SOCKETHANDLE hSocket)
 {
-    if (hSocket != NESocket::InvalidSocketHandle)
+    if (isSocketHandleValid(hSocket))
     {
         _osCloseSocket(hSocket);
     }
@@ -672,7 +667,7 @@ AREG_API_IMPL void NESocket::socketClose(SOCKETHANDLE hSocket)
 AREG_API_IMPL int NESocket::sendData(SOCKETHANDLE hSocket, const unsigned char* dataBuffer, int dataLength, int blockMaxSize /*= NECommon::DEFAULT_SIZE*/)
 {
     int result = -1;
-    if (hSocket != NESocket::InvalidSocketHandle)
+    if (isSocketHandleValid(hSocket))
     {
         result = 0;
         if ((dataBuffer != nullptr) && (dataLength > 0))
@@ -688,7 +683,7 @@ AREG_API_IMPL int NESocket::receiveData(SOCKETHANDLE hSocket, unsigned char* dat
 {
     int result = -1;
 
-    if (hSocket != NESocket::InvalidSocketHandle)
+    if (isSocketHandleValid(hSocket))
     {
         result = 0;
         if ((dataBuffer != nullptr) && (dataLength > 0))
@@ -708,7 +703,7 @@ AREG_API_IMPL bool NESocket::disableSend(SOCKETHANDLE hSocket)
     int flag{ SHUT_WR };
 #endif // WINDOWS
 
-    return (hSocket != NESocket::InvalidSocketHandle ? RETURNED_OK == ::shutdown(hSocket, flag) : false);
+    return ( isSocketHandleValid(hSocket) && (RETURNED_OK == ::shutdown(hSocket, flag)) );
 }
 
 AREG_API_IMPL bool NESocket::disableReceive(SOCKETHANDLE hSocket)
@@ -719,7 +714,7 @@ AREG_API_IMPL bool NESocket::disableReceive(SOCKETHANDLE hSocket)
     int flag{ SHUT_RD };
 #endif // WINDOWS
 
-    return (hSocket != NESocket::InvalidSocketHandle ? RETURNED_OK == ::shutdown(hSocket, flag) : false);
+    return ( isSocketHandleValid(hSocket) && (RETURNED_OK == ::shutdown(hSocket, flag)) );
 }
 
 AREG_API_IMPL const String & NESocket::getHostname(void)

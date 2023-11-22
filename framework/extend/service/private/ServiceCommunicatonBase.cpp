@@ -336,7 +336,6 @@ void ServiceCommunicatonBase::stopConnection(void)
     TRACE_WARN("Stopping remote servicing connection");
 
     mThreadReceive.triggerExit();
-    mServerConnection.disableReceive( );
 
     disconnectServices( );
     disconnectService( Event::eEventPriority::EventPriorityNormal );

@@ -42,7 +42,7 @@
 #       - The value 'msvc' will set Microsoft Visual C++ compiler for C++ and C.
 #
 # Example:
-# $ cmake -B ./build -DAREG_COMPILER_FAMILY=llvm -DAREG_BINARY=Release -DAREG_BUILD_TESTS=ON -DAREG_BUILD_EXAMPLES=ON
+# $ cmake -B ./build -DAREG_COMPILER_FAMILY=llvm -DAREG_BUILD_TYPE=Release -DAREG_BUILD_TESTS=ON -DAREG_BUILD_EXAMPLES=ON
 # 
 # NOTE: if in command line specify AREG_CXX_COMPILER, the AREG_C_COMPILER
 #       must be specified as well. The both options must be specified

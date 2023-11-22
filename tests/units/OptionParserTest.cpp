@@ -37,7 +37,7 @@ TEST( OptionParserTest, CommandLineOptionSimpleNoData )
     ASSERT_EQ( opts.getSize(), optCount - 1 );
     for (uint32_t i = 1; i < optCount; ++i)
     {
-        ASSERT_EQ( opts[ i - 1 ].inCommand, i );
+        ASSERT_EQ( opts[ i - 1 ].inCommand, static_cast<int>(i) );
         ASSERT_TRUE( OptionParser::isFreestyle( opts[ i - 1 ].inField ) );
         ASSERT_TRUE( OptionParser::isString( opts[ i - 1 ].inField ) );
         ASSERT_FALSE( OptionParser::hasRange( opts[ i - 1 ].inField ) );
@@ -141,7 +141,7 @@ TEST( OptionParserTest, CommandLineOptionMixedNoData )
     ASSERT_EQ( opts.getSize(), optCount - 1u );
     for (uint32_t i = 1; i < optCount; ++i )
     {
-        ASSERT_EQ( opts[ i - 1u ].inCommand, i );
+        ASSERT_EQ( opts[ i - 1u ].inCommand, static_cast<int>(i));
         ASSERT_TRUE( OptionParser::isFreestyle( opts[ i - 1u ].inField ) );
         ASSERT_TRUE( OptionParser::isString( opts[ i - 1u ].inField ) );
         ASSERT_FALSE( OptionParser::hasRange( opts[ i - 1u ].inField ) );
@@ -467,7 +467,7 @@ TEST( OptionParserTest, OptionMixedWithData )
         ASSERT_EQ( opt.inCommand, 3 );
         ASSERT_TRUE( OptionParser::isString( opt.inField ) );
         ASSERT_TRUE( OptionParser::hasRange( opt.inField ) );
-        ASSERT_EQ( opt.inString.size( ), 1 );
+        ASSERT_EQ( opt.inString.size( ), 1u );
         ASSERT_EQ( opt.inString[ 0u ], "some" );
     } while ( false );
 

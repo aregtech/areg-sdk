@@ -361,7 +361,7 @@ inline void Socket::setAddress( const NESocket::SocketAddress & newAddress )
 
 inline bool Socket::isValid( void ) const
 {
-    return (mSocket.get() != nullptr) && (*mSocket != NESocket::InvalidSocketHandle);
+    return (mSocket.get() != nullptr) && NESocket::isSocketHandleValid(*mSocket);
 }
 
 inline bool Socket::isAlive(void) const
