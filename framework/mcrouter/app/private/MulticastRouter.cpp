@@ -86,11 +86,15 @@ const OptionParser::sOptionSetup MulticastRouter::ValidOptions[ ]
 {
       { "-p", "--pause"     , static_cast<int>(eRouterOptions::CMD_RouterPause)     , OptionParser::NO_DATA , {}, {}, {} }
     , { "-r", "--restart"   , static_cast<int>(eRouterOptions::CMD_RouterRestart)   , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-i", "--instances" , static_cast<int>(eRouterOptions::CMD_RouterInstances) , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-n", "--instances" , static_cast<int>(eRouterOptions::CMD_RouterInstances) , OptionParser::NO_DATA , {}, {}, {} }
     , { "-v", "--verbose"   , static_cast<int>(eRouterOptions::CMD_RouterVerbose)   , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-n", "--silent"    , static_cast<int>(eRouterOptions::CMD_RouterSilent)    , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-l", "--silent"    , static_cast<int>(eRouterOptions::CMD_RouterSilent)    , OptionParser::NO_DATA , {}, {}, {} }
     , { "-h", "--help"      , static_cast<int>(eRouterOptions::CMD_RouterPrintHelp) , OptionParser::NO_DATA , {}, {}, {} }
     , { "-q", "--quit"      , static_cast<int>(eRouterOptions::CMD_RouterQuit)      , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-c", "--console"   , static_cast<int>(eRouterOptions::CMD_RouterConsole)   , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-i", "--install"   , static_cast<int>(eRouterOptions::CMD_RouterInstall)   , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-u", "--uninstall" , static_cast<int>(eRouterOptions::CMD_RouterUninstall) , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-s", "--service"   , static_cast<int>(eRouterOptions::CMD_RouterService)   , OptionParser::NO_DATA , {}, {}, {} }
 };
 
 MulticastRouter & MulticastRouter::getInstance(void)
@@ -291,14 +295,19 @@ void MulticastRouter::printHelp( bool isCmdLine )
     std::cout
         << "Usage of AREG Message Router (mcrouter) :" << std::endl
         << "---------------------------------------------------------------------------------------------" << std::endl
-        << "-i, --install   : Command to install service. Valid for Windows OS, ignored in other cases." << std::endl
-        << "-u, --uninstall : Command to uninstall service. Valid for Windows OS, ignored in other cases." << std::endl
-        << "-s, --service   : Command to run process as a system service process." << std::endl
-        << "-c, --console   : Command to run process as a console application." << std::endl
-        << "-v, --verbose   : Command to display data rate. Can be used in combination with \'--console\'" << std::endl
+        << "-c, --console   : Command to run mcrouter as a console application (default option). Usage: \'mcrouter --console\'" << std::endl
+        << "-i, --install   : Command to install mcrouter as a service. Valid only for Windows OS. Usage: \'mcrouter --install\'" << std::endl
+        << "-u, --uninstall : Command to uninstall mcrouter as a service. Valid only for Windows OS. Usage: \'mcrouter --uninstall\'" << std::endl
+        << "-s, --service   : Command to run mcrouter as a system service. Usage: \'mcrouter --service\'" << std::endl
+        << "-v, --verbose   : Command option to display data rate. Used in console application. Usage: --verbose" << std::endl
+        << "-p, --pause     : Command option to pause connection. Used in console application. Usage: --pause" << std::endl
+        << "-r, --restart   : Command option to restart connection. Used in console application. Usage: --restart" << std::endl
+        << "-n, --instances : Command option to display list of connected instances. Used in console application. Usage: --instances" << std::endl
+        << "-l, --silent    : Command option to stop displaying data rate. Used in console application. Usage: --silent" << std::endl
+        << "-q, --quit      : Command option to stop router and quit application. Used in console application. Usage: --quit" << std::endl
         << "-h, --help      : Command to display this message on console." << std::endl
         << "---------------------------------------------------------------------------------------------" << std::endl
-        << "Quit application ..." << std::endl << std::ends;
+        << std::ends;
 }
 
 void MulticastRouter::startConsoleService( void )
@@ -357,6 +366,13 @@ bool MulticastRouter::_checkCommand(const String& cmd)
 
             case eRouterOptions::CMD_RouterQuit:
                 quit = true;
+                break;
+
+            case eRouterOptions::CMD_RouterConsole:     // pass through
+            case eRouterOptions::CMD_RouterInstall:     // pass through
+            case eRouterOptions::CMD_RouterUninstall:   // pass through
+            case eRouterOptions::CMD_RouterService:
+                MulticastRouter::_outputInfo("This command should be used in command line ...");
                 break;
 
             default:

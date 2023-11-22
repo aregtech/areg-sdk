@@ -261,7 +261,7 @@ namespace NESocket
      *          Checks socket descriptor and returns true if it not equal to InvalidSocketHandle.
      * \param   hSocket     The socket descriptor to check
      **/
-    AREG_API bool isSocketHandleValid( SOCKETHANDLE hSocket );
+    inline bool isSocketHandleValid( SOCKETHANDLE hSocket );
 
     /**
      * \brief   NESocket::socketInitialize
@@ -507,8 +507,13 @@ inline unsigned short NESocket::SocketAddress::getHostPort( void ) const
 
 inline void NESocket::SocketAddress::resetAddress( void )
 {
-    mIpAddr = String::getEmptyString();
+    mIpAddr = String::EmptyString;
     mPortNr = NESocket::InvalidPort;
+}
+
+inline bool NESocket::isSocketHandleValid(SOCKETHANDLE hSocket)
+{
+    return ((hSocket != NESocket::InvalidSocketHandle) && (hSocket != NESocket::FailedSocketHandle));
 }
 
 #endif  // AREG_BASE_NESOCKET_HPP

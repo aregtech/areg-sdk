@@ -58,7 +58,17 @@ bool ServerReceiveThread::runDispatcher(void)
                 NESocket::SocketAddress addrAccepted;
                 SOCKETHANDLE hSocket = mConnection.waitForConnectionEvent(addrAccepted);
 
-                if (hSocket == NESocket::FailedSocketHandle)
+                if (mConnection.isValid() == false)
+                {
+                    TRACE_WARN("The server socket is not valid anymore, should quit receive thread!");
+                    if (NESocket::isSocketHandleValid(hSocket))
+                    {
+                        NESocket::socketClose(hSocket);
+                    }
+
+                    whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventExit);
+                }
+                else if (hSocket == NESocket::FailedSocketHandle)
                 {
                     TRACE_WARN("Failed selecting server socket, going to retry [ %d ] times before restart.", (RETRY_COUNT - retryCount - 1));
                     if (++retryCount >= RETRY_COUNT)
@@ -92,7 +102,7 @@ bool ServerReceiveThread::runDispatcher(void)
                             
                             mConnection.acceptConnection(clientSocket);
                         }
-                        else if ( clientSocket.isAlive( ) )
+                        else if ( clientSocket.isAlive() )
                         {
                             TRACE_WARN("Rejecting new connection of socket [ %u ], client [ %s : %d ]"
                                             , hSocket

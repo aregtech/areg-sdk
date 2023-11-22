@@ -62,6 +62,10 @@ public:
         , CMD_RouterSilent      //!< Silent mode, no data rate is displayed.
         , CMD_RouterPrintHelp   //!< Print help.
         , CMD_RouterQuit        //!< Quit router.
+        , CMD_RouterConsole     //!< Run as console application. Valid only as a command line option
+        , CMD_RouterInstall     //!< Install as service. Valid only as a command line option in Windows OS
+        , CMD_RouterUninstall   //!< Uninstall as a service. Valid only as a command line option in Windows OS
+        , CMD_RouterService     //!< Start router as a service. Valid only as a command line option in Windows OS
     };
 
     /**
