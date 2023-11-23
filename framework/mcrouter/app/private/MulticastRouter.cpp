@@ -51,18 +51,37 @@ namespace
     BEGIN_MODEL(_modelName)
 
         // define console service thread.
-        BEGIN_REGISTER_THREAD( "RouterConsoleServiceThread", NECommon::WATCHDOG_IGNORE)
-            // Define the console service
-            BEGIN_REGISTER_COMPONENT(RouterConsoleService::SERVICE_NAME, RouterConsoleService)
-                // register dummy 'empty service'.
-                REGISTER_IMPLEMENT_SERVICE( NEService::EmptyServiceName, NEService::EmptyServiceVersion )
-            // end of component description
-            END_REGISTER_COMPONENT(RouterConsoleService::SERVICE_NAME )
+        BEGIN_REGISTER_THREAD( "RouterConsoleServiceThread", NECommon::WATCHDOG_IGNORE )
+        // Define the console service
+        BEGIN_REGISTER_COMPONENT(RouterConsoleService::SERVICE_NAME, RouterConsoleService)
+        // register dummy 'empty service'.
+        REGISTER_IMPLEMENT_SERVICE( NEService::EmptyServiceName, NEService::EmptyServiceVersion )
+        // end of component description
+        END_REGISTER_COMPONENT(RouterConsoleService::SERVICE_NAME )
         // end of thread description
         END_REGISTER_THREAD( "RouterConsoleServiceThread" )
 
-    // end of model description
-    END_MODEL(_modelName)
+        // end of model description
+        END_MODEL(_modelName)
+
+
+    constexpr std::string_view _msgHelp []
+    {
+          {"Usage of AREG Message Router (mcrouter) :"}
+        , NESystemService::MSG_SEPARATOR
+        , {"-c, --console   : Command to run mcrouter as a console application (default option). Usage: \'mcrouter --console\'"}
+        , {"-i, --install   : Command to install mcrouter as a service. Valid only for Windows OS. Usage: \'mcrouter --install\'"}
+        , {"-u, --uninstall : Command to uninstall mcrouter as a service. Valid only for Windows OS. Usage: \'mcrouter --uninstall\'"}
+        , {"-s, --service   : Command to run mcrouter as a system service. Usage: \'mcrouter --service\'"}
+        , {"-v, --verbose   : Command option to display data rate. Used in console application. Usage: --verbose"}
+        , {"-p, --pause     : Command option to pause connection. Used in console application. Usage: --pause"}
+        , {"-r, --restart   : Command option to restart connection. Used in console application. Usage: --restart"}
+        , {"-n, --instances : Command option to display list of connected instances. Used in console application. Usage: --instances"}
+        , {"-l, --silent    : Command option to stop displaying data rate. Used in console application. Usage: --silent"}
+        , {"-q, --quit      : Command option to stop router and quit application. Used in console application. Usage: --quit"}
+        , {"-h, --help      : Command to display this message on console."}
+        , NESystemService::MSG_SEPARATOR
+    };
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -292,22 +311,29 @@ bool MulticastRouter::setState( NESystemService::eSystemServiceState newState )
 
 void MulticastRouter::printHelp( bool isCmdLine )
 {
-    std::cout
-        << "Usage of AREG Message Router (mcrouter) :" << std::endl
-        << "---------------------------------------------------------------------------------------------" << std::endl
-        << "-c, --console   : Command to run mcrouter as a console application (default option). Usage: \'mcrouter --console\'" << std::endl
-        << "-i, --install   : Command to install mcrouter as a service. Valid only for Windows OS. Usage: \'mcrouter --install\'" << std::endl
-        << "-u, --uninstall : Command to uninstall mcrouter as a service. Valid only for Windows OS. Usage: \'mcrouter --uninstall\'" << std::endl
-        << "-s, --service   : Command to run mcrouter as a system service. Usage: \'mcrouter --service\'" << std::endl
-        << "-v, --verbose   : Command option to display data rate. Used in console application. Usage: --verbose" << std::endl
-        << "-p, --pause     : Command option to pause connection. Used in console application. Usage: --pause" << std::endl
-        << "-r, --restart   : Command option to restart connection. Used in console application. Usage: --restart" << std::endl
-        << "-n, --instances : Command option to display list of connected instances. Used in console application. Usage: --instances" << std::endl
-        << "-l, --silent    : Command option to stop displaying data rate. Used in console application. Usage: --silent" << std::endl
-        << "-q, --quit      : Command option to stop router and quit application. Used in console application. Usage: --quit" << std::endl
-        << "-h, --help      : Command to display this message on console." << std::endl
-        << "---------------------------------------------------------------------------------------------" << std::endl
-        << std::ends;
+#if     AREG_EXTENDED
+
+    Console::Coord line{ NESystemService::COORD_INFO_MSG };
+    Console& console = Console::getInstance();
+    console.lockConsole();
+    for (const auto& text : _msgHelp)
+    {
+        console.outputTxt(line, text);
+        ++line.posY;
+    }
+
+    console.unlockConsole();
+
+#else   // AREG_EXTENDED
+
+    for (const auto& line : _msgHelp)
+    {
+        std::cout << line << std::endl;
+    }
+
+    std::cout << std::ends;
+
+#endif  // AREG_EXTENDED
 }
 
 void MulticastRouter::startConsoleService( void )
@@ -325,6 +351,8 @@ bool MulticastRouter::_checkCommand(const String& cmd)
     OptionParser parser( MulticastRouter::ValidOptions, static_cast<int>(MACRO_ARRAYLEN( MulticastRouter::ValidOptions )) );
     bool quit{ false };
     bool hasError{ false };
+
+    MulticastRouter::_cleanHelp();
 
     if ( parser.parseOptionLine( cmd ) )
     {
@@ -394,13 +422,7 @@ bool MulticastRouter::_checkCommand(const String& cmd)
     {
         if ( hasError )
         {
-            console.clearLine( NESystemService::COORD_ERROR_MSG );
-            console.clearLine( NESystemService::COORD_INFO_MSG );
             console.outputMsg( NESystemService::COORD_ERROR_MSG, NESystemService::FORMAT_MSG_ERROR.data( ), cmd.getString( ) );
-        }
-        else
-        {
-            console.clearLine( NESystemService::COORD_ERROR_MSG );
         }
 
         console.clearLine( NESystemService::COORD_USER_INPUT );
@@ -437,18 +459,25 @@ bool MulticastRouter::_checkCommand(const String& cmd)
 void MulticastRouter::_outputTitle( void )
 {
 #if AREG_EXTENDED
+
     Console & console = Console::getInstance( );
+    console.lockConsole();
     console.outputTxt( NESystemService::COORD_TITLE, NEMulticastRouterSettings::APP_TITLE.data( ) );
     console.outputTxt( NESystemService::COORD_SUBTITLE, NESystemService::MSG_SEPARATOR.data( ) );
+    console.unlockConsole();
+
 #else   // !AREG_EXTENDED
+
     printf( "%s\n", NEMulticastRouterSettings::APP_TITLE.data( ) );
     printf( "%s\n", NESystemService::MSG_SEPARATOR.data( ) );
+
 #endif  // AREG_EXTENDED
 }
 
 void MulticastRouter::_outputInfo( const String & info )
 {
 #if AREG_EXTENDED
+
     Console & console = Console::getInstance( );
     Console::Coord coord{NESystemService::COORD_INFO_MSG};
     console.lockConsole( );
@@ -458,8 +487,11 @@ void MulticastRouter::_outputInfo( const String & info )
     console.outputStr( coord, info );
 
     console.unlockConsole( );
+
 #else   // !AREG_EXTENDED
+
     printf( "%s\n", info.getString() );
+
 #endif  // AREG_EXTENDED
 }
 
@@ -569,6 +601,37 @@ void MulticastRouter::_setVerboseMode( bool makeVerbose )
 
     static constexpr std::string_view _unsupported{"This option is available only with extended features"};
     printf( "%s\n", _unsupported.data( ) );
+
+#endif  // AREG_EXTENDED
+}
+
+void MulticastRouter::_cleanHelp(void)
+{
+#if     AREG_EXTENDED
+
+    Console::Coord line{ NESystemService::COORD_INFO_MSG };
+    Console& console = Console::getInstance();
+    console.lockConsole();
+
+    console.clearLine(NESystemService::COORD_USER_INPUT);
+    uint32_t count = MACRO_ARRAYLEN(_msgHelp);
+    for (uint32_t i = 0; i < count; ++ i)
+    {
+        console.clearLine(line);
+        ++line.posY;
+    }
+
+    console.unlockConsole();
+
+#else   // AREG_EXTENDED
+
+    uint32_t count = MACRO_ARRAYLEN(_msgHelp);
+    for (uint32_t i = 0; i < count; ++ i)
+    {
+        std::cout << std::endl;
+    }
+
+    std::cout << std::ends;
 
 #endif  // AREG_EXTENDED
 }

@@ -123,7 +123,7 @@ namespace NESystemService
     /**
      * \brief   Underscore to output under the application title.
      **/
-    constexpr std::string_view  MSG_SEPARATOR   { "--------------------------------------------" };
+    constexpr std::string_view  MSG_SEPARATOR   { "---------------------------------------------------------------------------------------------" };
 
     /**
      * \brief   Coordinate to display the application title.
