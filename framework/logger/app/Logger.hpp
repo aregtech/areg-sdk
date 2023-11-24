@@ -47,19 +47,24 @@ private:
     /**
      * \brief   The commands to handle the logger.
      **/
-    enum class eLogCommands : int32_t
+    enum class eLoggerOptions : int32_t
     {
-          CMD_LogUndefined  //!< Undefined command.
-        , CMD_LogPause      //!< Pause logger.
-        , CMD_LogRestart    //!< Restart logger.
-        , CMD_LogSetScope   //!< Set the scope priorities
-        , CMD_LogInstances  //!< Display the names of connected instances
-        , CMD_LogSaveLogs   //!< Logger save logs in the file
-        , CMD_LogSaveConfig //!< Save the log configuration
-        , CMD_LogVerbose    //!< Display data rate information if possible. Functions only with extended features
-        , CMD_LogSilent     //!< Silent mode, no data rate is displayed.
-        , CMD_LogPrintHelp  //!< Output help message
-        , CMD_LogQuit       //!< Quit logger
+          CMD_LogUndefined      //!< Undefined command.
+        , CMD_LogPause          //!< Pause logger.
+        , CMD_LogRestart        //!< Restart logger.
+        , CMD_LogInstances      //!< Display the names of connected instances.
+        , CMD_LogVerbose        //!< Display data rate information if possible. Functions only with extended features.
+        , CMD_LogSilent         //!< Silent mode, no data rate is displayed.
+        , CMD_LogPrintHelp      //!< Output help message.
+        , CMD_LogQuit           //!< Quit logger.
+        , CMD_LogConsole        //!< Run as console application. Valid only as a command line option.
+        , CMD_LogInstall        //!< Install as service. Valid only as a command line option in Windows OS.
+        , CMD_LogUninstall      //!< Uninstall as a service. Valid only as a command line option in Windows OS.
+        , CMD_LogService        //!< Start logger as a service. Valid only as a command line option in Windows OS.
+        , CMD_LogUpdateScope    //!< Set the scope priorities.
+        , CMD_LogSaveLogs       //!< Logger save logs in the file.
+        , CMD_LogSaveLogsStop   //!< Stop saving logs in the file.
+        , CMD_LogSaveConfig     //!< Save the log configuration in the config file.
     };
 
     /**
@@ -245,6 +250,12 @@ private:
      *          Otherwise, it outputs error message and nothing happens.
      **/
     static void _setVerboseMode( bool makeVerbose );
+
+    /**
+     * \brief   Call to clean all message outputs like help, prompt, etc.
+     *          Normally, help is the largest message.
+     **/
+    static void _cleanHelp(void);
 
 //////////////////////////////////////////////////////////////////////////
 // OS specific hidden methods.

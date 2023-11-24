@@ -63,6 +63,27 @@ namespace
 
     // end of model description
     END_MODEL(_modelName)
+
+    constexpr std::string_view _msgHelp []
+    {
+          {"Usage of AREG Message Router (mcrouter) :"}
+        , NESystemService::MSG_SEPARATOR
+        , {"-a, --save      : Command to save logs in the file. Used in console application. Usage: --save"}
+        , {"-c, --console   : Command to run logger as a console application (default option). Usage: \'logger --console\'"}
+        , {"-f, --config    : Command to save current configuration, including log scopes in the config file. Used in console application. Usage: --config"}
+        , {"-h, --help      : Command to display this message on console."}
+        , {"-i, --install   : Command to install logger as a service. Valid only for Windows OS. Usage: \'logger --install\'"}
+        , {"-l, --silent    : Command option to stop displaying data rate. Used in console application. Usage: --silent"}
+        , {"-n, --instances : Command option to display list of connected instances. Used in console application. Usage: --instances"}
+        , {"-o, --scope     : Command to update log scope priority. Used in console application. Usage: --scope areg_base_NESocket=NOTSET"}
+        , {"-p, --pause     : Command option to pause connection. Used in console application. Usage: --pause"}
+        , {"-q, --quit      : Command option to stop logger and quit application. Used in console application. Usage: --quit"}
+        , {"-r, --restart   : Command option to restart connection. Used in console application. Usage: --restart"}
+        , {"-s, --service   : Command to run logger as a system service. Usage: \'logger --service\'"}
+        , {"-u, --uninstall : Command to uninstall logger as a service. Valid only for Windows OS. Usage: \'logger --uninstall\'"}
+        , {"-v, --verbose   : Command option to display data rate. Used in console application. Usage: --verbose"}
+        , NESystemService::MSG_SEPARATOR
+    };
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -84,16 +105,21 @@ DEF_TRACE_SCOPE(logger_app_logger_setState);
 
 const OptionParser::sOptionSetup Logger::ValidOptions[ ]
 {
-      {"-p", "--pause"      , static_cast<int>(eLogCommands::CMD_LogPause)      , OptionParser::NO_DATA         , {}, {}, {} }
-    , {"-r", "--restart"    , static_cast<int>(eLogCommands::CMD_LogRestart)    , OptionParser::NO_DATA         , {}, {}, {} }
-    , {"-s", "--scope"      , static_cast<int>(eLogCommands::CMD_LogSetScope)   , OptionParser::FREESTYLE_DATA  , {}, {}, {} }
-    , {"-i", "--instances"  , static_cast<int>(eLogCommands::CMD_LogInstances)  , OptionParser::NO_DATA         , {}, {}, {} }
-    , {"-l", "--save-log"   , static_cast<int>(eLogCommands::CMD_LogSaveLogs)   , OptionParser::FREESTYLE_DATA  , {}, {}, {} }
-    , {"-c", "--config"     , static_cast<int>(eLogCommands::CMD_LogSaveConfig) , OptionParser::FREESTYLE_DATA  , {}, {}, {} }
-    , {"-v", "--verbose"    , static_cast<int>(eLogCommands::CMD_LogVerbose)    , OptionParser::NO_DATA         , {}, {}, {} }
-    , {"-n", "--silent"     , static_cast<int>(eLogCommands::CMD_LogSilent)     , OptionParser::NO_DATA         , {}, {}, {} }
-    , {"-h", "--help"       , static_cast<int>(eLogCommands::CMD_LogPrintHelp)  , OptionParser::NO_DATA         , {}, {}, {} }
-    , {"-q", "--quit"       , static_cast<int>(eLogCommands::CMD_LogQuit)       , OptionParser::NO_DATA         , {}, {}, {} }
+      { "-a", "--save"      , static_cast<int>(eLoggerOptions::CMD_LogSaveLogs)     , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-b", "--unsave"    , static_cast<int>(eLoggerOptions::CMD_LogSaveLogsStop) , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-c", "--console"   , static_cast<int>(eLoggerOptions::CMD_LogConsole)      , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-f", "--config"    , static_cast<int>(eLoggerOptions::CMD_LogSaveConfig)   , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-h", "--help"      , static_cast<int>(eLoggerOptions::CMD_LogPrintHelp)    , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-i", "--install"   , static_cast<int>(eLoggerOptions::CMD_LogInstall)      , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-l", "--silent"    , static_cast<int>(eLoggerOptions::CMD_LogSilent)       , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-n", "--instances" , static_cast<int>(eLoggerOptions::CMD_LogInstances)    , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-o", "--scope"     , static_cast<int>(eLoggerOptions::CMD_LogUpdateScope)  , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-p", "--pause"     , static_cast<int>(eLoggerOptions::CMD_LogPause)        , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-q", "--quit"      , static_cast<int>(eLoggerOptions::CMD_LogQuit)         , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-r", "--restart"   , static_cast<int>(eLoggerOptions::CMD_LogRestart)      , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-s", "--service"   , static_cast<int>(eLoggerOptions::CMD_LogService)      , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-u", "--uninstall" , static_cast<int>(eLoggerOptions::CMD_LogUninstall)    , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-v", "--verbose"   , static_cast<int>(eLoggerOptions::CMD_LogVerbose)      , OptionParser::NO_DATA , {}, {}, {} }
 };
 
 Logger & Logger::getInstance(void)
@@ -126,6 +152,7 @@ Console::CallBack Logger::getOptionCheckCallback( void ) const
 void Logger::runConsoleInputExtended( void )
 {
 #if AREG_EXTENDED
+
     Console & console = Console::getInstance( );
     Logger::_outputTitle( );
 
@@ -150,6 +177,7 @@ void Logger::runConsoleInputExtended( void )
     console.moveCursorOneLineDown( );
     console.clearScreen( );
     console.uninitialize( );
+
 #endif   // !AREG_EXTENDED
 }
 
@@ -178,19 +206,19 @@ void Logger::serviceMain( int argc, char ** argv )
     // Start only tracing and timer manager.
     Application::initApplication(true, true, false, true, false, NEApplication::DEFAULT_CONFIG_FILE.data());
     SystemServiceBase::serviceMain( argc, argv );
-    setState( NESystemService::eSystemServiceState::ServiceStopped );
+    setState(NESystemService::eSystemServiceState::ServiceStopped);
     mServiceServer.waitToComplete( );
     Application::releaseApplication( );
 }
 
 bool Logger::serviceStart(void)
 {
-    TRACE_SCOPE( logger_app_logger_serviceStart );
-    TRACE_DBG( "Starting service [ %s ]", NELoggerSettings::SERVICE_NAME_ASCII );
+    TRACE_SCOPE(logger_app_logger_serviceStart);
+    TRACE_DBG("Starting service [ %s ]", NELoggerSettings::SERVICE_NAME_ASCII);
     bool result{ false };
     IEServiceConnectionProvider& service{ getService() };
-    if ( service.setupServiceConnectionData( NERemoteService::eRemoteServices::ServiceLogger, static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip) ) && 
-         service.connectServiceHost( ) )
+    if (service.setupServiceConnectionData(NERemoteService::eRemoteServices::ServiceLogger, static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip)) &&
+        service.connectServiceHost())
     {
         result = setState(NESystemService::eSystemServiceState::ServiceRunning);
     }
@@ -290,17 +318,29 @@ bool Logger::setState( NESystemService::eSystemServiceState newState )
 
 void Logger::printHelp( bool isCmdLine )
 {
-    std::cout
-        << "Usage of AREG Log Collector (logger) :" << std::endl
-        << "---------------------------------------------------------------------------------------------" << std::endl
-        << "-i, --install   : Command to install service. Valid for Windows OS, ignored in other cases." << std::endl
-        << "-u, --uninstall : Command to uninstall service. Valid for Windows OS, ignored in other cases." << std::endl
-        << "-s, --service   : Command to run process as a system service process." << std::endl
-        << "-c, --console   : Command to run process as a console application." << std::endl
-        << "-v, --verbose   : Command to display data rate. Can be used in combination with \'--console\'" << std::endl
-        << "-h, --help      : Command to display this message on console." << std::endl
-        << "---------------------------------------------------------------------------------------------" << std::endl
-        << "Quit application ..." << std::endl << std::ends;
+#if     AREG_EXTENDED
+
+    Console::Coord line{ NESystemService::COORD_INFO_MSG };
+    Console& console = Console::getInstance();
+    console.lockConsole();
+    for (const auto& text : _msgHelp)
+    {
+        console.outputTxt(line, text);
+        ++line.posY;
+    }
+
+    console.unlockConsole();
+
+#else   // AREG_EXTENDED
+
+    for (const auto& line : _msgHelp)
+    {
+        std::cout << line << std::endl;
+    }
+
+    std::cout << std::ends;
+
+#endif  // AREG_EXTENDED
 }
 
 void Logger::startConsoleService( void )
@@ -319,6 +359,8 @@ bool Logger::_checkCommand(const String& cmd)
     bool quit{ false };
     bool hasError {false};
 
+    Logger::_cleanHelp();
+
     if ( parser.parseOptionLine( cmd ) )
     {
         Logger & logger = Logger::getInstance( );
@@ -326,44 +368,54 @@ bool Logger::_checkCommand(const String& cmd)
         for ( uint32_t i = 0; i < opts.getSize( ); ++ i )
         {
             const OptionParser::sOption & opt = opts[ i ];
-            switch ( static_cast<eLogCommands>(opt.inCommand) )
+            switch ( static_cast<eLoggerOptions>(opt.inCommand) )
             {
-            case eLogCommands::CMD_LogPause:
+            case eLoggerOptions::CMD_LogPause:
                 Logger::_outputInfo( "Pausing log collector ..." );
                 logger.getService().disconnectServiceHost( );
                 logger.mServiceServer.waitToComplete( );
                 Logger::_outputInfo( "Log collector is paused ..." );
                 break;
 
-            case eLogCommands::CMD_LogRestart:
+            case eLoggerOptions::CMD_LogRestart:
                 Logger::_outputInfo( "Restarting log collector ..." );
                 logger.getService( ).connectServiceHost( );
                 Logger::_outputInfo( "Log collector is restarted ..." );
                 break;
 
-            case eLogCommands::CMD_LogInstances:
+            case eLoggerOptions::CMD_LogInstances:
                 Logger::_outputInstances( logger.getConnetedInstances() );
                 break;
 
-            case eLogCommands::CMD_LogVerbose:
+            case eLoggerOptions::CMD_LogVerbose:
                 Logger::_setVerboseMode( true );
                 break;
 
-            case eLogCommands::CMD_LogSilent:
+            case eLoggerOptions::CMD_LogSilent:
                 Logger::_setVerboseMode( false );
                 break;
 
-            case eLogCommands::CMD_LogPrintHelp:
+            case eLoggerOptions::CMD_LogPrintHelp:
                 logger.printHelp( false );
                 break;
 
-            case eLogCommands::CMD_LogQuit:
+            case eLoggerOptions::CMD_LogQuit:
                 quit = true;
                 break;
 
-            case eLogCommands::CMD_LogSetScope:
-            case eLogCommands::CMD_LogSaveLogs:
-            case eLogCommands::CMD_LogSaveConfig:
+            case eLoggerOptions::CMD_LogConsole:        // fall through
+            case eLoggerOptions::CMD_LogInstall:        // fall through
+            case eLoggerOptions::CMD_LogUninstall:      // fall through
+            case eLoggerOptions::CMD_LogService:
+                Logger::_outputInfo("This command should be used in command line ...");
+                break;
+
+            case eLoggerOptions::CMD_LogUpdateScope:    // fall through
+            case eLoggerOptions::CMD_LogSaveLogs:       // fall through
+            case eLoggerOptions::CMD_LogSaveConfig:     // fall through
+            case eLoggerOptions::CMD_LogSaveLogsStop:
+                Logger::_outputInfo("The feature is not implemented yet!!!");
+                break;
 
             default:
                 hasError = true;
@@ -384,13 +436,7 @@ bool Logger::_checkCommand(const String& cmd)
     {
         if ( hasError )
         {
-            console.clearLine( NESystemService::COORD_ERROR_MSG );
-            console.clearLine( NESystemService::COORD_INFO_MSG );
             console.outputMsg( NESystemService::COORD_ERROR_MSG, NESystemService::FORMAT_MSG_ERROR.data( ), cmd.getString( ) );
-        }
-        else
-        {
-            console.clearLine( NESystemService::COORD_ERROR_MSG );
         }
 
         console.clearLine( NESystemService::COORD_USER_INPUT );
@@ -427,18 +473,25 @@ bool Logger::_checkCommand(const String& cmd)
 void Logger::_outputTitle( void )
 {
 #if AREG_EXTENDED
+
     Console & console = Console::getInstance( );
+    console.lockConsole();
     console.outputTxt( NESystemService::COORD_TITLE, NELoggerSettings::APP_TITLE.data( ) );
     console.outputTxt( NESystemService::COORD_SUBTITLE, NESystemService::MSG_SEPARATOR.data( ) );
+    console.unlockConsole();
+
 #else   // !AREG_EXTENDED
+
     printf( "%s\n", NELoggerSettings::APP_TITLE.data( ) );
     printf( "%s\n", NESystemService::MSG_SEPARATOR.data( ) );
+
 #endif  // AREG_EXTENDED
 }
 
 void Logger::_outputInfo( const String & info )
 {
 #if AREG_EXTENDED
+
     Console & console = Console::getInstance( );
     Console::Coord coord{NESystemService::COORD_INFO_MSG};
     console.lockConsole( );
@@ -448,8 +501,11 @@ void Logger::_outputInfo( const String & info )
     console.outputStr( coord, info );
 
     console.unlockConsole( );
+
 #else   // !AREG_EXTENDED
+
     printf( "%s\n", info.getString() );
+
 #endif  // AREG_EXTENDED
 }
 
@@ -464,40 +520,48 @@ void Logger::_outputInstances( const ServiceCommunicatonBase::MapInstances & ins
     Console::Coord coord{NESystemService::COORD_INFO_MSG};
     console.lockConsole( );
 
-#endif // AREG_EXTENDED
-
     if ( instances.isEmpty( ) )
     {
-#if AREG_EXTENDED
-
         console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
         ++ coord.posY;
         console.outputStr( coord, _empty );
-
-#else   // !AREG_EXTENDED
-
-        printf( "%s\n", _empty.data() );
-
-#endif  // AREG_EXTENDED
+        ++ coord.posY;
     }
     else
     {
-#if AREG_EXTENDED
-
         console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
         ++ coord.posY;
         console.outputTxt( coord, _table );
         ++ coord.posY;
         console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
         ++ coord.posY;
+        int i{ 1 };
+        for ( auto pos = instances.firstPosition( ); instances.isValidPosition( pos ); pos = instances.nextPosition( pos ) )
+        {
+            ITEM_ID cookie{ 0 };
+            ServiceCommunicatonBase::sConnectedInstance instance;
+            instances.getAtPosition( pos, cookie, instance);
+            unsigned int id{ static_cast<unsigned int>(cookie) };
+
+            console.outputMsg( coord, " %4d. |  %11u  |  %s ", i ++, id, instance.ciInstance.getString( ) );
+            ++ coord.posY;
+        }
+    }
+
+    console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
+    console.unlockConsole( );
 
 #else   // !AREG_EXTENDED
 
+    if ( instances.isEmpty( ) )
+    {
+        printf( "%s\n", _empty.data() );
+    }
+    else
+    {
         printf( "%s\n", NESystemService::MSG_SEPARATOR.data( ) );
         printf( "%s\n", _table.data() );
         printf( "%s\n", NESystemService::MSG_SEPARATOR.data( ) );
-
-#endif  // AREG_EXTENDED
 
         int i{ 1 };
         for ( auto pos = instances.firstPosition( ); instances.isValidPosition( pos ); pos = instances.nextPosition( pos ) )
@@ -507,23 +571,11 @@ void Logger::_outputInstances( const ServiceCommunicatonBase::MapInstances & ins
             instances.getAtPosition( pos, cookie, instance);
             unsigned int id{ static_cast<unsigned int>(cookie) };
 
-#if AREG_EXTENDED
-
-            console.outputMsg( coord, " %4d. |  %11u  |  %s ", i ++, id, instance.ciInstance.getString( ) );
-            ++ coord.posY;
-
-#else   // !AREG_EXTENDED
-
             printf( " %4d. |  %11u  |  %s \n", i ++, id, instance.ciInstance.getString( ) );
-
-#endif  // AREG_EXTENDED
         }
     }
 
-#if AREG_EXTENDED
-
-    console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
-    console.unlockConsole( );
+    printf( "%s\n", NESystemService::MSG_SEPARATOR.data( ) );
 
 #endif  // AREG_EXTENDED
 }
@@ -563,6 +615,27 @@ void Logger::_setVerboseMode( bool makeVerbose )
 
     static constexpr std::string_view _unsupported{"This option is available only with extended features"};
     printf( "%s\n", _unsupported.data( ) );
+
+#endif  // AREG_EXTENDED
+}
+
+void Logger::_cleanHelp(void)
+{
+#if     AREG_EXTENDED
+
+    Console::Coord line{ NESystemService::COORD_INFO_MSG };
+    Console& console = Console::getInstance();
+    console.lockConsole();
+
+    console.clearLine(NESystemService::COORD_USER_INPUT);
+    uint32_t count = MACRO_ARRAYLEN(_msgHelp);
+    for (uint32_t i = 0; i < count; ++ i)
+    {
+        console.clearLine(line);
+        ++line.posY;
+    }
+
+    console.unlockConsole();
 
 #endif  // AREG_EXTENDED
 }

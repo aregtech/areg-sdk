@@ -252,6 +252,12 @@ private:
      **/
     static void _setVerboseMode( bool makeVerbose );
 
+    /**
+     * \brief   Call to clean all message outputs like help, prompt, etc.
+     *          Normally, help is the largest message.
+     **/
+    static void _cleanHelp(void);
+
 //////////////////////////////////////////////////////////////////////////
 // OS specific hidden methods.
 //////////////////////////////////////////////////////////////////////////
