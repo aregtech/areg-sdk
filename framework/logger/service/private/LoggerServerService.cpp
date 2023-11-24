@@ -80,7 +80,7 @@ void LoggerServerService::removeAllInstances(void)
 {
     Lock lock(mLock);
     ServiceCommunicatonBase::removeAllInstances();
-    for (auto pos = mObservers.firstPosition(); mObservers.isInvalidPosition(pos); pos = mObservers.nextPosition(pos))
+    for (auto pos = mObservers.firstPosition(); mObservers.isValidPosition(pos); pos = mObservers.nextPosition(pos))
     {
         mLoggerProcessor.notifyTargetInstances(mObservers.keyAtPosition(pos));
     }

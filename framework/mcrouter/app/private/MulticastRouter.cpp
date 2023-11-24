@@ -70,16 +70,16 @@ namespace
           {"Usage of AREG Message Router (mcrouter) :"}
         , NESystemService::MSG_SEPARATOR
         , {"-c, --console   : Command to run mcrouter as a console application (default option). Usage: \'mcrouter --console\'"}
-        , {"-i, --install   : Command to install mcrouter as a service. Valid only for Windows OS. Usage: \'mcrouter --install\'"}
-        , {"-u, --uninstall : Command to uninstall mcrouter as a service. Valid only for Windows OS. Usage: \'mcrouter --uninstall\'"}
-        , {"-s, --service   : Command to run mcrouter as a system service. Usage: \'mcrouter --service\'"}
-        , {"-v, --verbose   : Command option to display data rate. Used in console application. Usage: --verbose"}
-        , {"-p, --pause     : Command option to pause connection. Used in console application. Usage: --pause"}
-        , {"-r, --restart   : Command option to restart connection. Used in console application. Usage: --restart"}
-        , {"-n, --instances : Command option to display list of connected instances. Used in console application. Usage: --instances"}
-        , {"-l, --silent    : Command option to stop displaying data rate. Used in console application. Usage: --silent"}
-        , {"-q, --quit      : Command option to stop router and quit application. Used in console application. Usage: --quit"}
         , {"-h, --help      : Command to display this message on console."}
+        , {"-i, --install   : Command to install mcrouter as a service. Valid only for Windows OS. Usage: \'mcrouter --install\'"}
+        , {"-l, --silent    : Command option to stop displaying data rate. Used in console application. Usage: --silent"}
+        , {"-n, --instances : Command option to display list of connected instances. Used in console application. Usage: --instances"}
+        , {"-p, --pause     : Command option to pause connection. Used in console application. Usage: --pause"}
+        , {"-q, --quit      : Command option to stop router and quit application. Used in console application. Usage: --quit"}
+        , {"-r, --restart   : Command option to restart connection. Used in console application. Usage: --restart"}
+        , {"-s, --service   : Command to run mcrouter as a system service. Usage: \'mcrouter --service\'"}
+        , {"-u, --uninstall : Command to uninstall mcrouter as a service. Valid only for Windows OS. Usage: \'mcrouter --uninstall\'"}
+        , {"-v, --verbose   : Command option to display data rate. Used in console application. Usage: --verbose"}
         , NESystemService::MSG_SEPARATOR
     };
 }
@@ -103,17 +103,17 @@ DEF_TRACE_SCOPE(mcrouter_app_MulticastRouter_setState);
 
 const OptionParser::sOptionSetup MulticastRouter::ValidOptions[ ]
 {
-      { "-p", "--pause"     , static_cast<int>(eRouterOptions::CMD_RouterPause)     , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-r", "--restart"   , static_cast<int>(eRouterOptions::CMD_RouterRestart)   , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-n", "--instances" , static_cast<int>(eRouterOptions::CMD_RouterInstances) , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-v", "--verbose"   , static_cast<int>(eRouterOptions::CMD_RouterVerbose)   , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-l", "--silent"    , static_cast<int>(eRouterOptions::CMD_RouterSilent)    , OptionParser::NO_DATA , {}, {}, {} }
+      { "-c", "--console"   , static_cast<int>(eRouterOptions::CMD_RouterConsole)   , OptionParser::NO_DATA , {}, {}, {} }
     , { "-h", "--help"      , static_cast<int>(eRouterOptions::CMD_RouterPrintHelp) , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-q", "--quit"      , static_cast<int>(eRouterOptions::CMD_RouterQuit)      , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-c", "--console"   , static_cast<int>(eRouterOptions::CMD_RouterConsole)   , OptionParser::NO_DATA , {}, {}, {} }
     , { "-i", "--install"   , static_cast<int>(eRouterOptions::CMD_RouterInstall)   , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-u", "--uninstall" , static_cast<int>(eRouterOptions::CMD_RouterUninstall) , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-l", "--silent"    , static_cast<int>(eRouterOptions::CMD_RouterSilent)    , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-n", "--instances" , static_cast<int>(eRouterOptions::CMD_RouterInstances) , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-p", "--pause"     , static_cast<int>(eRouterOptions::CMD_RouterPause)     , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-q", "--quit"      , static_cast<int>(eRouterOptions::CMD_RouterQuit)      , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-r", "--restart"   , static_cast<int>(eRouterOptions::CMD_RouterRestart)   , OptionParser::NO_DATA , {}, {}, {} }
     , { "-s", "--service"   , static_cast<int>(eRouterOptions::CMD_RouterService)   , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-u", "--uninstall" , static_cast<int>(eRouterOptions::CMD_RouterUninstall) , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-v", "--verbose"   , static_cast<int>(eRouterOptions::CMD_RouterVerbose)   , OptionParser::NO_DATA , {}, {}, {} }
 };
 
 MulticastRouter & MulticastRouter::getInstance(void)
@@ -147,6 +147,7 @@ Console::CallBack MulticastRouter::getOptionCheckCallback( void ) const
 void MulticastRouter::runConsoleInputExtended( void )
 {
 #if AREG_EXTENDED
+
     Console & console = Console::getInstance( );
     MulticastRouter::_outputTitle( );
 
@@ -171,6 +172,7 @@ void MulticastRouter::runConsoleInputExtended( void )
     console.moveCursorOneLineDown( );
     console.clearScreen( );
     console.uninitialize( );
+
 #endif   // !AREG_EXTENDED
 }
 
@@ -622,16 +624,6 @@ void MulticastRouter::_cleanHelp(void)
     }
 
     console.unlockConsole();
-
-#else   // AREG_EXTENDED
-
-    uint32_t count = MACRO_ARRAYLEN(_msgHelp);
-    for (uint32_t i = 0; i < count; ++ i)
-    {
-        std::cout << std::endl;
-    }
-
-    std::cout << std::ends;
 
 #endif  // AREG_EXTENDED
 }
