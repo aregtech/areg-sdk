@@ -51,9 +51,9 @@ bool FileLogger::openLogger( void )
             {
                     
                 Process & curProcess = Process::getInstance();
-                NETrace::sLogMessage logMsgHello(NETrace::eMessageType::MsgText, 0, NETrace::eLogPriority::PrioIgnoreLayout, nullptr, 0);
+                NETrace::sLogMessage logMsgHello(NETrace::eLogMessageType::LogMessageText, 0, NETrace::eLogPriority::PrioIgnoreLayout, nullptr, 0);
                 String::formatString( logMsgHello.logMessage
-                                    , NETrace::LOG_MESSAGE_BUFFER_SIZE
+                                    , NETrace::LOG_MESSAGE_IZE
                                     , LoggerBase::FOMAT_MESSAGE_HELLO.data()
                                     , Process::getString(curProcess.getEnvironment())
                                     , curProcess.getFullPath().getString()
@@ -76,9 +76,9 @@ void FileLogger::closeLogger(void)
     if ( mLogFile.isOpened() )
     {
         Process & curProcess = Process::getInstance();
-        NETrace::sLogMessage logMsgGoodbye(NETrace::eMessageType::MsgText, 0, NETrace::eLogPriority::PrioIgnoreLayout, nullptr, 0);
+        NETrace::sLogMessage logMsgGoodbye(NETrace::eLogMessageType::LogMessageText, 0, NETrace::eLogPriority::PrioIgnoreLayout, nullptr, 0);
         String::formatString(logMsgGoodbye.logMessage
-                            , NETrace::LOG_MESSAGE_BUFFER_SIZE
+                            , NETrace::LOG_MESSAGE_IZE
                             , LoggerBase::FORMAT_MESSAGE_BYE.data()
                             , Process::getString(curProcess.getEnvironment())
                             , curProcess.getFullPath().getString()
@@ -97,15 +97,15 @@ void FileLogger::logMessage( const NETrace::sLogMessage & logMessage )
     {
         switch (logMessage.logMsgType)
         {
-        case NETrace::eMessageType::MsgText:
+        case NETrace::eLogMessageType::LogMessageText:
             getLayoutMessage().logMessage(logMessage, static_cast<IEOutStream&>(mLogFile));
             break;
 
-        case NETrace::eMessageType::MsgScopeEnter:
+        case NETrace::eLogMessageType::LogMessageScopeEnter:
             getLayoutEnterScope().logMessage( logMessage, static_cast<IEOutStream &>(mLogFile) );
             break;
 
-        case NETrace::eMessageType::MsgScopeExit:
+        case NETrace::eLogMessageType::LogMessageScopeExit:
             getLayoutExitScope().logMessage( logMessage, static_cast<IEOutStream &>(mLogFile) );
             break;
 

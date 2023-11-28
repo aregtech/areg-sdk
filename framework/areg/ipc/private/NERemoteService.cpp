@@ -27,7 +27,10 @@ namespace
         return ((client != NEService::COOKIE_UNKNOWN) && client != (NEService::COOKIE_LOCAL));
     }
 
-    inline static void _createRegisterRequest(RemoteMessage & out_msgRegister, NEService::eServiceRequestType reqType, NEService::eDisconnectReason reason, const StubAddress & addrService)
+    inline static void _createRegisterRequest( RemoteMessage & out_msgRegister
+                                             , NEService::eServiceRequestType reqType
+                                             , NEService::eDisconnectReason reason
+                                             , const StubAddress & addrService)
     {
         if (out_msgRegister.initMessage(NERemoteService::getMessageRegisterService().rbHeader) != nullptr)
         {
@@ -38,7 +41,10 @@ namespace
         }
     }
 
-    inline static void _createRegisterRequest(RemoteMessage & out_msgRegister, NEService::eServiceRequestType reqType, NEService::eDisconnectReason reason, const ProxyAddress & addrService)
+    inline static void _createRegisterRequest( RemoteMessage & out_msgRegister
+                                             , NEService::eServiceRequestType reqType
+                                             , NEService::eDisconnectReason reason
+                                             , const ProxyAddress & addrService)
     {
         if (out_msgRegister.initMessage(NERemoteService::getMessageRegisterService().rbHeader) != nullptr)
         {
@@ -49,7 +55,10 @@ namespace
         }
     }
 
-    inline static void _createRegisterNotify(RemoteMessage & out_msgNotify, NEService::eServiceRequestType reqType, NEService::eDisconnectReason reason, const StubAddress & addrService)
+    inline static void _createRegisterNotify( RemoteMessage & out_msgNotify
+                                            , NEService::eServiceRequestType reqType
+                                            , NEService::eDisconnectReason reason
+                                            , const StubAddress & addrService)
     {
         if (out_msgNotify.initMessage(NERemoteService::getMessageRegisterNotify().rbHeader) != nullptr)
         {
@@ -60,7 +69,10 @@ namespace
         }
     }
 
-    inline static void _createRegisterNotify(RemoteMessage & out_msgNotify, NEService::eServiceRequestType reqType, NEService::eDisconnectReason reason, const ProxyAddress & addrService)
+    inline static void _createRegisterNotify( RemoteMessage & out_msgNotify
+                                            , NEService::eServiceRequestType reqType
+                                            , NEService::eDisconnectReason reason
+                                            , const ProxyAddress & addrService)
     {
         if (out_msgNotify.initMessage(NERemoteService::getMessageRegisterNotify().rbHeader) != nullptr)
         {

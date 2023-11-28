@@ -352,4 +352,13 @@ namespace std
     };
 }
 
+#include "areg/base/Containers.hpp"
+
+// Declaration of ListProperties within NEPersistence namespace
+namespace NEPersistence
+{
+    //!< The type to initialize list of properties.
+    using ListProperties = TEArrayList<Property>;
+}
+
 #endif  // AREG_PERSIST_PROPERTY_HPP

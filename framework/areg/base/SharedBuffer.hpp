@@ -71,7 +71,7 @@ public:
     explicit SharedBuffer(unsigned int blockSize = NEMemory::BLOCK_SIZE);
 
     /**
-     * \brief   Constructor to reserve space for byte buffer object
+     * \brief   Reserves the space in the byte buffer to write data and sets block size.
      * \param   reserveSize Size in bytes to reserve
      * \param   blockSize   The size of minimum block size to increase on resize.
      *                      It is aligned to NEMemory::BLOCK_SIZE (minimum size)
@@ -79,13 +79,26 @@ public:
     SharedBuffer( unsigned int reserveSize, unsigned int blockSize );
 
     /**
-     * \brief	Initialization constructor, writes given data into byte buffer
+     * \brief	Reserves space and writes given data into byte buffer.
      * \param	buffer      The data to initialize byte buffer
      * \param	size        The length in bytes of data
      * \param   blockSize   The size of minimum block size to increase on resize.
      *                      It is aligned to NEMemory::BLOCK_SIZE (minimum size)
      **/
     SharedBuffer( const unsigned char * buffer, unsigned int size, unsigned int blockSize = NEMemory::BLOCK_SIZE );
+
+    /**
+     * \brief	Reserves requested space in bytes and writes given data into byte buffer.
+     *          The reserved space should at least the size of the buffer to write.
+     *          If the requested space to reserve is smaller than the size of the buffer,
+     *          it will be increased to the size of the buffer.
+     * \brief   reserveSize Number of bytes to reserve in the shared buffer.
+     * \param	buffer      The data to initialize byte buffer
+     * \param	size        The length in bytes of data
+     * \param   blockSize   The size of minimum block size to increase on resize.
+     *                      It is aligned to NEMemory::BLOCK_SIZE (minimum size)
+     **/
+    SharedBuffer(unsigned int reserveSize, const unsigned char* buffer, unsigned int size, unsigned int blockSize = NEMemory::BLOCK_SIZE);
 
     /**
      * \brief	Initialization constructor, writes given null-terminated string into byte buffer.

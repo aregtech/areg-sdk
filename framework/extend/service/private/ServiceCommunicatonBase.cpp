@@ -278,7 +278,7 @@ void ServiceCommunicatonBase::onServiceExit( void )
 bool ServiceCommunicatonBase::startConnection(void)
 {
     TRACE_SCOPE(areg_extend_service_ServiceCommunicatonBase_startConnection);
-    TRACE_DBG("Going to start connection. Address [ %u ], port [ %d ]"
+    TRACE_DBG("Going to start connection. Address [ %s ], port [ %d ]"
                 , mServerConnection.getAddress().getHostAddress().getString()
                 , mServerConnection.getAddress().getHostPort());
 
@@ -322,7 +322,7 @@ bool ServiceCommunicatonBase::startConnection(void)
 bool ServiceCommunicatonBase::restartConnection( void )
 {
     TRACE_SCOPE(areg_extend_service_ServiceCommunicatonBase_restartConnection);
-    TRACE_DBG("Going to start connection. Address [ %u ], port [ %d ]"
+    TRACE_DBG("Going to start connection. Address [ %s ], port [ %d ]"
                 , mServerConnection.getAddress().getHostAddress().getString()
                 , mServerConnection.getAddress().getHostPort());
 

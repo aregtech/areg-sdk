@@ -561,6 +561,9 @@
     <ClCompile Include="areg\ipc\private\NEConnection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="areg\persist\private\IEConfigurationListener.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\windows\GEWindows.h">
@@ -1110,6 +1113,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\ipc\private\NEConnection.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\persist\IEConfigurationListener.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

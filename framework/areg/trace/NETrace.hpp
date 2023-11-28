@@ -45,6 +45,16 @@ class FileBase;
  **/
 namespace NETrace
 {
+    //!< The list of the scopes. It is a pair, where the key is the ID of the scope
+    //!< and the value is the pointer to the scope.
+    using ScopeList = TEHashMap<unsigned int, TraceScope*>;
+
+    //!< Alias of the map position.
+    using SCOPEPOS = ScopeList::MAPPOS;
+
+    /**
+     * \brief   The supported logging version
+     **/
     constexpr std::string_view LOG_VERSION                  { "2.0.0" };
 
     /**
@@ -200,26 +210,36 @@ namespace NETrace
     AREG_API unsigned int makePriorities(const String& prioString);
 
     /**
-     * \brief   NETrace::LOG_MESSAGE_BUFFER_SIZE
+     * \brief   NETrace::LOG_MESSAGE_IZE
      *          The maximum size of text in log message
      **/
-    constexpr uint32_t  LOG_MESSAGE_BUFFER_SIZE { 512 };
+    constexpr uint32_t  LOG_MESSAGE_IZE     { 512 };
     /**
      * \brief   NETrace::LOG_NAMES_SIZE
      *          The maximum length of the names in logging objects
      **/
-    constexpr uint32_t   LOG_NAMES_SIZE         { LOG_MESSAGE_BUFFER_SIZE / 2 };
+    constexpr uint32_t   LOG_NAMES_SIZE     { 128 };
 
     /**
-     * \brief   NETrace::eMessageType
+     * \brief   NETrace::eLogMessageType
      *          The logging message type.
      **/
-    enum eMessageType : unsigned int
+    enum class eLogMessageType  : unsigned char
     {
-          MsgUndefined  = 0 //!< Undefined message type
-        , MsgScopeEnter     //!< Message entered scope
-        , MsgScopeExit      //!< Message exit scope
-        , MsgText           //!< Message text
+          LogMessageUndefined   = 0 //!< The log origin is undefined.
+        , LogMessageScopeEnter  = 1 //!< Indicates the begin of the logging scope.
+        , LogMessageText        = 2 //!< Indicates the message to log.
+        , LogMessageScopeExit   = 4 //!< Indicates the end of the logging scope.
+    };
+
+    /**
+     * \brief   NETrace::eLogDataType
+     *          The data type in the message log
+     **/
+    enum class eLogDataType : unsigned short
+    {
+          LogDataLocal          = 0 //!< The message data is generated locally.
+        , LogDataRemote         = 1 //!< The message data is prepared for remote logging.
     };
 
     /**
@@ -232,7 +252,7 @@ namespace NETrace
          * \brief   Initializes logging message of specified type.
          * \param   msgType     The logging message type.
          **/
-        sLogMessage( NETrace::eMessageType msgType = NETrace::eMessageType::MsgUndefined );
+        sLogMessage( NETrace::eLogMessageType msgType = NETrace::eLogMessageType::LogMessageUndefined );
         /**
          * \brief   Initializes logging message and sets specified data.
          * \param   msgType     The logging message type.
@@ -240,7 +260,7 @@ namespace NETrace
          * \param   mstPrio     The priority of logging message.
          * \param   message     The message text to output on target. Can be empty.
          **/
-        sLogMessage(NETrace::eMessageType msgType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message, unsigned int msgLen);
+        sLogMessage(NETrace::eLogMessageType msgType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message, unsigned int msgLen);
         /**
          * \brief   Copies data from given source.
          * \param   src     The source to copy data.
@@ -253,17 +273,22 @@ namespace NETrace
          **/
         sLogMessage & operator = (const sLogMessage & src);
 
-        NETrace::eMessageType   logMsgType;     //!< The type of the logging message.
-        ITEM_ID                 logSource;      //!< The ID of the source that generated logging message.
-        ITEM_ID                 logTarget;      //!< The ID of the target to send logging message, valid only in case of TCP/IP logging.
-        ITEM_ID                 logCookie;      //!< The cookie set by the networking service, i.e. the log collector. Valid only in case of TCP/IP logging.
-        ITEM_ID                 logModuleId;    //!< The ID of the process in the local machine.
-        ITEM_ID                 logThreadId;    //!< The ID the thread in the local process.
-        TIME64                  logTimestamp;   //!< The timestamp of generated log.
-        unsigned int            logScopeId;     //!< The ID of trace scope that generated log message
-        NETrace::eLogPriority   logMessagePrio; //!< The log message priority
-        unsigned int            logMessageLen;  //!< The actual length of the log message
-        char                    logMessage[LOG_MESSAGE_BUFFER_SIZE];  //!< The message text to output, with maximum NETrace::LOG_MESSAGE_BUFFER_SIZE characters
+        NETrace::eLogMessageType    logMsgType;     //!< The type of the logging message.
+        NETrace::eLogDataType       logDataType;    //!< The type of log message data.
+        NETrace::eLogPriority       logMessagePrio; //!< The log message priority
+        ITEM_ID                     logSource;      //!< The ID of the source that generated logging message.
+        ITEM_ID                     logTarget;      //!< The ID of the target to send logging message, valid only in case of TCP/IP logging.
+        ITEM_ID                     logCookie;      //!< The cookie set by the networking service, i.e. the log collector. Valid only in case of TCP/IP logging.
+        ITEM_ID                     logModuleId;    //!< The ID of the process in the local machine.
+        ITEM_ID                     logThreadId;    //!< The ID the thread in the local process.
+        TIME64                      logTimestamp;   //!< The timestamp of generated log.
+        unsigned int                logScopeId;     //!< The ID of trace scope that generated log message
+        unsigned int                logMessageLen;  //!< The actual length of the log message
+        char                        logMessage[LOG_MESSAGE_IZE];//!< The message text to output, with maximum NETrace::LOG_MESSAGE_IZE characters.
+        unsigned int                logThreadLen;               //!< The length of the thread name;
+        char                        logThread[LOG_NAMES_SIZE];  //!< The name of the thread that generated the log. Valid only for remote logging
+        unsigned int                logModuleLen;               //!< The length of the module name.
+        char                        logModule[LOG_NAMES_SIZE];  //!< The name of the module that generated the log. Valid only for remote logging.
     };
 
     /**
@@ -399,22 +424,19 @@ namespace NETrace
     } eScopeList;
 
     /**
-     * \brief   NETrace::eLogMessageType
-     *          Indicates the origin of the log.
+     * \brief   Creates a network communication message to make a log.
+     * \param   logMessage  The message log structure.
+     * \param   dataType    The type of created data to set in the structure.
+     * \param   srcCookie   The source of cookie to set in the structure.
+     * \return  Returns message object for network communication.
      **/
-    typedef enum E_LogMessageType   : unsigned char
-    {
-          LogMessageUndefined   //!< The log origin is undefined.
-        , LogMessageScopeEnter  //!< Indicates the begin of the logging scope.
-        , LogMessageText        //!< Indicates the message to log.
-        , LogMessageScopeExit   //!< Indicates the end of the logging scope.
-    } eLogMessageType;
+    AREG_API RemoteMessage createLogMessage(const NETrace::sLogMessage& logMessage, NETrace::eLogDataType dataType, const ITEM_ID & srcCookie);
 
     /**
-     * \brief   Creates a communication message to make a log.
-     * \param   logMessage  The message to log.
+     * \brief   Triggers an event to log the message, contained in the remote buffer.
+     * \param   message     The shared buffer with the information to log.
      **/
-    AREG_API RemoteMessage messageLog(const NETrace::sLogMessage & logMessage);
+    AREG_API void logMessage(const RemoteMessage& message);
 
     /**
      * \brief   Creates a message for logging service to start registering application logging scopes.
@@ -428,12 +450,6 @@ namespace NETrace
      * \return  Returns generated message.
      **/
     AREG_API RemoteMessage messageRegisterScopesEnd(const ITEM_ID & target);
-
-    //!< The list of the scopes. It is a pair, where the key is the ID of the scope
-    //!< and the value is the pointer to the scope.
-    using ScopeList = TEHashMap<unsigned int, TraceScope *>;
-    //!< Alias of the map position.
-    using SCOPEPOS = ScopeList::MAPPOS;
 
     /**
      * \brief   The maximum scope entries in one message.
@@ -460,7 +476,6 @@ namespace NETrace
 // NETrace namespace streamable types
 //////////////////////////////////////////////////////////////////////////////
 IMPLEMENT_STREAMABLE(NETrace::eLogPriority)
-IMPLEMENT_STREAMABLE(NETrace::eMessageType)
 IMPLEMENT_STREAMABLE(NETrace::eScopeList)
 IMPLEMENT_STREAMABLE(NETrace::eLogMessageType)
 

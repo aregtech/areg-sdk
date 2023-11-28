@@ -23,6 +23,7 @@
 #include "areg/base/Process.hpp"
 #include "areg/base/String.hpp"
 #include "areg/component/ComponentLoader.hpp"
+#include "areg/persist/ConfigManager.hpp"
 #include "areg/trace/GETrace.h"
 
 #include "extend/console/Console.hpp"
@@ -134,8 +135,9 @@ std::pair<const OptionParser::sOptionSetup *, int> Logger::getOptionSetup( void 
 }
 
 Logger::Logger( void )
-    : SystemServiceBase ( mServiceServer )
-    , mServiceServer    ( )
+    : SystemServiceBase         ( mServiceServer )
+    , IEConfigurationListener   ( )
+    , mServiceServer            ( )
 {
 }
 
@@ -201,10 +203,32 @@ void Logger::runConsoleInputSimple( void )
     } while ( quit == false );
 }
 
+void Logger::prepareSaveConfiguration(ConfigManager& config)
+{
+}
+
+void Logger::postSaveConfiguration(ConfigManager& config)
+{
+}
+
+void Logger::prepareReadConfiguration(ConfigManager& config)
+{
+}
+
+void Logger::postReadConfiguration(ConfigManager& config)
+{
+    enableLocalLogs(config, false);
+}
+
+void Logger::onSetupConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigManager& config)
+{
+    enableLocalLogs(config, false);
+}
+
 void Logger::serviceMain( int argc, char ** argv )
 {
     // Start only tracing and timer manager.
-    Application::initApplication(true, true, false, true, false, NEApplication::DEFAULT_CONFIG_FILE.data());
+    Application::initApplication(true, true, false, true, false, NEApplication::DEFAULT_CONFIG_FILE.data(), static_cast<IEConfigurationListener *>(&self()));
     SystemServiceBase::serviceMain( argc, argv );
     setState(NESystemService::eSystemServiceState::ServiceStopped);
     mServiceServer.waitToComplete( );
@@ -638,4 +662,17 @@ void Logger::_cleanHelp(void)
     console.unlockConsole();
 
 #endif  // AREG_EXTENDED
+}
+
+inline void Logger::enableLocalLogs(ConfigManager& config, bool enable)
+{
+    constexpr NEPersistence::eConfigKeys prioConfKey{ NEPersistence::eConfigKeys::EntryLogScope };
+    const NEPersistence::sPropertyKey& keyPrio{ NEPersistence::getLogScope() };
+    unsigned int prios = enable
+                ? static_cast<unsigned int>(NETrace::eLogPriority::PrioNotset) | static_cast<unsigned int>(NETrace::eLogPriority::PrioNotset)
+                : static_cast<unsigned int>(NETrace::eLogPriority::PrioNotset);
+    const String prio{ NETrace::makePrioString(prios) };
+
+    config.setModuleProperty(keyPrio.section, keyPrio.property, String(NEPersistence::SYNTAX_ANY_VALUE), prio, prioConfKey, true);
+    config.setLogEnabled(NETrace::eLogingTypes::LogTypeRemote, false, true);
 }

@@ -24,17 +24,14 @@
 
 #include <string.h>
 
-LogMessage::LogMessage(NETrace::eMessageType msgType, const TraceScope & traceScope )
+LogMessage::LogMessage(NETrace::eLogMessageType msgType, const TraceScope & traceScope )
     : NETrace::sLogMessage( msgType, traceScope.getScopeId(), NETrace::PrioScope, traceScope.getScopeName().getString(), traceScope.getScopeName( ).getLength() )
 {
-    ASSERT( (msgType == NETrace::eMessageType::MsgScopeEnter) || (msgType == NETrace::eMessageType::MsgScopeExit) );
+    ASSERT( (msgType == NETrace::eLogMessageType::LogMessageScopeEnter) || (msgType == NETrace::eLogMessageType::LogMessageScopeExit) );
 }
 
 void LogMessage::setMessage(const char * message, int msgLen )
 {
-    if ( (message != nullptr) && (msgLen > 0) )
-    {
-        int len = NEMemory::memCopy( this->logMessage, NETrace::LOG_MESSAGE_BUFFER_SIZE - 1, message, msgLen);
-        this->logMessage[len] = String::EmptyChar;
-    }
+    uint32_t len = NEMemory::memCopy(this->logMessage, NETrace::LOG_MESSAGE_IZE - 1, message, msgLen);
+    this->logMessage[len] = String::EmptyChar;
 }

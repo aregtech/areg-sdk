@@ -122,15 +122,19 @@ bool WaitableMutexIX::checkCanSignalMultipleThreads(void) const
     return false;
 }
 
-#ifdef DEBUG
+#ifdef  DEBUG
+
 void WaitableMutexIX::notifyReleasedThreads(int numThreads)
 {
     ASSERT((numThreads == 1) || (numThreads == 0));
 }
-#else
+
+#else   // DEBUG
+
 void WaitableMutexIX::notifyReleasedThreads(int /*numThreads*/)
 {
 }
-#endif
+
+#endif  // DEBUG
 
 #endif  // defined(_POSIX) || defined(POSIX)

@@ -167,7 +167,8 @@ public:
     inline virtual bool lock( unsigned int timeout = NECommon::WAIT_INFINITE ) override;
 
     /**
-     * \brief	Unlocks / Release mutex.
+     * \brief	Unlocks / Release mutex. The calling thread should have mutex ownership
+     *          to call the method. Otherwise, the mutex locked state is not changed.
      * \return	Returns true if succeeded.
      **/
     inline virtual bool unlock( void ) override;

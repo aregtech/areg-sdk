@@ -240,6 +240,7 @@ void LoggerMessageProcessor::logMessage(const RemoteMessage & msgReceived) const
         {
             const ITEM_ID & key{ observers.keyAtPosition(pos) };
             RemoteMessage msg{ msgReceived.clone(source, key) };
+            ASSERT(NETrace::eLogDataType::LogDataRemote == reinterpret_cast<NETrace::sLogMessage*>(msg.getBuffer())->logDataType);
             mLoggerService.sendMessage(msg);
         }
     }

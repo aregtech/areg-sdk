@@ -21,6 +21,13 @@
 
 #include <utility>
 
+namespace
+{
+    constexpr const uint32_t _logMessageSize{ static_cast<uint32_t>(sizeof(NETrace::sLogMessage)) };
+    constexpr const uint32_t _logNamesSize{ static_cast<uint32_t>(NETrace::LOG_NAMES_SIZE * 2) };
+    constexpr const uint32_t _logLocalMessage{ _logMessageSize - _logNamesSize };
+}
+
 TraceEventData::TraceEventData( void )
     : mAction       ( TraceEventData::eTraceAction::TraceUndefined )
     , mDataBuffer   ( )
@@ -39,11 +46,10 @@ TraceEventData::TraceEventData( TraceEventData::eTraceAction action, const Share
 {
 }
 
-TraceEventData::TraceEventData( TraceEventData::eTraceAction action, const LogMessage & logData )
+TraceEventData::TraceEventData( TraceEventData::eTraceAction action, const NETrace::sLogMessage & logData )
     : mAction       ( action )
-    , mDataBuffer   ( )
+    , mDataBuffer   (_logMessageSize, reinterpret_cast<const unsigned char *>(&logData), _logLocalMessage)
 {
-    mDataBuffer << logData;
 }
 
 TraceEventData::TraceEventData( const TraceEventData & src )

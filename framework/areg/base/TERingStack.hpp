@@ -455,17 +455,12 @@ template <typename VALUE>
 TERingStack<VALUE>::TERingStack( IEResourceLock & synchObject, uint32_t initCapacity /*= 0*/, NECommon::eRingOverlap onOverlap /*= NECommon::eRingOverlap::StopOnOverlap*/ )
     : mSynchObject  ( synchObject )
     , mOnOverlap    ( onOverlap )
-    , mStackList    ( nullptr )
+    , mStackList    ( initCapacity != 0 ? reinterpret_cast<VALUE*>(DEBUG_NEW unsigned char[initCapacity * sizeof(VALUE)]) : nullptr )
     , mElemCount    ( 0 )
-    , mCapacity     ( 0 )
+    , mCapacity     ( mStackList != nullptr ? initCapacity : 0 )
     , mStartPosition( 0 )
     , mLastPosition ( 0 )
 {
-    if ( initCapacity > 0 )
-    {
-        mStackList  = reinterpret_cast<VALUE *>(DEBUG_NEW unsigned char [ initCapacity * sizeof(VALUE) ]);
-        mCapacity   = mStackList != nullptr ? initCapacity : 0;
-    }
 }
 
 template <typename VALUE>
@@ -555,10 +550,9 @@ uint32_t TERingStack<VALUE>::pushLast( const VALUE& newElement )
 {
     Lock lock(mSynchObject);
 
-    if ( mElemCount + 1 <= mCapacity )
+    if ( (mElemCount + 1) <= mCapacity )
     {
-        ASSERT( mCapacity > 0 );
-        ASSERT( mStartPosition != mLastPosition || mElemCount == 0 );
+        ASSERT( (mStartPosition != mLastPosition) || (mElemCount == 0) );
 
         VALUE * block = mStackList + mLastPosition;
         NEMemory::constructElems<VALUE>(block, 1);
@@ -572,7 +566,7 @@ uint32_t TERingStack<VALUE>::pushLast( const VALUE& newElement )
         {
         case NECommon::eRingOverlap::ShiftOnOverlap:
             ASSERT( mLastPosition == mStartPosition );
-            if ( mCapacity > 0 )
+            if ( mCapacity != 0 )
             {
                 VALUE * block = mStackList + mLastPosition;
                 NEMemory::destroyElems<VALUE>(block, 1);
@@ -589,7 +583,7 @@ uint32_t TERingStack<VALUE>::pushLast( const VALUE& newElement )
             break;
 
         case NECommon::eRingOverlap::ResizeOnOvelap:
-            if ( reserve( static_cast<uint32_t>(mCapacity > 0 ? mCapacity : 1) * 2 ) > (mElemCount + 1 ))
+            if ( reserve( static_cast<uint32_t>(mCapacity != 0 ? mCapacity : 1) * 2 ) > (mElemCount + 1 ))
             {
                 ASSERT(mCapacity >= mElemCount + 1);
                 VALUE * block = mStackList + mLastPosition;
@@ -619,18 +613,15 @@ uint32_t TERingStack<VALUE>::pushFirst( const VALUE& newElement )
 {
     Lock lock(mSynchObject);
 
-    if ( mElemCount + 1 <= mCapacity )
+    if ( (mElemCount + 1) <= mCapacity )
     {
-        ASSERT( mCapacity > 0 );
-        ASSERT( mStartPosition != mLastPosition || mElemCount == 0 );
+        ASSERT( (mStartPosition != mLastPosition) || (mElemCount == 0) );
 
-        mStartPosition = mStartPosition > 0 ? mStartPosition - 1 : mCapacity - 1;
+        mStartPosition = mStartPosition != 0 ? mStartPosition - 1 : mCapacity - 1;
         VALUE * block = mStackList + mStartPosition;
         NEMemory::constructElems<VALUE>(block, 1);
         *block = newElement;
         ++ mElemCount;
-
-        ASSERT( mStartPosition != mLastPosition || mElemCount == mCapacity );
     }
     else
     {
@@ -638,9 +629,9 @@ uint32_t TERingStack<VALUE>::pushFirst( const VALUE& newElement )
         {
         case NECommon::eRingOverlap::ShiftOnOverlap:
             ASSERT( mLastPosition == mStartPosition );
-            if ( mCapacity > 0 )
+            if ( mCapacity != 0 )
             {
-                mStartPosition = mStartPosition > 0 ? mStartPosition - 1 : mCapacity - 1;
+                mStartPosition = mStartPosition != 0 ? mStartPosition - 1 : mCapacity - 1;
                 VALUE * block = mStackList + mStartPosition;
                 NEMemory::destroyElems<VALUE>(block, 1);
                 NEMemory::constructElems<VALUE>(block, 1);
@@ -655,10 +646,10 @@ uint32_t TERingStack<VALUE>::pushFirst( const VALUE& newElement )
             break;
 
         case NECommon::eRingOverlap::ResizeOnOvelap:
-            if ( reserve( static_cast<uint32_t>(mCapacity > 0 ? mCapacity : 1) * 2 ) > (mElemCount + 1 ))
+            if ( reserve( static_cast<uint32_t>(mCapacity != 0 ? mCapacity : 1) * 2 ) > (mElemCount + 1 ))
             {
                 ASSERT(mCapacity >= mElemCount + 1);
-                mStartPosition = mStartPosition > 0 ? mStartPosition - 1 : mCapacity - 1;
+                mStartPosition = mStartPosition != 0 ? mStartPosition - 1 : mCapacity - 1;
                 VALUE * block = mStackList + mStartPosition;
                 NEMemory::constructElems<VALUE>(block, 1);
                 *block = newElement;
@@ -687,17 +678,14 @@ VALUE TERingStack<VALUE>::popFirst( void )
     ASSERT( isEmpty() == false );
     VALUE result{ };
 
-    if ( mElemCount > 0 )
+    if ( mElemCount != 0 )
     {
-        ASSERT( mCapacity > 0 );
-        ASSERT( mStartPosition != mLastPosition );
+        ASSERT( mCapacity != 0 );
 
         result = mStackList[mStartPosition];
         NEMemory::destroyElems<VALUE>( mStackList + mStartPosition, 1 );
         mStartPosition = (mStartPosition + 1) % mCapacity;
         -- mElemCount;
-
-        ASSERT( (mStartPosition != mLastPosition) || (mElemCount == 0) );
     }
     else
     {
@@ -717,9 +705,9 @@ uint32_t TERingStack<VALUE>::copy( const TERingStack<VALUE> & source )
         Lock lock2(source.mSynchObject);
 
         uint32_t srcStart = source.mStartPosition;
-        if ( mCapacity - mElemCount >= source.mElemCount )
+        if ( (mCapacity - mElemCount) >= source.mElemCount )
         {
-            for (uint32_t i = 0; i < source.mElemCount; i ++, result ++ )
+            for (uint32_t i = 0; i < source.mElemCount; ++ i, ++ result )
             {
                 VALUE * block = mStackList + mLastPosition;
                 NEMemory::constructElems<VALUE>(block, 1);
@@ -735,9 +723,9 @@ uint32_t TERingStack<VALUE>::copy( const TERingStack<VALUE> & source )
             {
             case NECommon::eRingOverlap::ShiftOnOverlap:
                 ASSERT( mLastPosition == mStartPosition );
-                if ( mCapacity > 0 )
+                if ( mCapacity != 0 )
                 {
-                    for (uint32_t i = 0; i < source.mElemCount; i ++, result ++ )
+                    for (uint32_t i = 0; i < source.mElemCount; ++ i, ++ result )
                     {
                         VALUE * block = mStackList + mLastPosition;
                         NEMemory::destroyElems<VALUE>(block, 1);
@@ -756,10 +744,10 @@ uint32_t TERingStack<VALUE>::copy( const TERingStack<VALUE> & source )
                 break;
 
             case NECommon::eRingOverlap::ResizeOnOvelap:
-                if ( reserve( static_cast<uint32_t>(mCapacity > 0 ? mCapacity : 1) * 2 ) > (mElemCount + 1 ))
+                if ( reserve( static_cast<uint32_t>(mCapacity != 0 ? mCapacity : 1) * 2 ) > (mElemCount + 1 ))
                 {
-                    ASSERT(mCapacity >= mElemCount + 1);
-                    for (uint32_t i = 0; i < source.mElemCount; i ++, result ++ )
+                    ASSERT(mCapacity >= (mElemCount + 1));
+                    for (uint32_t i = 0; i < source.mElemCount; ++ i, ++ result )
                     {
                         VALUE * block = mStackList + mLastPosition;
                         NEMemory::constructElems<VALUE>(block, 1);
@@ -797,7 +785,7 @@ uint32_t TERingStack<VALUE>::reserve(uint32_t newCapacity )
 
     if ( newCapacity > mCapacity )
     {
-        VALUE * newList = newCapacity > 0 ? reinterpret_cast<VALUE *>( DEBUG_NEW unsigned char[ newCapacity ] ) : nullptr;
+        VALUE * newList = newCapacity != 0 ? reinterpret_cast<VALUE *>( DEBUG_NEW unsigned char[ newCapacity ] ) : nullptr;
         uint32_t dstLast    = 0;
         uint32_t srcStart   = mStartPosition;
         uint32_t elemCount  = newCapacity > mElemCount ? mElemCount : newCapacity;
@@ -805,7 +793,7 @@ uint32_t TERingStack<VALUE>::reserve(uint32_t newCapacity )
         if ( newList != nullptr )
         {
             NEMemory::constructElems<VALUE>(static_cast<void *>(newList), elemCount);
-            for (uint32_t i = 0; i < elemCount; i ++ )
+            for ( uint32_t i = 0; i < elemCount; ++ i )
             {
                 newList[dstLast ++] = mStackList[srcStart];
                 srcStart = ( srcStart + 1 ) % mCapacity;

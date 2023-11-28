@@ -30,7 +30,7 @@
 
 namespace
 {
-    const NEMemory::sRemoteMessage & _getLogRegisterScopes(void)
+    const NEMemory::sRemoteMessage & _getLogRegisterScopes(void) 
     {
         static constexpr NEMemory::sRemoteMessage _messageRegisterScopes
         {
@@ -81,8 +81,10 @@ namespace
     }
 }
 
-NETrace::sLogMessage::sLogMessage(NETrace::eMessageType msgType)
-    : logMsgType    { msgType}
+NETrace::sLogMessage::sLogMessage(NETrace::eLogMessageType msgType)
+    : logMsgType    { msgType }
+    , logDataType   { NETrace::eLogDataType::LogDataLocal }
+    , logMessagePrio{ NETrace::eLogPriority::PrioNotset }
     , logSource     { NEService::COOKIE_LOCAL }
     , logTarget     { NEService::COOKIE_LOGGER }
     , logCookie     { NEService::COOKIE_LOCAL }
@@ -90,14 +92,19 @@ NETrace::sLogMessage::sLogMessage(NETrace::eMessageType msgType)
     , logThreadId   { Thread::INVALID_THREAD_ID }
     , logTimestamp  { DateTime::INVALID_TIME }
     , logScopeId    { NETrace::TRACE_SCOPE_ID_NONE }
-    , logMessagePrio{ NETrace::eLogPriority::PrioNotset }
     , logMessageLen { 0 }
-    , logMessage    {'\0'}
+    , logMessage    { '\0' }
+    , logThreadLen  { 0 }
+    , logThread     { '\0' }
+    , logModuleLen  { 0 }
+    , logModule     { '\0' }
 {
 }
 
-NETrace::sLogMessage::sLogMessage(NETrace::eMessageType msgType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message, unsigned int msgLen)
+NETrace::sLogMessage::sLogMessage(NETrace::eLogMessageType msgType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message, unsigned int msgLen)
     : logMsgType    { msgType }
+    , logDataType   { NETrace::eLogDataType::LogDataLocal }
+    , logMessagePrio{ msgPrio }
     , logSource     { NEService::COOKIE_LOCAL }
     , logTarget     { NEService::COOKIE_LOGGER }
     , logCookie     { TraceManager::getConnectionCookie() }
@@ -105,16 +112,21 @@ NETrace::sLogMessage::sLogMessage(NETrace::eMessageType msgType, unsigned int sc
     , logThreadId   { Thread::getCurrentThreadId() }
     , logTimestamp  { DateTime::getNow() }
     , logScopeId    { scopeId }
-    , logMessagePrio{ msgPrio }
     , logMessageLen { msgLen }
     , logMessage    { '\0' }
+    , logThreadLen  { 0 }
+    , logThread     { '\0' }
+    , logModuleLen  { 0 }
+    , logModule     { '\0' }
 {
-    int len = NEMemory::memCopy(logMessage, NETrace::LOG_MESSAGE_BUFFER_SIZE - 1, message, msgLen);
+    uint32_t len = NEMemory::memCopy(logMessage, NETrace::LOG_MESSAGE_IZE - 1, message, msgLen);
     logMessage[len] = String::EmptyChar;
 }
 
 NETrace::sLogMessage::sLogMessage(const NETrace::sLogMessage & src)
     : logMsgType    { src.logMsgType }
+    , logDataType   { src.logDataType }
+    , logMessagePrio{ src.logMessagePrio }
     , logSource     { src.logSource }
     , logTarget     { src.logTarget }
     , logCookie     { src.logCookie }
@@ -122,11 +134,14 @@ NETrace::sLogMessage::sLogMessage(const NETrace::sLogMessage & src)
     , logThreadId   { src.logThreadId }
     , logTimestamp  { src.logTimestamp }
     , logScopeId    { src.logScopeId }
-    , logMessagePrio{ src.logMessagePrio }
     , logMessageLen { src.logMessageLen }
     , logMessage    { '\0' }
+    , logThreadLen  { 0 }
+    , logThread     { '\0' }
+    , logModuleLen  { 0 }
+    , logModule     { '\0' }
 {
-    int len = NEMemory::memCopy(logMessage, NETrace::LOG_MESSAGE_BUFFER_SIZE - 1, src.logMessage, src.logMessageLen);
+    uint32_t len = NEMemory::memCopy(logMessage, NETrace::LOG_MESSAGE_IZE - 1, src.logMessage, src.logMessageLen);
     logMessage[len] = String::EmptyChar;
 }
 
@@ -134,17 +149,23 @@ NETrace::sLogMessage & NETrace::sLogMessage::operator = (const NETrace::sLogMess
 {
     if (this != &src)
     {
-        logMsgType    = src.logMsgType;
-        logSource     = src.logSource;
-        logTarget     = src.logTarget;
-        logCookie     = src.logCookie;
-        logModuleId   = src.logModuleId;
-        logThreadId   = src.logThreadId;
-        logTimestamp  = src.logTimestamp;
-        logScopeId    = src.logScopeId;
-        logMessagePrio= src.logMessagePrio;
-        logMessageLen = src.logMessageLen;
-        int len = NEMemory::memCopy(logMessage, NETrace::LOG_MESSAGE_BUFFER_SIZE - 1, src.logMessage, src.logMessageLen);
+        logMsgType      = src.logMsgType;
+        logDataType     = src.logDataType;
+        logMessagePrio  = src.logMessagePrio;
+        logSource       = src.logSource;
+        logTarget       = src.logTarget;
+        logCookie       = src.logCookie;
+        logModuleId     = src.logModuleId;
+        logThreadId     = src.logThreadId;
+        logTimestamp    = src.logTimestamp;
+        logScopeId      = src.logScopeId;
+        logMessageLen   = src.logMessageLen;
+        logThreadLen    = 0;
+        logThread[0]    = String::EmptyChar;
+        logThreadLen    = 0;
+        logModule[0]    = String::EmptyChar;
+
+        uint32_t len = NEMemory::memCopy(logMessage, NETrace::LOG_MESSAGE_IZE - 1, src.logMessage, src.logMessageLen);
         logMessage[len] = String::EmptyChar;
     }
 
@@ -253,16 +274,37 @@ AREG_API_IMPL unsigned int NETrace::getScopePriority( const char * scopeName )
 #endif  // AREG_LOGS
 }
 
-AREG_API_IMPL RemoteMessage NETrace::messageLog(const NETrace::sLogMessage & logMessage)
+AREG_API_IMPL RemoteMessage NETrace::createLogMessage(const NETrace::sLogMessage& logMessage, NETrace::eLogDataType dataType, const ITEM_ID& srcCookie)
 {
     RemoteMessage msgLog;
-    if (msgLog.initMessage(_getLogMessage().rbHeader) != nullptr)
+    if (msgLog.initMessage(_getLogMessage().rbHeader, sizeof(NETrace::sLogMessage)) != nullptr)
     {
-        msgLog.setSource(NETrace::getCookie());
-        msgLog << logMessage;
+        msgLog.write(reinterpret_cast<const unsigned char *>(&logMessage), sizeof(NETrace::sLogMessage));
+        msgLog.setSource(srcCookie);
+        NETrace::sLogMessage* log = reinterpret_cast<NETrace::sLogMessage*>(msgLog.getBuffer());
+        log->logCookie  = srcCookie;
+        log->logDataType = dataType;
+
+        if (NETrace::eLogDataType::LogDataLocal != dataType)
+        {
+            const String& threadName{ Thread::getThreadName(log->logThreadId) };
+            uint32_t len = NEMemory::memCopy(log->logThread, NETrace::LOG_NAMES_SIZE - 1, threadName.getString(), threadName.getLength());
+            log->logThreadLen   = len;
+            log->logThread[len] = String::EmptyChar;
+
+            const String& module = Process::getInstance().getAppName();
+            len = NEMemory::memCopy(log->logModule, NETrace::LOG_NAMES_SIZE - 1, module.getString(), module.getLength());
+            log->logModuleLen   = len;
+            log->logModule[len] = String::EmptyChar;
+        }
     }
 
     return msgLog;
+}
+
+AREG_API_IMPL void NETrace::logMessage(const RemoteMessage& message)
+{
+    return TraceManager::logMessage(message);
 }
 
 AREG_API_IMPL RemoteMessage NETrace::messageRegisterScopesStart(const ITEM_ID & target, unsigned int scopeCount)

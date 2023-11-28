@@ -20,6 +20,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "extend/service/SystemServiceBase.hpp"
+#include "areg/persist/IEConfigurationListener.hpp"
 
 #include "areg/base/SynchObjects.hpp"
 #include "logger/app/NELoggerSettings.hpp"
@@ -38,7 +39,8 @@ class Console;
  *          and collects the log messages from the running applications.
  *          It may save logs in the file or forward to log viewer application..
  **/
-class Logger    : public SystemServiceBase
+class Logger    : public    SystemServiceBase
+                , private   IEConfigurationListener
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types
@@ -203,6 +205,43 @@ protected:
      **/
     virtual void runConsoleInputSimple( void ) override;
 
+/************************************************************************/
+// IEConfigurationListener protected overrides
+/************************************************************************/
+
+    /**
+     * \brief   Called by configuration manager before the configuration is saved in the file.
+     * \param   config  The instance of configuration manager.
+     **/
+    virtual void prepareSaveConfiguration(ConfigManager& config) override;
+
+    /**
+     * \brief   Called by configuration manager after the configuration is saved in the file.
+     * \param   config  The instance of configuration manager.
+     **/
+    virtual void postSaveConfiguration(ConfigManager& config) override;
+
+    /**
+     * \brief   Called by configuration manager before the configuration is loaded from the file.
+     * \param   config  The instance of configuration manager.
+     **/
+    virtual void prepareReadConfiguration(ConfigManager& config) override;
+
+    /**
+     * \brief   Called by configuration manager when configuration is completed to load data from the file.
+     * \param   config  The instance of configuration manager.
+     **/
+    virtual void postReadConfiguration(ConfigManager& config) override;
+
+    /**
+     * \brief   Called by configuration manager after setting read-only and writable properties.
+     *          For example, when the default configuration is set.
+     * \param   listReadonly    The list of read-only properties to set in the configuration.
+     * \param   listWritable    The list of module / process specific properties to set in the configuration;
+     * \param   config          The instance of configuration manager.
+     **/
+    virtual void onSetupConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigManager& config) override;
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.
 //////////////////////////////////////////////////////////////////////////
@@ -216,6 +255,8 @@ private:
      * \brief   Returns the list of connected instances.
      **/
     inline const ServiceCommunicatonBase::MapInstances & getConnetedInstances( void ) const;
+
+    inline void enableLocalLogs(ConfigManager& config, bool enable);
 
     /**
      * \brief   Returns instance of the logger service.

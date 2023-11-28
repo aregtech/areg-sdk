@@ -28,6 +28,11 @@
 #include "areg/component/NERegistry.hpp"
 #include "areg/persist/ConfigManager.hpp"
 
+ /************************************************************************
+  * Dependencies.
+  ************************************************************************/
+class IEConfigurationListener;
+
 //////////////////////////////////////////////////////////////////////////
 // Dependencies
 //////////////////////////////////////////////////////////////////////////
@@ -86,6 +91,9 @@ public:
      * \param   startTimer      If true, application starts timer manager. If Service Managers, Timer Manager automatically starts.
      * \param   startWatchdog   If true, application starts watchdog manager, so that it can track the component threads.
      * \param   configFile      If nullptr or empty, configures Tracing from specified file. Default location is './config/areg.init' (NEApplication::DEFAULT_CONFIG_FILE)
+     * \param   listener        A pointer to the configuration listener. If the pointer is valid, the listener is notified before and after loading configuration,
+     *                          as well as if loading configuration fails and the default configuration is set.
+     *                          By default, the pointer to listener is null, so that no notification is triggered.
      * \see     release, loadModel
      *
      * \example     Initialize Application
@@ -109,7 +117,8 @@ public:
                                 , bool startRouting   = true
                                 , bool startTimer     = true
                                 , bool startWatchdog  = false
-                                , const char * configFile = NEApplication::DEFAULT_CONFIG_FILE.data() );
+                                , const char * configFile = NEApplication::DEFAULT_CONFIG_FILE.data()
+                                , IEConfigurationListener * listener = nullptr);
 
     /**
      * \brief   Call to stop all components, unload models, stop services and release resources.
@@ -361,10 +370,12 @@ public:
      * \brief   Loads the configuration from the given file.
      * \param   fileName    The relative or absolute path to the file to read configurations.
      *                      If nullptr, loads configuration from default file './config/areg.init' (NEApplication::DEFAULT_CONFIG_FILE).
+     * \param   listener    The pointer to the configuration listener. If valid, the notifications are triggered before and after
+     *                      reading configuration from file. If listener is null or loading configuration failed, no notification is triggered.
      * \return  Returns true if succeeded to load configuration.
      *          If fails, loads default configuration and returns false.
      **/
-    static bool loadConfiguration(const char * fileName = nullptr);
+    static bool loadConfiguration(const char * fileName = nullptr, IEConfigurationListener * listener = nullptr);
 
     /**
      * \brief   Saves current configuration in the given file.
@@ -374,17 +385,21 @@ public:
      *                      If nullptr, saves configuration in the same file that was read.
      *                      If default configuration was loaded, saves all configuration in the
      *                      default file './config/areg.init' (NEApplication::DEFAULT_CONFIG_FILE).
+     * \param   listener    The pointer to the configuration listener. If valid, the notifications are triggered before and after
+     *                      saving configuration to file. If listener is null or saving configuration failed, no notification is triggered.
      * \return  Returns true if succeeded to save configuration.
      *          Otherwise, returns false.
      **/
-    static bool saveConfiguration(const char * fileName = nullptr);
+    static bool saveConfiguration(const char * fileName = nullptr, IEConfigurationListener * listener = nullptr);
 
     /**
      * \brief   Loads default configuration properties defined in NEApplication::DefaultReadonlyProperties
      *          and in the NEApplication::DefaultLogScopesConfig. This will discard the previous configuration
      *          if the application was already configured.
+     * \param   listener    The pointer to the configuration listener. If valid, the notifications are triggered if default
+     *                      configuration is set. If listener is null, no notification is triggered.
      **/
-    static void setupDefaultConfiguration(void);
+    static void setupDefaultConfiguration(IEConfigurationListener * listener = nullptr);
 
     /**
      * \brief   Returns true if the application is already configured.

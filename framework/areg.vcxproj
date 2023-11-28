@@ -220,6 +220,7 @@
     <ClCompile Include="areg\trace\private\LoggerBase.cpp" />
     <ClCompile Include="areg\component\private\WatchdogManager.cpp" />
     <ClCompile Include="areg\persist\private\ConfigManager.cpp" />
+    <ClCompile Include="areg\persist\private\IEConfigurationListener.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="areg\base\DateTime.hpp" />
@@ -400,6 +401,7 @@
     <ClInclude Include="areg\trace\private\LoggerBase.hpp" />
     <ClInclude Include="areg\trace\private\NELogging.hpp" />
     <ClInclude Include="areg\persist\PropertyKey.hpp" />
+    <ClInclude Include="areg\persist\IEConfigurationListener.hpp" />
     <ClInclude Include="system\posix\GEPosix.h" />
     <ClInclude Include="system\windows\GEWindows.h" />
     <ClInclude Include="system\GEPlatform.h" />

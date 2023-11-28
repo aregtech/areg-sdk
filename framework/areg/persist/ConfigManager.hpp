@@ -22,7 +22,6 @@
 
 #include "areg/base/String.hpp"
 #include "areg/base/SynchObjects.hpp"
-#include "areg/base/TEMap.hpp"
 #include "areg/base/Version.hpp"
 #include "areg/persist/NEPersistence.hpp"
 #include "areg/persist/Property.hpp"
@@ -35,6 +34,7 @@
  * Dependencies.
  ************************************************************************/
 class FileBase;
+class IEConfigurationListener;
 
 //////////////////////////////////////////////////////////////////////////
 // ConfigManager class declaration
@@ -50,13 +50,6 @@ class FileBase;
  **/
 class AREG_API ConfigManager
 {
-//////////////////////////////////////////////////////////////////////////
-// Object specific types and constants
-//////////////////////////////////////////////////////////////////////////
-public:
-    //!< The type to initialize list of properties.
-    using ListProperties  = TEArrayList<Property>;
-
 //////////////////////////////////////////////////////////////////////////
 // Constructors / destructor
 //////////////////////////////////////////////////////////////////////////
@@ -86,12 +79,42 @@ public:
     /**
      * \brief   Returns the list of read-only configuration properties.
      **/
-    inline const ConfigManager::ListProperties & getReadonlyProperties( void ) const;
+    inline const NEPersistence::ListProperties & getReadonlyProperties( void ) const;
 
     /**
      * \brief   Returns the list of writable configuration properties.
      **/
-    inline const ConfigManager::ListProperties & getModuleProperties( void ) const;
+    inline const NEPersistence::ListProperties & getModuleProperties( void ) const;
+
+    /**
+     * \brief	Locks the access resources of configuration manager. The current thread
+     *          gets access ownership until unlock method is called. If a thread already
+     *          owns the resource access of the configuration, the current thread is suspended.
+     * \return	Returns true if current thread successfully got configuration resource ownership.
+     **/
+    inline bool lock(void) const;
+
+    /**
+     * \brief	Unlocks / releases the configuration resource access ownership, so that other thread
+     *          may access the resources. The calling thread should have resource ownership to unlock it.
+     *          Otherwise, no lock state is changed.
+     * \return	Returns true if succeeded.
+     **/
+    inline bool unlock(void) const;
+
+    /**
+     * \brief   Attempts to get configuration resource access ownership without blocking current thread.
+     *          If the call succeeded, the calling thread takes the resource access ownership. Otherwise,
+     *          the access is already locked by another thread.
+     * \return  Return true if the configuration resource access ownership succeeded. Otherwise,
+     *          returns false.
+     **/
+    inline bool tryLock(void) const;
+
+    /**
+     * \brief   Return true if configuration resources access is already locked by a thread.
+     **/
+    inline bool isLocked(void) const;
 
     /**
      * \brief   Returns true if the specified property exists.
@@ -111,7 +134,7 @@ public:
     /**
      * \brief   Returns merged list of read-only and writable properties of the specified section.
      **/
-    ConfigManager::ListProperties getSectionProperties(const String& section) const;
+    NEPersistence::ListProperties getSectionProperties(const String& section) const;
 
     /**
      * \brief   Returns the pointer of the property searched by specified parameters.
@@ -257,12 +280,12 @@ public:
      * \param   propList    The list of new properties to add.
      * \return  Returns number of properties added to the writable list of the module.
      **/
-    inline int addModuleProperties(const ConfigManager::ListProperties& propList);
+    inline int addModuleProperties(const NEPersistence::ListProperties& propList);
 
     /**
      * \brief   Overwrites the existing list of writable properties. All existing properties will be lost.
      **/
-    inline void replaceModuleProperty(const ConfigManager::ListProperties& listProperties);
+    inline void replaceModuleProperty(const NEPersistence::ListProperties& listProperties);
 
     /**
      * \brief   Removes the existing configuration entry from the writable list.
@@ -306,9 +329,12 @@ public:
      *          NEApplication::DEFAULT_CONFIG_FILE file path.
      * \param   filePath    The relative of full path to the configuration file.
      *                      If empty, uses NEApplication::DEFAULT_CONFIG_FILE file path.
+     * \param   listener    The pointer to the configuration listener to notify
+     *                      before and after reading configuration from the file.
+     *                      If nullptr, no notification is triggered.
      * \return  Returns true if succeeded to read and initialize configuration.
      **/
-    bool readConfig(const String& filePath = String::EmptyString);
+    bool readConfig(const String& filePath = String::EmptyString, IEConfigurationListener * listener = nullptr);
 
     /**
      * \brief   Reads the configuration from the specified configuration file.
@@ -316,9 +342,12 @@ public:
      *          If the specified file path is empty, it uses default
      *          NEApplication::DEFAULT_CONFIG_FILE file path.
      * \param   file        The instance of file object opened for reading.
+     * \param   listener    The pointer to the configuration listener to notify
+     *                      before and after reading configuration from the file.
+     *                      If nullptr, no notification is triggered.
      * \return  Returns true if succeeded to read and initialize configuration.
      **/
-    bool readConfig(const FileBase& file);
+    bool readConfig(const FileBase& file, IEConfigurationListener * listener = nullptr);
 
     /**
      * \brief   Saves the current configuration in the specified file.
@@ -328,9 +357,12 @@ public:
      *                      If file is empty, uses the same name of previously opened file.
      *                      If the current configuration file path is empty (defaults are initialized),
      *                      it uses NEApplication::DEFAULT_CONFIG_FILE file to save.
+     * \param   listener    The pointer to the configuration listener to notify
+     *                      before and after saving configuration to the file.
+     *                      If nullptr, no notification is triggered.
      * \return  Returns true if succeeded to save configuration.
      **/
-    bool saveConfig(const String& filePath = String::EmptyString);
+    bool saveConfig(const String& filePath = String::EmptyString, IEConfigurationListener * listener = nullptr);
 
     /**
      * \brief   Saves the current configuration in the specified file object opened with write access.
@@ -340,9 +372,21 @@ public:
      *                      If file is empty, uses the same name of previously opened file.
      *                      If the current configuration file path is empty (defaults are initialized),
      *                      it uses NEApplication::DEFAULT_CONFIG_FILE file to save.
+     * \param   listener    The pointer to the configuration listener to notify
+     *                      before and after saving configuration to the file.
+     *                      If nullptr, no notification is triggered.
      * \return  Returns true if succeeded to save configuration.
      **/
-    bool saveConfig(const FileBase& srcFile, FileBase& dstFile);
+    bool saveConfig(const FileBase& srcFile, FileBase& dstFile, bool saveAll, IEConfigurationListener * listener = nullptr);
+
+    /**
+     * \brief   Sets the read-only and writable configuration entries.
+     * \param   listReadonly    The list of read-only configuration properties.
+     * \param   listWritable    The list of writable configuration properties.
+     * \param   listener        The pointer to the configuration listener to notify configuration data set/
+     *                          If nullptr, no notification is triggered.
+     **/
+    void setConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, IEConfigurationListener * listener = nullptr);
 
     /**
      * \brief   Releases all module specific entries.
@@ -355,13 +399,6 @@ public:
      *          This will clean only the writable entries
      **/
     inline void releaseProperties(void);
-
-    /**
-     * \brief   Sets the read-only and writable configuration entries.
-     * \param   listReadonly    The list of read-only configuration properties.
-     * \param   listWritable    The list of writable configuration properties.
-     **/
-    inline void setConfiguration(const ConfigManager::ListProperties& listReadonly, const ConfigManager::ListProperties& listWritable);
 
 /************************************************************************
  * Configuration properties.
@@ -724,12 +761,12 @@ private:
     /**
      * \brief   The list of writable properties of the configuration, which can be modified for current process.
      **/
-    ListProperties   mWritableProperties;
+    NEPersistence::ListProperties   mWritableProperties;
 
     /**
      * \brief   The list of read-only properties of the configuration, which cannot be modified.
      **/
-    ListProperties  mReadonlyProperties;
+    NEPersistence::ListProperties  mReadonlyProperties;
 
 #if defined(_MSC_VER) && (_MSC_VER > 1200)
     #pragma warning(default: 4251)
@@ -772,16 +809,36 @@ inline const String& ConfigManager::getConfigFile(void) const
     return mFilePath;
 }
 
-inline const ConfigManager::ListProperties& ConfigManager::getReadonlyProperties(void) const
+inline const NEPersistence::ListProperties& ConfigManager::getReadonlyProperties(void) const
 {
     Lock lock(mLock);
     return mReadonlyProperties;
 }
 
-inline const ConfigManager::ListProperties& ConfigManager::getModuleProperties(void) const
+inline const NEPersistence::ListProperties& ConfigManager::getModuleProperties(void) const
 {
     Lock lock(mLock);
     return mWritableProperties;
+}
+
+inline bool ConfigManager::lock(void) const
+{
+    return mLock.lock();
+}
+
+inline bool ConfigManager::unlock(void) const
+{
+    return mLock.unlock();
+}
+
+inline bool ConfigManager::tryLock(void) const
+{
+    return mLock.tryLock();
+}
+
+inline bool ConfigManager::isLocked(void) const
+{
+    return mLock.isLocked();
 }
 
 inline bool ConfigManager::existProperty(const String& section, const String& property, const String& position) const
@@ -805,9 +862,9 @@ inline void ConfigManager::setModuleProperty(const PropertyKey& key, const Strin
 }
 
 inline const PropertyValue * ConfigManager::getPropertyValue( const String& section
-                                                           , const String& property
-                                                           , const String& position /*= String::EmptyString*/
-                                                           , NEPersistence::eConfigKeys keyType /*= NEPersistence::eConfigKeys::EntryAnyKey*/) const
+                                                            , const String& property
+                                                            , const String& position /*= String::EmptyString*/
+                                                            , NEPersistence::eConfigKeys keyType /*= NEPersistence::eConfigKeys::EntryAnyKey*/) const
 {
     Lock lock(mLock);
 
@@ -825,10 +882,10 @@ inline const PropertyValue* ConfigManager::getModulePropertyValue(const Property
     return getModulePropertyValue(key.getSection(), key.getProperty(), key.getPosition(), key.getKeyType());
 }
 
-inline const PropertyValue* ConfigManager::getModulePropertyValue( const String& section
-                                                                , const String& property
-                                                                , const String& position /*= String::EmptyString*/
-                                                                , NEPersistence::eConfigKeys keyType /*= NEPersistence::eConfigKeys::EntryAnyKey*/) const
+inline const PropertyValue * ConfigManager::getModulePropertyValue( const String& section
+                                                                  , const String& property
+                                                                  , const String& position /*= String::EmptyString*/
+                                                                  , NEPersistence::eConfigKeys keyType /*= NEPersistence::eConfigKeys::EntryAnyKey*/) const
 {
     Lock lock(mLock);
 
@@ -852,7 +909,7 @@ inline PropertyValue * ConfigManager::getModulePropertyValue( const String& sect
     return (result != nullptr ? &const_cast<Property *>(result)->getValue() : nullptr);
 }
 
-inline int ConfigManager::addModuleProperties(const ConfigManager::ListProperties& propList)
+inline int ConfigManager::addModuleProperties(const NEPersistence::ListProperties& propList)
 {
     int result{ 0 };
     Lock lock(mLock);
@@ -869,7 +926,7 @@ inline int ConfigManager::addModuleProperties(const ConfigManager::ListPropertie
     return result;
 }
 
-inline void ConfigManager::replaceModuleProperty(const ConfigManager::ListProperties& listProperties)
+inline void ConfigManager::replaceModuleProperty(const NEPersistence::ListProperties& listProperties)
 {
     Lock lock(mLock);
     mWritableProperties = listProperties;
@@ -894,14 +951,6 @@ inline void ConfigManager::releaseProperties(void)
     mReadonlyProperties.clear();
 }
 
-inline void ConfigManager::setConfiguration(const ConfigManager::ListProperties& listReadonly, const ConfigManager::ListProperties& listWritable)
-{
-    Lock lock(mLock);
-    mIsConfigured = true;
-    mWritableProperties = listWritable;
-    mReadonlyProperties = listReadonly;
-}
-
 inline void ConfigManager::setLoggingStatus(bool newValue, bool isTemporary /*= false*/)
 {
     Lock lock(mLock);
@@ -923,7 +972,7 @@ inline void ConfigManager::setLogEnabled(const String& logType, bool newValue, b
 
     constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogEnable;
     const NEPersistence::sPropertyKey& key = NEPersistence::getLogEnable();
-    setModuleProperty(key.section, key.property, key.position, String::toString(newValue), confKey, isTemporary);
+    setModuleProperty(key.section, key.property, logType, String::toString(newValue), confKey, isTemporary);
 }
 
 inline void ConfigManager::setLogEnabled(const Identifier& logType, bool newValue, bool isTemporary /*= false*/)

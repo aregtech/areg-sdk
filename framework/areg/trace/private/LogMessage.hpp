@@ -55,7 +55,7 @@ public:
      * \brief   Initializes message log structure and sets the logging type value.
      * \param   msgType     The type of message to initialize
      **/
-    inline explicit LogMessage( NETrace::eMessageType msgType );
+    inline explicit LogMessage( NETrace::eLogMessageType msgType );
 
     /**
      * \brief   Initializes message log structure, sets the logging type value,
@@ -65,7 +65,7 @@ public:
      * \param   msgPrio     The priority of message to log
      * \param   message     The text message to log
      **/
-    inline LogMessage(NETrace::eMessageType msgType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const String & message );
+    inline LogMessage(NETrace::eLogMessageType msgType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const String & message );
 
     /**
      * \brief   Initializes message log structure, sets the logging type value,
@@ -76,7 +76,7 @@ public:
      * \param   message     The text message to log.
      * \param   msgLen      The length of the message to log.
      **/
-    inline LogMessage( NETrace::eMessageType msgType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message, unsigned int msgLen );
+    inline LogMessage( NETrace::eLogMessageType msgType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message, unsigned int msgLen );
 
     /**
      * \brief   Initializes message log structure for scope enter or exit event.
@@ -85,7 +85,7 @@ public:
      *                      It is either to enter or exit scope.
      * \param   traceScope  The trace scope object, which contains ID and trace scope name is set as text.
      **/
-    LogMessage( NETrace::eMessageType msgType, const TraceScope & traceScope );
+    LogMessage( NETrace::eLogMessageType msgType, const TraceScope & traceScope );
 
     /**
      * \brief   Copies logging message data from given source.
@@ -117,7 +117,7 @@ public:
     /**
      * \brief   Returns log type value
      **/
-    inline NETrace::eMessageType getMessageType( void ) const;
+    inline NETrace::eLogMessageType getMessageType( void ) const;
 
     /**
      * \brief   Return the ID of thread where the message was initialized
@@ -195,17 +195,17 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // LogMessage class inline methods
 //////////////////////////////////////////////////////////////////////////
-inline LogMessage::LogMessage( NETrace::eMessageType msgType )
+inline LogMessage::LogMessage( NETrace::eLogMessageType msgType )
     : NETrace::sLogMessage(msgType)
 {
 }
 
-inline LogMessage::LogMessage( NETrace::eMessageType msgType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const String & message )
+inline LogMessage::LogMessage( NETrace::eLogMessageType msgType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const String & message )
     : NETrace::sLogMessage( msgType, scopeId, msgPrio, message.getString(), message.getLength() )
 {
 }
 
-inline LogMessage::LogMessage( NETrace::eMessageType msgType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message, unsigned int msgLen )
+inline LogMessage::LogMessage( NETrace::eLogMessageType msgType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message, unsigned int msgLen )
     : NETrace::sLogMessage( msgType, scopeId, msgPrio, message, msgLen )
 {
 }
@@ -221,7 +221,7 @@ inline const NETrace::sLogMessage & LogMessage::getLogData(void) const
     return static_cast<const NETrace::sLogMessage &>(*this);
 }
 
-inline NETrace::eMessageType LogMessage::getMessageType(void) const
+inline NETrace::eLogMessageType LogMessage::getMessageType(void) const
 {
     return this->logMsgType;
 }

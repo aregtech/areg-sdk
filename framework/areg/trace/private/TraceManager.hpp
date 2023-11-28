@@ -45,6 +45,10 @@
 class TraceScope;
 class LogMessage;
 class IELogger;
+namespace NETrace
+{
+    struct sLogMessage;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // TraceManager class declaration
@@ -61,6 +65,7 @@ class TraceManager  : public    DispatcherThread
                     , private   IETraceEventConsumer
 {
     friend class TraceEventProcessor;
+    friend class CookieLayoutName;
 
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants
@@ -79,10 +84,19 @@ private:
 public:
 
     /**
-     * \brief   Sends logging message for logging.
+     * \brief   Triggers an event to log message created locally in the same process.
      * \param   logData The logging message object, which will be sent to all loggers.
      **/
-    static void sendLogMessage( LogMessage & logData );
+    static void logMessage( const NETrace::sLogMessage & logData );
+
+    /**
+     * \brief   Triggers and event log remote message.
+     * \param   logDaya     The instance of remote message buffer, which contains the
+     *                      log message from another process.
+     **/
+    static void logMessage( const RemoteMessage& logData );
+
+    static void sendCommandMessage(TraceEventData::eTraceAction cmd, const SharedBuffer& data);
 
     /**
      * \brief   Call to configure logging. The passed configuration file name should be either

@@ -50,12 +50,14 @@ class IELayout;
     class ThreadNameLayout;
     class ScopeNameLayout;
     class AnyTextLayout;
+    class CookieLayoutId;
+    class CookieLayoutName;
 
 //////////////////////////////////////////////////////////////////////////
 // IELayout interface declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The layout base interface extended by all layout objects.
+ * \brief   The layout base interface to extend by all layout objects.
  **/
 class IELayout
 {
@@ -318,7 +320,7 @@ public:
 // MessageLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   This layout outputs message data to the stream.
+ * \brief   This layout outputs log message to the stream.
  **/
 class MessageLayout       : public    IELayout
 {
@@ -384,7 +386,7 @@ public:
 // EndOfLineLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   This layout prints end-of-line data at the end of message.
+ * \brief   This layout prints end-of-line data at current position of cursor.
  **/
 class EndOfLineLayout   : public    IELayout
 {
@@ -516,7 +518,7 @@ public:
 // ScopeIdLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   This layout outputs the information of scope ID in the message.
+ * \brief   This layout outputs the information of scope ID in the streamming object.
  **/
 class ScopeIdLayout : public    IELayout
 {
@@ -582,7 +584,7 @@ public:
 // ThreadIdLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   This layout outputs the information of thread ID, which generated logging message.
+ * \brief   This layout outputs thread ID in the streaming object.
  **/
 class ThreadIdLayout      : public    IELayout
 {
@@ -648,7 +650,7 @@ public:
 // ModuleNameLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   This layout outputs the name of running module (process) in the message.
+ * \brief   This layout outputs the name of the thread, which logs message.
  **/
 class ModuleNameLayout      : public    IELayout
 {
@@ -780,7 +782,7 @@ public:
 // ScopeNameLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   This layout output information of scope name in the logging message.
+ * \brief   This layout outputs scope name in the streaming object.
  **/
 class ScopeNameLayout    : public    IELayout
 {
@@ -846,7 +848,7 @@ public:
 // AnyTextLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   This layout outputs any text message as it is without formating.
+ * \brief   This layout outputs any text message as it is without formating in the streaming object.
  **/
 class AnyTextLayout    : public    IELayout
 {
@@ -927,6 +929,138 @@ private:
      * \brief   The text message to log
      **/
     String    mTextMessage;
+};
+
+//////////////////////////////////////////////////////////////////////////
+// CookieLayoutId class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   This layout outputs the cookie ID of the source log message module.
+ **/
+class CookieLayoutId : public IELayout
+{
+//////////////////////////////////////////////////////////////////////////
+// Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Sets layout type value.
+     **/
+    CookieLayoutId( void );
+
+    /**
+     * \brief   Copies data from given source.
+     * \param   src     The source of data to copy.
+     **/
+    CookieLayoutId( const CookieLayoutId& src );
+
+    /**
+     * \brief   Moves data from given source.
+     * \param   src     The source of data to move.
+     **/
+    CookieLayoutId(CookieLayoutId&& src ) noexcept;
+
+    /**
+     * \brief   Destructor
+     **/
+    virtual ~CookieLayoutId( void ) = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Operators
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Copies data from given source.
+     * \param   src     The source of data to copy.
+     **/
+    inline CookieLayoutId & operator = ( const CookieLayoutId& src );
+
+    /**
+     * \brief   Moves data from given source.
+     * \param   src     The source of data to move.
+     **/
+    inline CookieLayoutId & operator = ( CookieLayoutId&& src ) noexcept;
+
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+
+/************************************************************************/
+// IELayout interface overrides
+/************************************************************************/
+
+    /**
+     * \brief   Makes layout specific formated text output of give message to the streaming object.
+     * \param   msgLog  The log message data structure that contains information to output message.
+     * \param   stream  The streaming object, where the text message should be written.
+     **/
+    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
+};
+
+//////////////////////////////////////////////////////////////////////////
+// CookieLayoutName class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   This layout outputs the name of the source log message module.
+ **/
+class CookieLayoutName : public IELayout
+{
+//////////////////////////////////////////////////////////////////////////
+// Constructors / Destructor
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Sets layout type value.
+     **/
+    CookieLayoutName( void );
+
+    /**
+     * \brief   Copies data from given source.
+     * \param   src     The source of data to copy.
+     **/
+    CookieLayoutName( const AnyTextLayout & src );
+
+    /**
+     * \brief   Moves data from given source.
+     * \param   src     The source of data to move.
+     **/
+    CookieLayoutName( AnyTextLayout && src ) noexcept;
+
+    /**
+     * \brief   Destructor
+     **/
+    virtual ~CookieLayoutName( void ) = default;
+
+//////////////////////////////////////////////////////////////////////////
+// Operators
+//////////////////////////////////////////////////////////////////////////
+public:
+    /**
+     * \brief   Copies data from given source.
+     * \param   src     The source of data to copy.
+     **/
+    inline CookieLayoutName& operator = ( const CookieLayoutName& src );
+
+    /**
+     * \brief   Moves data from given source.
+     * \param   src     The source of data to move.
+     **/
+    inline CookieLayoutName& operator = (CookieLayoutName&& src ) noexcept;
+
+//////////////////////////////////////////////////////////////////////////
+// Operations
+//////////////////////////////////////////////////////////////////////////
+
+/************************************************************************/
+// IELayout interface overrides
+/************************************************************************/
+
+    /**
+     * \brief   Makes layout specific formated text output of give message to the streaming object.
+     * \param   msgLog  The log message data structure that contains information to output message.
+     * \param   stream  The streaming object, where the text message should be written.
+     **/
+    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -1131,6 +1265,34 @@ inline AnyTextLayout & AnyTextLayout::operator = ( const AnyTextLayout & src )
 inline AnyTextLayout & AnyTextLayout::operator = ( AnyTextLayout && src ) noexcept
 {
     mTextMessage = static_cast<String &&>(src.mTextMessage);
+    return (*this);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CookieLayoutId class inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline CookieLayoutId& CookieLayoutId::operator=(const CookieLayoutId& src)
+{
+    return (*this);
+}
+
+inline CookieLayoutId& CookieLayoutId::operator=(CookieLayoutId&& src) noexcept
+{
+    return (*this);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CookieLayoutId class inline methods
+//////////////////////////////////////////////////////////////////////////
+
+inline CookieLayoutName& CookieLayoutName::operator=(const CookieLayoutName& src)
+{
+    return (*this);
+}
+
+inline CookieLayoutName& CookieLayoutName::operator=(CookieLayoutName&& src) noexcept
+{
     return (*this);
 }
 

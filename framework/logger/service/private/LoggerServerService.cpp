@@ -17,6 +17,7 @@
 #include "areg/ipc/private/NEConnection.hpp"
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/trace/GETrace.h"
+#include "areg/trace/private/TraceManager.hpp"
 
 DEF_TRACE_SCOPE(logger_service_LoggerServerService_onServiceMessageReceived);
 DEF_TRACE_SCOPE(logger_service_LoggerServerService_onServiceMessageSend);
@@ -125,19 +126,22 @@ void LoggerServerService::onServiceMessageReceived(const RemoteMessage &msgRecei
 
     case NEService::eFuncIdRange::ServiceLogMessage:
         mLoggerProcessor.logMessage(msgReceived);
+        NETrace::logMessage(msgReceived);
         break;
 
-    case NEService::eFuncIdRange::RequestServiceProviderVersion:
-    case NEService::eFuncIdRange::ResponseServiceProviderVersion:
-    case NEService::eFuncIdRange::RequestServiceProviderConnection:
-    case NEService::eFuncIdRange::ResponseServiceProviderConnection:
     case NEService::eFuncIdRange::SystemServiceConnect:
     case NEService::eFuncIdRange::SystemServiceDisconnect:
-    case NEService::eFuncIdRange::SystemServiceNotifyConnection:
-    case NEService::eFuncIdRange::SystemServiceNotifyInstances:
-    case NEService::eFuncIdRange::RequestRegisterService:
-    case NEService::eFuncIdRange::SystemServiceRequestRegister:
-    case NEService::eFuncIdRange::SystemServiceNotifyRegister:
+        break;
+
+    case NEService::eFuncIdRange::RequestRegisterService:           // fall through
+    case NEService::eFuncIdRange::RequestServiceProviderVersion:    // fall through
+    case NEService::eFuncIdRange::ResponseServiceProviderVersion:   // fall through
+    case NEService::eFuncIdRange::RequestServiceProviderConnection: // fall through
+    case NEService::eFuncIdRange::ResponseServiceProviderConnection:// fall through
+    case NEService::eFuncIdRange::SystemServiceNotifyConnection:    // fall through
+    case NEService::eFuncIdRange::SystemServiceNotifyInstances:     // fall through
+    case NEService::eFuncIdRange::SystemServiceRequestRegister:     // fall through
+    case NEService::eFuncIdRange::SystemServiceNotifyRegister:      // fall through
     default:
         TRACE_ERR("Unexpected logger service message!");
         ASSERT(false);

@@ -248,9 +248,8 @@ void Thread::onPostExitThread( void )
 
 const String & Thread::getThreadName( id_type threadId )
 {
-    static String emptyString;
     Thread* threadObj = Thread::findThreadById( threadId);
-    return (threadObj != nullptr ? threadObj->getName() : emptyString);
+    return (threadObj != nullptr ? threadObj->getName() : String::getEmptyString());
 }
 
 const ThreadAddress & Thread::getThreadAddress( id_type threadId )

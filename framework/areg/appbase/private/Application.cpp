@@ -52,7 +52,8 @@ void Application::initApplication(  bool startTracing   /*= true */
                                   , bool startRouting   /*= true */
                                   , bool startTimer     /*= true */
                                   , bool startWatchdog  /*= true */
-                                  , const char * configFile /*= NEApplication::DEFAULT_CONFIG_FILE */)
+                                  , const char * configFile /*= NEApplication::DEFAULT_CONFIG_FILE */
+                                  , IEConfigurationListener* listener /*= nullptr*/)
 {
     OUTPUT_DBG("Going to initialize application");
     Application::_setAppState(Application::eAppState::AppStateInitializing);
@@ -61,7 +62,7 @@ void Application::initApplication(  bool startTracing   /*= true */
     Application::setWorkingDirectory( nullptr );
     startTimer = startTimer == false ? startServicing : startTimer;
 
-    Application::loadConfiguration(NEString::isEmpty(configFile) ? NEApplication::DEFAULT_CONFIG_FILE.data() : configFile);
+    Application::loadConfiguration(NEString::isEmpty(configFile) ? NEApplication::DEFAULT_CONFIG_FILE.data() : configFile, listener);
 
     if (startTracing)
     {
@@ -405,38 +406,38 @@ ConfigManager& Application::getConfigManager(void)
     return Application::getInstance().mConfigManager;
 }
 
-bool Application::loadConfiguration(const char* fileName)
+bool Application::loadConfiguration(const char* fileName /*= nullptr*/, IEConfigurationListener * listener /*= nullptr*/)
 {
     Application& theApp = Application::getInstance();
     bool result{ true };
-    if (theApp.mConfigManager.readConfig(fileName == nullptr ? NEApplication::DEFAULT_CONFIG_FILE : fileName) == false)
+    if (theApp.mConfigManager.readConfig(fileName == nullptr ? NEApplication::DEFAULT_CONFIG_FILE : fileName, listener) == false)
     {
         result = false;
-        Application::setupDefaultConfiguration();
+        Application::setupDefaultConfiguration(listener);
     }
 
     return result;
 }
 
-bool Application::saveConfiguration(const char* fileName)
+bool Application::saveConfiguration(const char* fileName /*= nullptr*/, IEConfigurationListener * listener /*= nullptr*/)
 {
     Application& theApp = Application::getInstance();
     return theApp.mConfigManager.saveConfig(fileName);
 }
 
-void Application::setupDefaultConfiguration(void)
+void Application::setupDefaultConfiguration(IEConfigurationListener * listener /*= nullptr*/)
 {
     Application& theApp = Application::getInstance();
     const String& module = Process::getInstance().getAppName();
 
     const uint32_t countReadonly{ MACRO_ARRAYLEN(NEApplication::DefaultReadonlyProperties) };
-    ConfigManager::ListProperties defReadonly(countReadonly);
+    NEPersistence::ListProperties defReadonly(countReadonly);
     for (const auto & entry : NEApplication::DefaultReadonlyProperties)
     {
         defReadonly.add(Property(entry.configKey.section, entry.configKey.module, entry.configKey.property, entry.configKey.position, entry.configValue, String::EmptyString));
     }
 
-    ConfigManager::ListProperties defWritable;
+    NEPersistence::ListProperties defWritable;
     for (const auto& entry : NEApplication::DefaultLogScopesConfig)
     {
         if (module == entry.configKey.module)
@@ -445,7 +446,7 @@ void Application::setupDefaultConfiguration(void)
         }
     }
 
-    theApp.mConfigManager.setConfiguration(defReadonly, defWritable);
+    theApp.mConfigManager.setConfiguration(defReadonly, defWritable, listener);
 }
 
 bool Application::isConfigured(void)

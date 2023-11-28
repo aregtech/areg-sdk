@@ -29,8 +29,8 @@ TraceMessage::TraceMessage( const TraceScope & traceScope )
 {
     if ( isScopeEnabled() )
     {
-        LogMessage msg(NETrace::eMessageType::MsgScopeEnter, mScopeId, NETrace::PrioScope, mScopeName);
-        TraceManager::sendLogMessage(msg);
+        LogMessage msg{ NETrace::eLogMessageType::LogMessageScopeEnter, mScopeId, NETrace::PrioScope, mScopeName };
+        TraceManager::logMessage(msg);
     }
 }
 
@@ -39,8 +39,8 @@ TraceMessage::~TraceMessage( void )
 {
     if ( isScopeEnabled() )
     {
-        LogMessage msg(NETrace::eMessageType::MsgScopeExit, mScopeId, NETrace::PrioScope, mScopeName);
-        TraceManager::sendLogMessage(msg);
+        LogMessage msg{ NETrace::eLogMessageType::LogMessageScopeExit, mScopeId, NETrace::PrioScope, mScopeName };
+        TraceManager::logMessage(msg);
     }
 }
 
@@ -117,7 +117,7 @@ void TraceMessage::logTrace( NETrace::eLogPriority logPrio, const char * format,
 
 inline void TraceMessage::_sendLog( unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * format, va_list args )
 {
-    LogMessage logData(NETrace::MsgText, scopeId, msgPrio, nullptr, 0);
-    logData.logMessageLen = String::formatStringList( logData.logMessage, NETrace::LOG_MESSAGE_BUFFER_SIZE - 1, format, args );
-    TraceManager::sendLogMessage( logData );
+    LogMessage logData(NETrace::eLogMessageType::LogMessageText, scopeId, msgPrio, nullptr, 0);
+    logData.logMessageLen = String::formatStringList( logData.logMessage, NETrace::LOG_MESSAGE_IZE - 1, format, args );
+    TraceManager::logMessage( logData );
 }

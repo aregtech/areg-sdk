@@ -75,8 +75,8 @@ int main()
     std::cout << "A Demo to demonstrate simple request, response and broadcast ..." << std::endl;
 
     // force to start logging with default settings
-    TRACER_CONFIGURE_AND_START( nullptr );
-    Application::initApplication( true, true, false, true, true, nullptr );
+    Application::initApplication( true, true, false, true, false, nullptr );
+    TRACER_CONFIGURE_AND_START(nullptr);
 
     do 
     {

@@ -20,6 +20,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
+#include "areg/trace/NETrace.hpp"
 #include "extend/service/ServiceCommunicatonBase.hpp"
 #include "logger/service/private/LoggerMessageProcessor.hpp"
 
