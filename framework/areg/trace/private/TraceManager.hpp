@@ -96,6 +96,11 @@ public:
      **/
     static void logMessage( const RemoteMessage& logData );
 
+    /**
+     * \brief   Generates and queues a message to execute internal command.
+     * \param   cmd     The command to execute.
+     * \param   data    The binary data to pass in the command.
+     **/
     static void sendCommandMessage(TraceEventData::eTraceAction cmd, const SharedBuffer& data);
 
     /**
@@ -127,6 +132,9 @@ public:
      **/
     static bool saveLogConfig( const char * configFile = nullptr );
 
+    /**
+     * \brief   Updates the list of scopes and log priorities in the application configuration.
+     **/
     static void updateScopeConfiguration( void );
 
     /**

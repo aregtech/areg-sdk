@@ -72,7 +72,7 @@ protected:
     /**
      * \brief   The size of master list to listen sockets for incoming messages.
      **/
-    static constexpr int    MASTER_LIST_SIZE        = 64;
+    static constexpr int    MASTER_LIST_SIZE    { 64 };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor

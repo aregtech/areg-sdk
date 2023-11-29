@@ -60,7 +60,7 @@ private:
     using RingStack = TENolockRingStack<RemoteMessage>;
 
     //!< A prefix to add in front of thread and timer names.
-    static constexpr std::string_view   PREFIX_THREAD{ "logger" };
+    static constexpr std::string_view   PREFIX_THREAD{ "logger_" };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

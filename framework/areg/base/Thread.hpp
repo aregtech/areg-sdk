@@ -647,15 +647,20 @@ private:
 /************************************************************************/
 // Resource controlling and mapping variables
 /************************************************************************/
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(disable: 4251)
-#endif  // _MSC_VER
-    static  MapThreadHandleResource     _mapThreadhHandle;  //!< Map of thread object where key is thread handle
-    static  MapThreadNameResource       _mapThreadName;     //!< Map of thread object where key is thread name
-    static  MapThreadIDResource         _mapThreadId;       //!< Map of thread object where key is thread ID
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
-#endif  // _MSC_VER
+    /**
+     * \brief   Returns static map of thread object where key is thread handle.
+     **/
+    static  Thread::MapThreadHandleResource & _getMapThreadhHandle();
+
+    /**
+     * \brief   Returns static map of thread object where key is thread name.
+     **/
+    static  Thread::MapThreadNameResource & _getMapThreadName();
+
+    /**
+     * \brief   Returns static map of thread object where key is thread ID
+     **/
+    static  Thread::MapThreadIDResource & _getMapThreadId();
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -671,12 +676,12 @@ private:
 
 inline Thread* Thread::_findThreadByHandle(THREADHANDLE threadHandle)
 {
-    return Thread::_mapThreadhHandle.findResourceObject(threadHandle);
+    return Thread::_getMapThreadhHandle().findResourceObject(threadHandle);
 }
 
 inline THREADHANDLE Thread::_findThreadHandleById( id_type threadId)
 {
-    Thread * result = Thread::_mapThreadId.findResourceObject(threadId);
+    Thread * result = Thread::_getMapThreadId().findResourceObject(threadId);
     return (result != nullptr ? result->mThreadHandle : nullptr);
 }
 
@@ -717,12 +722,12 @@ inline const ThreadAddress & Thread::getAddress( void ) const
 
 inline Thread* Thread::findThreadByName(const String & threadName)
 {
-    return (!threadName.isEmpty() ? Thread::_mapThreadName.findResourceObject(threadName) : nullptr);
+    return (!threadName.isEmpty() ? Thread::_getMapThreadName().findResourceObject(threadName) : nullptr);
 }
 
 inline Thread* Thread::findThreadById( id_type threadId)
 {
-    return Thread::_mapThreadId.findResourceObject(threadId);
+    return Thread::_getMapThreadId().findResourceObject(threadId);
 }
 
 inline Thread* Thread::findThreadByAddress(const ThreadAddress& threadAddress)
