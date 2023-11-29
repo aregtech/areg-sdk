@@ -40,9 +40,9 @@ NetTcpLogger::NetTcpLogger(LogConfiguration & logConfig, ScopeController & scope
     , IEServiceConnectionConsumer   ( )
     , IERemoteMessageHandler        ( )
 
-    , mScopeController  (scopeController)
+    , mScopeController  ( scopeController )
     , mIsEnabled        ( false )
-    , mRingStack        ( NEApplication::DEFAULT_LOG_QUEUE_SIZE, NECommon::eRingOverlap::ShiftOnOverlap)
+    , mRingStack        ( logConfig.getStackSize(), NECommon::eRingOverlap::ShiftOnOverlap )
 {
 }
 

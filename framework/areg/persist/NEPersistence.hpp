@@ -142,31 +142,31 @@ namespace NEPersistence
      **/
     enum eConfigKeys    : int
     {
-          EntryInvalid          = -1    //!< Invalid key of the configuration
-        , EntryConfigVersion    = 0     //!< The configuration version.
+          EntryInvalid              = -1    //!< Invalid key of the configuration
+        , EntryConfigVersion        = 0     //!< The configuration version.
 
-        , EntryLogVersion       = 1     //!< The logging version.
-        , EntryLogTarget        = 2     //!< The logging types (targets).
-        , EntryLogStatus        = 3     //!< The logging enabled / disabled status.
-        , EntryLogEnable        = 4     //!< The logging type (in target) enabled / disabled flag.
-        , EntryLogFileLocation  = 5     //!< The log file location and file name mask.
-        , EntryLogFileAppend    = 6     //!< The flag to append logs into the file.
-        , EntryLogRemoteQueue   = 7     //!< The queue size of remote logging.
-        , EntryLogRemoteService = 8     //!< The service name of the remote logging.
-        , EntryLogLayoutEnter   = 9     //!< The layout of enter scope message.
-        , EntryLogLayoutMessage = 10    //!< The layout of log message.
-        , EntryLogLayoutExit    = 11    //!< The layout of exit scope message.
-        , EntryLogScope         = 12    //!< The log scope enable / disable flag.
+        , EntryLogVersion           = 1     //!< The logging version.
+        , EntryLogTarget            = 2     //!< The logging types (targets).
+        , EntryLogStatus            = 3     //!< The logging enabled / disabled status.
+        , EntryLogEnable            = 4     //!< The logging type (in target) enabled / disabled flag.
+        , EntryLogFileLocation      = 5     //!< The log file location and file name mask.
+        , EntryLogFileAppend        = 6     //!< The flag to append logs into the file.
+        , EntryLogRemoteQueueSize   = 7     //!< The queue size of remote logging.
+        , EntryLogRemoteService     = 8     //!< The service name of the remote logging.
+        , EntryLogLayoutEnter       = 9     //!< The layout of enter scope message.
+        , EntryLogLayoutMessage     = 10    //!< The layout of log message.
+        , EntryLogLayoutExit        = 11    //!< The layout of exit scope message.
+        , EntryLogScope             = 12    //!< The log scope enable / disable flag.
 
-        , EntryServiceList      = 13    //!< The list of supported remote services.
+        , EntryServiceList          = 13    //!< The list of supported remote services.
 
-        , EntryServiceName      = 14    //!< The process name of the remote service.
-        , EntryServiceConnection= 15    //!< The list of connection type of the remote service.
-        , EntryServiceEnable    = 16    //!< The connection enable / disable flag of the remote service.
-        , EntryServiceAddress   = 17    //!< The connection address of the remote service.
-        , EntryServicePort      = 18    //!< The connection port number of the remote service.
+        , EntryServiceName          = 14    //!< The process name of the remote service.
+        , EntryServiceConnection    = 15    //!< The list of connection type of the remote service.
+        , EntryServiceEnable        = 16    //!< The connection enable / disable flag of the remote service.
+        , EntryServiceAddress       = 17    //!< The connection address of the remote service.
+        , EntryServicePort          = 18    //!< The connection port number of the remote service.
 
-        , EntryAnyKey           = 19    //!< Indicates any key type.
+        , EntryAnyKey               = 19    //!< Indicates any key type.
     };
 
     /**
@@ -182,7 +182,7 @@ namespace NEPersistence
             , {"log"    , "*"   , "enable"  , "*"       }   //! 4   , The logging type (in target) enabled / disabled flag property structure.
             , {"log"    , "*"   , "file"    , "location"}   //! 5   , The log file location and file name mask property structure.
             , {"log"    , "*"   , "file"    , "append"  }   //! 6   , The flag to append logs into the file property structure.
-            , {"log"    , "*"   , "remote"  , "size"    }   //! 7   , The queue size of remote logging property structure.
+            , {"log"    , "*"   , "remote"  , "queue"   }   //! 7   , The queue size of remote logging property structure.
             , {"log"    , "*"   , "remote"  , "service" }   //! 8   , The service name of the remote logging.
             , {"log"    , "*"   , "layout"  , "enter"   }   //! 9   , The layout of enter scope message property structure.
             , {"log"    , "*"   , "layout"  , "message" }   //! 10  , The layout of log message property structure.
@@ -336,7 +336,7 @@ inline const NEPersistence::sPropertyKey& NEPersistence::getLogFileAppend(void)
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getLogRemoteQueueSize(void)
 {
-    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryLogRemoteQueue)];
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryLogRemoteQueueSize)];
 }
 
 inline const NEPersistence::sPropertyKey& NEPersistence::getLogLayoutEnter(void)

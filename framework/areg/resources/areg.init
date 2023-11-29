@@ -116,7 +116,7 @@ log::*::enable::debug       = false                         # Debug output conso
 log::*::enable::db          = false                         # Database logging enable / disable flag
 log::*::file::location      = ./logs/%appname%_%time%.log   # Log file location and masks
 log::*::file::append        = false                         # Append logs at the end of file
-log::*::remote::stack       = 100                           # Queue stack size in remote logging, 0 means no queuing
+log::*::remote::queue       = 100                           # Queue stack size in remote logging, 0 means no queuing
 log::*::remote::service     = logger                        # The service name of the remote logging
 
 # ---------------------------------------------------------------------------

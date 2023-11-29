@@ -682,7 +682,7 @@ uint32_t ConfigManager::getLogRemoteQueueSize(void) const
 {
     Lock lock(mLock);
 
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogRemoteQueue;
+    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogRemoteQueueSize;
     const NEPersistence::sPropertyKey& key = NEPersistence::getLogRemoteQueueSize();
     const PropertyValue* value = getPropertyValue(key.section, key.property, key.position, confKey);
     return (value != nullptr ? value->getInteger() : NEApplication::DEFAULT_LOG_QUEUE_SIZE);
@@ -692,7 +692,7 @@ void ConfigManager::setLogRemoteQueueSize(uint32_t newValue, bool isTemporary /*
 {
     Lock lock(mLock);
 
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogRemoteQueue;
+    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogRemoteQueueSize;
     const NEPersistence::sPropertyKey& key = NEPersistence::getLogRemoteQueueSize();
     setModuleProperty(key.section, key.property, key.position, String::toString(newValue), confKey, isTemporary);
 }

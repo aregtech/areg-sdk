@@ -146,7 +146,7 @@ namespace NEApplication
      * \brief  NEApplication::DEFAULT_LOG_QUEUE_SIZE
      *         The default size to queue logs in the stack, used for remote logging.
      **/
-    constexpr uint32_t          DEFAULT_LOG_QUEUE_SIZE      { 30 };
+    constexpr uint32_t          DEFAULT_LOG_QUEUE_SIZE      { 100 };
 
      /**
       * \brief  NEApplication::DEFAULT_LOG_FILE
@@ -227,13 +227,13 @@ namespace NEApplication
             , { {"log"      , "*"   , "version" , ""        }, NETrace::LOG_VERSION             }   //!< The logging version.
             , { {"log"      , "*"   , "target"  , ""        }, "remote | file | debug | db"     }   //!< The logging types.
             , { {"log"      , "*"   , "enable"  , ""        }, "true"                           }   //!< The logging enabled / disabled status.
-            , { {"log"      , "*"   , "enable"  , "remote"  }, "false"                          }   //!< The logging in remote log collector enabled / disabled flag.
+            , { {"log"      , "*"   , "enable"  , "remote"  }, "true"                          }   //!< The logging in remote log collector enabled / disabled flag.
             , { {"log"      , "*"   , "enable"  , "file"    }, "true"                           }   //!< The logging in file enabled / disabled flag.
             , { {"log"      , "*"   , "enable"  , "output"  }, "false"                          }   //!< The logging in output console enabled / disabled flag.
             , { {"log"      , "*"   , "enable"  , "db"      }, "false"                          }   //!< The logging in database enabled / disabled flag.
             , { {"log"      , "*"   , "file"    , "location"}, DEFAULT_LOG_FILE                 }   //!< The log file location and file name mask.
             , { {"log"      , "*"   , "file"    , "append"  }, "false"                          }   //!< The flag to append logs into the file.
-            , { {"log"      , "*"   , "remote"  , "size"    }, "100"                            }   //!< The queue size of remote logging.
+            , { {"log"      , "*"   , "remote"  , "queue"   }, "100"                            }   //!< The queue size of remote logging.
             , { {"log"      , "*"   , "remote"  , "service" }, "logger"                         }   //!< The service name of the remote logging.
             , { {"log"      , "*"   , "layout"  , "enter"   }, DEFAULT_LAYOUT_SCOPE_EXIT        }   //!< The layout of enter scope message.
             , { {"log"      , "*"   , "layout"  , "message" }, DEFAULT_LAYOUT_LOG_MESSAGE       }   //!< The layout of log message.
