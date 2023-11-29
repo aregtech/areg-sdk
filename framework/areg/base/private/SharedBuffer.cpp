@@ -54,6 +54,17 @@ SharedBuffer::SharedBuffer( const unsigned char* buffer, unsigned int size, unsi
     writeData(buffer, size);
 }
 
+SharedBuffer::SharedBuffer(unsigned int reserveSize, const unsigned char* buffer, unsigned int size, unsigned int blockSize)
+    : BufferStreamBase(static_cast<IECursorPosition&>(self()), static_cast<IECursorPosition&>(self()))
+    , BufferPosition(static_cast<IEByteBuffer&>(self()))
+
+    , mBlockSize(MACRO_ALIGN_SIZE(blockSize, NEMemory::BLOCK_SIZE))
+{
+    reserveSize = MACRO_MAX(reserveSize, size);
+    reserve(reserveSize, false);
+    writeData(buffer, size);
+}
+
 SharedBuffer::SharedBuffer(const char * textString, unsigned int blockSize /*= NEMemory::BLOCK_SIZE*/)
     : BufferStreamBase( static_cast<IECursorPosition &>(self()), static_cast<IECursorPosition &>(self()) )
     , BufferPosition  ( static_cast<IEByteBuffer &>(self()) )

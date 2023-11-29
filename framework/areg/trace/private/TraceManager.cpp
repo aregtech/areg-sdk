@@ -48,10 +48,19 @@ TraceManager & TraceManager::getInstance( void )
     return _theTraceManager;
 }
 
-void TraceManager::sendLogMessage( LogMessage & logData )
+void TraceManager::logMessage(const NETrace::sLogMessage& logData )
 {
-    TraceManager & tracer = TraceManager::getInstance();
-    tracer.sendLogEvent( TraceEventData(TraceEventData::eTraceAction::TraceLogMessage, logData) );
+    TraceManager::getInstance().sendLogEvent( TraceEventData(TraceEventData::eTraceAction::TraceLogMessage, logData) );
+}
+
+void TraceManager::logMessage(const RemoteMessage& logData)
+{
+    TraceManager::getInstance().sendLogEvent( TraceEventData(TraceEventData::eTraceAction::TraceLogMessage, logData) );
+}
+
+void TraceManager::sendCommandMessage(TraceEventData::eTraceAction cmd, const SharedBuffer& data)
+{
+    TraceManager::getInstance().sendLogEvent(TraceEventData(cmd, data));
 }
 
 bool TraceManager::readLogConfig( const char* configFile /*= nullptr*/ )
@@ -334,17 +343,7 @@ void TraceManager::writeLogMessage( const NETrace::sLogMessage & logMessage )
 
 bool TraceManager::postEvent(Event & eventElem)
 {
-    bool result = false;
-    if (RUNTIME_CAST(&eventElem, TraceEvent) != nullptr)
-    {
-        result = EventDispatcher::postEvent(eventElem);
-    }
-    else
-    {
-        OUTPUT_ERR("Not a TraceEvent type event, cannot Post. Destroying event type [ %s ]", eventElem.getRuntimeClassName().getString());
-        eventElem.destroy();
-    }
-    return result;
+    return EventDispatcher::postEvent(eventElem);
 }
 
 inline void TraceManager::sendLogEvent( const TraceEventData & data, Event::eEventPriority eventPrio /*= Event::eEventPriority::EventPriorityNormal*/ )

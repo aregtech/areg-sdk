@@ -45,7 +45,7 @@ void Thread::_osSetThreadName( id_type threadId, const char* threadName)
     /**
      * \brief   MS Exception value, used to set thread name.
      **/
-    static constexpr unsigned int   SET_NAME_MS_VC_EXCEPTION    = 0x406D1388u;
+    static constexpr unsigned int   SET_NAME_MS_VC_EXCEPTION{ 0x406D1388u };
 
 #pragma pack(push, 8)
     typedef struct tagTHREADNAME_INFO

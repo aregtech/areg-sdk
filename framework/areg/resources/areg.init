@@ -63,6 +63,8 @@
 #   Meaning of Layout format:
 #       The Layout Format is relevant only when logs the messages in the plain text file.
 #       The Layout Format specification fields are following:
+            %a      -- outputs the ID of a logging object set by the logger.
+            %b      -- outputs the module name of the logging object.
 #           %c      -- output tick-count value since process start
 #           %d      -- output day and time data
 #           %e      -- output module (process) ID
@@ -108,13 +110,13 @@ config::*::version          = 2.0.0
 log::*::version             = 2.0.0                         # Logging version
 log::*::target              = remote | file | debug | db    # Log targets: remote, file, debug output, database
 log::*::enable              = true                          # Global logging enable / disable flag
-log::*::enable::remote      = false                         # Remote logging enable / disable flag
+log::*::enable::remote      = true                          # Remote logging enable / disable flag
 log::*::enable::file        = true                          # File logging enable / disable flag
 log::*::enable::debug       = false                         # Debug output console logging enable / disable flag
 log::*::enable::db          = false                         # Database logging enable / disable flag
 log::*::file::location      = ./logs/%appname%_%time%.log   # Log file location and masks
 log::*::file::append        = false                         # Append logs at the end of file
-log::*::remote::stack       = 100                           # Queue stack size in remote logging, 0 means no queuing
+log::*::remote::queue       = 100                           # Queue stack size in remote logging, 0 means no queuing
 log::*::remote::service     = logger                        # The service name of the remote logging
 
 # ---------------------------------------------------------------------------
@@ -132,9 +134,16 @@ log::*::db::name            =                               # Database name
 # ---------------------------------------------------------------------------
 # Log message layout in the file
 # ---------------------------------------------------------------------------
-log::*::layout::enter       = %d: [ %t  %x.%z: Enter -->]%n # Enter scope layout
-log::*::layout::message     = %d: [ %t  %p >>> ] %m%n       # Log message layout
-log::*::layout::exit        = %d: [ %t  %x.%z: Exit <-- ]%n # Exit scope layout
+log::*::layout::enter       = %d: [ %t  %x.%z: Enter -->]%n    # Enter scope layout
+log::*::layout::message     = %d: [ %t  %p >>> ] %m%n          # Log message layout
+log::*::layout::exit        = %d: [ %t  %x.%z: Exit <-- ]%n    # Exit scope layout
+
+# ---------------------------------------------------------------------------
+# Message layout for logger
+# ---------------------------------------------------------------------------
+log::logger::layout::enter  = %d: [ %a.%b.%t.%z: Enter -->]%n # Enter scope layout
+log::logger::layout::message= %d: [ %a.%b.%t.%p >>> ] %m%n    # Log message layout
+log::logger::layout::exit   = %d: [ %a.%b.%t.%z: Exit <-- ]%n # Exit scope layout
 
 # ###########################################################################
 # Remote services

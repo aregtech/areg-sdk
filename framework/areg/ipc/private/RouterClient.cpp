@@ -275,8 +275,8 @@ void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, So
     TRACE_SCOPE(areg_ipc_private_RouterClient_processReceivedMessage);
     if ( msgReceived.isValid() && whichSource.isValid() )
     {
-        NEService::eFuncIdRange msgId = static_cast<NEService::eFuncIdRange>( msgReceived.getMessageId());
-        NEMemory::eMessageResult result = static_cast<NEMemory::eMessageResult>(msgReceived.getResult());
+        NEService::eFuncIdRange msgId{ static_cast<NEService::eFuncIdRange>(msgReceived.getMessageId()) };
+        NEMemory::eMessageResult result{ static_cast<NEMemory::eMessageResult>(msgReceived.getResult()) };
         TRACE_DBG("Processing received valid message [ %u ], result [ %s ]", msgId, NEMemory::getString(result));
 
         switch ( msgId )
@@ -544,7 +544,7 @@ void RouterClient::readyForEvents(bool isReady)
 {
     if (isReady)
     {
-        ServiceClientEvent::addListener(static_cast<IEServiceClientEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self()));
+        registerForServiceClientCommands();
         DispatcherThread::readyForEvents(true);
         setConnectionState(ServiceClientConnectionBase::eConnectionState::DisconnectState);
     }
@@ -552,7 +552,7 @@ void RouterClient::readyForEvents(bool isReady)
     {
         DispatcherThread::readyForEvents(false);
         setConnectionState(ServiceClientConnectionBase::eConnectionState::ConnectionStopped);
-        ServiceClientEvent::removeListener(static_cast<IEServiceClientEventConsumer &>(mEventConsumer), static_cast<DispatcherThread &>(self()));
+        unregisterForServiceClientCommands();
     }
 }
 

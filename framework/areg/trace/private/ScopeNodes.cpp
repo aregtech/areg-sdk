@@ -185,8 +185,8 @@ String ScopeNode::makeScopePath( const String & prefix ) const
 {
     ASSERT(mNodeName.isEmpty() == false);
     ASSERT(isValid());
-    char scope[NETrace::LOG_MESSAGE_BUFFER_SIZE];
-    int len = String::formatString(scope, NETrace::LOG_MESSAGE_BUFFER_SIZE, "%s%s%c", prefix.getString(), mNodeName.getString(), NELogging::SYNTAX_SCOPE_SEPARATOR);
+    char scope[NETrace::LOG_MESSAGE_IZE];
+    int len = String::formatString(scope, NETrace::LOG_MESSAGE_IZE, "%s%s%c", prefix.getString(), mNodeName.getString(), NELogging::SYNTAX_SCOPE_SEPARATOR);
 
     return String(scope, len > 0 ? len : 0);
 }
@@ -295,8 +295,8 @@ unsigned int ScopeNode::groupRecursive( void )
 
 String ScopeNode::makeConfigString( const String & parent ) const
 {
-    char scope[NETrace::LOG_MESSAGE_BUFFER_SIZE];
-    int len = String::formatString( scope, NETrace::LOG_MESSAGE_BUFFER_SIZE
+    char scope[NETrace::LOG_MESSAGE_IZE];
+    int len = String::formatString( scope, NETrace::LOG_MESSAGE_IZE
                                   , "%s%s%c%c"
                                   , parent.getString()
                                   , mNodeName.getString()

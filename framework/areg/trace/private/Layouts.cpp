@@ -18,6 +18,8 @@
 #include "areg/base/Thread.hpp"
 #include "areg/base/NEUtilities.hpp"
 
+#include "areg/trace/private/TraceManager.hpp"
+
 #include <utility>
 
 //////////////////////////////////////////////////////////////////////////
@@ -96,7 +98,7 @@ void DayTimeLaytout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStrea
 //////////////////////////////////////////////////////////////////////////
 
 ModuleIdLayout::ModuleIdLayout(void)
-    : IELayout ( NELogging::eLayouts::LayoutExecutableId )
+    : IELayout      ( NELogging::eLayouts::LayoutExecutableId )
 {
 }
 
@@ -112,17 +114,30 @@ ModuleIdLayout::ModuleIdLayout( ModuleIdLayout && /*src*/ ) noexcept
 
 void ModuleIdLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const
 {
-    if (msgLog.logModuleId != 0)
-    {
+    static const ITEM_ID _moduleId{ Process::getInstance().getId() };
 #ifdef _BIT64
-        constexpr char fmt[]{ "0x%llX" };
+    static const String  _moduleName{ String::toString(static_cast<uint64_t>(_moduleId), NEString::eRadix::RadixHexadecimal) };
 #else   // _BIT32
-        constexpr char fmt[]{ "0x%X" };
+    static const String  _moduleName{ String::toString(static_cast<uint32_t>(_moduleId), NEString::eRadix::RadixHexadecimal) };
 #endif  // _BIT64
 
-        char buffer[128];
-        int len = String::formatString(buffer, 128, fmt, static_cast<id_type>(msgLog.logModuleId));
-        stream.write( reinterpret_cast<const unsigned char *>(buffer), len > 0 ? len : 0 );
+    if (msgLog.logModuleId != 0)
+    {
+        if (msgLog.logModuleId == _moduleId)
+        {
+            stream.write(reinterpret_cast<const unsigned char*>(_moduleName.getBuffer()), _moduleName.getLength());
+        }
+        else
+        {
+#ifdef _BIT64
+            constexpr char fmt[]{ "0x%llX" };
+#else   // _BIT32
+            constexpr char fmt[]{ "0x%X" };
+#endif  // _BIT64
+            char buffer[128];
+            int len = String::formatString(buffer, 128, fmt, static_cast<id_type>(msgLog.logModuleId));
+            stream.write(reinterpret_cast<const unsigned char*>(buffer), len > 0 ? len : 0);
+        }
     }
 }
 
@@ -253,9 +268,11 @@ void ThreadIdLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStrea
     if ( msgLog.logThreadId != 0 )
     {
 #ifdef _BIT64
-        constexpr char fmt[]{ "0x%016llX" };
+        // constexpr char fmt[]{ "0x%016llX" };
+        constexpr char fmt[]{ "%06llu" };
 #else   // _BIT32
-        constexpr char fmt[]{ "0x%08X" };
+        // constexpr char fmt[]{ "0x%08X" };
+        constexpr char fmt[]{ "%06u" };
 #endif  // _BIT64
 
         char buffer[128];
@@ -310,12 +327,30 @@ ThreadNameLayout::ThreadNameLayout( ThreadNameLayout && /*src*/ ) noexcept
 
 void ThreadNameLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const
 {
-    static const String _unknownThread("Unknown Thread");
+    const char* name{ nullptr };
+    uint32_t len{ 0 };
 
-    id_type id = static_cast<id_type>(msgLog.logThreadId);
-    Thread * thread = Thread::findThreadById( id );
-    const String& name{ thread != nullptr ? thread->getName() : _unknownThread };
-    stream.write( reinterpret_cast<const unsigned char *>(name.getString()), name.getLength() );
+    if (msgLog.logDataType == NETrace::eLogDataType::LogDataLocal)
+    {
+        const String& thread{ Thread::getThreadName(static_cast<id_type>(msgLog.logThreadId)) };
+        name = thread.getString();
+        len = thread.getLength();
+    }
+    else
+    {
+        name = msgLog.logThread;
+        len = msgLog.logThreadLen;
+    }
+
+    if (len != 0)
+    {
+        stream.write(reinterpret_cast<const unsigned char*>(name), len);
+    }
+    else
+    {
+        static constexpr std::string_view _unknownThread{ "Unknown Thread" };
+        stream.write(reinterpret_cast<const unsigned char*>(_unknownThread.data()), static_cast<uint32_t>(_unknownThread.length()));
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -379,4 +414,83 @@ AnyTextLayout::AnyTextLayout(const char * anyMessage)
 void AnyTextLayout::logMessage( const NETrace::sLogMessage & /*msgLog*/, IEOutStream & stream ) const
 {
     stream.write( reinterpret_cast<const unsigned char *>(mTextMessage.getString()), mTextMessage.getLength() );
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CookieLayoutId class declaration
+//////////////////////////////////////////////////////////////////////////
+
+CookieLayoutId::CookieLayoutId(void)
+    : IELayout(NELogging::eLayouts::LayoutCookieId)
+{
+}
+
+CookieLayoutId::CookieLayoutId(const CookieLayoutId& src)
+    : IELayout(NELogging::eLayouts::LayoutCookieId)
+{
+}
+
+CookieLayoutId::CookieLayoutId(CookieLayoutId&& src) noexcept
+    : IELayout(NELogging::eLayouts::LayoutCookieId)
+{
+}
+
+void CookieLayoutId::logMessage(const NETrace::sLogMessage& msgLog, IEOutStream& stream) const
+{
+#ifdef _BIT64
+    constexpr char fmt[]{ "%03llu" };
+#else   // _BIT32
+    constexpr char fmt[]{ "%03u" };
+#endif  // _BIT64
+
+    char buffer[128];
+    int len = String::formatString(buffer, 128, fmt, static_cast<id_type>(msgLog.logCookie));
+    stream.write(reinterpret_cast<const unsigned char*>(buffer), len > 0 ? len : 0);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CookieLayoutName class declaration
+//////////////////////////////////////////////////////////////////////////
+
+CookieLayoutName::CookieLayoutName(void)
+    : IELayout(NELogging::eLayouts::LayoutCookieName)
+{
+}
+
+CookieLayoutName::CookieLayoutName(const AnyTextLayout& src)
+    : IELayout(NELogging::eLayouts::LayoutCookieName)
+{
+}
+
+CookieLayoutName::CookieLayoutName(AnyTextLayout&& src) noexcept
+    : IELayout(NELogging::eLayouts::LayoutCookieName)
+{
+}
+
+void CookieLayoutName::logMessage(const NETrace::sLogMessage& msgLog, IEOutStream& stream) const
+{
+    static constexpr std::string_view _unknown{ "Unknown Instance" };
+
+    if (msgLog.logCookie == NEService::COOKIE_UNKNOWN)
+    {
+        stream.write(reinterpret_cast<const unsigned char*>(_unknown.data()), static_cast<unsigned int>(_unknown.size()));
+    }
+    else if (msgLog.logCookie == NEService::COOKIE_LOCAL)
+    {
+        static const String& _module{ Process::getInstance().getAppName() };
+        stream.write(reinterpret_cast<const unsigned char*>(_module.getString()), _module.getLength());
+    }
+    else
+    {
+        const char* name = msgLog.logModule;
+        uint32_t len = msgLog.logModuleLen;
+        if (len != 0)
+        {
+            stream.write(reinterpret_cast<const unsigned char*>(name), len);
+        }
+        else
+        {
+            stream.write(reinterpret_cast<const unsigned char*>(_unknown.data()), static_cast<uint32_t>(_unknown.length()));
+        }
+    }
 }

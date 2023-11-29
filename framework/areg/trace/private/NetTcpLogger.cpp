@@ -40,9 +40,9 @@ NetTcpLogger::NetTcpLogger(LogConfiguration & logConfig, ScopeController & scope
     , IEServiceConnectionConsumer   ( )
     , IERemoteMessageHandler        ( )
 
-    , mScopeController  (scopeController)
+    , mScopeController  ( scopeController )
     , mIsEnabled        ( false )
-    , mRingStack        ( NEApplication::DEFAULT_LOG_QUEUE_SIZE, NECommon::eRingOverlap::ShiftOnOverlap)
+    , mRingStack        ( logConfig.getStackSize(), NECommon::eRingOverlap::ShiftOnOverlap )
 {
 }
 
@@ -56,6 +56,8 @@ bool NetTcpLogger::openLogger(void)
         mIsEnabled = false;
         if (mLogConfiguration.isRemoteLoggingEnabled())
         {
+            registerForServiceClientCommands();
+
             String host{ mLogConfiguration.getRemoteTcpAddress()};
             uint16_t port{ mLogConfiguration.getRemoteTcpPort() };
             mIsEnabled = true;
@@ -81,21 +83,21 @@ void NetTcpLogger::closeLogger(void)
 {
     disconnectServiceHost();
     mRingStack.clear();
+    unregisterForServiceClientCommands();
 }
 
 void NetTcpLogger::logMessage(const NETrace::sLogMessage& logMessage)
 {
     if (mIsEnabled)
     {
-        RemoteMessage log(NETrace::messageLog(logMessage));
-
         if (isConnectedState())
         {
-            sendMessage(log, Event::eEventPriority::EventPriorityNormal);
+            ASSERT(mChannel.isValid());
+            sendMessage(NETrace::createLogMessage(logMessage, NETrace::eLogDataType::LogDataRemote, mChannel.getCookie()), Event::eEventPriority::EventPriorityNormal);
         }
         else
         {
-            mRingStack.pushLast(log);
+            mRingStack.pushLast(NETrace::createLogMessage(logMessage, NETrace::eLogDataType::LogDataRemote, mChannel.getCookie()));
         }
     }
 }
@@ -109,31 +111,30 @@ bool NetTcpLogger::isLoggerOpened(void) const
 void NetTcpLogger::connectedRemoteServiceChannel(const Channel & channel)
 {
     ASSERT(channel.isValid());
-    ASSERT(channel.getSource() == NEService::COOKIE_LOGGER);
     ASSERT(channel.getCookie() >= NEService::COOKIE_REMOTE_SERVICE);
+    ASSERT(mChannel.isValid());
 
     mIsEnabled = true;
-    mChannel = channel;
-    mClientConnection.setCookie(channel.getCookie());
-
+    const ITEM_ID& cookie = channel.getCookie();
     while (mRingStack.isEmpty() == false)
     {
-        RemoteMessage msg{ mRingStack.popFirst() };
-        msg.setSource(channel.getCookie());
-        sendMessage(msg, Event::eEventPriority::EventPriorityNormal);
+        RemoteMessage msgLog{ mRingStack.popFirst() };
+        msgLog.setSource(cookie);
+        reinterpret_cast<NETrace::sLogMessage*>(msgLog.getBuffer())->logCookie = cookie;
+        sendMessage(msgLog, Event::eEventPriority::EventPriorityNormal);
     }
 }
 
 void NetTcpLogger::disconnectedRemoteServiceChannel(const Channel & channel)
 {
+    ASSERT(mChannel.isValid() == false);
     mIsEnabled = false;
-    mChannel.invalidate();
     mClientConnection.setCookie(NEService::COOKIE_UNKNOWN);
 }
 
 void NetTcpLogger::lostRemoteServiceChannel(const Channel & channel)
 {
-    mChannel.invalidate();
+    ASSERT(mChannel.isValid() == false);
     mClientConnection.setCookie(NEService::COOKIE_UNKNOWN);
 }
 
@@ -153,14 +154,53 @@ void NetTcpLogger::processReceivedMessage(const RemoteMessage & msgReceived, Soc
 {
     if (msgReceived.isValid() && whichSource.isValid())
     {
-        ASSERT(msgReceived.getTarget() == mChannel.getCookie());
-
-        const NEService::eFuncIdRange msgId { static_cast<NEService::eFuncIdRange>(msgReceived.getMessageId()) };
-        ITEM_ID target{ NEService::COOKIE_ANY };
-        msgReceived >> target;
-
+        NEService::eFuncIdRange msgId = static_cast<NEService::eFuncIdRange>(msgReceived.getMessageId());
         switch (msgId)
         {
+        case NEService::eFuncIdRange::SystemServiceNotifyConnection:
+        {
+            NEService::eServiceConnection connection = NEService::eServiceConnection::ServiceConnectionUnknown;
+            ITEM_ID cookie = NEService::COOKIE_UNKNOWN;
+            msgReceived >> connection;
+            msgReceived >> cookie;
+
+            switch (connection)
+            {
+            case NEService::eServiceConnection::ServiceConnected:
+            case NEService::eServiceConnection::ServicePending:
+                {
+                    if (msgReceived.getResult() == NEMemory::MESSAGE_SUCCESS)
+                    {
+                        Lock lock(mLock);
+                        ASSERT(cookie == msgReceived.getTarget());
+                        mClientConnection.setCookie(cookie);
+                        sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceStarted);
+                    }
+                    else
+                    {
+                        cancelConnection();
+                        sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceLost);
+                    }
+                }
+                break;
+
+            case NEService::eServiceConnection::ServiceConnectionLost:
+                {
+                    cancelConnection();
+                    sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceLost);
+                }
+                break;
+
+            default:
+                {
+                    cancelConnection();
+                    sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceStopped);
+                }
+                break;
+            }
+        }
+        break;
+
         case NEService::eFuncIdRange::ServiceLogUpdateScopes:
             {
                 uint32_t scopeCount{ 0 };

@@ -21,6 +21,7 @@
 #include "areg/appbase/NEApplication.hpp"
 #include "areg/base/File.hpp"
 #include "areg/base/Process.hpp"
+#include "areg/persist/IEConfigurationListener.hpp"
 
 namespace
 {
@@ -34,22 +35,21 @@ namespace
                                  , NEPersistence::eConfigKeys configKey)
     {
         uint32_t result { NECommon::INVALID_POSITION };
-        uint32_t count  { 0 };
         const auto& list{ propList.getData() };
-        for (const auto & prop : list)
+        uint32_t count{ static_cast<uint32_t>(list.size()) };
+
+        for (uint32_t pos = startAt; pos < count; ++ pos)
         {
-            const PropertyKey& key = prop.getKey();
+            const PropertyKey& key = propList[pos].getKey();
             if ((configKey == NEPersistence::eConfigKeys::EntryAnyKey) || (configKey == key.getKeyType()))
             {
                 if ((exact && key.isExactProperty(section, module, property, position)) ||
                     (!exact && key.isModuleProperty(section, module, property, position)))
                 {
-                    result = count;
+                    result = pos;
                     break;
                 }
             }
-
-            ++count;
         }
 
         return result;
@@ -69,6 +69,11 @@ namespace
         uint32_t readPos  = _findPosition(readList , 0, section, NEPersistence::SYNTAX_ALL_MODULES, property, position, false, confKey);
         uint32_t writePos = _findPosition(writeList, 0, section, module, property, position, true , confKey);
 
+        while ((writePos != NECommon::INVALID_POSITION) && (writeList[writePos].isTemporary() != isTemporary))
+        {
+            writePos = _findPosition(writeList, writePos + 1, section, module, property, position, true, confKey);
+        }
+
         if (readPos == NECommon::INVALID_POSITION)
         {
             if (writePos != NECommon::INVALID_POSITION)
@@ -85,7 +90,7 @@ namespace
             const PropertyValue& readValue = readList[readPos].getValue();
             if (newValue != static_cast<const Type&>(readValue))
             {
-                if (writePos != NECommon::INVALID_POSITION)
+                if ((writePos != NECommon::INVALID_POSITION) && (writeList[writePos].isTemporary() == isTemporary))
                 {
                     writeList[writePos].getValue() = newValue;
                 }
@@ -101,7 +106,7 @@ namespace
         }
     }
 
-    inline const Property* _getProperty( const ConfigManager::ListProperties& list
+    inline const Property* _getProperty( const NEPersistence::ListProperties& list
                                        , const String& section
                                        , const String& module
                                        , const String& property
@@ -115,7 +120,7 @@ namespace
         return (elemPos != NECommon::INVALID_POSITION ? &list[elemPos] : nullptr);
     }
 
-    uint32_t _readConfig(const FileBase& file, ConfigManager::ListProperties& OUT listWritable, ConfigManager::ListProperties& OUT listReadonly, const String& module)
+    uint32_t _readConfig(const FileBase& file, NEPersistence::ListProperties& OUT listWritable, NEPersistence::ListProperties& OUT listReadonly, const String& module)
     {
         uint32_t result{ 0 };
 
@@ -257,10 +262,10 @@ bool ConfigManager::existProperty(const PropertyKey& key) const
     return result;
 }
 
-ConfigManager::ListProperties ConfigManager::getSectionProperties(const String& section) const
+NEPersistence::ListProperties ConfigManager::getSectionProperties(const String& section) const
 {
     Lock lock(mLock);
-    ConfigManager::ListProperties result;
+    NEPersistence::ListProperties result;
     if (section.isEmpty())
     {
         return result;
@@ -377,7 +382,7 @@ void ConfigManager::removeSectionProperties(const String& section)
     }
 }
 
-bool ConfigManager::readConfig(const String& filePath /*= String::EmptyString*/)
+bool ConfigManager::readConfig(const String& filePath /*= String::EmptyString*/, IEConfigurationListener * listener /*= nullptr*/)
 {
     Lock lock(mLock);
     if (mIsConfigured == false)
@@ -395,7 +400,7 @@ bool ConfigManager::readConfig(const String& filePath /*= String::EmptyString*/)
 
         path = File::getFileFullPath(File::normalizePath(path));
         File fileConfig(path, FileBase::FO_MODE_EXIST | FileBase::FO_MODE_READ | FileBase::FO_MODE_TEXT | FileBase::FO_MODE_SHARE_READ);
-        if (fileConfig.open() && readConfig(fileConfig))
+        if (fileConfig.open() && readConfig(fileConfig, listener))
         {
             mFilePath = fileConfig.getName();
         }
@@ -404,20 +409,30 @@ bool ConfigManager::readConfig(const String& filePath /*= String::EmptyString*/)
     return mIsConfigured;
 }
 
-bool ConfigManager::readConfig(const FileBase& file)
+bool ConfigManager::readConfig(const FileBase& file, IEConfigurationListener * listener /*= nullptr*/)
 {
     Lock lock(mLock);
     if (mIsConfigured == false)
     {
         mWritableProperties.clear();
         mReadonlyProperties.clear();
+        if (listener != nullptr)
+        {
+            listener->prepareReadConfiguration(*this);
+        }
+
         mIsConfigured = _readConfig(file, mWritableProperties, mReadonlyProperties, mModule) != 0;
+
+        if (listener != nullptr)
+        {
+            listener->postReadConfiguration(*this);
+        }
     }
 
     return mIsConfigured;
 }
 
-bool ConfigManager::saveConfig(const String& filePath)
+bool ConfigManager::saveConfig(const String& filePath, IEConfigurationListener * listener /*= nullptr*/)
 {
     Lock lock(mLock);
     bool result{ false };
@@ -459,7 +474,7 @@ bool ConfigManager::saveConfig(const String& filePath)
 
     if (srcFile.open() && dstFile.open())
     {
-        if (_saveConfig(mWritableProperties.getData(), mReadonlyProperties.getData(), mModule, srcFile, dstFile, saveAll))
+        if (saveConfig(srcFile, dstFile, saveAll, listener))
         {
             srcFile.close();
             dstFile.close();
@@ -471,11 +486,38 @@ bool ConfigManager::saveConfig(const String& filePath)
     return result;
 }
 
-bool ConfigManager::saveConfig(const FileBase& srcFile, FileBase& dstFile)
+bool ConfigManager::saveConfig(const FileBase& srcFile, FileBase& dstFile, bool saveAll, IEConfigurationListener * listener /*= nullptr*/)
 {
     Lock lock(mLock);
-    return _saveConfig(mWritableProperties.getData(), mReadonlyProperties.getData(), mModule, srcFile, dstFile, false);
+    if (listener != nullptr)
+    {
+        listener->prepareSaveConfiguration(*this);
+    }
+
+    bool result = _saveConfig(mWritableProperties.getData(), mReadonlyProperties.getData(), mModule, srcFile, dstFile, saveAll);
+
+    if (listener != nullptr)
+    {
+        listener->postSaveConfiguration(*this);
+    }
+
+    return result;
 }
+
+void ConfigManager::setConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, IEConfigurationListener* listener /*= nullptr*/)
+{
+    Lock lock(mLock);
+
+    mIsConfigured = true;
+    mWritableProperties = listWritable;
+    mReadonlyProperties = listReadonly;
+
+    if (listener != nullptr)
+    {
+        listener->onSetupConfiguration(listReadonly, listWritable, *this);
+    }
+}
+
 
 Version ConfigManager::getConfigVersion(void) const
 {
@@ -640,7 +682,7 @@ uint32_t ConfigManager::getLogRemoteQueueSize(void) const
 {
     Lock lock(mLock);
 
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogRemoteQueue;
+    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogRemoteQueueSize;
     const NEPersistence::sPropertyKey& key = NEPersistence::getLogRemoteQueueSize();
     const PropertyValue* value = getPropertyValue(key.section, key.property, key.position, confKey);
     return (value != nullptr ? value->getInteger() : NEApplication::DEFAULT_LOG_QUEUE_SIZE);
@@ -650,7 +692,7 @@ void ConfigManager::setLogRemoteQueueSize(uint32_t newValue, bool isTemporary /*
 {
     Lock lock(mLock);
 
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogRemoteQueue;
+    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogRemoteQueueSize;
     const NEPersistence::sPropertyKey& key = NEPersistence::getLogRemoteQueueSize();
     setModuleProperty(key.section, key.property, key.position, String::toString(newValue), confKey, isTemporary);
 }

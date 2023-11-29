@@ -63,7 +63,7 @@ class SynchLockAndWaitIX
     using MapLockAndWait        = TEMap<IEWaitableBaseIX *, ListLockAndWait>;
 
 //////////////////////////////////////////////////////////////////////////
-// SynchWaitableMapIX class declaration
+// ImplResourceListMap class declaration
 //////////////////////////////////////////////////////////////////////////
     /**
      * \brief   The helper class of resource list map that contains helper functions implementation.
@@ -275,6 +275,16 @@ private:
 //////////////////////////////////////////////////////////////////////////
 
     /**
+     * \brief   Returns static list of waitables, where keys are id_type and values are waitables.
+     **/
+    static SynchLockAndWaitIX::MapWaitIDResource& _mapWaitResourceIds(void);
+
+    /**
+     * \brief   Returns the static instance of synchronization resource map.
+     */
+    static SynchResourceMapIX& _mapSynchResources(void);
+
+    /**
      * \brief   Returns true if no event in the list is fired.
      **/
     inline bool _noEventFired( void ) const;
@@ -404,15 +414,6 @@ private:
      * \brief   The list of waitables.
      **/
     WaitingList                             mWaitingList;
-
-    /**
-     * \brief   Static list of waitables, where keys are id_type and values are waitables.
-     **/
-    static MapWaitIDResource                _mapWaitIdResource;
-    /**
-     * \brief   The singleton instance of synchronization resource map.
-     */
-    static SynchResourceMapIX   			_theSynchResourceMapIX;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

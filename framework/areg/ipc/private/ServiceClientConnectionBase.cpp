@@ -225,10 +225,10 @@ void ServiceClientConnectionBase::onServiceConnectionStarted(void)
     {
         TRACE_DBG("Succeeded to start router service client, cookie [ %llu ]", mClientConnection.getCookie());
 
-        setConnectionState(ServiceClientConnectionBase::eConnectionState::ConnectionStarted);
         mChannel.setCookie( mClientConnection.getCookie() );
         mChannel.setSource( mMessageDispatcher.getId());
         mChannel.setTarget( mTarget );
+        setConnectionState(ServiceClientConnectionBase::eConnectionState::ConnectionStarted);
         mConnectionConsumer.connectedRemoteServiceChannel(mChannel);
     }
 }

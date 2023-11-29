@@ -25,6 +25,10 @@
  * Dependencies
  ************************************************************************/
 class LogMessage;
+namespace NETrace
+{
+    struct sLogMessage;
+}
 
 //////////////////////////////////////////////////////////////////////////
 // TraceEventData class declaration
@@ -56,8 +60,8 @@ public:
         , TraceSetDisableLogs           //!< Action to notify to stop logging
         , TraceSaveScopes               //!< Action to notify to save scope list
         , TraceLogMessage               //!< Action to output logging message
-        , TraceUpdateScopes
-        , TraceQueryScopes
+        , TraceUpdateScopes             //!< Action to update scope priorities
+        , TraceQueryScopes              //!< Action to send the list of scopes.
     } eTraceAction;
 
     /**
@@ -92,7 +96,7 @@ public:
      * \param   action  The action ID to set in event data
      * \param   logData The buffer of logging message data set.
      **/
-    TraceEventData( TraceEventData::eTraceAction action, const LogMessage & logData );
+    TraceEventData( TraceEventData::eTraceAction action, const NETrace::sLogMessage & logData );
 
     /**
      * \brief   Copies logging event data from given source.
@@ -194,6 +198,8 @@ inline const char * TraceEventData::getString( TraceEventData::eTraceAction acti
     CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceSetDisableLogs);
     CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceSaveScopes);
     CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceLogMessage);
+    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceUpdateScopes);
+    CASE_MAKE_STRING(TraceEventData::eTraceAction::TraceQueryScopes);
     CASE_DEFAULT("ERR: Undefined TraceEventData::eTraceAction value!");
     }
 }

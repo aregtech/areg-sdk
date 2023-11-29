@@ -63,6 +63,8 @@
 #   Meaning of Layout format:
 #       The Layout Format is relevant only when logs the messages in the plain text file.
 #       The Layout Format specification fields are following:
+            %a      -- outputs the ID of a logging object set by the logger.
+            %b      -- outputs the module name of the logging object.
 #           %c      -- output tick-count value since process start
 #           %d      -- output day and time data
 #           %e      -- output module (process) ID
@@ -111,57 +113,17 @@ log::*::enable              = true                          # Global logging ena
 log::*::enable::remote      = false                         # Remote logging enable / disable flag
 log::*::enable::file        = true                          # File logging enable / disable flag
 log::*::enable::debug       = false                         # Debug output console logging enable / disable flag
-log::*::enable::db          = false                         # Database logging enable / disable flag
 log::*::file::location      = ./logs/%appname%_%time%.log   # Log file location and masks
 log::*::file::append        = false                         # Append logs at the end of file
-log::*::remote::stack       = 100                           # Queue stack size in remote logging, 0 means no queuing
+log::*::remote::queue       = 100                           # Queue stack size in remote logging, 0 means no queuing
 log::*::remote::service     = logger                        # The service name of the remote logging
-
-# ---------------------------------------------------------------------------
-# Database logging settings (not supported at the moment!!!)
-# ---------------------------------------------------------------------------
-log::*::db::location        =                               # Database location
-log::*::db::append          = true                          # Append logs
-log::*::db::driver          =                               # Database driver
-log::*::db::address         = 127.0.0.1                     # Database connection IP-address
-log::*::db::port            = 1234                          # Database connection IP-port
-log::*::db::username        = areg                          # Database connection user name
-log::*::db::password        = areg                          # Database connection password
-log::*::db::name            =                               # Database name
 
 # ---------------------------------------------------------------------------
 # Log message layout in the file
 # ---------------------------------------------------------------------------
-log::*::layout::enter       = %d: [ %t  %x.%z: Enter -->]%n # Enter scope layout
-log::*::layout::message     = %d: [ %t  %p >>> ] %m%n       # Log message layout
-log::*::layout::exit        = %d: [ %t  %x.%z: Exit <-- ]%n # Exit scope layout
-
-# ###########################################################################
-# Remote services
-# ###########################################################################
-
-# ---------------------------------------------------------------------------
-# List of remote services
-# ---------------------------------------------------------------------------
-service::*::list            = router | logger               # The list of available remote services
-
-# ---------------------------------------------------------------------------
-# Message router settings
-# ---------------------------------------------------------------------------
-router::*::service          = mcrouter                      # The name of the router service (process name)
-router::*::connect          = tcpip			                # The list of supported communication protocols
-router::*::enable::tcpip    = true			                # Communication protocol enable / disable flag
-router::*::address::tcpip   = 127.0.0.1	                    # Protocol specific connection IP-address
-router::*::port::tcpip      = 8181			                # Protocol specific connection port number
-
-# ---------------------------------------------------------------------------
-# Remote logger settings
-# ---------------------------------------------------------------------------
-logger::*::service          = logger                        # The name of the router service (process name)
-logger::*::connect          = tcpip			                # The list of supported communication protocols
-logger::*::enable::tcpip    = true			                # Communication protocol enable / disable flag
-logger::*::address::tcpip   = 127.0.0.1	                    # Protocol specific connection IP-address
-logger::*::port::tcpip      = 8282			                # Protocol specific connection port number
+log::*::layout::enter       = %d: [ %t  %x.%z: Enter -->]%n    # Enter scope layout
+log::*::layout::message     = %d: [ %t  %p >>> ] %m%n          # Log message layout
+log::*::layout::exit        = %d: [ %t  %x.%z: Exit <-- ]%n    # Exit scope layout
 
 # #######################################
 # Application(s) Scopes

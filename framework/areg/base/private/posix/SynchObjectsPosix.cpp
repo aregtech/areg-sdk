@@ -33,11 +33,6 @@
 #include <time.h>
 
 //////////////////////////////////////////////////////////////////////////
-// Internal static methods
-//////////////////////////////////////////////////////////////////////////
-
-
-//////////////////////////////////////////////////////////////////////////
 // IESynchObject class implementation
 //////////////////////////////////////////////////////////////////////////
 
@@ -70,7 +65,7 @@ bool Mutex::_osLockMutex( unsigned int timeout )
 {
     bool result{ false };
     WaitableMutexIX * synchMutex{ reinterpret_cast<WaitableMutexIX *>(mSynchObject) };
-    
+
     if ( NESynchTypesIX::SynchObject0 == SynchLockAndWaitIX::waitForSingleObject(*synchMutex, timeout) )
     {
         mOwnerThreadId.store(reinterpret_cast<id_type>(synchMutex->getOwningThreadId()));

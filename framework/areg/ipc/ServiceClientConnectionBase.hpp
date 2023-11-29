@@ -134,6 +134,16 @@ public:
      **/
     inline bool isDisconnectState( void ) const;
 
+    /**
+     * \brief   Registers the client socket connection thread to receive service commands.
+     **/
+    inline void registerForServiceClientCommands(void);
+
+    /**
+     * \brief   Unregisters the client socket connection thread to receive service commands.
+     **/
+    inline void unregisterForServiceClientCommands(void);
+
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
@@ -456,6 +466,16 @@ inline bool ServiceClientConnectionBase::isDisconnectState( void ) const
     return (static_cast<uint16_t>(mConnectionState) & static_cast<uint16_t>(ServiceClientConnectionBase::eConnectionState::DisconnectState));
 }
 
+inline void ServiceClientConnectionBase::registerForServiceClientCommands(void)
+{
+    ServiceClientEvent::addListener(static_cast<IEServiceClientEventConsumer&>(mEventConsumer), mMessageDispatcher);
+}
+
+inline void ServiceClientConnectionBase::unregisterForServiceClientCommands(void)
+{
+    ServiceClientEvent::removeListener(static_cast<IEServiceClientEventConsumer&>(mEventConsumer), mMessageDispatcher);
+}
+
 inline const char * ServiceClientConnectionBase::getString(ServiceClientConnectionBase::eConnectionState val)
 {
     switch (val)
@@ -513,6 +533,5 @@ inline void ServiceClientConnectionBase::disconnectService( Event::eEventPriorit
                                , static_cast<DispatcherThread &>(mThreadSend)
                                , eventPrio );
 }
-
 
 #endif  // AREG_IPC_SERVICECLIENTCONNECTIONBASE_HPP

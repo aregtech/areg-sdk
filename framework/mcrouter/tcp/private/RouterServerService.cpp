@@ -165,26 +165,26 @@ void RouterServerService::onServiceMessageReceived(const RemoteMessage &msgRecei
         }
         break;
 
-    case NEService::eFuncIdRange::ServiceLastId:
-    case NEService::eFuncIdRange::SystemServiceQueryInstances:
-    case NEService::eFuncIdRange::SystemServiceConnect:
-    case NEService::eFuncIdRange::RequestServiceProviderConnection:
-    case NEService::eFuncIdRange::ResponseServiceProviderVersion:
-    case NEService::eFuncIdRange::RequestServiceProviderVersion:
-    case NEService::eFuncIdRange::RequestRegisterService:
-    case NEService::eFuncIdRange::ComponentCleanup:
-    case NEService::eFuncIdRange::SystemServiceNotifyRegister:
+    case NEService::eFuncIdRange::ServiceLastId:                    // fall through
+    case NEService::eFuncIdRange::SystemServiceQueryInstances:      // fall through
+    case NEService::eFuncIdRange::SystemServiceConnect:             // fall through
+    case NEService::eFuncIdRange::RequestServiceProviderConnection: // fall through
+    case NEService::eFuncIdRange::ResponseServiceProviderVersion:   // fall through
+    case NEService::eFuncIdRange::RequestServiceProviderVersion:    // fall through
+    case NEService::eFuncIdRange::RequestRegisterService:           // fall through
+    case NEService::eFuncIdRange::ComponentCleanup:                 // fall through
+    case NEService::eFuncIdRange::SystemServiceNotifyRegister:      // fall through
     case NEService::eFuncIdRange::SystemServiceNotifyConnection:
         break;
 
-    case NEService::eFuncIdRange::ResponseServiceProviderConnection:
-    case NEService::eFuncIdRange::AttributeLastId:
-    case NEService::eFuncIdRange::AttributeFirstId:
-    case NEService::eFuncIdRange::ResponseLastId:
-    case NEService::eFuncIdRange::ResponseFirstId:
-    case NEService::eFuncIdRange::RequestLastId:
-    case NEService::eFuncIdRange::RequestFirstId:
-    case NEService::eFuncIdRange::EmptyFunctionId:
+    case NEService::eFuncIdRange::ResponseServiceProviderConnection:// fall through
+    case NEService::eFuncIdRange::AttributeLastId:                  // fall through
+    case NEService::eFuncIdRange::AttributeFirstId:                 // fall through
+    case NEService::eFuncIdRange::ResponseLastId:                   // fall through
+    case NEService::eFuncIdRange::ResponseFirstId:                  // fall through
+    case NEService::eFuncIdRange::RequestLastId:                    // fall through
+    case NEService::eFuncIdRange::RequestFirstId:                   // fall through
+    case NEService::eFuncIdRange::EmptyFunctionId:                  // fall through
     default:
         if ( NEService::isExecutableId(static_cast<uint32_t>(msgId)) || NEService::isConnectNotifyId( static_cast<uint32_t>(msgId)) )
         {
