@@ -63,8 +63,7 @@
 #   Meaning of Layout format:
 #       The Layout Format is relevant only when logs the messages in the plain text file.
 #       The Layout Format specification fields are following:
-            %a      -- outputs the ID of a logging object set by the logger.
-            %b      -- outputs the module name of the logging object.
+#           %a      -- outputs the ID of a logging object set by the logger.
 #           %c      -- output tick-count value since process start
 #           %d      -- output day and time data
 #           %e      -- output module (process) ID
@@ -134,8 +133,6 @@ log::*::layout::exit        = %d: [ %t  %x.%z: Exit <-- ]%n    # Exit scope layo
 # ###########################################################################
 
 log::*::scope::*			= DEBUG | SCOPE ;
-# log::*::scope::areg_*       = NOTSET ;
-log::mcrouter::scope::*     = DEBUG | SCOPE ;
 log::logger::scope::*       = NOTSET ;
 
 # ###########################################################################

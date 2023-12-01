@@ -171,7 +171,8 @@ Thread::Thread(IEThreadConsumer &threadConsumer, const String & threadName )
 
 Thread::~Thread( void )
 {
-    _cleanResources();
+    ASSERT(mThreadHandle == Thread::INVALID_THREAD_HANDLE);
+    ASSERT(mThreadId == Thread::INVALID_THREAD_ID);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -221,6 +222,10 @@ Thread::eCompletionStatus Thread::shutdownThread( unsigned int waitForStopMs /* 
         _unregisterThread( );
         _cleanResources( );
         mSynchObject.unlock( );
+    }
+    else
+    {
+        OUTPUT_WARN("Could not lock the synchronization object, the resource will be not removed");
     }
 
     return result;
@@ -299,15 +304,18 @@ int Thread::_threadEntry( void )
         ; // do nothing
     }
 
+    _unregisterThread();
+    _cleanResources();
+
     return static_cast<int>(result);
 }
 
 void Thread::_cleanResources( void )
 {
-    THREADHANDLE handle = mThreadHandle;
+    THREADHANDLE handle{ mThreadHandle };
 
-    mThreadHandle   = INVALID_THREAD_HANDLE;
-    mThreadId       = INVALID_THREAD_ID;
+    mThreadHandle   = Thread::INVALID_THREAD_HANDLE;
+    mThreadId       = Thread::INVALID_THREAD_ID;
     mIsRunning      = false;
     mThreadPriority = Thread::eThreadPriority::PriorityUndefined;
 

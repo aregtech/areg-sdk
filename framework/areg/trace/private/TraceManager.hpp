@@ -65,7 +65,6 @@ class TraceManager  : public    DispatcherThread
                     , private   IETraceEventConsumer
 {
     friend class TraceEventProcessor;
-    friend class CookieLayoutName;
 
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants

@@ -186,11 +186,6 @@ private:
     //!< Wrapper of 'this' pointer.
     inline NetTcpLogger& self(void);
 
-    //! Resize the ring stack, set new capacity.
-    //! The newCapacity capacity value 0 will delete the ring stack
-    //! and disable queuing the messages.
-    inline void resizeStack(uint32_t newCapacity);
-
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////

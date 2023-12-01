@@ -76,7 +76,6 @@ namespace NELogging
         , LayoutAnyText         = 1     //!< Create any text layout to output message without formating
 
         , LayoutCookieId        = 'a'   //!< Create layout to output the cookie id of the log message source module
-        , LayoutCookieName      = 'b'   //!< Create layout to output the name of the log message source module
         , LayoutTickCount       = 'c'   //!< Create layout to output tick-count value since process start
         , LayoutDayTime         = 'd'   //!< Create layout to output day and time data
         , LayoutExecutableId    = 'e'   //!< Create layout to output module ID

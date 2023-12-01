@@ -276,10 +276,6 @@ void TraceManager::readyForEvents( bool isReady )
     {
         DispatcherThread::readyForEvents( false );
         TraceEvent::removeListener( static_cast<IETraceEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
-
-        mLoggerFile.closeLogger( );
-        mLoggerDebug.closeLogger( );
-        mLoggerTcp.closeLogger( );
     }
 }
 

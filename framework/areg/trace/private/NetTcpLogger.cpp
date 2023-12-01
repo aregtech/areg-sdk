@@ -42,7 +42,7 @@ NetTcpLogger::NetTcpLogger(LogConfiguration & logConfig, ScopeController & scope
 
     , mScopeController  ( scopeController )
     , mIsEnabled        ( false )
-    , mRingStack        ( logConfig.getStackSize(), NECommon::eRingOverlap::ShiftOnOverlap )
+    , mRingStack        ( 0, NECommon::eRingOverlap::ShiftOnOverlap )
 {
 }
 
@@ -57,18 +57,18 @@ bool NetTcpLogger::openLogger(void)
         if (mLogConfiguration.isRemoteLoggingEnabled())
         {
             registerForServiceClientCommands();
+            mRingStack.reserve(mLogConfiguration.getStackSize());
 
             String host{ mLogConfiguration.getRemoteTcpAddress()};
             uint16_t port{ mLogConfiguration.getRemoteTcpPort() };
             mIsEnabled = true;
-            resizeStack(mLogConfiguration.getStackSize());
             applyServiceConnectionData(host, port);
             mLock.unlock();
             result = connectServiceHost();
         }
         else
         {
-            resizeStack(0);
+            mRingStack.reserve(0);
         }
     }
     else
@@ -81,8 +81,8 @@ bool NetTcpLogger::openLogger(void)
 
 void NetTcpLogger::closeLogger(void)
 {
-    disconnectServiceHost();
-    mRingStack.clear();
+    mRingStack.discard();
+    onServiceExit();
     unregisterForServiceClientCommands();
 }
 
@@ -95,7 +95,7 @@ void NetTcpLogger::logMessage(const NETrace::sLogMessage& logMessage)
             ASSERT(mChannel.isValid());
             sendMessage(NETrace::createLogMessage(logMessage, NETrace::eLogDataType::LogDataRemote, mChannel.getCookie()), Event::eEventPriority::EventPriorityNormal);
         }
-        else
+        else if (mRingStack.capacity() != 0)
         {
             mRingStack.pushLast(NETrace::createLogMessage(logMessage, NETrace::eLogDataType::LogDataRemote, mChannel.getCookie()));
         }
@@ -253,22 +253,5 @@ void NetTcpLogger::processReceivedMessage(const RemoteMessage & msgReceived, Soc
         default:
             ASSERT(false);
         }
-    }
-}
-
-inline void NetTcpLogger::resizeStack(uint32_t newCapacity)
-{
-    if (newCapacity > mRingStack.capacity())
-    {
-        mRingStack.reserve(newCapacity);
-    }
-    else if (newCapacity < mRingStack.capacity())
-    {
-        while(newCapacity < mRingStack.getSize())
-        {
-            static_cast<void>(mRingStack.popFirst());
-        }
-
-        mRingStack.reserve(newCapacity);
     }
 }
