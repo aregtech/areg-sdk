@@ -63,8 +63,7 @@
 #   Meaning of Layout format:
 #       The Layout Format is relevant only when logs the messages in the plain text file.
 #       The Layout Format specification fields are following:
-            %a      -- outputs the ID of a logging object set by the logger.
-            %b      -- outputs the module name of the logging object.
+#           %a      -- outputs the ID of a logging object set by the logger.
 #           %c      -- output tick-count value since process start
 #           %d      -- output day and time data
 #           %e      -- output module (process) ID
@@ -141,9 +140,9 @@ log::*::layout::exit        = %d: [ %t  %x.%z: Exit <-- ]%n    # Exit scope layo
 # ---------------------------------------------------------------------------
 # Message layout for logger
 # ---------------------------------------------------------------------------
-log::logger::layout::enter  = %d: [ %a.%b.%t.%z: Enter -->]%n # Enter scope layout
-log::logger::layout::message= %d: [ %a.%b.%t.%p >>> ] %m%n    # Log message layout
-log::logger::layout::exit   = %d: [ %a.%b.%t.%z: Exit <-- ]%n # Exit scope layout
+log::logger::layout::enter  = %d: [ %a.%x.%t.%z: Enter -->]%n # Enter scope layout
+log::logger::layout::message= %d: [ %a.%x.%t.%p >>> ] %m%n    # Log message layout
+log::logger::layout::exit   = %d: [ %a.%x.%t.%z: Exit <-- ]%n # Exit scope layout
 
 # ###########################################################################
 # Remote services

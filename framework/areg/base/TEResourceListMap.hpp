@@ -95,7 +95,7 @@ protected:
     /**
      * \brief   Destructor.
      **/
-    ~TEResourceListMap( void ) = default;
+    ~TEResourceListMap( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Operations and attributes
@@ -398,6 +398,16 @@ template < typename RESOURCE_KEY
          , class ResourceList   /*= TELinkedList<RESOURCE_OBJECT>*/
          , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
          , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
+inline TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::~TEResourceListMap(void)
+{
+    removeAllResources();
+}
+
+template < typename RESOURCE_KEY
+         , typename RESOURCE_OBJECT
+         , class ResourceList   /*= TELinkedList<RESOURCE_OBJECT>*/
+         , class HashMap        /*= TEHashMap<RESOURCE_KEY, ResourceList>*/
+         , class Tracker        /*= TEResourceListMapImpl<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList>*/>
 inline void TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashMap, Tracker>::lock( void ) const
 {
     mSynchObj.lock( NECommon::WAIT_INFINITE );
@@ -577,7 +587,7 @@ inline void TEResourceListMap<RESOURCE_KEY, RESOURCE_OBJECT, ResourceList, HashM
 
     for (typename HashMap::MAPPOS pos = HashMap::firstPosition( ); HashMap::isValidPosition(pos); pos = HashMap::nextPosition( pos ) )
     {
-        cleanResourceList(pos->first, pos->second);
+        cleanResourceList(HashMap::keyAtPosition(pos), HashMap::valueAtPosition(pos));
     }
 
     HashMap::clear( );

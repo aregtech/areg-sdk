@@ -10,7 +10,7 @@
  * \file        areg/base/private/NESocketWin.cpp
  * \ingroup     AREG Asynchronous Event-Driven Communication Framework
  * \author      Artak Avetyan
- * \brief       AREG Platform. Socket OS independentant methods
+ * \brief       AREG Platform. Socket OS independent methods
  ************************************************************************/
 #include "areg/base/NESocket.hpp"
 
@@ -308,8 +308,8 @@ AREG_API_IMPL unsigned int NESocket::getMaxSendSize( SOCKETHANDLE hSocket )
 {
     ASSERT(isSocketHandleValid(hSocket));
 
-    unsigned long maxData= NESocket::DEFAULT_SEGMENT_SIZE;
-    return (_osGetOption(hSocket, SOL_SOCKET, SO_SNDBUF, maxData) ? static_cast<unsigned int>(maxData) : NESocket::DEFAULT_SEGMENT_SIZE);
+    unsigned long maxData{ NESocket::PACKET_DEFAULT_SIZE };
+    return (_osGetOption(hSocket, SOL_SOCKET, SO_SNDBUF, maxData) ? static_cast<unsigned int>(maxData) : NESocket::PACKET_DEFAULT_SIZE);
 }
 
 AREG_API_IMPL unsigned int NESocket::setMaxSendSize(SOCKETHANDLE hSocket, unsigned int sendSize)
@@ -318,25 +318,26 @@ AREG_API_IMPL unsigned int NESocket::setMaxSendSize(SOCKETHANDLE hSocket, unsign
 
     if (sendSize == 0)
     {
-        sendSize = NESocket::DEFAULT_SEGMENT_SIZE;
+        sendSize = NESocket::PACKET_DEFAULT_SIZE;
     }
-    else if (sendSize < NESocket::MIN_SEGMENT_SIZE)
+    else if (sendSize < NESocket::PACKET_MIN_SIZE)
     {
-        sendSize = NESocket::MIN_SEGMENT_SIZE;
+        sendSize = NESocket::PACKET_MIN_SIZE;
     }
-    else if (sendSize > NESocket::MAX_SEGMENT_SIZE)
+    else if (sendSize > NESocket::PACKET_MAX_SIZE)
     {
-        sendSize = NESocket::MAX_SEGMENT_SIZE;
+        sendSize = NESocket::PACKET_MAX_SIZE;
     }
 
-    return (RETURNED_OK == ::setsockopt(hSocket, SOL_SOCKET, SO_SNDBUF, reinterpret_cast<const char*>(&sendSize), sizeof(sendSize)) ? sendSize : NESocket::MIN_SEGMENT_SIZE);
+    constexpr unsigned int len{ sizeof(unsigned int) };
+    return (RETURNED_OK == ::setsockopt(hSocket, SOL_SOCKET, SO_SNDBUF, reinterpret_cast<const char*>(&sendSize), len) ? sendSize : NESocket::PACKET_MIN_SIZE);
 }
 
 AREG_API_IMPL unsigned int NESocket::getMaxReceiveSize( SOCKETHANDLE hSocket )
 {
     ASSERT(isSocketHandleValid(hSocket));
-    unsigned long maxData = NESocket::DEFAULT_SEGMENT_SIZE;
-    return (_osGetOption(hSocket, SOL_SOCKET, SO_RCVBUF, maxData) ? static_cast<unsigned int>(maxData) : NESocket::DEFAULT_SEGMENT_SIZE);
+    unsigned long maxData{ NESocket::PACKET_DEFAULT_SIZE };
+    return (_osGetOption(hSocket, SOL_SOCKET, SO_RCVBUF, maxData) ? static_cast<unsigned int>(maxData) : NESocket::PACKET_DEFAULT_SIZE);
 }
 
 AREG_API_IMPL unsigned int NESocket::setMaxReceiveSize(SOCKETHANDLE hSocket, unsigned int recvSize)
@@ -345,18 +346,19 @@ AREG_API_IMPL unsigned int NESocket::setMaxReceiveSize(SOCKETHANDLE hSocket, uns
 
     if (recvSize == 0)
     {
-        recvSize = NESocket::DEFAULT_SEGMENT_SIZE;
+        recvSize = NESocket::PACKET_DEFAULT_SIZE;
     }
-    else if (recvSize < NESocket::MIN_SEGMENT_SIZE)
+    else if (recvSize < NESocket::PACKET_MIN_SIZE)
     {
-        recvSize = NESocket::MIN_SEGMENT_SIZE;
+        recvSize = NESocket::PACKET_MIN_SIZE;
     }
-    else if (recvSize > NESocket::MAX_SEGMENT_SIZE)
+    else if (recvSize > NESocket::PACKET_MAX_SIZE)
     {
-        recvSize = NESocket::MAX_SEGMENT_SIZE;
+        recvSize = NESocket::PACKET_MAX_SIZE;
     }
 
-    return (RETURNED_OK == ::setsockopt(hSocket, SOL_SOCKET, SO_RCVBUF, reinterpret_cast<const char*>(&recvSize), sizeof(recvSize)) ? recvSize : NESocket::MIN_SEGMENT_SIZE);
+    constexpr unsigned int len{ sizeof(unsigned int) };
+    return (RETURNED_OK == ::setsockopt(hSocket, SOL_SOCKET, SO_RCVBUF, reinterpret_cast<const char*>(&recvSize), len) ? recvSize : NESocket::PACKET_MIN_SIZE);
 }
 
 AREG_API_IMPL SOCKETHANDLE NESocket::clientSocketConnect(const std::string_view & hostName, unsigned short portNr, NESocket::SocketAddress * out_socketAddr /*= nullptr*/)

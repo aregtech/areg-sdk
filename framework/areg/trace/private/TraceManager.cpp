@@ -277,9 +277,10 @@ void TraceManager::readyForEvents( bool isReady )
         DispatcherThread::readyForEvents( false );
         TraceEvent::removeListener( static_cast<IETraceEventConsumer &>(self( )), static_cast<DispatcherThread &>(self( )) );
 
-        mLoggerFile.closeLogger( );
-        mLoggerDebug.closeLogger( );
-        mLoggerTcp.closeLogger( );
+        // When we are here, all loggers should be already closed.
+        ASSERT(mLoggerFile.isLoggerOpened() == false);
+        ASSERT(mLoggerDebug.isLoggerOpened() == false);
+        ASSERT(mLoggerTcp.isLoggerOpened() == false);
     }
 }
 

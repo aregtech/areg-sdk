@@ -224,26 +224,30 @@ namespace NESocket
      *          The size of buffer to reserve for IP address, like "255.255.255.255"
      **/
     constexpr uint32_t  IP_ADDRESS_SIZE                             { 16 };
+
     /**
-     * \brief   NESocket::DEFAULT_SEGMENT_SIZE
-     *          The default size of segment when sends or receives data.
+     * \brief   NESocket::PACKET_MIN_SIZE
+     *          The minimum size of packet when send or receive data.
      **/
-    constexpr unsigned int              DEFAULT_SEGMENT_SIZE        { 1500 };
+    constexpr unsigned int              PACKET_MIN_SIZE             { 512 };
+
     /**
-     * \brief   NESocket::MAX_SEGMENT_SIZE
-     *          The maximum size of segment when sends or receives data.
+     * \brief   NESocket::PACKET_DEFAULT_SIZE
+     *          The default size of packet when send or receive data.
      **/
-    constexpr unsigned int              MAX_SEGMENT_SIZE            { 8 * NECommon::ONE_MEGABYTE };
+    constexpr unsigned int              PACKET_DEFAULT_SIZE         { 1500 };
+
     /**
-     * \brief   NESocket::MIN_SEGMENT_SIZE
-     *          The minimum size of segment when sends or receives data.
+     * \brief   NESocket::PACKET_MAX_SIZE
+     *          The maximum size of packet when send or receive data.
      **/
-    constexpr unsigned int              MIN_SEGMENT_SIZE            { 8 * NECommon::ONE_KILOBYTE };
+    constexpr unsigned int              PACKET_MAX_SIZE             { 65536 };
+
     /**
-     * \brief   NESocket::SEGMENT_INVALID_SIZE
-     *          The invalid size of segment.
+     * \brief   NESocket::PACKET_INVALID_SIZE
+     *          Packet invalid size.
      **/
-    constexpr unsigned int              SEGMENT_INVALID_SIZE        { 0 };
+    constexpr unsigned int              PACKET_INVALID_SIZE         { 0 };
 
     /**
      * \brief   NESocket::MAXIMUM_LISTEN_QUEUE_SIZE
@@ -387,29 +391,29 @@ namespace NESocket
 
     /**
      * \brief   NESocket::setMaxSendSize
-     *          Sets the socket buffer size in bytes to send the packet at once.
+     *          Sets the socket packet size in bytes to send data at once.
      * \param   hSocket     The valid socket descriptor to set the value.
      * \param   sendSize    The size in bytes to sent the packet at once.
-     *                      The minimum size is NESocket::MIN_SEGMENT_SIZE,
-     *                      the maximum is NESocket::MAX_SEGMENT_SIZE.
+     *                      The minimum size is NESocket::PACKET_MIN_SIZE,
+     *                      the maximum is NESocket::PACKET_MAX_SIZE.
      **/
     AREG_API unsigned int setMaxSendSize(SOCKETHANDLE hSocket, unsigned int sendSize);
 
     /**
      * \brief   NESocket::getMaxReceiveSize
-     *          Calculated the maximum number of package size in bytes, which can be received.
-     *          This value may vary by protocol.
+     *          Maximum size of packet in bytes to receive data.
      * \param   hSocket     The valid socket descriptor to retrieve value.
      **/
     AREG_API unsigned int getMaxReceiveSize( SOCKETHANDLE hSocket );
 
     /**
      * \brief   NESocket::setMaxReceiveSize
-     *          Sets the socket buffer size in bytes to receive the packet at once.
+     *          Sets the socket packet size in bytes to receive data at once.
      * \param   hSocket     The valid socket descriptor to set the value.
      * \param   recvSize    The size in bytes to receive the packet at once.
-     *                      The minimum size is NESocket::MIN_SEGMENT_SIZE,
-     *                      the maximum is NESocket::MAX_SEGMENT_SIZE.
+     *                      The minimum size is NESocket::PACKET_MIN_SIZE.
+     *                      The maximum is NESocket::PACKET_MAX_SIZE.
+     *                      The default seize is NESocket::PACKET_DEFAULT_SIZE.
      **/
     AREG_API unsigned int setMaxReceiveSize(SOCKETHANDLE hSocket, unsigned int recvSize);
 

@@ -50,8 +50,7 @@ class IELayout;
     class ThreadNameLayout;
     class ScopeNameLayout;
     class AnyTextLayout;
-    class CookieLayoutId;
-    class CookieLayoutName;
+    class CookieIdLayout;
 
 //////////////////////////////////////////////////////////////////////////
 // IELayout interface declaration
@@ -518,7 +517,7 @@ public:
 // ScopeIdLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   This layout outputs the information of scope ID in the streamming object.
+ * \brief   This layout outputs the information of scope ID in the streaming object.
  **/
 class ScopeIdLayout : public    IELayout
 {
@@ -932,12 +931,12 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-// CookieLayoutId class declaration
+// CookieIdLayout class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   This layout outputs the cookie ID of the source log message module.
+ * \brief   This layout outputs the cookie ID of the log message module.
  **/
-class CookieLayoutId : public IELayout
+class CookieIdLayout : public IELayout
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor
@@ -946,24 +945,24 @@ public:
     /**
      * \brief   Sets layout type value.
      **/
-    CookieLayoutId( void );
+    CookieIdLayout( void );
 
     /**
      * \brief   Copies data from given source.
      * \param   src     The source of data to copy.
      **/
-    CookieLayoutId( const CookieLayoutId& src );
+    CookieIdLayout( const CookieIdLayout& src );
 
     /**
      * \brief   Moves data from given source.
      * \param   src     The source of data to move.
      **/
-    CookieLayoutId(CookieLayoutId&& src ) noexcept;
+    CookieIdLayout(CookieIdLayout&& src ) noexcept;
 
     /**
      * \brief   Destructor
      **/
-    virtual ~CookieLayoutId( void ) = default;
+    virtual ~CookieIdLayout( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -973,79 +972,13 @@ public:
      * \brief   Copies data from given source.
      * \param   src     The source of data to copy.
      **/
-    inline CookieLayoutId & operator = ( const CookieLayoutId& src );
+    inline CookieIdLayout & operator = ( const CookieIdLayout& src );
 
     /**
      * \brief   Moves data from given source.
      * \param   src     The source of data to move.
      **/
-    inline CookieLayoutId & operator = ( CookieLayoutId&& src ) noexcept;
-
-//////////////////////////////////////////////////////////////////////////
-// Operations
-//////////////////////////////////////////////////////////////////////////
-
-/************************************************************************/
-// IELayout interface overrides
-/************************************************************************/
-
-    /**
-     * \brief   Makes layout specific formated text output of give message to the streaming object.
-     * \param   msgLog  The log message data structure that contains information to output message.
-     * \param   stream  The streaming object, where the text message should be written.
-     **/
-    virtual void logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const override;
-};
-
-//////////////////////////////////////////////////////////////////////////
-// CookieLayoutName class declaration
-//////////////////////////////////////////////////////////////////////////
-/**
- * \brief   This layout outputs the name of the source log message module.
- **/
-class CookieLayoutName : public IELayout
-{
-//////////////////////////////////////////////////////////////////////////
-// Constructors / Destructor
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Sets layout type value.
-     **/
-    CookieLayoutName( void );
-
-    /**
-     * \brief   Copies data from given source.
-     * \param   src     The source of data to copy.
-     **/
-    CookieLayoutName( const AnyTextLayout & src );
-
-    /**
-     * \brief   Moves data from given source.
-     * \param   src     The source of data to move.
-     **/
-    CookieLayoutName( AnyTextLayout && src ) noexcept;
-
-    /**
-     * \brief   Destructor
-     **/
-    virtual ~CookieLayoutName( void ) = default;
-
-//////////////////////////////////////////////////////////////////////////
-// Operators
-//////////////////////////////////////////////////////////////////////////
-public:
-    /**
-     * \brief   Copies data from given source.
-     * \param   src     The source of data to copy.
-     **/
-    inline CookieLayoutName& operator = ( const CookieLayoutName& src );
-
-    /**
-     * \brief   Moves data from given source.
-     * \param   src     The source of data to move.
-     **/
-    inline CookieLayoutName& operator = (CookieLayoutName&& src ) noexcept;
+    inline CookieIdLayout & operator = ( CookieIdLayout&& src ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -1269,29 +1202,15 @@ inline AnyTextLayout & AnyTextLayout::operator = ( AnyTextLayout && src ) noexce
 }
 
 //////////////////////////////////////////////////////////////////////////
-// CookieLayoutId class inline methods
+// CookieIdLayout class inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline CookieLayoutId& CookieLayoutId::operator=(const CookieLayoutId& src)
+inline CookieIdLayout& CookieIdLayout::operator=(const CookieIdLayout& src)
 {
     return (*this);
 }
 
-inline CookieLayoutId& CookieLayoutId::operator=(CookieLayoutId&& src) noexcept
-{
-    return (*this);
-}
-
-//////////////////////////////////////////////////////////////////////////
-// CookieLayoutId class inline methods
-//////////////////////////////////////////////////////////////////////////
-
-inline CookieLayoutName& CookieLayoutName::operator=(const CookieLayoutName& src)
-{
-    return (*this);
-}
-
-inline CookieLayoutName& CookieLayoutName::operator=(CookieLayoutName&& src) noexcept
+inline CookieIdLayout& CookieIdLayout::operator=(CookieIdLayout&& src) noexcept
 {
     return (*this);
 }

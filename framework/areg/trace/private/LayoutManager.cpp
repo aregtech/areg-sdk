@@ -152,11 +152,7 @@ inline void LayoutManager::_createLayouts(char* layoutFormat)
                 break;
 
             case NELogging::eLayouts::LayoutCookieId:
-                newLayout = DEBUG_NEW CookieLayoutId();
-                break;
-
-            case NELogging::eLayouts::LayoutCookieName:
-                newLayout = DEBUG_NEW CookieLayoutName();
+                newLayout = DEBUG_NEW CookieIdLayout();
                 break;
 
             case NELogging::eLayouts::LayoutUndefined:  // fall through

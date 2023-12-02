@@ -210,6 +210,11 @@ public:
     inline void clear( void );
 
     /**
+     * \brief   Clears the ring stack, deletes the list and sets capacity zero.
+     **/
+    void discard( void );
+
+    /**
      * \brief   Copies elements from given source. The elements will be copied at the end of stack.
      *          If capacity of stack is small to set copy all elements, the results depends on 
      *          overlapping flag of stack:
@@ -226,12 +231,12 @@ public:
      * \return  Returns number of elements copied in to the stack. The number of copied elements and elements in stack
      *          might differ depending on overlapping flag.
      **/
-    uint32_t copy( const TERingStack<VALUE> & source );
+    uint32_t add( const TERingStack<VALUE> & source );
 
     /**
-     * \brief   Reserves the space of given capacity entries. The operation will ensure that
-     * 			that the given capacity is not less than the existing. The existing entries
-     * 			are not lost if reallocates new space.
+     * \brief   Reserves the space of given capacity entries. If new capacity is not more than the existing,
+     *          the operation is ignored and the stack is not resized. Otherwise, the size of the stack is changed
+     *          and all existing elements are copied.
      * \param   newCapacity     New capacity to set for Ring Stack.
      * \return  Returns capacity size of resized ring stack.
      **/
@@ -257,7 +262,7 @@ protected:
     /**
      * \brief   The instance of synchronization object to be used to make object thread-safe.
      **/
-    IEResourceLock &        mSynchObject;
+    IEResourceLock &                mSynchObject;
 
     /**
      * \brief   The overlapping flag. Set when stack is initialized and cannot be changed anymore.
@@ -467,8 +472,13 @@ template <typename VALUE>
 TERingStack<VALUE>::~TERingStack( void )
 {
     _emptyStack();
-    delete[] reinterpret_cast<unsigned char*>(mStackList);
+    if (mStackList == nullptr)
+    {
+        delete[] reinterpret_cast<unsigned char*>(mStackList);
+    }
+
     mStackList = nullptr;
+    mCapacity = 0;
 }
 
 template <typename VALUE>
@@ -481,11 +491,7 @@ TERingStack<VALUE> & TERingStack<VALUE>::operator = ( const TERingStack<VALUE> &
         _emptyStack();
         source.lock();
 
-        if ( mCapacity < source.mElemCount )
-        {
-        	reserve( static_cast<uint32_t>(source.mElemCount) );
-        }
-
+        reserve(static_cast<uint32_t>(source.mElemCount));
         uint32_t pos = source.mStartPosition;
         for (uint32_t i = 0; i < source.mElemCount; ++ i )
         {
@@ -545,12 +551,26 @@ void TERingStack<VALUE>::clear( void )
     _emptyStack();
 }
 
+template<typename VALUE>
+void TERingStack<VALUE>::discard(void)
+{
+    Lock lock(mSynchObject);
+    _emptyStack();
+    if (mStackList == nullptr)
+    {
+        delete[] reinterpret_cast<unsigned char*>(mStackList);
+    }
+
+    mStackList = nullptr;
+    mCapacity = 0;
+}
+
 template <typename VALUE>
 uint32_t TERingStack<VALUE>::pushLast( const VALUE& newElement )
 {
     Lock lock(mSynchObject);
 
-    if ( (mElemCount + 1) <= mCapacity )
+    if ( mElemCount < mCapacity )
     {
         ASSERT( (mStartPosition != mLastPosition) || (mElemCount == 0) );
 
@@ -565,10 +585,11 @@ uint32_t TERingStack<VALUE>::pushLast( const VALUE& newElement )
         switch ( mOnOverlap )
         {
         case NECommon::eRingOverlap::ShiftOnOverlap:
-            ASSERT( mLastPosition == mStartPosition );
-            if ( mCapacity != 0 )
+            ASSERT(mLastPosition == mStartPosition);
+            if (mCapacity != 0)
             {
-                VALUE * block = mStackList + mLastPosition;
+                ASSERT(mStackList != nullptr);
+                VALUE* block = mStackList + mLastPosition;
                 NEMemory::destroyElems<VALUE>(block, 1);
                 NEMemory::constructElems<VALUE>(block, 1);
                 *block = newElement;
@@ -577,13 +598,14 @@ uint32_t TERingStack<VALUE>::pushLast( const VALUE& newElement )
             }
             else
             {
-                OUTPUT_ERR("The Ring Stack has no initial capacity, there is no space to insert element!");
-                ASSERT(false);
+                OUTPUT_WARN("The Ring Stack is not initialized, ignoring operation!");
+                ASSERT(mStackList == nullptr);
+                ASSERT(mElemCount == 0);
             }
             break;
 
         case NECommon::eRingOverlap::ResizeOnOvelap:
-            if ( reserve( static_cast<uint32_t>(mCapacity != 0 ? mCapacity : 1) * 2 ) > (mElemCount + 1 ))
+            if ( reserve(static_cast<uint32_t>(mCapacity != 0 ? mCapacity : 1) * 2) >= (mElemCount + 1) )
             {
                 ASSERT(mCapacity >= mElemCount + 1);
                 VALUE * block = mStackList + mLastPosition;
@@ -631,6 +653,7 @@ uint32_t TERingStack<VALUE>::pushFirst( const VALUE& newElement )
             ASSERT( mLastPosition == mStartPosition );
             if ( mCapacity != 0 )
             {
+                ASSERT(mStackList != nullptr);
                 mStartPosition = mStartPosition != 0 ? mStartPosition - 1 : mCapacity - 1;
                 VALUE * block = mStackList + mStartPosition;
                 NEMemory::destroyElems<VALUE>(block, 1);
@@ -640,13 +663,14 @@ uint32_t TERingStack<VALUE>::pushFirst( const VALUE& newElement )
             }
             else
             {
-                OUTPUT_ERR("The Ring Stack has no initial capacity, there is no space to insert element!");
-                ASSERT(false);
+                OUTPUT_WARN("The Ring Stack is not initialized, ignoring operation!");
+                ASSERT(mStackList == nullptr);
+                ASSERT(mElemCount == 0);
             }
             break;
 
         case NECommon::eRingOverlap::ResizeOnOvelap:
-            if ( reserve( static_cast<uint32_t>(mCapacity != 0 ? mCapacity : 1) * 2 ) > (mElemCount + 1 ))
+            if ( reserve(static_cast<uint32_t>(mCapacity != 0 ? mCapacity : 1) * 2) >= (mElemCount + 1) )
             {
                 ASSERT(mCapacity >= mElemCount + 1);
                 mStartPosition = mStartPosition != 0 ? mStartPosition - 1 : mCapacity - 1;
@@ -681,6 +705,7 @@ VALUE TERingStack<VALUE>::popFirst( void )
     if ( mElemCount != 0 )
     {
         ASSERT( mCapacity != 0 );
+        ASSERT( mStackList != nullptr );
 
         result = mStackList[mStartPosition];
         NEMemory::destroyElems<VALUE>( mStackList + mStartPosition, 1 );
@@ -696,7 +721,7 @@ VALUE TERingStack<VALUE>::popFirst( void )
 }
 
 template <typename VALUE>
-uint32_t TERingStack<VALUE>::copy( const TERingStack<VALUE> & source )
+uint32_t TERingStack<VALUE>::add( const TERingStack<VALUE> & source )
 {
     Lock lock(mSynchObject);
     uint32_t result = 0;
@@ -738,8 +763,9 @@ uint32_t TERingStack<VALUE>::copy( const TERingStack<VALUE> & source )
                 }
                 else
                 {
-                    OUTPUT_ERR("The Ring Stack has no initial capacity, there is no space to insert element!");
-                    ASSERT(false);
+                    OUTPUT_WARN("The Ring Stack is not initialized, ignoring operation!");
+                    ASSERT(mStackList == nullptr);
+                    ASSERT(mElemCount == 0);
                 }
                 break;
 
@@ -785,32 +811,31 @@ uint32_t TERingStack<VALUE>::reserve(uint32_t newCapacity )
 
     if ( newCapacity > mCapacity )
     {
-        VALUE * newList = newCapacity != 0 ? reinterpret_cast<VALUE *>( DEBUG_NEW unsigned char[ newCapacity ] ) : nullptr;
-        uint32_t dstLast    = 0;
-        uint32_t srcStart   = mStartPosition;
-        uint32_t elemCount  = newCapacity > mElemCount ? mElemCount : newCapacity;
-
-        if ( newList != nullptr )
+        VALUE * newList     = newCapacity != 0 ? reinterpret_cast<VALUE *>( DEBUG_NEW unsigned char[ newCapacity * sizeof(VALUE)] ) : nullptr;
+        if (newList != nullptr)
         {
-            NEMemory::constructElems<VALUE>(static_cast<void *>(newList), elemCount);
-            for ( uint32_t i = 0; i < elemCount; ++ i )
+            uint32_t posStart = mStartPosition;
+            uint32_t elemCount = mElemCount;
+            for (uint32_t i = 0; i < elemCount; ++i)
             {
-                newList[dstLast ++] = mStackList[srcStart];
-                srcStart = ( srcStart + 1 ) % mCapacity;
+                VALUE* elem = newList + i;
+                NEMemory::constructElems<VALUE>(static_cast<void*>(elem), 1);
+                *elem = mStackList[posStart];
+                posStart = (posStart + 1) % mCapacity;
             }
-        }
 
-        _emptyStack();
-        if ( mStackList != nullptr )
-        {
-            delete[] reinterpret_cast<unsigned char *>(mStackList);
-        }
+            _emptyStack();
+            if (mStackList != nullptr)
+            {
+                delete[] reinterpret_cast<unsigned char*>(mStackList);
+            }
 
-        mStackList      = newList;
-        mStartPosition  = 0;
-        mLastPosition   = dstLast;
-        mElemCount      = dstLast;
-        mCapacity       = newList != nullptr ? newCapacity : 0;
+            mStackList      = newList;
+            mStartPosition  = 0;
+            mElemCount      = elemCount;
+            mLastPosition   = elemCount % newCapacity;
+            mCapacity       = newCapacity;
+        }
     }
 
     return mCapacity;
@@ -873,13 +898,10 @@ void TERingStack<VALUE>::_emptyStack( void )
 {
     // do not delete stack, only remove elements and reset data.
     // keep capacity same
-    if ( mStackList != nullptr )
+    for (uint32_t i = 0; i < mElemCount; ++ i)
     {
-        for (uint32_t i = 0; i < mElemCount; i ++ )
-        {
-            NEMemory::destroyElems<VALUE>( mStackList + mStartPosition, 1 );
-            mStartPosition = ( mStartPosition + 1 ) % mCapacity;
-        }
+        NEMemory::destroyElems<VALUE>( mStackList + mStartPosition, 1 );
+        mStartPosition = ( mStartPosition + 1 ) % mCapacity;
     }
 
     mStartPosition  = 0;

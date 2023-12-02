@@ -57,7 +57,7 @@ namespace
 
     const NEMemory::sRemoteMessage & _getLogMessage(void)
     {
-        static constexpr NEMemory::sRemoteMessage _messageRegisterScopes
+        static constexpr NEMemory::sRemoteMessage _messageServiceLog
         {
             {
                 {   /*rbhBufHeader*/
@@ -77,7 +77,7 @@ namespace
             , { static_cast<char>(0) }
         };
 
-        return _messageRegisterScopes;
+        return _messageServiceLog;
     }
 }
 
@@ -279,7 +279,10 @@ AREG_API_IMPL RemoteMessage NETrace::createLogMessage(const NETrace::sLogMessage
     RemoteMessage msgLog;
     if (msgLog.initMessage(_getLogMessage().rbHeader, sizeof(NETrace::sLogMessage)) != nullptr)
     {
-        msgLog.write(reinterpret_cast<const unsigned char *>(&logMessage), sizeof(NETrace::sLogMessage));
+        // msgLog.write(reinterpret_cast<const unsigned char *>(&logMessage), sizeof(NETrace::sLogMessage));
+        msgLog << logMessage;
+        msgLog.setSizeUsed(sizeof(NETrace::sLogMessage));
+        msgLog.moveToEnd();
         msgLog.setSource(srcCookie);
         NETrace::sLogMessage* log = reinterpret_cast<NETrace::sLogMessage*>(msgLog.getBuffer());
         log->logCookie  = srcCookie;
@@ -288,14 +291,12 @@ AREG_API_IMPL RemoteMessage NETrace::createLogMessage(const NETrace::sLogMessage
         if (NETrace::eLogDataType::LogDataLocal != dataType)
         {
             const String& threadName{ Thread::getThreadName(log->logThreadId) };
-            uint32_t len = NEMemory::memCopy(log->logThread, NETrace::LOG_NAMES_SIZE - 1, threadName.getString(), threadName.getLength());
-            log->logThreadLen   = len;
-            log->logThread[len] = String::EmptyChar;
+            NEMemory::memCopy(log->logThread, NETrace::LOG_NAMES_SIZE, threadName.getString(), threadName.getLength() + 1);
+            log->logThreadLen   = threadName.getLength();
 
             const String& module = Process::getInstance().getAppName();
-            len = NEMemory::memCopy(log->logModule, NETrace::LOG_NAMES_SIZE - 1, module.getString(), module.getLength());
-            log->logModuleLen   = len;
-            log->logModule[len] = String::EmptyChar;
+            NEMemory::memCopy(log->logModule, NETrace::LOG_NAMES_SIZE, module.getString(), module.getLength() + 1);
+            log->logModuleLen   = module.getLength();
         }
     }
 

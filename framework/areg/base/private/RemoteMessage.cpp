@@ -23,6 +23,7 @@
 #include "areg/trace/GETrace.h"
 
 #include <string.h>
+#include <cstddef>
 
 inline unsigned int RemoteMessage::_checksumCalculate( const NEMemory::sRemoteMessage & remoteMessage )
 {
@@ -137,10 +138,13 @@ unsigned char * RemoteMessage::initMessage(const NEMemory::sRemoteMessageHeader 
 {
     invalidate();
 
-    unsigned int sizeUsed   = MACRO_MAX(rmHeader.rbhBufHeader.biUsed, 1);
-    unsigned int sizeData   = MACRO_ALIGN_SIZE(sizeUsed, mBlockSize);
-    unsigned int sizeBuffer = getHeaderSize() + sizeData;
-    unsigned char * result  = DEBUG_NEW unsigned char[sizeBuffer + reserve];
+    reserve = MACRO_MAX(reserve, 1);
+    unsigned int sizeUsed   = MACRO_MAX(rmHeader.rbhBufHeader.biUsed, reserve);
+    unsigned int hdrSize    = getHeaderSize();
+    unsigned int msgSize    = hdrSize + sizeUsed;
+    unsigned int sizeBuffer = MACRO_ALIGN_SIZE(msgSize, mBlockSize);
+    unsigned int sizeData   = sizeBuffer - hdrSize;
+    unsigned char * result  = DEBUG_NEW unsigned char[sizeBuffer];
     if ( result != nullptr )
     {
         NEMemory::memZero(result, sizeof(NEMemory::sRemoteMessage));
@@ -196,7 +200,7 @@ RemoteMessage RemoteMessage::clone(const ITEM_ID & source /*= 0*/, const ITEM_ID
 
 unsigned int RemoteMessage::getDataOffset(void) const
 {
-    return sizeof(NEMemory::sRemoteMessageHeader);
+    return offsetof(NEMemory::sRemoteMessage, rbData);
 }
 
 unsigned int RemoteMessage::getHeaderSize(void) const
