@@ -18,8 +18,6 @@
 SocketAccepted::SocketAccepted( const SOCKETHANDLE hSocket, const NESocket::SocketAddress & sockAddress )
     : Socket  ( hSocket, sockAddress)
 {
-    setRecvSegmentSize(NESocket::DEFAULT_SEGMENT_SIZE);
-    setSendSegmentSize(NESocket::DEFAULT_SEGMENT_SIZE);
 }
 
 bool SocketAccepted::createSocket(const char * /*hostName*/, unsigned short /*portNr*/)

@@ -55,7 +55,7 @@ namespace NESocket
         ::close(hSocket);
     }
 
-    int _osSendData(SOCKETHANDLE hSocket, const unsigned char* dataBuffer, int dataLength, int blockMaxSize /*= -1*/)
+    int _osSendData(SOCKETHANDLE hSocket, const unsigned char* dataBuffer, int dataLength, int blockMaxSize)
     {
         ASSERT(hSocket != NESocket::InvalidSocketHandle);
         ASSERT((dataBuffer != nullptr) && (dataLength > 0));

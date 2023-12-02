@@ -28,8 +28,8 @@
 Socket::Socket( void )
     : mSocket   ( )
     , mAddress  ( )
-    , mSendSize ( NESocket::DEFAULT_SEGMENT_SIZE )
-    , mRecvSize ( NESocket::DEFAULT_SEGMENT_SIZE )
+    , mSendSize ( NESocket::PACKET_DEFAULT_SIZE)
+    , mRecvSize ( NESocket::PACKET_DEFAULT_SIZE)
 {
     static_cast<void>(NESocket::socketInitialize( ));
 }
@@ -37,10 +37,12 @@ Socket::Socket( void )
 Socket::Socket(const SOCKETHANDLE hSocket, const NESocket::SocketAddress & sockAddress)
     : mSocket   ( std::make_shared<SOCKETHANDLE>(hSocket) )
     , mAddress  ( sockAddress )
-    , mSendSize ( NESocket::DEFAULT_SEGMENT_SIZE )
-    , mRecvSize ( NESocket::DEFAULT_SEGMENT_SIZE )
+    , mSendSize ( NESocket::PACKET_DEFAULT_SIZE )
+    , mRecvSize ( NESocket::PACKET_DEFAULT_SIZE )
 {
     static_cast<void>(NESocket::socketInitialize( ));
+    mSendSize = getSendPacketSize();
+    mRecvSize = getRecvPacketSize();
 }
 
 Socket::Socket( const Socket & source )
@@ -146,11 +148,11 @@ void Socket::closeSocketHandle( SOCKETHANDLE hSocket )
     }
 }
 
-unsigned int Socket::setSendSegmentSize(unsigned int sendSize, bool force /*= false*/) const
+unsigned int Socket::setSendPacketSize(unsigned int sendSize, bool force /*= false*/) const
 {
     if (isValid() == false)
     {
-        return NESocket::SEGMENT_INVALID_SIZE;
+        return NESocket::PACKET_INVALID_SIZE;
     }
 
     if (force || (sendSize > mSendSize))
@@ -161,16 +163,16 @@ unsigned int Socket::setSendSegmentSize(unsigned int sendSize, bool force /*= fa
     return mSendSize;
 }
 
-unsigned int Socket::setRecvSegmentSize(unsigned int recvSize, bool force /*= false*/) const
+unsigned int Socket::setRecvPacketSize(unsigned int recvSize, bool force /*= false*/) const
 {
     if (isValid() == false)
     {
-        return NESocket::SEGMENT_INVALID_SIZE;
+        return NESocket::PACKET_INVALID_SIZE;
     }
 
     if (force || (recvSize > mRecvSize))
     {
-        mRecvSize = NESocket::setMaxSendSize(*mSocket, recvSize);
+        mRecvSize = NESocket::setMaxReceiveSize(*mSocket, recvSize);
     }
 
     return mRecvSize;

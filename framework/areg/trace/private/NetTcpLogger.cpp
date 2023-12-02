@@ -68,7 +68,7 @@ bool NetTcpLogger::openLogger(void)
         }
         else
         {
-            mRingStack.reserve(0);
+            mRingStack.discard();
         }
     }
     else
