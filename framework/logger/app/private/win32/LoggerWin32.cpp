@@ -379,4 +379,9 @@ bool Logger::_osSetState( NESystemService::eSystemServiceState newState )
     return result;
 }
 
+bool Logger::_osWaitUserInput(char* buffer, unsigned int bufSize)
+{
+    return( gets_s(buffer, bufSize) != nullptr );
+}
+
 #endif // WINDOWS

@@ -135,7 +135,7 @@ AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageByeSer
     return _messageByeServer;
 }
 
-AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageAcceptClient()
+AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageNotifyClientConnection()
 {
     static constexpr NEMemory::sRemoteMessage _messageAcceptClient
     {
@@ -158,57 +158,6 @@ AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageAccept
     };
 
     return _messageAcceptClient;
-}
-
-AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageRejectClient( void )
-{
-    static constexpr NEMemory::sRemoteMessage _messageRejectClient
-    {
-        {
-            {   /*rbhBufHeader*/
-                  sizeof(NEMemory::sRemoteMessage)          // biBufSize
-                , sizeof(unsigned char)                     // biLength
-                , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
-                , NEMemory::eBufferType::BufferRemote       // biBufType
-                , 0                                         // biUsed
-            }
-            , NEMemory::INVALID_VALUE                       // rbhTarget
-            , NEMemory::INVALID_VALUE                       // rbhChecksum
-            , NEService::COOKIE_ROUTER                      // rbhSource
-            , static_cast<uint32_t>(NEService::eFuncIdRange::SystemServiceNotifyConnection)   // rbhMessageId
-            , NEMemory::MESSAGE_SUCCESS                     // rbhResult
-            , NEService::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
-        }
-        , {static_cast<char>(0)}
-    };
-
-    return _messageRejectClient;
-}
-
-
-AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageByeClient( void )
-{
-    static constexpr NEMemory::sRemoteMessage _messageByeClient
-    {
-        {
-            {   /*rbhBufHeader*/
-                  sizeof(NEMemory::sRemoteMessage)          // biBufSize
-                , sizeof(unsigned char)                     // biLength
-                , sizeof(NEMemory::sRemoteMessageHeader)    // biOffset
-                , NEMemory::eBufferType::BufferRemote       // biBufType
-                , 0                                         // biUsed
-            }
-            , NEMemory::INVALID_VALUE                       // rbhTarget
-            , NEMemory::INVALID_VALUE                       // rbhChecksum
-            , NEService::COOKIE_ROUTER                      // rbhSource
-            , static_cast<uint32_t>(NEService::eFuncIdRange::SystemServiceNotifyConnection)   // rbhMessageId
-            , NEMemory::MESSAGE_SUCCESS                     // rbhResult
-            , NEService::SEQUENCE_NUMBER_NOTIFY             // rbhSequenceNr
-        }
-        , {static_cast<char>(0)}
-    };
-
-    return _messageByeClient;
 }
 
 AREG_API_IMPL const NEMemory::sRemoteMessage & NERemoteService::getMessageRegisterService( void )
@@ -517,14 +466,14 @@ AREG_API_IMPL RemoteMessage NERemoteService::createDisconnectRequest(const ITEM_
 AREG_API_IMPL RemoteMessage NERemoteService::createConnectNotify( const ITEM_ID & source, const ITEM_ID & target )
 {
     RemoteMessage msgNotifyConnect;
-    if ( msgNotifyConnect.initMessage( NERemoteService::getMessageAcceptClient().rbHeader ) != nullptr )
+    if ( msgNotifyConnect.initMessage( NERemoteService::getMessageNotifyClientConnection().rbHeader ) != nullptr )
     {
         msgNotifyConnect.setSource(source);
         msgNotifyConnect.setTarget( target );
         msgNotifyConnect.setSequenceNr( NEService::SEQUENCE_NUMBER_ANY );
 
-        msgNotifyConnect << NEService::eServiceConnection::ServiceConnected;
         msgNotifyConnect << target;
+        msgNotifyConnect << NEService::eServiceConnection::ServiceConnected;
     }
 
     return msgNotifyConnect;
@@ -533,14 +482,14 @@ AREG_API_IMPL RemoteMessage NERemoteService::createConnectNotify( const ITEM_ID 
 AREG_API_IMPL RemoteMessage NERemoteService::createDisconnectNotify(const ITEM_ID & source, const ITEM_ID & target)
 {
     RemoteMessage msgNotifyDisconnect;
-    if ( msgNotifyDisconnect.initMessage( NERemoteService::getMessageByeClient().rbHeader ) != nullptr )
+    if ( msgNotifyDisconnect.initMessage( NERemoteService::getMessageNotifyClientConnection().rbHeader ) != nullptr )
     {
         msgNotifyDisconnect.setSource(source);
         msgNotifyDisconnect.setTarget( target );
         msgNotifyDisconnect.setSequenceNr( NEService::SEQUENCE_NUMBER_ANY );
 
-        msgNotifyDisconnect << NEService::eServiceConnection::ServiceDisconnected;
         msgNotifyDisconnect << target;
+        msgNotifyDisconnect << NEService::eServiceConnection::ServiceDisconnected;
     }
 
     return msgNotifyDisconnect;
@@ -549,14 +498,14 @@ AREG_API_IMPL RemoteMessage NERemoteService::createDisconnectNotify(const ITEM_I
 AREG_API_IMPL RemoteMessage NERemoteService::createRejectNotify(const ITEM_ID & source, const ITEM_ID & target)
 {
     RemoteMessage msgNotifyReject;
-    if ( msgNotifyReject.initMessage( NERemoteService::getMessageRejectClient().rbHeader ) != nullptr )
+    if ( msgNotifyReject.initMessage( NERemoteService::getMessageNotifyClientConnection().rbHeader ) != nullptr )
     {
         msgNotifyReject.setSource(source);
         msgNotifyReject.setTarget( target );
         msgNotifyReject.setSequenceNr( NEService::SEQUENCE_NUMBER_ANY );
 
-        msgNotifyReject << NEService::eServiceConnection::ServiceRejected;
         msgNotifyReject << target;
+        msgNotifyReject << NEService::eServiceConnection::ServiceRejected;
     }
 
     return msgNotifyReject;

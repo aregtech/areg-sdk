@@ -52,26 +52,18 @@ unsigned int IEByteBuffer::reserve(unsigned int size, bool copy)
 {
     if (size != 0 )
     {
+        // check that it is not shared
         if (mByteBuffer.use_count() <= 1)
         {
-            // If not enough shared 
-            unsigned int sizeLength{ 0 };
-            unsigned int sizeUsed{ 0 };
-            unsigned int sizeAlign{ getAlignedSize() };
-            if (isValid())
-            {
-                sizeLength  = mByteBuffer->bufHeader.biLength;
-                sizeUsed    = mByteBuffer->bufHeader.biUsed;
-            }
+            size = size > IEByteBuffer::MAX_BUF_LENGTH ? IEByteBuffer::MAX_BUF_LENGTH : size;
+            unsigned int sizeLength{ isValid() ? mByteBuffer->bufHeader.biLength : 0 };
 
-            if (size > IEByteBuffer::MAX_BUF_LENGTH)
+            // If not enough space
+            if (size > sizeLength)
             {
-                size = IEByteBuffer::MAX_BUF_LENGTH;
-            }
+                unsigned int sizeAlign{ getAlignedSize() };
+                unsigned int sizeBuffer{ getHeaderSize() + size };
 
-            if ( (size > sizeLength) || (size < sizeUsed) )
-            {
-                unsigned int sizeBuffer = getHeaderSize() + size;
                 sizeBuffer = MACRO_ALIGN_SIZE(sizeBuffer, sizeAlign);
                 unsigned char* buffer = DEBUG_NEW unsigned char[sizeBuffer];
                 int copied = static_cast<int>(initBuffer(buffer, sizeBuffer, copy));
@@ -115,7 +107,7 @@ unsigned int IEByteBuffer::initBuffer(unsigned char * newBuffer, unsigned int bu
         buffer->bufHeader.biOffset  = dataOffset;
         buffer->bufHeader.biBufType = NEMemory::eBufferType::BufferInternal;
 
-        if ( makeCopy )
+        if (makeCopy && (mByteBuffer.get() != nullptr))
         {
             unsigned char* data         = newBuffer + dataOffset;
             const unsigned char* srcBuf = NEMemory::getBufferDataRead(mByteBuffer.get());

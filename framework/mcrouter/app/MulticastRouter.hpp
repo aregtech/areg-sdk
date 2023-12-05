@@ -299,6 +299,14 @@ private:
      **/
     bool _osSetState( NESystemService::eSystemServiceState newState );
 
+    /**
+     * \brief   OS specific implementation of waiting for user input on console.
+     * \param   buffer  The allocated buffer to stream input from console.
+     * \param   bufSize The size of allocated bugger.
+     * \return  Returns true if succeeded to get user input.
+     **/
+    bool _osWaitUserInput(char* buffer, unsigned int bufSize);
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables.
 //////////////////////////////////////////////////////////////////////////

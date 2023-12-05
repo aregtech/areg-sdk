@@ -86,13 +86,22 @@ int ScopeController::setScopeGroupPriority( const String & scopeGroupName, unsig
     {
         mMapTraceScope.lock( );
 
-        for ( auto pos = mMapTraceScope.firstPosition( ); mMapTraceScope.isValidPosition( pos ); pos = mMapTraceScope.nextPosition( pos ) )
+        String scopeGroup{ scopeGroupName };
+        if (scopeGroupName.endsWith(NELogging::SYNTAX_SCOPE_GROUP))
         {
-            TraceScope * scope = mMapTraceScope.valueAtPosition( pos );
-            if ( scopeGroupName.compare( scope->getScopeName( ), true ) == NEMath::eCompare::Equal )
+            scopeGroup.resize(scopeGroup.getLength() - 1);
+        }
+
+        if (scopeGroup.isEmpty() || scopeGroup.endsWith(NELogging::SYNTAX_SCOPE_SEPARATOR))
+        {
+            for (auto pos = mMapTraceScope.firstPosition(); mMapTraceScope.isValidPosition(pos); pos = mMapTraceScope.nextPosition(pos))
             {
-                scope->setPriority( newPrio );
-                ++ result;
+                TraceScope* scope = mMapTraceScope.valueAtPosition(pos);
+                if (scopeGroup.isEmpty() || scope->getScopeName().startsWith(scopeGroup, true))
+                {
+                    scope->setPriority(newPrio);
+                    ++result;
+                }
             }
         }
 
@@ -287,7 +296,15 @@ void ScopeController::changeScopeActivityStatus( const String & scopeName, unsig
     }
     else
     {
-        setScopePriority( scopeName, logPrio );
+        if (scopeId != NETrace::TRACE_SCOPE_ID_NONE)
+        {
+            setScopePriority(scopeId, logPrio);
+        }
+        else
+        {
+            setScopePriority(scopeName, logPrio);
+        }
+
         mConfigScopeList.setAt( scopeName, logPrio );
     }
 }

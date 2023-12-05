@@ -117,7 +117,7 @@ refresh
 rename
 rmdir
 S_ISDIR
-scanf
+gets_s
 sched_get_priority_max
 sched_get_priority_min
 select
@@ -157,7 +157,8 @@ wcstoull
 write
 wmove
 wrefresh
-wscanw
+wgetnstr
+wscanw -- del
 ```
 
 Make sure that the target platform supports all of these functions and macro.

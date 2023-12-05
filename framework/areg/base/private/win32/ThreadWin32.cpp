@@ -176,7 +176,6 @@ bool Thread::_osCreateSystemThread( void )
             if (_registerThread() == false)
             {
                 result = false;
-                _unregisterThread();
                 _cleanResources();
             }
         }

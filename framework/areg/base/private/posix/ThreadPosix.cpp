@@ -148,6 +148,8 @@ Thread::eCompletionStatus Thread::_osDestroyThread(unsigned int waitForStopMs)
         OUTPUT_DBG("The thread [ %s ] should be terminated", mThreadAddress.getThreadName().getString());
         result = Thread::eCompletionStatus::ThreadTerminated;
         pthread_cancel(threadId);
+        this->mWaitForRun.resetEvent();
+        this->mWaitForExit.setEvent();
     }
     else
     {
@@ -184,7 +186,6 @@ bool Thread::_osCreateSystemThread( void )
                 if (_registerThread() == false)
                 {
                     result = false;
-                    _unregisterThread();
                     _cleanResources();
                 }
             }

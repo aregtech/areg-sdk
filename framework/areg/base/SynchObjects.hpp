@@ -1607,32 +1607,30 @@ inline bool SynchEvent::isAutoReset( void ) const
 
 inline bool SynchEvent::unlock( void )
 {
-    ASSERT( mSynchObject != nullptr );
-    return _osUnlockEvent( mSynchObject );
+    return (mSynchObject != nullptr ? _osUnlockEvent(mSynchObject) : false);
 }
 
 inline bool SynchEvent::lock( unsigned int timeout /* = NECommon::WAIT_INFINITE */ )
 {
-    ASSERT( mSynchObject != nullptr );
-    return _osLockEvent( timeout );
+    return (mSynchObject != nullptr ? _osLockEvent(timeout) : false);
 }
 
 inline bool SynchEvent::setEvent( void )
 {
-    ASSERT( mSynchObject != nullptr );
-    return _osSetEvent( );
+    return (mSynchObject != nullptr ? _osSetEvent( ) : false);
 }
 
 inline bool SynchEvent::resetEvent( void )
 {
-    ASSERT( mSynchObject != nullptr );
-    return _osResetEvent( );
+    return (mSynchObject != nullptr ? _osResetEvent( ) : false);
 }
 
 inline void SynchEvent::pulseEvent( void )
 {
-    ASSERT( mSynchObject != nullptr );
-    _osPulseEvent( );
+    if (mSynchObject != nullptr)
+    {
+        _osPulseEvent();
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////

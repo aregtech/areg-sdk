@@ -34,12 +34,6 @@
 
 #include <stdio.h>
 
-#ifdef MS_VISUAL_CPP
-    #define SCAN_S(fmt, buff, size)   scanf_s((fmt), (buff), size)
-#else   // !MS_VISUAL_CPP
-    #define SCAN_S(fmt, buff, size)   scanf((fmt), (buff))
-#endif  // MS_VISUAL_CPP
-
 namespace
 {
     //!< Clear the screen.
@@ -159,13 +153,10 @@ void Console::_osSetCursorCurPosition(Console::Coord pos) const
     printf("\x1B[%d;%dH", pos.posY, pos.posX);
 }
 
-void Console::_osWaitInput(const char * fmt, char* buffer, uint32_t size) const
+bool Console::_osWaitInputString(char* buffer, uint32_t size) const
 {
     ASSERT(buffer != nullptr);
-    if (SCAN_S(fmt, buffer, size) <= 0)
-    {
-        *buffer = '\0';
-    }
+    return (gets_s(buffer, static_cast<int>(size)) != nullptr);
 }
 
 void Console::_osRefreshScreen(void) const

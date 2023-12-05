@@ -36,7 +36,7 @@
  *          the very first position on screen starts with coordinate { 0, 0 }
  *          and the next line is { 0, 1 }. In addition, there are methods
  *          to get and set cursor position on the console, to clean the line
- *          read user input data from the console (similar to 'scanf') and
+ *          read user input data from the console (similar to 'gets_s') and
  *          wait until the user did not input the data on the console.
  *          The console is thread safe, so that if can run in multithreading
  *          environment where one thread is waiting for the user input and
@@ -104,7 +104,7 @@ public:
      * \brief   Before calling the method the console input must be enabled.
      *          Otherwise, the user cannot make input on console.
      *
-     *          Reads and converts formated inputs from console similar to 'scanf' method
+     *          Reads and converts formated inputs from console similar to 'gets_s' method
      *          and writes the data into the given arguments. Each argument must be a pointer
      *          to a variable of a type that corresponds to a type specifier in format. The maximum
      *          length of the strings must be specified in the format.
@@ -309,11 +309,10 @@ private:
     /**
      * \brief   A blocking call to wait for user input of string on the console.
      *          OS specific implementation.
-     * \brief   fmt     The format of string, should contains the limited size.
      * \brief   buffer  The buffer to fill in input, should be big enough.
      * \brief   size    The size of buffer.
      **/
-    void _osWaitInput(const char * fmt, char * buffer, uint32_t size) const;
+    bool _osWaitInputString(char * buffer, uint32_t size) const;
 
     /**
      * \brief   Refreshes the screen to display output messages.

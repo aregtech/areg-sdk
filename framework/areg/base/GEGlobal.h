@@ -48,8 +48,16 @@
     #define OUTPUT_DEBUG_LEVEL          OUTPUT_DEBUG_LEVEL_NONE
 #endif // DEBUG
 
+// enable using safe POSIX calls.
+#ifdef __STDC_LIB_EXT1__
+    #ifndef __STDC_WANT_LIB_EXT1__
+        #define __STDC_WANT_LIB_EXT1__      1
+    #endif  // __STDC_WANT_LIB_EXT1__
+#else   // __STDC_LIB_EXT1__
+        #define __STDC_WANT_LIB_EXT1__      0
+#endif  // __STDC_LIB_EXT1__
 
-/**
+ /**
  * \brief   Basic types
  **/
 #include "areg/base/GETypes.h"

@@ -170,6 +170,13 @@ public:
      **/
     inline void waitToComplete( );
 
+    /**
+     * \brief   Queues the message for sending
+     * \param   data        The data of the message.
+     * \param   eventPrio   The priority of the message to set.
+     **/
+    inline bool sendMessage(const RemoteMessage & data, Event::eEventPriority eventPrio = Event::eEventPriority::EventPriorityNormal );
+
 //////////////////////////////////////////////////////////////////////////
 // overrides
 //////////////////////////////////////////////////////////////////////////
@@ -400,12 +407,6 @@ protected:
      **/
     inline bool sendCommunicationMessage(ServiceEventData::eServiceEventCommands cmd, const RemoteMessage & msg, Event::eEventPriority eventPrio = Event::eEventPriority::EventPriorityNormal );
 
-    /**
-     * \brief   Queues the message for sending
-     * \param   data        The data of the message.
-     * \param   eventPrio   The priority of the message to set.
-     **/
-    inline bool sendMessage(const RemoteMessage & data, Event::eEventPriority eventPrio = Event::eEventPriority::EventPriorityNormal );
     /**
      * \brief   Call to send the disconnect event. It disconnects the socket  and exits the thread.
      * \param   eventPrio   The priority of set to the event.

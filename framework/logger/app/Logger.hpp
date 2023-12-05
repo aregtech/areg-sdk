@@ -256,6 +256,14 @@ private:
      **/
     inline const ServiceCommunicatonBase::MapInstances & getConnetedInstances( void ) const;
 
+    /**
+     * \brief   Enables or disables local log messages of the current process.
+     *          The method does not enable or disable logging, it only enables logging messages,
+     *          i.e. sets the priority NOTSET.
+     * \param   config  Instance of the configuration manager to enable or disable log messages.
+     * \param   enable  Flag, indicating whether the logs should be enabled or not.
+     *                  If true, the logs are enabled. Otherwise, the logs are disabled.
+     **/
     inline void enableLocalLogs(ConfigManager& config, bool enable);
 
     /**
@@ -298,6 +306,38 @@ private:
      **/
     static void _cleanHelp(void);
 
+    /**
+     * \brief   Triggered to process update scope priority command.
+     * \param   optScope    The option entry that contains scope priority update instruction.
+     *                      If the command contains a list of scopes to update, the should be split by ';'.
+     **/
+    static void _processUpdateScopes(const OptionParser::sOption& optScope);
+
+    /**
+     * \brief   Creates a list of remote messages to send to update log scope priorities.
+     *          On output the 'msgList' contains the list of message. Each message contains
+     *          instruction to update single scope or single scope group.
+     * \param   optScope    The option entry that contains scope priority update instruction.
+     *                      If the command contains a list of scopes to update, the should be split by ';'.
+     * \param   msgList     On output it contains a list a messages to send to the targets.
+     *                      If a message is referred to all connected clients, the target is NEService::COOKIE_ANY.
+     **/
+    static void _createScopeMessage(const OptionParser::sOption& optScope, TEArrayList<RemoteMessage> & OUT msgList);
+
+    /**
+     * \brief   Normalizes the scope to make it suitable to generate property object with the key and value.
+     * \param   scope   The scope to normalize.
+     * \return  Returns normalized scope priority string to parse and generate property object with key and value.
+     **/
+    static String _normalizeScopeProperty(const String & scope);
+
+    /**
+     * \brief   Creates a scope update message to send to the target client.
+     * \param   scope   The scope priority string to parse and create message.
+     * \return  Returns message to send to the remote target client.
+     **/
+    static RemoteMessage _createScopeUpdateMessage(const String& scope);
+
 //////////////////////////////////////////////////////////////////////////
 // OS specific hidden methods.
 //////////////////////////////////////////////////////////////////////////
@@ -338,6 +378,14 @@ private:
      * \brief   OS specific implementation of changing the state of the mcrouter service.
      **/
     bool _osSetState( NESystemService::eSystemServiceState newState );
+
+    /**
+     * \brief   OS specific implementation of waiting for user input on console.
+     * \param   buffer  The allocated buffer to stream input from console.
+     * \param   bufSize The size of allocated bugger.
+     * \return  Returns true if succeeded to get user input.
+     **/
+    bool _osWaitUserInput(char* buffer, unsigned int bufSize);
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.

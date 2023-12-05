@@ -154,15 +154,17 @@ void NetTcpLogger::processReceivedMessage(const RemoteMessage & msgReceived, Soc
 {
     if (msgReceived.isValid() && whichSource.isValid())
     {
+        ITEM_ID cookie{ NEService::COOKIE_UNKNOWN };
+        msgReceived >> cookie;
+        ASSERT((cookie == mChannel.getCookie()) || (mChannel.getCookie() <= NEService::COOKIE_LOCAL));
+
         NEService::eFuncIdRange msgId = static_cast<NEService::eFuncIdRange>(msgReceived.getMessageId());
         switch (msgId)
         {
         case NEService::eFuncIdRange::SystemServiceNotifyConnection:
         {
-            NEService::eServiceConnection connection = NEService::eServiceConnection::ServiceConnectionUnknown;
-            ITEM_ID cookie = NEService::COOKIE_UNKNOWN;
+            NEService::eServiceConnection connection{ NEService::eServiceConnection::ServiceConnectionUnknown };
             msgReceived >> connection;
-            msgReceived >> cookie;
 
             switch (connection)
             {
@@ -184,17 +186,18 @@ void NetTcpLogger::processReceivedMessage(const RemoteMessage & msgReceived, Soc
                 }
                 break;
 
-            case NEService::eServiceConnection::ServiceConnectionLost:
-                {
-                    cancelConnection();
-                    sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceLost);
-                }
-                break;
-
-            default:
+            case NEService::eServiceConnection::ServiceRejected:
                 {
                     cancelConnection();
                     sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceStopped);
+                }
+                break;
+
+            case NEService::eServiceConnection::ServiceConnectionLost:
+            default:
+                {
+                    cancelConnection();
+                    sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceLost);
                 }
                 break;
             }
@@ -204,18 +207,12 @@ void NetTcpLogger::processReceivedMessage(const RemoteMessage & msgReceived, Soc
         case NEService::eFuncIdRange::ServiceLogUpdateScopes:
             {
                 uint32_t scopeCount{ 0 };
-                String scopeName;
-                uint32_t scopeId{ 0 };
-                uint32_t scopePrio{ 0 };
-
+                NETrace::sScopeInfo scopeInfo{};
                 msgReceived >> scopeCount;
                 for ( uint32_t i = 0; i < scopeCount; ++ i)
                 {
-                    msgReceived >> scopeName;
-                    msgReceived >> scopeId;
-                    msgReceived >> scopePrio;
-
-                    TraceManager::updateScopes(scopeName, scopeId, scopePrio);
+                    msgReceived >> scopeInfo;
+                    TraceManager::updateScopes(scopeInfo.scopeName, scopeInfo.scopeId, scopeInfo.scopePrio);
                 }
             }
             break;
@@ -226,13 +223,13 @@ void NetTcpLogger::processReceivedMessage(const RemoteMessage & msgReceived, Soc
                 const uint32_t scopeCount{ scopes.getSize() };
                 const ITEM_ID & targetId{ msgReceived.getSource() };
 
-                RemoteMessage msgScopeBegin{ NETrace::messageRegisterScopesStart(targetId, scopeCount) };
+                RemoteMessage msgScopeBegin{ NETrace::messageRegisterScopesStart(mChannel.getCookie(), targetId, scopeCount) };
                 sendMessage(msgScopeBegin);
                 uint32_t scopesSent{ 0 };
                 NETrace::SCOPEPOS scopePos = scopes.invalidPosition();
                 while (scopeCount > scopesSent)
                 {
-                    RemoteMessage msgScope{ NETrace::messageRegisterScopes(targetId, static_cast<const NETrace::ScopeList &>(scopes), scopePos, NETrace::SCOPE_ENTRIES_MAX_COUNT) };
+                    RemoteMessage msgScope{ NETrace::messageRegisterScopes(mChannel.getCookie(), targetId, static_cast<const NETrace::ScopeList &>(scopes), scopePos, NETrace::SCOPE_ENTRIES_MAX_COUNT) };
                     if (msgScope.isValid())
                     {
                         sendMessage(msgScope);
@@ -241,7 +238,7 @@ void NetTcpLogger::processReceivedMessage(const RemoteMessage & msgReceived, Soc
                     scopesSent += NETrace::SCOPE_ENTRIES_MAX_COUNT;
                 }
 
-                RemoteMessage msgScopeEnd{ NETrace::messageRegisterScopesEnd(targetId) };
+                RemoteMessage msgScopeEnd{ NETrace::messageRegisterScopesEnd(mChannel.getCookie(), targetId) };
                 sendMessage(msgScopeEnd);
             }
             break;

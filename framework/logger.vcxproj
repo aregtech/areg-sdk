@@ -67,6 +67,7 @@
     <None Include="logger\resources\logger_post_build.bat" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="logger\app\private\CMakeLists.txt" />
     <Text Include="logger\CMakeLists.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
