@@ -54,6 +54,7 @@ getpeername
 getpid
 getpwuid
 getsockopt
+gets_s
 getyx
 gmtime
 gmtime_r
@@ -117,7 +118,6 @@ refresh
 rename
 rmdir
 S_ISDIR
-gets_s
 sched_get_priority_max
 sched_get_priority_min
 select

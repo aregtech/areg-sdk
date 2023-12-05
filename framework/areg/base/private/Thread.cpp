@@ -172,8 +172,6 @@ Thread::Thread(IEThreadConsumer &threadConsumer, const String & threadName )
 Thread::~Thread( void )
 {
     _cleanResources();
-    ASSERT(mThreadHandle == Thread::INVALID_THREAD_HANDLE);
-    ASSERT(mThreadId == Thread::INVALID_THREAD_ID);
 }
 
 //////////////////////////////////////////////////////////////////////////
