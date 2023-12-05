@@ -156,7 +156,16 @@ void Console::_osSetCursorCurPosition(Console::Coord pos) const
 bool Console::_osWaitInputString(char* buffer, uint32_t size) const
 {
     ASSERT(buffer != nullptr);
-    return (gets_s(buffer, static_cast<int>(size)) != nullptr);
+#if !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
+    #if defined(WINDOWS)
+        return (::gets_s(buffer, size) != nullptr);
+    #else   // defined(WINDOWS)
+        return (::fgets(buffer, size, stdin) != nullptr);
+    #endif  // defined(WINDOWS)
+#else
+        return (::gets_s(buffer, size) != nullptr);
+#endif // WINDOWS
+
 }
 
 void Console::_osRefreshScreen(void) const
