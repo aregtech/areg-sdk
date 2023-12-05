@@ -142,4 +142,13 @@ bool Logger::_osSetState( NESystemService::eSystemServiceState newState )
     return result;
 }
 
+bool Logger::_osWaitUserInput(char* buffer, unsigned int bufSize)
+{
+#if __STDC_WANT_LIB_EXT1__
+    return(gets_s(buffer, bufSize) != nullptr);
+#else   // __STDC_WANT_LIB_EXT1__
+    return (fgets(buffer, bufSize, stdin) != nullptr);
+#endif  // __STDC_WANT_LIB_EXT1__
+}
+
 #endif  // _POSIX

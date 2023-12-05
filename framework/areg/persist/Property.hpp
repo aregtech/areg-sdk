@@ -51,6 +51,13 @@ public:
     Property( void );
 
     /**
+     * \brief   Initializes property key and value by parsing passed string.
+     * \param   strProperty     The string to parse. It should contain key and value.
+     *                          Otherwise, the property remains invalid.
+     **/
+    Property(const String strProperty);
+
+    /**
      * \brief   Initializes the property, sets the key, value, comment and the optional flag to indicate whether the
      *          property can be saved in the configuration for the next session or not.
      * \param   key         The key of the property.
@@ -190,6 +197,11 @@ public:
      * \brief   Returns Key value of the property
      **/
     const PropertyKey & getKey( void ) const;
+
+    /**
+     * \brief   Returns the property key type value.
+     **/
+    NEPersistence::eConfigKeys getPropertyType(void) const;
 
     /**
      * \brief   Returns string value of the Key. 

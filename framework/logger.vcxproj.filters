@@ -89,5 +89,6 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="logger\CMakeLists.txt" />
+    <Text Include="logger\app\private\CMakeLists.txt" />
   </ItemGroup>
 </Project>

@@ -84,19 +84,10 @@ namespace NERemoteService
     AREG_API const NEMemory::sRemoteMessage & getMessageByeServer( void );
 
     /**
-     * \brief   Returns fixed message to notify client connection acceptance
+     * \brief   Returns fixed message to notify client connection statuses such as
+     *          connection accepted, connection rejected and connection is closed.
      **/
-    AREG_API const NEMemory::sRemoteMessage & getMessageAcceptClient( void );
-
-    /**
-     * \brief   Returns fixed message to notify client connected rejection
-     **/
-    AREG_API const NEMemory::sRemoteMessage & getMessageRejectClient( void );
-
-    /**
-     * \brief   Returns fixed message to notify client disconnect
-     **/
-    AREG_API const NEMemory::sRemoteMessage & getMessageByeClient( void );
+    AREG_API const NEMemory::sRemoteMessage & getMessageNotifyClientConnection( void );
 
     /**
      * \brief   Returns fixed message to start service registration

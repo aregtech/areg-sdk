@@ -140,16 +140,10 @@ void Console::_osSetCursorCurPosition(Console::Coord pos) const
     }
 }
 
-void Console::_osWaitInput(const char * fmt, char* buffer, uint32_t size) const
+bool Console::_osWaitInputString(char* buffer, uint32_t size) const
 {
     ASSERT(buffer != nullptr);
-    if (mContext != 0)
-    {
-        if (wscanw(reinterpret_cast<WINDOW*>(mContext), fmt, buffer) <= 0)
-        {
-            *buffer = '\0';
-        }
-    }
+    return ((mContext != 0) && (wgetnstr(reinterpret_cast<WINDOW*>(mContext), buffer, static_cast<int>(size)) == OK));
 }
 
 void Console::_osRefreshScreen(void) const

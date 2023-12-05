@@ -36,10 +36,44 @@ namespace
     }
 
     template<typename CharType>
-    inline void _splitOptions( const CharType * optLine, OptionParser::StrList & optList )
+    inline bool isSpace(CharType ch)
     {
         constexpr CharType space{ ' ' };
+        constexpr CharType endol{ '\n' };
+        constexpr CharType carrg{ '\r' };
+        return (ch == space) || (ch == endol) || (ch == carrg);
+    }
+
+    template<typename CharType>
+    inline bool isQuote(CharType ch)
+    {
         constexpr CharType quote{ '\"' };
+        return (ch == quote);
+    }
+
+    template<typename CharType>
+    inline bool isEqual(CharType ch)
+    {
+        constexpr CharType equal{ '=' };
+        return (ch == equal);
+    }
+
+    template<typename CharType>
+    inline bool isEofCommand(CharType ch)
+    {
+        constexpr CharType EofCmd{ ';' };
+        return (ch == EofCmd);
+    }
+
+    template<typename CharType>
+    inline bool isDelimiter(CharType ch)
+    {
+        return isSpace<CharType>(ch) || isEqual<CharType>(ch) || isEofCommand<CharType>(ch);
+    }
+
+    template<typename CharType>
+    inline void _splitOptions( const CharType * optLine, OptionParser::StrList & optList )
+    {
         constexpr CharType eos{ static_cast<CharType>(NEString::EndOfString) };
 
         if ( NEString::isEmpty<CharType>( optLine ) )
@@ -49,22 +83,32 @@ namespace
         const CharType * src = optLine;
         while ( *src != eos )
         {
-            if ( *src == space )
+            if (isDelimiter<CharType>(*src))
             {
                 if ( begin != src )
                 {
                     String str( begin, MACRO_ELEM_COUNT( begin, src ) );
                     optList.push_back( str );
                 }
+                else if (isSpace<CharType>(*src) == false)
+                {
+                    ++ src;
+                    String str(begin, MACRO_ELEM_COUNT(begin, src));
+                    optList.push_back(str);
+                }
+                else
+                {
+                    ++ src;
+                }
 
-                while ( (*src == space) && (*src != eos) )
+                while ( isSpace<CharType>(*src) )
                 {
                     ++ src;
                 }
 
                 begin = src;
             }
-            else if ( *src == quote )
+            else if ( isQuote<CharType>(*src) )
             {
                 if ( begin != src )
                 {
@@ -74,12 +118,12 @@ namespace
 
                 begin = src ++;
 
-                while ( (*src != quote) && (*src != eos) )
+                while ( !isQuote<CharType>(*src) && (*src != eos))
                 {
                     ++ src;
                 }
 
-                if (*src == quote)
+                if ( isQuote<CharType>(*src) )
                 {
                     if ( begin != src ++ )
                     {
@@ -337,10 +381,19 @@ OptionParser::sOption OptionParser::_setupInput( bool isShort, String cmdLine, u
 
 void OptionParser::_setInputValue( String & newValue, sOption & opt, uint32_t refSetup )
 {
+    const sOptionSetup& setup{ mSetupOptions[refSetup] };
+
     if ( newValue.startsWith( DELIMITER_EQUAL, true ) )
     {
-        newValue.substring( 1 );
-        newValue.trimAll( );
+        if ((OptionParser::isString(setup.optField) ==  false) || (opt.inString.size() == 0))
+        {
+            newValue.substring(1);
+            ASSERT(*newValue.getString() != *DELIMITER_SPACE.data());
+        }
+    }
+    else
+    {
+
     }
 
     bool cleaned = _cleanQuote( newValue );
@@ -348,7 +401,6 @@ void OptionParser::_setInputValue( String & newValue, sOption & opt, uint32_t re
     if ( newValue.isEmpty( ) == false )
     {
         ASSERT( (refSetup >= 0) && (refSetup < mSetupOptions.getSize( )) );
-        const sOptionSetup & setup = mSetupOptions[ refSetup ];
         if ( OptionParser::isEmptyData( setup.optField ) )
         {
             // the option should not have data. It is an error

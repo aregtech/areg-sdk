@@ -24,6 +24,7 @@
 #include "areg/base/NESocket.hpp"
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/base/String.hpp"
+#include "areg/base/TEArrayList.hpp"
 #include "areg/base/TEHashMap.hpp"
 #include "areg/component/NEService.hpp"
 
@@ -47,10 +48,24 @@ namespace NETrace
 {
     //!< The list of the scopes. It is a pair, where the key is the ID of the scope
     //!< and the value is the pointer to the scope.
-    using ScopeList = TEHashMap<unsigned int, TraceScope*>;
-
+    using ScopeList     = TEHashMap<unsigned int, TraceScope*>;
     //!< Alias of the map position.
-    using SCOPEPOS = ScopeList::MAPPOS;
+    using SCOPEPOS      = ScopeList::MAPPOS;
+
+    /**
+     * \brief   NETrace::sScopeInfo
+     *          The structure to keep scope information. It is used to generate scope priority update messages.
+     *          The structure contains scope name, scope ID and scope priority values.
+     **/
+    struct sScopeInfo
+    {
+        String       scopeName; //!< The name of the scope or scope group.
+        unsigned int scopeId;   //!< The scope ID, can be 0 (NETrace::TRACE_SCOPE_ID_NONE). For scope group should be 0.
+        unsigned int scopePrio; //!< The scope priority.
+    };
+
+    //!< The list of scope update structure.
+    using ScopeNames    = TEArrayList<sScopeInfo>;
 
     /**
      * \brief   The supported logging version
@@ -439,25 +454,31 @@ namespace NETrace
     AREG_API void logMessage(const RemoteMessage& message);
 
     /**
-     * \brief   Creates a message for logging service to start registering application logging scopes.
-     * \param   scopeCount  The number of scopes to send to register.
-     * \return  Returns generated message.
-     **/
-    AREG_API RemoteMessage messageRegisterScopesStart( const ITEM_ID & target, unsigned int scopeCount );
-
-    /**
-     * \brief   Creates a message for logging service to end registering application logging scopes.
-     * \return  Returns generated message.
-     **/
-    AREG_API RemoteMessage messageRegisterScopesEnd(const ITEM_ID & target);
-
-    /**
      * \brief   The maximum scope entries in one message.
      **/
     constexpr uint32_t  SCOPE_ENTRIES_MAX_COUNT     { 1'000u };
 
     /**
+     * \brief   Creates a message for logging service to start registering application logging scopes.
+     * \param   source      The ID of the source that generated the message.
+     * \param   target      The ID of the target to send the message
+     * \param   scopeCount  The number of scopes to send to register.
+     * \return  Returns generated message ready to send from indicated source to the target.
+     **/
+    AREG_API RemoteMessage messageRegisterScopesStart( const ITEM_ID & source, const ITEM_ID & target, unsigned int scopeCount );
+
+    /**
+     * \brief   Creates a message for logging service to end registering application logging scopes.
+     * \param   source      The ID of the source that generated the message.
+     * \param   target      The ID of the target to send the message
+     * \return  Returns generated message ready to send from indicated source to the target.
+     **/
+    AREG_API RemoteMessage messageRegisterScopesEnd(const ITEM_ID & source, const ITEM_ID & target);
+
+    /**
      * \brief   Creates a message for logging service to register scopes with message priority.
+     * \param   source      The ID of the source that generated the message.
+     * \param   target      The ID of the target to send the message
      * \param   scopeList   The list of scopes to register.
      * \param   startAt     The position in the list to extract and register scopes.
      *                          - If in input the value is invalid, it starts to register from beginning.
@@ -467,9 +488,34 @@ namespace NETrace
      *                            in the list.
      * \param   maxEntries  The maximum entries to push to scope registering message.
      *                      If the value is 0xFFFFFFFF, it registers all entries.
-     * \return  Returns generated message.
+     * \return  Returns generated message ready to send from indicated source to the target.
      **/
-    AREG_API RemoteMessage messageRegisterScopes(const ITEM_ID & target, const ScopeList & scopeList, SCOPEPOS & startAt, unsigned int maxEntries = 0xFFFFFFFF );
+    AREG_API RemoteMessage messageRegisterScopes(const ITEM_ID & source, const ITEM_ID & target, const NETrace::ScopeList & scopeList, NETrace::SCOPEPOS & startAt, unsigned int maxEntries = 0xFFFFFFFF );
+
+    /**
+     * \brief   Creates a message to update the list of log scopes and priorities. This message can change the priority either
+     *          of a certain scope or a scope group. The scope ID in the ScopeNames list can be set or missed.
+     *          If a scope name in the ScopeNames is indicating on a scope group, the scope ID can be missed.
+     * \param   source      The ID of the source that generated the message.
+     * \param   target      The ID of the target to send the message.
+     * \param   scopeNames  The list that consists of scope ID, log scope priority and scope name.
+     *                      The scope name can indicate on the scope group.
+     *                      The scope IDs can be set or missed (set 0).
+     * \return  Returns generated message ready to send from indicated source to the target.
+     **/
+    AREG_API RemoteMessage messageUpdateScopes(const ITEM_ID & source, const ITEM_ID & target, const NETrace::ScopeNames & scopeNames);
+
+    /**
+     * \brief   Creates a message to update the logging priority of a single scope or a single group of scopes.
+     *          The group of scopes ends with '*' sign. For example, the scope "areg_*" indicates all scopes that start with "areg_".
+     * \param   source      The ID of the source that generated the message.
+     * \param   target      The ID of the target to send the message.
+     * \param   scopeName   The scope name that indicates single scope or single group of scopes.
+     * \param   scopeId     The ID of the scope. Can be missed (set 0). For scope group it should be 0.
+     * \param   scopePrio   The logging priority of the scope.
+     * \return  Returns generated message ready to send from indicated source to the target.
+     **/
+    AREG_API RemoteMessage messageUpdateScope(const ITEM_ID& source, const ITEM_ID& target, const String & scopeName, unsigned int scopeId, unsigned int scopePrio);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -508,6 +554,28 @@ inline IEOutStream& operator << (IEOutStream& stream, const NETrace::sLogMessage
 {
     stream.write(reinterpret_cast<const unsigned char *>(&output), offsetof(NETrace::sLogMessage, logMessage));
     stream.write(reinterpret_cast<const unsigned char *>(output.logMessage), output.logMessageLen + 1);
+    return stream;
+}
+
+/**
+ * \brief   Deserializes a scope update structure from the stream.
+ * \param   stream  The source of data that contains scope update structure information.
+ * \param   input   On output this contains structured scope update data.
+ **/
+inline const IEInStream& operator >> (const IEInStream& stream, NETrace::sScopeInfo & input)
+{
+    stream >> input.scopeName >> input.scopeId >> input.scopePrio;
+    return stream;
+}
+
+/**
+ * \brief   Serializes a scope update structure to the stream.
+ * \param   stream  The streaming object to save scope update information.
+ * \param   output  The source of scope update structure to serialize message.
+ **/
+inline IEOutStream& operator << (IEOutStream& stream, const NETrace::sScopeInfo & output)
+{
+    stream << output.scopeName << output.scopeId << output.scopePrio;
     return stream;
 }
 

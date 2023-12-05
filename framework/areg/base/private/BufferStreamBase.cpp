@@ -268,7 +268,8 @@ unsigned int BufferStreamBase::writeData(const unsigned char* buffer, unsigned i
     ASSERT( (buffer != nullptr) || (size == 0) );
     unsigned int result     = 0;
     unsigned int writePos   = isValid() ? mWritePosition.getPosition() : 0;
-    unsigned int remain     = reserve(writePos + size, writePos != 0);
+    unsigned int remain     = reserve(writePos + size, true);
+    mWritePosition.setPosition(static_cast<int>(writePos), IECursorPosition::eCursorPosition::PositionBegin);
 
     if ((remain != 0) && (size != 0))
     {

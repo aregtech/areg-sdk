@@ -357,10 +357,10 @@ public:
     void activateScope( TraceScope & traceScope, unsigned int defaultPriority );
 
     /**
-     * \brief   Changes the logging priority of specified scope. If found a scope with specified name,
-     *          the system changes logging priority
-     * \param   scopeName   The name of scope to search in the system to change priority.
-     * \param   logPriority The logging priority to set for scope.
+     * \brief   Activates or deactivates the scope based on the log scope priority set in the configuration.
+     * \param   makeActive  Flag, indicating whether scopes should be activated or deactivated.
+     *                      If true, it lookups in the configuration settings and updates the priority.
+     *                      Otherwise, it deactivates all scopes, so that no messages are logged.
      **/
     void changeScopeActivityStatus( bool makeActive );
 

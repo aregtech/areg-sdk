@@ -50,17 +50,23 @@ void ServerConnection::closeAllConnections(void)
 {
     Lock lock( mLock );
     RemoteMessage msgByeClient;
-    if ( msgByeClient.initMessage(NERemoteService::getMessageByeClient().rbHeader ) != nullptr )
+    if ( msgByeClient.initMessage(NERemoteService::getMessageNotifyClientConnection().rbHeader ) != nullptr )
     {
         msgByeClient.setSequenceNr( NEService::SEQUENCE_NUMBER_ANY );
         msgByeClient.setSource( mChannelId );
-    }
 
-    for ( MapSocketToObject::MAPPOS pos = mAcceptedConnections.firstPosition(); mAcceptedConnections.isValidPosition(pos); pos = mAcceptedConnections.nextPosition(pos) )
-    {
-        SocketAccepted clientConnection = mAcceptedConnections.valueAtPosition(pos);
-        msgByeClient.setTarget( getCookie(clientConnection) );
-        sendMessage(msgByeClient, clientConnection);
+        for (MapSocketToObject::MAPPOS pos = mAcceptedConnections.firstPosition(); mAcceptedConnections.isValidPosition(pos); pos = mAcceptedConnections.nextPosition(pos))
+        {
+            SocketAccepted clientConnection = mAcceptedConnections.valueAtPosition(pos);
+            const ITEM_ID& target{ getCookie(clientConnection) };
+            if (target >= NEService::COOKIE_REMOTE_SERVICE)
+            {
+                RemoteMessage msgDisconnect{ msgByeClient.clone() };
+                msgDisconnect.setTarget(target);
+                msgDisconnect << target << NEService::eServiceConnection::ServiceDisconnected;
+                sendMessage(msgDisconnect, clientConnection);
+            }
+        }
     }
 
     mMasterList.clear();

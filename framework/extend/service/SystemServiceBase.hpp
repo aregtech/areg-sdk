@@ -74,6 +74,12 @@ public:
     virtual void serviceMain( int argc, char ** argv );
 
     /**
+     * \brief   Sends remote message to the target specified in the message structure.
+     * \param   message     The message to send to the target. The message contains information of the source and target.
+     **/
+    virtual void sendMessageToTarget(const RemoteMessage& message);
+
+    /**
      * \brief   Call to install (register) message router service in the system.
      * \return  Returns true if registration succeeded.
      **/

@@ -85,7 +85,7 @@ void HelloThread::onThreadRuns( void )
     Thread::sleep( NECommon::WAIT_500_MILLISECONDS);
 }
 
-//! \brief   A disatcher thread that runs timer.
+//! \brief   A dispatcher thread that runs timer.
 class HelloDispatcher   : public    DispatcherThread
                         , private   IETimerConsumer
 {

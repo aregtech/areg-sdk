@@ -25,6 +25,14 @@ Property::Property(void)
 {
 }
 
+Property::Property(const String strProperty)
+    : mIsTemporary  (false)
+    , mComment      (String::EmptyString)
+    , mProperty     ()
+{
+    parseProperty(strProperty);
+}
+
 Property::Property(const PropertyKey& key, const PropertyValue& value, const String& comment /*= String::EmptyString*/, bool isTemporary /* = false*/)
     : mIsTemporary  (isTemporary)
     , mComment      (comment)
@@ -152,6 +160,11 @@ void Property::setKey( PropertyKey && Key )
 const PropertyKey & Property::getKey(void) const
 {
     return mProperty.mValue.first;
+}
+
+NEPersistence::eConfigKeys Property::getPropertyType(void) const
+{
+    return mProperty.mValue.first.getKeyType();
 }
 
 String Property::getKeyString(void) const

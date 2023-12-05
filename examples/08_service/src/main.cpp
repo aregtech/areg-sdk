@@ -57,7 +57,7 @@ int main()
 
     do 
     {
-        unsigned int timeout{ NECommon::WAIT_5_SECONDS };
+        unsigned int timeout{ NECommon::WAIT_10_SECONDS };
 
         TRACE_SCOPE(examples_08_service_main);
         TRACE_DBG("The application has been initialized, loading model [ %s ]", _modelName);

@@ -29,13 +29,6 @@
 
 #include <stdio.h>
 
-#ifdef _WINDOWS
-    #define MACRO_SCANF(fmt, data, len)     scanf_s(fmt, data, len)
-#else   // _POSIX
-    #define MACRO_SCANF(fmt, data, len)     scanf(fmt, data)
-#endif  // _WINDOWS
-
-
 //////////////////////////////////////////////////////////////////////////
 // The model used only in console mode.
 //////////////////////////////////////////////////////////////////////////
@@ -187,8 +180,7 @@ void MulticastRouter::runConsoleInputSimple( void )
     do
     {
         printf( "%s", NESystemService::FORMAT_WAIT_QUIT.data( ) );
-        int count = MACRO_SCANF( "%510s", cmd, 512 );
-        if ((count <= 0) || (count >= 512))
+        if (_osWaitUserInput(cmd, 512))
             continue;
 
         quit = MulticastRouter::_checkCommand( cmd );

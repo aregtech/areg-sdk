@@ -59,7 +59,7 @@ WaitableTimerIX::WaitableTimerIX(bool isAutoReset /*= false*/, const char * name
     sigEvent.sigev_notify_function  = &WaitableTimerIX::_posixTimerRoutine;
     sigEvent.sigev_notify_attributes= nullptr;
 
-    if (RETURNED_OK != ::timer_create(CLOCK_MONOTONIC, &sigEvent, &mTimerId))
+    if (RETURNED_OK != ::timer_create(CLOCK_REALTIME, &sigEvent, &mTimerId))
     {
         mTimerId = static_cast<timer_t>(0);
     }

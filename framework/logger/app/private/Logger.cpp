@@ -25,17 +25,11 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/persist/ConfigManager.hpp"
 #include "areg/trace/GETrace.h"
+#include "areg/trace/NETrace.hpp"
 
 #include "extend/console/Console.hpp"
 
 #include <stdio.h>
-
-#ifdef _WINDOWS
-    #define MACRO_SCANF(fmt, data, len)     scanf_s(fmt, data, len)
-#else   // _POSIX
-    #define MACRO_SCANF(fmt, data, len)     scanf(fmt, data)
-#endif  // _WINDOWS
-
 
 //////////////////////////////////////////////////////////////////////////
 // The model used only in console mode.
@@ -106,21 +100,21 @@ DEF_TRACE_SCOPE(logger_app_logger_setState);
 
 const OptionParser::sOptionSetup Logger::ValidOptions[ ]
 {
-      { "-a", "--save"      , static_cast<int>(eLoggerOptions::CMD_LogSaveLogs)     , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-b", "--unsave"    , static_cast<int>(eLoggerOptions::CMD_LogSaveLogsStop) , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-c", "--console"   , static_cast<int>(eLoggerOptions::CMD_LogConsole)      , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-f", "--config"    , static_cast<int>(eLoggerOptions::CMD_LogSaveConfig)   , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-h", "--help"      , static_cast<int>(eLoggerOptions::CMD_LogPrintHelp)    , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-i", "--install"   , static_cast<int>(eLoggerOptions::CMD_LogInstall)      , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-l", "--silent"    , static_cast<int>(eLoggerOptions::CMD_LogSilent)       , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-n", "--instances" , static_cast<int>(eLoggerOptions::CMD_LogInstances)    , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-o", "--scope"     , static_cast<int>(eLoggerOptions::CMD_LogUpdateScope)  , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-p", "--pause"     , static_cast<int>(eLoggerOptions::CMD_LogPause)        , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-q", "--quit"      , static_cast<int>(eLoggerOptions::CMD_LogQuit)         , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-r", "--restart"   , static_cast<int>(eLoggerOptions::CMD_LogRestart)      , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-s", "--service"   , static_cast<int>(eLoggerOptions::CMD_LogService)      , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-u", "--uninstall" , static_cast<int>(eLoggerOptions::CMD_LogUninstall)    , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-v", "--verbose"   , static_cast<int>(eLoggerOptions::CMD_LogVerbose)      , OptionParser::NO_DATA , {}, {}, {} }
+      { "-a", "--save"      , static_cast<int>(eLoggerOptions::CMD_LogSaveLogs)     , OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-b", "--unsave"    , static_cast<int>(eLoggerOptions::CMD_LogSaveLogsStop) , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-c", "--console"   , static_cast<int>(eLoggerOptions::CMD_LogConsole)      , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-f", "--config"    , static_cast<int>(eLoggerOptions::CMD_LogSaveConfig)   , OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-h", "--help"      , static_cast<int>(eLoggerOptions::CMD_LogPrintHelp)    , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-i", "--install"   , static_cast<int>(eLoggerOptions::CMD_LogInstall)      , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-l", "--silent"    , static_cast<int>(eLoggerOptions::CMD_LogSilent)       , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-n", "--instances" , static_cast<int>(eLoggerOptions::CMD_LogInstances)    , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-o", "--scope"     , static_cast<int>(eLoggerOptions::CMD_LogUpdateScope)  , OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-p", "--pause"     , static_cast<int>(eLoggerOptions::CMD_LogPause)        , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-q", "--quit"      , static_cast<int>(eLoggerOptions::CMD_LogQuit)         , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-r", "--restart"   , static_cast<int>(eLoggerOptions::CMD_LogRestart)      , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-s", "--service"   , static_cast<int>(eLoggerOptions::CMD_LogService)      , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-u", "--uninstall" , static_cast<int>(eLoggerOptions::CMD_LogUninstall)    , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-v", "--verbose"   , static_cast<int>(eLoggerOptions::CMD_LogVerbose)      , OptionParser::NO_DATA         , {}, {}, {} }
 };
 
 Logger & Logger::getInstance(void)
@@ -194,8 +188,7 @@ void Logger::runConsoleInputSimple( void )
     do
     {
         printf( "%s", NESystemService::FORMAT_WAIT_QUIT.data( ) );
-        int count = MACRO_SCANF( "%510s", cmd, 512 );
-        if ((count <= 0) || (count >= 512))
+        if (_osWaitUserInput(cmd, 512) == false)
             continue;
 
         quit = Logger::_checkCommand( cmd );
@@ -434,7 +427,10 @@ bool Logger::_checkCommand(const String& cmd)
                 Logger::_outputInfo("This command should be used in command line ...");
                 break;
 
-            case eLoggerOptions::CMD_LogUpdateScope:    // fall through
+            case eLoggerOptions::CMD_LogUpdateScope:
+                Logger::_processUpdateScopes(opt);
+                break;
+
             case eLoggerOptions::CMD_LogSaveLogs:       // fall through
             case eLoggerOptions::CMD_LogSaveConfig:     // fall through
             case eLoggerOptions::CMD_LogSaveLogsStop:
@@ -662,6 +658,124 @@ void Logger::_cleanHelp(void)
     console.unlockConsole();
 
 #endif  // AREG_EXTENDED
+}
+
+void Logger::_processUpdateScopes(const OptionParser::sOption& optScope)
+{
+    Logger& logger{ Logger::getInstance() };
+    const ServiceCommunicatonBase::MapInstances& instances{ logger.getConnetedInstances() };
+
+    TEArrayList<RemoteMessage> msgList;
+    _createScopeMessage(optScope, msgList);
+    for (const auto& entry : msgList.getData())
+    {
+        if (entry.getTarget() == NEService::COOKIE_ANY)
+        {
+            for (const auto& inst : instances.getData())
+            {
+                const ITEM_ID target{ inst.first };
+                RemoteMessage msg{ entry.clone(NEService::COOKIE_LOGGER, target) };
+                msg.moveToBegin();
+                msg.setTarget(target);
+                msg << target;
+
+                logger.sendMessageToTarget(msg);
+            }
+        }
+        else
+        {
+            logger.sendMessageToTarget(entry);
+        }
+    }
+}
+
+void Logger::_createScopeMessage(const OptionParser::sOption& optScope, TEArrayList<RemoteMessage>& OUT msgList)
+{
+    ASSERT(optScope.inCommand == static_cast<int>(eLoggerOptions::CMD_LogUpdateScope));
+    ASSERT(optScope.inString.empty() == false);
+
+    const OptionParser::StrList& optValues{ optScope.inString };
+    String scope;
+    for (const auto& entry : optValues)
+    {
+        if (entry == NEPersistence::SYNTAX_END_COMMAND)
+        {
+            RemoteMessage msg{ Logger::_createScopeUpdateMessage(scope) };
+            scope.clear();
+            if (msg.isValid() == false)
+            {
+                msgList.clear();
+                break;
+            }
+            else
+            {
+                msgList.add(msg);
+            }
+        }
+        else
+        {
+            scope += entry;
+        }
+    }
+
+    if (scope.isEmpty() == false)
+    {
+        RemoteMessage msg{ Logger::_createScopeUpdateMessage(scope) };
+        if (msg.isValid() == false)
+        {
+            msgList.clear();
+        }
+        else
+        {
+            msgList.add(msg);
+        }
+    }
+}
+
+String Logger::_normalizeScopeProperty(const String & scope)
+{
+    const NEPersistence::sPropertyKey& propKey{ NEPersistence::DefaultPropertyKeys[static_cast<uint32_t>(NEPersistence::eConfigKeys::EntryLogScope)] };
+    String result;
+    if (scope.startsWith(propKey.property))
+    {
+        result.append(propKey.section)
+              .append(NEPersistence::SYNTAX_OBJECT_SEPARATOR)
+              .append(NEPersistence::SYNTAX_ALL_MODULES)
+              .append(NEPersistence::SYNTAX_OBJECT_SEPARATOR)
+              .append(scope);
+    }
+    else
+    {
+        result.append(propKey.section)
+              .append(NEPersistence::SYNTAX_OBJECT_SEPARATOR)
+              .append(scope);
+    }
+
+    return result;
+}
+
+RemoteMessage Logger::_createScopeUpdateMessage(const String& scope)
+{
+    RemoteMessage result;
+
+    if (scope.isEmpty() == false)
+    {
+        Property prop(Logger::_normalizeScopeProperty(scope));
+        if (prop.isValid() && prop.getPropertyType() == NEPersistence::eConfigKeys::EntryLogScope)
+        {
+            const PropertyKey& key{ prop.getKey() };
+            ITEM_ID target{ key.isAllModules() ? NEService::COOKIE_ANY : key.getModule().toUInt32() };
+            if (target >= NEService::COOKIE_ANY)
+            {
+                String scopeName{ key.getPosition() };
+                uint32_t scopePrio{ prop.getValue().getIndetifier(NEApplication::LogScopePriorityIndentifiers) };
+                result = NETrace::messageUpdateScope(NEService::COOKIE_LOGGER, target, scopeName, NETrace::TRACE_SCOPE_ID_NONE, scopePrio);
+                result.setTarget(target);
+            }
+        }
+    }
+
+    return result;
 }
 
 inline void Logger::enableLocalLogs(ConfigManager& config, bool enable)

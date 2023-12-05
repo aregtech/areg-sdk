@@ -285,8 +285,8 @@ void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, So
             {
                 NEService::eServiceConnection connection = NEService::eServiceConnection::ServiceConnectionUnknown;
                 ITEM_ID cookie = NEService::COOKIE_UNKNOWN;
-                msgReceived >> connection;
                 msgReceived >> cookie;
+                msgReceived >> connection;
                 TRACE_DBG("Router connection notification. Connection status [ %s ], cookie [ %llu ]", NEService::getString(connection), cookie);
 
                 switch ( connection )

@@ -49,7 +49,7 @@ protected:
 
     /**
      * \brief   IEByteBuffer::MAX_BUF_LENGTH
-     *          Maximum length of byte buffer. It is defined as 1 Mb.
+     *          Maximum length of byte buffer. It is defined as 64 Mb.
      **/
     static constexpr unsigned int   MAX_BUF_LENGTH  { 0x04000000u };
 

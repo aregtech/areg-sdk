@@ -26,13 +26,6 @@
 #include "extend/console/Console.hpp"
 
 
-#ifdef _WINDOWS
-    #define MACRO_SCANF(fmt, data, len)     scanf_s(fmt, data, len)
-#else   // _POSIX
-    #define MACRO_SCANF(fmt, data, len)     scanf(fmt, data)
-#endif  // _WINDOWS
-
-
 //////////////////////////////////////////////////////////////////////////
 // Traces.
 //////////////////////////////////////////////////////////////////////////
@@ -137,4 +130,9 @@ void SystemServiceBase::serviceMain( int argc, char ** argv )
 
     serviceStop( );
     TRACE_WARN( "Service Stopped and not running anymore" );
+}
+
+void SystemServiceBase::sendMessageToTarget(const RemoteMessage& message)
+{
+    mCommunication.sendMessage(message);
 }
