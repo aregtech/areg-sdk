@@ -32,7 +32,7 @@ void LoggerMessageProcessor::notifyTarget(const ITEM_ID & target, const RemoteMe
 void LoggerMessageProcessor::queryInstances(const RemoteMessage & msgReceived) const
 {
     const ITEM_ID & source = msgReceived.getSource();
-    const ServiceCommunicatonBase::sConnectedInstance & value = mLoggerService.getInstances().getAt(source);
+    const NEService::sServiceConnectedInstance& value = mLoggerService.getInstances().getAt(source);
     if (value.ciSource == NEService::eMessageSource::MessageSourceObserver)
     {
         notifyInstances();
@@ -49,7 +49,7 @@ void LoggerMessageProcessor::notifyInstances(void) const
         for (auto pos = instances.firstPosition(); instances.isValidPosition(pos); pos = instances.nextPosition(pos))
         {
             const ITEM_ID & key{ instances.keyAtPosition(pos) };
-            const ServiceCommunicatonBase::sConnectedInstance & value{ instances.valueAtPosition(pos) };
+            const NEService::sServiceConnectedInstance& value{ instances.valueAtPosition(pos) };
             if (value.ciSource != NEService::eMessageSource::MessageSourceObserver)
             {
                 clients.setAt(key, value);
@@ -78,7 +78,7 @@ void LoggerMessageProcessor::notifyTargetInstances(const ITEM_ID & target) const
         for (auto pos = instances.firstPosition(); instances.isValidPosition(pos); pos = instances.nextPosition(pos))
         {
             const ITEM_ID & key{ instances.keyAtPosition(pos) };
-            const ServiceCommunicatonBase::sConnectedInstance & value{ instances.valueAtPosition(pos) };
+            const NEService::sServiceConnectedInstance& value{ instances.valueAtPosition(pos) };
             if (value.ciSource != NEService::eMessageSource::MessageSourceObserver)
             {
                 clients.setAt(key, value);
@@ -179,7 +179,7 @@ void LoggerMessageProcessor::queryScopes(const RemoteMessage & msgReceived) cons
         {
             for (auto pos = instances.firstPosition(); instances.isInvalidPosition(pos); pos = instances.nextPosition(pos))
             {
-                const ServiceCommunicatonBase::sConnectedInstance & value{ instances.valueAtPosition(pos) };
+                const NEService::sServiceConnectedInstance& value{ instances.valueAtPosition(pos) };
                 if (value.ciSource != NEService::eMessageSource::MessageSourceObserver)
                 {
                     const ITEM_ID & key{ instances.keyAtPosition(pos) };
@@ -214,7 +214,7 @@ void LoggerMessageProcessor::saveLogConfiguration(const RemoteMessage & msgRecei
         {
             for (auto pos = instances.firstPosition(); instances.isInvalidPosition(pos); pos = instances.nextPosition(pos))
             {
-                const ServiceCommunicatonBase::sConnectedInstance & value{ instances.valueAtPosition(pos) };
+                const NEService::sServiceConnectedInstance& value{ instances.valueAtPosition(pos) };
                 if (value.ciSource != NEService::eMessageSource::MessageSourceObserver)
                 {
                     const ITEM_ID & key{ instances.keyAtPosition(pos) };

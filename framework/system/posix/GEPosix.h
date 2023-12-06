@@ -86,4 +86,13 @@
 
 #endif // defined(POSIX) || defined(_POSIX)
 
+// enable using safe POSIX calls.
+#ifdef __STDC_LIB_EXT1__
+    #ifndef __STDC_WANT_LIB_EXT1__
+        #define __STDC_WANT_LIB_EXT1__      1
+    #endif  // __STDC_WANT_LIB_EXT1__
+#else   // __STDC_LIB_EXT1__
+        #define __STDC_WANT_LIB_EXT1__      0
+#endif  // __STDC_LIB_EXT1__
+
 #endif // AREG_SYSTEM_POSIX_GEPOSIX_H

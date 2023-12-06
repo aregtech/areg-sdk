@@ -16,6 +16,7 @@
 #include "areg/base/Process.hpp"
 
 #include "areg/base/File.hpp"
+#include "areg/component/NEService.hpp"
 #include <filesystem>
 #include <iostream>
 
@@ -59,6 +60,22 @@ void Process::_initPaths( const char * fullPath )
         mProcessName = procPath.filename().empty()    ? String::getEmptyString() : procPath.filename().string();
         mAppName     = procPath.stem().empty()        ? String::getEmptyString() : procPath.stem().string();
         mProcessExt  = procPath.extension().empty()   ? String::getEmptyString() : procPath.extension().string();
+    }
+}
+
+unsigned int Process::getBitness(void) const
+{
+    if (mProcEnv == eProcEnv::ProcEnv32Bits)
+    {
+        return static_cast<unsigned int>(NEService::eInstanceBitness::Bitness32);
+    }
+    else if (mProcEnv == eProcEnv::ProcEnv64Bits)
+    {
+        return static_cast<unsigned int>(NEService::eInstanceBitness::Bitness64);
+    }
+    else
+    {
+        return static_cast<unsigned int>(NEService::eInstanceBitness::BitnessUnknown);
     }
 }
 

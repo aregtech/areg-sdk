@@ -439,12 +439,16 @@ AREG_API_IMPL RemoteMessage NERemoteService::createConnectRequest(const ITEM_ID 
     RemoteMessage msgHelloServer;
     if ( msgHelloServer.initMessage( NERemoteService::getMessageHelloServer().rbHeader ) != nullptr )
     {
-        String instance (Process::getInstance( ).getAppName( ));
         msgHelloServer.setTarget(target);
         msgHelloServer.setSource( NEService::SOURCE_UNKNOWN );
         msgHelloServer.setSequenceNr( NEService::SEQUENCE_NUMBER_NOTIFY );
+        NEService::sServiceConnectedInstance instance{ };
+        instance.ciSource   = msgSource;
+        instance.ciInstance = Process::getInstance().getAppName();
+        instance.ciBitness  = static_cast<NEService::eInstanceBitness>(Process::getInstance().getBitness());
+        instance.ciLocation = Process::getInstance().getPath();
+
         msgHelloServer << instance;
-        msgHelloServer << msgSource;
     }
 
     return msgHelloServer;
@@ -501,7 +505,7 @@ AREG_API_IMPL RemoteMessage NERemoteService::createRejectNotify(const ITEM_ID & 
     if ( msgNotifyReject.initMessage( NERemoteService::getMessageNotifyClientConnection().rbHeader ) != nullptr )
     {
         msgNotifyReject.setSource(source);
-        msgNotifyReject.setTarget( target );
+        msgNotifyReject.setTarget(target);
         msgNotifyReject.setSequenceNr( NEService::SEQUENCE_NUMBER_ANY );
 
         msgNotifyReject << target;

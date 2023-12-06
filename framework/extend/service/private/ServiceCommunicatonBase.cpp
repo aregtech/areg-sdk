@@ -70,7 +70,7 @@ ServiceCommunicatonBase::ServiceCommunicatonBase( const ITEM_ID & serviceId
 {
 }
 
-void ServiceCommunicatonBase::addInstance(const ITEM_ID & cookie, const sConnectedInstance & instance)
+void ServiceCommunicatonBase::addInstance(const ITEM_ID & cookie, const NEService::sServiceConnectedInstance & instance)
 {
     Lock lock(mLock);
     mInstanceMap.addIfUnique(cookie, instance);
@@ -437,9 +437,8 @@ void ServiceCommunicatonBase::processReceivedMessage(const RemoteMessage & msgRe
         }
         else if ( (source == NEService::SOURCE_UNKNOWN) && (msgId == NEService::eFuncIdRange::SystemServiceConnect) )
         {
-            sConnectedInstance instance{};
-            msgReceived >> instance.ciInstance;
-            msgReceived >> instance.ciSource;
+            NEService::sServiceConnectedInstance instance{};
+            msgReceived >> instance;
             addInstance(cookie, instance);
             RemoteMessage msgConnect(createServiceConnectMessage(mServerConnection.getChannelId(), cookie, NEService::eMessageSource::MessageSourceService));
             TRACE_DBG("Received request connect message, sending response [ %s ] of id [ 0x%X ], to new target [ %u ], connection socket [ %u ], checksum [ %u ]"

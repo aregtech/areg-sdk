@@ -137,6 +137,8 @@ public:
      **/
     inline Process::eProcEnv getEnvironment( void ) const;
 
+    unsigned int getBitness(void) const;
+
     /**
      * \brief   returns the value of the environment variable var, 
      *          or an empty string if:

@@ -65,12 +65,13 @@ namespace
         , NESystemService::MSG_SEPARATOR
         , {"-a, --save      : Command to save logs in the file. Used in console application. Usage: --save"}
         , {"-c, --console   : Command to run logger as a console application (default option). Usage: \'logger --console\'"}
+        , {"-e, --query     : Command to query the list of logging scopes. Used in console application. Usage (\'*\' can be a cookie number): --query *"}
         , {"-f, --config    : Command to save current configuration, including log scopes in the config file. Used in console application. Usage: --config"}
         , {"-h, --help      : Command to display this message on console."}
         , {"-i, --install   : Command to install logger as a service. Valid only for Windows OS. Usage: \'logger --install\'"}
         , {"-l, --silent    : Command option to stop displaying data rate. Used in console application. Usage: --silent"}
         , {"-n, --instances : Command option to display list of connected instances. Used in console application. Usage: --instances"}
-        , {"-o, --scope     : Command to update log scope priority. Used in console application. Usage: --scope areg_base_NESocket=NOTSET"}
+        , {"-o, --scope     : Command to update log scope priority. Used in console application. Usage (\'*\' can be a cookie number): --scope *::areg_base_NESocket=NOTSET"}
         , {"-p, --pause     : Command option to pause connection. Used in console application. Usage: --pause"}
         , {"-q, --quit      : Command option to stop logger and quit application. Used in console application. Usage: --quit"}
         , {"-r, --restart   : Command option to restart connection. Used in console application. Usage: --restart"}
@@ -103,6 +104,7 @@ const OptionParser::sOptionSetup Logger::ValidOptions[ ]
       { "-a", "--save"      , static_cast<int>(eLoggerOptions::CMD_LogSaveLogs)     , OptionParser::STRING_NO_RANGE , {}, {}, {} }
     , { "-b", "--unsave"    , static_cast<int>(eLoggerOptions::CMD_LogSaveLogsStop) , OptionParser::NO_DATA         , {}, {}, {} }
     , { "-c", "--console"   , static_cast<int>(eLoggerOptions::CMD_LogConsole)      , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-e", "--query"     , static_cast<int>(eLoggerOptions::CMD_LogQueryScopes)  , OptionParser::STRING_NO_RANGE , {}, {}, {} }
     , { "-f", "--config"    , static_cast<int>(eLoggerOptions::CMD_LogSaveConfig)   , OptionParser::STRING_NO_RANGE , {}, {}, {} }
     , { "-h", "--help"      , static_cast<int>(eLoggerOptions::CMD_LogPrintHelp)    , OptionParser::NO_DATA         , {}, {}, {} }
     , { "-i", "--install"   , static_cast<int>(eLoggerOptions::CMD_LogInstall)      , OptionParser::NO_DATA         , {}, {}, {} }
@@ -431,6 +433,10 @@ bool Logger::_checkCommand(const String& cmd)
                 Logger::_processUpdateScopes(opt);
                 break;
 
+            case eLoggerOptions::CMD_LogQueryScopes:
+                Logger::_processQueryScopes(opt);
+                break;
+
             case eLoggerOptions::CMD_LogSaveLogs:       // fall through
             case eLoggerOptions::CMD_LogSaveConfig:     // fall through
             case eLoggerOptions::CMD_LogSaveLogsStop:
@@ -531,7 +537,7 @@ void Logger::_outputInfo( const String & info )
 
 void Logger::_outputInstances( const ServiceCommunicatonBase::MapInstances & instances )
 {
-    static constexpr std::string_view _table{ "   Nr. |  Instance ID  |  Name " };
+    static constexpr std::string_view _table{ "   Nr. |  Instance ID  |  Bitness  |  Name " };
     static constexpr std::string_view _empty{ "There are no connected instances ..." };
 
 #if AREG_EXTENDED
@@ -559,11 +565,11 @@ void Logger::_outputInstances( const ServiceCommunicatonBase::MapInstances & ins
         for ( auto pos = instances.firstPosition( ); instances.isValidPosition( pos ); pos = instances.nextPosition( pos ) )
         {
             ITEM_ID cookie{ 0 };
-            ServiceCommunicatonBase::sConnectedInstance instance;
+            NEService::sServiceConnectedInstance instance;
             instances.getAtPosition( pos, cookie, instance);
             unsigned int id{ static_cast<unsigned int>(cookie) };
 
-            console.outputMsg( coord, " %4d. |  %11u  |  %s ", i ++, id, instance.ciInstance.getString( ) );
+            console.outputMsg( coord, " %4d. |  %11u  |    %u     |  %s ", i ++, id, static_cast<uint32_t>(instance.ciBitness), instance.ciInstance.getString( ) );
             ++ coord.posY;
         }
     }
@@ -587,11 +593,11 @@ void Logger::_outputInstances( const ServiceCommunicatonBase::MapInstances & ins
         for ( auto pos = instances.firstPosition( ); instances.isValidPosition( pos ); pos = instances.nextPosition( pos ) )
         {
             ITEM_ID cookie{ 0 };
-            ServiceCommunicatonBase::sConnectedInstance instance;
+            NEService::sServiceConnectedInstance instance;
             instances.getAtPosition( pos, cookie, instance);
             unsigned int id{ static_cast<unsigned int>(cookie) };
 
-            printf( " %4d. |  %11u  |  %s \n", i ++, id, instance.ciInstance.getString( ) );
+            printf(" %4d. |  %11u  |    %u     |  %s \n", i++, id, static_cast<uint32_t>(instance.ciBitness), instance.ciInstance.getString());
         }
     }
 
@@ -677,7 +683,6 @@ void Logger::_processUpdateScopes(const OptionParser::sOption& optScope)
                 RemoteMessage msg{ entry.clone(NEService::COOKIE_LOGGER, target) };
                 msg.moveToBegin();
                 msg.setTarget(target);
-                msg << target;
 
                 logger.sendMessageToTarget(msg);
             }
@@ -687,6 +692,10 @@ void Logger::_processUpdateScopes(const OptionParser::sOption& optScope)
             logger.sendMessageToTarget(entry);
         }
     }
+}
+
+void Logger::_processQueryScopes(const OptionParser::sOption& optScope)
+{
 }
 
 void Logger::_createScopeMessage(const OptionParser::sOption& optScope, TEArrayList<RemoteMessage>& OUT msgList)

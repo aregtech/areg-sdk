@@ -40,7 +40,7 @@ LoggerServerService::LoggerServerService( void )
 {
 }
 
-void LoggerServerService::addInstance(const ITEM_ID & cookie, const sConnectedInstance & instance)
+void LoggerServerService::addInstance(const ITEM_ID & cookie, const NEService::sServiceConnectedInstance& instance)
 {
     Lock lock(mLock);
     ServiceCommunicatonBase::addInstance(cookie, instance);
@@ -60,7 +60,7 @@ void LoggerServerService::addInstance(const ITEM_ID & cookie, const sConnectedIn
 void LoggerServerService::removeInstance(const ITEM_ID & cookie)
 {
     Lock lock(mLock);
-    sConnectedInstance instance;
+    NEService::sServiceConnectedInstance instance;
     bool exists{ mInstanceMap.find(cookie, instance) };
     ServiceCommunicatonBase::removeInstance(cookie);
     

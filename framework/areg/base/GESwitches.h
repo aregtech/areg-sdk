@@ -174,4 +174,16 @@
       #define AREG_API_IMPL
 #endif   // (defined(_WINDOWS) || defined(WINDOWS) || defined(_WIN32))
 
+// By default, no AREG extended features.
+#ifndef AREG_EXTENDED
+    #pragma message("The AREG_EXTENDED is not defined, setting default value 0")
+    #define AREG_EXTENDED   0
+#endif  // AREG_EXTENDED
+
+// By default, compile with logs
+#ifndef AREG_LOGS
+    #pragma message("The AREG_LOGS is not defined, setting default value 1")
+    #define AREG_LOGS       1
+#endif  // AREG_LOGS
+
 #endif   // AREG_BASE_GESWITCHES_H

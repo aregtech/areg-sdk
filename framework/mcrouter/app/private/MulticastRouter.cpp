@@ -180,7 +180,7 @@ void MulticastRouter::runConsoleInputSimple( void )
     do
     {
         printf( "%s", NESystemService::FORMAT_WAIT_QUIT.data( ) );
-        if (_osWaitUserInput(cmd, 512))
+        if (_osWaitUserInput(cmd, 512) == false)
             continue;
 
         quit = MulticastRouter::_checkCommand( cmd );
@@ -491,7 +491,7 @@ void MulticastRouter::_outputInfo( const String & info )
 
 void MulticastRouter::_outputInstances( const ServiceCommunicatonBase::MapInstances & instances )
 {
-    static constexpr std::string_view _table{ "   Nr. |  Instance ID  |  Name " };
+    static constexpr std::string_view _table{ "   Nr. |  Instance ID  |  Bitness  |  Name " };
     static constexpr std::string_view _empty{ "There are no connected instances ..." };
 
 #if AREG_EXTENDED
@@ -519,11 +519,11 @@ void MulticastRouter::_outputInstances( const ServiceCommunicatonBase::MapInstan
         for ( auto pos = instances.firstPosition( ); instances.isValidPosition( pos ); pos = instances.nextPosition( pos ) )
         {
             ITEM_ID cookie{ 0 };
-            ServiceCommunicatonBase::sConnectedInstance instance;
+            NEService::sServiceConnectedInstance instance;
             instances.getAtPosition( pos, cookie, instance);
             unsigned int id{ static_cast<unsigned int>(cookie) };
 
-            console.outputMsg( coord, " %4d. |  %11u  |  %s ", i ++, id, instance.ciInstance.getString( ) );
+            console.outputMsg(coord, " %4d. |  %11u  |    %u     |  %s ", i++, id, static_cast<uint32_t>(instance.ciBitness), instance.ciInstance.getString());
             ++ coord.posY;
         }
     }
@@ -547,11 +547,11 @@ void MulticastRouter::_outputInstances( const ServiceCommunicatonBase::MapInstan
         for ( auto pos = instances.firstPosition( ); instances.isValidPosition( pos ); pos = instances.nextPosition( pos ) )
         {
             ITEM_ID cookie{ 0 };
-            ServiceCommunicatonBase::sConnectedInstance instance;
+            NEService::sServiceConnectedInstance instance;
             instances.getAtPosition( pos, cookie, instance);
             unsigned int id{ static_cast<unsigned int>(cookie) };
 
-            printf( " %4d. |  %11u  |  %s \n", i ++, id, instance.ciInstance.getString( ) );
+            printf(" %4d. |  %11u  |    %u     |  %s \n", i++, id, static_cast<uint32_t>(instance.ciBitness), instance.ciInstance.getString());
         }
     }
 

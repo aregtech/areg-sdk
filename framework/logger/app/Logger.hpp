@@ -62,6 +62,7 @@ private:
         , CMD_LogConsole        //!< Run as console application. Valid only as a command line option.
         , CMD_LogInstall        //!< Install as service. Valid only as a command line option in Windows OS.
         , CMD_LogUninstall      //!< Uninstall as a service. Valid only as a command line option in Windows OS.
+        , CMD_LogQueryScopes    //!< Query the list of scopes
         , CMD_LogService        //!< Start logger as a service. Valid only as a command line option in Windows OS.
         , CMD_LogUpdateScope    //!< Set the scope priorities.
         , CMD_LogSaveLogs       //!< Logger save logs in the file.
@@ -312,6 +313,13 @@ private:
      *                      If the command contains a list of scopes to update, the should be split by ';'.
      **/
     static void _processUpdateScopes(const OptionParser::sOption& optScope);
+
+    /**
+     * \brief   Triggered to process update scope priority command.
+     * \param   optScope    The option entry that contains scope priority update instruction.
+     *                      If the command contains a list of scopes to update, the should be split by ';'.
+     **/
+    static void _processQueryScopes(const OptionParser::sOption& optScope);
 
     /**
      * \brief   Creates a list of remote messages to send to update log scope priorities.
