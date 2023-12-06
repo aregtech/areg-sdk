@@ -65,25 +65,14 @@ public:
      *              -   If the default behavior is to rejected the connection,
      *                  the connection is accepted if it IP-address white-listed.
      **/
-    typedef enum E_ConnectionBehavior
+    typedef enum class E_ConnectionBehavior : uint16_t
     {
           DefaultAccept //!< The default behavior is to accept the connection.
         , DefaultReject //!< The default behavior is to reject the connection.
     } eConnectionBehavior;
 
-    /**
-     * \brief   Connected instance of application.
-     **/
-    struct sConnectedInstance
-    {
-        //!< The type of the application
-        NEService::eMessageSource   ciSource    { NEService::eMessageSource::MessageSourceUndefined };
-        //!< The name of the application
-        String                      ciInstance  { "" };
-    };
-
     //!< The map of connected instances.
-    using MapInstances  = TEMap<ITEM_ID, sConnectedInstance>;
+    using MapInstances  = TEMap<ITEM_ID, NEService::sServiceConnectedInstance>;
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -189,7 +178,7 @@ public:
      * \param   cookie      The cookie of connected instance.
      * \param   instance    The name of the connected instance.
      **/
-    virtual void addInstance(const ITEM_ID & cookie, const sConnectedInstance & instance );
+    virtual void addInstance(const ITEM_ID & cookie, const NEService::sServiceConnectedInstance & instance );
 
     /**
      * \brief   Removes connected instance.
@@ -569,30 +558,6 @@ inline void ServiceCommunicatonBase::disconnectService( Event::eEventPriority ev
                                  , static_cast<IESendMessageEventConsumer &>(mThreadSend)
                                  , static_cast<DispatcherThread &>(mThreadSend)
                                  , eventPrio );
-}
-
-/**
- * \brief   Serializes the instance structure to the stream.
- * \param   stream  The streaming object to serialize.
- * \param   output  The single structure of instance to serialize.
- **/
-inline IEOutStream & operator << (IEOutStream & stream, const ServiceCommunicatonBase::sConnectedInstance & output)
-{
-    stream << output.ciSource;
-    stream << output.ciInstance;
-    return stream;
-}
-
-/**
- * \brief   De-serializes the instance structure from the stream.
- * \param   stream  The streaming object that contains the information of the connected instance.
- * \param   output  The single structure of instance to initialize.
- **/
-inline const IEInStream & operator >> (const IEInStream & stream, ServiceCommunicatonBase::sConnectedInstance & input)
-{
-    stream >> input.ciSource;
-    stream >> input.ciInstance;
-    return stream;
 }
 
 #endif  // AREG_EXTEND_SERVICE_SERVICECOMMUNICATONBASE_HPP

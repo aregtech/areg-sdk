@@ -48,15 +48,6 @@
     #define OUTPUT_DEBUG_LEVEL          OUTPUT_DEBUG_LEVEL_NONE
 #endif // DEBUG
 
-// enable using safe POSIX calls.
-#ifdef __STDC_LIB_EXT1__
-    #ifndef __STDC_WANT_LIB_EXT1__
-        #define __STDC_WANT_LIB_EXT1__      1
-    #endif  // __STDC_WANT_LIB_EXT1__
-#else   // __STDC_LIB_EXT1__
-        #define __STDC_WANT_LIB_EXT1__      0
-#endif  // __STDC_LIB_EXT1__
-
  /**
  * \brief   Basic types
  **/
@@ -67,18 +58,6 @@
  **/
 #include "areg/base/GESwitches.h"
 #include "areg/base/GEMacros.h"
-
-// By default, no AREG extended features.
-#ifndef AREG_EXTENDED
-    #pragma message("The AREG_EXTENDED is not defined, setting default value 0")
-    #define AREG_EXTENDED   0
-#endif  // AREG_EXTENDED
-
-// By default, compile with logs
-#ifndef AREG_LOGS
-    #pragma message("The AREG_LOGS is not defined, setting default value 1")
-    #define AREG_LOGS       1
-#endif  // AREG_LOGS
 
 #ifdef DEBUG
     #if (defined(OUTPUT_DEBUG) && (OUTPUT_DEBUG != 0)) 

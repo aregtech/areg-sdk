@@ -339,7 +339,6 @@ AREG_API_IMPL RemoteMessage NETrace::messageRegisterScopesStart(const ITEM_ID & 
     if (msgScope.initMessage(_getLogRegisterScopes().rbHeader) != nullptr)
     {
         msgScope.setSource(source != NEService::COOKIE_UNKNOWN ? source : NETrace::getCookie());
-        msgScope << target;
         msgScope << NETrace::eScopeList::ScopeListStart;
         msgScope << scopeCount;
     }
@@ -353,7 +352,6 @@ AREG_API_IMPL RemoteMessage NETrace::messageRegisterScopesEnd(const ITEM_ID & so
     if (msgScope.initMessage(_getLogRegisterScopes().rbHeader) != nullptr)
     {
         msgScope.setSource(source != NEService::COOKIE_UNKNOWN ? source : NETrace::getCookie());
-        msgScope << target;
         msgScope << NETrace::eScopeList::ScopeListEnd;
     }
 
@@ -366,7 +364,6 @@ AREG_API_IMPL RemoteMessage NETrace::messageRegisterScopes(const ITEM_ID & sourc
     if (msgScope.initMessage(_getLogRegisterScopes().rbHeader) != nullptr)
     {
         msgScope.setSource(source != NEService::COOKIE_UNKNOWN ? source : NETrace::getCookie());
-        msgScope << target;
         msgScope << NETrace::eScopeList::ScopeListContinue;
 
         SCOPEPOS end = scopeList.invalidPosition();
@@ -408,7 +405,6 @@ AREG_API_IMPL RemoteMessage NETrace::messageUpdateScopes(const ITEM_ID& source, 
     if (msgScope.initMessage(_getLogUpdateScopes().rbHeader) != nullptr)
     {
         msgScope.setSource(source != NEService::COOKIE_UNKNOWN ? source : NETrace::getCookie());
-        msgScope << target;
         msgScope << scopeNames.getSize();
         const std::vector<NETrace::sScopeInfo>& list = scopeNames.getData();
         for (const auto & entry : list)
@@ -426,7 +422,6 @@ AREG_API RemoteMessage NETrace::messageUpdateScope(const ITEM_ID& source, const 
     if (msgScope.initMessage(_getLogUpdateScopes().rbHeader) != nullptr)
     {
         msgScope.setSource(source != NEService::COOKIE_UNKNOWN ? source : NETrace::getCookie());
-        msgScope << target;
         msgScope << 1u;
         msgScope << scopeName << scopeId << scopePrio;
     }

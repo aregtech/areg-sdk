@@ -264,6 +264,7 @@ void ServiceClientConnectionBase::onServiceConnectionLost(void)
     TRACE_WARN("Client service lost connection. Resetting cookie and trying to restart, current connection state [ %s ]"
                 , ServiceClientConnectionBase::getString(getConnectionState()));
 
+    setConnectionState(ServiceClientConnectionBase::eConnectionState::ConnectionStopped);
     Channel channel = mChannel;
     mChannel.setCookie( NEService::COOKIE_UNKNOWN );
     mChannel.setSource( NEService::SOURCE_UNKNOWN );

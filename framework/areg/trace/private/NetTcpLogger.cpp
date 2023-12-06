@@ -154,16 +154,14 @@ void NetTcpLogger::processReceivedMessage(const RemoteMessage & msgReceived, Soc
 {
     if (msgReceived.isValid() && whichSource.isValid())
     {
-        ITEM_ID cookie{ NEService::COOKIE_UNKNOWN };
-        msgReceived >> cookie;
-        ASSERT((cookie == mChannel.getCookie()) || (mChannel.getCookie() <= NEService::COOKIE_LOCAL));
-
         NEService::eFuncIdRange msgId = static_cast<NEService::eFuncIdRange>(msgReceived.getMessageId());
         switch (msgId)
         {
         case NEService::eFuncIdRange::SystemServiceNotifyConnection:
         {
+            ITEM_ID cookie{ NEService::COOKIE_UNKNOWN };
             NEService::eServiceConnection connection{ NEService::eServiceConnection::ServiceConnectionUnknown };
+            msgReceived >> cookie;
             msgReceived >> connection;
 
             switch (connection)
@@ -193,7 +191,6 @@ void NetTcpLogger::processReceivedMessage(const RemoteMessage & msgReceived, Soc
                 }
                 break;
 
-            case NEService::eServiceConnection::ServiceConnectionLost:
             default:
                 {
                     cancelConnection();

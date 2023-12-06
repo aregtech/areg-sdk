@@ -291,6 +291,22 @@ namespace NEService
     inline const char * getString(NEService::eMessageSource msgSource);
 
     /**
+     * \brief   NEService::eInstanceBitness
+     *          The bitness of the executable instance.
+     **/
+    typedef enum class E_InstanceBitness: uint16_t
+    {
+          BitnessUnknown    = 0     //!< Unknown bitness
+        , Bitness32         = 32    //!< 32-bit system
+        , Bitness64         = 64    //!< 64-bit system
+    } eInstanceBitness;
+
+    /**
+     * \brief   Returns string value of NEService::eServiceType type
+     **/
+    inline const char* getString(NEService::eInstanceBitness bitness);
+
+    /**
      * \brief   NEService::SEQUENCE_NUMBER_NOTIFY
      *          Sequence number predefining notification message ID
      **/
@@ -1026,6 +1042,24 @@ namespace NEService
         ProxyData( void ) = delete;
         DECLARE_NOCOPY_NOMOVE( ProxyData );
     };
+
+
+    /**
+     * \brief   NEService::sServiceConnectedInstance
+     *          Service connected instance of application.
+     **/
+    struct sServiceConnectedInstance
+    {
+        //!< The type of the application
+        NEService::eMessageSource   ciSource    { NEService::eMessageSource::MessageSourceUndefined };
+        //!< The bit-set of connected instance
+        NEService::eInstanceBitness ciBitness   { NEService::eInstanceBitness::BitnessUnknown };
+        //!< The name of the application
+        String                      ciInstance  { "" };
+        //!< The optional file location
+        String                      ciLocation  { "" };
+    };
+
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1039,6 +1073,7 @@ IMPLEMENT_STREAMABLE(NEService::eServiceConnection)
 IMPLEMENT_STREAMABLE(NEService::eDisconnectReason)
 IMPLEMENT_STREAMABLE(NEService::eServiceRequestType)
 IMPLEMENT_STREAMABLE(NEService::eServiceType)
+IMPLEMENT_STREAMABLE(NEService::eInstanceBitness)
 IMPLEMENT_STREAMABLE(NEService::eMessageSource)
 IMPLEMENT_STREAMABLE(NEService::eFuncIdRange)
 
@@ -1265,6 +1300,31 @@ inline NEService::eDataStateType NEService::ProxyData::getParamState( unsigned i
 }
 
 //////////////////////////////////////////////////////////////////////////
+// class NEService::sServiceConnectedInstance serialization
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   Serializes the instance structure to the stream.
+ * \param   stream  The streaming object to serialize.
+ * \param   output  The single structure of instance to serialize.
+ **/
+inline IEOutStream& operator << (IEOutStream& stream, const NEService::sServiceConnectedInstance & output)
+{
+    stream << output.ciSource << output.ciBitness << output.ciInstance << output.ciLocation;
+    return stream;
+}
+
+/**
+ * \brief   De-serializes the instance structure from the stream.
+ * \param   stream  The streaming object that contains the information of the connected instance.
+ * \param   output  The single structure of instance to initialize.
+ **/
+inline const IEInStream& operator >> (const IEInStream& stream, NEService::sServiceConnectedInstance & input)
+{
+    stream >> input.ciSource >> input.ciBitness >> input.ciInstance >> input.ciLocation;
+    return stream;
+}
+
+//////////////////////////////////////////////////////////////////////////
 // class NEService enumerations string conversion
 //////////////////////////////////////////////////////////////////////////
 
@@ -1481,6 +1541,22 @@ inline const char * NEService::getString( NEService::eServiceType srvcType )
         return "ERR: Unexpected NEService::eServiceRequestType value!!!";
     }
 }
+
+const char* NEService::getString(NEService::eInstanceBitness bitness)
+{
+    switch (bitness)
+    {
+    case NEService::eInstanceBitness::Bitness32:
+        return "NEService::eInstanceBitness::Bitness32";
+    case NEService::eInstanceBitness::Bitness64:
+        return "NEService::eInstanceBitness::Bitness64";
+    case NEService::eInstanceBitness::BitnessUnknown:
+        return "NEService::eInstanceBitness::BitnessUnknown";
+    default:
+        return "ERR: Unexpected NEService::eInstanceBitness value!!!";
+    }
+}
+
 
 const char * NEService::getString(NEService::eMessageSource msgSource)
 {

@@ -69,7 +69,7 @@ public:
      * \param   cookie      The cookie of connected instance.
      * \param   instance    The name of the connected instance.
      **/
-    virtual void addInstance(const ITEM_ID & cookie, const sConnectedInstance & instance ) override;
+    virtual void addInstance(const ITEM_ID & cookie, const NEService::sServiceConnectedInstance & instance ) override;
 
     /**
      * \brief   Removes connected instance.
