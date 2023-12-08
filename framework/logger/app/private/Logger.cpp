@@ -681,8 +681,6 @@ void Logger::_cleanHelp(void)
 void Logger::_processUpdateScopes(const OptionParser::sOption& optScope)
 {
     Logger& logger{ Logger::getInstance() };
-    const ServiceCommunicatonBase::MapInstances& instances{ logger.getConnetedInstances() };
-
     TEArrayList<RemoteMessage> msgList;
     _createScopeMessage(optScope, msgList);
     for (uint32_t i = 0; i < msgList.getSize(); ++ i)
