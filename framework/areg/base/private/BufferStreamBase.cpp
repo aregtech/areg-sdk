@@ -185,10 +185,16 @@ unsigned int BufferStreamBase::write( const WideString & wideString )
  **/
 unsigned int BufferStreamBase::getSizeWritable( void ) const
 {
-    unsigned int lenWritten     = mWritePosition.getPosition();
-    unsigned int lenAvailable   = getSizeAvailable();
-    ASSERT(lenWritten <= lenAvailable);
-    return (lenAvailable - lenWritten);
+    unsigned int result{ 0u };
+    if (isValid())
+    {
+        unsigned int lenWritten{ mWritePosition.getPosition() };
+        unsigned int lenAvailable{ getSizeAvailable() };
+        ASSERT(lenWritten <= lenAvailable);
+        result = lenAvailable - lenWritten;
+    }
+
+    return result;
 }
 
 /**
@@ -269,7 +275,6 @@ unsigned int BufferStreamBase::writeData(const unsigned char* buffer, unsigned i
     unsigned int result     = 0;
     unsigned int writePos   = isValid() ? mWritePosition.getPosition() : 0;
     unsigned int remain     = reserve(writePos + size, true);
-    mWritePosition.setPosition(static_cast<int>(writePos), IECursorPosition::eCursorPosition::PositionBegin);
 
     if ((remain != 0) && (size != 0))
     {
@@ -330,11 +335,15 @@ unsigned char * BufferStreamBase::getBufferToWrite(void)
 
 unsigned int BufferStreamBase::reserve(unsigned int size, bool copy)
 {
-    unsigned int result = IEByteBuffer::reserve(size, copy);
-
-    if (result != 0)
+    unsigned int result = getSizeWritable();
+    if ((size == 0u) || (result < size))
     {
-        mWritePosition.setPosition( static_cast<int>(mByteBuffer->bufHeader.biUsed), IECursorPosition::eCursorPosition::PositionBegin );
+        unsigned int curPos = mWritePosition.getPosition();
+        result = IEByteBuffer::reserve(size, copy);
+        if (curPos != IECursorPosition::INVALID_CURSOR_POSITION)
+        {
+            mWritePosition.setPosition(static_cast<int>(curPos), IECursorPosition::eCursorPosition::PositionBegin);
+        }
     }
 
     return result;

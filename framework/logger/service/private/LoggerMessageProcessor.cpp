@@ -15,6 +15,7 @@
 
 #include "logger/service/private/LoggerMessageProcessor.hpp"
 
+#include "logger/app/Logger.hpp"
 #include "logger/service/LoggerServerService.hpp"
 #include "areg/ipc/NERemoteService.hpp"
 
@@ -23,225 +24,217 @@ LoggerMessageProcessor::LoggerMessageProcessor(LoggerServerService & loggerServi
 {
 }
 
-void LoggerMessageProcessor::notifyTarget(const ITEM_ID & target, const RemoteMessage & msgNotify) const
+void LoggerMessageProcessor::queryConnectedInstances(const RemoteMessage & msgReceived) const
 {
-    RemoteMessage msg{ msgNotify.clone(mLoggerService.getId(), target) };
-    mLoggerService.sendMessage(msg);
-}
+    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::SystemServiceQueryInstances));
 
-void LoggerMessageProcessor::queryInstances(const RemoteMessage & msgReceived) const
-{
-    const ITEM_ID & source = msgReceived.getSource();
-    const NEService::sServiceConnectedInstance& value = mLoggerService.getInstances().getAt(source);
-    if (value.ciSource == NEService::eMessageSource::MessageSourceObserver)
+    const ITEM_ID & source{ msgReceived.getSource() };
+    const ITEM_ID& target{ msgReceived.getTarget() };
+    if ((source >= NEService::COOKIE_REMOTE_SERVICE) && (target == NEService::COOKIE_LOGGER))
     {
-        notifyInstances();
+        const ServiceCommunicatonBase::MapInstances& instances = mLoggerService.getInstances();
+        auto srcPos = instances.find(source);
+        if (instances.isValidPosition(srcPos))
+        {
+            const NEService::sServiceConnectedInstance& instance = instances.valueAtPosition(srcPos);
+            if (instance.ciSource == NEService::eMessageSource::MessageSourceObserver)
+            {
+                notifyConnectedInstances(source);
+            }
+        }
     }
 }
 
-void LoggerMessageProcessor::notifyInstances(void) const
+void LoggerMessageProcessor::notifyConnectedInstances(const ITEM_ID& target /*= NEService::COOKIE_ANY*/) const
 {
+    const auto& observers{ mLoggerService.getObservers() };
+    if (observers.isEmpty())
+        return;
+
     RemoteMessage msgInstances;
+    const ServiceCommunicatonBase::MapInstances& instances = mLoggerService.getInstances();
+    ASSERT((target == NEService::COOKIE_ANY) || (instances.contains(target) && isLogObserver(instances.getAt(target).ciSource)));
+
     if (msgInstances.initMessage(NERemoteService::getMessageQueryInstances().rbHeader) != nullptr)
     {
-        const ServiceCommunicatonBase::MapInstances & instances = mLoggerService.getInstances();
-        ServiceCommunicatonBase::MapInstances clients;
-        for (auto pos = instances.firstPosition(); instances.isValidPosition(pos); pos = instances.nextPosition(pos))
+        uint32_t count{ 0 };
+        uint32_t pos = msgInstances.getPosition();
+        msgInstances << count; // reserves space, initially set 0
+        for (const auto& entry : instances.getData())
         {
-            const ITEM_ID & key{ instances.keyAtPosition(pos) };
-            const NEService::sServiceConnectedInstance& value{ instances.valueAtPosition(pos) };
-            if (value.ciSource != NEService::eMessageSource::MessageSourceObserver)
+            if (LoggerMessageProcessor::isLogSource(entry.second.ciSource))
             {
-                clients.setAt(key, value);
+                ++count;
+                msgInstances << entry.second;
             }
         }
 
-        const ServiceCommunicatonBase::MapInstances & observers = mLoggerService.getObservers();
-        if (observers.isEmpty() == false)
+        if (count != 0)
         {
-            msgInstances << clients;
-            for (auto pos = observers.firstPosition(); observers.isValidPosition(pos); pos = observers.nextPosition(pos))
+            msgInstances.setPosition(static_cast<int>(pos), IECursorPosition::eCursorPosition::PositionBegin);
+            msgInstances << count;
+            msgInstances.moveToEnd();
+        }
+
+        if (target == NEService::COOKIE_ANY)
+        {
+            for (const auto& observer : observers.getData())
             {
-                notifyTarget(observers.keyAtPosition(pos), msgInstances);
+                RemoteMessage msg{ msgInstances.clone(NEService::COOKIE_LOGGER, observer.first) };
+                mLoggerService.sendMessage(msg);
             }
+        }
+        else
+        {
+            msgInstances.setSource(NEService::COOKIE_LOGGER);
+            msgInstances.setTarget(target);
+            mLoggerService.sendMessage(msgInstances);
         }
     }
 }
 
-void LoggerMessageProcessor::notifyTargetInstances(const ITEM_ID & target) const
-{
-    RemoteMessage msgInstances;
-    if (msgInstances.initMessage(NERemoteService::getMessageQueryInstances().rbHeader) != nullptr)
-    {
-        const ServiceCommunicatonBase::MapInstances & instances = mLoggerService.getInstances();
-        ServiceCommunicatonBase::MapInstances clients;
-        for (auto pos = instances.firstPosition(); instances.isValidPosition(pos); pos = instances.nextPosition(pos))
-        {
-            const ITEM_ID & key{ instances.keyAtPosition(pos) };
-            const NEService::sServiceConnectedInstance& value{ instances.valueAtPosition(pos) };
-            if (value.ciSource != NEService::eMessageSource::MessageSourceObserver)
-            {
-                clients.setAt(key, value);
-            }
-        }
-
-        msgInstances << clients;
-        msgInstances.setSource(mLoggerService.getId());
-        msgInstances.setTarget(target);
-        mLoggerService.sendMessage(msgInstances);
-    }
-}
-
-void LoggerMessageProcessor::registerScopes(const RemoteMessage & msgReceived) const
+void LoggerMessageProcessor::registerScopesAtObserver(const RemoteMessage & msgReceived) const
 {
     ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogRegisterScopes));
+    msgReceived.moveToBegin();
+    NETrace::eScopeList scopeListType{ NETrace::eScopeList::ScopeListUndefined };
+    uint32_t scopeCount{ 0 };
+    msgReceived >> scopeListType;
 
-    ITEM_ID source{ msgReceived.getSource() };
-    ITEM_ID target{ NEService::COOKIE_ANY };
-    msgReceived >> target;
+    String msgStatus;
 
-    const ServiceCommunicatonBase::MapInstances & instances = mLoggerService.getInstances();
-
-    auto srcPos = instances.find(source);
-    auto dstPos = instances.find(target);
-    if (instances.isValidPosition(srcPos))
+    switch (scopeListType)
     {
-        if (instances.isValidPosition(dstPos))
+    case NETrace::eScopeList::ScopeListStart:
         {
-            RemoteMessage msg{ msgReceived.clone(source, target) };
-            mLoggerService.sendMessage(msg);
+            constexpr char fmt[]{ "Starting scope registration of source %u, there are %u scope to register ..." };
+            msgReceived >> scopeCount;
+            msgStatus.format(fmt, static_cast<uint32_t>(msgReceived.getSource()), scopeCount);
         }
-        else if (instances.valueAtPosition(srcPos).ciSource != NEService::eMessageSource::MessageSourceObserver)
+        break;
+
+    case NETrace::eScopeList::ScopeListContinue:
         {
-            const ServiceCommunicatonBase::MapInstances & observers = mLoggerService.getObservers();
-            for (auto pos = observers.firstPosition(); observers.isInvalidPosition(pos); pos = observers.nextPosition(pos))
-            {
-                const ITEM_ID & key{ observers.keyAtPosition(pos) };
-                RemoteMessage msg{ msgReceived.clone(source, key) };
-                mLoggerService.sendMessage(msg);
-            }
+            constexpr char fmt[]{ "Continuing scope registration, source %u sent %u scopes to register ..." };
+            msgReceived >> scopeCount;
+            msgStatus.format(fmt, static_cast<uint32_t>(msgReceived.getSource()), scopeCount);
         }
+        break;
+
+    case NETrace::eScopeList::ScopeListEnd:
+        {
+            constexpr char fmt[]{ "Completed scope registration of source %u ..." };
+            msgReceived >> scopeCount;
+            msgStatus.format(fmt, static_cast<uint32_t>(msgReceived.getSource()));
+        }
+        break;
+
+    default:
+        {
+            constexpr char fmt[]{ "Error, unexpected scope list message of source %u !!!" };
+            msgStatus.format(fmt, static_cast<uint32_t>(msgReceived.getSource()));
+        }
+        break;
     }
+
+    Logger::printStatus(msgStatus);
+    _forwardMessageToObservers(msgReceived);
 }
 
-void LoggerMessageProcessor::updateScopes(const RemoteMessage & msgReceived) const
+void LoggerMessageProcessor::updateLogSourceScopes(const RemoteMessage & msgReceived) const
 {
     ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogUpdateScopes));
-
-    ITEM_ID source{ msgReceived.getSource() };
-    ITEM_ID target{ NEService::COOKIE_ANY };
-    msgReceived >> target;
-
-    const ServiceCommunicatonBase::MapInstances & instances = mLoggerService.getInstances();
-
-    auto srcPos = instances.find(source);
-    auto dstPos = instances.find(target);
-    if (instances.isValidPosition(srcPos))
-    {
-        if (instances.isValidPosition(dstPos))
-        {
-            RemoteMessage msg{ msgReceived.clone(source, target) };
-            mLoggerService.sendMessage(msg);
-        }
-        else if (instances.valueAtPosition(srcPos).ciSource != NEService::eMessageSource::MessageSourceObserver)
-        {
-            const ServiceCommunicatonBase::MapInstances & observers = mLoggerService.getObservers();
-            for (auto pos = observers.firstPosition(); observers.isInvalidPosition(pos); pos = observers.nextPosition(pos))
-            {
-                const ITEM_ID & key{ observers.keyAtPosition(pos) };
-                RemoteMessage msg{ msgReceived.clone(source, key) };
-                mLoggerService.sendMessage(msg);
-            }
-        }
-    }
+    _forwardMessageToLogSources(msgReceived);
 }
 
-void LoggerMessageProcessor::queryScopes(const RemoteMessage & msgReceived) const
+void LoggerMessageProcessor::queryLogSourceScopes(const RemoteMessage & msgReceived) const
 {
     ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogQueryScopes));
-
-    ITEM_ID source{ msgReceived.getSource() };
-    ITEM_ID target{ NEService::COOKIE_ANY };
-    msgReceived >> target;
-
-    const ServiceCommunicatonBase::MapInstances & instances = mLoggerService.getInstances();
-
-    auto srcPos = instances.find(source);
-    auto dstPos = instances.find(target);
-    if (instances.isValidPosition(srcPos))
-    {
-        if (instances.isValidPosition(dstPos))
-        {
-            RemoteMessage msg{ msgReceived.clone(source, target) };
-            mLoggerService.sendMessage(msg);
-        }
-        else if (instances.valueAtPosition(srcPos).ciSource == NEService::eMessageSource::MessageSourceObserver)
-        {
-            for (auto pos = instances.firstPosition(); instances.isInvalidPosition(pos); pos = instances.nextPosition(pos))
-            {
-                const NEService::sServiceConnectedInstance& value{ instances.valueAtPosition(pos) };
-                if (value.ciSource != NEService::eMessageSource::MessageSourceObserver)
-                {
-                    const ITEM_ID & key{ instances.keyAtPosition(pos) };
-                    RemoteMessage msg{ msgReceived.clone(source, key) };
-                    mLoggerService.sendMessage(msg);
-                }
-            }
-        }
-    }
+    _forwardMessageToLogSources(msgReceived);
 }
 
-void LoggerMessageProcessor::saveLogConfiguration(const RemoteMessage & msgReceived) const
+void LoggerMessageProcessor::saveLogSourceConfiguration(const RemoteMessage & msgReceived) const
 {
     ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceSaveLogConfiguration));
-
-    ITEM_ID source{ msgReceived.getSource() };
-    ITEM_ID target{ NEService::COOKIE_ANY };
-    msgReceived >> target;
-
-    const ServiceCommunicatonBase::MapInstances & instances = mLoggerService.getInstances();
-
-    auto srcPos = instances.find(source);
-    auto dstPos = instances.find(target);
-    if (instances.isValidPosition(srcPos))
-    {
-        if (instances.isValidPosition(dstPos))
-        {
-            RemoteMessage msg{ msgReceived.clone(source, target) };
-            mLoggerService.sendMessage(msg);
-        }
-        else if (instances.valueAtPosition(srcPos).ciSource == NEService::eMessageSource::MessageSourceObserver)
-        {
-            for (auto pos = instances.firstPosition(); instances.isInvalidPosition(pos); pos = instances.nextPosition(pos))
-            {
-                const NEService::sServiceConnectedInstance& value{ instances.valueAtPosition(pos) };
-                if (value.ciSource != NEService::eMessageSource::MessageSourceObserver)
-                {
-                    const ITEM_ID & key{ instances.keyAtPosition(pos) };
-                    RemoteMessage msg{ msgReceived.clone(source, key) };
-                    mLoggerService.sendMessage(msg);
-                }
-            }
-        }
-    }
+    _forwardMessageToLogSources(msgReceived);
 }
 
 void LoggerMessageProcessor::logMessage(const RemoteMessage & msgReceived) const
 {
     ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogMessage));
+    ASSERT(NETrace::eLogDataType::LogDataRemote == reinterpret_cast<const NETrace::sLogMessage *>(msgReceived.getBuffer())->logDataType);
+    _forwardMessageToObservers(msgReceived);
+}
+
+bool LoggerMessageProcessor::isLogSource(NEService::eMessageSource msgSource)
+{
+    return ((msgSource == NEService::eMessageSource::MessageSourceClient    ) ||
+            (msgSource == NEService::eMessageSource::MessageSourceSimulation) ||
+            (msgSource == NEService::eMessageSource::MessageSourceTest      ));
+}
+
+bool LoggerMessageProcessor::isLogObserver(NEService::eMessageSource msgSource)
+{
+    return ((msgSource == NEService::eMessageSource::MessageSourceObserver));
+}
+
+inline void LoggerMessageProcessor::_forwardMessageToLogSources(const RemoteMessage& msgReceived) const
+{
+    const auto& instances = mLoggerService.getInstances();
+    if (instances.isEmpty())
+        return;
 
     ITEM_ID source{ msgReceived.getSource() };
-    const ServiceCommunicatonBase::MapInstances & instances = mLoggerService.getInstances();
-    auto srcPos = instances.find(source);
-    if (instances.isValidPosition(srcPos) && (instances.valueAtPosition(srcPos).ciSource != NEService::eMessageSource::MessageSourceObserver))
+    ITEM_ID target{ msgReceived.getTarget() != NEService::COOKIE_LOGGER ? msgReceived.getTarget() : NEService::COOKIE_ANY };
+
+    auto srcPos = source != NEService::COOKIE_LOGGER ? instances.find(source) : instances.invalidPosition();
+    if ((source == NEService::COOKIE_LOGGER) || (instances.isValidPosition(srcPos) && isLogObserver(instances.valueAtPosition(srcPos).ciSource)))
     {
-        const ServiceCommunicatonBase::MapInstances & observers = mLoggerService.getObservers();
-        for (auto pos = observers.firstPosition(); observers.isValidPosition(pos); pos = observers.nextPosition(pos))
+        auto dstPos = instances.find(target);
+        if (instances.isValidPosition(dstPos) && isLogSource(instances.valueAtPosition(dstPos).ciSource))
         {
-            const ITEM_ID & key{ observers.keyAtPosition(pos) };
-            RemoteMessage msg{ msgReceived.clone(source, key) };
-            ASSERT(NETrace::eLogDataType::LogDataRemote == reinterpret_cast<NETrace::sLogMessage*>(msg.getBuffer())->logDataType);
-            mLoggerService.sendMessage(msg);
+            mLoggerService.sendMessage(msgReceived);
+        }
+        else if (target == NEService::COOKIE_ANY)
+        {
+            for (const auto& instance : instances.getData())
+            {
+                if (isLogSource(instance.second.ciSource))
+                {
+                    RemoteMessage msg{ msgReceived.clone(source, instance.first) };
+                    mLoggerService.sendMessage(msg);
+                }
+            }
+        }
+    }
+}
+
+inline void LoggerMessageProcessor::_forwardMessageToObservers(const RemoteMessage& msgReceived) const
+{
+    const auto& observers = mLoggerService.getObservers();
+    if (observers.isEmpty())
+        return;
+
+    ITEM_ID source{ msgReceived.getSource() };
+    ITEM_ID target{ msgReceived.getTarget() != NEService::COOKIE_LOGGER ? msgReceived.getTarget() : NEService::COOKIE_ANY };
+    const ServiceCommunicatonBase::MapInstances& instances = mLoggerService.getInstances();
+
+    auto srcPos = instances.find(source);
+    auto dstPos = instances.find(target);
+    if (instances.isValidPosition(srcPos) && isLogSource(instances.valueAtPosition(srcPos).ciSource))
+    {
+        if (instances.isValidPosition(dstPos) && isLogObserver(instances.valueAtPosition(dstPos).ciSource))
+        {
+            mLoggerService.sendMessage(msgReceived);
+        }
+        else if (target == NEService::COOKIE_ANY)
+        {
+            for (const auto& observer : observers.getData())
+            {
+                ASSERT(isLogObserver(observer.second.ciSource));
+                RemoteMessage msg{ msgReceived.clone(source, observer.first) };
+                mLoggerService.sendMessage(msg);
+            }
         }
     }
 }

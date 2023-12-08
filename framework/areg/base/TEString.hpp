@@ -496,6 +496,7 @@ public:
      *          position value in the string. Otherwise, it returns NEString::INVALID_POS value.
      *
      * \param   phrase          The phrase to search in the string.
+     * \param   phaseCount      The length of the phrase or the number of characters in the phrase to search.
      * \param   startPos        The starting position in string to search. Should be valid.
      *                          By default, starts to search at the begin of string, i.e. at 'NEString::END_POS'
      * \param   caseSensitive   If true, the search of phrase should be exact, i.e. case-sensitive.
@@ -505,7 +506,8 @@ public:
      * \return  Returns valid string position value, if found given character.
      *          Otherwise, returns NEString::INVALID_POS value.
      **/
-    NEString::CharPos findLast( const CharType * phrase, NEString::CharPos startPos = NEString::END_POS, bool caseSensitive = true ) const;
+    NEString::CharPos findLast( const CharType * phrase, NEString::CharCount phraseCount, NEString::CharPos startPos, bool caseSensitive) const;
+    NEString::CharPos findLast( const CharType* phrase, NEString::CharPos startPos = NEString::END_POS, bool caseSensitive = true) const;
     NEString::CharPos findLast( const TEString<CharType> & phrase, NEString::CharPos startPos = NEString::END_POS, bool caseSensitive = true ) const;
 
     /**
@@ -691,6 +693,7 @@ public:
      **/
     inline TEString<CharType>& insertAt( const CharType * source, NEString::CharPos atDstPos, NEString::CharCount count = NEString::COUNT_ALL );
     inline TEString<CharType>& insertAt(const std::basic_string<CharType>& source, NEString::CharPos atDstPos, NEString::CharPos atSrcPos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+    inline TEString<CharType>& insertAt(const std::basic_string_view<CharType>& source, NEString::CharPos atDstPos, NEString::CharPos atSrcPos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
     inline TEString<CharType>& insertAt(const TEString<CharType>& source, NEString::CharPos atDstPos, NEString::CharPos atSrcPos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
 
     /**
@@ -1664,8 +1667,8 @@ NEString::CharPos TEString<CharType>::findOneOf( const CharType* chars, NEString
 
 template<typename CharType>
 NEString::CharPos TEString<CharType>::findFirst( CharType chSearch
-                                                 , NEString::CharPos startPos /*= NEString::START_POS*/
-                                                 , bool caseSensitive /*= true*/) const
+                                               , NEString::CharPos startPos /*= NEString::START_POS*/
+                                               , bool caseSensitive /*= true*/) const
 {
     if (isValidPosition(startPos) == false)
         return NEString::INVALID_POS;
@@ -1763,13 +1766,13 @@ NEString::CharPos TEString<CharType>::findLast(CharType chSearch, NEString::Char
 }
 
 template<typename CharType>
-NEString::CharPos TEString<CharType>::findLast(const CharType* phrase, NEString::CharPos startPos /*= NEString::END_POS*/, bool caseSensitive /*= true*/) const
+inline NEString::CharPos TEString<CharType>::findLast(const CharType* phrase, NEString::CharCount phraseCount, NEString::CharPos startPos, bool caseSensitive) const
 {
-    if (isInvalidPosition(startPos) || NEString::isEmpty<CharType>(phrase))
+    if (((startPos != NEString::END_POS) && isInvalidPosition(startPos)) || NEString::isEmpty<CharType>(phrase) || (phraseCount == 0))
         return NEString::INVALID_POS;
 
     NEString::CharPos result{ NEString::END_POS };
-    NEString::CharCount count = NEString::getStringLength<CharType>(phrase);
+    NEString::CharCount count = phraseCount > 0 ? phraseCount : NEString::getStringLength<CharType>(phrase);
     NEString::CharCount strLen = getLength();
 
     startPos = (startPos == NEString::END_POS) && (strLen >= count) ? strLen - 1 - count : 0;
@@ -1786,26 +1789,15 @@ NEString::CharPos TEString<CharType>::findLast(const CharType* phrase, NEString:
 }
 
 template<typename CharType>
+NEString::CharPos TEString<CharType>::findLast(const CharType* phrase, NEString::CharPos startPos /*= NEString::END_POS*/, bool caseSensitive /*= true*/) const
+{
+    return findLast(phrase, NEString::getStringLength<CharType>(phrase), startPos, caseSensitive);
+}
+
+template<typename CharType>
 NEString::CharPos TEString<CharType>::findLast(const TEString<CharType> & phrase, NEString::CharPos startPos /*= NEString::END_POS*/, bool caseSensitive /*= true*/) const
 {
-    if (isInvalidPosition(startPos) || phrase.isEmpty())
-        return NEString::INVALID_POS;
-
-    NEString::CharPos result{ NEString::END_POS };
-    NEString::CharCount count = phrase.getLength();
-    NEString::CharCount strLen = getLength();
-
-    startPos = (startPos == NEString::END_POS) && (strLen >= count) ? strLen - 1 - count : 0;
-    for (NEString::CharPos pos = startPos; pos >= 0; --pos)
-    {
-        if ((compareString(pos, phrase.getString(), count, caseSensitive) == NEMath::eCompare::Equal))
-        {
-            result = pos;
-            break;
-        }
-    }
-
-    return result;
+    return findLast(phrase, phrase.getLength(), startPos, caseSensitive);
 }
 
 template<typename CharType>
@@ -2117,6 +2109,21 @@ inline TEString<CharType>& TEString<CharType>::insertAt(const CharType* source, 
 
 template<typename CharType>
 inline TEString<CharType>& TEString<CharType>::insertAt( const std::basic_string<CharType>& source
+                                                       , NEString::CharPos atDstPos
+                                                       , NEString::CharPos atSrcPos /*= NEString::START_POS*/
+                                                       , NEString::CharCount count  /*= NEString::COUNT_ALL*/)
+{
+    if (isValidPosition(atDstPos) && (atSrcPos < static_cast<NEString::CharPos>(source.length())))
+    {
+        count = count == NEString::COUNT_ALL ? static_cast<NEString::CharPos>(source.length() - atSrcPos) : count;
+        mData.insert(atDstPos, source, atSrcPos, count);
+    }
+
+    return (*this);
+}
+
+template<typename CharType>
+inline TEString<CharType>& TEString<CharType>::insertAt( const std::basic_string_view<CharType>& source
                                                        , NEString::CharPos atDstPos
                                                        , NEString::CharPos atSrcPos /*= NEString::START_POS*/
                                                        , NEString::CharCount count  /*= NEString::COUNT_ALL*/)
