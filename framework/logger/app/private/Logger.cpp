@@ -130,6 +130,18 @@ std::pair<const OptionParser::sOptionSetup *, int> Logger::getOptionSetup( void 
     return std::pair< const OptionParser::sOptionSetup *, int>( Logger::ValidOptions, static_cast<int>(MACRO_ARRAYLEN( Logger::ValidOptions )) );
 }
 
+void Logger::printStatus(const String& status)
+{
+#if AREG_EXTENDED
+
+    if (Logger::getInstance().getCurrentOption() == NESystemService::eServiceOption::CMD_Console)
+    {
+        Logger::_outputInfo(status);
+    }
+
+#endif // AREG_EXTENDED
+}
+
 Logger::Logger( void )
     : SystemServiceBase         ( mServiceServer )
     , IEConfigurationListener   ( )
@@ -669,33 +681,43 @@ void Logger::_cleanHelp(void)
 void Logger::_processUpdateScopes(const OptionParser::sOption& optScope)
 {
     Logger& logger{ Logger::getInstance() };
-    const ServiceCommunicatonBase::MapInstances& instances{ logger.getConnetedInstances() };
-
     TEArrayList<RemoteMessage> msgList;
     _createScopeMessage(optScope, msgList);
-    for (const auto& entry : msgList.getData())
+    for (uint32_t i = 0; i < msgList.getSize(); ++ i)
     {
-        if (entry.getTarget() == NEService::COOKIE_ANY)
-        {
-            for (const auto& inst : instances.getData())
-            {
-                const ITEM_ID target{ inst.first };
-                RemoteMessage msg{ entry.clone(NEService::COOKIE_LOGGER, target) };
-                msg.moveToBegin();
-                msg.setTarget(target);
-
-                logger.sendMessageToTarget(msg);
-            }
-        }
-        else
-        {
-            logger.sendMessageToTarget(entry);
-        }
+        logger.mServiceServer.dispatchAndForwardLoggerMessage(msgList[i]);
     }
 }
 
 void Logger::_processQueryScopes(const OptionParser::sOption& optScope)
 {
+    Logger& logger{ Logger::getInstance() };
+    TEArrayList<ITEM_ID> listTargets;
+    if (optScope.inString.empty() || (optScope.inString[0] == NEPersistence::SYNTAX_ALL_MODULES))
+    {
+        listTargets.add(NEService::COOKIE_ANY);
+    }
+    else
+    {
+        for (const auto& elem : optScope.inString)
+        {
+            if (elem == NEPersistence::SYNTAX_ALL_MODULES)
+            {
+                listTargets.clear();
+                listTargets.add(NEService::COOKIE_ANY);
+                break;
+            }
+            else if (elem.isNumeric())
+            {
+                listTargets.add(elem.toUInt64());
+            }
+        }
+    }
+
+    for (const auto& target : listTargets.getData())
+    {
+        logger.mServiceServer.dispatchAndForwardLoggerMessage(NETrace::messageQueryScopes(NEService::COOKIE_LOGGER, target));
+    }
 }
 
 void Logger::_createScopeMessage(const OptionParser::sOption& optScope, TEArrayList<RemoteMessage>& OUT msgList)
@@ -755,9 +777,30 @@ String Logger::_normalizeScopeProperty(const String & scope)
     }
     else
     {
-        result.append(propKey.section)
-              .append(NEPersistence::SYNTAX_OBJECT_SEPARATOR)
-              .append(scope);
+        String prop(propKey.property);
+        prop += NEPersistence::SYNTAX_OBJECT_SEPARATOR;
+        NEString::CharPos pos = scope.findFirst(prop);
+        if ( scope.isValidPosition(pos))
+        {
+            result.append(propKey.section)
+                  .append(NEPersistence::SYNTAX_OBJECT_SEPARATOR)
+                  .append(scope);
+        }
+        else
+        {
+            result = scope;
+            pos = result.findLast(NEPersistence::SYNTAX_OBJECT_SEPARATOR);
+            if (result.isValidPosition(pos))
+            {
+                result.insertAt(prop, static_cast<NEString::CharCount>(pos + NEPersistence::SYNTAX_OBJECT_SEPARATOR.length()));
+            }
+            else
+            {
+                result.insertAt(prop, NEString::START_POS);
+            }
+
+            result = _normalizeScopeProperty(result);
+        }
     }
 
     return result;

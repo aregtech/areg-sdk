@@ -91,6 +91,14 @@ public:
      **/
     static std::pair<const OptionParser::sOptionSetup *, int> getOptionSetup( void );
 
+    /**
+     * \brief   Outputs the specified message on the console.
+     *          The method is valid only for console application compiled with AREG Extended features.
+     *          Otherwise, the method ignores request to output message.
+     * \param   status  The status message to print on console.
+     **/
+    static void printStatus(const String& status);
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor / destructor
 //////////////////////////////////////////////////////////////////////////
@@ -315,9 +323,9 @@ private:
     static void _processUpdateScopes(const OptionParser::sOption& optScope);
 
     /**
-     * \brief   Triggered to process update scope priority command.
-     * \param   optScope    The option entry that contains scope priority update instruction.
-     *                      If the command contains a list of scopes to update, the should be split by ';'.
+     * \brief   Triggered to trigger querying the list of registered scopes.
+     * \param   optScope    The option entry that contains query command and list of client application IDs to request scope list.
+     *                      If the command contains a list of IDs, it can be separated either by space ' ' or semicolon ';'.
      **/
     static void _processQueryScopes(const OptionParser::sOption& optScope);
 

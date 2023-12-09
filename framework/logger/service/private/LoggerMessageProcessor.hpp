@@ -20,6 +20,8 @@
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
+#include "areg/component/NEService.hpp"
+
 /************************************************************************
  * Dependencies
  ************************************************************************/
@@ -53,33 +55,18 @@ public:
 public:
 
     /**
-     * \brief   Sends the notification message to the specified target.
-     *          Sets in the message as a source the ID of the logger service and the target
-     *          is passed as parameter.
-     * \param   target      The ID of the target application.
-     * \param   msgNotify   The message to send to the target.
-     **/
-    void notifyTarget(const ITEM_ID & target, const RemoteMessage & msgNotify) const;
-
-    /**
      * \brief   Processes the message to query instances. The message is sent by observers to receive
      *          the list of connected non-observer instances.
      * \param   msgReceived     The message to process.
      **/
-    void queryInstances(const RemoteMessage & msgReceived) const;
+    void queryConnectedInstances(const RemoteMessage & msgReceived) const;
 
     /**
      * \brief   Notifies the observers about connected instances. Automatically processed when
      *          new instance of application is connected.
      * \param   msgReceived     The message to process.
      **/
-    void notifyInstances(void) const;
-
-    /**
-     * \brief   Notifies the targeted observer about connected instances.
-     * \param   msgReceived     The message to process.
-     **/
-    void notifyTargetInstances(const ITEM_ID & target) const;
+    void notifyConnectedInstances(const ITEM_ID & target = NEService::COOKIE_ANY) const;
 
     /**
      * \brief   Called when a connected instance of application requests to register scopes.
@@ -87,7 +74,7 @@ public:
      *          The message is forwarded to the all connected observers to register scopes.
      * \param   msgReceived     The message to process.
      **/
-    void registerScopes(const RemoteMessage & msgReceived) const;
+    void registerScopesAtObserver(const RemoteMessage & msgReceived) const;
 
     /**
      * \brief   Called when a connected instance of observer requests to update scopes
@@ -96,7 +83,7 @@ public:
      *          The message is forwarded to the all connected observers to register scopes.
      * \param   msgReceived     The message to process.
      **/
-    void updateScopes(const RemoteMessage & msgReceived) const;
+    void updateLogSourceScopes(const RemoteMessage & msgReceived) const;
 
     /**
      * \brief   Called when a connected instance of observer queries the list of scopes.
@@ -104,7 +91,7 @@ public:
      *          or to the certain application to receive list of log scope of the application.
      * \param   msgReceived     The message to process.
      **/
-    void queryScopes(const RemoteMessage & msgReceived) const;
+    void queryLogSourceScopes(const RemoteMessage & msgReceived) const;
 
     /**
      * \brief   Called when a connected instance of observer requests the clients to save log configuration,
@@ -113,7 +100,7 @@ public:
      *          or to the certain application to save the log configuration.
      * \param   msgReceived     The message to process.
      **/
-    void saveLogConfiguration(const RemoteMessage & msgReceived) const;
+    void saveLogSourceConfiguration(const RemoteMessage & msgReceived) const;
 
     /**
      * \brief   Called to forward the log message to the observer application.
@@ -121,6 +108,42 @@ public:
      **/
     void logMessage(const RemoteMessage & msgReceived) const;
 
+    /**
+     * \brief   Checks whether the specified message source is considered as a log source.
+     *          The log source application as well has list of scopes.
+     *          The clients, test application and simulations are considered as a source of logs.
+     *          Observers and services are not.
+     * \param   msgSource   The source of message to check.
+     * \return  Returns true if the specified type is a source of log messages.
+     **/
+    static bool isLogSource(NEService::eMessageSource msgSource);
+
+    /**
+     * \brief   Checks whether the specified message source is considered as an observer.
+     *          The observers can collect logs and send instructions to update log scopes and priorities.
+     * \param   msgSource   The source of message to check.
+     * \return  Returns true if the specified type is an observer.
+     **/
+    static bool isLogObserver(NEService::eMessageSource msgSource);
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden methods
+//////////////////////////////////////////////////////////////////////////
+private:
+
+    /**
+     * \brief   Forwards specified message to the log sources, i.e. clients.
+     *          If the target in the remote message is NEService::COOKIE_ANY, the message is sent to all clients.
+     * \param   msgReceived     The remote message received from observer or generated by the logger.
+     **/
+    inline void _forwardMessageToLogSources(const RemoteMessage& msgReceived) const;
+
+    /**
+     * \brief   Forwards specified message to the log observer.
+     *          If the target in the remote message is NEService::COOKIE_ANY, the message is sent to all observers.
+     * \param   msgReceived     The remote message received from a client.
+     **/
+    inline void _forwardMessageToObservers(const RemoteMessage& msgReceived) const;
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////

@@ -516,6 +516,21 @@ namespace NETrace
      * \return  Returns generated message ready to send from indicated source to the target.
      **/
     AREG_API RemoteMessage messageUpdateScope(const ITEM_ID& source, const ITEM_ID& target, const String & scopeName, unsigned int scopeId, unsigned int scopePrio);
+
+    /**
+     * \brief   Creates a message to query the list of scopes of connected client applications.
+     *          After option it should follow either '*' for all connected clients or the list of connected cookies.
+     *          The cookie ID is specified, the message is sent to the specified target. Otherwise, the message is sent
+     *          to all connected clients. An empty command after option is considered as sending message to all clients.
+     *          Only observers and the log collector service (logger) can generate and send the message.
+     *          The message is ignored if the client creates and send the message.
+     * \param   source      The ID of the source that generated the message.
+     *                      The source should be either observer or NEService::COOKIE_LOGGER.
+     * \param   target      The ID of the target to send the message.
+     *                      If the ID is NEService::COOKIE_ANY, the message is sent to all connected clients.
+     * \return  Returns generated message ready to send from indicated source to the target.
+     **/
+    AREG_API RemoteMessage messageQueryScopes(const ITEM_ID& source, const ITEM_ID& target);
 }
 
 //////////////////////////////////////////////////////////////////////////////

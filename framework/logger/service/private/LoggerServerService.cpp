@@ -43,15 +43,13 @@ LoggerServerService::LoggerServerService( void )
 void LoggerServerService::addInstance(const ITEM_ID & cookie, const NEService::sServiceConnectedInstance& instance)
 {
     Lock lock(mLock);
+
     ServiceCommunicatonBase::addInstance(cookie, instance);
-    if (instance.ciSource != NEService::eMessageSource::MessageSourceObserver)
+    if (LoggerMessageProcessor::isLogSource(instance.ciSource))
     {
-        if (mObservers.isEmpty() == false)
-        {
-            mLoggerProcessor.notifyInstances();
-        }
+        mLoggerProcessor.notifyConnectedInstances(NEService::COOKIE_ANY);
     }
-    else
+    else if (LoggerMessageProcessor::isLogObserver(instance.ciSource))
     {
         mObservers.addIfUnique(cookie, instance);
     }
@@ -60,18 +58,16 @@ void LoggerServerService::addInstance(const ITEM_ID & cookie, const NEService::s
 void LoggerServerService::removeInstance(const ITEM_ID & cookie)
 {
     Lock lock(mLock);
+
     NEService::sServiceConnectedInstance instance;
     bool exists{ mInstanceMap.find(cookie, instance) };
     ServiceCommunicatonBase::removeInstance(cookie);
     
-    if (exists && (instance.ciSource != NEService::eMessageSource::MessageSourceObserver))
+    if (exists && LoggerMessageProcessor::isLogSource(instance.ciSource))
     {
-        if (mObservers.isEmpty() == false)
-        {
-            mLoggerProcessor.notifyInstances();
-        }
+        mLoggerProcessor.notifyConnectedInstances(NEService::COOKIE_ANY);
     }
-    else
+    else if (LoggerMessageProcessor::isLogObserver(instance.ciSource))
     {
         mObservers.removeAt(cookie);
     }
@@ -81,18 +77,42 @@ void LoggerServerService::removeAllInstances(void)
 {
     Lock lock(mLock);
     ServiceCommunicatonBase::removeAllInstances();
-    for (auto pos = mObservers.firstPosition(); mObservers.isValidPosition(pos); pos = mObservers.nextPosition(pos))
-    {
-        mLoggerProcessor.notifyTargetInstances(mObservers.keyAtPosition(pos));
-    }
-
+    mLoggerProcessor.notifyConnectedInstances(NEService::COOKIE_ANY);
     mObservers.clear();
+}
+
+void LoggerServerService::dispatchAndForwardLoggerMessage(const RemoteMessage& msgForward)
+{
+    Lock lock(mLock);
+
+    ASSERT(msgForward.isValid());
+    ASSERT(msgForward.getSource() == NEService::COOKIE_LOGGER);
+    NEService::eFuncIdRange msgId = static_cast<NEService::eFuncIdRange>(msgForward.getMessageId());
+    switch (msgId)
+    {
+    case NEService::eFuncIdRange::ServiceLogUpdateScopes:
+        mLoggerProcessor.updateLogSourceScopes(msgForward);
+        break;
+
+    case NEService::eFuncIdRange::ServiceLogQueryScopes:
+        mLoggerProcessor.queryLogSourceScopes(msgForward);
+        break;
+
+    case NEService::eFuncIdRange::ServiceSaveLogConfiguration:
+        mLoggerProcessor.saveLogSourceConfiguration(msgForward);
+        break;
+
+    default:
+        ASSERT(false);
+        break;
+    }
 }
 
 void LoggerServerService::onServiceMessageReceived(const RemoteMessage &msgReceived)
 {
     TRACE_SCOPE(logger_service_LoggerServerService_onServiceMessageReceived);
 
+    Lock lock(mLock);
     ASSERT( msgReceived.isValid() );
     NEService::eFuncIdRange msgId = static_cast<NEService::eFuncIdRange>( msgReceived.getMessageId() );
 
@@ -105,23 +125,23 @@ void LoggerServerService::onServiceMessageReceived(const RemoteMessage &msgRecei
     switch (msgId)
     {
     case NEService::eFuncIdRange::SystemServiceQueryInstances:
-        mLoggerProcessor.queryInstances(msgReceived);
+        mLoggerProcessor.queryConnectedInstances(msgReceived);
         break;
 
     case NEService::eFuncIdRange::ServiceLogRegisterScopes:
-        mLoggerProcessor.registerScopes(msgReceived);
+        mLoggerProcessor.registerScopesAtObserver(msgReceived);
         break;
 
     case NEService::eFuncIdRange::ServiceLogUpdateScopes:
-        mLoggerProcessor.updateScopes(msgReceived);
+        mLoggerProcessor.updateLogSourceScopes(msgReceived);
         break;
 
     case NEService::eFuncIdRange::ServiceLogQueryScopes:
-        mLoggerProcessor.queryScopes(msgReceived);
+        mLoggerProcessor.queryLogSourceScopes(msgReceived);
         break;
 
     case NEService::eFuncIdRange::ServiceSaveLogConfiguration:
-        mLoggerProcessor.saveLogConfiguration(msgReceived);
+        mLoggerProcessor.saveLogSourceConfiguration(msgReceived);
         break;
 
     case NEService::eFuncIdRange::ServiceLogMessage:
