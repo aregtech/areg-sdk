@@ -30,6 +30,12 @@
 
 namespace
 {
+    /**
+     * \brief   Returns predefined structure for the logging communication message.
+     *          The structure is used as a template to initialize the remote communication message.
+     *          The target, source and the message ID should be set before sending the message.
+     *          Otherwise, the message ID is an empty function and message will be ignored by any component.
+     **/
     const NEMemory::sRemoteMessage& _getLogEmptyMessage(void)
     {
         static constexpr NEMemory::sRemoteMessage _messageUpdateScpes
@@ -55,6 +61,12 @@ namespace
         return _messageUpdateScpes;
     }
 
+    /**
+     * \brief   Returns predefined structure for to log a message on remote collector / observer.
+     *          The structure is used as a template to initialize remote communication message.
+     *          The source of the log should be set before sending the message.
+     *          Otherwise, it is ignored by the logger and the message is dropped.
+     **/
     const NEMemory::sRemoteMessage & _getLogMessage(void)
     {
         static constexpr NEMemory::sRemoteMessage _messageServiceLog
@@ -141,8 +153,7 @@ NETrace::sLogMessage::sLogMessage(const NETrace::sLogMessage & src)
     , logModuleLen  { 0 }
     , logModule     { '\0' }
 {
-    uint32_t len = NEMemory::memCopy(logMessage, NETrace::LOG_MESSAGE_IZE - 1, src.logMessage, src.logMessageLen);
-    logMessage[len] = String::EmptyChar;
+    NEMemory::memCopy(logMessage, NETrace::LOG_MESSAGE_IZE, src.logMessage, src.logMessageLen + 1);
 }
 
 NETrace::sLogMessage & NETrace::sLogMessage::operator = (const NETrace::sLogMessage & src)
@@ -160,13 +171,16 @@ NETrace::sLogMessage & NETrace::sLogMessage::operator = (const NETrace::sLogMess
         logTimestamp    = src.logTimestamp;
         logScopeId      = src.logScopeId;
         logMessageLen   = src.logMessageLen;
-        logThreadLen    = 0;
-        logThread[0]    = String::EmptyChar;
-        logThreadLen    = 0;
-        logModule[0]    = String::EmptyChar;
 
-        uint32_t len = NEMemory::memCopy(logMessage, NETrace::LOG_MESSAGE_IZE - 1, src.logMessage, src.logMessageLen);
-        logMessage[len] = String::EmptyChar;
+        if (logDataType == NETrace::eLogDataType::LogDataRemote)
+        {
+            logThreadLen = 0;
+            logThread[0] = String::EmptyChar;
+            logThreadLen = 0;
+            logModule[0] = String::EmptyChar;
+        }
+
+        NEMemory::memCopy(logMessage, NETrace::LOG_MESSAGE_IZE, src.logMessage, src.logMessageLen + 1);
     }
 
     return (*this);
@@ -279,7 +293,6 @@ AREG_API_IMPL RemoteMessage NETrace::createLogMessage(const NETrace::sLogMessage
     RemoteMessage msgLog;
     if (msgLog.initMessage(_getLogMessage().rbHeader, sizeof(NETrace::sLogMessage)) != nullptr)
     {
-        // msgLog.write(reinterpret_cast<const unsigned char *>(&logMessage), sizeof(NETrace::sLogMessage));
         msgLog << logMessage;
         msgLog.setSizeUsed(sizeof(NETrace::sLogMessage));
         msgLog.moveToEnd();
