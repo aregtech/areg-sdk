@@ -391,7 +391,7 @@ private:
     bool _osRegisterService( void );
 
     /**
-     * \brief   OS specific implementation of changing the state of the mcrouter service.
+     * \brief   OS specific implementation of changing the state of the logger service.
      **/
     bool _osSetState( NESystemService::eSystemServiceState newState );
 
