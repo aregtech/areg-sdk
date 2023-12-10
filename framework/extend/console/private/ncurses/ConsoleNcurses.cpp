@@ -143,7 +143,10 @@ void Console::_osSetCursorCurPosition(Console::Coord pos) const
 bool Console::_osWaitInputString(char* buffer, uint32_t size) const
 {
     ASSERT(buffer != nullptr);
-    return ((mContext != 0) && (wgetnstr(reinterpret_cast<WINDOW*>(mContext), buffer, static_cast<int>(size)) == OK));
+    if ((mContext == 0) || (wgetnstr(reinterpret_cast<WINDOW*>(mContext), buffer, static_cast<int>(size)) != OK))
+        return false;
+
+    return (NEString::trimRight<char>(buffer) > 0);
 }
 
 void Console::_osRefreshScreen(void) const

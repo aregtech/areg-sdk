@@ -72,17 +72,17 @@ inline void TrafficLightClient::outputState(NESimpleTrafficLight::eTrafficLight 
     switch (lightState)
     {
     case NESimpleTrafficLight::eTrafficLight::LightRed:
-        std::cout << "Light: RED ..." << std::endl;
+        printf("Light: RED ...\r\n");
         break;
     case NESimpleTrafficLight::eTrafficLight::LightYellow:
-        std::cout << "Light: Yellow ..." << std::endl;
+        printf("Light: Yellow ...\r\n");
         break;
     case NESimpleTrafficLight::eTrafficLight::LightGreen:
-        std::cout << "Light: GREEN ..." << std::endl;
+        printf("Light: GREEN ...\r\n");
         break;
     case NESimpleTrafficLight::eTrafficLight::LightOff:
     default:
-        std::cout << "Light: OFF ..." << std::endl;
+        printf("Light: OFF ...\r\n");
         break;
     }
 }
