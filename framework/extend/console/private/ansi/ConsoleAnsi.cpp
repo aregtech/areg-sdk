@@ -158,14 +158,18 @@ bool Console::_osWaitInputString(char* buffer, uint32_t size) const
     ASSERT(buffer != nullptr);
 #if !defined(__STDC_WANT_LIB_EXT1__) || !(__STDC_WANT_LIB_EXT1__)
     #if defined(WINDOWS)
-        return (::gets_s(buffer, size) != nullptr);
+        if (::gets_s(buffer, size) == nullptr)
+            return false;
     #else   // defined(WINDOWS)
-        return (::fgets(buffer, size, stdin) != nullptr);
+        if (::fgets(buffer, size, stdin) == nullptr)
+            return false;
     #endif  // defined(WINDOWS)
 #else
-        return (::gets_s(buffer, size) != nullptr);
+        if (::gets_s(buffer, size) == nullptr)
+            return false;
 #endif // WINDOWS
 
+    return (NEString::trimRight<char>(buffer) > 0);
 }
 
 void Console::_osRefreshScreen(void) const

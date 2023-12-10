@@ -30,7 +30,7 @@
     #pragma comment(lib, "14_generated.lib")
 #endif // WIN32
 
-//! A demo of dynamic model and client with data update subsription.
+//! A demo of dynamic model and client with data update subscription.
 int main()
 {
     constexpr char const _modelName[]{ "TheModel" };
@@ -48,7 +48,7 @@ int main()
 
     Console & console = Console::getInstance( );
     console.enableConsoleInput( true );
-    console.outputTxt( { 0, 0 }, "A demo of dynamic model and client with data update subsription..." );
+    console.outputTxt( { 0, 0 }, "A demo of dynamic model and client with data update subscription..." );
 
     // At first, determine which traffic direction should be set.
     // This is used to react on the right attribute.
