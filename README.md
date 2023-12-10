@@ -34,6 +34,8 @@
 
 **AREG** (*Automated Real-time Event Grid*) is a communication engine that enables data transmission in IoT [fog- and mist-network](https://csrc.nist.gov/publications/detail/sp/500-325/final). It is lightweight, automated, featured, and works on different platforms. AREG uses an interface-centric approach to create a grid of services that allows multiple devices and software nodes to operate like distributed servers and clients. By automating real-time data transmission, and using both Client-Server and Publish-Subscribe models, AREG ensures reliable and efficient communication between connected software nodes.
 
+> 💡 AREG is under intensive development and you have to be ready to encounter some problems. Feel free to create a bug ticket and describe the problem. As well, please follow [AREG Wiki](https://github.com/aregtech/areg-sdk/wiki). 
+
 ---
 
 ## Table of contents[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#table-of-contents)
@@ -427,7 +429,7 @@ AREG SDK is under free open source [_Apache License Version 2.0_](https://github
 Join our project and provide assistance by:
 * Checking out the list of [open issues](https://github.com/aregtech/areg-sdk/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) where we need help.
 * If you need new features, please open a [new issue](https://github.com/aregtech/areg-sdk/issues) or start a [discussion](https://github.com/aregtech/areg-sdk/discussions).
-* hen creating a pull request, kindly consider the time it takes for reviewing and testing, and maintain proper coding style.
+* When creating a pull request, kindly consider the time it takes for reviewing and testing, and maintain proper coding style.
 * If you require invoiced commercial support or training, or if you wish to support AREG SDK commercially, kindly contact us at info[at]aregtech[dot]com. 
 
 Please [![Star AREG SDK](https://img.shields.io/github/stars/aregtech/areg-sdk.svg?style=social&label=Star%20AREG%20SDK)](https://github.com/aregtech/areg-sdk/) repository to encourage contributors and helps to grow our community. Contact us for the feedback or new ideas.
