@@ -23,6 +23,11 @@
 
 SortedEventStack::~SortedEventStack(void)
 {
+    for (auto evt : mValueList)
+    {
+        evt->destroy();
+    }
+
     mValueList.clear();
 }
 

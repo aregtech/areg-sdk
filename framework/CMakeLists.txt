@@ -1,6 +1,6 @@
 
 # ###########################################################################
-# User sepcific settings
+# User specific settings
 # ###########################################################################
 include("${AREG_BASE}/areg/CMakeLists.txt")
 include("${AREG_BASE}/extend/CMakeLists.txt")

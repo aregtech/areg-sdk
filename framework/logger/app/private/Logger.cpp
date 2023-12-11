@@ -61,7 +61,7 @@ namespace
 
     constexpr std::string_view _msgHelp []
     {
-          {"Usage of AREG Message Router (mcrouter) :"}
+          {"Usage of AREG Log collector (logger) :"}
         , NESystemService::MSG_SEPARATOR
         , {"-a, --save      : Command to save logs in the file. Used in console application. Usage: --save"}
         , {"-c, --console   : Command to run logger as a console application (default option). Usage: \'logger --console\'"}
