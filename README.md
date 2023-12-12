@@ -34,8 +34,6 @@
 
 **AREG** (*Automated Real-time Event Grid*) is a communication engine that enables data transmission in IoT [fog- and mist-network](https://csrc.nist.gov/publications/detail/sp/500-325/final). It is lightweight, automated, featured, and works on different platforms. AREG uses an interface-centric approach to create a grid of services that allows multiple devices and software nodes to operate like distributed servers and clients. By automating real-time data transmission, and using both Client-Server and Publish-Subscribe models, AREG ensures reliable and efficient communication between connected software nodes.
 
-> 💡 AREG is under intensive development and you have to be ready to encounter some problems. Feel free to create a bug ticket and describe the problem. As well, please follow [AREG Wiki](https://github.com/aregtech/areg-sdk/wiki). 
-
 ---
 
 ## Table of contents[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#table-of-contents)
