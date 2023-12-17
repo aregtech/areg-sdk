@@ -140,10 +140,18 @@ void NetTcpLogger::lostRemoteServiceChannel(const Channel & channel)
 
 void NetTcpLogger::failedSendMessage(const RemoteMessage & msgFailed, Socket & whichTarget)
 {
+    ASSERT(mIsEnabled);
+    if (mLogConfiguration.getStackSize() > 0)
+    {
+        mRingStack.pushLast(msgFailed);
+    }
+
+    sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceLost);
 }
 
 void NetTcpLogger::failedReceiveMessage(Socket & whichSource)
 {
+    sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceLost);
 }
 
 void NetTcpLogger::failedProcessMessage(const RemoteMessage & msgUnprocessed)
