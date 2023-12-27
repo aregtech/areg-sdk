@@ -103,8 +103,11 @@ endfunction(addStaticLib target_name target_source_list)
 # usage ......: setSharedLibOptions( <name of shared library> <list of libraries>) 
 # ---------------------------------------------------------------------------
 function(setSharedLibOptions item library_list)
-
+    # Set common compile definition
     target_compile_definitions(${item} PRIVATE ${COMMON_COMPILE_DEF} _USRDLL)
+
+    # Linking flags
+    target_link_libraries(${item} areg-extend ${library_list} areg ${AREG_EXTENDED_LIBS} ${AREG_LDFLAGS})
 
     if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         target_compile_options(${item} PRIVATE -fPIC)
