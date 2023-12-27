@@ -8,7 +8,7 @@
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/ipc/private/IEServiceRegisterProvider.cpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Interface of public service registration provider.
  *

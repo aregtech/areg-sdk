@@ -8,7 +8,7 @@
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        extend/service/private/ServiceCommunicatonBase.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Service communication base class
  ************************************************************************/

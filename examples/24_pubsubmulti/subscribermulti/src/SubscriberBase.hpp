@@ -2,7 +2,7 @@
 
 /************************************************************************
  * \file        subscribermulti/src/SubscriberBase.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file is a demonstration of PubSub feature service consumer.

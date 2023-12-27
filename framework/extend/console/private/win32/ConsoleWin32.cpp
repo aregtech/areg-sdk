@@ -9,7 +9,7 @@
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        extend/console/private/win32/Console.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Basic OS specific console implementation.
  *              Windows specific implementation based on Win32 API.

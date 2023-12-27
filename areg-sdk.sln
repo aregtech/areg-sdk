@@ -647,6 +647,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "24_subscribermulti", "examp
 		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3} = {FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "observerapi", "framework\observerapi.vcxproj", "{B29F438E-904C-4929-903C-F4673182A417}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -1183,6 +1188,14 @@ Global
 		{EB36417C-8220-4DC9-B9BD-F3EAAE24DC0D}.Release|Win32.Build.0 = Release|Win32
 		{EB36417C-8220-4DC9-B9BD-F3EAAE24DC0D}.Release|x64.ActiveCfg = Release|x64
 		{EB36417C-8220-4DC9-B9BD-F3EAAE24DC0D}.Release|x64.Build.0 = Release|x64
+		{B29F438E-904C-4929-903C-F4673182A417}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B29F438E-904C-4929-903C-F4673182A417}.Debug|Win32.Build.0 = Debug|Win32
+		{B29F438E-904C-4929-903C-F4673182A417}.Debug|x64.ActiveCfg = Debug|x64
+		{B29F438E-904C-4929-903C-F4673182A417}.Debug|x64.Build.0 = Debug|x64
+		{B29F438E-904C-4929-903C-F4673182A417}.Release|Win32.ActiveCfg = Release|Win32
+		{B29F438E-904C-4929-903C-F4673182A417}.Release|Win32.Build.0 = Release|Win32
+		{B29F438E-904C-4929-903C-F4673182A417}.Release|x64.ActiveCfg = Release|x64
+		{B29F438E-904C-4929-903C-F4673182A417}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

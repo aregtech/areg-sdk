@@ -227,6 +227,14 @@ if(UNIX AND NOT CYGWIN)
     set(CMAKE_EXECUTABLE_SUFFIX ".out")
 endif()
 
+set(COMMON_COMPILE_DEF)
+if(AREG_BINARY MATCHES "static")
+    set(COMMON_COMPILE_DEF IMP_AREG_LIB)
+else()
+    set(COMMON_COMPILE_DEF IMP_AREG_DLL)
+endif()
+
+
 message(STATUS "-------------------- CMakeLists Status Report Begin --------------------")
 message(STATUS ">>> Build for '${CMAKE_SYSTEM_NAME}' '${AREG_BITNESS}'-bit platform '${AREG_PROCESSOR}' with compiler '${CMAKE_CXX_COMPILER}', ID '${AREG_COMPILER_FAMILY}', and build type '${CMAKE_BUILD_TYPE}'")
 message(STATUS ">>> Binary output folder '${AREG_OUTPUT_BIN}', executable extensions '${CMAKE_EXECUTABLE_SUFFIX}'")

@@ -10,7 +10,7 @@
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/base/GESwitches.h
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, Framework Switches.
  *              This header should be included before using any of 
@@ -128,32 +128,32 @@
 #endif  // defined(EXP_AREG_LIB) || defined(_EXP_AREG_LIB) || defined(EXPORT_STATIC_SYMBOLS) || defined(_EXPORT_STATIC_SYMBOLS)
 
 #if !defined(EXP_AREG_DLL) && !defined(EXP_AREG_LIB) && !defined(IMP_AREG_DLL) && !defined(IMP_AREG_LIB)
-    #pragma message ("WARNING: None of preprocessor defines are set. By default sets EXP_AREG_DLL. See GESwitches.h file of AREG API Core")
-    #define EXP_AREG_DLL
-#endif  // !defined(LINK_AREG_API_DLL) && !defined(LINK_AREG_API_LIB) && !defined(IMP_AREG_API_DLL) && !defined(IMP_AREG_API_LIB)
+    #pragma message ("WARNING: None of preprocessor defines are set. By default sets IMP_AREG_DLL. See GESwitches.h file of AREG API Core")
+    #define IMP_AREG_DLL
+#endif  // !defined(EXP_AREG_DLL) && !defined(EXP_AREG_LIB) && !defined(IMP_AREG_DLL) && !defined(IMP_AREG_LIB)
 
 /**
  * \brief   Set Exports / Imports for dynamic and static libraries
  **/
 #ifdef EXP_AREG_DLL
    #if defined(_WIN32)
-      #define AREG_API        __declspec(dllexport)
+      #define AREG_API          __declspec(dllexport)
    #elif defined(__CYGWIN__)
-      #define AREG_API        __attribute__ ((dllexport))
+      #define AREG_API          __attribute__ ((dllexport))
    #elif defined(__GNUC__) && (__GNUC__ >= 4)
-      #define AREG_API        __attribute__((visibility("default")))
+      #define AREG_API          __attribute__((visibility("default")))
    #else    // !defined(__GNUC__) && (__GNUC__ >= 4)
       #define AREG_API
    #endif   // (defined(_WINDOWS) || defined(WINDOWS) || defined(_WIN32))
-#endif   // LINK_AREG_DLL
+#endif   // EXP_AREG_DLL
 
 #ifdef IMP_AREG_DLL
    #if defined(_WIN32)
-      #define AREG_API        __declspec(dllimport)
+      #define AREG_API          __declspec(dllimport)
    #elif defined(__CYGWIN__)
-      #define AREG_API        __attribute__ ((dllimport))
+      #define AREG_API          __attribute__ ((dllimport))
    #elif defined(__GNUC__) && (__GNUC__ >= 4)
-      #define AREG_API     __attribute__((visibility("default")))
+      #define AREG_API          __attribute__((visibility("default")))
    #else    // !(__GNUC__ >= 4)
       #define AREG_API
    #endif   // (defined(_WINDOWS) || defined(WINDOWS) || defined(_WIN32))
@@ -161,18 +161,18 @@
 
 #if defined(EXP_AREG_LIB) || defined(IMP_AREG_LIB)
     #define AREG_API
-#endif // (EXP_AREG_LIB)
+#endif // defined(EXP_AREG_LIB) || defined(IMP_AREG_LIB)
 
 
 #ifndef AREG_API
    #define AREG_API
 #endif  // AREG_API
 
-#if defined(_WIN32)
-      #define AREG_API_IMPL   AREG_API
-#else    // ! ((defined(_WINDOWS) || defined(WINDOWS) || defined(_WIN32)))
-      #define AREG_API_IMPL
-#endif   // (defined(_WINDOWS) || defined(WINDOWS) || defined(_WIN32))
+#ifdef WIN32
+    #define AREG_API_IMPL   AREG_API
+#else   // !WIN32
+    #define AREG_API_IMPL
+#endif   // WIN32
 
 // By default, no AREG extended features.
 #ifndef AREG_EXTENDED

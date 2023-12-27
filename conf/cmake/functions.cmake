@@ -7,12 +7,8 @@
 # usage ......: setAppOptions( <name of executable> <list of libraries>) 
 # ---------------------------------------------------------------------------
 function(setAppOptions item library_list)
-
-    if(AREG_BINARY MATCHES "shared")
-        target_compile_definitions(${item} PRIVATE IMP_AREG_DLL)
-    else()
-        target_compile_definitions(${item} PRIVATE IMP_AREG_LIB)
-    endif()
+    # Set common compile definition
+    target_compile_definitions(${item} PRIVATE ${COMMON_COMPILE_DEF})
 
     # Linking flags
     target_link_libraries(${item} areg-extend ${library_list} areg ${AREG_EXTENDED_LIBS} ${AREG_LDFLAGS})
@@ -58,20 +54,13 @@ endfunction(addExecutable target_name target_source_list)
 # ---------------------------------------------------------------------------
 function(setStaticLibOptions item library_list)
 
-    target_compile_definitions(${item} PRIVATE _LIB)
-
-    # Setting libxxx properties (static or shared)
-    if(AREG_BINARY MATCHES "shared")
-        target_compile_definitions(${item} PRIVATE IMP_AREG_DLL)
-    else()
-        target_compile_definitions(${item} PRIVATE IMP_AREG_LIB)
-    endif()
+    # Set common compile definition
+    target_compile_definitions(${item} PRIVATE ${COMMON_COMPILE_DEF} _LIB)
 
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
         target_compile_options(${item} PRIVATE "-Bstatic")
     endif()
 
-    target_compile_definitions(${item} PRIVATE _LIB)
     target_link_libraries(${item} ${library_list} areg ${AREG_LDFLAGS})
 
     # Adjusting CPP standard for target
@@ -115,12 +104,7 @@ endfunction(addStaticLib target_name target_source_list)
 # ---------------------------------------------------------------------------
 function(setSharedLibOptions item library_list)
 
-    if(AREG_BINARY MATCHES "shared")
-        target_compile_definitions(${item} PRIVATE IMP_AREG_DLL)
-        target_compile_options(${item} PRIVATE ${AREG_SHARED_LIB_FLAGS})
-    else()
-        target_compile_definitions(${item} PRIVATE IMP_AREG_LIB)
-    endif()
+    target_compile_definitions(${item} PRIVATE ${COMMON_COMPILE_DEF} _USRDLL)
 
     if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         target_compile_options(${item} PRIVATE -fPIC)
@@ -129,9 +113,6 @@ function(setSharedLibOptions item library_list)
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
         target_compile_options(${item} PRIVATE "-Bdynamic")
     endif()
-
-    target_compile_definitions(${item} PRIVATE _USRDLL)
-    # target_link_libraries(${item} ${library_list} areg ${AREG_LDFLAGS})
 
     # Adjusting CPP standard for target
     set_target_properties(${item} PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON )

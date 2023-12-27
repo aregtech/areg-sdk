@@ -1,6 +1,6 @@
 /************************************************************************
 * \file        areg/appbase/private/ApplicationWin.cpp
-* \ingroup     AREG Asynchronous Event-Driven Communication Framework
+* \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
 * \author      Artak Avetyan
 * \brief       AREG Platform, Windows OS specific Application methods implementation
 *              Windows apecifix API calls.

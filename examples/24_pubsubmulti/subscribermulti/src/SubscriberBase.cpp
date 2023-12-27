@@ -1,6 +1,6 @@
 /************************************************************************
  * \file        subscribermulti/src/SubscriberBase.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file is a demonstration of a data subscriber, which is a service consumer.
