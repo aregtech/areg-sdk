@@ -40,7 +40,7 @@ ifeq ($(AREG_COMPILER_ID), Clang)
         AREG_COMPILER_OPTIONS   += -m64
     endif
 
-    AREG_COMPILER_OPTIONS   += -g -pthread -std=c++17 -Werror -Wall -fmessage-length=0 $(AREG_DEFINITIONS) -stdlib=libstdc++
+    AREG_COMPILER_OPTIONS   += -g -pthread -std=c++17 -Werror -Wall -fmessage-length=0 -fPIC $(AREG_DEFINITIONS) -stdlib=libstdc++
     AREG_LDFLAGS            += -lm -lstdc++ -lrt -pthread
 
     OBJ_EXT         := o
@@ -138,7 +138,7 @@ else
         AREG_COMPILER_OPTIONS   += -m64
     endif
 
-    AREG_COMPILER_OPTIONS   += -pthread -Wall -fmessage-length=0 -std=c++17
+    AREG_COMPILER_OPTIONS   += -pthread -Wall -fmessage-length=0 -fPIC -std=c++17
     AREG_LDFLAGS            += -lstdc++ -lm -lpthread -lrt
 
     OBJ_EXT         := o
