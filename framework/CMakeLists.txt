@@ -30,7 +30,7 @@ else(AREG_BINARY MATCHES "shared")
 
 endif()
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
     target_compile_options(areg PRIVATE -fPIC)
 endif()
 
@@ -59,6 +59,10 @@ if (AREG_OBSERVER_LIB MATCHES "shared")
     # build observer API shared library
     addSharedLib(observerapi "${observer_lib_SRC}")
 
+    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
+        target_compile_options(observerapi PRIVATE -fPIC)
+    endif()
+
     # observer API shared library
     target_compile_definitions(observerapi PRIVATE EXP_OBSERVER_DLL)
 
@@ -71,6 +75,9 @@ else(AREG_OBSERVER_LIB MATCHES "shared")
     # build observer API shared library
     addStaticLib(observerapi "${observer_lib_SRC}")
 
+    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
+        target_compile_options(observerapi PRIVATE -fPIC)
+    endif()
     # observer API shared library
     target_compile_definitions(observerapi PRIVATE EXP_OBSERVER_LIB)
 

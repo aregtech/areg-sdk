@@ -125,9 +125,10 @@
     #define OBSERVER_API_IMPL
 #endif   // WIN32
 
-#ifndef IMP_AREG_DLL
+#if !defined(IMP_AREG_DLL) && !defined(IMP_AREG_LIB)
+    #pragma message ("WARNING: Neither IMP_AREG_DLL, nor IMP_AREG_LIB is defined. Make proper settings. By default setting IMP_AREG_DLL.")
     #define IMP_AREG_DLL
-#endif  // IMP_AREG_DLL
+#endif  // !defined(IMP_AREG_DLL) && !defined(IMP_AREG_LIB)
 
 #include "areg/base/GEGlobal.h"
 

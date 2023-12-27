@@ -220,7 +220,7 @@ set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${AREG_OUTPUT_DIR}
 include_directories(BEFORE "${AREG_BASE} ${AREG_GENERATE_DIR}")
 
 # Adding library search paths
-link_directories(BEFORE "${AREG_OUTPUT_BIN} ${AREG_OUTPUT_LIB}")
+link_directories(BEFORE "${AREG_OUTPUT_BIN}" "${AREG_OUTPUT_LIB}")
 
 # Only for Linux
 if(UNIX AND NOT CYGWIN)
@@ -240,4 +240,5 @@ message(STATUS ">>> Build for '${CMAKE_SYSTEM_NAME}' '${AREG_BITNESS}'-bit platf
 message(STATUS ">>> Binary output folder '${AREG_OUTPUT_BIN}', executable extensions '${CMAKE_EXECUTABLE_SUFFIX}'")
 message(STATUS ">>> Generated files are in '${AREG_GENERATE_DIR}', library output folder '${AREG_OUTPUT_LIB}'")
 message(STATUS ">>> Build examples is '${AREG_BUILD_EXAMPLES}', build tests is '${AREG_BUILD_TESTS}', AREG extended features are '${AREG_EXTENDED}', compile with logs '${AREG_LOGS}'")
+message(STATUS ">>> CMAKE_CXX_COMPILER_ID = ${CMAKE_CXX_COMPILER_ID}")
 message(STATUS "-------------------- CMakeLists Status Report End ----------------------")

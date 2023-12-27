@@ -109,9 +109,7 @@ function(setSharedLibOptions item library_list)
     # Linking flags
     target_link_libraries(${item} areg-extend ${library_list} areg ${AREG_EXTENDED_LIBS} ${AREG_LDFLAGS})
 
-    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        target_compile_options(${item} PRIVATE -fPIC)
-    endif()
+    # target_compile_options(${item} PRIVATE -fPIC)
 
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
         target_compile_options(${item} PRIVATE "-Bdynamic")
