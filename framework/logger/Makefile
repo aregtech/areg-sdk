@@ -10,15 +10,9 @@ logger_OBJS :=
 include $(logger_BASE)/app/private/Makefile
 include $(logger_BASE)/service/private/Makefile
 
-logger_CXXFLAGS := -I$(AREG_BASE)
-ifeq ($(AREG_BINARY), shared)
-	logger_CXXFLAGS += -DIMP_AREG_DLL
-else
-	logger_CXXFLAGS += -DIMP_AREG_LIB
-endif
-
-logger_LDFLAGS    := $(AREG_TOOL_FLAGS)
-logger_TARGET_BIN := $(logger_PROJECT_NAME)$(AREG_BIN_EXT)
+logger_CXXFLAGS		:= -I$(AREG_BASE) $(AREG_LIB_IMPORT)
+logger_LDFLAGS		:= $(AREG_TOOL_FLAGS)
+logger_TARGET_BIN	:= $(logger_PROJECT_NAME)$(AREG_BIN_EXT)
 
 logger: $(AREG_OUTPUT_BIN)/$(logger_TARGET_BIN)
 

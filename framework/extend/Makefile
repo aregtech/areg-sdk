@@ -10,13 +10,7 @@ extend_OBJS :=
 include $(extend_BASE)/console/private/Makefile
 include $(extend_BASE)/service/private/Makefile
 
-
-extend_CXXFLAGS		:= 
-ifeq ($(AREG_BINARY), shared)
-    extend_CXXFLAGS := -I$(AREG_BASE) -DIMP_AREG_DLL
-else
-    extend_CXXFLAGS := -I$(AREG_BASE) -DIMP_AREG_LIB
-endif
+extend_CXXFLAGS		:= -I$(AREG_BASE) $(AREG_LIB_IMPORT)
 
 extend: $(extend_TARGET_PATH)
 

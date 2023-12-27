@@ -9,27 +9,16 @@ observer_lib_OBJS :=
 
 include $(observer_lib_BASE)/private/Makefile
 
-observer_lib_CXXFLAGS	:= -I$(AREG_BASE)
+observer_lib_CXXFLAGS	:= -I$(AREG_BASE) -fPIC $(AREG_LIB_IMPORT)
 observer_lib_LDFLAGS	:= $(AREG_TOOL_FLAGS)
 
 ifeq ($(AREG_OBSERVER_LIB), shared)
-	ifeq ($(AREG_BINARY), shared)
-		observer_lib_CXXFLAGS += -DIMP_AREG_DLL
-	else
-		observer_lib_CXXFLAGS += -DIMP_AREG_LIB
-	endif
-
-	observer_lib_CXXFLAGS += -fPIC -DEXP_OBSERVER_DLL
-	observer_lib_TARGET_PATH := $(AREG_OUTPUT_BIN)/$(AREG_LIB_PREFIX)$(observer_lib_PROJECT_NAME)$(AREG_OBSERVER_LIB_EXT)
+	observer_lib_CXXFLAGS += -DEXP_OBSERVER_DLL
 else
-	ifeq ($(AREG_BINARY), shared)
-		observer_lib_CXXFLAGS += -DIMP_AREG_DLL
-	else
-		observer_lib_CXXFLAGS += -DIMP_AREG_LIB
-	endif
-	observer_lib_CXXFLAGS += -fPIC -DEXP_OBSERVER_LIB
-	observer_lib_TARGET_PATH := $(AREG_OUTPUT_LIB)/$(AREG_LIB_PREFIX)$(observer_lib_PROJECT_NAME)$(AREG_OBSERVER_LIB_EXT)
+	observer_lib_CXXFLAGS += -DEXP_OBSERVER_LIB
 endif
+
+observer_lib_TARGET_PATH := $(AREG_OUTPUT_BIN)/$(AREG_LIB_PREFIX)$(observer_lib_PROJECT_NAME)$(AREG_OBSERVER_LIB_EXT)
 
 observerapi: $(observer_lib_TARGET_PATH)
 
