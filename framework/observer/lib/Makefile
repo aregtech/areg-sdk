@@ -20,14 +20,15 @@ ifeq ($(AREG_OBSERVER_LIB), shared)
 	endif
 
 	observer_lib_CXXFLAGS += -fPIC -DEXP_OBSERVER_DLL
-	observer_lib_TARGET_PATH := $(AREG_OUTPUT_BIN)/$(AREG_LIB_PREFIX)$(observer_lib_PROJECT_NAME)$(AREG_LIB_EXT)
+	observer_lib_TARGET_PATH := $(AREG_OUTPUT_BIN)/$(AREG_LIB_PREFIX)$(observer_lib_PROJECT_NAME)$(AREG_OBSERVER_LIB_EXT)
 else
 	ifeq ($(AREG_BINARY), shared)
 		observer_lib_CXXFLAGS += -DIMP_AREG_DLL
 	else
 		observer_lib_CXXFLAGS += -DIMP_AREG_LIB
 	endif
-	observer_lib_TARGET_PATH := $(AREG_OUTPUT_LIB)/$(AREG_LIB_PREFIX)$(observer_lib_PROJECT_NAME)$(AREG_LIB_EXT)
+	observer_lib_CXXFLAGS += -fPIC -DEXP_OBSERVER_LIB
+	observer_lib_TARGET_PATH := $(AREG_OUTPUT_LIB)/$(AREG_LIB_PREFIX)$(observer_lib_PROJECT_NAME)$(AREG_OBSERVER_LIB_EXT)
 endif
 
 observerapi: $(observer_lib_TARGET_PATH)
@@ -35,10 +36,10 @@ observerapi: $(observer_lib_TARGET_PATH)
 # define one target for each source file
 $(foreach cpp, $(observer_lib_SRC), $(eval $(call obj, $(cpp), $(observer_lib_OUTPUT_OBJ), observer_lib_OBJS, $(observer_lib_CXXFLAGS))))
 
-DEPS = $(areg_OBJS:%.o=%.d)
+DEPS = $(observer_lib_OBJS:%.o=%.d)
 -include $(DEPS)
 
-$(observer_lib_TARGET_PATH): $(observer_lib_OBJS)
+$(observer_lib_TARGET_PATH): $(AREG_DEPEND) $(observer_lib_OBJS)
 	@echo "Linking $(observer_lib_PROJECT_NAME) $(AREG_OBSERVER_LIB) library ..."
 	@mkdir -p $(dir $@)
 	if [ "$(AREG_OBSERVER_LIB)" = "shared" ]; then \

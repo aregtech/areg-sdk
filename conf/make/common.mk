@@ -14,6 +14,8 @@ AREG_TOOLCHAIN          = $(CXX)
 AREG_PROJECT            := areg
 AREG_EXTENDED_PROJECT   := areg-extend
 AREG_DEPEND             :=
+AREG_LIB_EXT            :=
+AREG_OBSERVER_LIB_EXT   :=
 
 ifeq ($(AREG_BUILD_TYPE), Release)
     AREG_DEFINITIONS    += -DNDEBUG
@@ -51,6 +53,12 @@ ifeq ($(AREG_COMPILER_ID), Clang)
     	AREG_LIB_EXT := .a
     endif
 
+    ifeq ($(AREG_OBSERVER_LIB), shared)
+        AREG_OBSERVER_LIB_EXT = .so
+    else
+        AREG_OBSERVER_LIB_EXT = .a
+    endif
+
 else ifeq ($(AREG_COMPILER_ID), GNU)
 
     AREG_DEFINITIONS        += -DPOSIX
@@ -85,6 +93,12 @@ else ifeq ($(AREG_COMPILER_ID), GNU)
     	    AREG_LIB_EXT := .lib
         endif
 
+        ifeq ($(AREG_OBSERVER_LIB), shared)
+            AREG_OBSERVER_LIB_EXT := .dll
+        else
+            AREG_OBSERVER_LIB_EXT := .lib
+        endif
+
     else
         AREG_COMPILER_OPTIONS   += -std=c++17
 
@@ -96,6 +110,12 @@ else ifeq ($(AREG_COMPILER_ID), GNU)
     	    AREG_LIB_EXT := .so
         else
     	    AREG_LIB_EXT := .a
+        endif
+
+        ifeq ($(AREG_OBSERVER_LIB), shared)
+            AREG_OBSERVER_LIB_EXT := .so
+        else
+            AREG_OBSERVER_LIB_EXT := .a
         endif
 
     endif
@@ -129,6 +149,12 @@ else
     	AREG_LIB_EXT := .so
     else
     	AREG_LIB_EXT := .a
+    endif
+
+    ifeq ($(AREG_OBSERVER_LIB), shared)
+        AREG_OBSERVER_LIB_EXT := .so
+    else
+        AREG_OBSERVER_LIB_EXT := .a
     endif
 
 endif
@@ -183,7 +209,7 @@ else
     AREG_DEPEND = $(AREG_OUTPUT_LIB)/$(AREG_LIB_PREFIX)$(AREG_PROJECT)$(AREG_LIB_EXT)
 endif
 
-AREG_DEPEND     += $(AREG_OUTPUT_LIB)/$(AREG_EXTEND_LIB) 
+AREG_DEPEND     += $(AREG_OUTPUT_LIB)/$(AREG_EXTEND_LIB)
 
 $(info -------------------- Makefile Status Report Begin --------------------)
 $(info >>> Build for '$(AREG_OS)' '$(AREG_BITNESS)'-bit platform '$(AREG_PLATFORM)' with compiler '$(AREG_CXX_COMPILER)', ID '$(AREG_COMPILER_FAMILY)', and build type '$(AREG_BUILD_TYPE)')
