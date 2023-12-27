@@ -9,7 +9,7 @@ observer_lib_OBJS :=
 
 include $(observer_lib_BASE)/private/Makefile
 
-observer_lib_CXXFLAGS	:= -I$(AREG_BASE) -fPIC $(AREG_LIB_IMPORT)
+observer_lib_CXXFLAGS	:= -I$(AREG_BASE) -D$(AREG_LIB_IMPORT) -fPIC
 observer_lib_LDFLAGS	:= $(AREG_TOOL_FLAGS)
 
 ifeq ($(AREG_OBSERVER_LIB), shared)

@@ -10,7 +10,7 @@ mcrouter_OBJS :=
 include $(mcrouter_BASE)/app/private/Makefile
 include $(mcrouter_BASE)/tcp/private/Makefile
 
-mcrouter_CXXFLAGS	:= -I$(AREG_BASE) $(AREG_LIB_IMPORT)
+mcrouter_CXXFLAGS	:= -I$(AREG_BASE) -D$(AREG_LIB_IMPORT)
 mcrouter_LDFLAGS	:= $(AREG_TOOL_FLAGS)
 mcrouter_TARGET_BIN := $(mcrouter_PROJECT_NAME)$(AREG_BIN_EXT)
 

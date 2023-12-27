@@ -10,7 +10,7 @@ logger_OBJS :=
 include $(logger_BASE)/app/private/Makefile
 include $(logger_BASE)/service/private/Makefile
 
-logger_CXXFLAGS		:= -I$(AREG_BASE) $(AREG_LIB_IMPORT)
+logger_CXXFLAGS		:= -I$(AREG_BASE) -D$(AREG_LIB_IMPORT)
 logger_LDFLAGS		:= $(AREG_TOOL_FLAGS)
 logger_TARGET_BIN	:= $(logger_PROJECT_NAME)$(AREG_BIN_EXT)
 
