@@ -1,6 +1,6 @@
 /************************************************************************
  * \file        common/src/Subscriber.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework examples
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit examples
  * \author      Artak Avetyan
  * \brief       Collection of AREG SDK examples.
  *              This file is demonstration of manual unlbocking of the request.

@@ -1,0 +1,6 @@
+LIBRARY observerapi
+
+EXPORTS
+    logObserverInitialize
+    logObserverUninitialize
+

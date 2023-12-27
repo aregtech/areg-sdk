@@ -16,10 +16,10 @@ include $(areg_BASE)/trace/private/Makefile
 
 areg_CXXFLAGS :=
 ifeq ($(AREG_BINARY), shared)
-	areg_CXXFLAGS += -fPIC -DEXP_AREG_DLL
+	areg_CXXFLAGS := -fPIC -DEXP_AREG_DLL
 	areg_TARGET_PATH := $(AREG_OUTPUT_BIN)/$(AREG_LIB_PREFIX)$(areg_PROJECT_NAME)$(AREG_LIB_EXT)
 else
-	areg_CXXFLAGS += -DEXP_AREG_LIB
+	areg_CXXFLAGS := -fPIC -DEXP_AREG_LIB
 	areg_TARGET_PATH := $(AREG_OUTPUT_LIB)/$(AREG_LIB_PREFIX)$(areg_PROJECT_NAME)$(AREG_LIB_EXT)
 endif
 
