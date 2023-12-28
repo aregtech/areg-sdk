@@ -18,6 +18,8 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/base/SynchObjects.hpp"
 
+#include "observer/lib/private/LoggerClient.hpp"
+
 #include <atomic>
 
 // Use these options if compile for Windows with MSVC
@@ -30,33 +32,64 @@ namespace
 {
     struct sLogObserverStruct
     {
-        Mutex   losLock{ false };
-        bool    losInitialized{ false };
+        Mutex           losLock         { false };
+        bool            losInitialized  { false };
+        sObserverEvents losEvents       { };
     };
 
     sLogObserverStruct theObserver;
+
+    void setCallbacks(const sObserverEvents* srcCallbacks, sObserverEvents & dstCallbacks)
+    {
+        if (srcCallbacks != nullptr)
+        {
+            dstCallbacks.evtServiceConnected = srcCallbacks->evtServiceConnected;
+            dstCallbacks.evtMessagingFailed  = srcCallbacks->evtMessagingFailed;
+        }
+        else
+        {
+            dstCallbacks.evtServiceConnected = nullptr;
+            dstCallbacks.evtMessagingFailed  = nullptr;
+        }
+    }
 }
 
-OBSERVER_API_IMPL bool logObserverInitialize(const char* configFilePath)
+OBSERVER_API_IMPL bool logObserverInitialize(const sObserverEvents * callbacks, const char* configFilePath)
 {
     Lock lock(theObserver.losLock);
 
     if (theObserver.losInitialized == false)
     {
-        theObserver.losInitialized = true;
+        theObserver.losInitialized  = true;
+        setCallbacks(callbacks, theObserver.losEvents);
         Application::initApplication(true, false, false, true, false, configFilePath);
+
+        LoggerClient& client = LoggerClient::getInstance();
+        client.setCallbacks(&theObserver.losEvents);
+        if (client.startLoggerClient() == false)
+        {
+            client.setCallbacks(nullptr);
+            client.stopLoggerClient();
+            Application::releaseApplication();
+            setCallbacks(nullptr, theObserver.losEvents);
+            theObserver.losInitialized  = false;
+        }
     }
 
     return theObserver.losInitialized;
 }
 
-OBSERVER_API_IMPL void logObserverUninitialize()
+OBSERVER_API_IMPL void logObserverRelease()
 {
     Lock lock(theObserver.losLock);
 
     if (theObserver.losInitialized)
     {
+        LoggerClient& client = LoggerClient::getInstance();
+        client.setCallbacks(nullptr);
+        client.stopLoggerClient();
         Application::releaseApplication();
+        setCallbacks(nullptr, theObserver.losEvents);
         theObserver.losInitialized = false;
     }
 }
@@ -65,4 +98,86 @@ OBSERVER_API_IMPL bool logObserverIsInitialized()
 {
     Lock lock(theObserver.losLock);
     return theObserver.losInitialized;
+}
+
+OBSERVER_API_IMPL bool logObserverIsConnected()
+{
+    Lock lock(theObserver.losLock);
+    bool result{ false };
+    if (theObserver.losInitialized)
+    {
+        LoggerClient& client = LoggerClient::getInstance();
+        result = client.isConnectedState();
+    }
+
+    return result;
+}
+
+OBSERVER_API_IMPL const char* logObserverLoggerAddress()
+{
+    Lock lock(theObserver.losLock);
+    const char * result{ nullptr };
+    if (theObserver.losInitialized)
+    {
+        LoggerClient& client = LoggerClient::getInstance();
+        result = client.getAddress().getHostAddress().getString();
+    }
+
+    return result;
+}
+
+OBSERVER_API_IMPL unsigned short logObserverLoggerPort()
+{
+    Lock lock(theObserver.losLock);
+    unsigned short result{ NESocket::InvalidPort };
+    if (theObserver.losInitialized)
+    {
+        LoggerClient& client = LoggerClient::getInstance();
+        result = client.getAddress().getHostPort();
+    }
+
+    return result;
+}
+
+OBSERVER_API bool logObserverConfigLoggerEnabled()
+{
+    Lock lock(theObserver.losLock);
+    bool result{ false };
+    if (theObserver.losInitialized)
+    {
+        LoggerClient& client = LoggerClient::getInstance();
+        result = client.isConfigLoggerConnectEnabled();
+    }
+
+    return result;
+}
+
+OBSERVER_API bool logObserverConfigLoggerAddress(char* addrBuffer, int count)
+{
+    Lock lock(theObserver.losLock);
+    bool result{ false };
+    if (theObserver.losInitialized)
+    {
+        LoggerClient& client = LoggerClient::getInstance();
+        String addr{ client.getConfigLoggerAddress() };
+        if ((addrBuffer != nullptr) && (addr.getLength() > static_cast<NEString::CharCount>(count)))
+        {
+            result = NEString::copyString<char, char>(addrBuffer, count, addr.getString(), addr.getLength()) > 0;
+        }
+    }
+
+    return result;
+}
+
+OBSERVER_API unsigned short logObserverConfigLoggerPort()
+{
+    Lock lock(theObserver.losLock);
+    uint16_t result{ NESocket::InvalidPort };
+    if (theObserver.losInitialized)
+    {
+        LoggerClient& client = LoggerClient::getInstance();
+        result = client.getConfigLoggerPort();
+    }
+
+    return result;
 }

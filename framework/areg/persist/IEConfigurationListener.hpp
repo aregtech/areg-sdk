@@ -36,7 +36,7 @@ class ConfigManager;
  *          For example, the developers may set temporary property, which will
  *          have the influence on the application, but not saved in the config file.
  **/
-class IEConfigurationListener
+class AREG_API IEConfigurationListener
 {
 //////////////////////////////////////////////////////////////////////////
 // Protected constructors / destructor

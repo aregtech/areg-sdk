@@ -39,8 +39,10 @@
   <ItemGroup>
     <ClInclude Include="observer\lib\LogObserverApi.h" />
     <ClInclude Include="observer\lib\LogObserverSwitches.h" />
+    <ClInclude Include="observer\lib\private\LoggerClient.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="observer\lib\private\LoggerClient.cpp" />
     <ClCompile Include="observer\lib\private\LogObserverApi.cpp" />
   </ItemGroup>
   <ItemGroup>
