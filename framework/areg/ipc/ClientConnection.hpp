@@ -34,7 +34,7 @@
  *          Client socket is using only TCP/IP connection. All other types
  *          and protocols are out of scope of this class and are not considered.
  **/
-class ClientConnection   : private   SocketConnectionBase
+class AREG_API ClientConnection : private   SocketConnectionBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor

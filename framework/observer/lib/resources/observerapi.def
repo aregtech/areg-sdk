@@ -2,5 +2,11 @@ LIBRARY observerapi
 
 EXPORTS
     logObserverInitialize
-    logObserverUninitialize
-
+    logObserverRelease
+    logObserverIsInitialized
+    logObserverIsConnected
+    logObserverLoggerAddress
+    logObserverLoggerPort
+    logObserverConfigLoggerEnabled
+    logObserverConfigLoggerAddress
+    logObserverConfigLoggerPort

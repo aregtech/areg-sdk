@@ -34,6 +34,9 @@
 
 #include <string_view>
 
+/************************************************************************
+ * Dependencies
+ ************************************************************************/
 class DispatcherThread;
 class LogConfiguration;
 class ScopeController;
