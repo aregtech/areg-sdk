@@ -31,7 +31,7 @@
 /**
  * \brief   Predefined invalid Service Entry.
  **/
-AREG_API const NERegistry::ServiceEntry & NERegistry::invalidServiceEntry( void )
+AREG_API_IMPL const NERegistry::ServiceEntry & NERegistry::invalidServiceEntry( void )
 {
     static const NERegistry::ServiceEntry _invalidServiceEntry;
     return _invalidServiceEntry;
@@ -40,7 +40,7 @@ AREG_API const NERegistry::ServiceEntry & NERegistry::invalidServiceEntry( void 
 /**
  * \brief   Predefined invalid Service List.
  **/
-AREG_API const NERegistry::ServiceList & NERegistry::invalidServiceList( void )
+AREG_API_IMPL const NERegistry::ServiceList & NERegistry::invalidServiceList( void )
 {
     static const NERegistry::ServiceList _invalidServiceList;
     return _invalidServiceList;
@@ -49,7 +49,7 @@ AREG_API const NERegistry::ServiceList & NERegistry::invalidServiceList( void )
 /**
  * \brief   Predefined invalid Worker Thread Entry.
  **/
-AREG_API const NERegistry::WorkerThreadEntry & NERegistry::invalidWorkerThreadEntry( void )
+AREG_API_IMPL const NERegistry::WorkerThreadEntry & NERegistry::invalidWorkerThreadEntry( void )
 {
     static const NERegistry::WorkerThreadEntry _invalidWorkerThreadEntry;
     return _invalidWorkerThreadEntry;
@@ -58,7 +58,7 @@ AREG_API const NERegistry::WorkerThreadEntry & NERegistry::invalidWorkerThreadEn
 /**
  * \brief   Predefined invalid Worker Thread List.
  **/
-AREG_API const NERegistry::WorkerThreadList & NERegistry::invalidWorkerThreadList( void )
+AREG_API_IMPL const NERegistry::WorkerThreadList & NERegistry::invalidWorkerThreadList( void )
 {
     static const NERegistry::WorkerThreadList _invalidWorkerThreadList;
     return _invalidWorkerThreadList;
@@ -67,7 +67,7 @@ AREG_API const NERegistry::WorkerThreadList & NERegistry::invalidWorkerThreadLis
 /**
  * \brief   Predefined invalid service dependency entry.
  **/
-AREG_API const NERegistry::DependencyEntry & NERegistry::invalidDepedencyEntry( void )
+AREG_API_IMPL const NERegistry::DependencyEntry & NERegistry::invalidDepedencyEntry( void )
 {
     static const NERegistry::DependencyEntry _invalidDepedencyEntry;
     return _invalidDepedencyEntry;
@@ -76,7 +76,7 @@ AREG_API const NERegistry::DependencyEntry & NERegistry::invalidDepedencyEntry( 
 /**
  * \brief   Predefined invalid service dependency entry.
  **/
-AREG_API const NERegistry::DependencyList & NERegistry::invalidDepedencyList( void )
+AREG_API_IMPL const NERegistry::DependencyList & NERegistry::invalidDepedencyList( void )
 {
     static const NERegistry::DependencyList _invalidDepedencyList;
     return _invalidDepedencyList;
@@ -85,7 +85,7 @@ AREG_API const NERegistry::DependencyList & NERegistry::invalidDepedencyList( vo
 /**
  * \brief   Predefined Invalid Component Entry.
  **/
-AREG_API const NERegistry::ComponentEntry & NERegistry::invalidComponentEntry( void )
+AREG_API_IMPL const NERegistry::ComponentEntry & NERegistry::invalidComponentEntry( void )
 {
     static const NERegistry::ComponentEntry _invalidComponentEntry;
     return _invalidComponentEntry;
@@ -94,7 +94,7 @@ AREG_API const NERegistry::ComponentEntry & NERegistry::invalidComponentEntry( v
 /**
  * \brief   Predefined invalid Component List.
  **/
-AREG_API const NERegistry::ComponentList & NERegistry::invalidComponentList( void )
+AREG_API_IMPL const NERegistry::ComponentList & NERegistry::invalidComponentList( void )
 {
     static const NERegistry::ComponentList _invalidComponentList;
     return _invalidComponentList;
@@ -103,7 +103,7 @@ AREG_API const NERegistry::ComponentList & NERegistry::invalidComponentList( voi
 /**
  * \brief   Predefined invalid Thread Entry.
  **/
-AREG_API const NERegistry::ComponentThreadEntry & NERegistry::invalidThreadEntry( void )
+AREG_API_IMPL const NERegistry::ComponentThreadEntry & NERegistry::invalidThreadEntry( void )
 {
     static const NERegistry::ComponentThreadEntry _invalidThreadEntry;
     return _invalidThreadEntry;
@@ -112,7 +112,7 @@ AREG_API const NERegistry::ComponentThreadEntry & NERegistry::invalidThreadEntry
 /**
  * \brief   Predefined invalid Thread List.
  **/
-AREG_API const NERegistry::ComponentThreadList & NERegistry::invalidThreadList( void )
+AREG_API_IMPL const NERegistry::ComponentThreadList & NERegistry::invalidThreadList( void )
 {
     static const NERegistry::ComponentThreadList _invalidThreadList;
     return _invalidThreadList;
@@ -121,7 +121,7 @@ AREG_API const NERegistry::ComponentThreadList & NERegistry::invalidThreadList( 
 /**
  * \brief   Predefined invalid Model.
  **/
-AREG_API const NERegistry::Model & NERegistry::invalidModel( void )
+AREG_API_IMPL const NERegistry::Model & NERegistry::invalidModel( void )
 {
     static const NERegistry::Model _invalidModel;
     return _invalidModel;

@@ -439,6 +439,7 @@ void ServiceCommunicatonBase::processReceivedMessage(const RemoteMessage & msgRe
         {
             NEService::sServiceConnectedInstance instance{};
             msgReceived >> instance;
+            instance.ciCookie = cookie;
             addInstance(cookie, instance);
             RemoteMessage msgConnect(createServiceConnectMessage(mServerConnection.getChannelId(), cookie, NEService::eMessageSource::MessageSourceService));
             TRACE_DBG("Received request connect message, sending response [ %s ] of id [ 0x%X ], to new target [ %u ], connection socket [ %u ], checksum [ %u ]"

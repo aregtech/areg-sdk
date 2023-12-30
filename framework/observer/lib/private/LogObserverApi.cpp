@@ -54,7 +54,7 @@ namespace
     }
 }
 
-OBSERVER_API_IMPL bool logObserverInitialize(const sObserverEvents * callbacks, const char* configFilePath)
+OBSERVER_API_IMPL bool logObserverInitialize(const sObserverEvents * callbacks, const char* configFilePath /* = nullptr */)
 {
     Lock lock(theObserver.losLock);
 
@@ -66,17 +66,19 @@ OBSERVER_API_IMPL bool logObserverInitialize(const sObserverEvents * callbacks, 
 
         LoggerClient& client = LoggerClient::getInstance();
         client.setCallbacks(&theObserver.losEvents);
-        if (client.startLoggerClient() == false)
-        {
-            client.setCallbacks(nullptr);
-            client.stopLoggerClient();
-            Application::releaseApplication();
-            setCallbacks(nullptr, theObserver.losEvents);
-            theObserver.losInitialized  = false;
-        }
     }
 
     return theObserver.losInitialized;
+}
+
+OBSERVER_API_IMPL bool logObserverConnectLogger(const char* ipAddress /*= nullptr*/, unsigned short portNr /* = 0 */)
+{
+    return LoggerClient::getInstance().startLoggerClient(ipAddress, portNr);
+}
+
+OBSERVER_API_IMPL void logObserverDisconnectLogger()
+{
+    LoggerClient::getInstance().stopLoggerClient();
 }
 
 OBSERVER_API_IMPL void logObserverRelease()
@@ -139,7 +141,7 @@ OBSERVER_API_IMPL unsigned short logObserverLoggerPort()
     return result;
 }
 
-OBSERVER_API bool logObserverConfigLoggerEnabled()
+OBSERVER_API_IMPL bool logObserverConfigLoggerEnabled()
 {
     Lock lock(theObserver.losLock);
     bool result{ false };
@@ -152,7 +154,7 @@ OBSERVER_API bool logObserverConfigLoggerEnabled()
     return result;
 }
 
-OBSERVER_API bool logObserverConfigLoggerAddress(char* addrBuffer, int count)
+OBSERVER_API_IMPL bool logObserverConfigLoggerAddress(char* addrBuffer, int count)
 {
     Lock lock(theObserver.losLock);
     bool result{ false };
@@ -169,7 +171,7 @@ OBSERVER_API bool logObserverConfigLoggerAddress(char* addrBuffer, int count)
     return result;
 }
 
-OBSERVER_API unsigned short logObserverConfigLoggerPort()
+OBSERVER_API_IMPL unsigned short logObserverConfigLoggerPort()
 {
     Lock lock(theObserver.losLock);
     uint16_t result{ NESocket::InvalidPort };
@@ -180,4 +182,46 @@ OBSERVER_API unsigned short logObserverConfigLoggerPort()
     }
 
     return result;
+}
+
+OBSERVER_API_IMPL void logObserverRequestInstances()
+{
+    Lock lock(theObserver.losLock);
+    if (theObserver.losInitialized)
+    {
+        LoggerClient::getInstance().requestConnectedInstances();
+    }
+}
+
+OBSERVER_API_IMPL void logObserverRequestScopes(unsigned long long target /* = ID_IGNORED */)
+{
+    Lock lock(theObserver.losLock);
+    if (theObserver.losInitialized)
+    {
+        LoggerClient::getInstance().requestScopes(target);
+    }
+}
+
+OBSERVER_API_IMPL void logObserverRequestChangeScopePrio(unsigned long long target, const sLogScope* scopes, unsigned int count)
+{
+    Lock lock(theObserver.losLock);
+    if (theObserver.losInitialized && (target != ID_IGNORE))
+    {
+        NETrace::ScopeNames scopeList(count);
+        for (uint32_t i = 0; i < count; ++i)
+        {
+            scopeList.add(NETrace::sScopeInfo(scopes[i].lsName, scopes[i].lsId, scopes[i].lsPrio));
+        }
+
+        LoggerClient::getInstance().requestChangeScopePrio( scopeList, target);
+    }
+}
+
+OBSERVER_API_IMPL void logObserverRequestSaveConfig(unsigned long long target /* = ID_IGNORED */)
+{
+    Lock lock(theObserver.losLock);
+    if (theObserver.losInitialized)
+    {
+        LoggerClient::getInstance().requestSaveConfiguration(target);
+    }
 }

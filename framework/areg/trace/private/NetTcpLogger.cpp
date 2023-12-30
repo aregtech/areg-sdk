@@ -224,27 +224,9 @@ void NetTcpLogger::processReceivedMessage(const RemoteMessage & msgReceived, Soc
 
         case NEService::eFuncIdRange::ServiceLogQueryScopes:
             {
-                const TraceScopeMap & scopes{ mScopeController.getScopeList() };
-                const uint32_t scopeCount{ scopes.getSize() };
+                const NETrace::ScopeList & scopes{ static_cast<const NETrace::ScopeList &>(mScopeController.getScopeList()) };
                 const ITEM_ID & targetId{ msgReceived.getSource() };
-
-                RemoteMessage msgScopeBegin{ NETrace::messageRegisterScopesStart(mChannel.getCookie(), targetId, scopeCount) };
-                sendMessage(msgScopeBegin);
-                uint32_t scopesSent{ 0 };
-                NETrace::SCOPEPOS scopePos = scopes.invalidPosition();
-                while (scopeCount > scopesSent)
-                {
-                    RemoteMessage msgScope{ NETrace::messageRegisterScopes(mChannel.getCookie(), targetId, static_cast<const NETrace::ScopeList &>(scopes), scopePos, NETrace::SCOPE_ENTRIES_MAX_COUNT) };
-                    if (msgScope.isValid())
-                    {
-                        sendMessage(msgScope);
-                    }
-
-                    scopesSent += NETrace::SCOPE_ENTRIES_MAX_COUNT;
-                }
-
-                RemoteMessage msgScopeEnd{ NETrace::messageRegisterScopesEnd(mChannel.getCookie(), targetId) };
-                sendMessage(msgScopeEnd);
+                sendMessage(NETrace::messageRegisterScopes(mChannel.getCookie(), targetId, scopes));
             }
             break;
 

@@ -149,9 +149,9 @@ bool ServiceClientConnectionBase::isServiceHostSetup( void ) const
     return mClientConnection.getAddress().isValid();
 }
 
-RemoteMessage ServiceClientConnectionBase::createServiceConnectMessage(const ITEM_ID & /*source*/, const ITEM_ID & target, NEService::eMessageSource msgSource) const
+RemoteMessage ServiceClientConnectionBase::createServiceConnectMessage(const ITEM_ID & source, const ITEM_ID & target, NEService::eMessageSource msgSource) const
 {
-    return NERemoteService::createConnectRequest(target, msgSource);
+    return NERemoteService::createConnectRequest(source, target, msgSource);
 }
 
 RemoteMessage ServiceClientConnectionBase::createServiceDisconnectMessage(const ITEM_ID & source, const ITEM_ID & target) const

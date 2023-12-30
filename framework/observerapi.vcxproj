@@ -40,10 +40,12 @@
     <ClInclude Include="observer\lib\LogObserverApi.h" />
     <ClInclude Include="observer\lib\LogObserverSwitches.h" />
     <ClInclude Include="observer\lib\private\LoggerClient.hpp" />
+    <ClInclude Include="observer\lib\private\ObserverMessageProcessor.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="observer\lib\private\LoggerClient.cpp" />
     <ClCompile Include="observer\lib\private\LogObserverApi.cpp" />
+    <ClCompile Include="observer\lib\private\ObserverMessageProcessor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="observer\CMakeLists.txt" />
