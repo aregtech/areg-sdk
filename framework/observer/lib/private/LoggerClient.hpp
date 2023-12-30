@@ -26,7 +26,10 @@
 #include "areg/ipc/IEServiceConnectionConsumer.hpp"
 #include "areg/ipc/IERemoteMessageHandler.hpp"
 
+#include "areg/trace/NETrace.hpp"
+
 #include "areg/base/SynchObjects.hpp"
+#include "observer/lib/private/ObserverMessageProcessor.hpp"
 
 /************************************************************************
  * Dependencies
@@ -48,6 +51,11 @@ class LoggerClient  : public    ServiceClientConnectionBase
                     , protected IERemoteMessageHandler
 {
 //////////////////////////////////////////////////////////////////////////
+// Friend class
+//////////////////////////////////////////////////////////////////////////
+    friend class ObserverMessageProcessor;
+
+//////////////////////////////////////////////////////////////////////////
 // Internal constants
 //////////////////////////////////////////////////////////////////////////
 private:
@@ -64,7 +72,7 @@ private:
     static constexpr NERemoteService::eRemoteServices   ServiceType     { NERemoteService::eRemoteServices::ServiceLogger };
 
     //!< The connection type. At the moment only TCP/IP
-    static constexpr uint32_t                           ConnectType     { static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip) };
+    static constexpr NERemoteService::eConnectionTypes  ConnectType     { NERemoteService::eConnectionTypes::ConnectTcpip };
 
     //!< The message source. It is marked as an observer.
     static constexpr NEService::eMessageSource          SourceType      { NEService::eMessageSource::MessageSourceObserver };
@@ -93,9 +101,16 @@ public:
     /**
      * \brief   Call to start the send and receive threads, and establish connection to the logger service.
      *          If failed to connect, it triggers a timer and retries connection.
+     * \param   address     The IP address or the host name of the logger service to connect.
+     *                      If the address is empty, it uses the value set in the configuration file.
+     *                      If the address is empty, the port number should be NESocket::InvalidPort.
+     * \param   portNr      The port number of the logger service to connect. If the port number is
+     *                      NESocket::InvalidPort, it uses the port number set in the configuration file.
+     *                      If the port number is NESocket::InvalidPort, the address should be empty.
      * \return  Returns true if succeeded to initialize the threads and trigger the service connection.
+     * \note    Either both, the 'address' and 'portNr' should be valid values or both should be invalid / empty.
      **/
-    bool startLoggerClient(void);
+    bool startLoggerClient(const String & address = String::EmptyString, uint16_t portNr = NESocket::InvalidPort);
 
     /**
      * \brief   Call to stop threads and disconnect logger service.
@@ -105,6 +120,11 @@ public:
 
     /**
      * \brief   Sets the pointer to the callbacks to trigger on messaging events.
+     * \param   callbacks   The pointer of the callback structure to set.
+     *                      The structure can have either all pointers to the callbacks
+     *                      or to only certain callbacks.
+     *                      If the parameter is 'nullptr' it resets all callbacks and no
+     *                      callback is triggered on the events.
      **/
     void setCallbacks(const sObserverEvents * callbacks);
 
@@ -128,6 +148,43 @@ public:
      * \brief   Returns the IP port number of logger service written in the configuration file.
      **/
     uint16_t getConfigLoggerPort(void) const;
+
+    /**
+     * \brief   Generates and sends the message to query list of connected clients.
+     **/
+    void requestConnectedInstances(void);
+
+    /**
+     * \brief   Generates and sends the message to query list of scopes.
+     *          The message is sent either to certain target or to all connected clients
+     *          if the target is NEService::COOKIE_ANY.
+     * \param   target  The ID of the target to send the message.
+     *                  The message is sent to all clients if the target is NEService::COOKIE_ANY.
+     **/
+    void requestScopes(const ITEM_ID& target = NEService::COOKIE_ANY);
+
+    /**
+     * \brief   Generates and sends the message to update the scope priority.
+     *          The message is sent either to certain target or to all connected clients
+     *          if the target is NEService::COOKIE_ANY.
+     * \param   scopes  The list of scopes or scope group to update the log message priority.
+     *                  Each entry contains scope name, scope ID and the scope message priority.
+     *                  The ID can be 0 if the name refers to a scope group.
+     * \param   target  The ID of the target to send the message.
+     *                  The message is sent to all clients if the target is NEService::COOKIE_ANY.
+     **/
+    void requestChangeScopePrio(const NETrace::ScopeNames& scopes, const ITEM_ID& target = NEService::COOKIE_ANY);
+
+    /**
+     * \brief   Generates and sends the message to request to save configuration current state,
+     *          so that on the next start the application starts with the configuration state.
+     *          Normally, this is used when change scope message priority.
+     *          The message is sent either to certain target or to all connected clients
+     *          if the target is NEService::COOKIE_ANY.
+     * \param   target  The ID of the target to send the message.
+     *                  The message is sent to all clients if the target is NEService::COOKIE_ANY.
+     **/
+    void requestSaveConfiguration(const ITEM_ID & target = NEService::COOKIE_ANY);
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -230,9 +287,17 @@ private:
 //////////////////////////////////////////////////////////////////////////
 private:
 
-    mutable Mutex           mLock;
+    /**
+     * \brief   The pointer to the callback structure to trigger methods on certain event.
+     *          If nullptr, no callback is triggered.
+     **/
+    const sObserverEvents *     mCallbacks;
 
-    const sObserverEvents * mCallbacks;
+    /**
+     * \brief   The object that processes received messages.
+     **/
+    ObserverMessageProcessor    mMessageProcessor;
+
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////

@@ -26,9 +26,21 @@
     <ClInclude Include="observer\lib\LogObserverSwitches.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="observer\lib\private\LoggerClient.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="observer\lib\private\ObserverMessageProcessor.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="observer\lib\private\LogObserverApi.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="observer\lib\private\LoggerClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="observer\lib\private\ObserverMessageProcessor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -227,7 +227,7 @@ namespace NEApplication
             , { {"log"      , "*"   , "version" , ""        }, NETrace::LOG_VERSION             }   //!< The logging version.
             , { {"log"      , "*"   , "target"  , ""        }, "remote | file | debug | db"     }   //!< The logging types.
             , { {"log"      , "*"   , "enable"  , ""        }, "true"                           }   //!< The logging enabled / disabled status.
-            , { {"log"      , "*"   , "enable"  , "remote"  }, "true"                          }   //!< The logging in remote log collector enabled / disabled flag.
+            , { {"log"      , "*"   , "enable"  , "remote"  }, "true"                           }   //!< The logging in remote log collector enabled / disabled flag.
             , { {"log"      , "*"   , "enable"  , "file"    }, "true"                           }   //!< The logging in file enabled / disabled flag.
             , { {"log"      , "*"   , "enable"  , "output"  }, "false"                          }   //!< The logging in output console enabled / disabled flag.
             , { {"log"      , "*"   , "enable"  , "db"      }, "false"                          }   //!< The logging in database enabled / disabled flag.

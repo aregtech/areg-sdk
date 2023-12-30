@@ -3,6 +3,8 @@ LIBRARY observerapi
 EXPORTS
     logObserverInitialize
     logObserverRelease
+    logObserverConnectLogger
+    logObserverDisconnectLogger
     logObserverIsInitialized
     logObserverIsConnected
     logObserverLoggerAddress
@@ -10,3 +12,7 @@ EXPORTS
     logObserverConfigLoggerEnabled
     logObserverConfigLoggerAddress
     logObserverConfigLoggerPort
+    logObserverRequestInstances
+    logObserverRequestScopes
+    logObserverRequestChangeScopePrio
+    logObserverRequestSaveConfig

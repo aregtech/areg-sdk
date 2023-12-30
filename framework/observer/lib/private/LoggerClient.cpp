@@ -17,6 +17,7 @@
 #include "observer/lib/private/LoggerClient.hpp"
 
 #include "areg/ipc/ConnectionConfiguration.hpp"
+#include "areg/trace/NETrace.hpp"
 #include "observer/lib/LogObserverApi.h"
 
 #define IS_VALID(callback)  ((mCallbacks != nullptr) && ((callback) != nullptr))
@@ -30,7 +31,7 @@ LoggerClient& LoggerClient::getInstance(void)
 LoggerClient::LoggerClient(void)
     : ServiceClientConnectionBase( TargetID
                                  , ServiceType
-                                 , ConnectType
+                                 , static_cast<uint32_t>(ConnectType)
                                  , SourceType
                                  , static_cast<IEServiceConnectionConsumer &>(self())
                                  , static_cast<IERemoteMessageHandler &>(self())
@@ -40,14 +41,27 @@ LoggerClient::LoggerClient(void)
     , IEServiceConnectionConsumer( )
     , IERemoteMessageHandler     ( )
 
-    , mLock                      ( false )
     , mCallbacks                 ( nullptr )
+    , mMessageProcessor          ( self() )
 {
 }
 
-bool LoggerClient::startLoggerClient(void)
+bool LoggerClient::startLoggerClient(const String & address /*= String::EmptyString*/, uint16_t portNr /*= NESocket::InvalidPort*/)
 {
     Lock lock(mLock);
+    if ((address.isEmpty() == false) && (portNr != NESocket::InvalidPort))
+    {
+        applyServiceConnectionData(address, portNr);
+    }
+    else
+    {
+        ConnectionConfiguration config(LoggerClient::ServiceType, LoggerClient::ConnectType);
+        if (config.isConfigured())
+        {
+            applyServiceConnectionData(config.getConnectionAddress(), config.getConnectionPort());
+        }
+    }
+
     return connectServiceHost();
 }
 
@@ -71,13 +85,13 @@ const NESocket::SocketAddress& LoggerClient::getAddress(void) const
 
 bool LoggerClient::isConfigLoggerConnectEnabled(void) const
 {
-    ConnectionConfiguration config(LoggerClient::ServiceType, static_cast<NERemoteService::eConnectionTypes>(LoggerClient::ConnectType));
+    ConnectionConfiguration config(LoggerClient::ServiceType, LoggerClient::ConnectType);
     return (config.isConfigured() && config.getConnectionEnableFlag());
 }
 
 String LoggerClient::getConfigLoggerAddress(void) const
 {
-    ConnectionConfiguration config(LoggerClient::ServiceType, static_cast<NERemoteService::eConnectionTypes>(LoggerClient::ConnectType));
+    ConnectionConfiguration config(LoggerClient::ServiceType, LoggerClient::ConnectType);
     if (config.isConfigured())
     {
         return config.getConnectionAddress();
@@ -90,7 +104,7 @@ String LoggerClient::getConfigLoggerAddress(void) const
 
 uint16_t LoggerClient::getConfigLoggerPort(void) const
 {
-    ConnectionConfiguration config(LoggerClient::ServiceType, static_cast<NERemoteService::eConnectionTypes>(LoggerClient::ConnectType));
+    ConnectionConfiguration config(LoggerClient::ServiceType, LoggerClient::ConnectType);
     if (config.isConfigured())
     {
         return config.getConnectionPort();
@@ -98,6 +112,38 @@ uint16_t LoggerClient::getConfigLoggerPort(void) const
     else
     {
         return NESocket::InvalidPort;
+    }
+}
+
+void LoggerClient::requestConnectedInstances(void)
+{
+    if (mChannel.getCookie() != NEService::COOKIE_UNKNOWN)
+    {
+        sendMessage(NETrace::messageQueryInstances(mChannel.getCookie(), LoggerClient::TargetID));
+    }
+}
+
+void LoggerClient::requestScopes(const ITEM_ID& target /*= NEService::COOKIE_ANY*/)
+{
+    if ((mChannel.getCookie() != NEService::COOKIE_UNKNOWN) && (target != NEService::COOKIE_UNKNOWN))
+    {
+        sendMessage(NETrace::messageQueryScopes(mChannel.getCookie(), target == NEService::COOKIE_ANY ? LoggerClient::TargetID : target));
+    }
+}
+
+void LoggerClient::requestChangeScopePrio(const NETrace::ScopeNames & scopes, const ITEM_ID& target /*= NEService::COOKIE_ANY*/)
+{
+    if ((mChannel.getCookie() != NEService::COOKIE_UNKNOWN) && (target != NEService::COOKIE_UNKNOWN))
+    {
+        sendMessage(NETrace::messageUpdateScopes(mChannel.getCookie(), target == NEService::COOKIE_ANY ? LoggerClient::TargetID : target, scopes));
+    }
+}
+
+void LoggerClient::requestSaveConfiguration(const ITEM_ID& target /*= NEService::COOKIE_ANY*/)
+{
+    if ((mChannel.getCookie() != NEService::COOKIE_UNKNOWN) && (target != NEService::COOKIE_UNKNOWN))
+    {
+        sendMessage(NETrace::messageSaveConfiguration(mChannel.getCookie(), target == NEService::COOKIE_ANY ? LoggerClient::TargetID : target));
     }
 }
 
@@ -162,6 +208,8 @@ void LoggerClient::connectedRemoteServiceChannel(const Channel& channel)
     {
         const NESocket::SocketAddress& addr{ mClientConnection.getAddress() };
         mCallbacks->evtServiceConnected(true, addr.getHostAddress().getString(), addr.getHostPort());
+
+        sendMessage(NETrace::messageQueryInstances(channel.getCookie(), LoggerClient::TargetID));
     }
 }
 
@@ -209,4 +257,29 @@ void LoggerClient::failedProcessMessage(const RemoteMessage& msgUnprocessed)
 
 void LoggerClient::processReceivedMessage(const RemoteMessage& msgReceived, Socket& whichSource)
 {
+    if (msgReceived.isValid() && whichSource.isValid())
+    {
+        NEService::eFuncIdRange msgId = static_cast<NEService::eFuncIdRange>(msgReceived.getMessageId());
+        switch (msgId)
+        {
+        case NEService::eFuncIdRange::SystemServiceNotifyConnection:
+            mMessageProcessor.notifyServiceConnection(msgReceived);
+            break;
+
+        case NEService::eFuncIdRange::SystemServiceQueryInstances:
+            mMessageProcessor.notifyConnectedClients(msgReceived);
+            break;
+
+        case NEService::eFuncIdRange::ServiceLogQueryScopes:
+            mMessageProcessor.notifyLogScopes(msgReceived);
+            break;
+
+        case NEService::eFuncIdRange::ServiceLogMessage:
+            mMessageProcessor.notifyLogMessage(msgReceived);
+            break;
+
+        default:
+            ASSERT(false);
+        }
+    }
 }
