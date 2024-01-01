@@ -67,7 +67,7 @@ public:
      * \param   msgReceived     The buffer with data of scope names, scope IDs and the message priority.
      *                          This contains the information of all scopes.
      **/
-    void notifyLogScopes(const RemoteMessage& msgReceived);
+    void notifyLogRegisterScopes(const RemoteMessage& msgReceived);
 
     /**
      * \brief   Triggered to notify to log a message.
