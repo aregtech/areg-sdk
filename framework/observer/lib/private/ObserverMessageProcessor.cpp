@@ -111,7 +111,7 @@ void ObserverMessageProcessor::notifyConnectedClients(const RemoteMessage& msgRe
     }
 }
 
-void ObserverMessageProcessor::notifyLogScopes(const RemoteMessage& msgReceived)
+void ObserverMessageProcessor::notifyLogRegisterScopes(const RemoteMessage& msgReceived)
 {
     if (IS_VALID(mLoggerClient.mCallbacks->evtLogScopes))
     {

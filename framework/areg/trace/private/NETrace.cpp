@@ -131,7 +131,7 @@ NETrace::sLogMessage::sLogMessage(NETrace::eLogMessageType msgType, unsigned int
     , logModuleLen  { 0 }
     , logModule     { '\0' }
 {
-    uint32_t len = NEMemory::memCopy(logMessage, NETrace::LOG_MESSAGE_IZE - 1, message, msgLen);
+    uint32_t len = message != nullptr ? NEMemory::memCopy(logMessage, NETrace::LOG_MESSAGE_IZE - 1, message, msgLen) : 0u;
     logMessage[len] = String::EmptyChar;
 }
 
@@ -350,6 +350,11 @@ AREG_API_IMPL RemoteMessage NETrace::messageRegisterScopes(const ITEM_ID & sourc
     }
 
     return msgScope;
+}
+
+AREG_API void NETrace::logAnyMessageLocal(const NETrace::sLogMessage& logMessage)
+{
+    return TraceManager::logMessage(logMessage);
 }
 
 AREG_API_IMPL RemoteMessage NETrace::messageUpdateScopes(const ITEM_ID& source, const ITEM_ID& target, const NETrace::ScopeNames& scopeNames)

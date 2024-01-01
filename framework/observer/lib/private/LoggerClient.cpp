@@ -266,12 +266,12 @@ void LoggerClient::processReceivedMessage(const RemoteMessage& msgReceived, Sock
             mMessageProcessor.notifyServiceConnection(msgReceived);
             break;
 
-        case NEService::eFuncIdRange::SystemServiceQueryInstances:
+        case NEService::eFuncIdRange::SystemServiceNotifyInstances:
             mMessageProcessor.notifyConnectedClients(msgReceived);
             break;
 
-        case NEService::eFuncIdRange::ServiceLogQueryScopes:
-            mMessageProcessor.notifyLogScopes(msgReceived);
+        case NEService::eFuncIdRange::ServiceLogRegisterScopes:
+            mMessageProcessor.notifyLogRegisterScopes(msgReceived);
             break;
 
         case NEService::eFuncIdRange::ServiceLogMessage:

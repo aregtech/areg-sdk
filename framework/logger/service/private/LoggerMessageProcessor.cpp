@@ -55,7 +55,7 @@ void LoggerMessageProcessor::notifyConnectedInstances(const ITEM_ID& target /*= 
     const ServiceCommunicatonBase::MapInstances& instances = mLoggerService.getInstances();
     ASSERT((target == NEService::COOKIE_ANY) || (instances.contains(target) && isLogObserver(instances.getAt(target).ciSource)));
 
-    if (msgInstances.initMessage(NERemoteService::getMessageQueryInstances().rbHeader) != nullptr)
+    if (msgInstances.initMessage(NERemoteService::getMessageNotifyInstances().rbHeader) != nullptr)
     {
         uint32_t count{ 0 };
         uint32_t pos = msgInstances.getPosition();

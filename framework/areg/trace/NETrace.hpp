@@ -455,6 +455,12 @@ namespace NETrace
     AREG_API void logMessage(const RemoteMessage& message);
 
     /**
+     * \brief   Log generated custom message locally bypassing priority settings of a scope.
+     * \param   logMessage  The structure that contains information to log a message.
+     **/
+    AREG_API void logAnyMessageLocal(const NETrace::sLogMessage& logMessage);
+
+    /**
      * \brief   Creates a message for logging service to register scopes with message priority.
      * \param   source      The ID of the source that generated the message.
      * \param   target      The ID of the target to send the message
