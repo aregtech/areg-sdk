@@ -7,7 +7,7 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \file        areg/trace/private/Layouts.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       The collection of layouts
  ************************************************************************/

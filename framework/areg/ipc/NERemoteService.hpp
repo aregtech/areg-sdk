@@ -10,7 +10,7 @@
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/ipc/NERemoteService.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform Remote service namespace
  ************************************************************************/
@@ -112,10 +112,11 @@ namespace NERemoteService
     /**
      * \brief   NERemoteService::CreateConnectRequest
      *          Initializes and returns connection request message.
+     * \param   source      The iD of the source that generates and sends the message.
      * \param   target      The ID of the target to send the connect message request.
      * \param   msgSource   The message source of the application to connect to service
      **/
-    AREG_API RemoteMessage createConnectRequest(const ITEM_ID & target, NEService::eMessageSource msgSource);
+    AREG_API RemoteMessage createConnectRequest(const ITEM_ID & source, const ITEM_ID & target, NEService::eMessageSource msgSource);
 
     /**
      * \brief   NERemoteService::CreateDisconnectRequest

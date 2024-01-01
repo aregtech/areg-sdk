@@ -8,7 +8,7 @@
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/ipc/private/ServiceClientConnectionBase.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Service Connection client implementation
  ************************************************************************/
@@ -149,9 +149,9 @@ bool ServiceClientConnectionBase::isServiceHostSetup( void ) const
     return mClientConnection.getAddress().isValid();
 }
 
-RemoteMessage ServiceClientConnectionBase::createServiceConnectMessage(const ITEM_ID & /*source*/, const ITEM_ID & target, NEService::eMessageSource msgSource) const
+RemoteMessage ServiceClientConnectionBase::createServiceConnectMessage(const ITEM_ID & source, const ITEM_ID & target, NEService::eMessageSource msgSource) const
 {
-    return NERemoteService::createConnectRequest(target, msgSource);
+    return NERemoteService::createConnectRequest(source, target, msgSource);
 }
 
 RemoteMessage ServiceClientConnectionBase::createServiceDisconnectMessage(const ITEM_ID & source, const ITEM_ID & target) const

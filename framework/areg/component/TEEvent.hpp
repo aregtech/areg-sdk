@@ -10,7 +10,7 @@
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
 * \file     areg/component/TEEvent.hpp
-* \ingroup  AREG SDK, Asynchronous Event Generator Software Development Kit 
+* \ingroup  AREG SDK, Automated Real-time Event Grid Software Development Kit 
 * \author   Artak Avetyan
 * \brief    AREG Platform, Event class template.
 *           Base classes for multi-threading communication by

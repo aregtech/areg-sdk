@@ -10,7 +10,7 @@
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/trace/NETrace.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, NETrace namespace contains constants, structures and types.
  ************************************************************************/
@@ -46,6 +46,11 @@ class FileBase;
  **/
 namespace NETrace
 {
+    /**
+     * \brief   The supported logging version
+     **/
+    constexpr std::string_view LOG_VERSION{ "2.0.0" };
+
     //!< The list of the scopes. It is a pair, where the key is the ID of the scope
     //!< and the value is the pointer to the scope.
     using ScopeList     = TEHashMap<unsigned int, TraceScope*>;
@@ -59,6 +64,19 @@ namespace NETrace
      **/
     struct sScopeInfo
     {
+        /**
+         * \brief   Default constructor
+         **/
+        inline sScopeInfo(void);
+
+        /**
+         * \brief   Constructor that initializes the scope name, scope ID and the scope priority.
+         * \param   name    The name of the scope.
+         * \param   id      The scope ID. Can be 0 if the ID is unknown or the name is a scope group.
+         * \param   prio    The scope message priority.
+         **/
+        inline sScopeInfo(const char* name, uint32_t id, uint32_t prio);
+
         String       scopeName; //!< The name of the scope or scope group.
         unsigned int scopeId;   //!< The scope ID, can be 0 (NETrace::TRACE_SCOPE_ID_NONE). For scope group should be 0.
         unsigned int scopePrio; //!< The scope priority.
@@ -68,15 +86,10 @@ namespace NETrace
     using ScopeNames    = TEArrayList<sScopeInfo>;
 
     /**
-     * \brief   The supported logging version
-     **/
-    constexpr std::string_view LOG_VERSION                  { "2.0.0" };
-
-    /**
      * \brief   NETrace::eLogingTypes
      *          The logging types in AREG framework
      **/
-    enum eLogingTypes
+    enum eLogingTypes : unsigned int
     {
           LogTypeUndefined  = 0 //!< Logging is undefined
         , LogTypeRemote     = 1 //!< Logging is to remote log collector
@@ -89,7 +102,7 @@ namespace NETrace
      * \brief   NETrace::eLogPriority
      *          Log priority definition set when logging message
      **/
-    enum eLogPriority : unsigned int
+    enum eLogPriority : unsigned short
     {
           PrioInvalid       = 0x0000  //!< Invalid priority,          bit set:  0000 0000 0000
         , PrioNotset        = 0x0001  //!< No priority is set,        bit set:  0000 0000 0001
@@ -251,7 +264,7 @@ namespace NETrace
      * \brief   NETrace::eLogDataType
      *          The data type in the message log
      **/
-    enum class eLogDataType : unsigned short
+    enum class eLogDataType : unsigned char
     {
           LogDataLocal          = 0 //!< The message data is generated locally.
         , LogDataRemote         = 1 //!< The message data is prepared for remote logging.
@@ -288,8 +301,8 @@ namespace NETrace
          **/
         sLogMessage & operator = (const sLogMessage & src);
 
-        NETrace::eLogMessageType    logMsgType;     //!< The type of the logging message.
         NETrace::eLogDataType       logDataType;    //!< The type of log message data.
+        NETrace::eLogMessageType    logMsgType;     //!< The type of the logging message.
         NETrace::eLogPriority       logMessagePrio; //!< The log message priority
         ITEM_ID                     logSource;      //!< The ID of the source that generated logging message.
         ITEM_ID                     logTarget;      //!< The ID of the target to send logging message, valid only in case of TCP/IP logging.
@@ -427,18 +440,6 @@ namespace NETrace
     AREG_API unsigned int getScopePriority( const char * scopeName );
 
     /**
-     * \brief   NETrace::eScopeList
-     *          Defines the state of registering logging scopes.
-     **/
-    typedef enum E_ScopeList        : unsigned char
-    {
-          ScopeListUndefined    //!< The state is undefined.
-        , ScopeListStart        //!< Indicates the begin to register the logging scopes
-        , ScopeListContinue     //!< Indicates the continuation to register the logging scopes.
-        , ScopeListEnd          //!< Indicates the end to register the logging scopes.
-    } eScopeList;
-
-    /**
      * \brief   Creates a network communication message to make a log.
      * \param   logMessage  The message log structure.
      * \param   dataType    The type of created data to set in the structure.
@@ -454,43 +455,19 @@ namespace NETrace
     AREG_API void logMessage(const RemoteMessage& message);
 
     /**
-     * \brief   The maximum scope entries in one message.
+     * \brief   Log generated custom message locally bypassing priority settings of a scope.
+     * \param   logMessage  The structure that contains information to log a message.
      **/
-    constexpr uint32_t  SCOPE_ENTRIES_MAX_COUNT     { 1'000u };
-
-    /**
-     * \brief   Creates a message for logging service to start registering application logging scopes.
-     * \param   source      The ID of the source that generated the message.
-     * \param   target      The ID of the target to send the message
-     * \param   scopeCount  The number of scopes to send to register.
-     * \return  Returns generated message ready to send from indicated source to the target.
-     **/
-    AREG_API RemoteMessage messageRegisterScopesStart( const ITEM_ID & source, const ITEM_ID & target, unsigned int scopeCount );
-
-    /**
-     * \brief   Creates a message for logging service to end registering application logging scopes.
-     * \param   source      The ID of the source that generated the message.
-     * \param   target      The ID of the target to send the message
-     * \return  Returns generated message ready to send from indicated source to the target.
-     **/
-    AREG_API RemoteMessage messageRegisterScopesEnd(const ITEM_ID & source, const ITEM_ID & target);
+    AREG_API void logAnyMessageLocal(const NETrace::sLogMessage& logMessage);
 
     /**
      * \brief   Creates a message for logging service to register scopes with message priority.
      * \param   source      The ID of the source that generated the message.
      * \param   target      The ID of the target to send the message
      * \param   scopeList   The list of scopes to register.
-     * \param   startAt     The position in the list to extract and register scopes.
-     *                          - If in input the value is invalid, it starts to register from beginning.
-     *                          - If on output the value is valid, there are still unregistered scopes 
-     *                            in the list and the value indicates the next valid scope.
-     *                          - In on output the value is invalid, there are no more unregistered scopes
-     *                            in the list.
-     * \param   maxEntries  The maximum entries to push to scope registering message.
-     *                      If the value is 0xFFFFFFFF, it registers all entries.
      * \return  Returns generated message ready to send from indicated source to the target.
      **/
-    AREG_API RemoteMessage messageRegisterScopes(const ITEM_ID & source, const ITEM_ID & target, const NETrace::ScopeList & scopeList, NETrace::SCOPEPOS & startAt, unsigned int maxEntries = 0xFFFFFFFF );
+    AREG_API RemoteMessage messageRegisterScopes(const ITEM_ID & source, const ITEM_ID & target, const NETrace::ScopeList & scopeList);
 
     /**
      * \brief   Creates a message to update the list of log scopes and priorities. This message can change the priority either
@@ -518,6 +495,14 @@ namespace NETrace
     AREG_API RemoteMessage messageUpdateScope(const ITEM_ID& source, const ITEM_ID& target, const String & scopeName, unsigned int scopeId, unsigned int scopePrio);
 
     /**
+     * \brief   Creates a message to query instances connected to the service.
+     * \param   source      The source ID that created the query message. Should be the ID of the log observer or the ID of the logger service.
+     * \param   target      The target ID to send the message. The target is either concrete target or NEService::COOKIE_ANY if message targets all clients.
+     * \return  Returns generated message ready to forward to target client(s) via logger service.
+     **/
+    AREG_API RemoteMessage messageQueryInstances(const ITEM_ID& source, const ITEM_ID& target);
+
+    /**
      * \brief   Creates a message to query the list of scopes of connected client applications.
      *          After option it should follow either '*' for all connected clients or the list of connected cookies.
      *          The cookie ID is specified, the message is sent to the specified target. Otherwise, the message is sent
@@ -531,13 +516,22 @@ namespace NETrace
      * \return  Returns generated message ready to send from indicated source to the target.
      **/
     AREG_API RemoteMessage messageQueryScopes(const ITEM_ID& source, const ITEM_ID& target);
+
+    /**
+     * \brief   Creates a message to send request to the connected client target to save configuration.
+     * \param   source      The source ID that generated the message. It should be either ID of the observer application
+     *                      or the ID of the logger service.
+     * \param   target      The target ID to receive the message. This target can be either concrete connected client
+     *                      or can be NEService::COOKIE_ANY if should be forwarded to all connected clients.
+     * \return  Returns generated message ready to send to client(s) via logger service.
+     **/
+    AREG_API RemoteMessage messageSaveConfiguration(const ITEM_ID & source, const ITEM_ID & target);
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // NETrace namespace streamable types
 //////////////////////////////////////////////////////////////////////////////
 IMPLEMENT_STREAMABLE(NETrace::eLogPriority)
-IMPLEMENT_STREAMABLE(NETrace::eScopeList)
 IMPLEMENT_STREAMABLE(NETrace::eLogMessageType)
 
 //////////////////////////////////////////////////////////////////////////////
@@ -549,7 +543,7 @@ IMPLEMENT_STREAMABLE(NETrace::eLogMessageType)
 //////////////////////////////////////////////////////////////////////////////
 
 /**
- * \brief   Deserializes log message from the stream.
+ * \brief   De-serializes log message from the stream.
  * \param   stream  The source of log message data.
  * \param   input   On output this contains structured logging message.
  **/
@@ -573,7 +567,7 @@ inline IEOutStream& operator << (IEOutStream& stream, const NETrace::sLogMessage
 }
 
 /**
- * \brief   Deserializes a scope update structure from the stream.
+ * \brief   De-serializes a scope update structure from the stream.
  * \param   stream  The source of data that contains scope update structure information.
  * \param   input   On output this contains structured scope update data.
  **/
@@ -634,6 +628,20 @@ inline const char* NETrace::getString(NETrace::eLogPriority prio)
         ASSERT(false);
         return "ERR: Unexpected NETrace::eLogPrior value";
     }
+}
+
+inline NETrace::sScopeInfo::sScopeInfo(void)
+    : scopeName ( String::EmptyString )
+    , scopeId   ( 0u )
+    , scopePrio ( static_cast<uint32_t>(NETrace::eLogPriority::PrioInvalid) )
+{
+}
+
+inline NETrace::sScopeInfo::sScopeInfo(const char* name, uint32_t id, uint32_t prio)
+    : scopeName (name)
+    , scopeId   (id)
+    , scopePrio (prio)
+{
 }
 
 inline bool NETrace::isValidLogPriority( NETrace::eLogPriority prio )

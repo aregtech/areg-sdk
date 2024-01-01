@@ -10,7 +10,7 @@
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/persist/IEConfigurationListener.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, the configuration object to read configuration file.
  ************************************************************************/
@@ -36,7 +36,7 @@ class ConfigManager;
  *          For example, the developers may set temporary property, which will
  *          have the influence on the application, but not saved in the config file.
  **/
-class IEConfigurationListener
+class AREG_API IEConfigurationListener
 {
 //////////////////////////////////////////////////////////////////////////
 // Protected constructors / destructor

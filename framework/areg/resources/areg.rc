@@ -50,7 +50,7 @@ BEGIN
         BEGIN
             VALUE "Comments", "AREG SDK Platform Library"
             VALUE "CompanyName", "AREGtech Limited"
-            VALUE "FileDescription", "AREG SDK, Asynchronous Event Generator Communication Framework Dynamic Link Library"
+            VALUE "FileDescription", "AREG SDK, Automated Real-time Event Grid Communication Framework Dynamic Link Library"
             VALUE "FileVersion", VERSION_STRING(2,0,0,0)
             VALUE "InternalName", "AREG SDK"
             VALUE "LegalCopyright", "Copyright (c) 2016 - 2019"

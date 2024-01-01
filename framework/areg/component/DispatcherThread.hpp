@@ -10,7 +10,7 @@
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/DispatcherThread.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \brief       AREG Platform, Dispatcher thread.
  *              Generic thread to dispatch events and trigger event processing
  *              functions on registered consumer side.

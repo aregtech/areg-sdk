@@ -8,7 +8,7 @@
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/ipc/private/NERemoteService.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform Remote service namespace
  ************************************************************************/
@@ -434,7 +434,7 @@ AREG_API_IMPL RemoteMessage NERemoteService::createServiceClientUnregisteredNoti
     return msgResult;
 }
 
-AREG_API_IMPL RemoteMessage NERemoteService::createConnectRequest(const ITEM_ID & target, NEService::eMessageSource msgSource)
+AREG_API_IMPL RemoteMessage NERemoteService::createConnectRequest(const ITEM_ID & source, const ITEM_ID & target, NEService::eMessageSource msgSource)
 {
     RemoteMessage msgHelloServer;
     if ( msgHelloServer.initMessage( NERemoteService::getMessageHelloServer().rbHeader ) != nullptr )
@@ -444,8 +444,9 @@ AREG_API_IMPL RemoteMessage NERemoteService::createConnectRequest(const ITEM_ID 
         msgHelloServer.setSequenceNr( NEService::SEQUENCE_NUMBER_NOTIFY );
         NEService::sServiceConnectedInstance instance{ };
         instance.ciSource   = msgSource;
-        instance.ciInstance = Process::getInstance().getAppName();
         instance.ciBitness  = static_cast<NEService::eInstanceBitness>(Process::getInstance().getBitness());
+        instance.ciCookie   = source;
+        instance.ciInstance = Process::getInstance().getAppName();
         instance.ciLocation = Process::getInstance().getPath();
 
         msgHelloServer << instance;

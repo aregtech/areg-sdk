@@ -8,7 +8,7 @@
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        logger/service/private/LoggerMessageProcessor.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Log Collector message processor
  ************************************************************************/
@@ -55,7 +55,7 @@ void LoggerMessageProcessor::notifyConnectedInstances(const ITEM_ID& target /*= 
     const ServiceCommunicatonBase::MapInstances& instances = mLoggerService.getInstances();
     ASSERT((target == NEService::COOKIE_ANY) || (instances.contains(target) && isLogObserver(instances.getAt(target).ciSource)));
 
-    if (msgInstances.initMessage(NERemoteService::getMessageQueryInstances().rbHeader) != nullptr)
+    if (msgInstances.initMessage(NERemoteService::getMessageNotifyInstances().rbHeader) != nullptr)
     {
         uint32_t count{ 0 };
         uint32_t pos = msgInstances.getPosition();
@@ -97,45 +97,13 @@ void LoggerMessageProcessor::registerScopesAtObserver(const RemoteMessage & msgR
 {
     ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogRegisterScopes));
     msgReceived.moveToBegin();
-    NETrace::eScopeList scopeListType{ NETrace::eScopeList::ScopeListUndefined };
     uint32_t scopeCount{ 0 };
-    msgReceived >> scopeListType;
+    msgReceived >> scopeCount;
+    msgReceived.moveToBegin();
 
     String msgStatus;
-
-    switch (scopeListType)
-    {
-    case NETrace::eScopeList::ScopeListStart:
-        {
-            constexpr char fmt[]{ "Starting scope registration of source %u, there are %u scope to register ..." };
-            msgReceived >> scopeCount;
-            msgStatus.format(fmt, static_cast<uint32_t>(msgReceived.getSource()), scopeCount);
-        }
-        break;
-
-    case NETrace::eScopeList::ScopeListContinue:
-        {
-            constexpr char fmt[]{ "Continuing scope registration, source %u sent %u scopes to register ..." };
-            msgReceived >> scopeCount;
-            msgStatus.format(fmt, static_cast<uint32_t>(msgReceived.getSource()), scopeCount);
-        }
-        break;
-
-    case NETrace::eScopeList::ScopeListEnd:
-        {
-            constexpr char fmt[]{ "Completed scope registration of source %u ..." };
-            msgReceived >> scopeCount;
-            msgStatus.format(fmt, static_cast<uint32_t>(msgReceived.getSource()));
-        }
-        break;
-
-    default:
-        {
-            constexpr char fmt[]{ "Error, unexpected scope list message of source %u !!!" };
-            msgStatus.format(fmt, static_cast<uint32_t>(msgReceived.getSource()));
-        }
-        break;
-    }
+    constexpr char fmt[]{ "Received scope registration from source %u, sent %u scopes to register ..." };
+    msgStatus.format(fmt, static_cast<uint32_t>(msgReceived.getSource()), scopeCount);
 
     Logger::printStatus(msgStatus);
     _forwardMessageToObservers(msgReceived);

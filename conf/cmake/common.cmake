@@ -217,15 +217,23 @@ add_compile_options(${AREG_COMPILER_OPTIONS})
 set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${AREG_OUTPUT_DIR})
 
 # Add include search paths
-include_directories(BEFORE "${AREG_BASE} ${AREG_GENERATE_DIR}")
+include_directories(BEFORE "${AREG_BASE}" "${AREG_GENERATE_DIR}")
 
 # Adding library search paths
-link_directories(BEFORE "${AREG_OUTPUT_BIN} ${AREG_OUTPUT_LIB}")
+link_directories(BEFORE "${AREG_OUTPUT_BIN}" "${AREG_OUTPUT_LIB}")
 
 # Only for Linux
 if(UNIX AND NOT CYGWIN)
     set(CMAKE_EXECUTABLE_SUFFIX ".out")
 endif()
+
+set(COMMON_COMPILE_DEF)
+if(AREG_BINARY MATCHES "static")
+    set(COMMON_COMPILE_DEF IMP_AREG_LIB)
+else()
+    set(COMMON_COMPILE_DEF IMP_AREG_DLL)
+endif()
+
 
 message(STATUS "-------------------- CMakeLists Status Report Begin --------------------")
 message(STATUS ">>> Build for '${CMAKE_SYSTEM_NAME}' '${AREG_BITNESS}'-bit platform '${AREG_PROCESSOR}' with compiler '${CMAKE_CXX_COMPILER}', ID '${AREG_COMPILER_FAMILY}', and build type '${CMAKE_BUILD_TYPE}'")

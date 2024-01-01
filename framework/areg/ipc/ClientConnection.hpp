@@ -10,7 +10,7 @@
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/ipc/ClientConnection.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform Client Connection class declaration
  ************************************************************************/
@@ -34,7 +34,7 @@
  *          Client socket is using only TCP/IP connection. All other types
  *          and protocols are out of scope of this class and are not considered.
  **/
-class ClientConnection   : private   SocketConnectionBase
+class AREG_API ClientConnection : private   SocketConnectionBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructors / Destructor

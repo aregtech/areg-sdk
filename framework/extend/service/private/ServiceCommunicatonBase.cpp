@@ -8,7 +8,7 @@
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        extend/service/private/ServiceCommunicatonBase.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Service communication base class
  ************************************************************************/
@@ -439,6 +439,7 @@ void ServiceCommunicatonBase::processReceivedMessage(const RemoteMessage & msgRe
         {
             NEService::sServiceConnectedInstance instance{};
             msgReceived >> instance;
+            instance.ciCookie = cookie;
             addInstance(cookie, instance);
             RemoteMessage msgConnect(createServiceConnectMessage(mServerConnection.getChannelId(), cookie, NEService::eMessageSource::MessageSourceService));
             TRACE_DBG("Received request connect message, sending response [ %s ] of id [ 0x%X ], to new target [ %u ], connection socket [ %u ], checksum [ %u ]"

@@ -8,7 +8,7 @@
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        logger/service/private/LoggerServerService.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, logger connection service
  ************************************************************************/
@@ -40,13 +40,23 @@ LoggerServerService::LoggerServerService( void )
 {
 }
 
-void LoggerServerService::addInstance(const ITEM_ID & cookie, const NEService::sServiceConnectedInstance& instance)
+void LoggerServerService::addInstance(const ITEM_ID& cookie, const NEService::sServiceConnectedInstance& instance)
 {
     Lock lock(mLock);
 
     ServiceCommunicatonBase::addInstance(cookie, instance);
     if (LoggerMessageProcessor::isLogSource(instance.ciSource))
     {
+        NETrace::sLogMessage logMsgHello(NETrace::eLogMessageType::LogMessageText, 0, NETrace::eLogPriority::PrioAny, nullptr, 0);
+        String::formatString( logMsgHello.logMessage
+                            , NETrace::LOG_MESSAGE_IZE
+                            , "CONNECTED the %u-bit instance [ %s ] with cookie [ %llu ] and location [ %s ]"
+                            , static_cast<uint32_t>(instance.ciBitness)
+                            , instance.ciInstance.getString()
+                            , instance.ciCookie
+                            , instance.ciLocation.getString());
+        NETrace::logAnyMessageLocal(logMsgHello);
+
         mLoggerProcessor.notifyConnectedInstances(NEService::COOKIE_ANY);
     }
     else if (LoggerMessageProcessor::isLogObserver(instance.ciSource))
@@ -65,6 +75,16 @@ void LoggerServerService::removeInstance(const ITEM_ID & cookie)
     
     if (exists && LoggerMessageProcessor::isLogSource(instance.ciSource))
     {
+        NETrace::sLogMessage logMsgBye(NETrace::eLogMessageType::LogMessageText, 0, NETrace::eLogPriority::PrioAny, nullptr, 0);
+        String::formatString(logMsgBye.logMessage
+                            , NETrace::LOG_MESSAGE_IZE
+                            , "DISCONNECTED the %u-bit instance [ %s ] with cookie [ %llu ] and location [ %s ]"
+                            , static_cast<uint32_t>(instance.ciBitness)
+                            , instance.ciInstance.getString()
+                            , instance.ciCookie
+                            , instance.ciLocation.getString());
+        NETrace::logAnyMessageLocal(logMsgBye);
+
         mLoggerProcessor.notifyConnectedInstances(NEService::COOKIE_ANY);
     }
     else if (LoggerMessageProcessor::isLogObserver(instance.ciSource))
@@ -76,8 +96,15 @@ void LoggerServerService::removeInstance(const ITEM_ID & cookie)
 void LoggerServerService::removeAllInstances(void)
 {
     Lock lock(mLock);
-    ServiceCommunicatonBase::removeAllInstances();
-    mLoggerProcessor.notifyConnectedInstances(NEService::COOKIE_ANY);
+    if (mInstanceMap.getSize() != 0)
+    {
+        NETrace::sLogMessage logMsgClose(NETrace::eLogMessageType::LogMessageText, 0, NETrace::eLogPriority::PrioAny, nullptr, 0);
+        String::formatString(logMsgClose.logMessage, NETrace::LOG_MESSAGE_IZE, "Disconnecting and removing [ %u ] instances.", mInstanceMap.getSize());
+        NETrace::logAnyMessageLocal(logMsgClose);
+        ServiceCommunicatonBase::removeAllInstances();
+        mLoggerProcessor.notifyConnectedInstances(NEService::COOKIE_ANY);
+    }
+
     mObservers.clear();
 }
 
@@ -153,13 +180,14 @@ void LoggerServerService::onServiceMessageReceived(const RemoteMessage &msgRecei
     case NEService::eFuncIdRange::SystemServiceDisconnect:
         break;
 
+    case NEService::eFuncIdRange::SystemServiceNotifyInstances:
+
     case NEService::eFuncIdRange::RequestRegisterService:           // fall through
     case NEService::eFuncIdRange::RequestServiceProviderVersion:    // fall through
     case NEService::eFuncIdRange::ResponseServiceProviderVersion:   // fall through
     case NEService::eFuncIdRange::RequestServiceProviderConnection: // fall through
     case NEService::eFuncIdRange::ResponseServiceProviderConnection:// fall through
     case NEService::eFuncIdRange::SystemServiceNotifyConnection:    // fall through
-    case NEService::eFuncIdRange::SystemServiceNotifyInstances:     // fall through
     case NEService::eFuncIdRange::SystemServiceRequestRegister:     // fall through
     case NEService::eFuncIdRange::SystemServiceNotifyRegister:      // fall through
     default:

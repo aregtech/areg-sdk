@@ -1,0 +1,18 @@
+LIBRARY observerapi
+
+EXPORTS
+    logObserverInitialize
+    logObserverRelease
+    logObserverConnectLogger
+    logObserverDisconnectLogger
+    logObserverIsInitialized
+    logObserverIsConnected
+    logObserverLoggerAddress
+    logObserverLoggerPort
+    logObserverConfigLoggerEnabled
+    logObserverConfigLoggerAddress
+    logObserverConfigLoggerPort
+    logObserverRequestInstances
+    logObserverRequestScopes
+    logObserverRequestChangeScopePrio
+    logObserverRequestSaveConfig

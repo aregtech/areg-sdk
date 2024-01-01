@@ -9,8 +9,8 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        areg/ipc/private/ServiceClientConnectionBase.hpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \file        areg/ipc/ServiceClientConnectionBase.hpp
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Service client connection 
  ************************************************************************/
@@ -44,8 +44,8 @@ class IERemoteMessageHandler;
  *          to read and send message, to dispatch messages and
  *          communicate with service manager.
  **/
-class ServiceClientConnectionBase   : public    IEServiceConnectionProvider
-                                    , public    IEServiceEventConsumerBase
+class AREG_API ServiceClientConnectionBase  : public    IEServiceConnectionProvider
+                                            , public    IEServiceEventConsumerBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types and constants
@@ -402,6 +402,10 @@ protected:
 // Hidden member variables
 //////////////////////////////////////////////////////////////////////////
 private:
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(disable: 4251)
+#endif  // _MSC_VER
+
     /**
      * \brief   Connection retry timer object.
      **/
@@ -418,6 +422,10 @@ private:
      * \brief   The Client Service event consumer
      **/
     ReconnectTimerConsumer                  mTimerConsumer;
+
+#if defined(_MSC_VER) && (_MSC_VER > 1200)
+    #pragma warning(default: 4251)
+#endif  // _MSC_VER
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

@@ -8,7 +8,7 @@
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/trace/private/NETrace.cpp
- * \ingroup     AREG Asynchronous Event-Driven Communication Framework
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       NETrace namespace contains , structures and types.
  *
@@ -94,8 +94,8 @@ namespace
 }
 
 NETrace::sLogMessage::sLogMessage(NETrace::eLogMessageType msgType)
-    : logMsgType    { msgType }
-    , logDataType   { NETrace::eLogDataType::LogDataLocal }
+    : logDataType   { NETrace::eLogDataType::LogDataLocal }
+    , logMsgType    { msgType }
     , logMessagePrio{ NETrace::eLogPriority::PrioNotset }
     , logSource     { NEService::COOKIE_LOCAL }
     , logTarget     { NEService::COOKIE_LOGGER }
@@ -114,8 +114,8 @@ NETrace::sLogMessage::sLogMessage(NETrace::eLogMessageType msgType)
 }
 
 NETrace::sLogMessage::sLogMessage(NETrace::eLogMessageType msgType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message, unsigned int msgLen)
-    : logMsgType    { msgType }
-    , logDataType   { NETrace::eLogDataType::LogDataLocal }
+    : logDataType   { NETrace::eLogDataType::LogDataLocal }
+    , logMsgType    { msgType }
     , logMessagePrio{ msgPrio }
     , logSource     { NEService::COOKIE_LOCAL }
     , logTarget     { NEService::COOKIE_LOGGER }
@@ -131,13 +131,13 @@ NETrace::sLogMessage::sLogMessage(NETrace::eLogMessageType msgType, unsigned int
     , logModuleLen  { 0 }
     , logModule     { '\0' }
 {
-    uint32_t len = NEMemory::memCopy(logMessage, NETrace::LOG_MESSAGE_IZE - 1, message, msgLen);
+    uint32_t len = message != nullptr ? NEMemory::memCopy(logMessage, NETrace::LOG_MESSAGE_IZE - 1, message, msgLen) : 0u;
     logMessage[len] = String::EmptyChar;
 }
 
 NETrace::sLogMessage::sLogMessage(const NETrace::sLogMessage & src)
-    : logMsgType    { src.logMsgType }
-    , logDataType   { src.logDataType }
+    : logDataType   { src.logDataType }
+    , logMsgType    { src.logMsgType }
     , logMessagePrio{ src.logMessagePrio }
     , logSource     { src.logSource }
     , logTarget     { src.logTarget }
@@ -160,8 +160,8 @@ NETrace::sLogMessage & NETrace::sLogMessage::operator = (const NETrace::sLogMess
 {
     if (this != &src)
     {
-        logMsgType      = src.logMsgType;
         logDataType     = src.logDataType;
+        logMsgType      = src.logMsgType;
         logMessagePrio  = src.logMessagePrio;
         logSource       = src.logSource;
         logTarget       = src.logTarget;
@@ -321,7 +321,7 @@ AREG_API_IMPL void NETrace::logMessage(const RemoteMessage& message)
     return TraceManager::logMessage(message);
 }
 
-AREG_API_IMPL RemoteMessage NETrace::messageRegisterScopesStart(const ITEM_ID & source, const ITEM_ID & target, unsigned int scopeCount)
+AREG_API_IMPL RemoteMessage NETrace::messageRegisterScopes(const ITEM_ID & source, const ITEM_ID & target, const NETrace::ScopeList & scopeList)
 {
     RemoteMessage msgScope;
     if (msgScope.initMessage(_getLogEmptyMessage().rbHeader) != nullptr)
@@ -329,68 +329,32 @@ AREG_API_IMPL RemoteMessage NETrace::messageRegisterScopesStart(const ITEM_ID & 
         msgScope.setMessageId(static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogRegisterScopes));
         msgScope.setTarget(target != NEService::COOKIE_UNKNOWN ? target : NEService::COOKIE_LOGGER);
         msgScope.setSource(source != NEService::COOKIE_UNKNOWN ? source : NETrace::getCookie());
-        msgScope << NETrace::eScopeList::ScopeListStart;
-        msgScope << scopeCount;
-    }
-
-    return msgScope;
-}
-
-AREG_API_IMPL RemoteMessage NETrace::messageRegisterScopesEnd(const ITEM_ID & source, const ITEM_ID & target)
-{
-    RemoteMessage msgScope;
-    if (msgScope.initMessage(_getLogEmptyMessage().rbHeader) != nullptr)
-    {
-        msgScope.setMessageId(static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogRegisterScopes));
-        msgScope.setTarget(target != NEService::COOKIE_UNKNOWN ? target : NEService::COOKIE_LOGGER);
-        msgScope.setSource(source != NEService::COOKIE_UNKNOWN ? source : NETrace::getCookie());
-        msgScope << NETrace::eScopeList::ScopeListEnd;
-    }
-
-    return msgScope;
-}
-
-AREG_API_IMPL RemoteMessage NETrace::messageRegisterScopes(const ITEM_ID & source, const ITEM_ID & target, const NETrace::ScopeList & scopeList, NETrace::SCOPEPOS & startAt, unsigned int maxEntries /*= 0xFFFFFFFF*/)
-{
-    RemoteMessage msgScope;
-    if (msgScope.initMessage(_getLogEmptyMessage().rbHeader) != nullptr)
-    {
-        msgScope.setMessageId(static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogRegisterScopes));
-        msgScope.setTarget(target != NEService::COOKIE_UNKNOWN ? target : NEService::COOKIE_LOGGER);
-        msgScope.setSource(source != NEService::COOKIE_UNKNOWN ? source : NETrace::getCookie());
-        msgScope << NETrace::eScopeList::ScopeListContinue;
-
-        SCOPEPOS end = scopeList.invalidPosition();
-        SCOPEPOS pos = startAt == end ? scopeList.firstPosition() : startAt;
-
-        if (maxEntries == 0xFFFFFFFF)
-        {
-            maxEntries = scopeList.getSize();
-        }
 
         unsigned int numPos = msgScope.getPosition();
-        msgScope << maxEntries; // initially, the number of scopes is the complete list.
-
         unsigned int count{ 0 };
-        for (; (count < maxEntries) && (pos != end); ++ count)
+        msgScope << count; // reserve space
+
+        SCOPEPOS end = scopeList.invalidPosition();
+        for (SCOPEPOS pos = scopeList.firstPosition(); pos != end; ++ count, pos = scopeList.nextPosition(pos))
         {
             TraceScopePair tracePair;
             scopeList.getAtPosition(pos, tracePair);
             ASSERT(tracePair.second != nullptr);
             msgScope << (*tracePair.second);
-            pos = scopeList.nextPosition(pos);
         }
 
-        if (count != maxEntries)
-        {
-            count = MACRO_MIN(count, maxEntries);
-            msgScope.setPosition(static_cast<int>(numPos), IECursorPosition::eCursorPosition::PositionBegin);
-            msgScope << count;
-            msgScope.moveToEnd();
-        }
+        // Write number of scopes
+        msgScope.setPosition(static_cast<int>(numPos), IECursorPosition::eCursorPosition::PositionBegin);
+        msgScope << count;
+        msgScope.moveToEnd();
     }
 
     return msgScope;
+}
+
+AREG_API void NETrace::logAnyMessageLocal(const NETrace::sLogMessage& logMessage)
+{
+    return TraceManager::logMessage(logMessage);
 }
 
 AREG_API_IMPL RemoteMessage NETrace::messageUpdateScopes(const ITEM_ID& source, const ITEM_ID& target, const NETrace::ScopeNames& scopeNames)
@@ -431,6 +395,22 @@ AREG_API_IMPL RemoteMessage NETrace::messageUpdateScope(const ITEM_ID& source, c
     return msgScope;
 }
 
+AREG_API_IMPL RemoteMessage NETrace::messageQueryInstances(const ITEM_ID& source, const ITEM_ID& target)
+{
+    RemoteMessage msgQuery;
+    if ((source != NEService::COOKIE_UNKNOWN) &&
+        (target != NEService::COOKIE_UNKNOWN) &&
+        (msgQuery.initMessage(_getLogEmptyMessage().rbHeader) != nullptr))
+    {
+        msgQuery.setMessageId(static_cast<uint32_t>(NEService::eFuncIdRange::SystemServiceQueryInstances));
+        msgQuery.setTarget(target);
+        msgQuery.setSource(source);
+        msgQuery << target;
+    }
+
+    return msgQuery;
+}
+
 AREG_API_IMPL RemoteMessage NETrace::messageQueryScopes(const ITEM_ID& source, const ITEM_ID& target)
 {
     RemoteMessage msgQuery;
@@ -445,6 +425,22 @@ AREG_API_IMPL RemoteMessage NETrace::messageQueryScopes(const ITEM_ID& source, c
     }
 
     return msgQuery;
+}
+
+AREG_API_IMPL RemoteMessage NETrace::messageSaveConfiguration(const ITEM_ID& source, const ITEM_ID& target)
+{
+    RemoteMessage msgRequest;
+    if ((source != NEService::COOKIE_UNKNOWN) &&
+        (target != NEService::COOKIE_UNKNOWN) &&
+        (msgRequest.initMessage(_getLogEmptyMessage().rbHeader) != nullptr))
+    {
+        msgRequest.setMessageId(static_cast<uint32_t>(NEService::eFuncIdRange::ServiceSaveLogConfiguration));
+        msgRequest.setTarget(target);
+        msgRequest.setSource(source);
+        msgRequest << target;
+    }
+
+    return msgRequest;
 }
 
 AREG_API_IMPL bool NETrace::forceStartLogging(void)

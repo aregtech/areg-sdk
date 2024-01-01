@@ -10,7 +10,7 @@
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
  * \file        areg/component/NEService.hpp
- * \ingroup     AREG SDK, Asynchronous Event Generator Software Development Kit 
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit 
  * \author      Artak Avetyan
  * \brief       AREG Platform, NEService namespace contains
  *              collection of classes, structures and types defining
@@ -1054,6 +1054,8 @@ namespace NEService
         NEService::eMessageSource   ciSource    { NEService::eMessageSource::MessageSourceUndefined };
         //!< The bit-set of connected instance
         NEService::eInstanceBitness ciBitness   { NEService::eInstanceBitness::BitnessUnknown };
+        //!< The cookie of the connected instance.
+        ITEM_ID                     ciCookie    { NEService::COOKIE_UNKNOWN };
         //!< The name of the application
         String                      ciInstance  { "" };
         //!< The optional file location
@@ -1309,7 +1311,7 @@ inline NEService::eDataStateType NEService::ProxyData::getParamState( unsigned i
  **/
 inline IEOutStream& operator << (IEOutStream& stream, const NEService::sServiceConnectedInstance & output)
 {
-    stream << output.ciSource << output.ciBitness << output.ciInstance << output.ciLocation;
+    stream << output.ciSource << output.ciBitness << output.ciCookie << output.ciInstance << output.ciLocation;
     return stream;
 }
 
@@ -1320,7 +1322,7 @@ inline IEOutStream& operator << (IEOutStream& stream, const NEService::sServiceC
  **/
 inline const IEInStream& operator >> (const IEInStream& stream, NEService::sServiceConnectedInstance & input)
 {
-    stream >> input.ciSource >> input.ciBitness >> input.ciInstance >> input.ciLocation;
+    stream >> input.ciSource >> input.ciBitness >> input.ciCookie >> input.ciInstance >> input.ciLocation;
     return stream;
 }
 

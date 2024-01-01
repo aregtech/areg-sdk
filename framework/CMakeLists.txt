@@ -6,6 +6,7 @@ include("${AREG_BASE}/areg/CMakeLists.txt")
 include("${AREG_BASE}/extend/CMakeLists.txt")
 include("${AREG_BASE}/mcrouter/CMakeLists.txt")
 include("${AREG_BASE}/logger/CMakeLists.txt")
+include("${AREG_BASE}/observer/CMakeLists.txt")
 
 # build areg library
 if(AREG_BINARY MATCHES "shared")
@@ -29,7 +30,7 @@ else(AREG_BINARY MATCHES "shared")
 
 endif()
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
     target_compile_options(areg PRIVATE -fPIC)
 endif()
 
@@ -47,6 +48,40 @@ addExecutable(mcrouter "${mcrouter_SRC}")
 
 # build logger executable
 addExecutable(logger "${logger_SRC}")
+
+# build observer API library
+if (AREG_OBSERVER_LIB MATCHES "shared")
+    # in case of Windows add DEF file.
+    if (MSVC)
+	    list(APPEND observer_lib_SRC ${observer_lib_RESOURCE}/observerapi.def)
+    endif()
+
+    # build observer API shared library
+    addSharedLib(observerapi "${observer_lib_SRC}")
+
+    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
+        target_compile_options(observerapi PRIVATE -fPIC)
+    endif()
+
+    # observer API shared library
+    target_compile_definitions(observerapi PRIVATE EXP_OBSERVER_DLL)
+
+    # add MSVC linker option
+    if (MSVC)
+        target_link_options(observerapi PRIVATE "/DEF:${observer_lib_RESOURCE}/observerapi.def")
+    endif()
+
+else(AREG_OBSERVER_LIB MATCHES "shared")
+    # build observer API shared library
+    addStaticLib(observerapi "${observer_lib_SRC}")
+
+    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
+        target_compile_options(observerapi PRIVATE -fPIC)
+    endif()
+    # observer API shared library
+    target_compile_definitions(observerapi PRIVATE EXP_OBSERVER_LIB)
+
+endif(AREG_OBSERVER_LIB MATCHES "shared")
 
 # copying log and router init files to 'bin/config'
 file(MAKE_DIRECTORY ${AREG_OUTPUT_BIN}/config)

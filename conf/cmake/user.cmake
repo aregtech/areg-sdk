@@ -17,6 +17,7 @@
 #  10. AREG_OUTPUT_DIR      -- The output directory of build binaries
 #  11. AREG_OUTPUT_BIN      -- Set the path to folder to output compiled shared libraries and executables.
 #  12. AREG_OUTPUT_LIB      -- Set the path to folder to output compiled static libraries.
+#  13. AREG_OBSERVER_LIB    -- Set the observer API library type. By default it is set as shared.
 #
 # The default values are:
 #   1. AREG_COMPILER_FAMILY = <default> (possible values: gnu, cygwin, llvm, msvc)
@@ -31,6 +32,7 @@
 #  10. AREG_OUTPUT_DIR      = <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release     (possible values: any full path)
 #  11. AREG_OUTPUT_BIN      = <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release/bin (possible values: any full path)
 #  12. AREG_OUTPUT_LIB      = <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release/lib (possible values: any full path)
+#  13. AREG_OBSERVER_LIB    = shared    (possible values: shared, static)
 #
 # Hints:
 #
@@ -178,6 +180,11 @@ endif()
 # Set the areg-sdk build root folder to output files.
 if (NOT DEFINED AREG_BUILD_ROOT OR "${AREG_BUILD_ROOT}" STREQUAL "")
     set(AREG_BUILD_ROOT "${AREG_SDK_ROOT}/product")
+endif()
+
+# Set the areg observer API library type.
+if (NOT DEFINED AREG_OBSERVER_LIB OR NOT "${AREG_OBSERVER_LIB}" STREQUAL "static")
+    set(AREG_OBSERVER_LIB "shared")
 endif()
 
 # The absolute path for generated files
