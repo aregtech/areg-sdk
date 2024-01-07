@@ -65,7 +65,19 @@ public:
      * \brief   Returns accumulative value of sent data size and rests the existing value to zero.
      *          The operations are atomic. The value can be used to display data rate, for example.
      **/
-    inline uint32_t extractDataSend( void );
+    inline uint32_t extractDataSend( void ) const;
+
+    /**
+     * \brief   Call to enable or disable the received data calculation.
+     *          It as well resets the existing calculated data.
+     * \param   enable  Flag, indicating whether data calculation is enabled or not.
+     **/
+    inline void setEnableCalculateData(bool enable);
+
+    /**
+     * \brief   Returns flag, indicating whether data calculation is enabled or not.
+     **/
+    inline bool isCalculateDataEnabled(void) const;
 
 protected:
 /************************************************************************/
@@ -114,16 +126,21 @@ private:
     /**
      * \brief   The instance of remote service handler to dispatch messages.
      **/
-    IERemoteMessageHandler& mRemoteService;
+    IERemoteMessageHandler&     mRemoteService;
     /**
      * \brief   The instance of connection to send messages from remote routing service.
      **/
-    ClientConnection &      mConnection;
+    ClientConnection &          mConnection;
 
     /**
      * \brief   Accumulative value of sent data size.
      **/
-    std::atomic_uint        mBytesSend;
+    mutable std::atomic_uint    mBytesSend;
+
+    /**
+     * \brief   Flag, indicating whether data calculation is enabled or disabled. By default, it is disabled.
+     **/
+    bool                        mSaveDataSend;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -133,9 +150,23 @@ private:
     DECLARE_NOCOPY_NOMOVE( ClientSendThread );
 };
 
-inline uint32_t ClientSendThread::extractDataSend( void )
+inline uint32_t ClientSendThread::extractDataSend( void ) const
 {
     return static_cast<uint32_t>(mBytesSend.exchange( 0 ));
+}
+
+inline void ClientSendThread::setEnableCalculateData(bool enable)
+{
+    if (mSaveDataSend != enable)
+    {
+        mBytesSend.store(0u);
+        mSaveDataSend = enable;
+    }
+}
+
+inline bool ClientSendThread::isCalculateDataEnabled(void) const
+{
+    return mSaveDataSend;
 }
 
 #endif  // AREG_IPC_PRIVATE_CLIENTSENDTHREAD_HPP

@@ -20,8 +20,6 @@
 #include "areg/base/GEGlobal.h"
 
 #include "areg/base/IEIOStream.hpp"
-#include "areg/base/NECommon.hpp"
-#include "areg/base/NESocket.hpp"
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/TEArrayList.hpp"
@@ -34,7 +32,6 @@
  * Dependencies
  ************************************************************************/
 class TraceScope;
-class FileBase;
 
 //////////////////////////////////////////////////////////////////////////
 // NETrace namespace declaration
@@ -77,9 +74,9 @@ namespace NETrace
          **/
         inline sScopeInfo(const char* name, uint32_t id, uint32_t prio);
 
-        String       scopeName; //!< The name of the scope or scope group.
-        unsigned int scopeId;   //!< The scope ID, can be 0 (NETrace::TRACE_SCOPE_ID_NONE). For scope group should be 0.
-        unsigned int scopePrio; //!< The scope priority.
+        String      scopeName;  //!< The name of the scope or scope group.
+        uint32_t    scopeId;    //!< The scope ID, can be 0 (NETrace::TRACE_SCOPE_ID_NONE). For scope group should be 0.
+        uint32_t    scopePrio;  //!< The scope priority.
     };
 
     //!< The list of scope update structure.
@@ -424,6 +421,17 @@ namespace NETrace
     AREG_API unsigned int makeScopeId( const char * scopeName );
 
     /**
+     * \brief   Returns the ID of given scope name.
+     *          If the scope name is nullptr, empty or ends with grouping symbol '*', it returns 0.
+     *          Otherwise, returns scope ID calculated by makeScopeId() method.
+     * \param   scopeName   The name of scope. If nullptr, empty or ends with grouping symbol '*',
+     *                      the return value is zero.
+     * \return  Returns the ID of given scope name or returns zero if scope name is empty or
+     *          ends with grouping symbol '*'
+     **/
+    AREG_API unsigned int makeScopeIdEx(const char* scopeName);
+
+    /**
      * \brief   Call to change the scope log priority.
      * \param   scopeName   The name of the existing scope. Ignored if scope does not exit.
      * \param   newPrio     The new priority to set. Can be bitwise combination with scopes.
@@ -455,10 +463,16 @@ namespace NETrace
     AREG_API void logMessage(const RemoteMessage& message);
 
     /**
-     * \brief   Log generated custom message locally bypassing priority settings of a scope.
+     * \brief   Log local custom message ignoring process and thread names.
      * \param   logMessage  The structure that contains information to log a message.
      **/
     AREG_API void logAnyMessageLocal(const NETrace::sLogMessage& logMessage);
+
+    /**
+     * \brief   Log custom message considering process and thread names.
+     * \param   logMessage  The structure that contains information to log a message.
+     **/
+    AREG_API void logAnyMessage(const NETrace::sLogMessage& logMessage);
 
     /**
      * \brief   Creates a message for logging service to register scopes with message priority.

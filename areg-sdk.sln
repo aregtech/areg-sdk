@@ -650,6 +650,13 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "observerapi", "framework\observerapi.vcxproj", "{B29F438E-904C-4929-903C-F4673182A417}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
+		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3} = {FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logobserver", "framework\logobserver.vcxproj", "{6941F2A7-F0C7-4293-8646-AF68A7E35183}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
+		{B29F438E-904C-4929-903C-F4673182A417} = {B29F438E-904C-4929-903C-F4673182A417}
 	EndProjectSection
 EndProject
 Global
@@ -1196,6 +1203,14 @@ Global
 		{B29F438E-904C-4929-903C-F4673182A417}.Release|Win32.Build.0 = Release|Win32
 		{B29F438E-904C-4929-903C-F4673182A417}.Release|x64.ActiveCfg = Release|x64
 		{B29F438E-904C-4929-903C-F4673182A417}.Release|x64.Build.0 = Release|x64
+		{6941F2A7-F0C7-4293-8646-AF68A7E35183}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6941F2A7-F0C7-4293-8646-AF68A7E35183}.Debug|Win32.Build.0 = Debug|Win32
+		{6941F2A7-F0C7-4293-8646-AF68A7E35183}.Debug|x64.ActiveCfg = Debug|x64
+		{6941F2A7-F0C7-4293-8646-AF68A7E35183}.Debug|x64.Build.0 = Debug|x64
+		{6941F2A7-F0C7-4293-8646-AF68A7E35183}.Release|Win32.ActiveCfg = Release|Win32
+		{6941F2A7-F0C7-4293-8646-AF68A7E35183}.Release|Win32.Build.0 = Release|Win32
+		{6941F2A7-F0C7-4293-8646-AF68A7E35183}.Release|x64.ActiveCfg = Release|x64
+		{6941F2A7-F0C7-4293-8646-AF68A7E35183}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

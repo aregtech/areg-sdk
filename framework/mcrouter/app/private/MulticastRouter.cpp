@@ -18,11 +18,9 @@
 
 #include "areg/appbase/Application.hpp"
 #include "areg/appbase/NEApplication.hpp"
-#include "areg/base/File.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/component/ComponentLoader.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/String.hpp"
-#include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
 
 #include "extend/console/Console.hpp"
@@ -120,7 +118,6 @@ std::pair<const OptionParser::sOptionSetup *, int> MulticastRouter::getOptionSet
     return std::pair< const OptionParser::sOptionSetup *, int>(MulticastRouter::ValidOptions, static_cast<int>(MACRO_ARRAYLEN( MulticastRouter::ValidOptions )));
 }
 
-
 MulticastRouter::MulticastRouter( void )
     : SystemServiceBase ( mServiceServer )
     , mServiceServer    ( )
@@ -144,7 +141,7 @@ void MulticastRouter::runConsoleInputExtended( void )
     Console & console = Console::getInstance( );
     MulticastRouter::_outputTitle( );
 
-    if ( mRunVerbose )
+    if (getDataRateHelper().isVerbose())
     {
         // Disable to block user input until Console Service is up and running.
         console.enableConsoleInput( false );
@@ -569,9 +566,9 @@ void MulticastRouter::_setVerboseMode( bool makeVerbose )
     MulticastRouter & router = MulticastRouter::getInstance( );
     Console & console = Console::getInstance( );
     console.lockConsole( );
-    if ( router.mRunVerbose != makeVerbose )
+    if ( router.getDataRateHelper().isVerbose() != makeVerbose )
     {
-        router.mRunVerbose = makeVerbose;
+        router.getDataRateHelper().setVerbose(makeVerbose);
 
         if ( makeVerbose == false )
         {
@@ -581,8 +578,8 @@ void MulticastRouter::_setVerboseMode( bool makeVerbose )
         }
         else
         {
-            console.outputMsg( NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data( ), 0.0f, SystemServiceConsole::MSG_BYTES.data( ) );
-            console.outputMsg( NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data( ), 0.0f, SystemServiceConsole::MSG_BYTES.data( ) );
+            console.outputMsg( NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data( ), 0.0f, DataRateHelper::MSG_BYTES.data( ) );
+            console.outputMsg( NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data( ), 0.0f, DataRateHelper::MSG_BYTES.data( ) );
             console.outputTxt( NESystemService::COORD_INFO_MSG, _verbose);
         }
 

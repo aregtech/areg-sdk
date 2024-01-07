@@ -16,15 +16,11 @@
 #include "areg/trace/private/TraceManager.hpp"
 
 #include "areg/appbase/Application.hpp"
-#include "areg/base/Containers.hpp"
 #include "areg/base/File.hpp"
-#include "areg/base/FileBuffer.hpp"
-#include "areg/base/NEString.hpp"
 #include "areg/base/Process.hpp"
 
 #include "areg/trace/TraceScope.hpp"
 #include "areg/trace/private/LogMessage.hpp"
-#include "areg/trace/private/TraceEvent.hpp"
 
  //////////////////////////////////////////////////////////////////////////
 // TraceManager::TraceScopeMap class implementation
@@ -51,6 +47,11 @@ TraceManager & TraceManager::getInstance( void )
 void TraceManager::logMessage(const NETrace::sLogMessage& logData )
 {
     TraceManager::getInstance().sendLogEvent( TraceEventData(TraceEventData::eTraceAction::TraceLogMessage, logData) );
+}
+
+void TraceManager::logMessage(const SharedBuffer& logData)
+{
+    TraceManager::getInstance().sendLogEvent(TraceEventData(TraceEventData::eTraceAction::TraceLogMessage, logData));
 }
 
 void TraceManager::logMessage(const RemoteMessage& logData)

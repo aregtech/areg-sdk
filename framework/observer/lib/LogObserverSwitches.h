@@ -125,7 +125,7 @@
     #define OBSERVER_API_IMPL
 #endif   // WIN32
 
-#if !defined(IMP_AREG_DLL) && !defined(IMP_AREG_LIB)
+#if !defined(IMP_AREG_DLL) && !defined(IMP_AREG_LIB) && !defined(IMPORT_SHARED_SYMBOLS) && !defined(IMPORT_STATIC_SYMBOLS)
     #pragma message ("WARNING: Neither IMP_AREG_DLL, nor IMP_AREG_LIB is defined. Make proper settings. By default setting IMP_AREG_DLL.")
     #define IMP_AREG_DLL
 #endif  // !defined(IMP_AREG_DLL) && !defined(IMP_AREG_LIB)

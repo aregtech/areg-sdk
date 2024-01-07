@@ -166,48 +166,8 @@ void NetTcpLogger::processReceivedMessage(const RemoteMessage & msgReceived, Soc
         switch (msgId)
         {
         case NEService::eFuncIdRange::SystemServiceNotifyConnection:
-        {
-            ITEM_ID cookie{ NEService::COOKIE_UNKNOWN };
-            NEService::eServiceConnection connection{ NEService::eServiceConnection::ServiceConnectionUnknown };
-            msgReceived >> cookie;
-            msgReceived >> connection;
-
-            switch (connection)
-            {
-            case NEService::eServiceConnection::ServiceConnected:
-            case NEService::eServiceConnection::ServicePending:
-                {
-                    if (msgReceived.getResult() == NEMemory::MESSAGE_SUCCESS)
-                    {
-                        Lock lock(mLock);
-                        ASSERT(cookie == msgReceived.getTarget());
-                        mClientConnection.setCookie(cookie);
-                        sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceStarted);
-                    }
-                    else
-                    {
-                        cancelConnection();
-                        sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceLost);
-                    }
-                }
-                break;
-
-            case NEService::eServiceConnection::ServiceRejected:
-                {
-                    cancelConnection();
-                    sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceStopped);
-                }
-                break;
-
-            default:
-                {
-                    cancelConnection();
-                    sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceLost);
-                }
-                break;
-            }
-        }
-        break;
+            serviceConnectionEvent(msgReceived);
+            break;
 
         case NEService::eFuncIdRange::ServiceLogUpdateScopes:
             {

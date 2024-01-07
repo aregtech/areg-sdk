@@ -106,6 +106,12 @@ public:
      **/
     virtual void onServiceMessageSend(const RemoteMessage& msgSend) = 0;
 
+    /**
+     * \brief   Called when need to inform the channel connection.
+     * \param   cookie  The channel connection cookie.
+     **/
+    virtual void onChannelConnected(const ITEM_ID & cookie) = 0;
+
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////

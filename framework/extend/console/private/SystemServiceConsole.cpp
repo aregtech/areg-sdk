@@ -18,46 +18,20 @@
  ************************************************************************/
 #include "extend/console/SystemServiceConsole.hpp"
 
-#include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentThread.hpp"
 #include "extend/console/Console.hpp"
+#include "extend/service/DataRateHelper.hpp"
 #include "extend/service/NESystemService.hpp"
-#include "extend/service/SystemServiceBase.hpp"
-
- //////////////////////////////////////////////////////////////////////////
- // SystemServiceConsole::DataRate helper class implementation
- //////////////////////////////////////////////////////////////////////////
-SystemServiceConsole::DataRate::DataRate(uint32_t sizeBytes)
-    : mRate ( )
-{
-    if (sizeBytes >= ONE_MEGABYTE)
-    {
-        double rate = static_cast<double>(sizeBytes) / ONE_MEGABYTE;
-        mRate.first = static_cast<float>(rate);
-        mRate.second= SystemServiceConsole::MSG_MEGABYTES;
-    }
-    else if (sizeBytes >= ONE_KILOBYTE)
-    {
-        double rate = static_cast<double>(sizeBytes) / ONE_KILOBYTE;
-        mRate.first = static_cast<float>(rate);
-        mRate.second= SystemServiceConsole::MSG_KILOBYTES;
-    }
-    else
-    {
-        mRate.first = static_cast<float>(sizeBytes);
-        mRate.second = SystemServiceConsole::MSG_BYTES;
-    }
-}
 
 //////////////////////////////////////////////////////////////////////////
 // SystemServiceConsole class implementation
 //////////////////////////////////////////////////////////////////////////
-SystemServiceConsole::SystemServiceConsole( SystemServiceBase & sysService, const NERegistry::ComponentEntry & entry, ComponentThread & owner, NEMemory::uAlign OPT data )
+SystemServiceConsole::SystemServiceConsole(DataRateHelper* dataRate, const NERegistry::ComponentEntry & entry, ComponentThread & owner, NEMemory::uAlign OPT data )
     : Component         ( entry, owner )
     , StubBase          ( self( ), NEService::getEmptyInterface( ) )
     , IETimerConsumer   ( )
 
-    , mSystemService    ( sysService )
+    , mDataRateHelper   ( dataRate )
     , mTimer            ( self( ), "ConsoleServiceTimer" )
 {
 }
@@ -69,11 +43,11 @@ void SystemServiceConsole::startupServiceInterface( Component & holder )
     Console & console = Console::getInstance( );
     console.lockConsole( );
 
-    if ( mSystemService.isVerbose( ) )
+    if ( (mDataRateHelper != nullptr) && mDataRateHelper->isVerbose())
     {
 
-        console.outputMsg( NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data( ), 0.0f, SystemServiceConsole::MSG_BYTES.data( ) );
-        console.outputMsg( NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data( ), 0.0f, SystemServiceConsole::MSG_BYTES.data( ) );
+        console.outputMsg( NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data( ), 0.0f, DataRateHelper::MSG_BYTES.data( ) );
+        console.outputMsg( NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data( ), 0.0f, DataRateHelper::MSG_BYTES.data( ) );
     }
 
     mTimer.startTimer( NECommon::TIMEOUT_1_SEC, Timer::CONTINUOUSLY );
@@ -122,14 +96,14 @@ inline void SystemServiceConsole::_outputDataRate(void)
 {
     Console& console = Console::getInstance();
     console.lockConsole( );
-    if ( mSystemService.isVerbose( ) )
+    if ( (mDataRateHelper != nullptr) && mDataRateHelper->isVerbose())
     {
-        SystemServiceConsole::DataRate rateSend( mSystemService.queryDataSent( ) );
-        SystemServiceConsole::DataRate rateRecv( mSystemService.queryDataReceived( ) );
+        DataRateHelper::DataRate rateSend{ mDataRateHelper->queryBytesSentWithLiterals() };
+        DataRateHelper::DataRate rateRecv{ mDataRateHelper->queryBytesReceivedWithLiterals() };
 
         console.saveCursorPosition( );
-        console.outputMsg( NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data( ), rateSend.mRate.first, rateSend.mRate.second.c_str( ) );
-        console.outputMsg( NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data( ), rateRecv.mRate.first, rateRecv.mRate.second.c_str( ) );
+        console.outputMsg( NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data( ), rateSend.first, rateSend.second.c_str( ) );
+        console.outputMsg( NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data( ), rateRecv.first, rateRecv.second.c_str( ) );
         console.restoreCursorPosition( );
         console.refreshScreen( );
     }

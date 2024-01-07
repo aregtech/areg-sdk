@@ -12,7 +12,7 @@
  * \author      Artak Avetyan
  * \brief       AREG Platform, Service connectivity server send message thread
  ************************************************************************/
-#include "extend/service/ServerSendThread.hpp"
+#include "extend/service/private/ServerSendThread.hpp"
 
 #include "areg/component/NEService.hpp"
 #include "areg/ipc/private/NEConnection.hpp"
@@ -29,6 +29,7 @@ ServerSendThread::ServerSendThread(IERemoteMessageHandler& remoteService, Server
     , mRemoteService            ( remoteService )
     , mConnection               ( connection )
     , mBytesSend                ( 0 )
+    , mSaveDataSend             ( false )
 {
 }
 
@@ -80,7 +81,11 @@ void ServerSendThread::processEvent( const SendMessageEventData & data )
         }
         else
         {
-            mBytesSend += sentBytes;
+            if (mSaveDataSend)
+            {
+                mBytesSend += sentBytes;
+            }
+
             TRACE_DBG("Succeeded to send message [ %u ] to target [ %p ]", msgSend.getMessageId(), static_cast<id_type>(msgSend.getTarget()));
         }
     }

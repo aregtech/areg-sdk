@@ -14,10 +14,12 @@
  *              The logger service connection client.
  ************************************************************************/
 
+/************************************************************************
+ * Include files.
+ ************************************************************************/
 #include "observer/lib/private/LoggerClient.hpp"
 
 #include "areg/ipc/ConnectionConfiguration.hpp"
-#include "areg/trace/NETrace.hpp"
 #include "observer/lib/LogObserverApi.h"
 
 #define IS_VALID(callback)  ((mCallbacks != nullptr) && ((callback) != nullptr))
@@ -37,24 +39,29 @@ LoggerClient::LoggerClient(void)
                                  , static_cast<IERemoteMessageHandler &>(self())
                                  , static_cast<DispatcherThread &>(self())
                                  , ThreadPrefix)
+    , IEConfigurationListener    ( )
     , DispatcherThread           ( ThreadName )
     , IEServiceConnectionConsumer( )
     , IERemoteMessageHandler     ( )
 
     , mCallbacks                 ( nullptr )
     , mMessageProcessor          ( self() )
+    , mIsPaused                  ( false )
 {
 }
 
 bool LoggerClient::startLoggerClient(const String & address /*= String::EmptyString*/, uint16_t portNr /*= NESocket::InvalidPort*/)
 {
-    Lock lock(mLock);
     if ((address.isEmpty() == false) && (portNr != NESocket::InvalidPort))
     {
+        Lock lock(mLock);
+        mIsPaused = false;
         applyServiceConnectionData(address, portNr);
     }
     else
     {
+        Lock lock(mLock);
+        mIsPaused = false;
         ConnectionConfiguration config(LoggerClient::ServiceType, LoggerClient::ConnectType);
         if (config.isConfigured())
         {
@@ -67,7 +74,12 @@ bool LoggerClient::startLoggerClient(const String & address /*= String::EmptyStr
 
 void LoggerClient::stopLoggerClient(void)
 {
-    Lock lock(mLock);
+    do
+    {
+        Lock lock(mLock);
+        mIsPaused = false;
+    } while (false);
+
     disconnectServiceHost();
 }
 
@@ -75,6 +87,28 @@ void LoggerClient::setCallbacks(const sObserverEvents* callbacks)
 {
     Lock lock(mLock);
     mCallbacks = callbacks;
+}
+
+void LoggerClient::setPaused(bool doPause)
+{
+    FuncObserverStarted evtStart{ nullptr };
+    bool isStarted{ false };
+
+    do
+    {
+        Lock lock(mLock);
+        mIsPaused = doPause;
+        if (mCallbacks != nullptr)
+        {
+            evtStart = isConnectionStarted() ? mCallbacks->evtLoggingStarted : nullptr;
+            isStarted = mIsPaused;
+        }
+    } while (false);
+
+    if (evtStart != nullptr)
+    {
+        evtStart(isStarted);
+    }
 }
 
 const NESocket::SocketAddress& LoggerClient::getAddress(void) const
@@ -125,6 +159,7 @@ void LoggerClient::requestConnectedInstances(void)
 
 void LoggerClient::requestScopes(const ITEM_ID& target /*= NEService::COOKIE_ANY*/)
 {
+    Lock lock(mLock);
     if ((mChannel.getCookie() != NEService::COOKIE_UNKNOWN) && (target != NEService::COOKIE_UNKNOWN))
     {
         sendMessage(NETrace::messageQueryScopes(mChannel.getCookie(), target == NEService::COOKIE_ANY ? LoggerClient::TargetID : target));
@@ -133,6 +168,7 @@ void LoggerClient::requestScopes(const ITEM_ID& target /*= NEService::COOKIE_ANY
 
 void LoggerClient::requestChangeScopePrio(const NETrace::ScopeNames & scopes, const ITEM_ID& target /*= NEService::COOKIE_ANY*/)
 {
+    Lock lock(mLock);
     if ((mChannel.getCookie() != NEService::COOKIE_UNKNOWN) && (target != NEService::COOKIE_UNKNOWN))
     {
         sendMessage(NETrace::messageUpdateScopes(mChannel.getCookie(), target == NEService::COOKIE_ANY ? LoggerClient::TargetID : target, scopes));
@@ -141,10 +177,58 @@ void LoggerClient::requestChangeScopePrio(const NETrace::ScopeNames & scopes, co
 
 void LoggerClient::requestSaveConfiguration(const ITEM_ID& target /*= NEService::COOKIE_ANY*/)
 {
+    Lock lock(mLock);
     if ((mChannel.getCookie() != NEService::COOKIE_UNKNOWN) && (target != NEService::COOKIE_UNKNOWN))
     {
         sendMessage(NETrace::messageSaveConfiguration(mChannel.getCookie(), target == NEService::COOKIE_ANY ? LoggerClient::TargetID : target));
     }
+}
+
+void LoggerClient::prepareSaveConfiguration(ConfigManager& config)
+{
+}
+
+void LoggerClient::postSaveConfiguration(ConfigManager& config)
+{
+}
+
+void LoggerClient::prepareReadConfiguration(ConfigManager& config)
+{
+}
+
+void LoggerClient::postReadConfiguration(ConfigManager& config)
+{
+    FuncObserverConfigured evtConfig{ nullptr };
+    String address;
+    uint16_t port;
+
+    config.setLogEnabled(NETrace::eLogingTypes::LogTypeFile, true, true);
+    config.setLogEnabled(NETrace::eLogingTypes::LogTypeRemote, false, true);
+
+    do
+    {
+        Lock lock(mLock);
+        if (mCallbacks != nullptr)
+        {
+            evtConfig = mCallbacks->evtObserverConfigured;
+            address = config.getRemoteServiceAddress(LoggerClient::ServiceType, LoggerClient::ConnectType);
+            port = config.getRemoteServicePort(LoggerClient::ServiceType, LoggerClient::ConnectType);
+        }
+    } while (false);
+
+    if (evtConfig != nullptr)
+    {
+        evtConfig(address.getString(), port);
+    }
+}
+
+void LoggerClient::onSetupConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigManager& config)
+{
+}
+
+bool LoggerClient::postEvent(Event& eventElem)
+{
+    return EventDispatcher::postEvent(eventElem);
 }
 
 void LoggerClient::readyForEvents(bool isReady)
@@ -203,51 +287,123 @@ void LoggerClient::onServiceExit(void)
 
 void LoggerClient::connectedRemoteServiceChannel(const Channel& channel)
 {
-    Lock lock(mLock);
-    if (IS_VALID(mCallbacks->evtServiceConnected))
-    {
-        const NESocket::SocketAddress& addr{ mClientConnection.getAddress() };
-        mCallbacks->evtServiceConnected(true, addr.getHostAddress().getString(), addr.getHostPort());
+    FuncServiceConnected evtConnect{ nullptr };
+    FuncObserverStarted evtStart{ nullptr };
+    String address;
+    uint16_t port{ NESocket::InvalidPort };
+    bool isStarted{ false };
 
-        sendMessage(NETrace::messageQueryInstances(channel.getCookie(), LoggerClient::TargetID));
+    do
+    {
+        Lock lock(mLock);
+        if (mCallbacks != nullptr)
+        {
+            evtConnect = mCallbacks->evtServiceConnected;
+            evtStart = mCallbacks->evtLoggingStarted;
+            const NESocket::SocketAddress& addr{ mClientConnection.getAddress() };
+            address = addr.getHostAddress();
+            port = addr.getHostPort();
+            isStarted = mIsPaused = false;
+        }
+    } while (false);
+
+    sendMessage(NETrace::messageQueryInstances(channel.getCookie(), LoggerClient::TargetID));
+    if (evtConnect != nullptr)
+    {
+        evtConnect(true, address.getString(), port);
+    }
+
+    if (evtStart != nullptr)
+    {
+        evtStart(isStarted);
     }
 }
 
 void LoggerClient::disconnectedRemoteServiceChannel(const Channel& channel)
 {
-    Lock lock(mLock);
-    if (IS_VALID(mCallbacks->evtServiceConnected))
+    FuncServiceConnected evtConnect{ nullptr };
+    FuncObserverStarted evtStart{ nullptr };
+    String address;
+    uint16_t port{ NESocket::InvalidPort };
+
+    do
     {
-        const NESocket::SocketAddress& addr{ mClientConnection.getAddress() };
-        mCallbacks->evtServiceConnected(false, addr.getHostAddress().getString(), addr.getHostPort());
+        Lock lock(mLock);
+        if (mCallbacks != nullptr)
+        {
+            evtConnect = mCallbacks->evtServiceConnected;
+            evtStart = mCallbacks->evtLoggingStarted;
+            const NESocket::SocketAddress& addr{ mClientConnection.getAddress() };
+            address = addr.getHostAddress();
+            port = addr.getHostPort();
+        }
+    } while (false);
+
+    if (evtStart != nullptr)
+    {
+        evtStart(false);
+    }
+
+    if (evtConnect != nullptr)
+    {
+        evtConnect(false, address.getString(), port);
     }
 }
 
 void LoggerClient::lostRemoteServiceChannel(const Channel& channel)
 {
-    Lock lock(mLock);
-    if (IS_VALID(mCallbacks->evtServiceConnected))
+    FuncObserverStarted evtStart{ nullptr };
+
+    do
     {
-        const NESocket::SocketAddress& addr{ mClientConnection.getAddress() };
-        mCallbacks->evtServiceConnected(false, addr.getHostAddress().getString(), addr.getHostPort());
+        Lock lock(mLock);
+        if (mCallbacks != nullptr)
+        {
+            evtStart = mCallbacks->evtLoggingStarted;
+        }
+    } while (false);
+
+    if (evtStart != nullptr)
+    {
+        evtStart(false);
     }
 }
 
 void LoggerClient::failedSendMessage(const RemoteMessage& msgFailed, Socket& whichTarget)
 {
-    Lock lock(mLock);
-    if (IS_VALID(mCallbacks->evtMessagingFailed))
+    FuncMessagingFailed evtFailed{ nullptr };
+    do
     {
-        mCallbacks->evtMessagingFailed();
+        Lock lock(mLock);
+        if (mCallbacks != nullptr)
+        {
+            evtFailed = mCallbacks->evtMessagingFailed;
+        }
+    } while (false);
+
+
+    if (evtFailed)
+    {
+        evtFailed();
     }
 }
 
 void LoggerClient::failedReceiveMessage(Socket& whichSource)
 {
-    Lock lock(mLock);
-    if (IS_VALID(mCallbacks->evtMessagingFailed))
+    FuncMessagingFailed evtFailed{ nullptr };
+    do
     {
-        mCallbacks->evtMessagingFailed();
+        Lock lock(mLock);
+        if (mCallbacks != nullptr)
+        {
+            evtFailed = mCallbacks->evtMessagingFailed;
+        }
+    } while (false);
+
+
+    if (evtFailed)
+    {
+        evtFailed();
     }
 }
 
@@ -275,7 +431,10 @@ void LoggerClient::processReceivedMessage(const RemoteMessage& msgReceived, Sock
             break;
 
         case NEService::eFuncIdRange::ServiceLogMessage:
-            mMessageProcessor.notifyLogMessage(msgReceived);
+            if (mIsPaused == false)
+            {
+                mMessageProcessor.notifyLogMessage(msgReceived);
+            }
             break;
 
         default:

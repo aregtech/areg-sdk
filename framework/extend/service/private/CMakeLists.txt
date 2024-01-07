@@ -1,4 +1,5 @@
 list(APPEND extend_SRC
+    ${extend_BASE}/service/private/DataRateHelper.cpp
     ${extend_BASE}/service/private/IEServiceConnectionHandler.cpp
     ${extend_BASE}/service/private/NESystemService.cpp
     ${extend_BASE}/service/private/ServerConnection.cpp

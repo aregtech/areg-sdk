@@ -43,12 +43,6 @@ set_target_properties(areg PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STAN
 # build areg extended static library
 addStaticLib(areg-extend "${extend_SRC}")
 
-# build mcrouter executable
-addExecutable(mcrouter "${mcrouter_SRC}")
-
-# build logger executable
-addExecutable(logger "${logger_SRC}")
-
 # build observer API library
 if (AREG_OBSERVER_LIB MATCHES "shared")
     # in case of Windows add DEF file.
@@ -81,6 +75,20 @@ else(AREG_OBSERVER_LIB MATCHES "shared")
     # observer API shared library
     target_compile_definitions(observerapi PRIVATE EXP_OBSERVER_LIB)
 
+endif(AREG_OBSERVER_LIB MATCHES "shared")
+
+# build mcrouter executable
+addExecutable(mcrouter "${mcrouter_SRC}")
+
+# build logger executable
+addExecutable(logger "${logger_SRC}")
+
+# build log observer console application
+addExecutableEx(logobserver "${logobserver_SRC}" observerapi)
+if (AREG_OBSERVER_LIB MATCHES "shared")
+    target_compile_definitions(logobserver PRIVATE IMP_OBSERVER_DLL)
+else(AREG_OBSERVER_LIB MATCHES "shared")
+    target_compile_definitions(observerapi PRIVATE IMP_OBSERVER_LIB)
 endif(AREG_OBSERVER_LIB MATCHES "shared")
 
 # copying log and router init files to 'bin/config'

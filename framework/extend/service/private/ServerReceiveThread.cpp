@@ -12,7 +12,7 @@
  * \author      Artak Avetyan
  * \brief       AREG Platform, Service connectivity server receive message Thread
  ************************************************************************/
-#include "extend/service/ServerReceiveThread.hpp"
+#include "extend/service/private/ServerReceiveThread.hpp"
 
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/base/SocketAccepted.hpp"
@@ -32,6 +32,7 @@ ServerReceiveThread::ServerReceiveThread( IEServiceConnectionHandler & connectHa
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
     , mBytesReceive     ( 0 )
+    , mSaveDataReceive  ( false )
 {
 }
 
@@ -130,13 +131,17 @@ bool ServerReceiveThread::runDispatcher(void)
                     int sizeReceived = mConnection.receiveMessage(msgReceived, clientSocket);
                     if (sizeReceived > 0 )
                     {
+                        if (mSaveDataReceive)
+                        {
+                            mBytesReceive += static_cast<uint32_t>(sizeReceived);
+                        }
+
                         TRACE_DBG("Received message [ %p ] from source [ %p ], client [ %s : %d ]"
                                     , static_cast<id_type>(msgReceived.getMessageId())
                                     , static_cast<id_type>(msgReceived.getSource())
                                     , addSocket.getHostAddress().getString()
                                     , addSocket.getHostPort());
 
-                        mBytesReceive += static_cast<uint32_t>(sizeReceived);
                         mRemoteService.processReceivedMessage(msgReceived, clientSocket);
                     }
                     else

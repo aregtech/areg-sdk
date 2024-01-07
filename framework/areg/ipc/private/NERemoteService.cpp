@@ -14,6 +14,7 @@
  ************************************************************************/
 #include "areg/ipc/NERemoteService.hpp"
 
+#include "areg/base/DateTime.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/component/NEService.hpp"
@@ -446,6 +447,7 @@ AREG_API_IMPL RemoteMessage NERemoteService::createConnectRequest(const ITEM_ID 
         instance.ciSource   = msgSource;
         instance.ciBitness  = static_cast<NEService::eInstanceBitness>(Process::getInstance().getBitness());
         instance.ciCookie   = source;
+        instance.ciTimestamp= static_cast<TIME64>(DateTime::getNow());
         instance.ciInstance = Process::getInstance().getAppName();
         instance.ciLocation = Process::getInstance().getPath();
 

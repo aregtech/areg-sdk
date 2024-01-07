@@ -484,8 +484,12 @@ inline TEArrayList<VALUE>::TEArrayList( const std::vector<VALUE> & src )
 template<typename VALUE>
 inline TEArrayList<VALUE>::TEArrayList(const VALUE* list, uint32_t count)
     : Constless<std::vector<VALUE>>( )
-    , mValueList( list, list != nullptr ? count : 0)
+    , mValueList( list != nullptr ? count : 0)
 {
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        mValueList.at(i) = list[i];
+    }
 }
 
 template<typename VALUE>
