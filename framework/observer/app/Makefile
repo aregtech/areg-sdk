@@ -8,8 +8,8 @@ logobserver_OBJS :=
 
 include $(logobserver_BASE)/app/private/Makefile
 
-logobserver_CXXFLAGS	:= -I$(AREG_BASE) -D$(AREG_LIB_IMPORT) $(OBSERVER_API_IMPORT) -L$(OBSERVER_API_PATH)
-logobserver_LDFLAGS		:= $(AREG_TOOL_FLAGS) -l$(observer_lib_PROJECT_NAME)
+logobserver_CXXFLAGS	:= -I$(AREG_BASE) -D$(AREG_LIB_IMPORT) $(OBSERVER_API_IMPORT)
+logobserver_LDFLAGS		:= -L$(OBSERVER_API_PATH) $(AREG_TOOL_FLAGS) -l$(observer_lib_PROJECT_NAME)
 logobserver_TARGET_BIN	:= $(AREG_OUTPUT_BIN)/$(logobserver_PROJECT_NAME)$(AREG_BIN_EXT)
 
 logobserver: $(logobserver_TARGET_BIN)
