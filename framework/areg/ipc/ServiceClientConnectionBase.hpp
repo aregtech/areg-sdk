@@ -25,7 +25,6 @@
 #include "areg/ipc/ClientConnection.hpp"
 #include "areg/ipc/private/ClientReceiveThread.hpp"
 #include "areg/ipc/private/ClientSendThread.hpp"
-#include "areg/ipc/NERemoteService.hpp"
 #include "areg/component/Channel.hpp"
 #include "areg/component/Timer.hpp"
 #include "areg/base/SynchObjects.hpp"
@@ -120,6 +119,18 @@ public:
     inline uint32_t queryBytesReceived( void );
 
     /**
+     * \brief   Enable or disable the data rate calculation.
+     * \param   enable  If true, the data rate calculation is enabled.
+     *                  Otherwise, it is disabled.
+     **/
+    inline void enableCalculateDataRate(bool enable);
+
+    /**
+     * \brief   Returns enable or disable the data rate calculation flag.
+     **/
+    inline bool isCalculateDataRateEnabled(void) const;
+
+    /**
      * \brief   Returns true if the connection status is either connecting or connected.
      **/
     inline bool isConnectState( void ) const;
@@ -148,6 +159,18 @@ public:
 // Overrides
 //////////////////////////////////////////////////////////////////////////
 protected:
+
+/************************************************************************/
+// ServiceClientConnectionBase interface overrides
+/************************************************************************/
+
+    /**
+     * \brief   Triggered when get service notifies the client the connection
+     *          status like connection accepted, disconnected or rejected.
+     *          Override the method if need custom connection reaction.
+     * \param   msgReceived     The message sent by service to the client.
+     **/
+    virtual void serviceConnectionEvent(const RemoteMessage& msgReceived);
 
 /************************************************************************/
 // IEServiceConnectionProvider interface overrides
@@ -279,6 +302,12 @@ protected:
      * \param   msgReceived     The received the communication message.
      **/
     virtual void onServiceMessageSend(const RemoteMessage& msgSend) override;
+
+    /**
+     * \brief   Called when need to inform the channel connection.
+     * \param   cookie  The channel connection cookie.
+     **/
+    virtual void onChannelConnected(const ITEM_ID & cookie) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Protected operations and attributes
@@ -457,6 +486,17 @@ inline uint32_t ServiceClientConnectionBase::queryBytesSent( void )
 inline uint32_t ServiceClientConnectionBase::queryBytesReceived( void )
 {
     return mThreadReceive.extractDataReceive();
+}
+
+inline void ServiceClientConnectionBase::enableCalculateDataRate(bool enable)
+{
+    mThreadReceive.setEnableCalculateData(enable);
+    mThreadSend.setEnableCalculateData(enable);
+}
+
+inline bool ServiceClientConnectionBase::isCalculateDataRateEnabled(void) const
+{
+    return mThreadReceive.isCalculateDataEnabled() && mThreadSend.isCalculateDataEnabled();
 }
 
 inline bool ServiceClientConnectionBase::isConnectState( void ) const

@@ -12,7 +12,6 @@
  * \author      Artak Avetyan
  * \brief       AREG Platform, Log Collector message processor
  ************************************************************************/
-
 #include "logger/service/private/LoggerMessageProcessor.hpp"
 
 #include "logger/app/Logger.hpp"
@@ -39,24 +38,24 @@ void LoggerMessageProcessor::queryConnectedInstances(const RemoteMessage & msgRe
             const NEService::sServiceConnectedInstance& instance = instances.valueAtPosition(srcPos);
             if (instance.ciSource == NEService::eMessageSource::MessageSourceObserver)
             {
-                notifyConnectedInstances(source);
+                notifyConnectedInstances(mLoggerService.getInstances(), source);
             }
         }
     }
 }
 
-void LoggerMessageProcessor::notifyConnectedInstances(const ITEM_ID& target /*= NEService::COOKIE_ANY*/) const
+void LoggerMessageProcessor::notifyConnectedInstances(const ServiceCommunicatonBase::MapInstances& instances, const ITEM_ID& target /*= NEService::COOKIE_ANY*/) const
 {
     const auto& observers{ mLoggerService.getObservers() };
     if (observers.isEmpty())
         return;
 
     RemoteMessage msgInstances;
-    const ServiceCommunicatonBase::MapInstances& instances = mLoggerService.getInstances();
     ASSERT((target == NEService::COOKIE_ANY) || (instances.contains(target) && isLogObserver(instances.getAt(target).ciSource)));
 
     if (msgInstances.initMessage(NERemoteService::getMessageNotifyInstances().rbHeader) != nullptr)
     {
+        msgInstances << NERemoteService::eRemoteConnection::RemoteConnected;
         uint32_t count{ 0 };
         uint32_t pos = msgInstances.getPosition();
         msgInstances << count; // reserves space, initially set 0
@@ -76,6 +75,34 @@ void LoggerMessageProcessor::notifyConnectedInstances(const ITEM_ID& target /*= 
             msgInstances.moveToEnd();
         }
 
+        if (target == NEService::COOKIE_ANY)
+        {
+            for (const auto& observer : observers.getData())
+            {
+                RemoteMessage msg{ msgInstances.clone(NEService::COOKIE_LOGGER, observer.first) };
+                mLoggerService.sendMessage(msg);
+            }
+        }
+        else
+        {
+            msgInstances.setSource(NEService::COOKIE_LOGGER);
+            msgInstances.setTarget(target);
+            mLoggerService.sendMessage(msgInstances);
+        }
+    }
+}
+
+void LoggerMessageProcessor::notifyDisconnectedInstances(const TEArrayList<ITEM_ID>& listIds, const ITEM_ID& target) const
+{
+    const auto& observers{ mLoggerService.getObservers() };
+    if (observers.isEmpty())
+        return;
+
+    RemoteMessage msgInstances;
+    if (msgInstances.initMessage(NERemoteService::getMessageNotifyInstances().rbHeader) != nullptr)
+    {
+        msgInstances << NERemoteService::eRemoteConnection::RemoteDisconnected;
+        msgInstances << listIds;
         if (target == NEService::COOKIE_ANY)
         {
             for (const auto& observer : observers.getData())

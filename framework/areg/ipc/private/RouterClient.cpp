@@ -18,14 +18,12 @@
 #include "areg/ipc/private/NEConnection.hpp"
 
 #include "areg/component/RemoteEventFactory.hpp"
-#include "areg/component/DispatcherThread.hpp"
 #include "areg/component/StreamableEvent.hpp"
 #include "areg/component/ResponseEvents.hpp"
 #include "areg/component/RequestEvents.hpp"
 #include "areg/component/NEService.hpp"
 #include "areg/appbase/Application.hpp"
 #include "areg/base/Process.hpp"
-#include "areg/base/File.hpp"
 #include "areg/trace/GETrace.h"
 
 DEF_TRACE_SCOPE(areg_ipc_private_RouterClient_failedSendMessage);
@@ -282,48 +280,7 @@ void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, So
         switch ( msgId )
         {
         case NEService::eFuncIdRange::SystemServiceNotifyConnection:
-            {
-                NEService::eServiceConnection connection = NEService::eServiceConnection::ServiceConnectionUnknown;
-                ITEM_ID cookie = NEService::COOKIE_UNKNOWN;
-                msgReceived >> cookie;
-                msgReceived >> connection;
-                TRACE_DBG("Router connection notification. Connection status [ %s ], cookie [ %llu ]", NEService::getString(connection), cookie);
-
-                switch ( connection )
-                {
-                case NEService::eServiceConnection::ServiceConnected:
-                case NEService::eServiceConnection::ServicePending:
-                    {
-                        if ( msgReceived.getResult( ) == NEMemory::MESSAGE_SUCCESS )
-                        {
-                            Lock lock( mLock );
-                            ASSERT( cookie == msgReceived.getTarget( ) );
-                            mClientConnection.setCookie( cookie );
-                            sendCommand( ServiceEventData::eServiceEventCommands::CMD_ServiceStarted );
-                        }
-                        else
-                        {
-                            cancelConnection( );
-                            sendCommand( ServiceEventData::eServiceEventCommands::CMD_ServiceLost );
-                        }
-                    }
-                    break;
-
-                case NEService::eServiceConnection::ServiceConnectionLost:
-                    {
-                        cancelConnection( );
-                        sendCommand( ServiceEventData::eServiceEventCommands::CMD_ServiceLost );
-                    }
-                    break;
-
-                default:
-                    {
-                        cancelConnection( );
-                        sendCommand( ServiceEventData::eServiceEventCommands::CMD_ServiceStopped );
-                    }
-                    break;
-                }
-            }
+            serviceConnectionEvent(msgReceived);
             break;
 
         case NEService::eFuncIdRange::SystemServiceNotifyRegister:

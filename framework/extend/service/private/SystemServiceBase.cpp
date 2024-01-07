@@ -14,15 +14,7 @@
  ************************************************************************/
 #include "extend/service/SystemServiceBase.hpp"
 
-#include "areg/appbase/Application.hpp"
-#include "areg/appbase/NEApplication.hpp"
-#include "areg/base/File.hpp"
-#include "areg/base/NEUtilities.hpp"
-#include "areg/base/Process.hpp"
-#include "areg/base/String.hpp"
-#include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
-
 #include "extend/console/Console.hpp"
 
 
@@ -39,10 +31,15 @@ SystemServiceBase::SystemServiceBase( ServiceCommunicatonBase & commBase )
     : mCommunication        ( commBase )
     , mSystemServiceState   ( NESystemService::eSystemServiceState::ServiceStopped )
     , mSystemServiceOption  ( NESystemService::DEFAULT_OPTION )
-    , mRunVerbose           ( NESystemService::DEFAULT_VERBOSE )
     , mSvcHandle            ( nullptr )
     , mSeMHandle            ( nullptr )
 {
+}
+
+void SystemServiceBase::resetDefaultOptions(void)
+{
+    mSystemServiceOption = NESystemService::DEFAULT_OPTION;
+    mCommunication.enableCalculateDataRate(NESystemService::DEFAULT_VERBOSE);
 }
 
 bool SystemServiceBase::parseOptions( int argc, const char ** argv, const OptionParser::sOptionSetup * optSetup, int optCount )
@@ -71,7 +68,7 @@ bool SystemServiceBase::parseOptions( int argc, const char ** argv, const Option
                     break;
 
                 case NESystemService::eServiceOption::CMD_Verbose:
-                    mRunVerbose = true;
+                    mCommunication.enableCalculateDataRate(true);
                     setCurrentOption( NESystemService::eServiceOption::CMD_Console );
                     result = true;
                     break;

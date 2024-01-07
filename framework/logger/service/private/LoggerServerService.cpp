@@ -15,9 +15,7 @@
 #include "logger/service/LoggerServerService.hpp"
 
 #include "areg/ipc/private/NEConnection.hpp"
-#include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/trace/GETrace.h"
-#include "areg/trace/private/TraceManager.hpp"
 
 DEF_TRACE_SCOPE(logger_service_LoggerServerService_onServiceMessageReceived);
 DEF_TRACE_SCOPE(logger_service_LoggerServerService_onServiceMessageSend);
@@ -34,7 +32,11 @@ DEF_TRACE_SCOPE(logger_service_LoggerServerService_failedReceiveMessage);
 //////////////////////////////////////////////////////////////////////////
 
 LoggerServerService::LoggerServerService( void )
-    : ServiceCommunicatonBase   ( NEService::COOKIE_LOGGER, NERemoteService::eRemoteServices::ServiceLogger, static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip), NEConnection::SERVER_DISPATCH_MESSAGE_THREAD, ServiceCommunicatonBase::eConnectionBehavior::DefaultAccept )
+    : ServiceCommunicatonBase   ( NEService::COOKIE_LOGGER
+                                , NERemoteService::eRemoteServices::ServiceLogger
+                                , static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip)
+                                , NEConnection::SERVER_DISPATCH_MESSAGE_THREAD
+                                , ServiceCommunicatonBase::eConnectionBehavior::DefaultAccept )
     , mLoggerProcessor          ( self() )
     , mObservers                ( )
 {
@@ -57,7 +59,7 @@ void LoggerServerService::addInstance(const ITEM_ID& cookie, const NEService::sS
                             , instance.ciLocation.getString());
         NETrace::logAnyMessageLocal(logMsgHello);
 
-        mLoggerProcessor.notifyConnectedInstances(NEService::COOKIE_ANY);
+        mLoggerProcessor.notifyConnectedInstances(getInstances(), NEService::COOKIE_ANY);
     }
     else if (LoggerMessageProcessor::isLogObserver(instance.ciSource))
     {
@@ -69,6 +71,7 @@ void LoggerServerService::removeInstance(const ITEM_ID & cookie)
 {
     Lock lock(mLock);
 
+    TEArrayList<ITEM_ID> listIds;
     NEService::sServiceConnectedInstance instance;
     bool exists{ mInstanceMap.find(cookie, instance) };
     ServiceCommunicatonBase::removeInstance(cookie);
@@ -85,7 +88,8 @@ void LoggerServerService::removeInstance(const ITEM_ID & cookie)
                             , instance.ciLocation.getString());
         NETrace::logAnyMessageLocal(logMsgBye);
 
-        mLoggerProcessor.notifyConnectedInstances(NEService::COOKIE_ANY);
+        listIds.add(instance.ciCookie);
+        mLoggerProcessor.notifyDisconnectedInstances(listIds, NEService::COOKIE_ANY);
     }
     else if (LoggerMessageProcessor::isLogObserver(instance.ciSource))
     {
@@ -98,11 +102,24 @@ void LoggerServerService::removeAllInstances(void)
     Lock lock(mLock);
     if (mInstanceMap.getSize() != 0)
     {
+        TEArrayList<ITEM_ID> listIds;
+        for (const auto& entry : getInstances().getData())
+        {
+            if (LoggerMessageProcessor::isLogSource(entry.second.ciSource))
+            {
+                listIds.add(entry.second.ciCookie);
+            }
+        }
+
         NETrace::sLogMessage logMsgClose(NETrace::eLogMessageType::LogMessageText, 0, NETrace::eLogPriority::PrioAny, nullptr, 0);
         String::formatString(logMsgClose.logMessage, NETrace::LOG_MESSAGE_IZE, "Disconnecting and removing [ %u ] instances.", mInstanceMap.getSize());
         NETrace::logAnyMessageLocal(logMsgClose);
         ServiceCommunicatonBase::removeAllInstances();
-        mLoggerProcessor.notifyConnectedInstances(NEService::COOKIE_ANY);
+
+        if (listIds.isEmpty() == false)
+        {
+            mLoggerProcessor.notifyDisconnectedInstances(listIds, NEService::COOKIE_ANY);
+        }
     }
 
     mObservers.clear();

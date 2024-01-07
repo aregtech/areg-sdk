@@ -23,13 +23,12 @@
 #include "areg/component/IETimerConsumer.hpp"
 #include "areg/component/StubBase.hpp"
 
-#include "areg/base/NECommon.hpp"
 #include "areg/component/Timer.hpp"
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
-class SystemServiceBase;
+class DataRateHelper;
 
 //////////////////////////////////////////////////////////////////////////
 // SystemServiceConsole class declaration
@@ -44,61 +43,28 @@ class SystemServiceConsole  : public    Component
                             , protected IETimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
-// Internal types and constants.
-//////////////////////////////////////////////////////////////////////////
-public:
-
-    //!< Bytes in 1 Kilobyte.
-    static constexpr uint32_t           ONE_KILOBYTE    { NECommon::ONE_KILOBYTE };
-    //!< Bytes in 1 megabyte.
-    static constexpr uint32_t           ONE_MEGABYTE    { NECommon::ONE_MEGABYTE };
-    //!< String kilobytes per second
-    static constexpr std::string_view   MSG_KILOBYTES   { "KBytes / sec." };
-    //!< String megabytes per second
-    static constexpr std::string_view   MSG_MEGABYTES   { "MBytes / sec." };
-    //!< String bytes per second
-    static constexpr std::string_view   MSG_BYTES       { " Bytes / sec." };
-
-//////////////////////////////////////////////////////////////////////////
-// DataRate helper class declaration.
-//////////////////////////////////////////////////////////////////////////
-    /**
-     * \brief   The helper class to calculate data rate and output message in MB, KB and Bytes.
-     **/
-    class DataRate
-    {
-    //////////////////////////////////////////////////////////////////////////
-    // Members.
-    //////////////////////////////////////////////////////////////////////////
-    public:
-        /**
-         * \brief   Calculates and initializes the data rate.
-         **/
-        DataRate(uint32_t sizeBytes = 0);
-
-        //!< This pair contains size in bytes and message indicating MB, KB or Bytes.
-        std::pair<float, std::string>   mRate;
-    };
-
-//////////////////////////////////////////////////////////////////////////
 // Constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 protected:
 
     /**
      * \brief   Instantiates the component object.
-     * \param   sysService  The instance of the system service object.
+     * \param   dataRate    The pointer to the optional data rate helper object to extrate send and receive data rates.
      * \param   entry       The component entry object set in the model.
      * \param   owner       The instance of component owner thread.
      * \param   data        The optional component data set in system. Can be empty / no data.
      **/
-    SystemServiceConsole( SystemServiceBase & sysService, const NERegistry::ComponentEntry & entry, ComponentThread & owner,  NEMemory::uAlign OPT data );
+    SystemServiceConsole(DataRateHelper* dataRate, const NERegistry::ComponentEntry & entry, ComponentThread & owner,  NEMemory::uAlign OPT data );
 
     /**
      * \brief   Destructor.
      **/
     virtual ~SystemServiceConsole( void ) = default;
 
+//////////////////////////////////////////////////////////////////////////
+// Overrides
+//////////////////////////////////////////////////////////////////////////
+protected:
 /************************************************************************/
 // StubBase overrides. Triggered by Component on startup.
 /************************************************************************/
@@ -204,8 +170,8 @@ private:
 // Hidden member variables
 //////////////////////////////////////////////////////////////////////////
 private:
-    SystemServiceBase & mSystemService; //!< The instance of system service object.
-    Timer               mTimer;         //!< The timer to run in component thread.
+    DataRateHelper* mDataRateHelper;//!< The pointer to utility object to retrieve data rate info.
+    Timer           mTimer;         //!< The timer to run in component thread.
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

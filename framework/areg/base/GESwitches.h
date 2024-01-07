@@ -175,9 +175,11 @@
 #endif   // WIN32
 
 // By default, no AREG extended features.
-#ifndef AREG_EXTENDED
+#if !defined(AREG_EXTENDED) && !defined(AREG_EXTEND)
     #pragma message("The AREG_EXTENDED is not defined, setting default value 0")
     #define AREG_EXTENDED   0
+#elif defined(AREG_EXTEND) && !defined(AREG_EXTENDED)
+    #define AREG_EXTENDED   AREG_EXTEND
 #endif  // AREG_EXTENDED
 
 // By default, compile with logs

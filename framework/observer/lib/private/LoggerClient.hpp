@@ -25,10 +25,10 @@
 #include "areg/ipc/ServiceClientConnectionBase.hpp"
 #include "areg/ipc/IEServiceConnectionConsumer.hpp"
 #include "areg/ipc/IERemoteMessageHandler.hpp"
+#include "areg/persist/IEConfigurationListener.hpp"
 
 #include "areg/trace/NETrace.hpp"
 
-#include "areg/base/SynchObjects.hpp"
 #include "observer/lib/private/ObserverMessageProcessor.hpp"
 
 /************************************************************************
@@ -46,6 +46,7 @@ struct sObserverEvents;
  *          structure of callbacks to trigger when an event happens.
  **/
 class LoggerClient  : public    ServiceClientConnectionBase
+                    , public    IEConfigurationListener
                     , protected DispatcherThread
                     , protected IEServiceConnectionConsumer
                     , protected IERemoteMessageHandler
@@ -129,6 +130,13 @@ public:
     void setCallbacks(const sObserverEvents * callbacks);
 
     /**
+     * \brief   Set paused flag true or false. If logger client is paused, it does not
+     *          write logs in the file, but remain connected.
+     * \param   doPause     The paused flag to set.
+     **/
+    void setPaused(bool doPause);
+
+    /**
      * \brief   Returns the socket address (IP address and port number) to connect to the logger service.
      *          The connection might be not established yet.
      **/
@@ -191,8 +199,56 @@ public:
 //////////////////////////////////////////////////////////////////////////
 protected:
 /************************************************************************/
+// IEConfigurationListener interface overrides
+/************************************************************************/
+
+    /**
+     * \brief   Called by configuration manager before the configuration is saved in the file.
+     * \param   config  The instance of configuration manager.
+     **/
+    virtual void prepareSaveConfiguration(ConfigManager& config) override;
+
+    /**
+     * \brief   Called by configuration manager after the configuration is saved in the file.
+     * \param   config  The instance of configuration manager.
+     **/
+    virtual void postSaveConfiguration(ConfigManager& config) override;
+
+    /**
+     * \brief   Called by configuration manager before the configuration is loaded from the file.
+     * \param   config  The instance of configuration manager.
+     **/
+    virtual void prepareReadConfiguration(ConfigManager& config) override;
+
+    /**
+     * \brief   Called by configuration manager when configuration is completed to load data from the file.
+     * \param   config  The instance of configuration manager.
+     **/
+    virtual void postReadConfiguration(ConfigManager& config) override;
+
+    /**
+     * \brief   Called by configuration manager after setting read-only and writable properties.
+     *          For example, when the default configuration is set.
+     * \param   listReadonly    The list of read-only properties to set in the configuration.
+     * \param   listWritable    The list of module / process specific properties to set in the configuration;
+     * \param   config          The instance of configuration manager.
+     **/
+    virtual void onSetupConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigManager& config) override;
+
+/************************************************************************/
 // DispatcherThread overrides
 /************************************************************************/
+
+    /**
+     * \brief	Posts event and delivers to its target.
+     *          Since the Dispatcher Thread is a Base object for
+     *          Worker and Component threads, it does nothing
+     *          and only destroys event object without processing.
+     *          Override this method or use Worker / Component thread.
+     * \param	eventElem	Event object to post
+     * \return	In this class it always returns true.
+     **/
+    virtual bool postEvent(Event& eventElem) override;
 
     /**
      * \brief   Call to enable or disable event dispatching threads to receive events.
@@ -297,6 +353,11 @@ private:
      * \brief   The object that processes received messages.
      **/
     ObserverMessageProcessor    mMessageProcessor;
+
+    /**
+     * \brief   The flag, indicating whether the observer was paused or not.
+     **/
+    bool                        mIsPaused;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

@@ -45,6 +45,7 @@
     <ClCompile Include="extend\console\private\OptionParser.cpp" />
     <ClCompile Include="extend\console\private\win32\ConsoleWin32.cpp" />
     <ClCompile Include="extend\console\private\SystemServiceConsole.cpp" />
+    <ClCompile Include="extend\service\private\DataRateHelper.cpp" />
     <ClCompile Include="extend\service\private\NESystemService.cpp" />
     <ClCompile Include="extend\service\private\SystemServiceBase.cpp" />
     <ClCompile Include="extend\service\private\IEServiceConnectionHandler.cpp" />
@@ -61,13 +62,14 @@
   <ItemGroup>
     <ClInclude Include="extend\console\Console.hpp" />
     <ClInclude Include="extend\console\OptionParser.hpp" />
+    <ClInclude Include="extend\service\DataRateHelper.hpp" />
     <ClInclude Include="extend\service\NESystemService.hpp" />
     <ClInclude Include="extend\console\SystemServiceConsole.hpp" />
     <ClInclude Include="extend\service\SystemServiceBase.hpp" />
     <ClInclude Include="extend\service\IEServiceConnectionHandler.hpp" />
     <ClInclude Include="extend\service\ServerConnection.hpp" />
-    <ClInclude Include="extend\service\ServerReceiveThread.hpp" />
-    <ClInclude Include="extend\service\ServerSendThread.hpp" />
+    <ClInclude Include="extend\service\private\ServerReceiveThread.hpp" />
+    <ClInclude Include="extend\service\private\ServerSendThread.hpp" />
     <ClInclude Include="extend\service\ServiceCommunicatonBase.hpp" />
   </ItemGroup>
   <ItemGroup>

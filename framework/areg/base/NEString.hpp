@@ -688,21 +688,27 @@ namespace NEString
      * \brief   Returns true if a give string starts with specified phrase.
      * \param   strString       The string to check the phrase.
      * \param   phrase          The phrase to check.
+     * \param   ch              The character to check.
      * \param   caseSensitive   If false, it with check ignoring upper / lower case. Otherwise, checks exact match.
      * \return  Returns true if the string starts with given phrase.
      **/
     template<typename CharType>
     bool stringStartsWith(const CharType * strString, const CharType * phrase, bool caseSensitive = true);
+    template<typename CharType>
+    bool stringStartsWith(const CharType * strString, const CharType ch, bool caseSensitive = true);
 
     /**
      * \brief   Returns true if a give string ends with specified phrase.
      * \param   strString   The string to check the phrase.
      * \param   phrase      The phrase to check.
+     * \param   ch              The character to check.
      * \param   caseSensitive If false, it with check ignoring upper / lower case. Otherwise, checks exact match.
      * \return  Returns true if the string ends with given phrase.
      **/
     template<typename CharType>
     bool stringEndsWith(const CharType * strString, const CharType * phrase, bool caseSensitive = true);
+    template<typename CharType>
+    bool stringEndsWith(const CharType * strString, const CharType ch, bool caseSensitive = true);
 
     /**
      * \brief   Returns printable string of given buffer. The buffer should be possible to modify.
@@ -1252,7 +1258,7 @@ NEString::CharPos NEString::findFirst( const CharType * strPhrase
 template<typename CharType>
 bool NEString::stringStartsWith(const CharType * strString, const CharType * phrase, bool caseSensitive /*= true*/)
 {
-    bool result = false;
+    bool result{ false };
     if ((isEmpty<CharType>(strString) == false) && (isEmpty<CharType>(phrase) == false))
     {
         result = true;
@@ -1280,9 +1286,28 @@ bool NEString::stringStartsWith(const CharType * strString, const CharType * phr
 }
 
 template<typename CharType>
+bool NEString::stringStartsWith(const CharType* strString, const CharType ch, bool caseSensitive)
+{
+    bool result{ false };
+    if (isEmpty<CharType>(strString) == false)
+    {
+        if (caseSensitive)
+        {
+            result = *strString == ch;
+        }
+        else
+        {
+            result = NEString::makeAsciiLower<CharType>(*strString) == NEString::makeAsciiLower<CharType>(ch);
+        }
+    }
+
+    return result;
+}
+
+template<typename CharType>
 bool NEString::stringEndsWith(const CharType * strString, const CharType * phrase, bool caseSensitive /*= true*/)
 {
-    bool result = false;
+    bool result{ false };
     if ((isEmpty<CharType>(strString) == false) && (isEmpty<CharType>(phrase) == false))
     {
         int lenString   = NEString::getStringLength<CharType>(strString);
@@ -1294,6 +1319,27 @@ bool NEString::stringEndsWith(const CharType * strString, const CharType * phras
         int diff = lenString - lenPhrase;
 
         result = (diff >= 0) && NEString::stringStartsWith<CharType>(strString + diff, phrase, caseSensitive);
+    }
+
+    return result;
+}
+
+template<typename CharType>
+bool NEString::stringEndsWith(const CharType* strString, const CharType ch, bool caseSensitive /*= true*/)
+{
+    bool result{ false };
+    if (isEmpty<CharType>(strString) == false)
+    {
+        int len = NEString::getStringLength<CharType>(strString);
+        ASSERT(len != 0);
+        if (caseSensitive)
+        {
+            result = strString[len - 1] == ch;
+        }
+        else
+        {
+            result = NEString::makeAsciiLower<CharType>(strString[len - 1]) == NEString::makeAsciiLower<CharType>(ch);
+        }
     }
 
     return result;

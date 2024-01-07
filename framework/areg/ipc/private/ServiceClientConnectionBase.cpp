@@ -14,21 +14,12 @@
  ************************************************************************/
 #include "areg/ipc/ServiceClientConnectionBase.hpp"
 
-#include "areg/component/DispatcherThread.hpp"
-
+#include "areg/component/NEService.hpp"
+#include "areg/appbase/Application.hpp"
 #include "areg/ipc/IEServiceConnectionConsumer.hpp"
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/ipc/NERemoteService.hpp"
 #include "areg/ipc/private/NEConnection.hpp"
-
-#include "areg/component/DispatcherThread.hpp"
-#include "areg/component/StreamableEvent.hpp"
-#include "areg/component/ResponseEvents.hpp"
-#include "areg/component/RequestEvents.hpp"
-#include "areg/component/NEService.hpp"
-#include "areg/appbase/Application.hpp"
-#include "areg/base/Process.hpp"
-#include "areg/base/File.hpp"
 #include "areg/trace/GETrace.h"
 
 DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceReconnectTimerExpired);
@@ -37,7 +28,9 @@ DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnection
 DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStarted);
 DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStopped);
 DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionLost);
+DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onChannelConnected);
 
+DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_serviceConnectionEvent);
 DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_startConnection);
 DEF_TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_cancelConnection);
 
@@ -74,6 +67,60 @@ ServiceClientConnectionBase::ServiceClientConnectionBase( const ITEM_ID & target
     , mTimerConsumer        ( static_cast<IEServiceEventConsumerBase &>(self()) )
 {
     ASSERT((target > NEService::TARGET_LOCAL) && (target < NEService::COOKIE_REMOTE_SERVICE));
+}
+
+void ServiceClientConnectionBase::serviceConnectionEvent(const RemoteMessage& msgReceived)
+{
+    TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_serviceConnectionEvent);
+    Lock lock(mLock);
+
+    ITEM_ID cookie{ NEService::COOKIE_UNKNOWN };
+    NEService::eServiceConnection connection{ NEService::eServiceConnection::ServiceConnectionUnknown };
+    msgReceived >> cookie;
+    msgReceived >> connection;
+    TRACE_DBG("Remote service connection notification: status [ %s ], cookie [ %llu ]", NEService::getString(connection), cookie);
+
+    switch (connection)
+    {
+    case NEService::eServiceConnection::ServiceConnected:
+    case NEService::eServiceConnection::ServicePending:
+        {
+            if (msgReceived.getResult() == NEMemory::MESSAGE_SUCCESS)
+            {
+                Lock lock(mLock);
+                ASSERT(cookie == msgReceived.getTarget());
+                mClientConnection.setCookie(cookie);
+                onChannelConnected(cookie);
+                sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceStarted);
+            }
+            else
+            {
+                cancelConnection();
+                onChannelConnected(NEService::COOKIE_UNKNOWN);
+                sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceLost);
+            }
+        }
+        break;
+
+    case NEService::eServiceConnection::ServiceConnectionLost:
+        {
+            cancelConnection();
+            onChannelConnected(NEService::COOKIE_UNKNOWN);
+            sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceLost);
+        }
+        break;
+
+    case NEService::eServiceConnection::ServiceRejected:
+    case NEService::eServiceConnection::ServiceFailed:
+    case NEService::eServiceConnection::ServiceShutdown:
+    default:
+        {
+            cancelConnection();
+            onChannelConnected(NEService::COOKIE_UNKNOWN);
+            sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceStopped);
+        }
+        break;
+    }
 }
 
 bool ServiceClientConnectionBase::setupServiceConnectionData(NERemoteService::eRemoteServices service, uint32_t connectTypes)
@@ -301,6 +348,27 @@ void ServiceClientConnectionBase::onServiceMessageReceived( const RemoteMessage 
 
 void ServiceClientConnectionBase::onServiceMessageSend( const RemoteMessage & msgSend )
 {
+}
+
+void ServiceClientConnectionBase::onChannelConnected(const ITEM_ID& cookie)
+{
+    TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onChannelConnected);
+    if (cookie >= NEService::COOKIE_REMOTE_SERVICE)
+    {
+        mChannel.setCookie(cookie);
+        mChannel.setSource(mMessageDispatcher.getId());
+        mChannel.setTarget(mTarget);
+
+        TRACE_DBG("Connected remote channel [ source = %llu, target = %llu, cookie = %llu ]", mChannel.getSource(), mChannel.getTarget(), mChannel.getCookie());
+    }
+    else
+    {
+        TRACE_INFO("Disconnecting remote channel [ source = %llu, target = %llu, cookie = %llu ]", mChannel.getSource(), mChannel.getTarget(), mChannel.getCookie());
+
+        mChannel.setCookie(cookie);
+        mChannel.setSource(NEService::SOURCE_UNKNOWN);
+        mChannel.setTarget(NEService::TARGET_UNKNOWN);
+    }
 }
 
 bool ServiceClientConnectionBase::startConnection(void)

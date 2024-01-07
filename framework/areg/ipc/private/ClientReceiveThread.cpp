@@ -28,6 +28,7 @@ ClientReceiveThread::ClientReceiveThread(IERemoteMessageHandler& remoteService, 
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
     , mBytesReceive     ( 0 )
+    , mSaveDataReceive  ( false )
 {
 }
 
@@ -58,7 +59,11 @@ bool ClientReceiveThread::runDispatcher(void)
             }
             else
             {
-                mBytesReceive += static_cast<uint32_t>(sizeReceive);
+                if (mSaveDataReceive)
+                {
+                    mBytesReceive += static_cast<uint32_t>(sizeReceive);
+                }
+
                 mRemoteService.processReceivedMessage( msgReceived, mConnection.getSocket( ) );
             }
 

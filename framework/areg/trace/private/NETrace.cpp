@@ -24,7 +24,6 @@
 #include "areg/component/NEService.hpp"
 #include "areg/trace/TraceScope.hpp"
 #include "areg/trace/private/TraceManager.hpp"
-#include "areg/ipc/private/NEConnection.hpp"
 
 #include <string.h>
 
@@ -264,7 +263,16 @@ AREG_API_IMPL bool NETrace::saveLogging( const char * configFile )
 AREG_API_IMPL unsigned int NETrace::makeScopeId( const char * scopeName )
 {
 #if AREG_LOGS
-    return  NEMath::crc32Calculate( scopeName );
+    return  NEMath::crc32Calculate(scopeName);
+#else   // !AREG_LOGS
+    return 0;
+#endif  // AREG_LOGS
+}
+
+AREG_API_IMPL unsigned int NETrace::makeScopeIdEx(const char* scopeName)
+{
+#if AREG_LOGS
+    return  (NEString::stringEndsWith<char>(scopeName, NELogging::SYNTAX_SCOPE_GROUP, true) ? NEMath::CHECKSUM_IGNORE : NETrace::makeScopeId(scopeName));
 #else   // !AREG_LOGS
     return 0;
 #endif  // AREG_LOGS
@@ -330,31 +338,22 @@ AREG_API_IMPL RemoteMessage NETrace::messageRegisterScopes(const ITEM_ID & sourc
         msgScope.setTarget(target != NEService::COOKIE_UNKNOWN ? target : NEService::COOKIE_LOGGER);
         msgScope.setSource(source != NEService::COOKIE_UNKNOWN ? source : NETrace::getCookie());
 
-        unsigned int numPos = msgScope.getPosition();
-        unsigned int count{ 0 };
-        msgScope << count; // reserve space
-
-        SCOPEPOS end = scopeList.invalidPosition();
-        for (SCOPEPOS pos = scopeList.firstPosition(); pos != end; ++ count, pos = scopeList.nextPosition(pos))
+        msgScope << static_cast<uint32_t>(scopeList.getSize());
+        const auto& list{ scopeList.getData() };
+        for (const auto& entry : list)
         {
-            TraceScopePair tracePair;
-            scopeList.getAtPosition(pos, tracePair);
-            ASSERT(tracePair.second != nullptr);
-            msgScope << (*tracePair.second);
+            const TraceScope* scope = entry.second;
+            ASSERT(scope != nullptr);
+            msgScope << *scope;
         }
-
-        // Write number of scopes
-        msgScope.setPosition(static_cast<int>(numPos), IECursorPosition::eCursorPosition::PositionBegin);
-        msgScope << count;
-        msgScope.moveToEnd();
     }
 
     return msgScope;
 }
 
-AREG_API void NETrace::logAnyMessageLocal(const NETrace::sLogMessage& logMessage)
+AREG_API_IMPL void NETrace::logAnyMessageLocal(const NETrace::sLogMessage& logMessage)
 {
-    return TraceManager::logMessage(logMessage);
+    TraceManager::logMessage(logMessage);
 }
 
 AREG_API_IMPL RemoteMessage NETrace::messageUpdateScopes(const ITEM_ID& source, const ITEM_ID& target, const NETrace::ScopeNames& scopeNames)
@@ -376,6 +375,11 @@ AREG_API_IMPL RemoteMessage NETrace::messageUpdateScopes(const ITEM_ID& source, 
     }
 
     return msgScope;
+}
+
+AREG_API_IMPL void NETrace::logAnyMessage(const NETrace::sLogMessage& logMessage)
+{
+    TraceManager::logMessage(SharedBuffer(reinterpret_cast<const unsigned char *>(&logMessage), sizeof(NETrace::sLogMessage)));
 }
 
 AREG_API_IMPL RemoteMessage NETrace::messageUpdateScope(const ITEM_ID& source, const ITEM_ID& target, const String& scopeName, unsigned int scopeId, unsigned int scopePrio)

@@ -22,13 +22,8 @@
 #include "areg/component/DispatcherThread.hpp"
 #include "areg/trace/private/TraceEvent.hpp"
 
-#include "areg/base/Containers.hpp"
-#include "areg/base/Version.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/SynchObjects.hpp"
-
-#include "areg/component/Timer.hpp"
-
 #include "areg/trace/NETrace.hpp"
 #include "areg/trace/private/ScopeController.hpp"
 #include "areg/trace/private/FileLogger.hpp"
@@ -89,8 +84,14 @@ public:
     static void logMessage( const NETrace::sLogMessage & logData );
 
     /**
-     * \brief   Triggers and event log remote message.
-     * \param   logDaya     The instance of remote message buffer, which contains the
+     * \brief   Triggers an event to log message contained in the shared buffer.
+     * \param   logData     The instance of message in shared buffer to og.
+     **/
+    static void logMessage(const SharedBuffer& logData);
+
+    /**
+     * \brief   Triggers an event to log remote message.
+     * \param   logData     The instance of remote message buffer, which contains the
      *                      log message from another process.
      **/
     static void logMessage( const RemoteMessage& logData );

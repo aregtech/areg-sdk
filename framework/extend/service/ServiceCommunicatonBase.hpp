@@ -24,15 +24,16 @@
 #include "areg/ipc/IEServiceConnectionConsumer.hpp"
 #include "areg/ipc/IEServiceConnectionProvider.hpp"
 #include "areg/ipc/ServiceEventConsumerBase.hpp"
+#include "extend/service/DataRateHelper.hpp"
 #include "extend/service/IEServiceConnectionHandler.hpp"
 
-#include "areg/base/Containers.hpp"
+#include "areg/base/TEMap.hpp"
 #include "areg/base/SynchObjects.hpp"
 #include "areg/component/Timer.hpp"
 #include "areg/ipc/NERemoteService.hpp"
 #include "extend/service/ServerConnection.hpp"
-#include "extend/service/ServerReceiveThread.hpp"
-#include "extend/service/ServerSendThread.hpp"
+#include "extend/service/private/ServerReceiveThread.hpp"
+#include "extend/service/private/ServerSendThread.hpp"
 
 /************************************************************************
  * Dependencies
@@ -137,18 +138,6 @@ public:
     inline void removeBlackList( const NESocket::SocketAddress & addrClient );
 
     /**
-     * \brief   Each time querying the bytes sent via network connection returns
-     *          the value after last query.
-     **/
-    inline uint32_t queryBytesSent(void);
-
-    /**
-     * \brief   Each time querying the bytes received via network connection returns
-     *          the value after last query.
-     **/
-    inline uint32_t queryBytesReceived(void);
-
-    /**
      * \brief   Returns the list of connected instances.
      **/
     inline const MapInstances & getInstances( void ) const;
@@ -165,6 +154,35 @@ public:
      * \param   eventPrio   The priority of the message to set.
      **/
     inline bool sendMessage(const RemoteMessage & data, Event::eEventPriority eventPrio = Event::eEventPriority::EventPriorityNormal );
+
+    /**
+     * \brief   Returns the instance of data rate helper object to use when computing data rate.
+     **/
+    inline DataRateHelper& getDataRateHelper(void) const;
+
+    /**
+     * \brief   Each time querying the bytes sent via network connection returns
+     *          the value after last query.
+     **/
+    inline uint32_t queryBytesSent(void);
+
+    /**
+     * \brief   Each time querying the bytes received via network connection returns
+     *          the value after last query.
+     **/
+    inline uint32_t queryBytesReceived(void);
+
+    /**
+     * \brief   Enable or disable the data rate calculation.
+     * \param   enable  If true, the data rate calculation is enabled.
+     *                  Otherwise, it is disabled.
+     **/
+    inline void enableCalculateDataRate(bool enable);
+
+    /**
+     * \brief   Returns enable or disable the data rate calculation flag.
+     **/
+    inline bool isCalculateDataRateEnabled(void) const;
 
 //////////////////////////////////////////////////////////////////////////
 // overrides
@@ -350,6 +368,12 @@ protected:
      **/
     virtual void onServiceExit(void) override;
 
+    /**
+     * \brief   Called when need to inform the channel connection.
+     * \param   cookie  The channel connection cookie.
+     **/
+    virtual void onChannelConnected(const ITEM_ID & cookie) override;
+
 /************************************************************************/
 // ServiceCommunicatonBase overrides
 /************************************************************************/
@@ -448,6 +472,7 @@ protected:
     Timer                                   mTimerConnect;      //!< The timer object to trigger in case if failed to create server socket.
     ServerSendThread                        mThreadSend;        //!< The thread to send messages to clients
     ServerReceiveThread                     mThreadReceive;     //!< The thread to receive messages from clients
+    DataRateHelper                          mDataRateHelper;    //!< The helper object to query information of sent and receive bytes.
     StringArray                             mWhiteList;         //!< The list of enabled fixed client hosts.
     StringArray                             mBlackList;         //!< The list of disabled fixes client hosts.
     ServiceServerEventConsumer              mEventConsumer;     //!< The custom event consumer object
@@ -505,16 +530,6 @@ inline void ServiceCommunicatonBase::removeBlackList(const NESocket::SocketAddre
     mBlackList.removeElem( addrClient.getHostAddress(), 0);
 }
 
-inline uint32_t ServiceCommunicatonBase::queryBytesSent(void)
-{
-    return mThreadSend.extractDataSend();
-}
-
-inline uint32_t ServiceCommunicatonBase::queryBytesReceived(void)
-{
-    return mThreadReceive.extractDataReceive();
-}
-
 inline const ServiceCommunicatonBase::MapInstances & ServiceCommunicatonBase::getInstances( void ) const
 {
     return mInstanceMap;
@@ -550,6 +565,31 @@ inline bool ServiceCommunicatonBase::sendMessage( const RemoteMessage & data, Ev
                                         , static_cast<IESendMessageEventConsumer &>(mThreadSend)
                                         , static_cast<DispatcherThread &>(mThreadSend)
                                         , eventPrio );
+}
+
+inline DataRateHelper& ServiceCommunicatonBase::getDataRateHelper(void) const
+{
+    return const_cast<DataRateHelper &>(mDataRateHelper);
+}
+
+inline uint32_t ServiceCommunicatonBase::queryBytesSent(void)
+{
+    return mDataRateHelper.queryBytesSent();
+}
+
+inline uint32_t ServiceCommunicatonBase::queryBytesReceived(void)
+{
+    return mDataRateHelper.queryBytesReceived();
+}
+
+inline void ServiceCommunicatonBase::enableCalculateDataRate(bool enable)
+{
+    mDataRateHelper.setVerbose(enable);
+}
+
+inline bool ServiceCommunicatonBase::isCalculateDataRateEnabled(void) const
+{
+    return mDataRateHelper.isVerbose();
 }
 
 inline void ServiceCommunicatonBase::disconnectService( Event::eEventPriority eventPrio )

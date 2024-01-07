@@ -166,7 +166,7 @@ void Logger::runConsoleInputExtended( void )
     Console & console = Console::getInstance( );
     Logger::_outputTitle( );
 
-    if ( mRunVerbose )
+    if (getDataRateHelper().isVerbose())
     {
         // Disable to block user input until Console Service is up and running.
         console.enableConsoleInput( false );
@@ -627,9 +627,9 @@ void Logger::_setVerboseMode( bool makeVerbose )
     Logger & logger = Logger::getInstance( );
     Console & console = Console::getInstance( );
     console.lockConsole( );
-    if ( logger.mRunVerbose != makeVerbose )
+    if ( logger.getDataRateHelper().isVerbose() != makeVerbose )
     {
-        logger.mRunVerbose = makeVerbose;
+        logger.getDataRateHelper().setVerbose(makeVerbose);
 
         if ( makeVerbose == false )
         {
@@ -639,8 +639,8 @@ void Logger::_setVerboseMode( bool makeVerbose )
         }
         else
         {
-            console.outputMsg( NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data( ), 0.0f, SystemServiceConsole::MSG_BYTES.data( ) );
-            console.outputMsg( NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data( ), 0.0f, SystemServiceConsole::MSG_BYTES.data( ) );
+            console.outputMsg( NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data( ), 0.0f, DataRateHelper::MSG_BYTES.data( ) );
+            console.outputMsg( NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data( ), 0.0f, DataRateHelper::MSG_BYTES.data( ) );
             console.outputTxt( NESystemService::COORD_INFO_MSG, _verbose);
         }
 

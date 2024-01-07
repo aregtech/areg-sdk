@@ -20,7 +20,6 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
-#include "areg/base/SynchObjects.hpp"
 #include "extend/service/NESystemService.hpp"
 #include "extend/service/ServiceCommunicatonBase.hpp"
 
@@ -148,25 +147,14 @@ public:
     inline NESystemService::eSystemServiceState getState( void ) const;
 
     /**
+     * \brief   Returns the instance of data rate helper object to use when computing data rate.
+     **/
+    inline DataRateHelper& getDataRateHelper(void) const;
+
+    /**
      * \brief   Resets default options.
      **/
-    inline void resetDefaultOptions(void);
-
-    /**
-     * \brief   Call to query the size in bytes of data sent.
-     **/
-    inline uint32_t queryDataReceived(void);
-
-    /**
-     * \brief   Call to query the size in bytes of data received.
-     **/
-    inline uint32_t queryDataSent(void);
-
-    /**
-     * \brief   Returns true if verbose flag is set.
-     *          If verbose flag is set, it outputs the data rate in console.
-     **/
-    inline bool isVerbose( void ) const;
+    void resetDefaultOptions(void);
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -227,10 +215,6 @@ protected:
      **/
     NESystemService::eServiceOption         mSystemServiceOption;
     /**
-     * \brief   Flag, indicating whether the process should run verbose or not. Valid only if process runs as console application.
-     */
-    bool                                    mRunVerbose;
-    /**
      * \brief   OS specific service handle
      **/
     void *                                  mSvcHandle;
@@ -255,6 +239,11 @@ inline NESystemService::eSystemServiceState SystemServiceBase::getState( void ) 
     return mSystemServiceState;
 }
 
+inline DataRateHelper& SystemServiceBase::getDataRateHelper(void) const
+{
+    return  mCommunication.getDataRateHelper();
+}
+
 inline NESystemService::eServiceOption SystemServiceBase::getCurrentOption(void) const
 {
     return mSystemServiceOption;
@@ -263,27 +252,6 @@ inline NESystemService::eServiceOption SystemServiceBase::getCurrentOption(void)
 inline void SystemServiceBase::setCurrentOption( NESystemService::eServiceOption optService )
 {
     mSystemServiceOption = optService;
-}
-
-inline void SystemServiceBase::resetDefaultOptions(void)
-{
-    mSystemServiceOption= NESystemService::DEFAULT_OPTION;
-    mRunVerbose         = NESystemService::DEFAULT_VERBOSE;
-}
-
-inline uint32_t SystemServiceBase::queryDataReceived(void)
-{
-    return mCommunication.queryBytesReceived();
-}
-
-inline uint32_t SystemServiceBase::queryDataSent(void)
-{
-    return mCommunication.queryBytesSent();
-}
-
-inline bool SystemServiceBase::isVerbose(void) const
-{
-    return mRunVerbose;
 }
 
 #endif  // AREG_EXTEND_SERVICE_SYSTEMSERVICEBASE_HPP

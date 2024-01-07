@@ -67,6 +67,17 @@ namespace NERemoteService
     };
 
     /**
+     * \brief   Indicates the connect or disconnect of the remote instance.
+     **/
+    enum eRemoteConnection : uint32_t
+    {
+        /* Remote instance is disconnected. */
+          RemoteDisconnected    = 0
+        /* Remote instance is connected. */
+        , RemoteConnected       = 1
+    };
+
+    /**
      * \brief   NERemoteService::DEFAULT_REMOTE_SERVICE_ENABLED
      *          Message router enable / disable default flag. If true, by default it is enabled.
      *          The default values are used if failed to read and parse router configuration file.
@@ -272,5 +283,6 @@ namespace NERemoteService
 //////////////////////////////////////////////////////////////////////////
 IMPLEMENT_STREAMABLE(NERemoteService::eRemoteServices);
 IMPLEMENT_STREAMABLE(NERemoteService::eConnectionTypes);
+IMPLEMENT_STREAMABLE(NERemoteService::eRemoteConnection);
 
 #endif  // AREG_IPC_NEREMOTESERVICE_HPP

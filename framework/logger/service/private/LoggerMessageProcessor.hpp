@@ -21,6 +21,8 @@
 #include "areg/base/GEGlobal.h"
 
 #include "areg/component/NEService.hpp"
+#include "areg/base/TEArrayList.hpp"
+#include "extend/service/ServiceCommunicatonBase.hpp"
 
 /************************************************************************
  * Dependencies
@@ -62,11 +64,26 @@ public:
     void queryConnectedInstances(const RemoteMessage & msgReceived) const;
 
     /**
-     * \brief   Notifies the observers about connected instances. Automatically processed when
-     *          new instance of application is connected.
-     * \param   msgReceived     The message to process.
+     * \brief   Creates a communication message with the information of connected instances
+     *          and sends the notification to the specified observer target. If target is NEService::COOKIE_ANY
+     *          the notification is sent to all connected observers. Otherwise, it send to
+     *          the specified exact target.
+     * \param   instances   The list of connected instances to include in the notification message.
+     * \param   target      The ID of the target to send the message. If target is NEService::COOKIE_ANY,
+     *                      the notification message is sent to all observers. Otherwise, it is sent to the exact target.
      **/
-    void notifyConnectedInstances(const ITEM_ID & target = NEService::COOKIE_ANY) const;
+    void notifyConnectedInstances(const ServiceCommunicatonBase::MapInstances& instances, const ITEM_ID & target = NEService::COOKIE_ANY) const;
+
+    /**
+     * \brief   Creates a communication message with the IDs of disconnected instances
+     *          and sends the notification to the specified observer target. If target is NEService::COOKIE_ANY
+     *          the notification is sent to all connected observers. Otherwise, it send to
+     *          the specified exact target.
+     * \param   listIds     The list of IDs of disconnected instances to include in the notification message.
+     * \param   target      The ID of the target to send the message. If target is NEService::COOKIE_ANY,
+     *                      the notification message is sent to all observers. Otherwise, it is sent to the exact target.
+     **/
+    void notifyDisconnectedInstances(const TEArrayList<ITEM_ID> & listIds, const ITEM_ID& target = NEService::COOKIE_ANY) const;
 
     /**
      * \brief   Called when a connected instance of application requests to register scopes.

@@ -14,10 +14,13 @@
  ************************************************************************/
 #include "extend/service/ServiceCommunicatonBase.hpp"
 
+#include "areg/base/DateTime.hpp"
 #include "areg/ipc/NERemoteService.hpp"
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/ipc/private/NEConnection.hpp"
 #include "areg/trace/GETrace.h"
+
+#include "extend/service/NESystemService.hpp"
 
 DEF_TRACE_SCOPE(areg_extend_service_ServiceCommunicatonBase_connectServiceHost);
 DEF_TRACE_SCOPE(areg_extend_service_ServiceCommunicatonBase_reconnectServiceHost);
@@ -60,6 +63,7 @@ ServiceCommunicatonBase::ServiceCommunicatonBase( const ITEM_ID & serviceId
     , mTimerConnect     ( static_cast<IETimerConsumer &>(mTimerConsumer), NEConnection::SERVER_CONNECT_TIMER_NAME.data( ) )
     , mThreadSend       ( static_cast<IERemoteMessageHandler&>(self()), mServerConnection )
     , mThreadReceive    ( static_cast<IEServiceConnectionHandler&>(self()), static_cast<IERemoteMessageHandler&>(self()), mServerConnection )
+    , mDataRateHelper   ( mThreadSend, mThreadReceive, NESystemService::DEFAULT_VERBOSE )
     , mWhiteList        ( )
     , mBlackList        ( )
     , mEventConsumer    ( self() )
@@ -275,6 +279,10 @@ void ServiceCommunicatonBase::onServiceExit( void )
     triggerExit( );
 }
 
+void ServiceCommunicatonBase::onChannelConnected(const ITEM_ID& /*cookie*/)
+{
+}
+
 bool ServiceCommunicatonBase::startConnection(void)
 {
     TRACE_SCOPE(areg_extend_service_ServiceCommunicatonBase_startConnection);
@@ -439,6 +447,7 @@ void ServiceCommunicatonBase::processReceivedMessage(const RemoteMessage & msgRe
         {
             NEService::sServiceConnectedInstance instance{};
             msgReceived >> instance;
+            instance.ciTimestamp = static_cast<TIME64>(DateTime::getNow());
             instance.ciCookie = cookie;
             addInstance(cookie, instance);
             RemoteMessage msgConnect(createServiceConnectMessage(mServerConnection.getChannelId(), cookie, NEService::eMessageSource::MessageSourceService));

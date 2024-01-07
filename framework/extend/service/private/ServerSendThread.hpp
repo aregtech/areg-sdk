@@ -1,5 +1,5 @@
-#ifndef AREG_EXTEND_SERVICE_SERVERSENDTHREAD_HPP
-#define AREG_EXTEND_SERVICE_SERVERSENDTHREAD_HPP
+#ifndef AREG_EXTEND_SERVICE_PRIVATE_SERVERSENDTHREAD_HPP
+#define AREG_EXTEND_SERVICE_PRIVATE_SERVERSENDTHREAD_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,7 +9,7 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        extend/service/ServerSendThread.hpp
+ * \file        extend/service/private/ServerSendThread.hpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Service connectivity server send message thread
@@ -63,7 +63,19 @@ public:
      * \brief   Returns accumulative value of sent data size and rests the existing value to zero.
      *          The operations are atomic. The value can be used to display data rate, for example.
      **/
-    inline uint32_t extractDataSend( void );
+    inline uint32_t extractDataSend( void ) const;
+
+    /**
+     * \brief   Call to enable or disable the received data calculation.
+     *          It as well resets the existing calculated data.
+     * \param   enable  Flag, indicating whether data calculation is enabled or not.
+     **/
+    inline void setEnableCalculateData(bool enable);
+
+    /**
+     * \brief   Returns flag, indicating whether data calculation is enabled or not.
+     **/
+    inline bool isCalculateDataEnabled(void) const;
 
 protected:
 /************************************************************************/
@@ -112,15 +124,19 @@ private:
     /**
      * \brief   The instance of remote servicing interface object
      **/
-    IERemoteMessageHandler& mRemoteService;
+    IERemoteMessageHandler&     mRemoteService;
     /**
      * \brief   The instance of server connection object
      **/
-    ServerConnection &      mConnection;
+    ServerConnection &          mConnection;
     /**
      * \brief   Accumulative value of sent data size.
      **/
-    std::atomic_uint        mBytesSend;
+    mutable std::atomic_uint    mBytesSend;
+    /**
+     * \brief   Flag, indicating whether should calculate send data size or not. By default it does not compute.
+     **/
+    bool                        mSaveDataSend;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -134,9 +150,23 @@ private:
 // ServerSendThread class inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline uint32_t ServerSendThread::extractDataSend(void)
+inline uint32_t ServerSendThread::extractDataSend(void) const
 {
     return static_cast<uint32_t>(mBytesSend.exchange(0));
 }
 
-#endif  // AREG_EXTEND_SERVICE_SERVERSENDTHREAD_HPP
+inline void ServerSendThread::setEnableCalculateData(bool enable)
+{
+    if (mSaveDataSend != enable)
+    {
+        mBytesSend.store(0u);
+        mSaveDataSend = enable;
+    }
+}
+
+inline bool ServerSendThread::isCalculateDataEnabled(void) const
+{
+    return mSaveDataSend;
+}
+
+#endif  // AREG_EXTEND_SERVICE_PRIVATE_SERVERSENDTHREAD_HPP

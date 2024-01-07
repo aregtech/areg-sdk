@@ -25,9 +25,12 @@ DEF_TRACE_SCOPE(areg_ipc_private_ClientSendThread_readyForEvents);
 
 ClientSendThread::ClientSendThread(IERemoteMessageHandler& remoteService, ClientConnection & connection, const String& namePrefix )
     : DispatcherThread  ( namePrefix + NEConnection::CLIENT_SEND_MESSAGE_THREAD )
+    , IESendMessageEventConsumer( )
+
     , mRemoteService    ( remoteService )
     , mConnection       ( connection )
     , mBytesSend        ( 0 )
+    , mSaveDataSend     ( false )
 {
 }
 
@@ -58,7 +61,10 @@ void ClientSendThread::processEvent( const SendMessageEventData & data )
         int sizeSend = mConnection.sendMessage( msg );
         if ( sizeSend > 0 )
         {
-            mBytesSend += static_cast<uint32_t>(sizeSend);
+            if (mSaveDataSend)
+            {
+                mBytesSend += static_cast<uint32_t>(sizeSend);
+            }
         }
         else
         {
