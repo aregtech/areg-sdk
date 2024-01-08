@@ -49,4 +49,8 @@
     <Text Include="locsvcmesh\CMakeLists.txt" />
     <Text Include="locsvcmesh\src\CMakeLists.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="locsvcmesh\Makefile" />
+    <None Include="locsvcmesh\src\Makefile" />
+  </ItemGroup>
 </Project>

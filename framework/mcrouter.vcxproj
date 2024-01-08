@@ -64,6 +64,7 @@
     <ResourceCompile Include="mcrouter\resources\mcrouter.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="mcrouter\app\private\Makefile" />
     <None Include="mcrouter\Makefile" />
     <None Include="mcrouter\Readme.md" />
     <None Include="mcrouter\resources\mcrouter.ico" />
@@ -71,6 +72,7 @@
     <None Include="mcrouter\resources\mcrouter_install.bat" />
     <None Include="mcrouter\resources\mcrouter_uninstall.bat" />
     <None Include="mcrouter\resources\mcrouter_post_build.bat" />
+    <None Include="mcrouter\tcp\private\Makefile" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="mcrouter\app\private\CMakeLists.txt" />

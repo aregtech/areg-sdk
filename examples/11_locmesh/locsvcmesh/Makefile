@@ -11,7 +11,7 @@ $(foreach cpp, $(11_locsvcmesh_SRC), $(eval $(call obj, $(cpp), $(11_locsvcmesh_
 DEPS = $(11_locsvcmesh_OBJS:%.o=%.d)
 -include $(DEPS)
 
-$(AREG_OUTPUT_BIN)/$(11_locsvcmesh_TARGET_BIN): $(areg_TARGET_PATH) $(11_locsvcmesh_OBJS) $(11_locmesh_DEPEND)
+$(11_locsvcmesh_TARGET_BIN): $(areg_TARGET_BIN) $(11_locsvcmesh_OBJS) $(11_locmesh_DEPEND)
 	@echo "Linking $@ ..."
 	@mkdir -p $(dir $@)
 	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(11_locmesh_CXXFLAGS) $(11_locsvcmesh_OBJS) -o $@ $(11_locmesh_LDFLAGS)

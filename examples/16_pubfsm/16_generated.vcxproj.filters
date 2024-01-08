@@ -106,5 +106,7 @@
   <ItemGroup>
     <None Include="res\PowerManager.siml" />
     <None Include="res\TrafficController.siml" />
+    <None Include="generated\Makefile" />
+    <None Include="generated\src\private\Makefile" />
   </ItemGroup>
 </Project>

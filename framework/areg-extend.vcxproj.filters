@@ -37,5 +37,7 @@
   <ItemGroup>
     <None Include="extend\Readme.md" />
     <None Include="extend\Makefile" />
+    <None Include="extend\console\private\Makefile" />
+    <None Include="extend\service\private\Makefile" />
   </ItemGroup>
 </Project>

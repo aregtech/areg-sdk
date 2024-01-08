@@ -58,6 +58,7 @@
     </None>
     <None Include="logger\Readme.md" />
     <None Include="logger\Makefile" />
+    <None Include="logger\app\private\Makefile" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="logger\app\private\Logger.cpp">

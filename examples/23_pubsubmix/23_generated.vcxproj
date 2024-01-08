@@ -50,6 +50,8 @@
     <ClInclude Include="generated\src\PubSubMixStub.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="generated\Makefile" />
+    <None Include="generated\src\private\Makefile" />
     <None Include="res\generate.bat" />
     <None Include="res\generate.sh" />
     <None Include="res\PubSubMix.siml" />
@@ -60,6 +62,10 @@
     <ClCompile Include="generated\src\private\PubSubMixEvents.cpp" />
     <ClCompile Include="generated\src\private\PubSubMixProxy.cpp" />
     <ClCompile Include="generated\src\private\PubSubMixStub.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="generated\CMakeLists.txt" />
+    <Text Include="generated\src\private\CMakeLists.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -15,7 +15,7 @@ AREG_PROJECT            := areg
 AREG_EXTENDED_PROJECT   := areg-extend
 AREG_DEPEND             :=
 AREG_LIB_EXT            :=
-AREG_OBSERVER_LIB_EXT   :=
+AREG_LOGOBSERVERAPI_EXT :=
 AREG_LIB_IMPORT         :=
 
 ifeq ($(AREG_BUILD_TYPE), Release)
@@ -54,10 +54,10 @@ ifeq ($(AREG_COMPILER_ID), Clang)
     	AREG_LIB_EXT := .a
     endif
 
-    ifeq ($(AREG_OBSERVER_LIB), shared)
-        AREG_OBSERVER_LIB_EXT = .so
+    ifeq ($(AREG_LOGOBSERVER_LIB), shared)
+        AREG_LOGOBSERVERAPI_EXT = .so
     else
-        AREG_OBSERVER_LIB_EXT = .a
+        AREG_LOGOBSERVERAPI_EXT = .a
     endif
 
 else ifeq ($(AREG_COMPILER_ID), GNU)
@@ -94,10 +94,10 @@ else ifeq ($(AREG_COMPILER_ID), GNU)
     	    AREG_LIB_EXT := .lib
         endif
 
-        ifeq ($(AREG_OBSERVER_LIB), shared)
-            AREG_OBSERVER_LIB_EXT := .dll
+        ifeq ($(AREG_LOGOBSERVER_LIB), shared)
+            AREG_LOGOBSERVERAPI_EXT := .dll
         else
-            AREG_OBSERVER_LIB_EXT := .lib
+            AREG_LOGOBSERVERAPI_EXT := .lib
         endif
 
     else
@@ -113,10 +113,10 @@ else ifeq ($(AREG_COMPILER_ID), GNU)
     	    AREG_LIB_EXT := .a
         endif
 
-        ifeq ($(AREG_OBSERVER_LIB), shared)
-            AREG_OBSERVER_LIB_EXT := .so
+        ifeq ($(AREG_LOGOBSERVER_LIB), shared)
+            AREG_LOGOBSERVERAPI_EXT := .so
         else
-            AREG_OBSERVER_LIB_EXT := .a
+            AREG_LOGOBSERVERAPI_EXT := .a
         endif
 
     endif
@@ -152,10 +152,10 @@ else
     	AREG_LIB_EXT := .a
     endif
 
-    ifeq ($(AREG_OBSERVER_LIB), shared)
-        AREG_OBSERVER_LIB_EXT := .so
+    ifeq ($(AREG_OLOGBSERVER_LIB), shared)
+        AREG_LOGOBSERVERAPI_EXT := .so
     else
-        AREG_OBSERVER_LIB_EXT := .a
+        AREG_LOGOBSERVERAPI_EXT := .a
     endif
 
 endif

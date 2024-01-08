@@ -41,6 +41,14 @@
   <ItemGroup>
     <ClCompile Include="pubsubdyn\src\main.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="pubsubdyn\CMakeLists.txt" />
+    <Text Include="pubsubdyn\src\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="pubsubdyn\Makefile" />
+    <None Include="pubsubdyn\src\Makefile" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

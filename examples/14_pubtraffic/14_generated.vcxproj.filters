@@ -55,4 +55,8 @@
     <Text Include="generated\CMakeLists.txt" />
     <Text Include="generated\src\private\CMakeLists.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="generated\Makefile" />
+    <None Include="generated\src\private\Makefile" />
+  </ItemGroup>
 </Project>

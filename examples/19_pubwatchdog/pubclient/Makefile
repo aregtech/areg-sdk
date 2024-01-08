@@ -1,6 +1,3 @@
-19_pubclient_PROJECT_NAME := 19_pubclient
-
-19_pubclient_TARGET_BIN := $(19_pubclient_PROJECT_NAME)$(AREG_BIN_EXT)
 19_pubclient_OUTPUT_OBJ := $(19_pubwatchdog_OUTPUT_OBJ)/pubclient
 
 19_pubclient_SRC  :=
@@ -14,7 +11,7 @@ $(foreach cpp, $(19_pubclient_SRC), $(eval $(call obj, $(cpp), $(19_pubclient_OU
 DEPS = $(19_pubclient_OBJS:%.o=%.d)
 -include $(DEPS)
 
-$(AREG_OUTPUT_BIN)/$(19_pubclient_TARGET_BIN): $(areg_TARGET_PATH) $(19_pubclient_OBJS) $(19_pubwatchdog_DEPEND)
+$(19_pubclient_TARGET_BIN): $(areg_TARGET_BIN) $(19_pubclient_OBJS) $(19_pubwatchdog_DEPEND)
 	@echo "Linking $@ ..."
 	@mkdir -p $(dir $@)
 	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(19_pubwatchdog_CXXFLAGS) $(19_pubclient_OBJS) -o $@ $(19_pubwatchdog_LDFLAGS)

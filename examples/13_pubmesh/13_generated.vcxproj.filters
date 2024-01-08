@@ -116,5 +116,7 @@
     <None Include="res\LocalHelloWorld.siml" />
     <None Include="res\PublicHelloWorld.siml" />
     <None Include="res\SystemShutdown.siml" />
+    <None Include="generated\Makefile" />
+    <None Include="generated\src\private\Makefile" />
   </ItemGroup>
 </Project>

@@ -1,0 +1,300 @@
+/************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
+ * \file        logobserver/lib/private/LogObserverApi.cpp
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
+ * \author      Artak Avetyan
+ * \brief       AREG Platform, Log Observer library API.
+ *
+ ************************************************************************/
+
+#include "logobserver/lib/LogObserverApi.h"
+#include "areg/appbase/Application.hpp"
+#include "areg/base/SynchObjects.hpp"
+
+#include "logobserver/lib/private/LoggerClient.hpp"
+
+#include <atomic>
+
+// Use these options if compile for Windows with MSVC
+#ifdef WINDOWS
+    #pragma comment(lib, "areg")
+#endif // WINDOWS
+
+
+namespace
+{
+    struct sLogObserverStruct
+    {
+        Mutex           losLock     { false };
+        eObserverStates losState    { eObserverStates::ObserverUninitialized };
+        sObserverEvents losEvents   { };
+    };
+
+    sLogObserverStruct theObserver;
+
+    void _setCallbacks(sObserverEvents & dstCallbacks, const sObserverEvents* srcCallbacks)
+    {
+        if (srcCallbacks != nullptr)
+        {
+            dstCallbacks.evtObserverConfigured  = srcCallbacks->evtObserverConfigured;
+            dstCallbacks.evtServiceConnected    = srcCallbacks->evtServiceConnected;
+            dstCallbacks.evtLoggingStarted      = srcCallbacks->evtLoggingStarted;
+            dstCallbacks.evtMessagingFailed     = srcCallbacks->evtMessagingFailed;
+            dstCallbacks.evtInstConnected       = srcCallbacks->evtInstConnected;
+            dstCallbacks.evtInstDisconnected    = srcCallbacks->evtInstDisconnected;
+            dstCallbacks.evtLogScopes           = srcCallbacks->evtLogScopes;
+            dstCallbacks.evtLogMessage          = srcCallbacks->evtLogMessage;
+            dstCallbacks.evtLogMessageEx        = srcCallbacks->evtLogMessageEx;
+        }
+        else
+        {
+            dstCallbacks.evtObserverConfigured  = nullptr;
+            dstCallbacks.evtServiceConnected    = nullptr;
+            dstCallbacks.evtLoggingStarted      = nullptr;
+            dstCallbacks.evtMessagingFailed     = nullptr;
+            dstCallbacks.evtInstConnected       = nullptr;
+            dstCallbacks.evtInstDisconnected    = nullptr;
+            dstCallbacks.evtLogScopes           = nullptr;
+            dstCallbacks.evtLogMessage          = nullptr;
+            dstCallbacks.evtLogMessageEx        = nullptr;
+        }
+    }
+
+    inline bool _isInitialized(eObserverStates state)
+    {
+        return (state != eObserverStates::ObserverUninitialized);
+    }
+
+    inline bool _isDisconnected(eObserverStates state)
+    {
+        return (state == eObserverStates::ObserverDisconnected);
+    }
+
+    inline bool _isConnected(eObserverStates state)
+    {
+        return (state >= eObserverStates::ObserverConnected);
+    }
+
+    inline bool _isStarted(eObserverStates state)
+    {
+        return (state == eObserverStates::ObserverConnected);
+    }
+}
+
+LOGOBSERVER_API_IMPL bool logObserverInitialize(const sObserverEvents * callbacks, const char* configFilePath /* = nullptr */)
+{
+    Lock lock(theObserver.losLock);
+
+    if (_isInitialized(theObserver.losState) == false)
+    {
+        LoggerClient& client = LoggerClient::getInstance();
+        theObserver.losState = eObserverStates::ObserverDisconnected;
+        _setCallbacks(theObserver.losEvents, callbacks);
+        client.setCallbacks(&theObserver.losEvents);
+        Application::initApplication(true, false, false, true, false, configFilePath, static_cast<IEConfigurationListener *>(&client));
+    }
+
+    return _isInitialized(theObserver.losState);
+}
+
+LOGOBSERVER_API_IMPL bool logObserverConnectLogger(const char* ipAddress /*= nullptr*/, uint16_t portNr /* = 0 */)
+{
+    Lock lock(theObserver.losLock);
+
+    if (_isDisconnected(theObserver.losState))
+    {
+        if (LoggerClient::getInstance().startLoggerClient(ipAddress, portNr))
+        {
+            theObserver.losState = eObserverStates::ObserverConnected;
+        }
+    }
+
+    return _isConnected(theObserver.losState);
+}
+
+LOGOBSERVER_API_IMPL void logObserverDisconnectLogger()
+{
+    Lock lock(theObserver.losLock);
+
+    if (_isConnected(theObserver.losState))
+    {
+        LoggerClient& client = LoggerClient::getInstance();
+        client.stopLoggerClient();
+        theObserver.losState = eObserverStates::ObserverDisconnected;
+    }
+}
+
+LOGOBSERVER_API_IMPL void logObserverPauseLogging(bool doPause)
+{
+    Lock lock(theObserver.losLock);
+
+    if (_isConnected(theObserver.losState))
+    {
+        theObserver.losState = doPause ? eObserverStates::ObserverPaused : eObserverStates::ObserverConnected;
+        LoggerClient::getInstance().setPaused(doPause);
+    }
+}
+
+LOGOBSERVER_API_IMPL eObserverStates logObserverCurrentState()
+{
+    Lock lock(theObserver.losLock);
+    return theObserver.losState;
+}
+
+LOGOBSERVER_API_IMPL void logObserverRelease()
+{
+    Lock lock(theObserver.losLock);
+
+    if (_isInitialized(theObserver.losState))
+    {
+        LoggerClient& client = LoggerClient::getInstance();
+        client.setCallbacks(nullptr);
+        client.stopLoggerClient();
+        Application::releaseApplication();
+        _setCallbacks(theObserver.losEvents, nullptr);
+        theObserver.losState = eObserverStates::ObserverUninitialized;
+    }
+}
+
+LOGOBSERVER_API_IMPL bool logObserverIsInitialized()
+{
+    Lock lock(theObserver.losLock);
+    return _isInitialized(theObserver.losState);
+}
+
+LOGOBSERVER_API_IMPL bool logObserverIsConnected()
+{
+    Lock lock(theObserver.losLock);
+    bool result{ false };
+    if (_isInitialized(theObserver.losState))
+    {
+        LoggerClient& client = LoggerClient::getInstance();
+        result = client.isConnectedState();
+    }
+
+    return result;
+}
+
+LOGOBSERVER_API_IMPL bool logObserverIsStarted()
+{
+    Lock lock(theObserver.losLock);
+    return _isStarted(theObserver.losState);
+}
+
+LOGOBSERVER_API_IMPL const char* logObserverLoggerAddress()
+{
+    Lock lock(theObserver.losLock);
+    const char * result{ nullptr };
+    if (_isInitialized(theObserver.losState))
+    {
+        LoggerClient& client = LoggerClient::getInstance();
+        result = client.getAddress().getHostAddress().getString();
+    }
+
+    return result;
+}
+
+LOGOBSERVER_API_IMPL unsigned short logObserverLoggerPort()
+{
+    Lock lock(theObserver.losLock);
+    unsigned short result{ NESocket::InvalidPort };
+    if (_isInitialized(theObserver.losState))
+    {
+        LoggerClient& client = LoggerClient::getInstance();
+        result = client.getAddress().getHostPort();
+    }
+
+    return result;
+}
+
+LOGOBSERVER_API_IMPL bool logObserverConfigLoggerEnabled()
+{
+    Lock lock(theObserver.losLock);
+    bool result{ false };
+    if (_isInitialized(theObserver.losState))
+    {
+        LoggerClient& client = LoggerClient::getInstance();
+        result = client.isConfigLoggerConnectEnabled();
+    }
+
+    return result;
+}
+
+LOGOBSERVER_API_IMPL bool logObserverConfigLoggerAddress(char* addrBuffer, uint32_t space)
+{
+    Lock lock(theObserver.losLock);
+    bool result{ false };
+    if (_isInitialized(theObserver.losState))
+    {
+        LoggerClient& client = LoggerClient::getInstance();
+        String addr{ client.getConfigLoggerAddress() };
+        if ((addrBuffer != nullptr) && (addr.getLength() > static_cast<NEString::CharCount>(space)))
+        {
+            result = NEString::copyString<char, char>(addrBuffer, space, addr.getString(), addr.getLength()) > 0;
+        }
+    }
+
+    return result;
+}
+
+LOGOBSERVER_API_IMPL unsigned short logObserverConfigLoggerPort()
+{
+    Lock lock(theObserver.losLock);
+    uint16_t result{ NESocket::InvalidPort };
+    if (_isInitialized(theObserver.losState))
+    {
+        LoggerClient& client = LoggerClient::getInstance();
+        result = client.getConfigLoggerPort();
+    }
+
+    return result;
+}
+
+LOGOBSERVER_API_IMPL void logObserverRequestInstances()
+{
+    Lock lock(theObserver.losLock);
+    if (_isInitialized(theObserver.losState))
+    {
+        LoggerClient::getInstance().requestConnectedInstances();
+    }
+}
+
+LOGOBSERVER_API_IMPL void logObserverRequestScopes(ITEM_ID target /* = ID_IGNORED */)
+{
+    Lock lock(theObserver.losLock);
+    if (_isInitialized(theObserver.losState))
+    {
+        LoggerClient::getInstance().requestScopes(target);
+    }
+}
+
+LOGOBSERVER_API_IMPL void logObserverRequestChangeScopePrio(ITEM_ID target, const sLogScope* scopes, uint32_t count)
+{
+    Lock lock(theObserver.losLock);
+    if (_isInitialized(theObserver.losState) && (target != ID_IGNORE))
+    {
+        NETrace::ScopeNames scopeList(count);
+        for (uint32_t i = 0; i < count; ++i)
+        {
+            scopeList.add(NETrace::sScopeInfo(scopes[i].lsName, scopes[i].lsId, scopes[i].lsPrio));
+        }
+
+        LoggerClient::getInstance().requestChangeScopePrio( scopeList, target);
+    }
+}
+
+LOGOBSERVER_API_IMPL void logObserverRequestSaveConfig(ITEM_ID target /* = ID_IGNORED */)
+{
+    Lock lock(theObserver.losLock);
+    if (_isInitialized(theObserver.losState))
+    {
+        LoggerClient::getInstance().requestSaveConfiguration(target);
+    }
+}

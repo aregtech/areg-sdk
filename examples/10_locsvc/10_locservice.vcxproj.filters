@@ -37,6 +37,8 @@
     <None Include="res\HelloWorld.siml">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="locservice\Makefile" />
+    <None Include="locservice\src\Makefile" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="locservice\CMakeLists.txt" />

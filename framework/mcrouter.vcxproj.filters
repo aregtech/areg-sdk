@@ -67,6 +67,8 @@
     </None>
     <None Include="mcrouter\Readme.md" />
     <None Include="mcrouter\Makefile" />
+    <None Include="mcrouter\app\private\Makefile" />
+    <None Include="mcrouter\tcp\private\Makefile" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mcrouter\app\private\MulticastRouter.cpp">

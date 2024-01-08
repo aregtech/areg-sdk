@@ -11,7 +11,7 @@ $(foreach cpp, $(24_publisher_SRC), $(eval $(call obj, $(cpp), $(24_publisher_OU
 DEPS = $(24_publisher_OBJS:%.o=%.d)
 -include $(DEPS)
 
-$(AREG_OUTPUT_BIN)/$(24_publisher_TARGET_BIN): $(areg_TARGET_PATH) $(24_publisher_OBJS) $(24_pubsubmulti_DEPEND)
+$(24_publisher_TARGET_BIN): $(areg_TARGET_BIN) $(24_publisher_OBJS) $(24_pubsubmulti_DEPEND)
 	@echo "Linking $@ ..."
 	@mkdir -p $(dir $@)
 	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(24_pubsubmulti_CXXFLAGS) $(24_publisher_OBJS) -o $@ $(24_pubsubmulti_LDFLAGS)

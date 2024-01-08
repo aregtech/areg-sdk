@@ -11,7 +11,7 @@ $(foreach cpp, $(20_pubclient_SRC), $(eval $(call obj, $(cpp), $(20_pubclient_OU
 DEPS = $(20_pubclient_OBJS:%.o=%.d)
 -include $(DEPS)
 
-$(AREG_OUTPUT_BIN)/$(20_pubclient_TARGET_BIN): $(areg_TARGET_PATH) $(20_pubclient_OBJS) $(20_pubdatarate_DEPEND)
+$(20_pubclient_TARGET_BIN): $(areg_TARGET_BIN) $(20_pubclient_OBJS) $(20_pubdatarate_DEPEND)
 	@echo "Linking $@ ..."
 	@mkdir -p $(dir $@)
 	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(20_pubdatarate_CXXFLAGS) $(20_pubclient_OBJS) -o $@ $(20_pubdatarate_LDFLAGS)

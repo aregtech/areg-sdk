@@ -1,8 +1,5 @@
-areg_PROJECT_NAME := $(AREG_PROJECT)
-
-areg_TARGET_PATH :=
-areg_BASE        := $(AREG_BASE)/areg
-areg_OUTPUT_OBJ  := $(AREG_OUTPUT_OBJ)/$(areg_PROJECT_NAME)
+areg_BASE       := $(AREG_BASE)/areg
+areg_OUTPUT_OBJ := $(AREG_OUTPUT_OBJ)/$(areg_PROJECT_NAME)
 
 areg_SRC  :=
 areg_OBJS :=
@@ -17,13 +14,13 @@ include $(areg_BASE)/trace/private/Makefile
 areg_CXXFLAGS :=
 ifeq ($(AREG_BINARY), shared)
 	areg_CXXFLAGS := -fPIC -DEXP_AREG_DLL
-	areg_TARGET_PATH := $(AREG_OUTPUT_BIN)/$(AREG_LIB_PREFIX)$(areg_PROJECT_NAME)$(AREG_LIB_EXT)
+	areg_TARGET_BIN := $(AREG_OUTPUT_BIN)/$(AREG_LIB_PREFIX)$(areg_PROJECT_NAME)$(AREG_LIB_EXT)
 else
 	areg_CXXFLAGS := -fPIC -DEXP_AREG_LIB
-	areg_TARGET_PATH := $(AREG_OUTPUT_LIB)/$(AREG_LIB_PREFIX)$(areg_PROJECT_NAME)$(AREG_LIB_EXT)
+	areg_TARGET_BIN := $(AREG_OUTPUT_LIB)/$(AREG_LIB_PREFIX)$(areg_PROJECT_NAME)$(AREG_LIB_EXT)
 endif
 
-areg: $(areg_TARGET_PATH)
+areg: $(areg_TARGET_BIN)
 
 # define one target for each source file
 $(foreach cpp, $(areg_SRC), $(eval $(call obj, $(cpp), $(areg_OUTPUT_OBJ), areg_OBJS, $(areg_CXXFLAGS))))
@@ -31,7 +28,7 @@ $(foreach cpp, $(areg_SRC), $(eval $(call obj, $(cpp), $(areg_OUTPUT_OBJ), areg_
 DEPS = $(areg_OBJS:%.o=%.d)
 -include $(DEPS)
 
-$(areg_TARGET_PATH): $(areg_OBJS)
+$(areg_TARGET_BIN): $(areg_OBJS)
 	@echo "Linking $(areg_PROJECT_NAME) $(AREG_BINARY) library ..."
 	@mkdir -p $(dir $@)
 	if [ "$(AREG_BINARY)" = "shared" ]; then \
