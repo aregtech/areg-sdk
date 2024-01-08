@@ -1,5 +1,5 @@
-set(logobserver_BASE     "${AREG_BASE}/logobserver")
-set(logobserver_RESOURCE "${logobserver_BASE}/resources")
-set(logobserver_SRC)
+set(logobserverapp_BASE		"${logobserver_BASE}/app")
+set(logobserverapp_RESOURCE "${logobserver_BASE}/resources")
+set(logobserverapp_SRC)
 
-include("${logobserver_BASE}/app/private/CMakeLists.txt")
+include("${logobserverapp_BASE}/private/CMakeLists.txt")

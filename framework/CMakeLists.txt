@@ -45,10 +45,6 @@ addStaticLib(areg-extend "${extend_SRC}")
 
 # build log observer API library
 if (AREG_LOGOBSERVER_LIB MATCHES "shared")
-    # in case of Windows add DEF file.
-    if (MSVC)
-	    list(APPEND logobserverapi_SRC ${logobserverapi_RESOURCE}/logobserver.def)
-    endif()
 
     # build log observer API shared library
     addSharedLib(logobserverapi "${logobserverapi_SRC}")
@@ -67,7 +63,7 @@ if (AREG_LOGOBSERVER_LIB MATCHES "shared")
 
 else(AREG_LOGOBSERVER_LIB MATCHES "shared")
     # build log observer API static library
-    addStaticLib(logobserver "${logobserverapi_SRC}")
+    addStaticLib(logobserverapi "${logobserverapi_SRC}")
 
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
         target_compile_options(logobserverapi PRIVATE -fPIC)
@@ -84,7 +80,7 @@ addExecutable(mcrouter "${mcrouter_SRC}")
 addExecutable(logger "${logger_SRC}")
 
 # build log observer console application
-addExecutableEx(logobserver "${logobserver_SRC}" logobserverapi)
+addExecutableEx(logobserver "${logobserverapp_SRC}" logobserverapi)
 if (AREG_LOGOBSERVER_LIB MATCHES "shared")
     target_compile_definitions(logobserver PRIVATE IMP_LOGOBSERVER_DLL)
 else(AREG_LOGOBSERVER_LIB MATCHES "shared")
