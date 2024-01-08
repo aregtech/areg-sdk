@@ -11,7 +11,7 @@ $(foreach cpp, $(00_twothreads_SRC), $(eval $(call obj, $(cpp), $(00_twothreads_
 DEPS = $(00_twothreads_OBJS:%.o=%.d)
 -include $(DEPS)
 
-$(AREG_OUTPUT_BIN)/$(00_twothreads_TARGET_BIN): $(areg_TARGET_PATH) $(00_twothreads_OBJS) $(00_helloservice_DEPEND)
+$(00_twothreads_TARGET_BIN): $(areg_TARGET_BIN) $(00_twothreads_OBJS) $(00_helloservice_DEPEND)
 	@echo "Linking $@ ..."
 	@mkdir -p $(dir $@)
 	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(00_helloservice_CXXFLAGS) $(00_twothreads_OBJS) $(00_helloservice_LDFLAGS) -o $@

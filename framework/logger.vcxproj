@@ -58,6 +58,7 @@
     <ResourceCompile Include="logger\resources\logger.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="logger\app\private\Makefile" />
     <None Include="logger\Makefile" />
     <None Include="logger\Readme.md" />
     <None Include="logger\resources\logger.ico" />

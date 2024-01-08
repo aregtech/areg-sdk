@@ -15,48 +15,54 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="observer\app\private\LogObserver.cpp">
+    <ClCompile Include="logobserver\app\private\LogObserver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="observer\app\private\NELogObserverSettings.cpp">
+    <ClCompile Include="logobserver\app\private\NELogObserverSettings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="observer\app\private\posix\LogObserverPosix.cpp">
+    <ClCompile Include="logobserver\app\private\posix\LogObserverPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="observer\app\private\win32\LogObserverWin32.cpp">
+    <ClCompile Include="logobserver\app\private\win32\LogObserverWin32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="observer\app\LogObserver.hpp">
+    <ClInclude Include="logobserver\app\LogObserver.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="observer\app\NELogObserverSettings.hpp">
+    <ClInclude Include="logobserver\app\NELogObserverSettings.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="observer\app\resources\resource.hpp">
+    <ClInclude Include="logobserver\app\resources\resource.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="observer\app\resources\targetver.hpp">
+    <ClInclude Include="logobserver\app\resources\targetver.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="observer\app\private\CMakeLists.txt" />
-    <Text Include="observer\app\CMakeLists.txt" />
+    <Text Include="logobserver\app\private\CMakeLists.txt" />
+    <Text Include="logobserver\app\CMakeLists.txt" />
+    <Text Include="logobserver\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="observer\app\resources\logobserver.ico">
+    <Image Include="logobserver\app\resources\logobserver.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="observer\app\resources\small.ico">
+    <Image Include="logobserver\app\resources\small.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="observer\app\resources\logobserver.rc">
+    <ResourceCompile Include="logobserver\app\resources\logobserver.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="logobserver\app\Makefile" />
+    <None Include="logobserver\Makefile" />
+    <None Include="logobserver\app\private\Makefile" />
   </ItemGroup>
 </Project>

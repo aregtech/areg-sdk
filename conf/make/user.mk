@@ -18,7 +18,7 @@
 # AREG_BUILD_TYPE		-- 'Debug' or 'Release' build types of codes. The default is 'Release'. The default is 'Release'
 # AREG_EXTENDED			-- Enabled or disable extensions in AREG extended static library and it may require additional dependencies. By default is OFF.
 # AREG_LOGS				-- Enable or disable compilation with logs.
-# AREG_OBSERVER_LIB		-- Set the observer API library type. By default it is set as shared.
+# AREG_LOGOBSERVER_LIB  -- Set the log observer API library type. By default it is set as shared.
 #
 # The following is a list of preprocessor directives, depending on the settings above:
 #   1. -DDEBUG or -DNDEBUG, depending whether AREG_BUILD_TYPE name is "Debug" or not, default is -DNDEBUG ("Release")
@@ -140,8 +140,8 @@ AREG_EXTENDED := $(if $(AREG_EXTENDED),$(AREG_EXTENDED),0)
 # By default, the applications are compiled with logs.
 AREG_LOGS := $(if $(AREG_LOGS),$(AREG_LOGS),1)
 
-# Modify 'AREG_OBSERVER_LIB' to compile observer library either as shared or static.
-AREG_OBSERVER_LIB := $(if $(AREG_OBSERVER_LIB),$(AREG_OBSERVER_LIB),shared)
+# Modify 'AREG_LOGOBSERVER_LIB' to compile log observer library either as shared or static.
+AREG_LOGOBSERVER_LIB := $(if $(AREG_LOGOBSERVER_LIB),$(AREG_LOGOBSERVER_LIB),shared)
 
 # ###########################################################################
 #           AERG SDK globals

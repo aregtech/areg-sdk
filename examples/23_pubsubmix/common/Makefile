@@ -11,7 +11,7 @@ $(foreach cpp, $(23_common_SRC), $(eval $(call obj, $(cpp), $(23_common_OUTPUT_O
 DEPS = $(23_common_OBJS:%.o=%.d)
 -include $(DEPS)
 
-$(AREG_OUTPUT_LIB)/$(23_common_TARGET_BIN): $(23_common_OBJS)
+$(23_common_TARGET_BIN): $(23_common_OBJS)
 	@echo "Linking $@ ..."
 	@mkdir -p $(dir $@)
 	$(AREG_AR) -rcs $@ $^

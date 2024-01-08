@@ -31,4 +31,8 @@
     <Text Include="pubservice\CMakeLists.txt" />
     <Text Include="pubservice\src\CMakeLists.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="pubservice\Makefile" />
+    <None Include="pubservice\src\Makefile" />
+  </ItemGroup>
 </Project>

@@ -61,7 +61,7 @@ namespace
     }
 
     /**
-     * \brief   Returns predefined structure for to log a message on remote collector / observer.
+     * \brief   Returns predefined structure for to log a message on remote log collector / observer.
      *          The structure is used as a template to initialize remote communication message.
      *          The source of the log should be set before sending the message.
      *          Otherwise, it is ignored by the logger and the message is dropped.

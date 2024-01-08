@@ -53,6 +53,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="res\HelloWatchdog.siml" />
+    <None Include="generated\Makefile" />
+    <None Include="generated\src\private\Makefile" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="generated\CMakeLists.txt" />

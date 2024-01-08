@@ -106,12 +106,12 @@ namespace NERemoteService
     AREG_API const NEMemory::sRemoteMessage & getMessageRegisterService( void );
 
     /**
-     * \brief   Returns fixed message to query service the connected instances. Only observers can query.
+     * \brief   Returns fixed message to query service the connected instances. Only log observers can query.
      **/
     AREG_API const NEMemory::sRemoteMessage & getMessageQueryInstances( void );
 
     /**
-     * \brief   Returns fixed message to notify observers the connected instances. Only observers receive the message.
+     * \brief   Returns fixed message to notify log observers the connected instances. Only log observers receive the message.
      **/
     AREG_API const NEMemory::sRemoteMessage & getMessageNotifyInstances(void);
 

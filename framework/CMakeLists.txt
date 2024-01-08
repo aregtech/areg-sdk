@@ -6,7 +6,7 @@ include("${AREG_BASE}/areg/CMakeLists.txt")
 include("${AREG_BASE}/extend/CMakeLists.txt")
 include("${AREG_BASE}/mcrouter/CMakeLists.txt")
 include("${AREG_BASE}/logger/CMakeLists.txt")
-include("${AREG_BASE}/observer/CMakeLists.txt")
+include("${AREG_BASE}/logobserver/CMakeLists.txt")
 
 # build areg library
 if(AREG_BINARY MATCHES "shared")
@@ -43,39 +43,39 @@ set_target_properties(areg PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STAN
 # build areg extended static library
 addStaticLib(areg-extend "${extend_SRC}")
 
-# build observer API library
-if (AREG_OBSERVER_LIB MATCHES "shared")
+# build log observer API library
+if (AREG_LOGOBSERVER_LIB MATCHES "shared")
     # in case of Windows add DEF file.
     if (MSVC)
-	    list(APPEND observer_lib_SRC ${observer_lib_RESOURCE}/observerapi.def)
+	    list(APPEND logobserverapi_SRC ${logobserverapi_RESOURCE}/logobserver.def)
     endif()
 
-    # build observer API shared library
-    addSharedLib(observerapi "${observer_lib_SRC}")
+    # build log observer API shared library
+    addSharedLib(logobserverapi "${logobserverapi_SRC}")
 
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
-        target_compile_options(observerapi PRIVATE -fPIC)
+        target_compile_options(logobserverapi PRIVATE -fPIC)
     endif()
 
-    # observer API shared library
-    target_compile_definitions(observerapi PRIVATE EXP_OBSERVER_DLL)
+    # log observer API shared library
+    target_compile_definitions(logobserverapi PRIVATE EXP_LOGOBSERVER_DLL)
 
     # add MSVC linker option
     if (MSVC)
-        target_link_options(observerapi PRIVATE "/DEF:${observer_lib_RESOURCE}/observerapi.def")
+        target_link_options(logobserverapi PRIVATE "/DEF:${logobserverapi_RESOURCE}/logobserver.def")
     endif()
 
-else(AREG_OBSERVER_LIB MATCHES "shared")
-    # build observer API shared library
-    addStaticLib(observerapi "${observer_lib_SRC}")
+else(AREG_LOGOBSERVER_LIB MATCHES "shared")
+    # build log observer API static library
+    addStaticLib(logobserver "${logobserverapi_SRC}")
 
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
-        target_compile_options(observerapi PRIVATE -fPIC)
+        target_compile_options(logobserverapi PRIVATE -fPIC)
     endif()
-    # observer API shared library
-    target_compile_definitions(observerapi PRIVATE EXP_OBSERVER_LIB)
+    # log observer API static library
+    target_compile_definitions(logobserverapi PRIVATE EXP_LOGOBSERVER_LIB)
 
-endif(AREG_OBSERVER_LIB MATCHES "shared")
+endif(AREG_LOGOBSERVER_LIB MATCHES "shared")
 
 # build mcrouter executable
 addExecutable(mcrouter "${mcrouter_SRC}")
@@ -84,12 +84,12 @@ addExecutable(mcrouter "${mcrouter_SRC}")
 addExecutable(logger "${logger_SRC}")
 
 # build log observer console application
-addExecutableEx(logobserver "${logobserver_SRC}" observerapi)
-if (AREG_OBSERVER_LIB MATCHES "shared")
-    target_compile_definitions(logobserver PRIVATE IMP_OBSERVER_DLL)
-else(AREG_OBSERVER_LIB MATCHES "shared")
-    target_compile_definitions(observerapi PRIVATE IMP_OBSERVER_LIB)
-endif(AREG_OBSERVER_LIB MATCHES "shared")
+addExecutableEx(logobserver "${logobserver_SRC}" logobserverapi)
+if (AREG_LOGOBSERVER_LIB MATCHES "shared")
+    target_compile_definitions(logobserver PRIVATE IMP_LOGOBSERVER_DLL)
+else(AREG_LOGOBSERVER_LIB MATCHES "shared")
+    target_compile_definitions(logobserver PRIVATE IMP_LOGOBSERVER_LIB)
+endif(AREG_LOGOBSERVER_LIB MATCHES "shared")
 
 # copying log and router init files to 'bin/config'
 file(MAKE_DIRECTORY ${AREG_OUTPUT_BIN}/config)

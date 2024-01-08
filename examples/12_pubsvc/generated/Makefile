@@ -11,7 +11,7 @@ $(foreach cpp, $(12_generated_SRC), $(eval $(call obj, $(cpp), $(12_generated_OU
 DEPS = $(12_generated_OBJS:%.o=%.d)
 -include $(DEPS)
 
-$(AREG_OUTPUT_LIB)/$(12_generated_TARGET_BIN): $(12_generated_OBJS)
+$(12_generated_TARGET_BIN): $(12_generated_OBJS)
 	@echo "Linking $@ ..."
 	@mkdir -p $(dir $@)
 	$(AREG_AR) -rcs $@ $^

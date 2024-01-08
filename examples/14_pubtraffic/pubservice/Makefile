@@ -11,7 +11,7 @@ $(foreach cpp, $(14_pubservice_SRC), $(eval $(call obj, $(cpp), $(14_pubservice_
 DEPS = $(14_pubservice_OBJS:%.o=%.d)
 -include $(DEPS)
 
-$(AREG_OUTPUT_BIN)/$(14_pubservice_TARGET_BIN): $(areg_TARGET_PATH) $(14_pubservice_OBJS) $(14_pubtraffic_DEPEND)
+$(14_pubservice_TARGET_BIN): $(areg_TARGET_BIN) $(14_pubservice_OBJS) $(14_pubtraffic_DEPEND)
 	@echo "Linking $@ ..."
 	@mkdir -p $(dir $@)
 	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(14_pubtraffic_CXXFLAGS) $(14_pubservice_OBJS) -o $@ $(14_pubtraffic_LDFLAGS)

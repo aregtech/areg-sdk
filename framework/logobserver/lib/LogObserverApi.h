@@ -1,0 +1,404 @@
+#ifndef AREG_LOGOBSERVER_LIB_LOGOBSERVERAPI_H
+#define AREG_LOGOBSERVER_LIB_LOGOBSERVERAPI_H
+/************************************************************************
+ * This file is part of the AREG SDK core engine.
+ * AREG SDK is dual-licensed under Free open source (Apache version 2.0
+ * License) and Commercial (with various pricing models) licenses, depending
+ * on the nature of the project (commercial, research, academic or free).
+ * You should have received a copy of the AREG SDK license description in LICENSE.txt.
+ * If not, please contact to info[at]aregtech.com
+ *
+ * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
+ * \file        logobserver/lib/LogObserverApi.h
+ * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
+ * \author      Artak Avetyan
+ * \brief       AREG Platform, Log Observer library API.
+ *
+ ************************************************************************/
+
+/************************************************************************
+ * Include files.
+ ************************************************************************/
+#include "logobserver/lib/LogObserverSwitches.h"
+
+/**
+ * \brief   The message source is a client application.
+ **/
+#define SOURCE_CLIENT       1
+/**
+ * \brief   The message source is a test application.
+ **/
+#define SOURCE_TEST         8
+/**
+ * \brief   The message source is a simulation application.
+ **/
+#define SOURCE_SIMULATION   16
+
+/**
+ * \brief   The bitness of the message source application. These indicate either 32- or 64-bit application.
+ **/
+#define BITNESS_32BITS      32
+#define BITNESS_64BITS      64
+
+/**
+ * \brief   The maximum length of the names, including null-terminated character in the name.
+ **/
+#define LENGTH_NAME         128
+/**
+ * \brief   The maximum length of the file locations, including null-terminated character in the name.
+ **/
+#define LENGTH_LOCATION     512
+/**
+ * \brief   The maximum length of scope name, including null-terminated character in the name.
+ **/
+#define LENGTH_SCOPE        256
+/**
+ * \brief   The maximum length log message text, including null-terminated character in the name.
+ **/
+#define LENGTH_MESSAGE      512
+
+#define ID_IGNORE           0u
+
+/**
+ * \brief   The structure of the connected instance.
+ **/
+struct sLogInstance
+{
+    /* The type of the message source application. Either client, test or simulation */
+    uint32_t    liSource;
+    /* The bitness of the application, should be either 32 or 64 */
+    uint32_t    liBitness;
+    /* The cookie ID of the connected client. */
+    ITEM_ID     liCookie;
+    /* The connection timestamp */
+    TIME64      liTimestamp;
+    /* The name of the connected application */
+    char        liName[LENGTH_NAME];
+    /* The name of the file location. */
+    char        liLocation[LENGTH_LOCATION];
+};
+
+/**
+ * \brief   The type of the log message
+ **/
+enum eLogType
+{
+    /* The enter scope log message */
+      LogScopeEnter     = 1
+    /* The log message text */
+    , LogMessageText    = 2
+    /* The exit scope log message */
+    , LogScopeExit      = 4
+};
+
+/**
+ * \brief   The priority of logs. Can be in combination with PrioScope
+ **/
+enum eLogPriority
+{
+    /* No priority, should not log any message */
+      PrioNotSet    = 0x0001
+    /* Logs scope enter and scope exit messages */
+    , PrioScope     = 0x0010
+    /* Logs fatal error messages. Can be in combination with PrioScope */
+    , PrioFatal     = 0x0020
+    /* Logs fatal error and error messages. Can be in combination with PrioScope */
+    , PrioError     = 0x0040
+    /* Logs fatal error, error and warning messages. Can be in combination with PrioScope */
+    , PrioWarning   = 0x0080
+    /* Logs fatal error, error, warning and info messages. Can be in combination with PrioScope */
+    , PrioInfo      = 0x0100
+    /* Logs fatal error, error, warning, info and debug messages. Can be in combination with PrioScope */
+    , PrioDebug     = 0x0200
+    /* Logs a message without priority. Can be in combination with PrioScope */
+    , PrioAny       = 0x0FF0
+};
+
+/**
+ * \brief   The structure of scopes
+ **/
+struct sLogScope
+{
+    /* The ID of the scope. Can be 0 if unknown or if indicates to scope group. */
+    uint32_t    lsId;
+    /* The priority of the scope to log messages. These are values of eLogPriority. Can be set bitwise. */
+    uint32_t    lsPrio;
+    /* The name of the scope or scope group. The scope groups are ending with '*'. For example 'areg_base_*' */
+    char        lsName[LENGTH_SCOPE];
+};
+
+/**
+ * \brief   The structure of the logging message.
+ **/
+struct sLogMessage
+{
+    /* The type of the message: scope enter, scope exit or message text. */
+    eLogType        msgType;
+    /* The priority of the message to log. */
+    eLogPriority    msgPriority;
+    /* The ID of the message source. This value is indicated in the sLogInstance::liCookie */
+    ITEM_ID         msgSource;
+    /* The cookie ID of the message. This value is indicated in the sLogInstance::liCookie */
+    ITEM_ID         msgCookie;
+    /* The ID of the process, running on the local machine. */
+    ITEM_ID         msgModuleId;
+    /* The ID of the thread where the log has been generated. */
+    ITEM_ID         msgThreadId;
+    /* The timestamp where the log was generated. */
+    TIME64          msgTimestamp;
+    /* The ID of the scope that generated message. Same as indicated in sLogScope::lsId. */
+    uint32_t        msgScopeId;
+    /* The text of generated log message. */
+    char            msgLogText[LENGTH_MESSAGE];
+    /* The name of the thread, if set, where the message was generated. */
+    char            msgThread[LENGTH_NAME];
+    /* The name of the application that generated the message. Same as in sLogInstance::liName */
+    char            msgModule[LENGTH_NAME];
+};
+
+/**
+ * \brief   The states of the log observer.
+ **/
+enum eObserverStates
+{
+    /* The lob observer is uninitialized */
+      ObserverUninitialized = 0
+    /* The log observer is initialized, but disconnected / stopped. */
+    , ObserverDisconnected  = 1
+    /* The log observer is connected and started. */
+    , ObserverConnected     = 3
+    /* The log observer is connected, but paused, i.e. receives, but does not write or forward logs. */
+    , ObserverPaused        = 7
+};
+
+/**
+ * \brief   The callback of the event triggered when initializing and configuring the observer.
+ *          The callback indicates the IP address and port number of the logger service set
+ *          in the configuration file.
+ * \param   address         The null-terminated string of the IP address of the logger service set in the configuration file.
+ * \param   port            The IP port number of the logger service set in the configuration file.
+ **/
+typedef void (*FuncObserverConfigured)(const char * /*address*/, uint16_t /*port*/);
+
+/**
+ * \brief   The callback of the event triggered when the observer connects or disconnects from the logger service.
+ * \param   isConnected     Flag, indicating whether observer is connected or disconnected.
+ * \param   address         The IP address of the logger service to connect or disconnect.
+ * \param   port            The IP port number of the logger service to connect or disconnect.
+ **/
+typedef void (*FuncServiceConnected)(bool /*isConnected*/, const char * /*address*/, uint16_t /*port*/);
+
+/**
+ * \brief   The callback of the event trigger when starting or pausing the log observer.
+ *          If the log observer is paused, on start it continues to write logs in the same file.
+ *          If the log observer is stopped (disconnected is called), on start it creates new file.
+ * \param   isStarted       The flag indicating whether the lob observer is started or paused.
+ **/
+typedef void(*FuncObserverStarted)(bool /*isStarted*/);
+
+/**
+ * \brief   The callback of the event triggered when fails to send or receive message.
+ **/
+typedef void (*FuncMessagingFailed)();
+
+/**
+ * \brief   The callback of the event triggered when receive the list of connected instances that make logs.
+ * \param   instances   The pointer to the list of the connected instances.
+ * \param   count       The number of entries in the list.
+ **/
+typedef void (*FuncInstancesConnect)(const sLogInstance* /*instances*/, uint32_t /*count*/);
+
+/**
+ * \brief   The callback of the event triggered when receive the list of disconnected instances that make logs.
+ * \param   instances   The pointer to the list of IDs of the disconnected instances.
+ * \param   count       The number of entries in the list.
+ **/
+typedef void (*FuncInstancesDisconnect)(const ITEM_ID * /*instances*/, uint32_t /*count*/);
+
+/**
+ * \brief   The callback of the event triggered when receive the list of the scopes registered in an application.
+ * \param   cookie  The cookie ID of the connected instance / application. Same as sLogInstance::liCookie
+ * \param   scopes  The list of the scopes registered in the application. Each entry contains the ID of the scope, message priority and the full name.
+ * \param   count   The number of scope entries in the list.
+ **/
+typedef void (*FuncLogScopes)(ITEM_ID /*cookie*/, const sLogScope* /*scopes*/, uint32_t /*count*/);
+
+/**
+ * \brief   The callback of the event triggered when receive message to log.
+ * \param   logMessage  The structure of the message to log.
+ **/
+typedef void (*FuncLogMessage)(const sLogMessage * /*logMessage*/);
+
+/**
+ * \brief   The callback of the event triggered when receive remote message to log.
+ *          The buffer indicates to the NETrace::sLogMessage structure.
+ * \param   logBuffer   The pointer to the NETrace::sLogMessage structure to log messages.
+ * \param   size        The size of the buffer with log message.
+ **/
+typedef void (*FuncLogMessageEx)(const unsigned char* /*logBuffer*/, uint32_t /*size*/);
+
+/**
+ * \brief   The structure of the callbacks / events to set when send or receive messages.
+ **/
+struct sObserverEvents
+{
+    /* The callback to the trigger when the observer is initialized and configured. */
+    FuncObserverConfigured  evtObserverConfigured;
+    /* The callback to trigger when connect or disconnect logger service. */
+    FuncServiceConnected    evtServiceConnected;
+    /* The callback to trigger when log observer is tarted or paused. */
+    FuncObserverStarted     evtLoggingStarted;
+    /* The callback to trigger when fails to send or receive message. */
+    FuncMessagingFailed     evtMessagingFailed;
+    /* The callback to trigger when receive list of connected instances that make logs. */
+    FuncInstancesConnect    evtInstConnected;
+    /* The callback to trigger when receive list of IDs of the disconnected instances that make logs. */
+    FuncInstancesDisconnect evtInstDisconnected;
+    /* The callback to trigger when receive list of registered scopes. */
+    FuncLogScopes           evtLogScopes;
+    /* The callback to trigger when receive a message to log. If is set and not null, the 'evtLogMessageEx' callback is ignored. */
+    FuncLogMessage          evtLogMessage;
+    /* The callback to trigger when receive remote message to log. To use, set the 'evtLogMessage' callback null. */
+    FuncLogMessageEx        evtLogMessageEx;
+};
+
+/**
+ * \brief   Call to initialize the log observer internals. This function should
+ *          be called before any other. The multiple call of this function will not
+ *          have any effect.
+ * \param   configFilePath  Relative or absolute path to the application configuration file.
+ *                          If NULL, it uses the default location of the config file './config/areg.init'
+ * \returns Returns true, if succeeded to initialize internals. Otherwise, returns false.
+ **/
+LOGOBSERVER_API bool logObserverInitialize(const sObserverEvents * callbacks, const char * configFilePath = 0);
+
+/**
+ * \brief   Call to release the log observer internals and release resources. This function should
+ *          be called at the end of application run. Once the observer is uninitialized, it will be
+ *          not possible to use any other API and trigger remote methods.
+ **/
+LOGOBSERVER_API void logObserverRelease();
+
+/**
+ * \brief   Call to trigger TCP/IP connection with the logger service. Either specify the IP address and the port number
+ *          of the logger service to connect, or pass NULL to use settings indicated in the LOGconfiguration file.
+ * \param   ipAddress   The IP address or the host name of the logger service. If NULL, uses IP address indicated in the config file.
+ *                      If NULL, the port number is ignored and the value in the configuration file is used.
+ * \param   portNr      The port number to connect. If 0, uses port number indicated in the config file.
+ *                      If 0, the IP address is ignore and the value in the configuration file is used.
+ * \return  Returns true if succeeded to trigger connection. The physical connection might not be established yet.
+ *          The physical connection is established when triggers callback of type FuncServiceConnected.
+ * \note    The 'ipAddress' and 'portNr' parameters should be either both valid or they are ignored and the default values
+ *          indicated in the configuration file are used.
+ **/
+LOGOBSERVER_API bool logObserverConnectLogger(const char* ipAddress = 0, uint16_t portNr = 0);
+
+/**
+ * \brief   Call to trigger disconnect from logger service.
+ *          After disconnecting the callback of FuncServiceConnected type is triggered.
+ **/
+LOGOBSERVER_API void logObserverDisconnectLogger();
+
+/**
+ * \brief   Call to start paused log observer. By default, when log observer is connected, it is in started state.
+ *          When call logObserverStart(false) it pauses the log observer and no messages are logged.
+ *          On start, the log observer resumes and continues writing logs.
+ * \param   doPause     The flag to set to indicate whether the log observer should pause or resume writing logs.
+ **/
+LOGOBSERVER_API void logObserverPauseLogging(bool doPause);
+
+/**
+ * \brief   Call to get the current state of the log observer.
+ **/
+LOGOBSERVER_API eObserverStates logObserverCurrentState();
+
+/**
+ * \brief   Returns true if log observer is initialized and the logger service connection is triggered.
+ *          Otherwise, it returns false.
+ *          The method does not indicate whether the observer is connected to the logger service or not.
+ **/
+LOGOBSERVER_API bool logObserverIsInitialized();
+
+/**
+ * \brief   Returns true if log observer is initialize and connected to the logger service.
+ *          Otherwise, it returns false.
+ **/
+LOGOBSERVER_API bool logObserverIsConnected();
+
+/**
+ * \brief   Returns true, if log observer is initialized, connected, receives and writes or forwards logs.
+ *          In all other cases it returns false.
+ **/
+LOGOBSERVER_API bool logObserverIsStarted();
+
+/**
+ * \brief   Returns the current IP address of the logger service to connect.
+ *          Returns empty string, if not configured or the IP address is unknown
+ **/
+LOGOBSERVER_API const char * logObserverLoggerAddress();
+
+/**
+ * \brief   Returns the current IP port of the logger service to connect.
+ *          Return 0 (invalid port), if not configured or the port number is unknown
+ **/
+LOGOBSERVER_API uint16_t logObserverLoggerPort();
+
+/**
+ * \brief   Return true if logger TCP/IP connection is enabled in the configuration file.
+ *          Otherwise, returns false.
+ **/
+LOGOBSERVER_API bool logObserverConfigLoggerEnabled();
+
+/**
+ * \brief   On exit, the addrBuffer contains the IP address of the logger registered in the configuration file.
+ * \param   addrBuffer  Should be valid pointer of the buffer to write the IP address, the minimum size should be 16 bytes.
+ * \param   space       The length of the buffer to write the IP address, inclusive the null-terminated character at the end.
+ * \return  Returns true, if succeeds to write the address. Returns false, if the log observer is not configured,
+ *          or the address is not specified in the configuration, or the buffer is not big enough to write address.
+ **/
+LOGOBSERVER_API bool logObserverConfigLoggerAddress(char * addrBuffer, uint32_t space);
+
+/**
+ * \brief   Returns the configured IP port of the logger service to connect,
+ *          i.e. the IP port saved in configuration file. Returns 0 (invalid port),
+ *          if the log observer is not configured or the port number is not specified in configuration.
+ **/
+LOGOBSERVER_API unsigned short logObserverConfigLoggerPort();
+
+/**
+ * \brief   Call to request the list of connected instances.
+ *          The callback of FuncLogInstances type is triggered when receive the list of connected instances.
+ **/
+LOGOBSERVER_API void logObserverRequestInstances();
+
+/**
+ * \brief   Call to receive the list of registered scopes of the specified connected instance.
+ * \param   target  The cookie ID of the target instance to receive the list of registered scopes.
+ *                  If the target is ID_IGNORE (or 0), it receives the list of scopes of all connected instances.
+ *                  Otherwise, should be indicated the valid cookie ID of the connected log instance.
+ **/
+LOGOBSERVER_API void logObserverRequestScopes(ITEM_ID target);
+
+/**
+ * \brief   Call to update the priority of the logging message to receive.
+ *          The indicated scopes can be scope group.
+ * \param   target  The valid cookie ID of the target to update the log message priority.
+ *                  This value cannot be ID_IGNORE (or 0).
+ * \param   scopes  The list of scopes of scope group to update the priority.
+ *                  The scope group should  end with '*'. For example 'areg_base_*'.
+ *                  In this case the ID of the scope can be 0.
+ * \param   count   The number of scope entries in the list.
+ **/
+LOGOBSERVER_API void logObserverRequestChangeScopePrio(ITEM_ID target, const sLogScope* scopes, uint32_t count);
+
+/**
+ * \brief   Call to save current configuration of the specified target. This is normally called when update the log priority of the instance,
+ *          so that on next start the application logs message of the scopes and priorities currently set.
+ * \param   target  The cookie ID of the target instance to save the configuration.
+ *                  If the target is ID_IGNORE (or 0), the request is sent to all connected instances.
+ *                  Otherwise, should be indicated the valid cookie ID of the connected log instance.
+ **/
+LOGOBSERVER_API void logObserverRequestSaveConfig(ITEM_ID target);
+
+#endif  // AREG_LOGOBSERVER_LIB_LOGOBSERVERAPI_H
+

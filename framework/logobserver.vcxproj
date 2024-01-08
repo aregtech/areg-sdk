@@ -21,7 +21,7 @@
   </ImportGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;IMP_OBSERVER_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;IMP_LOGOBSERVER_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -34,27 +34,33 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="observer\app\LogObserver.hpp" />
-    <ClInclude Include="observer\app\NELogObserverSettings.hpp" />
-    <ClInclude Include="observer\app\resources\resource.hpp" />
-    <ClInclude Include="observer\app\resources\targetver.hpp" />
+    <ClInclude Include="logobserver\app\LogObserver.hpp" />
+    <ClInclude Include="logobserver\app\NELogObserverSettings.hpp" />
+    <ClInclude Include="logobserver\app\resources\resource.hpp" />
+    <ClInclude Include="logobserver\app\resources\targetver.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="observer\app\private\LogObserver.cpp" />
-    <ClCompile Include="observer\app\private\NELogObserverSettings.cpp" />
-    <ClCompile Include="observer\app\private\posix\LogObserverPosix.cpp" />
-    <ClCompile Include="observer\app\private\win32\LogObserverWin32.cpp" />
+    <ClCompile Include="logobserver\app\private\LogObserver.cpp" />
+    <ClCompile Include="logobserver\app\private\NELogObserverSettings.cpp" />
+    <ClCompile Include="logobserver\app\private\posix\LogObserverPosix.cpp" />
+    <ClCompile Include="logobserver\app\private\win32\LogObserverWin32.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="observer\app\CMakeLists.txt" />
-    <Text Include="observer\app\private\CMakeLists.txt" />
+    <Text Include="logobserver\app\CMakeLists.txt" />
+    <Text Include="logobserver\app\private\CMakeLists.txt" />
+    <Text Include="logobserver\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="observer\app\resources\logobserver.ico" />
-    <Image Include="observer\app\resources\small.ico" />
+    <Image Include="logobserver\app\resources\logobserver.ico" />
+    <Image Include="logobserver\app\resources\small.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="observer\app\resources\logobserver.rc" />
+    <ResourceCompile Include="logobserver\app\resources\logobserver.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="logobserver\app\Makefile" />
+    <None Include="logobserver\app\private\Makefile" />
+    <None Include="logobserver\Makefile" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

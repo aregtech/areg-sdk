@@ -54,5 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="res\HelloWorld.siml" />
+    <None Include="generated\Makefile" />
+    <None Include="generated\src\private\Makefile" />
   </ItemGroup>
 </Project>

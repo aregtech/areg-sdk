@@ -42,4 +42,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="common\CMakeLists.txt" />
+    <Text Include="common\src\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="common\Makefile" />
+    <None Include="common\src\Makefile" />
+  </ItemGroup>
 </Project>

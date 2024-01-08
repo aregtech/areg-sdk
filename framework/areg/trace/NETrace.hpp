@@ -521,10 +521,10 @@ namespace NETrace
      *          After option it should follow either '*' for all connected clients or the list of connected cookies.
      *          The cookie ID is specified, the message is sent to the specified target. Otherwise, the message is sent
      *          to all connected clients. An empty command after option is considered as sending message to all clients.
-     *          Only observers and the log collector service (logger) can generate and send the message.
+     *          Only log observers and the log collector service (logger) can generate and send the message.
      *          The message is ignored if the client creates and send the message.
      * \param   source      The ID of the source that generated the message.
-     *                      The source should be either observer or NEService::COOKIE_LOGGER.
+     *                      The source should be either log observer or NEService::COOKIE_LOGGER.
      * \param   target      The ID of the target to send the message.
      *                      If the ID is NEService::COOKIE_ANY, the message is sent to all connected clients.
      * \return  Returns generated message ready to send from indicated source to the target.
@@ -533,7 +533,7 @@ namespace NETrace
 
     /**
      * \brief   Creates a message to send request to the connected client target to save configuration.
-     * \param   source      The source ID that generated the message. It should be either ID of the observer application
+     * \param   source      The source ID that generated the message. It should be either ID of the log observer application
      *                      or the ID of the logger service.
      * \param   target      The target ID to receive the message. This target can be either concrete connected client
      *                      or can be NEService::COOKIE_ANY if should be forwarded to all connected clients.

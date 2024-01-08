@@ -71,7 +71,7 @@ private:
 public:
     /**
      * \brief   Initializes logger base objects and logger service client object to
-     *          communicate via TCP/IP protocol to forward logs to observers.
+     *          communicate via TCP/IP protocol to forward logs to log observers.
      * \param   logConfig       The log configuration object, which contains information about log state.
      * \param   scopeController The scope controller object, which contains and controls the scopes in application.
      * \param   dispatchThread  The dispatcher thread to dispatch events and messages.
