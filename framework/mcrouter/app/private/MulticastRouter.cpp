@@ -43,18 +43,17 @@ namespace
 
         // define console service thread.
         BEGIN_REGISTER_THREAD( "RouterConsoleServiceThread", NECommon::WATCHDOG_IGNORE )
-        // Define the console service
-        BEGIN_REGISTER_COMPONENT(RouterConsoleService::SERVICE_NAME, RouterConsoleService)
-        // register dummy 'empty service'.
-        REGISTER_IMPLEMENT_SERVICE( NEService::EmptyServiceName, NEService::EmptyServiceVersion )
-        // end of component description
-        END_REGISTER_COMPONENT(RouterConsoleService::SERVICE_NAME )
+            // Define the console service
+            BEGIN_REGISTER_COMPONENT(RouterConsoleService::SERVICE_NAME, RouterConsoleService)
+                // register dummy 'empty service'.
+                REGISTER_IMPLEMENT_SERVICE( NEService::EmptyServiceName, NEService::EmptyServiceVersion )
+            // end of component description
+            END_REGISTER_COMPONENT(RouterConsoleService::SERVICE_NAME )
         // end of thread description
         END_REGISTER_THREAD( "RouterConsoleServiceThread" )
 
-        // end of model description
-        END_MODEL(_modelName)
-
+    // end of model description
+    END_MODEL(_modelName)
 
     constexpr std::string_view _msgHelp []
     {
