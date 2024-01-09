@@ -136,7 +136,10 @@ void Logger::printStatus(const String& status)
 
     if (Logger::getInstance().getCurrentOption() == NESystemService::eServiceOption::CMD_Console)
     {
+        Console& console{ Console::getInstance() };
+        Console::Coord curPos{ console.getCursorCurPosition() };
         Logger::_outputInfo(status);
+        console.setCursorCurPosition(curPos);
     }
 
 #endif // AREG_EXTENDED
