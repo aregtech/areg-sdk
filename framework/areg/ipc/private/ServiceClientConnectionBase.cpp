@@ -237,10 +237,7 @@ void ServiceClientConnectionBase::onServiceStop(void)
     mTimerConnect.stopTimer( );
 
     Channel channel{ mChannel };
-
-    mChannel.setCookie( NEService::COOKIE_UNKNOWN );
-    mChannel.setSource( NEService::SOURCE_UNKNOWN );
-    mChannel.setTarget( NEService::TARGET_UNKNOWN );
+    mChannel.invalidate();
 
     mThreadReceive.triggerExit( );
 
@@ -290,9 +287,7 @@ void ServiceClientConnectionBase::onServiceConnectionStopped(void)
     mTimerConnect.stopTimer( );
 
     Channel channel = mChannel;
-    mChannel.setCookie( NEService::COOKIE_UNKNOWN );
-    mChannel.setSource( NEService::SOURCE_UNKNOWN );
-    mChannel.setTarget( NEService::TARGET_UNKNOWN );
+    mChannel.invalidate();
 
     cancelConnection( );
 
