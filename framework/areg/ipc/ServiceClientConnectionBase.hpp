@@ -60,7 +60,7 @@ protected:
         , ConnectionStopped     = 3     //!< 0000 0011, The connection is stopped, i.e. not connected.
         , ConnectionStopping    = 5     //!< 0000 0101, The connection is stopping, because of manual request.
         , ConnectState          = 16    //!< 0001 0000, the connect state
-        , ConnectionStarting    = 16    //!< 0011 0000, The connection is initiated, but the status is not known.
+        , ConnectionStarting    = 48    //!< 0011 0000, The connection is initiated, but the status is not known.
         , ConnectionStarted     = 80    //!< 0101 0000, The connection is established and accepted by server.
     };
 
@@ -501,7 +501,7 @@ inline bool ServiceClientConnectionBase::isCalculateDataRateEnabled(void) const
 
 inline bool ServiceClientConnectionBase::isConnectState( void ) const
 {
-    return (static_cast<uint16_t>(mConnectionState) & static_cast<uint16_t>(ServiceClientConnectionBase::eConnectionState::ConnectState));
+    return (static_cast<uint16_t>(mConnectionState) & static_cast<uint16_t>(ServiceClientConnectionBase::eConnectionState::ConnectState)) != 0;
 }
 
 inline bool ServiceClientConnectionBase::isConnectedState( void ) const
@@ -511,7 +511,7 @@ inline bool ServiceClientConnectionBase::isConnectedState( void ) const
 
 inline bool ServiceClientConnectionBase::isDisconnectState( void ) const
 {
-    return (static_cast<uint16_t>(mConnectionState) & static_cast<uint16_t>(ServiceClientConnectionBase::eConnectionState::DisconnectState));
+    return ((static_cast<uint16_t>(mConnectionState) & static_cast<uint16_t>(ServiceClientConnectionBase::eConnectionState::DisconnectState)) != 0);
 }
 
 inline void ServiceClientConnectionBase::registerForServiceClientCommands(void)

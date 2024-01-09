@@ -93,6 +93,11 @@ void Application::initApplication(  bool startTracing   /*= true */
         Application::startMessageRouting( static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectTcpip) );
     }
 
+    if (Application::getInstance().mAppState == Application::eAppState::AppStateInitializing)
+    {
+        Application::_setAppState(Application::eAppState::AppStateReady);
+    }
+
     Application::getInstance().mAppQuit.resetEvent();
 }
 
@@ -246,6 +251,7 @@ bool Application::startServiceManager( void )
         else
         {
             OUTPUT_ERR("Failed to start service manager!");
+            Application::_setAppState(Application::eAppState::AppStateFailure);
         }
     }
     else

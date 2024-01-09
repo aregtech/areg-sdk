@@ -90,9 +90,8 @@ void NetTcpLogger::logMessage(const NETrace::sLogMessage& logMessage)
 {
     if (mIsEnabled)
     {
-        if (isConnectedState())
+        if (mChannel.isValid() && isConnectState())
         {
-            ASSERT(mChannel.isValid());
             sendMessage(NETrace::createLogMessage(logMessage, NETrace::eLogDataType::LogDataRemote, mChannel.getCookie()), Event::eEventPriority::EventPriorityNormal);
         }
         else if (mRingStack.capacity() != 0)

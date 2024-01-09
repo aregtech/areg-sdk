@@ -103,6 +103,8 @@ void ServiceClientConnectionBase::serviceConnectionEvent(const RemoteMessage& ms
         break;
 
     case NEService::eServiceConnection::ServiceConnectionLost:
+    case NEService::eServiceConnection::ServiceDisconnected:
+    case NEService::eServiceConnection::ServiceFailed:
         {
             cancelConnection();
             onChannelConnected(NEService::COOKIE_UNKNOWN);
@@ -111,7 +113,6 @@ void ServiceClientConnectionBase::serviceConnectionEvent(const RemoteMessage& ms
         break;
 
     case NEService::eServiceConnection::ServiceRejected:
-    case NEService::eServiceConnection::ServiceFailed:
     case NEService::eServiceConnection::ServiceShutdown:
     default:
         {
@@ -313,9 +314,7 @@ void ServiceClientConnectionBase::onServiceConnectionLost(void)
 
     setConnectionState(ServiceClientConnectionBase::eConnectionState::ConnectionStopped);
     Channel channel = mChannel;
-    mChannel.setCookie( NEService::COOKIE_UNKNOWN );
-    mChannel.setSource( NEService::SOURCE_UNKNOWN );
-    mChannel.setTarget( NEService::TARGET_UNKNOWN );
+    mChannel.invalidate();
 
     if ( Application::isServicingReady( ) && mTimerConnect.isStopped( ) )
     {
@@ -353,6 +352,8 @@ void ServiceClientConnectionBase::onServiceMessageSend( const RemoteMessage & ms
 void ServiceClientConnectionBase::onChannelConnected(const ITEM_ID& cookie)
 {
     TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onChannelConnected);
+    Lock lock(mLock);
+
     if (cookie >= NEService::COOKIE_REMOTE_SERVICE)
     {
         mChannel.setCookie(cookie);
@@ -364,10 +365,7 @@ void ServiceClientConnectionBase::onChannelConnected(const ITEM_ID& cookie)
     else
     {
         TRACE_INFO("Disconnecting remote channel [ source = %llu, target = %llu, cookie = %llu ]", mChannel.getSource(), mChannel.getTarget(), mChannel.getCookie());
-
-        mChannel.setCookie(cookie);
-        mChannel.setSource(NEService::SOURCE_UNKNOWN);
-        mChannel.setTarget(NEService::TARGET_UNKNOWN);
+        mChannel.invalidate();
     }
 }
 

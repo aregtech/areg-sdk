@@ -79,6 +79,7 @@ public:
         , AppStateInitializing  //!< Application is initializing
         , AppStateReady         //!< Application is ready. The application is ready only when Service Manager runs.
         , AppStateReleasing     //!< Application is releasing.
+        , AppStateFailure       //!< Application is failure state and cannot be continued
     } eAppState;
 
     /**
