@@ -469,7 +469,7 @@ void LogObserver::_processPrintHelp(void)
 void LogObserver::_processInfoInstances(void)
 {
     static constexpr std::string_view _table{ "   Nr. |  Inst. ID  |  Bits |  Scopes  |  Name " };
-    static constexpr std::string_view _formt{ "  %3u. |%11u |  x%u  |   %5u  | %s " };
+    static constexpr std::string_view _formt{ "  %3u. |%11u |  x%u  |   %5u  |  %s " };
     static constexpr std::string_view _empty{ "There are no connected instances ..." };
 
     Console& console = Console::getInstance();
