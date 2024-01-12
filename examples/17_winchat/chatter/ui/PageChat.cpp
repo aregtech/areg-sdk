@@ -48,12 +48,9 @@ PageChat::PageChat( const String & serviceName
     , mCtrlTimerValue           ( )
     , mCtrlTimerSpin            ( )
     , mTimerId                  ( 0 )
+    , mModelName                ( )
 {
 
-}
-
-PageChat::~PageChat()
-{
 }
 
 void PageChat::DoDataExchange(CDataExchange* pDX)
@@ -136,12 +133,14 @@ BOOL PageChat::OnInitDialog( )
 
     NEMemory::uAlign data;
     data.alignClsPtr.mElement = reinterpret_cast<NEMemory::_EmptyClass *>(this);
+    ASSERT(mModelName.isEmpty());
 
     NERegistry::Model model = mIsChatInitiator ? DirectChatService::GetModel( initiator, parties, data ) : ChatParticipantService::GetModel(initiator, parties, data);
     if ( ComponentLoader::isModelLoaded(model.getModelName()) == false )
     {
+        mModelName = model.getModelName();
         ComponentLoader::addModelUnique( model );
-        ComponentLoader::loadComponentModel( model.getModelName( ) );    
+        ComponentLoader::loadComponentModel( mModelName );    
     }
     else
     {
@@ -207,22 +206,21 @@ void PageChat::OnClickedButtonChatSend( )
 
 void PageChat::OnDestroy( )
 {
-    DirectMessagingClient * client = this->GetChatClient( );
+    DirectMessagingClient * client = GetChatClient( );
     if ( client != nullptr )
     {
-        client->clearAllNotifications();
-        client->requestChatLeave( GetConnectionOwner( ), DateTime::getNow() );
+        client->shutdownChat();
+        SetChatClient(nullptr);
+        SetChatWindow(0);
     }
 
+    if (mModelName.isEmpty() == false)
+    {
+        ComponentLoader::unloadComponentModel(true, mModelName);
+        mModelName.clear();
 
-    SetChatWindow( 0 );
-    SetChatClient( nullptr );
-
-    const NEDirectConnection::sInitiator & initiator = GetInitiator();
-    String modelName = NEDistributedApp::PREFIX_MODEL + GetServiceName();
-    ComponentLoader::unloadComponentModel(true, modelName );
-    
-    ChatPrticipantHandler::Invalidate();
+        ChatPrticipantHandler::Invalidate();
+    }
     
     CPropertyPage::OnDestroy( );
 }
@@ -230,15 +228,13 @@ void PageChat::OnDestroy( )
 
 void PageChat::OnClickedButtonCloseChat( )
 {
-    DirectMessagingClient * client = this->GetChatClient( );
+    DirectMessagingClient * client = GetChatClient( );
     if ( client != nullptr )
     {
-        client->clearAllNotifications();
-        client->requestChatLeave( GetConnectionOwner( ), DateTime::getNow() );
+        client->shutdownChat();
+        SetChatWindow(0);
+        SetChatClient(nullptr);
     }
-
-    SetChatWindow( 0 );
-    SetChatClient( nullptr );
 
     const NEDirectConnection::sInitiator & initiator = GetInitiator();
     String modelName = NEDistributedApp::PREFIX_MODEL + GetServiceName();

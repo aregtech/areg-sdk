@@ -19,7 +19,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // English (United States) resources
 
-#if !defined(AFX_RESOUR_DLL) || defined(AFX_TARG_ENU)
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
 
@@ -110,9 +110,9 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_CAPTION
 CAPTION "Connection List"
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
+    CONTROL         "",IDC_LIST_CONNECTIONS,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER,10,17,305,150
     EDITTEXT        IDC_EDIT_BROADCAST,10,181,252,14,ES_AUTOHSCROLL
     DEFPUSHBUTTON   "&Broadcast",IDC_BUTTON_BROADCAST,265,181,50,14
-    CONTROL         "",IDC_LIST_CONNECTIONS,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER,10,17,305,150
     GROUPBOX        "Messages:",IDC_STATIC,7,7,311,163
     GROUPBOX        "Broadcast message:",IDC_STATIC,7,169,311,28
 END

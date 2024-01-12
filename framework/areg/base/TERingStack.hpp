@@ -472,11 +472,7 @@ template <typename VALUE>
 TERingStack<VALUE>::~TERingStack( void )
 {
     _emptyStack();
-    if (mStackList == nullptr)
-    {
-        delete[] reinterpret_cast<unsigned char*>(mStackList);
-    }
-
+    delete[] reinterpret_cast<unsigned char*>(mStackList);
     mStackList = nullptr;
     mCapacity = 0;
 }
@@ -556,11 +552,7 @@ void TERingStack<VALUE>::discard(void)
 {
     Lock lock(mSynchObject);
     _emptyStack();
-    if (mStackList == nullptr)
-    {
-        delete[] reinterpret_cast<unsigned char*>(mStackList);
-    }
-
+    delete[] reinterpret_cast<unsigned char*>(mStackList);
     mStackList = nullptr;
     mCapacity = 0;
 }
@@ -825,11 +817,7 @@ uint32_t TERingStack<VALUE>::reserve(uint32_t newCapacity )
             }
 
             _emptyStack();
-            if (mStackList != nullptr)
-            {
-                delete[] reinterpret_cast<unsigned char*>(mStackList);
-            }
-
+            delete[] reinterpret_cast<unsigned char*>(mStackList);
             mStackList      = newList;
             mStartPosition  = 0;
             mElemCount      = elemCount;

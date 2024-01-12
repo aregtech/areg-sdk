@@ -15,7 +15,12 @@ class DirectMessagingClient   : public DirectMessagerClientBase
 {
 public:
     DirectMessagingClient( Component & owner, const char * roleName, ChatPrticipantHandler & handlerParticipants );
-    virtual ~DirectMessagingClient( void );
+    virtual ~DirectMessagingClient( void ) = default;
+
+    /**
+     * \brief   Call to send request to leave the chat and release notifications.
+     **/
+    void shutdownChat(void);
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -110,7 +115,8 @@ private:
     inline void postMessage(NEDistributedApp::eWndCommands cmdSend, ptr_type wParam, ptr_type lParam);
 
 private:
-    ChatPrticipantHandler &   mParticipantsHandler;
+    ChatPrticipantHandler & mParticipantsHandler;
+    bool                    mJoinedChat;
 //////////////////////////////////////////////////////////////////////////
 // Hidden members
 //////////////////////////////////////////////////////////////////////////

@@ -34,7 +34,7 @@ public:
               , const NEDirectConnection::ListParticipants & listParties
               , const NEDirectConnection::sParticipant & ownerConnection
               , bool isInitiator );
-	virtual ~PageChat();
+	virtual ~PageChat() = default;
 
 // Dialog Data
 	enum { IDD = IDD_PAGE_CHAT };
@@ -94,7 +94,7 @@ private:
     INT                 mLastItem;
     CString             mTitle;
     BOOL                mEditEnabled;
-    // If enabled, makes autotype
+    // If enabled, makes auto-type
     BOOL                mDoAutotype;
     // The timer in milliseconds to generate letter.
     INT                mTimerValue;
@@ -102,7 +102,10 @@ private:
     CEdit               mCtrlTimerValue;
     // The timer spin
     CSpinButtonCtrl     mCtrlTimerSpin;
+    // The timer ID
     UINT_PTR            mTimerId;
+    // The name of dynamically created model.
+    String              mModelName;
 
 private:
     PageChat( void );

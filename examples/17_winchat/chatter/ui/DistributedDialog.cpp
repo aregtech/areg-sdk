@@ -156,7 +156,7 @@ BOOL DistributedDialog::OnInitDialog()
     //  when the application's main window is not a dialog
     SetIcon(m_hIcon, TRUE);			// Set big icon
     SetIcon(m_hIcon, FALSE);		// Set small icon
-    ModifyStyle( 0, WS_SYSMENU | WS_MAXIMIZEBOX | WS_MINIMIZEBOX, SWP_FRAMECHANGED );
+    ModifyStyle( 0, WS_SYSMENU | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SIZEBOX | WS_TABSTOP, SWP_FRAMECHANGED );
 
     mCaptionInit.LoadString(IDS_APPLICATION_TITLE);
     mCaption = mCaptionInit;

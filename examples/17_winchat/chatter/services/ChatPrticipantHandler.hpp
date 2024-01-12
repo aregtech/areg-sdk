@@ -115,6 +115,7 @@ private:
 
 inline bool ChatPrticipantHandler::IsValid( void ) const
 {
+    Lock lock(mLock);
     return (mWndChat != 0) && (mConnectionService != nullptr);
 }
 

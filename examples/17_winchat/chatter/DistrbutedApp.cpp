@@ -78,7 +78,7 @@ BOOL DistrbutedApp::InitInstance()
     SetRegistryKey(_T("Local AppWizard-Generated Applications"));
 
     // Don't start connection with the router, this will be started on UI
-    Application::initApplication(true, true, false, true, true, nullptr);
+    Application::initApplication(true, true, false, true, false, nullptr);
 
     do
     {
