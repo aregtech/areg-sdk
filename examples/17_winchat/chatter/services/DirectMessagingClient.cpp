@@ -22,13 +22,20 @@ DEF_TRACE_SCOPE( chatter_DirectMessagingClient_broadcastParticipantLeft );
 DEF_TRACE_SCOPE( chatter_DirectMessagingClient_broadcastChatClosed );
 
 DirectMessagingClient::DirectMessagingClient( Component & owner, const char * roleName, ChatPrticipantHandler & handlerParticipants )
-    : DirectMessagerClientBase    ( roleName, owner )
-    , mParticipantsHandler          ( handlerParticipants )
+    : DirectMessagerClientBase  ( roleName, owner )
+    , mParticipantsHandler      ( handlerParticipants )
+    , mJoinedChat               (false)
 {
 }
 
-DirectMessagingClient::~DirectMessagingClient( )
+void DirectMessagingClient::shutdownChat(void)
 {
+    clearAllNotifications();
+    if (mJoinedChat)
+    {
+        mJoinedChat = false;
+        requestChatLeave(mParticipantsHandler.GetConnectionOwner(), DateTime::getNow());
+    }
 }
 
 bool DirectMessagingClient::serviceConnected( NEService::eServiceConnection status, ProxyBase & proxy )
@@ -42,12 +49,13 @@ bool DirectMessagingClient::serviceConnected( NEService::eServiceConnection stat
 
     if ( isConnected( ) )
     {
+        mJoinedChat = true;
         mParticipantsHandler.SetChatClient( this );
         requestChatJoin( mParticipantsHandler.GetConnectionOwner( ), DateTime::getNow( ) );
     }
     else
     {
-        requestChatLeave( mParticipantsHandler.GetConnectionOwner( ), DateTime::getNow( ) );
+        shutdownChat();
     }
 
     return result;
@@ -62,6 +70,7 @@ void DirectMessagingClient::responseChatJoin( bool succeed, const NEDirectMessag
 
     if ( succeed )
     {
+        mJoinedChat = true;
         for (uint32_t i = 0; i < listParticipant.getSize(); ++i)
         {
             updateChatOutput( NEDistributedApp::eWndCommands::CmdChatMessage, listParticipant[i], "Is in chat room", DateTime( ), DateTime( ) );

@@ -107,6 +107,7 @@ bool ChatPrticipantHandler::ParticipantExist( const NECommon::sParticipant & par
 
 bool ChatPrticipantHandler::IsEmpty(void) const
 {
+    Lock lock(mLock);
     uint32_t size = mListParticipants.getSize( );
     if (size == 1)
     {

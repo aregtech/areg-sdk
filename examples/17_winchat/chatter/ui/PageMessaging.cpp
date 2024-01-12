@@ -316,7 +316,7 @@ void PageMessaging::OnTypeMessage( uint32_t cookie, NECommon::sMessageData & dat
 
 void PageMessaging::OnSendMessage( uint32_t cookie, NECommon::sMessageData & data )
 {
-        outputMessage( data.nickName, data.message, data.timeSend, data.timeReceived, static_cast<uint32_t>(data.dataSave) );
+    outputMessage( data.nickName, data.message, data.timeSend, data.timeReceived, static_cast<uint32_t>(data.dataSave) );
 }
 
 LRESULT PageMessaging::OnOutputMessage( WPARAM wParam, LPARAM lParam )
