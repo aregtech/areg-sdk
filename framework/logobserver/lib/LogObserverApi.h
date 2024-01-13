@@ -304,8 +304,9 @@ LOGOBSERVER_API void logObserverDisconnectLogger();
  *          When call logObserverStart(false) it pauses the log observer and no messages are logged.
  *          On start, the log observer resumes and continues writing logs.
  * \param   doPause     The flag to set to indicate whether the log observer should pause or resume writing logs.
+ * \return  Returns true if processed with success. Otherwise, returns false.
  **/
-LOGOBSERVER_API void logObserverPauseLogging(bool doPause);
+LOGOBSERVER_API bool logObserverPauseLogging(bool doPause);
 
 /**
  * \brief   Call to get the current state of the log observer.
@@ -368,16 +369,18 @@ LOGOBSERVER_API unsigned short logObserverConfigLoggerPort();
 /**
  * \brief   Call to request the list of connected instances.
  *          The callback of FuncLogInstances type is triggered when receive the list of connected instances.
+ * \return  Returns true if processed with success. Otherwise, returns false.
  **/
-LOGOBSERVER_API void logObserverRequestInstances();
+LOGOBSERVER_API bool logObserverRequestInstances();
 
 /**
  * \brief   Call to receive the list of registered scopes of the specified connected instance.
  * \param   target  The cookie ID of the target instance to receive the list of registered scopes.
  *                  If the target is ID_IGNORE (or 0), it receives the list of scopes of all connected instances.
  *                  Otherwise, should be indicated the valid cookie ID of the connected log instance.
+ * \return  Returns true if processed with success. Otherwise, returns false.
  **/
-LOGOBSERVER_API void logObserverRequestScopes(ITEM_ID target);
+LOGOBSERVER_API bool logObserverRequestScopes(ITEM_ID target);
 
 /**
  * \brief   Call to update the priority of the logging message to receive.
@@ -388,8 +391,9 @@ LOGOBSERVER_API void logObserverRequestScopes(ITEM_ID target);
  *                  The scope group should  end with '*'. For example 'areg_base_*'.
  *                  In this case the ID of the scope can be 0.
  * \param   count   The number of scope entries in the list.
+ * \return  Returns true if processed with success. Otherwise, returns false.
  **/
-LOGOBSERVER_API void logObserverRequestChangeScopePrio(ITEM_ID target, const sLogScope* scopes, uint32_t count);
+LOGOBSERVER_API bool logObserverRequestChangeScopePrio(ITEM_ID target, const sLogScope* scopes, uint32_t count);
 
 /**
  * \brief   Call to save current configuration of the specified target. This is normally called when update the log priority of the instance,
@@ -397,8 +401,9 @@ LOGOBSERVER_API void logObserverRequestChangeScopePrio(ITEM_ID target, const sLo
  * \param   target  The cookie ID of the target instance to save the configuration.
  *                  If the target is ID_IGNORE (or 0), the request is sent to all connected instances.
  *                  Otherwise, should be indicated the valid cookie ID of the connected log instance.
+ * \return  Returns true if processed with success. Otherwise, returns false.
  **/
-LOGOBSERVER_API void logObserverRequestSaveConfig(ITEM_ID target);
+LOGOBSERVER_API bool logObserverRequestSaveConfig(ITEM_ID target);
 
 #endif  // AREG_LOGOBSERVER_LIB_LOGOBSERVERAPI_H
 

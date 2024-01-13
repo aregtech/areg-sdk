@@ -104,6 +104,7 @@ void LogObserver::_runConsoleInputExtended( void )
     LogObserver::_outputTitle( );
 
     console.enableConsoleInput(true);
+    console.outputTxt(NESystemService::COORD_STATUS_MSG, LogObserver::STATUS_INITIALIZED);
     console.outputTxt(NESystemService::COORD_USER_INPUT, NESystemService::FORMAT_WAIT_QUIT);
     console.waitForInput(getOptionCheckCallback());
 
@@ -304,37 +305,46 @@ bool LogObserver::_checkCommand(const String& cmd)
     bool hasError {false};
 
     LogObserver::_cleanHelp();
+    Console& console = Console::getInstance();
 
     if ( parser.parseOptionLine( cmd ) )
     {
         const OptionParser::InputOptionList & opts = parser.getOptions( );
         for ( uint32_t i = 0; i < opts.getSize( ); ++ i )
         {
+            bool processed{ false };
+            const LogObserver::sObserverStatus* status{ nullptr };
             const OptionParser::sOption & opt = opts[ i ];
             switch ( static_cast<eLoggerOptions>(opt.inCommand) )
             {
             case eLoggerOptions::CMD_LogQueryScopes:
-                LogObserver::_processQueryScopes(opt);
+                processed = LogObserver::_processQueryScopes(opt);
+                status = &ObserverStatus[static_cast<uint32_t>(eLoggerOptions::CMD_LogQueryScopes)];
                 break;
 
             case eLoggerOptions::CMD_LogSaveConfig:
-                LogObserver::_processSaveConfig(opt);
+                processed = LogObserver::_processSaveConfig(opt);
+                status = &ObserverStatus[static_cast<uint32_t>(eLoggerOptions::CMD_LogSaveConfig)];
                 break;
 
             case eLoggerOptions::CMD_LogPrintHelp:
-                LogObserver::_processPrintHelp();
+                processed = LogObserver::_processPrintHelp();
+                status = &ObserverStatus[static_cast<uint32_t>(eLoggerOptions::CMD_LogPrintHelp)];
                 break;
 
             case eLoggerOptions::CMD_LogInformation:
-                LogObserver::_processInfoInstances();
+                processed = LogObserver::_processInfoInstances();
+                status = &ObserverStatus[static_cast<uint32_t>(eLoggerOptions::CMD_LogInformation)];
                 break;
 
             case eLoggerOptions::CMD_LogUpdateScope:
-                LogObserver::_processUpdateScopes(opt);
+                processed = LogObserver::_processUpdateScopes(opt);
+                status = &ObserverStatus[static_cast<uint32_t>(eLoggerOptions::CMD_LogUpdateScope)];
                 break;
 
             case eLoggerOptions::CMD_LogPause:
-                LogObserver::_processPauseLogging();
+                processed = LogObserver::_processPauseLogging();
+                status = &ObserverStatus[static_cast<uint32_t>(eLoggerOptions::CMD_LogPause)];
                 break;
 
             case eLoggerOptions::CMD_LogQuit:
@@ -342,16 +352,40 @@ bool LogObserver::_checkCommand(const String& cmd)
                 break;
 
             case eLoggerOptions::CMD_LogRestart:
-                LogObserver::_processStartLogging(true);
+                processed = LogObserver::_processStartLogging(true);
+                status = &ObserverStatus[static_cast<uint32_t>(eLoggerOptions::CMD_LogRestart)];
                 break;
 
             case eLoggerOptions::CMD_LogStop:
-                LogObserver::_processStartLogging(false);
+                processed = LogObserver::_processStartLogging(false);
+                status = &ObserverStatus[static_cast<uint32_t>(eLoggerOptions::CMD_LogRestart)];
                 break;
 
             default:
                 hasError = true;
                 break;
+            }
+
+            if (status != nullptr)
+            {
+                ASSERT(static_cast<eLoggerOptions>(opt.inCommand) == status->osOption);
+                console.lockConsole();
+                if (processed && (status->osStatus.empty() == false))
+                {
+                    console.clearLine(NESystemService::COORD_STATUS_MSG);
+                    console.outputTxt(NESystemService::COORD_STATUS_MSG, status->osStatus);
+                }
+                else if ((processed == false) && (status->osError.empty() == false))
+                {
+                    console.clearLine(NESystemService::COORD_STATUS_MSG);
+                    console.outputTxt(NESystemService::COORD_STATUS_MSG, status->osError);
+                }
+                else
+                {
+                    console.clearLine(NESystemService::COORD_STATUS_MSG);
+                }
+
+                console.unlockConsole();
             }
         }
     }
@@ -360,13 +394,12 @@ bool LogObserver::_checkCommand(const String& cmd)
         hasError = true;
     }
     
-    Console & console = Console::getInstance( );
     console.lockConsole();
     if ( quit == false )
     {
         if ( hasError )
         {
-            console.outputMsg( NESystemService::COORD_ERROR_MSG, NESystemService::FORMAT_MSG_ERROR.data( ), cmd.getString( ) );
+            console.outputMsg( NESystemService::COORD_ERROR_MSG, NESystemService::FORMAT_MSG_ERROR.data(), cmd.getString());
         }
 
         console.clearLine( NESystemService::COORD_USER_INPUT );
@@ -387,8 +420,8 @@ void LogObserver::_outputTitle( void )
 {
     Console & console = Console::getInstance( );
     console.lockConsole();
-    console.outputTxt( NESystemService::COORD_TITLE, NELogObserverSettings::APP_TITLE.data( ) );
-    console.outputTxt( NESystemService::COORD_SUBTITLE, NESystemService::MSG_SEPARATOR.data( ) );
+    console.outputTxt( NESystemService::COORD_TITLE, LogObserver::APP_TITLE );
+    console.outputTxt( NESystemService::COORD_SUBTITLE, NESystemService::MSG_SEPARATOR );
     console.unlockConsole();
 }
 
@@ -398,7 +431,7 @@ void LogObserver::_outputInfo( const String & info )
     Console::Coord coord{NESystemService::COORD_INFO_MSG};
     console.lockConsole( );
 
-    console.outputTxt( coord, NESystemService::MSG_SEPARATOR.data( ) );
+    console.outputTxt( coord, NESystemService::MSG_SEPARATOR );
     ++ coord.posY;
     console.outputStr( coord, info );
 
@@ -422,7 +455,7 @@ void LogObserver::_cleanHelp(void)
     console.unlockConsole();
 }
 
-void LogObserver::_processSaveConfig(const OptionParser::sOption& optSave)
+bool LogObserver::_processSaveConfig(const OptionParser::sOption& optSave)
 {
     TEArrayList<ITEM_ID> listTargets;
     if (optSave.inString.empty() || (optSave.inString[0] == NEPersistence::SYNTAX_ALL_MODULES))
@@ -446,13 +479,16 @@ void LogObserver::_processSaveConfig(const OptionParser::sOption& optSave)
         }
     }
 
+    bool result{ true };
     for (const auto& target : listTargets.getData())
     {
-        ::logObserverRequestSaveConfig(target);
+        result &= ::logObserverRequestSaveConfig(target);
     }
+
+    return result;
 }
 
-void LogObserver::_processPrintHelp(void)
+bool LogObserver::_processPrintHelp(void)
 {
     Console::Coord line{ NESystemService::COORD_INFO_MSG };
     Console& console = Console::getInstance();
@@ -464,9 +500,10 @@ void LogObserver::_processPrintHelp(void)
     }
 
     console.unlockConsole();
+    return true;
 }
 
-void LogObserver::_processInfoInstances(void)
+bool LogObserver::_processInfoInstances(void)
 {
     static constexpr std::string_view _table{ "   Nr. |  Inst. ID  |  Bits |  Scopes  |  Name " };
     static constexpr std::string_view _formt{ "  %3u. |%11u |  x%u  |   %5u  |  %s " };
@@ -478,18 +515,18 @@ void LogObserver::_processInfoInstances(void)
 
     if (_listInstances.isEmpty())
     {
-        console.outputTxt(coord, NESystemService::MSG_SEPARATOR.data());
+        console.outputTxt(coord, NESystemService::MSG_SEPARATOR);
         ++coord.posY;
         console.outputStr(coord, _empty);
         ++coord.posY;
     }
     else
     {
-        console.outputTxt(coord, NESystemService::MSG_SEPARATOR.data());
+        console.outputTxt(coord, NESystemService::MSG_SEPARATOR);
         ++coord.posY;
         console.outputTxt(coord, _table);
         ++coord.posY;
-        console.outputTxt(coord, NESystemService::MSG_SEPARATOR.data());
+        console.outputTxt(coord, NESystemService::MSG_SEPARATOR);
         ++coord.posY;
         for (uint32_t i = 0; i < _listInstances.getSize(); ++ i)
         {
@@ -502,12 +539,15 @@ void LogObserver::_processInfoInstances(void)
         }
     }
 
-    console.outputTxt(coord, NESystemService::MSG_SEPARATOR.data());
+    console.outputTxt(coord, NESystemService::MSG_SEPARATOR);
     console.unlockConsole();
+
+    return true;
 }
 
-void LogObserver::_processUpdateScopes(const OptionParser::sOption& optScope)
+bool LogObserver::_processUpdateScopes(const OptionParser::sOption& optScope)
 {
+    bool result{ false };
     ASSERT(optScope.inCommand == static_cast<int>(eLoggerOptions::CMD_LogUpdateScope));
     ASSERT(optScope.inString.empty() == false);
 
@@ -528,38 +568,49 @@ void LogObserver::_processUpdateScopes(const OptionParser::sOption& optScope)
 
     if (scope.isEmpty() == false)
     {
-        LogObserver::_sendScopeUpdateMessage(scope);
+        result = LogObserver::_sendScopeUpdateMessage(scope);
     }
+
+    return result;
 }
 
-void LogObserver::_processPauseLogging(void)
+bool LogObserver::_processPauseLogging(void)
 {
-    ::logObserverPauseLogging(true);
+    return ::logObserverPauseLogging(true);
 }
 
-void LogObserver::_processStartLogging(bool doStart)
+bool LogObserver::_processStartLogging(bool doStart)
 {
+    bool result{ true };
     if (doStart)
     {
-        ASSERT(::logObserverIsInitialized());
-
-        if (::logObserverIsConnected() == false)
+        if (::logObserverIsInitialized())
         {
-            ::logObserverConnectLogger(nullptr, NESocket::InvalidPort);
+            if (::logObserverIsConnected() == false)
+            {
+                result = ::logObserverConnectLogger(nullptr, NESocket::InvalidPort);
+            }
+            else if (::logObserverIsStarted() == false)
+            {
+                result = ::logObserverPauseLogging(false);
+            }
         }
-        else if (::logObserverIsStarted() == false)
+        else
         {
-            ::logObserverPauseLogging(false);
+            result = false;
         }
     }
     else
     {
         ::logObserverDisconnectLogger();
     }
+
+    return result;
 }
 
-void LogObserver::_processQueryScopes(const OptionParser::sOption& optScope)
+bool LogObserver::_processQueryScopes(const OptionParser::sOption& optScope)
 {
+    bool result{ true };
     TEArrayList<ITEM_ID> listTargets;
     if (optScope.inString.empty() || (optScope.inString[0] == NEPersistence::SYNTAX_ALL_MODULES))
     {
@@ -584,8 +635,10 @@ void LogObserver::_processQueryScopes(const OptionParser::sOption& optScope)
 
     for (const auto& target : listTargets.getData())
     {
-        ::logObserverRequestScopes(target);
+        result &= ::logObserverRequestScopes(target);
     }
+
+    return result;
 }
 
 String LogObserver::_normalizeScopeProperty(const String & scope)
@@ -631,9 +684,9 @@ String LogObserver::_normalizeScopeProperty(const String & scope)
     return result;
 }
 
-RemoteMessage LogObserver::_sendScopeUpdateMessage(const String& scope)
+bool LogObserver::_sendScopeUpdateMessage(const String& scope)
 {
-    RemoteMessage result;
+    bool result{ false };
 
     if (scope.isEmpty() == false)
     {
@@ -650,7 +703,7 @@ RemoteMessage LogObserver::_sendScopeUpdateMessage(const String& scope)
                 logScope.lsId   = NETrace::makeScopeIdEx(scopeName.getString());
                 logScope.lsPrio = scopePrio;
                 NEString::copyString<char>(logScope.lsName, LENGTH_SCOPE, scopeName.getString(), scopeName.getLength());
-                ::logObserverRequestChangeScopePrio(target, &logScope, 1);
+                result = ::logObserverRequestChangeScopePrio(target, &logScope, 1);
             }
         }
     }
