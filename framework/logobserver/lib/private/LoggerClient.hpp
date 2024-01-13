@@ -363,6 +363,11 @@ private:
      **/
     bool                        mIsPaused;
 
+    /**
+     * \brief   The list of connected instances.
+     **/
+    NEService::MapInstances     mInstances;
+
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////

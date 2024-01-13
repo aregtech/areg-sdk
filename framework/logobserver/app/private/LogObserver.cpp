@@ -126,6 +126,7 @@ void LogObserver::callbackServiceConnected(bool isConnected, const char* address
     }
     else
     {
+        _listInstances.clear();
         _logConnect.lcAddress.clear();
         _logConnect.lcPort = NESocket::InvalidPort;
     }
@@ -358,7 +359,7 @@ bool LogObserver::_checkCommand(const String& cmd)
 
             case eLoggerOptions::CMD_LogStop:
                 processed = LogObserver::_processStartLogging(false);
-                status = &ObserverStatus[static_cast<uint32_t>(eLoggerOptions::CMD_LogRestart)];
+                status = &ObserverStatus[static_cast<uint32_t>(eLoggerOptions::CMD_LogStop)];
                 break;
 
             default:

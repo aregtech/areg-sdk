@@ -485,7 +485,7 @@ void MulticastRouter::_outputInfo( const String & info )
 #endif  // AREG_EXTENDED
 }
 
-void MulticastRouter::_outputInstances( const ServiceCommunicatonBase::MapInstances & instances )
+void MulticastRouter::_outputInstances( const NEService::MapInstances & instances )
 {
     static constexpr std::string_view _table{ "   Nr. |  Instance ID  |  Bitness  |  Name " };
     static constexpr std::string_view _empty{ "There are no connected instances ..." };

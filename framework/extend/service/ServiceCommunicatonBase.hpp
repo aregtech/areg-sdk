@@ -72,9 +72,6 @@ public:
         , DefaultReject //!< The default behavior is to reject the connection.
     } eConnectionBehavior;
 
-    //!< The map of connected instances.
-    using MapInstances  = TEMap<ITEM_ID, NEService::sServiceConnectedInstance>;
-
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
@@ -140,7 +137,7 @@ public:
     /**
      * \brief   Returns the list of connected instances.
      **/
-    inline const MapInstances & getInstances( void ) const;
+    inline const NEService::MapInstances & getInstances( void ) const;
 
     /**
      * \brief   Call to wait the service communication thread to complete the job.
@@ -477,7 +474,7 @@ protected:
     StringArray                             mBlackList;         //!< The list of disabled fixes client hosts.
     ServiceServerEventConsumer              mEventConsumer;     //!< The custom event consumer object
     ReconnectTimerConsumer                  mTimerConsumer;     //!< The timer consumer object.
-    MapInstances                            mInstanceMap;       //!< The map of connected instance.
+    NEService::MapInstances                 mInstanceMap;       //!< The map of connected instance.
     SynchEvent                              mEventSendStop;     //!< The event set when cannot send and receive data anymore.
     mutable ResourceLock                    mLock;              //!< The synchronization object to be accessed from different threads.
 
@@ -530,7 +527,7 @@ inline void ServiceCommunicatonBase::removeBlackList(const NESocket::SocketAddre
     mBlackList.removeElem( addrClient.getHostAddress(), 0);
 }
 
-inline const ServiceCommunicatonBase::MapInstances & ServiceCommunicatonBase::getInstances( void ) const
+inline const NEService::MapInstances & ServiceCommunicatonBase::getInstances( void ) const
 {
     return mInstanceMap;
 }

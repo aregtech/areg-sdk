@@ -47,6 +47,7 @@ LoggerClient::LoggerClient(void)
     , mCallbacks                 ( nullptr )
     , mMessageProcessor          ( self() )
     , mIsPaused                  ( false )
+    , mInstances                 ( )
 {
 }
 
@@ -285,6 +286,18 @@ void LoggerClient::disconnectServiceHost(void)
 {
     if (isRunning())
     {
+        FuncInstancesDisconnect evtDisconnect{ mCallbacks != nullptr ? mCallbacks->evtInstDisconnected : nullptr };
+        if (evtDisconnect != nullptr)
+        {
+
+            for (const auto& entry : mInstances.getData())
+            {
+                evtDisconnect(&entry.first, 1);
+            }
+        }
+
+        mInstances.clear();
+
         ServiceClientConnectionBase::disconnectServiceHost();
         completionWait(NECommon::WAIT_INFINITE);
         shutdownThread(NECommon::DO_NOT_WAIT);
@@ -373,6 +386,8 @@ void LoggerClient::lostRemoteServiceChannel(const Channel& channel)
         {
             evtStart = mCallbacks->evtLoggingStarted;
         }
+
+        mInstances.clear();
     } while (false);
 
     if (evtStart != nullptr)

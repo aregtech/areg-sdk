@@ -72,7 +72,7 @@ public:
      * \param   target      The ID of the target to send the message. If target is NEService::COOKIE_ANY,
      *                      the notification message is sent to all observers. Otherwise, it is sent to the exact target.
      **/
-    void notifyConnectedInstances(const ServiceCommunicatonBase::MapInstances& instances, const ITEM_ID & target = NEService::COOKIE_ANY) const;
+    void notifyConnectedInstances(const NEService::MapInstances& instances, const ITEM_ID & target = NEService::COOKIE_ANY) const;
 
     /**
      * \brief   Creates a communication message with the IDs of disconnected instances
