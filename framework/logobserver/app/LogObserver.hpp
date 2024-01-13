@@ -80,18 +80,31 @@ private:
      **/
     static const OptionParser::sOptionSetup ValidOptions[];
 
+    /**
+     * \brief   The list of actions, associated status and error messages.
+     **/
     static constexpr sObserverStatus    ObserverStatus[]
     {
+          //!< No status, no error
           { eLoggerOptions::CMD_LogUndefined    , "", "" }
+          //!< The status and error message when query scopes.
         , { eLoggerOptions::CMD_LogQueryScopes  , "Log observer queries scopes."                    , "Log observer failed to query scopes." }
+          //!< The status and error message when request to save configuration
         , { eLoggerOptions::CMD_LogSaveConfig   , "Log observer requested to save configuration."   , "Log observer failed to request save config." }
+          //!< No status or error when output print help
         , { eLoggerOptions::CMD_LogPrintHelp    , "", "" }
+          //!< The status or error message when request to output list of  connected instances.
         , { eLoggerOptions::CMD_LogInformation  , "List of connected instances ..."                 , "" }
+          //!< The status or error message when request to update scopes.
         , { eLoggerOptions::CMD_LogUpdateScope  , "Log observer requested to update scopes."        , "Log observer failed to request update scopes." }
+          //!< The status or error message when request to pause logging.
         , { eLoggerOptions::CMD_LogPause        , "Log observer is paused, type \'-r\' to resume."  , "" }
+          //!< No status or error when request to quit log observer
         , { eLoggerOptions::CMD_LogQuit         , "", "" }
+          //!< The status or error  message when request to start or resume log observer.
         , { eLoggerOptions::CMD_LogRestart      , "Log observer triggered connection."              , "Log observer failed to trigger connection. Check initialization." }
-        , { eLoggerOptions::CMD_LogInformation  , "Log observer stops, type \'-r\' to resume."      , "Log observer failed to stop. Restart application." }
+          //!< The status or error message when request to stop logging.
+        , { eLoggerOptions::CMD_LogStop         , "Log observer stops, type \'-r\' to resume."      , "Log observer failed to stop. Restart application." }
     };
 
     //!< The initialized status.

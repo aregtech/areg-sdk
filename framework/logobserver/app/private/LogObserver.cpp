@@ -368,6 +368,7 @@ bool LogObserver::_checkCommand(const String& cmd)
 
             if (status != nullptr)
             {
+                ASSERT(static_cast<eLoggerOptions>(opt.inCommand) == status->osOption);
                 console.lockConsole();
                 if (processed && (status->osStatus.empty() == false))
                 {
@@ -378,6 +379,10 @@ bool LogObserver::_checkCommand(const String& cmd)
                 {
                     console.clearLine(NESystemService::COORD_STATUS_MSG);
                     console.outputTxt(NESystemService::COORD_STATUS_MSG, status->osError);
+                }
+                else
+                {
+                    console.clearLine(NESystemService::COORD_STATUS_MSG);
                 }
 
                 console.unlockConsole();
