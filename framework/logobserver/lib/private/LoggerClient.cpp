@@ -149,39 +149,51 @@ uint16_t LoggerClient::getConfigLoggerPort(void) const
     }
 }
 
-void LoggerClient::requestConnectedInstances(void)
+bool LoggerClient::requestConnectedInstances(void)
 {
+    bool result{ false };
     if (mChannel.getCookie() != NEService::COOKIE_UNKNOWN)
     {
-        sendMessage(NETrace::messageQueryInstances(mChannel.getCookie(), LoggerClient::TargetID));
+        result = sendMessage(NETrace::messageQueryInstances(mChannel.getCookie(), LoggerClient::TargetID));
     }
+
+    return result;
 }
 
-void LoggerClient::requestScopes(const ITEM_ID& target /*= NEService::COOKIE_ANY*/)
+bool LoggerClient::requestScopes(const ITEM_ID& target /*= NEService::COOKIE_ANY*/)
 {
+    bool result{ false };
     Lock lock(mLock);
     if ((mChannel.getCookie() != NEService::COOKIE_UNKNOWN) && (target != NEService::COOKIE_UNKNOWN))
     {
-        sendMessage(NETrace::messageQueryScopes(mChannel.getCookie(), target == NEService::COOKIE_ANY ? LoggerClient::TargetID : target));
+        result = sendMessage(NETrace::messageQueryScopes(mChannel.getCookie(), target == NEService::COOKIE_ANY ? LoggerClient::TargetID : target));
     }
+
+    return result;
 }
 
-void LoggerClient::requestChangeScopePrio(const NETrace::ScopeNames & scopes, const ITEM_ID& target /*= NEService::COOKIE_ANY*/)
+bool LoggerClient::requestChangeScopePrio(const NETrace::ScopeNames & scopes, const ITEM_ID& target /*= NEService::COOKIE_ANY*/)
 {
+    bool result{ false };
     Lock lock(mLock);
     if ((mChannel.getCookie() != NEService::COOKIE_UNKNOWN) && (target != NEService::COOKIE_UNKNOWN))
     {
-        sendMessage(NETrace::messageUpdateScopes(mChannel.getCookie(), target == NEService::COOKIE_ANY ? LoggerClient::TargetID : target, scopes));
+        result = sendMessage(NETrace::messageUpdateScopes(mChannel.getCookie(), target == NEService::COOKIE_ANY ? LoggerClient::TargetID : target, scopes));
     }
+
+    return result;
 }
 
-void LoggerClient::requestSaveConfiguration(const ITEM_ID& target /*= NEService::COOKIE_ANY*/)
+bool LoggerClient::requestSaveConfiguration(const ITEM_ID& target /*= NEService::COOKIE_ANY*/)
 {
+    bool result{ false };
     Lock lock(mLock);
     if ((mChannel.getCookie() != NEService::COOKIE_UNKNOWN) && (target != NEService::COOKIE_UNKNOWN))
     {
-        sendMessage(NETrace::messageSaveConfiguration(mChannel.getCookie(), target == NEService::COOKIE_ANY ? LoggerClient::TargetID : target));
+        result = sendMessage(NETrace::messageSaveConfiguration(mChannel.getCookie(), target == NEService::COOKIE_ANY ? LoggerClient::TargetID : target));
     }
+
+    return result;
 }
 
 void LoggerClient::prepareSaveConfiguration(ConfigManager& config)

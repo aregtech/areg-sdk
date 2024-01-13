@@ -53,7 +53,7 @@ private:
      **/
     enum class eLoggerOptions : int32_t
     {
-          CMD_LogUndefined      //!< Undefined command.
+          CMD_LogUndefined  = 0 //!< Undefined command.
         , CMD_LogQueryScopes    //!< Query the list of scopes
         , CMD_LogSaveConfig     //!< Save the configuration file.
         , CMD_LogPrintHelp      //!< Output help message.
@@ -66,9 +66,39 @@ private:
     };
 
     /**
+     * \brief   The structure to fill text of observer status and error message on certain action
+     **/
+    struct sObserverStatus
+    {
+        eLoggerOptions      osOption;   //!< The action
+        std::string_view    osStatus;   //!< The status message to display when action succeeds
+        std::string_view    osError;    //!< The error message when action fails.
+    };
+
+    /**
      * \brief   The setup to validate input options of the logger.
      **/
-    static const OptionParser::sOptionSetup ValidOptions[ ];
+    static const OptionParser::sOptionSetup ValidOptions[];
+
+    static constexpr sObserverStatus    ObserverStatus[]
+    {
+          { eLoggerOptions::CMD_LogUndefined    , "", "" }
+        , { eLoggerOptions::CMD_LogQueryScopes  , "Log observer queries scopes."                    , "Log observer failed to query scopes." }
+        , { eLoggerOptions::CMD_LogSaveConfig   , "Log observer requested to save configuration."   , "Log observer failed to request save config." }
+        , { eLoggerOptions::CMD_LogPrintHelp    , "", "" }
+        , { eLoggerOptions::CMD_LogInformation  , "List of connected instances ..."                 , "" }
+        , { eLoggerOptions::CMD_LogUpdateScope  , "Log observer requested to update scopes."        , "Log observer failed to request update scopes." }
+        , { eLoggerOptions::CMD_LogPause        , "Log observer is paused, type \'-r\' to resume."  , "" }
+        , { eLoggerOptions::CMD_LogQuit         , "", "" }
+        , { eLoggerOptions::CMD_LogRestart      , "Log observer triggered connection."              , "Log observer failed to trigger connection. Check initialization." }
+        , { eLoggerOptions::CMD_LogInformation  , "Log observer stops, type \'-r\' to resume."      , "Log observer failed to stop. Restart application." }
+    };
+
+    //!< The initialized status.
+    static constexpr std::string_view  STATUS_INITIALIZED       { "The log observer is initialized, type \'-r\' to connect." };
+
+    //!< The title to display on console when run application.
+    static constexpr std::string_view  APP_TITLE                { "AREG Log Observer console application ..." };
 
 //////////////////////////////////////////////////////////////////////////
 // statics
@@ -215,8 +245,9 @@ private:
      * \brief   Triggered when requested to save the configuration of the client(s).
      * \param   optSave     The option entry that contains the list of target clients
      *                      that should save configuration.
+     * \return  Returns true if processed with success. Otherwise, returns false.
      **/
-    static void _processSaveConfig(const OptionParser::sOption& optSave);
+    static bool _processSaveConfig(const OptionParser::sOption& optSave);
 
     /**
      * \brief   Triggered to print the help message on console.
@@ -225,41 +256,47 @@ private:
      *                      If 'true', the printing message is about using the service in
      *                      command line. Otherwise, if application expects user inputs, prints
      *                      the help of command options.
+     * \return  Returns true if processed with success. Otherwise, returns false.
      **/
-    static void _processPrintHelp(void);
+    static bool _processPrintHelp(void);
 
     /**
      * \brief   Triggered to print the information of instances, such as ID, number of registered scope, name, etc.
+     * \return  Returns true if processed with success. Otherwise, returns false.
      **/
-    static void _processInfoInstances(void);
+    static bool _processInfoInstances(void);
 
     /**
      * \brief   Triggered to process update scope priority command.
      * \param   optScope    The option entry that contains scope priority update instruction.
      *                      If the command contains a list of scopes to update, the should be split by ';'.
+     * \return  Returns true if processed with success. Otherwise, returns false.
      **/
-    static void _processUpdateScopes(const OptionParser::sOption& optScope);
+    static bool _processUpdateScopes(const OptionParser::sOption& optScope);
 
     /**
      * \brief   Triggered to pause logging. The lob observer is paused if it does not write logs in the file.
      *          But the log observer may remain connected.
+     * \return  Returns true if processed with success. Otherwise, returns false.
      **/
-    static void _processPauseLogging(void);
+    static bool _processPauseLogging(void);
 
     /**
      * \brief   Triggered to stop, resume or start logging. When starts it may create new log file.
      *          The resumed logging continues writing logs in the existing log file.
      * \param   doStart     If true it resumes or starts the logging.
      *                      If false, it stops and disconnects the log observer from logging service.
+     * \return  Returns true if processed with success. Otherwise, returns false.
      **/
-    static void _processStartLogging(bool doStart);
+    static bool _processStartLogging(bool doStart);
 
     /**
      * \brief   Triggered to trigger querying the list of registered scopes.
      * \param   optScope    The option entry that contains query command and list of client application IDs to request scope list.
      *                      If the command contains a list of IDs, it can be separated either by space ' ' or semicolon ';'.
+     * \return  Returns true if processed with success. Otherwise, returns false.
      **/
-    static void _processQueryScopes(const OptionParser::sOption& optScope);
+    static bool _processQueryScopes(const OptionParser::sOption& optScope);
 
     /**
      * \brief   Normalizes the scope to make it suitable to generate property object with the key and value.
@@ -273,7 +310,7 @@ private:
      * \param   scope   The scope priority string to parse and create message.
      * \return  Returns message to send to the remote target client.
      **/
-    static RemoteMessage _sendScopeUpdateMessage(const String& scope);
+    static bool _sendScopeUpdateMessage(const String& scope);
 
 //////////////////////////////////////////////////////////////////////////
 // OS specific hidden methods.

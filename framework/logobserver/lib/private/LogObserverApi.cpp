@@ -131,15 +131,18 @@ LOGOBSERVER_API_IMPL void logObserverDisconnectLogger()
     }
 }
 
-LOGOBSERVER_API_IMPL void logObserverPauseLogging(bool doPause)
+LOGOBSERVER_API_IMPL bool logObserverPauseLogging(bool doPause)
 {
     Lock lock(theObserver.losLock);
 
+    bool result{ _isInitialized(theObserver.losState) };
     if (_isConnected(theObserver.losState))
     {
         theObserver.losState = doPause ? eObserverStates::ObserverPaused : eObserverStates::ObserverConnected;
         LoggerClient::getInstance().setPaused(doPause);
     }
+
+    return result;
 }
 
 LOGOBSERVER_API_IMPL eObserverStates logObserverCurrentState()
@@ -257,26 +260,33 @@ LOGOBSERVER_API_IMPL unsigned short logObserverConfigLoggerPort()
     return result;
 }
 
-LOGOBSERVER_API_IMPL void logObserverRequestInstances()
+LOGOBSERVER_API_IMPL bool logObserverRequestInstances()
 {
+    bool result{ false };
     Lock lock(theObserver.losLock);
     if (_isInitialized(theObserver.losState))
     {
-        LoggerClient::getInstance().requestConnectedInstances();
+        result = LoggerClient::getInstance().requestConnectedInstances();
     }
+
+    return result;
 }
 
-LOGOBSERVER_API_IMPL void logObserverRequestScopes(ITEM_ID target /* = ID_IGNORED */)
+LOGOBSERVER_API_IMPL bool logObserverRequestScopes(ITEM_ID target /* = ID_IGNORED */)
 {
+    bool result{ false };
     Lock lock(theObserver.losLock);
     if (_isInitialized(theObserver.losState))
     {
-        LoggerClient::getInstance().requestScopes(target);
+        result = LoggerClient::getInstance().requestScopes(target);
     }
+
+    return result;
 }
 
-LOGOBSERVER_API_IMPL void logObserverRequestChangeScopePrio(ITEM_ID target, const sLogScope* scopes, uint32_t count)
+LOGOBSERVER_API_IMPL bool logObserverRequestChangeScopePrio(ITEM_ID target, const sLogScope* scopes, uint32_t count)
 {
+    bool result{ false };
     Lock lock(theObserver.losLock);
     if (_isInitialized(theObserver.losState) && (target != ID_IGNORE))
     {
@@ -288,13 +298,18 @@ LOGOBSERVER_API_IMPL void logObserverRequestChangeScopePrio(ITEM_ID target, cons
 
         LoggerClient::getInstance().requestChangeScopePrio( scopeList, target);
     }
+
+    return result;
 }
 
-LOGOBSERVER_API_IMPL void logObserverRequestSaveConfig(ITEM_ID target /* = ID_IGNORED */)
+LOGOBSERVER_API_IMPL bool logObserverRequestSaveConfig(ITEM_ID target /* = ID_IGNORED */)
 {
+    bool result{ false };
     Lock lock(theObserver.losLock);
     if (_isInitialized(theObserver.losState))
     {
-        LoggerClient::getInstance().requestSaveConfiguration(target);
+        result = LoggerClient::getInstance().requestSaveConfiguration(target);
     }
+
+    return result;
 }

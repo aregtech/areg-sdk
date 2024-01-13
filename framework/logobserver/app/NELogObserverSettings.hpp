@@ -30,34 +30,9 @@
     #define     IMP_LOGOBSERVER_DLL
 #endif  // !defined(IMP_LOGOBSERVER_DLL) || !defined(IMP_LOGOBSERVER_LIB)
 
-#if 0
-#if !defined(AREG_EXTENDED)
-    #define AREG_EXTENDED           1
-#elif (AREG_EXTENDED == 0)
-    #undef  AREG_EXTENDED
-    #define AREG_EXTENDED           1
-#endif  // !defined(AREG_EXTENDED)
-#endif 
-
 /************************************************************************
  * Include files.
  ************************************************************************/
 #include "logobserver/lib/LogObserverSwitches.h"
-
-#include <string_view>
-
-namespace NELogObserverSettings
-{
-    /**
-     * \brief   The name of main thread in the console log observer application.
-     **/
-    constexpr char      LOG_LOGOBSERVER_THREAD_NAME[]  { "_AREG_LOG_OBSERVER_THREAD_" };
-
-    /**
-     * \brief   The title to display on console when run application.
-     **/
-    constexpr std::string_view   APP_TITLE{ "AREG Log Observer console application ..." };
-
-}
 
 #endif // AREG_LOGOBSERVER_APP_NELOGOBSERVERSETTINGS_HPP

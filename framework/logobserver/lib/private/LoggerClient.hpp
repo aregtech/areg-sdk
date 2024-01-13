@@ -159,8 +159,9 @@ public:
 
     /**
      * \brief   Generates and sends the message to query list of connected clients.
+     * \return  Returns true if processed the request with success. Otherwise, returns false.
      **/
-    void requestConnectedInstances(void);
+    bool requestConnectedInstances(void);
 
     /**
      * \brief   Generates and sends the message to query list of scopes.
@@ -168,8 +169,9 @@ public:
      *          if the target is NEService::COOKIE_ANY.
      * \param   target  The ID of the target to send the message.
      *                  The message is sent to all clients if the target is NEService::COOKIE_ANY.
+     * \return  Returns true if processed the request with success. Otherwise, returns false.
      **/
-    void requestScopes(const ITEM_ID& target = NEService::COOKIE_ANY);
+    bool requestScopes(const ITEM_ID& target = NEService::COOKIE_ANY);
 
     /**
      * \brief   Generates and sends the message to update the scope priority.
@@ -180,8 +182,9 @@ public:
      *                  The ID can be 0 if the name refers to a scope group.
      * \param   target  The ID of the target to send the message.
      *                  The message is sent to all clients if the target is NEService::COOKIE_ANY.
+     * \return  Returns true if processed the request with success. Otherwise, returns false.
      **/
-    void requestChangeScopePrio(const NETrace::ScopeNames& scopes, const ITEM_ID& target = NEService::COOKIE_ANY);
+    bool requestChangeScopePrio(const NETrace::ScopeNames& scopes, const ITEM_ID& target = NEService::COOKIE_ANY);
 
     /**
      * \brief   Generates and sends the message to request to save configuration current state,
@@ -191,8 +194,9 @@ public:
      *          if the target is NEService::COOKIE_ANY.
      * \param   target  The ID of the target to send the message.
      *                  The message is sent to all clients if the target is NEService::COOKIE_ANY.
+     * \return  Returns true if processed the request with success. Otherwise, returns false.
      **/
-    void requestSaveConfiguration(const ITEM_ID & target = NEService::COOKIE_ANY);
+    bool requestSaveConfiguration(const ITEM_ID & target = NEService::COOKIE_ANY);
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
