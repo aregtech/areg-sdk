@@ -22,6 +22,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/base/IEIOStream.hpp"
+#include "areg/base/TEMap.hpp"
 #include "areg/base/NECommon.hpp"
 #include "areg/base/String.hpp"
 #include "areg/base/TEFixedArray.hpp"
@@ -1064,6 +1065,10 @@ namespace NEService
         String                      ciLocation  { "" };
     };
 
+    /**
+     * \brief   The map of key-value connected instances, where the key is an instance ID and the value is connected instance information.
+     **/
+    using MapInstances = TEMap<ITEM_ID, NEService::sServiceConnectedInstance>;
 }
 
 //////////////////////////////////////////////////////////////////////////

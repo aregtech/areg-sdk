@@ -263,7 +263,7 @@ private:
     /**
      * \brief   Returns the list of connected instances.
      **/
-    inline const ServiceCommunicatonBase::MapInstances & getConnetedInstances( void ) const;
+    inline const NEService::MapInstances & getConnetedInstances( void ) const;
 
     /**
      * \brief   Enables or disables local log messages of the current process.
@@ -300,7 +300,7 @@ private:
     /**
      * \brief   Outputs on console the information about connected instances.
      **/
-    static void _outputInstances( const ServiceCommunicatonBase::MapInstances & instances );
+    static void _outputInstances( const NEService::MapInstances & instances );
 
     /**
      * \brief   Sets verbose or silent mode to output data rate.
@@ -428,7 +428,7 @@ inline IEServiceConnectionProvider & Logger::getService( void )
     return static_cast<IEServiceConnectionProvider &>(mServiceServer);
 }
 
-inline const ServiceCommunicatonBase::MapInstances & Logger::getConnetedInstances( void ) const
+inline const NEService::MapInstances & Logger::getConnetedInstances( void ) const
 {
     return mServiceServer.getInstances( );
 }

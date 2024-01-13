@@ -550,7 +550,7 @@ void Logger::_outputInfo( const String & info )
 #endif  // AREG_EXTENDED
 }
 
-void Logger::_outputInstances( const ServiceCommunicatonBase::MapInstances & instances )
+void Logger::_outputInstances( const NEService::MapInstances & instances )
 {
     static constexpr std::string_view _table{ "   Nr. |  Instance ID  |  Bitness  |  Name " };
     static constexpr std::string_view _empty{ "There are no connected instances ..." };

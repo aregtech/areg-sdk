@@ -53,56 +53,57 @@ void ObserverMessageProcessor::notifyConnectedClients(const RemoteMessage& msgRe
     do
     {
         Lock lock(mLoggerClient.mLock);
-        if (mLoggerClient.mCallbacks != nullptr)
-        {
-            msgReceived >> remConnect;
-            msgReceived >> count;
+        msgReceived >> remConnect;
+        msgReceived >> count;
 
-            if (remConnect == NERemoteService::eRemoteConnection::RemoteConnected)
+        if (remConnect == NERemoteService::eRemoteConnection::RemoteConnected)
+        {
+            evtInstConnected = mLoggerClient.mCallbacks != nullptr ? mLoggerClient.mCallbacks->evtInstConnected : nullptr;
+            listConnect = (count != 0) && (evtInstConnected != nullptr) ? new sLogInstance[count] : nullptr;
+            for (uint32_t i = 0; i < count; ++i)
             {
-                evtInstConnected = mLoggerClient.mCallbacks->evtInstConnected;
-                listConnect = count != 0 ? new sLogInstance[count] : nullptr;
+                NEService::sServiceConnectedInstance instance{};
+                msgReceived >> instance;
+                mLoggerClient.mInstances.addIfUnique(instance.ciCookie, instance, false);
+
                 if (listConnect != nullptr)
                 {
-                    for (uint32_t i = 0; i < count; ++i)
-                    {
-                        sLogInstance& inst{ listConnect[i] };
-                        NEService::sServiceConnectedInstance instance{};
-                        msgReceived >> instance;
-                        inst.liSource   = static_cast<uint32_t>(instance.ciSource);
-                        inst.liBitness  = static_cast<uint32_t>(instance.ciBitness);
-                        inst.liCookie   = instance.ciCookie;
-                        inst.liTimestamp= instance.ciTimestamp;
-                        NEString::copyString( inst.liName
-                                            , static_cast<NEString::CharCount>(LENGTH_NAME)
-                                            , instance.ciInstance.getString()
-                                            , static_cast<NEString::CharCount>(instance.ciInstance.getLength()));
-                        NEString::copyString( inst.liLocation
-                                            , static_cast<NEString::CharCount>(LENGTH_LOCATION)
-                                            , instance.ciLocation.getString()
-                                            , static_cast<NEString::CharCount>(instance.ciLocation.getLength()));
-                    }
+                    sLogInstance& inst{ listConnect[i] };
+                    inst.liSource = static_cast<uint32_t>(instance.ciSource);
+                    inst.liBitness = static_cast<uint32_t>(instance.ciBitness);
+                    inst.liCookie = instance.ciCookie;
+                    inst.liTimestamp = instance.ciTimestamp;
+                    NEString::copyString( inst.liName
+                                        , static_cast<NEString::CharCount>(LENGTH_NAME)
+                                        , instance.ciInstance.getString()
+                                        , static_cast<NEString::CharCount>(instance.ciInstance.getLength()));
+                    NEString::copyString( inst.liLocation
+                                        , static_cast<NEString::CharCount>(LENGTH_LOCATION)
+                                        , instance.ciLocation.getString()
+                                        , static_cast<NEString::CharCount>(instance.ciLocation.getLength()));
                 }
-                else
+            }
+
+            if (listConnect == nullptr)
+            {
+                count = 0;
+            }
+        }
+        else
+        {
+            evtInstDisconnected = mLoggerClient.mCallbacks->evtInstDisconnected;
+            listDisconnect = new ITEM_ID[count];
+            if (listDisconnect != nullptr)
+            {
+                for (uint32_t i = 0; i < count; ++i)
                 {
-                    count = 0;
+                    msgReceived >> listDisconnect[i];
+                    mLoggerClient.mInstances.removeAt(listDisconnect[i]);
                 }
             }
             else
             {
-                evtInstDisconnected = mLoggerClient.mCallbacks->evtInstDisconnected;
-                listDisconnect = new ITEM_ID[count];
-                if (listDisconnect != nullptr)
-                {
-                    for (uint32_t i = 0; i < count; ++i)
-                    {
-                        msgReceived >> listDisconnect[i];                        
-                    }
-                }
-                else
-                {
-                    count = 0;
-                }
+                count = 0;
             }
         }
     } while (false);

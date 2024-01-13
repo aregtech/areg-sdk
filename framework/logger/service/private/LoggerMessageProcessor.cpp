@@ -31,7 +31,7 @@ void LoggerMessageProcessor::queryConnectedInstances(const RemoteMessage & msgRe
     const ITEM_ID& target{ msgReceived.getTarget() };
     if ((source >= NEService::COOKIE_REMOTE_SERVICE) && (target == NEService::COOKIE_LOGGER))
     {
-        const ServiceCommunicatonBase::MapInstances& instances = mLoggerService.getInstances();
+        const NEService::MapInstances& instances = mLoggerService.getInstances();
         auto srcPos = instances.find(source);
         if (instances.isValidPosition(srcPos))
         {
@@ -44,7 +44,7 @@ void LoggerMessageProcessor::queryConnectedInstances(const RemoteMessage & msgRe
     }
 }
 
-void LoggerMessageProcessor::notifyConnectedInstances(const ServiceCommunicatonBase::MapInstances& instances, const ITEM_ID& target /*= NEService::COOKIE_ANY*/) const
+void LoggerMessageProcessor::notifyConnectedInstances(const NEService::MapInstances& instances, const ITEM_ID& target /*= NEService::COOKIE_ANY*/) const
 {
     const auto& observers{ mLoggerService.getObservers() };
     if (observers.isEmpty())
@@ -212,7 +212,7 @@ inline void LoggerMessageProcessor::_forwardMessageToObservers(const RemoteMessa
 
     ITEM_ID source{ msgReceived.getSource() };
     ITEM_ID target{ msgReceived.getTarget() != NEService::COOKIE_LOGGER ? msgReceived.getTarget() : NEService::COOKIE_ANY };
-    const ServiceCommunicatonBase::MapInstances& instances = mLoggerService.getInstances();
+    const NEService::MapInstances& instances = mLoggerService.getInstances();
 
     auto srcPos = instances.find(source);
     auto dstPos = instances.find(target);
