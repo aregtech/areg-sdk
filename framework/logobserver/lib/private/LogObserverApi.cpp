@@ -296,7 +296,7 @@ LOGOBSERVER_API_IMPL bool logObserverRequestChangeScopePrio(ITEM_ID target, cons
             scopeList.add(NETrace::sScopeInfo(scopes[i].lsName, scopes[i].lsId, scopes[i].lsPrio));
         }
 
-        LoggerClient::getInstance().requestChangeScopePrio( scopeList, target);
+        result = LoggerClient::getInstance().requestChangeScopePrio( scopeList, target);
     }
 
     return result;
