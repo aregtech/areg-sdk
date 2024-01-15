@@ -49,7 +49,8 @@ namespace
             dstCallbacks.evtMessagingFailed     = srcCallbacks->evtMessagingFailed;
             dstCallbacks.evtInstConnected       = srcCallbacks->evtInstConnected;
             dstCallbacks.evtInstDisconnected    = srcCallbacks->evtInstDisconnected;
-            dstCallbacks.evtLogScopes           = srcCallbacks->evtLogScopes;
+            dstCallbacks.evtLogRegisterScopes   = srcCallbacks->evtLogRegisterScopes;
+            dstCallbacks.evtLogUpdatedScopes    = srcCallbacks->evtLogUpdatedScopes;
             dstCallbacks.evtLogMessage          = srcCallbacks->evtLogMessage;
             dstCallbacks.evtLogMessageEx        = srcCallbacks->evtLogMessageEx;
         }
@@ -61,7 +62,8 @@ namespace
             dstCallbacks.evtMessagingFailed     = nullptr;
             dstCallbacks.evtInstConnected       = nullptr;
             dstCallbacks.evtInstDisconnected    = nullptr;
-            dstCallbacks.evtLogScopes           = nullptr;
+            dstCallbacks.evtLogRegisterScopes   = nullptr;
+            dstCallbacks.evtLogUpdatedScopes    = nullptr;
             dstCallbacks.evtLogMessage          = nullptr;
             dstCallbacks.evtLogMessageEx        = nullptr;
         }
@@ -296,7 +298,7 @@ LOGOBSERVER_API_IMPL bool logObserverRequestChangeScopePrio(ITEM_ID target, cons
             scopeList.add(NETrace::sScopeInfo(scopes[i].lsName, scopes[i].lsId, scopes[i].lsPrio));
         }
 
-        LoggerClient::getInstance().requestChangeScopePrio( scopeList, target);
+        result = LoggerClient::getInstance().requestChangeScopePrio( scopeList, target);
     }
 
     return result;

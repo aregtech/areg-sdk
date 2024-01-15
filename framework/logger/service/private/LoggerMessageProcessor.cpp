@@ -20,6 +20,8 @@
 
 LoggerMessageProcessor::LoggerMessageProcessor(LoggerServerService & loggerService)
     : mLoggerService    ( loggerService )
+    , mListSaveConfig   ( )
+    , mPendingSave      ( NEService::COOKIE_UNKNOWN )
 {
 }
 
@@ -148,10 +150,65 @@ void LoggerMessageProcessor::queryLogSourceScopes(const RemoteMessage & msgRecei
     _forwardMessageToLogSources(msgReceived);
 }
 
-void LoggerMessageProcessor::saveLogSourceConfiguration(const RemoteMessage & msgReceived) const
+void LoggerMessageProcessor::saveLogSourceConfiguration(const RemoteMessage & msgReceived)
 {
     ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceSaveLogConfiguration));
-    _forwardMessageToLogSources(msgReceived);
+
+    ITEM_ID target{ NEService::COOKIE_UNKNOWN };
+    msgReceived >> target;
+    if ((target == NEService::COOKIE_ANY) || (target == NEService::COOKIE_LOGGER))
+    {
+        const NEService::MapInstances& instances{ mLoggerService.getInstances() };
+        for (const auto& entry : instances.getData())
+        {
+            if (isLogSource(entry.second.ciSource))
+            {
+                mListSaveConfig.addIfUnique(entry.first);
+            }
+        }
+    }
+    else if (target != NEService::COOKIE_UNKNOWN)
+    {
+        mListSaveConfig.addIfUnique(target);
+    }
+
+    if ((mPendingSave == NEService::COOKIE_UNKNOWN) && (mListSaveConfig.isEmpty() == false))
+    {
+        processNextSaveConfig();
+    }
+}
+
+void LoggerMessageProcessor::logSourceScopesUpadated(const RemoteMessage& msgReceived)
+{
+    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogScopesUpdated));
+    _forwardMessageToObservers(msgReceived);
+}
+
+void LoggerMessageProcessor::logSourceConfigurationSaved(const RemoteMessage& msgReceived)
+{
+    ASSERT(msgReceived.getMessageId() == static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogConfigurationSaved));
+    processNextSaveConfig();
+}
+
+void LoggerMessageProcessor::processNextSaveConfig(void)
+{
+    mLoggerService.mSaveTimer.stopTimer();
+    mPendingSave = NEService::COOKIE_UNKNOWN;
+    if (mListSaveConfig.isEmpty() == false)
+    {
+        mPendingSave = mListSaveConfig[0u];
+        mListSaveConfig.removeAt(0u, 1u);
+        mLoggerService.sendMessage(NETrace::messageSaveConfiguration(NEService::COOKIE_LOGGER, mPendingSave));
+        mLoggerService.mSaveTimer.startTimer(LoggerServerService::TIMEOUT_SAVE_CONFIG, static_cast<DispatcherThread &>(mLoggerService), 1);
+    }
+}
+
+void LoggerMessageProcessor::clientDisconnected(const ITEM_ID& cookie)
+{
+    if ((cookie > NEService::COOKIE_ANY) && (mPendingSave == cookie))
+    {
+        processNextSaveConfig();
+    }
 }
 
 void LoggerMessageProcessor::logMessage(const RemoteMessage & msgReceived) const

@@ -287,6 +287,7 @@ void LogObserver::logMain( int argc, char ** argv )
         , &LogObserver::callbackDisconnecteInstances
         , &LogObserver::callbackLogScopes
         , nullptr
+        , nullptr
         , &LogObserver::callbackLogMessageEx
     };
 

@@ -221,7 +221,15 @@ typedef void (*FuncInstancesDisconnect)(const ITEM_ID * /*instances*/, uint32_t 
  * \param   scopes  The list of the scopes registered in the application. Each entry contains the ID of the scope, message priority and the full name.
  * \param   count   The number of scope entries in the list.
  **/
-typedef void (*FuncLogScopes)(ITEM_ID /*cookie*/, const sLogScope* /*scopes*/, uint32_t /*count*/);
+typedef void (*FuncLogRegisterScopes)(ITEM_ID /*cookie*/, const sLogScope* /*scopes*/, uint32_t /*count*/);
+
+/**
+ * \brief   The callback of the event triggered when receive the list of previously registered scopes with new priorities.
+ * \param   cookie  The cookie ID of the connected instance / application. Same as sLogInstance::liCookie
+ * \param   scopes  The list of previously registered scopes. Each entry contains the ID of the scope, message priority and the full name.
+ * \param   count   The number of scope entries in the list.
+ **/
+typedef void (*FuncLogUpdateScopes)(ITEM_ID /*cookie*/, const sLogScope* /*scopes*/, uint32_t /*count*/);
 
 /**
  * \brief   The callback of the event triggered when receive message to log.
@@ -255,7 +263,9 @@ struct sObserverEvents
     /* The callback to trigger when receive list of IDs of the disconnected instances that make logs. */
     FuncInstancesDisconnect evtInstDisconnected;
     /* The callback to trigger when receive list of registered scopes. */
-    FuncLogScopes           evtLogScopes;
+    FuncLogRegisterScopes   evtLogRegisterScopes;
+    /* The callback to trigger when receive list of updated scope priorities */
+    FuncLogUpdateScopes     evtLogUpdatedScopes;
     /* The callback to trigger when receive a message to log. If is set and not null, the 'evtLogMessageEx' callback is ignored. */
     FuncLogMessage          evtLogMessage;
     /* The callback to trigger when receive remote message to log. To use, set the 'evtLogMessage' callback null. */

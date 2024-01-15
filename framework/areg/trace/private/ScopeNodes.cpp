@@ -254,11 +254,6 @@ unsigned int ScopeNode::groupChildNodes( void )
 unsigned int ScopeNode::updateConfigNode( ConfigManager & config, const String & parentPath ) const
 {
     unsigned int result{ 0 };
-    if ( hasLogsEneabled( ) == false )
-    {
-        return result;
-    }
-
     String thisScope = makeScopePath( parentPath );
     if ( (mGroupping & static_cast<unsigned int>(ScopeNodeBase::eGroupping::GrouppingAll)) != 0 )
     {
@@ -387,23 +382,16 @@ unsigned int ScopeRoot::updateConfigNode( ConfigManager & config, const String &
     unsigned int result{ 0 };
 
     String thisScope( makeScopePath(String::EmptyString) );
-
     for ( auto pos = mChildLeafs.firstPosition( ); mChildLeafs.isValidPosition( pos ); pos = mChildLeafs.nextPosition( pos ) )
     {
         const ScopeLeaf & leaf = mChildLeafs.valueAtPosition( pos );
-        if ( leaf.hasLogsEneabled( ) )
-        {
-            result += leaf.updateConfigNode( config, thisScope );
-        }
+        result += leaf.updateConfigNode(config, thisScope);
     }
 
     for ( auto pos = mChildNodes.firstPosition( ); mChildNodes.isValidPosition( pos ); pos = mChildNodes.nextPosition( pos ) )
     {
         const ScopeNode & node = mChildNodes.valueAtPosition( pos );
-        if ( node.hasLogsEneabled( ) )
-        {
-            result += node.updateConfigNode( config, thisScope );
-        }
+        result += node.updateConfigNode(config, thisScope);
     }
 
     if ( result == 0 )

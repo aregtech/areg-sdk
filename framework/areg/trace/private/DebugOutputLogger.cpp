@@ -39,8 +39,7 @@ bool DebugOutputLogger::openLogger(void)
 #if defined(OUTPUT_DEBUG)
     if ( mIsOpened == false )
     {
-        const LogConfiguration& traceConfig = getTraceConfiguration();
-        if (traceConfig.isDebugOutputLoggingEnabled())
+        if (mLogConfiguration.isDebugOutputLoggingEnabled())
         {
             mIsOpened = createLayouts();
 

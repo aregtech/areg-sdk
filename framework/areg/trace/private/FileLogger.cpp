@@ -27,15 +27,12 @@ FileLogger::FileLogger( LogConfiguration & tracerConfig )
 
 bool FileLogger::openLogger( void )
 {
-    if ( mLogFile.isOpened() == false )
+    if ( (mLogFile.isOpened() == false) && mLogConfiguration.isFileLoggingEnabled())
     {
-        const LogConfiguration & traceConfig = getTraceConfiguration();
-        ASSERT(traceConfig.isFileLoggingEnabled());
-
-        String fileName( traceConfig.getLogFile() );
+        String fileName(mLogConfiguration.getLogFile() );
         if ( fileName.isEmpty() == false )
         {
-            bool newFile      = static_cast<bool>(traceConfig.getAppendData()) == false;
+            bool newFile      = static_cast<bool>(mLogConfiguration.getAppendData()) == false;
             unsigned int mode = File::FO_MODE_WRITE | File::FO_MODE_READ | File::FO_MODE_SHARE_READ | File::FO_MODE_SHARE_WRITE | File::FO_MODE_TEXT;
 
             if (File::existFile(fileName))

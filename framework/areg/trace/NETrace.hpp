@@ -48,10 +48,15 @@ namespace NETrace
      **/
     constexpr std::string_view LOG_VERSION{ "2.0.0" };
 
-    //!< The list of the scopes. It is a pair, where the key is the ID of the scope
-    //!< and the value is the pointer to the scope.
+    /**
+     * \brief   The list of the scopes. It is a pair, where the key is the ID of the scope
+     *          and the value is the pointer to the scope.
+     **/
     using ScopeList     = TEHashMap<unsigned int, TraceScope*>;
-    //!< Alias of the map position.
+
+    /**
+     * \brief   Alias of the map position.
+     **/
     using SCOPEPOS      = ScopeList::MAPPOS;
 
     /**
@@ -532,6 +537,18 @@ namespace NETrace
     AREG_API RemoteMessage messageQueryScopes(const ITEM_ID& source, const ITEM_ID& target);
 
     /**
+     * \brief   Creates a message to notify that scopes priority have been changed.
+     *          The message is contains the list of all scopes and priorities, similar to methods messageRegisterScopes()
+     * \param   source      The source ID that creates the message.
+     * \param   target      The target ID that receives the message. Normally, it should be NEService::COOKIE_LOGGER, and
+     *                      then the logger forwards the message to all lob observer instances.
+     * \param   scopeList   The list of scopes, IDs and priorities to set in the message.
+     * \return  Returns generated remote message that contains information of scopes, IDS and priorities to send to logger.
+     * \see     messageRegisterScopes
+     **/
+    AREG_API RemoteMessage messageScopesUpdated(const ITEM_ID& source, const ITEM_ID& target, const NETrace::ScopeList& scopeList);
+
+    /**
      * \brief   Creates a message to send request to the connected client target to save configuration.
      * \param   source      The source ID that generated the message. It should be either ID of the log observer application
      *                      or the ID of the logger service.
@@ -540,6 +557,16 @@ namespace NETrace
      * \return  Returns generated message ready to send to client(s) via logger service.
      **/
     AREG_API RemoteMessage messageSaveConfiguration(const ITEM_ID & source, const ITEM_ID & target);
+
+    /**
+     * \brief   Create a message to notify the logger that the configuration file has been saved.
+     *          The message sent immediately after request to save configuration file, and the message
+     *          is sent only to the log observer. The source of the message is taken by 
+     *          calling NETrace::getCookie() method, and the target is hard-coded value NEService::COOKIE_LOGGER.
+     * \return  Returns generate remote message to notify the logger that the configuration file has been saved.
+     * \see     messageSaveConfiguration
+     **/
+    AREG_API RemoteMessage messageConfigurationSaved(void);
 }
 
 //////////////////////////////////////////////////////////////////////////////

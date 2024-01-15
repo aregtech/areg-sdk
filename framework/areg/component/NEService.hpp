@@ -508,8 +508,12 @@ namespace NEService
         , ServiceLogUpdateScopes
         //!< Sent by observer or logger service to the client application to query the list of scopes
         , ServiceLogQueryScopes
+        //!< Sent by log source clients to notify that the log scopes have been updated.
+        , ServiceLogScopesUpdated
         //!< Sent by observer or logger service to the client application to save the log configuration file.
         , ServiceSaveLogConfiguration
+        //!< Sent by log source to notify that the configuration file is saved.
+        , ServiceLogConfigurationSaved
         //!< Sent by logger service or client applications to log the messages.
         , ServiceLogMessage
         //!< The last ID of service calls.
@@ -1627,8 +1631,12 @@ inline const char * NEService::getString( NEService::eFuncIdRange funcId )
         return "NEService::eFuncIdRange::ServiceLogUpdateScopes";
     case NEService::eFuncIdRange::ServiceLogQueryScopes:
         return "NEService::eFuncIdRange::ServiceLogQueryScopes";
+    case NEService::eFuncIdRange::ServiceLogScopesUpdated:
+        return "NEService::eFuncIdRange::ServiceLogScopesUpdated";
     case NEService::eFuncIdRange::ServiceSaveLogConfiguration:
         return "NEService::eFuncIdRange::ServiceSaveLogConfiguration";
+    case NEService::eFuncIdRange::ServiceLogConfigurationSaved:
+        return "NEService::eFuncIdRange::ServiceLogConfigurationSaved";
     case NEService::eFuncIdRange::ServiceLogMessage:
         return "NEService::eFuncIdRange::ServiceLogMessage";
     case NEService::eFuncIdRange::RequestFirstId:

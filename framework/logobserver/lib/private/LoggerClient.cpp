@@ -457,6 +457,10 @@ void LoggerClient::processReceivedMessage(const RemoteMessage& msgReceived, Sock
             mMessageProcessor.notifyLogRegisterScopes(msgReceived);
             break;
 
+        case NEService::eFuncIdRange::ServiceLogScopesUpdated:
+            mMessageProcessor.notifyLogUpdateScopes(msgReceived);
+            break;
+
         case NEService::eFuncIdRange::ServiceLogMessage:
             if (mIsPaused == false)
             {

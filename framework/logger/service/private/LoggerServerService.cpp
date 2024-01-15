@@ -37,8 +37,11 @@ LoggerServerService::LoggerServerService( void )
                                 , static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip)
                                 , NEConnection::SERVER_DISPATCH_MESSAGE_THREAD
                                 , ServiceCommunicatonBase::eConnectionBehavior::DefaultAccept )
+    , IETimerConsumer           ( )
+
     , mLoggerProcessor          ( self() )
     , mObservers                ( )
+    , mSaveTimer                ( static_cast<IETimerConsumer &>(self()), "ConfigSaveTimer", LoggerServerService::TIMEOUT_SAVE_CONFIG)
 {
 }
 
@@ -75,7 +78,8 @@ void LoggerServerService::removeInstance(const ITEM_ID & cookie)
     NEService::sServiceConnectedInstance instance;
     bool exists{ mInstanceMap.find(cookie, instance) };
     ServiceCommunicatonBase::removeInstance(cookie);
-    
+   
+    mLoggerProcessor.clientDisconnected(cookie);
     if (exists && LoggerMessageProcessor::isLogSource(instance.ciSource))
     {
         NETrace::sLogMessage logMsgBye(NETrace::eLogMessageType::LogMessageText, 0, NETrace::eLogPriority::PrioAny, nullptr, 0);
@@ -100,6 +104,9 @@ void LoggerServerService::removeInstance(const ITEM_ID & cookie)
 void LoggerServerService::removeAllInstances(void)
 {
     Lock lock(mLock);
+    
+    mSaveTimer.stopTimer();
+
     if (mInstanceMap.getSize() != 0)
     {
         TEArrayList<ITEM_ID> listIds;
@@ -184,8 +191,16 @@ void LoggerServerService::onServiceMessageReceived(const RemoteMessage &msgRecei
         mLoggerProcessor.queryLogSourceScopes(msgReceived);
         break;
 
+    case NEService::eFuncIdRange::ServiceLogScopesUpdated:
+        mLoggerProcessor.logSourceScopesUpadated(msgReceived);
+        break;
+
     case NEService::eFuncIdRange::ServiceSaveLogConfiguration:
         mLoggerProcessor.saveLogSourceConfiguration(msgReceived);
+        break;
+
+    case NEService::eFuncIdRange::ServiceLogConfigurationSaved:
+        mLoggerProcessor.logSourceConfigurationSaved(msgReceived);
         break;
 
     case NEService::eFuncIdRange::ServiceLogMessage:
@@ -212,6 +227,10 @@ void LoggerServerService::onServiceMessageReceived(const RemoteMessage &msgRecei
         ASSERT(false);
         break;
     }
+}
+
+void LoggerServerService::processTimer(Timer& timer)
+{
 }
 
 void LoggerServerService::onServiceMessageSend(const RemoteMessage &msgSend)

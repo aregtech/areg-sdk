@@ -81,7 +81,6 @@ protected:
      **/
     virtual void processTimer( Timer & timer ) = 0;
 
-
     /**
      * \brief   Automatically triggered when event is dispatched by thread.
      * \param   data    The Timer Event Data object containing Timer object.

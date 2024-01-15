@@ -117,13 +117,41 @@ public:
      *          or to the certain application to save the log configuration.
      * \param   msgReceived     The message to process.
      **/
-    void saveLogSourceConfiguration(const RemoteMessage & msgReceived) const;
+    void saveLogSourceConfiguration(const RemoteMessage & msgReceived);
 
     /**
      * \brief   Called to forward the log message to the observer application.
      * \param   msgReceived     The message to process.
      **/
-    void logMessage(const RemoteMessage & msgReceived) const;
+    void logMessage(const RemoteMessage& msgReceived) const;
+
+    /**
+     * \brief   Called when the connected instance of log source updates the scope priorities.
+     *          The message contains the list of scope names, ID and log priority.
+     *          The message should be forwarded to all connected lob observer instances, so that
+     *          the have information about actual scope state.
+     * \param   msgReceived     The message to process.
+     **/
+    void logSourceScopesUpadated(const RemoteMessage& msgReceived);
+
+    /**
+     * \brief   Called when the connected instance of log source saves current configuration.
+     *          It notifies the log observer that the configuration is saved, so that the logger
+     *          may request the other connected instances to start update procedure.
+     * \param   msgReceived     The message to process.
+     **/
+    void logSourceConfigurationSaved(const RemoteMessage& msgReceived);
+
+    /**
+     * \brief   Called to process the next log source application in the queue to save configuration.
+     **/
+    void processNextSaveConfig(void);
+
+    /**
+     * \brief   Called when an instance of a log source is disconnected.
+     * \param   cookie      The ID of disconnected application.
+     **/
+    void clientDisconnected(const ITEM_ID& cookie);
 
     /**
      * \brief   Checks whether the specified message source is considered as a log source.
@@ -167,6 +195,12 @@ private:
 private:
     //!< The instance of the logger service.
     LoggerServerService &   mLoggerService;
+
+    //!< The queue of application IDs to save configuration.
+    TEArrayList<ITEM_ID>    mListSaveConfig;
+
+    //!< The ID of an application pending to save the configuration.
+    ITEM_ID                 mPendingSave;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

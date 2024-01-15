@@ -156,8 +156,8 @@ namespace
         return result;
     }
 
-    inline bool _saveConfig( const std::vector<Property>& listWritable
-                           , const std::vector<Property>& listReadonly
+    inline bool _saveConfig( const NEPersistence::ListProperties& listWritable
+                           , const NEPersistence::ListProperties& listReadonly
                            , const String& module
                            , const FileBase& srcFile
                            , FileBase& dstFile
@@ -166,21 +166,26 @@ namespace
         bool result{ false };
         if (srcFile.canRead() && dstFile.canWrite())
         {
+            uint32_t count{ 0 };
             srcFile.moveToBegin();
             dstFile.moveToBegin();
 
             if (saveAll)
             {
-                for (const auto& prop : listReadonly)
+                count = listReadonly.getSize();
+                for (uint32_t i = 0; i < count; ++ i)
                 {
+                    const auto& prop = listReadonly[i];
                     if (prop.isTemporary() == false)
                     {
                         dstFile.writeLine(prop.convToString());
                     }
                 }
 
-                for (const auto& prop : listWritable)
+                count = listWritable.getSize();
+                for (uint32_t i = 0; i < count; ++ i)
                 {
+                    const auto& prop = listWritable[i];
                     if (prop.isTemporary() == false)
                     {
                         dstFile.writeLine(prop.convToString());
@@ -209,8 +214,10 @@ namespace
                     }
                 }
 
-                for (const auto& prop : listWritable)
+                count = listWritable.getSize();
+                for (uint32_t i = 0; i < count; ++i)
                 {
+                    const auto& prop = listWritable[i];
                     if (prop.isTemporary() == false)
                     {
                         dstFile.writeLine(prop.convToString());
@@ -494,7 +501,7 @@ bool ConfigManager::saveConfig(const FileBase& srcFile, FileBase& dstFile, bool 
         listener->prepareSaveConfiguration(*this);
     }
 
-    bool result = _saveConfig(mWritableProperties.getData(), mReadonlyProperties.getData(), mModule, srcFile, dstFile, saveAll);
+    bool result = _saveConfig(mWritableProperties, mReadonlyProperties, mModule, srcFile, dstFile, saveAll);
 
     if (listener != nullptr)
     {
