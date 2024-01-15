@@ -70,6 +70,13 @@ public:
     void notifyLogRegisterScopes(const RemoteMessage& msgReceived);
 
     /**
+     * \brief   Triggered when the observer is notified that the scope priorities are updated.
+     * \param   msgReceived     The buffer with data of scope names, scope IDs and the message priority.
+     *                          This contains the information of all scopes.
+     **/
+    void notifyLogUpdateScopes(const RemoteMessage& msgReceived);
+
+    /**
      * \brief   Triggered to notify to log a message.
      * \param   msgReceived     The buffer with the log message.
      **/

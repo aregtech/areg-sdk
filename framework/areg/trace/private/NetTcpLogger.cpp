@@ -178,6 +178,12 @@ void NetTcpLogger::processReceivedMessage(const RemoteMessage & msgReceived, Soc
                     msgReceived >> scopeInfo;
                     TraceManager::updateScopes(scopeInfo.scopeName, scopeInfo.scopeId, scopeInfo.scopePrio);
                 }
+
+                if (scopeCount != 0)
+                {
+                    const NETrace::ScopeList& scopes{ static_cast<const NETrace::ScopeList&>(mScopeController.getScopeList()) };
+                    sendMessage(NETrace::messageScopesUpdated(mChannel.getCookie(), NEService::COOKIE_LOGGER, scopes));
+                }
             }
             break;
 
@@ -190,7 +196,10 @@ void NetTcpLogger::processReceivedMessage(const RemoteMessage & msgReceived, Soc
             break;
 
         case NEService::eFuncIdRange::ServiceSaveLogConfiguration:
-            Application::getConfigManager().saveConfig();
+            if (TraceManager::saveLogConfig())
+            {
+                sendMessage(NETrace::messageConfigurationSaved());
+            }
             break;
 
         default:

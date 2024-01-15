@@ -57,7 +57,7 @@
         <!-- Property to compile the extended features of AREG SDK. By default, it is not compiled with extended features.                      -->
         <!-- Set 1 to compile with extended features. Set 0 or ignore setting to compile without extended features.                             -->
         <!-- ********************************************************************************************************************************** -->
-        <AregExtended>0</AregExtended>
+        <AregExtended>1</AregExtended>
         <!-- ********************************************************************************************************************************** -->
         <!-- Property to compile the source codes with logging. By default, the sources are compiled with logs.                                 -->
         <!-- Set 0 to compile sources codes without logs. Set 1 or ignore setting to compile with logs.                                         -->

@@ -19,7 +19,9 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
+#include "areg/component/IETimerConsumer.hpp"
 
+#include "areg/component/Timer.hpp"
 #include "areg/trace/NETrace.hpp"
 #include "extend/service/ServiceCommunicatonBase.hpp"
 #include "logger/service/private/LoggerMessageProcessor.hpp"
@@ -31,12 +33,21 @@
  * \brief   The server side connection service. Used by message router to
  *          accept service connections.
  **/
-class LoggerServerService : public    ServiceCommunicatonBase
+class LoggerServerService   : public    ServiceCommunicatonBase
+                            , private   IETimerConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Friend classes to access internals
 //////////////////////////////////////////////////////////////////////////
     friend class LoggerMessageProcessor;
+
+//////////////////////////////////////////////////////////////////////////
+// Internal constants
+//////////////////////////////////////////////////////////////////////////
+private:
+
+    //!< The timeout waiting to save config.
+    static constexpr uint32_t   TIMEOUT_SAVE_CONFIG{ NECommon::WAIT_1_SECOND };
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -155,6 +166,18 @@ protected:
      **/
     virtual void onServiceMessageSend(const RemoteMessage & msgSend) override;
 
+/************************************************************************/
+// IETimerConsumer interface overrides.
+/************************************************************************/
+
+    /**
+     * \brief   Triggered when Timer is expired. 
+     *          The passed Timer parameter is indicating object, which has been expired.
+     *          Overwrite method to receive messages.
+     * \param   timer   The timer object that is expired.
+     **/
+    virtual void processTimer( Timer & timer ) override;
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.
 //////////////////////////////////////////////////////////////////////////
@@ -172,6 +195,8 @@ private:
     LoggerMessageProcessor  mLoggerProcessor;
     //!< List of log observers (log viewers)
     NEService::MapInstances mObservers;
+    //!< The timer used when trigger multiple requests to save configuration.
+    Timer                   mSaveTimer;
 
 //////////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

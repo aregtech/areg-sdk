@@ -90,6 +90,18 @@ namespace
 
         return _messageServiceLog;
     }
+
+    void _storeScopeList(RemoteMessage& msgRemote, const NETrace::ScopeList& scopeList)
+    {
+        msgRemote << static_cast<uint32_t>(scopeList.getSize());
+        const auto& list{ scopeList.getData() };
+        for (const auto& entry : list)
+        {
+            const TraceScope* scope = entry.second;
+            ASSERT(scope != nullptr);
+            msgRemote << *scope;
+        }
+    }
 }
 
 NETrace::sLogMessage::sLogMessage(NETrace::eLogMessageType msgType)
@@ -338,14 +350,7 @@ AREG_API_IMPL RemoteMessage NETrace::messageRegisterScopes(const ITEM_ID & sourc
         msgScope.setTarget(target != NEService::COOKIE_UNKNOWN ? target : NEService::COOKIE_LOGGER);
         msgScope.setSource(source != NEService::COOKIE_UNKNOWN ? source : NETrace::getCookie());
 
-        msgScope << static_cast<uint32_t>(scopeList.getSize());
-        const auto& list{ scopeList.getData() };
-        for (const auto& entry : list)
-        {
-            const TraceScope* scope = entry.second;
-            ASSERT(scope != nullptr);
-            msgScope << *scope;
-        }
+        _storeScopeList(msgScope, scopeList);
     }
 
     return msgScope;
@@ -431,6 +436,21 @@ AREG_API_IMPL RemoteMessage NETrace::messageQueryScopes(const ITEM_ID& source, c
     return msgQuery;
 }
 
+AREG_API_IMPL RemoteMessage NETrace::messageScopesUpdated(const ITEM_ID& source, const ITEM_ID& target, const NETrace::ScopeList& scopeList)
+{
+    RemoteMessage msgScope;
+    if (msgScope.initMessage(_getLogEmptyMessage().rbHeader) != nullptr)
+    {
+        msgScope.setMessageId(static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogScopesUpdated));
+        msgScope.setTarget(target);
+        msgScope.setSource(source);
+
+        _storeScopeList(msgScope, scopeList);
+    }
+
+    return msgScope;
+}
+
 AREG_API_IMPL RemoteMessage NETrace::messageSaveConfiguration(const ITEM_ID& source, const ITEM_ID& target)
 {
     RemoteMessage msgRequest;
@@ -445,6 +465,19 @@ AREG_API_IMPL RemoteMessage NETrace::messageSaveConfiguration(const ITEM_ID& sou
     }
 
     return msgRequest;
+}
+
+AREG_API RemoteMessage NETrace::messageConfigurationSaved(void)
+{
+    RemoteMessage msgScope;
+    if (msgScope.initMessage(_getLogEmptyMessage().rbHeader) != nullptr)
+    {
+        msgScope.setMessageId(static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogConfigurationSaved));
+        msgScope.setTarget(NEService::COOKIE_LOGGER);
+        msgScope.setSource(NETrace::getCookie());
+    }
+
+    return msgScope;
 }
 
 AREG_API_IMPL bool NETrace::forceStartLogging(void)

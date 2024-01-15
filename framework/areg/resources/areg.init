@@ -138,11 +138,18 @@ log::*::layout::message     = %d: [ %t  %p >>> ] %m%n          # Log message lay
 log::*::layout::exit        = %d: [ %t  %x.%z: Exit <-- ]%n    # Exit scope layout
 
 # ---------------------------------------------------------------------------
-# Message layout for logger
+# Message layout for log observer
 # ---------------------------------------------------------------------------
-log::logger::layout::enter  = %d: [ %a.%x.%t.%z: Enter -->]%n # Enter scope layout
-log::logger::layout::message= %d: [ %a.%x.%t.%p >>> ] %m%n    # Log message layout
-log::logger::layout::exit   = %d: [ %a.%x.%t.%z: Exit <-- ]%n # Exit scope layout
+log::logobserver::layout::enter     = %d: [ %a.%x.%t.%z: Enter -->]%n   # Enter scope layout
+log::logobserver::layout::message   = %d: [ %a.%x.%t.%p >>> ] %m%n      # Log message layout
+log::logobserver::layout::exit      = %d: [ %a.%x.%t.%z: Exit <-- ]%n   # Exit scope layout
+
+# ---------------------------------------------------------------------------
+# Messaging enable states for the logger
+# ---------------------------------------------------------------------------
+log::logger::enable::file   = false     # Logger service: do not output log messages in the file
+log::logger::enable::debug  = false     # Logger service: do not output logs in the debug output
+log::logger::enable::db     = false     # Logger service: do not output in the database
 
 # ###########################################################################
 # Remote services

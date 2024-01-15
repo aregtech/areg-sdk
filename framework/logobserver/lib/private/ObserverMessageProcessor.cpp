@@ -132,7 +132,7 @@ void ObserverMessageProcessor::notifyConnectedClients(const RemoteMessage& msgRe
 
 void ObserverMessageProcessor::notifyLogRegisterScopes(const RemoteMessage& msgReceived)
 {
-    FuncLogScopes evtScopes{ nullptr };
+    FuncLogRegisterScopes evtScopes{ nullptr };
     ITEM_ID cookie{ msgReceived.getSource() };
     sLogScope* scopes{ nullptr };
     uint32_t count{ 0 };
@@ -142,7 +142,49 @@ void ObserverMessageProcessor::notifyLogRegisterScopes(const RemoteMessage& msgR
         Lock lock(mLoggerClient.mLock);
         if (mLoggerClient.mCallbacks != nullptr)
         {
-            evtScopes = mLoggerClient.mCallbacks->evtLogScopes;
+            evtScopes = mLoggerClient.mCallbacks->evtLogRegisterScopes;
+            msgReceived >> count;
+            scopes = count != 0 ? new sLogScope[count] : nullptr;
+            if (scopes != nullptr)
+            {
+                for (uint32_t i = 0; i < count; ++i)
+                {
+                    TraceScope scope(msgReceived);
+                    scopes[i].lsId = scope.getScopeId();
+                    scopes[i].lsPrio = scope.getPriority();
+                    NEString::copyString(scopes[i].lsName, static_cast<NEString::CharCount>(LENGTH_SCOPE), scope.getScopeName().getString(), scope.getScopeName().getLength());
+                }
+            }
+            else
+            {
+                count = 0;
+            }
+        }
+    } while (false);
+
+    if (evtScopes != nullptr)
+    {
+        evtScopes(cookie, scopes, count);
+        if (scopes != nullptr)
+        {
+            delete[] scopes;
+        }
+    }
+}
+
+void ObserverMessageProcessor::notifyLogUpdateScopes(const RemoteMessage& msgReceived)
+{
+    FuncLogUpdateScopes evtScopes{ nullptr };
+    ITEM_ID cookie{ msgReceived.getSource() };
+    sLogScope* scopes{ nullptr };
+    uint32_t count{ 0 };
+
+    do
+    {
+        Lock lock(mLoggerClient.mLock);
+        if (mLoggerClient.mCallbacks != nullptr)
+        {
+            evtScopes = mLoggerClient.mCallbacks->evtLogUpdatedScopes;
             msgReceived >> count;
             scopes = count != 0 ? new sLogScope[count] : nullptr;
             if (scopes != nullptr)
