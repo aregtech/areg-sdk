@@ -323,7 +323,7 @@ AREG_API_IMPL RemoteMessage NETrace::createLogMessage(const NETrace::sLogMessage
 
         if (NETrace::eLogDataType::LogDataLocal != dataType)
         {
-            const String& threadName{ Thread::getThreadName(log->logThreadId) };
+            const String& threadName{ Thread::getThreadName(static_cast<id_type>(log->logThreadId)) };
             NEMemory::memCopy(log->logThread, NETrace::LOG_NAMES_SIZE, threadName.getString(), threadName.getLength() + 1);
             log->logThreadLen   = threadName.getLength();
 

@@ -196,8 +196,8 @@ void LoggerMessageProcessor::processNextSaveConfig(void)
     mPendingSave = NEService::COOKIE_UNKNOWN;
     if (mListSaveConfig.isEmpty() == false)
     {
-        mPendingSave = mListSaveConfig[0];
-        mListSaveConfig.removeAt(0, 1);
+        mPendingSave = mListSaveConfig[0u];
+        mListSaveConfig.removeAt(0u, 1u);
         mLoggerService.sendMessage(NETrace::messageSaveConfiguration(NEService::COOKIE_LOGGER, mPendingSave));
         mLoggerService.mSaveTimer.startTimer(LoggerServerService::TIMEOUT_SAVE_CONFIG, static_cast<DispatcherThread &>(mLoggerService), 1);
     }
