@@ -6,17 +6,19 @@
 AREG_DEVELOP_ENV        :=
 AREG_LDFLAGS            :=
 AREG_COMPILER_OPTIONS   :=
+AREG_COMMON_OPTIONS     := 
 AREG_INCLUDES           :=
 AREG_LIB_INCLUDES       :=
 AREG_DEFINITIONS        := $(AREG_USER_DEFINES) -DUNICODE -D_UNICODE
 AREG_AR                 := ar
-AREG_TOOLCHAIN          = $(CXX)
 AREG_PROJECT            := areg
 AREG_EXTENDED_PROJECT   := areg-extend
 AREG_DEPEND             :=
 AREG_LIB_EXT            :=
 AREG_LOGOBSERVERAPI_EXT :=
 AREG_LIB_IMPORT         :=
+AREG_CXX_TOOLCHAIN      := $(CXX)
+AREG_CC_TOOLCHAIN       := $(CC)
 
 ifeq ($(AREG_BUILD_TYPE), Release)
     AREG_DEFINITIONS    += -DNDEBUG
@@ -30,18 +32,20 @@ ifeq ($(AREG_COMPILER_ID), Clang)
     AREG_DEVELOP_ENV        := Posix
 
     ifeq ($(AREG_BUILD_TYPE), Release)
-        AREG_COMPILER_OPTIONS   += -O2
+        AREG_COMMON_OPTIONS   += -O2
     else
-        AREG_COMPILER_OPTIONS  += -O0 -g3
+        AREG_COMMON_OPTIONS  += -O0 -g3
     endif
 
     ifeq ($(AREG_BITNESS), 32)
-        AREG_COMPILER_OPTIONS   += -m32
+        AREG_COMMON_OPTIONS   += -m32
     else
-        AREG_COMPILER_OPTIONS   += -m64
+        AREG_COMMON_OPTIONS   += -m64
     endif
 
-    AREG_COMPILER_OPTIONS   += -g -pthread -std=c++17 -Werror -Wall -fmessage-length=0 -fPIC $(AREG_DEFINITIONS) -stdlib=libstdc++
+    
+    AREG_COMMON_OPTIONS     += -g -pthread -Werror -Wall -fmessage-length=0 -fPIC $(AREG_DEFINITIONS)
+    AREG_COMPILER_OPTIONS   += -std=c++17 $(AREG_COMMON_OPTIONS) -stdlib=libstdc++
     AREG_LDFLAGS            += -lm -lstdc++ -lrt -pthread
 
     OBJ_EXT         := o
@@ -64,26 +68,26 @@ else ifeq ($(AREG_COMPILER_ID), GNU)
 
     AREG_DEFINITIONS        += -DPOSIX
     AREG_DEVELOP_ENV        := Posix
-    AREG_COMPILER_OPTIONS   := -g -pthread -Wall -Werror -fmessage-length=0 -fPIC
+    AREG_COMMON_OPTIONS     := -g -pthread -Wall -Werror -fmessage-length=0 -fPIC
 
     ifeq ($(AREG_BUILD_TYPE), Release)
-        AREG_COMPILER_OPTIONS   += -O2
+        AREG_COMMON_OPTIONS   += -O2
     else
-        AREG_COMPILER_OPTIONS   += -O0 -g3
+        AREG_COMMON_OPTIONS   += -O0 -g3
     endif
 
     ifeq ($(AREG_BITNESS), 32)
-        AREG_COMPILER_OPTIONS   += -m32
+        AREG_COMMON_OPTIONS   += -m32
     else
-        AREG_COMPILER_OPTIONS   += -m64
+        AREG_COMMON_OPTIONS   += -m64
     endif
 
-    AREG_COMPILER_OPTIONS   += $(AREG_DEFINITIONS)
+    AREG_COMMON_OPTIONS     += $(AREG_DEFINITIONS)
     AREG_LDFLAGS            += -lm -lstdc++ -lrt -pthread
 
     ifeq ($(AREG_OS), Cygwin)
 
-        AREG_COMPILER_OPTIONS   += -std=gnu++17
+        AREG_COMPILER_OPTIONS   += -std=gnu++17 $(AREG_COMMON_OPTIONS)
         OBJ_EXT         := o
         AREG_BIN_EXT    := .exe
         AREG_STATIC_LIB := .lib
@@ -101,7 +105,7 @@ else ifeq ($(AREG_COMPILER_ID), GNU)
         endif
 
     else
-        AREG_COMPILER_OPTIONS   += -std=c++17
+        AREG_COMPILER_OPTIONS   += -std=c++17 $(AREG_COMMON_OPTIONS)
 
         OBJ_EXT         := o
         AREG_BIN_EXT    := .out
@@ -128,18 +132,19 @@ else
     AREG_DEVELOP_ENV    := Posix
 
     ifeq ($(AREG_BUILD_TYPE), Release)
-        AREG_COMPILER_OPTIONS   += -O2
+        AREG_COMMON_OPTIONS   += -O2
     else
-        AREG_COMPILER_OPTIONS   += -O0 -g3
+        AREG_COMMON_OPTIONS   += -O0 -g3
     endif
 
     ifeq ($(AREG_BITNESS MATCHES), 32)
-        AREG_COMPILER_OPTIONS   += -m32
+        AREG_COMMON_OPTIONS   += -m32
     else
-        AREG_COMPILER_OPTIONS   += -m64
+        AREG_COMMON_OPTIONS   += -m64
     endif
 
-    AREG_COMPILER_OPTIONS   += -pthread -Wall -fmessage-length=0 -fPIC -std=c++17
+    AREG_COMMON_OPTIONS     += -pthread -Wall -fmessage-length=0 -fPIC
+    AREG_COMPILER_OPTIONS   += -std=c++17 $(AREG_COMMON_OPTIONS)
     AREG_LDFLAGS            += -lstdc++ -lm -lpthread -lrt
 
     OBJ_EXT         := o
@@ -161,7 +166,7 @@ else
 endif
 
 # The source code build relative path
-AREG_PRODUCT_PATH := $(shell echo build/$(AREG_COMPILER_FAMILY)-$(AREG_TOOLCHAIN)/$(AREG_OS)-$(AREG_BITNESS)-$(AREG_PLATFORM)-$(AREG_BUILD_TYPE)-$(AREG_BINARY) | tr '[:upper:]' '[:lower:]')
+AREG_PRODUCT_PATH := $(shell echo build/$(AREG_COMPILER_FAMILY)-$(AREG_CXX_TOOLCHAIN)/$(AREG_OS)-$(AREG_BITNESS)-$(AREG_PLATFORM)-$(AREG_BUILD_TYPE)-$(AREG_BINARY) | tr '[:upper:]' '[:lower:]')
 
 # If 'AREG_OUTPUT_DIR' is not set, build and set the default path.
 AREG_OUTPUT_DIR := $(if $(AREG_OUTPUT_DIR),$(AREG_OUTPUT_DIR),$(AREG_BUILD_ROOT)/$(AREG_PRODUCT_PATH))
@@ -195,6 +200,7 @@ endif
 
 # set compiler flags
 CXXFLAGS    += $(AREG_COMPILER_OPTIONS)
+CCFLAGS     += $(AREG_COMMON_OPTIONS)
 # set linker flags, include AREG_OUTPUT_BIN to the library search path
 LDFLAGS     += $(AREG_LDFLAGS) -Wl,-R$(AREG_OUTPUT_BIN)
 
@@ -244,16 +250,53 @@ export AREG_HELP_MSG
 help:
 	@echo "$$AREG_HELP_MSG"
 
+
 # Define a new target to build object for a given source file.
 # {1} source file, {2}, object directory, {3} object list, {4} extra CXXFLAGS
 define obj
 $(2)/$(patsubst %.cpp,%.$(OBJ_EXT), $(notdir $(1))): ${1}
 	@echo Compiling $$@
 	@mkdir -p $(2)
-	$(AREG_TOOLCHAIN) -c $(CXXFLAGS) ${4} $(AREG_INCLUDES) -MMD $$< -o $$@
+	$(AREG_CXX_TOOLCHAIN) -c $(CXXFLAGS) ${4} $(AREG_INCLUDES) -MMD $$< -o $$@
 
 # add to list of objects
 ${3} += $(2)/$(patsubst %.cpp,%.$(OBJ_EXT), $(notdir $(1)))
+endef
+
+# Define a new target to build object for a given source file.
+# {1} source file, {2}, object directory, {3} object list, {4} extra CXXFLAGS
+define objcpp
+$(2)/$(patsubst %.cpp,%.$(OBJ_EXT), $(notdir $(1))): ${1}
+	@echo Compiling $$@
+	@mkdir -p $(2)
+	$(AREG_CXX_TOOLCHAIN) -c $(CXXFLAGS) ${4} $(AREG_INCLUDES) -MMD $$< -o $$@
+
+# add to list of objects
+${3} += $(2)/$(patsubst %.cpp,%.$(OBJ_EXT), $(notdir $(1)))
+endef
+
+# Define a new target to build object for a given source file.
+# {1} source file, {2}, object directory, {3} object list, {4} extra CXXFLAGS
+define objccp
+$(2)/$(patsubst %.cc,%.$(OBJ_EXT), $(notdir $(1))): ${1}
+	@echo Compiling $$@
+	@mkdir -p $(2)
+	$(AREG_CXX_TOOLCHAIN) -c $(CXXFLAGS) ${4} $(AREG_INCLUDES) -MMD $$< -o $$@
+
+# add to list of objects
+${3} += $(2)/$(patsubst %.cc,%.$(OBJ_EXT), $(notdir $(1)))
+endef
+
+# Define a new target to build object for a given source file with CXX compiler
+# {1} source file, {2}, object directory, {3} object list, {4} extra CXXFLAGS
+define objcc
+$(2)/$(patsubst %.c,%.$(OBJ_EXT), $(notdir $(1))): ${1}
+	@echo Compiling $$@
+	@mkdir -p $(2)
+	$(AREG_CC_TOOLCHAIN) -c $(CCFLAGS) ${4} $(AREG_INCLUDES) -MMD $$< -o $$@
+
+# add to list of objects
+${3} += $(2)/$(patsubst %.c,%.$(OBJ_EXT), $(notdir $(1)))
 endef
 
 # clean targets

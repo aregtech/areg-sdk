@@ -23,7 +23,7 @@
 #   1. AREG_COMPILER_FAMILY = <default> (possible values: gnu, cygwin, llvm, msvc)
 #   2. AREG_COMPILER        = <default> (possible values: g++, gcc, c++, cc, clang++, clang, cl)
 #   3. AREG_BINARY          = shared    (possible values: shared, static)
-#   4. AREG_BUILD_TYPE      = Release   (possible values: Release, Debug
+#   4. AREG_BUILD_TYPE      = Release   (possible values: Release, Debug)
 #   5. AREG_BUILD_TESTS     = OFF       (possible values: ON, OFF)
 #   6. AREG_BUILD_EXAMPLES  = ON        (possible values: ON, OFF)
 #   7. AREG_EXTENDED        = OFF       (possible values: ON, OFF)

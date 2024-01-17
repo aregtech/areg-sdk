@@ -37,6 +37,7 @@ include(${AREG_CMAKE_CONFIG_DIR}/common.cmake)
 
 include_directories(${AREG_BASE})
 include_directories(${AREG_THIRDPARTY})
+include(${AREG_THIRDPARTY}/CMakeLists.txt)
 include(${AREG_BASE}/CMakeLists.txt)
 
 if(AREG_BUILD_EXAMPLES)

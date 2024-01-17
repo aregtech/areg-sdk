@@ -22,4 +22,4 @@ DEPS = $(mcrouter_OBJS:%.o=%.d)
 $(mcrouter_TARGET_BIN): $(areg_TARGET_BIN) $(mcrouter_OBJS) $(AREG_DEPEND)
 	@echo "Linking AREG SDK mcrouter ..."
 	@mkdir -p $(dir $@)
-	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(mcrouter_CXXFLAGS) $(mcrouter_OBJS) -o $@ $(mcrouter_LDFLAGS)
+	$(AREG_CXX_TOOLCHAIN) $(CXXFLAGS) $(mcrouter_CXXFLAGS) $(mcrouter_OBJS) -o $@ $(mcrouter_LDFLAGS)

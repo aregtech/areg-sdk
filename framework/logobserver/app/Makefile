@@ -19,4 +19,4 @@ DEPS = $(logobserver_OBJS:%.o=%.d)
 $(logobserver_TARGET_BIN): $(areg_TARGET_BIN) $(logobserver_OBJS) $(AREG_DEPEND) $(logobserverapi_TARGET_BIN)
 	@echo "Linking log observer ..."
 	@mkdir -p $(dir $@)
-	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(logobserver_CXXFLAGS) $(logobserver_OBJS) -o $@ $(logobserver_LDFLAGS)
+	$(AREG_CXX_TOOLCHAIN) $(CXXFLAGS) $(logobserver_CXXFLAGS) $(logobserver_OBJS) -o $@ $(logobserver_LDFLAGS)

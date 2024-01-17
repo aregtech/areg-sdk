@@ -33,7 +33,7 @@ $(logobserverapi_TARGET_BIN): $(logobserverapi_OBJS) $(AREG_DEPEND)
 	@echo "Linking AREG SDK $(logobserverapi_PROJECT_NAME) $(AREG_LOGOBSERVER_LIB) library ..."
 	@mkdir -p $(dir $@)
 	if [ "$(AREG_LOGOBSERVER_LIB)" = "shared" ]; then \
-		$(AREG_TOOLCHAIN) -shared $(CXXFLAGS) $(logobserverapi_CXXFLAGS) $(logobserverapi_OBJS) -o $@  $(logobserverapi_LDFLAGS); \
+		$(AREG_CXX_TOOLCHAIN) -shared $(CXXFLAGS) $(logobserverapi_CXXFLAGS) $(logobserverapi_OBJS) -o $@  $(logobserverapi_LDFLAGS); \
 	else \
 		$(AREG_AR) -rcs $@ $^; \
 	fi

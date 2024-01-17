@@ -14,4 +14,4 @@ DEPS = $(23_pubsubctrl_OBJS:%.o=%.d)
 $(23_pubsubctrl_TARGET_BIN): $(areg_TARGET_BIN) $(23_pubsubctrl_OBJS) $(23_pubsubmix_DEPEND)
 	@echo "Linking $@ ..."
 	@mkdir -p $(dir $@)
-	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(23_pubsubmix_CXXFLAGS) $(23_pubsubctrl_OBJS) -o $@ $(23_pubsubmix_LDFLAGS)
+	$(AREG_CXX_TOOLCHAIN) $(CXXFLAGS) $(23_pubsubmix_CXXFLAGS) $(23_pubsubctrl_OBJS) -o $@ $(23_pubsubmix_LDFLAGS)

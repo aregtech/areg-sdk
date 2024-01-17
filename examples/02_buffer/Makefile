@@ -17,6 +17,6 @@ $(foreach cpp, $(02_buffer_SRC), $(eval $(call obj, $(cpp), $(02_buffer_OUTPUT_O
 $(02_buffer_TARGET_BIN): $(areg_TARGET_BIN) $(02_buffer_OBJS) $(AREG_DEPEND)
 	@echo "Linking $(02_buffer_PROJECT_NAME) ..."
 	@mkdir -p $(dir $@)
-	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(examples_CXXFLAGS) $(02_buffer_OBJS) $(examples_LDFLAGS) -o $@
+	$(AREG_CXX_TOOLCHAIN) $(CXXFLAGS) $(examples_CXXFLAGS) $(02_buffer_OBJS) $(examples_LDFLAGS) -o $@
 
 .PHONY: 02_buffer

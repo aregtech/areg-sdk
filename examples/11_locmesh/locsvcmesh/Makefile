@@ -14,4 +14,4 @@ DEPS = $(11_locsvcmesh_OBJS:%.o=%.d)
 $(11_locsvcmesh_TARGET_BIN): $(areg_TARGET_BIN) $(11_locsvcmesh_OBJS) $(11_locmesh_DEPEND)
 	@echo "Linking $@ ..."
 	@mkdir -p $(dir $@)
-	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(11_locmesh_CXXFLAGS) $(11_locsvcmesh_OBJS) -o $@ $(11_locmesh_LDFLAGS)
+	$(AREG_CXX_TOOLCHAIN) $(CXXFLAGS) $(11_locmesh_CXXFLAGS) $(11_locsvcmesh_OBJS) -o $@ $(11_locmesh_LDFLAGS)

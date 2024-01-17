@@ -17,6 +17,6 @@ $(foreach cpp, $(05_timer_SRC), $(eval $(call obj, $(cpp), $(05_timer_OUTPUT_OBJ
 $(05_timer_TARGET_BIN): $(areg_TARGET_BIN) $(05_timer_OBJS) $(AREG_DEPEND)
 	@echo "Linking $(05_timer_PROJECT_NAME) ..."
 	@mkdir -p $(dir $@)
-	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(examples_CXXFLAGS) $(05_timer_OBJS) $(examples_LDFLAGS) -o $@
+	$(AREG_CXX_TOOLCHAIN) $(CXXFLAGS) $(examples_CXXFLAGS) $(05_timer_OBJS) $(examples_LDFLAGS) -o $@
 
 .PHONY: 05_timer

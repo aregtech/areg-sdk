@@ -22,4 +22,4 @@ DEPS = $(logger_OBJS:%.o=%.d)
 $(logger_TARGET_BIN): $(areg_TARGET_BIN) $(logger_OBJS) $(AREG_DEPEND)
 	@echo "Linking logger ..."
 	@mkdir -p $(dir $@)
-	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(logger_CXXFLAGS) $(logger_OBJS) -o $@ $(logger_LDFLAGS)
+	$(AREG_CXX_TOOLCHAIN) $(CXXFLAGS) $(logger_CXXFLAGS) $(logger_OBJS) -o $@ $(logger_LDFLAGS)

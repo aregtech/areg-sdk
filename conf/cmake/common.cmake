@@ -25,7 +25,8 @@ endif()
 # areg specific internal variable settings
 # -----------------------------------------------------
 # The toolchain
-set(AREG_TOOLCHAIN "${CMAKE_CXX_COMPILER}")
+set(AREG_CXX_TOOLCHAIN "${CMAKE_CXX_COMPILER}")
+set(AREG_CC_TOOLCHAIN  "${CMAKE_CC_COMPILER}")
 
 # The development environment -- POSIX or Win32 API
 set(AREG_DEVELOP_ENV)

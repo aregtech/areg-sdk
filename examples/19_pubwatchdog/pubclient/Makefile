@@ -14,4 +14,4 @@ DEPS = $(19_pubclient_OBJS:%.o=%.d)
 $(19_pubclient_TARGET_BIN): $(areg_TARGET_BIN) $(19_pubclient_OBJS) $(19_pubwatchdog_DEPEND)
 	@echo "Linking $@ ..."
 	@mkdir -p $(dir $@)
-	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(19_pubwatchdog_CXXFLAGS) $(19_pubclient_OBJS) -o $@ $(19_pubwatchdog_LDFLAGS)
+	$(AREG_CXX_TOOLCHAIN) $(CXXFLAGS) $(19_pubwatchdog_CXXFLAGS) $(19_pubclient_OBJS) -o $@ $(19_pubwatchdog_LDFLAGS)

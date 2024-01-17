@@ -95,7 +95,7 @@ public:
     /**
      * \brief   Destructor
      **/
-    virtual ~ServiceClientConnectionBase( void ) = default;
+    virtual ~ServiceClientConnectionBase( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Attribute
