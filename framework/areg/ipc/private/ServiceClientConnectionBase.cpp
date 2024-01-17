@@ -69,6 +69,10 @@ ServiceClientConnectionBase::ServiceClientConnectionBase( const ITEM_ID & target
     ASSERT((target > NEService::TARGET_LOCAL) && (target < NEService::COOKIE_REMOTE_SERVICE));
 }
 
+ServiceClientConnectionBase::~ServiceClientConnectionBase(void)
+{
+}
+
 void ServiceClientConnectionBase::serviceConnectionEvent(const RemoteMessage& msgReceived)
 {
     TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_serviceConnectionEvent);

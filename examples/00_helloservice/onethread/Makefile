@@ -14,4 +14,4 @@ DEPS = $(00_onethread_OBJS:%.o=%.d)
 $(00_onethread_TARGET_BIN): $(areg_TARGET_BIN) $(00_onethread_OBJS) $(00_helloservice_DEPEND)
 	@echo "Linking $@ ..."
 	@mkdir -p $(dir $@)
-	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(00_helloservice_CXXFLAGS) $(00_onethread_OBJS) -o $@ $(00_helloservice_LDFLAGS) 
+	$(AREG_CXX_TOOLCHAIN) $(CXXFLAGS) $(00_helloservice_CXXFLAGS) $(00_onethread_OBJS) -o $@ $(00_helloservice_LDFLAGS) 

@@ -14,4 +14,4 @@ DEPS = $(00_serviceproc_OBJS:%.o=%.d)
 $(00_serviceproc_TARGET_BIN): $(areg_TARGET_BIN) $(00_serviceproc_OBJS) $(00_helloservice_DEPEND)
 	@echo "Linking $@ ..."
 	@mkdir -p $(dir $@)
-	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(00_helloservice_CXXFLAGS) $(00_serviceproc_OBJS) $(00_helloservice_LDFLAGS) -o $@
+	$(AREG_CXX_TOOLCHAIN) $(CXXFLAGS) $(00_helloservice_CXXFLAGS) $(00_serviceproc_OBJS) $(00_helloservice_LDFLAGS) -o $@

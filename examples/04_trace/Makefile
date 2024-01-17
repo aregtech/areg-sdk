@@ -17,6 +17,6 @@ $(foreach cpp, $(04_trace_SRC), $(eval $(call obj, $(cpp), $(04_trace_OUTPUT_OBJ
 $(04_trace_TARGET_BIN): $(areg_TARGET_BIN) $(04_trace_OBJS) $(AREG_DEPEND)
 	@echo "Linking $(04_trace_PROJECT_NAME) ..."
 	@mkdir -p $(dir $@)
-	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(examples_CXXFLAGS) $(04_trace_OBJS) $(examples_LDFLAGS) -o $@
+	$(AREG_CXX_TOOLCHAIN) $(CXXFLAGS) $(examples_CXXFLAGS) $(04_trace_OBJS) $(examples_LDFLAGS) -o $@
 
 .PHONY: 04_trace

@@ -17,6 +17,6 @@ $(foreach cpp, $(06_threads_SRC), $(eval $(call obj, $(cpp), $(06_threads_OUTPUT
 $(06_threads_TARGET_BIN): $(areg_TARGET_BIN) $(06_threads_OBJS) $(AREG_DEPEND)
 	@echo "Linking $(06_threads_PROJECT_NAME) ..."
 	@mkdir -p $(dir $@)
-	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(examples_CXXFLAGS) $(06_threads_OBJS) $(examples_LDFLAGS) -o $@
+	$(AREG_CXX_TOOLCHAIN) $(CXXFLAGS) $(examples_CXXFLAGS) $(06_threads_OBJS) $(examples_LDFLAGS) -o $@
 
 .PHONY: 06_threads

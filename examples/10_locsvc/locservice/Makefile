@@ -14,4 +14,4 @@ DEPS = $(10_locservice_OBJS:%.o=%.d)
 $(10_locservice_TARGET_BIN): $(areg_TARGET_BIN) $(10_locservice_OBJS) $(10_locsvc_DEPEND)
 	@echo "Linking $@ ..."
 	@mkdir -p $(dir $@)
-	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(10_locsvc_CXXFLAGS) $(10_locservice_OBJS) -o $@ $(10_locsvc_LDFLAGS)
+	$(AREG_CXX_TOOLCHAIN) $(CXXFLAGS) $(10_locsvc_CXXFLAGS) $(10_locservice_OBJS) -o $@ $(10_locsvc_LDFLAGS)

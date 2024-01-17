@@ -1,6 +1,6 @@
 # Configure examples
 
-examples_CXXFLAGS   := -I$(AREG_BASE) -D$(AREG_LIB_IMPORT)
+examples_CXXFLAGS   := -I$(AREG_BASE) -I$(AREG_THIRDPARTY) -D$(AREG_LIB_IMPORT)
 examples_LDFLAGS    := $(AREG_TOOL_FLAGS)
 
 include $(AREG_EXAMPLES)/00_helloservice/Makefile

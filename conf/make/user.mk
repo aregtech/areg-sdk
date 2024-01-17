@@ -7,18 +7,34 @@
 # ###########################################################################
 # These parameters already should be set either from command line or by extracting from other params
 # 
-# AREG_BUILD_ROOT		-- The root directory for project(s) to build. By default it is <areg-sdk>/product.
-# AREG_COMPILER_FAMILY	-- simple way to set CXX and CC compilers. Possible values: gnu for g++/gcc, llvm for clang++/clang and cygwin to compile with GNU g++/gcc compilers under Windows.
-# AREG_COMPILER			-- Set the CXX and CC compilers. Possible values: gcc, g++, clang++ and clang. If C++ compiler is set, it will guess the CC compiler. The defaults are g++ / gcc compilers
-# AREG_OS      			-- 'Windows' or 'Linux' OS. The default is current system.
-# AREG_PLATFORM			-- Sets the CPU platform. Possible values: x86, x86_64, arm and aarch64. The default is current system
-# AREG_BITNESS			-- Bitness of binaries. Possible values: 32 or 64. The default is current system
-# AREG_BINARY			-- The binary type of AREG library. Possible values: 'shared' or 'static'. The default is 'shared'.
-# AREG_BUILD_ROOT		-- The root directory for project(s) to build. By default is the "product" directory of areg-sdk root.
-# AREG_BUILD_TYPE		-- 'Debug' or 'Release' build types of codes. The default is 'Release'. The default is 'Release'
-# AREG_EXTENDED			-- Enabled or disable extensions in AREG extended static library and it may require additional dependencies. By default is OFF.
-# AREG_LOGS				-- Enable or disable compilation with logs.
-# AREG_LOGOBSERVER_LIB  -- Set the log observer API library type. By default it is set as shared.
+#   1. AREG_COMPILER_FAMILY -- Simple way to set CXX and CC compilers
+#   2. AREG_COMPILER        -- Specifies one compiler to set for CXX and CC compilers
+#   3. AREG_BINARY          -- AREG engine binary type ('shared' or 'static')
+#   4. AREG_BUILD_TYPE      -- build configurations ('Debug' or 'Release')
+#   5. AREG_BUILD_TESTS     -- Build AREG engine unit tests (currently not used)
+#   6. AREG_BUILD_EXAMPLES  -- Build AREG engine examples
+#   7. AREG_EXTENDED        -- Enabled or disable extensions in AREG extended static library and it may require additional dependencies.
+#   8. AREG_LOGS            -- Enable or disable compilation with logs.
+#   9. AREG_BUILD_ROOT      -- The root directory for project(s) to build. By default is the "product" directory of areg-sdk root.
+#  10. AREG_OUTPUT_DIR      -- The output directory of build binaries
+#  11. AREG_OUTPUT_BIN      -- Set the path to folder to output compiled shared libraries and executables.
+#  12. AREG_OUTPUT_LIB      -- Set the path to folder to output compiled static libraries.
+#  13. AREG_LOGOBSERVER_LIB -- Set the log observer API library type. By default it is set as shared.
+#
+# The default values are:
+#   1. AREG_COMPILER_FAMILY = <default> (possible values: gnu, cygwin, llvm)
+#   2. AREG_COMPILER        = <default> (possible values: g++, gcc, c++, cc, clang++, clang)
+#   3. AREG_BINARY          = shared    (possible values: shared, static)
+#   4. AREG_BUILD_TYPE      = Release   (possible values: Release, Debug)
+#   5. AREG_BUILD_TESTS     = 0         (possible values: 1, 0)
+#   6. AREG_BUILD_EXAMPLES  = 1         (possible values: 1, 0)
+#   7. AREG_EXTENDED        = 0			(possible values: 1, 0)
+#   8. AREG_LOGS            = 1			(possible values: 1, 0)
+#   9. AREG_BUILD_ROOT      = <areg-sdk>/product                                                (possible values: any full path)
+#  10. AREG_OUTPUT_DIR      = <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release     (possible values: any full path)
+#  11. AREG_OUTPUT_BIN      = <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release/bin (possible values: any full path)
+#  12. AREG_OUTPUT_LIB      = <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release/lib (possible values: any full path)
+#  13. AREG_LOGOBSERVER_LIB = shared    (possible values: shared, static)
 #
 # The following is a list of preprocessor directives, depending on the settings above:
 #   1. -DDEBUG or -DNDEBUG, depending whether AREG_BUILD_TYPE name is "Debug" or not, default is -DNDEBUG ("Release")
@@ -131,6 +147,12 @@ AREG_BINARY := $(if $(AREG_BINARY),$(AREG_BINARY),shared)
 # Modify the 'AREG_BUILD_TYPE' to change the "Release" or "Debug" build configuration
 # AREG_BUILD_TYPE := Debug
 AREG_BUILD_TYPE := $(if $(AREG_BUILD_TYPE),$(AREG_BUILD_TYPE),Release)
+
+# Compile AREG examples if set 1. By default, it is 0 to escape building tests
+AREG_BUILD_TESTS := $(if $(AREG_BUILD_TESTS),$(AREG_BUILD_TESTS),0)
+
+# Compile AREG examples if set 1. By default, it is 1 to build examples
+AREG_BUILD_EXAMPLES := $(if $(AREG_BUILD_EXAMPLES),$(AREG_BUILD_EXAMPLES),1)
 
 # Compile AREG extended features if set 1. By default, it is 0.
 # Otherwise, enable extensions by setting 1.

@@ -17,6 +17,6 @@ $(foreach cpp, $(03_file_SRC), $(eval $(call obj, $(cpp), $(03_file_OUTPUT_OBJ),
 $(03_file_TARGET_BIN): $(areg_TARGET_BIN) $(03_file_OBJS) $(AREG_DEPEND)
 	@echo "Linking $(03_file_PROJECT_NAME) ..."
 	@mkdir -p $(dir $@)
-	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(examples_CXXFLAGS) $(03_file_OBJS) $(examples_LDFLAGS) -o $@
+	$(AREG_CXX_TOOLCHAIN) $(CXXFLAGS) $(examples_CXXFLAGS) $(03_file_OBJS) $(examples_LDFLAGS) -o $@
 
 .PHONY: 03_file

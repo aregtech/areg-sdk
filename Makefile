@@ -13,14 +13,23 @@ AREG_EXAMPLES       := $(AREG_SDK_ROOT)/examples
 AREG_EXTEND         := $(AREG_BASE)/extend
 AREG_THIRDPARTY     := $(AREG_SDK_ROOT)/thirdparty
 
+DEPS_EXAMPLES :=
+ifneq ($(AREG_BUILD_EXAMPLES),0)
+DEPS_EXAMPLES := examples
+endif
+
 # 'all' must be defined first before include project's makefiles
-all: framework examples
+all: thirdparty framework $(DEPS_EXAMPLES)
 
 include $(AREG_MAKE_CONFIG_DIR)/detect_os.mk
 include $(AREG_MAKE_CONFIG_DIR)/user.mk
 include $(AREG_MAKE_CONFIG_DIR)/common.mk
 
+include $(AREG_THIRDPARTY)/Makefile
 include $(AREG_BASE)/Makefile
+
+ifneq ($(AREG_BUILD_EXAMPLES),0)
 include $(AREG_EXAMPLES)/Makefile
+endif
 
 .PHONY: all

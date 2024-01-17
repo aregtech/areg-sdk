@@ -21,6 +21,6 @@ DEPS = $(08_service_OBJS:%.o=%.d)
 $(08_service_TARGET_BIN): $(areg_TARGET_BIN) $(08_service_OBJS) $(AREG_DEPEND)
 	@echo "Linking $(08_service_PROJECT_NAME) ..."
 	@mkdir -p $(dir $@)
-	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(examples_CXXFLAGS) $(08_service_OBJS) -o $@ $(examples_LDFLAGS)
+	$(AREG_CXX_TOOLCHAIN) $(CXXFLAGS) $(examples_CXXFLAGS) $(08_service_OBJS) -o $@ $(examples_LDFLAGS)
 
 .PHONY: 08_service

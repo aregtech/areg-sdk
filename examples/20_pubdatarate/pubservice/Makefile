@@ -14,4 +14,4 @@ DEPS = $(20_pubservice_OBJS:%.o=%.d)
 $(20_pubservice_TARGET_BIN): $(areg_TARGET_BIN) $(20_pubservice_OBJS) $(20_pubdatarate_DEPEND)
 	@echo "Linking $@ ..."
 	@mkdir -p $(dir $@)
-	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(20_pubdatarate_CXXFLAGS) $(20_pubservice_OBJS) -o $@ $(20_pubdatarate_LDFLAGS)
+	$(AREG_CXX_TOOLCHAIN) $(CXXFLAGS) $(20_pubdatarate_CXXFLAGS) $(20_pubservice_OBJS) -o $@ $(20_pubdatarate_LDFLAGS)

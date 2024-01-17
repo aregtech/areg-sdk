@@ -24,6 +24,6 @@ include $(AREG_BASE)/logger/Makefile
 include $(AREG_BASE)/logobserver/Makefile
 
 
-framework: areg extend mcrouter logger observer
+framework: areg extend mcrouter logger logobserverapi logobserver
 
 .PHONY: framework

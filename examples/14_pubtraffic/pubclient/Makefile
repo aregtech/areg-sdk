@@ -14,4 +14,4 @@ DEPS = $(14_pubclient_OBJS:%.o=%.d)
 $(14_pubclient_TARGET_BIN): $(areg_TARGET_BIN) $(14_pubclient_OBJS) $(14_pubtraffic_DEPEND)
 	@echo "Linking $@ ..."
 	@mkdir -p $(dir $@)
-	$(AREG_TOOLCHAIN) $(CXXFLAGS) $(14_pubtraffic_CXXFLAGS) $(14_pubclient_OBJS) -o $@ $(14_pubtraffic_LDFLAGS)
+	$(AREG_CXX_TOOLCHAIN) $(CXXFLAGS) $(14_pubtraffic_CXXFLAGS) $(14_pubclient_OBJS) -o $@ $(14_pubtraffic_LDFLAGS)
