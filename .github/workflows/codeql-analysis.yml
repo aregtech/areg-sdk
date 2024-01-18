@@ -67,7 +67,7 @@ jobs:
       with:
         # filter out all thirdparty files
         patterns: |
-          -thirdparty/**
+          -thirdparty/*
         input: sarif-results/${{ matrix.language }}.sarif
         output: sarif-results/${{ matrix.language }}.sarif
 
