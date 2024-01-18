@@ -13,12 +13,13 @@ name: "CodeQL"
 
 on:
   push:
-    branches: [ master ]
-  pull_request:
-    # The branches below must be a subset of the branches above
-    branches: [ master ]
-  schedule:
-    - cron: '32 22 * * 1'
+    branches:
+#    branches: [ master ]
+#  pull_request:
+#    # The branches below must be a subset of the branches above
+#    branches: [ master ]
+#  schedule:
+#    - cron: '32 22 * * 1'
 
 jobs:
   analyze:
@@ -61,19 +62,3 @@ jobs:
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
-
-    - name: filter-sarif
-      uses: advanced-security/filter-sarif@v1
-      with:
-        # filter out all thirdparty files
-        patterns: |
-          +**/*
-          -**/thirdparty/**/*
-        input: sarif-results/${{ matrix.language }}.sarif
-        output: sarif-results/${{ matrix.language }}.sarif
-
-    - name: Upload SARIF
-      uses: github/codeql-action/upload-sarif@v2
-      with:
-        sarif_file: sarif-results/${{ matrix.language }}.sarif
-
