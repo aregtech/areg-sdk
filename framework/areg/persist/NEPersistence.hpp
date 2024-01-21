@@ -153,20 +153,29 @@ namespace NEPersistence
         , EntryLogFileAppend        = 6     //!< The flag to append logs into the file.
         , EntryLogRemoteQueueSize   = 7     //!< The queue size of remote logging.
         , EntryLogRemoteService     = 8     //!< The service name of the remote logging.
-        , EntryLogLayoutEnter       = 9     //!< The layout of enter scope message.
-        , EntryLogLayoutMessage     = 10    //!< The layout of log message.
-        , EntryLogLayoutExit        = 11    //!< The layout of exit scope message.
-        , EntryLogScope             = 12    //!< The log scope enable / disable flag.
 
-        , EntryServiceList          = 13    //!< The list of supported remote services.
+        , EntryLogDatabaseName      = 9     //!< The log database name.
+        , EntryLogDatabaseLocation  = 10    //!< The log database location.
+        , EntryLogDatabaseDriver    = 11    //!< The log database driver.
+        , EntryLogDatabaseAddress   = 12    //!< The log database address.
+        , EntryLogDatabasePort      = 13    //!< The log database port.
+        , EntryLogDatabaseUsername  = 14    //!< The log database user-name.
+        , EntryLogDatabasePassword  = 15    //!< The log database user-password.
 
-        , EntryServiceName          = 14    //!< The process name of the remote service.
-        , EntryServiceConnection    = 15    //!< The list of connection type of the remote service.
-        , EntryServiceEnable        = 16    //!< The connection enable / disable flag of the remote service.
-        , EntryServiceAddress       = 17    //!< The connection address of the remote service.
-        , EntryServicePort          = 18    //!< The connection port number of the remote service.
+        , EntryLogLayoutEnter       = 16    //!< The layout of enter scope message.
+        , EntryLogLayoutMessage     = 17    //!< The layout of log message.
+        , EntryLogLayoutExit        = 18    //!< The layout of exit scope message.
+        , EntryLogScope             = 19    //!< The log scope enable / disable flag.
 
-        , EntryAnyKey               = 19    //!< Indicates any key type.
+        , EntryServiceList          = 20    //!< The list of supported remote services.
+
+        , EntryServiceName          = 21    //!< The process name of the remote service.
+        , EntryServiceConnection    = 22    //!< The list of connection type of the remote service.
+        , EntryServiceEnable        = 23    //!< The connection enable / disable flag of the remote service.
+        , EntryServiceAddress       = 24    //!< The connection address of the remote service.
+        , EntryServicePort          = 25    //!< The connection port number of the remote service.
+
+        , EntryAnyKey               = 26    //!< Indicates any key type.
     };
 
     /**
@@ -184,20 +193,30 @@ namespace NEPersistence
             , {"log"    , "*"   , "file"    , "append"  }   //! 6   , The flag to append logs into the file property structure.
             , {"log"    , "*"   , "remote"  , "queue"   }   //! 7   , The queue size of remote logging property structure.
             , {"log"    , "*"   , "remote"  , "service" }   //! 8   , The service name of the remote logging.
-            , {"log"    , "*"   , "layout"  , "enter"   }   //! 9   , The layout of enter scope message property structure.
-            , {"log"    , "*"   , "layout"  , "message" }   //! 10  , The layout of log message property structure.
-            , {"log"    , "*"   , "layout"  , "exit"    }   //! 11  , The layout of exit scope message property structure.
-            , {"log"    , "*"   , "scope"   , "*"       }   //! 12  , The log scope enable / disable flag property structure.
+        
+            , {"log"    , "*"   , "db"      , "name"    }   //! 9   , The name of the log database.
+            , {"log"    , "*"   , "db"      , "location"}   //! 10  , The location of log database.
+            , {"log"    , "*"   , "db"      , "driver"  }   //! 11  , The log database driver.
+            , {"log"    , "*"   , "db"      , "address" }   //! 12  , The address of the remote log database engine (DB Server).
+            , {"log"    , "*"   , "db"      , "port"    }   //! 13  , The port of the remote log database engine (DB Server).
+            , {"log"    , "*"   , "db"      , "username"}   //! 14  , The user name to log-in into the log database.
+            , {"log"    , "*"   , "db"      , "password"}   //! 15  , The user password to log-in into the log database.
 
-            , {"service", "*"   , "list"    , ""        }   //! 13  , The list of supported remote services property structure.
+            , {"log"    , "*"   , "layout"  , "enter"   }   //! 16  , The layout of enter scope message property structure.
+            , {"log"    , "*"   , "layout"  , "message" }   //! 17  , The layout of log message property structure.
+            , {"log"    , "*"   , "layout"  , "exit"    }   //! 18  , The layout of exit scope message property structure.
+            , {"log"    , "*"   , "scope"   , "*"       }   //! 19  , The log scope enable / disable flag property structure.
 
-            , {"*"      , "*"   , "service" , ""        }   //! 14  , The process name of the remote service property structure.
-            , {"*"      , "*"   , "connect" , ""        }   //! 15  , The list of connection type of the remote service property structure.
-            , {"*"      , "*"   , "enable"  , "*"       }   //! 16  , The connection enable / disable flag of the remote service property structure.
-            , {"*"      , "*"   , "address" , "*"       }   //! 17  , The connection address of the remote service property structure.
-            , {"*"      , "*"   , "port"    , "*"       }   //! 18  , The connection port number of the remote service property structure.
-            , {"*"      , "*"   , "*"       , "*"       }   //! 19  , Indicates any key type.
-    };
+            , {"service", "*"   , "list"    , ""        }   //! 20  , The list of supported remote services property structure.
+
+            , {"*"      , "*"   , "service" , ""        }   //! 21  , The process name of the remote service property structure.
+            , {"*"      , "*"   , "connect" , ""        }   //! 22  , The list of connection type of the remote service property structure.
+            , {"*"      , "*"   , "enable"  , "*"       }   //! 23  , The connection enable / disable flag of the remote service property structure.
+            , {"*"      , "*"   , "address" , "*"       }   //! 24  , The connection address of the remote service property structure.
+            , {"*"      , "*"   , "port"    , "*"       }   //! 25  , The connection port number of the remote service property structure.
+
+            , {"*"      , "*"   , "*"       , "*"       }   //! 26  , Indicates any key type.
+        };
 
     /**
      * \brief   Returns the configuration version property structure.
@@ -288,6 +307,42 @@ namespace NEPersistence
      * \brief   Returns the connection port number of the remote service property structure.
      **/
     inline const NEPersistence::sPropertyKey& getServicePort(void);
+
+    /**
+     * \brief   Returns the log database name.
+     **/
+    inline const NEPersistence::sPropertyKey& getLogDatabaseName(void);
+
+    /**
+     * \brief   Returns the location of the log database. This can be either
+     *          a file path or URI.
+     **/
+    inline const NEPersistence::sPropertyKey& getLogDatabaseLocation(void);
+
+    /**
+     * \brief   Returns the driver of the log database.
+     **/
+    inline const NEPersistence::sPropertyKey& getLogDatabaseDriver(void);
+
+    /**
+     * \brief   Returns the IP-address of the log database engine to connect.
+     **/
+    inline const NEPersistence::sPropertyKey& getLogDatabaseAddress(void);
+
+    /**
+     * \brief   Returns the port number of the log database engine to connect.
+     **/
+    inline const NEPersistence::sPropertyKey& getLogDatabasePort(void);
+
+    /**
+     * \brief   The user name to use when connect to the database engine.
+     **/
+    inline const NEPersistence::sPropertyKey& getLogDatabaseUser(void);
+
+    /**
+     * \brief   The password to use when connect to the database engine.
+     **/
+    inline const NEPersistence::sPropertyKey& getLogDatabasePassword(void);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -382,6 +437,41 @@ inline const NEPersistence::sPropertyKey& NEPersistence::getServiceAddress(void)
 inline const NEPersistence::sPropertyKey& NEPersistence::getServicePort(void)
 {
     return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryServicePort)];
+}
+
+const NEPersistence::sPropertyKey& NEPersistence::getLogDatabaseName(void)
+{
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryLogDatabaseName)];
+}
+
+const NEPersistence::sPropertyKey& NEPersistence::getLogDatabaseLocation(void)
+{
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryLogDatabaseLocation)];
+}
+
+const NEPersistence::sPropertyKey& NEPersistence::getLogDatabaseDriver(void)
+{
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryLogDatabaseDriver)];
+}
+
+const NEPersistence::sPropertyKey& NEPersistence::getLogDatabaseAddress(void)
+{
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryLogDatabaseAddress)];
+}
+
+const NEPersistence::sPropertyKey& NEPersistence::getLogDatabasePort(void)
+{
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryLogDatabasePort)];
+}
+
+const NEPersistence::sPropertyKey& NEPersistence::getLogDatabaseUser(void)
+{
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryLogDatabaseUsername)];
+}
+
+const NEPersistence::sPropertyKey& NEPersistence::getLogDatabasePassword(void)
+{
+    return NEPersistence::DefaultPropertyKeys[static_cast<int>(NEPersistence::eConfigKeys::EntryLogDatabasePassword)];
 }
 
 #endif  // AREG_PERSIST_NEPERSISTEN_HPP

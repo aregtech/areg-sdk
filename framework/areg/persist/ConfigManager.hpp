@@ -744,6 +744,22 @@ public:
      **/
     void setRemoteServicePort(NERemoteService::eRemoteServices serviceType, NERemoteService::eConnectionTypes connectType, uint16_t newValue, bool isTemporary = false);
 
+    /**
+     * \brief   Returns the log database property entry of specified position.
+     * \param   whichPosition   The position of log database property.
+     **/
+    String getLogDatabaseProperty(const String& whichPosition);
+
+    /**
+     * \brief   Sets the permanent or temporary value of the log database of the specified position.
+     * \param   whichPosition   The position of the log database to set the value.
+     * \param   newValue        The value to set for the specified position of the log database.
+     * \param   isTemporary     The flag, indicating whether the new value is permanent of temporary.
+     *                          Unlike the permanent value, the temporary values are not saved in
+     *                          the configuration file.
+     **/
+    void setLogDatabaseProperty(const String & whichPosition, const String & newValue, bool isTemporary = false);
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden member variables
 //////////////////////////////////////////////////////////////////////////
@@ -958,7 +974,7 @@ inline void ConfigManager::setLoggingStatus(bool newValue, bool isTemporary /*= 
     constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogStatus;
     const NEPersistence::sPropertyKey& key = NEPersistence::getLogStatus();
 
-    setModuleProperty(key.section, key.property, key.position, String::toString(newValue), confKey, isTemporary);
+    setModuleProperty(key.section, key.property, key.position, String::makeString(newValue), confKey, isTemporary);
 }
 
 inline bool ConfigManager::getLogEnabled(const Identifier& logType) const
@@ -972,7 +988,7 @@ inline void ConfigManager::setLogEnabled(const String& logType, bool newValue, b
 
     constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogEnable;
     const NEPersistence::sPropertyKey& key = NEPersistence::getLogEnable();
-    setModuleProperty(key.section, key.property, logType, String::toString(newValue), confKey, isTemporary);
+    setModuleProperty(key.section, key.property, logType, String::makeString(newValue), confKey, isTemporary);
 }
 
 inline void ConfigManager::setLogEnabled(const Identifier& logType, bool newValue, bool isTemporary /*= false*/)

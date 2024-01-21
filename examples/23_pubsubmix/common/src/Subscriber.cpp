@@ -135,7 +135,7 @@ void Subscriber::onIntegerAlwaysUpdate(const NEPubSubMix::sInteger & IntegerAlwa
     TRACE_SCOPE(examples_23_pubsubmix_common_Subscriber_onIntegerAlwaysUpdate);
     Console & console = Console::getInstance();
     console.lockConsole();
-    String oldInt = mOldState ? String::toString(mOldInteger.value) : NECommon::Invalid;
+    String oldInt = mOldState ? String::makeString(mOldInteger.value) : NECommon::Invalid;
     console.saveCursorPosition();
     if (state == NEService::eDataStateType::DataIsOK)
     {
@@ -150,7 +150,7 @@ void Subscriber::onIntegerAlwaysUpdate(const NEPubSubMix::sInteger & IntegerAlwa
                           , NECommon::FormatInteger.data()
                           , IntegerAlways.name.getString()
                           , oldInt.getString()
-                          , String::toString(IntegerAlways.value).getString()
+                          , String::makeString(IntegerAlways.value).getString()
                           , isChanged ? "CHANGED" : "UNCHANGED");
 
         mOldInteger = IntegerAlways;

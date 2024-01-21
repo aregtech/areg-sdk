@@ -75,7 +75,7 @@ void PageConnections::OnServiceNetwork( bool isConnected, DispatcherThread * own
                 , isConnected ? "CONNECTED" : "DISCONNECTED"
                 , ownerThread != nullptr ? "VALID" : "NULL"
                 , mConnectionHandler.IsValid() ? "VALID" : "INVALID"
-                , cookie != NEConnectionManager::InvalidCookie ? String::toString(cookie).getString() : "Invalid cookie"
+                , cookie != NEConnectionManager::InvalidCookie ? String::makeString(cookie).getString() : "Invalid cookie"
                 , nickName.getString()
                 , mConnectionHandler.GetRegistered() ? "REGISTERED" : "NOT REGISTERED"
                 , mClientConnections != nullptr ? mClientConnections->getServiceName().getString() : "NULL");

@@ -64,6 +64,13 @@ namespace NESocket
         SocketAddress( void );
 
         /**
+         * \brief   Creates an object and sets directly the resolved IP-address and the port number.
+         * \param   address     The IP-address of the socket.
+         * \param   portNr      The port number of the socket.
+         **/
+        SocketAddress(const String& address, uint16_t portNr);
+
+        /**
          * \brief   Copies the socket address data from given source.
          * \param   source  The source of data to copy.
          **/
@@ -183,6 +190,92 @@ namespace NESocket
          * \brief   The port number of socket to connect.
          **/
         unsigned short  mPortNr;
+    };
+
+//////////////////////////////////////////////////////////////////////////
+// NESocket::UserData class declaration
+//////////////////////////////////////////////////////////////////////////
+    /**
+     * \brief   The class that contains the user name and password pair.
+     **/
+    class AREG_API UserData
+    {
+    //////////////////////////////////////////////////////////////////////////
+    // Constructors
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Creates empty user name and password.
+         **/
+        UserData(void);
+
+        /**
+         * \brief   Sets the user name and the password pair.
+         **/
+        UserData(const String& user, const String& password);
+
+        /**
+         * \brief   Copies user name and password from the given source.
+         **/
+        UserData(const UserData& src);
+        UserData(UserData&& src) noexcept;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Operators
+    //////////////////////////////////////////////////////////////////////////
+    public:
+        /**
+         * \brief   Copies user name and password from the given source.
+         **/
+        NESocket::UserData& operator = (const NESocket::UserData& source);
+        NESocket::UserData& operator = (NESocket::UserData&& source);
+
+        /**
+         * \brief   Compares 2 user name and password elements
+         *          and returns true if they are equal.
+         **/
+        bool operator == (const NESocket::UserData & other);
+
+        /**
+         * \brief   Compares 2 user name and password elements
+         *          and returns true if they are not equal.
+         **/
+        bool operator != (const NESocket::UserData & other);
+
+        /**
+         * \brief   Returns user name.
+         **/
+        const String& getUser(void) const;
+
+        /**
+         * \brief   Sets user name.
+         **/
+        void setUser(const String& user);
+
+        /**
+         * \brief   Returns password.
+         **/
+        const String& getPassword(void) const;
+
+        /**
+         * \brief   Sets the password.
+         **/
+        void setPassword(const String& password);
+
+        /**
+         * \brief   Returns true if the entry is valid.
+         *          The entry is valid if at least the user name is not empty.
+         **/
+        bool isValid(void) const;
+
+    //////////////////////////////////////////////////////////////////////////
+    // Member variables
+    //////////////////////////////////////////////////////////////////////////
+    private:
+        //!< The user name entry.
+        String mUser;
+        //!< The user password entry.
+        String mPassword;
     };
 
 //////////////////////////////////////////////////////////////////////////

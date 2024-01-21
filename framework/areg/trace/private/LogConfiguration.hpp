@@ -19,6 +19,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
+#include "areg/base/NESocket.hpp"
 #include "areg/base/Version.hpp"
 #include "areg/persist/NEPersistence.hpp"
 #include "areg/persist/Property.hpp"
@@ -167,6 +168,38 @@ public:
      **/
     uint32_t getModuleScopes(std::vector<Property>& scopeList);
     void setModuleScopes(const std::vector<Property>& scopeList);
+
+    /**
+     * \brief   Gets and sets the database name like "SQLite" or "MySQL", etc.
+     **/
+    String getDatabaseName(void) const;
+    void setDatabaseName(const String dbName, bool isTemporary = false);
+
+    /**
+     * \brief   Gets and sets the database location. The location can be full or relative file path, or an URI.
+     **/
+    String getDatabaseLocation(void) const;
+    void setDatabaseLocation(const String& dbLocation, bool isTemporary = false);
+
+    /**
+     * \brief   Gets and sets the database driver, if needed.
+     **/
+    String getDatabaseDriver(void) const;
+    void setDatabaseDriver(const String& dbDriver, bool isTemporary = false);
+
+    /**
+     * \brief   Gets and sets the database service address that contains IP-address and port number.
+     **/
+    NESocket::SocketAddress getDatabaseAddress(void) const;
+    void setDatabaseAddress(const NESocket::SocketAddress& dbAddress, bool isTemporary = false);
+    void setDatabaseAddress(const String& dbAddress, uint16_t dbPort, bool isTemporary = false);
+
+    /**
+     * \brief   Gets and sets the database user name and user password.
+     **/
+    NESocket::UserData getDatabaseUser(void) const;
+    void setDatabaseUser(const NESocket::UserData& dbUser, bool isTemporary = false);
+    void setDatabaseUser(const String& dbUserName, const String& dbUserPassword, bool isTemporary = false);
 
     /**
      * \brief   Saves the configuration in the current config file.

@@ -73,7 +73,7 @@ void SubscriberBase::onIntegerAlwaysUpdate(unsigned int IntegerAlways, NEService
     ++ mIntEventCount;
 
     Console & console = Console::getInstance();
-    String oldInt = mOldState ? String::toString(mOldInteger) : NECommon::StrInvalid;
+    String oldInt = mOldState ? String::makeString(mOldInteger) : NECommon::StrInvalid;
     if (state == NEService::eDataStateType::DataIsOK)
     {
         TRACE_DBG("The INTEGER (always) data is OK, old is [ %s ], new [ %u ]", oldInt.getString(), IntegerAlways);

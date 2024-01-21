@@ -116,9 +116,9 @@ void ModuleIdLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStrea
 {
     static const ITEM_ID _moduleId{ Process::getInstance().getId() };
 #ifdef _BIT64
-    static const String  _moduleName{ String::toString(static_cast<uint64_t>(_moduleId), NEString::eRadix::RadixHexadecimal) };
+    static const String  _moduleName{ String::makeString(static_cast<uint64_t>(_moduleId), NEString::eRadix::RadixHexadecimal) };
 #else   // _BIT32
-    static const String  _moduleName{ String::toString(static_cast<uint32_t>(_moduleId), NEString::eRadix::RadixHexadecimal) };
+    static const String  _moduleName{ String::makeString(static_cast<uint32_t>(_moduleId), NEString::eRadix::RadixHexadecimal) };
 #endif  // _BIT64
 
     if (msgLog.logModuleId != 0)

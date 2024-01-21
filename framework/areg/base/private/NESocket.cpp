@@ -107,6 +107,12 @@ NESocket::SocketAddress::SocketAddress( void )
 {
 }
 
+NESocket::SocketAddress::SocketAddress(const String& address, uint16_t portNr)
+    : mIpAddr   ( address )
+    , mPortNr   ( portNr )
+{
+}
+
 NESocket::SocketAddress::SocketAddress(const NESocket::SocketAddress & src)
     : mIpAddr   ( src.mIpAddr )
     , mPortNr   ( src.mPortNr )
@@ -293,6 +299,83 @@ bool NESocket::SocketAddress::operator == ( const NESocket::SocketAddress & othe
 bool NESocket::SocketAddress::operator != ( const NESocket::SocketAddress & other ) const
 {
     return (this != &other ? mIpAddr != other.mIpAddr || mPortNr != other.mPortNr : false);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// NESocket::UserData class implementation
+//////////////////////////////////////////////////////////////////////////
+
+NESocket::UserData::UserData(void)
+    : mUser     ( )
+    , mPassword ( )
+{
+}
+
+NESocket::UserData::UserData(const String& user, const String& password)
+    : mUser     ( user )
+    , mPassword ( password )
+{
+}
+
+NESocket::UserData::UserData(const UserData& src)
+    : mUser     ( src.mUser )
+    , mPassword ( src.mPassword )
+{
+}
+
+NESocket::UserData::UserData(UserData&& src) noexcept
+    : mUser     ( std::move(src.mUser) )
+    , mPassword ( std::move(src.mPassword) )
+{
+}
+
+NESocket::UserData& NESocket::UserData::operator=(const NESocket::UserData& source)
+{
+    mUser = source.mUser;
+    mPassword = source.mPassword;
+    return (*this);
+}
+
+NESocket::UserData& NESocket::UserData::operator=(NESocket::UserData&& source)
+{
+    mUser = std::move(source.mUser);
+    mPassword = std::move(source.mPassword);
+    return (*this);
+}
+
+bool NESocket::UserData::operator==(const NESocket::UserData& other)
+{
+    return (mUser == other.mUser) && (mPassword == other.mPassword);
+}
+
+bool NESocket::UserData::operator!=(const NESocket::UserData& other)
+{
+    return (mUser != other.mUser) || (mPassword != other.mPassword);
+}
+
+const String& NESocket::UserData::getUser(void) const
+{
+    return mUser;
+}
+
+void NESocket::UserData::setUser(const String& user)
+{
+    mUser = user;
+}
+
+const String& NESocket::UserData::getPassword(void) const
+{
+    return mPassword;
+}
+
+void NESocket::UserData::setPassword(const String& password)
+{
+    mPassword = password;
+}
+
+bool NESocket::UserData::isValid(void) const
+{
+    return (mUser.isEmpty() == false);
 }
 
 //////////////////////////////////////////////////////////////////////////
