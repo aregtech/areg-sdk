@@ -45,6 +45,7 @@
     <ClCompile Include="extend\console\private\OptionParser.cpp" />
     <ClCompile Include="extend\console\private\win32\ConsoleWin32.cpp" />
     <ClCompile Include="extend\console\private\SystemServiceConsole.cpp" />
+    <ClCompile Include="extend\db\private\Database.cpp" />
     <ClCompile Include="extend\service\private\DataRateHelper.cpp" />
     <ClCompile Include="extend\service\private\NESystemService.cpp" />
     <ClCompile Include="extend\service\private\SystemServiceBase.cpp" />
@@ -57,11 +58,13 @@
   <ItemGroup>
     <Text Include="extend\CMakeLists.txt" />
     <Text Include="extend\console\private\CMakeLists.txt" />
+    <Text Include="extend\db\private\CMakeLists.txt" />
     <Text Include="extend\service\private\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="extend\console\Console.hpp" />
     <ClInclude Include="extend\console\OptionParser.hpp" />
+    <ClInclude Include="extend\db\Database.hpp" />
     <ClInclude Include="extend\service\DataRateHelper.hpp" />
     <ClInclude Include="extend\service\NESystemService.hpp" />
     <ClInclude Include="extend\console\SystemServiceConsole.hpp" />
@@ -74,6 +77,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="extend\console\private\Makefile" />
+    <None Include="extend\db\private\Makefile" />
     <None Include="extend\Makefile" />
     <None Include="extend\Readme.md" />
     <None Include="extend\service\private\Makefile" />

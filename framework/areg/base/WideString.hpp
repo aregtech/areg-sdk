@@ -355,46 +355,46 @@ public:
      * \param   radix       The base value to make conversion. The lowest is 2 (binary) and the highest is hexadecimal (16)
      * \return  Returns converted string.
      **/
-    static WideString toString( int32_t number, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
+    static WideString makeString( int32_t number, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
     /**
      * \brief   Converts given unsigned 32-bit integer into the string. The conversion is done on radix base, which by default is decimal (10).
      * \param   number      The number to convert to string
      * \param   radix       The base value to make conversion. The lowest is 2 (binary) and the highest is hexadecimal (16)
      * \return  Returns converted string.
      **/
-    static WideString toString( uint32_t number, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
+    static WideString makeString( uint32_t number, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
     /**
      * \brief   Converts given signed 64-bit integer into the string. The conversion is done on radix base, which by default is decimal (10).
      * \param   number      The number to convert to string
      * \param   radix       The base value to make conversion. The lowest is 2 (binary) and the highest is hexadecimal (16)
      * \return  Returns converted string.
      **/
-    static WideString toString( int64_t number, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
+    static WideString makeString( int64_t number, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
     /**
      * \brief   Converts given unsigned 64-bit integer into the string. The conversion is done on radix base, which by default is decimal (10).
      * \param   number      The number to convert to string
      * \param   radix       The base value to make conversion. The lowest is 2 (binary) and the highest is hexadecimal (16)
      * \return  Returns converted string.
      **/
-    static WideString toString( uint64_t number, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
+    static WideString makeString( uint64_t number, NEString::eRadix radix = NEString::eRadix::RadixDecimal );
     /**
      * \brief   Converts given 32-bit digit with floating point into the string. The conversion is done on radix base, which by default is decimal (10).
      * \param   number      The number to convert to string
      * \return  Returns converted string.
      **/
-    static WideString toString( float number );
+    static WideString makeString( float number );
     /**
      * \brief   Converts given 32-bit digit with floating point into the string. The conversion is done on radix base, which by default is decimal (10).
      * \param   number      The number to convert to string
      * \return  Returns converted string.
      **/
-    static WideString toString( double number );
+    static WideString makeString( double number );
     /**
      * \brief   Converts given boolean value to string.
      * \param   value   The boolean value to convert to string
      * \return  Returns converted string.
      **/
-    static WideString toString( bool value );
+    static WideString makeString( bool value );
 
     /**
      * \brief   Formats the string. The classic rules similar of 'spintf' are applied.
@@ -969,43 +969,43 @@ inline bool WideString::toBool( void ) const
 
 inline WideString & WideString::fromInt32( int32_t value, NEString::eRadix radix /*= NEString::RadixDecimal */ )
 {
-    *this = WideString::toString(value, radix);
+    *this = WideString::makeString(value, radix);
     return (*this);
 }
 
 inline WideString & WideString::fromUInt32( uint32_t value, NEString::eRadix radix /*= NEString::RadixDecimal */ )
 {
-    (*this) = WideString::toString( value, radix );
+    (*this) = WideString::makeString( value, radix );
     return (*this);
 }
 
 inline WideString & WideString::fromInt64( int64_t value, NEString::eRadix radix /*= NEString::RadixDecimal */ )
 {
-    (*this) = WideString::toString( value, radix );
+    (*this) = WideString::makeString( value, radix );
     return (*this);
 }
 
 inline WideString & WideString::fromUInt64( uint64_t value, NEString::eRadix radix /*= NEString::RadixDecimal */ )
 {
-    (*this) = WideString::toString( value, radix );
+    (*this) = WideString::makeString( value, radix );
     return (*this);
 }
 
 inline WideString & WideString::fromFloat( float value )
 {
-    (*this) = WideString::toString( value );
+    (*this) = WideString::makeString( value );
     return (*this);
 }
 
 inline WideString & WideString::fromDouble( double value )
 {
-    (*this) = WideString::toString( value );
+    (*this) = WideString::makeString( value );
     return (*this);
 }
 
 inline WideString & WideString::fromBool( bool value )
 {
-    (*this) = WideString::toString( value );
+    (*this) = WideString::makeString( value );
     return (*this);
 }
 

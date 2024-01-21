@@ -195,11 +195,13 @@
     <ClCompile Include="areg\ipc\private\IEServiceRegisterConsumer.cpp" />
     <ClCompile Include="areg\ipc\private\IERemoteMessageHandler.cpp" />
     <ClCompile Include="areg\ipc\private\NERemoteService.cpp" />
+    <ClCompile Include="areg\persist\private\IEDatabaseEngine.cpp" />
     <ClCompile Include="areg\persist\private\PersistenceManager.cpp" />
     <ClCompile Include="areg\persist\private\Property.cpp" />
     <ClCompile Include="areg\persist\private\PropertyKey.cpp" />
     <ClCompile Include="areg\persist\private\PropertyValue.cpp" />
     <ClCompile Include="areg\persist\private\NEPersistence.cpp" />
+    <ClCompile Include="areg\trace\private\DatabaseLogger.cpp" />
     <ClCompile Include="areg\trace\private\DebugOutputLogger.cpp" />
     <ClCompile Include="areg\trace\private\LayoutManager.cpp" />
     <ClCompile Include="areg\trace\private\Layouts.cpp" />
@@ -247,6 +249,7 @@
     <ClInclude Include="areg\base\TEResourceListMap.hpp" />
     <ClInclude Include="areg\base\TERingStack.hpp" />
     <ClInclude Include="areg\base\TEString.hpp" />
+    <ClInclude Include="areg\base\TEValue.hpp" />
     <ClInclude Include="areg\base\WideString.hpp" />
     <ClInclude Include="areg\ipc\IEServiceConnectionConsumer.hpp" />
     <ClInclude Include="areg\ipc\IEServiceRegisterProvider.hpp" />
@@ -375,10 +378,12 @@
     <ClInclude Include="areg\ipc\ServiceEventConsumerBase.hpp" />
     <ClInclude Include="areg\ipc\SocketConnectionBase.hpp" />
     <ClInclude Include="areg\persist\ConfigManager.hpp" />
+    <ClInclude Include="areg\persist\IEDatabaseEngine.hpp" />
     <ClInclude Include="areg\persist\Property.hpp" />
     <ClInclude Include="areg\persist\PropertyValue.hpp" />
     <ClInclude Include="areg\persist\PersistenceManager.hpp" />
     <ClInclude Include="areg\persist\NEPersistence.hpp" />
+    <ClInclude Include="areg\trace\private\DatabaseLogger.hpp" />
     <ClInclude Include="areg\trace\private\LogConfiguration.hpp" />
     <ClInclude Include="areg\trace\private\NetTcpLogger.hpp" />
     <ClInclude Include="areg\trace\private\ScopeController.hpp" />

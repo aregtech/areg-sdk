@@ -200,6 +200,73 @@ void LogConfiguration::setModuleScopes(const std::vector<Property>& scopeList)
     Application::getConfigManager().addModuletLogScopes(scopeList, true);
 }
 
+String LogConfiguration::getDatabaseName(void) const
+{
+    return Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabaseName().position);
+}
+
+void LogConfiguration::setDatabaseName(const String dbName, bool isTemporary /*= false*/)
+{
+    Application::getConfigManager().setLogDatabaseProperty(NEPersistence::getLogDatabaseName().position, dbName, isTemporary);
+}
+
+String LogConfiguration::getDatabaseLocation(void) const
+{
+    return Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabaseLocation().position);
+}
+
+void LogConfiguration::setDatabaseLocation(const String& dbLocation, bool isTemporary /*= false*/)
+{
+    Application::getConfigManager().setLogDatabaseProperty(NEPersistence::getLogDatabaseLocation().position, dbLocation, isTemporary);
+}
+
+String LogConfiguration::getDatabaseDriver(void) const
+{
+    return Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabaseDriver().position);
+}
+
+void LogConfiguration::setDatabaseDriver(const String& dbDriver, bool isTemporary /*= false*/)
+{
+    Application::getConfigManager().setLogDatabaseProperty(NEPersistence::getLogDatabaseDriver().position, dbDriver, isTemporary);
+}
+
+NESocket::SocketAddress LogConfiguration::getDatabaseAddress(void) const
+{
+    String address{ Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabaseAddress().position) };
+    uint32_t port{ Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabasePort().position).toUInt32() };
+
+    return NESocket::SocketAddress(address, static_cast<uint16_t>(port));
+}
+
+void LogConfiguration::setDatabaseAddress(const NESocket::SocketAddress& dbAddress, bool isTemporary)
+{
+    setDatabaseAddress(dbAddress.getHostAddress(), dbAddress.getHostPort(), isTemporary);
+}
+
+void LogConfiguration::setDatabaseAddress(const String& dbAddress, uint16_t dbPort, bool isTemporary)
+{
+    Application::getConfigManager().setLogDatabaseProperty(NEPersistence::getLogDatabaseAddress().position, dbAddress, isTemporary);
+    Application::getConfigManager().setLogDatabaseProperty(NEPersistence::getLogDatabasePort().position, String::makeString(static_cast<uint32_t>(dbPort)), isTemporary);
+}
+
+NESocket::UserData LogConfiguration::getDatabaseUser(void) const
+{
+    String user{ Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabaseUser().position) };
+    String password{ Application::getConfigManager().getLogDatabaseProperty(NEPersistence::getLogDatabasePassword().position) };
+    return NESocket::UserData(user, password);
+}
+
+void LogConfiguration::setDatabaseUser(const NESocket::UserData& dbUser, bool isTemporary)
+{
+    return setDatabaseUser(dbUser.getUser(), dbUser.getPassword(), isTemporary);
+}
+
+void LogConfiguration::setDatabaseUser(const String& dbUserName, const String& dbUserPassword, bool isTemporary)
+{
+    Application::getConfigManager().setLogDatabaseProperty(NEPersistence::getLogDatabaseUser().position, dbUserName, isTemporary);
+    Application::getConfigManager().setLogDatabaseProperty(NEPersistence::getLogDatabasePassword().position, dbUserPassword, isTemporary);
+}
+
 void LogConfiguration::saveConfiguration(void)
 {
     Application::getConfigManager().saveConfig();

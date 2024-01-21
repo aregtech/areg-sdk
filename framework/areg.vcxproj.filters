@@ -564,6 +564,12 @@
     <ClCompile Include="areg\persist\private\IEConfigurationListener.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="areg\persist\private\IEDatabaseEngine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="areg\trace\private\DatabaseLogger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\windows\GEWindows.h">
@@ -1116,6 +1122,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\persist\IEConfigurationListener.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\base\TEValue.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\persist\IEDatabaseEngine.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\trace\private\DatabaseLogger.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

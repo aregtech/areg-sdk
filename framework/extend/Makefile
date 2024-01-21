@@ -6,6 +6,7 @@ extend_SRC  :=
 extend_OBJS :=
 
 include $(extend_BASE)/console/private/Makefile
+include $(extend_BASE)/db/private/Makefile
 include $(extend_BASE)/service/private/Makefile
 
 extend_CXXFLAGS		:= -I$(AREG_BASE) -D$(AREG_LIB_IMPORT)

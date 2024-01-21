@@ -47,17 +47,17 @@ PropertyValue::PropertyValue( const char * value )
 }
 
 PropertyValue::PropertyValue(unsigned int intValue)
-    : mValue( String::toString(intValue, NEString::eRadix::RadixDecimal) )
+    : mValue( String::makeString(intValue, NEString::eRadix::RadixDecimal) )
 {
 }
 
 PropertyValue::PropertyValue(double dValue)
-    : mValue( String::toString( dValue ) )
+    : mValue( String::makeString( dValue ) )
 {
 }
 
 PropertyValue::PropertyValue(bool bValue)
-    : mValue(String::toString(bValue))
+    : mValue(String::makeString(bValue))
 {
 }
 
@@ -222,17 +222,17 @@ bool PropertyValue::getBoolean(void) const
 
 void PropertyValue::setBoolean(bool newValue)
 {
-    mValue = String::toString(newValue);
+    mValue = String::makeString(newValue);
 }
 
 void PropertyValue::setInteger(unsigned int intValue, NEString::eRadix radix /*= NEString::RadixDecimal*/ )
 {
-    mValue = String::toString(intValue, radix);
+    mValue = String::makeString(intValue, radix);
 }
 
 void PropertyValue::setDouble(double dValue)
 {
-    mValue = String::toString( dValue );
+    mValue = String::makeString( dValue );
 }
 
 TEArrayList<Identifier> PropertyValue::getIdentifierList(const std::vector<Identifier>& lookupList) const

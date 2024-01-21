@@ -398,7 +398,7 @@ bool WideString::makeBool( const wchar_t * strBoolean, const wchar_t ** end /*= 
     return result;
 }
 
-WideString WideString::toString(int32_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
+WideString WideString::makeString(int32_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
 {
     WideString result;
 
@@ -431,7 +431,7 @@ WideString WideString::toString(int32_t number, NEString::eRadix radix /*= NEStr
     return result;
 }
 
-WideString WideString::toString(uint32_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
+WideString WideString::makeString(uint32_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
 {
     WideString result;
 
@@ -458,7 +458,7 @@ WideString WideString::toString(uint32_t number, NEString::eRadix radix /*= NESt
     return result;
 }
 
-WideString WideString::toString(int64_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
+WideString WideString::makeString(int64_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
 {
     WideString result;
 
@@ -492,7 +492,7 @@ WideString WideString::toString(int64_t number, NEString::eRadix radix /*= NEStr
     return result;
 }
 
-WideString WideString::toString(uint64_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
+WideString WideString::makeString(uint64_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
 {
     WideString result;
 
@@ -520,21 +520,21 @@ WideString WideString::toString(uint64_t number, NEString::eRadix radix /*= NESt
     return result;
 }
 
-WideString WideString::toString(float number)
+WideString WideString::makeString(float number)
 {
     WideString result;
     _formatDigit<float>( result, L"%f", number );
     return result;
 }
 
-WideString WideString::toString(double number)
+WideString WideString::makeString(double number)
 {
     WideString result;
     _formatDigit<double>( result, L"%g", number );
     return result;
 }
 
-WideString WideString::toString( bool value )
+WideString WideString::makeString( bool value )
 {
     return WideString(value ? NECommon::BOOLEAN_TRUE : NECommon::BOOLEAN_FALSE);
 }

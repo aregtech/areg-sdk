@@ -124,7 +124,7 @@ void Subscriber::onIntegerAlwaysUpdate(unsigned int IntegerAlways, NEService::eD
 {
     TRACE_SCOPE(examples_22_subscriber_Subscriber_onIntegerAlwaysUpdate);
     Console & console = Console::getInstance();
-    String oldInt = mOldState ? String::toString(mOldInteger) : _invalid;
+    String oldInt = mOldState ? String::makeString(mOldInteger) : _invalid;
     if (state == NEService::eDataStateType::DataIsOK)
     {
         TRACE_DBG("The INTEGER (always) data is OK, old is [ %s ], new [ %u ]", oldInt.getString(), IntegerAlways);

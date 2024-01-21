@@ -102,6 +102,11 @@
         <!-- ****************************************************************************************************************************** -->
         <GoogleTestDir>$(AregThirdpartyDir)\googletest\googletest</GoogleTestDir>
 
+        <!-- ****************************************************************************************************************************** -->
+        <!-- SQLite3 directory for embedded database. Do not change.                                                                           -->
+        <!-- ****************************************************************************************************************************** -->
+        <SQLiteDir>$(AregThirdpartyDir)\sqlite3</SQLiteDir>
+
     </PropertyGroup>
 
     <!-- ********************************************************************************************************************************** -->
@@ -145,6 +150,10 @@
 
         <BuildMacro Include="GoogleTestDir">
             <Value>$(GoogleTestDir)</Value>
+        </BuildMacro>
+
+        <BuildMacro Include="SQLiteDir">
+            <Value>$(SQLiteDir)</Value>
         </BuildMacro>
 
     </ItemGroup>

@@ -398,7 +398,7 @@ bool String::makeBool( const char * strBoolean, const char ** end /*= nullptr*/ 
     return result;
 }
 
-String String::toString(int32_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
+String String::makeString(int32_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
 {
     String result;
 
@@ -431,7 +431,7 @@ String String::toString(int32_t number, NEString::eRadix radix /*= NEString::Rad
     return result;
 }
 
-String String::toString(uint32_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
+String String::makeString(uint32_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
 {
     String result;
 
@@ -458,7 +458,7 @@ String String::toString(uint32_t number, NEString::eRadix radix /*= NEString::Ra
     return result;
 }
 
-String String::toString(int64_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
+String String::makeString(int64_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
 {
     String result;
 
@@ -492,7 +492,7 @@ String String::toString(int64_t number, NEString::eRadix radix /*= NEString::Rad
     return result;
 }
 
-String String::toString(uint64_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
+String String::makeString(uint64_t number, NEString::eRadix radix /*= NEString::RadixDecimal */)
 {
     String result;
 
@@ -520,21 +520,21 @@ String String::toString(uint64_t number, NEString::eRadix radix /*= NEString::Ra
     return result;
 }
 
-String String::toString(float number)
+String String::makeString(float number)
 {
     String result;
     _formatDigit<float>( result, "%f", number );
     return result;
 }
 
-String String::toString(double number)
+String String::makeString(double number)
 {
     String result;
     _formatDigit<double>( result, "%g", number );
     return result;
 }
 
-String String::toString( bool value )
+String String::makeString( bool value )
 {
     return String(value ? NECommon::BOOLEAN_TRUE : NECommon::BOOLEAN_FALSE);
 }

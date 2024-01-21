@@ -84,7 +84,7 @@ void PageMessaging::OnClientRegistration( bool isRegistered, DispatcherThread * 
         const NECommon::ListConnections & listConnections = mConnectionHandler.GetConnectionList();
         if ( listConnections.getSize() > 0 )
         {
-            outputMessage( "<Info>", String::toString(listConnections.getSize()) + " participants...", 0, 0, 0 );
+            outputMessage( "<Info>", String::makeString(listConnections.getSize()) + " participants...", 0, 0, 0 );
         }
 
         for (uint32_t i = 0; i < listConnections.getSize(); ++ i )

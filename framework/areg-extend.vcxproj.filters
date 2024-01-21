@@ -57,6 +57,9 @@
     <ClCompile Include="extend\console\private\SystemServiceConsole.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="extend\db\private\Database.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="extend\CMakeLists.txt">
@@ -68,6 +71,7 @@
     <Text Include="extend\console\private\CMakeLists.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="extend\db\private\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="extend\console\Console.hpp">
@@ -103,6 +107,9 @@
     <ClInclude Include="extend\console\SystemServiceConsole.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="extend\db\Database.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="extend\Makefile">
@@ -117,5 +124,6 @@
     <None Include="extend\Readme.md">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="extend\db\private\Makefile" />
   </ItemGroup>
 </Project>

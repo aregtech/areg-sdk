@@ -682,7 +682,7 @@ void ConfigManager::setLogFileAppend(bool newValue, bool isTemporary /*= false*/
     Lock lock(mLock);
     constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogFileAppend;
     const NEPersistence::sPropertyKey& key = NEPersistence::getLogFileAppend();
-    setModuleProperty(key.section, key.property, key.position, String::toString(newValue), confKey, isTemporary);
+    setModuleProperty(key.section, key.property, key.position, String::makeString(newValue), confKey, isTemporary);
 }
 
 uint32_t ConfigManager::getLogRemoteQueueSize(void) const
@@ -701,7 +701,7 @@ void ConfigManager::setLogRemoteQueueSize(uint32_t newValue, bool isTemporary /*
 
     constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogRemoteQueueSize;
     const NEPersistence::sPropertyKey& key = NEPersistence::getLogRemoteQueueSize();
-    setModuleProperty(key.section, key.property, key.position, String::toString(newValue), confKey, isTemporary);
+    setModuleProperty(key.section, key.property, key.position, String::makeString(newValue), confKey, isTemporary);
 }
 
 String ConfigManager::getLogLayoutEnter(void) const
@@ -942,7 +942,7 @@ void ConfigManager::setRemoteServiceEnable(const String& service, const String& 
 
     constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryServiceEnable;
     const NEPersistence::sPropertyKey& key = NEPersistence::getServiceEnable();
-    setModuleProperty(service, key.property, connectType, String::toString(newValue), confKey, isTemporary);
+    setModuleProperty(service, key.property, connectType, String::makeString(newValue), confKey, isTemporary);
 }
 
 void ConfigManager::setRemoteServiceEnable(NERemoteService::eRemoteServices serviceType, NERemoteService::eConnectionTypes connectType, bool newValue, bool isTemporary /*= false*/)
@@ -1035,7 +1035,7 @@ void ConfigManager::setRemoteServicePort(const String& service, const String& co
 
     constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryServicePort;
     const NEPersistence::sPropertyKey& key = NEPersistence::getServicePort();
-    setModuleProperty(service, key.property, connectType, String::toString(static_cast<uint32_t>(newValue)), confKey, isTemporary);
+    setModuleProperty(service, key.property, connectType, String::makeString(static_cast<uint32_t>(newValue)), confKey, isTemporary);
 }
 
 void ConfigManager::setRemoteServicePort(NERemoteService::eRemoteServices serviceType, NERemoteService::eConnectionTypes connectType, uint16_t newValue, bool isTemporary /*= false*/)
@@ -1047,4 +1047,19 @@ void ConfigManager::setRemoteServicePort(NERemoteService::eRemoteServices servic
                                                     , NEApplication::ConnectionIdentifiers
                                                     , static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectUndefined));
     setRemoteServicePort(service, connect, newValue, isTemporary);
+}
+
+String ConfigManager::getLogDatabaseProperty(const String& whichPosition)
+{
+    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogDatabaseName;
+    const NEPersistence::sPropertyKey& key = NEPersistence::getLogDatabaseName();
+    const PropertyValue* value = getPropertyValue(key.section, key.property, whichPosition);
+    return (value != nullptr ? value->getValue() : String::getEmptyString());
+}
+
+void ConfigManager::setLogDatabaseProperty(const String& whichPosition, const String& newValue, bool isTemporary)
+{
+    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogDatabaseName;
+    const NEPersistence::sPropertyKey& key = NEPersistence::getLogDatabaseName();
+    setModuleProperty(key.section, key.property, whichPosition, newValue, NEPersistence::EntryAnyKey, isTemporary);
 }
