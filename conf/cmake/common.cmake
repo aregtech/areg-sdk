@@ -218,7 +218,7 @@ add_compile_options(${AREG_COMPILER_OPTIONS})
 set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${AREG_OUTPUT_DIR})
 
 # Add include search paths
-include_directories(BEFORE "${AREG_BASE}" "${AREG_GENERATE_DIR}")
+include_directories(BEFORE "${AREG_BASE}" "${AREG_GENERATE_DIR}" "${AREG_THIRDPARTY}")
 
 # Adding library search paths
 link_directories(BEFORE "${AREG_OUTPUT_BIN}" "${AREG_OUTPUT_LIB}")

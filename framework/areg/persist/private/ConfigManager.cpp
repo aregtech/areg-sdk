@@ -1051,15 +1051,13 @@ void ConfigManager::setRemoteServicePort(NERemoteService::eRemoteServices servic
 
 String ConfigManager::getLogDatabaseProperty(const String& whichPosition)
 {
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogDatabaseName;
     const NEPersistence::sPropertyKey& key = NEPersistence::getLogDatabaseName();
     const PropertyValue* value = getPropertyValue(key.section, key.property, whichPosition);
     return (value != nullptr ? value->getValue() : String::getEmptyString());
 }
 
-void ConfigManager::setLogDatabaseProperty(const String& whichPosition, const String& newValue, bool isTemporary)
+void ConfigManager::setLogDatabaseProperty(const String& whichPosition, const String& newValue, bool isTemporary /*= false*/)
 {
-    constexpr NEPersistence::eConfigKeys confKey = NEPersistence::eConfigKeys::EntryLogDatabaseName;
     const NEPersistence::sPropertyKey& key = NEPersistence::getLogDatabaseName();
     setModuleProperty(key.section, key.property, whichPosition, newValue, NEPersistence::EntryAnyKey, isTemporary);
 }
