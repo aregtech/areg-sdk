@@ -467,7 +467,7 @@ AREG_API_IMPL RemoteMessage NETrace::messageSaveConfiguration(const ITEM_ID& sou
     return msgRequest;
 }
 
-AREG_API RemoteMessage NETrace::messageConfigurationSaved(void)
+AREG_API_IMPL RemoteMessage NETrace::messageConfigurationSaved(void)
 {
     RemoteMessage msgScope;
     if (msgScope.initMessage(_getLogEmptyMessage().rbHeader) != nullptr)
@@ -478,6 +478,14 @@ AREG_API RemoteMessage NETrace::messageConfigurationSaved(void)
     }
 
     return msgScope;
+}
+
+AREG_API_IMPL void NETrace::setLogDatabaseEngine(IELogDatabaseEngine * dbEngine)
+{
+#ifdef AREG_LOGS
+    TraceManager::setLogDatabaseEngine(dbEngine);
+#endif // AREG_LOGS
+
 }
 
 AREG_API_IMPL bool NETrace::forceStartLogging(void)

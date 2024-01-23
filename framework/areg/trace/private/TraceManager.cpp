@@ -19,6 +19,7 @@
 #include "areg/base/File.hpp"
 #include "areg/base/Process.hpp"
 
+#include "areg/trace/IELogDatabaseEngine.hpp"
 #include "areg/trace/TraceScope.hpp"
 #include "areg/trace/private/LogMessage.hpp"
 
@@ -155,6 +156,21 @@ unsigned int TraceManager::getScopePriority( const char * scopeName )
     return (scope != nullptr ? scope->getPriority() : static_cast<unsigned int>(NETrace::eLogPriority::PrioInvalid));
 }
 
+void TraceManager::setLogDatabaseEngine(IELogDatabaseEngine * dbEngine)
+{
+    TraceManager::getInstance().mLoggerDatabase.setDatabaseEngine(dbEngine);
+}
+
+bool TraceManager::isLogDabaseEngineInitialized(void)
+{
+    return TraceManager::getInstance().mLoggerDatabase.isValid();
+}
+
+bool TraceManager::isLogDatabaseEnabled(void)
+{
+    return TraceManager::getInstance().mLogConfig.getDatabaseEnable();
+}
+
 void TraceManager::forceEnableLogging(void)
 {
     TraceManager& traceManager = TraceManager::getInstance();
@@ -175,7 +191,8 @@ TraceManager::TraceManager(void)
 
     , mLoggerFile       ( mLogConfig )
     , mLoggerDebug      ( mLogConfig )
-    , mLoggerTcp        (mLogConfig, mScopeController, static_cast<DispatcherThread &>(self()) )
+    , mLoggerTcp        ( mLogConfig, mScopeController, static_cast<DispatcherThread &>(self()) )
+    , mLoggerDatabase   ( mLogConfig )
     , mEventProcessor   ( self() )
 
     , mLogStarted       ( false, false )
@@ -274,6 +291,7 @@ void TraceManager::readyForEvents( bool isReady )
         ASSERT(mLoggerFile.isLoggerOpened() == false);
         ASSERT(mLoggerDebug.isLoggerOpened() == false);
         ASSERT(mLoggerTcp.isLoggerOpened() == false);
+        ASSERT(mLoggerDatabase.isLoggerOpened() == false);
     }
 }
 
@@ -304,6 +322,11 @@ void TraceManager::traceStartLogs( void )
         {
             mLoggerTcp.openLogger();
         }
+
+        if (mLoggerDatabase.isLoggerOpened() == false)
+        {
+            mLoggerDatabase.openLogger();
+        }
     }
 
     mIsStarted = true;
@@ -320,6 +343,7 @@ void TraceManager::traceStopLogs(void)
     mLoggerDebug.closeLogger( );
     mLoggerFile.closeLogger( );
     mLoggerTcp.closeLogger( );
+    mLoggerDatabase.closeLogger();
     triggerExit( );
 }
 
@@ -328,10 +352,12 @@ void TraceManager::writeLogMessage( const NETrace::sLogMessage & logMessage )
     mLoggerFile.logMessage( logMessage );
     mLoggerDebug.logMessage( logMessage );
     mLoggerTcp.logMessage( logMessage );
+    mLoggerDatabase.logMessage(logMessage);
 
     if ( hasMoreEvents() == false )
     {
         mLoggerFile.flushLogs();
+        mLoggerDatabase.flushLogs();
     }
 }
 

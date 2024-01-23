@@ -13,7 +13,7 @@
  * \brief       AREG Platform, Interface of log configuration
  ************************************************************************/
 
-#include "areg/trace/private/LogConfiguration.hpp"
+#include "areg/trace/LogConfiguration.hpp"
 
 #include "areg/appbase/Application.hpp"
 #include "areg/base/Containers.hpp"

@@ -15,15 +15,27 @@
  * \brief       AREG Platform, File Logger object to log message into the file
  ************************************************************************/
 
- /************************************************************************
-  * Include files.
-  ************************************************************************/
+/************************************************************************
+ * Include files.
+ ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/trace/private/LoggerBase.hpp"
 #include "areg/base/SynchObjects.hpp"
 
-class IEDatabaseEngine;
+/************************************************************************
+ * Dependencies.
+ ************************************************************************/
+class IELogDatabaseEngine;
 
+//////////////////////////////////////////////////////////////////////////
+// DatabaseLogger class declaration
+//////////////////////////////////////////////////////////////////////////
+/**
+ * \brief   The database logging class, which is responsible to log messages
+ *          into the database. The database engine, which is responsible to handle
+ *          the database, should be manually set. This class is forwarding
+ *          the log messages to database engine handle for further processing.
+ **/
 class DatabaseLogger : public LoggerBase
 {
 public:
@@ -44,12 +56,26 @@ public:
 //////////////////////////////////////////////////////////////////////////
 public:
 
-    inline const IEDatabaseEngine* getDatabaseEngine(void) const;
+    /**
+     * \brief   Returns the pointer to the database engine handler object,
+     *          which is responsible to handle the database.
+     **/
+    inline const IELogDatabaseEngine * getDatabaseEngine(void) const;
+    inline IELogDatabaseEngine * getDatabaseEngine(void);
 
-    inline IEDatabaseEngine* getDatabaseEngine(void);
+    /**
+     * \brief   Call to set the logging database engine object.
+     *          If nullptr, no data is logged in the database.
+     *          Otherwise, the log messages are forwarded to the 
+     *          database engine for further processing.
+     * \param   dbEngine    The pointer to the log database engine to save log messages.
+     *                      If nullptr, no message is forwarded to the database engine.
+     **/
+    inline void setDatabaseEngine(IELogDatabaseEngine * dbEngine);
 
-    inline void setDatabaseEngine(IEDatabaseEngine* dbEngine);
-
+    /**
+     * \brief   Returns true if the logging database engine is nut null.
+     **/
     inline bool isValid(void) const;
 
 //////////////////////////////////////////////////////////////////////////
@@ -113,10 +139,10 @@ protected:
 //////////////////////////////////////////////////////////////////////////
 private:
     //!< The pointer to the database engine.
-    IEDatabaseEngine *  mDatabase;
+    IELogDatabaseEngine *   mDatabase;
 
     //!< Locking object.
-    mutable Mutex       mLock;
+    mutable Mutex           mLock;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
@@ -130,19 +156,19 @@ private:
 // DatabaseLogger class inline methods.
 //////////////////////////////////////////////////////////////////////////
 
-inline const IEDatabaseEngine* DatabaseLogger::getDatabaseEngine(void) const
+inline const IELogDatabaseEngine * DatabaseLogger::getDatabaseEngine(void) const
 {
     Lock lock(mLock);
     return mDatabase;
 }
 
-inline IEDatabaseEngine* DatabaseLogger::getDatabaseEngine(void)
+inline IELogDatabaseEngine * DatabaseLogger::getDatabaseEngine(void)
 {
     Lock lock(mLock);
     return mDatabase;
 }
 
-inline void DatabaseLogger::setDatabaseEngine(IEDatabaseEngine* dbEngine)
+inline void DatabaseLogger::setDatabaseEngine(IELogDatabaseEngine * dbEngine)
 {
     Lock lock(mLock);
     mDatabase = dbEngine;

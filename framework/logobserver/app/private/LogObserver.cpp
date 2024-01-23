@@ -113,7 +113,11 @@ void LogObserver::_runConsoleInputExtended( void )
     console.uninitialize( );
 }
 
-void LogObserver::callbackObserverConfigured(const char* address, uint16_t port)
+void LogObserver::callbackObserverConfigured(bool isEnabled, const char* address, uint16_t port)
+{
+}
+
+void LogObserver::callbackDatabaseConfigured(bool isEnabled, const char* dbName, const char* dbLocation, const char* user)
 {
 }
 
@@ -280,6 +284,7 @@ void LogObserver::logMain( int argc, char ** argv )
     sObserverEvents evts
     {
           &LogObserver::callbackObserverConfigured
+        , &LogObserver::callbackDatabaseConfigured
         , &LogObserver::callbackServiceConnected
         , &LogObserver::callbackObserverStarted
         , &LogObserver::callbackMessagingFailed
@@ -590,7 +595,7 @@ bool LogObserver::_processStartLogging(bool doStart)
         {
             if (::logObserverIsConnected() == false)
             {
-                result = ::logObserverConnectLogger(nullptr, NESocket::InvalidPort);
+                result = ::logObserverConnectLogger(nullptr, nullptr, NESocket::InvalidPort);
             }
             else if (::logObserverIsStarted() == false)
             {

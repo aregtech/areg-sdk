@@ -175,10 +175,22 @@ enum eObserverStates
  * \brief   The callback of the event triggered when initializing and configuring the observer.
  *          The callback indicates the IP address and port number of the logger service set
  *          in the configuration file.
+ * \param   isEnabled       The flag, indicating whether the logging service is enabled or not.
  * \param   address         The null-terminated string of the IP address of the logger service set in the configuration file.
  * \param   port            The IP port number of the logger service set in the configuration file.
  **/
-typedef void (*FuncObserverConfigured)(const char * /*address*/, uint16_t /*port*/);
+typedef void (*FuncObserverConfigured)(bool /*isEnabled*/, const char* /*address*/, uint16_t /*port*/);
+
+/**
+ * \brief   The callback of the event triggered when initializing and configuring the observer.
+ *          The callback indicates the supported database, the database location or URI and
+ *          the database user name.
+ * \param   isEnabled       The flag, indicating whether the logging in the database is enabler or not.
+ * \param   dbName          The name of the  supported database.
+ * \param   dbLocation      The relative or absolute path the database. The path may contain a mask.
+ * \param   dbUser          The database user to use when log in. If null or empty, the database may not require the user name.
+ **/
+typedef void (*FuncLogDbConfigured)(bool /*isEnabled*/, const char* /*dbName*/, const char* /*dbLocation*/, const char* /*dbUser*/);
 
 /**
  * \brief   The callback of the event triggered when the observer connects or disconnects from the logger service.
@@ -250,11 +262,13 @@ typedef void (*FuncLogMessageEx)(const unsigned char* /*logBuffer*/, uint32_t /*
  **/
 struct sObserverEvents
 {
-    /* The callback to the trigger when the observer is initialized and configured. */
+    /* The callback to the trigger when the observer is initialized and configured, and the information of the logger is available. */
     FuncObserverConfigured  evtObserverConfigured;
+    /* The callback to trigger when the observer is initialized and configured, and the information of logging database is available. */
+    FuncLogDbConfigured     evtLogDbConfigured;
     /* The callback to trigger when connect or disconnect logger service. */
     FuncServiceConnected    evtServiceConnected;
-    /* The callback to trigger when log observer is tarted or paused. */
+    /* The callback to trigger when log observer is started or paused. */
     FuncObserverStarted     evtLoggingStarted;
     /* The callback to trigger when fails to send or receive message. */
     FuncMessagingFailed     evtMessagingFailed;
@@ -292,6 +306,8 @@ LOGOBSERVER_API void logObserverRelease();
 /**
  * \brief   Call to trigger TCP/IP connection with the logger service. Either specify the IP address and the port number
  *          of the logger service to connect, or pass NULL to use settings indicated in the LOGconfiguration file.
+ * \param   dbPath      The path to the logging database file. If NULL, uses the path specified in the config file.
+ *                      The file path may as well contain masking like "./log/log_%time%.db".
  * \param   ipAddress   The IP address or the host name of the logger service. If NULL, uses IP address indicated in the config file.
  *                      If NULL, the port number is ignored and the value in the configuration file is used.
  * \param   portNr      The port number to connect. If 0, uses port number indicated in the config file.
@@ -301,7 +317,7 @@ LOGOBSERVER_API void logObserverRelease();
  * \note    The 'ipAddress' and 'portNr' parameters should be either both valid or they are ignored and the default values
  *          indicated in the configuration file are used.
  **/
-LOGOBSERVER_API bool logObserverConnectLogger(const char* ipAddress = 0, uint16_t portNr = 0);
+LOGOBSERVER_API bool logObserverConnectLogger(const char * dbPath = 0, const char* ipAddress = 0, uint16_t portNr = 0);
 
 /**
  * \brief   Call to trigger disconnect from logger service.

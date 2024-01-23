@@ -155,10 +155,22 @@ private:
      * \brief   The callback of the event triggered when initializing and configuring the observer.
      *          The callback indicates the IP address and port number of the logger service set
      *          in the configuration file.
+     * \param   isEnabled       The flag, indicating whether the logging service is enabled or not.
      * \param   address         The null-terminated string of the IP address of the logger service set in the configuration file.
      * \param   port            The IP port number of the logger service set in the configuration file.
      **/
-    static void callbackObserverConfigured(const char * address, uint16_t port);
+    static void callbackObserverConfigured(bool isEnabled, const char * address, uint16_t port);
+
+    /**
+     * \brief   The callback of the event triggered when initializing and configuring the observer.
+     *          The callback indicates the supported database, the database location or URI and
+     *          the database user name.
+     * \param   isEnabled       The flag, indicating whether the logging in the database is enabler or not.
+     * \param   dbName          The name of the  supported database.
+     * \param   dbLocation      The relative or absolute path the database. The path may contain a mask.
+     * \param   dbUser          The database user to use when log in. If null or empty, the database may not require the user name.
+     **/
+    static void callbackDatabaseConfigured(bool isEnabled, const char* dbName, const char* dbLocation, const char* user);
 
     /**
      * \brief   The callback of the event triggered when the observer connects or disconnects from the logger service.

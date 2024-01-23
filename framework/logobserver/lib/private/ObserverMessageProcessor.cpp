@@ -19,6 +19,7 @@
  ************************************************************************/
 #include "logobserver/lib/private/ObserverMessageProcessor.hpp"
 
+#include "areg/base/DateTime.hpp"
 #include "areg/base/RemoteMessage.hpp"
 #include "areg/component/NEService.hpp"
 #include "areg/ipc/NERemoteService.hpp"
@@ -49,6 +50,7 @@ void ObserverMessageProcessor::notifyConnectedClients(const RemoteMessage& msgRe
     ITEM_ID* listDisconnect{ nullptr };
     NERemoteService::eRemoteConnection remConnect{ NERemoteService::eRemoteConnection::RemoteDisconnected };
     uint32_t count{ 0 };
+    DateTime now(DateTime::getNow());
 
     do
     {
@@ -59,12 +61,16 @@ void ObserverMessageProcessor::notifyConnectedClients(const RemoteMessage& msgRe
         if (remConnect == NERemoteService::eRemoteConnection::RemoteConnected)
         {
             evtInstConnected = mLoggerClient.mCallbacks != nullptr ? mLoggerClient.mCallbacks->evtInstConnected : nullptr;
-            listConnect = (count != 0) && (evtInstConnected != nullptr) ? new sLogInstance[count] : nullptr;
+            listConnect = count != 0 ? new sLogInstance[count] : nullptr;
             for (uint32_t i = 0; i < count; ++i)
             {
                 NEService::sServiceConnectedInstance instance{};
                 msgReceived >> instance;
-                mLoggerClient.mInstances.addIfUnique(instance.ciCookie, instance, false);
+                auto added = mLoggerClient.mInstances.addIfUnique(instance.ciCookie, instance, false);
+                if (added.second)
+                {
+                    mLoggerClient.mLogDatabase.logInstanceConnected(instance, now);
+                }
 
                 if (listConnect != nullptr)
                 {
@@ -92,13 +98,18 @@ void ObserverMessageProcessor::notifyConnectedClients(const RemoteMessage& msgRe
         else
         {
             evtInstDisconnected = mLoggerClient.mCallbacks->evtInstDisconnected;
-            listDisconnect = new ITEM_ID[count];
+            listDisconnect = count != 0 ? new ITEM_ID[count] : nullptr;
             if (listDisconnect != nullptr)
             {
                 for (uint32_t i = 0; i < count; ++i)
                 {
                     msgReceived >> listDisconnect[i];
-                    mLoggerClient.mInstances.removeAt(listDisconnect[i]);
+                    const ITEM_ID& cookie{ listDisconnect[i] };
+
+                    if (mLoggerClient.mInstances.removeAt(cookie))
+                    {
+                        mLoggerClient.mLogDatabase.logInstanceDisconnected(cookie, now);
+                    }
                 }
             }
             else
@@ -106,6 +117,9 @@ void ObserverMessageProcessor::notifyConnectedClients(const RemoteMessage& msgRe
                 count = 0;
             }
         }
+
+        mLoggerClient.mLogDatabase.commit(true);
+
     } while (false);
 
     if (evtInstConnected != nullptr)
@@ -113,21 +127,16 @@ void ObserverMessageProcessor::notifyConnectedClients(const RemoteMessage& msgRe
         ASSERT(evtInstDisconnected == nullptr);
         ASSERT(listDisconnect == nullptr);
         evtInstConnected(static_cast<const sLogInstance *>(listConnect), count);
-        if (listConnect != nullptr)
-        {
-            delete[] listConnect;
-        }
     }
     else if (evtInstDisconnected != nullptr)
     {
         ASSERT(evtInstConnected == nullptr);
         ASSERT(listConnect == nullptr);
         evtInstDisconnected(static_cast<const ITEM_ID *>(listDisconnect), count);
-        if (listDisconnect != nullptr)
-        {
-            delete[] listDisconnect;
-        }
     }
+
+    delete[] listDisconnect;
+    delete[] listConnect;
 }
 
 void ObserverMessageProcessor::notifyLogRegisterScopes(const RemoteMessage& msgReceived)
@@ -136,40 +145,43 @@ void ObserverMessageProcessor::notifyLogRegisterScopes(const RemoteMessage& msgR
     ITEM_ID cookie{ msgReceived.getSource() };
     sLogScope* scopes{ nullptr };
     uint32_t count{ 0 };
+    DateTime now(DateTime::getNow());
 
     do
     {
         Lock lock(mLoggerClient.mLock);
-        if (mLoggerClient.mCallbacks != nullptr)
+        mLoggerClient.mLogDatabase.logScopesDeactivate(cookie, now);
+        evtScopes = mLoggerClient.mCallbacks != nullptr ? mLoggerClient.mCallbacks->evtLogRegisterScopes : nullptr;
+        msgReceived >> count;
+        scopes = count != 0 ? new sLogScope[count] : nullptr;
+        if (scopes != nullptr)
         {
-            evtScopes = mLoggerClient.mCallbacks->evtLogRegisterScopes;
-            msgReceived >> count;
-            scopes = count != 0 ? new sLogScope[count] : nullptr;
-            if (scopes != nullptr)
+            for (uint32_t i = 0; i < count; ++i)
             {
-                for (uint32_t i = 0; i < count; ++i)
-                {
-                    TraceScope scope(msgReceived);
-                    scopes[i].lsId = scope.getScopeId();
-                    scopes[i].lsPrio = scope.getPriority();
-                    NEString::copyString(scopes[i].lsName, static_cast<NEString::CharCount>(LENGTH_SCOPE), scope.getScopeName().getString(), scope.getScopeName().getLength());
-                }
-            }
-            else
-            {
-                count = 0;
+                TraceScope scope(msgReceived);
+                sLogScope& entry{ scopes[i] };
+                entry.lsId = scope.getScopeId();
+                entry.lsPrio = scope.getPriority();
+                NEString::copyString(entry.lsName, static_cast<NEString::CharCount>(LENGTH_SCOPE), scope.getScopeName().getString(), scope.getScopeName().getLength());
+
+                mLoggerClient.mLogDatabase.logScopeActivate(entry.lsName, entry.lsId, entry.lsPrio, cookie, now);
             }
         }
+        else
+        {
+            count = 0;
+        }
+
+        mLoggerClient.mLogDatabase.commit(true);
+
     } while (false);
 
     if (evtScopes != nullptr)
     {
         evtScopes(cookie, scopes, count);
-        if (scopes != nullptr)
-        {
-            delete[] scopes;
-        }
     }
+
+    delete[] scopes;
 }
 
 void ObserverMessageProcessor::notifyLogUpdateScopes(const RemoteMessage& msgReceived)
@@ -178,40 +190,41 @@ void ObserverMessageProcessor::notifyLogUpdateScopes(const RemoteMessage& msgRec
     ITEM_ID cookie{ msgReceived.getSource() };
     sLogScope* scopes{ nullptr };
     uint32_t count{ 0 };
+    DateTime now(DateTime::getNow());
 
     do
     {
         Lock lock(mLoggerClient.mLock);
-        if (mLoggerClient.mCallbacks != nullptr)
+        mLoggerClient.mLogDatabase.logScopesDeactivate(cookie, now);
+        evtScopes = mLoggerClient.mCallbacks != nullptr ? mLoggerClient.mCallbacks->evtLogUpdatedScopes : nullptr;
+        msgReceived >> count;
+        scopes = count != 0 ? new sLogScope[count] : nullptr;
+        if (scopes != nullptr)
         {
-            evtScopes = mLoggerClient.mCallbacks->evtLogUpdatedScopes;
-            msgReceived >> count;
-            scopes = count != 0 ? new sLogScope[count] : nullptr;
-            if (scopes != nullptr)
+            for (uint32_t i = 0; i < count; ++i)
             {
-                for (uint32_t i = 0; i < count; ++i)
-                {
-                    TraceScope scope(msgReceived);
-                    scopes[i].lsId = scope.getScopeId();
-                    scopes[i].lsPrio = scope.getPriority();
-                    NEString::copyString(scopes[i].lsName, static_cast<NEString::CharCount>(LENGTH_SCOPE), scope.getScopeName().getString(), scope.getScopeName().getLength());
-                }
-            }
-            else
-            {
-                count = 0;
+                TraceScope scope(msgReceived);
+                sLogScope& entry{ scopes[i] };
+                entry.lsId = scope.getScopeId();
+                entry.lsPrio = scope.getPriority();
+                NEString::copyString(entry.lsName, static_cast<NEString::CharCount>(LENGTH_SCOPE), scope.getScopeName().getString(), scope.getScopeName().getLength());
+                mLoggerClient.mLogDatabase.logScopeActivate(entry.lsName, entry.lsId, entry.lsPrio, cookie, now);
             }
         }
+        else
+        {
+            count = 0;
+        }
+
+        mLoggerClient.mLogDatabase.commit(true);
     } while (false);
 
     if (evtScopes != nullptr)
     {
         evtScopes(cookie, scopes, count);
-        if (scopes != nullptr)
-        {
-            delete[] scopes;
-        }
     }
+
+    delete[] scopes;
 }
 
 void ObserverMessageProcessor::notifyLogMessage(const RemoteMessage& msgReceived)
@@ -221,17 +234,21 @@ void ObserverMessageProcessor::notifyLogMessage(const RemoteMessage& msgReceived
     sLogMessage msgLog{ };
     const unsigned char* logBuffer{ nullptr };
     unsigned int size{ 0 };
+    DateTime now{ DateTime::getNow() };
 
     do
     {
         Lock lock(mLoggerClient.mLock);
+        const NETrace::sLogMessage* msgRemote = reinterpret_cast<const NETrace::sLogMessage*>(msgReceived.getBuffer());
+        ASSERT(msgRemote != nullptr);
+        mLoggerClient.mLogDatabase.logMessage(*msgRemote, now);
+        mLoggerClient.mLogDatabase.commit(true);
+
         if (mLoggerClient.mCallbacks != nullptr)
         {
             if (mLoggerClient.mCallbacks->evtLogMessage != nullptr)
             {
                 evtMessage = mLoggerClient.mCallbacks->evtLogMessage;
-                const NETrace::sLogMessage* msgRemote = reinterpret_cast<const NETrace::sLogMessage*>(msgReceived.getBuffer());
-                ASSERT(msgRemote != nullptr);
 
                 msgLog.msgType      = static_cast<eLogType>(msgRemote->logMsgType);
                 msgLog.msgPriority  = static_cast<eLogPriority>(msgRemote->logMessagePrio);

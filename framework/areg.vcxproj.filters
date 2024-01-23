@@ -570,6 +570,9 @@
     <ClCompile Include="areg\trace\private\DatabaseLogger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="areg\trace\private\IELogDatabaseEngine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="system\windows\GEWindows.h">
@@ -1058,7 +1061,7 @@
     <ClInclude Include="areg\base\WideString.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\trace\private\LogConfiguration.hpp">
+    <ClInclude Include="areg\trace\LogConfiguration.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\component\private\Watchdog.hpp">
@@ -1131,6 +1134,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\trace\private\DatabaseLogger.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="areg\trace\IELogDatabaseEngine.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

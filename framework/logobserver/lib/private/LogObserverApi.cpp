@@ -25,6 +25,8 @@
 // Use these options if compile for Windows with MSVC
 #ifdef WINDOWS
     #pragma comment(lib, "areg")
+    #pragma comment(lib, "areg-extend")
+    #pragma comment(lib, "sqlite3")
 #endif // WINDOWS
 
 
@@ -44,6 +46,7 @@ namespace
         if (srcCallbacks != nullptr)
         {
             dstCallbacks.evtObserverConfigured  = srcCallbacks->evtObserverConfigured;
+            dstCallbacks.evtLogDbConfigured     = srcCallbacks->evtLogDbConfigured;
             dstCallbacks.evtServiceConnected    = srcCallbacks->evtServiceConnected;
             dstCallbacks.evtLoggingStarted      = srcCallbacks->evtLoggingStarted;
             dstCallbacks.evtMessagingFailed     = srcCallbacks->evtMessagingFailed;
@@ -57,6 +60,7 @@ namespace
         else
         {
             dstCallbacks.evtObserverConfigured  = nullptr;
+            dstCallbacks.evtLogDbConfigured     = nullptr;
             dstCallbacks.evtServiceConnected    = nullptr;
             dstCallbacks.evtLoggingStarted      = nullptr;
             dstCallbacks.evtMessagingFailed     = nullptr;
@@ -106,13 +110,15 @@ LOGOBSERVER_API_IMPL bool logObserverInitialize(const sObserverEvents * callback
     return _isInitialized(theObserver.losState);
 }
 
-LOGOBSERVER_API_IMPL bool logObserverConnectLogger(const char* ipAddress /*= nullptr*/, uint16_t portNr /* = 0 */)
+LOGOBSERVER_API_IMPL bool logObserverConnectLogger(const char* dbPath, const char* ipAddress /*= nullptr*/, uint16_t portNr /* = 0 */)
 {
     Lock lock(theObserver.losLock);
 
     if (_isDisconnected(theObserver.losState))
     {
-        if (LoggerClient::getInstance().startLoggerClient(ipAddress, portNr))
+        LoggerClient& client = LoggerClient::getInstance();
+        client.openLoggingDatabase(dbPath);
+        if (client.startLoggerClient(ipAddress, portNr))
         {
             theObserver.losState = eObserverStates::ObserverConnected;
         }
@@ -129,6 +135,7 @@ LOGOBSERVER_API_IMPL void logObserverDisconnectLogger()
     {
         LoggerClient& client = LoggerClient::getInstance();
         client.stopLoggerClient();
+        client.closeLoggingDatabase();
         theObserver.losState = eObserverStates::ObserverDisconnected;
     }
 }

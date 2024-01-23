@@ -20,6 +20,7 @@
 #include "logobserver/lib/private/LoggerClient.hpp"
 
 #include "areg/ipc/ConnectionConfiguration.hpp"
+#include "areg/trace/LogConfiguration.hpp"
 #include "logobserver/lib/LogObserverApi.h"
 
 #define IS_VALID(callback)  ((mCallbacks != nullptr) && ((callback) != nullptr))
@@ -48,6 +49,7 @@ LoggerClient::LoggerClient(void)
     , mMessageProcessor          ( self() )
     , mIsPaused                  ( false )
     , mInstances                 ( )
+    , mLogDatabase               ( )
 {
 }
 
@@ -197,6 +199,31 @@ bool LoggerClient::requestSaveConfiguration(const ITEM_ID& target /*= NEService:
     return result;
 }
 
+bool LoggerClient::openLoggingDatabase(const char* dbPath /*= nullptr*/)
+{
+    String filePath (dbPath);
+    if (filePath.isEmpty())
+    {
+        LogConfiguration config;
+        if (config.isDatabaseLoggingEnabled() && (config.getDatabaseName() == NETrace::LOGDB_NAME_SQLITE3))
+        {
+            mLogDatabase.setDatabaseLoggingEnabled(true);
+            filePath = config.getDatabaseLocation();
+        }
+        else
+        {
+            mLogDatabase.setDatabaseLoggingEnabled(false);
+        }
+    }
+
+    return mLogDatabase.connect(filePath);
+}
+
+void LoggerClient::closeLoggingDatabase(void)
+{
+    mLogDatabase.disconnect();
+}
+
 void LoggerClient::prepareSaveConfiguration(ConfigManager& config)
 {
 }
@@ -212,8 +239,12 @@ void LoggerClient::prepareReadConfiguration(ConfigManager& config)
 void LoggerClient::postReadConfiguration(ConfigManager& config)
 {
     FuncObserverConfigured evtConfig{ nullptr };
+    FuncLogDbConfigured evtLogConfig{ nullptr };
     String address;
     uint16_t port;
+    String dbName;
+    String dbLocation;
+    String dbUser;
 
     config.setLogEnabled(NETrace::eLogingTypes::LogTypeFile, true, true);
     config.setLogEnabled(NETrace::eLogingTypes::LogTypeRemote, false, true);
@@ -224,14 +255,23 @@ void LoggerClient::postReadConfiguration(ConfigManager& config)
         if (mCallbacks != nullptr)
         {
             evtConfig = mCallbacks->evtObserverConfigured;
+            evtLogConfig = mCallbacks->evtLogDbConfigured;
             address = config.getRemoteServiceAddress(LoggerClient::ServiceType, LoggerClient::ConnectType);
             port = config.getRemoteServicePort(LoggerClient::ServiceType, LoggerClient::ConnectType);
+            dbName = config.getLogDatabaseProperty(NEPersistence::getLogDatabaseName().position);
+            dbLocation = config.getLogDatabaseProperty(NEPersistence::getLogDatabaseLocation().position);
+            dbUser = config.getLogDatabaseProperty(NEPersistence::getLogDatabaseUser().position);
         }
     } while (false);
 
     if (evtConfig != nullptr)
     {
-        evtConfig(address.getString(), port);
+        evtConfig(true, address.getString(), port);
+    }
+
+    if (evtLogConfig != nullptr)
+    {
+        evtLogConfig(config.getLogEnabled(NETrace::eLogingTypes::LogTypeDatabase), dbName.getString(), dbLocation.getString(), dbUser.getString());
     }
 }
 

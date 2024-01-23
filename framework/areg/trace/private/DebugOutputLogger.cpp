@@ -15,7 +15,7 @@
  ************************************************************************/
 #include "areg/trace/private/DebugOutputLogger.hpp"
 
-#include "areg/trace/private/LogConfiguration.hpp"
+#include "areg/trace/LogConfiguration.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/DateTime.hpp"
 #include "areg/base/IEByteBuffer.hpp"

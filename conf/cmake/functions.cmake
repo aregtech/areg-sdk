@@ -59,6 +59,7 @@ function(setStaticLibOptions item library_list)
 
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
         target_compile_options(${item} PRIVATE "-Bstatic")
+        target_compile_options(${item} PRIVATE -fPIC)
     endif()
 
     target_link_libraries(${item} ${library_list} areg ${AREG_LDFLAGS})
@@ -110,6 +111,7 @@ function(setSharedLibOptions item library_list)
     target_link_libraries(${item} areg-extend ${library_list} areg ${AREG_EXTENDED_LIBS} ${AREG_LDFLAGS})
 
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
+        target_compile_options(${item} PRIVATE -fPIC)
         target_compile_options(${item} PRIVATE "-Bdynamic")
     endif()
 
