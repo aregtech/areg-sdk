@@ -27,6 +27,11 @@
 
 namespace
 {
+    //////////////////////////////////////////////////////////////////////////
+    // Log specific SQL scripts for SQLite3 database.
+    //////////////////////////////////////////////////////////////////////////
+
+    //! Create a version table to keep information about start and stop of log observer.
     constexpr std::string_view  _sqlCreateTbVersion
     {
         "CREATE TABLE \"version\" ("
@@ -40,16 +45,23 @@ namespace
             ");"
     };
 
+    //! A string format to generate INSERT statement to insert a new entry in the version.
+    //! Normally, this is the only entry in the version table.
     constexpr std::string_view  _fmtVersion
     {
         "INSERT INTO version (name, version, describe, created_by, db_name, time_created) VALUES (\'%s\', \'%s\', \'%s\', \'%s\', \'%s\', %llu);"
     };
 
+    //! A string format to generate UPDATE state to change entry in the version table.
+    //! Used when application stops collecting logs.
     constexpr std::string_view  _fmtUpdVersion
     {
         "UPDATE version SET time_closed = %llu;"
     };
 
+    //! Create a table with the information about connected log source instances.
+    //! Each new entry should have unique cookie_id, as well as information when it
+    //! is connected and when disconnected.
     constexpr std::string_view  _sqlCreateTbInstances
     {
         "CREATE TABLE \"instances\" ("
@@ -65,6 +77,10 @@ namespace
             ");"
     };
 
+    //! A string format to generate INSERT statement to insert a new entry in the instances table.
+    //! It is called when a new log source instance is connecting to the log collector service.
+    //! Each entry is a logging source process with unique cookie ID and the field indicating
+    //! when the instance was connected or disconnected.
     constexpr std::string_view _fmtInstance
     {
         "INSERT INTO instances "
@@ -73,16 +89,27 @@ namespace
         "(%llu, %u, %u, \'%s\', \'%s\', %llu, %llu);"
     };
 
+    //! A string format to generate UPDATE statement to update instance entry.
+    //! It is called when a log source instance disconnects from log collector service
+    //! of when the log observer disconnects / stops running.
+    //! It updates the disconnect time for the instance with specified cookie ID.
     constexpr std::string_view _fmtUpdInstance
     {
         "UPDATE instances SET time_disconnected = %llu, time_updated = %llu WHERE cookie_id = %llu AND time_disconnected IS NULL;"
     };
 
+    //! A string format to generate UPDATE statement and mark all instances as disconnected.
+    //! It is closed before closing database to ensure that all entries are updated.
     constexpr std::string_view _fmCloseInstances
     {
         "UPDATE instances SET time_disconnected = %llu, time_updated = %llu WHERE time_disconnected IS NULL;"
     };
 
+    //! Create a table with the information about scopes of connected instances.
+    //! The table has list of all scopes of the log source application
+    //! The table is updated each time when scope changes the priority.
+    //! The combination of cookie ID, scope ID and time when the scope is updated
+    //! or registered should be unique.
     constexpr std::string_view _sqlCreateTbScopes
     {
         "CREATE TABLE \"scopes\" ("
@@ -98,26 +125,35 @@ namespace
             ");"
     };
 
+    //! A string format to generate INSERT statement to insert an information about scope.
+    //! It is called when registering or updating scope list of the connected application.
     constexpr std::string_view _fmtScopes
     {
         "INSERT INTO scopes (scope_id, cookie_id, scope_is_active, scope_prio, scope_name, time_received)  VALUES (%u, %llu, 1, %u, \'%s\', %llu);"
     };
 
+    //! A string format to generate UPDATE statement to update the scope state of a connected instance.
+    //! The script will mark all scopes of specified cookie ID as inactive.
     constexpr std::string_view _fmtUpdScopes
     {
         "UPDATE scopes SET time_inactivated = %llu, scope_is_active = 0 WHERE cookie_id = %llu AND scope_is_active = 1;"
     };
 
+    //! A string format to generate UPDATE statement to update the activation state of a single scope.
+    //! The script will mark the specified scope of the specified cookie as inactive.
     constexpr std::string_view _fmtUpdScope
     {
         "UPDATE scopes SET time_inactivated = %llu, scope_is_active = 0 WHERE cookie_id = %llu AND scope_id = %u AND scope_is_active = 1;"
     };
 
+    //! A string format to generate UPDATE statement to mark all scopes of all instances as inactive.
     constexpr std::string_view _fmtCloseScopes
     {
         "UPDATE scopes SET time_inactivated = %llu, scope_is_active = 0 WHERE scope_is_active = 1;"
     };
 
+    //! Create a table with logs that contain information of application cookie ID,
+    //! scope ID, log priority, log message, and information like thread.
     constexpr std::string_view  _sqlCreateTbLogs
     {
         "CREATE TABLE \"logs\" ("
@@ -138,6 +174,7 @@ namespace
             ");"
     };
 
+    //! A string format to create INSERT statement to insert new log message in the logs table.
     constexpr std::string_view _fmtLog
     {
         "INSERT INTO logs "
@@ -146,25 +183,34 @@ namespace
         "(%llu, %u, %u, %u, %llu, %llu, \'%s\', \'%s\', \'%s\', %llu, %llu);"
     };
 
+    //! A script to create index of the instances table. 
     constexpr std::string_view  _sqlCraeteIdxCookie
     {
         "CREATE UNIQUE INDEX \"idx_cookies\" ON \"instances\" (\"cookie_id\");"
     };
 
-    constexpr std::string_view  _sqlCreateIdxLogs
-    {
-        "CREATE INDEX \"idx_logs\" ON \"logs\" (\"cookie_id\", \"scope_id\", \"msg_thread_id\"); "
-    };
-
+    //! A script to create index of the scopes table.
     constexpr std::string_view _sqlCreateIdxScopes
     {
         "CREATE INDEX \"idx_scopes\" ON \"scopes\" (\"scope_id\", \"cookie_id\");"
     };
 
+    //! A script to create index of the logs table
+    constexpr std::string_view  _sqlCreateIdxLogs
+    {
+        "CREATE INDEX \"idx_logs\" ON \"logs\" (\"cookie_id\", \"scope_id\", \"msg_thread_id\"); "
+    };
+
+    //! The size of the string buffer to format SQL scripts
     constexpr uint32_t  SQL_LEN     { 768 };
 
+    //! The size of the string buffer to format SQL script to insert a log.
     constexpr uint32_t  SQL_LEN_MAX { 1024 };
 }
+
+//////////////////////////////////////////////////////////////////////////
+// LogSqliteDatabase class implementation.
+//////////////////////////////////////////////////////////////////////////
 
 LogSqliteDatabase::LogSqliteDatabase(void)
     : IELogDatabaseEngine   ( )
