@@ -24,12 +24,13 @@
 
 #include "areg/base/String.hpp"
 #include "areg/base/SynchObjects.hpp"
+#include "areg/trace/LogConfiguration.hpp"
 #include "areg/trace/NETrace.hpp"
 #include "areg/trace/private/ScopeController.hpp"
 #include "areg/trace/private/FileLogger.hpp"
 #include "areg/trace/private/DebugOutputLogger.hpp"
 #include "areg/trace/private/NetTcpLogger.hpp"
-#include "areg/trace/private/LogConfiguration.hpp"
+#include "areg/trace/private/DatabaseLogger.hpp"
 #include "areg/trace/private/TraceEventProcessor.hpp"
 
 #include <string_view>
@@ -37,6 +38,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
+class IELogDatabaseEngine;
 class TraceScope;
 class LogMessage;
 class IELogger;
@@ -85,7 +87,7 @@ public:
 
     /**
      * \brief   Triggers an event to log message contained in the shared buffer.
-     * \param   logData     The instance of message in shared buffer to og.
+     * \param   logData     The instance of message in shared buffer to log.
      **/
     static void logMessage(const SharedBuffer& logData);
 
@@ -250,6 +252,25 @@ public:
      *          Otherwise, returns invalid priority (NETrace::eLogPriority::PrioInvalid).
      **/
     static unsigned int getScopePriority( const char * scopeName );
+
+    /**
+     * \brief   Call to set the instance of log database engine responsible to handle the database.
+     *          If not null, the log messages are forwarded to the database engine.
+     *          Otherwise, ignores to write the log messages.
+     * \param   dbEngine    The pointer to the log database engine to set.
+     **/
+    static void setLogDatabaseEngine(IELogDatabaseEngine * dbEngine);
+
+    /**
+     * \brief   Returns true if database and data tables are initialized and the
+     *          logging database is ready to save messages.
+     **/
+    static bool isLogDabaseEngineInitialized(void);
+
+    /**
+     * \brief   Returns true if logging in the database is enabled. The value is read from configuration file.
+     **/
+    static bool isLogDatabaseEnabled(void);
 
     /**
      * \brief   Returns the logger service connection cookie.
@@ -447,6 +468,10 @@ private:
      * \brief   The remote TCP/IP logging service.
      **/
     NetTcpLogger        mLoggerTcp;
+    /**
+     * \brief   The database logger object to write logs in the DB.
+     **/
+    DatabaseLogger      mLoggerDatabase;
     /**
      * \brief   The log event processor helper object.
      **/

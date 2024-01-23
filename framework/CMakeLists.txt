@@ -18,7 +18,7 @@ if(AREG_BINARY MATCHES "shared")
     endif()
     set_property(TARGET areg PROPERTY LIBRARY_OUTPUT_DIRECTORY ${AREG_OUTPUT_BIN})
 
-else(AREG_BINARY MATCHES "shared")
+else(AREG_BINARY MATCHES "static")
 
     # Static Library
     add_library(areg STATIC ${areg_SRC})
@@ -47,7 +47,7 @@ addStaticLib(areg-extend "${extend_SRC}")
 if (AREG_LOGOBSERVER_LIB MATCHES "shared")
 
     # build log observer API shared library
-    addSharedLib(logobserverapi "${logobserverapi_SRC}")
+    addSharedLibEx(logobserverapi "${logobserverapi_SRC}" sqlite3)
 
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
         target_compile_options(logobserverapi PRIVATE -fPIC)
@@ -61,7 +61,7 @@ if (AREG_LOGOBSERVER_LIB MATCHES "shared")
         target_link_options(logobserverapi PRIVATE "/DEF:${logobserverapi_RESOURCE}/logobserver.def")
     endif()
 
-else(AREG_LOGOBSERVER_LIB MATCHES "shared")
+else(AREG_LOGOBSERVER_LIB MATCHES "static")
     # build log observer API static library
     addStaticLib(logobserverapi "${logobserverapi_SRC}")
 
@@ -80,12 +80,13 @@ addExecutable(mcrouter "${mcrouter_SRC}")
 addExecutable(logger "${logger_SRC}")
 
 # build log observer console application
-addExecutableEx(logobserver "${logobserverapp_SRC}" logobserverapi)
 if (AREG_LOGOBSERVER_LIB MATCHES "shared")
+    addExecutableEx(logobserver "${logobserverapp_SRC}" logobserverapi)
     target_compile_definitions(logobserver PRIVATE IMP_LOGOBSERVER_DLL)
-else(AREG_LOGOBSERVER_LIB MATCHES "shared")
+else (AREG_LOGOBSERVER_LIB MATCHES "static")
+    addExecutableEx(logobserver "${logobserverapp_SRC}" logobserverapi sqlite3)
     target_compile_definitions(logobserver PRIVATE IMP_LOGOBSERVER_LIB)
-endif(AREG_LOGOBSERVER_LIB MATCHES "shared")
+endif()
 
 # copying log and router init files to 'bin/config'
 file(MAKE_DIRECTORY ${AREG_OUTPUT_BIN}/config)

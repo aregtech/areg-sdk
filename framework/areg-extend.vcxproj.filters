@@ -57,7 +57,10 @@
     <ClCompile Include="extend\console\private\SystemServiceConsole.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="extend\db\private\Database.cpp">
+    <ClCompile Include="extend\db\private\SqliteDatabase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="extend\db\private\LogSqliteDatabase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -107,7 +110,10 @@
     <ClInclude Include="extend\console\SystemServiceConsole.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="extend\db\Database.hpp">
+    <ClInclude Include="extend\db\SqliteDatabase.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="extend\db\LogSqliteDatabase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

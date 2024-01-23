@@ -28,6 +28,7 @@
 #include "areg/persist/IEConfigurationListener.hpp"
 
 #include "areg/trace/NETrace.hpp"
+#include "extend/db/LogSqliteDatabase.hpp"
 
 #include "logobserver/lib/private/ObserverMessageProcessor.hpp"
 
@@ -198,6 +199,20 @@ public:
      **/
     bool requestSaveConfiguration(const ITEM_ID & target = NEService::COOKIE_ANY);
 
+    /**
+     * \brief   Creates of opens the database for the logging. If specified path is null or empty,
+     *          if uses the location specified in the configuration file.
+     * \param   dbPath      The relative or absolute path to the logging database file.
+     *                      If null or empty, uses the location specified in the configuration file.
+     * \return  Returns true if succeeded to initialize the database.
+     **/
+    bool openLoggingDatabase(const char* dbPath = nullptr);
+
+    /**
+     * \brief   Closes previously opened logging database.
+     **/
+    void closeLoggingDatabase(void);
+
 //////////////////////////////////////////////////////////////////////////
 // Overrides
 //////////////////////////////////////////////////////////////////////////
@@ -367,6 +382,11 @@ private:
      * \brief   The list of connected instances.
      **/
     NEService::MapInstances     mInstances;
+
+    /**
+     * \brief   The logging database engine.
+     **/
+    LogSqliteDatabase           mLogDatabase;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.

@@ -203,6 +203,7 @@
     <ClCompile Include="areg\persist\private\NEPersistence.cpp" />
     <ClCompile Include="areg\trace\private\DatabaseLogger.cpp" />
     <ClCompile Include="areg\trace\private\DebugOutputLogger.cpp" />
+    <ClCompile Include="areg\trace\private\IELogDatabaseEngine.cpp" />
     <ClCompile Include="areg\trace\private\LayoutManager.cpp" />
     <ClCompile Include="areg\trace\private\Layouts.cpp" />
     <ClCompile Include="areg\trace\private\LogConfiguration.cpp" />
@@ -383,8 +384,9 @@
     <ClInclude Include="areg\persist\PropertyValue.hpp" />
     <ClInclude Include="areg\persist\PersistenceManager.hpp" />
     <ClInclude Include="areg\persist\NEPersistence.hpp" />
+    <ClInclude Include="areg\trace\IELogDatabaseEngine.hpp" />
     <ClInclude Include="areg\trace\private\DatabaseLogger.hpp" />
-    <ClInclude Include="areg\trace\private\LogConfiguration.hpp" />
+    <ClInclude Include="areg\trace\LogConfiguration.hpp" />
     <ClInclude Include="areg\trace\private\NetTcpLogger.hpp" />
     <ClInclude Include="areg\trace\private\ScopeController.hpp" />
     <ClInclude Include="areg\trace\private\ScopeNodeBase.hpp" />

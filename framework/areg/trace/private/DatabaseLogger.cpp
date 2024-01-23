@@ -18,9 +18,12 @@
  ************************************************************************/
 #include "areg/trace/private/DatabaseLogger.hpp"
 
+#include "areg/base/DateTime.hpp"
 #include "areg/base/File.hpp"
-#include "areg/persist/IEDatabaseEngine.hpp"
-#include "areg/trace/private/LogConfiguration.hpp"
+#include "areg/trace/IELogDatabaseEngine.hpp"
+#include "areg/trace/LogConfiguration.hpp"
+
+#include <string_view>
 
 DatabaseLogger::DatabaseLogger(LogConfiguration& tracerConfig)
     : LoggerBase    (tracerConfig)
@@ -73,6 +76,11 @@ void DatabaseLogger::closeLogger(void)
 
 void DatabaseLogger::logMessage(const NETrace::sLogMessage& logMessage)
 {
+    Lock lock(mLock);
+    if (isValid())
+    {
+        mDatabase->logMessage(logMessage, DateTime::getNow());
+    }
 }
 
 bool DatabaseLogger::isLoggerOpened(void) const

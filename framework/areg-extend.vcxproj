@@ -45,7 +45,8 @@
     <ClCompile Include="extend\console\private\OptionParser.cpp" />
     <ClCompile Include="extend\console\private\win32\ConsoleWin32.cpp" />
     <ClCompile Include="extend\console\private\SystemServiceConsole.cpp" />
-    <ClCompile Include="extend\db\private\Database.cpp" />
+    <ClCompile Include="extend\db\private\LogSqliteDatabase.cpp" />
+    <ClCompile Include="extend\db\private\SqliteDatabase.cpp" />
     <ClCompile Include="extend\service\private\DataRateHelper.cpp" />
     <ClCompile Include="extend\service\private\NESystemService.cpp" />
     <ClCompile Include="extend\service\private\SystemServiceBase.cpp" />
@@ -64,7 +65,8 @@
   <ItemGroup>
     <ClInclude Include="extend\console\Console.hpp" />
     <ClInclude Include="extend\console\OptionParser.hpp" />
-    <ClInclude Include="extend\db\Database.hpp" />
+    <ClInclude Include="extend\db\SqliteDatabase.hpp" />
+    <ClInclude Include="extend\db\LogSqliteDatabase.hpp" />
     <ClInclude Include="extend\service\DataRateHelper.hpp" />
     <ClInclude Include="extend\service\NESystemService.hpp" />
     <ClInclude Include="extend\console\SystemServiceConsole.hpp" />

@@ -31,6 +31,7 @@
 /************************************************************************
  * Dependencies
  ************************************************************************/
+class IELogDatabaseEngine;
 class TraceScope;
 
 //////////////////////////////////////////////////////////////////////////
@@ -203,6 +204,11 @@ namespace NETrace
      * \brief   No priority string
      **/
     const String  PRIO_NO_PRIO        { "" };
+
+    /**
+     * \brief   The name of the supported database logging engines.
+     **/
+    constexpr std::string_view   LOGDB_NAME_SQLITE3 { "sqlite3" };
 
     /**
      * \brief   Returns string value of NETrace::eLogPriority.
@@ -567,6 +573,11 @@ namespace NETrace
      * \see     messageSaveConfiguration
      **/
     AREG_API RemoteMessage messageConfigurationSaved(void);
+
+    /**
+     * \brief   Call to set external logging database engine.
+     **/
+    AREG_API void setLogDatabaseEngine(IELogDatabaseEngine* dbEngine);
 }
 
 //////////////////////////////////////////////////////////////////////////////

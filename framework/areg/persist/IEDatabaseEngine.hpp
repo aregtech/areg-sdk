@@ -55,6 +55,8 @@ public:
      * \param   dbpath  The path to the database. If needed, the path may contain
      *                  file path or URL, user name and password. It is up to
      *                  Database engine to parse the path and initialize the connection.
+     *                  If the parameter is empty, it should take the data from the
+     *                  'areg.init' configuration file.
      * \return  Returns true if succeeded to connect. Otherwise, returns false.
      **/
     virtual bool connect(const String & dbPath) = 0;

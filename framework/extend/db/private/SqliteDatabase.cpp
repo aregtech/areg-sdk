@@ -7,7 +7,7 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        extend/db/private/Database.cpp
+ * \file        extend/db/private/SqliteDatabase.cpp
  * \author      Artak Avetyan
  * \ingroup     AREG platform, extended library, SQLite database
  ************************************************************************/
@@ -15,20 +15,20 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "extend/db/Database.hpp"
+#include "extend/db/SqliteDatabase.hpp"
 
 #include "areg/base/File.hpp"
 
 #include <string_view>
 
-Database::Database(void)
+SqliteDatabase::SqliteDatabase(void)
     : IEDatabaseEngine  ( )
     , mDbPath           ( )
     , mDbObject         ( nullptr )
 {
 }
 
-Database::Database(const String& dbPath, bool open)
+SqliteDatabase::SqliteDatabase(const String& dbPath, bool open)
     : IEDatabaseEngine  ( )
     , mDbPath           (dbPath.isEmpty() ? String::getEmptyString() : File::normalizePath(dbPath))
     , mDbObject         ( nullptr )
@@ -42,12 +42,12 @@ Database::Database(const String& dbPath, bool open)
     }
 }
 
-Database::~Database(void)
+SqliteDatabase::~SqliteDatabase(void)
 {
     _close();
 }
 
-inline bool Database::_open(const String& dbPath)
+inline bool SqliteDatabase::_open(const String& dbPath)
 {
     bool result{ true };
     _close();
@@ -61,7 +61,7 @@ inline bool Database::_open(const String& dbPath)
     return result;
 }
 
-inline void Database::_close(void)
+inline void SqliteDatabase::_close(void)
 {
     if (mDbObject != nullptr)
     {
@@ -70,22 +70,22 @@ inline void Database::_close(void)
     }
 }
 
-bool Database::isOperable(void) const
+bool SqliteDatabase::isOperable(void) const
 {
     return (mDbObject != nullptr);
 }
 
-bool Database::connect(const String& dbPath)
+bool SqliteDatabase::connect(const String& dbPath)
 {
     return _open(dbPath);
 }
 
-void Database::disconnect(void)
+void SqliteDatabase::disconnect(void)
 {
     _close();
 }
 
-bool Database::execute(const String& sql)
+bool SqliteDatabase::execute(const String& sql)
 {
     bool result{ false };
     if (mDbObject != nullptr)
@@ -96,14 +96,14 @@ bool Database::execute(const String& sql)
     return result;
 }
 
-bool Database::begin(void)
+bool SqliteDatabase::begin(void)
 {
     constexpr std::string_view  sqlBegin{ "BEGIN TRANSACTION;" };
 
     return (mDbObject != nullptr ? SQLITE_OK == sqlite3_exec(mDbObject, sqlBegin.data(), nullptr, nullptr, nullptr) : false);
 }
 
-bool Database::commit(bool doCommit)
+bool SqliteDatabase::commit(bool doCommit)
 {
     constexpr std::string_view sqlCommit{ "COMMIT;" };
     constexpr std::string_view sqlRoolback{ "ROLLBACK;" };

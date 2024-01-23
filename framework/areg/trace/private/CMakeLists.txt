@@ -1,6 +1,8 @@
 list(APPEND areg_SRC
+	${areg_BASE}/trace/private/DatabaseLogger.cpp
 	${areg_BASE}/trace/private/DebugOutputLogger.cpp
 	${areg_BASE}/trace/private/FileLogger.cpp
+	${areg_BASE}/trace/private/IELogDatabaseEngine.cpp
 	${areg_BASE}/trace/private/LayoutManager.cpp
 	${areg_BASE}/trace/private/LogConfiguration.cpp
 	${areg_BASE}/trace/private/LogMessage.cpp

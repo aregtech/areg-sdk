@@ -121,13 +121,14 @@ log::*::remote::service     = logger                        # The service name o
 # ---------------------------------------------------------------------------
 # Database logging settings (not supported at the moment!!!)
 # ---------------------------------------------------------------------------
+log::*::db::name            =                               # The database name
 log::*::db::location        =                               # Database location
-log::*::db::append          = true                          # Append logs
+log::*::db::append          =                               # Append logs
 log::*::db::driver          =                               # Database driver
-log::*::db::address         = 127.0.0.1                     # Database connection IP-address
-log::*::db::port            = 1234                          # Database connection IP-port
-log::*::db::username        = areg                          # Database connection user name
-log::*::db::password        = areg                          # Database connection password
+log::*::db::address         =                               # Database connection IP-address
+log::*::db::port            =                               # Database connection IP-port
+log::*::db::username        =                               # Database connection user name
+log::*::db::password        =                               # Database connection password
 
 # ---------------------------------------------------------------------------
 # Log message layout in the file
@@ -142,6 +143,14 @@ log::*::layout::exit        = %d: [ %t  %x.%z: Exit <-- ]%n    # Exit scope layo
 log::logobserver::layout::enter     = %d: [ %a.%x.%t.%z: Enter -->]%n   # Enter scope layout
 log::logobserver::layout::message   = %d: [ %a.%x.%t.%p >>> ] %m%n      # Log message layout
 log::logobserver::layout::exit      = %d: [ %a.%x.%t.%z: Exit <-- ]%n   # Exit scope layout
+
+# ---------------------------------------------------------------------------
+# Log observer specific database logging settings
+# ---------------------------------------------------------------------------
+log::logobserver::enable::db        = true                          # Database logging enable / disable flag
+log::logobserver::db::name          = sqlite3                       # The database name
+log::logobserver::db::location      = ./logs/log_%time%.sqlite3     # Database location
+log::logobserver::db::append        = false                         # Append logs
 
 # ---------------------------------------------------------------------------
 # Messaging enable states for the logger
@@ -186,7 +195,6 @@ logger::*::port::tcpip      = 8282			                # Protocol specific connect
 # ###########################################################################
 
 log::*::scope::*			= DEBUG | SCOPE ;
-# log::*::scope::areg_*       = NOTSET ;
 log::mcrouter::scope::*     = DEBUG | SCOPE ;
 log::logger::scope::*       = NOTSET ;
 

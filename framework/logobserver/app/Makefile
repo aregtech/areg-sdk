@@ -5,8 +5,8 @@ logobserver_OBJS :=
 
 include $(logobserver_BASE)/app/private/Makefile
 
-logobserver_CXXFLAGS	:= -I$(AREG_BASE) -D$(AREG_LIB_IMPORT) $(OBSERVER_API_IMPORT)
-logobserver_LDFLAGS		:= -L$(OBSERVER_API_PATH) $(AREG_TOOL_FLAGS) -l$(logobserverapi_PROJECT_NAME)
+logobserver_CXXFLAGS	:= $(AREG_COMMON_INCLUDES) -D$(AREG_LIB_IMPORT) $(OBSERVER_API_IMPORT)
+logobserver_LDFLAGS		:= $(AREG_TOOL_FLAGS) -l$(logobserverapi_PROJECT_NAME) -lsqlite3
 
 logobserver: $(logobserver_TARGET_BIN)
 
