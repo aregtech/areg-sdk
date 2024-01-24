@@ -235,6 +235,12 @@ inline bool LogSqliteDatabase::_open(const String& dbPath)
     bool result{ true };
     _close();
     mDbPath = dbPath.isEmpty() == false ? File::normalizePath(dbPath) : mDbPath;
+    String folder = File::getFileDirectory(mDbPath);
+    if ((folder.isEmpty() == false) && (File::existDir(folder) == false))
+    {
+        File::createDirCascaded(folder);
+    }
+
     if (SQLITE_OK != sqlite3_open(mDbPath.getString(), &mDbObject))
     {
         _close();
