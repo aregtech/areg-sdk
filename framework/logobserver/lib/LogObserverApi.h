@@ -96,21 +96,25 @@ enum eLogType
  **/
 enum eLogPriority
 {
-    /* No priority, should not log any message */
-      PrioNotSet    = 0x0001
-    /* Logs scope enter and scope exit messages */
+    /* Invalid priority log message. */
+      PrioInvalid   = 0x0000
+    /* No priority, should not log any message. */
+    , PrioNotSet    = 0x0001
+    /* Logs scope enter and scope exit messages. */
     , PrioScope     = 0x0010
-    /* Logs fatal error messages. Can be in combination with PrioScope */
+    /* Logs fatal error messages. Can be in combination with PrioScope. */
     , PrioFatal     = 0x0020
-    /* Logs fatal error and error messages. Can be in combination with PrioScope */
+    /* Logs fatal error and error messages. Can be in combination with PrioScope. */
     , PrioError     = 0x0040
-    /* Logs fatal error, error and warning messages. Can be in combination with PrioScope */
+    /* Logs fatal error, error and warning messages. Can be in combination with PrioScope. */
     , PrioWarning   = 0x0080
-    /* Logs fatal error, error, warning and info messages. Can be in combination with PrioScope */
+    /* Logs fatal error, error, warning and info messages. Can be in combination with PrioScope. */
     , PrioInfo      = 0x0100
-    /* Logs fatal error, error, warning, info and debug messages. Can be in combination with PrioScope */
+    /* Logs fatal error, error, warning, info and debug messages. Can be in combination with PrioScope. */
     , PrioDebug     = 0x0200
-    /* Logs a message without priority. Can be in combination with PrioScope */
+    /* Ignore the message priority, force to log. */
+    , PrioIgnore    = 0x0400
+    /* Logs a message without priority. Can be in combination with PrioScope. */
     , PrioAny       = 0x0FF0
 };
 
