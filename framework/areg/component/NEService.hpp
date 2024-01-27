@@ -222,9 +222,9 @@ namespace NEService
     typedef enum class E_DisconnectReason : uint16_t
     {
           ReasonUndefined               = 0     //!< Undefined disconnect reason.
-        , ReasonRouterDisconnected      = 1     //!< The router is disconnected.
-        , ReasonRouterLost              = 2     //!< The router connection is lost.
-        , ReasonRouterRejected          = 4     //!< The router rejected connection.
+        , ReasonServiceDisconnected     = 1     //!< The service is disconnected.
+        , ReasonServiceLost             = 2     //!< The service connection is lost.
+        , ReasonServiceRejected         = 4     //!< The service rejected connection.
         , ReasonProviderDisconnected    = 8     //!< The service provider disconnected.
         , ReasonProviderLost            = 16    //!< The connection with service provider is lost.
         , ReasonProviderRejected        = 32    //!< The service provider rejected the service consumer.
@@ -232,6 +232,8 @@ namespace NEService
         , ReasonConsumerLost            = 128   //!< The connection with service consumer is lost.
         , ReasonConsumerNotSupported    = 256   //!< The service consumer is rejected because is not supported (wrong version, for example).
         , ReasonSystemShutdown          = 512   //!< The system is shutting down.
+        , ReasonClientConnectionLost    = 1024  //!< The system lost connection with the client. General reason.
+        , ReasonClientConnectionClosed  = 2048  //!< The client requested to disconnect. General reason.
     } eDisconnectReason;
 
     inline const char * getString( NEService::eDisconnectReason reason );
@@ -1126,19 +1128,21 @@ inline NEService::eServiceConnection NEService::serviceConnection( NEService::eD
     case NEService::eDisconnectReason::ReasonUndefined:
         return NEService::eServiceConnection::ServiceConnectionUnknown;
     
-    case NEService::eDisconnectReason::ReasonRouterDisconnected:
-    case NEService::eDisconnectReason::ReasonRouterLost:
+    case NEService::eDisconnectReason::ReasonServiceDisconnected:
+    case NEService::eDisconnectReason::ReasonServiceLost:
     case NEService::eDisconnectReason::ReasonProviderLost:
     case NEService::eDisconnectReason::ReasonConsumerLost:
+    case NEService::eDisconnectReason::ReasonClientConnectionLost:
         return NEService::eServiceConnection::ServiceConnectionLost;
 
-    case NEService::eDisconnectReason::ReasonRouterRejected:
+    case NEService::eDisconnectReason::ReasonServiceRejected:
     case NEService::eDisconnectReason::ReasonProviderRejected:
-    case NEService::eDisconnectReason::ReasonConsumerDisconnected:
     case NEService::eDisconnectReason::ReasonConsumerNotSupported:
         return NEService::eServiceConnection::ServiceRejected;
 
+    case NEService::eDisconnectReason::ReasonConsumerDisconnected:
     case NEService::eDisconnectReason::ReasonProviderDisconnected:
+    case NEService::eDisconnectReason::ReasonClientConnectionClosed:
         return NEService::eServiceConnection::ServiceDisconnected;
 
     case NEService::eDisconnectReason::ReasonSystemShutdown:
@@ -1495,12 +1499,12 @@ inline const char * NEService::getString( NEService::eDisconnectReason reason )
     {
     case NEService::eDisconnectReason::ReasonUndefined:
         return "NEService::eDisconnectReason::ReasonUndefined";
-    case NEService::eDisconnectReason::ReasonRouterDisconnected:
-        return "NEService::eDisconnectReason::ReasonRouterDisconnected";
-    case NEService::eDisconnectReason::ReasonRouterLost:
-        return "NEService::eDisconnectReason::ReasonRouterLost";
-    case NEService::eDisconnectReason::ReasonRouterRejected:
-        return "NEService::eDisconnectReason::ReasonRouterRejected";
+    case NEService::eDisconnectReason::ReasonServiceDisconnected:
+        return "NEService::eDisconnectReason::ReasonServiceDisconnected";
+    case NEService::eDisconnectReason::ReasonServiceLost:
+        return "NEService::eDisconnectReason::ReasonServiceLost";
+    case NEService::eDisconnectReason::ReasonServiceRejected:
+        return "NEService::eDisconnectReason::ReasonServiceRejected";
     case NEService::eDisconnectReason::ReasonProviderDisconnected:
         return "NEService::eDisconnectReason::ReasonProviderDisconnected";
     case NEService::eDisconnectReason::ReasonProviderLost:
@@ -1515,6 +1519,10 @@ inline const char * NEService::getString( NEService::eDisconnectReason reason )
         return "NEService::eDisconnectReason::ReasonConsumerNotSupported";
     case NEService::eDisconnectReason::ReasonSystemShutdown:
         return "NEService::eDisconnectReason::ReasonSystemShutdown";
+    case NEService::eDisconnectReason::ReasonClientConnectionLost:
+        return "NEService::eDisconnectReason::ReasonClientConnectionLost";
+    case NEService::eDisconnectReason::ReasonClientConnectionClosed:
+        return "NEService::eDisconnectReason::ReasonClientConnectionClosed";
     default:
         ASSERT( false );
         return "ERR: Undefined NEService::eDisconnectReason value!";

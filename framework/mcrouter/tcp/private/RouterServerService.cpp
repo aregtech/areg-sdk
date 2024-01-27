@@ -245,12 +245,12 @@ void RouterServerService::disconnectServices(void)
 
     for ( uint32_t i = 0; i < stubList.getSize(); ++ i )
     {
-        unregisteredRemoteServiceProvider( stubList[i], NEService::eDisconnectReason::ReasonRouterDisconnected, NEService::COOKIE_ANY );
+        unregisteredRemoteServiceProvider( stubList[i], NEService::eDisconnectReason::ReasonServiceDisconnected, NEService::COOKIE_ANY );
     }
 
     for ( uint32_t i = 0; i < proxyList.getSize(); ++ i )
     {
-        unregisteredRemoteServiceConsumer( proxyList[i], NEService::eDisconnectReason::ReasonRouterDisconnected, NEService::COOKIE_ANY );
+        unregisteredRemoteServiceConsumer( proxyList[i], NEService::eDisconnectReason::ReasonServiceDisconnected, NEService::COOKIE_ANY );
     }
 
     mServiceRegistry.clear( );

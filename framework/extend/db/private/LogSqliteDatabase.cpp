@@ -65,15 +65,15 @@ namespace
     constexpr std::string_view  _sqlCreateTbInstances
     {
         "CREATE TABLE \"instances\" ("
-            "\"cookie_id\"	        INTEGER NOT NULL UNIQUE,"
+            "\"cookie_id\"	        INTEGER NOT NULL,"
+            "\"inst_connect\"       NUMERIC,"
             "\"inst_type\"	        INTEGER,"
             "\"inst_bits\"	        INTEGER,"
             "\"inst_name\"	        TEXT,"
             "\"inst_location\"	    TEXT,"
             "\"time_connected\"     NUMERIC,"
             "\"time_disconnected\"	NUMERIC,"
-            "\"time_updated\"	    NUMERIC,"
-            "CONSTRAINT \"pk_instances\" PRIMARY KEY(\"cookie_id\")"
+            "\"time_updated\"	    NUMERIC"
             ");"
     };
 
@@ -84,9 +84,9 @@ namespace
     constexpr std::string_view _fmtInstance
     {
         "INSERT INTO instances "
-        "(cookie_id, inst_type, inst_bits, inst_name, inst_location, time_connected, time_updated) "
+        "(cookie_id, inst_connect, inst_type, inst_bits, inst_name, inst_location, time_connected, time_updated) "
         "VALUES "
-        "(%llu, %u, %u, \'%s\', \'%s\', %llu, %llu);"
+        "(%llu, 1, %u, %u, \'%s\', \'%s\', %llu, %llu);"
     };
 
     //! A string format to generate UPDATE statement to update instance entry.
@@ -95,14 +95,14 @@ namespace
     //! It updates the disconnect time for the instance with specified cookie ID.
     constexpr std::string_view _fmtUpdInstance
     {
-        "UPDATE instances SET time_disconnected = %llu, time_updated = %llu WHERE cookie_id = %llu AND time_disconnected IS NULL;"
+        "UPDATE instances SET inst_connect = 0, time_disconnected = %llu, time_updated = %llu WHERE cookie_id = %llu AND time_disconnected IS NULL;"
     };
 
     //! A string format to generate UPDATE statement and mark all instances as disconnected.
     //! It is closed before closing database to ensure that all entries are updated.
     constexpr std::string_view _fmCloseInstances
     {
-        "UPDATE instances SET time_disconnected = %llu, time_updated = %llu WHERE time_disconnected IS NULL;"
+        "UPDATE instances SET inst_connect = 0, time_disconnected = %llu, time_updated = %llu WHERE time_disconnected IS NULL;"
     };
 
     //! Create a table with the information about scopes of connected instances.
@@ -120,8 +120,7 @@ namespace
             "\"scope_name\"	        TEXT,"
             "\"time_received\"	    NUMERIC,"
             "\"time_inactivated\"	NUMERIC,"
-            "CONSTRAINT \"u_scope_id\" UNIQUE(\"scope_id\",\"cookie_id\",\"time_received\"),"
-            "FOREIGN KEY(\"cookie_id\") REFERENCES \"instances\"(\"cookie_id\")"
+            "CONSTRAINT \"u_scope_id\" UNIQUE(\"scope_id\", \"cookie_id\", \"time_received\")"
             ");"
     };
 
@@ -169,8 +168,7 @@ namespace
             "\"msg_module\"	        TEXT,"
             "\"time_created\"	    NUMERIC,"
             "\"time_received\"      NUMERIC,"
-            "CONSTRAINT \"pk_msg_id\" PRIMARY KEY(\"id\" AUTOINCREMENT),"
-            "CONSTRAINT \"fk_logs_cookie_id\" FOREIGN KEY(\"cookie_id\") REFERENCES \"instances\"(\"cookie_id\")"
+            "CONSTRAINT \"pk_msg_id\" PRIMARY KEY(\"id\" AUTOINCREMENT)"
             ");"
     };
 
@@ -186,13 +184,13 @@ namespace
     //! A script to create index of the instances table. 
     constexpr std::string_view  _sqlCraeteIdxCookie
     {
-        "CREATE UNIQUE INDEX \"idx_cookies\" ON \"instances\" (\"cookie_id\");"
+        "CREATE UNIQUE INDEX \"idx_inst_cookies\" ON \"instances\" (\"cookie_id\", \"time_connected\", \"time_disconnected\");"
     };
 
     //! A script to create index of the scopes table.
     constexpr std::string_view _sqlCreateIdxScopes
     {
-        "CREATE INDEX \"idx_scopes\" ON \"scopes\" (\"scope_id\", \"cookie_id\");"
+        "CREATE UNIQUE INDEX \"idx_scope_id\" ON \"scopes\" (\"scope_id\", \"cookie_id\", \"time_received\", \"time_inactivated\");"
     };
 
     //! A script to create index of the logs table
@@ -200,6 +198,9 @@ namespace
     {
         "CREATE INDEX \"idx_logs\" ON \"logs\" (\"cookie_id\", \"scope_id\", \"msg_thread_id\"); "
     };
+
+    //! The size of the string buffer to generate a message.
+    constexpr uint32_t  MSG_LEN     { 512 };
 
     //! The size of the string buffer to format SQL scripts
     constexpr uint32_t  SQL_LEN     { 768 };
@@ -297,8 +298,8 @@ inline void LogSqliteDatabase::_initialize(void)
     VERIFY(_execute(sql));
 
     String::formatString(sql, SQL_LEN, _fmtLog.data()
-                        , NEService::COOKIE_LOCAL
-                        , NEMath::CHECKSUM_IGNORE
+                        , static_cast<uint64_t>(NEService::COOKIE_LOCAL)
+                        , static_cast<uint32_t>(NEMath::CHECKSUM_IGNORE)
                         , static_cast<uint32_t>(NETrace::eLogMessageType::LogMessageText)
                         , static_cast<uint32_t>(NETrace::eLogPriority::PrioIgnore)
                         , static_cast<uint64_t>(proc.getId())
@@ -430,8 +431,35 @@ bool LogSqliteDatabase::logMessage(const NETrace::sLogMessage& message, const Da
 
 bool LogSqliteDatabase::logInstanceConnected(const NEService::sServiceConnectedInstance& instance, const DateTime& timestamp)
 {
-    char sql[SQL_LEN];
-    String::formatString( sql, SQL_LEN, _fmtInstance.data()
+    Process& proc{ Process::getInstance() };
+    String module{ proc.getAppName() };
+    id_type threadId{ Thread::getCurrentThreadId() };
+    String thread{ Thread::getThreadName(threadId) };
+
+    char msg[MSG_LEN];
+    String::formatString( msg, MSG_LEN, "The %u-bit instance [ %s ] with cookie [ %llu ] is connected at time [ %s ]"
+                        , static_cast<uint32_t>(instance.ciBitness)
+                        , instance.ciInstance.getString()
+                        , static_cast<uint64_t>(instance.ciCookie)
+                        , timestamp.formatTime().getString());
+
+    char sqlLog[SQL_LEN_MAX];
+    String::formatString( sqlLog, SQL_LEN_MAX, _fmtLog.data()
+                        , static_cast<uint64_t>(NEService::COOKIE_LOCAL)
+                        , static_cast<uint32_t>(NEMath::CHECKSUM_IGNORE)
+                        , static_cast<uint32_t>(NETrace::eLogMessageType::LogMessageText)
+                        , static_cast<uint32_t>(NETrace::eLogPriority::PrioIgnore)
+                        , static_cast<uint64_t>(proc.getId())
+                        , static_cast<uint64_t>(threadId)
+                        , msg
+                        , thread.getString()
+                        , module.getString()
+                        , static_cast<uint64_t>(timestamp.getTime())
+                        , static_cast<uint64_t>(timestamp.getTime())
+                        );
+
+    char sqlInst[SQL_LEN];
+    String::formatString( sqlInst, SQL_LEN, _fmtInstance.data()
                         , static_cast<uint64_t>(instance.ciCookie)
                         , static_cast<uint32_t>(instance.ciSource)
                         , static_cast<uint32_t>(instance.ciBitness)
@@ -440,19 +468,46 @@ bool LogSqliteDatabase::logInstanceConnected(const NEService::sServiceConnectedI
                         , static_cast<uint64_t>(instance.ciTimestamp)
                         , static_cast<uint64_t>(timestamp.getTime())
                         );
-    return _execute(sql);
+
+    return (_execute(sqlLog) && _execute(sqlInst));
 }
 
 bool LogSqliteDatabase::logInstanceDisconnected(const ITEM_ID& cookie, const DateTime& timestamp)
 {
     logScopesDeactivate(cookie, timestamp);
 
-    char sql[SQL_LEN];
-    String::formatString( sql, SQL_LEN, _fmtUpdInstance.data()
+    Process& proc{ Process::getInstance() };
+    String module{ proc.getAppName() };
+    id_type threadId{ Thread::getCurrentThreadId() };
+    String thread{ Thread::getThreadName(threadId) };
+
+    char msg[MSG_LEN];
+    String::formatString( msg, MSG_LEN, "The instance with cookie [ %llu ] is disconnected at time [ %s ]"
+                        , static_cast<uint64_t>(cookie)
+                        , timestamp.formatTime().getString());
+
+    char sqlLog[SQL_LEN_MAX];
+    String::formatString( sqlLog, SQL_LEN_MAX, _fmtLog.data()
+                        , static_cast<uint64_t>(NEService::COOKIE_LOCAL)
+                        , static_cast<uint32_t>(NEMath::CHECKSUM_IGNORE)
+                        , static_cast<uint32_t>(NETrace::eLogMessageType::LogMessageText)
+                        , static_cast<uint32_t>(NETrace::eLogPriority::PrioIgnore)
+                        , static_cast<uint64_t>(proc.getId())
+                        , static_cast<uint64_t>(threadId)
+                        , msg
+                        , thread.getString()
+                        , module.getString()
+                        , static_cast<uint64_t>(timestamp.getTime())
+                        , static_cast<uint64_t>(timestamp.getTime())
+                        );
+
+    char sqlInst[SQL_LEN];
+    String::formatString( sqlInst, SQL_LEN, _fmtUpdInstance.data()
                         , static_cast<uint64_t>(timestamp.getTime())
                         , static_cast<uint64_t>(DateTime::getNow().getTime())
                         , static_cast<uint64_t>(cookie));
-    return _execute(sql);
+
+    return (_execute(sqlLog) && _execute(sqlInst));
 }
 
 bool LogSqliteDatabase::logScopeActivate(const NETrace::sScopeInfo & scope, const ITEM_ID& cookie, const DateTime& timestamp)

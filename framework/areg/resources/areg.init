@@ -123,7 +123,6 @@ log::*::remote::service     = logger                        # The service name o
 # ---------------------------------------------------------------------------
 log::*::db::name            =                               # The database name
 log::*::db::location        =                               # Database location
-log::*::db::append          =                               # Append logs
 log::*::db::driver          =                               # Database driver
 log::*::db::address         =                               # Database connection IP-address
 log::*::db::port            =                               # Database connection IP-port
@@ -147,17 +146,21 @@ log::logobserver::layout::exit      = %d: [ %a.%x.%t.%z: Exit <-- ]%n   # Exit s
 # ---------------------------------------------------------------------------
 # Log observer specific database logging settings
 # ---------------------------------------------------------------------------
-log::logobserver::enable::db        = true                          # Database logging enable / disable flag
-log::logobserver::db::name          = sqlite3                       # The database name
-log::logobserver::db::location      = ./logs/log_%time%.sqlite3     # Database location
-log::logobserver::db::append        = false                         # Append logs
+log::logobserver::enable::file      = true                          # Logobserver: File logging enable / disable flag
+log::logobserver::enable::db        = true                          # Logobserver: Database logging enable / disable flag
+log::logobserver::db::name          = sqlite3                       # Logobserver: The database name
+log::logobserver::db::location      = ./logs/log_%time%.sqlite3     # Logobserver: Database location
 
 # ---------------------------------------------------------------------------
-# Messaging enable states for the logger
+# Messaging enable states for the logger and mcrouter services.
 # ---------------------------------------------------------------------------
-log::logger::enable::file   = false     # Logger service: do not output log messages in the file
-log::logger::enable::debug  = false     # Logger service: do not output logs in the debug output
-log::logger::enable::db     = false     # Logger service: do not output in the database
+log::logger::enable::file       = false     # Logger service: do not output log messages in the file
+log::logger::enable::debug      = false     # Logger service: do not output logs in the debug output
+log::logger::enable::db         = false     # Logger service: do not output in the database
+log::mcrouter::enable::file     = false     # MC Router: File logging enable / disable flag
+log::mcrouter::enable::db       = false     # MC Router: Database logging enable / disable flag
+log::mcrouter::enable::debug    = false     # MC Router: Debug output console logging enable / disable flag
+log::mcrouter::enable::remote   = true      # MC Router: Remote logging enable / disable flag
 
 # ###########################################################################
 # Remote services

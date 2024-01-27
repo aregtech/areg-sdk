@@ -238,7 +238,7 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
             NEService::eDisconnectReason reason { NEService::eDisconnectReason::ReasonProviderDisconnected };
             if ( cmdService == ServiceManagerEventData::eServiceManagerCommands::CMD_LostConnection )
             {
-                reason = NEService::eDisconnectReason::ReasonRouterLost;
+                reason = NEService::eDisconnectReason::ReasonServiceLost;
             }
 
             for ( uint32_t i = 0; i < stubList.getSize( ); ++i )
