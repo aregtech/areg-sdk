@@ -29,7 +29,7 @@
     </Link>
     <PostBuildEvent>
       <Command>$(AregFrameworkSources)\mcrouter\resources\mcrouter_post_build.bat $(AregFrameworkSources)\mcrouter\resources $(OutDir)</Command>
-      <Message Condition="Exists($(AregFrameworkResources))">Copy mcrouter service installation files to the executable directory</Message>
+      <Message Condition="Exists($(AregFrameworkResources))">Copy mcrouter service installation scripts to the executable directory</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
@@ -76,7 +76,6 @@
     <None Include="mcrouter\resources\mcrouter_uninstall.bat" />
     <None Include="mcrouter\resources\mcrouter_post_build.bat" />
     <None Include="mcrouter\tcp\private\Makefile" />
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="mcrouter\app\private\CMakeLists.txt" />
@@ -85,13 +84,5 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.220531.1\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.220531.1\build\native\Microsoft.Windows.CppWinRT.targets')" />
   </ImportGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.220531.1\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.220531.1\build\native\Microsoft.Windows.CppWinRT.props'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.220531.1\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.220531.1\build\native\Microsoft.Windows.CppWinRT.targets'))" />
-  </Target>
 </Project>

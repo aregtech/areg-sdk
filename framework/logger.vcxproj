@@ -28,7 +28,7 @@
     </Link>
     <PostBuildEvent>
       <Command>$(AregFrameworkSources)\logger\resources\logger_post_build.bat $(AregFrameworkSources)\logger\resources $(OutDir)</Command>
-      <Message Condition="Exists($(AregFrameworkResources))">Copy logger service installation files to the executable directory</Message>
+      <Message Condition="Exists($(AregFrameworkResources))">Copy logger service installation scripts to the executable directory</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
