@@ -27,6 +27,9 @@
  ************************************************************************/
 class ConfigManager;
 
+//////////////////////////////////////////////////////////////////////////
+// IEConfigurationListener interface declaration
+//////////////////////////////////////////////////////////////////////////
 /**
  * \brief   Configuration listener is an object, which methods are triggered
  *          when the application loads, saves or sets default configuration data.

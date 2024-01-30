@@ -24,7 +24,6 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/appbase/NEApplication.hpp"
 
-
 //////////////////////////////////////////////////////////////////////////
 // Global functions, Begin
 //////////////////////////////////////////////////////////////////////////
@@ -33,9 +32,7 @@ int main(int argc, char* argv[], char* envp[])
 {
     int result      = 0;
     MulticastRouter & router = MulticastRouter::getInstance();
-    const char * temp = static_cast<const char *>(*argv);
-    std::pair<const OptionParser::sOptionSetup *, int> opt{ MulticastRouter::getOptionSetup( ) };
-    if ( router.parseOptions( argc, &temp, opt.first, opt.second ) == false )
+    if (router.parseOptions(argc, argv, NESystemService::ServiceOptionSetup, MACRO_ARRAYLEN(NESystemService::ServiceOptionSetup)) == false)
     {
         router.resetDefaultOptions( );
     }
@@ -50,10 +47,14 @@ int main(int argc, char* argv[], char* envp[])
         router.serviceUninstall();
         break;
 
-    case NESystemService::eServiceOption::CMD_Service:
     case NESystemService::eServiceOption::CMD_Console:
+    case NESystemService::eServiceOption::CMD_Service:
         router.setState(NESystemService::eSystemServiceState::ServiceStarting);
         router.serviceMain( static_cast<int>(argc), argv);
+        break;
+
+    case NESystemService::eServiceOption::CMD_Verbose:
+    case NESystemService::eServiceOption::CMD_Help:
         break;
 
     default:
@@ -78,7 +79,7 @@ bool MulticastRouter::_osIsValid( void ) const
 
 bool MulticastRouter::_osRegisterService( void )
 {
-    return false;
+    return true;
 }
 
 

@@ -42,7 +42,7 @@ class Console;
  *          Normally, for every connection channel type there should one instance of 
  *          message routing service also called as Multi-casting router (MCR).
  **/
-class MulticastRouter final : public SystemServiceBase
+class MulticastRouter final : public    SystemServiceBase
 {
 //////////////////////////////////////////////////////////////////////////
 // internal types and constants
@@ -203,6 +203,11 @@ protected:
      * \brief   Triggered if need to run console with simple (not extended) features.
      **/
     virtual void runConsoleInputSimple( void ) override;
+
+    /**
+     * \brief   Run application as a background process without input or output on console. 
+     **/
+    virtual void runService(void) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.

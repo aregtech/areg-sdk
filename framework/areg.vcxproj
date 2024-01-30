@@ -39,10 +39,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="areg\appbase\private\posix\ApplicationPosix.cpp" />
+    <ClCompile Include="areg\appbase\private\posix\NEApplicationPosix.cpp" />
     <ClCompile Include="areg\appbase\private\win32\ApplicationWin32.cpp" />
     <ClCompile Include="areg\appbase\private\configure.cpp" />
     <ClCompile Include="areg\appbase\private\Application.cpp" />
     <ClCompile Include="areg\appbase\private\NEApplication.cpp" />
+    <ClCompile Include="areg\appbase\private\win32\NEApplicationWin32.cpp" />
     <ClCompile Include="areg\base\private\posix\CriticalSectionIX.cpp" />
     <ClCompile Include="areg\base\private\posix\FilePosix.cpp" />
     <ClCompile Include="areg\base\private\posix\MutexIX.cpp" />

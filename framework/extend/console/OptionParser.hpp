@@ -403,6 +403,8 @@ public:
      **/
     bool parseCommandLine( const char ** cmdLine,  int count);
     bool parseCommandLine( const wchar_t ** cmdLine, int count );
+    bool parseCommandLine( char** IN cmdLine, int count);
+    bool parseCommandLine( wchar_t** IN cmdLine, int count);
 
     /**
      * \brief   Parses the string passed as an options separated by space ' '.

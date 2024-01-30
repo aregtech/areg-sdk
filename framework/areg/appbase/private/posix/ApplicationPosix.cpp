@@ -108,22 +108,21 @@ void Application::_osReleaseHandlers(void)
 }
 
 /**
-* \brief   POSIX specific implementation of method.
-**/
-bool Application::_osStartRouterService( void )
+ * \brief   Windows OS specific implementation of method.
+ **/
+bool Application::_osStartLocalService(const wchar_t* serviceName, const wchar_t* serviceExecutable)
 {
-    int pid = _getProcIdByName(NEApplication::DEFAULT_ROUTER_SERVICE_NAME.data());
-    bool result = pid != -1;
+    ASSERT(NEString::isEmpty<wchar_t>(serviceName) == false);
+    ASSERT(NEString::isEmpty<wchar_t>(serviceExecutable) == false);
+    String serviceExe(serviceExecutable);
+    int pid = _getProcIdByName(serviceExe);
+    bool result{ pid > 0 };
     if (pid < 0)
     {
-        constexpr char const argv0[] { "--console" };
-        
-        String fileName = String::getEmptyString();
-        fileName.append(Process::getInstance().getPath())
-                .append( File::PATH_SEPARATOR )
-                .append(NEApplication::DEFAULT_ROUTER_SERVICE_NAME);
-
-        result = execl(fileName.getString(), fileName.getString(), argv0, nullptr) > 0;
+        constexpr std::string_view fmt { "systemctl start %s" };
+        char cmd[512];
+        String::formatString(cmd, 512, fmt.data(), serviceName);
+        result = std::system(cmd);
     }
 
     return result;

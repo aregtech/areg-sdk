@@ -38,9 +38,9 @@
 Application Application::_theApplication;
 
 Application::Application(void)
-    : mSetup        ( false )
+    : mAppState     ( NEApplication::eApplicationState::AppStateStopped )
+    , mSetup        ( false )
     , mConfigManager( )
-    , mAppState     ( Application::eAppState::AppStateStopped )
     , mAppQuit      (false, false)
     , mLock         ( )
     , mStorage      ( )
@@ -53,16 +53,16 @@ void Application::initApplication(  bool startTracing   /*= true */
                                   , bool startTimer     /*= true */
                                   , bool startWatchdog  /*= true */
                                   , const char * configFile /*= NEApplication::DEFAULT_CONFIG_FILE */
-                                  , IEConfigurationListener* listener /*= nullptr*/)
+                                  , IEConfigurationListener* configListener /*= nullptr*/)
 {
     OUTPUT_DBG("Going to initialize application");
-    Application::_setAppState(Application::eAppState::AppStateInitializing);
 
+    Application::_setAppState(NEApplication::eApplicationState::AppStateInitializing);
     Application::_osSetupHandlers();
     Application::setWorkingDirectory( nullptr );
     startTimer = startTimer == false ? startServicing : startTimer;
 
-    Application::loadConfiguration(NEString::isEmpty(configFile) ? NEApplication::DEFAULT_CONFIG_FILE.data() : configFile, listener);
+    Application::loadConfiguration(NEString::isEmpty(configFile) ? NEApplication::DEFAULT_CONFIG_FILE.data() : configFile, configListener);
 
     if (startTracing)
     {
@@ -87,15 +87,15 @@ void Application::initApplication(  bool startTracing   /*= true */
         Application::startServiceManager();
     }
 
-    if ( startRouting )
+    if (startRouting)
     {
         OUTPUT_DBG("Starting message router TCP/IP client connection");
-        Application::startMessageRouting( static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectTcpip) );
+        Application::startMessageRouting(static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectTcpip));
     }
 
-    if (Application::getInstance().mAppState == Application::eAppState::AppStateInitializing)
+    if (Application::getInstance().mAppState == NEApplication::eApplicationState::AppStateInitializing)
     {
-        Application::_setAppState(Application::eAppState::AppStateReady);
+        Application::_setAppState(NEApplication::eApplicationState::AppStateReady);
     }
 
     Application::getInstance().mAppQuit.resetEvent();
@@ -103,7 +103,7 @@ void Application::initApplication(  bool startTracing   /*= true */
 
 void Application::releaseApplication(void)
 {
-    Application::_setAppState(Application::eAppState::AppStateReleasing);
+    Application::_setAppState(NEApplication::eApplicationState::AppStateReleasing);
 
     WatchdogManager::stopWatchdogManager(false);
     TimerManager::stopTimerManager(false);
@@ -117,7 +117,7 @@ void Application::releaseApplication(void)
     ServiceManager::_waitServiceManager();
     NETrace::waitLoggingEnd();
 
-    Application::_setAppState(Application::eAppState::AppStateStopped);
+    Application::_setAppState(NEApplication::eApplicationState::AppStateStopped);
     Application::_osReleaseHandlers();
 }
 
@@ -223,19 +223,19 @@ bool Application::isTracerConfigured(void)
 
 void Application::stopServiceManager( void )
 {
-    Application::_setAppState(Application::eAppState::AppStateReleasing);
+    Application::_setAppState(NEApplication::eApplicationState::AppStateReleasing);
     
     if ( ServiceManager::isServiceManagerStarted() )
     {
         ServiceManager::_stopServiceManager(true);
     }
     
-    Application::_setAppState(Application::eAppState::AppStateStopped);
+    Application::_setAppState(NEApplication::eApplicationState::AppStateStopped);
 }
 
 bool Application::startServiceManager( void )
 {
-    Application::_setAppState(Application::eAppState::AppStateInitializing);
+    Application::_setAppState(NEApplication::eApplicationState::AppStateInitializing);
 
     bool result = false;
 
@@ -246,18 +246,18 @@ bool Application::startServiceManager( void )
             Application::startTimerManager();
             Application::startWatchdogManager();
             result = true;
-            Application::_setAppState(Application::eAppState::AppStateReady);
+            Application::_setAppState(NEApplication::eApplicationState::AppStateReady);
         }
         else
         {
             OUTPUT_ERR("Failed to start service manager!");
-            Application::_setAppState(Application::eAppState::AppStateFailure);
+            Application::_setAppState(NEApplication::eApplicationState::AppStateFailure);
         }
     }
     else
     {
         result = true;
-        Application::_setAppState(Application::eAppState::AppStateReady);
+        Application::_setAppState(NEApplication::eApplicationState::AppStateReady);
 
         OUTPUT_INFO("The service manager has been started, ignoring to start service manager");
     }
@@ -338,7 +338,12 @@ bool Application::isMessageRoutingConfigured(void)
 
 bool Application::startRouterService(void)
 {
-    return Application::_osStartRouterService();
+    return Application::_osStartLocalService(NEApplication::ROUTER_SERVICE_NAME_WIDE, NEApplication::ROUTER_SERVICE_EXECUTABLE_WIDE);
+}
+
+bool Application::startLoggingService(void)
+{
+    return Application::_osStartLocalService(NEApplication::LOGGER_SERVICE_NAME_WIDE, NEApplication::LOGGER_SERVICE_EXECUTABLE_WIDE);
 }
 
 bool Application::isElementStored( const String & elemName )
@@ -389,7 +394,7 @@ void Application::signalAppQuit(void)
 bool Application::isServicingReady(void)
 {
     Application & theApp = Application::getInstance();
-    return (theApp.mAppState == Application::eAppState::AppStateReady);
+    return (theApp.mAppState == NEApplication::eApplicationState::AppStateReady);
 }
 
 void Application::queryCommunicationData( unsigned int & OUT sizeSend, unsigned int & OUT sizeReceive )
@@ -460,40 +465,40 @@ bool Application::isConfigured(void)
     return Application::getInstance().mConfigManager.isConfigured();;
 }
 
-bool Application::_setAppState(eAppState newState)
+bool Application::_setAppState(NEApplication::eApplicationState newState)
 {
     bool result = false;
     Application & theApp = Application::getInstance();
     switch (theApp.mAppState)
     {
-    case Application::eAppState::AppStateStopped:
-        if (newState == Application::eAppState::AppStateInitializing)
+    case NEApplication::eApplicationState::AppStateStopped:
+        if (newState == NEApplication::eApplicationState::AppStateInitializing)
         {
-            theApp.mAppState = Application::eAppState::AppStateInitializing;
+            theApp.mAppState = NEApplication::eApplicationState::AppStateInitializing;
             result = true;
         }
         break;
 
-    case Application::eAppState::AppStateInitializing:
-        if (newState == Application::eAppState::AppStateReady)
+    case NEApplication::eApplicationState::AppStateInitializing:
+        if (newState == NEApplication::eApplicationState::AppStateReady)
         {
-            theApp.mAppState = Application::eAppState::AppStateReady;
+            theApp.mAppState = NEApplication::eApplicationState::AppStateReady;
             result = true;
         }
         break;
 
-    case Application::eAppState::AppStateReady:
-        if (newState == Application::eAppState::AppStateReleasing)
+    case NEApplication::eApplicationState::AppStateReady:
+        if (newState == NEApplication::eApplicationState::AppStateReleasing)
         {
-            theApp.mAppState = Application::eAppState::AppStateReleasing;
+            theApp.mAppState = NEApplication::eApplicationState::AppStateReleasing;
             result = true;
         }
         break;
 
-    case Application::eAppState::AppStateReleasing:
-        if (newState == Application::eAppState::AppStateStopped)
+    case NEApplication::eApplicationState::AppStateReleasing:
+        if (newState == NEApplication::eApplicationState::AppStateStopped)
         {
-            theApp.mAppState = Application::eAppState::AppStateStopped;
+            theApp.mAppState = NEApplication::eApplicationState::AppStateStopped;
             result = true;
         }
         break;

@@ -36,6 +36,22 @@ namespace
     }
 
     template<typename CharType>
+    inline void _convertArguments(CharType** argv, int argc, OptionParser::StrList& optList)
+    {
+        if ((argv != nullptr) && (argc > 1))
+        {
+            for (int i = 1; i < static_cast<int>(argc); ++i)
+            {
+                const CharType* opt = argv[i];
+                if (NEString::isEmpty<CharType>(opt))
+                    break;
+
+                optList.push_back(String(opt));
+            }
+        }
+    }
+
+    template<typename CharType>
     inline bool isSpace(CharType ch)
     {
         constexpr CharType space{ ' ' };
@@ -270,6 +286,20 @@ bool OptionParser::parseCommandLine( const wchar_t ** cmdLine, int count )
     StrList optList;
     _convertArguments<wchar_t>( cmdLine, count, optList );
     return parseOptions( optList );
+}
+
+bool OptionParser::parseCommandLine(char** cmdLine, int count)
+{
+    StrList optList;
+    _convertArguments<char>(cmdLine, count, optList);
+    return parseOptions(optList);
+}
+
+bool OptionParser::parseCommandLine(wchar_t** cmdLine, int count)
+{
+    StrList optList;
+    _convertArguments<wchar_t>(cmdLine, count, optList);
+    return parseOptions(optList);
 }
 
 bool OptionParser::parseOptionLine( const char * optLine )

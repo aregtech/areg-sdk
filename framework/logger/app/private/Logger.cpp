@@ -18,14 +18,10 @@
 
 #include "areg/appbase/Application.hpp"
 #include "areg/appbase/NEApplication.hpp"
-#include "areg/base/File.hpp"
-#include "areg/base/NEUtilities.hpp"
+#include "areg/component/ComponentLoader.hpp"
 #include "areg/base/Process.hpp"
 #include "areg/base/String.hpp"
-#include "areg/component/ComponentLoader.hpp"
-#include "areg/persist/ConfigManager.hpp"
 #include "areg/trace/GETrace.h"
-#include "areg/trace/NETrace.hpp"
 
 #include "extend/console/Console.hpp"
 
@@ -148,6 +144,7 @@ void Logger::printStatus(const String& status)
 Logger::Logger( void )
     : SystemServiceBase         ( mServiceServer )
     , IEConfigurationListener   ( )
+
     , mServiceServer            ( )
 {
 }
@@ -213,6 +210,11 @@ void Logger::runConsoleInputSimple( void )
     } while ( quit == false );
 }
 
+void Logger::runService(void)
+{
+    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+}
+
 void Logger::prepareSaveConfiguration(ConfigManager& config)
 {
 }
@@ -238,9 +240,14 @@ void Logger::onSetupConfiguration(const NEPersistence::ListProperties& listReado
 void Logger::serviceMain( int argc, char ** argv )
 {
     // Start only tracing and timer manager.
-    Application::initApplication(true, true, false, true, false, NEApplication::DEFAULT_CONFIG_FILE.data(), static_cast<IEConfigurationListener *>(&self()));
+    Application::initApplication( true
+                                , true
+                                , false
+                                , true
+                                , false
+                                , NEApplication::DEFAULT_CONFIG_FILE.data()
+                                , static_cast<IEConfigurationListener *>(&self()));
     SystemServiceBase::serviceMain( argc, argv );
-    setState(NESystemService::eSystemServiceState::ServiceStopped);
     mServiceServer.waitToComplete( );
     Application::releaseApplication( );
 }

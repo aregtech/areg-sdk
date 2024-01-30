@@ -59,11 +59,30 @@ public:
 /************************************************************************/
 
     /**
-     * \brief   Parses the options and returns true if succeeded.
+     * \brief   Parses the NESystemService::eServiceOption options passed
+     *          in the command line and returns true if succeeded.
+     *          Override and implement this method if the options differ than
+     *          NESystemService::eServiceOption
      * \param   argc    The number of options to parse.
      * \param   argv    The options to parse.
-     */
+     * \return  Returns true if succeeded to parse command line options,
+     *          found no failure and the application can continue working.
+     *          To interrupt the application, return false.
+     **/
     virtual bool parseOptions( int argc, const char ** argv, const OptionParser::sOptionSetup * optSetup, int optCount );
+    virtual bool parseOptions( int argc, char** argv, const OptionParser::sOptionSetup* optSetup, int optCount);
+
+    /**
+     * \brief   Checks the listed options and prepares to dispatch.
+     *          In case of failure or request to display manual, prints the
+     *          help to use command line options properly.
+     *          Override the method if need extra checkups or preparations.
+     * \param   opts    The list of options. By default, they are
+     *                  type of NESystemService::eServiceOption.
+     * \return  Returns true if found no failure and the application can continue working.
+     *          To interrupt the application, return false.
+     **/
+    virtual bool prepareOptions(const OptionParser::InputOptionList& opts);
 
     /**
      * \brief   Called from main to start execution of  message router service.
@@ -200,6 +219,11 @@ protected:
      * \brief   Triggered if need to run console with simple (not extended) features.
      **/
     virtual void runConsoleInputSimple( void ) = 0;
+
+    /**
+     * \brief   Run application as a background process without input or output on console.
+     **/
+    virtual void runService(void) = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables.

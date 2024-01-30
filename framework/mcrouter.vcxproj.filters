@@ -69,6 +69,12 @@
     <None Include="mcrouter\Makefile" />
     <None Include="mcrouter\app\private\Makefile" />
     <None Include="mcrouter\tcp\private\Makefile" />
+    <None Include="mcrouter\resources\Readme.md">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="mcrouter\resources\mcrouter.service">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mcrouter\app\private\MulticastRouter.cpp">

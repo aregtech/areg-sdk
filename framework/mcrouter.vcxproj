@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.220531.1\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.220531.1\build\native\Microsoft.Windows.CppWinRT.props')" />
   <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
     <Import Project="$(SolutionDir)\msvc_setup.props" />
   </ImportGroup>
@@ -28,7 +29,7 @@
     </Link>
     <PostBuildEvent>
       <Command>$(AregFrameworkSources)\mcrouter\resources\mcrouter_post_build.bat $(AregFrameworkSources)\mcrouter\resources $(OutDir)</Command>
-      <Message Condition="Exists($(AregFrameworkResources))">Copy mcrouter service installation files to the executable directory</Message>
+      <Message Condition="Exists($(AregFrameworkResources))">Copy mcrouter service installation scripts to the executable directory</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
@@ -67,7 +68,9 @@
     <None Include="mcrouter\app\private\Makefile" />
     <None Include="mcrouter\Makefile" />
     <None Include="mcrouter\Readme.md" />
+    <None Include="mcrouter\resources\mcrouter.service" />
     <None Include="mcrouter\resources\mcrouter.ico" />
+    <None Include="mcrouter\resources\Readme.md" />
     <None Include="mcrouter\resources\small.ico" />
     <None Include="mcrouter\resources\mcrouter_install.bat" />
     <None Include="mcrouter\resources\mcrouter_uninstall.bat" />

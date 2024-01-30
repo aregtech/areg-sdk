@@ -41,31 +41,51 @@ namespace NEApplication
 
     /**
      * \brief   NEApplication::ROUTER_SERVICE_NAME_ASCII
-     *          ASCII version of service interface router service name:
-     *          "AREG TCP/IP connection Message Multicast Router Service"
+     *          ASCII version of router service name.
      **/
     extern AREG_API char        ROUTER_SERVICE_NAME_ASCII[];
 
     /**
      * \brief   NEApplication::ROUTER_SERVICE_NAME_WIDE
-     *          Unicode version of service interface router service name:
-     *          L"AREG TCP/IP connection Message Multicast Router Service"
+     *          Unicode version of router service name.
      **/
     extern AREG_API wchar_t     ROUTER_SERVICE_NAME_WIDE[];
 
     /**
+     * \brief   NEApplication::ROUTER_SERVICE_EXECUTABLE_ASCII
+     *          ASCII version of router service executable.
+     **/
+    extern AREG_API char        ROUTER_SERVICE_EXECUTABLE_ASCII[];
+
+    /**
+     * \brief   NEApplication::ROUTER_SERVICE_EXECUTABLE_WIDE
+     *          Unicode version of router service executable.
+     **/
+    extern AREG_API wchar_t     ROUTER_SERVICE_EXECUTABLE_WIDE[];
+
+    /**
      * \brief   NEApplication::LOGGER_SERVICE_NAME_ASCII
-     *          ASCII version of service interface logger service name:
-     *          "AREG TCP/IP Logs collection Service"
+     *          ASCII version of logger service name.
      **/
     extern AREG_API char        LOGGER_SERVICE_NAME_ASCII[];
 
     /**
      * \brief   NEApplication::LOGGER_SERVICE_NAME_WIDE
-     *          Unicode version of service interface logger service name:
-     *          L"AREG TCP/IP Log collection Service"
+     *          Unicode version of logger service name.
      **/
     extern AREG_API wchar_t     LOGGER_SERVICE_NAME_WIDE[];
+
+    /**
+     * \brief   NEApplication::LOGGER_SERVICE_EXECUTABLE_ASCII
+     *          ASCII version of logger service executable.
+     **/
+    extern AREG_API char        LOGGER_SERVICE_EXECUTABLE_ASCII[];
+
+    /**
+     * \brief   NEApplication::LOGGER_SERVICE_EXECUTABLE_WIDE
+     *          Unicode version of logger service executable.
+     **/
+    extern AREG_API wchar_t     LOGGER_SERVICE_EXECUTABLE_WIDE[];
 
     /**
      * \brief   NEApplication::DEFAULT_ROUTER_SERVICE_NAME
@@ -291,6 +311,25 @@ namespace NEApplication
      *          The list of logging priority type identifiers to convert to string or NETrace::eLogPriority types
      **/
     extern AREG_API const std::vector<Identifier> LogScopePriorityIndentifiers;
+
+    /**
+     * \brief   NEApplication::eApplicationState
+     *          Describes the application states.
+     *          -   Initially, the application is in undefined state.
+     *          -   The application is in initialization state, when Service Manager did not started yet and it
+     *              initializes any module like tracing, timer, etc.
+     *          -   Application is in ready state only when Service Manager is started.
+     *          -   Application is in release state when it is going to stop Service Manager.
+     **/
+    typedef enum class E_AppState
+    {
+          AppStateStopped       //!< Application state is undefined
+        , AppStateInitializing  //!< Application is initializing
+        , AppStateReady         //!< Application is ready. The application is ready only when Service Manager runs.
+        , AppStateReleasing     //!< Application is releasing.
+        , AppStateFailure       //!< Application is failure state and cannot be continued
+    } eApplicationState;
+
 }
 
 #endif // AREG_APPBASE_NEAPPLICATION_HPP
