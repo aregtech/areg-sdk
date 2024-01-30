@@ -4,7 +4,7 @@ StartLimitIntervalSec=1
 
 [Service]
 # Set the full path to logger.out file and start with option '--service'
-ExecStart=/mnt/c/projects/areg-sdk/product/build/gnu-g++/linux-64-x86_64-debug-shared/bin/logger.out --service
+ExecStart=/usr/local/bin/logger.out --service
 Type=simple
 Restart=on-failure
 RestartSec=1
