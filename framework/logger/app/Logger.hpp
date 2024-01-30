@@ -19,8 +19,8 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "extend/service/SystemServiceBase.hpp"
 #include "areg/persist/IEConfigurationListener.hpp"
+#include "extend/service/SystemServiceBase.hpp"
 
 #include "areg/base/SynchObjects.hpp"
 #include "logger/app/NELoggerSettings.hpp"
@@ -213,6 +213,11 @@ protected:
      * \brief   Triggered if need to run console with simple (not extended) features.
      **/
     virtual void runConsoleInputSimple( void ) override;
+
+    /**
+     * \brief   Run application as a background process without input or output on console. 
+     **/
+    virtual void runService(void) override;
 
 /************************************************************************/
 // IEConfigurationListener protected overrides

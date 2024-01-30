@@ -12,35 +12,12 @@
  * \author      Artak Avetyan
  * \brief       AREG Platform, Application global namespace and configurations
  ************************************************************************/
- /************************************************************************
-  * Include files.
-  ************************************************************************/
+/************************************************************************
+ * Include files.
+ ************************************************************************/
 #include "areg/appbase/NEApplication.hpp"
 
-/**
- * "AREG TCP/IP connection Message Multicast Router Service"
- **/
-AREG_API_IMPL char NEApplication::ROUTER_SERVICE_NAME_ASCII[]    { "AREG TCP/IP connection Message Multicast Router Service" };
-// { 'A', 'R', 'E', 'G', ' ', 'T', 'C', 'P', '/', 'I', 'P', ' ', 'c', 'o', 'n', 'n', 'e', 'c', 't', 'i', 'o', 'n', ' ', 'M', 'e', 's', 's', 'a', 'g', 'e', ' ', 'M', 'u', 'l', 't', 'i', 'c', 'a', 's', 't', ' ', 'R', 'o', 'u', 't', 'e', 'r', ' ', 'S', 'e', 'r', 'v', 'i', 'c', 'e', '\0' };
-
-/**
- * L"AREG TCP/IP connection Message Multicast Router Service"
- **/
-AREG_API_IMPL wchar_t NEApplication::ROUTER_SERVICE_NAME_WIDE[]  { L"AREG TCP/IP connection Message Multicast Router Service" };
-// { 'A', 'R', 'E', 'G', ' ', 'T', 'C', 'P', '/', 'I', 'P', ' ', 'c', 'o', 'n', 'n', 'e', 'c', 't', 'i', 'o', 'n', ' ', 'M', 'e', 's', 's', 'a', 'g', 'e', ' ', 'M', 'u', 'l', 't', 'i', 'c', 'a', 's', 't', ' ', 'R', 'o', 'u', 't', 'e', 'r', ' ', 'S', 'e', 'r', 'v', 'i', 'c', 'e', '\0' };
-
-/**
- * "AREG TCP/IP Logs collection Service"
- **/
-AREG_API_IMPL char NEApplication::LOGGER_SERVICE_NAME_ASCII[]    { "AREG TCP/IP TCP/IP Logs collection Service" };
-// { 'A', 'R', 'E', 'G', ' ', 'T', 'C', 'P', '/', 'I', 'P', ' ', 'L', 'o', 'g', 's', ' ', 'c', 'o', 'l', 'l', 'e', 'c', 't', 'i', 'o', 'n', ' ', 'S', 'e', 'r', 'v', 'i', 'c', 'e', '\0' };
-
-/**
- * L"AREG TCP/IP Logs collection Service"
- **/
-AREG_API_IMPL wchar_t NEApplication::LOGGER_SERVICE_NAME_WIDE[]  { L"AREG TCP/IP TCP/IP Logs collection Service" };
-// { 'A', 'R', 'E', 'G', ' ', 'T', 'C', 'P', '/', 'I', 'P', ' ', 'L', 'o', 'g', 's', ' ', 'c', 'o', 'l', 'l', 'e', 'c', 't', 'i', 'o', 'n', ' ', 'S', 'e', 'r', 'v', 'i', 'c', 'e', '\0' };
-
+//! Logging type identifiers
 AREG_API_IMPL const std::vector<Identifier>     NEApplication::LogTypeIdentifiers =
 {
       {static_cast<unsigned int>(NETrace::eLogingTypes::LogTypeUndefined)               , NEApplication::DefaultLogTypes[0].ltIdName        }
@@ -50,6 +27,7 @@ AREG_API_IMPL const std::vector<Identifier>     NEApplication::LogTypeIdentifier
     , {static_cast<unsigned int>(NETrace::eLogingTypes::LogTypeDatabase)                , NEApplication::DefaultLogTypes[4].ltIdName        }
 };
 
+//! Connection type identifiers
 AREG_API_IMPL const std::vector<Identifier>   NEApplication::ConnectionIdentifiers
 {
       { static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectUndefined)  , NEApplication::DefaultConnections[0].ltIdName     }
@@ -59,6 +37,7 @@ AREG_API_IMPL const std::vector<Identifier>   NEApplication::ConnectionIdentifie
     , { static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectSM)         , NEApplication::DefaultConnections[4].ltIdName     }
 };
 
+//! Remote service identifiers
 AREG_API_IMPL const std::vector<Identifier>   NEApplication::RemoteServiceIdentifiers
 {
       { static_cast<unsigned int>(NERemoteService::eRemoteServices::ServiceUnknown)     , NEApplication::DefaultRemotetServices[0].ltIdName }
@@ -66,6 +45,7 @@ AREG_API_IMPL const std::vector<Identifier>   NEApplication::RemoteServiceIdenti
     , { static_cast<unsigned int>(NERemoteService::eRemoteServices::ServiceLogger)      , NEApplication::DefaultRemotetServices[2].ltIdName }
 };
 
+//! Log priority identifiers
 AREG_API_IMPL const std::vector<Identifier>   NEApplication::LogScopePriorityIndentifiers
 {
       { static_cast<unsigned int>(NETrace::eLogPriority::PrioInvalid)                   , NETrace::PRIO_NO_PRIO                             }

@@ -36,22 +36,23 @@ void Application::_osReleaseHandlers(void)
 /**
  * \brief   Windows OS specific implementation of method.
  **/
-bool Application::_osStartRouterService( void )
+bool Application::_osStartLocalService(const wchar_t* serviceName, const wchar_t* /*serviceExecutable*/)
 {
+    ASSERT(NEString::isEmpty<wchar_t>(serviceName) == false);
     bool result = false;
 
     DWORD rights = SC_MANAGER_CONNECT | SC_MANAGER_ENUMERATE_SERVICE | SC_MANAGER_QUERY_LOCK_STATUS | STANDARD_RIGHTS_READ;
-    SC_HANDLE SeMHandle = ::OpenSCManager( nullptr, nullptr, rights );
-    if ( SeMHandle != nullptr )
+    SC_HANDLE SeMHandle = ::OpenSCManager(nullptr, nullptr, rights);
+    if (SeMHandle != nullptr)
     {
-        rights = SERVICE_PAUSE_CONTINUE | SERVICE_QUERY_STATUS | SERVICE_START | SERVICE_STOP;
-        SC_HANDLE SvcHandle = ::OpenService( SeMHandle, NEApplication::ROUTER_SERVICE_NAME_WIDE, rights );
-        if ( SvcHandle != nullptr )
+        rights = SERVICE_PAUSE_CONTINUE | SERVICE_QUERY_STATUS | SERVICE_START;
+        SC_HANDLE SvcHandle = ::OpenService(SeMHandle, serviceName, rights);
+        if (SvcHandle != nullptr)
         {
             SERVICE_STATUS serviceStatus = { 0 };
-            if ( ::QueryServiceStatus( SvcHandle, &serviceStatus ) )
+            if (::QueryServiceStatus(SvcHandle, &serviceStatus))
             {
-                switch ( serviceStatus.dwCurrentState )
+                switch (serviceStatus.dwCurrentState)
                 {
                     /*nothing to do*/
                 case SERVICE_CONTINUE_PENDING:  // fall through
@@ -63,13 +64,13 @@ bool Application::_osStartRouterService( void )
                     /*service was paused*/
                 case SERVICE_PAUSE_PENDING:
                 case SERVICE_PAUSED:
-                    result = ::ControlService( SvcHandle, SERVICE_CONTROL_CONTINUE, &serviceStatus ) != FALSE;
+                    result = ::ControlService(SvcHandle, SERVICE_CONTROL_CONTINUE, &serviceStatus) != FALSE;
                     break;
 
                     /*service not running*/
                 case SERVICE_STOP_PENDING:
                 case SERVICE_STOPPED:
-                    result = ::StartService( SvcHandle, 0, nullptr ) != FALSE;
+                    result = ::StartService(SvcHandle, 0, nullptr) != FALSE;
                     break;
 
                     /*in all other cases*/
@@ -78,12 +79,13 @@ bool Application::_osStartRouterService( void )
                 }
             }
 
-            ::CloseServiceHandle( SvcHandle );
+            ::CloseServiceHandle(SvcHandle);
         }
 
-        ::CloseServiceHandle( SeMHandle );
+        ::CloseServiceHandle(SeMHandle);
     }
 
     return result;
 }
+
 #endif // _WINDOWS

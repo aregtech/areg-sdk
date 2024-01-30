@@ -1,5 +1,5 @@
-#ifndef AREG_APPBASE_CEAPPLICATION_HPP
-#define AREG_APPBASE_CEAPPLICATION_HPP
+#ifndef AREG_APPBASE_APPLICATION_HPP
+#define AREG_APPBASE_APPLICATION_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -65,24 +65,6 @@ class AREG_API Application
 public:
 
     /**
-     * \brief   Application::eAppState
-     *          Describes the application states.
-     *          -   Initially, the application is in undefined state.
-     *          -   The application is in initialization state, when Service Manager did not started yet and it
-     *              initializes any module like tracing, timer, etc.
-     *          -   Application is in ready state only when Service Manager is started.
-     *          -   Application is in release state when it is going to stop Service Manager.
-     **/
-    typedef enum class E_AppState
-    {
-          AppStateStopped       //!< Application state is undefined
-        , AppStateInitializing  //!< Application is initializing
-        , AppStateReady         //!< Application is ready. The application is ready only when Service Manager runs.
-        , AppStateReleasing     //!< Application is releasing.
-        , AppStateFailure       //!< Application is failure state and cannot be continued
-    } eAppState;
-
-    /**
      * \brief   Call to initialize application and start main services. If necessary, point the service config file path.
      *          The system ignores requests to start service if it is already running.
      *
@@ -91,10 +73,13 @@ public:
      * \param   startRouting    If true, application starts multi-cast router client and Service Manager (if not started).
      * \param   startTimer      If true, application starts timer manager. If Service Managers, Timer Manager automatically starts.
      * \param   startWatchdog   If true, application starts watchdog manager, so that it can track the component threads.
-     * \param   configFile      If nullptr or empty, configures Tracing from specified file. Default location is './config/areg.init' (NEApplication::DEFAULT_CONFIG_FILE)
-     * \param   listener        A pointer to the configuration listener. If the pointer is valid, the listener is notified before and after loading configuration,
-     *                          as well as if loading configuration fails and the default configuration is set.
+     * \param   configFile      If nullptr or empty, configures Tracing from specified file. Default location is 
+     *                          './config/areg.init' (NEApplication::DEFAULT_CONFIG_FILE)
+     * \param   configListener  A pointer to the configuration listener. If the pointer is valid, the listener is notified
+     *                          before and after loading configuration, as well as if loading configuration fails and the 
+     *                          default configuration is set.
      *                          By default, the pointer to listener is null, so that no notification is triggered.
+     *                          
      * \see     release, loadModel
      *
      * \example     Initialize Application
@@ -119,7 +104,7 @@ public:
                                 , bool startTimer     = true
                                 , bool startWatchdog  = false
                                 , const char * configFile = NEApplication::DEFAULT_CONFIG_FILE.data()
-                                , IEConfigurationListener * listener = nullptr);
+                                , IEConfigurationListener * configListener = nullptr);
 
     /**
      * \brief   Call to stop all components, unload models, stop services and release resources.
@@ -290,6 +275,13 @@ public:
     static bool startRouterService( void );
 
     /**
+     * \brief   Call to start routing service on local machine.
+     *          To succeed call, the user must have appropriate access rights.
+     * \return  Returns true if Message Routing Service successfully started as service.
+     **/
+    static bool startLoggingService(void);
+
+    /**
      * \brief   Returns true if application successfully connected to Message Routing Service,
      *          and can register or request remote servicing.
      **/
@@ -412,6 +404,10 @@ public:
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
+     * \brief   The state of application.
+     **/
+    NEApplication::eApplicationState    mAppState;
+    /**
      * \brief   Flag, indicating application basic handling is setup. In Linux setup signal handling.
      */
     bool            mSetup;
@@ -419,10 +415,6 @@ private:
      * \brief   The object to read and save application configuration properties.
      **/
     ConfigManager   mConfigManager;
-    /**
-     * \brief   The state of application.
-     **/
-    eAppState       mAppState;
     /**
      * \brief   Exit application event.
      **/
@@ -471,13 +463,17 @@ private:
      * \param   newState    The new sate of application to set.
      * \return  Returns true if succeeded to change the application state.
      **/
-    static bool _setAppState(eAppState newState);
+    static bool _setAppState(NEApplication::eApplicationState newState);
 
     /**
-     * \brief   Operating system specific implementation to start router service on machine.
-     * \return  Returns true if succeeded to start service.
+     * \brief   The OS specific implementation of start a service.
+     *          If service is not running, the application should have enough access rights
+     *          to start a service. Nothing happens if the service is running.
+     * \param   serviceName         The name of the service to check and if needed to start.
+     * \param   serviceExecutable   The name of the service executable to check.
+     * \return  Returns true, if service is running. Otherwise, returns false.
      **/
-    static bool _osStartRouterService( void );
+    static bool _osStartLocalService( const wchar_t * serviceName, const wchar_t * serviceExecutable );
 
     /**
      * \brief   OS specific implementation to make setups.
@@ -507,4 +503,4 @@ inline Application & Application::getInstance( void )
     return Application::_theApplication;
 }
 
-#endif  // AREG_APPBASE_CEAPPLICATION_HPP
+#endif  // AREG_APPBASE_APPLICATION_HPP

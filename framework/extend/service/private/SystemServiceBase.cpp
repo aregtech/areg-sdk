@@ -46,48 +46,16 @@ bool SystemServiceBase::parseOptions( int argc, const char ** argv, const Option
 {
     bool result{ false };
 
-    if ( argc > 1 )
+    if (argc > 1)
     {
-        bool outHelp{ true };
-        OptionParser parser( optSetup, optCount );
-        if ( parser.parseCommandLine( static_cast<const char **>(argv), argc ) )
+        OptionParser parser(optSetup, optCount);
+        if (parser.parseCommandLine(static_cast<const char**>(argv), argc))
         {
-            outHelp = false;
-            const OptionParser::InputOptionList & opts = parser.getOptions( );
-            for (uint32_t i = 0; i < opts.getSize(); ++i )
-            {
-                const OptionParser::sOption & opt = opts[ i ];
-                switch ( static_cast<NESystemService::eServiceOption>(opt.inCommand) )
-                {
-                case NESystemService::eServiceOption::CMD_Install:
-                case NESystemService::eServiceOption::CMD_Uninstall:
-                case NESystemService::eServiceOption::CMD_Service:
-                case NESystemService::eServiceOption::CMD_Console:
-                    result = true;
-                    setCurrentOption( static_cast<NESystemService::eServiceOption>(opt.inCommand) );
-                    break;
-
-                case NESystemService::eServiceOption::CMD_Verbose:
-                    mCommunication.enableCalculateDataRate(true);
-                    setCurrentOption( NESystemService::eServiceOption::CMD_Console );
-                    result = true;
-                    break;
-
-                case NESystemService::eServiceOption::CMD_Help:
-                    outHelp = true;
-                    break;
-
-                default:
-                    setCurrentOption( NESystemService::eServiceOption::CMD_Undefined );
-                    outHelp = true;
-                    break;
-                }
-            }
+            result = prepareOptions(parser.getOptions());
         }
-
-        if ( outHelp )
+        else
         {
-            printHelp( true );
+            printHelp(true);
             result = false;
         }
     }
@@ -95,6 +63,76 @@ bool SystemServiceBase::parseOptions( int argc, const char ** argv, const Option
     {
         resetDefaultOptions( );
         result = true;
+    }
+
+    return result;
+}
+
+bool SystemServiceBase::parseOptions(int argc, char** argv, const OptionParser::sOptionSetup* optSetup, int optCount)
+{
+    bool result{ false };
+
+    if (argc > 1)
+    {
+        OptionParser parser(optSetup, optCount);
+        if (parser.parseCommandLine(argv, argc))
+        {
+            result = prepareOptions(parser.getOptions());
+        }
+        else
+        {
+            printHelp(true);
+            result = false;
+        }
+    }
+    else if (argc == 1)
+    {
+        resetDefaultOptions();
+        result = true;
+    }
+
+    return result;
+}
+
+bool SystemServiceBase::prepareOptions(const OptionParser::InputOptionList& opts)
+{
+    bool result{ false };
+    bool outHelp{ false };
+
+    for (uint32_t i = 0; i < opts.getSize(); ++i)
+    {
+        const OptionParser::sOption& opt = opts[i];
+        switch (static_cast<NESystemService::eServiceOption>(opt.inCommand))
+        {
+        case NESystemService::eServiceOption::CMD_Install:
+        case NESystemService::eServiceOption::CMD_Uninstall:
+        case NESystemService::eServiceOption::CMD_Service:
+        case NESystemService::eServiceOption::CMD_Console:
+            result = true;
+            setCurrentOption(static_cast<NESystemService::eServiceOption>(opt.inCommand));
+            break;
+
+        case NESystemService::eServiceOption::CMD_Verbose:
+            mCommunication.enableCalculateDataRate(true);
+            setCurrentOption(NESystemService::eServiceOption::CMD_Console);
+            result = true;
+            break;
+
+        case NESystemService::eServiceOption::CMD_Help:
+            outHelp = true;
+            break;
+
+        default:
+            setCurrentOption(NESystemService::eServiceOption::CMD_Undefined);
+            outHelp = true;
+            break;
+        }
+    }
+
+    if (outHelp)
+    {
+        printHelp(true);
+        result = false;
     }
 
     return result;
@@ -116,7 +154,11 @@ void SystemServiceBase::serviceMain( int argc, char ** argv )
         serviceStart( );
     }
 
-    if ( mSystemServiceOption == NESystemService::eServiceOption::CMD_Console )
+    if (mSystemServiceOption == NESystemService::eServiceOption::CMD_Service)
+    {
+        runService();
+    }
+    else if ( mSystemServiceOption == NESystemService::eServiceOption::CMD_Console )
     {
 #if AREG_EXTENDED
         runConsoleInputExtended( );

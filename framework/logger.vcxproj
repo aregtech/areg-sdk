@@ -62,6 +62,7 @@
     <None Include="logger\Makefile" />
     <None Include="logger\Readme.md" />
     <None Include="logger\resources\logger.ico" />
+    <None Include="logger\resources\logger.service" />
     <None Include="logger\resources\small.ico" />
     <None Include="logger\resources\logger_install.bat" />
     <None Include="logger\resources\logger_uninstall.bat" />
@@ -70,6 +71,7 @@
   <ItemGroup>
     <Text Include="logger\app\private\CMakeLists.txt" />
     <Text Include="logger\CMakeLists.txt" />
+    <Text Include="logger\resources\Readme.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -59,6 +59,7 @@
     <None Include="logger\Readme.md" />
     <None Include="logger\Makefile" />
     <None Include="logger\app\private\Makefile" />
+    <None Include="logger\resources\logger.service" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="logger\app\private\Logger.cpp">
@@ -91,5 +92,6 @@
   <ItemGroup>
     <Text Include="logger\CMakeLists.txt" />
     <Text Include="logger\app\private\CMakeLists.txt" />
+    <Text Include="logger\resources\Readme.md" />
   </ItemGroup>
 </Project>

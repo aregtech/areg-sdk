@@ -47,14 +47,45 @@ VOID WINAPI _win32ServiceCtrlHandler(DWORD);
 namespace
 {
 #ifdef UNICODE
-    wchar_t * _serviceDescribe = NEApplication::ROUTER_SERVICE_NAME_WIDE;
+    /**
+     * \brief   The name of the AREG mcrouter
+     **/
+    wchar_t * _serviceName  = NEMulticastRouterSettings::SERVICE_NAME_WIDE;
 #else
-    char * _serviceDescribe = NEApplication::ROUTER_SERVICE_NAME_ASCII;
+    /**
+     * \brief   The name of the AREG mcrouter
+     **/
+    char* _serviceName = NEMulticastRouterSettings::SERVICE_NAME_ASCII;
 #endif // UNICODE
+
+    /**
+     * \brief   The AREG mcrouter display string.
+     **/
+    TCHAR _serviceDisplay[]
+    {
+          'A', 'R', 'E', 'G', ' '
+        , 'M', 'u', 'l', 't', 'i', 'c', 'a', 's', 't', ' '
+        , 'R', 'o', 'u', 't', 'e', 'r', ' '
+        , 'S', 'e', 'r', 'v', 'i', 'c', 'e', '\0'
+    };
+
+    /**
+     * \brief   The description to display in the list of services.
+     **/
+    TCHAR   _serviceDescribe[]
+    {
+          'A', 'R', 'E', 'G', ' '
+        , 'T', 'C', 'P', ' ', '/', ' ', 'I', 'P', ' '
+        , 'M', 'u', 'l', 't', 'i', 'c', 'a', 's', 't', ' '
+        , 'R', 'o', 'u', 't', 'e', 'r', ' '
+        , 'S', 'e', 'r', 'v', 'i', 'c', 'e'
+        , 't', 'o', ' ', 'a', 'u', 't', 'o', 'm', 'a', 't', 'e', ' '
+        , 'm', 'e', 's', 's', 'a', 'g', 'i', 'n', 'g', '.', '\0'
+    };
 
     SERVICE_STATUS          _serviceStatus  { 0 };
     SERVICE_STATUS_HANDLE   _statusHandle   { nullptr };
-    SERVICE_TABLE_ENTRY     _serviceTable[] { {_serviceDescribe, &::_win32ServiceMain}, {nullptr, nullptr} };
+    SERVICE_TABLE_ENTRY     _serviceTable[] { {_serviceName, &::_win32ServiceMain}, {nullptr, nullptr} };
 
     inline char ** _convertArguments( TCHAR ** argv, int argc )
     {
@@ -91,14 +122,13 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
     int result      = 0;
     char ** argvTemp = _convertArguments(argv, argc);
     const char * temp = *argvTemp;
-    MulticastRouter & router = MulticastRouter::getInstance();
-    std::pair<const OptionParser::sOptionSetup *, int> opt{ MulticastRouter::getOptionSetup( ) };
-    if (router.parseOptions(argc, &temp, opt.first, opt.second) == false)
+    MulticastRouter & router = MulticastRouter::getInstance( );
+    if (router.parseOptions(argc, argvTemp, NESystemService::ServiceOptionSetup, MACRO_ARRAYLEN(NESystemService::ServiceOptionSetup)) == false)
     {
-        router.resetDefaultOptions();
+        router.resetDefaultOptions( );
     }
 
-    _deleteArguments(argvTemp, argc);
+    _deleteArguments( argvTemp, argc );
 
     switch ( router.getCurrentOption() )
     {
@@ -134,7 +164,6 @@ VOID WINAPI _win32ServiceMain( DWORD argc, LPTSTR * argv )
 {
     try
     {
-
         NEMemory::zeroElement<SERVICE_STATUS>( _serviceStatus );
         _serviceStatus.dwServiceType            = SERVICE_WIN32_OWN_PROCESS;
         _serviceStatus.dwCurrentState           = SERVICE_STOPPED;
@@ -157,7 +186,6 @@ VOID WINAPI _win32ServiceMain( DWORD argc, LPTSTR * argv )
     {
         ASSERT(false);
     }
-
 }
 
 VOID WINAPI _win32ServiceCtrlHandler(DWORD CtrlCode)
@@ -218,7 +246,7 @@ bool MulticastRouter::_osOpenService(void)
     
     if ( (mSeMHandle != nullptr) && (mSvcHandle == nullptr) )
     {
-        mSvcHandle = reinterpret_cast<void *>(::OpenService( reinterpret_cast<SC_HANDLE>(mSeMHandle), ::_serviceDescribe, SERVICE_ALL_ACCESS ));
+        mSvcHandle = reinterpret_cast<void *>(::OpenService( reinterpret_cast<SC_HANDLE>(mSeMHandle), ::_serviceName, SERVICE_ALL_ACCESS ));
     }
     
     return ( mSvcHandle != nullptr );
@@ -236,6 +264,9 @@ bool MulticastRouter::_osCcreateService(void)
         TCHAR szPath[MAX_PATH];
         if( ::GetModuleFileName( nullptr, szPath, MAX_PATH ) )
         {
+            TEString<TCHAR> modulePath{ _T('\"') };
+            modulePath += szPath;
+            modulePath += _T("\" --service");
 
 #define DEVELOPMENT_PENDING     0
 
@@ -245,8 +276,8 @@ bool MulticastRouter::_osCcreateService(void)
             DWORD startType = SERVICE_AUTO_START;
 #endif  // defined(DEVELOPMENT_PENDING) && (DEVELOPMENT_PENDING != 0)
 
-            mSvcHandle = reinterpret_cast<void *>(::CreateService(reinterpret_cast<SC_HANDLE>(mSeMHandle), _serviceDescribe, _serviceDescribe, SERVICE_ALL_ACCESS
-                                                                , SERVICE_WIN32_OWN_PROCESS, startType, SERVICE_ERROR_NORMAL, szPath
+            mSvcHandle = reinterpret_cast<void *>(::CreateService(reinterpret_cast<SC_HANDLE>(mSeMHandle), _serviceName, _serviceDisplay, SERVICE_ALL_ACCESS
+                                                                , SERVICE_WIN32_OWN_PROCESS, startType, SERVICE_ERROR_NORMAL, modulePath.getString()
                                                                 , nullptr, nullptr, nullptr, nullptr, nullptr));
             if ( mSvcHandle != nullptr )
             {
@@ -258,9 +289,9 @@ bool MulticastRouter::_osCcreateService(void)
                 actionFlag.fFailureActionsOnNonCrashFailures = TRUE;
                 ::ChangeServiceConfig2(reinterpret_cast<SC_HANDLE>(mSvcHandle), SERVICE_CONFIG_FAILURE_ACTIONS_FLAG, &actionFlag);
 
+                constexpr uint32_t count{ 5 };
                 SERVICE_FAILURE_ACTIONS failures = {0};
-                SC_ACTION actions[4];
-                int count = 4;
+                SC_ACTION actions[count];
 
                 failures.dwResetPeriod  = INFINITE;
                 failures.lpRebootMsg    = nullptr;
@@ -269,35 +300,35 @@ bool MulticastRouter::_osCcreateService(void)
                 failures.lpsaActions    = actions;
 
                 // first failure
-                actions[0].Delay        = 500;
+                actions[0].Delay        = NECommon::WAIT_1_SECOND;
                 actions[0].Type         = SC_ACTION_RESTART;
 
                 // first second
-                actions[1].Delay        = 500;
+                actions[1].Delay        = NECommon::WAIT_1_SECOND;
                 actions[1].Type         = SC_ACTION_RESTART;
 
                 // third failure
-                actions[2].Delay        = 500;
+                actions[2].Delay        = NECommon::WAIT_1_SECOND;
                 actions[2].Type         = SC_ACTION_RESTART;
 
                 // fourth failure
-                actions[3].Delay        = 0;
-                actions[3].Type         = SC_ACTION_NONE;
+                actions[3].Delay        = NECommon::WAIT_1_SECOND;
+                actions[3].Type         = SC_ACTION_RESTART;
 
-                actions[count - 1].Delay= 0;
+                actions[count - 1].Delay= NECommon::DO_NOT_WAIT;
                 actions[count - 1].Type = SC_ACTION_NONE;
 
                 ::ChangeServiceConfig2(reinterpret_cast<SC_HANDLE>(mSvcHandle), SERVICE_CONFIG_FAILURE_ACTIONS, &failures);
 
 #if !defined(DEVELOPMENT_PENDING) || (DEVELOPMENT_PENDING == 0)
                 SERVICE_DELAYED_AUTO_START_INFO delay = {1};
-                delay.fDelayedAutostart = TRUE;
+                delay.fDelayedAutostart = FALSE;
                 ::ChangeServiceConfig2(reinterpret_cast<SC_HANDLE>(mSvcHandle), SERVICE_CONFIG_DELAYED_AUTO_START_INFO, &delay);
 #endif // !defined(DEVELOPMENT_PENDING) || (DEVELOPMENT_PENDING == 0)
             }
         }
     }
-    
+
     return ( mSvcHandle != nullptr );
 }
 
@@ -313,7 +344,7 @@ bool MulticastRouter::_osRegisterService( void )
 {
     if ( mSystemServiceOption == NESystemService::eServiceOption::CMD_Service )
     {
-        _statusHandle = ::RegisterServiceCtrlHandler( _serviceDescribe, _win32ServiceCtrlHandler );
+        _statusHandle = ::RegisterServiceCtrlHandler( _serviceName, _win32ServiceCtrlHandler );
     }
 
     return (_statusHandle != nullptr);

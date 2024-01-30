@@ -47,14 +47,45 @@ VOID WINAPI _win32ServiceCtrlHandler(DWORD);
 namespace
 {
 #ifdef UNICODE
-    wchar_t * _serviceDescribe = NEApplication::LOGGER_SERVICE_NAME_WIDE;
+    /**
+     * \brief   The name of the AREG logger
+     **/
+    wchar_t * _serviceName = NELoggerSettings::SERVICE_NAME_WIDE;
 #else
-    char *    _serviceDescribe = NEApplication::LOGGER_SERVICE_NAME_ASCII;
+    /**
+     * \brief   The name of the AREG logger
+     **/
+    char *    _serviceName = NELoggerSettings::SERVICE_NAME_ASCII;
 #endif // UNICODE
+
+    /**
+     * \brief   The AREG logger display string.
+     **/
+    TCHAR _serviceDisplay[]
+    {
+          'A', 'R', 'E', 'G', ' '
+        , 'L', 'o', 'g', ' '
+        , 'C', 'o', 'l', 'l', 'e', 'c', 't', 'o', 'r', ' '
+        , 'S', 'e', 'r', 'v', 'i', 'c', 'e', '\0'
+    };
+
+    /**
+     * \brief   The description to display in the list of services.
+     **/
+    TCHAR   _serviceDescribe[]
+    {
+          'A', 'R', 'E', 'G', ' '
+        , 'T', 'C', 'P', ' ', '/', ' ', 'I', 'P', ' '
+        , 'L', 'o', 'g', 'g', 'i', 'n', 'g', ' '
+        , 'S', 'e', 'r', 'v', 'i', 'c', 'e', ' '
+        , 't', 'o', ' ', 'c', 'o', 'l', 'l', 'e', 'c', 't', ' '
+        , 'a', 'p', 'p', 'l', 'i', 'c', 'a', 't', 'i', 'o', 'n', ' '
+        , 'l', 'o', 'g', 's', '.', '\0'
+    };
 
     SERVICE_STATUS          _serviceStatus  { 0 };
     SERVICE_STATUS_HANDLE   _statusHandle   { nullptr };
-    SERVICE_TABLE_ENTRY     _serviceTable[] { {_serviceDescribe, &::_win32ServiceMain}, {nullptr, nullptr} };
+    SERVICE_TABLE_ENTRY     _serviceTable[] { {_serviceName, &::_win32ServiceMain}, {nullptr, nullptr} };
 
     inline char ** _convertArguments( TCHAR ** argv, int argc )
     {
@@ -88,12 +119,11 @@ namespace
 
 int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
-    int result = 0;
-    char ** argvTemp = _convertArguments( argv, argc );
+    int result      = 0;
+    char ** argvTemp = _convertArguments(argv, argc);
     const char * temp = *argvTemp;
     Logger & logger = Logger::getInstance( );
-    std::pair<const OptionParser::sOptionSetup *, int> opt{ Logger::getOptionSetup( ) };
-    if ( logger.parseOptions( argc, &temp, opt.first, opt.second ) == false )
+    if (logger.parseOptions(argc, argvTemp, NESystemService::ServiceOptionSetup, MACRO_ARRAYLEN(NESystemService::ServiceOptionSetup)) == false)
     {
         logger.resetDefaultOptions( );
     }
@@ -118,6 +148,10 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
         result = ::StartServiceCtrlDispatcher(_serviceTable) ? 0 : -1;
         break;
 
+    case NESystemService::eServiceOption::CMD_Verbose:
+    case NESystemService::eServiceOption::CMD_Help:
+        break;
+
     default:
         ASSERT(false);  // unexpected
         break;
@@ -130,7 +164,6 @@ VOID WINAPI _win32ServiceMain( DWORD argc, LPTSTR * argv )
 {
     try
     {
-
         NEMemory::zeroElement<SERVICE_STATUS>( _serviceStatus );
         _serviceStatus.dwServiceType            = SERVICE_WIN32_OWN_PROCESS;
         _serviceStatus.dwCurrentState           = SERVICE_STOPPED;
@@ -153,7 +186,6 @@ VOID WINAPI _win32ServiceMain( DWORD argc, LPTSTR * argv )
     {
         ASSERT(false);
     }
-
 }
 
 VOID WINAPI _win32ServiceCtrlHandler(DWORD CtrlCode)
@@ -214,7 +246,7 @@ bool Logger::_osOpenService(void)
     
     if ( (mSeMHandle != nullptr) && (mSvcHandle == nullptr) )
     {
-        mSvcHandle = reinterpret_cast<void *>(::OpenService( reinterpret_cast<SC_HANDLE>(mSeMHandle), ::_serviceDescribe, SERVICE_ALL_ACCESS ));
+        mSvcHandle = reinterpret_cast<void *>(::OpenService( reinterpret_cast<SC_HANDLE>(mSeMHandle), ::_serviceName, SERVICE_ALL_ACCESS ));
     }
     
     return ( mSvcHandle != nullptr );
@@ -232,6 +264,9 @@ bool Logger::_osCcreateService(void)
         TCHAR szPath[MAX_PATH];
         if( ::GetModuleFileName( nullptr, szPath, MAX_PATH ) )
         {
+            TEString<TCHAR> modulePath{ _T('\"') };
+            modulePath += szPath;
+            modulePath += _T("\" --service");
 
 #define DEVELOPMENT_PENDING     0
 
@@ -241,8 +276,8 @@ bool Logger::_osCcreateService(void)
             DWORD startType = SERVICE_AUTO_START;
 #endif  // defined(DEVELOPMENT_PENDING) && (DEVELOPMENT_PENDING != 0)
 
-            mSvcHandle = reinterpret_cast<void *>(::CreateService(reinterpret_cast<SC_HANDLE>(mSeMHandle), _serviceDescribe, _serviceDescribe, SERVICE_ALL_ACCESS
-                                                                , SERVICE_WIN32_OWN_PROCESS, startType, SERVICE_ERROR_NORMAL, szPath
+            mSvcHandle = reinterpret_cast<void *>(::CreateService(reinterpret_cast<SC_HANDLE>(mSeMHandle), _serviceName, _serviceDisplay, SERVICE_ALL_ACCESS
+                                                                , SERVICE_WIN32_OWN_PROCESS, startType, SERVICE_ERROR_NORMAL, modulePath.getString()
                                                                 , nullptr, nullptr, nullptr, nullptr, nullptr));
             if ( mSvcHandle != nullptr )
             {
@@ -287,13 +322,13 @@ bool Logger::_osCcreateService(void)
 
 #if !defined(DEVELOPMENT_PENDING) || (DEVELOPMENT_PENDING == 0)
                 SERVICE_DELAYED_AUTO_START_INFO delay = {1};
-                delay.fDelayedAutostart = TRUE;
+                delay.fDelayedAutostart = FALSE;
                 ::ChangeServiceConfig2(reinterpret_cast<SC_HANDLE>(mSvcHandle), SERVICE_CONFIG_DELAYED_AUTO_START_INFO, &delay);
 #endif // !defined(DEVELOPMENT_PENDING) || (DEVELOPMENT_PENDING == 0)
             }
         }
     }
-    
+
     return ( mSvcHandle != nullptr );
 }
 
@@ -309,7 +344,7 @@ bool Logger::_osRegisterService( void )
 {
     if ( mSystemServiceOption == NESystemService::eServiceOption::CMD_Service )
     {
-        _statusHandle = ::RegisterServiceCtrlHandler( _serviceDescribe, _win32ServiceCtrlHandler );
+        _statusHandle = ::RegisterServiceCtrlHandler( _serviceName, _win32ServiceCtrlHandler );
     }
 
     return (_statusHandle != nullptr);
@@ -381,7 +416,7 @@ bool Logger::_osSetState( NESystemService::eSystemServiceState newState )
 
 bool Logger::_osWaitUserInput(char* buffer, unsigned int bufSize)
 {
-    return( gets_s(buffer, bufSize) != nullptr );
+    return(gets_s(buffer, bufSize) != nullptr);
 }
 
 #endif // WINDOWS

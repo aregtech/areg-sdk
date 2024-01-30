@@ -118,8 +118,9 @@ std::pair<const OptionParser::sOptionSetup *, int> MulticastRouter::getOptionSet
 }
 
 MulticastRouter::MulticastRouter( void )
-    : SystemServiceBase ( mServiceServer )
-    , mServiceServer    ( )
+    : SystemServiceBase     ( mServiceServer )
+
+    , mServiceServer        ( )
 {
 }
 
@@ -184,12 +185,23 @@ void MulticastRouter::runConsoleInputSimple( void )
     } while ( quit == false );
 }
 
+void MulticastRouter::runService(void)
+{
+    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+}
+
 void MulticastRouter::serviceMain( int argc, char ** argv )
 {
     // Start only tracing and timer manager.
-    Application::initApplication(true, true, false, true, false, NEApplication::DEFAULT_CONFIG_FILE.data() );
+    Application::initApplication( true
+                                , true
+                                , false
+                                , true
+                                , false
+                                , NEApplication::DEFAULT_CONFIG_FILE.data()
+                                , static_cast<IEConfigurationListener *>(nullptr));
+
     SystemServiceBase::serviceMain( argc, argv );
-    setState(NESystemService::eSystemServiceState::ServiceStopped);
     mServiceServer.waitToComplete( );
     Application::releaseApplication( );
 }

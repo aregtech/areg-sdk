@@ -33,9 +33,7 @@ int main(int argc, char* argv[], char* envp[])
 {
     int result{0};
     Logger & logger = Logger::getInstance();
-    const char * temp = static_cast<const char *>(*argv);
-    std::pair<const OptionParser::sOptionSetup *, int> opt{ Logger::getOptionSetup( ) };
-    if ( logger.parseOptions( argc, &temp, opt.first, opt.second ) == false )
+    if (logger.parseOptions(argc, argv, NESystemService::ServiceOptionSetup, MACRO_ARRAYLEN(NESystemService::ServiceOptionSetup)) == false)
     {
         logger.resetDefaultOptions( );
     }
@@ -79,7 +77,7 @@ bool Logger::_osIsValid( void ) const
 
 bool Logger::_osRegisterService( void )
 {
-    return false;
+    return true;
 }
 
 
