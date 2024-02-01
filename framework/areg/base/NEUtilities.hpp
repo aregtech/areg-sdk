@@ -126,6 +126,12 @@ namespace   NEUtilities
 // NEUtilities namespace utility types
 /************************************************************************/
 
+    typedef enum E_Time : int
+    {
+          TimeUtc   = 0
+        , TimeLocal = 1
+    } eTime;
+
     /**
      * \brief   NEUtilities::sSystemTime
      *          The structure defines date-time data used in system time
@@ -141,17 +147,8 @@ namespace   NEUtilities
         int     stSecond{ 0 };      //!< The second in the time, which starts from 0
         int     stMillisecs{ 0 };   //!< The millisecond in the time, which starts from 0
         int     stMicrosecs{ 0 };   //!< The microseconds in the time, which starts from 0
+        eTime   stTimeType{ eTime::TimeUtc };
     } sSystemTime;
-
-    /**
-     * \brief   NEUtilities::sFileTime
-     *          Specifies file time type and format.
-     **/
-    typedef struct S_FileTime
-    {
-        unsigned long   ftLowDateTime{ 0 };     //!< Low part of date-time.
-        unsigned long   ftHighDateTime{ 0 };    //!< High part of date-time.
-    } sFileTime;
 
     /**
      * \brief   Returns current time. On output 'out_sysTime' system time contains the date-time data.
@@ -159,13 +156,6 @@ namespace   NEUtilities
      * \param   localTime   If true, in output the out_sysTime contains local time values.
      **/
     AREG_API void systemTimeNow( sSystemTime & OUT sysTime, bool localTime );
-
-    /**
-     * \brief   Returns current time. On output 'out_fileTime' time contains the date-time data.
-     * \param   fileTime    On output the file-time parameter contains date-time of current time.
-     * \param   localTime   If true, in output the out_fileTime contains local time values.
-     **/
-    AREG_API void systemTimeNow( sFileTime & OUT fileTime, bool localTime );
 
     /**
      * \brief   Returns current system time data as a 64-bit integer value. The returned value is
@@ -183,40 +173,11 @@ namespace   NEUtilities
     AREG_API TIME64 convToTime( const sSystemTime & IN sysTime );
 
     /**
-     * \brief   Returns file time data as a 64-bit integer value. The returned value is
-     *          passed microseconds since January 1, 1970 (UNIX epoch).
-     * \param   fileTime    The system time structure with data to convert.
-     * \return  Returns microseconds passed since January 1, 1970 (UNIX epoch).
-     **/
-    AREG_API TIME64 convToTime( const sFileTime & IN fileTime );
-
-    /**
      * \brief   Converts 64-bit value of microseconds passed since January 1 1970 into system time data structure.
      * \param   timeValue   64-bit value as microseconds passed since January 1 1970.
      * \param   sysTime     On output the system time parameter contains date-time of converted time.
      **/
     AREG_API void convToSystemTime( const TIME64 & IN timeValue, sSystemTime & OUT sysTime );
-
-    /**
-     * \brief   Converts given file-time data structure into system time data structure.
-     * \param   fileTime        The file-time data structure to convert.
-     * \param   out_sysTime     On output the system time parameter contains date-time of converted time.
-     **/
-    AREG_API void convToSystemTime( const sFileTime & IN fileTime, sSystemTime & OUT out_sysTime );
-
-    /**
-     * \brief   Converts 64-bit value of microseconds passed since January 1 1970 into file time data structure.
-     * \param   timeValue   64-bit value as microseconds passed since January 1 1970.
-     * \param   fileTime    On output the file-time parameter contains date-time of converted time.
-     **/
-    AREG_API void convToFileTime( const TIME64 & IN timeValue, sFileTime & OUT fileTime );
-
-    /**
-     * \brief   Converts given system-time data structure into file-time data structure.
-     * \param   sysTime     The system-time data structure to convert.
-     * \param   fileTime    On output the file-time parameter contains date-time of converted time.
-     **/
-    AREG_API void convToFileTime( const sSystemTime & IN sysTime, sFileTime & OUT fileTime );
 
     /**
      * \brief   Compare 2 system-time data structures and returns result indicating equality of data.
@@ -228,17 +189,6 @@ namespace   NEUtilities
      *              - NEMath::Bigger  if Left-Hand Operand 'lhs' is greater than Right-Hand Operand 'rhs'
      **/
     AREG_API NEMath::eCompare compareTimes( const sSystemTime & lhs, const sSystemTime & rhs );
-
-    /**
-     * \brief   Compare 2 file-time data structures and returns result indicating equality of data.
-     * \param   lhs     Left-Hand Operand to compare
-     * \param   rhs     Right-Hand Operand to compare
-     * \return  Returns one of possible results: 
-     *              - NEMath::Smaller if Left-Hand Operand 'lhs' is smaller than Right-Hand Operand 'rhs'
-     *              - NEMath::Equal if both operands are equal
-     *              - NEMath::Bigger  if Left-Hand Operand 'lhs' is greater than Right-Hand Operand 'rhs'
-     **/
-    AREG_API NEMath::eCompare compareTimes( const sFileTime & lhs, const sFileTime & rhs );
 
     /**
      * \brief   Compare 2 64-bit time values and returns result indicating equality of data. The given 64-values
@@ -492,6 +442,8 @@ namespace   NEUtilities
 #endif  // _MSC_VER
     };
 }
+
+IMPLEMENT_STREAMABLE(NEUtilities::eTime);
 
 //////////////////////////////////////////////////////////////////////////
 // NEUtilities::Duration inline methods

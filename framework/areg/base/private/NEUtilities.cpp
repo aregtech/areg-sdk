@@ -39,28 +39,20 @@ namespace NEUtilities
 
     extern void _osSystemTimeNow( NEUtilities::sSystemTime & OUT sysTime, bool localTime );
 
-    extern void _osSystemTimeNow( NEUtilities::sFileTime & OUT fileTime, bool localTime );
-
-    extern TIME64 _osSystemTimeNow( void );
-
     extern TIME64 _osConvToTime( const NEUtilities::sSystemTime & IN sysTime );
 
     extern void _osConvToSystemTime( const TIME64 & IN timeValue, NEUtilities::sSystemTime & OUT sysTime );
     
-    extern void _osConvToSystemTime( const NEUtilities::sFileTime & IN fileTime, NEUtilities::sSystemTime & OUT sysTime );
-
-    extern void _osConvToFileTime( const NEUtilities::sSystemTime & IN sysTime, NEUtilities::sFileTime & OUT fileTime );
-    
-    NEMath::eCompare compareLargeIntegers( const NEMath::uLargeInteger & lsh, const NEMath::uLargeInteger & rhs )
+    NEMath::eCompare compareLargeIntegers( const NEMath::uLargeInteger & lhs, const NEMath::uLargeInteger & rhs )
     {
         NEMath::eCompare result = NEMath::eCompare::Equal;
-        if ( lsh.u.highPart < rhs.u.highPart )
+        if ( lhs.u.highPart < rhs.u.highPart )
             result = NEMath::eCompare::Smaller;
-        else if ( lsh.u.highPart > rhs.u.highPart )
+        else if ( lhs.u.highPart > rhs.u.highPart )
             result = NEMath::eCompare::Bigger;
-        else if ( lsh.u.lowPart < rhs.u.lowPart )
+        else if ( lhs.u.lowPart < rhs.u.lowPart )
             result = NEMath::eCompare::Smaller;
-        else if ( lsh.u.lowPart > rhs.u.lowPart )
+        else if ( lhs.u.lowPart > rhs.u.lowPart )
             result = NEMath::eCompare::Bigger;
 
         return result;
@@ -69,13 +61,13 @@ namespace NEUtilities
 /************************************************************************/
 // NEUtilities namespace global functions
 /************************************************************************/
-AREG_API_IMPL NEMath::eCompare NEUtilities::compareTimes( const TIME64 & lsh, const TIME64 & rhs )
+AREG_API_IMPL NEMath::eCompare NEUtilities::compareTimes( const TIME64 & lhs, const TIME64 & rhs )
 {
-    NEMath::uLargeInteger lshLi, rshLi;
-    lshLi.quadPart  = lsh;
+    NEMath::uLargeInteger lhsLi, rshLi;
+    lhsLi.quadPart  = lhs;
     rshLi.quadPart  = rhs;
 
-    return NEUtilities::compareLargeIntegers(lshLi, rshLi);
+    return NEUtilities::compareLargeIntegers(lhsLi, rshLi);
 }
 
 AREG_API_IMPL void NEUtilities::convToTm(const sSystemTime & IN sysTime, struct tm & OUT time)
@@ -117,38 +109,26 @@ AREG_API_IMPL void NEUtilities::convToSystemTime(const struct tm & IN time, sSys
     sysTime.stHour      = static_cast<int>(time.tm_hour);
     sysTime.stDay       = static_cast<int>(time.tm_mday);
     sysTime.stMonth     = static_cast<int>(time.tm_mon + 1);
-    sysTime.stYear      = static_cast<int>(time.tm_year + 1900);
+    sysTime.stYear      = static_cast<int>(time.tm_year + 1970);
     sysTime.stDayOfWeek = static_cast<int>(time.tm_wday);
 }
 
-AREG_API_IMPL NEMath::eCompare NEUtilities::compareTimes( const NEUtilities::sSystemTime & lsh, const NEUtilities::sSystemTime & rhs )
+AREG_API_IMPL NEMath::eCompare NEUtilities::compareTimes( const NEUtilities::sSystemTime & lhs, const NEUtilities::sSystemTime & rhs )
 {
-    sFileTime lshFile, rshFile;
-    NEUtilities::convToFileTime( lsh, lshFile );
-    NEUtilities::convToFileTime( rhs, rshFile );
-
-    return NEUtilities::compareTimes(lshFile, rshFile);
-}
-
-AREG_API_IMPL NEMath::eCompare NEUtilities::compareTimes( const NEUtilities::sFileTime & lsh, const NEUtilities::sFileTime & rhs )
-{
-    NEMath::uLargeInteger lshLi, rshLi;
-    lshLi.u.lowPart = lsh.ftLowDateTime;
-    lshLi.u.highPart= lsh.ftHighDateTime;
-
-    rshLi.u.lowPart = rhs.ftLowDateTime;
-    rshLi.u.highPart= rhs.ftHighDateTime;
-
-    return NEUtilities::compareLargeIntegers( lshLi, rshLi );
-}
-
-AREG_API_IMPL TIME64 NEUtilities::convToTime( const NEUtilities::sFileTime & IN fileTime )
-{
-    NEMath::uLargeInteger li;
-    li.u.lowPart    = fileTime.ftLowDateTime;
-    li.u.highPart   = fileTime.ftHighDateTime;
-
-    return static_cast<uint64_t>(li.quadPart);
+    TIME64 lhsTm{ NEUtilities::convToTime(lhs) };
+    TIME64 rshTm{ NEUtilities::convToTime(lhs) };
+    if (lhsTm > rshTm)
+    {
+        return NEMath::eCompare::Bigger;
+    }
+    else if (lhsTm < rshTm)
+    {
+        return NEMath::eCompare::Smaller;
+    }
+    else
+    {
+        return NEMath::eCompare::Equal;
+    }
 }
 
 AREG_API_IMPL String NEUtilities::createComponentItemName( const String & componentName, const String & itemName )
@@ -215,14 +195,14 @@ AREG_API_IMPL void NEUtilities::systemTimeNow( NEUtilities::sSystemTime & OUT sy
     _osSystemTimeNow( sysTime, localTime );
 }
 
-AREG_API_IMPL void NEUtilities::systemTimeNow( NEUtilities::sFileTime & OUT fileTime, bool localTime )
-{
-    _osSystemTimeNow( fileTime, localTime );
-}
-
 AREG_API_IMPL TIME64 NEUtilities::systemTimeNow( void )
 {
-    return _osSystemTimeNow( );
+    struct timespec ts { 0 };
+    std::timespec_get(&ts, TIME_UTC);
+    std::chrono::seconds secs{ ts.tv_sec };
+    std::chrono::nanoseconds ns{ ts.tv_nsec };
+    std::chrono::microseconds now{ std::chrono::duration_cast<std::chrono::microseconds>(secs) + std::chrono::duration_cast<std::chrono::microseconds>(ns) };
+    return static_cast<TIME64>(now.count());
 }
 
 AREG_API_IMPL TIME64 NEUtilities::convToTime( const NEUtilities::sSystemTime & IN sysTime )
@@ -235,16 +215,7 @@ AREG_API_IMPL void NEUtilities::convToSystemTime( const TIME64 & IN timeValue, N
     _osConvToSystemTime( timeValue, sysTime );
 }
 
-AREG_API_IMPL void NEUtilities::convToSystemTime( const NEUtilities::sFileTime & IN fileTime, NEUtilities::sSystemTime & OUT sysTime )
-{
-    _osConvToSystemTime( fileTime, sysTime );
-}
-
-AREG_API_IMPL void NEUtilities::convToFileTime( const NEUtilities::sSystemTime & IN sysTime, NEUtilities::sFileTime & OUT fileTime )
-{
-    _osConvToFileTime( sysTime, fileTime );
-}
-
+/**
 AREG_API_IMPL void NEUtilities::convToFileTime( const TIME64 & IN timeValue, NEUtilities::sFileTime & OUT fileTime )
 {
     uint64_t quad = timeValue + WIN_TO_POSIX_EPOCH_BIAS_MICROSECS;
@@ -252,6 +223,7 @@ AREG_API_IMPL void NEUtilities::convToFileTime( const TIME64 & IN timeValue, NEU
     fileTime.ftLowDateTime = MACRO_64_LO_BYTE32( quad );
     fileTime.ftHighDateTime = MACRO_64_HI_BYTE32( quad );
 }
+**/
 
 AREG_API_IMPL NEUtilities::DataLiteral NEUtilities::convDataSize( uint64_t dataSize )
 {

@@ -190,15 +190,6 @@ namespace NEUtilities
         }
     }
 
-    TIME64 _osSystemTimeNow( void )
-    {
-        struct timespec ts { 0 };
-        ::clock_gettime( CLOCK_REALTIME, &ts );
-
-        TIME64 quad = static_cast<TIME64>(ts.tv_sec) * SEC_TO_MICROSECS + static_cast<TIME64>(ts.tv_nsec) / MICROSEC_TO_NS;
-        return quad;
-    }
-
     TIME64 _osConvToTime( const NEUtilities::sSystemTime & sysTime )
     {
         TIME64 quad = 0;

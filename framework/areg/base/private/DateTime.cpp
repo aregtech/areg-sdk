@@ -37,11 +37,6 @@ DateTime::DateTime( const NEUtilities::sSystemTime & sysTime )
 {
 }
 
-DateTime::DateTime( const NEUtilities::sFileTime & fileTime )
-    : mDateTime( NEUtilities::convToTime(fileTime) )
-{
-}
-
 DateTime::DateTime( const DateTime & dateTime )
     : mDateTime ( dateTime.mDateTime )
 {

@@ -22,6 +22,7 @@
 #include "areg/base/NEMemory.hpp"
 
 #include <Windows.h>
+#include <chrono>
 
 namespace NEUtilities {
 
@@ -42,15 +43,16 @@ namespace NEUtilities {
         {
             *out_buffer = '\0';
             const char * spec = specChar != nullptr ? specChar : NECommon::DEFAULT_SPECIAL_CHAR.data();
-            FILETIME now { 0, 0 };
-            ::GetSystemTimeAsFileTime( &now );
+            NEMath::uLargeInteger time{};
+            auto now{ std::chrono::high_resolution_clock::now().time_since_epoch() };
+            time.quadPart = std::chrono::duration_cast<std::chrono::microseconds>(now).count();
 
             String::formatString( out_buffer, length, strFormat
                                   , prefix != nullptr ? prefix : NEUtilities::DEFAULT_GENERATED_NAME.data()
                                   , spec
-                                  , now.dwHighDateTime
+                                  , time.u.highPart
                                   , spec
-                                  , now.dwLowDateTime);
+                                  , time.u.lowPart);
         }
 
         return out_buffer;
@@ -81,39 +83,6 @@ namespace NEUtilities {
         winTime.wMinute         = static_cast<WORD>(aregTime.stMinute);
         winTime.wSecond         = static_cast<WORD>(aregTime.stSecond);
         winTime.wMilliseconds   = static_cast<WORD>(aregTime.stMillisecs);
-    }
-
-
-    inline void _convWinFileTime2AregFileTime( const FILETIME & winTime, NEUtilities::sFileTime & aregTime )
-    {
-        aregTime.ftLowDateTime  = winTime.dwLowDateTime;
-        aregTime.ftHighDateTime = winTime.dwHighDateTime;
-    }
-    
-    //!< Converts areg 64-bits time structure to windows 64-bits time.
-    inline void _convAregFileTime2WinFileTime( const NEUtilities::sFileTime & IN aregTime, FILETIME & OUT winTime )
-    {
-        winTime.dwLowDateTime   = aregTime.ftLowDateTime;
-        winTime.dwHighDateTime  = aregTime.ftHighDateTime;
-    }
-
-    //!< Converts windows 64-bit file structure to areg 64-bit time.
-    inline void _convWinFileTime2AregTime( const FILETIME & IN winTime, TIME64 & OUT aregTime)
-    {
-        aregTime = MACRO_MAKE_64( winTime.dwHighDateTime, winTime.dwLowDateTime );
-    }
-
-    //!< Converts areg 64-bits time structure to 64-bits time value.
-    inline TIME64 _convWinFileTime2AregTime( const FILETIME & winTime )
-    {
-        return MACRO_MAKE_64( winTime.dwHighDateTime, winTime.dwLowDateTime );
-    }
-
-    //!< Converts 64-bits time value to areg 64-bit time structure.
-    inline void _convAregTime2WinFileTime(const TIME64 & IN aregTime, FILETIME & OUT winTime)
-    {
-        winTime.dwLowDateTime   = MACRO_64_LO_BYTE32(aregTime);
-        winTime.dwHighDateTime  = MACRO_64_HI_BYTE32(aregTime);
     }
 
     uint64_t _osGetTickCount( void )
@@ -147,7 +116,7 @@ namespace NEUtilities {
         return result;
     }
 
-    bool _osConvToLocalTime( const TIME64 & inUtcTime, sSystemTime & outLocalTime )
+    bool _osConvToLocalTime( const TIME64 & inUtcTime, NEUtilities::sSystemTime & outLocalTime )
     {
         NEUtilities::sSystemTime utcTime;
         convToSystemTime( inUtcTime, utcTime );
@@ -157,98 +126,62 @@ namespace NEUtilities {
 
     void _osSystemTimeNow( NEUtilities::sSystemTime & OUT sysTime, bool localTime )
     {
-        SYSTEMTIME utc{ 0 };
-        ::GetSystemTime( &utc );
-
-        if ( localTime )
+        struct timespec ts { 0 };
+        struct tm now { 0 };
+        std::timespec_get(&ts, TIME_UTC);
+        if (localTime)
         {
-            TIME_ZONE_INFORMATION tzi{ 0 };
-            SYSTEMTIME local{ 0 };
-            GetTimeZoneInformation( &tzi );
-            _convWinSysTime2AregSysTime( SystemTimeToTzSpecificLocalTime( &tzi, &utc, &local ) ? local : utc, sysTime );
+            ::localtime_s(&now, &ts.tv_sec);
         }
         else
         {
-            NEUtilities::_convWinSysTime2AregSysTime( utc, sysTime );
-        }
-    }
-
-    void _osSystemTimeNow( NEUtilities::sFileTime & OUT fileTime, bool localTime )
-    {
-        SYSTEMTIME utc{ 0 };
-        SYSTEMTIME * src = &utc;
-        ::GetSystemTime( src );
-
-        if ( localTime )
-        {
-            SYSTEMTIME local{ 0 };
-            TIME_ZONE_INFORMATION tzi{ 0 };
-            GetTimeZoneInformation( &tzi );
-            if ( SystemTimeToTzSpecificLocalTime( &tzi, &utc, &local ) )
-            {
-                src = &local;
-            }
+            gmtime_s(&now, &ts.tv_sec);
         }
 
-        FILETIME ft{ 0 };
-        ::SystemTimeToFileTime( src, &ft );
+        unsigned short milli = static_cast<unsigned short>((ts.tv_nsec / MILLISEC_TO_NS));
+        unsigned short micro = static_cast<unsigned short>((ts.tv_nsec % MILLISEC_TO_NS) / MICROSEC_TO_NS);
 
-        NEUtilities::_convWinFileTime2AregFileTime( ft, fileTime );
-    }
+        ASSERT(milli < 1000);
+        ASSERT(micro < 1000);
 
-    TIME64 _osSystemTimeNow( void )
-    {
-        SYSTEMTIME st{ 0 };
-        ::GetSystemTime( &st );
-
-        FILETIME ft{ 0 };
-        ::SystemTimeToFileTime( &st, &ft );
-
-        return _convWinFileTime2AregTime( ft );
+        sysTime.stYear = now.tm_year + 1900;
+        sysTime.stMonth = now.tm_mon + 1;
+        sysTime.stDayOfWeek = now.tm_wday;
+        sysTime.stDay = now.tm_mday;
+        sysTime.stHour = now.tm_hour;
+        sysTime.stMinute = now.tm_min;
+        sysTime.stSecond = now.tm_sec;
+        sysTime.stMillisecs = milli;
+        sysTime.stMicrosecs = micro;
+        sysTime.stTimeType = localTime ? NEUtilities::eTime::TimeLocal : NEUtilities::eTime::TimeUtc;
     }
 
     TIME64 _osConvToTime( const NEUtilities::sSystemTime & IN sysTime )
     {
-        SYSTEMTIME st{ 0 };
-        NEUtilities::_convAregSysTime2WinSysTime( sysTime, st );
-
-        FILETIME ft{ 0 };
-        ::SystemTimeToFileTime( &st, &ft );
-
-        return _convWinFileTime2AregTime( ft );
+        struct tm gmt {};
+        NEUtilities::convToTm(sysTime, gmt);
+        std::chrono::seconds secs{ ::mktime(&gmt) };
+        std::chrono::microseconds ums{ sysTime.stMillisecs * NEUtilities::MILLISEC_TO_MICROSECS + sysTime.stMicrosecs };
+        return (ums + secs).count();
     }
 
     void _osConvToSystemTime( const TIME64 & IN timeValue, NEUtilities::sSystemTime & OUT sysTime )
     {
-        FILETIME ft{ 0 };
-        NEUtilities::_convAregTime2WinFileTime( timeValue, ft );
+        std::chrono::microseconds ums{ timeValue };
+        std::chrono::seconds secs{ std::chrono::duration_cast<std::chrono::seconds>(ums) };
+        std::chrono::microseconds remain{ ums - secs };
+        time_t tmSecs{ secs.count() };
 
-        SYSTEMTIME st{ 0 };
-        ::FileTimeToSystemTime( &ft, &st );
+        struct tm gmt {};
+        if (::gmtime_s(&gmt, &tmSecs) == 0)
+        {
+            convToSystemTime(gmt, sysTime);
+            sysTime.stMillisecs = static_cast<int32_t>(remain.count() / NEUtilities::MILLISEC_TO_MICROSECS);
+            sysTime.stMicrosecs = static_cast<int32_t>(remain.count() - (sysTime.stMillisecs * NEUtilities::MILLISEC_TO_MICROSECS));
 
-        NEUtilities::_convWinSysTime2AregSysTime( st, sysTime );
-    }
-
-    void _osConvToSystemTime( const NEUtilities::sFileTime & IN fileTime, NEUtilities::sSystemTime & OUT sysTime )
-    {
-        FILETIME ft{ 0 };
-        NEUtilities::_convAregFileTime2WinFileTime( fileTime, ft );
-
-        SYSTEMTIME st{ 0 };
-        ::FileTimeToSystemTime( &ft, &st );
-
-        NEUtilities::_convWinSysTime2AregSysTime( st, sysTime );
-    }
-
-    void _osConvToFileTime( const NEUtilities::sSystemTime & IN sysTime, NEUtilities::sFileTime & OUT fileTime )
-    {
-        SYSTEMTIME st{ 0 };
-        NEUtilities::_convAregSysTime2WinSysTime( sysTime, st );
-
-        FILETIME ft{ 0 };
-        ::SystemTimeToFileTime( &st, &ft );
-
-        NEUtilities::_convWinFileTime2AregFileTime( ft, fileTime );
+            ASSERT(sysTime.stMillisecs < 1000);
+            ASSERT(sysTime.stMicrosecs < 1000);
+        }
     }
 
 } // namespace

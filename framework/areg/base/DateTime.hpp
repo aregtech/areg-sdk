@@ -93,12 +93,6 @@ public:
     explicit DateTime( const NEUtilities::sSystemTime & sysTime );
 
     /**
-     * \brief   Sets date and time value from given file time structure.
-     * \param   fileTime    File time structure to get date and time values.
-     **/
-    explicit DateTime( const NEUtilities::sFileTime & fileTime );
-
-    /**
      * \brief   Copies data and time data from given source.
      * \param   src     The source to copy data.
      **/
