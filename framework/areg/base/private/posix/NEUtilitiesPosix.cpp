@@ -37,6 +37,14 @@ namespace NEUtilities
         return result;
     }
 
+    TIME64 _osSystemTimeNow(void)
+    {
+        struct timespec ts { 0 };
+        return (RETURNED_OK == ::clock_gettime(CLOCK_REALTIME, &ts)
+                ? static_cast<TIME64>((ts.tv_sec * NEUtilities::SEC_TO_MICROSECS) + (ts.tv_nsec / NEUtilities::MICROSEC_TO_NS))
+                : 0LL);
+    }
+
     void _osSystemTimeNow( NEUtilities::sSystemTime & OUT sysTime, bool localTime )
     {
         struct timespec ts { 0 };

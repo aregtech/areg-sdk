@@ -34,6 +34,8 @@ namespace NEUtilities
 
     extern void _osSystemTimeNow( sSystemTime & OUT sysTime, bool localTime );
 
+    extern TIME64 _osSystemTimeNow(void);
+
     extern void _osMakeTmLocal(struct tm& IN OUT utcTime);
 
     extern bool _osConvToLocalTime(const TIME64& IN utcTime, sSystemTime& OUT localTime);
@@ -238,17 +240,7 @@ AREG_API_IMPL void NEUtilities::systemTimeNow( NEUtilities::sSystemTime & OUT sy
 
 AREG_API_IMPL TIME64 NEUtilities::systemTimeNow( void )
 {
-    TIME64 result{ 0 };
-    struct timespec ts { 0 };
-    if (std::timespec_get(&ts, TIME_UTC) != 0)
-    {
-        std::chrono::seconds secs{ ts.tv_sec };
-        std::chrono::nanoseconds ns{ ts.tv_nsec };
-        std::chrono::microseconds now{ std::chrono::duration_cast<std::chrono::microseconds>(secs) + std::chrono::duration_cast<std::chrono::microseconds>(ns) };
-        result = static_cast<TIME64>(now.count());
-    }
-
-    return result;
+    return _osSystemTimeNow();
 }
 
 AREG_API_IMPL TIME64 NEUtilities::convToTime( const NEUtilities::sSystemTime & IN sysTime )
