@@ -212,6 +212,13 @@ TEST( DateTimeTest, TestLocalTime )
     NEUtilities::convToSystemTime( date.getTime( ), utcTime );
     _checkTimeStruct( utcTime, "Areg UTC " );
 
+    time_t secs1 = NEUtilities::convToSeconds(date.getTime());
+    time_t secs2 = NEUtilities::convToSeconds(utcTime);
+    ASSERT_EQ(secs1, secs2);
+
+    TIME64 micro = NEUtilities::convToTime(utcTime);
+    ASSERT_EQ(date.getTime(), micro);
+
     NEUtilities::sSystemTime localTime{ };
     NEUtilities::convToLocalTime( utcTime, localTime );
     _checkTimeStruct( localTime, "Areg Local " );

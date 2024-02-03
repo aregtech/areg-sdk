@@ -122,15 +122,154 @@ namespace   NEUtilities
      **/
     constexpr TIME64                MICROSEC_TO_NS                    	{ 1'000LL };
 
+    /**
+     * \brief   NEUtilities::MIN_TO_SECS
+     *          Seconds in 1 minute.
+     **/
+    constexpr TIME64                MIN_TO_SECS                         { 60LL };
+
+    /**
+     * \brief   NEUtilities::MIN_TO_MILLISECS
+     *          Milliseconds in 1 minute.
+     **/
+    constexpr TIME64                MIN_TO_MILLISECS                    { MIN_TO_SECS * SEC_TO_MILLISECS };
+
+    /**
+     * \brief   NEUtilities::MIN_TO_MICROSECS
+     *          Microseconds in 1 minute.
+     **/
+    constexpr TIME64                MIN_TO_MICROSECS                    { MIN_TO_SECS * SEC_TO_MICROSECS };
+
+    /**
+     * \brief   NEUtilities::HOUR_TO_MINS
+     *          Minutes in 1 hour.
+     **/
+    constexpr TIME64                HOUR_TO_MINS                        { 60LL };
+
+    /**
+     * \brief   NEUtilities::HOUR_TO_SECS
+     *          Seconds in 1 hour.
+     **/
+    constexpr TIME64                HOUR_TO_SECS                        { HOUR_TO_MINS * MIN_TO_SECS };
+
+    /**
+     * \brief   NEUtilities::HOUR_TO_MILLISECS
+     *          Milliseconds in 1 hour.
+     **/
+    constexpr TIME64                HOUR_TO_MILLISECS                   { HOUR_TO_SECS * SEC_TO_MILLISECS };
+
+    /**
+     * \brief   NEUtilities::HOUR_TO_MICROSECS
+     *          Microseconds in 1 hour.
+     **/
+    constexpr TIME64                HOUR_TO_MICROSECS                   { HOUR_TO_SECS * SEC_TO_MICROSECS };
+
+    /**
+     * \brief   NEUtilities::DAY_TO_HOURS
+     *          Hours in 1 day.
+     **/
+    constexpr TIME64                DAY_TO_HOURS                        { 24LL };
+
+    /**
+     * \brief   NEUtilities::DAY_TO_MINS
+     *          Minutes in 1 day.
+     **/
+    constexpr TIME64                DAY_TO_MINS                         { DAY_TO_HOURS * HOUR_TO_MINS };
+
+    /**
+     * \brief   NEUtilities::DAY_TO_SECS
+     *          Seconds in 1 day.
+     **/
+    constexpr TIME64                DAY_TO_SECS                         { DAY_TO_MINS * MIN_TO_SECS };
+
+    /**
+     * \brief   NEUtilities::DAY_TO_MILLISECS
+     *          Milliseconds in 1 day.
+     **/
+    constexpr TIME64                DAY_TO_MILLISECS                    { DAY_TO_SECS * SEC_TO_MILLISECS };
+
+    /**
+     * \brief   NEUtilities::DAY_TO_MICROSECS
+     *          Microseconds in 1 day.
+     **/
+    constexpr TIME64                DAY_TO_MICROSECS                    { DAY_TO_SECS * SEC_TO_MICROSECS };
+
+    /**
+     * \brief   NEUtilities::YEAR_TO_DAYS
+     *          Days in 1 year.
+     **/
+    constexpr TIME64                YEAR_TO_DAYS                        { 365LL };
+
+    /**
+     * \brief   NEUtilities::YEAR_TO_HOURS
+     *          Hours in 1 year.
+     **/
+    constexpr TIME64                YEAR_TO_HOURS                       { YEAR_TO_DAYS * DAY_TO_HOURS };
+
+    /**
+     * \brief   NEUtilities::YEAR_TO_MINS
+     *          Minutes in 1 year.
+     **/
+    constexpr TIME64                YEAR_TO_MINS                        { YEAR_TO_HOURS * HOUR_TO_MINS};
+
+    /**
+     * \brief   NEUtilities::YEAR_TO_SECS
+     *          Seconds in 1 year.
+     **/
+    constexpr TIME64                YEAR_TO_SECS                        { YEAR_TO_MINS * MIN_TO_SECS };
+
+    /**
+     * \brief   NEUtilities::YEAR_TO_MILLISECS
+     *          Milliseconds in 1 year.
+     **/
+    constexpr TIME64                YEAR_TO_MILLISECS                   { YEAR_TO_SECS * SEC_TO_MILLISECS };
+
+    /**
+     * \brief   NEUtilities::YEAR_TO_MICROSECS
+     *          Microseconds in 1 year.
+     **/
+    constexpr TIME64                YEAR_TO_MICROSECS                   { YEAR_TO_SECS * SEC_TO_MICROSECS };
+
+    /**
+     * \brief   NEUtilities::YEAR_TO_DAYS_EX
+     *          Days in 1 leap year
+     **/
+    constexpr TIME64                YEAR_TO_DAYS_EX                     { 366LL };
+
+    /**
+     * \brief   NEUtilities::YEAR_TO_HOURS_EX
+     *          Hours in 1 leap year.
+     **/
+    constexpr TIME64                YEAR_TO_HOURS_EX                    { YEAR_TO_DAYS * DAY_TO_HOURS };
+
+    /**
+     * \brief   NEUtilities::YEAR_TO_MINS_EX
+     *          Minutes in 1 leap year.
+     **/
+    constexpr TIME64                YEAR_TO_MINS_EX                     { YEAR_TO_HOURS * HOUR_TO_MINS};
+
+    /**
+     * \brief   NEUtilities::YEAR_TO_SECS_EX
+     *          Seconds in 1 leap year.
+     **/
+    constexpr TIME64                YEAR_TO_SECS_EX                     { YEAR_TO_MINS * MIN_TO_SECS };
+
+    /**
+     * \brief   NEUtilities::YEAR_TO_MILLISECS_EX
+     *          Milliseconds in 1 year.
+     **/
+    constexpr TIME64                YEAR_TO_MILLISECS_EX                { YEAR_TO_SECS * SEC_TO_MILLISECS };
+
+    /**
+     * \brief   NEUtilities::YEAR_TO_MICROSECS_EX
+     *          Microseconds in 1 year.
+     **/
+    constexpr TIME64                YEAR_TO_MICROSECS_EX                { YEAR_TO_SECS * SEC_TO_MICROSECS };
+
+
 /************************************************************************/
 // NEUtilities namespace utility types
 /************************************************************************/
-
-    typedef enum E_Time : int
-    {
-          TimeUtc   = 0
-        , TimeLocal = 1
-    } eTime;
 
     /**
      * \brief   NEUtilities::sSystemTime
@@ -140,15 +279,29 @@ namespace   NEUtilities
     {
         int     stYear{ 0 };        //!< The year in the time
         int     stMonth{ 0 };       //!< The month in the time, which starts from 1 (January) until 12 (December)
-        int     stDayOfWeek{ 0 };   //!< The day of week in the time, which starts from 0 (Sunday) until 6 (Saturday)
+        int     stDayOfWeek{ 0 };   //!< The day of week in the time, which starts from 1 (Sunday) until 7 (Saturday)
+        int     stDayOfYear{ 0 };   //!< The day of the year, which starts from 1 to 365
         int     stDay{ 0 };         //!< The day of the month in the time, which starts from 1
         int     stHour{ 0 };        //!< The hour in the time, which starts from 0
         int     stMinute{ 0 };      //!< The minute in the time, which starts from 0
         int     stSecond{ 0 };      //!< The second in the time, which starts from 0
         int     stMillisecs{ 0 };   //!< The millisecond in the time, which starts from 0
         int     stMicrosecs{ 0 };   //!< The microseconds in the time, which starts from 0
-        eTime   stTimeType{ eTime::TimeUtc };
     } sSystemTime;
+
+    /**
+     * \brief   Converts time in microseconds to time in seconds.
+     * \param   microseconds    The time in microseconds.
+     * \return  Returns time in seconds.
+     **/
+    inline time_t convToSeconds(const TIME64 & microsecs);
+
+    /**
+     * \brief   Converts the broken time to seconds, throwing out the milliseconds and microseconds.
+     * \param   sysTime     The broken time to convert.
+     * \return  Returns time in seconds.
+     **/
+    AREG_API time_t convToSeconds(const sSystemTime& sysTime);
 
     /**
      * \brief   Returns current time. On output 'out_sysTime' system time contains the date-time data.
@@ -203,6 +356,16 @@ namespace   NEUtilities
     AREG_API NEMath::eCompare compareTimes( const TIME64 & lhs, const TIME64 & rhs );
 
     /**
+     * \brief   Converts given time in microseconds into the time in seconds, milliseconds and microseconds.
+     *
+     * \param   time[in]    The time in microseconds to parse and extract.
+     * \param   secs[out]   On output, this contains the time in seconds.
+     * \param   milli[out]  On output, this contains the remaining time in milliseconds.
+     * \param   micro[out]  On output, this contains the remaining time in microseconds.
+     **/
+    AREG_API void convMicrosecs(const TIME64 & IN time, time_t & OUT secs, unsigned short & OUT milli, unsigned short & OUT micro);
+
+    /**
      * \brief   Converts system-time data structure to standard 'tm' type. In conversion, a milliseconds part of data will be lost.
      * \param   sysTime     The system-time data structure to convert.
      * \param   time        On output the parameter contains date-time of converted system time without information of milliseconds.
@@ -238,11 +401,19 @@ namespace   NEUtilities
 
     /**
      * \brief   Converts the system UTC time to local time.
-     * \param   inUtcTime       The UTC time in microseconds passed since January 1 1970
-     * \param   outLocalTime    On return this structure contains the local time information.
+     * \param   utcTime     The UTC time in microseconds passed since January 1 1970
+     * \param   localTime   On return this structure contains the local time information.
      * \return  Returns true if conversion succeeded.
      **/
     AREG_API bool convToLocalTime( const TIME64 & IN utcTime, sSystemTime & OUT localTime );
+
+    /**
+     * \brief   Converts the system UTC time to local time in structure of tm.
+     * \param   utcTime     The UTC time in microseconds passed since January 1 1970
+     * \param   localTm     On return this structure contains the local time information.
+     * \return  Returns true if conversion succeeded.
+     **/
+    AREG_API bool convToLocalTm(const TIME64 & IN utcTime, struct tm & OUT localTm);
 
 /************************************************************************/
 // NEUtilities namespace utility functions, generate names
@@ -443,7 +614,14 @@ namespace   NEUtilities
     };
 }
 
-IMPLEMENT_STREAMABLE(NEUtilities::eTime);
+//////////////////////////////////////////////////////////////////////////
+// NEUtilities::Duration inline methods
+//////////////////////////////////////////////////////////////////////////
+
+time_t NEUtilities::convToSeconds(const TIME64& microsecs)
+{
+    return static_cast<time_t>(microsecs / NEUtilities::SEC_TO_MICROSECS);
+}
 
 //////////////////////////////////////////////////////////////////////////
 // NEUtilities::Duration inline methods
