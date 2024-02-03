@@ -35,7 +35,7 @@ namespace
     {
         aregTime.stYear = static_cast<int>(winTime.wYear);
         aregTime.stMonth = static_cast<int>(winTime.wMonth);
-        aregTime.stDayOfWeek = static_cast<int>(winTime.wDayOfWeek);
+        aregTime.stDayOfWeek = static_cast<int>(winTime.wDayOfWeek + 1);
         aregTime.stDay = static_cast<int>(winTime.wDay);
         aregTime.stHour = static_cast<int>(winTime.wHour);
         aregTime.stMinute = static_cast<int>(winTime.wMinute);
@@ -49,7 +49,7 @@ namespace
     {
         winTime.wYear = static_cast<WORD>(aregTime.stYear);
         winTime.wMonth = static_cast<WORD>(aregTime.stMonth);
-        winTime.wDayOfWeek = static_cast<WORD>(aregTime.stDayOfWeek);
+        winTime.wDayOfWeek = static_cast<WORD>(aregTime.stDayOfWeek - 1);
         winTime.wDay = static_cast<WORD>(aregTime.stDay);
         winTime.wHour = static_cast<WORD>(aregTime.stHour);
         winTime.wMinute = static_cast<WORD>(aregTime.stMinute);
@@ -100,8 +100,8 @@ namespace
         EXPECT_GE( time.stMonth, 1 )        << prefix << "Month:  " << time.stMonth << std::endl;
         EXPECT_LE( time.stMonth, 12 )       << prefix << "Month:  " << time.stMonth << std::endl;
 
-        EXPECT_GE( time.stDayOfWeek, 0 )    << prefix << "DoF:    " << time.stDayOfWeek << std::endl;
-        EXPECT_LE( time.stDayOfWeek, 6 )    << prefix << "DoF:    " << time.stDayOfWeek << std::endl;
+        EXPECT_GE( time.stDayOfWeek, 1 )    << prefix << "DoF:    " << time.stDayOfWeek << std::endl;
+        EXPECT_LE( time.stDayOfWeek, 7 )    << prefix << "DoF:    " << time.stDayOfWeek << std::endl;
 
         EXPECT_GE( time.stDay, 1 )          << prefix << "Day:    " << time.stDay << std::endl;
         EXPECT_LE( time.stDay, 31 )         << prefix << "Day:    " << time.stDay << std::endl;
@@ -211,6 +211,13 @@ TEST( DateTimeTest, TestLocalTime )
     NEUtilities::sSystemTime utcTime;
     NEUtilities::convToSystemTime( date.getTime( ), utcTime );
     _checkTimeStruct( utcTime, "Areg UTC " );
+
+    time_t secs1 = NEUtilities::convToSeconds(date.getTime());
+    time_t secs2 = NEUtilities::convToSeconds(utcTime);
+    ASSERT_EQ(secs1, secs2);
+
+    TIME64 micro = NEUtilities::convToTime(utcTime);
+    ASSERT_EQ(date.getTime(), micro);
 
     NEUtilities::sSystemTime localTime{ };
     NEUtilities::convToLocalTime( utcTime, localTime );

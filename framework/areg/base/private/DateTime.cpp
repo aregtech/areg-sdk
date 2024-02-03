@@ -37,11 +37,6 @@ DateTime::DateTime( const NEUtilities::sSystemTime & sysTime )
 {
 }
 
-DateTime::DateTime( const NEUtilities::sFileTime & fileTime )
-    : mDateTime( NEUtilities::convToTime(fileTime) )
-{
-}
-
 DateTime::DateTime( const DateTime & dateTime )
     : mDateTime ( dateTime.mDateTime )
 {
@@ -84,20 +79,18 @@ void DateTime::formatTime(const DateTime& dateTime, String& OUT result, const st
 
     if (dateTime.mDateTime != 0)
     {
-        NEUtilities::sSystemTime sysTime{ 0 };
+        time_t secs;
+        unsigned short milli, micro;
         struct tm conv { 0 };
-
-        NEUtilities::convToLocalTime(dateTime.mDateTime, sysTime);
-        NEUtilities::convToTm(sysTime, conv);
-
-        unsigned int milli{ static_cast<unsigned int>(sysTime.stMillisecs) };
+        NEUtilities::convMicrosecs(dateTime.mDateTime, secs, milli, micro);
+        NEUtilities::convToLocalTm(dateTime.mDateTime, conv);
 
         String str(formatName.empty() == false ? formatName : DateTime::TIME_FORMAT_ISO8601_OUTPUT);
         NEString::CharPos ms = str.findFirst(FORMAT_MILLISECOND.data());
         if (str.isValidPosition(ms))
         {
             char buf[128];
-            String::formatString(buf, 128, "%03u", milli);
+            String::formatString(buf, 128, "%03u", static_cast<uint32_t>(milli));
             str.replace(ms, static_cast<NEString::CharCount>(FORMAT_MILLISECOND.length()), buf);
         }
 
