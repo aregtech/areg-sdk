@@ -25,24 +25,67 @@
 #include <time.h>
 
 
-/************************************************************************/
-// static local functions
-/************************************************************************/
 namespace NEUtilities 
 {
+/************************************************************************/
+// Declaration of OS specific methods
+/************************************************************************/
+
+    /**
+     * \brief   Returns value as milliseconds that have elapsed since the system was started.
+     **/
     extern uint64_t _osGetTickCount( void );
 
-    extern void _osSystemTimeNow( sSystemTime & OUT sysTime, bool localTime );
-
+    /**
+     * \brief   Returns value of the current date and time in microseconds passed since Unix epoch (1 January 1970).
+     *          The time is in UTC.
+     **/
     extern TIME64 _osSystemTimeNow(void);
 
+    /**
+     * \brief   Set the current date and time in the struct pointed to by the `sysTime` argument.
+     * \param[out]  sysTime     The structure to break the current date and time.
+     * \param[in]   localTime   The flag, indicating whether the time should be local or in UTC.
+     **/
+    extern void _osSystemTimeNow( sSystemTime & OUT sysTime, bool localTime );
+
+    /**
+     * \brief   Converts the UTC time broken in the structure of `tm` to the local time.
+     * \param[in,out]   utcTime     The broken time in UTC to convert to the local time.
+     **/
     extern void _osMakeTmLocal(struct tm& IN OUT utcTime);
 
+    /**
+     * \brief   Converts the given time in microseconds passed since Unix epoch (1 January 1970) to the local time
+     *          broken in the structure of `localTime` parameter.
+     * \param[in]   utcTime     The UTC time in microseconds since Unix epoch (1 January 1970) to convert to local time.
+     * \param[out]  localTime   The broken time structure. On output this contains structured calendar structure.
+     * \return  Returns true if operation succeeded. Otherwise, returns false.
+     **/
     extern bool _osConvToLocalTime(const TIME64& IN utcTime, sSystemTime& OUT localTime);
 
+    /**
+     * \brief   Converts the given time in microseconds passed since Unix epoch (1 January 1970) to the local time
+     *          broken in the structure of `localTm` parameter.
+     * \param[in]   utcTime     The UTC time in microseconds since Unix epoch (1 January 1970) to convert to local time.
+     * \param[out]  localTm     The broken time structure. On output this contains structured calendar structure without
+     *                          milliseconds and microseconds.
+     * \return  Returns true if operation succeeded. Otherwise, returns false.
+     **/
     extern bool _osConvToLocalTm(const TIME64& IN utcTime, struct tm& OUT localTm);
 
+    /**
+     * \brief   Converts the given time in microseconds passed since Unix epoch (1 January 1970) to the time
+     *          broken in the structure of `sysTime` parameter.
+     * \param[in]   utcTime     The UTC time in microseconds since Unix epoch (1 January 1970) to break.
+     * \param[out]  localTime   The broken time structure. On output this contains structured calendar structure,
+     *                          including milliseconds and microseconds.
+     **/
     extern void _osConvToSystemTime(const TIME64& IN timeValue, NEUtilities::sSystemTime& OUT sysTime);
+
+/************************************************************************/
+// Local static methods.
+/************************************************************************/
 
     NEMath::eCompare compareLargeIntegers( const NEMath::uLargeInteger & lhs, const NEMath::uLargeInteger & rhs )
     {
