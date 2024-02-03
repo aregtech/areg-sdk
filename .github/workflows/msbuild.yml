@@ -46,12 +46,12 @@ jobs:
 
     steps:
     - name: Checkout AREG engine (AREG SDK) source codes and submodules
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: recursive
 
     - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/setup-msbuild@v2
 
     - name: Restore NuGet packages
       working-directory: ${{env.GITHUB_WORKSPACE}}
