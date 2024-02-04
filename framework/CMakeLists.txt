@@ -93,11 +93,11 @@ file(MAKE_DIRECTORY ${AREG_OUTPUT_BIN}/config)
 file(COPY ${AREG_BASE}/areg/resources/areg.init DESTINATION ${AREG_OUTPUT_BIN}/config)
 
 if("${AREG_DEVELOP_ENV}" STREQUAL "Win32")
-    add_custom_command(TARGET mcrouter
-                       POST_BUILD
-                       COMMAND cmd /c "${mcrouter_RESOURCE}/mcrouter_post_build.bat" "${mcrouter_RESOURCE}" "${AREG_OUTPUT_BIN}")
-
-    add_custom_command(TARGET logger
-                       POST_BUILD
-                       COMMAND cmd /c "${logger_RESOURCE}/logger_post_build.bat" "${logger_RESOURCE}" "${AREG_OUTPUT_BIN}")
+    file(COPY ${mcrouter_RESOURCE}/mcrouter_install.bat DESTINATION ${AREG_OUTPUT_BIN}/)
+    file(COPY ${mcrouter_RESOURCE}/mcrouter_uninstall.bat DESTINATION ${AREG_OUTPUT_BIN}/)
+    file(COPY ${logger_RESOURCE}/logger_install.bat DESTINATION ${AREG_OUTPUT_BIN}/)
+    file(COPY ${logger_RESOURCE}/logger_uninstall.bat DESTINATION ${AREG_OUTPUT_BIN}/)
+else()
+    file(COPY ${mcrouter_RESOURCE}/mcrouter.service DESTINATION ${AREG_OUTPUT_BIN}/)
+    file(COPY ${logger_RESOURCE}/logger.service DESTINATION ${AREG_OUTPUT_BIN}/)
 endif()

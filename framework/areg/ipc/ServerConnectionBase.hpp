@@ -165,7 +165,7 @@ public:
      *          source or target in Remote Buffer.
      * \param   clientSocket    Accepted client socket connection
      **/
-    inline const ITEM_ID & getCookie( const SocketAccepted & clientSocket ) const;
+    inline ITEM_ID getCookie( const SocketAccepted & clientSocket ) const;
 
     /**
      * \brief   Returns cookie of client connection set by server.
@@ -173,7 +173,7 @@ public:
      *          source or target in Remote Buffer.
      * \param   socketHandle    Socket handle of accepted client connection
      **/
-    inline const ITEM_ID & getCookie( SOCKETHANDLE socketHandle ) const;
+    inline ITEM_ID getCookie( SOCKETHANDLE socketHandle ) const;
 
     /**
      * \brief   Returns accepted socket object, which is matching passed cookie.
@@ -385,12 +385,12 @@ inline bool ServerConnectionBase::isConnectionAccepted( SOCKETHANDLE connection 
     return mAcceptedConnections.contains(connection);
 }
 
-inline const ITEM_ID & ServerConnectionBase::getCookie(const SocketAccepted & clientSocket) const
+inline ITEM_ID ServerConnectionBase::getCookie(const SocketAccepted & clientSocket) const
 {
     return getCookie(clientSocket.getHandle());
 }
 
-inline const ITEM_ID & ServerConnectionBase::getCookie(SOCKETHANDLE socketHandle) const
+inline ITEM_ID ServerConnectionBase::getCookie(SOCKETHANDLE socketHandle) const
 {
     Lock lock( mLock );
 

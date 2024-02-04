@@ -23,3 +23,4 @@ $(mcrouter_TARGET_BIN): $(areg_TARGET_BIN) $(mcrouter_OBJS) $(AREG_DEPEND)
 	@echo "Linking AREG SDK mcrouter ..."
 	@mkdir -p $(dir $@)
 	$(AREG_CXX_TOOLCHAIN) $(CXXFLAGS) $(mcrouter_CXXFLAGS) $(mcrouter_OBJS) -o $@ $(mcrouter_LDFLAGS)
+	@cp $(mcrouter_BASE)/resources/mcrouter.service $(AREG_OUTPUT_BIN)/
