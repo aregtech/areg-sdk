@@ -8,7 +8,7 @@
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentThread.hpp"
 #include "common/NECommon.hpp"
-#include "generated/src/NEConnectionManager.hpp"
+#include "generate/examples/17_winchat/NEConnectionManager.hpp"
 #include "chatter/NEDistributedApp.hpp"
 #include "chatter/services/ConnectionHandler.hpp"
 #include "chatter/ui/DistributedDialog.hpp"

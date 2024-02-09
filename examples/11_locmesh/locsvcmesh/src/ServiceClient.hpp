@@ -13,7 +13,7 @@
  ************************************************************************/
 
 #include "areg/base/GEGlobal.h"
-#include "generated/src/HelloWorldClientBase.hpp"
+#include "generate/examples/11_locmesh/HelloWorldClientBase.hpp"
 #include "areg/component/IETimerConsumer.hpp"
 
 #include "areg/component/Timer.hpp"

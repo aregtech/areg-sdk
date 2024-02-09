@@ -14,7 +14,7 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "generated/src/SystemShutdownStub.hpp"
+#include "generate/examples/13_pubmesh/SystemShutdownStub.hpp"
 #include "common/src/PublicHelloWorldService.hpp"
 #include "common/src/LocalHelloWorldClient.hpp"
 

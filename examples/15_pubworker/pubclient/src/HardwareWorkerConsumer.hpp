@@ -13,7 +13,7 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/IEWorkerThreadConsumer.hpp"
-#include "generated/src/PatientInfoEvent.hpp"
+#include "common/PatientInfoEvent.hpp"
 
 /**
  * \brief   The worker thread consumer that is invoked to handle worker thread.

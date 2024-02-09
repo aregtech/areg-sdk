@@ -46,7 +46,6 @@
     <Text Include="src\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="config\areg.init" />
     <None Include="Makefile" />
     <None Include="ReadMe.md" />
   </ItemGroup>

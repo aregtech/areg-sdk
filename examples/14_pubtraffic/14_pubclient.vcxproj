@@ -43,6 +43,7 @@
     <ClCompile Include="pubclient\src\TrafficLightClient.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="common\NECommon.hpp" />
     <ClInclude Include="pubclient\src\TrafficLightClient.hpp" />
   </ItemGroup>
   <ItemGroup>

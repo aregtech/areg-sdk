@@ -57,6 +57,12 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Setup Java
+        uses: actions/setup-java@4
+        with: 
+          distribution: 'oracle'
+          java-version: '21'
+
       - name: Update compilers on Linux
         if: matrix.config.os == 'ubuntu-latest'
         # Update compilers, set C/C++ compilers
@@ -79,7 +85,8 @@ jobs:
             gcc-g++,^
             make,^
             ncurses,^
-            libncurses-devel
+            libncurses-devel,^
+            java
 
       - name: set Windows PATH environment variable
         if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'

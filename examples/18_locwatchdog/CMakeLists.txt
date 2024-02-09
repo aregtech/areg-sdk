@@ -1,7 +1,9 @@
-# Project names
-macro_declare_project(18_generated    "generated")
+
+# add service interface
+addServiceInterface(18_generated res HelloWatchdog)
+
+# add project
 macro_declare_project(18_locservice   "locservice")
 
-# Setting up appropriate flags
-addStaticLib(${project_generated}       "${generated_src}")
-addExecutableEx(${project_locservice}   "${locservice_src}" "${project_generated}")
+# add executable
+addExecutableEx(${project_locservice}   "${locservice_src}" 18_generated)

@@ -14,13 +14,13 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "generated/src/HelloWorldClientBase.hpp"
+#include "generate/examples/10_locsvc/HelloWorldClientBase.hpp"
 #include "areg/component/IETimerConsumer.hpp"
 
 #include "areg/component/Timer.hpp"
 
 //! \brief  A client component to call request, and process response and broadcast.
-//!         The reuqests are triggered on each timer timeout.
+//!         The requests are triggered on each timer timeout.
 class ServiceClient : public    Component
                     , protected HelloWorldClientBase
                     , private   IETimerConsumer

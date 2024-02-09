@@ -282,6 +282,12 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Setup Java
+        uses: actions/setup-java@4
+        with: 
+          distribution: 'oracle'
+          java-version: '21'
+
       - name: Fetch cygwin installer on Windows
         if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
         shell: powershell
@@ -298,7 +304,8 @@ jobs:
             flexdll,^
             gcc-g++,^
             ncurses,^
-            libncurses-devel
+            libncurses-devel^
+            java
 
       - name: set Windows PATH environment variable
         if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'

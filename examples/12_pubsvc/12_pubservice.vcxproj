@@ -43,6 +43,7 @@
     <ClCompile Include="pubservice\src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="common\NECommon.hpp" />
     <ClInclude Include="pubservice\src\ServicingComponent.hpp" />
   </ItemGroup>
   <ItemGroup>

@@ -12,7 +12,7 @@
   ************************************************************************/
 
 #include "areg/base/GEGlobal.h"
-#include "generated/src/HelloWorldStub.hpp"
+#include "generate/examples/11_locmesh/HelloWorldStub.hpp"
 
 //! \brief  An implementation of a service to include in the components.
 //!         This service receives requests, send response and broadcast.

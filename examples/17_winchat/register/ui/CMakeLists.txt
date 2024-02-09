@@ -1,4 +1,4 @@
-macro_add_sources(macro_project_sources
+macro_add_sources(project_sources
     CentralDialog.cpp
     PageBrokerSetup.cpp
     PageConnections.cpp

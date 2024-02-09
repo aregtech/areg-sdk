@@ -12,8 +12,8 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
 
-#include "generated/src/NEHelloWatchdog.hpp"
-#include "generated/src/NECommon.hpp"
+#include "generate/examples/19_pubwatchdog/NEHelloWatchdog.hpp"
+#include "common/NECommon.hpp"
 #include "pubservice/src/ServicingComponent.hpp"
 
 #ifdef WINDOWS

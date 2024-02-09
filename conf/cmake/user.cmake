@@ -187,8 +187,10 @@ if (NOT DEFINED AREG_LOGOBSERVER_LIB OR NOT "${AREG_LOGOBSERVER_LIB}" STREQUAL "
     set(AREG_LOGOBSERVER_LIB "shared")
 endif()
 
+set(AREG_GENERATE "generate")
+
 # The absolute path for generated files
-set(AREG_GENERATE_DIR "${AREG_BUILD_ROOT}/generate")
+set(AREG_GENERATE_DIR "${AREG_BUILD_ROOT}/${AREG_GENERATE}")
 
 # CPP standard for the projects
 set(AREG_CXX_STANDARD 17)

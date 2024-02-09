@@ -16,7 +16,7 @@
 #include "areg/trace/GETrace.h"
 
 
-#include "generated/src/NECommon.hpp"
+#include "common/NECommon.hpp"
 #include "ServiceClient.hpp"
 
 #ifdef WINDOWS

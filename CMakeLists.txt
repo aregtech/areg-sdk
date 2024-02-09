@@ -12,6 +12,7 @@ set(AREG_BASE               "${AREG_SDK_ROOT}/framework")
 set(AREG_EXAMPLES           "${AREG_SDK_ROOT}/examples")
 set(AREG_TESTS              "${AREG_SDK_ROOT}/tests")
 set(AREG_THIRDPARTY         "${AREG_SDK_ROOT}/thirdparty")
+set(AREG_SDK_TOOLS			"${AREG_SDK_ROOT}/tools")
 
 include(${AREG_CMAKE_CONFIG_DIR}/functions.cmake)
 include(${AREG_CMAKE_CONFIG_DIR}/user.cmake)

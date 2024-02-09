@@ -4,12 +4,11 @@ set(project_root "${CMAKE_CURRENT_LIST_DIR}")
 set(CMAKE_MFC_FLAG PRIVATE 2)
 
 # ####################################
-# generated project
-
-# 'generated project'
-macro_declare_project(17_generated    "generated")
-# Setting up appropriate flags
-addStaticLib(${project_generated} "${generated_src}")
+# add service interfaces
+addServiceInterface(17_generated res CentralMessager)
+addServiceInterface(17_generated res ConnectionManager)
+addServiceInterface(17_generated res DirectConnection)
+addServiceInterface(17_generated res DirectMessager)
 
 # Set MFC DLL and other Windows flags.
 list(APPEND MFC_DEFINES _AFXDLL _BIND_TO_CURRENT_CRT_VERSION _BIND_TO_CURRENT_MFC_VERSION)
@@ -24,7 +23,7 @@ list(APPEND chatter_src "${chatter_resources}")
 
 # 'chatter' project, compile for Windows system, set options
 add_executable(${project_chatter} WIN32 ${chatter_src})
-setAppOptions(${project_chatter} ${project_generated})
+setAppOptions(${project_chatter} 17_generated)
 # Set compile definitions to link MFC DLL
 target_compile_definitions(${project_chatter} PRIVATE "${MFC_DEFINES}")
 # Ensure Windows Subsystem and switch the entry point from main() method to 'wWinMainCRTStartup' implemented in MFC DLL.
@@ -40,7 +39,7 @@ set_source_files_properties(${register_resources} PROPERTIES LANGUAGE RC)
 list(APPEND register_src ${register_resources})
 # 'register' project, compile for Windows system, set options
 add_executable(${project_register} WIN32 ${register_src})
-setAppOptions(${project_register} ${project_generated})
+setAppOptions(${project_register} 17_generated)
 # Set compile definitions to link MFC DLL
 target_compile_definitions(${project_register} PRIVATE "${MFC_DEFINES}")
 # Ensure Windows Subsystem and switch the entry point from main() method to 'wWinMainCRTStartup' implemented in MFC DLL.

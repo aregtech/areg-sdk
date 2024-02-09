@@ -15,46 +15,40 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="generated\src\private\HelloServiceClientBase.cpp">
+    <ClCompile Include="$(AregGenerateDir)\examples\00_helloservice\private\HelloServiceClientBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\HelloServiceEvents.cpp">
+    <ClCompile Include="$(AregGenerateDir)\examples\00_helloservice\private\HelloServiceEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\HelloServiceProxy.cpp">
+    <ClCompile Include="$(AregGenerateDir)\examples\00_helloservice\private\HelloServiceProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\HelloServiceStub.cpp">
+    <ClCompile Include="$(AregGenerateDir)\examples\00_helloservice\private\HelloServiceStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\NEHelloService.cpp">
+    <ClCompile Include="$(AregGenerateDir)\examples\00_helloservice\private\NEHelloService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="generated\src\private\HelloServiceEvents.hpp">
+    <ClInclude Include="$(AregGenerateDir)\examples\00_helloservice\private\HelloServiceEvents.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\private\HelloServiceProxy.hpp">
+    <ClInclude Include="$(AregGenerateDir)\examples\00_helloservice\private\HelloServiceProxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\HelloServiceClientBase.hpp">
+    <ClInclude Include="$(AregGenerateDir)\examples\00_helloservice\HelloServiceClientBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\HelloServiceStub.hpp">
+    <ClInclude Include="$(AregGenerateDir)\examples\00_helloservice\HelloServiceStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\NEHelloService.hpp">
+    <ClInclude Include="$(AregGenerateDir)\examples\00_helloservice\NEHelloService.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="generated\CMakeLists.txt" />
-    <Text Include="generated\src\private\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\HelloService.siml" />
-    <None Include="generated\Makefile" />
-    <None Include="generated\src\private\Makefile" />
   </ItemGroup>
 </Project>

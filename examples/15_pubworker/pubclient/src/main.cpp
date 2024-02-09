@@ -13,7 +13,7 @@
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
 
-#include "generated/src/NECommon.hpp"
+#include "common/NECommon.hpp"
 #include "pubclient/src/PatientClient.hpp"
 
 #ifdef WINDOWS

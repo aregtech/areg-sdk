@@ -50,6 +50,12 @@ jobs:
       with:
         submodules: recursive
 
+    - name: Setup Java
+      uses: actions/setup-java@4
+      with: 
+        distribution: 'oracle'
+        java-version: '21'
+
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
 

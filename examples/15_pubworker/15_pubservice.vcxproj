@@ -44,8 +44,11 @@
     <ClCompile Include="pubservice\src\PatientServiceWorkerConsumer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="common\NECommon.hpp" />
+    <ClInclude Include="common\PatientInfoEvent.hpp" />
     <ClInclude Include="pubservice\src\PatientService.hpp" />
     <ClInclude Include="pubservice\src\PatientServiceWorkerConsumer.hpp" />
+    <ClInclude Include="res\NECommon.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="pubservice\CMakeLists.txt" />

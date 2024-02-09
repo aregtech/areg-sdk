@@ -14,7 +14,7 @@
  ************************************************************************/
 
 #include "areg/base/GEGlobal.h"
-#include "generated/src/PublicHelloWorldStub.hpp"
+#include "generate/examples/13_pubmesh/PublicHelloWorldStub.hpp"
 
 //! \brief  Implementation of a public service to receive requests from remote clients.
 class PublicHelloWorldService : private PublicHelloWorldStub

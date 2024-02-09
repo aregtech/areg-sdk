@@ -1,9 +1,12 @@
-# Project names
-macro_declare_project(16_generated    "generated")
+
+# add service interfaces
+addServiceInterface(16_generated res PowerManager)
+addServiceInterface(16_generated res TrafficController)
+
+# add projects
 macro_declare_project(16_pubclient    "pubclient")
 macro_declare_project(16_pubservice   "pubservice")
 
-# Setting up appropriate flags
-addStaticLib(${project_generated}       "${generated_src}")
-addExecutableEx(${project_pubclient}    "${pubclient_src}"  "${project_generated}")
-addExecutableEx(${project_pubservice}   "${pubservice_src}" "${project_generated}")
+# add executables
+addExecutableEx(${project_pubclient}    "${pubclient_src}"  16_generated)
+addExecutableEx(${project_pubservice}   "${pubservice_src}" 16_generated)

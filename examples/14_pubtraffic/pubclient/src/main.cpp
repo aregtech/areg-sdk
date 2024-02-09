@@ -21,7 +21,7 @@
 #include "areg/base/NEUtilities.hpp"
 #include "extend/console/Console.hpp"
 
-#include "generated/src/NECommon.hpp"
+#include "common/NECommon.hpp"
 #include "pubclient/src/TrafficLightClient.hpp"
 
 #ifdef WIN32

@@ -218,7 +218,7 @@ add_compile_options(${AREG_COMPILER_OPTIONS})
 set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${AREG_OUTPUT_DIR})
 
 # Add include search paths
-include_directories(BEFORE "${AREG_BASE}" "${AREG_GENERATE_DIR}" "${AREG_THIRDPARTY}")
+include_directories(BEFORE "${AREG_BASE}" "${AREG_BUILD_ROOT}" "${AREG_GENERATE_DIR}" "${AREG_THIRDPARTY}")
 
 # Adding library search paths
 link_directories(BEFORE "${AREG_OUTPUT_BIN}" "${AREG_OUTPUT_LIB}")
@@ -242,3 +242,4 @@ message(STATUS ">>> Binary output folder '${AREG_OUTPUT_BIN}', executable extens
 message(STATUS ">>> Generated files are in '${AREG_GENERATE_DIR}', library output folder '${AREG_OUTPUT_LIB}'")
 message(STATUS ">>> Build examples is '${AREG_BUILD_EXAMPLES}', build tests is '${AREG_BUILD_TESTS}', AREG extended features are '${AREG_EXTENDED}', compile with logs '${AREG_LOGS}'")
 message(STATUS "-------------------- CMakeLists Status Report End ----------------------")
+message(STATUS CMAKE_SOURCE_DIR = ${CMAKE_SOURCE_DIR})

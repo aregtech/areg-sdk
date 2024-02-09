@@ -13,9 +13,9 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "generated/src/SimpleTrafficLightClientBase.hpp"
+#include "generate/examples/14_pubtraffic/SimpleTrafficLightClientBase.hpp"
 
-#include "generated/src/NECommon.hpp"
+#include "common/NECommon.hpp"
 
 //! The simple service client, which receives data update notifications.
 class TrafficLightClient    : public    Component

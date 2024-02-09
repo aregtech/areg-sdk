@@ -26,6 +26,9 @@
     <ClInclude Include="pubservice\src\ServicingComponent.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="common\NECommon.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="pubservice\CMakeLists.txt" />

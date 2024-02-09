@@ -13,7 +13,7 @@
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/component/IETimerConsumer.hpp"
-#include "generated/src/PubSubMixStub.hpp"
+#include "generate/examples/23_pubsubmix/PubSubMixStub.hpp"
 
 #include "areg/component/Timer.hpp"
 #include "extend/console/OptionParser.hpp"

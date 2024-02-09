@@ -39,29 +39,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="generated\src\private\NEPubSub.cpp" />
-    <ClCompile Include="generated\src\private\PubSubClientBase.cpp" />
-    <ClCompile Include="generated\src\private\PubSubEvents.cpp" />
-    <ClCompile Include="generated\src\private\PubSubProxy.cpp" />
-    <ClCompile Include="generated\src\private\PubSubStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\24_pubsubmulti\private\NEPubSub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\24_pubsubmulti\private\PubSubClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\24_pubsubmulti\private\PubSubEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\24_pubsubmulti\private\PubSubProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\24_pubsubmulti\private\PubSubStub.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="generated\src\NEPubSub.hpp" />
-    <ClInclude Include="generated\src\private\PubSubEvents.hpp" />
-    <ClInclude Include="generated\src\private\PubSubProxy.hpp" />
-    <ClInclude Include="generated\src\PubSubClientBase.hpp" />
-    <ClInclude Include="generated\src\PubSubStub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\24_pubsubmulti\NEPubSub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\24_pubsubmulti\private\PubSubEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\24_pubsubmulti\private\PubSubProxy.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\24_pubsubmulti\PubSubClientBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\24_pubsubmulti\PubSubStub.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="generated\Makefile" />
-    <None Include="generated\src\private\Makefile" />
-    <None Include="res\generate.bat" />
-    <None Include="res\generate.sh" />
     <None Include="res\PubSub.siml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="generated\CMakeLists.txt" />
-    <Text Include="generated\src\private\CMakeLists.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

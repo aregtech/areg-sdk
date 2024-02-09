@@ -1,9 +1,11 @@
-# Project names
-macro_declare_project(15_generated    "generated")
+
+# add service interface
+addServiceInterface(15_generated res PatientInformation)
+
+# add projects
 macro_declare_project(15_pubclient    "pubclient")
 macro_declare_project(15_pubservice   "pubservice")
 
-# Setting up appropriate flags
-addStaticLib(${project_generated}       "${generated_src}")
-addExecutableEx(${project_pubclient}    "${pubclient_src}"  "${project_generated}")
-addExecutableEx(${project_pubservice}   "${pubservice_src}" "${project_generated}")
+# add executables
+addExecutableEx(${project_pubclient}    "${pubclient_src}"  15_generated)
+addExecutableEx(${project_pubservice}   "${pubservice_src}" 15_generated)
