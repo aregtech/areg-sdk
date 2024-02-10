@@ -1,9 +1,9 @@
 include(GoogleTest)
-
-# add each file as a separate test.
-addTest(DemoTest.cpp)
-addTest(DateTimeTest.cpp)
-addTest(FileTest.cpp)
-addTest(StringUtilsTest.cpp)
-addTest(LogScopesTest.cpp)
-addTest(OptionParserTest.cpp)
+addUnitTest("${AREG_UNIT_TEST_PROJECT}"
+    ${AREG_UNIT_TEST_BASE}/DemoTest.cpp
+    ${AREG_UNIT_TEST_BASE}/DateTimeTest.cpp
+    ${AREG_UNIT_TEST_BASE}/FileTest.cpp
+    ${AREG_UNIT_TEST_BASE}/StringUtilsTest.cpp
+    ${AREG_UNIT_TEST_BASE}/LogScopesTest.cpp
+    ${AREG_UNIT_TEST_BASE}/OptionParserTest.cpp
+)
