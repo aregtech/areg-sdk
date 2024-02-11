@@ -291,6 +291,7 @@ jobs:
         run: |
             c:\setup.exe -qgnO -s http://mirrors.kernel.org/sourceware/cygwin/ -l C:\cygwin-packages\ -P ^
             cmake,^
+            make,^
             dos2unix,^
             flexdll,^
             gcc-g++,^
@@ -303,15 +304,11 @@ jobs:
 
       - name: Set cmake cache destination for Linux
         if: matrix.config.os == 'ubuntu-latest'
-        run: |
-          echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> "$GITHUB_ENV"
-          echo "Set cmake cache directory to " ${{env.CACHE_DEST}}
+        run: echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> "$GITHUB_ENV"
          
       - name: Set cmake cache destination for Windows
         if: matrix.config.os == 'windows-latest'
-        run: |
-          echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> $env:GITHUB_ENV
-          echo "Set cmake cache directory to " ${{env.CACHE_DEST}}
+        run: echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> $env:GITHUB_ENV
          
       - name: Configure CMake with enabled extended feature and selected compiler family
         if: matrix.config.extend == 'ON'
