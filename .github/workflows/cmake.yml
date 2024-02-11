@@ -303,9 +303,6 @@ jobs:
         if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
         run: echo "PATH=C:\cygwin64;C:\cygwin64\bin;C:\cygwin64\lib;%SYSTEMROOT%\system32;%PATH%" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           
-      - name: Adding repository directory  a safe directory
-        run: git config --global --add safe.directory ${{github.workspace}}
-
       - name: Set cmake cache destination for Linux
         if: matrix.config.os == 'ubuntu-latest'
         run: echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> "$GITHUB_ENV"
