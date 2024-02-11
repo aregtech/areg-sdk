@@ -34,7 +34,7 @@
 #  11. AREG_OUTPUT_BIN      = <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release/bin (possible values: any full path)
 #  12. AREG_OUTPUT_LIB      = <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release/lib (possible values: any full path)
 #  13. AREG_LOGOBSERVER_LIB = shared    (possible values: shared, static)
-#  14. AREG_PACKAGES        -- <package location> (default value is AREG_BUILD_ROOT/packages)
+#  14. AREG_PACKAGES        = <package location> (default value is ${AREG_BUILD_ROOT}/packages)
 #
 # Hints:
 #
