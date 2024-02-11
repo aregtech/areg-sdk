@@ -291,12 +291,13 @@ jobs:
         run: |
             c:\setup.exe -qgnO -s http://mirrors.kernel.org/sourceware/cygwin/ -l C:\cygwin-packages\ -P ^
             cmake,^
-            make,^
             dos2unix,^
             flexdll,^
             gcc-g++,^
+            git,^
             ncurses,^
-            libncurses-devel
+            libncurses-devel,^
+            make
 
       - name: set Windows PATH environment variable
         if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
