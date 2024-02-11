@@ -494,9 +494,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "21_pubservice", "examples\2
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{93F005FC-C82E-41C7-AD15-C2F7C8287BFF}"
-	ProjectSection(SolutionItems) = preProject
-		tests\CMakeLists.txt = tests\CMakeLists.txt
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "units", "units", "{48E60088-F431-4FFB-A170-31DAF8EC2DC8}"
 EndProject

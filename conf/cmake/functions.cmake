@@ -451,6 +451,19 @@ macro(macro_declare_project project_name project_alias)
 endmacro(macro_declare_project)
 
 # ---------------------------------------------------------------------------
+# Description : This function creates a single test executable discovered by CTest.
+# Function ...: addTest
+# Parameters .: ${test_name}    -- The name of test executable
+#               ${test_source}  -- The source to set to compile executable.
+# Usage ......: addTest( <test name> <source file>) 
+# ---------------------------------------------------------------------------
+function(addTest test_name test_source)
+    list(APPEND google_test_libs "GTest::gtest_main" "GTest::gtest")
+    addExecutableEx(${test_name} "${test_source}" "${google_test_libs}")
+    gtest_discover_tests(${test_name} DISCOVERY_TIMEOUT 60)
+endfunction(addTest)
+
+# ---------------------------------------------------------------------------
 # Description : Creates an unit test executable from specified list of sources
 #               and libraries. If the target with the same name exist, the sources
 #               are added to the existing executable. Otherwise, the new executable

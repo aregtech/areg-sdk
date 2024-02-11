@@ -3,7 +3,7 @@
 # Copyright 2022-2023 Aregtech
 # ###########################################################################
 
-cmake_minimum_required(VERSION 3.16.0)
+cmake_minimum_required(VERSION 3.20.0)
 
 # Areg root directory
 set(AREG_SDK_ROOT           "${CMAKE_CURRENT_LIST_DIR}")
