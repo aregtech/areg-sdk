@@ -571,3 +571,47 @@ endfunction(addServiceInterface)
 macro(macro_add_service_interface gen_project_name interface_name)
     addServiceInterface(${gen_project_name} "" ${interface_name})
 endmacro(macro_add_service_interface)
+
+# ---------------------------------------------------------------------------
+# Description : Creates an unit test executable from specified list of sources
+#               and libraries. If the target with the same name exist, the sources
+#               are added to the existing executable. Otherwise, the new executable
+#               is created using specified source and linked with specified libraries.
+# Function ...: addUnitTestEx
+# Parameters .: ${test_project}     -- The name unit test executable.
+#               ${test_sources}     -- The list of unit test sources to include in executable.
+#               ${library_list}     -- The list of libraries to link the unit test executable.
+#                                      The 'gtest' and 'areg' libraries is automatically included,
+#                                      so that there is no need to specify them.
+#                                      The list of libraries can be empty.
+# Usage ......: addUnitTestEx( <name of executable> "<list of sources>" "<list of libraries>")
+# ---------------------------------------------------------------------------
+function(addUnitTestEx test_project test_sources library_list)
+    if (DEFINED GOOGLE_TEST_BASE)
+        if (TARGET ${test_project})
+            target_sources(${test_project} PRIVATE "${test_sources}")
+        else()
+            list(APPEND google_test_libs "GTest::gtest_main" "GTest::gtest" "${library_list}")
+            addExecutableEx(${test_project} "${test_sources}" "${google_test_libs}")
+            gtest_discover_tests(${test_project} DISCOVERY_TIMEOUT 60)
+        endif()
+    endif()
+endfunction(addUnitTestEx)
+
+# ---------------------------------------------------------------------------
+# Description : Creates an unit test executable from specified list of sources
+#               linked with 'areg' and 'gtest' libraries. If the target with the
+#               same name exist, the sources are added to the existing executable.
+#               Otherwise, the new executable is created using specified source.
+# Function ...: addUnitTest
+# Parameters .: ${test_project}     -- The name unit test executable.
+#               ${test_sources}     -- The list of unit test sources to include in executable.
+# Usage ......: addUnitTest( <name of executable> <list of sources>)
+# ---------------------------------------------------------------------------
+function(addUnitTest test_project test_sources)
+    set(source_list "${ARGN}")
+    foreach(item IN LISTS source_list)
+        list(APPEND test_sources "${item}")
+    endforeach()
+    addUnitTestEx("${test_project}" "${test_sources}" "")
+endfunction(addUnitTest)

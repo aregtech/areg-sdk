@@ -31,6 +31,7 @@ endfunction(addTest testName)
 if (DEFINED GOOGLE_TEST_BASE)
 
     set(AREG_UNIT_TEST_BASE "${AREG_TESTS}/units")
+    set(AREG_UNIT_TEST_PROJECT "areg-unit-tests")
     include_directories(${AREG_TESTS})
 
     # For Windows: Prevent overriding the parent project's compiler/linker settings

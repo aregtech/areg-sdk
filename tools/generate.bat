@@ -1,13 +1,16 @@
-echo off
+echo on
 cls
 
 :: set the AREG_SDK_ROOT directory here
-set AREG_SDK_ROOT=E:\Projects\aregtech\areg-sdk
+if (%AREG_SDK_ROOT%=="") (set AREG_SDK_ROOT="E:\Projects\aregtech\areg-sdk")
+
+
+echo %AREG_SDK_ROOT%
 
 :: .bat file directory
 set BATCH_ROOT=%~dp0
-:: Specify the root folder of your project here
-set PROJECT_ROOT=%BATCH_ROOT%\..
+:: In case of examples, one level up.
+set PROJECT_ROOT=%BATCH_ROOT%..
 :: Specify the relative path of output folder
 set CODE_GEN=generated\src
 :: Include codegen.jar in CLASSPATH
