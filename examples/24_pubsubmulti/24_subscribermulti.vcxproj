@@ -54,10 +54,6 @@
     <Text Include="subscribermulti\CMakeLists.txt" />
     <Text Include="subscribermulti\src\CMakeLists.txt" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="subscribermulti\Makefile" />
-    <None Include="subscribermulti\src\Makefile" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

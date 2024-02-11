@@ -57,8 +57,6 @@
     <ClInclude Include="generated\src\private\HelloWatchdogProxy.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="generated\Makefile" />
-    <None Include="generated\src\private\Makefile" />
     <None Include="res\HelloWatchdog.siml" />
   </ItemGroup>
   <ItemGroup>

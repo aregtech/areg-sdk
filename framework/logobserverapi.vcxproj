@@ -34,10 +34,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="logobserver\lib\Makefile" />
-    <None Include="logobserver\lib\private\Makefile" />
     <None Include="logobserver\lib\resources\logobserverapi.def" />
-    <None Include="logobserver\Makefile" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="logobserver\lib\LogObserverApi.h" />

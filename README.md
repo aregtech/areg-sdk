@@ -17,7 +17,6 @@
 <table class="no-border">
   <tr>
     <td><a href="https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml" alt="CMake"><img src="https://github.com/aregtech/areg-sdk/actions/workflows/cmake.yml/badge.svg" alt="CMake build"/></a></td>
-    <td><a href="https://github.com/aregtech/areg-sdk/actions/workflows/c-cpp.yml" alt="C/C++"><img src="https://github.com/aregtech/areg-sdk/actions/workflows/c-cpp.yml/badge.svg" alt="C/C++ Make"/></a></td>
     <td><a href="https://github.com/aregtech/areg-sdk/actions/workflows/msbuild.yml" alt="MS Build"><img src="https://github.com/aregtech/areg-sdk/actions/workflows/msbuild.yml/badge.svg" alt="MS Build"/></a></td>
     <td><a href="https://github.com/aregtech/areg-sdk/actions/workflows/codeql-analysis.yml" alt="CodeQL"><img src="https://github.com/aregtech/areg-sdk/actions/workflows/codeql-analysis.yml/badge.svg" alt="CodeQL"/></a></td>
   </tr>
@@ -44,7 +43,6 @@
 - [Clone sources](#clone-sources)
 - [Quick build](#quick-build)
   - [Build with `cmake`](#build-with-cmake)
-  - [Build with `make`](#build-with-make)
   - [Build with `msbuild`](#build-with-msbuild)
   - [Build with WSL](#build-with-wsl)
   - [Build with IDEs](#build-with-ides)
@@ -125,20 +123,8 @@ Furthermore, the AREG SDK includes a variety of [examples](https://github.com/ar
 
 To obtain the AREG SDK source codes and the dependent modules, run the git-command in your `projects` folder:
 ```bash
-git clone --recurse-submodules https://github.com/aregtech/areg-sdk.git
+git clone https://github.com/aregtech/areg-sdk.git
 ```
-
-Alternatively, to clone only the submodule sources, run the git-command in the AREG SDK root folder:
-```bash
-git submodule update --init --recursive
-```
-
-To update the AREG SDK to the latest submodule sources, use the git-command:
-```bash
-git submodule update --remote --recursive
-```
-
-> 💡 Please note that after running this git-command, your submodule sources may differ from the sources that AREG SDK uses.
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
@@ -156,7 +142,6 @@ To compile the sources, the following tools can be used:
 | Tool | Solution | Platforms | API | Quick actions to compile |
 | --- | --- | --- | --- | --- |
 | `cmake` | `CMakeLists.txt` | Linux, Cygwin, Windows | POSIX, Win32 | - Build with *cmake*.<br/> - Build in *VSCode*.<br/> - Build in *MSVS*. |
-| `make` | `Makefile` | Linux, Cygwin | POSIX | - Build with *make*. |
 | `msbuild` | `areg-sdk.sln` | Windows | Win32 | - Build with *msbuild*.<br/> - Open and build in *MSVS*. |
 
 After compilation, the binaries are stored in the `<areg-sdk>/product/build/<family>-<compiler>/<platform>-<bitness>-<cpu>-<build type>/bin` folder. For example, if the code is compiled with GNU GCC on a 64-bit Linux system with an x86_64 CPU and in release mode, the binaries will be in the `./product/build/gnu-gcc/linux-64-x86_64-release/bin` subfolder of `areg-sdk`.
@@ -190,19 +175,6 @@ cmake --build ./build -j8
 > 💡 For instructions on how to customize builds with `cmake` tool, kindly refer to the [Build with CMake](https://github.com/aregtech/areg-sdk/wiki/03.-Software-build#build-with-cmake-cmakeliststxt) Wiki page.
  </details>
 
-### Build with `make`
-
-<details open><summary title="Click to show/hide details">Click to show / hide <code>Build with cmake</code>.</summary><br/>
-
-To build the AREG and examples using [Make](https://www.gnu.org/software/make/), ensure that you have cloned the sources properly as [described earlier](#clone-sources). Open the _Terminal_ in the `areg-sdk` directory and compile sources with default options (_g++_ compiler, _release_ build, build examples and unit tests), justify parallel jobs with `-j` option:
-
-```bash
-make -j 8
-```
-
-> 💡 For instructions on how to customize builds with `make` tool, kindly refer to the [Build with Make](https://github.com/aregtech/areg-sdk/wiki/03.-Software-build#build-with-make-makefile) Wiki page.
-</details>
-
 ### Build with `msbuild`
 
 <details open><summary title="Click to show/hide details">Click to show / hide <code>Build with msbuild</code>.</summary><br/>
@@ -213,7 +185,7 @@ To build the AREG and examples using [MSBuild](https://visualstudio.microsoft.co
 MSBuild .
 ```
 
-> 💡 For instructions on how to customize builds with `make` tool, kindly refer to the [Build with MSBuild](https://github.com/aregtech/areg-sdk/wiki/03.-Software-build#build-with-msbuild-areg-sdksln) Wiki page.
+> 💡 For instructions on how to customize builds with `MSBuild` tool, kindly refer to the [Build with MSBuild](https://github.com/aregtech/areg-sdk/wiki/03.-Software-build#build-with-msbuild-areg-sdksln) Wiki page.
 </details>
 
 ### Build with WSL
@@ -338,8 +310,11 @@ These steps will guide you in creating your own services using the AREG SDK.
 To configure the _Multicast Router_, you need to adjust the [_areg.init_](https://github.com/aregtech/areg-sdk/blob/master/framework/areg/resources/areg.init) file. Open the file and modify the following properties to specify the IP address and port of the `mcrouter`:
 
 ```
-connection.address.tcpip    = 127.0.0.1	# IP address of the mcrouter host
-connection.port.tcpip       = 8181      # connection port of the mcrouter
+router::*::service          = mcrouter      # The name of the router service (process name)
+router::*::connect          = tcpip         # The list of supported communication protocols
+router::*::enable::tcpip    = true          # Communication protocol enable / disable flag
+router::*::address::tcpip   = 127.0.0.1     # Protocol specific connection IP-address
+router::*::port::tcpip      = 8181          # Protocol specific connection port number
 ```
 
 Please note that the *Multicast Router* is only necessary for applications that provide or consume _Public_ services (multiprocessing applications). If your application uses only _Local_ services (multithreading applications), you can ignore the Multicast Router configuration. 
@@ -356,18 +331,20 @@ To configure logging for applications based on the AREG framework, you can compi
 
 Here's an example configuration for the log file:
 ```
-log.file        = %home%/logs/%appname%_%time%.log # creates logs in the 'log' subfolder of the user's home directory
-scope.mcrouter.*= NOTSET ;                         # disables logs for mcrouter.
+log::*::target              = file                          # Log targets: remote, file, debug output, database
+log::*::enable::file        = true                          # File logging enable / disable flag
+log::*::file::location      = ./logs/%appname%_%time%.log   # Log file location and masks
 
-scope.my_app.*                   = DEBUG | SCOPE ; # enables all logs of my_app
-scope.my_app.ignore_this_scope   = NOTSET ;        # disables logs for a certain scope in my_app
-scope.my_app.ignore_this_group_* = NOTSET ;        # disables logs for a certain scope group in my_app
+log::mcrouter::scope::*                 = NOTSET ;                         # disables logs for mcrouter.
+log::my_app::scope::*                   = DEBUG | SCOPE ; # enables all logs of my_app
+log::my_app::scope::ignore_this_scope   = NOTSET ;        # disables logs for a certain scope in my_app
+log::my_app::scope::ignore_this_group_* = NOTSET ;        # disables logs for a certain scope group in my_app
 ```
 
 Please refer to the [AREG Logging System](https://github.com/aregtech/areg-sdk/wiki/05.-AREG-Logging-System) Wiki page for detailed instructions on compiling applications with enabled or disabled logging, starting and stopping logs during runtime, creating and using logging scopes, and configuring the `areg.init` file.
 
 > 💡 By default, the `areg.init` files are located in the `config` subfolder of the binaries.<br/>
-> 💡 To enable logging for all applications, use `scope.*  = DEBUG | SCOPE ;`.<br/>
+> 💡 To enable logging for all applications, use `log::*::scope::*  = DEBUG | SCOPE ;`.<br/>
 > 💡 Currently, logging is only possible in the file.
 
 </details>

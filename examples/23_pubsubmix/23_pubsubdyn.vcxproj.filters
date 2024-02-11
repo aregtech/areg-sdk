@@ -23,8 +23,4 @@
     <Text Include="pubsubdyn\CMakeLists.txt" />
     <Text Include="pubsubdyn\src\CMakeLists.txt" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="pubsubdyn\Makefile" />
-    <None Include="pubsubdyn\src\Makefile" />
-  </ItemGroup>
 </Project>

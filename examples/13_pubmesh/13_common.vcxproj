@@ -58,10 +58,6 @@
     <Text Include="common\CMakeLists.txt" />
     <Text Include="common\src\CMakeLists.txt" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="common\Makefile" />
-    <None Include="common\src\Makefile" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

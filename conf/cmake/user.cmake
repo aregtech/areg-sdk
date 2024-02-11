@@ -18,6 +18,7 @@
 #  11. AREG_OUTPUT_BIN      -- Set the path to folder to output compiled shared libraries and executables.
 #  12. AREG_OUTPUT_LIB      -- Set the path to folder to output compiled static libraries.
 #  13. AREG_LOGOBSERVER_LIB -- Set the log observer API library type. By default it is set as shared.
+#  14. AREG_PACKAGES        -- Set the location to install thirdparty packages. 
 #
 # The default values are:
 #   1. AREG_COMPILER_FAMILY = <default> (possible values: gnu, cygwin, llvm, msvc)
@@ -33,6 +34,7 @@
 #  11. AREG_OUTPUT_BIN      = <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release/bin (possible values: any full path)
 #  12. AREG_OUTPUT_LIB      = <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release/lib (possible values: any full path)
 #  13. AREG_LOGOBSERVER_LIB = shared    (possible values: shared, static)
+#  14. AREG_PACKAGES        -- <package location> (default value is AREG_BUILD_ROOT/packages)
 #
 # Hints:
 #
@@ -185,6 +187,10 @@ endif()
 # Set the areg log observer API library type.
 if (NOT DEFINED AREG_LOGOBSERVER_LIB OR NOT "${AREG_LOGOBSERVER_LIB}" STREQUAL "static")
     set(AREG_LOGOBSERVER_LIB "shared")
+endif()
+
+if (NOT DEFINED AREG_PACKAGES OR "${AREG_PACKAGES}" STREQUAL "")
+    set(AREG_PACKAGES "${AREG_BUILD_ROOT}/packages")
 endif()
 
 # The absolute path for generated files

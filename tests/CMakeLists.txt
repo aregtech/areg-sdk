@@ -28,7 +28,23 @@ function(addTest testName)
     addTestEx(${testName} "${AREG_UNIT_TEST_BASE}/${testName}" "")
 endfunction(addTest testName)
 
-if (DEFINED GOOGLE_TEST_BASE)
+if (AREG_BUILD_TESTS)
+# Check whether the Google test sources exist.
+    include(FetchContent)
+    enable_testing()
+    find_package(GTest)
+    if (NOT GTest_FOUND)
+        message(STATUS "Fetching googletest from https://github.com/google/googletest.git to ${AREG_PACKAGES} directory.")
+        FetchContent_Declare( googletest
+                              GIT_REPOSITORY https://github.com/google/googletest.git
+                              GIT_TAG        "main")
+    endif()
+
+	FetchContent_MakeAvailable(googletest)
+    set(GOOGLE_TEST_BASE "${GTEST_INCLUDE_DIRS}")
+    include_directories(${GOOGLE_TEST_BASE})
+    add_library(GTest::GTest INTERFACE IMPORTED)
+    target_link_libraries(GTest::GTest INTERFACE gtest_main)
 
     set(AREG_UNIT_TEST_BASE "${AREG_TESTS}/units")
     set(AREG_UNIT_TEST_PROJECT "areg-unit-tests")

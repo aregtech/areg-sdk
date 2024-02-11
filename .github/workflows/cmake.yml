@@ -277,10 +277,8 @@ jobs:
 
     steps:
 
-      - name: Checkout AREG engine (AREG SDK) source codes and dependencies
+      - name: Checkout AREG engine (AREG SDK) source codes
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
 
       - name: Fetch cygwin installer on Windows
         if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
@@ -293,7 +291,6 @@ jobs:
         run: |
             c:\setup.exe -qgnO -s http://mirrors.kernel.org/sourceware/cygwin/ -l C:\cygwin-packages\ -P ^
             cmake,^
-            make,^
             dos2unix,^
             flexdll,^
             gcc-g++,^
@@ -303,28 +300,31 @@ jobs:
       - name: set Windows PATH environment variable
         if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
         run: echo "PATH=C:\cygwin64;C:\cygwin64\bin;C:\cygwin64\lib;%SYSTEMROOT%\system32;%PATH%" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Set cmake cache destination
+        run: echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> "$GITHUB_ENV"
          
       - name: Configure CMake with enabled extended feature and selected compiler family
         if: matrix.config.extend == 'ON'
         working-directory: ${{github.workspace}}
         run: |
-          cmake -B ./build -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGS:BOOL=${{matrix.config.logs}} -DAREG_BUILD_EXAMPLES:BOOL=OFF -DAREG_BUILD_TESTS:BOOL=${{matrix.config.test}}
+          cmake -B ${{env.BUILD_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGS:BOOL=${{matrix.config.logs}} -DAREG_BUILD_EXAMPLES:BOOL=OFF -DAREG_BUILD_TESTS:BOOL=${{matrix.config.test}}
     
       - name: Configure CMake for disabled extended feature and selected compiler
         if: matrix.config.extend == 'OFF'
         working-directory: ${{github.workspace}}
         run: |
-          cmake -B ./build -DAREG_COMPILER=${{matrix.config.cc}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGS:BOOL=${{matrix.config.logs}} -DAREG_BUILD_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_BUILD_TESTS:BOOL=${{matrix.config.test}}
+          cmake -B ${{env.BUILD_DEST}} -DAREG_COMPILER=${{matrix.config.cc}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGS:BOOL=${{matrix.config.logs}} -DAREG_BUILD_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_BUILD_TESTS:BOOL=${{matrix.config.test}}
     
       - name: Build with CMake
         working-directory: ${{github.workspace}}
         # Build your program with the given configuration
-        run: cmake --build ./build -j 16
+        run: cmake --build ${{env.BUILD_DEST}} -j 16
 
       - name: Run Unit Tests
         if: matrix.config.test == 'ON'
         working-directory: ${{github.workspace}}
-        run: ctest --test-dir ./build --output-on-failure --output-junit test_results.xml
+        run: ctest --test-dir ${{env.BUILD_DEST}} --output-on-failure --output-junit test_results.xml
 
       - name: Linux build path guess
         if: always() && matrix.config.os == 'ubuntu-latest'

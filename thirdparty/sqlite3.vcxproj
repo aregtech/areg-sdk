@@ -48,7 +48,6 @@
     <Text Include="sqlite3\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="sqlite3\Makefile" />
     <None Include="sqlite3\Readme.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -61,8 +61,6 @@
     <Text Include="generated\src\private\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="generated\Makefile" />
-    <None Include="generated\src\private\Makefile" />
     <None Include="res\HelloWorld.siml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

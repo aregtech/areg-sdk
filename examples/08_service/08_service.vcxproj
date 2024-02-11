@@ -50,7 +50,6 @@
     <ClInclude Include="src\ServicingComponent.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Makefile" />
     <None Include="ReadMe.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

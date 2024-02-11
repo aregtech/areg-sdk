@@ -51,10 +51,6 @@
     <Text Include="locservice\CMakeLists.txt" />
     <Text Include="locservice\src\CMakeLists.txt" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="locservice\Makefile" />
-    <None Include="locservice\src\Makefile" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -57,11 +57,6 @@
   <ItemGroup>
     <ResourceCompile Include="logobserver\app\resources\logobserver.rc" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="logobserver\app\Makefile" />
-    <None Include="logobserver\app\private\Makefile" />
-    <None Include="logobserver\Makefile" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -23,8 +23,4 @@
     <Text Include="pubsvcmesh\CMakeLists.txt" />
     <Text Include="pubsvcmesh\src\CMakeLists.txt" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="pubsvcmesh\Makefile" />
-    <None Include="pubsvcmesh\src\Makefile" />
-  </ItemGroup>
 </Project>
