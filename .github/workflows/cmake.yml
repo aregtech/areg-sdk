@@ -277,6 +277,9 @@ jobs:
 
     steps:
 
+      - name: Checkout AREG engine (AREG SDK) source codes
+        uses: actions/checkout@v4
+
       - name: Fetch cygwin installer on Windows
         if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
         shell: powershell
@@ -300,9 +303,6 @@ jobs:
       - name: Set Windows PATH environment variable
         if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
         run: echo "PATH=C:\cygwin64;C:\cygwin64\bin;C:\cygwin64\lib;%SYSTEMROOT%\system32;%PATH%" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          
-      - name: Checkout AREG engine (AREG SDK) source codes
-        uses: actions/checkout@v4
 
       - name: Set cmake cache destination for Linux
         if: matrix.config.os == 'ubuntu-latest'
@@ -360,3 +360,8 @@ jobs:
         with:
           name: ${{matrix.config.name}}
           path: ./${{matrix.config.name}}/
+
+      - name: Uninstall cygwin git package on Windows
+        if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
+        shell: cmd
+        run: c:\setup.exe -qnx git
