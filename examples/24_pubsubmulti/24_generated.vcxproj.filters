@@ -58,8 +58,6 @@
     <None Include="res\generate.sh">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="generated\Makefile" />
-    <None Include="generated\src\private\Makefile" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="generated\CMakeLists.txt" />

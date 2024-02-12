@@ -66,9 +66,6 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="mcrouter\Readme.md" />
-    <None Include="mcrouter\Makefile" />
-    <None Include="mcrouter\app\private\Makefile" />
-    <None Include="mcrouter\tcp\private\Makefile" />
     <None Include="mcrouter\resources\Readme.md">
       <Filter>Resource Files</Filter>
     </None>

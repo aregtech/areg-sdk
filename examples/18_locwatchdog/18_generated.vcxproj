@@ -42,8 +42,6 @@
     <Text Include="generated\src\private\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="generated\Makefile" />
-    <None Include="generated\src\private\Makefile" />
     <None Include="res\HelloWatchdog.siml" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">

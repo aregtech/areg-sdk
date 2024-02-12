@@ -46,8 +46,4 @@
     <Text Include="subscribermulti\CMakeLists.txt" />
     <Text Include="subscribermulti\src\CMakeLists.txt" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="subscribermulti\Makefile" />
-    <None Include="subscribermulti\src\Makefile" />
-  </ItemGroup>
 </Project>

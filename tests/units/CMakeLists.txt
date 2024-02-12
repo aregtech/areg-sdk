@@ -1,4 +1,4 @@
-include(GoogleTest)
+
 addUnitTest("${AREG_UNIT_TEST_PROJECT}"
     ${AREG_UNIT_TEST_BASE}/DemoTest.cpp
     ${AREG_UNIT_TEST_BASE}/DateTimeTest.cpp

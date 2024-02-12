@@ -23,8 +23,4 @@
     <Text Include="pubclients\CMakeLists.txt" />
     <Text Include="pubclients\src\CMakeLists.txt" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="pubclients\Makefile" />
-    <None Include="pubclients\src\Makefile" />
-  </ItemGroup>
 </Project>

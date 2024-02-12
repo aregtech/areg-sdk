@@ -24,7 +24,6 @@
     <Text Include="src\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Makefile" />
     <None Include="ReadMe.md" />
     <None Include="config\areg.init" />
   </ItemGroup>

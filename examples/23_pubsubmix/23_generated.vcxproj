@@ -50,8 +50,6 @@
     <ClInclude Include="generated\src\PubSubMixStub.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="generated\Makefile" />
-    <None Include="generated\src\private\Makefile" />
     <None Include="res\generate.bat" />
     <None Include="res\generate.sh" />
     <None Include="res\PubSubMix.siml" />

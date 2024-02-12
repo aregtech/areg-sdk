@@ -118,18 +118,8 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="extend\Makefile">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="extend\console\private\Makefile">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="extend\service\private\Makefile">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="extend\Readme.md">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="extend\db\private\Makefile" />
   </ItemGroup>
 </Project>

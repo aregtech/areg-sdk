@@ -31,8 +31,4 @@
     <Text Include="pubsubctrl\CMakeLists.txt" />
     <Text Include="pubsubctrl\src\CMakeLists.txt" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="pubsubctrl\Makefile" />
-    <None Include="pubsubctrl\src\Makefile" />
-  </ItemGroup>
 </Project>

@@ -31,11 +31,9 @@
 #endif // wrong imports
 
 #include "areg/base/GEGlobal.h"
-#include "googletest/googletest/include/gtest/gtest.h"
+#include "gtest/gtest.h"
 
 #ifdef WINDOWS
-    #pragma comment(lib, "gtest.lib")
-    #pragma comment(lib, "gtest_main.lib")
     #pragma comment(lib, "areg.lib")
     #pragma comment(lib, "areg-extend.lib")
 #endif // WINDOWS

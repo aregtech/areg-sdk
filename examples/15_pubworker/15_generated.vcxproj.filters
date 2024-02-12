@@ -60,7 +60,5 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="res\PatientInformation.siml" />
-    <None Include="generated\Makefile" />
-    <None Include="generated\src\private\Makefile" />
   </ItemGroup>
 </Project>
