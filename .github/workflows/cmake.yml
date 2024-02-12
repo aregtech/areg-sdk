@@ -285,7 +285,7 @@ jobs:
 
       - name: Install cygwin on Windows
         if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
-        shell: powershell
+        shell: cmd
         run: |
             c:\setup.exe -qgnO -s http://mirrors.kernel.org/sourceware/cygwin/ -l C:\cygwin-packages\ -P ^
             cmake,^
