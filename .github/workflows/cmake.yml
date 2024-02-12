@@ -277,11 +277,16 @@ jobs:
 
     steps:
 
-      - name: Fetch and install cygwin on Windows
+      - name: Fetch cygwin installer on Windows
         if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
         shell: powershell
         run: |
-            Invoke-WebRequest https://cygwin.com/setup-x86_64.exe -OutFile C:\setup.exe
+          Invoke-WebRequest https://cygwin.com/setup-x86_64.exe -OutFile C:\setup.exe
+
+      - name: Install cygwin on Windows
+        if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
+        shell: powershell
+        run: |
             c:\setup.exe -qgnO -s http://mirrors.kernel.org/sourceware/cygwin/ -l C:\cygwin-packages\ -P ^
             cmake,^
             dos2unix,^
@@ -291,8 +296,11 @@ jobs:
             ncurses,^
             libncurses-devel,^
             make
-            echo "PATH=C:\cygwin64;C:\cygwin64\bin;C:\cygwin64\lib;%SYSTEMROOT%\system32;%PATH%" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
+      - name: Set Windows PATH environment variable
+        if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
+        run: echo "PATH=C:\cygwin64;C:\cygwin64\bin;C:\cygwin64\lib;%SYSTEMROOT%\system32;%PATH%" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          
       - name: Checkout AREG engine (AREG SDK) source codes
         uses: actions/checkout@v4
 
