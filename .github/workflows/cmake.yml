@@ -284,8 +284,8 @@ jobs:
         uses: actions/setup-java@v4.0.0
         with: 
           java-version: 11
-          java-package: jdk
-          distribution: oracle
+          java-package: jre
+          distribution: temurin
 
       - name: Fetch cygwin installer on Windows
         if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
