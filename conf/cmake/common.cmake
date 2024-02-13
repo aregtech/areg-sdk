@@ -235,6 +235,7 @@ else()
     set(COMMON_COMPILE_DEF IMP_AREG_DLL)
 endif()
 
+set(FETCHCONTENT_BASE_DIR "${AREG_PACKAGES}" CACHE PATH "Location of AREG thirdpary packages" FORCE)
 
 message(STATUS "-------------------- CMakeLists Status Report Begin --------------------")
 message(STATUS ">>> Build for '${CMAKE_SYSTEM_NAME}' '${AREG_BITNESS}'-bit platform '${AREG_PROCESSOR}' with compiler '${CMAKE_CXX_COMPILER}', ID '${AREG_COMPILER_FAMILY}', and build type '${CMAKE_BUILD_TYPE}'")

@@ -23,23 +23,6 @@
   <PropertyGroup>
     <OutDir>$(OutLibDir)\</OutDir>
   </PropertyGroup>
-  <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)\examples\14_pubtraffic\private\NESimpleTrafficLight.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\14_pubtraffic\private\SimpleTrafficLightClientBase.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\14_pubtraffic\private\SimpleTrafficLightEvents.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\14_pubtraffic\private\SimpleTrafficLightProxy.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\14_pubtraffic\private\SimpleTrafficLightStub.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="$(AregGenerateDir)\examples\14_pubtraffic\NESimpleTrafficLight.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\14_pubtraffic\private\SimpleTrafficLightEvents.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\14_pubtraffic\private\SimpleTrafficLightProxy.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\14_pubtraffic\SimpleTrafficLightClientBase.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\14_pubtraffic\SimpleTrafficLightStub.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="res\SimpleTrafficLight.siml" />
-  </ItemGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
     <ClCompile>
       <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -58,6 +41,23 @@
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="$(AregGenerateDir)\examples\14_pubtraffic\private\NESimpleTrafficLight.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\14_pubtraffic\private\SimpleTrafficLightClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\14_pubtraffic\private\SimpleTrafficLightEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\14_pubtraffic\private\SimpleTrafficLightProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\14_pubtraffic\private\SimpleTrafficLightStub.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(AregGenerateDir)\examples\14_pubtraffic\NESimpleTrafficLight.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\14_pubtraffic\private\SimpleTrafficLightEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\14_pubtraffic\private\SimpleTrafficLightProxy.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\14_pubtraffic\SimpleTrafficLightClientBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\14_pubtraffic\SimpleTrafficLightStub.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\SimpleTrafficLight.siml" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

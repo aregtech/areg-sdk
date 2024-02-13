@@ -55,10 +55,6 @@
     <Text Include="locsvcmesh\CMakeLists.txt" />
     <Text Include="locsvcmesh\src\CMakeLists.txt" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="locsvcmesh\Makefile" />
-    <None Include="locsvcmesh\src\Makefile" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

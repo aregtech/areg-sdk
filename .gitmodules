@@ -1,6 +1,0 @@
-[submodule "thirdparty/googletest"]
-	path = thirdparty/googletest
-	url = https://github.com/google/googletest.git
-[submodule "docs/wiki"]
-	path = docs/wiki
-	url = https://github.com/aregtech/areg-sdk.wiki.git

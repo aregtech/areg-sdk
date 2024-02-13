@@ -39,7 +39,7 @@
         <!-- ****************************************************************************************************************************** -->
         <!-- Check AregBuildRoot settings. If missed, by default, it is a 'product' subdirectory relative to 'SolutionDir'.                 -->
         <!-- ****************************************************************************************************************************** -->
-        <AregBuildRoot Condition="'$(AregBuildRoot)'==''">$(SolutionDir)\product</AregBuildRoot>
+        <AregBuildRoot Condition="'$(AregBuildRoot)'==''">$(SolutionDir)product</AregBuildRoot>
         <!-- ****************************************************************************************************************************** -->
         <!-- Check and set AregOutputDir, AregOutputLib, AregOutputBin and AregOutputObj.                                                   -->
         <!-- ****************************************************************************************************************************** -->
@@ -69,6 +69,8 @@
 
         <!-- Set the directory for generated source files.                                                                                  -->
         <AregGenerateDir>$(AregBuildRoot)\generate</AregGenerateDir>
+        <!-- Set the directory to download thirdparty packages. If change, also change the location in nuget.config file.                   -->
+        <AregPackages>$(AregBuildRoot)\packages</AregPackages>
         <!-- Set the AREG Framework path.                                                                                                   -->
         <AregFrameworkSources>$(AregSdkRoot)\framework</AregFrameworkSources>
         <!-- Set the path of AREG Framework resources                                                                                       -->
@@ -98,11 +100,6 @@
         <OutObjDir>$(AregOutputObj)</OutObjDir>
 
         <!-- ****************************************************************************************************************************** -->
-        <!-- Google Test directory for Unit Tests. Do not change.                                                                           -->
-        <!-- ****************************************************************************************************************************** -->
-        <GoogleTestDir>$(AregThirdpartyDir)\googletest\googletest</GoogleTestDir>
-
-        <!-- ****************************************************************************************************************************** -->
         <!-- SQLite3 directory for embedded database. Do not change.                                                                           -->
         <!-- ****************************************************************************************************************************** -->
         <SQLiteDir>$(AregThirdpartyDir)\sqlite3</SQLiteDir>
@@ -116,6 +113,9 @@
         
         <BuildMacro Include="AregGenerateDir">
             <Value>$(AregGenerateDir)</Value>
+        </BuildMacro>
+        <BuildMacro Include="AregPackages">
+            <Value>$(AregPackages)</Value>
         </BuildMacro>
         <BuildMacro Include="AregFrameworkSources">
             <Value>$(AregFrameworkSources)</Value>
@@ -146,10 +146,6 @@
         </BuildMacro>
         <BuildMacro Include="OutObjDir">
             <Value>$(OutObjDir)</Value>
-        </BuildMacro>
-
-        <BuildMacro Include="GoogleTestDir">
-            <Value>$(GoogleTestDir)</Value>
         </BuildMacro>
 
         <BuildMacro Include="SQLiteDir">

@@ -49,10 +49,6 @@
     <Text Include="pubsubctrl\CMakeLists.txt" />
     <Text Include="pubsubctrl\src\CMakeLists.txt" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="pubsubctrl\Makefile" />
-    <None Include="pubsubctrl\src\Makefile" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

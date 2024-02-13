@@ -465,6 +465,15 @@ macro(macro_declare_project project_name project_alias)
     macro_declare_project_ex(${project_name} ${project_alias} ${project_alias})
 endmacro(macro_declare_project)
 
+macro(macro_normalize_path normal_path os_path)
+    if (CYGWIN)
+        execute_process(COMMAND cygpath.exe -m ${os_path} OUTPUT_VARIABLE ${normal_path})
+        string (STRIP ${${normal_path}} ${normal_path})
+    else()
+        set(${normal_path} ${os_path})
+    endif()
+endmacro(macro_normalize_path)
+
 # ---------------------------------------------------------------------------
 # Description : This function calls service interface code generator to
 #               generate codes, includes the generated codes either in the
@@ -499,20 +508,17 @@ function(addServiceInterfaceEx gen_project_name source_root relative_path sub_di
 
     set(interface_doc)
     if (${sub_dir} STREQUAL "")
-        set(interface_doc "${source_root}/${relative_path}/${interface_name}.siml")
+        macro_normalize_path(interface_doc "${source_root}/${relative_path}/${interface_name}.siml")
     else()
-        set(interface_doc "${source_root}/${relative_path}/${sub_dir}/${interface_name}.siml")
+        macro_normalize_path(interface_doc "${source_root}/${relative_path}/${sub_dir}/${interface_name}.siml")
     endif()
+    macro_normalize_path(root_path "${AREG_BUILD_ROOT}")
+    macro_normalize_path(interface_out "${AREG_GENERATE}/${relative_path}")
+    macro_normalize_path(codegen_path "${AREG_SDK_TOOLS}/codegen.jar")
 
-    set(interface_out "${AREG_GENERATE}/${relative_path}")
+    execute_process(COMMAND java -jar ${codegen_path} --root=${root_path} --doc=${interface_doc} --target=${interface_out})
+
     set(generate_dir "${AREG_GENERATE_DIR}/${relative_path}")
-    set(succeeded 0)
-    execute_process(COMMAND java -jar ${AREG_SDK_TOOLS}/codegen.jar --root=${AREG_BUILD_ROOT} --doc=${interface_doc} --target=${interface_out} RESULT_VARIABLE succeeded)
-    if (NOT succeeded EQUAL 0)
-        message(FATAL_ERROR "Failed to generate files for service interface ${interface_doc}, ignoring adding library. Either Java is not installed or the Service Interface does not exit.")
-        return ()
-    endif()
-
     set(proj_src)
     list(APPEND proj_src
         ${generate_dir}/private/${interface_name}ClientBase.cpp 
@@ -571,6 +577,19 @@ endfunction(addServiceInterface)
 macro(macro_add_service_interface gen_project_name interface_name)
     addServiceInterface(${gen_project_name} "" ${interface_name})
 endmacro(macro_add_service_interface)
+
+# ---------------------------------------------------------------------------
+# Description : This function creates a single test executable discovered by CTest.
+# Function ...: addTest
+# Parameters .: ${test_name}    -- The name of test executable
+#               ${test_source}  -- The source to set to compile executable.
+# Usage ......: addTest( <test name> <source file>) 
+# ---------------------------------------------------------------------------
+function(addTest test_name test_source)
+    list(APPEND google_test_libs "GTest::gtest_main" "GTest::gtest")
+    addExecutableEx(${test_name} "${test_source}" "${google_test_libs}")
+    gtest_discover_tests(${test_name} DISCOVERY_TIMEOUT 60)
+endfunction(addTest)
 
 # ---------------------------------------------------------------------------
 # Description : Creates an unit test executable from specified list of sources

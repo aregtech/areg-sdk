@@ -42,9 +42,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="res\HelloWorld.siml" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="$(AregGenerateDir)\examples\10_locsvc\private\HelloWorldClientBase.cpp" />
     <ClCompile Include="$(AregGenerateDir)\examples\10_locsvc\private\HelloWorldEvents.cpp" />
     <ClCompile Include="$(AregGenerateDir)\examples\10_locsvc\private\HelloWorldProxy.cpp" />
@@ -57,6 +54,9 @@
     <ClInclude Include="$(AregGenerateDir)\examples\10_locsvc\NEHelloWorld.hpp" />
     <ClInclude Include="$(AregGenerateDir)\examples\10_locsvc\private\HelloWorldEvents.hpp" />
     <ClInclude Include="$(AregGenerateDir)\examples\10_locsvc\private\HelloWorldProxy.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\HelloWorld.siml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

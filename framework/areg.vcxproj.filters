@@ -1151,8 +1151,6 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="areg\Readme.md" />
-    <None Include="areg\Makefile" />
-    <None Include="Makefile" />
     <None Include="areg\resources\areg.init">
       <Filter>Resource Files</Filter>
     </None>

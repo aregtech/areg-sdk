@@ -18,9 +18,6 @@
     <None Include="logobserver\lib\resources\logobserverapi.def">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="logobserver\Makefile" />
-    <None Include="logobserver\lib\Makefile" />
-    <None Include="logobserver\lib\private\Makefile" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="logobserver\lib\LogObserverApi.h">

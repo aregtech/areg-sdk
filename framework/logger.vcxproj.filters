@@ -57,8 +57,6 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="logger\Readme.md" />
-    <None Include="logger\Makefile" />
-    <None Include="logger\app\private\Makefile" />
     <None Include="logger\resources\logger.service" />
   </ItemGroup>
   <ItemGroup>

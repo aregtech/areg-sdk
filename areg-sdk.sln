@@ -14,10 +14,11 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FD549A95-E734-4E26-A5B2-2330FC310C8D}"
 	ProjectSection(SolutionItems) = preProject
 		CMakeLists.txt = CMakeLists.txt
+		CODE_OF_CONDUCT.md = CODE_OF_CONDUCT.md
 		CONTRIBUTING.md = CONTRIBUTING.md
 		LICENSE.txt = LICENSE.txt
-		Makefile = Makefile
 		msvc_setup.props = msvc_setup.props
+		nuget.config = nuget.config
 		README.md = README.md
 		Releases.md = Releases.md
 	EndProjectSection
@@ -48,14 +49,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "conf", "conf", "{A9875C78-1248-4693-9310-5C46C73DDCEB}"
 	ProjectSection(SolutionItems) = preProject
 		conf\README.md = conf\README.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "make", "make", "{4571029B-5844-49A6-A1B4-AA3DCC8B63C7}"
-	ProjectSection(SolutionItems) = preProject
-		conf\make\common.mk = conf\make\common.mk
-		conf\make\detect_os.mk = conf\make\detect_os.mk
-		functions.mk = functions.mk
-		conf\make\user.mk = conf\make\user.mk
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "msvc", "msvc", "{C0125346-EA97-4FE0-ABC8-592A556B3481}"
@@ -91,15 +84,12 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{07BFF46A-D4BC-4FAD-9727-D959755BFBAC}"
 	ProjectSection(SolutionItems) = preProject
 		examples\CMakeLists.txt = examples\CMakeLists.txt
-		examples\examples_generate.bat = examples\examples_generate.bat
-		examples\Makefile = examples\Makefile
 		examples\README.md = examples\README.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "00_helloservice", "00_helloservice", "{2DF9C20F-08BB-475B-8901-C1A64D88BA8A}"
 	ProjectSection(SolutionItems) = preProject
 		examples\00_helloservice\CMakeLists.txt = examples\00_helloservice\CMakeLists.txt
-		examples\00_helloservice\Makefile = examples\00_helloservice\Makefile
 		examples\00_helloservice\ReadMe.md = examples\00_helloservice\ReadMe.md
 	EndProjectSection
 EndProject
@@ -185,7 +175,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "10_locsvc", "10_locsvc", "{F99F67DA-37F9-46DD-A416-64C930758DE5}"
 	ProjectSection(SolutionItems) = preProject
 		examples\10_locsvc\CMakeLists.txt = examples\10_locsvc\CMakeLists.txt
-		examples\10_locsvc\Makefile = examples\10_locsvc\Makefile
 		examples\10_locsvc\ReadMe.md = examples\10_locsvc\ReadMe.md
 	EndProjectSection
 EndProject
@@ -208,7 +197,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "11_locmesh", "11_locmesh", "{35133FDA-2CD3-4BAD-9C54-145DC4DC787A}"
 	ProjectSection(SolutionItems) = preProject
 		examples\11_locmesh\CMakeLists.txt = examples\11_locmesh\CMakeLists.txt
-		examples\11_locmesh\Makefile = examples\11_locmesh\Makefile
 		examples\11_locmesh\ReadMe.md = examples\11_locmesh\ReadMe.md
 	EndProjectSection
 EndProject
@@ -231,7 +219,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "12_pubsvc", "12_pubsvc", "{13F637CA-7D9B-4218-8B55-D415897B8DE0}"
 	ProjectSection(SolutionItems) = preProject
 		examples\12_pubsvc\CMakeLists.txt = examples\12_pubsvc\CMakeLists.txt
-		examples\12_pubsvc\Makefile = examples\12_pubsvc\Makefile
 		examples\12_pubsvc\ReadMe.md = examples\12_pubsvc\ReadMe.md
 	EndProjectSection
 EndProject
@@ -260,7 +247,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "13_pubmesh", "13_pubmesh", "{BB26B4E2-9A39-4CD5-8BE0-A14BA7BE2D5D}"
 	ProjectSection(SolutionItems) = preProject
 		examples\13_pubmesh\CMakeLists.txt = examples\13_pubmesh\CMakeLists.txt
-		examples\13_pubmesh\Makefile = examples\13_pubmesh\Makefile
 		examples\13_pubmesh\ReadMe.md = examples\13_pubmesh\ReadMe.md
 	EndProjectSection
 EndProject
@@ -300,7 +286,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "14_pubtraffic", "14_pubtraffic", "{5EB605B1-44A1-4C33-B5BA-23AFEA531487}"
 	ProjectSection(SolutionItems) = preProject
 		examples\14_pubtraffic\CMakeLists.txt = examples\14_pubtraffic\CMakeLists.txt
-		examples\14_pubtraffic\Makefile = examples\14_pubtraffic\Makefile
 		examples\14_pubtraffic\ReadMe.md = examples\14_pubtraffic\ReadMe.md
 	EndProjectSection
 EndProject
@@ -329,7 +314,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "15_pubworker", "15_pubworker", "{5EE61717-AD86-46E4-B4D0-5AA9280B0E09}"
 	ProjectSection(SolutionItems) = preProject
 		examples\15_pubworker\CMakeLists.txt = examples\15_pubworker\CMakeLists.txt
-		examples\15_pubworker\Makefile = examples\15_pubworker\Makefile
 		examples\15_pubworker\ReadMe.md = examples\15_pubworker\ReadMe.md
 	EndProjectSection
 EndProject
@@ -358,7 +342,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "16_pubfsm", "16_pubfsm", "{7955A5EE-8C1E-4BE2-BE4F-55839EDC4E3C}"
 	ProjectSection(SolutionItems) = preProject
 		examples\16_pubfsm\CMakeLists.txt = examples\16_pubfsm\CMakeLists.txt
-		examples\16_pubfsm\Makefile = examples\16_pubfsm\Makefile
 		examples\16_pubfsm\ReadMe.md = examples\16_pubfsm\ReadMe.md
 	EndProjectSection
 EndProject
@@ -419,7 +402,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "18_locwatchdog", "18_locwatchdog", "{83821483-D719-475B-88E3-F548C267E3AB}"
 	ProjectSection(SolutionItems) = preProject
 		examples\18_locwatchdog\CMakeLists.txt = examples\18_locwatchdog\CMakeLists.txt
-		examples\18_locwatchdog\Makefile = examples\18_locwatchdog\Makefile
 		examples\18_locwatchdog\ReadMe.md = examples\18_locwatchdog\ReadMe.md
 	EndProjectSection
 EndProject
@@ -437,7 +419,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "19_pubwatchdog", "19_pubwatchdog", "{E5D433F5-DBA3-45D5-8A7A-32A10566AA8E}"
 	ProjectSection(SolutionItems) = preProject
 		examples\19_pubwatchdog\CMakeLists.txt = examples\19_pubwatchdog\CMakeLists.txt
-		examples\19_pubwatchdog\Makefile = examples\19_pubwatchdog\Makefile
 		examples\19_pubwatchdog\ReadMe.md = examples\19_pubwatchdog\ReadMe.md
 	EndProjectSection
 EndProject
@@ -461,7 +442,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "20_pubdatarate", "20_pubdatarate", "{840A1C6C-5940-4464-AF58-DBA24484C64F}"
 	ProjectSection(SolutionItems) = preProject
 		examples\20_pubdatarate\CMakeLists.txt = examples\20_pubdatarate\CMakeLists.txt
-		examples\20_pubdatarate\Makefile = examples\20_pubdatarate\Makefile
 		examples\20_pubdatarate\ReadMe.md = examples\20_pubdatarate\ReadMe.md
 	EndProjectSection
 EndProject
@@ -511,7 +491,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "21_pubunblock", "21_pubunblock", "{967610F9-FBB0-4793-9E76-F500C4167FCE}"
 	ProjectSection(SolutionItems) = preProject
 		examples\21_pubunblock\CMakeLists.txt = examples\21_pubunblock\CMakeLists.txt
-		examples\21_pubunblock\Makefile = examples\21_pubunblock\Makefile
 		examples\21_pubunblock\ReadMe.md = examples\21_pubunblock\ReadMe.md
 	EndProjectSection
 EndProject
@@ -533,17 +512,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "21_pubservice", "examples\2
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{93F005FC-C82E-41C7-AD15-C2F7C8287BFF}"
-	ProjectSection(SolutionItems) = preProject
-		tests\CMakeLists.txt = tests\CMakeLists.txt
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "googletest", "googletest", "{4CD64072-ECEB-47D9-8384-C1CF2E6193DC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "units", "units", "{48E60088-F431-4FFB-A170-31DAF8EC2DC8}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gtest", "thirdparty\gtest.vcxproj", "{BB5D8C31-A4F1-4962-8181-668103FDDE22}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gtest_main", "thirdparty\gtest_main.vcxproj", "{11927EA9-1F1B-497D-8251-0C1EC93A770E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "areg-unit-tests", "tests\areg-unit-tests.vcxproj", "{E8BD18E5-EF07-42A0-BB98-461F3D9BCDE1}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -553,21 +523,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{C485A89F-A149-4893-A023-253593403974}"
 	ProjectSection(SolutionItems) = preProject
 		examples\21_pubunblock\res\HelloUnblock.siml = examples\21_pubunblock\res\HelloUnblock.siml
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wiki", "wiki", "{D2A3A8BC-F3AC-499C-AE2C-19AC78F5EAFB}"
-	ProjectSection(SolutionItems) = preProject
-		docs\wiki\01.-Clone-source-codes.md = docs\wiki\01.-Clone-source-codes.md
-		docs\wiki\02.-Preprocessor-define-symbols.md = docs\wiki\02.-Preprocessor-define-symbols.md
-		docs\wiki\03.-Software-build.md = docs\wiki\03.-Software-build.md
-		docs\wiki\04.-Build-with-Windows-Subsystem-for-Linux-(WSL).md = docs\wiki\04.-Build-with-Windows-Subsystem-for-Linux-(WSL).md
-		docs\wiki\05.-AREG-Logging-System.md = docs\wiki\05.-AREG-Logging-System.md
-		docs\wiki\06.-Message-Router.md = docs\wiki\06.-Message-Router.md
-		docs\wiki\07.-Persistence-Syntax.md = docs\wiki\07.-Persistence-Syntax.md
-		docs\wiki\08.-Setup-a-project.md = docs\wiki\08.-Setup-a-project.md
-		docs\wiki\Home.md = docs\wiki\Home.md
-		docs\wiki\_Footer.md = docs\wiki\_Footer.md
-		docs\wiki\_Sidebar.md = docs\wiki\_Sidebar.md
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logger", "framework\logger.vcxproj", "{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}"
@@ -586,7 +541,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "22_pubsub", "22_pubsub", "{285E5D8D-7561-4FA9-9B90-89054E8EE93F}"
 	ProjectSection(SolutionItems) = preProject
 		examples\22_pubsub\CMakeLists.txt = examples\22_pubsub\CMakeLists.txt
-		examples\22_pubsub\Makefile = examples\22_pubsub\Makefile
 		examples\22_pubsub\ReadMe.md = examples\22_pubsub\ReadMe.md
 	EndProjectSection
 EndProject
@@ -612,7 +566,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "23_pubsubmix", "23_pubsubmix", "{5CB52248-C396-4985-BB18-266DACF7838C}"
 	ProjectSection(SolutionItems) = preProject
 		examples\23_pubsubmix\CMakeLists.txt = examples\23_pubsubmix\CMakeLists.txt
-		examples\23_pubsubmix\Makefile = examples\23_pubsubmix\Makefile
 		examples\23_pubsubmix\ReadMe.md = examples\23_pubsubmix\ReadMe.md
 	EndProjectSection
 EndProject
@@ -650,7 +603,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "24_pubsubmulti", "24_pubsubmulti", "{7B7FB883-C82B-45F1-BCEA-0E97E8BAD476}"
 	ProjectSection(SolutionItems) = preProject
 		examples\24_pubsubmulti\CMakeLists.txt = examples\24_pubsubmulti\CMakeLists.txt
-		examples\24_pubsubmulti\Makefile = examples\24_pubsubmulti\Makefile
 		examples\24_pubsubmulti\ReadMe.md = examples\24_pubsubmulti\ReadMe.md
 	EndProjectSection
 EndProject
@@ -692,7 +644,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "thirdparty", "thirdparty", "{BB98F00E-A26C-48A8-AE2A-CEECB9E3FFB1}"
 	ProjectSection(SolutionItems) = preProject
 		thirdparty\CMakeLists.txt = thirdparty\CMakeLists.txt
-		thirdparty\Makefile = thirdparty\Makefile
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dummy", "examples\dummy.vcxproj", "{98743716-82FC-4B02-96AF-E6F649403A0A}"
@@ -1127,22 +1078,6 @@ Global
 		{D89AC0DB-DFF2-4F15-8A26-63D51EDABB57}.Release|Win32.Build.0 = Release|Win32
 		{D89AC0DB-DFF2-4F15-8A26-63D51EDABB57}.Release|x64.ActiveCfg = Release|x64
 		{D89AC0DB-DFF2-4F15-8A26-63D51EDABB57}.Release|x64.Build.0 = Release|x64
-		{BB5D8C31-A4F1-4962-8181-668103FDDE22}.Debug|Win32.ActiveCfg = Debug|Win32
-		{BB5D8C31-A4F1-4962-8181-668103FDDE22}.Debug|Win32.Build.0 = Debug|Win32
-		{BB5D8C31-A4F1-4962-8181-668103FDDE22}.Debug|x64.ActiveCfg = Debug|x64
-		{BB5D8C31-A4F1-4962-8181-668103FDDE22}.Debug|x64.Build.0 = Debug|x64
-		{BB5D8C31-A4F1-4962-8181-668103FDDE22}.Release|Win32.ActiveCfg = Release|Win32
-		{BB5D8C31-A4F1-4962-8181-668103FDDE22}.Release|Win32.Build.0 = Release|Win32
-		{BB5D8C31-A4F1-4962-8181-668103FDDE22}.Release|x64.ActiveCfg = Release|x64
-		{BB5D8C31-A4F1-4962-8181-668103FDDE22}.Release|x64.Build.0 = Release|x64
-		{11927EA9-1F1B-497D-8251-0C1EC93A770E}.Debug|Win32.ActiveCfg = Debug|Win32
-		{11927EA9-1F1B-497D-8251-0C1EC93A770E}.Debug|Win32.Build.0 = Debug|Win32
-		{11927EA9-1F1B-497D-8251-0C1EC93A770E}.Debug|x64.ActiveCfg = Debug|x64
-		{11927EA9-1F1B-497D-8251-0C1EC93A770E}.Debug|x64.Build.0 = Debug|x64
-		{11927EA9-1F1B-497D-8251-0C1EC93A770E}.Release|Win32.ActiveCfg = Release|Win32
-		{11927EA9-1F1B-497D-8251-0C1EC93A770E}.Release|Win32.Build.0 = Release|Win32
-		{11927EA9-1F1B-497D-8251-0C1EC93A770E}.Release|x64.ActiveCfg = Release|x64
-		{11927EA9-1F1B-497D-8251-0C1EC93A770E}.Release|x64.Build.0 = Release|x64
 		{E8BD18E5-EF07-42A0-BB98-461F3D9BCDE1}.Debug|Win32.ActiveCfg = Debug|Win32
 		{E8BD18E5-EF07-42A0-BB98-461F3D9BCDE1}.Debug|Win32.Build.0 = Debug|Win32
 		{E8BD18E5-EF07-42A0-BB98-461F3D9BCDE1}.Debug|x64.ActiveCfg = Debug|x64
@@ -1287,7 +1222,6 @@ Global
 		{7D57975F-814D-4F13-9F2F-87B667937FC7} = {FD549A95-E734-4E26-A5B2-2330FC310C8D}
 		{1D3709F1-9915-4CEA-A9F6-4D3FDFD79965} = {FD549A95-E734-4E26-A5B2-2330FC310C8D}
 		{A9875C78-1248-4693-9310-5C46C73DDCEB} = {FD549A95-E734-4E26-A5B2-2330FC310C8D}
-		{4571029B-5844-49A6-A1B4-AA3DCC8B63C7} = {A9875C78-1248-4693-9310-5C46C73DDCEB}
 		{C0125346-EA97-4FE0-ABC8-592A556B3481} = {A9875C78-1248-4693-9310-5C46C73DDCEB}
 		{7BD2AAAA-FA5E-4895-837F-4A24C85A851A} = {1D3709F1-9915-4CEA-A9F6-4D3FDFD79965}
 		{5E95D089-DBB0-467A-BC0A-B00B9297023A} = {A9875C78-1248-4693-9310-5C46C73DDCEB}
@@ -1368,13 +1302,9 @@ Global
 		{EB228067-EA4D-452C-91FC-91DB3B445C31} = {967610F9-FBB0-4793-9E76-F500C4167FCE}
 		{A09D9D20-FBB8-4C1A-8628-3071AC7903DA} = {967610F9-FBB0-4793-9E76-F500C4167FCE}
 		{D89AC0DB-DFF2-4F15-8A26-63D51EDABB57} = {967610F9-FBB0-4793-9E76-F500C4167FCE}
-		{4CD64072-ECEB-47D9-8384-C1CF2E6193DC} = {BB98F00E-A26C-48A8-AE2A-CEECB9E3FFB1}
 		{48E60088-F431-4FFB-A170-31DAF8EC2DC8} = {93F005FC-C82E-41C7-AD15-C2F7C8287BFF}
-		{BB5D8C31-A4F1-4962-8181-668103FDDE22} = {4CD64072-ECEB-47D9-8384-C1CF2E6193DC}
-		{11927EA9-1F1B-497D-8251-0C1EC93A770E} = {4CD64072-ECEB-47D9-8384-C1CF2E6193DC}
 		{E8BD18E5-EF07-42A0-BB98-461F3D9BCDE1} = {48E60088-F431-4FFB-A170-31DAF8EC2DC8}
 		{C485A89F-A149-4893-A023-253593403974} = {967610F9-FBB0-4793-9E76-F500C4167FCE}
-		{D2A3A8BC-F3AC-499C-AE2C-19AC78F5EAFB} = {1D3709F1-9915-4CEA-A9F6-4D3FDFD79965}
 		{73EC875E-F233-4FA9-B3AF-E2981EA59B3A} = {285E5D8D-7561-4FA9-9B90-89054E8EE93F}
 		{285E5D8D-7561-4FA9-9B90-89054E8EE93F} = {07BFF46A-D4BC-4FAD-9727-D959755BFBAC}
 		{29121F55-3BA7-4701-9C44-2B1BA5103A5F} = {285E5D8D-7561-4FA9-9B90-89054E8EE93F}

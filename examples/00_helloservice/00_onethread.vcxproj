@@ -33,10 +33,6 @@
     <Text Include="onethread\CMakeLists.txt" />
     <Text Include="onethread\src\CMakeLists.txt" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="onethread\Makefile" />
-    <None Include="onethread\src\Makefile" />
-  </ItemGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
     <ClCompile>
       <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
