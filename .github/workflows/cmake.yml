@@ -284,7 +284,7 @@ jobs:
         uses: actions/setup-java@v4.0.0
         with: 
           java-version: 11
-          java-package: jre
+          java-package: jdk
           distribution: oracle
 
       - name: Fetch cygwin installer on Windows
