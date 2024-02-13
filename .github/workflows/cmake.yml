@@ -277,8 +277,12 @@ jobs:
 
     steps:
 
-      - name: Checkout AREG engine (AREG SDK) source codes
+      - name: Checkout AREG engine (AREG SDK) source codes and setup Java
         uses: actions/checkout@v4
+        uses: actions/setup-java@3
+        with: 
+          distribution: 'oracle'
+          java-version: '11'
 
       - name: Fetch cygwin installer on Windows
         if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
@@ -303,13 +307,6 @@ jobs:
             ncurses,^
             libncurses-devel,^
             make
-
-      - name: Setup Java
-        uses: actions/setup-java@4
-        with: 
-          distribution: 'oracle'
-          java-version: '11'
-
 
       - name: Set cmake cache destination for Linux
         if: matrix.config.os == 'ubuntu-latest'
