@@ -280,11 +280,12 @@ jobs:
       - name: Checkout AREG engine (AREG SDK) source codes
         uses: actions/checkout@v4
         
-      - name: Setup Java for code generator
-        uses: actions/setup-java@3
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v4.0.0
         with: 
-          distribution: 'oracle'
-          java-version: '11'
+          java-version: 11
+          java-package: jre
+          distribution: oracle
 
       - name: Fetch cygwin installer on Windows
         if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
