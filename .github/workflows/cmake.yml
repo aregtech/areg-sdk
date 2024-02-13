@@ -280,7 +280,7 @@ jobs:
       - name: Checkout AREG engine (AREG SDK) source codes
         uses: actions/checkout@v4
         
-      -name: Setup Java for code generator
+      - name: Setup Java for code generator
         uses: actions/setup-java@3
         with: 
           distribution: 'oracle'
