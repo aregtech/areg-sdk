@@ -26,7 +26,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{7D57975F-814D-4F13-9F2F-87B667937FC7}"
 	ProjectSection(SolutionItems) = preProject
 		tools\codegen.jar = tools\codegen.jar
-		tools\generate-examples.bat = tools\generate-examples.bat
 		tools\generate.bat = tools\generate.bat
 		tools\generate.sh = tools\generate.sh
 		tools\README.md = tools\README.md
