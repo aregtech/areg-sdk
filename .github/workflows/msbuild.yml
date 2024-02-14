@@ -47,14 +47,13 @@ jobs:
     steps:
     - name: Checkout AREG engine (AREG SDK) source codes and submodules
       uses: actions/checkout@v4
-      with:
-        submodules: recursive
 
-    - name: Setup Java
-      uses: actions/setup-java@4
+    - name: Setup Java JDK to run code generator
+      uses: actions/setup-java@v4.0.0
       with: 
-        distribution: 'oracle'
-        java-version: '21'
+        java-version: 11
+        java-package: jre
+        distribution: temurin
 
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
