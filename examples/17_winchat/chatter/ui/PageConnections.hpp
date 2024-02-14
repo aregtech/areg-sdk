@@ -3,8 +3,8 @@
 #include "areg/base/GEGlobal.h"
 #include "chatter/res/resource.h"
 #include "areg/base/String.hpp"
-#include "generated/src/NEDirectConnection.hpp"
-#include "generated/src/NEConnectionManager.hpp"
+#include "generate/examples/17_winchat/NEDirectConnection.hpp"
+#include "generate/examples/17_winchat/NEConnectionManager.hpp"
 
 class String;
 class Component;

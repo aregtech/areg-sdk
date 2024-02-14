@@ -194,7 +194,8 @@ if (NOT DEFINED AREG_PACKAGES OR "${AREG_PACKAGES}" STREQUAL "")
 endif()
 
 # The absolute path for generated files
-set(AREG_GENERATE_DIR "${AREG_BUILD_ROOT}/generate")
+set(AREG_GENERATE "generate")
+set(AREG_GENERATE_DIR "${AREG_BUILD_ROOT}/${AREG_GENERATE}")
 
 # CPP standard for the projects
 set(AREG_CXX_STANDARD 17)

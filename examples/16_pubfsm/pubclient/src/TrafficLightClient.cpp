@@ -10,7 +10,7 @@
   ************************************************************************/
 #include "pubclient/src/TrafficLightClient.hpp"
 
-#include "generated/src/NECommon.hpp"
+#include "common/NECommon.hpp"
 #include "areg/trace/GETrace.h"
 #include "areg/appbase/Application.hpp"
 

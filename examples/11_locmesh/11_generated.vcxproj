@@ -42,25 +42,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="generated\src\private\HelloWorldClientBase.cpp" />
-    <ClCompile Include="generated\src\private\HelloWorldEvents.cpp" />
-    <ClCompile Include="generated\src\private\HelloWorldProxy.cpp" />
-    <ClCompile Include="generated\src\private\HelloWorldStub.cpp" />
-    <ClCompile Include="generated\src\private\NEHelloWorld.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="generated\src\HelloWorldClientBase.hpp" />
-    <ClInclude Include="generated\src\HelloWorldStub.hpp" />
-    <ClInclude Include="generated\src\NEHelloWorld.hpp" />
-    <ClInclude Include="generated\src\private\HelloWorldEvents.hpp" />
-    <ClInclude Include="generated\src\private\HelloWorldProxy.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="generated\CMakeLists.txt" />
-    <Text Include="generated\src\private\CMakeLists.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="res\HelloWorld.siml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(AregGenerateDir)\examples\11_locmesh\private\HelloWorldClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\11_locmesh\private\HelloWorldEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\11_locmesh\private\HelloWorldProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\11_locmesh\private\HelloWorldStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\11_locmesh\private\NEHelloWorld.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(AregGenerateDir)\examples\11_locmesh\HelloWorldClientBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\11_locmesh\HelloWorldStub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\11_locmesh\NEHelloWorld.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\11_locmesh\private\HelloWorldEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\11_locmesh\private\HelloWorldProxy.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -42,27 +42,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="generated\src\private\NEPubSub.cpp" />
-    <ClCompile Include="generated\src\private\PubSubClientBase.cpp" />
-    <ClCompile Include="generated\src\private\PubSubEvents.cpp" />
-    <ClCompile Include="generated\src\private\PubSubProxy.cpp" />
-    <ClCompile Include="generated\src\private\PubSubStub.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="generated\src\NEPubSub.hpp" />
-    <ClInclude Include="generated\src\private\PubSubEvents.hpp" />
-    <ClInclude Include="generated\src\private\PubSubProxy.hpp" />
-    <ClInclude Include="generated\src\PubSubClientBase.hpp" />
-    <ClInclude Include="generated\src\PubSubStub.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="res\generate.bat" />
-    <None Include="res\generate.sh" />
     <None Include="res\PubSub.siml" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="generated\CMakeLists.txt" />
-    <Text Include="generated\src\private\CMakeLists.txt" />
+    <ClCompile Include="$(AregGenerateDir)\examples\22_pubsub\private\NEPubSub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\22_pubsub\private\PubSubClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\22_pubsub\private\PubSubEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\22_pubsub\private\PubSubProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\22_pubsub\private\PubSubStub.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(AregGenerateDir)\examples\22_pubsub\NEPubSub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\22_pubsub\private\PubSubEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\22_pubsub\private\PubSubProxy.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\22_pubsub\PubSubClientBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\22_pubsub\PubSubStub.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

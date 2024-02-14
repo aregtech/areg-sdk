@@ -14,12 +14,12 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "generated/src/PowerManagerStub.hpp"
-#include "generated/src/TrafficControllerStub.hpp"
-#include "generated/src/private/IETrafficLightActionHandler.hpp"
+#include "generate/examples/16_pubfsm/PowerManagerStub.hpp"
+#include "generate/examples/16_pubfsm/TrafficControllerStub.hpp"
+#include "pubservice/src/IETrafficLightActionHandler.hpp"
 
 #include "pubservice/src/PowerControllerClient.hpp"
-#include "generated/src/private/TrafficLightFSM.hpp"
+#include "pubservice/src/TrafficLightFSM.hpp"
 
 /**
  * \brief   The traffic light controller, which is an implementation

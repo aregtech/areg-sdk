@@ -25,6 +25,5 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.md" />
-    <None Include="config\areg.init" />
   </ItemGroup>
 </Project>

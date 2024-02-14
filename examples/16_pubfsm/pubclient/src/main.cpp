@@ -20,7 +20,7 @@
 #include "areg/trace/GETrace.h"
 #include "areg/base/NEUtilities.hpp"
 
-#include "generated/src/NECommon.hpp"
+#include "common/NECommon.hpp"
 #include "pubclient/src/TrafficLightClient.hpp"
 
 #ifdef WINDOWS

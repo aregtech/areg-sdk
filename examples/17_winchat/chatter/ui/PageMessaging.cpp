@@ -6,7 +6,7 @@
 #include "chatter/services/CentralMessaging.hpp"
 #include "chatter/DistrbutedApp.hpp"
 #include "chatter/NEDistributedApp.hpp"
-#include "generated/src/NEConnectionManager.hpp"
+#include "generate/examples/17_winchat/NEConnectionManager.hpp"
 #include "areg/base/GEGlobal.h"
 #include "chatter/services/ConnectionHandler.hpp"
 

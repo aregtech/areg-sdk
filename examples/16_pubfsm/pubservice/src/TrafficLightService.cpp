@@ -11,7 +11,7 @@
   ************************************************************************/
 #include "pubservice/src/TrafficLightService.hpp"
 
-#include "generated/src/NECommon.hpp"
+#include "common/NECommon.hpp"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/trace/GETrace.h"
 

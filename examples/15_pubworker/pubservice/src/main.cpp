@@ -16,7 +16,7 @@
 #include "areg/trace/GETrace.h"
 
 #include "pubservice/src/PatientService.hpp"
-#include "generated/src/NECommon.hpp"
+#include "common/NECommon.hpp"
 
 #ifdef WINDOWS
     #pragma comment(lib, "areg.lib")

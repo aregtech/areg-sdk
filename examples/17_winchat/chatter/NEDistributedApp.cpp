@@ -5,7 +5,7 @@
 
 #include "chatter/NEDistributedApp.hpp"
 #include "common/NECommon.hpp"
-#include "generated/src/NEDirectConnection.hpp"
+#include "generate/examples/17_winchat/NEDirectConnection.hpp"
 
 #include <Windows.h>
 #include <tchar.h>

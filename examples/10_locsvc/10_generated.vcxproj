@@ -42,22 +42,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="generated\src\private\HelloWorldClientBase.cpp" />
-    <ClCompile Include="generated\src\private\HelloWorldEvents.cpp" />
-    <ClCompile Include="generated\src\private\HelloWorldProxy.cpp" />
-    <ClCompile Include="generated\src\private\HelloWorldStub.cpp" />
-    <ClCompile Include="generated\src\private\NEHelloWorld.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\10_locsvc\private\HelloWorldClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\10_locsvc\private\HelloWorldEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\10_locsvc\private\HelloWorldProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\10_locsvc\private\HelloWorldStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\10_locsvc\private\NEHelloWorld.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="generated\src\HelloWorldClientBase.hpp" />
-    <ClInclude Include="generated\src\HelloWorldStub.hpp" />
-    <ClInclude Include="generated\src\NEHelloWorld.hpp" />
-    <ClInclude Include="generated\src\private\HelloWorldEvents.hpp" />
-    <ClInclude Include="generated\src\private\HelloWorldProxy.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="generated\CMakeLists.txt" />
-    <Text Include="generated\src\private\CMakeLists.txt" />
+    <ClInclude Include="$(AregGenerateDir)\examples\10_locsvc\HelloWorldClientBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\10_locsvc\HelloWorldStub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\10_locsvc\NEHelloWorld.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\10_locsvc\private\HelloWorldEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\10_locsvc\private\HelloWorldProxy.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\HelloWorld.siml" />

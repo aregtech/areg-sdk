@@ -1,10 +1,15 @@
-# Project names
-macro_declare_project(23_generated  "generated")
+
+# add service interface
+addServiceInterface(23_generated res PubSubMix)
+
+# add projects
 macro_declare_project(23_common     "common")
 macro_declare_project(23_pubsubctrl "pubsubctrl")
 macro_declare_project(23_pubsubdyn  "pubsubdyn")
 
-addStaticLib(${project_generated}       "${generated_src}")
-addStaticLibEx(${project_common}       	"${common_src}"     "${project_generated}")
-addExecutableEx(${project_pubsubctrl}   "${pubsubctrl_src}" "${project_generated}" "${project_common}")
-addExecutableEx(${project_pubsubdyn}   	"${pubsubdyn_src}"  "${project_generated}" "${project_common}")
+# add static library
+addStaticLibEx(${project_common}       	"${common_src}"     23_generated)
+
+# add executable
+addExecutableEx(${project_pubsubctrl}   "${pubsubctrl_src}" 23_generated "${project_common}")
+addExecutableEx(${project_pubsubdyn}   	"${pubsubdyn_src}"  23_generated "${project_common}")

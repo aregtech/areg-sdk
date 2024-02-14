@@ -15,52 +15,40 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="generated\src\private\NEPubSub.cpp">
+    <ClCompile Include="$(AregGenerateDir)\examples\24_pubsubmulti\private\NEPubSub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\PubSubClientBase.cpp">
+    <ClCompile Include="$(AregGenerateDir)\examples\24_pubsubmulti\private\PubSubClientBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\PubSubEvents.cpp">
+    <ClCompile Include="$(AregGenerateDir)\examples\24_pubsubmulti\private\PubSubEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\PubSubProxy.cpp">
+    <ClCompile Include="$(AregGenerateDir)\examples\24_pubsubmulti\private\PubSubProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\PubSubStub.cpp">
+    <ClCompile Include="$(AregGenerateDir)\examples\24_pubsubmulti\private\PubSubStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="generated\src\private\PubSubEvents.hpp">
+    <ClInclude Include="$(AregGenerateDir)\examples\24_pubsubmulti\private\PubSubEvents.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\private\PubSubProxy.hpp">
+    <ClInclude Include="$(AregGenerateDir)\examples\24_pubsubmulti\private\PubSubProxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\NEPubSub.hpp">
+    <ClInclude Include="$(AregGenerateDir)\examples\24_pubsubmulti\NEPubSub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\PubSubClientBase.hpp">
+    <ClInclude Include="$(AregGenerateDir)\examples\24_pubsubmulti\PubSubClientBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\PubSubStub.hpp">
+    <ClInclude Include="$(AregGenerateDir)\examples\24_pubsubmulti\PubSubStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\PubSub.siml">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\generate.bat">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\generate.sh">
-      <Filter>Resource Files</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="generated\CMakeLists.txt" />
-    <Text Include="generated\src\private\CMakeLists.txt" />
+    <None Include="res\PubSub.siml" />
   </ItemGroup>
 </Project>

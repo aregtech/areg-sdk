@@ -39,6 +39,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="common\NECommon.hpp" />
     <ClInclude Include="pubservice\src\TrafficLightService.hpp" />
   </ItemGroup>
   <ItemGroup>

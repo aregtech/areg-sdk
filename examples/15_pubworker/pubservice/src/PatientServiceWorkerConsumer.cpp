@@ -11,8 +11,8 @@
 #include "pubservice/src/PatientServiceWorkerConsumer.hpp"
 
 #include "areg/base/NEUtilities.hpp"
-#include "generated/src/NECommon.hpp"
-#include "generated/src/PatientInformationStub.hpp"
+#include "common/NECommon.hpp"
+#include "generate/examples/15_pubworker/PatientInformationStub.hpp"
 #include "areg/appbase/Application.hpp"
 
 #ifdef _WINDOWS

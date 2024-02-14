@@ -13,7 +13,7 @@
   ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
-#include "generated/src/PubSubClientBase.hpp"
+#include "generate/examples/22_pubsub/PubSubClientBase.hpp"
 
 /**
  * \brief   The PubSub service consumer object.

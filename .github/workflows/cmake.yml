@@ -2,7 +2,7 @@ name: CMake
 
 on:
   push:         # Keep empty to run on each branch when push the code. Otherwise use branches: [ master ]
-    branches: [master]
+    branches: [ master ]
   pull_request: # Set to master to run only when merge with master branch
     branches: [ master ]
 
@@ -279,30 +279,23 @@ jobs:
 
       - name: Checkout AREG engine (AREG SDK) source codes
         uses: actions/checkout@v4
-
-      - name: Fetch cygwin installer on Windows
-        if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
-        shell: powershell
-        run: |
-          Invoke-WebRequest https://cygwin.com/setup-x86_64.exe -OutFile C:\setup.exe
-
-      - name: Install cygwin on Windows
-        if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
-        shell: cmd
-        run: |
-            c:\setup.exe -qgnO -s http://mirrors.kernel.org/sourceware/cygwin/ -l C:\cygwin-packages\ -P ^
-            cmake,^
-            dos2unix,^
-            flexdll,^
-            gcc-g++,^
-            git,^
-            ncurses,^
-            libncurses-devel,^
-            make
+        
+      - name: Setup Java JDK to run code generator
+        uses: actions/setup-java@v4.0.0
+        with: 
+          java-version: 11
+          java-package: jre
+          distribution: temurin
 
       - name: Set Windows PATH environment variable
         if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
-        run: echo "PATH=C:\cygwin64;C:\cygwin64\bin;C:\cygwin64\lib;%SYSTEMROOT%\system32;%PATH%" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        run: echo "PATH=C:\cygwin;C:\cygwin\bin;C:\cygwin\lib;%SYSTEMROOT%\system32;%PATH%" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Install cygwin on Windows
+        if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
+        uses: cygwin/cygwin-install-action@v4
+        with:
+          packages: cmake, dos2unix, flexdll, gcc-g++, git, ncurses, libncurses-devel, make
 
       - name: Set cmake cache destination for Linux
         if: matrix.config.os == 'ubuntu-latest'
@@ -312,13 +305,13 @@ jobs:
         if: matrix.config.os == 'windows-latest'
         run: echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> $env:GITHUB_ENV
          
-      - name: Configure CMake with enabled extended feature and selected compiler family
+      - name: Configure CMake with enabled extended feature and select compiler family
         if: matrix.config.extend == 'ON'
         working-directory: ${{github.workspace}}
         run: |
-          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGS:BOOL=${{matrix.config.logs}} -DAREG_BUILD_EXAMPLES:BOOL=OFF -DAREG_BUILD_TESTS:BOOL=${{matrix.config.test}}
+          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGS:BOOL=${{matrix.config.logs}} -DAREG_BUILD_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_BUILD_TESTS:BOOL=${{matrix.config.test}}
     
-      - name: Configure CMake for disabled extended feature and selected compiler
+      - name: Configure CMake for disabled extended feature and select compiler name
         if: matrix.config.extend == 'OFF'
         working-directory: ${{github.workspace}}
         run: |

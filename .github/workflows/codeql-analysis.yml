@@ -41,6 +41,13 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    - name: Setup Java JDK to run code generator
+      uses: actions/setup-java@v4.0.0
+      with: 
+        java-version: 11
+        java-package: jre
+        distribution: temurin
+
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3

@@ -15,8 +15,8 @@
 
 #include "areg/base/GEGlobal.h"
 #include "areg/component/IETimerConsumer.hpp"
-#include "generated/src/LocalHelloWorldClientBase.hpp"
-#include "generated/src/SystemShutdownClientBase.hpp"
+#include "generate/examples/13_pubmesh/LocalHelloWorldClientBase.hpp"
+#include "generate/examples/13_pubmesh/SystemShutdownClientBase.hpp"
 
 #include "areg/component/Timer.hpp"
 

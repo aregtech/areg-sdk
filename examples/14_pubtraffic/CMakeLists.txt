@@ -1,8 +1,11 @@
-# Project names
-macro_declare_project(14_generated    "generated")
+
+#add service interface
+addServiceInterface(14_generated res SimpleTrafficLight)
+
+# add projects
 macro_declare_project(14_pubclient    "pubclient")
 macro_declare_project(14_pubservice   "pubservice")
 
-addStaticLib(${project_generated}       "${generated_src}")
-addExecutableEx(${project_pubclient}    "${pubclient_src}"  "${project_generated}")
-addExecutableEx(${project_pubservice}   "${pubservice_src}" "${project_generated}")
+# add executables
+addExecutableEx(${project_pubclient}    "${pubclient_src}"  14_generated)
+addExecutableEx(${project_pubservice}   "${pubservice_src}" 14_generated)

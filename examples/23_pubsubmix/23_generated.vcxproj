@@ -42,28 +42,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="common\Publisher.hpp" />
-    <ClInclude Include="generated\src\NEPubSubMix.hpp" />
-    <ClInclude Include="generated\src\private\PubSubMixEvents.hpp" />
-    <ClInclude Include="generated\src\private\PubSubMixProxy.hpp" />
-    <ClInclude Include="generated\src\PubSubMixClientBase.hpp" />
-    <ClInclude Include="generated\src\PubSubMixStub.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="res\generate.bat" />
-    <None Include="res\generate.sh" />
     <None Include="res\PubSubMix.siml" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="generated\src\private\NEPubSubMix.cpp" />
-    <ClCompile Include="generated\src\private\PubSubMixClientBase.cpp" />
-    <ClCompile Include="generated\src\private\PubSubMixEvents.cpp" />
-    <ClCompile Include="generated\src\private\PubSubMixProxy.cpp" />
-    <ClCompile Include="generated\src\private\PubSubMixStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\23_pubsubmix\private\NEPubSubMix.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\23_pubsubmix\private\PubSubMixClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\23_pubsubmix\private\PubSubMixEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\23_pubsubmix\private\PubSubMixProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\23_pubsubmix\private\PubSubMixStub.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="generated\CMakeLists.txt" />
-    <Text Include="generated\src\private\CMakeLists.txt" />
+    <ClInclude Include="$(AregGenerateDir)\examples\23_pubsubmix\NEPubSubMix.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\23_pubsubmix\private\PubSubMixEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\23_pubsubmix\private\PubSubMixProxy.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\23_pubsubmix\PubSubMixClientBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\23_pubsubmix\PubSubMixStub.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -42,22 +42,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="generated\src\private\LargeDataClientBase.cpp" />
-    <ClCompile Include="generated\src\private\LargeDataEvents.cpp" />
-    <ClCompile Include="generated\src\private\LargeDataProxy.cpp" />
-    <ClCompile Include="generated\src\private\LargeDataStub.cpp" />
-    <ClCompile Include="generated\src\private\NELargeData.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\20_pubdatarate\private\LargeDataClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\20_pubdatarate\private\LargeDataEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\20_pubdatarate\private\LargeDataProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\20_pubdatarate\private\LargeDataStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\20_pubdatarate\private\NELargeData.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="generated\src\LargeDataClientBase.hpp" />
-    <ClInclude Include="generated\src\LargeDataStub.hpp" />
-    <ClInclude Include="generated\src\NELargeData.hpp" />
-    <ClInclude Include="generated\src\private\LargeDataEvents.hpp" />
-    <ClInclude Include="generated\src\private\LargeDataProxy.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="generated\CMakeLists.txt" />
-    <Text Include="generated\src\private\CMakeLists.txt" />
+    <ClInclude Include="$(AregGenerateDir)\examples\20_pubdatarate\LargeDataClientBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\20_pubdatarate\LargeDataStub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\20_pubdatarate\NELargeData.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\20_pubdatarate\private\LargeDataEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\20_pubdatarate\private\LargeDataProxy.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\LargeData.siml" />

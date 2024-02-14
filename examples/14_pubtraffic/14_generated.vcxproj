@@ -42,23 +42,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="generated\src\NECommon.hpp" />
-    <ClInclude Include="generated\src\NESimpleTrafficLight.hpp" />
-    <ClInclude Include="generated\src\private\SimpleTrafficLightEvents.hpp" />
-    <ClInclude Include="generated\src\private\SimpleTrafficLightProxy.hpp" />
-    <ClInclude Include="generated\src\SimpleTrafficLightClientBase.hpp" />
-    <ClInclude Include="generated\src\SimpleTrafficLightStub.hpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\14_pubtraffic\private\NESimpleTrafficLight.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\14_pubtraffic\private\SimpleTrafficLightClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\14_pubtraffic\private\SimpleTrafficLightEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\14_pubtraffic\private\SimpleTrafficLightProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)\examples\14_pubtraffic\private\SimpleTrafficLightStub.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="generated\src\private\NESimpleTrafficLight.cpp" />
-    <ClCompile Include="generated\src\private\SimpleTrafficLightClientBase.cpp" />
-    <ClCompile Include="generated\src\private\SimpleTrafficLightEvents.cpp" />
-    <ClCompile Include="generated\src\private\SimpleTrafficLightProxy.cpp" />
-    <ClCompile Include="generated\src\private\SimpleTrafficLightStub.cpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\14_pubtraffic\NESimpleTrafficLight.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\14_pubtraffic\private\SimpleTrafficLightEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\14_pubtraffic\private\SimpleTrafficLightProxy.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\14_pubtraffic\SimpleTrafficLightClientBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)\examples\14_pubtraffic\SimpleTrafficLightStub.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="generated\CMakeLists.txt" />
-    <Text Include="generated\src\private\CMakeLists.txt" />
+    <None Include="res\SimpleTrafficLight.siml" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

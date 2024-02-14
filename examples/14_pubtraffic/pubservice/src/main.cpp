@@ -21,7 +21,7 @@
 #include "areg/trace/GETrace.h"
 #include "extend/console/Console.hpp"
 
-#include "generated/src/NECommon.hpp"
+#include "common/NECommon.hpp"
 #include "pubservice/src/TrafficLightService.hpp"
 
 #ifdef WINDOWS

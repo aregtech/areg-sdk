@@ -1,8 +1,11 @@
-# Project names
-macro_declare_project(12_generated    "generated")
+
+# add service interface
+addServiceInterface(12_generated res HelloWorld)
+
+# add projects
 macro_declare_project(12_pubclient    "pubclient")
 macro_declare_project(12_pubservice   "pubservice")
 
-addStaticLib(${project_generated}       "${generated_src}")
-addExecutableEx(${project_pubclient}    "${pubclient_src}"     "${project_generated}")
-addExecutableEx(${project_pubservice}   "${pubservice_src}"    "${project_generated}")
+# add executables
+addExecutableEx(${project_pubclient}    "${pubclient_src}"  12_generated)
+addExecutableEx(${project_pubservice}   "${pubservice_src}" 12_generated)

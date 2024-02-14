@@ -15,42 +15,38 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="generated\src\private\LargeDataClientBase.cpp">
+    <ClCompile Include="$(AregGenerateDir)\examples\20_pubdatarate\private\LargeDataClientBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\LargeDataEvents.cpp">
+    <ClCompile Include="$(AregGenerateDir)\examples\20_pubdatarate\private\LargeDataEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\LargeDataProxy.cpp">
+    <ClCompile Include="$(AregGenerateDir)\examples\20_pubdatarate\private\LargeDataProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\LargeDataStub.cpp">
+    <ClCompile Include="$(AregGenerateDir)\examples\20_pubdatarate\private\LargeDataStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="generated\src\private\NELargeData.cpp">
+    <ClCompile Include="$(AregGenerateDir)\examples\20_pubdatarate\private\NELargeData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="generated\src\private\LargeDataEvents.hpp">
+    <ClInclude Include="$(AregGenerateDir)\examples\20_pubdatarate\private\LargeDataEvents.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\private\LargeDataProxy.hpp">
+    <ClInclude Include="$(AregGenerateDir)\examples\20_pubdatarate\private\LargeDataProxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\LargeDataClientBase.hpp">
+    <ClInclude Include="$(AregGenerateDir)\examples\20_pubdatarate\LargeDataClientBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\LargeDataStub.hpp">
+    <ClInclude Include="$(AregGenerateDir)\examples\20_pubdatarate\LargeDataStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="generated\src\NELargeData.hpp">
+    <ClInclude Include="$(AregGenerateDir)\examples\20_pubdatarate\NELargeData.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="generated\CMakeLists.txt" />
-    <Text Include="generated\src\private\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\LargeData.siml">

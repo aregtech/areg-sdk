@@ -21,6 +21,18 @@
     <ClInclude Include="pubservice\src\PowerControllerClient.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="pubservice\src\IETrafficLightActionHandler.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pubservice\src\NETrafficLightFSM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pubservice\src\TrafficLightFSM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="common\NECommon.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pubservice\src\main.cpp">
@@ -30,6 +42,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="pubservice\src\PowerControllerClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pubservice\src\IETrafficLightActionHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pubservice\src\NETrafficLightFSM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pubservice\src\TrafficLightFSM.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

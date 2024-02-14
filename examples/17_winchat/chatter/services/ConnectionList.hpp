@@ -1,5 +1,5 @@
 #pragma once
-#include "generated/src/ConnectionManagerClientBase.hpp"
+#include "generate/examples/17_winchat/ConnectionManagerClientBase.hpp"
 
 class Component;
 class ConnectionHandler;

@@ -1,4 +1,4 @@
-setSources(macro_project_sources
+setSources(project_sources
     main.cpp
     ServicingComponent.cpp
 )

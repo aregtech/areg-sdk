@@ -7,8 +7,8 @@
 #include "areg/base/GEGlobal.h"
 #include "areg/component/Component.hpp"
 #include "areg/base/NEMemory.hpp"
-#include "generated/src/ConnectionManagerStub.hpp"
-#include "generated/src/CentralMessagerStub.hpp"
+#include "generate/examples/17_winchat/ConnectionManagerStub.hpp"
+#include "generate/examples/17_winchat/CentralMessagerStub.hpp"
 
 class ComponentThread;
 

@@ -87,7 +87,7 @@
         <!-- ****************************************************************************************************************************** -->
 
         <!-- AREG Framework specific includes. The value may change when integrate in other projects.                                       -->
-        <AregCommonIncludes>$(AregFrameworkSources);$(AregGenerateDir);$(AregFrameworkResources);$(AregThirdpartyDir)</AregCommonIncludes>
+        <AregCommonIncludes>$(AregFrameworkSources);$(AregBuildRoot);$(AregGenerateDir);$(AregFrameworkResources);$(AregThirdpartyDir)</AregCommonIncludes>
         <!-- AREG Framework specific library search paths. The value may change when integrate in other projects.                           -->
         <AregCommonLibs>$(AregOutputLib);$(AregOutputBin)</AregCommonLibs>
 
