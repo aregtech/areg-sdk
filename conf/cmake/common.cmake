@@ -237,10 +237,16 @@ endif()
 
 set(FETCHCONTENT_BASE_DIR "${AREG_PACKAGES}" CACHE PATH "Location of AREG thirdpary packages" FORCE)
 
+find_package(Java COMPONENTS Runtime)
+if (NOT ${Java_FOUND})
+    find_package(Java COMPONENTS Development)
+endif()
+
 message(STATUS "-------------------- CMakeLists Status Report Begin --------------------")
-message(STATUS ">>> Build for '${CMAKE_SYSTEM_NAME}' '${AREG_BITNESS}'-bit platform '${AREG_PROCESSOR}' with compiler '${CMAKE_CXX_COMPILER}', ID '${AREG_COMPILER_FAMILY}', and build type '${CMAKE_BUILD_TYPE}'")
+message(STATUS ">>> Build '${CMAKE_SYSTEM_NAME}' '${AREG_BITNESS}'-bit platform '${AREG_PROCESSOR}', compiler '${CMAKE_CXX_COMPILER}', ID '${AREG_COMPILER_FAMILY}', build type '${CMAKE_BUILD_TYPE}'")
 message(STATUS ">>> Binary output folder '${AREG_OUTPUT_BIN}', executable extensions '${CMAKE_EXECUTABLE_SUFFIX}'")
-message(STATUS ">>> Generated files are in '${AREG_GENERATE_DIR}', library output folder '${AREG_OUTPUT_LIB}'")
+message(STATUS ">>> Generated files location '${AREG_GENERATE_DIR}', library output folder '${AREG_OUTPUT_LIB}'")
 message(STATUS ">>> Build examples is '${AREG_BUILD_EXAMPLES}', build tests is '${AREG_BUILD_TESTS}', AREG extended features are '${AREG_EXTENDED}', compile with logs '${AREG_LOGS}'")
+message(STATUS ">>> Java ${Java_VERSION_STRING} at location ${Java_JAVA_EXECUTABLE} is required by code generator. Minimum version 1.8")
 message(STATUS "-------------------- CMakeLists Status Report End ----------------------")
 message(STATUS CMAKE_SOURCE_DIR = ${CMAKE_SOURCE_DIR})

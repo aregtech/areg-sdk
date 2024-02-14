@@ -506,6 +506,11 @@ endmacro(macro_normalize_path)
 # ---------------------------------------------------------------------------
 function(addServiceInterfaceEx gen_project_name source_root relative_path sub_dir interface_name)
 
+    if (NOT ${Java_FOUND})
+        message(FATAL_ERROR "No Java found, cannot call code generator. Install JRE 1.8 or higher and try again!")
+        return()
+    endif()
+
     set(interface_doc)
     if (${sub_dir} STREQUAL "")
         macro_normalize_path(interface_doc "${source_root}/${relative_path}/${interface_name}.siml")
@@ -516,7 +521,7 @@ function(addServiceInterfaceEx gen_project_name source_root relative_path sub_di
     macro_normalize_path(interface_out "${AREG_GENERATE}/${relative_path}")
     macro_normalize_path(codegen_path "${AREG_SDK_TOOLS}/codegen.jar")
 
-    execute_process(COMMAND java -jar ${codegen_path} --root=${root_path} --doc=${interface_doc} --target=${interface_out})
+    execute_process(COMMAND ${Java_JAVA_EXECUTABLE} -jar ${codegen_path} --root=${root_path} --doc=${interface_doc} --target=${interface_out})
 
     set(generate_dir "${AREG_GENERATE_DIR}/${relative_path}")
     set(proj_src)
