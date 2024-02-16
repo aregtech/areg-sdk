@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ME=$(realpath "$0")
-TARGET=_generated
+TARGET=generated
 
 helpmsg()
 {
@@ -61,4 +61,4 @@ echo ===========================================================================
 echo Generating class defined in $(basename ${DOC_PATH}) to $TARGET ....
 echo ==============================================================================
 
-exec java com.aregtech.CMFMain --root=${PROJECT_ROOT} --doc=${DOC_PATH} --target=$TARGET
+exec java -jar ${TOOLS_PATH}/codegen.jar --root=${PROJECT_ROOT} --doc=${DOC_PATH} --target=$TARGET

@@ -209,7 +209,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "11_generated", "examples\11
 		{98743716-82FC-4B02-96AF-E6F649403A0A} = {98743716-82FC-4B02-96AF-E6F649403A0A}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "11_locmesh", "examples\11_locmesh\11_locmesh.vcxproj", "{18CE1C5F-A87D-42E2-B9F8-89FDD6ECE323}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "11_localmesh", "examples\11_locmesh\11_localmesh.vcxproj", "{18CE1C5F-A87D-42E2-B9F8-89FDD6ECE323}"
 	ProjectSection(ProjectDependencies) = postProject
 		{1D3A6135-F0EE-4531-B682-55270B70B699} = {1D3A6135-F0EE-4531-B682-55270B70B699}
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
@@ -645,7 +645,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "thirdparty", "thirdparty", 
 		thirdparty\CMakeLists.txt = thirdparty\CMakeLists.txt
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dummy", "examples\dummy.vcxproj", "{98743716-82FC-4B02-96AF-E6F649403A0A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dummy", "examples\dummy\dummy.vcxproj", "{98743716-82FC-4B02-96AF-E6F649403A0A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "github-workflows", "github-workflows", "{85EF9AE6-92A6-4DD9-833C-455EEAEA186D}"
 	ProjectSection(SolutionItems) = preProject

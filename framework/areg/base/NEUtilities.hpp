@@ -318,12 +318,20 @@ namespace   NEUtilities
     AREG_API TIME64 systemTimeNow( void );
 
     /**
-     * \brief   Returns system time data as a 64-bit integer value. The returned value is
-     *          passed microseconds since January 1, 1970 (UNIX epoch).
+     * \brief   Returns system time data as a 64-bit integer value in microseconds passed since Unix epoch,
+     *          which is January 1, 1970 (UNIX epoch).
      * \param   sysTime     The system time structure with data to convert.
      * \return  Returns microseconds passed since January 1, 1970 (UNIX epoch).
      **/
     AREG_API TIME64 convToTime( const sSystemTime & IN sysTime );
+
+    /**
+     * \brief   Returns tm structure data as a 64-bit integer value in microseconds passed since Unix epoch,
+     *          which is January 1, 1970 (UNIX epoch).
+     * \param   sysTime     The system time structure with data to convert.
+     * \return  Returns microseconds passed since January 1, 1970 (UNIX epoch).
+     **/
+    AREG_API TIME64 convToTime(const struct tm& IN time);
 
     /**
      * \brief   Converts 64-bit value of microseconds passed since January 1 1970 into system time data structure.
@@ -371,6 +379,14 @@ namespace   NEUtilities
      * \param   time        On output the parameter contains date-time of converted system time without information of milliseconds.
      **/
     AREG_API void convToTm( const sSystemTime & IN sysTime, struct tm & OUT time );
+
+    /**
+     * \brief   Converts time in microseconds since Unix epoch (January 1, 1970) to standard 'tm' type.
+     *          In conversion, a milliseconds and microseconds part of data will be lost.
+     * \param   timeMicro   The time in microseconds since Unix epoch (January 1, 1970) to convert.
+     * \param   time        On output the parameter contains date-time of converted system time without information of milliseconds.
+     **/
+    AREG_API void convToTm(const TIME64& IN timeMicro, struct tm& OUT time);
 
     /**
      * \brief   Converts standard 'tm' type to system-time data structure. In conversion, a milliseconds part of data will not exist.
