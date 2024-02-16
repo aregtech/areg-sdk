@@ -7,9 +7,9 @@
     <Import Project="$(AregSdkRoot)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{BB5D8C31-A4F1-4962-8181-668103FDDE22}</ProjectGuid>
-    <ProjectName>gtest</ProjectName>
-    <RootNamespace>gtest</RootNamespace>
+    <ProjectGuid>{98743716-82FC-4B02-96AF-E6F649403A0A}</ProjectGuid>
+    <ProjectName>dummy</ProjectName>
+    <RootNamespace>dummy</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -25,23 +25,26 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
     <ClCompile>
-      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;GTEST_HAS_PTHREAD=0;_HAS_EXCEPTIONS=1;STRICT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(GoogleTestDir);$(GoogleTestDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <PreBuildEvent>
+      <Command>$(AregExamplesDir)\examples_generate.bat</Command>
+      <Message>Call to generate service interface source files for all example projects.</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
     <ClCompile>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;GTEST_HAS_PTHREAD=0;_HAS_EXCEPTIONS=1;STRICT;IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(GoogleTestDir);$(GoogleTestDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <PreBuildEvent>
+      <Command>$(AregExamplesDir)\examples_generate.bat</Command>
+      <Message>Call to generate service interface source files for all example projects.</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="googletest\googletest\src\gtest-all.cc" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="gtest.mk" />
+    <ClCompile Include="dummy.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

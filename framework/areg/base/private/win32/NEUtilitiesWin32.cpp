@@ -116,6 +116,12 @@ namespace NEUtilities
         }
     }
     
+    void _osConvToTm(const TIME64& IN timeValue, tm& OUT time)
+    {
+        time_t secs{ static_cast<time_t>(timeValue / NEUtilities::SEC_TO_MICROSECS) };
+        ::gmtime_s(&time, &secs);
+    }
+
 } // namespace
 
 #endif // WINDOWS

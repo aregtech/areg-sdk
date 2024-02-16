@@ -161,7 +161,7 @@ TEST( DateTimeTest, TestNow )
     DateTime date( DateTime::getNow( ) );
     ASSERT_TRUE( date.getTime( ) != 0 );
 
-    date.convToSystemTime( sysTime );
+    date.getDateTime( sysTime );
     _checkTimeStruct( sysTime, "UTC " );
 }
 
