@@ -554,6 +554,7 @@ void ProxyBase::sendNotificationEvent( unsigned int msgId, NEService::eResultTyp
         {
             eventElem->setEventConsumer(static_cast<IEEventConsumer *>(caller));
         }
+
         static_cast<Event *>(eventElem)->deliverEvent();
     }
 }

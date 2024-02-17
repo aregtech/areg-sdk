@@ -51,19 +51,7 @@ WorkerThread::WorkerThread( const String & threadName
 //////////////////////////////////////////////////////////////////////////
 bool WorkerThread::postEvent( Event& eventElem )
 {
-    bool result = false;
-    if ( Event::isCustom(eventElem.getEventType()) )
-    {
-        EventDispatcher::postEvent(eventElem);
-    }
-    else
-    {
-        OUTPUT_ERR("Wrong event to post, event type [ %s ], category [ %d ]", eventElem.getRuntimeClassName().getString(), static_cast<int>(eventElem.getEventType()));
-        eventElem.destroy();
-        ASSERT(false);
-    }
-
-    return result;
+    return Event::isCustom(eventElem.getEventType()) && EventDispatcher::postEvent(eventElem);
 }
 
 void WorkerThread::readyForEvents( bool isReady )

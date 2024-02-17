@@ -29,18 +29,7 @@ TimerManagerBase::TimerManagerBase(const String& threadName)
 
 bool TimerManagerBase::postEvent(Event& eventElem)
 {
-    bool result = false;
-    if (RUNTIME_CAST(&eventElem, TimerManagerEvent) != nullptr)
-    {
-        result = EventDispatcher::postEvent(eventElem);
-    }
-    else
-    {
-        OUTPUT_ERR("Not a TimerManagerEvent type event, cannot Post. Destroying event type [ %s ]", eventElem.getRuntimeClassName().getString());
-        eventElem.destroy();
-    }
-
-    return result;
+    return (RUNTIME_CAST(&eventElem, TimerManagerEvent) != nullptr) && EventDispatcher::postEvent(eventElem);
 }
 
 bool TimerManagerBase::runDispatcher(void)

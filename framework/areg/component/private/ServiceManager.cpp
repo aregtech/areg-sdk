@@ -249,18 +249,7 @@ void ServiceManager::processEvent( const ServiceManagerEventData & data )
 
 bool ServiceManager::postEvent(Event & eventElem)
 {
-    bool result = false;
-    if (RUNTIME_CAST(&eventElem, ServiceManagerEvent) != nullptr)
-    {
-        result = EventDispatcher::postEvent(eventElem);
-    }
-    else
-    {
-        OUTPUT_ERR("Not a ServiceManagerEvent type event, cannot Post. Destroying event type [ %s ]", eventElem.getRuntimeClassName().getString());
-        eventElem.destroy();
-    }
-
-    return result;
+    return (RUNTIME_CAST(&eventElem, ServiceManagerEvent) != nullptr) && EventDispatcher::postEvent(eventElem);
 }
 
 void ServiceManager::readyForEvents( bool isReady )

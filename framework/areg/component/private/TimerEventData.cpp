@@ -73,7 +73,7 @@ bool TimerEvent::sendEvent( Timer & timer, id_type dispatchThreadId )
 
 bool TimerEvent::sendEvent(Timer & timer, DispatcherThread & dispatchThread)
 {
-    bool result = false;
+    bool result{ false };
     if ( dispatchThread.isRunning() )
     {
         TimerEvent* timerEvent = DEBUG_NEW TimerEvent(timer, dispatchThread);

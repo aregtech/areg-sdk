@@ -72,12 +72,5 @@ int EventDispatcher::onThreadExit( void )
 
 bool EventDispatcher::postEvent( Event& eventElem )
 {
-    bool result = mDispatcherThread != nullptr ? queueEvent(eventElem) : false;
-    if (result == false)
-    {
-        OUTPUT_ERR("Failed to queue event of type [ %s ], going to destroy", eventElem.getRuntimeClassName().getString());
-        eventElem.destroy();
-    }
-
-    return result;
+    return queueEvent(eventElem);
 }

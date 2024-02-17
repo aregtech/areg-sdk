@@ -204,25 +204,19 @@ bool ProxyAddress::deliverServiceEvent(ServiceResponseEvent & proxyEvent) const
 
 bool ProxyAddress::_deliverEvent(Event & serviceEvent, const ITEM_ID & idTarget)
 {
-    bool result = false;
-    if ( idTarget != NEService::TARGET_UNKNOWN )
+    bool result{ false };
+    Thread* thread = idTarget != NEService::TARGET_UNKNOWN ? Thread::findThreadById(static_cast<id_type>(idTarget)) : nullptr;
+    DispatcherThread* dispatcher = thread != nullptr ? RUNTIME_CAST(thread, DispatcherThread) : nullptr;
+    if (dispatcher != nullptr)
     {
-        Thread * thread = Thread::findThreadById(static_cast<id_type>(idTarget));
-        DispatcherThread * dispatcher = thread != nullptr ? RUNTIME_CAST(thread, DispatcherThread) : nullptr;
-        if ( dispatcher != nullptr )
-        {
-            result = serviceEvent.registerForThread(dispatcher);
-            serviceEvent.deliverEvent();
-        }
-        else
-        {
-            serviceEvent.destroy();
-        }
+        result = serviceEvent.registerForThread(dispatcher);
+        serviceEvent.deliverEvent();
     }
     else
     {
         serviceEvent.destroy();
     }
+
     return result;
 }
 

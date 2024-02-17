@@ -116,11 +116,7 @@ EventDispatcher& Event::getDispatcher( void ) const
 void Event::deliverEvent( void )
 {
     EventDispatcher * dispatcher = mTargetThread != nullptr ? &mTargetThread->getEventDispatcher( ) : nullptr;
-    if ( (dispatcher != nullptr) && (dispatcher->isReady()) )
-    {
-        dispatcher->postEvent(*this);
-    }
-    else
+    if ((dispatcher == nullptr) || (dispatcher->postEvent(*this) == false))
     {
         OUTPUT_ERR("The event target is unknown! Event type [ %s ] is going to be deleted.", getRuntimeClassName().getString());
         destroy();

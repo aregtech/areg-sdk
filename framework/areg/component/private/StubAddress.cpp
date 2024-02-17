@@ -201,25 +201,20 @@ void StubAddress::setThread(const String & threadName)
 bool StubAddress::deliverServiceEvent( ServiceRequestEvent & serviceEvent ) const
 {
     bool result{ false };
+
     const ITEM_ID & target{ mChannel.getSource() };
-    if ( target != NEService::TARGET_UNKNOWN )
+    Thread* thread = target != NEService::TARGET_UNKNOWN ? Thread::findThreadById(static_cast<id_type>(target)) : nullptr;
+    DispatcherThread* dispatcher = thread != nullptr ? RUNTIME_CAST(thread, DispatcherThread) : nullptr;
+    if (dispatcher != nullptr)
     {
-        Thread * thread = Thread::findThreadById(static_cast<id_type>(target));
-        DispatcherThread * dispatcher = thread != nullptr ? RUNTIME_CAST(thread, DispatcherThread) : nullptr;
-        if ( dispatcher != nullptr )
-        {
-            result = serviceEvent.registerForThread(dispatcher);
-            serviceEvent.deliverEvent();
-        }
-        else
-        {
-            serviceEvent.destroy();
-        }
+        result = serviceEvent.registerForThread(dispatcher);
+        serviceEvent.deliverEvent();
     }
     else
     {
         serviceEvent.destroy();
     }
+
     return result;
 }
 
