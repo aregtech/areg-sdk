@@ -101,17 +101,20 @@ void EventDispatcherBase::shutdownDispatcher( void )
 
 bool EventDispatcherBase::queueEvent( Event& eventElem )
 {
-    bool result = false;
+    bool result{ false };
     if ( mHasStarted )
     {
-        result = true;
         Event::eEventType eventType = eventElem.getEventType();
-        if ( Event::isInternal(eventType) )
+        if (Event::isInternal(eventType))
+        {
             mInternalEvents.pushEvent(eventElem);
-        else if ( Event::isExternal(eventType) )
+            result = true;
+        }
+        else if (Event::isExternal(eventType))
+        {
             mExternaEvents.pushEvent(eventElem);
-        else
-            result = false;
+            result = true;
+        }
     }
 
     return result;

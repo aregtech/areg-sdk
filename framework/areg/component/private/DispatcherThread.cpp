@@ -219,7 +219,9 @@ bool DispatcherThread::postEvent( Event& eventElem )
 {
     OUTPUT_ERR("Wrong postEvent function call, destroying event [ %s ]", eventElem.getRuntimeClassName().getString());
     eventElem.destroy();
+
     ASSERT(false);  // <= this should not be called.
+    // You may want to call EventDispatcher::postEvent() and/or filter events here
 
     return true;
 }
