@@ -44,30 +44,8 @@ public:
 /************************************************************************/
 // Public constants
 /************************************************************************/
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(disable: 4251)
-#endif  // _MSC_VER
 
-    /**
-     * \brief   ISO8601 format of time-stamp to display logs
-     **/
-    static constexpr std::string_view   TIME_FORMAT_ISO8601_OUTPUT          { "%Y-%m-%d %H:%M:%S,%l" };
-
-    /**
-     * \brief   Absolute time format of time-stamp
-     **/
-    static constexpr std::string_view   TIME_FORMAT_ABSOLUTE_OUTPUT         { "%H:%M:%S,%l" };
-
-    /**
-     * \brief   Format only data of time-stamp
-     **/
-    static constexpr std::string_view   TIME_FORMAT_DATE_OUTPUT             { "%d %b %Y %H:%M:%S,%l" };
-
-#if defined(_MSC_VER) && (_MSC_VER > 1200)
-    #pragma warning(default: 4251)
-#endif  // _MSC_VER
-
-    /**
+/**
      * \brief   Invalid time.
      **/
     static constexpr TIME64             INVALID_TIME                        { 0 };
@@ -249,7 +227,7 @@ public:
      * \param   result      On output this contains formated string of DateTime.
      * \param   formatName  The formating to convert DateTime.
      **/
-    static void formatTime(const DateTime &dateTime, String& OUT result, const std::string_view& formatName = DateTime::TIME_FORMAT_ISO8601_OUTPUT);
+    static void formatTime(const DateTime &dateTime, String& OUT result, const std::string_view& formatName = NEUtilities::DEFAULT_TIME_FORMAT_OUTPUT);
 
 /************************************************************************/
 // Non-static operations
@@ -259,7 +237,7 @@ public:
      * \brief   Formats time and outputs as a string. The caller should specify the
      *          the time format name for output
      **/
-    String formatTime( const std::string_view & formatName = DateTime::TIME_FORMAT_ISO8601_OUTPUT ) const;
+    String formatTime( const std::string_view & formatName = NEUtilities::DEFAULT_TIME_FORMAT_OUTPUT) const;
 
     /**
      * \brief   Returns the time data.

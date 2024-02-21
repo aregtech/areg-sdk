@@ -24,6 +24,7 @@
 #include "areg/base/Thread.hpp"
 #include "areg/component/NEService.hpp"
 #include "areg/trace/NETrace.hpp"
+#include "areg/trace/private/NELogging.hpp"
 
 namespace
 {
