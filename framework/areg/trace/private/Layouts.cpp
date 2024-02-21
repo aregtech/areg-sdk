@@ -22,6 +22,8 @@
 
 #include <utility>
 
+#if AREG_LOGS
+
 //////////////////////////////////////////////////////////////////////////
 // IELayout interface implementation
 //////////////////////////////////////////////////////////////////////////
@@ -465,3 +467,5 @@ void CookieIdLayout::logMessage(const NETrace::sLogMessage& msgLog, IEOutStream&
     int len = String::formatString(buffer, 128, fmt, static_cast<id_type>(msgLog.logCookie));
     stream.write(reinterpret_cast<const unsigned char*>(buffer), len > 0 ? len : 0);
 }
+
+#endif  // AREG_LOGS

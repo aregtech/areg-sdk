@@ -22,9 +22,10 @@
 
 #include "areg/base/TESortedLinkedList.hpp"
 
- /************************************************************************
-  * Implemented classes.
-  ************************************************************************/
+#if AREG_LOGS
+/************************************************************************
+ * Implemented classes.
+ ************************************************************************/
 class ScopeLeaf;
 class ScopeNode;
 class ScopeRoot;
@@ -370,4 +371,5 @@ inline unsigned int ScopeNode::childNodeCount( void ) const
     return (mChildLeafs.getSize( ) + mChildNodes.getSize( ));
 }
 
+#endif  // AREG_LOGS
 #endif  // AREG_TRACE_PRIVATE_SCOPENODES_HPP

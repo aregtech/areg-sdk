@@ -24,6 +24,7 @@
 
 #include <string_view>
 
+#if AREG_LOGS
 /************************************************************************
  * Dependencies
  ************************************************************************/
@@ -218,4 +219,5 @@ inline const LayoutManager & LoggerBase::getLayoutExitScope(void) const
     return mLayoutsScopeExit;
 }
 
+#endif  // AREG_LOGS
 #endif  // AREG_TRACE_PRIVATE_LOGGERBASE_HPP

@@ -22,6 +22,8 @@
 
 #include <stdarg.h>
 
+#if AREG_LOGS
+
 TraceMessage::TraceMessage( const TraceScope & traceScope )
     : mScopeName( traceScope.getScopeName() )
     , mScopeId  ( traceScope.mScopeId       )
@@ -33,7 +35,6 @@ TraceMessage::TraceMessage( const TraceScope & traceScope )
         TraceManager::logMessage(msg);
     }
 }
-
 
 TraceMessage::~TraceMessage( void )
 {
@@ -121,3 +122,15 @@ inline void TraceMessage::_sendLog( unsigned int scopeId, NETrace::eLogPriority 
     logData.logMessageLen = String::formatStringList( logData.logMessage, NETrace::LOG_MESSAGE_IZE - 1, format, args );
     TraceManager::logMessage( logData );
 }
+
+#else   // AREG_LOGS
+
+TraceMessage::TraceMessage(const TraceScope& /*traceScope*/)
+{
+}
+
+TraceMessage::~TraceMessage(void)
+{
+}
+
+#endif // AREG_LOGS

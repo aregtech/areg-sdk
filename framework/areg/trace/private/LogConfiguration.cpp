@@ -272,6 +272,8 @@ void LogConfiguration::saveConfiguration(void)
     Application::getConfigManager().saveConfig();
 }
 
+#if AREG_LOGS
+
 void LogConfiguration::updateScopeConfiguration(const ScopeController& scopeController) const
 {
     const auto& scopeList = scopeController.getScopeList();
@@ -289,3 +291,11 @@ void LogConfiguration::updateScopeConfiguration(const ScopeController& scopeCont
     config.removeModuleScopes();
     root.updateConfigNode(config, String::EmptyString);
 }
+
+#else   // AREG_LOGS
+
+void LogConfiguration::updateScopeConfiguration(const ScopeController& /*scopeController*/) const
+{
+}
+
+#endif  // AREG_LOGS

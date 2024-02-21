@@ -34,6 +34,8 @@
 
 #include <string_view>
 
+#if AREG_LOGS
+
 /************************************************************************
  * Dependencies
  ************************************************************************/
@@ -217,4 +219,5 @@ inline NetTcpLogger& NetTcpLogger::self(void)
     return (*this);
 }
 
+#endif  // AREG_LOGS
 #endif  // AREG_TRACE_PRIVATE_NETTCPLOGGER_HPP

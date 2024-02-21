@@ -22,6 +22,8 @@
 #include "areg/base/Process.hpp"
 #include "areg/persist/ConfigManager.hpp"
 
+#if AREG_LOGS
+
 //////////////////////////////////////////////////////////////////////////
 // ScopeLeaf class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -407,3 +409,5 @@ String ScopeRoot::makeConfigString(const String& parent) const
 {
     return (parent + NELogging::SYNTAX_SCOPE_GROUP);
 }
+
+#endif // AREG_LOGS

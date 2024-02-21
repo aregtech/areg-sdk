@@ -24,6 +24,8 @@
 #include "areg/trace/private/TraceManager.hpp"
 #include "areg/trace/private/ScopeNodes.hpp"
 
+#if AREG_LOGS
+
 TraceEventProcessor::TraceEventProcessor( TraceManager & traceManager )
     : mTraceManager ( traceManager )
 {
@@ -105,3 +107,5 @@ inline void TraceEventProcessor::_changeScopePriority( const SharedBuffer & stre
         mTraceManager.changeScopePriority( scopeName, scopeId, scopePrio );
     }
 }
+
+#endif  // AREG_LOGS

@@ -26,6 +26,7 @@
 #include "areg/trace/private/TraceManager.hpp"
 #include "areg/trace/private/ScopeController.hpp"
 
+#if AREG_LOGS
 
 NetTcpLogger::NetTcpLogger(LogConfiguration & logConfig, ScopeController & scopeController, DispatcherThread & dispatchThread)
     : LoggerBase                    (logConfig)
@@ -207,3 +208,5 @@ void NetTcpLogger::processReceivedMessage(const RemoteMessage & msgReceived, Soc
         }
     }
 }
+
+#endif  // AREG_LOGS

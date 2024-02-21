@@ -25,6 +25,8 @@
 
 #include "areg/base/String.hpp"
 
+#if AREG_LOGS
+
 //////////////////////////////////////////////////////////////////////////
 // DebugOutputLogger class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -172,4 +174,5 @@ private:
     DECLARE_NOCOPY_NOMOVE( DebugOutputLogger );
 };
 
+#endif // AREG_LOGS
 #endif  // AREG_TRACE_PRIVATE_DEBUGOUTPUTLOGGER_HPP

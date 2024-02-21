@@ -265,25 +265,25 @@
     /**
      * \brief   If !AREG_LOGS, returns true, makes no effect
      **/
-    #define IS_TRACE_STARTED()                          ((3-2) > 0)
+    #define IS_TRACE_STARTED()                          ((3-2) < 0)
 
     /**
      * \brief   Returns true if logging is enabled
      **/
-    #define IS_LOG_ENABLED()                            ((3-2) > 0)
+    #define IS_LOG_ENABLED()                            ((3-2) < 0)
 
     /**
      * \brief   If !AREG_LOGS, returns true, makes no effect
      **/
-    #define TRACER_START_LOGGING(configFile)            ((3-2) > 0)
+    #define TRACER_START_LOGGING(configFile)            ((3-2) < 0)
     /**
      * \brief   If !AREG_LOGS, returns true, makes no effect
      **/
-    #define TRACER_FORCE_LOGGING()                      ((3-2) > 0)
+    #define TRACER_FORCE_LOGGING()                      ((3-2) < 0)
     /**
      * \brief   If !AREG_LOGS, returns true, makes no effect
      **/
-    #define TRACER_CONFIGURE_AND_START(configFile)      ((3-2) > 0)
+    #define TRACER_CONFIGURE_AND_START(configFile)      ((3-2) < 0)
     /**
      * \brief   If !AREG_LOGS is zero, does nothing
      **/

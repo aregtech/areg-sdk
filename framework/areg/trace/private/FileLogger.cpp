@@ -18,6 +18,8 @@
 #include "areg/base/Process.hpp"
 #include "areg/base/DateTime.hpp"
 
+#if AREG_LOGS
+
 FileLogger::FileLogger( LogConfiguration & tracerConfig )
     : LoggerBase( tracerConfig )
 
@@ -122,3 +124,5 @@ void FileLogger::flushLogs(void)
 {
     mLogFile.flush();
 }
+
+#endif // AREG_LOGS

@@ -18,6 +18,8 @@
 #include "areg/trace/private/NELogging.hpp"
 #include "areg/base/NEUtilities.hpp"
 
+#if AREG_LOGS
+
 LayoutManager::~LayoutManager(void)
 {
     deleteLayouts();
@@ -196,3 +198,5 @@ inline void LayoutManager::_createLayouts(char* layoutFormat)
         mLayoutList.add(static_cast<IELayout*>(DEBUG_NEW AnyTextLayout(pos1)));
     }
 }
+
+#endif  // AREG_LOGS

@@ -22,6 +22,8 @@
 #include "areg/trace/private/LoggerBase.hpp"
 #include "areg/base/SynchObjects.hpp"
 
+#if AREG_LOGS
+
 /************************************************************************
  * Dependencies.
  ************************************************************************/
@@ -180,4 +182,5 @@ inline bool DatabaseLogger::isValid(void) const
     return (mDatabase != nullptr);
 }
 
+#endif  // AREG_LOGS
 #endif  // AREG_TRACE_PRIVATE_DATABASELOGGER_HPP

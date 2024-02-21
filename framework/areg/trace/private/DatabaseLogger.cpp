@@ -25,6 +25,8 @@
 
 #include <string_view>
 
+#if AREG_LOGS
+
 DatabaseLogger::DatabaseLogger(LogConfiguration& tracerConfig)
     : LoggerBase    (tracerConfig)
     , mDatabase     (nullptr)
@@ -108,3 +110,4 @@ void DatabaseLogger::releaseLayouts(void)
 {
 }
 
+#endif // AREG_LOGS

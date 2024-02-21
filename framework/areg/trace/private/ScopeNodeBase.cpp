@@ -22,6 +22,8 @@
 #include "areg/trace/TraceScope.hpp"
 #include "areg/trace/private/NELogging.hpp"
 
+#if AREG_LOGS
+
 ScopeNodeBase & ScopeNodeBase::invalidNode( void )
 {
     static ScopeNodeBase _invalid;
@@ -213,3 +215,5 @@ bool ScopeNodeBase::isEmpty( void ) const
 {
     return true;
 }
+
+#endif  // AREG_LOGS

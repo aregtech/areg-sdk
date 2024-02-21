@@ -21,6 +21,8 @@
 #include "areg/base/TEArrayList.hpp"
 #include "areg/trace/NETrace.hpp"
 
+#if AREG_LOGS
+
 /************************************************************************
  * Dependencies
  ************************************************************************/
@@ -123,4 +125,5 @@ inline bool LayoutManager::isValid( void ) const
     return (mLayoutList.isEmpty() == false);
 }
 
+#endif  // AREG_LOGS
 #endif  // AREG_TRACE_PRIVATE_LAYOUTMANAGER_HPP

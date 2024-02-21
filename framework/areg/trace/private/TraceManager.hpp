@@ -35,6 +35,8 @@
 
 #include <string_view>
 
+#if AREG_LOGS
+
 /************************************************************************
  * Dependencies
  ************************************************************************/
@@ -542,4 +544,5 @@ inline bool TraceManager::isLoggingStarted( void )
     return getInstance().mIsStarted;
 }
 
+#endif  // AREG_LOGS
 #endif  // AREG_TRACE_PRIVATE_TRACEMANAGER_HPP
