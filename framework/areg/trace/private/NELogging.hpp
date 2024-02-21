@@ -132,24 +132,6 @@ namespace NELogging
     constexpr std::string_view  INVALID_SCOPE_NAME                  { "INVALID_SCOPE_NAME" };
 
     /**
-     * \brief   Format of time-stamp to display logs
-     **/
-    constexpr std::string_view  TIME_FORMAT_ISO8601                 { "ISO8601" };
-    constexpr std::string_view  TIME_FORMAT_ISO8601_OUTPUT          { "%Y-%m-%d %H:%M:%S,%l" };
-
-    /**
-     * \brief   Absolute time format of time-stamp
-     **/
-    constexpr std::string_view  TIME_FORMAT_ABSOLUTE                { "ABSOLUTE" };
-    constexpr std::string_view  TIME_FORMAT_ABSOLUTE_OUTPUT         { "%H:%M:%S,%l" };
-
-    /**
-     * \brief   Format only data of time-stamp
-     **/
-    constexpr std::string_view  TIME_FORMAT_DATE                    { "DATE" };
-    constexpr std::string_view  TIME_FORMAT_DATE_OUTPUT             { "%d %b %Y %H:%M:%S,%l" };
-
-    /**
      * \brief   Predefined name of logger to log into file
      **/
     constexpr std::string_view  LOGGER_NAME_FILE                    { "FileLogger" };
@@ -181,15 +163,6 @@ namespace NELogging
      * \brief   The default logging priority
      **/
     constexpr unsigned int      DEFAULT_LOG_PRIORITY                { static_cast<unsigned int>(NETrace::PrioNotset) };
-
-    /**
-     * \brief   Default time format
-     **/
-    constexpr std::string_view  DEFAULT_TIME_FORMAT                 { TIME_FORMAT_ISO8601 };
-    /**
-     * \brief   Default time format output
-     **/
-    constexpr std::string_view  DEFAULT_TIME_FORMAT_OUTPUT          { TIME_FORMAT_ISO8601_OUTPUT };
 
     /**
      * \brief   The default scopes to activate or deactivate

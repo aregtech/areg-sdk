@@ -90,7 +90,7 @@ void DayTimeLaytout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStrea
     if ( msgLog.logTimestamp != 0 )
     {
         String timestamp;
-        DateTime::formatTime(DateTime(msgLog.logTimestamp), timestamp, DateTime::TIME_FORMAT_ISO8601_OUTPUT);
+        DateTime::formatTime(DateTime(msgLog.logTimestamp), timestamp, NEUtilities::TIME_FORMAT_ISO8601_OUTPUT);
         stream.write( reinterpret_cast<const unsigned char *>(timestamp.getString()), timestamp.getLength());
     }
 }

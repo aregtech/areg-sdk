@@ -132,7 +132,7 @@ function(setSharedLibOptions item library_list)
     endif()
 
     # Adjusting CPP standard for target
-    set_target_properties(${item} PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON )
+    set_target_properties(${item} PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON)
     set_property(TARGET ${item} PROPERTY LIBRARY_OUTPUT_DIRECTORY ${AREG_OUTPUT_BIN})
 
 endfunction(setSharedLibOptions)
@@ -402,7 +402,7 @@ endmacro(macro_project_sources_ex)
 #               'my_project_src'. This macro is simplified version of
 #               the macro macro_project_sources_ex.
 # Macro ......: macro_project_sources
-# Parameters .: ${project_name}     -- The name of the project, which has same name od a sub-directory
+# Parameters .: ${project_name}     -- The name of the project, which has same name of a sub-directory
 # Usage ......: macro_project_sources( <name of the project> ) 
 # ---------------------------------------------------------------------------
 macro(macro_project_sources project_name)

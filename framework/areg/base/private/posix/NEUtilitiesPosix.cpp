@@ -31,10 +31,8 @@ namespace NEUtilities
     uint64_t _osGetTickCount( void )
     {
         struct timespec ts;
-        ::clock_gettime( CLOCK_MONOTONIC, &ts );
-
-        TIME64 result = (ts.tv_sec * SEC_TO_MILLISECS) + ts.tv_nsec / MILLISEC_TO_NS;
-        return result;
+        ::clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts);
+        return ((ts.tv_sec * NEUtilities::SEC_TO_MILLISECS) + (ts.tv_nsec / NEUtilities::MILLISEC_TO_NS));
     }
 
     TIME64 _osSystemTimeNow(void)
