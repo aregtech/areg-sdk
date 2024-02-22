@@ -27,6 +27,8 @@
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////////
 
+#if AREG_LOGS
+
 TraceScope::TraceScope( const char * scopeName, NETrace::eLogPriority priority /*= NETrace::PrioNotset*/ )
     : mScopeName    ( scopeName != nullptr ? scopeName : "" )
     , mScopeId      ( NETrace::makeScopeId(mScopeName.getString())  )
@@ -56,3 +58,25 @@ void TraceScope::setPriority(const String& newPrio)
 {
     setPriority(NETrace::stringToLogPrio(newPrio));
 }
+
+#else   // AREG_LOGS
+
+TraceScope::TraceScope(const char* /*scopeName*/, NETrace::eLogPriority /*priority*/ /*= NETrace::PrioNotset*/)
+    : mScopeName    ()
+    , mScopeId      ( 0 )
+    , mScopePrio    ( static_cast<unsigned int>(NETrace::eLogPriority::PrioInvalid) )
+{
+}
+
+TraceScope::TraceScope(const IEInStream& stream)
+    : mScopeName    ()
+    , mScopeId      ( 0 )
+    , mScopePrio    ( static_cast<unsigned int>(NETrace::eLogPriority::PrioInvalid) )
+{
+}
+
+TraceScope::~TraceScope(void)
+{
+}
+
+#endif  // AREG_LOGS

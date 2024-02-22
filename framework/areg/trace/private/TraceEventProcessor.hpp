@@ -23,6 +23,7 @@
 #include "areg/trace/NETrace.hpp"
 #include "areg/trace/private/TraceEvent.hpp"
 
+#if AREG_LOGS
 /************************************************************************
  * Dependencies
  ************************************************************************/
@@ -122,4 +123,5 @@ private:
     DECLARE_NOCOPY_NOMOVE( TraceEventProcessor );
 };
 
+#endif  // AREG_LOGS
 #endif  // AREG_TRACE_PRIVATE_TRACEEVENTPROCESSOR_HPP

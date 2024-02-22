@@ -104,6 +104,8 @@ public:
      **/
     ~LogMessage(void) = default;
 
+#if AREG_LOGS
+
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
 //////////////////////////////////////////////////////////////////////////
@@ -183,7 +185,7 @@ public:
      * \brief   Sets message text in log
      **/
     void setMessage( const char * message, int msgLen );
-
+#endif  // AREG_LOGS
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls.
 //////////////////////////////////////////////////////////////////////////
@@ -191,6 +193,8 @@ private:
     LogMessage( void ) = delete;
     DECLARE_NOMOVE( LogMessage );
 };
+
+#if AREG_LOGS
 
 //////////////////////////////////////////////////////////////////////////
 // LogMessage class inline methods
@@ -276,4 +280,28 @@ inline void LogMessage::setCookie(const ITEM_ID & newCookie)
     this->logCookie = newCookie;
 }
 
+#else   // AREG_LOGS
+
+inline LogMessage::LogMessage(NETrace::eLogMessageType /*msgType*/)
+    : NETrace::sLogMessage()
+{
+}
+
+inline LogMessage::LogMessage(NETrace::eLogMessageType /*msgType*/, unsigned int /*scopeId*/, NETrace::eLogPriority /*msgPrio*/, const String& /*message*/)
+    : NETrace::sLogMessage()
+{
+}
+
+inline LogMessage::LogMessage(NETrace::eLogMessageType /*msgType*/, unsigned int /*scopeId*/, NETrace::eLogPriority /*msgPrio*/, const char* /*message*/, unsigned int /*msgLen*/)
+    : NETrace::sLogMessage()
+{
+}
+
+inline LogMessage::LogMessage(const IEInStream& stream)
+    : NETrace::sLogMessage()
+{
+    stream >> static_cast<NETrace::sLogMessage&>(*this);
+}
+
+#endif  // AREG_LOGS
 #endif  // AREG_TRACE_PRIVATE_LOGMESSAGE_HPP

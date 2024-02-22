@@ -23,7 +23,7 @@
 #include "areg/trace/TraceScope.hpp"
 #include "areg/trace/private/NELogging.hpp"
 
-
+#if AREG_LOGS
 inline bool ScopeController::_isScopeGroup( const String & scopeName )
 {
     return (scopeName.findLast(NELogging::SYNTAX_SCOPE_GROUP ) >= NEString::START_POS);
@@ -308,3 +308,5 @@ void ScopeController::changeScopeActivityStatus( const String & scopeName, unsig
         mConfigScopeList.setAt( scopeName, logPrio );
     }
 }
+
+#endif  // AREG_LOGS

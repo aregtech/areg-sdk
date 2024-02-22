@@ -24,6 +24,7 @@
 
 #include <string.h>
 
+#if AREG_LOGS
 LogMessage::LogMessage(NETrace::eLogMessageType msgType, const TraceScope & traceScope )
     : NETrace::sLogMessage( msgType, traceScope.getScopeId(), NETrace::PrioScope, traceScope.getScopeName().getString(), traceScope.getScopeName( ).getLength() )
 {
@@ -35,3 +36,12 @@ void LogMessage::setMessage(const char * message, int msgLen )
     uint32_t len = NEMemory::memCopy(this->logMessage, NETrace::LOG_MESSAGE_IZE - 1, message, msgLen);
     this->logMessage[len] = String::EmptyChar;
 }
+
+#else   // AREG_LOGS
+
+LogMessage::LogMessage(NETrace::eLogMessageType /*msgType*/, const TraceScope& /*traceScope*/)
+    : NETrace::sLogMessage( )
+{
+}
+
+#endif  // AREG_LOGS

@@ -21,6 +21,8 @@
 
 #include <utility>
 
+#if AREG_LOGS
+
 namespace
 {
     constexpr const uint32_t _logMessageSize{ static_cast<uint32_t>(sizeof(NETrace::sLogMessage)) };
@@ -77,3 +79,5 @@ TraceEventData & TraceEventData::operator = ( TraceEventData && src ) noexcept
     mDataBuffer = std::move(src.mDataBuffer);
     return (*this);
 }
+
+#endif  // AREG_LOGS

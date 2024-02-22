@@ -21,6 +21,8 @@
 #include "areg/trace/private/NELogging.hpp"
 #include "areg/base/String.hpp"
 
+#if AREG_LOGS
+
 /************************************************************************
  * Dependencies
  ************************************************************************/
@@ -1215,4 +1217,5 @@ inline CookieIdLayout& CookieIdLayout::operator=(CookieIdLayout&& src) noexcept
     return (*this);
 }
 
+#endif  // AREG_LOGS
 #endif  // AREG_TRACE_PRIVATE_LAYOUTS_HPP

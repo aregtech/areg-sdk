@@ -264,7 +264,7 @@ TEST( DateTimeTest, TestFormatISO8601 )
     NEUtilities::sSystemTime sysTime;
     NEUtilities::convToLocalTime( date.getTime( ), sysTime );
 
-    String timestamp = date.formatTime( DateTime::TIME_FORMAT_ISO8601_OUTPUT );
+    String timestamp = date.formatTime( NEUtilities::TIME_FORMAT_ISO8601_OUTPUT );
     ASSERT_FALSE( timestamp.isEmpty( ) );
 
     char buf[ 128 ];

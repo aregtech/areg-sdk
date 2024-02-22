@@ -25,6 +25,7 @@
 
 #include <string_view>
 
+#if AREG_LOGS
 /************************************************************************
  * Dependencies
  ************************************************************************/
@@ -496,4 +497,5 @@ inline void ScopeController::clearConfigScopes( void )
     mConfigScopeGroup.clear( );
 }
 
-#endif   // AREG_TRACE_PRIVATE_ScopeController_HPP
+#endif  // AREG_LOGS
+#endif  // AREG_TRACE_PRIVATE_ScopeController_HPP

@@ -25,6 +25,8 @@
 
 #include "areg/base/private/NEDebug.hpp"
 
+#if AREG_LOGS
+
 DebugOutputLogger::DebugOutputLogger( LogConfiguration & tracerConfig )
     : LoggerBase        ( tracerConfig )
     , IEOutStream       ( )
@@ -169,3 +171,5 @@ unsigned int DebugOutputLogger::getSizeWritable(void) const
 {
     return static_cast<unsigned int>(0xFFFF);
 }
+
+#endif // AREG_LOGS

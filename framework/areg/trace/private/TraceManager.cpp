@@ -23,6 +23,7 @@
 #include "areg/trace/TraceScope.hpp"
 #include "areg/trace/private/LogMessage.hpp"
 
+#if AREG_LOGS
 //////////////////////////////////////////////////////////////////////////
 // TraceManager class implementation
 //////////////////////////////////////////////////////////////////////////
@@ -376,3 +377,4 @@ void TraceManager::changeScopePriority( const String & scopeName, unsigned int s
     mScopeController.changeScopeActivityStatus( scopeName, scopeId, scopePrio );
 }
 
+#endif  // AREG_LOGS

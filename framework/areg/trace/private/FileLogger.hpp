@@ -23,6 +23,8 @@
 
 #include "areg/base/File.hpp"
 
+#if AREG_LOGS
+
 //////////////////////////////////////////////////////////////////////////
 // FileLogger class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -111,4 +113,5 @@ private:
     DECLARE_NOCOPY_NOMOVE( FileLogger );
 };
 
+#endif  // AREG_LOGS
 #endif  // AREG_TRACE_PRIVATE_FILELOGGER_HPP

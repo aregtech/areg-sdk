@@ -22,6 +22,8 @@
 #include "areg/base/String.hpp"
 #include "areg/trace/NETrace.hpp"
 
+#if AREG_LOGS
+
  /************************************************************************
   * Dependencies.
   ************************************************************************/
@@ -468,4 +470,5 @@ inline bool ScopeNodeBase::hasLogScopes( void ) const
     return (mPrioStates & static_cast<uint32_t>(NETrace::eLogPriority::PrioScope)) != 0;
 }
 
+#endif  // AREG_LOGS
 #endif  // AREG_TRACE_PRIVATE_SCOPENODEBASE_HPP

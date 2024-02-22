@@ -15,6 +15,8 @@
 #include "areg/trace/private/LoggerBase.hpp"
 #include "areg/trace/private/TraceManager.hpp"
 
+#if AREG_LOGS
+
 LoggerBase::LoggerBase( LogConfiguration & tracerConfig )
     : mLogConfiguration ( tracerConfig )
     , mLayoutsMessage   ( )
@@ -38,3 +40,5 @@ void LoggerBase::releaseLayouts(void)
     mLayoutsScopeEnter.deleteLayouts();
     mLayoutsScopeExit.deleteLayouts();
 }
+
+#endif  // AREG_LOGS

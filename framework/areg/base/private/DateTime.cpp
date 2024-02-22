@@ -59,21 +59,10 @@ DateTime::DateTime( const IEInStream & stream )
 
 uint64_t DateTime::getProcessTickCount(void)
 {
-#ifdef WINDOWS
-    
-    return static_cast<uint64_t>( clock() );
-
-#else   // _POSIX
-
-    struct timespec ts;
-    ::clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts);
-    return ((ts.tv_sec * NEUtilities::SEC_TO_MILLISECS)+ (ts.tv_nsec / NEUtilities::MILLISEC_TO_NS));
-
-#endif // WINDOWS
-
+    return NEUtilities::getTickCount();
 }
 
-void DateTime::formatTime(const DateTime& dateTime, String& OUT result, const std::string_view& formatName)
+void DateTime::formatTime(const DateTime& dateTime, String& OUT result, const std::string_view& formatName /*= NEUtilities::DEFAULT_TIME_FORMAT_OUTPUT*/)
 {
     char buffer[128] = { 0 };
 
@@ -85,7 +74,7 @@ void DateTime::formatTime(const DateTime& dateTime, String& OUT result, const st
         NEUtilities::convMicrosecs(dateTime.mDateTime, secs, milli, micro);
         NEUtilities::convToLocalTm(dateTime.mDateTime, conv);
 
-        String str(formatName.empty() == false ? formatName : DateTime::TIME_FORMAT_ISO8601_OUTPUT);
+        String str(formatName.empty() == false ? formatName : NEUtilities::DEFAULT_TIME_FORMAT_OUTPUT);
         NEString::CharPos ms = str.findFirst(FORMAT_MILLISECOND.data());
         if (str.isValidPosition(ms))
         {
@@ -149,7 +138,7 @@ void DateTime::getNow( NEUtilities::sSystemTime & OUT timeData, bool localTime )
     NEUtilities::systemTimeNow(timeData, localTime);
 }
 
-String DateTime::formatTime( const std::string_view & formatName /*= DateTime::TIME_FORMAT_ISO8601_OUTPUT */ ) const
+String DateTime::formatTime( const std::string_view & formatName /*= NEUtilities::DEFAULT_TIME_FORMAT_OUTPUT */ ) const
 {
     String result;
     DateTime::formatTime(*this, result, formatName);
