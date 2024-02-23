@@ -49,10 +49,10 @@ namespace
     constexpr std::string_view  CMD_ONE_LINE_DOWN   { "\x1B[1E" };
 
 
-    inline void _outputText(IESynchObject & lock, Console::Coord pos, const char * text, uint32_t length)
+    inline void _outputText(IESynchObject & synch, Console::Coord pos, const char * text, uint32_t length)
     {
         ASSERT(text != nullptr)
-        Lock lock(lock);
+        Lock lock(synch);
 
         DWORD written = 0;
         HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -118,12 +118,12 @@ void Console::_osRelease(void)
 
 void Console::_osOutputText(Console::Coord pos, const String& text) const
 {
-    _outputText(mLock, pos, text.getString(), text.getLength());
+    _outputText(mLock, pos, text.getString(), static_cast<uint32_t>(text.getLength()));
 }
 
 void Console::_osOutputText(Console::Coord pos, const std::string_view& text) const
 {
-    _outputText(mLock, pos, text.data(), text.length());
+    _outputText(mLock, pos, text.data(), static_cast<uint32_t>(text.length()));
 }
 
 void Console::_osOutputText(const String& text) const
