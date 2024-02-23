@@ -652,8 +652,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "github-workflows", "github-
 		.github\workflows\accessibility-bot.yml = .github\workflows\accessibility-bot.yml
 		.github\workflows\cmake.yml = .github\workflows\cmake.yml
 		.github\workflows\codeql-analysis.yml = .github\workflows\codeql-analysis.yml
+		.github\workflows\mega-lintner.yml = .github\workflows\mega-lintner.yml
 		.github\workflows\msbuild.yml = .github\workflows\msbuild.yml
-		mega-lintner.yml = mega-lintner.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "res", "res", "{11AEF28F-83CA-493A-B507-F271FCB35DBA}"
