@@ -47,6 +47,19 @@ namespace
     constexpr std::string_view  CMD_ONE_LINE_UP     { "\x1B[1F" };
     //!< The command to move cursor one line down from current position
     constexpr std::string_view  CMD_ONE_LINE_DOWN   { "\x1B[1E" };
+
+
+    inline void _outputText(IESynchObject & lock, Console::Coord pos, const char * text, uint32_t length)
+    {
+        ASSERT(text != nullptr)
+        Lock lock(lock);
+
+        DWORD written = 0;
+        HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+        SetConsoleCursorPosition(hStdOut, COORD{ static_cast<int16_t>(pos.posX), static_cast<int16_t>(pos.posY) });
+        WriteConsoleA(hStdOut, CMD_CLEAR_LINE.data(), static_cast<DWORD>(CMD_CLEAR_LINE.length()), &written, NULL);
+        WriteConsoleA(hStdOut, text, static_cast<DWORD>(length), &written, NULL);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -105,24 +118,12 @@ void Console::_osRelease(void)
 
 void Console::_osOutputText(Console::Coord pos, const String& text) const
 {
-    Lock lock(mLock);
-
-    DWORD written = 0;
-    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleCursorPosition(hStdOut, COORD{static_cast<int16_t>(pos.posX), static_cast<int16_t>(pos.posY)});
-    WriteConsoleA(hStdOut, CMD_CLEAR_LINE.data(), static_cast<DWORD>(CMD_CLEAR_LINE.length()), &written, NULL);
-    WriteConsoleA(hStdOut, text.getString(), static_cast<DWORD>(text.getLength()), &written, NULL);
+    _outputText(mLock, pos, text.getString(), text.getLength());
 }
 
 void Console::_osOutputText(Console::Coord pos, const std::string_view& text) const
 {
-    Lock lock(mLock);
-
-    DWORD written = 0;
-    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleCursorPosition(hStdOut, COORD{ static_cast<int16_t>(pos.posX), static_cast<int16_t>(pos.posY) });
-    WriteConsoleA(hStdOut, CMD_CLEAR_LINE.data(), static_cast<DWORD>(CMD_CLEAR_LINE.length()), &written, NULL);
-    WriteConsoleA(hStdOut, text.data(), static_cast<DWORD>(text.length()), &written, NULL);
+    _outputText(mLock, pos, text.data(), text.length());
 }
 
 void Console::_osOutputText(const String& text) const
