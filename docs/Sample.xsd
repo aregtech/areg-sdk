@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="qualified">
+
+    <xs:simpleType name="ValidNames">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[A-Za-z][A-Za-z_0-9]+"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="ValidTypes">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="bool"/>
+            <xs:enumeration value="char"/>
+            <xs:enumeration value="int8"/>
+            <xs:enumeration value="uint8"/>
+            <xs:enumeration value="int16"/>
+            <xs:enumeration value="uint16"/>
+            <xs:enumeration value="int32"/>
+            <xs:enumeration value="uint32"/>
+            <xs:enumeration value="int64"/>
+            <xs:enumeration value="unt64"/>
+            <xs:enumeration value="type_id"/>
+            <xs:enumeration value="float32"/>
+            <xs:enumeration value="float64"/>
+            <xs:enumeration value="String"/>
+            <xs:enumeration value="BinaryBuffer"/>
+            <xs:enumeration value="DateTime"/>
+            <xs:enumeration value="SomeStruct"/>
+            <xs:enumeration value="SomeEnum"/>
+            <xs:enumeration value="SomeArray"/>
+            <xs:enumeration value="NEMemory::uAlign"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="ExtendedValidType">
+        <xs:union memberTypes="ValidTypes ValidNames xs:anyURI"/>
+    </xs:simpleType>
+
+    <xs:simpleType name="ValidObjects">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Enumerate"/>
+            <xs:enumeration value="Structure"/>
+            <xs:enumeration value="Imported"/>
+            <xs:enumeration value="DefinedType"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:element name="ServiceInterface">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Overview">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Description" type="xs:string" minOccurs="0"/>
+                            <xs:element name="DeprecateHint" type="xs:string" minOccurs="0"/>
+                        </xs:sequence>
+                        <xs:attribute name="ID" type="xs:integer" use="required"/>
+                        <xs:attribute name="Name" type="ValidNames" use="required"/>
+                        <xs:attribute name="Version" type="xs:string" use="required"/>
+                        <xs:attribute name="isRemote" type="xs:boolean" use="required"/>
+                        <xs:attribute name="IsDeprecated" type="xs:boolean" use="optional"/>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="DataTypeList">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="DataType" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="Description" type="xs:string" minOccurs="0"/>
+                                        <xs:element name="Container" default="Array" minOccurs="0">
+                                            <xs:simpleType>
+                                                <xs:restriction base="xs:string">
+                                                    <xs:enumeration value="Array"/>
+                                                    <xs:enumeration value="LinkedList"/>
+                                                    <xs:enumeration value="HashMap"/>
+                                                    <xs:enumeration value="Pair"/>
+                                                    <xs:enumeration value="CustomContainer"/>
+                                                </xs:restriction>
+                                            </xs:simpleType>
+                                        </xs:element>
+                                        <xs:element name="BaseTypeValue" type="ExtendedValidType" minOccurs="0"/>
+                                        <xs:element name="BaseTypeKey" type="ValidTypes" minOccurs="0"/>
+                                        <xs:element name="Namespace" type="ValidNames" minOccurs="0"/>
+                                        <xs:element name="Location" type="xs:string" minOccurs="0"/>
+                                        <xs:element name="DeprecateHint" type="xs:string" minOccurs="0"/>
+                                        <xs:element name="FieldList" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="EnumEntry" minOccurs="0" maxOccurs="unbounded">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element name="Value" type="xs:string"/>
+                                                                <xs:element name="DeprecateHint" type="xs:string" minOccurs="0"/>
+                                                            </xs:sequence>
+                                                            <xs:attribute name="ID" type="xs:integer" use="required"/>
+                                                            <xs:attribute name="Name" type="ValidNames" use="required"/>
+                                                            <xs:attribute name="IsDeprecated" type="xs:boolean" use="optional"/>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                    <xs:element name="Field" minOccurs="0" maxOccurs="unbounded">
+                                                        <xs:complexType>
+                                                            <xs:sequence>
+                                                                <xs:element name="Value">
+                                                                    <xs:complexType>
+                                                                        <xs:simpleContent>
+                                                                            <xs:extension base="xs:string">
+                                                                                <xs:attribute name="IsDefault" type="xs:boolean" use="optional"/>
+                                                                            </xs:extension>
+                                                                        </xs:simpleContent>
+                                                                    </xs:complexType>
+                                                                </xs:element>
+                                                                <xs:element name="Description" type="xs:string" minOccurs="0"/>
+                                                                <xs:element name="DeprecateHint" type="xs:string" minOccurs="0"/>
+                                                            </xs:sequence>
+                                                            <xs:attribute name="DataType" type="ExtendedValidType" use="required"/>
+                                                            <xs:attribute name="ID" type="xs:integer" use="required"/>
+                                                            <xs:attribute name="Name" type="ValidNames" use="required"/>
+                                                            <xs:attribute name="IsDeprecated" type="xs:boolean" use="optional"/>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                    <xs:attribute name="ID" type="xs:integer" use="required"/>
+                                    <xs:attribute name="Name" type="ValidNames" use="required"/>
+                                    <xs:attribute name="Type" type="ValidObjects" use="required"/>
+                                    <xs:attribute name="Values" type="xs:string" use="optional"/>
+                                    <xs:attribute name="IsDeprecated" type="xs:boolean" use="optional"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="AttributeList">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Attribute" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="Description" type="xs:string" minOccurs="0"/>
+                                        <xs:element name="DeprecateHint" type="xs:string" minOccurs="0"/>
+                                    </xs:sequence>
+                                    <xs:attribute name="DataType" type="ExtendedValidType" use="required"/>
+                                    <xs:attribute name="ID" type="xs:integer" use="required"/>
+                                    <xs:attribute name="Name" type="ValidNames" use="required"/>
+                                    <xs:attribute name="Notify" use="required">
+                                        <xs:simpleType>
+                                            <xs:restriction base="xs:string">
+                                                <xs:pattern value="Always|OnChange"/>
+                                            </xs:restriction>
+                                        </xs:simpleType>
+                                    </xs:attribute>
+                                    <xs:attribute name="IsDeprecated" type="xs:boolean" use="optional"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="MethodList">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Method" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="Description" type="xs:string"/>
+                                        <xs:element name="DeprecateHint" type="xs:string" minOccurs="0"/>
+                                        <xs:element name="ParamList" minOccurs="0">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="Parameter" maxOccurs="unbounded">
+                                                        <xs:complexType>
+                                                            <xs:sequence minOccurs="0">
+                                                                <xs:element name="Value" minOccurs="0">
+                                                                    <xs:complexType>
+                                                                        <xs:simpleContent>
+                                                                            <xs:extension base="xs:string">
+                                                                                <xs:attribute name="IsDefault" type="xs:boolean" use="required"/>
+                                                                            </xs:extension>
+                                                                        </xs:simpleContent>
+                                                                    </xs:complexType>
+                                                                </xs:element>
+                                                                <xs:element name="Description" type="xs:string" minOccurs="0"/>
+                                                                <xs:element name="DeprecateHint" type="xs:string" minOccurs="0"/>
+                                                            </xs:sequence>
+                                                            <xs:attribute name="DataType" type="ExtendedValidType" use="required"/>
+                                                            <xs:attribute name="ID" type="xs:integer" use="required"/>
+                                                            <xs:attribute name="Name" type="ValidNames" use="required"/>
+                                                            <xs:attribute name="IsDeprecated" type="xs:boolean" use="optional"/>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                    <xs:attribute name="ID" type="xs:integer" use="required"/>
+                                    <xs:attribute name="MethodType" use="required">
+                                        <xs:simpleType>
+                                            <xs:restriction base="xs:string">
+                                                <xs:pattern value="request|response|broadcast"/>
+                                            </xs:restriction>
+                                        </xs:simpleType>
+                                    </xs:attribute>
+                                    <xs:attribute name="Name" type="ValidNames" use="required"/>
+                                    <xs:attribute name="Response" type="xs:string" use="optional"/>
+                                    <xs:attribute name="IsDeprecated" type="xs:boolean" use="optional"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="ConstantList">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Constant" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="Value" type="xs:string"/>
+                                        <xs:element name="Description" type="xs:string" minOccurs="0"/>
+                                        <xs:element name="DeprecateHint" type="xs:string" minOccurs="0"/>
+                                    </xs:sequence>
+                                    <xs:attribute name="DataType" type="ValidTypes" use="required"/>
+                                    <xs:attribute name="ID" type="xs:integer" use="required"/>
+                                    <xs:attribute name="Name" type="ValidNames" use="required"/>
+                                    <xs:attribute name="IsDeprecated" type="xs:boolean" use="optional"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="IncludeList">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Location" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="Description" type="xs:string" minOccurs="0"/>
+                                        <xs:element name="DeprecateHint" type="xs:string" minOccurs="0"/>
+                                    </xs:sequence>
+                                    <xs:attribute name="ID" type="xs:integer" use="required"/>
+                                    <xs:attribute name="Name" type="xs:string" use="required"/>
+                                    <xs:attribute name="IsDeprecated" type="xs:boolean" use="optional"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="FormatVersion" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
