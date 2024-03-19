@@ -19,8 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/persist/IEConfigurationListener.hpp"
-#include "extend/service/SystemServiceBase.hpp"
+#include "extend/service/ServiceApplicationBase.hpp"
 
 #include "areg/base/SynchObjects.hpp"
 #include "logger/app/NELoggerSettings.hpp"
@@ -39,15 +38,15 @@ class Console;
  *          and collects the log messages from the running applications.
  *          It may save logs in the file or forward to log viewer application..
  **/
-class Logger    : public    SystemServiceBase
-                , private   IEConfigurationListener
+class Logger : public ServiceApplicationBase
 {
 //////////////////////////////////////////////////////////////////////////
 // Internal types
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   The commands to handle the logger.
+     * \brief   NELoggerSettings::eRouterOptions
+     *          The commands to handle the logger.
      **/
     enum class eLoggerOptions : int32_t
     {
@@ -66,7 +65,7 @@ private:
         , CMD_LogService        //!< Start logger as a service. Valid only as a command line option in Windows OS.
         , CMD_LogUpdateScope    //!< Set the scope priorities.
         , CMD_LogSaveLogs       //!< Logger save logs in the file.
-        , CMD_LogSaveLogsStop   //!< Stop saving logs in the file.
+        , CMD_LogSaveLogsStop   //!< Cancel saving logs in the file.
         , CMD_LogSaveConfig     //!< Save the log configuration in the config file.
     };
 
@@ -85,15 +84,9 @@ public:
     static Logger& getInstance( void );
 
     /**
-     * \brief   Returns list of the options to validate contained in the pair object,
-     *          where the first entry is the pointer to the list and second entry is
-     *          the number of elements in the list
-     **/
-    static std::pair<const OptionParser::sOptionSetup *, int> getOptionSetup( void );
-
-    /**
      * \brief   Outputs the specified message on the console.
-     *          The method is valid only for console application compiled with AREG Extended features.
+     *          The method is valid only for console application compiled
+     *          with AREG Extended features.
      *          Otherwise, the method ignores request to output message.
      * \param   status  The status message to print on console.
      **/
@@ -108,71 +101,11 @@ private:
      **/
     Logger( void );
 
-    virtual ~Logger(void);
+    virtual ~Logger( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
 //////////////////////////////////////////////////////////////////////////
-public:
-/************************************************************************/
-// SystemServiceBase overrides
-/************************************************************************/
-
-    /**
-     * \brief   Called from main to start execution of  message router service.
-     * \param   argc    The 'argc' parameter passed from 'main', indicates the number of parameters passed to executable.
-     * \param   argv    The 'argv' parameter passed from 'main', indicated parameters passed to executable.
-     **/
-    virtual void serviceMain( int argc, char ** argv ) override;
-
-    /**
-     * \brief   Call to install (register) message router service in the system.
-     * \return  Returns true if registration succeeded.
-     **/
-    virtual bool serviceInstall( void ) override;
-
-    /**
-     * \brief   Call to uninstall (unregister) message router service in the system.
-     **/
-    virtual void serviceUninstall( void ) override;
-
-    /**
-     * \brief   Registers system service in the system.
-     **/
-    virtual bool registerService( void ) override;
-
-    /**
-     * \brief   Opens operating system service DB for further processing.
-     * \return  Returns true if succeeded.
-     **/
-    virtual bool serviceOpen( void ) override;
-
-    /**
-     * \brief   Called to start message router service.
-     * \return  Returns true, if started with success.
-     **/
-    virtual bool serviceStart( void ) override;
-
-    /**
-     * \brief   Called to pause message router service.
-     **/
-    virtual void servicePause( void ) override;
-
-    /**
-     * \brief   Called to resume paused message router service.
-     **/
-    virtual bool serviceContinue( void ) override;
-
-    /**
-     * \brief   Called to stop message router service.
-     **/
-    virtual void serviceStop( void ) override;
-
-    /**
-     * \brief   Sets the state of message router service.
-     **/
-    virtual bool setState( NESystemService::eSystemServiceState newState ) override;
-
 protected:
 /************************************************************************/
 // SystemServiceBase protected overrides
@@ -220,26 +153,68 @@ protected:
     virtual void runService(void) override;
 
 /************************************************************************/
+// ServiceApplicationBase protected overrides
+/************************************************************************/
+    /**
+     * \brief   Returns list of the options to validate contained in the pair object,
+     *          where the first entry is the pointer to the list and second entry is
+     *          the number of elements in the list
+     **/
+    virtual std::pair<const OptionParser::sOptionSetup*, int> getAppOptions(void) const override;
+
+    /**
+     * \brief   Returns the UNICODE name of the service application.
+     **/
+    virtual wchar_t* getServiceNameW(void) const override;
+
+    /**
+     * \brief   Returns the ASCII name of the service application.
+     **/
+    virtual char* getServiceNameA(void) const override;
+
+    /**
+     * \brief   Returns the UNICODE display name of the service application.
+     *          This optional display name could be valid only for specific OS.
+     *          For example, in Windows this name is displayed in the list of services.
+     **/
+    virtual wchar_t* getServiceDisplayNameW(void) const override;
+
+    /**
+     * \brief   Returns the ASCII display name of the service application.
+     *          This optional display name could be valid only for specific OS.
+     *          For example, in Windows this name is displayed in the list of services.
+     **/
+    virtual char* getServiceDisplayNameA(void) const override;
+
+    /**
+     * \brief   Returns the UNICODE description of the service application.
+     *          This optional service description could be valid only for specific OS.
+     *          For example, in Windows this description is shown in the list of services.
+     **/
+    virtual wchar_t* getServiceDescriptionW(void) const override;
+
+    /**
+     * \brief   Returns the ASCII description of the service application.
+     *          This optional service description could be valid only for specific OS.
+     *          For example, in Windows this description is shown in the list of services.
+     **/
+    virtual char* getServiceDescriptionA(void) const override;
+
+    /**
+     * \brief   Returns the type of the remote service.
+     *          Valid only for AREG SDK services.
+     **/
+    virtual NERemoteService::eRemoteServices getServiceType(void) const override;
+
+    /**
+     * \brief   Returns the type of the connection of the remote services.
+     *          Valid only for AREG SDK services.
+     **/
+    virtual NERemoteService::eConnectionTypes getConnectionType(void) const override;
+
+/************************************************************************/
 // IEConfigurationListener protected overrides
 /************************************************************************/
-
-    /**
-     * \brief   Called by configuration manager before the configuration is saved in the file.
-     * \param   config  The instance of configuration manager.
-     **/
-    virtual void prepareSaveConfiguration(ConfigManager& config) override;
-
-    /**
-     * \brief   Called by configuration manager after the configuration is saved in the file.
-     * \param   config  The instance of configuration manager.
-     **/
-    virtual void postSaveConfiguration(ConfigManager& config) override;
-
-    /**
-     * \brief   Called by configuration manager before the configuration is loaded from the file.
-     * \param   config  The instance of configuration manager.
-     **/
-    virtual void prepareReadConfiguration(ConfigManager& config) override;
 
     /**
      * \brief   Called by configuration manager when configuration is completed to load data from the file.
@@ -260,15 +235,16 @@ protected:
 // Hidden methods.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Returns the instance of the remote servicing object.
-     **/
-    inline IEServiceConnectionProvider & getService( void );
 
     /**
      * \brief   Returns the list of connected instances.
      **/
     inline const NEService::MapInstances & getConnetedInstances( void ) const;
+
+    /**
+     * \brief   Returns instance of the logger service.
+     **/
+    inline Logger& self(void);
 
     /**
      * \brief   Enables or disables local log messages of the current process.
@@ -278,12 +254,7 @@ private:
      * \param   enable  Flag, indicating whether the logs should be enabled or not.
      *                  If true, the logs are enabled. Otherwise, the logs are disabled.
      **/
-    inline void enableLocalLogs(ConfigManager& config, bool enable);
-
-    /**
-     * \brief   Returns instance of the logger service.
-     **/
-    inline Logger & self( void );
+    inline void _enableLocalLogs(ConfigManager& config, bool enable);
 
     /**
      * \brief   Checks the command typed on console. Relevant only if it runs as a console application.
@@ -360,55 +331,6 @@ private:
     static RemoteMessage _createScopeUpdateMessage(const String& scope);
 
 //////////////////////////////////////////////////////////////////////////
-// OS specific hidden methods.
-//////////////////////////////////////////////////////////////////////////
-private:
-    
-    /**
-     * \brief   OS specific validity check of logger service.
-     **/
-    bool _osIsValid( void ) const;
-
-    /**
-     * \brief   Called to free engaged resources.
-     **/
-    void _osFreeResources( void );
-
-    /**
-     * \brief   OS specific implementation to open service.
-     **/
-    bool _osOpenService( void );
-
-    /**
-     * \brief   OS specific implementation to create service.
-     **/
-    bool _osCcreateService( void );
-
-    /**
-     * \brief   OS specific implementation of deleting service.
-     **/
-    void _osDeleteService( void );
-
-    /**
-     * \brief   Registers service and returns true if handle is valid.
-     *          The method is valid for Windows OS.
-     **/
-    bool _osRegisterService( void );
-
-    /**
-     * \brief   OS specific implementation of changing the state of the logger service.
-     **/
-    bool _osSetState( NESystemService::eSystemServiceState newState );
-
-    /**
-     * \brief   OS specific implementation of waiting for user input on console.
-     * \param   buffer  The allocated buffer to stream input from console.
-     * \param   bufSize The size of allocated bugger.
-     * \return  Returns true if succeeded to get user input.
-     **/
-    bool _osWaitUserInput(char* buffer, unsigned int bufSize);
-
-//////////////////////////////////////////////////////////////////////////
 // Member variables.
 //////////////////////////////////////////////////////////////////////////
 private:
@@ -427,11 +349,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // Logger class inline methods.
 //////////////////////////////////////////////////////////////////////////
-
-inline IEServiceConnectionProvider & Logger::getService( void )
-{
-    return static_cast<IEServiceConnectionProvider &>(mServiceServer);
-}
 
 inline const NEService::MapInstances & Logger::getConnetedInstances( void ) const
 {

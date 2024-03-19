@@ -23,6 +23,11 @@
 #include "extend/service/NESystemService.hpp"
 #include "extend/service/ServiceCommunicatonBase.hpp"
 
+/************************************************************************
+ * Dependencies
+ ************************************************************************/
+class IEConfigurationListener;
+
 //////////////////////////////////////////////////////////////////////////
 // SystemServiceBase class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -37,6 +42,48 @@
  **/
 class SystemServiceBase
 {
+//////////////////////////////////////////////////////////////////////////
+// Internal types and constants.
+//////////////////////////////////////////////////////////////////////////
+public:
+
+    /**
+     * \brief   SystemServiceBase::RESULT_SUCCEEDED
+     *          Returns value indicating no error, i.e. operation succeeded.
+     **/
+    static constexpr int        RESULT_SUCCEEDED        { 0 };
+
+    /**
+     * \brief   SystemServiceBase::RESULT_FAILED_INIT
+     *          Returns value indicating error during initialization.
+     **/
+    static constexpr int        RESULT_FAILED_INIT      { 1 };
+
+    /**
+     * \brief   SystemServiceBase::RESULT_FAILED_INSTALL
+     *          Returns value indicating error during installation of the service.
+     *          Valid for Windows OS and ignored in Linux.
+     **/
+    static constexpr int        RESULT_FAILED_INSTALL   { 2 };
+
+    /**
+     * \brief   SystemServiceBase::RESULT_FAILED_RUN
+     *          Returns value indicating error during run.
+     **/
+    static constexpr int        RESULT_FAILED_RUN       { 3 };
+
+    /**
+     * \brief   SystemServiceBase::eServiceControl
+     *          The control constants of the service.
+     **/
+    typedef enum E_ServiceControl
+    {
+          ServiceStop       = 1 //!< The service received control to stop.
+        , ServicePause          //!< The service received control to pause.
+        , ServiceContinue       //!< The service received control to resume paused service.
+        , ServiceShutdown       //!< The service received control to shutdown.
+    } eServiceControl;
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor / destructor
 //////////////////////////////////////////////////////////////////////////
@@ -54,6 +101,15 @@ protected:
 // Overrides
 //////////////////////////////////////////////////////////////////////////
 public:
+
+    /**
+     * \brief   Triggered when the system changes the service control state.
+     *          This is operated via operating system and valid for Windows OS.
+     *          In Linux OS this has no effect.
+     * \tparam  control     The control triggered by system.
+     **/
+    void controlService(SystemServiceBase::eServiceControl control);
+
 /************************************************************************/
 // SystemServiceBase overrides
 /************************************************************************/
@@ -88,8 +144,9 @@ public:
      * \brief   Called from main to start execution of  message router service.
      * \param   argc    The 'argc' parameter passed from 'main', indicates the number of parameters passed to executable.
      * \param   argv    The 'argv' parameter passed from 'main', indicated parameters passed to executable.
+     * \return  Returns the result to return in main function.
      **/
-    virtual void serviceMain( int argc, char ** argv );
+    virtual int serviceMain( int argc, char ** argv );
 
     /**
      * \brief   Sends remote message to the target specified in the message structure.
@@ -98,13 +155,27 @@ public:
     virtual void sendMessageToTarget(const RemoteMessage& message);
 
     /**
-     * \brief   Call to install (register) message router service in the system.
+     * \brief   Triggered when need to initialize the service application.
+     * \param   argc        The 'argc' parameter passed from 'main', indicates the number of parameters passed to executable.
+     * \param   argv        The 'argv' parameter passed from 'main', indicated parameters passed to executable.
+     * \return  Returns true if succeeded to initialize application and the application can continue run.
+     *          Otherwise, the application run should be interrupted and the failure code 1 is returned.
+     **/
+    virtual bool serviceInitialize(int argc, char** argv) = 0;
+
+    /**
+     * \brief   Triggered when service application is going to exit.
+     **/
+    virtual void serviceRelease( void ) = 0;
+
+    /**
+     * \brief   Call to create and install the service in the system.
      * \return  Returns true if registration succeeded.
      **/
     virtual bool serviceInstall( void ) = 0;
 
     /**
-     * \brief   Call to uninstall (unregister) message router service in the system.
+     * \brief   Call to delete and uninstall the service in the system.
      **/
     virtual void serviceUninstall( void ) = 0;
 
@@ -114,34 +185,39 @@ public:
     virtual bool registerService( void ) = 0;
 
     /**
-     * \brief   Opens operating system service DB for further processing.
+     * \brief   Opens operating system service for further processing.
      * \return  Returns true if succeeded.
      **/
     virtual bool serviceOpen( void ) = 0;
 
     /**
-     * \brief   Called to start message router service.
+     * \brief   Called to start the system service.
      * \return  Returns true, if started with success.
      **/
     virtual bool serviceStart( void ) = 0;
 
     /**
-     * \brief   Called to pause message router service.
+     * \brief   Called to pause the system service.
      **/
     virtual void servicePause( void ) = 0;
 
     /**
-     * \brief   Called to resume paused message router service.
+     * \brief   Called to resume paused system service.
      **/
     virtual bool serviceContinue( void ) = 0;
 
     /**
-     * \brief   Called to stop message router service.
+     * \brief   Called to stop the system service.
      **/
     virtual void serviceStop( void ) = 0;
 
     /**
-     * \brief   Sets the state of message router service.
+     * \brief   Called to shutdown the system service.
+     **/
+    virtual void serviceShutdown( void ) = 0;
+
+    /**
+     * \brief   Sets the state of the system service.
      **/
     virtual bool setState( NESystemService::eSystemServiceState newState ) = 0;
 
@@ -169,6 +245,11 @@ public:
      * \brief   Returns the instance of data rate helper object to use when computing data rate.
      **/
     inline DataRateHelper& getDataRateHelper(void) const;
+
+    /**
+     * \brief   Return the instance of the communication controller object.
+     **/
+    inline ServiceCommunicatonBase& getCommunicationController(void) const;
 
     /**
      * \brief   Resets default options.
@@ -266,6 +347,11 @@ inline NESystemService::eSystemServiceState SystemServiceBase::getState( void ) 
 inline DataRateHelper& SystemServiceBase::getDataRateHelper(void) const
 {
     return  mCommunication.getDataRateHelper();
+}
+
+inline ServiceCommunicatonBase& SystemServiceBase::getCommunicationController(void) const
+{
+    return const_cast<ServiceCommunicatonBase&>(mCommunication);
 }
 
 inline NESystemService::eServiceOption SystemServiceBase::getCurrentOption(void) const

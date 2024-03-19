@@ -112,21 +112,25 @@ MulticastRouter & MulticastRouter::getInstance(void)
     return _messageRouter;
 }
 
-std::pair<const OptionParser::sOptionSetup *, int> MulticastRouter::getOptionSetup( void )
+void MulticastRouter::printStatus(const String& status)
 {
-    return std::pair< const OptionParser::sOptionSetup *, int>(MulticastRouter::ValidOptions, static_cast<int>(MACRO_ARRAYLEN( MulticastRouter::ValidOptions )));
+#if AREG_EXTENDED
+
+    if (MulticastRouter::getInstance().getCurrentOption() == NESystemService::eServiceOption::CMD_Console)
+    {
+        Console& console{ Console::getInstance() };
+        Console::Coord curPos{ console.getCursorCurPosition() };
+        MulticastRouter::_outputInfo(status);
+        console.setCursorCurPosition(curPos);
+    }
+
+#endif // AREG_EXTENDED
 }
 
 MulticastRouter::MulticastRouter( void )
-    : SystemServiceBase     ( mServiceServer )
-
+    : ServiceApplicationBase( mServiceServer )
     , mServiceServer        ( )
 {
-}
-
-MulticastRouter::~MulticastRouter( void )
-{
-    _osFreeResources( );
 }
 
 Console::CallBack MulticastRouter::getOptionCheckCallback( void ) const
@@ -168,16 +172,16 @@ void MulticastRouter::runConsoleInputExtended( void )
 
 void MulticastRouter::runConsoleInputSimple( void )
 {
-    char cmd[ 512 ]{ 0 };
+    constexpr uint32_t bufSize{ 512 };
+    char cmd[bufSize]{ 0 };
     bool quit{ false };
-    OptionParser parser( MulticastRouter::ValidOptions, MACRO_ARRAYLEN( MulticastRouter::ValidOptions ) );
 
     MulticastRouter::_outputTitle( );
 
     do
     {
         printf( "%s", NESystemService::FORMAT_WAIT_QUIT.data( ) );
-        if (_osWaitUserInput(cmd, 512) == false)
+        if (inputConsoleData(cmd, bufSize) == false)
             continue;
 
         quit = MulticastRouter::_checkCommand( cmd );
@@ -185,130 +189,50 @@ void MulticastRouter::runConsoleInputSimple( void )
     } while ( quit == false );
 }
 
-void MulticastRouter::runService(void)
+std::pair<const OptionParser::sOptionSetup*, int> MulticastRouter::getAppOptions(void) const
 {
-    Application::waitAppQuit(NECommon::WAIT_INFINITE);
+    static  std::pair< const OptionParser::sOptionSetup*, int> _opts(std::pair< const OptionParser::sOptionSetup*, int>(MulticastRouter::ValidOptions, static_cast<int>(MACRO_ARRAYLEN(MulticastRouter::ValidOptions))));
+    return _opts;
 }
 
-void MulticastRouter::serviceMain( int argc, char ** argv )
+wchar_t* MulticastRouter::getServiceNameW(void) const
 {
-    // Start only tracing and timer manager.
-    Application::initApplication( true
-                                , true
-                                , false
-                                , true
-                                , false
-                                , NEApplication::DEFAULT_CONFIG_FILE.data()
-                                , static_cast<IEConfigurationListener *>(nullptr));
-
-    SystemServiceBase::serviceMain( argc, argv );
-    mServiceServer.waitToComplete( );
-    Application::releaseApplication( );
+    return NEMulticastRouterSettings::SERVICE_NAME_WIDE;
 }
 
-bool MulticastRouter::serviceStart(void)
+char* MulticastRouter::getServiceNameA(void) const
 {
-    TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceStart);
-    TRACE_DBG("Starting service [ %s ]", NEMulticastRouterSettings::SERVICE_NAME_ASCII);
-    bool result{ false };
-    IEServiceConnectionProvider& service{ getService() };
-    if (service.setupServiceConnectionData(NERemoteService::eRemoteServices::ServiceRouter, static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip)) &&
-        service.connectServiceHost())
-    {
-        result = setState(NESystemService::eSystemServiceState::ServiceRunning);
-    }
-    else
-    {
-        Application::signalAppQuit();
-    }
-
-    return result;
+    return NEMulticastRouterSettings::SERVICE_NAME_ASCII;
 }
 
-void MulticastRouter::serviceStop(void)
+wchar_t* MulticastRouter::getServiceDisplayNameW(void) const
 {
-    TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceStop);
-    TRACE_WARN("Stopping service [ %s ]", NEMulticastRouterSettings::SERVICE_NAME_ASCII);
-    setState(NESystemService::eSystemServiceState::ServiceStopping);
-    getService().disconnectServiceHost();
-    mServiceServer.waitToComplete( );
-    Application::signalAppQuit();
+    return NEMulticastRouterSettings::SERVICE_DISPLAY_NAME_WIDE;
 }
 
-void MulticastRouter::servicePause(void)
+char* MulticastRouter::getServiceDisplayNameA(void) const
 {
-    TRACE_SCOPE(mcrouter_app_MulticastRouter_servicePause);
-    TRACE_DBG("Pausing Message Router service");
-
-    setState( NESystemService::eSystemServiceState::ServicePausing );
-    getService( ).disconnectServiceHost();
-    mServiceServer.waitToComplete( );
-    setState( NESystemService::eSystemServiceState::ServicePaused );
+    return NEMulticastRouterSettings::SERVICE_DISPLAY_NAME_ASCII;
 }
 
-bool MulticastRouter::serviceContinue(void)
+wchar_t* MulticastRouter::getServiceDescriptionW(void) const
 {
-    TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceContinue);
-    TRACE_DBG("Continuing Message Router service");
-
-    bool result = false;
-    setState( NESystemService::eSystemServiceState::ServiceContinuing );
-    if ( getService( ).isServiceHostSetup() && getService( ).connectServiceHost() )
-    {
-        result = true;
-        setState( NESystemService::eSystemServiceState::ServiceRunning );
-    }
-    else
-    {
-        TRACE_ERR("Failed to restart remote servicing");
-        Application::signalAppQuit();
-    }
-
-    return result;
+    return NEMulticastRouterSettings::SERVICE_DESCRIBE_WIDE;
 }
 
-bool MulticastRouter::serviceInstall(void)
+char* MulticastRouter::getServiceDescriptionA(void) const
 {
-    TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceInstall);
-    
-    if ( _osOpenService() == false )
-    {
-        _osCcreateService();
-    }
-
-    return _osIsValid();
+    return NEMulticastRouterSettings::SERVICE_DESCRIBE_ASCII;
 }
 
-void MulticastRouter::serviceUninstall(void)
+NERemoteService::eRemoteServices MulticastRouter::getServiceType(void) const
 {
-    TRACE_SCOPE(mcrouter_app_MulticastRouter_serviceUninstall);
-
-    if ( _osOpenService() )
-    {
-        _osDeleteService();
-    }
-
-    _osFreeResources();
+    return NERemoteService::eRemoteServices::ServiceRouter;
 }
 
-bool MulticastRouter::registerService( void )
+NERemoteService::eConnectionTypes MulticastRouter::getConnectionType(void) const
 {
-    return _osRegisterService();
-}
-
-bool MulticastRouter::serviceOpen( void )
-{
-    return _osOpenService( );
-}
-
-bool MulticastRouter::setState( NESystemService::eSystemServiceState newState )
-{
-    TRACE_SCOPE( mcrouter_app_MulticastRouter_setState );
-    TRACE_DBG( "Changing Message Router service state. Old state [ %s ], new state [ %s ]"
-                , NESystemService::getString( mSystemServiceState )
-                , NESystemService::getString( newState ) );
-
-    return _osSetState( newState );
+    return NERemoteService::eConnectionTypes::ConnectTcpip;
 }
 
 void MulticastRouter::printHelp( bool isCmdLine )
@@ -367,14 +291,14 @@ bool MulticastRouter::_checkCommand(const String& cmd)
             {
             case eRouterOptions::CMD_RouterPause:
                 MulticastRouter::_outputInfo( "Pausing message router ..." );
-                router.getService().disconnectServiceHost( );
+                router.getCommunicationController().disconnectServiceHost( );
                 router.mServiceServer.waitToComplete( );
                 MulticastRouter::_outputInfo( "Message router is paused ..." );
                 break;
 
             case eRouterOptions::CMD_RouterRestart:
                 MulticastRouter::_outputInfo( "Restarting message router ..." );
-                router.getService( ).connectServiceHost( );
+                router.getCommunicationController( ).connectServiceHost( );
                 MulticastRouter::_outputInfo( "Message router is restarted ..." );
                 break;
 

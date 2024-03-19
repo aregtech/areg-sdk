@@ -52,7 +52,7 @@ class ServiceCommunicatonBase   : public    IERemoteMessageHandler
                                 , public    IEServiceConnectionProvider
                                 , protected DispatcherThread
                                 , protected IEServiceEventConsumerBase
-                                , private   IEServiceConnectionHandler
+                                , protected IEServiceConnectionHandler
 {
 //////////////////////////////////////////////////////////////////////////
 // The internal types and constants
@@ -182,7 +182,7 @@ public:
     inline bool isCalculateDataRateEnabled(void) const;
 
 //////////////////////////////////////////////////////////////////////////
-// overrides
+// Overrides
 //////////////////////////////////////////////////////////////////////////
 public:
 /************************************************************************/
@@ -206,12 +206,56 @@ public:
      **/
     virtual void removeAllInstances(void);
 
-//////////////////////////////////////////////////////////////////////////
-// Overrides
-//////////////////////////////////////////////////////////////////////////
-protected:
 /************************************************************************/
-// IERemoteServiceConnection interface overrides
+// IERemoteMessageHandler interface overrides
+/************************************************************************/
+
+    /**
+     * \brief   Triggered, when failed to send message.
+     * \param   msgFailed   The message, which failed to send.
+     * \param   whichTarget The target socket to send message.
+     **/
+    virtual void failedSendMessage( const RemoteMessage & msgFailed, Socket & whichTarget ) override;
+
+    /**
+     * \brief   Triggered, when failed to receive message.
+     * \param   whichSource Indicates the failed source socket to receive message.
+     **/
+    virtual void failedReceiveMessage( Socket & whichSource ) override;
+
+    /**
+     * \brief   Triggered, when need to process received message.
+     * \param   msgReceived Received message to process.
+     * \param   whichSource The source socket, which received message.
+     **/
+    virtual void processReceivedMessage( const RemoteMessage & msgReceived, Socket & whichSource ) override;
+
+/************************************************************************/
+// IEServiceConnectionConsumer
+/************************************************************************/
+
+    /**
+     * \brief   Triggered when remote service connection and communication channel is established.
+     * \param   channel     The connection and communication channel of remote service.
+     **/
+    virtual void connectedRemoteServiceChannel(const Channel& channel) = 0;
+
+    /**
+     * \brief   Triggered when disconnected remote service connection and communication channel.
+     * \param   channel     The connection and communication channel of remote service.
+     **/
+    virtual void disconnectedRemoteServiceChannel(const Channel& channel) = 0;
+
+    /**
+     * \brief   Triggered when remote service connection and communication channel is lost.
+     *          The connection is considered lost if it not possible to read or
+     *          receive data, and it was not stopped by API call.
+     * \param   channel     The connection and communication channel of remote service.
+     **/
+    virtual void lostRemoteServiceChannel(const Channel& channel) = 0;
+
+/************************************************************************/
+// IEServiceConnectionProvider interface overrides
 /************************************************************************/
     /**
      * \brief   Call to configure remote service. The passed file name
@@ -281,62 +325,6 @@ protected:
     virtual RemoteMessage createServiceDisconnectMessage( const ITEM_ID & source, const ITEM_ID & target ) const override;
 
 /************************************************************************/
-// IEServiceConnectionHandler interface overrides
-/************************************************************************/
-
-    /**
-     * \brief   Call to check whether new client connection should be accepted
-     *          or rejected. Once client is accepted, server will start to receive
-     *          messages from client. Otherwise, connection with client is immediately
-     *          closed and communication is stopped.
-     * \param   clientSocket    Accepted client socket object to check.
-     * \return  Returns true if client connection can be accepted. To reject and close
-     *          connection with client, the method should return false.
-     **/
-    virtual bool canAcceptConnection( const SocketAccepted & clientSocket ) override;
-
-    /**
-     * \brief   Triggered, when lost connection with client.
-     *          Passed clientSocket parameter specifies client socket, which lost connection.
-     * \param   clientSocket    Client socket object, which lost connection.
-     **/
-    virtual void connectionLost( SocketAccepted & clientSocket ) override;
-
-    /**
-     * \brief   Triggered, when there is a connection failure. Normally, this should restart the connection.
-     **/
-    virtual void connectionFailure( void ) override;
-
-    /**
-     * \brief   Called when need to disconnect and unregister all service providers and service consumers.
-     **/
-    virtual void disconnectServices( void ) override;
-
-/************************************************************************/
-// IERemoteMessageHandler interface overrides
-/************************************************************************/
-
-    /**
-     * \brief   Triggered, when failed to send message.
-     * \param   msgFailed   The message, which failed to send.
-     * \param   whichTarget The target socket to send message.
-     **/
-    virtual void failedSendMessage( const RemoteMessage & msgFailed, Socket & whichTarget ) override;
-
-    /**
-     * \brief   Triggered, when failed to receive message.
-     * \param   whichSource Indicates the failed source socket to receive message.
-     **/
-    virtual void failedReceiveMessage( Socket & whichSource ) override;
-
-    /**
-     * \brief   Triggered, when need to process received message.
-     * \param   msgReceived Received message to process.
-     * \param   whichSource The source socket, which received message.
-     **/
-    virtual void processReceivedMessage( const RemoteMessage & msgReceived, Socket & whichSource ) override;
-
-/************************************************************************/
 // IEServiceEventConsumerBase overrides
 /************************************************************************/
 
@@ -372,7 +360,39 @@ protected:
     virtual void onChannelConnected(const ITEM_ID & cookie) override;
 
 /************************************************************************/
-// ServiceCommunicatonBase overrides
+// IEServiceConnectionHandler interface overrides
+/************************************************************************/
+
+    /**
+     * \brief   Call to check whether new client connection should be accepted
+     *          or rejected. Once client is accepted, server will start to receive
+     *          messages from client. Otherwise, connection with client is immediately
+     *          closed and communication is stopped.
+     * \param   clientSocket    Accepted client socket object to check.
+     * \return  Returns true if client connection can be accepted. To reject and close
+     *          connection with client, the method should return false.
+     **/
+    virtual bool canAcceptConnection( const SocketAccepted & clientSocket ) override;
+
+    /**
+     * \brief   Triggered, when lost connection with client.
+     *          Passed clientSocket parameter specifies client socket, which lost connection.
+     * \param   clientSocket    Client socket object, which lost connection.
+     **/
+    virtual void connectionLost( SocketAccepted & clientSocket ) override;
+
+    /**
+     * \brief   Triggered, when there is a connection failure. Normally, this should restart the connection.
+     **/
+    virtual void connectionFailure( void ) override;
+
+    /**
+     * \brief   Called when need to disconnect and unregister all service providers and service consumers.
+     **/
+    virtual void disconnectServices( void ) override;
+
+/************************************************************************/
+// ServiceCommunicatonBase
 /************************************************************************/
 
     /**
@@ -453,6 +473,7 @@ protected:
 // Hidden calls
 //////////////////////////////////////////////////////////////////////////////
 private:
+
     /**
      * \brief   Returns instance of object. For internal use only.
      **/

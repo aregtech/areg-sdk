@@ -15,5 +15,44 @@
 #include "logger/app/NELoggerSettings.hpp"
 #include "areg/appbase/NEApplication.hpp"
 
-char *      NELoggerSettings::SERVICE_NAME_ASCII   = NEApplication::LOGGER_SERVICE_NAME_ASCII;
-wchar_t *   NELoggerSettings::SERVICE_NAME_WIDE    = NEApplication::LOGGER_SERVICE_NAME_WIDE;
+char *      NELoggerSettings::SERVICE_NAME_ASCII    { NEApplication::LOGGER_SERVICE_NAME_ASCII };
+
+wchar_t *   NELoggerSettings::SERVICE_NAME_WIDE     { NEApplication::LOGGER_SERVICE_NAME_WIDE };
+
+char        NELoggerSettings::SERVICE_DISPLAY_NAME_ASCII[]
+{
+          'A', 'R', 'E', 'G', ' '
+        , 'L', 'o', 'g', ' '
+        , 'C', 'o', 'l', 'l', 'e', 'c', 't', 'o', 'r', ' '
+        , 'S', 'e', 'r', 'v', 'i', 'c', 'e', '\0'
+};
+
+wchar_t     NELoggerSettings::SERVICE_DISPLAY_NAME_WIDE[]
+{
+          'A', 'R', 'E', 'G', ' '
+        , 'L', 'o', 'g', ' '
+        , 'C', 'o', 'l', 'l', 'e', 'c', 't', 'o', 'r', ' '
+        , 'S', 'e', 'r', 'v', 'i', 'c', 'e', '\0'
+};
+
+char        NELoggerSettings::SERVICE_DESCRIBE_ASCII[]
+{
+          'A', 'R', 'E', 'G', ' '
+        , 'T', 'C', 'P', ' ', '/', ' ', 'I', 'P', ' '
+        , 'L', 'o', 'g', 'g', 'i', 'n', 'g', ' '
+        , 'S', 'e', 'r', 'v', 'i', 'c', 'e', ' '
+        , 't', 'o', ' ', 'c', 'o', 'l', 'l', 'e', 'c', 't', ' '
+        , 'a', 'p', 'p', 'l', 'i', 'c', 'a', 't', 'i', 'o', 'n', ' '
+        , 'l', 'o', 'g', 's', '.', '\0'
+};
+
+wchar_t     NELoggerSettings::SERVICE_DESCRIBE_WIDE[]
+{
+          'A', 'R', 'E', 'G', ' '
+        , 'T', 'C', 'P', ' ', '/', ' ', 'I', 'P', ' '
+        , 'L', 'o', 'g', 'g', 'i', 'n', 'g', ' '
+        , 'S', 'e', 'r', 'v', 'i', 'c', 'e', ' '
+        , 't', 'o', ' ', 'c', 'o', 'l', 'l', 'e', 'c', 't', ' '
+        , 'a', 'p', 'p', 'l', 'i', 'c', 'a', 't', 'i', 'o', 'n', ' '
+        , 'l', 'o', 'g', 's', '.', '\0'
+};

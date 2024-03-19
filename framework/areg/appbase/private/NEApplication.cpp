@@ -57,3 +57,27 @@ AREG_API_IMPL const std::vector<Identifier>   NEApplication::LogScopePriorityInd
     , { static_cast<unsigned int>(NETrace::eLogPriority::PrioInfo)                      , NETrace::PRIO_INFO_STR                            }
     , { static_cast<unsigned int>(NETrace::eLogPriority::PrioDebug)                     , NETrace::PRIO_DEBUG_STR                           }
 };
+
+ //! AREG TCP/IP Multicast Router Service name
+AREG_API_IMPL char NEApplication::ROUTER_SERVICE_NAME_ASCII[]           { 'm', 'c', 'r', 'o', 'u', 't', 'e', 'r', '.', 's', 'e', 'r', 'v', 'i', 'c', 'e', '\0' };
+
+//! AREG TCP/IP Multicast Router Service name
+AREG_API_IMPL wchar_t NEApplication::ROUTER_SERVICE_NAME_WIDE[]         { 'm', 'c', 'r', 'o', 'u', 't', 'e', 'r', '.', 's', 'e', 'r', 'v', 'i', 'c', 'e', '\0' };
+
+//! Router Service executable
+AREG_API_IMPL char NEApplication::ROUTER_SERVICE_EXECUTABLE_ASCII[]     { 'm', 'c', 'r', 'o', 'u', 't', 'e', 'r', '.', 'e', 'x', 'e', '\0' };
+
+//! Router Service executable
+AREG_API_IMPL wchar_t NEApplication::ROUTER_SERVICE_EXECUTABLE_WIDE[]   { 'm', 'c', 'r', 'o', 'u', 't', 'e', 'r', '.', 'e', 'x', 'e', '\0' };
+
+//! AREG TCP/IP Log Collector Service name
+AREG_API_IMPL char NEApplication::LOGGER_SERVICE_NAME_ASCII[]           { 'l', 'o', 'g', 'g', 'e', 'r', '.', 's', 'e', 'r', 'v', 'i', 'c', 'e', '\0' };
+
+//! AREG TCP/IP Log Collector Service name
+AREG_API_IMPL wchar_t NEApplication::LOGGER_SERVICE_NAME_WIDE[]         { 'l', 'o', 'g', 'g', 'e', 'r', '.', 's', 'e', 'r', 'v', 'i', 'c', 'e', '\0' };
+
+//! Log Collector Service executable
+AREG_API_IMPL char NEApplication::LOGGER_SERVICE_EXECUTABLE_ASCII[]     { 'l', 'o', 'g', 'g', 'e', 'r', '.', 'e', 'x', 'e', '\0' };
+
+//! Log Collector Service executable
+AREG_API_IMPL wchar_t NEApplication::LOGGER_SERVICE_EXECUTABLE_WIDE[]   { 'l', 'o', 'g', 'g', 'e', 'r', '.', 'e', 'x', 'e', '\0' };

@@ -63,6 +63,15 @@
     <ClCompile Include="extend\db\private\LogSqliteDatabase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="extend\service\private\ServiceApplicationBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="extend\service\private\posix\ServiceApplicationBasePosix.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="extend\service\private\win32\ServiceApplicationBaseWin32.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="extend\CMakeLists.txt">
@@ -114,6 +123,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="extend\db\LogSqliteDatabase.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="extend\service\ServiceApplicationBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

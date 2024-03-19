@@ -71,10 +71,8 @@ namespace NERemoteService
      **/
     enum eRemoteConnection : uint32_t
     {
-        /* Remote instance is disconnected. */
-          RemoteDisconnected    = 0
-        /* Remote instance is connected. */
-        , RemoteConnected       = 1
+          RemoteDisconnected    = 0 //!< Remote instance is disconnected.
+        , RemoteConnected       = 1 //!< Remote instance is connected.
     };
 
     /**

@@ -49,12 +49,15 @@
     <ClCompile Include="extend\db\private\SqliteDatabase.cpp" />
     <ClCompile Include="extend\service\private\DataRateHelper.cpp" />
     <ClCompile Include="extend\service\private\NESystemService.cpp" />
+    <ClCompile Include="extend\service\private\posix\ServiceApplicationBasePosix.cpp" />
+    <ClCompile Include="extend\service\private\ServiceApplicationBase.cpp" />
     <ClCompile Include="extend\service\private\SystemServiceBase.cpp" />
     <ClCompile Include="extend\service\private\IEServiceConnectionHandler.cpp" />
     <ClCompile Include="extend\service\private\ServerConnection.cpp" />
     <ClCompile Include="extend\service\private\ServerReceiveThread.cpp" />
     <ClCompile Include="extend\service\private\ServerSendThread.cpp" />
     <ClCompile Include="extend\service\private\ServiceCommunicatonBase.cpp" />
+    <ClCompile Include="extend\service\private\win32\ServiceApplicationBaseWin32.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="extend\CMakeLists.txt" />
@@ -70,6 +73,7 @@
     <ClInclude Include="extend\service\DataRateHelper.hpp" />
     <ClInclude Include="extend\service\NESystemService.hpp" />
     <ClInclude Include="extend\console\SystemServiceConsole.hpp" />
+    <ClInclude Include="extend\service\ServiceApplicationBase.hpp" />
     <ClInclude Include="extend\service\SystemServiceBase.hpp" />
     <ClInclude Include="extend\service\IEServiceConnectionHandler.hpp" />
     <ClInclude Include="extend\service\ServerConnection.hpp" />

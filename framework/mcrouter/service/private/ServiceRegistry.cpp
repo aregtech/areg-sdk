@@ -7,12 +7,12 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        mcrouter/tcp/private/ServiceRegistry.cpp
+ * \file        mcrouter/service/private/ServiceRegistry.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform Service Manager
  ************************************************************************/
-#include "mcrouter/tcp/private/ServiceRegistry.hpp"
+#include "mcrouter/service/private/ServiceRegistry.hpp"
 
 #include "areg/trace/GETrace.h"
 
@@ -20,13 +20,13 @@
 // ServiceRegistry class implementation
 //////////////////////////////////////////////////////////////////////////
 
-DEF_TRACE_SCOPE(mcrouter_tcp_private_ServiceRegistry_registerServiceProxy);
-DEF_TRACE_SCOPE(mcrouter_tcp_private_ServiceRegistry_unregisterServiceProxy);
-DEF_TRACE_SCOPE(mcrouter_tcp_private_ServiceRegistry_registerServiceStub);
-DEF_TRACE_SCOPE(mcrouter_tcp_private_ServiceRegistry_unregisterServiceStub);
-DEF_TRACE_SCOPE(mcrouter_tcp_private_ServiceRegistry_getServiceList);
-DEF_TRACE_SCOPE(mcrouter_tcp_private_ServiceRegistry_getServiceSources);
-DEF_TRACE_SCOPE(mcrouter_tcp_private_ServiceRegistry_disconnectProxy);
+DEF_TRACE_SCOPE(mcrouter_service_private_ServiceRegistry_registerServiceProxy);
+DEF_TRACE_SCOPE(mcrouter_service_private_ServiceRegistry_unregisterServiceProxy);
+DEF_TRACE_SCOPE(mcrouter_service_private_ServiceRegistry_registerServiceStub);
+DEF_TRACE_SCOPE(mcrouter_service_private_ServiceRegistry_unregisterServiceStub);
+DEF_TRACE_SCOPE(mcrouter_service_private_ServiceRegistry_getServiceList);
+DEF_TRACE_SCOPE(mcrouter_service_private_ServiceRegistry_getServiceSources);
+DEF_TRACE_SCOPE(mcrouter_service_private_ServiceRegistry_disconnectProxy);
 
 //////////////////////////////////////////////////////////////////////////
 // ServiceRegistry statics
@@ -79,7 +79,7 @@ NEService::eServiceConnection ServiceRegistry::getServiceStatus(const ProxyAddre
 
 const ServiceStub & ServiceRegistry::registerServiceProxy(const ProxyAddress & addrProxy, ServiceProxy & out_proxyService)
 {
-    TRACE_SCOPE(mcrouter_tcp_private_ServiceRegistry_registerServiceProxy);
+    TRACE_SCOPE(mcrouter_service_private_ServiceRegistry_registerServiceProxy);
     std::pair<MAPPOS, bool> pos = addIfUnique(ServiceStub(addrProxy), ServiceRegistry::EmptyProxiesList);
     ASSERT(isValidPosition(pos.first));
 
@@ -106,7 +106,7 @@ const ServiceStub & ServiceRegistry::registerServiceProxy(const ProxyAddress & a
 
 const ServiceStub & ServiceRegistry::unregisterServiceProxy(const ProxyAddress & addrProxy, ServiceProxy & out_proxyService)
 {
-    TRACE_SCOPE(mcrouter_tcp_private_ServiceRegistry_unregisterServiceProxy);
+    TRACE_SCOPE(mcrouter_service_private_ServiceRegistry_unregisterServiceProxy);
 
     MAPPOS pos = findService( static_cast<const ServiceAddress &>(addrProxy) );
     if ( isValidPosition(pos) )
@@ -142,7 +142,7 @@ const ServiceStub & ServiceRegistry::unregisterServiceProxy(const ProxyAddress &
 
 const ServiceStub & ServiceRegistry::registerServiceStub(const StubAddress & addrStub, ListServiceProxies & out_listProxies)
 {
-    TRACE_SCOPE(mcrouter_tcp_private_ServiceRegistry_registerServiceStub);
+    TRACE_SCOPE(mcrouter_service_private_ServiceRegistry_registerServiceStub);
 
     std::pair<MAPPOS, bool> pos = addIfUnique( ServiceStub(addrStub), ServiceRegistry::EmptyProxiesList);
     ASSERT(isValidPosition(pos.first));
@@ -173,7 +173,7 @@ const ServiceStub & ServiceRegistry::registerServiceStub(const StubAddress & add
 
 const ServiceStub & ServiceRegistry::unregisterServiceStub(const StubAddress & addrStub, ListServiceProxies & out_listProxies)
 {
-    TRACE_SCOPE(mcrouter_tcp_private_ServiceRegistry_unregisterServiceStub);
+    TRACE_SCOPE(mcrouter_service_private_ServiceRegistry_unregisterServiceStub);
 
     MAPPOS pos = findService( static_cast<const ServiceAddress &>(addrStub) );
     if ( isValidPosition(pos) )
@@ -216,7 +216,7 @@ ServiceRegistry::MAPPOS ServiceRegistry::findService( const ServiceAddress & add
 
 void ServiceRegistry::getServiceList(const ITEM_ID & cookie , TEArrayList<StubAddress> & OUT out_stubServiceList, TEArrayList<ProxyAddress> & OUT out_proxyServiceList ) const
 {
-    TRACE_SCOPE(mcrouter_tcp_private_ServiceRegistry_getServiceList);
+    TRACE_SCOPE(mcrouter_service_private_ServiceRegistry_getServiceList);
     TRACE_DBG("Filter service list for cookie [ %u ]", static_cast<unsigned int>(cookie));
 
     for (ServiceRegistryBase::MAPPOS posMap = firstPosition(); isValidPosition(posMap); posMap = nextPosition(posMap) )
@@ -268,7 +268,7 @@ void ServiceRegistry::getServiceList(const ITEM_ID & cookie , TEArrayList<StubAd
 
 void ServiceRegistry::getServiceSources(const ITEM_ID & cookie, TEArrayList<StubAddress> & OUT stubSource, TEArrayList<ProxyAddress> & OUT proxySources)
 {
-    TRACE_SCOPE(mcrouter_tcp_private_ServiceRegistry_getServiceSources);
+    TRACE_SCOPE(mcrouter_service_private_ServiceRegistry_getServiceSources);
     TRACE_DBG("Pickup services with [ %u ] sources ", static_cast<unsigned int>(cookie));
 
     for (ServiceRegistry::MAPPOS posMap = firstPosition(); isValidPosition(posMap); posMap = nextPosition(posMap) )
@@ -309,7 +309,7 @@ void ServiceRegistry::getServiceSources(const ITEM_ID & cookie, TEArrayList<Stub
 
 const ServiceStub & ServiceRegistry::disconnectProxy(const ProxyAddress & IN addrProxy)
 {
-    TRACE_SCOPE(mcrouter_tcp_private_ServiceRegistry_disconnectProxy);
+    TRACE_SCOPE(mcrouter_service_private_ServiceRegistry_disconnectProxy);
     MAPPOS pos = findService( static_cast<const ServiceAddress &>(addrProxy) );
     if ( isValidPosition(pos) )
     {

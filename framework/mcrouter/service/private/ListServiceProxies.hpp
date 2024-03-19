@@ -1,5 +1,5 @@
-#ifndef AREG_MCROUTER_TCP_PRIVATE_LISTSERVICEPROXIES_HPP
-#define AREG_MCROUTER_TCP_PRIVATE_LISTSERVICEPROXIES_HPP
+#ifndef AREG_MCROUTER_SERVICE_PRIVATE_LISTSERVICEPROXIES_HPP
+#define AREG_MCROUTER_SERVICE_PRIVATE_LISTSERVICEPROXIES_HPP
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -9,7 +9,7 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        mcrouter/tcp/private/ListServiceProxies.hpp
+ * \file        mcrouter/service/private/ListServiceProxies.hpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform Proxy Service object, list of proxies
@@ -20,14 +20,14 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/base/TELinkedList.hpp"
-#include "mcrouter/tcp/private/ServiceProxy.hpp"
+#include "mcrouter/service/private/ServiceProxy.hpp"
 
 /************************************************************************
  * Dependencies
  ************************************************************************/
 class ServiceStub;
-
 using ListServiceProxiesBase = TELinkedList<ServiceProxy>;
+
 //////////////////////////////////////////////////////////////////////////
 // ListServiceProxies class declaration
 //////////////////////////////////////////////////////////////////////////
@@ -199,4 +199,4 @@ inline bool ListServiceProxies::isServiceRegistered( const ProxyAddress & addrPr
     return ListServiceProxiesBase::isValidPosition(_findProxy(addrProxy));
 }
 
-#endif  // AREG_MCROUTER_TCP_PRIVATE_LISTSERVICEPROXIES_HPP
+#endif  // AREG_MCROUTER_SERVICE_PRIVATE_LISTSERVICEPROXIES_HPP

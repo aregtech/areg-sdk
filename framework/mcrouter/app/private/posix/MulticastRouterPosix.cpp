@@ -7,7 +7,7 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        mcrouter/private/app/MulticastRouterPosix.cpp
+ * \file        mcrouter/app/private/MulticastRouterPosix.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Router, Multicast Router Service process
@@ -30,125 +30,11 @@
 
 int main(int argc, char* argv[], char* envp[])
 {
-    int result      = 0;
-    MulticastRouter & router = MulticastRouter::getInstance();
-    if (router.parseOptions(argc, argv, NESystemService::ServiceOptionSetup, MACRO_ARRAYLEN(NESystemService::ServiceOptionSetup)) == false)
-    {
-        router.resetDefaultOptions( );
-    }
-
-    switch ( router.getCurrentOption() )
-    {
-    case NESystemService::eServiceOption::CMD_Install:
-        result = router.serviceInstall() ? 0 : -2;
-        break;
-
-    case NESystemService::eServiceOption::CMD_Uninstall:
-        router.serviceUninstall();
-        break;
-
-    case NESystemService::eServiceOption::CMD_Console:
-    case NESystemService::eServiceOption::CMD_Service:
-        router.setState(NESystemService::eSystemServiceState::ServiceStarting);
-        router.serviceMain( static_cast<int>(argc), argv);
-        break;
-
-    case NESystemService::eServiceOption::CMD_Verbose:
-    case NESystemService::eServiceOption::CMD_Help:
-        break;
-
-    default:
-        ASSERT(false);  // unexpected
-        break;
-    }
-
-    return result;
+    return MulticastRouter::getInstance().serviceMain(argc, argv);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Global functions, End
 //////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////
-// MulticastRouter class implementation
-//////////////////////////////////////////////////////////////////////////
-bool MulticastRouter::_osIsValid( void ) const
-{
-    return true;
-}
-
-bool MulticastRouter::_osRegisterService( void )
-{
-    return true;
-}
-
-
-void MulticastRouter::_osFreeResources( void )
-{
-    mSvcHandle = nullptr;
-    mSeMHandle = nullptr;
-}
-
-bool MulticastRouter::_osOpenService(void)
-{
-    return true;
-}
-
-bool MulticastRouter::_osCcreateService(void)
-{
-    return true;
-}
-
-void MulticastRouter::_osDeleteService( void )
-{
-}
-
-bool MulticastRouter::_osSetState( NESystemService::eSystemServiceState newState )
-{
-    bool result{ true };
-
-    if ( newState != mSystemServiceState )
-    {
-        switch ( newState )
-        {
-        case NESystemService::eSystemServiceState::ServiceStopped:
-            break;
-
-        case NESystemService::eSystemServiceState::ServiceStarting:
-            break;
-
-        case NESystemService::eSystemServiceState::ServiceStopping:
-            break;
-
-        case NESystemService::eSystemServiceState::ServiceRunning:
-            break;
-
-        case NESystemService::eSystemServiceState::ServiceContinuing:
-            break;
-
-        case NESystemService::eSystemServiceState::ServicePausing:
-            break;
-
-        case NESystemService::eSystemServiceState::ServicePaused:
-            break;
-
-        default:
-            ASSERT(false);
-        }
-
-        mSystemServiceState = newState;
-    }
-
-    return result;
-}
-
-bool MulticastRouter::_osWaitUserInput(char* buffer, unsigned int bufSize)
-{
-#if __STDC_WANT_LIB_EXT1__
-    return(gets_s(buffer, bufSize) != nullptr);
-#else   // __STDC_WANT_LIB_EXT1__
-    return (fgets(buffer, bufSize, stdin) != nullptr);
-#endif  // __STDC_WANT_LIB_EXT1__
-}
-
-#endif  // _POSIX
+#endif // POSIX
