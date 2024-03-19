@@ -31,10 +31,31 @@ namespace NELoggerSettings
      * \brief   The ASCII name of the logger as a system service.
      **/
     extern char *       SERVICE_NAME_ASCII  /*= NEApplication::LOGGER_SERVICE_NAME_ASCII*/;
+
     /**
      * \brief   The UNICODE name of the logger as a system service.
      **/
     extern wchar_t *    SERVICE_NAME_WIDE   /*= NEApplication::LOGGER_SERVICE_NAME_WIDE*/;
+
+    /**
+     * \brief   The ASCII display name of the logger service to show in the service list.
+     **/
+    extern char         SERVICE_DISPLAY_NAME_ASCII[];
+
+    /**
+     * \brief   The UNICODE name of the logger service to show in the service list.
+     **/
+    extern wchar_t      SERVICE_DISPLAY_NAME_WIDE[];
+
+    /**
+     * \brief   The ASCII description of the logger service to show in the service list.
+     **/
+    extern char         SERVICE_DESCRIBE_ASCII[];
+
+    /**
+     * \brief   The UNICODE description of the logger service to show in the service list.
+     **/
+    extern wchar_t      SERVICE_DESCRIBE_WIDE[];
 
     /**
      * \brief   The name of main thread in the logger.

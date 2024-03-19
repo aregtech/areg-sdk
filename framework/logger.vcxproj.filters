@@ -66,12 +66,6 @@
     <ClCompile Include="logger\app\private\NELoggerSettings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="logger\app\private\win32\LoggerWin32.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="logger\app\private\posix\LoggerPosix.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="logger\app\private\LoggerConsoleService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -79,6 +73,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="logger\service\private\LoggerMessageProcessor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="logger\app\private\win32\LoggerWin32.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="logger\app\private\posix\LoggerPosix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

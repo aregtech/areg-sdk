@@ -70,28 +70,8 @@ bool SystemServiceBase::parseOptions( int argc, const char ** argv, const Option
 
 bool SystemServiceBase::parseOptions(int argc, char** argv, const OptionParser::sOptionSetup* optSetup, int optCount)
 {
-    bool result{ false };
-
-    if (argc > 1)
-    {
-        OptionParser parser(optSetup, optCount);
-        if (parser.parseCommandLine(argv, argc))
-        {
-            result = prepareOptions(parser.getOptions());
-        }
-        else
-        {
-            printHelp(true);
-            result = false;
-        }
-    }
-    else if (argc == 1)
-    {
-        resetDefaultOptions();
-        result = true;
-    }
-
-    return result;
+    const char* temp{ argv != nullptr ? static_cast<const char*>(*argv) : nullptr };
+    return (temp != nullptr ? parseOptions(argc, &temp, optSetup, optCount) : false);
 }
 
 bool SystemServiceBase::prepareOptions(const OptionParser::InputOptionList& opts)
@@ -138,40 +118,78 @@ bool SystemServiceBase::prepareOptions(const OptionParser::InputOptionList& opts
     return result;
 }
 
-void SystemServiceBase::serviceMain( int argc, char ** argv )
+int SystemServiceBase::serviceMain( int argc, char ** argv )
 {
-    TRACE_SCOPE( utilities_service_base_SystemServiceBase_serviceMain );
-    TRACE_DBG( "Starting logger service. There are [ %d ] arguments in the list...", argc );
+    int result{ RESULT_SUCCEEDED };
+
+    if (serviceInitialize(argc, argv))
+    {
+        TRACE_SCOPE( utilities_service_base_SystemServiceBase_serviceMain );
+        TRACE_DBG( "Starting logger service. There are [ %d ] arguments in the list...", argc );
+        setState(NESystemService::eSystemServiceState::ServiceStarting);
 
 #ifdef  DEBUG
     for ( int i = 0; i < argc; ++ i )
         TRACE_DBG( "... Command argument [ %d ]: [ %s ]", i, argv[ i ] );
 #endif  // DEBUG
 
-    if ( registerService( ) || (mSystemServiceOption == NESystemService::eServiceOption::CMD_Console) )
-    {
-        TRACE_DBG( "Starting service" );
-        serviceStart( );
-    }
+        if (registerService() || (mSystemServiceOption == NESystemService::eServiceOption::CMD_Console))
+        {
+            TRACE_DBG("Starting service");
+            serviceStart();
+        }
 
-    if (mSystemServiceOption == NESystemService::eServiceOption::CMD_Service)
-    {
-        runService();
-    }
-    else if ( mSystemServiceOption == NESystemService::eServiceOption::CMD_Console )
-    {
+        if (mSystemServiceOption == NESystemService::eServiceOption::CMD_Service)
+        {
+            runService();
+        }
+        else if (mSystemServiceOption == NESystemService::eServiceOption::CMD_Console)
+        {
 #if AREG_EXTENDED
-        runConsoleInputExtended( );
+            runConsoleInputExtended();
 #else   // !AREG_EXTENDED
-        runConsoleInputSimple( );
+            runConsoleInputSimple();
 #endif  // !AREG_EXTENDED
+        }
+
+        serviceStop();
+        TRACE_WARN("Service Stopped and not running anymore");
+    }
+    else
+    {
+        result = RESULT_FAILED_INIT;
     }
 
-    serviceStop( );
-    TRACE_WARN( "Service Stopped and not running anymore" );
+    serviceRelease();
+    setState(NESystemService::eSystemServiceState::ServiceStopped);
+
+    return result;
 }
 
 void SystemServiceBase::sendMessageToTarget(const RemoteMessage& message)
 {
     mCommunication.sendMessage(message);
+}
+
+void SystemServiceBase::controlService(SystemServiceBase::eServiceControl control)
+{
+    switch (control)
+    {
+    case SystemServiceBase::eServiceControl::ServiceStop:
+        SystemServiceBase::eServiceControl::ServiceShutdown;
+        serviceStop();
+        break;
+
+    case SystemServiceBase::eServiceControl::ServicePause:
+        servicePause();
+        break;
+
+    case SystemServiceBase::eServiceControl::ServiceContinue:
+        serviceContinue();
+        break;
+
+    default:
+        ASSERT(false);
+        break;
+    }
 }

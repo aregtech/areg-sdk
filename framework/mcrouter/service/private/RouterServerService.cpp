@@ -7,30 +7,30 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        mcrouter/tcp/private/RouterServerService.cpp
+ * \file        mcrouter/service/private/RouterServerService.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, Message router connection service.
  ************************************************************************/
-#include "mcrouter/tcp/RouterServerService.hpp"
+#include "mcrouter/service/RouterServerService.hpp"
 
 #include "areg/ipc/private/NEConnection.hpp"
 #include "areg/ipc/ConnectionConfiguration.hpp"
 #include "areg/ipc/NERemoteService.hpp"
 #include "areg/trace/GETrace.h"
 
-DEF_TRACE_SCOPE(mcrouter_tcp_RouterServerService_registerServiceProvider);
-DEF_TRACE_SCOPE(mcrouter_tcp_RouterServerService_unregisterServiceProvider);
-DEF_TRACE_SCOPE(mcrouter_tcp_RouterServerService_registerServiceConsumer);
-DEF_TRACE_SCOPE(mcrouter_tcp_RouterServerService_unregisterServiceConsumer);
+DEF_TRACE_SCOPE(mcrouter_service_RouterServerService_registerServiceProvider);
+DEF_TRACE_SCOPE(mcrouter_service_RouterServerService_unregisterServiceProvider);
+DEF_TRACE_SCOPE(mcrouter_service_RouterServerService_registerServiceConsumer);
+DEF_TRACE_SCOPE(mcrouter_service_RouterServerService_unregisterServiceConsumer);
 
-DEF_TRACE_SCOPE(mcrouter_tcp_RouterServerService_registeredRemoteServiceProvider);
-DEF_TRACE_SCOPE(mcrouter_tcp_RouterServerService_registeredRemoteServiceConsumer);
-DEF_TRACE_SCOPE(mcrouter_tcp_RouterServerService_unregisteredRemoteServiceProvider);
-DEF_TRACE_SCOPE(mcrouter_tcp_RouterServerService_unregisteredRemoteServiceConsumer);
+DEF_TRACE_SCOPE(mcrouter_service_RouterServerService_registeredRemoteServiceProvider);
+DEF_TRACE_SCOPE(mcrouter_service_RouterServerService_registeredRemoteServiceConsumer);
+DEF_TRACE_SCOPE(mcrouter_service_RouterServerService_unregisteredRemoteServiceProvider);
+DEF_TRACE_SCOPE(mcrouter_service_RouterServerService_unregisteredRemoteServiceConsumer);
 
-DEF_TRACE_SCOPE(mcrouter_tcp_RouterServerService_onServiceMessageReceived);
-DEF_TRACE_SCOPE(mcrouter_tcp_RouterServerService_onServiceMessageSend);
+DEF_TRACE_SCOPE(mcrouter_service_RouterServerService_onServiceMessageReceived);
+DEF_TRACE_SCOPE(mcrouter_service_RouterServerService_onServiceMessageSend);
 
 //////////////////////////////////////////////////////////////////////////
 // RouterServerService class implementation
@@ -47,33 +47,33 @@ RouterServerService::RouterServerService( void )
 
 bool RouterServerService::registerServiceProvider(const StubAddress & /* stubService */)
 {
-    TRACE_SCOPE(mcrouter_tcp_RouterServerService_registerServiceProvider);
+    TRACE_SCOPE(mcrouter_service_RouterServerService_registerServiceProvider);
     TRACE_ERR("Method is not implemented, this should not be called");
     return false;
 }
 
 void RouterServerService::unregisterServiceProvider(const StubAddress & /* stubService */, const NEService::eDisconnectReason /*reason*/ )
 {
-    TRACE_SCOPE(mcrouter_tcp_RouterServerService_unregisterServiceProvider);
+    TRACE_SCOPE(mcrouter_service_RouterServerService_unregisterServiceProvider);
     TRACE_ERR("Method is not implemented, this should not be called");
 }
 
 bool RouterServerService::registerServiceConsumer(const ProxyAddress & /* proxyService */)
 {
-    TRACE_SCOPE(mcrouter_tcp_RouterServerService_registerServiceConsumer);
+    TRACE_SCOPE(mcrouter_service_RouterServerService_registerServiceConsumer);
     TRACE_ERR("Method is not implemented, this should not be called");
     return false;
 }
 
 void RouterServerService::unregisterServiceConsumer(const ProxyAddress & /* proxyService */, const NEService::eDisconnectReason /*reason*/ )
 {
-    TRACE_SCOPE(mcrouter_tcp_RouterServerService_unregisterServiceConsumer);
+    TRACE_SCOPE(mcrouter_service_RouterServerService_unregisterServiceConsumer);
     TRACE_ERR("Method is not implemented, this should not be called");
 }
 
 void RouterServerService::onServiceMessageReceived(const RemoteMessage &msgReceived)
 {
-    TRACE_SCOPE(mcrouter_tcp_RouterServerService_onServiceMessageReceived);
+    TRACE_SCOPE(mcrouter_service_RouterServerService_onServiceMessageReceived);
 
     ASSERT( msgReceived.isValid() );
     NEService::eFuncIdRange msgId { static_cast<NEService::eFuncIdRange>(msgReceived.getMessageId()) };
@@ -212,7 +212,7 @@ void RouterServerService::onServiceMessageReceived(const RemoteMessage &msgRecei
 
 void RouterServerService::onServiceMessageSend(const RemoteMessage &msgSend)
 {
-    TRACE_SCOPE(mcrouter_tcp_RouterServerService_onServiceMessageSend);
+    TRACE_SCOPE(mcrouter_service_RouterServerService_onServiceMessageSend);
 
     NEService::eFuncIdRange msgId = static_cast<NEService::eFuncIdRange>( msgSend.getMessageId() );
     TRACE_DBG("Sending message [ %s ] of id [ 0x%X ] is going to send to target [ %u ] from source [ %u ]"
@@ -263,7 +263,7 @@ void RouterServerService::extractRemoteServiceAddresses( const ITEM_ID & cookie,
 
 void RouterServerService::registeredRemoteServiceProvider(const StubAddress & stub)
 {
-    TRACE_SCOPE(mcrouter_tcp_RouterServerService_registeredRemoteServiceProvider);
+    TRACE_SCOPE(mcrouter_service_RouterServerService_registeredRemoteServiceProvider);
     ASSERT(stub.isServicePublic());
 
     TRACE_DBG("Going to register remote stub [ %s ]", StubAddress::convAddressToPath(stub).getString());
@@ -340,7 +340,7 @@ void RouterServerService::registeredRemoteServiceProvider(const StubAddress & st
 
 void RouterServerService::registeredRemoteServiceConsumer(const ProxyAddress & proxy)
 {
-    TRACE_SCOPE(mcrouter_tcp_RouterServerService_registeredRemoteServiceConsumer);
+    TRACE_SCOPE(mcrouter_service_RouterServerService_registeredRemoteServiceConsumer);
     if ( mServiceRegistry.getServiceStatus(proxy) != NEService::eServiceConnection::ServiceConnected )
     {
         ServiceProxy proxyService;
@@ -392,7 +392,7 @@ void RouterServerService::registeredRemoteServiceConsumer(const ProxyAddress & p
 
 void RouterServerService::unregisteredRemoteServiceProvider(const StubAddress & stub, NEService::eDisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ )
 {
-    TRACE_SCOPE(mcrouter_tcp_RouterServerService_unregisteredRemoteServiceProvider);
+    TRACE_SCOPE(mcrouter_service_RouterServerService_unregisteredRemoteServiceProvider);
     if ( mServiceRegistry.getServiceStatus(stub) == NEService::eServiceConnection::ServiceConnected )
     {
         ListServiceProxies listProxies;
@@ -444,7 +444,7 @@ void RouterServerService::unregisteredRemoteServiceProvider(const StubAddress & 
 
 void RouterServerService::unregisteredRemoteServiceConsumer(const ProxyAddress & proxy, NEService::eDisconnectReason reason, const ITEM_ID & cookie /*= NEService::COOKIE_ANY*/ )
 {
-    TRACE_SCOPE(mcrouter_tcp_RouterServerService_unregisteredRemoteServiceConsumer);
+    TRACE_SCOPE(mcrouter_service_RouterServerService_unregisteredRemoteServiceConsumer);
     TRACE_DBG("Unregistering services of proxy [ %s ] related to cookie [ %u ]"
                     , ProxyAddress::convAddressToPath(proxy).getString()
                     , static_cast<unsigned int>(cookie));

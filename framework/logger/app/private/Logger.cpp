@@ -121,11 +121,6 @@ Logger & Logger::getInstance(void)
     return _logger;
 }
 
-std::pair<const OptionParser::sOptionSetup *, int> Logger::getOptionSetup( void )
-{
-    return std::pair< const OptionParser::sOptionSetup *, int>( Logger::ValidOptions, static_cast<int>(MACRO_ARRAYLEN( Logger::ValidOptions )) );
-}
-
 void Logger::printStatus(const String& status)
 {
 #if AREG_EXTENDED
@@ -142,16 +137,9 @@ void Logger::printStatus(const String& status)
 }
 
 Logger::Logger( void )
-    : SystemServiceBase         ( mServiceServer )
-    , IEConfigurationListener   ( )
-
-    , mServiceServer            ( )
+    : ServiceApplicationBase( mServiceServer )
+    , mServiceServer        ( )
 {
-}
-
-Logger::~Logger( void )
-{
-    _osFreeResources( );
 }
 
 Console::CallBack Logger::getOptionCheckCallback( void ) const
@@ -193,16 +181,16 @@ void Logger::runConsoleInputExtended( void )
 
 void Logger::runConsoleInputSimple( void )
 {
-    char cmd[ 512 ]{ 0 };
+    constexpr uint32_t bufSize{ 512 };
+    char cmd[bufSize]{ 0 };
     bool quit{ false };
-    OptionParser parser( Logger::ValidOptions, MACRO_ARRAYLEN( Logger::ValidOptions ) );
 
     Logger::_outputTitle( );
 
     do
     {
         printf( "%s", NESystemService::FORMAT_WAIT_QUIT.data( ) );
-        if (_osWaitUserInput(cmd, 512) == false)
+        if (inputConsoleData(cmd, bufSize) == false)
             continue;
 
         quit = Logger::_checkCommand( cmd );
@@ -215,146 +203,60 @@ void Logger::runService(void)
     Application::waitAppQuit(NECommon::WAIT_INFINITE);
 }
 
-void Logger::prepareSaveConfiguration(ConfigManager& config)
+std::pair<const OptionParser::sOptionSetup*, int> Logger::getAppOptions(void) const
 {
+    static  std::pair< const OptionParser::sOptionSetup*, int> _opts(std::pair< const OptionParser::sOptionSetup*, int>(Logger::ValidOptions, static_cast<int>(MACRO_ARRAYLEN(Logger::ValidOptions))));
+    return _opts;
 }
 
-void Logger::postSaveConfiguration(ConfigManager& config)
+wchar_t* Logger::getServiceNameW(void) const
 {
+    return NELoggerSettings::SERVICE_NAME_WIDE;
 }
 
-void Logger::prepareReadConfiguration(ConfigManager& config)
+char* Logger::getServiceNameA(void) const
 {
+    return NELoggerSettings::SERVICE_NAME_ASCII;
+}
+
+wchar_t* Logger::getServiceDisplayNameW(void) const
+{
+    return NELoggerSettings::SERVICE_DISPLAY_NAME_WIDE;
+}
+
+char* Logger::getServiceDisplayNameA(void) const
+{
+    return NELoggerSettings::SERVICE_DISPLAY_NAME_ASCII;
+}
+
+wchar_t* Logger::getServiceDescriptionW(void) const
+{
+    return NELoggerSettings::SERVICE_DESCRIBE_WIDE;
+}
+
+char* Logger::getServiceDescriptionA(void) const
+{
+    return NELoggerSettings::SERVICE_DESCRIBE_ASCII;
+}
+
+NERemoteService::eRemoteServices Logger::getServiceType(void) const
+{
+    return NERemoteService::eRemoteServices::ServiceLogger;
+}
+
+NERemoteService::eConnectionTypes Logger::getConnectionType(void) const
+{
+    return NERemoteService::eConnectionTypes::ConnectTcpip;
 }
 
 void Logger::postReadConfiguration(ConfigManager& config)
 {
-    enableLocalLogs(config, false);
+    _enableLocalLogs(config, false);
 }
 
 void Logger::onSetupConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigManager& config)
 {
-    enableLocalLogs(config, false);
-}
-
-void Logger::serviceMain( int argc, char ** argv )
-{
-    // Start only tracing and timer manager.
-    Application::initApplication( true
-                                , true
-                                , false
-                                , true
-                                , false
-                                , NEApplication::DEFAULT_CONFIG_FILE.data()
-                                , static_cast<IEConfigurationListener *>(&self()));
-    SystemServiceBase::serviceMain( argc, argv );
-    mServiceServer.waitToComplete( );
-    Application::releaseApplication( );
-}
-
-bool Logger::serviceStart(void)
-{
-    TRACE_SCOPE(logger_app_logger_serviceStart);
-    TRACE_DBG("Starting service [ %s ]", NELoggerSettings::SERVICE_NAME_ASCII);
-    bool result{ false };
-    IEServiceConnectionProvider& service{ getService() };
-    if (service.setupServiceConnectionData(NERemoteService::eRemoteServices::ServiceLogger, static_cast<uint32_t>(NERemoteService::eConnectionTypes::ConnectTcpip)) &&
-        service.connectServiceHost())
-    {
-        result = setState(NESystemService::eSystemServiceState::ServiceRunning);
-    }
-    else
-    {
-        Application::signalAppQuit();
-    }
-
-    return result;
-}
-
-void Logger::serviceStop(void)
-{
-    TRACE_SCOPE(logger_app_logger_serviceStop);
-    TRACE_WARN("Stopping service [ %s ]", NELoggerSettings::SERVICE_NAME_ASCII);
-    setState(NESystemService::eSystemServiceState::ServiceStopping);
-    getService().disconnectServiceHost();
-    mServiceServer.waitToComplete( );
-    Application::signalAppQuit();
-}
-
-void Logger::servicePause(void)
-{
-    TRACE_SCOPE(logger_app_logger_servicePause);
-    TRACE_DBG("Pausing Log Collector service");
-
-    setState( NESystemService::eSystemServiceState::ServicePausing );
-    getService( ).disconnectServiceHost();
-    mServiceServer.waitToComplete( );
-    setState( NESystemService::eSystemServiceState::ServicePaused );
-}
-
-bool Logger::serviceContinue(void)
-{
-    TRACE_SCOPE(logger_app_logger_serviceContinue);
-    TRACE_DBG("Continuing Log Collector service");
-
-    bool result = false;
-    setState( NESystemService::eSystemServiceState::ServiceContinuing );
-    if ( getService( ).isServiceHostSetup() && getService( ).connectServiceHost() )
-    {
-        result = true;
-        setState( NESystemService::eSystemServiceState::ServiceRunning );
-    }
-    else
-    {
-        TRACE_ERR("Failed to restart remote servicing");
-        Application::signalAppQuit();
-    }
-
-    return result;
-}
-
-bool Logger::serviceInstall(void)
-{
-    TRACE_SCOPE(logger_app_logger_serviceInstall);
-    
-    if ( _osOpenService() == false )
-    {
-        _osCcreateService();
-    }
-
-    return _osIsValid();
-}
-
-void Logger::serviceUninstall(void)
-{
-    TRACE_SCOPE(logger_app_logger_serviceUninstall);
-
-    if ( _osOpenService() )
-    {
-        _osDeleteService();
-    }
-
-    _osFreeResources();
-}
-
-bool Logger::registerService( void )
-{
-    return _osRegisterService();
-}
-
-bool Logger::serviceOpen( void )
-{
-    return _osOpenService( );
-}
-
-bool Logger::setState( NESystemService::eSystemServiceState newState )
-{
-    TRACE_SCOPE( logger_app_logger_setState );
-    TRACE_DBG( "Changing Log Collector service state. Old state [ %s ], new state [ %s ]"
-               , NESystemService::getString( mSystemServiceState )
-               , NESystemService::getString( newState ) );
-
-    return _osSetState( newState );
+    _enableLocalLogs(config, false);
 }
 
 void Logger::printHelp( bool isCmdLine )
@@ -413,14 +315,14 @@ bool Logger::_checkCommand(const String& cmd)
             {
             case eLoggerOptions::CMD_LogPause:
                 Logger::_outputInfo( "Pausing log collector ..." );
-                logger.getService().disconnectServiceHost( );
+                logger.getCommunicationController().disconnectServiceHost( );
                 logger.mServiceServer.waitToComplete( );
                 Logger::_outputInfo( "Log collector is paused ..." );
                 break;
 
             case eLoggerOptions::CMD_LogRestart:
                 Logger::_outputInfo( "Restarting log collector ..." );
-                logger.getService( ).connectServiceHost( );
+                logger.getCommunicationController( ).connectServiceHost( );
                 Logger::_outputInfo( "Log collector is restarted ..." );
                 break;
 
@@ -840,7 +742,7 @@ RemoteMessage Logger::_createScopeUpdateMessage(const String& scope)
     return result;
 }
 
-inline void Logger::enableLocalLogs(ConfigManager& config, bool enable)
+inline void Logger::_enableLocalLogs(ConfigManager& config, bool enable)
 {
     constexpr NEPersistence::eConfigKeys prioConfKey{ NEPersistence::eConfigKeys::EntryLogScope };
     const NEPersistence::sPropertyKey& keyPrio{ NEPersistence::getLogScope() };

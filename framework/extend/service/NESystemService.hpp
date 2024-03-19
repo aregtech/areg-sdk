@@ -15,11 +15,12 @@
  * \brief       AREG Platform, The system service basic settings.
  ************************************************************************/
 
- /************************************************************************
-  * Include files.
-  ************************************************************************/
+/************************************************************************
+ * Include files.
+ ************************************************************************/
 #include "areg/base/GEGlobal.h"
 
+#include "areg/base/NEString.hpp"
 #include "extend/console/Console.hpp"
 #include "extend/console/OptionParser.hpp"
 
@@ -158,6 +159,24 @@ namespace NESystemService
      * \brief   Coordinate to start to display information message.
      **/
     constexpr Console::Coord    COORD_INFO_MSG      { 0, 8 };
+
+    /**
+     * \brief   Converts the argument list from 'char' or 'wchar_t' type to the 'char'.
+     *          The memory of returned value should be freed by calling 'deleteArgument'.
+     * \tparam  CharType    The type of the string. Should be 'char' or 'wchar_t'.
+     * \param   argv        The list of arguments received in 'main' function.
+     * \param   argc        The number of arguments in the argument list.
+     * \returns Returns argument list of type 'char'
+     **/
+    template<typename CharType>
+    inline char** convertArguments(CharType** argv, int argc);
+
+    /**
+     * \brief   Deletes the list of arguments returned by 'convertArguments' function.
+     * \param   argv        The list of arguments returned by 'convertArguments' function.
+     * \param   argc        The number of arguments in the argument list.
+     **/
+    inline void deleteArguments(char** argv, int argc);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -207,6 +226,39 @@ inline const char * const NESystemService::getString( NESystemService::eSystemSe
     default:
         ASSERT( false );
         return "ERR: Undefined NESystemService::eSystemServiceState value!!!";
+    }
+}
+
+template<typename CharType>
+inline char** NESystemService::convertArguments(CharType** argv, int argc)
+{
+    char** result = argc != 0 ? DEBUG_NEW char* [argc] : nullptr;
+    if (result != nullptr)
+    {
+        for (int i = 0; i < argc; ++i)
+        {
+            CharType* entry = argv[i];
+            uint32_t length = static_cast<uint32_t>(NEString::getStringLength<CharType>(entry));
+            uint32_t size = length + 1u;
+            char* arg = DEBUG_NEW char[size];
+            NEString::copyString<char, CharType>(arg, size, entry);
+            result[i] = arg;
+        }
+    }
+
+    return result;
+}
+
+inline void NESystemService::deleteArguments(char** argv, int argc)
+{
+    if (argv != nullptr)
+    {
+        for (int i = 0; i < argc; ++i)
+        {
+            delete[] argv[i];
+        }
+
+        delete[] argv;
     }
 }
 

@@ -19,11 +19,11 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "extend/service/SystemServiceBase.hpp"
+#include "extend/service/ServiceApplicationBase.hpp"
 
 #include "areg/base/SynchObjects.hpp"
 #include "mcrouter/app/NEMulticastRouterSettings.hpp"
-#include "mcrouter/tcp/RouterServerService.hpp"
+#include "mcrouter/service/RouterServerService.hpp"
 #include "extend/console/OptionParser.hpp"
 
 #include <utility>
@@ -34,25 +34,21 @@ class Console;
 // MulticastRouter class declaration
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   The message routing service is a separate process, which routs messages
- *          to components. Applications, developed based on AREG SDK,
- *          should connect to message routing service to send and receive IPC messages.
- *          The business logic of message router to know logical relationship
- *          of running components and know where to redirect messages.
- *          Normally, for every connection channel type there should one instance of 
- *          message routing service also called as Multi-casting router (MCR).
+ * \brief   The message routing service is a separate process, which receives and routs messages
+ *          to the connected servicing components. Applications connect to message routing service via
+ *          TCP/IP protocol. The message router distributes the IPC message to the targets.
  **/
-class MulticastRouter final : public    SystemServiceBase
+class MulticastRouter final : public ServiceApplicationBase
 {
 //////////////////////////////////////////////////////////////////////////
-// internal types and constants
+// Internal types
 //////////////////////////////////////////////////////////////////////////
-public:
+private:
     /**
      * \brief   MulticastRouter::eRouterOptions
-     *          The message router commands
+     *          The command to handle the message router.
      **/
-    enum class eRouterOptions   : int32_t
+    enum class eRouterOptions : int32_t
     {
           CMD_RouterUndefined   //!< Undefined command.
         , CMD_RouterPause       //!< Pause router.
@@ -83,86 +79,28 @@ public:
     static MulticastRouter & getInstance( void );
 
     /**
-     * \brief   Returns list of the options to validate contained in the pair object,
-     *          where the first entry is the pointer to the list and second entry is
-     *          the number of elements in the list
+     * \brief   Outputs the specified message on the console.
+     *          The method is valid only for console application compiled
+     *          with AREG Extended features.
+     *          Otherwise, the method ignores request to output message.
+     * \param   status  The status message to print on console.
      **/
-    static std::pair<const OptionParser::sOptionSetup *, int> getOptionSetup( void );
+    static void printStatus(const String& status);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Initializes instance of message router service.
+     * \brief   Default constructor and destructor.
      **/
     MulticastRouter( void );
 
-    virtual ~MulticastRouter( void );
+    virtual ~MulticastRouter( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Attributes and operations
 //////////////////////////////////////////////////////////////////////////
-public:
-/************************************************************************/
-// SystemServiceBase overrides
-/************************************************************************/
-
-    /**
-     * \brief   Called from main to start execution of  message router service.
-     * \param   argc    The 'argc' parameter passed from 'main', indicates the number of parameters passed to executable.
-     * \param   argv    The 'argv' parameter passed from 'main', indicated parameters passed to executable.
-     **/
-    virtual void serviceMain( int argc, char ** argv ) override;
-
-    /**
-     * \brief   Call to install (register) message router service in the system.
-     * \return  Returns true if registration succeeded.
-     **/
-    virtual bool serviceInstall( void ) override;
-
-    /**
-     * \brief   Call to uninstall (unregister) message router service in the system.
-     **/
-    virtual void serviceUninstall( void ) override;
-
-    /**
-     * \brief   Registers system service in the system.
-     **/
-    virtual bool registerService( void ) override;
-
-    /**
-     * \brief   Opens operating system service DB for further processing.
-     * \return  Returns true if succeeded.
-     **/
-    virtual bool serviceOpen( void ) override;
-
-    /**
-     * \brief   Called to start message router service.
-     * \return  Returns true, if started with success.
-     **/
-    virtual bool serviceStart( void ) override;
-
-    /**
-     * \brief   Called to pause message router service.
-     **/
-    virtual void servicePause( void ) override;
-
-    /**
-     * \brief   Called to resume paused message router service.
-     **/
-    virtual bool serviceContinue( void ) override;
-
-    /**
-     * \brief   Called to stop message router service.
-     **/
-    virtual void serviceStop( void ) override;
-
-    /**
-     * \brief   Sets the state of message router service.
-     **/
-    virtual bool setState( NESystemService::eSystemServiceState newState ) override;
-
 protected:
 /************************************************************************/
 // SystemServiceBase protected overrides
@@ -204,19 +142,70 @@ protected:
      **/
     virtual void runConsoleInputSimple( void ) override;
 
+/************************************************************************/
+// ServiceApplicationBase protected overrides
+/************************************************************************/
     /**
-     * \brief   Run application as a background process without input or output on console. 
+     * \brief   Returns list of the options to validate contained in the pair object,
+     *          where the first entry is the pointer to the list and second entry is
+     *          the number of elements in the list
      **/
-    virtual void runService(void) override;
+    virtual std::pair<const OptionParser::sOptionSetup*, int> getAppOptions(void) const override;
+
+    /**
+     * \brief   Returns the UNICODE name of the service application.
+     **/
+    virtual wchar_t* getServiceNameW(void) const override;
+
+    /**
+     * \brief   Returns the ASCII name of the service application.
+     **/
+    virtual char* getServiceNameA(void) const override;
+
+    /**
+     * \brief   Returns the UNICODE display name of the service application.
+     *          This optional display name could be valid only for specific OS.
+     *          For example, in Windows this name is displayed in the list of services.
+     **/
+    virtual wchar_t* getServiceDisplayNameW(void) const override;
+
+    /**
+     * \brief   Returns the ASCII display name of the service application.
+     *          This optional display name could be valid only for specific OS.
+     *          For example, in Windows this name is displayed in the list of services.
+     **/
+    virtual char* getServiceDisplayNameA(void) const override;
+
+    /**
+     * \brief   Returns the UNICODE description of the service application.
+     *          This optional service description could be valid only for specific OS.
+     *          For example, in Windows this description is shown in the list of services.
+     **/
+    virtual wchar_t* getServiceDescriptionW(void) const override;
+
+    /**
+     * \brief   Returns the ASCII description of the service application.
+     *          This optional service description could be valid only for specific OS.
+     *          For example, in Windows this description is shown in the list of services.
+     **/
+    virtual char* getServiceDescriptionA(void) const override;
+
+    /**
+     * \brief   Returns the type of the remote service.
+     *          Valid only for AREG SDK services.
+     **/
+    virtual NERemoteService::eRemoteServices getServiceType(void) const override;
+
+    /**
+     * \brief   Returns the type of the connection of the remote services.
+     *          Valid only for AREG SDK services.
+     **/
+    virtual NERemoteService::eConnectionTypes getConnectionType(void) const override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods.
 //////////////////////////////////////////////////////////////////////////
 private:
-    /**
-     * \brief   Returns the instance of the remote servicing object.
-     **/
-    inline IEServiceConnectionProvider & getService( void );
 
     /**
      * \brief   Returns the list of connected instances.
@@ -264,55 +253,6 @@ private:
     static void _cleanHelp(void);
 
 //////////////////////////////////////////////////////////////////////////
-// OS specific hidden methods.
-//////////////////////////////////////////////////////////////////////////
-private:
-    
-    /**
-     * \brief   OS specific validity check of message router service.
-     **/
-    bool _osIsValid( void ) const;
-
-    /**
-     * \brief   Called to free engaged resources.
-     **/
-    void _osFreeResources( void );
-
-    /**
-     * \brief   OS specific implementation to open service.
-     **/
-    bool _osOpenService( void );
-
-    /**
-     * \brief   OS specific implementation to create service.
-     **/
-    bool _osCcreateService( void );
-
-    /**
-     * \brief   OS specific implementation of deleting service.
-     **/
-    void _osDeleteService( void );
-
-    /**
-     * \brief   Registers service and returns true if handle is valid.
-     *          The method is valid for Windows OS.
-     **/
-    bool _osRegisterService( void );
-
-    /**
-     * \brief   OS specific implementation of changing the state of the mcrouter service.
-     **/
-    bool _osSetState( NESystemService::eSystemServiceState newState );
-
-    /**
-     * \brief   OS specific implementation of waiting for user input on console.
-     * \param   buffer  The allocated buffer to stream input from console.
-     * \param   bufSize The size of allocated bugger.
-     * \return  Returns true if succeeded to get user input.
-     **/
-    bool _osWaitUserInput(char* buffer, unsigned int bufSize);
-
-//////////////////////////////////////////////////////////////////////////
 // Member variables.
 //////////////////////////////////////////////////////////////////////////
 private:
@@ -331,11 +271,6 @@ private:
 //////////////////////////////////////////////////////////////////////////
 // MulticastRouter class inline methods.
 //////////////////////////////////////////////////////////////////////////
-
-inline IEServiceConnectionProvider & MulticastRouter::getService( void )
-{
-    return static_cast<IEServiceConnectionProvider &>(mServiceServer);
-}
 
 inline const NEService::MapInstances & MulticastRouter::getConnetedInstances( void ) const
 {

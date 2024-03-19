@@ -7,12 +7,12 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        mcrouter/tcp/private/ServiceStub.cpp
+ * \file        mcrouter/service/private/ServiceStub.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform Stub Service object
  ************************************************************************/
-#include "mcrouter/tcp/private/ServiceStub.hpp"
+#include "mcrouter/service/private/ServiceStub.hpp"
 #include "areg/component/ProxyAddress.hpp"
 
 #include <utility>

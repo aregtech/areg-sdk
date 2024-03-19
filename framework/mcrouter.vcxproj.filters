@@ -30,19 +30,19 @@
     <ClInclude Include="mcrouter\app\NEMulticastRouterSettings.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\tcp\RouterServerService.hpp">
+    <ClInclude Include="mcrouter\service\RouterServerService.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\tcp\private\ServiceRegistry.hpp">
+    <ClInclude Include="mcrouter\service\private\ServiceRegistry.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\tcp\private\ListServiceProxies.hpp">
+    <ClInclude Include="mcrouter\service\private\ListServiceProxies.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\tcp\private\ServiceProxy.hpp">
+    <ClInclude Include="mcrouter\service\private\ServiceProxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="mcrouter\tcp\private\ServiceStub.hpp">
+    <ClInclude Include="mcrouter\service\private\ServiceStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mcrouter\app\private\RouterConsoleService.hpp">
@@ -77,19 +77,19 @@
     <ClCompile Include="mcrouter\app\private\MulticastRouter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\tcp\private\RouterServerService.cpp">
+    <ClCompile Include="mcrouter\service\private\RouterServerService.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\tcp\private\ServiceRegistry.cpp">
+    <ClCompile Include="mcrouter\service\private\ServiceRegistry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\tcp\private\ListServiceProxies.cpp">
+    <ClCompile Include="mcrouter\service\private\ListServiceProxies.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\tcp\private\ServiceProxy.cpp">
+    <ClCompile Include="mcrouter\service\private\ServiceProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mcrouter\tcp\private\ServiceStub.cpp">
+    <ClCompile Include="mcrouter\service\private\ServiceStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="mcrouter\app\private\NEMulticastRouterSettings.cpp">
@@ -113,6 +113,6 @@
   <ItemGroup>
     <Text Include="mcrouter\CMakeLists.txt" />
     <Text Include="mcrouter\app\private\CMakeLists.txt" />
-    <Text Include="mcrouter\tcp\private\CMakeLists.txt" />
+    <Text Include="mcrouter\service\private\CMakeLists.txt" />
   </ItemGroup>
 </Project>

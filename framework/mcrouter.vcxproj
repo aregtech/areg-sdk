@@ -44,19 +44,19 @@
     <ClCompile Include="mcrouter\app\private\posix\MulticastRouterPosix.cpp" />
     <ClCompile Include="mcrouter\app\private\RouterConsoleService.cpp" />
     <ClCompile Include="mcrouter\app\private\win32\MulticastRouterWin32.cpp" />
-    <ClCompile Include="mcrouter\tcp\private\ListServiceProxies.cpp" />
-    <ClCompile Include="mcrouter\tcp\private\RouterServerService.cpp" />
-    <ClCompile Include="mcrouter\tcp\private\ServiceProxy.cpp" />
-    <ClCompile Include="mcrouter\tcp\private\ServiceRegistry.cpp" />
-    <ClCompile Include="mcrouter\tcp\private\ServiceStub.cpp" />
+    <ClCompile Include="mcrouter\service\private\ListServiceProxies.cpp" />
+    <ClCompile Include="mcrouter\service\private\RouterServerService.cpp" />
+    <ClCompile Include="mcrouter\service\private\ServiceProxy.cpp" />
+    <ClCompile Include="mcrouter\service\private\ServiceRegistry.cpp" />
+    <ClCompile Include="mcrouter\service\private\ServiceStub.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mcrouter\app\private\RouterConsoleService.hpp" />
-    <ClInclude Include="mcrouter\tcp\private\ListServiceProxies.hpp" />
-    <ClInclude Include="mcrouter\tcp\private\ServiceProxy.hpp" />
-    <ClInclude Include="mcrouter\tcp\private\ServiceRegistry.hpp" />
-    <ClInclude Include="mcrouter\tcp\private\ServiceStub.hpp" />
-    <ClInclude Include="mcrouter\tcp\RouterServerService.hpp" />
+    <ClInclude Include="mcrouter\service\private\ListServiceProxies.hpp" />
+    <ClInclude Include="mcrouter\service\private\ServiceProxy.hpp" />
+    <ClInclude Include="mcrouter\service\private\ServiceRegistry.hpp" />
+    <ClInclude Include="mcrouter\service\private\ServiceStub.hpp" />
+    <ClInclude Include="mcrouter\service\RouterServerService.hpp" />
     <ClInclude Include="system\GEPlatform.h" />
     <ClInclude Include="mcrouter\app\MulticastRouter.hpp" />
     <ClInclude Include="mcrouter\app\NEMulticastRouterSettings.hpp" />
@@ -77,7 +77,7 @@
   <ItemGroup>
     <Text Include="mcrouter\app\private\CMakeLists.txt" />
     <Text Include="mcrouter\CMakeLists.txt" />
-    <Text Include="mcrouter\tcp\private\CMakeLists.txt" />
+    <Text Include="mcrouter\service\private\CMakeLists.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

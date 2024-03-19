@@ -7,14 +7,14 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        logger/private/app/LoggerPosix.cpp
+ * \file        logger/app/private/LoggerPosix.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       Logger, POSIX specific implementation
  ************************************************************************/
 #include "logger/app/Logger.hpp"
 
-#ifdef _POSIX
+#ifdef POSIX
 
 #include "areg/base/NEUtilities.hpp"
 #include "areg/base/File.hpp"
@@ -24,129 +24,17 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/appbase/NEApplication.hpp"
 
-
 //////////////////////////////////////////////////////////////////////////
 // Global functions, Begin
 //////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char* argv[], char* envp[])
 {
-    int result{0};
-    Logger & logger = Logger::getInstance();
-    if (logger.parseOptions(argc, argv, NESystemService::ServiceOptionSetup, MACRO_ARRAYLEN(NESystemService::ServiceOptionSetup)) == false)
-    {
-        logger.resetDefaultOptions( );
-    }
-
-    switch ( logger.getCurrentOption() )
-    {
-    case NESystemService::eServiceOption::CMD_Install:
-        result = logger.serviceInstall() ? 0 : -2;
-        break;
-
-    case NESystemService::eServiceOption::CMD_Uninstall:
-        logger.serviceUninstall();
-        break;
-
-    case NESystemService::eServiceOption::CMD_Service:
-    case NESystemService::eServiceOption::CMD_Console:
-        logger.setState(NESystemService::eSystemServiceState::ServiceStarting);
-        logger.serviceMain( static_cast<int>(argc), argv);
-        break;
-
-
-    default:
-        ASSERT(false);  // unexpected
-        break;
-    }
-
-    return result;
+    return Logger::getInstance().serviceMain( static_cast<int>(argc), argv);
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Global functions, End
 //////////////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////////
-// Logger class implementation
-//////////////////////////////////////////////////////////////////////////
-bool Logger::_osIsValid( void ) const
-{
-    return true;
-}
-
-bool Logger::_osRegisterService( void )
-{
-    return true;
-}
-
-
-void Logger::_osFreeResources( void )
-{
-    mSvcHandle = nullptr;
-    mSeMHandle = nullptr;
-}
-
-bool Logger::_osOpenService(void)
-{
-    return true;
-}
-
-bool Logger::_osCcreateService(void)
-{
-    return true;
-}
-
-void Logger::_osDeleteService( void )
-{
-}
-
-bool Logger::_osSetState( NESystemService::eSystemServiceState newState )
-{
-    bool result{ true };
-
-    if ( newState != mSystemServiceState )
-    {
-        switch ( newState )
-        {
-        case NESystemService::eSystemServiceState::ServiceStopped:
-            break;
-
-        case NESystemService::eSystemServiceState::ServiceStarting:
-            break;
-
-        case NESystemService::eSystemServiceState::ServiceStopping:
-            break;
-
-        case NESystemService::eSystemServiceState::ServiceRunning:
-            break;
-
-        case NESystemService::eSystemServiceState::ServiceContinuing:
-            break;
-
-        case NESystemService::eSystemServiceState::ServicePausing:
-            break;
-
-        case NESystemService::eSystemServiceState::ServicePaused:
-            break;
-
-        default:
-            ASSERT(false);
-        }
-
-        mSystemServiceState = newState;
-    }
-
-    return result;
-}
-
-bool Logger::_osWaitUserInput(char* buffer, unsigned int bufSize)
-{
-#if __STDC_WANT_LIB_EXT1__
-    return(gets_s(buffer, bufSize) != nullptr);
-#else   // __STDC_WANT_LIB_EXT1__
-    return (fgets(buffer, bufSize, stdin) != nullptr);
-#endif  // __STDC_WANT_LIB_EXT1__
-}
-
-#endif  // _POSIX
+#endif // POSIX
