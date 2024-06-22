@@ -65,6 +65,7 @@ function(setStaticLibOptions item library_list)
 
     # Set common compile definition
     target_compile_definitions(${item} PRIVATE ${COMMON_COMPILE_DEF} _LIB)
+        target_compile_options(${item} PRIVATE  ${AREG_COMPILER_VERSION})
 
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
         target_compile_options(${item} PRIVATE "-Bstatic")
@@ -110,6 +111,51 @@ endfunction(addStaticLibEx)
 function(addStaticLib target_name source_list)
     addStaticLibEx(${target_name} "${source_list}" "")
 endfunction(addStaticLib)
+
+# ---------------------------------------------------------------------------
+# Description : Adds static library compiled with C-compiler, sets the sources and 
+#               the options of library links with the passed list of libraries.
+#               No need to specify the AREG library, it is automatically added.
+# Function ...: addStaticLibEx_C
+# Parameters .: ${target_name}  -- The name of the static library to build.
+#               ${source_list}  -- The list of the sources to build the static library.
+#               ${library_list} -- The list of libraries to link the static library.
+# usage ......: addStaticLibEx_C( <name of static library> <list of C-sources> <list of libraries> ) 
+# ---------------------------------------------------------------------------
+function(addStaticLibEx_C target_name source_list library_list)
+    set(exList "${ARGN}")
+    foreach(item IN LISTS exList)
+        list(APPEND library_list "${item}")
+    endforeach()
+    add_library(${target_name} STATIC ${source_list})
+
+    # Set common compile definition
+    target_compile_definitions(${target_name} PRIVATE ${COMMON_COMPILE_DEF} _LIB)
+
+    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
+        target_compile_options(${target_name} PRIVATE "-Bstatic")
+        target_compile_options(${target_name} PRIVATE -fPIC)
+    endif()
+
+    target_link_libraries(${target_name} ${library_list} areg ${AREG_LDFLAGS})
+
+    # Adjusting CPP standard for target
+    # set_target_properties(${target_name} PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON )
+    set_property(TARGET ${target_name} PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${AREG_OUTPUT_LIB})
+    target_include_directories(${target_name}  BEFORE PRIVATE ${CMAKE_CURRENT_LIST_DIR})    
+endfunction(addStaticLibEx_C)
+
+# ---------------------------------------------------------------------------
+# Description : Adds static library compiled with C-compiler, sets the sources and
+#               the options of library. The AREG library is automatically added.
+# Function ...: addStaticLib_C
+# Parameters .: ${target_name}  -- The name of the static library to build.
+#               ${source_list}  -- The list of the sources to build the static library.
+# usage ......: addStaticLib_C( <name of static library> <list of C-sources> ) 
+# ---------------------------------------------------------------------------
+function(addStaticLib_C target_name source_list)
+    addStaticLibEx_C(${target_name} "${source_list}" "")
+endfunction(addStaticLib_C)
 
 # ---------------------------------------------------------------------------
 # Description : Sets the compiler and the linker options of the shared library.

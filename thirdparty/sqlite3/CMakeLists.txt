@@ -5,4 +5,4 @@ list(APPEND sqlite_SRC
 
 include_directories(${sqlite_BASE})
 
-addStaticLib(sqlite3 "${sqlite_SRC}")
+addStaticLib_C(sqlite3 "${sqlite_SRC}")

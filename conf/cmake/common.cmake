@@ -34,8 +34,10 @@ set(AREG_DEVELOP_ENV)
 set(AREG_LDFLAGS)
 # The compiler options
 set(AREG_COMPILER_OPTIONS)
-#set areg extended static library dependencies
+# set areg extended static library dependencies
 set(AREG_EXTENDED_LIBS)
+# set areg compiler version
+set(AREG_COMPILER_VERSION)
 
 # Adding common definition
 add_definitions(-DUNICODE -D_UNICODE)
@@ -71,7 +73,8 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     endif()
 
     # Clang compile options
-    list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -stdlib=libstdc++ ${AREG_USER_DEFINES})
+    list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 ${AREG_USER_DEFINES})
+    set(AREG_COMPILER_VERSION  -stdlib=libstdc++)
     # Linker flags (-l is not necessary)
     list(APPEND AREG_LDFLAGS stdc++ m pthread rt)
 
@@ -98,9 +101,11 @@ elseif (CMAKE_COMPILER_IS_GNUCXX )
     # GNU compile options
     if (CYGWIN)
         message(STATUS ">>> CYGWIN is detected")
-        list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -MMD -std=gnu++17 ${AREG_USER_DEFINES})
+        list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -MMD ${AREG_USER_DEFINES})
+        set(AREG_COMPILER_VERSION  -std=gnu++17)
     else()
-        list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -MMD -std=c++17 ${AREG_USER_DEFINES})
+        list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -MMD ${AREG_USER_DEFINES})
+        set(AREG_COMPILER_VERSION -std=c++17)
     endif()
     # Linker flags (-l is not necessary)
     list(APPEND AREG_LDFLAGS stdc++ m pthread rt)
@@ -147,7 +152,8 @@ else()
     endif()
 
     # Compile options
-    list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -MMD -std=c++17 ${AREG_USER_DEFINES})
+    list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -MMD ${AREG_USER_DEFINES})
+    set(AREG_COMPILER_VERSION -std=c++17)
     # Linker flags (-l is not necessary)
     list(APPEND AREG_LDFLAGS stdc++ m pthread rt)
 
@@ -235,7 +241,7 @@ else()
     set(COMMON_COMPILE_DEF IMP_AREG_DLL)
 endif()
 
-set(FETCHCONTENT_BASE_DIR "${AREG_PACKAGES}" CACHE PATH "Location of AREG thirdpary packages" FORCE)
+set(FETCHCONTENT_BASE_DIR "${AREG_PACKAGES}" CACHE PATH "Location of AREG thirdparty packages" FORCE)
 
 find_package(Java COMPONENTS Runtime)
 if (NOT ${Java_FOUND})
