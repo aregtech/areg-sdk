@@ -1,5 +1,6 @@
-#ifndef AREG_TESTS_UNITS_GUNITTESTS_HPP
-#define AREG_TESTS_UNITS_GUNITTESTS_HPP
+#ifndef AREG_TESTS_UNITS_UNITTESTUTILITIES_HPP
+#define AREG_TESTS_UNITS_UNITTESTUTILITIES_HPP
+
 /************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
@@ -14,29 +15,9 @@
  * \author      Artak Avetyan
  * \brief       AREG Platform, Unit Tests. Global configuration file.
  ************************************************************************/
- /************************************************************************
-  * Include files.
-  ************************************************************************/
-  
-#if !defined(IMP_AREG_DLL)          && \
-    !defined(_IMP_AREG_DLL)         && \
-    !defined(IMPORT_SHARED_SYMBOLS) && \
-    !defined(_IMPORT_SHARED_SYMBOLS)&& \
-    !defined(IMP_AREG_LIB)          && \
-    !defined(_IMP_AREG_LIB)         && \
-    !defined(IMPORT_STATIC_SYMBOLS) && \
-    !defined(_IMPORT_STATIC_SYMBOLS)
-
-    #error  "You should import AREG engine either as shared or static library"
-
-#endif // wrong imports
+/************************************************************************
+ * Include files.
+ ************************************************************************/
 
 #include "areg/base/GEGlobal.h"
-#include "gtest/gtest.h"
-
-#ifdef WINDOWS
-    #pragma comment(lib, "areg.lib")
-    #pragma comment(lib, "areg-extend.lib")
-#endif // WINDOWS
-
-#endif // !AREG_TESTS_UNITS_GUNITTESTS_HPP
+#endif // AREG_TESTS_UNITS_UNITTESTUTILITIES_HPP

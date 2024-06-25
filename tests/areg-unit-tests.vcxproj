@@ -49,9 +49,11 @@
     <ClCompile Include="units\LogScopesTest.cpp" />
     <ClCompile Include="units\OptionParserTest.cpp" />
     <ClCompile Include="units\StringUtilsTest.cpp" />
+    <ClCompile Include="units\TEArrayListTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="units\GUnitTest.hpp" />
+    <ClInclude Include="units\UnitTestUtilities.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(AregSdkRoot)\framework\areg.vcxproj">
