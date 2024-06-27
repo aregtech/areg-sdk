@@ -49,7 +49,7 @@
     <ClCompile Include="units\LogScopesTest.cpp" />
     <ClCompile Include="units\OptionParserTest.cpp" />
     <ClCompile Include="units\StringUtilsTest.cpp" />
-    <ClCompile Include="units\TEArrayListTest.cpp" />
+    <ClCompile Include="units\ArrayListTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="units\GUnitTest.hpp" />

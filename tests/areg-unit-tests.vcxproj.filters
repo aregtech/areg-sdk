@@ -37,7 +37,7 @@
     <ClCompile Include="units\OptionParserTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="units\TEArrayListTest.cpp">
+    <ClCompile Include="units\ArrayListTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

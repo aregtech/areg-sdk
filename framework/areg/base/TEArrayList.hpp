@@ -379,6 +379,11 @@ public:
     inline void reserve( uint32_t newCapacity );
 
     /**
+     * \brief   Returns the capacity of the array
+     **/
+    inline uint32_t getCapacity(void) const;
+
+    /**
      * \brief	Shifts array elements starting at given valid index position. Reserves .
      * \param	startAt	    The starting index position to start shifting
      * \param	count       The space to reserve. If the value is positive, the elements are stretched out, 
@@ -486,6 +491,11 @@ inline TEArrayList<VALUE>::TEArrayList(const VALUE* list, uint32_t count)
     : Constless<std::vector<VALUE>>( )
     , mValueList( list != nullptr ? count : 0)
 {
+    if (NECommon::ARRAY_DEFAULT_CAPACITY > static_cast<uint32_t>(mValueList.capacity()))
+    {
+        mValueList.reserve(NECommon::ARRAY_DEFAULT_CAPACITY);
+    }
+
     for (uint32_t i = 0; i < count; ++i)
     {
         mValueList.at(i) = list[i];
@@ -626,6 +636,12 @@ template<typename VALUE >
 inline void TEArrayList< VALUE >::reserve( uint32_t newCapacity)
 {
     mValueList.reserve(newCapacity > NECommon::MAX_CONTAINER_SIZE ? NECommon::MAX_CONTAINER_SIZE : newCapacity);
+}
+
+template<typename VALUE >
+inline uint32_t TEArrayList< VALUE >::getCapacity(void) const
+{
+    return static_cast<uint32_t>(mValueList.capacity());
 }
 
 template<typename VALUE >
