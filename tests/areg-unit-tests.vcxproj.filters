@@ -37,9 +37,15 @@
     <ClCompile Include="units\OptionParserTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="units\ArrayListTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="units\GUnitTest.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="units\UnitTestUtilities.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
