@@ -88,7 +88,7 @@ TEST(ArrayListTest, TestArrayContent)
     using Array = TEArrayList<int>;
 
     constexpr int _arr[]{ 1, 2, 3 };
-    constexpr int _len{ MACRO_ARRAYLEN(_arr) };
+    constexpr uint32_t _len{ MACRO_ARRAYLEN(_arr) };
 
     constexpr int _capacity{ 5 };
 
@@ -105,7 +105,7 @@ TEST(ArrayListTest, TestArrayContent)
     EXPECT_EQ(arr5.getCapacity(), _len);
 
     std::vector<int> _vec;
-    for (int i = 0; i < _len; ++i)
+    for (uint32_t i = 0; i < _len; ++i)
     {
         _vec.push_back(_arr[i]);
         EXPECT_EQ(arr4[i], _arr[i]);
@@ -133,7 +133,7 @@ TEST(ArrayListTest, TestGetSetAndContent)
     using Array = TEArrayList<int>;
 
     constexpr int _arr[]{ 1, 2, 3, 4, 5 };
-    constexpr int _len{ MACRO_ARRAYLEN(_arr) };
+    constexpr uint32_t _len{ MACRO_ARRAYLEN(_arr) };
 
     Array arr4(_arr, _len);
     EXPECT_EQ(arr4.getSize(), _len);
@@ -143,13 +143,13 @@ TEST(ArrayListTest, TestGetSetAndContent)
 
     Array arr5(_len, _len);
     EXPECT_EQ(arr5.getSize(), _len);
-    for (int i = 0; i < _len; ++i)
+    for (uint32_t i = 0; i < _len; ++i)
     {
         ASSERT_TRUE(arr5.isValidIndex(i));
         arr5.setAt(i, arr4.getAt(i));
     }
 
-    for (int i = 0; i < _len; ++i)
+    for (uint32_t i = 0; i < _len; ++i)
     {
         EXPECT_EQ(arr5[i], arr4[i]);
         EXPECT_EQ(arr5.valueAtPosition(i), _arr[i]);
@@ -163,11 +163,11 @@ TEST(ArrayListTest, TestAdd)
     constexpr int _unique[]{ 1, 2, 3, 4, 5 };
     constexpr int _mixed[] { 1, 2, 3, 4, 5, 5, 4, 3, 2, 1 };
 
-    constexpr int _lenUnique{ MACRO_ARRAYLEN(_unique) };
-    constexpr int _lenMixed{ MACRO_ARRAYLEN(_mixed) };
+    constexpr uint32_t _lenUnique{ MACRO_ARRAYLEN(_unique) };
+    constexpr uint32_t _lenMixed{ MACRO_ARRAYLEN(_mixed) };
 
     Array arrUnique;
-    for (int i = 0; i < _lenUnique; ++i)
+    for (uint32_t i = 0; i < _lenUnique; ++i)
     {
         arrUnique.add(_unique[i]);
         EXPECT_EQ(arrUnique.getSize(), (i + 1));
@@ -176,9 +176,9 @@ TEST(ArrayListTest, TestAdd)
     ASSERT_EQ(arrUnique.getSize(), _lenUnique);
 
     Array arrMixed;
-    for (int i = 0; i < _lenUnique; ++i)
+    for (uint32_t i = 0; i < _lenUnique; ++i)
     {
-        int size{ static_cast<int>(arrMixed.getSize()) };
+        uint32_t size{ static_cast<uint32_t>(arrMixed.getSize()) };
 
         if (arrMixed.find(_mixed[i]) == NECommon::INVALID_INDEX)
         {
@@ -195,7 +195,7 @@ TEST(ArrayListTest, TestAdd)
     ASSERT_NE(arrMixed.getSize(), _lenMixed);
     ASSERT_EQ(arrUnique.getSize(), arrMixed.getSize());
 
-    for (int i = 0; i < static_cast<int>(arrMixed.getSize()); ++i)
+    for (uint32_t i = 0; i < static_cast<int>(arrMixed.getSize()); ++i)
     {
         ASSERT_FALSE(arrUnique.addIfUnique(arrMixed[i]));
     }
@@ -206,7 +206,7 @@ TEST(ArrayListTest, TestAdd)
     int lenUnq = arrUnique.getSize();
     int lenMix = arrMixed.getSize();
 
-    for (int i = 0; i < static_cast<int>(arrMixed.getSize()); ++i)
+    for (uint32_t i = 0; i < static_cast<int>(arrMixed.getSize()); ++i)
     {
         arrUnique.add(arrMixed[i]);
     }
@@ -222,20 +222,20 @@ TEST(ArrayListTest, TestAppend)
     constexpr int _arr2[]{ 6, 7, 8, 9, 0 };
     constexpr int _arr3[]{ 1, 3, 5, 7, 9 };
 
-    constexpr int _len1{ MACRO_ARRAYLEN(_arr1) };
-    constexpr int _len2{ MACRO_ARRAYLEN(_arr2) };
-    constexpr int _len3{ MACRO_ARRAYLEN(_arr3) };
+    constexpr uint32_t _len1{ MACRO_ARRAYLEN(_arr1) };
+    constexpr uint32_t _len2{ MACRO_ARRAYLEN(_arr2) };
+    constexpr uint32_t _len3{ MACRO_ARRAYLEN(_arr3) };
 
     Array arr1;
     arr1.append(Array(_arr1, _len1)).append(Array(_arr2, _len2));
     EXPECT_EQ(arr1.getSize(), _len1 + _len2);
-    EXPECT_EQ(arr1[0], _arr1[0]);
+    EXPECT_EQ(arr1[0u], _arr1[0]);
     EXPECT_EQ(arr1[_len1 + _len2 - 1], _arr2[_len2 - 1]);
 
     arr1.append(Array(_arr3, _len3));
     const int* values = arr1.getValues();
     ASSERT_TRUE(values != nullptr);
-    for (int i = 0; i < _len1; ++i)
+    for (uint32_t i = 0; i < _len1; ++i)
     {
         EXPECT_EQ(values[i], _arr1[i]);
     }
@@ -243,7 +243,7 @@ TEST(ArrayListTest, TestAppend)
     ASSERT_TRUE(::memcmp(values, _arr1, _len1 * sizeof(int)) == 0);
     values += _len1;
 
-    for (int i = 0; i < _len2; ++i)
+    for (uint32_t i = 0; i < _len2; ++i)
     {
         EXPECT_EQ(values[i], _arr2[i]);
     }
@@ -251,7 +251,7 @@ TEST(ArrayListTest, TestAppend)
     ASSERT_TRUE(::memcmp(values, _arr2, _len2 * sizeof(int)) == 0);
     values += _len2;
 
-    for (int i = 0; i < _len3; ++i)
+    for (uint32_t i = 0; i < _len3; ++i)
     {
         EXPECT_EQ(values[i], _arr3[i]);
     }
