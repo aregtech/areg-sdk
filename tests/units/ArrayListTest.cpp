@@ -213,3 +213,51 @@ TEST(ArrayListTest, TestAdd)
 
     ASSERT_EQ(arrUnique.getSize(), (lenUnq + lenMix));
 }
+
+TEST(ArrayListTest, TestAppend)
+{
+    using Array = TEArrayList<int>;
+
+    constexpr int _arr1[]{ 1, 2, 3, 4, 5 };
+    constexpr int _arr2[]{ 6, 7, 8, 9, 0 };
+    constexpr int _arr3[]{ 1, 3, 5, 7, 9 };
+
+    constexpr int _len1{ MACRO_ARRAYLEN(_arr1) };
+    constexpr int _len2{ MACRO_ARRAYLEN(_arr2) };
+    constexpr int _len3{ MACRO_ARRAYLEN(_arr3) };
+
+    Array arr1;
+    arr1.append(Array(_arr1, _len1)).append(Array(_arr2, _len2));
+    EXPECT_EQ(arr1.getSize(), _len1 + _len2);
+    EXPECT_EQ(arr1[0], _arr1[0]);
+    EXPECT_EQ(arr1[_len1 + _len2 - 1], _arr2[_len2 - 1]);
+
+    arr1.append(Array(_arr3, _len3));
+    const int* values = arr1.getValues();
+    ASSERT_TRUE(values != nullptr);
+    for (int i = 0; i < _len1; ++i)
+    {
+        EXPECT_EQ(values[i], _arr1[i]);
+    }
+
+    ASSERT_TRUE(::memcmp(values, _arr1, _len1 * sizeof(int)) == 0);
+    values += _len1;
+
+    for (int i = 0; i < _len2; ++i)
+    {
+        EXPECT_EQ(values[i], _arr2[i]);
+    }
+
+    ASSERT_TRUE(::memcmp(values, _arr2, _len2 * sizeof(int)) == 0);
+    values += _len2;
+
+    for (int i = 0; i < _len3; ++i)
+    {
+        EXPECT_EQ(values[i], _arr3[i]);
+    }
+
+    ASSERT_TRUE(::memcmp(values, _arr3, _len3 * sizeof(int)) == 0);
+
+    arr1.clear();
+    ASSERT_TRUE(arr1.isEmpty());
+}

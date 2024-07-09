@@ -286,8 +286,8 @@ public:
      * \brief	Appends entries taken from the given source at the end of the array.
      * \param	src	    The source of new entries.
      **/
-    inline void append( const TEArrayList< VALUE > & src );
-    inline void append( TEArrayList< VALUE > && src);
+    inline TEArrayList< VALUE >& append( const TEArrayList< VALUE > & src );
+    inline TEArrayList< VALUE >& append( TEArrayList< VALUE > && src);
 
     /**
      * \brief	Copies all entries from given source. If array previously had values,
@@ -679,7 +679,7 @@ inline bool TEArrayList< VALUE >::addIfUnique(const VALUE & newElement, bool upd
 }
 
 template<typename VALUE >
-inline void TEArrayList< VALUE >::append(const TEArrayList< VALUE >& src)
+inline TEArrayList< VALUE >& TEArrayList< VALUE >::append(const TEArrayList< VALUE >& src)
 {
     ASSERT(this != &src);
     uint32_t size = static_cast<uint32_t>(mValueList.size());
@@ -692,10 +692,12 @@ inline void TEArrayList< VALUE >::append(const TEArrayList< VALUE >& src)
     {
         mValueList.push_back(src.mValueList[i]);
     }
+
+    return (*this);
 }
 
 template<typename VALUE >
-inline void TEArrayList< VALUE >::append(TEArrayList< VALUE > && src)
+inline TEArrayList< VALUE >& TEArrayList< VALUE >::append(TEArrayList< VALUE > && src)
 {
     ASSERT(this != &src);
     uint32_t size = static_cast<uint32_t>(mValueList.size());
@@ -708,6 +710,8 @@ inline void TEArrayList< VALUE >::append(TEArrayList< VALUE > && src)
     {
         mValueList.push_back(std::move(src.mValueList[i]));
     }
+
+    return (*this);
 }
 
 template<typename VALUE >
