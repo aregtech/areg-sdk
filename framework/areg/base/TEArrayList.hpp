@@ -286,8 +286,8 @@ public:
      * \brief	Appends entries taken from the given source at the end of the array.
      * \param	src	    The source of new entries.
      **/
-    inline void append( const TEArrayList< VALUE > & src );
-    inline void append( TEArrayList< VALUE > && src);
+    inline TEArrayList< VALUE >& append( const TEArrayList< VALUE > & src );
+    inline TEArrayList< VALUE >& append( TEArrayList< VALUE > && src);
 
     /**
      * \brief	Copies all entries from given source. If array previously had values,
@@ -377,6 +377,11 @@ public:
      * \param   newCapacity The new capacity of the array.
      **/
     inline void reserve( uint32_t newCapacity );
+
+    /**
+     * \brief   Returns the capacity of the array
+     **/
+    inline uint32_t getCapacity(void) const;
 
     /**
      * \brief	Shifts array elements starting at given valid index position. Reserves .
@@ -486,6 +491,11 @@ inline TEArrayList<VALUE>::TEArrayList(const VALUE* list, uint32_t count)
     : Constless<std::vector<VALUE>>( )
     , mValueList( list != nullptr ? count : 0)
 {
+    if (NECommon::ARRAY_DEFAULT_CAPACITY > static_cast<uint32_t>(mValueList.capacity()))
+    {
+        mValueList.reserve(NECommon::ARRAY_DEFAULT_CAPACITY);
+    }
+
     for (uint32_t i = 0; i < count; ++i)
     {
         mValueList.at(i) = list[i];
@@ -629,6 +639,12 @@ inline void TEArrayList< VALUE >::reserve( uint32_t newCapacity)
 }
 
 template<typename VALUE >
+inline uint32_t TEArrayList< VALUE >::getCapacity(void) const
+{
+    return static_cast<uint32_t>(mValueList.capacity());
+}
+
+template<typename VALUE >
 inline const VALUE* TEArrayList< VALUE >::getValues( void ) const
 {
     return static_cast<const VALUE *>(mValueList.data());
@@ -663,7 +679,7 @@ inline bool TEArrayList< VALUE >::addIfUnique(const VALUE & newElement, bool upd
 }
 
 template<typename VALUE >
-inline void TEArrayList< VALUE >::append(const TEArrayList< VALUE >& src)
+inline TEArrayList< VALUE >& TEArrayList< VALUE >::append(const TEArrayList< VALUE >& src)
 {
     ASSERT(this != &src);
     uint32_t size = static_cast<uint32_t>(mValueList.size());
@@ -676,10 +692,12 @@ inline void TEArrayList< VALUE >::append(const TEArrayList< VALUE >& src)
     {
         mValueList.push_back(src.mValueList[i]);
     }
+
+    return (*this);
 }
 
 template<typename VALUE >
-inline void TEArrayList< VALUE >::append(TEArrayList< VALUE > && src)
+inline TEArrayList< VALUE >& TEArrayList< VALUE >::append(TEArrayList< VALUE > && src)
 {
     ASSERT(this != &src);
     uint32_t size = static_cast<uint32_t>(mValueList.size());
@@ -692,6 +710,8 @@ inline void TEArrayList< VALUE >::append(TEArrayList< VALUE > && src)
     {
         mValueList.push_back(std::move(src.mValueList[i]));
     }
+
+    return (*this);
 }
 
 template<typename VALUE >
