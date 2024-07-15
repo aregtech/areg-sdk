@@ -261,3 +261,35 @@ TEST(ArrayListTest, TestAppend)
     arr1.clear();
     ASSERT_TRUE(arr1.isEmpty());
 }
+
+TEST(ArrayListTest, TestCopyMove)
+{
+    using Array = TEArrayList<int>;
+
+    constexpr int _arr1[]{ 1, 2, 3, 4, 5 };
+    constexpr int _arr2[]{ 6, 7, 8, 9, 0, 1, 2, 3, 4, 5 };
+
+    constexpr uint32_t _len1{ MACRO_ARRAYLEN(_arr1) };
+    constexpr uint32_t _len2{ MACRO_ARRAYLEN(_arr2) };
+
+    Array arr1(_arr1, _len1), arr2(_arr2, _len2);
+    const int* data1 = arr1.getValues();
+    const int* data2 = arr2.getValues();
+    ASSERT_TRUE(arr1 != arr2);
+    ASSERT_TRUE(arr1.getSize() != arr2.getSize());
+    ASSERT_TRUE(memcmp(data1, data2, MACRO_MIN(_len1, _len2) * sizeof(int)) != 0);
+
+    arr2.copy(arr1);
+    data1 = arr1.getValues();
+    data2 = arr2.getValues();
+    ASSERT_TRUE(arr1 == arr2);
+    ASSERT_TRUE(arr1.getSize() == arr2.getSize());
+    ASSERT_TRUE(memcmp(data1, data2, _len1 * sizeof(int)) == 0);
+
+    arr2.copy(Array(_arr2, _len2));
+    EXPECT_EQ(arr2.getSize(), _len2);
+    arr1.move(std::move(arr2));
+    EXPECT_EQ(arr1.getSize(), _len2);
+    ASSERT_TRUE(memcmp(arr1.getValues(), _arr2, _len2 * sizeof(int)) == 0);
+    ASSERT_TRUE(arr2.isEmpty());
+}
