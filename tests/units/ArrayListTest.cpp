@@ -293,3 +293,42 @@ TEST(ArrayListTest, TestCopyMove)
     ASSERT_TRUE(memcmp(arr1.getValues(), _arr2, _len2 * sizeof(int)) == 0);
     ASSERT_TRUE(arr2.isEmpty());
 }
+
+TEST(ArrayListTest, TestInsert)
+{
+    using Array = TEArrayList<int>;
+
+    constexpr int _arr1[]{ 0, 1, 2, 3, 4 };
+    constexpr int _arr2[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    constexpr int _arr3[]{ 5, 6, 7, 8, 9 };
+    constexpr uint32_t _len1{ MACRO_ARRAYLEN(_arr1) };
+    constexpr uint32_t _len2{ MACRO_ARRAYLEN(_arr2) };
+    constexpr uint32_t _len3{ MACRO_ARRAYLEN(_arr3) };
+
+    Array arr1(_arr1, _len1);
+    Array arr2;
+
+    for (uint32_t i = 0; i < _len2; ++i)
+    {
+        arr2.insertAt(i, i, 1);
+        EXPECT_EQ(arr2[i], _arr2[i]);
+    }
+
+    arr2.clear();
+    for (uint32_t i = 0; i < _len2; ++i)
+    {
+        uint32_t idx = i % 2;
+        arr2.insertAt(idx, _arr2[i], 1);
+        EXPECT_EQ(arr2[idx], _arr2[i]);
+    }
+
+    arr2 = arr1;
+    EXPECT_EQ(arr2.getSize(), arr1.getSize());
+    EXPECT_EQ(arr2, arr1);
+    arr2.insertAt(arr1.getSize(), 0, 5);
+    EXPECT_EQ(arr2.getSize(), arr1.getSize() + 5);
+    arr2.insertAt(arr1.getSize(), _arr3, _len3);
+    ASSERT_TRUE(memcmp(arr2.getValues(), _arr2, _len2 * sizeof(int)) == 0);
+    arr2.insertAt(arr1.getSize(), arr1);
+    ASSERT_TRUE(memcmp(arr2.getValues() + arr1.getSize(), arr1.getValues(), arr1.getSize() * sizeof(int)) == 0);
+}
