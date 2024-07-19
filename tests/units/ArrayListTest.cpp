@@ -437,12 +437,12 @@ TEST(ArrayListTest, TestResize)
     for (uint32_t i = 0; i < _len1; ++i)
     {
         EXPECT_EQ(arr[i], _arr1[i]);
-        arr[i + _len1] = _arr1[i];
+        arr.setAt(i + _len1, _arr1[i]);
     }
 
     const int* values = arr.getValues();
     const uint32_t len = arr.getSize();
-
+    EXPECT_EQ(len, _len1 * 2);
     ASSERT_TRUE(::memcmp(values, values + _len1, _len1) == 0);
 }
 
@@ -469,4 +469,6 @@ TEST(ArrayListTest, TestReserve)
     ASSERT_TRUE(arr.getCapacity() >= (_len1 * 100));
     arr.freeExtra();
     ASSERT_TRUE(arr.getCapacity() == _len1);
+    arr.release();
+    ASSERT_TRUE(arr.isEmpty());
 }
