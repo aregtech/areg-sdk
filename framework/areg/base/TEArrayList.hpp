@@ -842,7 +842,7 @@ inline void TEArrayList< VALUE >::insertAt(uint32_t startAt, const VALUE* newArr
 
         if (mValueList.size() == startAt)
         {
-            resize(mValueList.size() + count);
+            resize(static_cast<uint32_t>(mValueList.size() + count));
         }
         else
         {
