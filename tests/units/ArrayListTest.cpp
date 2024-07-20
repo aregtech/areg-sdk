@@ -332,3 +332,143 @@ TEST(ArrayListTest, TestInsert)
     arr2.insertAt(arr1.getSize(), arr1);
     ASSERT_TRUE(memcmp(arr2.getValues() + arr1.getSize(), arr1.getValues(), arr1.getSize() * sizeof(int)) == 0);
 }
+
+TEST(ArrayListTest, TestRemoveAt)
+{
+    using Array = TEArrayList<int>;
+
+    constexpr int _arr1[]{ 0, 1, 2, 3, 4 };
+    constexpr uint32_t _len1{ MACRO_ARRAYLEN(_arr1) };
+
+    Array arr(_arr1, _len1);
+    arr.removeAt(2, 1);
+    EXPECT_EQ(arr.getSize(), _len1 - 1u);
+    EXPECT_NE(arr[2u], 2);
+    arr.removeAt(2, _len1);
+    EXPECT_EQ(arr.getSize(), 2u);
+    arr.removeAt(0, _len1);
+    ASSERT_TRUE(arr.isEmpty());
+}
+
+TEST(ArrayListTest, TestRemovePosition)
+{
+    using Array = TEArrayList<int>;
+
+    constexpr int _arr2[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    constexpr uint32_t _len2{ MACRO_ARRAYLEN(_arr2) };
+
+    Array arr(_arr2, _len2);
+
+    for (int32_t i = static_cast<int>(_len2 - 1u); i >= 0; --i)
+    {
+        EXPECT_EQ(arr.removePosition(static_cast<uint32_t>(i)), i);
+    }
+
+    arr.insertAt(0, _arr2, _len2);
+    EXPECT_EQ(arr.getSize(), _len2);
+    EXPECT_EQ(arr.removePosition(5u), 5);
+    EXPECT_EQ(arr.getSize(), _len2 - 1u);
+}
+
+TEST(ArrayListTest, TestRemoveElement)
+{
+    using Array = TEArrayList<int>;
+
+    constexpr int _arr1[]{ 0, 1, 2, 3, 4 };
+    constexpr uint32_t _len1{ MACRO_ARRAYLEN(_arr1) };
+
+    Array arr(_arr1, _len1);
+    for (int i = static_cast<int>(_len1 - 1u); i >= 0; --i)
+    {
+        ASSERT_TRUE(arr.removeElem(i));
+    }
+
+    ASSERT_TRUE(arr.isEmpty());
+}
+
+TEST(ArrayListTest, TestFind)
+{
+    using Array = TEArrayList<int>;
+
+    constexpr int _arr1[]{ 0, 1, 2, 3, 4 };
+    constexpr uint32_t _len1{ MACRO_ARRAYLEN(_arr1) };
+
+    Array arr(_arr1, _len1);
+    for (int i = 10; i >= 0; --i)
+    {
+        if (_len1 <= static_cast<uint32_t>(i))
+        {
+            EXPECT_EQ(arr.find(i), NECommon::INVALID_INDEX);
+        }
+        else
+        {
+            EXPECT_EQ(arr.find(i), i);
+        }
+    }
+
+    for (int i = 0; i < static_cast<int>(_len1); ++i)
+    {
+        EXPECT_EQ(arr.find(i, 0), i);
+        EXPECT_EQ(arr.find(i, i), i);
+        EXPECT_EQ(arr.find(i, i + 1), NECommon::INVALID_INDEX);
+    }
+}
+
+TEST(ArrayListTest, TestResize)
+{
+    using Array = TEArrayList<int>;
+
+    constexpr int _arr1[]{ 0, 1, 2, 3, 4 };
+    constexpr uint32_t _len1{ MACRO_ARRAYLEN(_arr1) };
+
+    Array arr;
+    ASSERT_TRUE(arr.isEmpty());
+    arr.resize(_len1);
+    ASSERT_FALSE(arr.isEmpty());
+    EXPECT_EQ(arr.getSize(), _len1);
+    for (uint32_t i = 0; i < _len1; ++i)
+    {
+        arr[i] = _arr1[i];
+    }
+
+    arr.resize(_len1 * 2);
+    EXPECT_EQ(arr.getSize(), _len1 * 2);
+
+    for (uint32_t i = 0; i < _len1; ++i)
+    {
+        EXPECT_EQ(arr[i], _arr1[i]);
+        arr.setAt(i + _len1, _arr1[i]);
+    }
+
+    const int* values = arr.getValues();
+    const uint32_t len = arr.getSize();
+    EXPECT_EQ(len, _len1 * 2);
+    ASSERT_TRUE(::memcmp(values, values + _len1, _len1) == 0);
+}
+
+TEST(ArrayListTest, TestReserve)
+{
+    using Array = TEArrayList<int>;
+
+    constexpr int _arr1[]{ 0, 1, 2, 3, 4 };
+    constexpr uint32_t _len1{ MACRO_ARRAYLEN(_arr1) };
+
+    Array arr;
+    ASSERT_TRUE(arr.isEmpty());
+
+    arr.reserve(_len1);
+    ASSERT_TRUE(arr.isEmpty());
+    ASSERT_TRUE(arr.getCapacity() >= _len1);
+    arr.copy(Array(_arr1, _len1));
+    arr.freeExtra();
+    ASSERT_TRUE(arr.getCapacity() == _len1);
+
+    EXPECT_EQ(arr.getSize(), _len1);
+    arr.reserve(_len1 * 100);
+    EXPECT_EQ(arr.getSize(), _len1);
+    ASSERT_TRUE(arr.getCapacity() >= (_len1 * 100));
+    arr.freeExtra();
+    ASSERT_TRUE(arr.getCapacity() == _len1);
+    arr.release();
+    ASSERT_TRUE(arr.isEmpty());
+}

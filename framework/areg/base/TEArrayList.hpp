@@ -779,7 +779,11 @@ inline void TEArrayList< VALUE >::removeAt(uint32_t index, uint32_t elemCount /*
 {
     if (elemCount != 0)
     {
-        ASSERT(isValidIndex(index) && isValidIndex(index + elemCount - 1));
+        uint32_t remain = static_cast<uint32_t>(mValueList.size()) - index;
+        elemCount = MACRO_MIN(elemCount, remain);
+        ASSERT(isValidIndex(index));
+        ASSERT(isValidIndex(index + elemCount - 1));
+
         ARRAYPOS first = getPosition(index);
         if (elemCount == 1)
         {
@@ -787,7 +791,7 @@ inline void TEArrayList< VALUE >::removeAt(uint32_t index, uint32_t elemCount /*
         }
         else
         {
-            ARRAYPOS last = first + (elemCount - 1);
+            ARRAYPOS last = first + elemCount;
             mValueList.erase(first, last);
         }
     }
@@ -798,7 +802,9 @@ inline VALUE TEArrayList< VALUE >::removePosition(uint32_t index)
 {
     ASSERT(isValidIndex(index));
     ARRAYPOS first = getPosition(index);
-    return *(mValueList.erase(first));
+    VALUE result = *first;
+    mValueList.erase(first);
+    return result;
 }
 
 template<typename VALUE >
@@ -827,7 +833,6 @@ inline void TEArrayList< VALUE >::insertAt(uint32_t startAt, const VALUE& newEle
 template<typename VALUE >
 inline void TEArrayList< VALUE >::insertAt(uint32_t startAt, const VALUE* newArray, uint32_t count)
 {
-    ASSERT(isValidIndex(startAt));
     if ((newArray != nullptr) && (count != 0))
     {
         if ((getSize() + count) > NECommon::MAX_CONTAINER_SIZE)
@@ -835,7 +840,16 @@ inline void TEArrayList< VALUE >::insertAt(uint32_t startAt, const VALUE* newArr
             count = NECommon::MAX_CONTAINER_SIZE - getSize();
         }
 
-        shift(startAt, static_cast<int>(count));
+        if (mValueList.size() == startAt)
+        {
+            resize(static_cast<uint32_t>(mValueList.size() + count));
+        }
+        else
+        {
+            ASSERT(isValidIndex(startAt));
+            shift(startAt, static_cast<int>(count));
+        }
+
         for (uint32_t i = 0; i < count; ++i)
         {
             mValueList[startAt ++] = newArray[i];
