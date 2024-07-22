@@ -125,6 +125,7 @@ public:
      * \param   src     The source of array of values.
      **/
     inline TEArrayList< VALUE > & operator = ( const TEArrayList< VALUE > & src );
+    inline TEArrayList< VALUE > & operator = ( const std::vector< VALUE > & src );
 
     /**
      * \brief   Move operator. Moves all values from given source.
@@ -134,6 +135,7 @@ public:
      * \param   src     The source of array of values.
      **/
     inline TEArrayList< VALUE > & operator = ( TEArrayList< VALUE > && src ) noexcept;
+    inline TEArrayList< VALUE > & operator = ( std::vector< VALUE > && src ) noexcept;
 
     /**
      * \brief   Checks equality of 2 array objects, and returns true if they are equal.
@@ -141,6 +143,7 @@ public:
      * \param   other   The array object to compare.
      **/
     inline bool operator == ( const TEArrayList< VALUE > & other ) const;
+    inline bool operator == ( const std::vector< VALUE > & other ) const;
 
     /**
      * \brief   Checks inequality of 2 array objects, and returns true if they are not equal.
@@ -148,6 +151,7 @@ public:
      * \param   other   The array object to compare.
      **/
     inline bool operator != ( const TEArrayList< VALUE > & other ) const;
+    inline bool operator != ( const std::vector< VALUE > & other ) const;
 
     /**
      * \brief   Returns pointer to the array values. The values cannot be modified
@@ -249,7 +253,7 @@ public:
      * \brief   Sets new element at given valid index. The index should be valid.
      **/
     inline void setAt( uint32_t index, const VALUE & newElement );
-    inline void setAt(uint32_t index, VALUE && newElement);
+    inline void setAt( uint32_t index, VALUE && newElement );
 
     /**
      * \brief   Returns element value by valid zero-based index.
@@ -287,7 +291,9 @@ public:
      * \param	src	    The source of new entries.
      **/
     inline TEArrayList< VALUE >& append( const TEArrayList< VALUE > & src );
-    inline TEArrayList< VALUE >& append( TEArrayList< VALUE > && src);
+    inline TEArrayList< VALUE >& append( const std::vector< VALUE > & src );
+    inline TEArrayList< VALUE >& append( TEArrayList< VALUE > && src) noexcept;
+    inline TEArrayList< VALUE >& append( std::vector< VALUE > && src) noexcept;
 
     /**
      * \brief	Copies all entries from given source. If array previously had values,
@@ -296,12 +302,14 @@ public:
      * \param	src	    The source of array elements.
      **/
     inline void copy( const TEArrayList< VALUE > & src );
+    inline void copy( const std::vector< VALUE > & src );
 
     /**
      * \brief	Moves all entries from given source. On output, the source of array is empty.
      * \param	src	    The source of array elements
      **/
     inline void move( TEArrayList< VALUE > && src ) noexcept;
+    inline void move( std::vector< VALUE > && src ) noexcept;
 
     /**
      * \brief   If position is valid, it shifts elements and inserts new element at specified position.
@@ -328,6 +336,7 @@ public:
      * \param	newArray	Sources of array elements.
      **/
     inline void insertAt( uint32_t startAt, const TEArrayList< VALUE > & newArray );
+    inline void insertAt( uint32_t startAt, const std::vector< VALUE > & newArray );
 
     /**
      * \brief	Removes elements starting at given valid index position.
@@ -350,7 +359,7 @@ public:
      * \param	searchAt	The position to start searching.
      * \return	Returns true if found and removed the element.
      **/
-    inline bool removeElem(const VALUE& elemRemove, uint32_t searchAt = 0);
+    inline bool removeElem(const VALUE & elemRemove, uint32_t searchAt = 0);
 
     /**
      * \brief	Search element entry in the array and returns the index.
@@ -681,34 +690,52 @@ inline bool TEArrayList< VALUE >::addIfUnique(const VALUE & newElement, bool upd
 template<typename VALUE >
 inline TEArrayList< VALUE >& TEArrayList< VALUE >::append(const TEArrayList< VALUE >& src)
 {
-    ASSERT(this != &src);
+    return append(src.mValueList);
+}
+
+template<typename VALUE >
+inline TEArrayList< VALUE >& TEArrayList< VALUE >::append(const std::vector< VALUE >& src)
+{
+    ASSERT(&mValueList != &src);
+
     uint32_t size = static_cast<uint32_t>(mValueList.size());
-    uint32_t remain = static_cast<uint32_t>(src.mValueList.size());
+    uint32_t remain = static_cast<uint32_t>(src.size());
     if ((size + remain) > NECommon::MAX_CONTAINER_SIZE)
+    {
         remain = NECommon::MAX_CONTAINER_SIZE - static_cast<uint32_t>(mValueList.size());
+    }
 
     mValueList.reserve(size + remain);
     for (uint32_t i = 0; i < remain; ++i)
     {
-        mValueList.push_back(src.mValueList[i]);
+        mValueList.push_back(src[i]);
     }
 
     return (*this);
 }
 
 template<typename VALUE >
-inline TEArrayList< VALUE >& TEArrayList< VALUE >::append(TEArrayList< VALUE > && src)
+inline TEArrayList< VALUE >& TEArrayList< VALUE >::append(TEArrayList< VALUE >&& src) noexcept
 {
-    ASSERT(this != &src);
+    return append(std::move(src.mValueList));
+}
+
+template<typename VALUE >
+inline TEArrayList< VALUE >& TEArrayList< VALUE >::append(std::vector< VALUE > && src) noexcept
+{
+    ASSERT(&mValueList != &src);
+
     uint32_t size = static_cast<uint32_t>(mValueList.size());
-    uint32_t remain = static_cast<uint32_t>(src.mValueList.size());
+    uint32_t remain = static_cast<uint32_t>(src.size());
     if ((size + remain) > NECommon::MAX_CONTAINER_SIZE)
+    {
         remain = NECommon::MAX_CONTAINER_SIZE - static_cast<uint32_t>(mValueList.size());
+    }
 
     mValueList.reserve(size + remain);
     for (uint32_t i = 0; i < remain; ++i)
     {
-        mValueList.push_back(std::move(src.mValueList[i]));
+        mValueList.push_back(std::move(src[i]));
     }
 
     return (*this);
@@ -717,15 +744,27 @@ inline TEArrayList< VALUE >& TEArrayList< VALUE >::append(TEArrayList< VALUE > &
 template<typename VALUE >
 inline void TEArrayList< VALUE >::copy(const TEArrayList< VALUE >& src)
 {
-    ASSERT(this != &src);
-    mValueList = src.mValueList;
+    copy(src.getData());
+}
+
+template<typename VALUE >
+inline void TEArrayList< VALUE >::copy(const std::vector< VALUE >& src)
+{
+    ASSERT(&mValueList != &src);
+    mValueList = src;
 }
 
 template<typename VALUE >
 inline void TEArrayList< VALUE >::move( TEArrayList< VALUE > && src ) noexcept
 {
-    ASSERT( this != &src );
-    mValueList = std::move(src.mValueList);
+    move(std::move(src.mValueList));
+}
+
+template<typename VALUE >
+inline void TEArrayList< VALUE >::move(std::vector< VALUE > && src) noexcept
+{
+    ASSERT(&mValueList != &src);
+    mValueList = std::move(src);
 }
 
 template<typename VALUE >
@@ -745,14 +784,26 @@ inline const VALUE & TEArrayList< VALUE >::operator [] (uint32_t index) const
 template<typename VALUE >
 inline TEArrayList< VALUE > & TEArrayList< VALUE >::operator = ( const TEArrayList< VALUE >& src )
 {
-    mValueList = src.mValueList;
+    return this->operator = (src.mValueList);
+}
+
+template<typename VALUE >
+inline TEArrayList< VALUE > & TEArrayList< VALUE >::operator = ( const std::vector< VALUE >& src )
+{
+    mValueList = src;
     return (*this);
 }
 
 template<typename VALUE >
 inline TEArrayList< VALUE > & TEArrayList< VALUE >::operator = ( TEArrayList< VALUE > && src ) noexcept
 {
-    mValueList = std::move(src.mValueList);
+    return this->operator = (std::move(src.mValueList));
+}
+
+template<typename VALUE >
+inline TEArrayList< VALUE > & TEArrayList< VALUE >::operator = ( std::vector< VALUE > && src ) noexcept
+{
+    mValueList = std::move(src);
     return (*this);
 }
 
@@ -763,9 +814,21 @@ inline bool TEArrayList< VALUE >::operator == ( const TEArrayList< VALUE >& othe
 }
 
 template<typename VALUE >
-inline bool TEArrayList< VALUE >::operator != (const TEArrayList< VALUE >& other) const
+inline bool TEArrayList< VALUE >::operator == ( const std::vector< VALUE >& other ) const
 {
-    return mValueList != other.mValueList;
+    return mValueList == other.mValueList;
+}
+
+template<typename VALUE >
+inline bool TEArrayList< VALUE >::operator != ( const TEArrayList< VALUE >& other ) const
+{
+    return this->operator != (other.mValueList);
+}
+
+template<typename VALUE >
+inline bool TEArrayList< VALUE >::operator != ( const std::vector< VALUE >& other ) const
+{
+    return mValueList != other;
 }
 
 template<typename VALUE >
@@ -860,18 +923,24 @@ inline void TEArrayList< VALUE >::insertAt(uint32_t startAt, const VALUE* newArr
 template<typename VALUE >
 inline void TEArrayList< VALUE >::insertAt(uint32_t startAt, const TEArrayList< VALUE >& newArray)
 {
+    insertAt(startAt, newArray.mValueList);
+}
+
+template<typename VALUE >
+inline void TEArrayList< VALUE >::insertAt(uint32_t startAt, const std::vector< VALUE >& newArray)
+{
     ASSERT(isValidIndex(startAt));
 
-    if (newArray.mValueList.empty() == false)
+    if (newArray.empty() == false)
     {
         uint32_t limit = 0;
-        if ((getSize() + newArray.getSize()) > NECommon::MAX_CONTAINER_SIZE)
+        if ((getSize() + newArray.size()) > NECommon::MAX_CONTAINER_SIZE)
         {
-            limit = NECommon::MAX_CONTAINER_SIZE - (getSize() + newArray.getSize());
+            limit = NECommon::MAX_CONTAINER_SIZE - (getSize() + static_cast<uint32_t>(newArray.size()));
         }
 
         ARRAYPOS cit = getPosition(startAt);
-        mValueList.insert(cit, newArray.mValueList.begin(), newArray.mValueList.end() - limit);
+        mValueList.insert(cit, newArray.begin(), newArray.end() - limit);
     }
 }
 
@@ -935,26 +1004,24 @@ void TEArrayList< VALUE >::shift(uint32_t startAt, int count)
                 count = static_cast<int>(NECommon::MAX_CONTAINER_SIZE - getSize());
             }
 
-            uint32_t posFirst   = static_cast<uint32_t>(mValueList.size()) - 1;
-            uint32_t posLast    = posFirst + count;
-            mValueList.resize(mValueList.size() + count);
-            while (posFirst >= startAt)
-            {
-                mValueList[posLast --] = mValueList[posFirst --];
-            }
+            VALUE* values = mValueList.data();
+            uint32_t size = static_cast<uint32_t>(mValueList.size());
+            mValueList.resize(size + count);
+            NEMemory::moveElems<VALUE>(values + startAt + count, values + startAt, size - startAt);
         }
-        else
+        else if (startAt != 0)
         {
+            VALUE* values = mValueList.data();
+            uint32_t size = static_cast<uint32_t>(mValueList.size());
+
             count *= -1;
-            uint32_t start  = static_cast<uint32_t>(count) > (startAt + 1) ? 0 : startAt - count;
-            uint32_t last   = static_cast<uint32_t>(mValueList.size()) - 1;
-            uint32_t length = start + (last - startAt) + 1;
-            for (uint32_t i = startAt; i <= last; ++i)
+            if (startAt < static_cast<uint32_t>(count))
             {
-                mValueList[start++] = mValueList[i];
+                count = static_cast<int>(startAt);
             }
 
-            mValueList.resize(length);
+            NEMemory::moveElems<VALUE>(values + startAt - count, values + startAt, size - startAt);
+            mValueList.resize(size - count);
         }
     }
 }

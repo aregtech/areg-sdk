@@ -408,10 +408,17 @@ TEST(ArrayListTest, TestFind)
 
     for (int i = 0; i < static_cast<int>(_len1); ++i)
     {
+        EXPECT_TRUE(arr.contains(i, 0));
         EXPECT_EQ(arr.find(i, 0), i);
+        
+        EXPECT_TRUE(arr.contains(i, i));
         EXPECT_EQ(arr.find(i, i), i);
+
+        EXPECT_FALSE(arr.contains(i, i + 1));
         EXPECT_EQ(arr.find(i, i + 1), NECommon::INVALID_INDEX);
     }
+
+    EXPECT_FALSE(arr.contains(0, _len1 * 2));
 }
 
 TEST(ArrayListTest, TestResize)
@@ -471,4 +478,53 @@ TEST(ArrayListTest, TestReserve)
     ASSERT_TRUE(arr.getCapacity() == _len1);
     arr.release();
     ASSERT_TRUE(arr.isEmpty());
+}
+
+TEST(ArrayListTest, TestShift)
+{
+    using Array = TEArrayList<int>;
+
+    constexpr int _arr1[]{ 0, 1, 2, 3, 4 };
+    constexpr uint32_t _len1{ MACRO_ARRAYLEN(_arr1) };
+
+    Array arr;
+    ASSERT_TRUE(arr.isEmpty());
+
+    arr.shift(0, _len1);
+    ASSERT_TRUE(arr.isEmpty());
+    arr.shift(_len1, _len1);
+    ASSERT_TRUE(arr.isEmpty());
+
+    Array origin(_arr1, _len1);
+    arr = std::move(origin);
+    ASSERT_TRUE(origin.isEmpty());
+    origin = arr;
+
+    EXPECT_EQ(arr.getSize(), _len1);
+    arr.shift(0, 1);
+    EXPECT_EQ(arr.getSize(), _len1 + 1);
+    arr.shift(3, 1);
+    EXPECT_EQ(arr.getSize(), _len1 + 2);
+    arr.shift(arr.getSize() - 1, 1);
+    EXPECT_EQ(arr.getSize(), _len1 + 3);
+    arr.shift(arr.getSize(), 1);
+    EXPECT_EQ(arr.getSize(), _len1 + 3);
+
+    arr.shift(arr.getSize(), -1);
+    EXPECT_EQ(arr.getSize(), _len1 + 3);
+    arr.shift(arr.getSize() - 1, -1);
+    EXPECT_EQ(arr.getSize(), _len1 + 2);
+    arr.shift(3 + 1, -1);
+    EXPECT_EQ(arr.getSize(), _len1 + 1);
+    arr.shift(0 + 1, -1);
+    EXPECT_EQ(arr.getSize(), _len1);
+
+    EXPECT_EQ(arr, origin);
+
+    arr.shift(0, -1);
+    EXPECT_EQ(arr.getSize(), _len1);
+    arr.shift(arr.getSize(), -1);
+    EXPECT_EQ(arr.getSize(), _len1);
+    arr.shift(4, -5);
+    EXPECT_EQ(arr.getSize(), _len1 - 4);
 }
