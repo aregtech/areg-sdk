@@ -18,15 +18,19 @@
  ************************************************************************/
 #include "units/GUnitTest.hpp"
 #include "areg/base/TEArrayList.hpp"
+#include "areg/base/SharedBuffer.hpp"
 
+/**
+ * \brief   Test TEArrayList constructors.
+ **/
 TEST(ArrayListTest, TestConstructors)
 {
     using Array = TEArrayList<int>;
 
     constexpr int _arr[]{ 1, 2, 3 };
     constexpr int _len{ MACRO_ARRAYLEN(_arr) };
-
     constexpr int _capacity{ 5 };
+    std::vector vec{ 1, 2, 3, 4, 5 };
 
     Array arr1;
     ASSERT_TRUE(arr1.isEmpty());
@@ -51,8 +55,22 @@ TEST(ArrayListTest, TestConstructors)
     EXPECT_EQ(arr5.getCapacity(), _len);
 
     EXPECT_EQ(arr4, arr5);
+
+    Array arr6(vec);
+    EXPECT_EQ(arr6, vec);
+
+    Array arr7(std::move(vec));
+    EXPECT_NE(arr6, vec);
+    EXPECT_TRUE(vec.empty());
+
+    Array arr8(std::move(arr6));
+    EXPECT_TRUE(arr6.isEmpty());
+    EXPECT_EQ(arr8, arr7);
 }
 
+/**
+ * \brief   Tests the validity of the array index.
+ **/
 TEST(ArrayListTest, TestIndexValidity)
 {
     using Array = TEArrayList<int>;
@@ -83,6 +101,9 @@ TEST(ArrayListTest, TestIndexValidity)
     ASSERT_TRUE(arr5.isValidIndex(1));
 }
 
+/**
+ * \brief   Tests the content of the array.
+ **/
 TEST(ArrayListTest, TestArrayContent)
 {
     using Array = TEArrayList<int>;
@@ -128,6 +149,9 @@ TEST(ArrayListTest, TestArrayContent)
     EXPECT_NE(arr4, arr5);
 }
 
+/**
+ * \brief   Tests setting, getting and the content of the values of the array.
+ **/
 TEST(ArrayListTest, TestGetSetAndContent)
 {
     using Array = TEArrayList<int>;
@@ -156,6 +180,9 @@ TEST(ArrayListTest, TestGetSetAndContent)
     }
 }
 
+/**
+ * \brief   Tests the 'add' method of the array.
+ **/
 TEST(ArrayListTest, TestAdd)
 {
     using Array = TEArrayList<int>;
@@ -214,6 +241,9 @@ TEST(ArrayListTest, TestAdd)
     ASSERT_EQ(arrUnique.getSize(), (lenUnq + lenMix));
 }
 
+/**
+ * \brief   Tests the 'append' method of the array.
+ **/
 TEST(ArrayListTest, TestAppend)
 {
     using Array = TEArrayList<int>;
@@ -261,6 +291,9 @@ TEST(ArrayListTest, TestAppend)
     arr1.clear();
     ASSERT_TRUE(arr1.isEmpty());
 }
+/**
+ * \brief   Tests the 'copy' and 'move' methods of the array.
+ **/
 
 TEST(ArrayListTest, TestCopyMove)
 {
@@ -294,6 +327,9 @@ TEST(ArrayListTest, TestCopyMove)
     ASSERT_TRUE(arr2.isEmpty());
 }
 
+/**
+ * \brief   Tests the 'insert' method of the array.
+ **/
 TEST(ArrayListTest, TestInsert)
 {
     using Array = TEArrayList<int>;
@@ -333,6 +369,9 @@ TEST(ArrayListTest, TestInsert)
     ASSERT_TRUE(memcmp(arr2.getValues() + arr1.getSize(), arr1.getValues(), arr1.getSize() * sizeof(int)) == 0);
 }
 
+/**
+ * \brief   Tests the 'removeAt' method of the array.
+ **/
 TEST(ArrayListTest, TestRemoveAt)
 {
     using Array = TEArrayList<int>;
@@ -350,6 +389,9 @@ TEST(ArrayListTest, TestRemoveAt)
     ASSERT_TRUE(arr.isEmpty());
 }
 
+/**
+ * \brief   Tests the 'position' method of the array.
+ **/
 TEST(ArrayListTest, TestRemovePosition)
 {
     using Array = TEArrayList<int>;
@@ -370,6 +412,9 @@ TEST(ArrayListTest, TestRemovePosition)
     EXPECT_EQ(arr.getSize(), _len2 - 1u);
 }
 
+/**
+ * \brief   Tests the 'removeElem' method of the array.
+ **/
 TEST(ArrayListTest, TestRemoveElement)
 {
     using Array = TEArrayList<int>;
@@ -386,6 +431,9 @@ TEST(ArrayListTest, TestRemoveElement)
     ASSERT_TRUE(arr.isEmpty());
 }
 
+/**
+ * \brief   Tests the 'find' method (searching) of the array.
+ **/
 TEST(ArrayListTest, TestFind)
 {
     using Array = TEArrayList<int>;
@@ -421,6 +469,9 @@ TEST(ArrayListTest, TestFind)
     EXPECT_FALSE(arr.contains(0, _len1 * 2));
 }
 
+/**
+ * \brief   Tests the 'resize' method of the array.
+ **/
 TEST(ArrayListTest, TestResize)
 {
     using Array = TEArrayList<int>;
@@ -453,6 +504,9 @@ TEST(ArrayListTest, TestResize)
     ASSERT_TRUE(::memcmp(values, values + _len1, _len1) == 0);
 }
 
+/**
+ * \brief   Tests the 'reserve' method of the array.
+ **/
 TEST(ArrayListTest, TestReserve)
 {
     using Array = TEArrayList<int>;
@@ -480,11 +534,14 @@ TEST(ArrayListTest, TestReserve)
     ASSERT_TRUE(arr.isEmpty());
 }
 
+/**
+ * \brief   Tests the 'shift' method of the array.
+ **/
 TEST(ArrayListTest, TestShift)
 {
     using Array = TEArrayList<int>;
 
-    constexpr int _arr1[]{ 0, 1, 2, 3, 4 };
+    constexpr int _arr1[]{ 0, 1, 2, 3, 4, 5 };
     constexpr uint32_t _len1{ MACRO_ARRAYLEN(_arr1) };
 
     Array arr;
@@ -527,4 +584,64 @@ TEST(ArrayListTest, TestShift)
     EXPECT_EQ(arr.getSize(), _len1);
     arr.shift(4, -5);
     EXPECT_EQ(arr.getSize(), _len1 - 4);
+}
+
+/**
+ * \brief   Tests the 'first' and 'last' methods of the array to access elements by reference.
+ **/
+TEST(ArrayListTest, TestEntries)
+{
+    using Array = TEArrayList<int>;
+
+    constexpr int _arr1[]{ 0, 1, 2, 3, 4, 5 };
+    constexpr uint32_t _len1{ MACRO_ARRAYLEN(_arr1) };
+
+    Array arr, temp(_arr1, _len1);
+    ASSERT_TRUE(arr.isEmpty());
+    ASSERT_FALSE(temp.isEmpty());
+
+    arr = std::move(temp);
+    ASSERT_FALSE(arr.isEmpty());
+    ASSERT_TRUE(temp.isEmpty());
+
+
+    const int& first = arr.firstEntry();
+    EXPECT_EQ(first, _arr1[0u]);
+    EXPECT_EQ(first, arr[0u]);
+    EXPECT_EQ(&first, &arr[0u]);
+    EXPECT_NE(first, arr[1u]);
+
+    const int& last = arr.lastEntry();
+    EXPECT_EQ(last, _arr1[_len1 - 1u]);
+    EXPECT_EQ(last, arr[_len1 - 1u]);
+    EXPECT_EQ(&last, &arr[_len1 - 1u]);
+    EXPECT_NE(last, arr[_len1 - 2u]);
+
+    arr.firstEntry() = 5;
+    EXPECT_EQ(arr[0u], 5);
+    arr.lastEntry() = 0;
+    EXPECT_EQ(arr[_len1 - 1u], 0);
+}
+
+/**
+ * \brief   Tests the streaming operators of the array.
+ **/
+TEST(ArrayListTest, TestStream)
+{
+    using Array = TEArrayList<int>;
+
+    constexpr int _arr1[]{ 0, 1, 2, 3, 4, 5 };
+    constexpr uint32_t _len1{ MACRO_ARRAYLEN(_arr1) };
+
+    Array dst, src(_arr1, _len1);
+    ASSERT_TRUE(dst.isEmpty());
+    ASSERT_FALSE(src.isEmpty());
+
+    SharedBuffer stream;
+    stream << src;
+    stream.moveToBegin();
+    stream >> dst;
+
+    EXPECT_EQ(dst.getSize(), _len1);
+    EXPECT_EQ(src, dst);
 }

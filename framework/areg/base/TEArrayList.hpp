@@ -816,7 +816,7 @@ inline bool TEArrayList< VALUE >::operator == ( const TEArrayList< VALUE >& othe
 template<typename VALUE >
 inline bool TEArrayList< VALUE >::operator == ( const std::vector< VALUE >& other ) const
 {
-    return mValueList == other.mValueList;
+    return mValueList == other;
 }
 
 template<typename VALUE >
