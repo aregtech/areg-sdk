@@ -75,7 +75,7 @@ public:
     /**
      * \brief	Creates FixedArray with initial size. If the initial
      *          size is zero, no element can be accessed. To change the size,
-     *          use assigning or move operators should be used.
+     *          assigning or move operators should be used.
      * \param	elemCount	The initial size of array.
      **/
     explicit TEFixedArray( uint32_t elemCount = 0);
