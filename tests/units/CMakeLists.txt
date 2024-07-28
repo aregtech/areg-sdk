@@ -6,4 +6,6 @@ addUnitTest("${AREG_UNIT_TEST_PROJECT}"
     ${AREG_UNIT_TEST_BASE}/StringUtilsTest.cpp
     ${AREG_UNIT_TEST_BASE}/LogScopesTest.cpp
     ${AREG_UNIT_TEST_BASE}/OptionParserTest.cpp
+    ${AREG_UNIT_TEST_BASE}/ArrayListTest.cpp
+    ${AREG_UNIT_TEST_BASE}/FixedArrayTest.cpp
 )
