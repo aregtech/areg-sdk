@@ -409,13 +409,9 @@ template< typename VALUE >
 inline bool TEFixedArray<VALUE>::contains(const VALUE& elemSearch, uint32_t startAt /*= 0*/) const
 {
     bool result = false;
-    for (uint32_t i = startAt; i < mElemCount; ++i)
+    for (uint32_t i = startAt; (result == false) && (i < mElemCount); ++i)
     {
-        if (mValueList[i] == elemSearch)
-        {
-            result = true;
-            break;
-        }
+        result = mValueList[i] == elemSearch;
     }
 
     return result;
@@ -512,11 +508,11 @@ template< typename VALUE >
 inline uint32_t TEFixedArray<VALUE>::find(const VALUE& elemSearch, uint32_t startAt /* = 0 */) const
 {
     uint32_t result = static_cast<uint32_t>(NECommon::INVALID_INDEX);
-    for (uint32_t i = 0; i < mElemCount; ++i)
+    for (uint32_t i = startAt; i < mElemCount; ++i)
     {
         if (elemSearch == mValueList[i])
         {
-            result = static_cast<int>(i);
+            result = i;
             break;
         }
     }

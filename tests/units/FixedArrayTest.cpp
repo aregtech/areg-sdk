@@ -26,11 +26,13 @@
 TEST(FixedArrayTest, TestConstructors)
 {
     using FixedArray = TEFixedArray<int>;
+    constexpr uint32_t elemCount{ 10u };
 
-    FixedArray empty, notEmpty(10);
+    FixedArray empty, notEmpty(elemCount);
 
     EXPECT_TRUE(empty.isEmpty());
     EXPECT_FALSE(notEmpty.isEmpty());
+    EXPECT_EQ(notEmpty.getSize(), elemCount);
 
     for (uint32_t i = 0; i < notEmpty.getSize(); ++i)
     {
@@ -66,15 +68,130 @@ TEST(FixedArrayTest, TestConstructors)
     EXPECT_TRUE(src.isEmpty());
     EXPECT_FALSE(toMove.isEmpty());
     EXPECT_EQ(toCopy, toMove);
+
+    toMove.clear();
+    EXPECT_TRUE(toMove.isEmpty());
+    EXPECT_EQ(toMove.getSize(), 0u);
 }
 
-TEST(FixedArrayTest, TestSearches)
+/**
+ * \brief   Testing copy and move methods of Fixed Array
+ **/
+TEST(FixedArrayTest, TestCopyMove)
 {
     using FixedArray = TEFixedArray<int>;
+    constexpr uint32_t elemCount{ 10u };
 
-    FixedArray empty, notEmpty(10);
+    FixedArray empty, notEmpty(elemCount);
+
     for (uint32_t i = 0; i < notEmpty.getSize(); ++i)
     {
         notEmpty[i] = static_cast<int>(i);
     }
+
+    empty.copy(notEmpty);
+    EXPECT_EQ(empty, notEmpty);
+
+    FixedArray toCopy;
+    toCopy.copy(notEmpty);
+    EXPECT_FALSE(notEmpty.isEmpty());
+    EXPECT_FALSE(toCopy.isEmpty());
+    EXPECT_EQ(empty, toCopy);
+
+    FixedArray toMove;
+    toMove.move(std::move(notEmpty));
+    EXPECT_TRUE(notEmpty.isEmpty());
+    EXPECT_FALSE(toMove.isEmpty());
+    EXPECT_EQ(toCopy, toMove);
+
+    FixedArray src(15);
+    for (uint32_t i = 0; i < src.getSize(); ++i)
+    {
+        src[i] = 10 + static_cast<int>(i);
+    }
+
+    toCopy.copy(src);
+    EXPECT_FALSE(src.isEmpty());
+    EXPECT_FALSE(toCopy.isEmpty());
+    EXPECT_EQ(src, toCopy);
+    EXPECT_NE(empty, toCopy);
+
+    toMove.move(std::move(src));
+    EXPECT_TRUE(src.isEmpty());
+    EXPECT_FALSE(toMove.isEmpty());
+    EXPECT_EQ(toCopy, toMove);
+
+    toMove.clear();
+    EXPECT_TRUE(toMove.isEmpty());
+    EXPECT_EQ(toMove.getSize(), 0u);
+}
+
+/**
+ * \brief   Test values of the fixed array
+ **/
+TEST(FixedArrayTest, TestValues)
+{
+    using FixedArray = TEFixedArray<int>;
+    constexpr uint32_t elemCount{ 10u };
+    constexpr int32_t arr[]{ 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
+    constexpr int len{ MACRO_ARRAYLEN(arr) };
+
+    FixedArray notEmpty(elemCount);
+    const int* dst = notEmpty.getValues();
+    const int* src = arr;
+    for (uint32_t i = elemCount; i > 0; -- i)
+    {
+        EXPECT_TRUE(notEmpty.isValidIndex(elemCount - i));
+        notEmpty.setAt(elemCount - i, *src ++);
+    }
+
+    EXPECT_TRUE(::memcmp(dst, arr, elemCount * sizeof(int)) == 0);
+}
+
+/**
+ * \brief   Testing searching methods like 'find' and 'contains' of fixed array
+ **/
+TEST(FixedArrayTest, TestSearchElem)
+{
+    using FixedArray = TEFixedArray<int>;
+    constexpr uint32_t elemCount{ 10u };
+
+    FixedArray notEmpty(elemCount);
+    for (uint32_t i = 0; i < notEmpty.getSize(); ++i)
+    {
+        notEmpty[i] = static_cast<int>(i);
+    }
+
+    for (uint32_t i = 0; i < notEmpty.getSize(); ++i)
+    {
+        EXPECT_TRUE(notEmpty.contains(i, 0));
+        EXPECT_TRUE(notEmpty.contains(i, i));
+        EXPECT_FALSE(notEmpty.contains(i, i + 1));
+        EXPECT_FALSE(notEmpty.contains(i + elemCount, 0));
+
+        EXPECT_EQ(notEmpty.find(i, 0), i);
+        EXPECT_EQ(notEmpty.find(i, i), i);
+        EXPECT_EQ(notEmpty.find(i, i + elemCount), static_cast<uint32_t>(NECommon::INVALID_INDEX));
+        EXPECT_EQ(notEmpty.find(i + elemCount, 0), static_cast<uint32_t>(NECommon::INVALID_INDEX));
+    }
+}
+
+/**
+ * \brief   Testing the position of the element
+ **/
+TEST(FixedArrayTest, TestElemPosition)
+{
+    using FixedArray = TEFixedArray<int>;
+    constexpr uint32_t elemCount{ 10u };
+
+    FixedArray notEmpty(elemCount);
+    for (uint32_t i = 0; i < notEmpty.getSize(); ++i)
+    {
+        notEmpty[i] = static_cast<int>(i);
+        EXPECT_EQ(notEmpty.getAt(i), static_cast<int>(i));
+        EXPECT_EQ(notEmpty.getAt(i), notEmpty.valueAtPosition(i));
+    }
+
+    EXPECT_EQ(notEmpty.firstEntry(), 0u);
+    EXPECT_EQ(notEmpty.lastEntry(), elemCount - 1u);
 }
