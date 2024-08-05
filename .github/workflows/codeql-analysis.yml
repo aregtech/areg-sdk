@@ -44,7 +44,7 @@ jobs:
     - name: Setup Java JDK to run code generator
       uses: actions/setup-java@v4.2.1
       with: 
-        java-version: 11
+        java-version: 17
         java-package: jre
         distribution: temurin
 
