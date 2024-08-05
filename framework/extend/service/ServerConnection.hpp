@@ -73,9 +73,9 @@ public:
     /**
      * \brief   Creates instance of object with invalid socket object.
      *          Before sending or receiving data, the socket should be created 
-     *          and bound to host and port. Specified remoteAddress will be set as server address.
+     *          and bound to host and port. Specified serverAddress will be set as server address.
      * \param   channelId       The unique channel ID of the service connectivity in the system.
-     * \param   remoteAddress   Address of server.
+     * \param   serverAddress   Address of server.
      **/
     ServerConnection(const ITEM_ID & channelId, const NESocket::SocketAddress & serverAddress );
 
@@ -97,7 +97,7 @@ public:
     /**
      * \brief   Call to reject connection. When rejected, the socket connection will be closed and
      *          no more data will be accepted from connection.
-     * \param   out_connection  Connection to reject.
+     * \param   clientConnection    Connection to reject.
      **/
     void rejectConnection( SocketAccepted & clientConnection );
 

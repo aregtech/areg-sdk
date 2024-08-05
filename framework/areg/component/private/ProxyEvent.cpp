@@ -160,15 +160,7 @@ void IEProxyEventConsumer::startEventProcessing( Event & eventElem )
                     }
                     else
                     {
-                        ProxyEvent* proxyEvent = RUNTIME_CAST(&eventElem, ProxyEvent);
-                        if (proxyEvent != nullptr)
-                        {
                             processProxyEvent(*proxyEvent);
-                        }
-                        else
-                        {
-                            processGenericEvent(eventElem);
-                        }
                     }
                 }
             }

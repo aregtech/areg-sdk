@@ -59,8 +59,8 @@ class Version;
  ************************************************************************/
 /**
  * \brief   Function type to create a Proxy object.
- * \param   roleName    The role name of servicing component to connect.
- * \param   ownerThread The instance of thread to dispatch messages.
+ *          roleName    The role name of servicing component to connect.
+ *          ownerThread The instance of thread to dispatch messages.
  *                      If nullptr, uses current component thread.
  **/
 typedef ProxyBase* (*FuncCreateProxy)( const String & /*roleName*/, DispatcherThread * /*ownerThread*/ );
@@ -131,9 +131,9 @@ private:
 
         /**
          * \brief   Creates Listener, sets message ID, sequence number and client listener pointer.
-         * \param   msgId       Message ID.
-         * \param   seqNr       Sequence Number
-         * \param   consumer    Client listener pointer 
+         * \param   msgId   Message ID.
+         * \param   seqNr   Sequence Number
+         * \param   caller  Client listener pointer 
          **/
         Listener(unsigned int msgId, const SequenceNumber & seqNr, IENotificationEventConsumer * caller);
 
@@ -218,7 +218,7 @@ private:
     // ProxyBase::ProxyMap class declaration.
     //////////////////////////////////////////////////////////////////////////
     /************************************************************************
-     * \brief   Proxy map is used to keep control of instantiated resource.
+     * \details Proxy map is used to keep control of instantiated resource.
      *          As well as to lookup for already existing instance or proxy
      *          in the same thread. As a Key, it is using Proxy Address
      *          and value is instance of Proxy.
@@ -235,9 +235,9 @@ private:
     /**
      * \brief   ProxyBase::MapProxyResource
      *          Proxy Resource Map declaration to keep controlling of all instantiated Proxy objects.
-     * \tparam  ProxyAddress  The Key of Resource map is a Proxy address object.
-     * \tparam  ProxyBase     The Values are pointers of Proxy object.
-     * \tparam  ProxyMap      The type of Hash Mapping object used as container
+     *          ProxyAddress  The Key of Resource map is a Proxy address object.
+     *          ProxyBase     The Values are pointers of Proxy object.
+     *          ProxyMap      The type of Hash Mapping object used as container
      **/
     using MapProxyResource  = TELockResourceMap<ProxyAddress, std::shared_ptr<ProxyBase>, MapProxy, ImplProxyResource>;
 
@@ -262,10 +262,10 @@ private:
          * \brief	Called when all resources are removed.
          *          This function is called from RemoveAllResources() for every single
          *          resource being unregistered.
-         * \param	Key	    The String as a Key of resource.
-         * \param	List    The list of proxy objects.
+         *          Key	    The String as a Key of resource.
+         *          List    The list of proxy objects.
          **/
-        inline void implCleanResourceList( const String & Key, ThreadProxyList & List )
+        inline void implCleanResourceList( const String & /* Key */, ThreadProxyList & /* List */ )
         {
         }
 
@@ -358,7 +358,7 @@ protected:
          **/
         inline IENotificationEventConsumer & getConsumer( void ) const
         {
-            return mConsumer;
+            return mNotifyConsumer;
         }
 
         /**
@@ -397,7 +397,7 @@ protected:
         /**
          * \brief   Instance of consumer to send service available notification.
          **/
-        IENotificationEventConsumer &   mConsumer;
+        IENotificationEventConsumer &   mNotifyConsumer;
 
         /**
          * \brief   The time in milliseconds to delay service available event.
@@ -424,10 +424,8 @@ public:
      *          return pointer to already instantiated proxy object.
      *          If Proxy already exists, on every call of this function
      *          it will increase reference count.
-     * \param   roleName    The role name of server component
-     * \param   serviceName Implemented Service Name. 
-     *                      Every Service Interface should have name
-     * \param   version     The version number of implemented service.
+     * \param   roleName        The role name of server component
+     * \param   serviceIfData   The instance of service interface data that contains name and version. 
      * \param   connect     The object, which should be notified when
      *                      server component accepts proxy connection
      * \param   funcCreate  The pointer to function which should instantiate
@@ -450,10 +448,8 @@ public:
      *          return pointer to already instantiated proxy object.
      *          If Proxy already exists, on every call of this function
      *          it will increase reference count.
-     * \param   roleName    The role name of server component
-     * \param   serviceName Implemented Service Name. 
-     *                      Every Service Interface should have name
-     * \param   version     The version number of implemented service.
+     * \param   roleName        The role name of server component
+     * \param   serviceIfData   The instance of service interface data that contains name and version. 
      * \param   connect     The object, which should be notified when
      *                      server component accepts proxy connection
      * \param   funcCreate  The pointer to function which should instantiate
@@ -765,7 +761,7 @@ protected:
      *          message ID there is no other listener existing, it
      *          will send event to Stub object to stop sending event
      *          for particular message ID.
-     * \param	listener    Pointer to listener object to unregister
+     * \param	consumer    Pointer to listener object to unregister
      *
      * \remark  Use of ProxyBase::unregisterListener()
      *
@@ -794,7 +790,7 @@ protected:
      * \param	msgId	    The message ID of notification.
      * \param	resType	    Type of result to notify the listener
      * \param	seqNr	    Sequence number to use for listener searching
-     * \param	consumer	Pointer to Listener object to be notified.
+     * \param	caller	    Pointer to Listener object to be notified.
      **/
     virtual void sendNotificationEvent( unsigned int msgId, NEService::eResultType resType, const SequenceNumber & seqNr, IENotificationEventConsumer * caller );
 
@@ -869,7 +865,7 @@ protected:
      * \brief   Remove Proxy Listener entry from listener list.
      * \param   msgId       The message ID of listener to remove.
      * \param   seqNr       The sequence number of listener to remove.
-     * \param   consumer    Notification Event consumer.
+     * \param   caller      Notification Event consumer.
      **/
     inline void removeListener( unsigned int msgId, const SequenceNumber & seqNr, IENotificationEventConsumer * caller );
 
@@ -877,7 +873,7 @@ protected:
      * \brief   Add Proxy Listener entry to listener list.
      * \param   msgId       Message ID of listener
      * \param   seqNr       Sequence number of listener
-     * \param   consumer    Pointer to Notification Event consumer object.
+     * \param   caller      Pointer to Notification Event consumer object.
      * \param   unique      If true, it checks whether the same listener already exists or not,
      *                      and adds listener only if it is not existing. Otherwise, if false,
      *                      it add the listener at the end without checking.
@@ -906,7 +902,7 @@ protected:
      *          exists in listener list, sends immediate update notification
      *          based on existing update data status.
      * \param   msgId           The Notification Message ID
-     * \param   consumer        The pointer of Notification Event consumer
+     * \param   caller          The pointer of Notification Event consumer
      * \param   alwaysNotify    The flag indicating whether notification message
      *                          should be sent if the notification already is pending.
      **/
@@ -914,8 +910,8 @@ protected:
 
     /**
      * \brief   Clears listener entries of specified Notification Event consumer
-     * \param   msgId       The Notification Message ID
-     * \param   consumer    The pointer of Notification Event Consumer.
+     * \param   msgId   The Notification Message ID
+     * \param   caller  The pointer of Notification Event Consumer.
      **/
     void clearNotification( unsigned int msgId, IENotificationEventConsumer * caller );
 
@@ -944,7 +940,7 @@ protected:
      *                          message ID will get notification.
      * \return  Returns the size of listeners in output listener list.
      **/
-    int prepareListeners( ProxyBase::ProxyListenerList & out_listenerList, unsigned int msgId, const SequenceNumber & seqNrToSearch );
+    uint32_t prepareListeners( ProxyBase::ProxyListenerList & out_listenerList, unsigned int msgId, const SequenceNumber & seqNrToSearch );
 
     /**
      * \brief   Sends request event
@@ -954,7 +950,6 @@ protected:
      * \param   caller  The pointer of notification consumer. 
      *                  This parameter can be nullptr only if request has not appropriate response.
      *                  Otherwise this should be valid pointer.
-     * \return  
      **/
     void sendRequestEvent( unsigned int reqId, const EventDataStream & args, IENotificationEventConsumer * caller );
 

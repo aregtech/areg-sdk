@@ -65,7 +65,7 @@ function(setStaticLibOptions item library_list)
 
     # Set common compile definition
     target_compile_definitions(${item} PRIVATE ${COMMON_COMPILE_DEF} _LIB)
-        target_compile_options(${item} PRIVATE  ${AREG_COMPILER_VERSION})
+    target_compile_options(${item} PRIVATE  ${AREG_COMPILER_VERSION})
 
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
         target_compile_options(${item} PRIVATE "-Bstatic")
@@ -317,13 +317,13 @@ function(findCompilerFamilyName compiler_path family_var)
 
     string(FIND "${compiler_path}" "clang++" FOUND_POS REVERSE)
     if (${FOUND_POS} GREATER -1)
-        set(${family_var} "clang" PARENT_SCOPE)
+        set(${family_var} "llvm" PARENT_SCOPE)
         return()
     endif()
 
     string(FIND "${compiler_path}" "clang" FOUND_POS REVERSE)
     if (${FOUND_POS} GREATER -1)
-        set(${family_var} "clang" PARENT_SCOPE)
+        set(${family_var} "llvm" PARENT_SCOPE)
         return()
     endif()
 
@@ -584,6 +584,7 @@ function(addServiceInterfaceEx gen_project_name source_root relative_path sub_di
     else()
         message(STATUS "Adding service interface library ${gen_project_name}")
         addStaticLib(${gen_project_name} "${proj_src}")
+        target_compile_options(${gen_project_name} PRIVATE "${AREG_CODEGEN_OPT}")
     endif()
 
 endfunction(addServiceInterfaceEx)

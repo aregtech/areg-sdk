@@ -355,7 +355,7 @@ public:
      * \param   traceScope      The scope to activate and update logging priority.
      * \param   defaultPrio     The default priority to set to the scope.
      **/
-    void activateScope( TraceScope & traceScope, unsigned int defaultPriority );
+    void activateScope( TraceScope & traceScope, unsigned int defaultPrio );
 
     /**
      * \brief   Activates or deactivates the scope based on the log scope priority set in the configuration.

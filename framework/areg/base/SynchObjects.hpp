@@ -356,7 +356,7 @@ private:
 
     /**
      * \brief   The OS specific call to set event and release thread(s).
-     * \param   evenHandle      The handle of event object to set.
+     * \param   eventHandle The handle of event object to set.
      **/
     bool _osUnlockEvent( void * eventHandle );
 
@@ -606,9 +606,7 @@ public:
      *          this function cause wait indefinitely for ownership.
      *          In contrast, when a mutex object is used for mutual exclusion,
      *          the lock() function accept a specified time-out interval.
-     *
-     * \param   timeout     NOT USED in case of critical section object.
-     * \return  In case of critical section, always return true
+     * \return  In case of critical section, always return true.
      **/
     virtual bool lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/) override;
 
@@ -719,9 +717,7 @@ public:
      *          this function cause wait indefinitely for ownership.
      *          In contrast, when a mutex object is used for mutual exclusion,
      *          the lock() function accept a specified time-out interval.
-     *
-     * \param   timeout     NOT USED in case of critical section object.
-     * \return  Spin-lock always return true
+     * \return  Spin-lock always return true.
      **/
     virtual bool lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/ ) override;
 
@@ -804,8 +800,6 @@ public:
      *          Otherwise, it waits infinite until the thread takes the ownership.
      *          The recursive call to lock within same thread context will not
      *          block the thread.
-     * \param   timeout     NOT USED. I will always wait infinite until the thread
-     *                      takes the ownership.
      * \return  Always returns true.
      **/
     inline virtual bool lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/ ) override;
@@ -912,7 +906,6 @@ public:
 
     /**
      * \brief   No real locking when call this method.
-     * \param	NOT USED.
      * \return	Always returns true.
      **/
     inline virtual bool lock( unsigned int /*timeout = NECommon::WAIT_INFINITE*/ ) override;
@@ -1331,7 +1324,7 @@ public:
     /**
      * \brief   Unlocks certain entry in the synchronization objects list.
      * \param   index   The entry of previously locked object to unlock
-     * \brief   Returns true if operation succeeded.
+     * \return  Returns true if operation succeeded.
      **/
     bool unlock(int index);
 
@@ -1343,7 +1336,7 @@ private:
      * \brief   The OS specific call to lock multiple synchronization objects.
      *          It returns the index of locking object, that the thread has
      *          taken the ownership.
-     * \pram    timeout     The timeout in milliseconds to wait. If expired,
+     * \param   timeout     The timeout in milliseconds to wait. If expired,
      *                      returns timeout expired value without locking.
      * \param   waitForAll  It true, waits for all objects.
      * \param   isAlertable If true and thread is locked it returns the
@@ -1482,7 +1475,7 @@ public:
      * \param   passed  The steady high-resolution time in passed.
      * \return  The time difference in nanoseconds.
      **/
-    static inline Wait::Duration untilNow(const Wait::SteadyTime& past);
+    static inline Wait::Duration untilNow(const Wait::SteadyTime& passed);
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -1542,7 +1535,7 @@ private:
     /**
      * \brief   OS dependent implementation of thread waiting.
      *          The accuracy depends on the OS and hardware provided features.
-     * \param   time    The time in the future to suspend thread and wait.
+     * \param   timeout     The time in the future to suspend thread and wait.
      * \return  Returns waiting results. Any value, which is not equal to eWaitResult::WaitInvalid
      *          is considered successful operation.
      **/
@@ -1827,9 +1820,9 @@ inline Wait::Duration Wait::fromNow(const Wait::SteadyTime& future)
     return (future - std::chrono::steady_clock::now());
 }
 
-inline Wait::Duration Wait::untilNow(const Wait::SteadyTime& past)
+inline Wait::Duration Wait::untilNow(const Wait::SteadyTime& passed)
 {
-    return (std::chrono::steady_clock::now() - past);
+    return (std::chrono::steady_clock::now() - passed);
 }
 
 inline Wait::eWaitResult Wait::wait(uint32_t ms) const

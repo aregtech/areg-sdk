@@ -155,7 +155,6 @@ public:
 
     /**
      * \brief   Triggered when application is going to exit.
-     * \param   listener    The pointer to the configuration listener object if any.
      **/
     virtual void serviceRelease( void ) override;
 

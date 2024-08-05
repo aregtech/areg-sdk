@@ -44,13 +44,13 @@ bool LayoutManager::createLayouts( const char * layoutFormat )
 bool LayoutManager::createLayouts(const String& layoutFormat)
 {
     deleteLayouts();
-    uint32_t len = layoutFormat.getLength();
+    uint32_t len  = static_cast<uint32_t>(layoutFormat.getLength());
     uint32_t size = len + 1u;
     char* strFormat = size > 1 ? DEBUG_NEW char[size] : nullptr;
 
     if (strFormat != nullptr)
     {
-        NEString::copyString<char, char>(strFormat, len, layoutFormat.getString(), len);
+        NEString::copyString<char, char>(strFormat, static_cast<NEString::CharCount>(len), layoutFormat.getString(), static_cast<NEString::CharCount>(len));
         _createLayouts(strFormat);
         delete[] strFormat;
     }

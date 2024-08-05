@@ -57,14 +57,14 @@ public:
     void RemoveAllChatPages( void );
 
 protected:
-    virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
+    virtual void DoDataExchange(CDataExchange* pDX) override;	// DDX/DDV support
 
                                                         // Implementation
 protected:
     HICON m_hIcon;
 
     // Generated message map functions
-    virtual BOOL OnInitDialog();
+    virtual BOOL OnInitDialog() override;
     afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
     afx_msg void OnPaint();
     afx_msg void OnDestroy();

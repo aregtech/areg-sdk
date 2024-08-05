@@ -502,7 +502,7 @@ protected:
      *                          specified request ID.
      * \return  Returns the size of filtered listener list.
      **/
-    int findListeners(unsigned int requestId, StubListenerList & out_listners) const;
+    uint32_t findListeners(unsigned int requestId, StubListenerList & out_listners) const;
 
     /**
      * \brief   Searches notification listener in the list of listeners and returns true
@@ -549,7 +549,6 @@ protected:
      * \brief   Returns all listeners for specified proxy and on output returns
      *          list of remove request IDs.
      * \param   whichProxy  The address of request source proxy to remove.
-     * \param   removedIDs  The list of removed request IDs
      **/
     void clearAllListeners(const ProxyAddress & whichProxy);
 
@@ -558,7 +557,7 @@ protected:
      *          listed in given listener list.
      * \param   whichListeners  The list of listeners, containing target proxy address,
      *                          to send update notification event.
-     * \param   eventElem       The event, containing updated object ID and the new
+     * \param   masterEvent     The event, containing updated object ID and the new
      *                          value of attribute.
      **/
     void sendResponseNotification( const StubBase::StubListenerList & whichListeners, const ServiceResponseEvent & masterEvent );
@@ -567,7 +566,7 @@ protected:
      * \brief   Sends error message for requested to get attribute.
      * \param   whichListeners  The list of listeners containing target
      *                          proxy address to send error notification.
-     * \param   eventElem       The event, containing error type and 
+     * \param   masterEvent     The event, containing error type and 
      *                          attribute object ID.
      **/
     void sendErrorNotification( const StubBase::StubListenerList & whichListeners, const ServiceResponseEvent & masterEvent );
@@ -577,7 +576,7 @@ protected:
      *          listed listeners, containing target proxy addresses.
      * \param   whichListeners  The list of listeners, containing
      *                          address of proxy to send update notification.
-     * \param   eventElem       The event message to send, which contains 
+     * \param   masterEvent     The event message to send, which contains 
      *                          attribute object ID, update type and new 
      *                          updated  value of attribute.
      **/

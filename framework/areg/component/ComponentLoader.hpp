@@ -37,9 +37,9 @@
  **/
 #define BEGIN_MODEL(model_name)                                                                                 \
     /*  Declare Load model method and give name of model                            */                          \
-    static NERegistry::Model _createdModelData( const char * _modelName )                                       \
+    static NERegistry::Model _createdModelData( const char * _model_name_ )                                     \
     {                                                                                                           \
-        NERegistry::Model __model(_modelName);
+        NERegistry::Model __model(_model_name_);
 
 #define END_MODEL(model_name)                                                                                   \
         return __model;                                                                                         \

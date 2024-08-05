@@ -156,10 +156,6 @@ bool ServerReceiveThread::runDispatcher(void)
 
                     msgReceived.invalidate();
                 }
-                else
-                {
-                    OUTPUT_WARN("Client connection lost. Clean master list on next loop or close server socket!");
-                }
             }
             else
             {

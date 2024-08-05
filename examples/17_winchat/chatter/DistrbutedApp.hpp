@@ -33,12 +33,12 @@ public:
 
     // Overrides
 public:
-    virtual BOOL InitInstance();
+    virtual BOOL InitInstance() override;
 
     // Implementation
 
     DECLARE_MESSAGE_MAP()
-    virtual int ExitInstance( );
+    virtual int ExitInstance( ) override;
 };
 
 extern DistrbutedApp theApp;

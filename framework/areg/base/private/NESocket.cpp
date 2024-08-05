@@ -22,8 +22,8 @@
     #ifndef WIN32_LEAN_AND_MEAN
         #define WIN32_LEAN_AND_MEAN
     #endif  // WIN32_LEAN_AND_MEAN
-    #include <winsock2.h>
-    #include <ws2tcpip.h>
+    #include <WinSock2.h>
+    #include <WS2tcpip.h>
 #else
     #include <arpa/inet.h>
     #include <ctype.h>      // IEEE Std 1003.1-2001
@@ -208,21 +208,8 @@ bool NESocket::SocketAddress::resolveSocket(SOCKETHANDLE hSocket)
             {
                 setAddress(addr_in);
                 result = true;
-
-                OUTPUT_DBG("Succeeded to resolve name of socket [ %u ]. IP address = [ %s ], port number [ %u ]"
-                            , static_cast<unsigned int>(hSocket)
-                            , static_cast<const char *>(mIpAddr)
-                            , static_cast<unsigned int>(mPortNr));
             }
         }
-        else
-        {
-            OUTPUT_WARN("Failed to get peer name of socket [ %u ]", static_cast<unsigned int>(hSocket));
-        }
-    }
-    else
-    {
-        OUTPUT_WARN("Invalid Socket Handle, cannot resolve name");
     }
 
     return result;
@@ -262,27 +249,15 @@ bool NESocket::SocketAddress::resolveAddress( const std::string_view & hostName,
                     setAddress(*addrIn);
                     result = mIpAddr.isEmpty() == false;
                     mPortNr = portNr;
-
-                    OUTPUT_DBG("Succeeded to resolve name [ %s ] of [ %s ]. The IP address [ %s ], port number [ %u ]"
-                                , host
-                                , isServer ? "SERVER" : "CLIENT"
-                                , static_cast<const char *>(mIpAddr)
-                                , static_cast<unsigned int>(mPortNr));
-
                     break;
                 }
             }
 
             ::freeaddrinfo( aiResult );
         }
-        else
-        {
-            OUTPUT_ERR("Failed to resolve name [ %s ] and port number [ %u ] of [ %s ]", host, static_cast<unsigned int>(portNr), isServer ? "SERVER" : "CLIENT");
-        }
     }
     else
     {
-        OUTPUT_DBG("Ignored to resolve name for specified IP address [ %s ] and port number [ %u ] of [ %s ]", host, static_cast<unsigned int>(portNr), isServer ? "SERVER" : "CLIENT");
         mPortNr = portNr;
         mIpAddr = host;
         result  = true;
@@ -712,7 +687,7 @@ AREG_API_IMPL SOCKETHANDLE NESocket::serverAcceptConnection(SOCKETHANDLE serverS
     }
     else
     {
-        TRACE_WARN("Found broken connection of socket [ %u ]", ((unsigned int)result));
+        TRACE_WARN("Found broken connection of socket [ %u ]", MACRO_MAKE_NUMBER(result));
         return result;
     }
 
@@ -749,31 +724,31 @@ AREG_API_IMPL void NESocket::socketClose(SOCKETHANDLE hSocket)
     }
 }
 
-AREG_API_IMPL int NESocket::sendData(SOCKETHANDLE hSocket, const unsigned char* dataBuffer, int dataLength, int blockMaxSize /*= NECommon::DEFAULT_SIZE*/)
+AREG_API_IMPL int NESocket::sendData(SOCKETHANDLE hSocket, const unsigned char* dataBuffer, uint32_t dataLength, uint32_t blockMaxSize /*= NECommon::DEFAULT_SIZE*/)
 {
     int result = -1;
     if (isSocketHandleValid(hSocket))
     {
         result = 0;
-        if ((dataBuffer != nullptr) && (dataLength > 0))
+        if ((dataBuffer != nullptr) && (static_cast<int32_t>(dataLength) > 0))
         {
-            result = _osSendData(hSocket, dataBuffer, dataLength, blockMaxSize > 0 ? blockMaxSize : NESocket::getMaxSendSize(hSocket));
+            result = _osSendData(hSocket, dataBuffer, static_cast<int32_t>(dataLength), static_cast<int32_t>(blockMaxSize) != 0 ? static_cast<int32_t>(blockMaxSize) : static_cast<int32_t>(NESocket::getMaxSendSize(hSocket)));
         }
     }
 
     return result;
 }
 
-AREG_API_IMPL int NESocket::receiveData(SOCKETHANDLE hSocket, unsigned char* dataBuffer, int dataLength, int blockMaxSize )
+AREG_API_IMPL int NESocket::receiveData(SOCKETHANDLE hSocket, unsigned char* dataBuffer, uint32_t dataLength, uint32_t blockMaxSize )
 {
     int result = -1;
 
     if (isSocketHandleValid(hSocket))
     {
         result = 0;
-        if ((dataBuffer != nullptr) && (dataLength > 0))
+        if ((dataBuffer != nullptr) && (static_cast<int32_t>(dataLength) > 0))
         {
-            result = _osRecvData(hSocket, dataBuffer, dataLength, blockMaxSize > 0 ? blockMaxSize : NESocket::getMaxReceiveSize(hSocket));
+            result = _osRecvData(hSocket, dataBuffer, static_cast<int32_t>(dataLength), static_cast<int32_t>(blockMaxSize) > 0 ? static_cast<int32_t>(blockMaxSize) : static_cast<int32_t>(NESocket::getMaxReceiveSize(hSocket)));
         }
     }
 

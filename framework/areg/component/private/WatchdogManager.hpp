@@ -89,18 +89,17 @@ public:
     static bool isWatchdogManagerStarted( void );
 
     /**
-     * \brief   Starts the timer. If succeeds, returns true.
+     * \brief   Starts the watchdog timer. If succeeds, returns true.
      *          When timer event is fired, it will be dispatched in the
      *          thread where it was started, i.e. in the current thread.
-     * \param   timer   The timer object that should be started
+     * \param   watchdog    The watchdog object that should be started.
      * \return  Returns true if timer was successfully created.
      **/
     static bool startTimer(Watchdog& watchdog);
 
     /**
-     * \brief   Stops the timer. Returns true if timer successfully was stopped.
-     * \param   timer   The timer object that should be stopped
-     * \return  Returns true if timer was successfully stopped.
+     * \brief   Stops the watchdog timer. Returns true if timer successfully was stopped.
+     * \param   watchdog    The watchdog object that should be stopped.
      **/
     static void stopTimer(Watchdog& watchdog);
 
@@ -166,7 +165,7 @@ private:
      * \brief   Stop watchdog timer and unregister from the resource map.
      * \param   watchdog   The instance of watchdog object to unregister.
      **/
-    inline void _unregisterWatchdog( Watchdog & Watchdog );
+    inline void _unregisterWatchdog( Watchdog & watchdog );
 
 //////////////////////////////////////////////////////////////////////////
 //  OS specific hidden methods
@@ -198,14 +197,14 @@ private:
 
     /**
      * \brief   Starts system Watchdog and returns true if Watchdog started with success.
-     * \param   WatchdogInfo   The Watchdog information object
+     * \param   watchdog    The Watchdog  object with timer information.
      * \return  Returns true if system Watchdog started with success.
      **/
     static bool _osSystemTimerStart( Watchdog & watchdog );
 
     /**
      * \brief   Stops previously started waitable timer.
-     * \param   timerHandle The waitable timer handle to destroy.
+     * \param   handle      The waitable timer handle to destroy.
      **/
     static void _osSystemTimerStop(TIMERHANDLE handle);
 

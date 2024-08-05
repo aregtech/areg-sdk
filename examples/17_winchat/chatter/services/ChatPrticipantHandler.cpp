@@ -24,12 +24,10 @@ ChatPrticipantHandler::ChatPrticipantHandler( const String & serviceName
     , mWndChat          ( static_cast<ptr_type>(0) )
     , mLock             ( false )
 {
-    ; // do nothing
 }
 
 ChatPrticipantHandler::~ChatPrticipantHandler( void )
 {
-    ; // do nothing
 }
 
 int ChatPrticipantHandler::AddParticipant( const NECommon::sInitiator & initiator, const NECommon::ListParticipants & listParticipants )
@@ -75,7 +73,7 @@ int ChatPrticipantHandler::RemoveParticipant( const NECommon::sInitiator & initi
             int pos = findPosition(connection);
             if ( pos != NECommon::INVALID_INDEX )
             {
-                mListParticipants.removeAt(pos);
+                mListParticipants.removeAt(static_cast<uint32_t>(pos));
                 ++ result;
             }
         }
@@ -92,7 +90,7 @@ bool ChatPrticipantHandler::RemoveParticipant( const NECommon::sInitiator & init
         int pos = findPosition( participant );
         if ( pos != NECommon::INVALID_INDEX )
         {
-            mListParticipants.removeAt( pos );
+            mListParticipants.removeAt( static_cast<uint32_t>(pos) );
             ++ result;
         }
     }

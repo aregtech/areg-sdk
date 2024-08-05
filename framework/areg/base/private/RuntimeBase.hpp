@@ -91,7 +91,7 @@ public:
 
     /**
      * \brief   Checks class instance by name.
-     * \param   className   The name of class to check.
+     * \param   classMagic  The magic number related with the  name of the class to check.
      **/
     virtual bool isInstanceOfRuntimeClass( unsigned int classMagic ) const;
 

@@ -57,7 +57,7 @@ Component * DirectChatService::CreateComponent( const NERegistry::ComponentEntry
     return ( page != nullptr ? new DirectChatService(entry, owner, static_cast<ChatPrticipantHandler &>(*page) ) : nullptr);
 }
 
-void DirectChatService::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry )
+void DirectChatService::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & /* entry */ )
 {
     delete (&compObject);
 }

@@ -26,7 +26,7 @@
 //////////////////////////////////////////////////////////////////////////
 // SystemServiceConsole class implementation
 //////////////////////////////////////////////////////////////////////////
-SystemServiceConsole::SystemServiceConsole(DataRateHelper* dataRate, const NERegistry::ComponentEntry & entry, ComponentThread & owner, NEMemory::uAlign OPT data )
+SystemServiceConsole::SystemServiceConsole(DataRateHelper* dataRate, const NERegistry::ComponentEntry & entry, ComponentThread & owner, NEMemory::uAlign OPT /* data */ )
     : Component         ( entry, owner )
     , StubBase          ( self( ), NEService::getEmptyInterface( ) )
     , IETimerConsumer   ( )
@@ -46,8 +46,8 @@ void SystemServiceConsole::startupServiceInterface( Component & holder )
     if ( (mDataRateHelper != nullptr) && mDataRateHelper->isVerbose())
     {
 
-        console.outputMsg( NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data( ), 0.0f, DataRateHelper::MSG_BYTES.data( ) );
-        console.outputMsg( NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data( ), 0.0f, DataRateHelper::MSG_BYTES.data( ) );
+        console.outputMsg( NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
+        console.outputMsg( NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
     }
 
     mTimer.startTimer( NECommon::TIMEOUT_1_SEC, Timer::CONTINUOUSLY );
@@ -76,19 +76,19 @@ void SystemServiceConsole::processTimer( Timer & timer )
 //////////////////////////////////////////////////////////////////////////
 // These methods must exist, but can have empty body
 //////////////////////////////////////////////////////////////////////////
-void SystemServiceConsole::sendNotification( unsigned int msgId )
+void SystemServiceConsole::sendNotification( unsigned int /* msgId */ )
 {
 }
 
-void SystemServiceConsole::errorRequest( unsigned int msgId, bool msgCancel )
+void SystemServiceConsole::errorRequest( unsigned int /* msgId */, bool /* msgCancel */ )
 {
 }
 
-void SystemServiceConsole::processRequestEvent( ServiceRequestEvent & eventElem )
+void SystemServiceConsole::processRequestEvent( ServiceRequestEvent & /* eventElem */ )
 {
 }
 
-void SystemServiceConsole::processAttributeEvent( ServiceRequestEvent & eventElem )
+void SystemServiceConsole::processAttributeEvent( ServiceRequestEvent & /* eventElem */ )
 {
 }
 
@@ -102,8 +102,8 @@ inline void SystemServiceConsole::_outputDataRate(void)
         DataRateHelper::DataRate rateRecv{ mDataRateHelper->queryBytesReceivedWithLiterals() };
 
         console.saveCursorPosition( );
-        console.outputMsg( NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data( ), rateSend.first, rateSend.second.c_str( ) );
-        console.outputMsg( NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data( ), rateRecv.first, rateRecv.second.c_str( ) );
+        console.outputMsg( NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data( ), static_cast<double>(rateSend.first), rateSend.second.c_str( ) );
+        console.outputMsg( NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data( ), static_cast<double>(rateRecv.first), rateRecv.second.c_str( ) );
         console.restoreCursorPosition( );
         console.refreshScreen( );
     }

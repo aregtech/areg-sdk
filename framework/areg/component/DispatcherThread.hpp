@@ -35,7 +35,7 @@ class NullDispatcherThread;
 // DispatcherThread declarations
 //////////////////////////////////////////////////////////////////////////
 /************************************************************************
- * \brief   Global type.
+ * Global type.
  ************************************************************************/
 /**
  * \brief   Generic event dispatching thread.

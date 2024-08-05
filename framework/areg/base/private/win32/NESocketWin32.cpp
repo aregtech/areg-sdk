@@ -23,8 +23,8 @@
 #ifndef WIN32_LEAN_AND_MEAN
     #define WIN32_LEAN_AND_MEAN
 #endif  // WIN32_LEAN_AND_MEAN
-#include <winsock2.h>
-#include <ws2tcpip.h>
+#include <WinSock2.h>
+#include <WS2tcpip.h>
 
 #include <atomic>
 
@@ -104,7 +104,7 @@ namespace NESocket
                 if (errCode == static_cast<int>(WSAEMSGSIZE))
                 {
                     // try again with other package size
-                    blockMaxSize = NESocket::getMaxSendSize(hSocket);
+                    blockMaxSize = static_cast<int32_t>(NESocket::getMaxSendSize(hSocket));
                 }
                 else
                 {
@@ -146,7 +146,7 @@ namespace NESocket
                 if (errCode == static_cast<int>(WSAEMSGSIZE))
                 {
                     // try again with other package size
-                    blockMaxSize = NESocket::getMaxReceiveSize(hSocket);
+                    blockMaxSize = static_cast<int32_t>(NESocket::getMaxReceiveSize(hSocket));
                 }
                 else
                 {

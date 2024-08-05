@@ -133,9 +133,9 @@ protected:
 
     /**
      * \brief   Triggered when Timer is expired.
-     * \param   timer   The timer object that is expired.
+     *          timer   The timer object that is expired.
      **/
-    virtual void processTimer( Timer & timer ) override
+    virtual void processTimer( Timer & /* timer */ ) override
     {
         // this never happens, since we break dispatching in dispatchEvent() method.
         ASSERT( false );

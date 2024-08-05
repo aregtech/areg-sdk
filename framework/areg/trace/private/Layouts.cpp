@@ -61,8 +61,8 @@ void TickCountLayout::logMessage( const NETrace::sLogMessage & /*msgLog*/, IEOut
 #endif  // _BIT64
 
     char buffer[128];
-    int len = String::formatString(buffer, 128, fmt, static_cast<id_type>( DateTime::getProcessTickCount() ));
-    stream.write(reinterpret_cast<const unsigned char *>(buffer), len > 0 ? len : 0);
+    uint32_t len = static_cast<uint32_t>(String::formatString(buffer, 128, fmt, static_cast<id_type>( DateTime::getProcessTickCount() )));
+    stream.write(reinterpret_cast<const unsigned char *>(buffer), len);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -91,7 +91,7 @@ void DayTimeLaytout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStrea
     {
         String timestamp;
         DateTime::formatTime(DateTime(msgLog.logTimestamp), timestamp, NEUtilities::TIME_FORMAT_ISO8601_OUTPUT);
-        stream.write( reinterpret_cast<const unsigned char *>(timestamp.getString()), timestamp.getLength());
+        stream.write( reinterpret_cast<const unsigned char *>(timestamp.getString()), static_cast<uint32_t>(timestamp.getLength()));
     }
 }
 
@@ -127,7 +127,7 @@ void ModuleIdLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStrea
     {
         if (msgLog.logModuleId == _moduleId)
         {
-            stream.write(reinterpret_cast<const unsigned char*>(_moduleName.getBuffer()), _moduleName.getLength());
+            stream.write(reinterpret_cast<const unsigned char*>(_moduleName.getBuffer()), static_cast<uint32_t>(_moduleName.getLength()));
         }
         else
         {
@@ -137,8 +137,8 @@ void ModuleIdLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStrea
             constexpr char fmt[]{ "0x%X" };
 #endif  // _BIT64
             char buffer[128];
-            int len = String::formatString(buffer, 128, fmt, static_cast<id_type>(msgLog.logModuleId));
-            stream.write(reinterpret_cast<const unsigned char*>(buffer), len > 0 ? len : 0);
+            uint32_t len = static_cast<uint32_t>(String::formatString(buffer, 128, fmt, static_cast<id_type>(msgLog.logModuleId)));
+            stream.write(reinterpret_cast<const unsigned char*>(buffer), len);
         }
     }
 }
@@ -164,7 +164,7 @@ MessageLayout::MessageLayout( MessageLayout && /*src*/ ) noexcept
 
 void MessageLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const
 {
-    NEString::CharCount count{ NEString::getStringLength<char>(msgLog.logMessage) };
+    uint32_t count{ static_cast<uint32_t>(NEString::getStringLength<char>(msgLog.logMessage)) };
     stream.write(reinterpret_cast<const unsigned char *>(msgLog.logMessage), count);
 }
 
@@ -214,7 +214,7 @@ PriorityLayout::PriorityLayout( PriorityLayout && /*src*/ ) noexcept
 void PriorityLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStream & stream ) const
 {
     const String& prio{ NETrace::logPrioToString(msgLog.logMessagePrio) };
-    stream.write(reinterpret_cast<const unsigned char *>(prio.getString()), prio.getLength());
+    stream.write(reinterpret_cast<const unsigned char *>(prio.getString()), static_cast<uint32_t>(prio.getLength()));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -241,8 +241,8 @@ void ScopeIdLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStream
     if ( msgLog.logScopeId != 0 )
     {
         char buffer[128];
-        int len = String::formatString(buffer, 128, "%u", msgLog.logScopeId);
-        stream.write( reinterpret_cast<const unsigned char *>(buffer), len > 0 ? len : 0 );
+        uint32_t len = static_cast<uint32_t>(String::formatString(buffer, 128, "%u", msgLog.logScopeId));
+        stream.write( reinterpret_cast<const unsigned char *>(buffer), len );
     }
 }
 
@@ -276,8 +276,8 @@ void ThreadIdLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStrea
 #endif  // _BIT64
 
         char buffer[128];
-        int len = String::formatString(buffer, 128, fmt, static_cast<id_type>(msgLog.logThreadId));
-        stream.write( reinterpret_cast<const unsigned char *>(buffer), len > 0 ? len : 0 );
+        uint32_t len = static_cast<uint32_t>(String::formatString(buffer, 128, fmt, static_cast<id_type>(msgLog.logThreadId)));
+        stream.write( reinterpret_cast<const unsigned char *>(buffer), len );
     }
 }
 
@@ -305,14 +305,14 @@ void ModuleNameLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStr
     if (msgLog.logDataType == NETrace::eLogDataType::LogDataLocal)
     {
         static const String& _module{ Process::getInstance().getAppName() };
-        stream.write(reinterpret_cast<const unsigned char*>(_module.getString()), _module.getLength());
+        stream.write(reinterpret_cast<const unsigned char*>(_module.getString()), static_cast<uint32_t>(_module.getLength()));
     }
     else
     {
         if (msgLog.logCookie == NEService::COOKIE_LOCAL)
         {
             static const String& _module{ Process::getInstance().getAppName() };
-            stream.write(reinterpret_cast<const unsigned char*>(_module.getString()), _module.getLength());
+            stream.write(reinterpret_cast<const unsigned char*>(_module.getString()), static_cast<uint32_t>(_module.getLength()));
         }
         else if ((msgLog.logCookie != NEService::COOKIE_UNKNOWN) && (msgLog.logModuleLen != 0))
         {
@@ -354,7 +354,7 @@ void ThreadNameLayout::logMessage( const NETrace::sLogMessage & msgLog, IEOutStr
     {
         const String& thread{ Thread::getThreadName(static_cast<id_type>(msgLog.logThreadId)) };
         name = thread.getString();
-        len = thread.getLength();
+        len  = static_cast<uint32_t>(thread.getLength());
     }
     else
     {
@@ -433,7 +433,7 @@ AnyTextLayout::AnyTextLayout(const char * anyMessage)
 
 void AnyTextLayout::logMessage( const NETrace::sLogMessage & /*msgLog*/, IEOutStream & stream ) const
 {
-    stream.write( reinterpret_cast<const unsigned char *>(mTextMessage.getString()), mTextMessage.getLength() );
+    stream.write( reinterpret_cast<const unsigned char *>(mTextMessage.getString()), static_cast<uint32_t>(mTextMessage.getLength()) );
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -445,12 +445,12 @@ CookieIdLayout::CookieIdLayout(void)
 {
 }
 
-CookieIdLayout::CookieIdLayout(const CookieIdLayout& src)
+CookieIdLayout::CookieIdLayout(const CookieIdLayout& /* src */)
     : IELayout(NELogging::eLayouts::LayoutCookieId)
 {
 }
 
-CookieIdLayout::CookieIdLayout(CookieIdLayout&& src) noexcept
+CookieIdLayout::CookieIdLayout(CookieIdLayout&& /* src */) noexcept
     : IELayout(NELogging::eLayouts::LayoutCookieId)
 {
 }
@@ -464,8 +464,8 @@ void CookieIdLayout::logMessage(const NETrace::sLogMessage& msgLog, IEOutStream&
 #endif  // _BIT64
 
     char buffer[128];
-    int len = String::formatString(buffer, 128, fmt, static_cast<id_type>(msgLog.logCookie));
-    stream.write(reinterpret_cast<const unsigned char*>(buffer), len > 0 ? len : 0);
+    uint32_t len = static_cast<uint32_t>(String::formatString(buffer, 128, fmt, static_cast<id_type>(msgLog.logCookie)));
+    stream.write(reinterpret_cast<const unsigned char*>(buffer), len);
 }
 
 #endif  // AREG_LOGS

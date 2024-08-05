@@ -41,16 +41,16 @@ namespace
 
     inline char ** _convertArguments( TCHAR ** argv, int argc )
     {
-        char ** argvTemp = argc != 0 ? DEBUG_NEW char * [argc] : nullptr;
+        char ** argvTemp = argc != 0 ? DEBUG_NEW char * [static_cast<uint32_t>(argc)] : nullptr;
         if ( argvTemp != nullptr )
         {
-            for ( int i = 0; i < static_cast<int>(argc); ++i )
+            for ( uint32_t i = 0; i < static_cast<uint32_t>(argc); ++i )
             {
                 TCHAR * entry = argv[i];
                 uint32_t length = static_cast<uint32_t>(NEString::getStringLength<TCHAR>( entry ));
                 uint32_t size = length + 1u;
                 char * arg = DEBUG_NEW char[size];
-                NEString::copyString<char, TCHAR>( arg, size, entry );
+                NEString::copyString<char, TCHAR>( arg, static_cast<NEString::CharCount>(size), entry );
                 argvTemp[i] = arg;
             }
         }
@@ -62,7 +62,10 @@ namespace
         if ( argv != nullptr )
         {
             for ( int i = 0; i < static_cast<int>(argc); ++i )
+            {
                 delete[] argv[i];
+            }
+
             delete[] argv;
         }
     }

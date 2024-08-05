@@ -177,7 +177,7 @@ private:
      * \brief   Returns the string value of TrafficLight states.
      * \param   state   The state value of TrafficLight State Machine.
      **/
-    static inline const char* const getString( const TrafficLightFSM::eState state );
+    static inline const char* getString( const TrafficLightFSM::eState state );
     
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -216,7 +216,7 @@ public:
 
     /**
      * \brief   Call to send and event.
-     * \param   fsmEventValue   The name of event, generated in NETrafficLightFSM namespace.
+     * \param   data    The name of event, generated in NETrafficLightFSM namespace.
      **/
     inline void sendEvent( const NETrafficLightFSM::eFsmEventData data );   
 
@@ -273,7 +273,7 @@ public:
     /**
      * \brief   Returns true if specified timer object is active
      **/
-     inline const bool isTimerActive( const NETrafficLightFSM::eFsmTimerData whichTimer ) const;
+     inline bool isTimerActive( const NETrafficLightFSM::eFsmTimerData whichTimer ) const;
 
 private:
 /************************************************************************/
@@ -538,7 +538,7 @@ inline TrafficLightFSM& TrafficLightFSM::self( void )
     return (*this);
 }
 
-inline const bool TrafficLightFSM::isTimerActive( const NETrafficLightFSM::eFsmTimerData whichTimer ) const
+inline bool TrafficLightFSM::isTimerActive( const NETrafficLightFSM::eFsmTimerData whichTimer ) const
 {
     switch (whichTimer)
     {
@@ -578,7 +578,7 @@ inline void TrafficLightFSM::sendEvent( const NETrafficLightFSM::eFsmEventData d
 /**
  * \brief   Returns the string value of states
  **/
-inline  const char* const TrafficLightFSM::getString( const TrafficLightFSM::eState state )
+inline  const char* TrafficLightFSM::getString( const TrafficLightFSM::eState state )
 {
     switch (state)
     {

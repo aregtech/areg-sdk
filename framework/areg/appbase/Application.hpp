@@ -150,7 +150,7 @@ public:
 
     /**
      * \brief   Searches model by name.
-     * \param   moldelName  The name of model to search.
+     * \param   modelName   The name of model to search.
      * \return  If found, returns valid model. Otherwise, returns invalid model.
      *          The invalid model has empty name.
      **/
@@ -201,7 +201,6 @@ public:
 
     /**
      * \brief   Call to stop Service Manager. When stops, it automatically stops Routing Service connection.
-     * \return  Returns true if succeeded to start service manager.
      **/
     static void stopServiceManager( void );
 

@@ -168,7 +168,7 @@ public:
      *          There should be possibility to stream values and if VALUE is not a
      *          primitive, but an object, it should have implemented streaming operator.
      * \param   stream  The stream to write values.
-     * \param   input   The linked list object containing value to stream.
+     * \param   output  The linked list object containing value to stream.
      **/
     template<typename V>
     friend inline IEOutStream & operator << ( IEOutStream & stream, const TELinkedList<V> & output );
@@ -242,10 +242,17 @@ public:
      * \brief	Checks whether given element exist in the linked list or not. The elements of type
      *          VALUE should have comparing operators.
      * \param	elemSearch  The element to search.
-     * \param	startAt	    The position to start searching.
      * \return	Returns true if could find element starting at given position.
      **/
     inline bool contains(const VALUE& elemSearch) const;
+
+    /**
+     * \brief	Checks whether given element exist in the linked list or not. The elements of type
+     *          VALUE should have comparing operators.
+     * \param	elemSearch  The element to search.
+     * \param	startAt	    The position to start searching.
+     * \return	Returns true if could find element starting at given position.
+     **/
     inline bool contains( const VALUE & elemSearch, LISTPOS startAt) const;
 
     /**
@@ -471,27 +478,55 @@ public:
      * \brief	Removes element at given position and returns position of the next entry in the linked list.
      *          Returns invalid position if tail entry is removed.
      * \param	atPosition  Position of the element to remove from Linked List. 
-     * \param   out_Value   On output, it contains value of removed element
+     * \return  Returns the position of the next entry in the linked-list.
+     *          If the tail entry is removed, returns invalid position.
      **/
     inline LISTPOS removeAt( LISTPOS atPosition );
+
+    /**
+     * \brief	Removes element at given position and returns position of the next entry in the linked list.
+     *          Returns invalid position if tail entry is removed.
+     * \param	atPosition  Position of the element to remove from Linked List. 
+     * \param   out_Value   On output, it contains value of removed element
+     * \return  Returns the position of the next entry in the linked-list.
+     *          If the tail entry is removed, returns invalid position.
+     **/
     inline LISTPOS removeAt( LISTPOS atPosition, VALUE & OUT out_Value );
 
     /**
      * \brief	Searches and removes first match of entry, which value is equal to the given element.
      *          Returns true if found and removed entry with success.
      * \param	removeElement	Element to search and remove from Linked List
-     * \param	searchAfter	    The valid position in the linked list to start searching.
+     * \return  Returns true if found end removed entry.
      **/
     inline bool removeEntry( const VALUE & removeElement );
+
+    /**
+     * \brief	Searches and removes first match of entry, which value is equal to the given element.
+     *          Returns true if found and removed entry with success.
+     * \param	removeElement	Element to search and remove from Linked List
+     * \param	searchAfter	    The valid position in the linked list to start searching.
+     * \return  Returns true if found end removed entry.
+     **/
     inline bool removeEntry(const VALUE& removeElement, LISTPOS searchAfter);
 
     /**
      * \brief	Searches position of the entry by given value and returns valid position if found an entry.
      *          Otherwise, it returns invalid position.
      * \param	searchValue	    Value of element to search.
-     * \param	searchAfter	    The valid position in the linked list to start searching.
+     * \return  If found, returns valid position of the entry in the linked-list.
+     *          Otherwise, returns invalid position.
      **/
     inline LISTPOS find(const VALUE& searchValue) const;
+
+    /**
+     * \brief	Searches position of the entry by given value and returns valid position if found an entry.
+     *          Otherwise, it returns invalid position.
+     * \param	searchValue	    Value of element to search.
+     * \param	searchAfter	    The valid position in the linked list to start searching.
+     * \return  If found, returns valid position of the entry in the linked-list.
+     *          Otherwise, returns invalid position.
+     **/
     inline LISTPOS find( const VALUE & searchValue, LISTPOS searchAfter ) const;
 
     /**

@@ -103,7 +103,7 @@ public:
      * \brief   Creates instance of object with invalid socket object.
      *          Before sending or receiving data, the socket should be created
      *          and bound to host and port. Specified remoteAddress will be set as server address.
-     * \param   remoteAddress   Address of server.
+     * \param   serverAddress   The address of server socket.
      **/
     ServerConnectionBase( const NESocket::SocketAddress & serverAddress );
 
@@ -229,7 +229,7 @@ public:
      *          To accept connections on server side, firs socket should be created, which is bound to a
      *          local address. A backlog for incoming connections is specified with listen, and the length
      *          of pending connections are specified in maxQueueSize parameter. Then the connections are accepted.
-     * \param   maxQueueSize
+     * \param   maxQueueSize    The maximum size of the socket queue in the list.
      **/
     bool serverListen( int maxQueueSize = NESocket::MAXIMUM_LISTEN_QUEUE_SIZE );
 
@@ -255,8 +255,8 @@ public:
     /**
      * \brief   Call to accept connection. Nothing will happen if connection was already accepted.
      *          For new connections, on output out_connection parameter will have accepted state.
-     * \param   out_connection  Connection to accept. If object is valid, on output this will
-     *                          be in accepted state.
+     * \param[out]  clientConnection    Connection to accept. If object is valid, on output this will
+     *                                  be in accepted state.
      **/
     bool acceptConnection( SocketAccepted & clientConnection );
 
@@ -288,13 +288,11 @@ public:
 
     /**
      * \brief   Sets all sockets in the read-only mode, i.e. no send message is possible anymore.
-     * \return  Returns true if operation succeeds.
      **/
     inline void disableSend( void );
 
     /**
      * \brief   Sets all sockets in the write-only more, i.e. no receive message is possible anymore.
-     * \return  Returns true if operation succeeds.
      **/
     inline void disableReceive( void );
 

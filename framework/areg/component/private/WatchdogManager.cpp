@@ -137,7 +137,7 @@ void WatchdogManager::processEvent(const TimerManagerEventData & data)
     }
 }
 
-void WatchdogManager::_processExpiredTimer(Watchdog* watchdog, Watchdog::WATCHDOG_ID watchdogId, uint32_t hiBytes, uint32_t loBytes)
+void WatchdogManager::_processExpiredTimer(Watchdog* watchdog, Watchdog::WATCHDOG_ID watchdogId, uint32_t /* hiBytes */, uint32_t /* loBytes */)
 {
     TRACE_SCOPE(areg_component_private_WatchdogManager__processExpiredTimers);
 

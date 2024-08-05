@@ -31,7 +31,10 @@ protected:
      * \param   listParticipants    List of chat-room participants
      * \see     requestConnectoinSetup
      **/
-    virtual void responseConnectoinSetup( bool succeeded, const NEDirectConnection::sParticipant & target, const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants );
+    virtual void responseConnectoinSetup( bool succeeded
+                                        , const NEDirectConnection::sParticipant & target
+                                        , const NEDirectConnection::sInitiator & initiator
+                                        , const NEDirectConnection::ListParticipants & listParticipants ) override;
 
 /************************************************************************/
 // IEProxyListener Overrides

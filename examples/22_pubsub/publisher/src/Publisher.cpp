@@ -265,44 +265,46 @@ void Publisher::onThreadRuns(void)
             cmd = opts.getSize() == 1u ? static_cast<eCommands>(opts[0u].inCommand) : eCommands::CMD_Error;
             switch (cmd)
             {
-            case eCommands::CMD_Invalidate:
+            case Publisher::eCommands::CMD_Invalidate:
                 invalidate();
                 message = "Requested to invalidate data...";
                 break;
 
-            case eCommands::CMD_Pause:
+            case Publisher::eCommands::CMD_Pause:
                 stop();
                 message = "Requested to pause service...";
                 break;
 
-            case eCommands::CMD_Start:
+            case Publisher::eCommands::CMD_Start:
                 start();
                 message = "Requested to start service...";
                 break;
 
-            case eCommands::CMD_Quit:
+            case Publisher::eCommands::CMD_Quit:
                 quit();
                 message = "Request to quit application...";
                 break;
 
-            case eCommands::CMD_Help:
+            case Publisher::eCommands::CMD_Help:
                 break;
 
+            case Publisher::eCommands::CMD_Undefined:
+            case Publisher::eCommands::CMD_Error:
             default:
-                cmd = eCommands::CMD_Error;
+                cmd = Publisher::eCommands::CMD_Error;
                 message.format(_fmtError.data(), usrInput.getString());
                 break;
             }
         }
         else
         {
-            cmd = eCommands::CMD_Error;
+            cmd = Publisher::eCommands::CMD_Error;
             message.format(_fmtError.data(), usrInput.getString());
         }
 
         printMessage(message, cmd);
 
-    } while (cmd != eCommands::CMD_Quit);
+    } while (cmd != Publisher::eCommands::CMD_Quit);
 }
 
 

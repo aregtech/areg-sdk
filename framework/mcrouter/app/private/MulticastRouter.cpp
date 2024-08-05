@@ -112,9 +112,9 @@ MulticastRouter & MulticastRouter::getInstance(void)
     return _messageRouter;
 }
 
+#if AREG_EXTENDED
 void MulticastRouter::printStatus(const String& status)
 {
-#if AREG_EXTENDED
 
     if (MulticastRouter::getInstance().getCurrentOption() == NESystemService::eServiceOption::CMD_Console)
     {
@@ -123,9 +123,12 @@ void MulticastRouter::printStatus(const String& status)
         MulticastRouter::_outputInfo(status);
         console.setCursorCurPosition(curPos);
     }
-
-#endif // AREG_EXTENDED
 }
+#else   // AREG_EXTENDED
+void MulticastRouter::printStatus(const String& /* status */)
+{
+}
+#endif  // AREG_EXTENDED
 
 MulticastRouter::MulticastRouter( void )
     : ServiceApplicationBase( mServiceServer )
@@ -235,7 +238,7 @@ NERemoteService::eConnectionTypes MulticastRouter::getConnectionType(void) const
     return NERemoteService::eConnectionTypes::ConnectTcpip;
 }
 
-void MulticastRouter::printHelp( bool isCmdLine )
+void MulticastRouter::printHelp( bool /* isCmdLine */ )
 {
 #if     AREG_EXTENDED
 
@@ -287,48 +290,49 @@ bool MulticastRouter::_checkCommand(const String& cmd)
         for (uint32_t i = 0; i < opts.getSize( ); ++ i )
         {
             const OptionParser::sOption & opt = opts[ i ];
-            switch ( static_cast<eRouterOptions>(opt.inCommand) )
+            switch ( static_cast<MulticastRouter::eRouterOptions>(opt.inCommand) )
             {
-            case eRouterOptions::CMD_RouterPause:
+            case MulticastRouter::eRouterOptions::CMD_RouterPause:
                 MulticastRouter::_outputInfo( "Pausing message router ..." );
                 router.getCommunicationController().disconnectServiceHost( );
                 router.mServiceServer.waitToComplete( );
                 MulticastRouter::_outputInfo( "Message router is paused ..." );
                 break;
 
-            case eRouterOptions::CMD_RouterRestart:
+            case MulticastRouter::eRouterOptions::CMD_RouterRestart:
                 MulticastRouter::_outputInfo( "Restarting message router ..." );
                 router.getCommunicationController( ).connectServiceHost( );
                 MulticastRouter::_outputInfo( "Message router is restarted ..." );
                 break;
 
-            case eRouterOptions::CMD_RouterInstances:
+            case MulticastRouter::eRouterOptions::CMD_RouterInstances:
                 MulticastRouter::_outputInstances( router.getConnetedInstances() );
                 break;
 
-            case eRouterOptions::CMD_RouterVerbose:
+            case MulticastRouter::eRouterOptions::CMD_RouterVerbose:
                 MulticastRouter::_setVerboseMode( true );
                 break;
 
-            case eRouterOptions::CMD_RouterSilent:
+            case MulticastRouter::eRouterOptions::CMD_RouterSilent:
                 MulticastRouter::_setVerboseMode( false );
                 break;
 
-            case eRouterOptions::CMD_RouterPrintHelp:
+            case MulticastRouter::eRouterOptions::CMD_RouterPrintHelp:
                 router.printHelp( false );
                 break;
 
-            case eRouterOptions::CMD_RouterQuit:
+            case MulticastRouter::eRouterOptions::CMD_RouterQuit:
                 quit = true;
                 break;
 
-            case eRouterOptions::CMD_RouterConsole:     // pass through
-            case eRouterOptions::CMD_RouterInstall:     // pass through
-            case eRouterOptions::CMD_RouterUninstall:   // pass through
-            case eRouterOptions::CMD_RouterService:
+            case MulticastRouter::eRouterOptions::CMD_RouterConsole:     // pass through
+            case MulticastRouter::eRouterOptions::CMD_RouterInstall:     // pass through
+            case MulticastRouter::eRouterOptions::CMD_RouterUninstall:   // pass through
+            case MulticastRouter::eRouterOptions::CMD_RouterService:
                 MulticastRouter::_outputInfo("This command should be used in command line ...");
                 break;
 
+            case MulticastRouter::eRouterOptions::CMD_RouterUndefined:  // pass through
             default:
                 hasError = true;
                 break;
@@ -492,10 +496,9 @@ void MulticastRouter::_outputInstances( const NEService::MapInstances & instance
 #endif  // AREG_EXTENDED
 }
 
+#if AREG_EXTENDED
 void MulticastRouter::_setVerboseMode( bool makeVerbose )
 {
-#if AREG_EXTENDED
-
     static constexpr std::string_view _verbose{ "Switching to verbose mode to output data rate ..." };
     static constexpr std::string_view _silence{ "Switching to silent mode, no data rate output ..." };
     MulticastRouter & router = MulticastRouter::getInstance( );
@@ -513,8 +516,8 @@ void MulticastRouter::_setVerboseMode( bool makeVerbose )
         }
         else
         {
-            console.outputMsg( NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data( ), 0.0f, DataRateHelper::MSG_BYTES.data( ) );
-            console.outputMsg( NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data( ), 0.0f, DataRateHelper::MSG_BYTES.data( ) );
+            console.outputMsg( NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
+            console.outputMsg( NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
             console.outputTxt( NESystemService::COORD_INFO_MSG, _verbose);
         }
 
@@ -523,13 +526,19 @@ void MulticastRouter::_setVerboseMode( bool makeVerbose )
 
     console.unlockConsole( );
 
-#else   // !AREG_EXTENDED
-
     static constexpr std::string_view _unsupported{"This option is available only with extended features"};
     printf( "%s\n", _unsupported.data( ) );
+}
+
+#else   // !AREG_EXTENDED
+
+void MulticastRouter::_setVerboseMode( bool /* makeVerbose */ )
+{
+    static constexpr std::string_view _unsupported{"This option is available only with extended features"};
+    printf( "%s\n", _unsupported.data( ) );
+}
 
 #endif  // AREG_EXTENDED
-}
 
 void MulticastRouter::_cleanHelp(void)
 {

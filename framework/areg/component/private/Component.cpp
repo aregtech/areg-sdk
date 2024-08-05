@@ -153,13 +153,11 @@ WorkerThread* Component::createWorkerThread( const String & threadName, IEWorker
     WorkerThread* workThread = mComponentInfo.findWorkerThread(threadName);
     if (workThread == nullptr)
     {
-        OUTPUT_DBG("Going to Create WorkerThread object [ %s ]", threadName.getString());
         workThread = DEBUG_NEW WorkerThread(threadName, self(), consumer, watchdogTimeout);
         if (workThread != nullptr)
         {
             if (workThread->createThread(NECommon::WAIT_INFINITE))
             {
-                OUTPUT_DBG("Registering WorkerThread [ %s ]", threadName.getString());
                 mComponentInfo.registerWorkerThread(*workThread);
             }
             else
@@ -175,11 +173,9 @@ WorkerThread* Component::createWorkerThread( const String & threadName, IEWorker
 
 void Component::deleteWorkerThread( const String & threadName )
 {
-    OUTPUT_DBG("Going to Delete WorkerThread object [ %s ]", threadName.getString());
     WorkerThread* workThread = mComponentInfo.findWorkerThread(threadName);
     if (workThread != nullptr)
     {
-        OUTPUT_DBG("Unregistering and deleting WorkerThread [ %s ]", threadName.getString());
         workThread->shutdownThread(NECommon::WAIT_INFINITE);
         mComponentInfo.unregisterWorkerThread(*workThread);
         delete workThread;
@@ -205,10 +201,6 @@ void Component::shutdownComponent( ComponentThread& /* comThread */ )
     WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
     while (workerThread != nullptr)
     {
-        OUTPUT_INFO("Shutting down worker thread [ %s ] of component [ %s ]"
-                        , workerThread->getName().getString()
-                        , getRoleName().getString());
-
         workerThread->shutdownThread( NECommon::WAIT_INFINITE );
         workerThread = mComponentInfo.getNextWorkerThread(addrThread);
     }
@@ -220,9 +212,6 @@ void Component::notifyComponentShutdown( ComponentThread& /*comThread */ )
     WorkerThread * workerThread = mComponentInfo.getFirstWorkerThread(addrThread);
     while (workerThread != nullptr)
     {
-        OUTPUT_INFO("Shutting down worker thread [ %s ] of component [ %s ]"
-                        , workerThread->getName().getString()
-                        , getRoleName().getString());
         workerThread->shutdownThread( NECommon::WAIT_INFINITE );
         workerThread = mComponentInfo.getNextWorkerThread(addrThread);
     }
@@ -299,7 +288,7 @@ inline void Component::_shutdownServices(void)
     {
         StubBase* stub = mServerList.valueAtPosition(pos);
         ASSERT(stub != nullptr);
-        OUTPUT_INFO("Shutting down Service Interface [ %s ] of component [ %s ]", stub->getAddress().getServiceName().getString(), getRoleName().getString());
+
         stub->shutdownServiceIntrface(self());
         ServiceManager::requestUnregisterServer(stub->getAddress(), NEService::eDisconnectReason::ReasonProviderDisconnected);
     }

@@ -33,7 +33,7 @@ Component * ConnectionService::CreateComponent( const NERegistry::ComponentEntry
     return new ConnectionService( entry, owner );
 }
 
-void ConnectionService::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry )
+void ConnectionService::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & /* entry */ )
 {
     TRACE_SCOPE( chatter_ConnectionService_DeleteComponent );
     delete (&compObject);

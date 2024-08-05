@@ -199,7 +199,7 @@ public:
     /**
      * \brief   Writes identifier value to stream.
      * \param   stream  Streaming object to write identifier value
-     * \param   input   Identifier to read values
+     * \param   output  Identifier to read values
      * \return  Returns instance of write streaming object
      **/
     friend inline IEOutStream & operator << (IEOutStream & stream, const Identifier & output);
@@ -258,7 +258,7 @@ inline const String& Identifier::convToString(unsigned int idValue, const std::v
         }
     }
 
-    return ((defIndex >= 0) && (defIndex < static_cast<uint32_t>(lookupList.size()))? lookupList[defIndex].mName : String::getEmptyString());
+    return (defIndex < static_cast<uint32_t>(lookupList.size())? lookupList[defIndex].mName : String::getEmptyString());
 }
 
 inline unsigned int Identifier::convFromString(const String& idName, const std::vector<Identifier>& lookupList, unsigned int defIndex)
@@ -272,7 +272,7 @@ inline unsigned int Identifier::convFromString(const String& idName, const std::
         }
     }
 
-    return ((defIndex >= 0) && (defIndex < static_cast<uint32_t>(lookupList.size())) ? lookupList[defIndex].mValue : static_cast<uint32_t>(~0));
+    return (defIndex < static_cast<uint32_t>(lookupList.size()) ? lookupList[defIndex].mValue : static_cast<uint32_t>(~0));
 }
 
 inline bool Identifier::operator == ( const Identifier & other ) const

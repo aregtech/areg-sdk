@@ -114,7 +114,7 @@ public:
      * \brief   Copies property Key from given source as a string
      * \param   source  The source as string to parse and copy data.
      **/
-    PropertyKey & operator = ( const String & params );
+    PropertyKey & operator = ( const String & source );
     PropertyKey & operator = ( String && source );
 
     /**
@@ -318,7 +318,7 @@ private:
      * \param   module      The module part of the property key.
      * \param   property    The property part of the property key.
      * \param   position    The position part of the property key.
-     * \param   Returns the key type, wich syntax matches the specified data.
+     * \return  Returns the key type, wich syntax matches the specified data.
      **/
     inline static NEPersistence::eConfigKeys _findKey(const String& section, const String& module, const String& property, const String& position);
 

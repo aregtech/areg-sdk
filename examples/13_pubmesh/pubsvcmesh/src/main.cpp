@@ -48,7 +48,7 @@ public:
     /**
      * \brief   Called by system to delete component and free resources.
      * \param   compObject  The instance of component previously created by CreateComponent method.
-     * \param   entry   The entry of registry, which describes the component.
+     *          entry   The entry of registry, which describes the component.
      **/
     static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & /*entry*/ )
     {
@@ -106,7 +106,7 @@ public:
     /**
      * \brief   Called by system to delete component and free resources.
      * \param   compObject  The instance of component previously created by CreateComponent method.
-     * \param   entry   The entry of registry, which describes the component.
+     *          entry   The entry of registry, which describes the component.
      **/
     static void DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & /*entry*/ )
     {

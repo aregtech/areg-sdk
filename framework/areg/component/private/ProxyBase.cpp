@@ -153,7 +153,7 @@ IMPLEMENT_RUNTIME_EVENT(ProxyBase::ServiceAvailableEvent, ThreadEventBase)
 
 ProxyBase::ServiceAvailableEvent::ServiceAvailableEvent( IENotificationEventConsumer & consumer )
     : ThreadEventBase   ( Event::eEventType::EventExternal )
-    , mConsumer         ( consumer )
+    , mNotifyConsumer   ( consumer )
     , mDelayConnectEvent( 0 )
 {
 }
@@ -236,7 +236,7 @@ std::shared_ptr<ProxyBase> ProxyBase::findOrCreateProxy( const String & roleName
 int ProxyBase::findThreadProxies(DispatcherThread & ownerThread, TEArrayList<std::shared_ptr<ProxyBase>> & OUT threadProxyList )
 {
     ThreadProxyList * proxyList = ProxyBase::_mapThreadProxies.findResource(ownerThread.getName());
-    int result = proxyList != nullptr ? proxyList->getSize() : 0;
+    int result = proxyList != nullptr ? static_cast<int32_t>(proxyList->getSize()) : 0;
     if ( result > 0 )
     {
         threadProxyList = static_cast<const TEArrayList<std::shared_ptr<ProxyBase>> &>(*proxyList);
@@ -270,7 +270,7 @@ ProxyBase::ProxyBase(const String & roleName, const NEService::SInterfaceData & 
     , mProxyAddress     ( serviceIfData, roleName, (ownerThread != nullptr) && (ownerThread->isValid()) ? ownerThread->getName() : String::getEmptyString() )
     , mStubAddress      ( StubAddress::getInvalidStubAddress() )
     , mSequenceCount    ( 0 )
-    , mListenerList     ( static_cast<int>(serviceIfData.idAttributeCount + serviceIfData.idResponseCount) )
+    , mListenerList     ( serviceIfData.idAttributeCount + serviceIfData.idResponseCount )
     , mListConnect      (   )
     , mProxyInstCount   ( 0 )
 
@@ -305,7 +305,7 @@ void ProxyBase::freeProxy( IEProxyListener & connect )
     int exists = mListConnect.find(&connect, 0);
     if ( exists >= 0 )
     {
-        mListConnect.removeAt(exists);
+        mListConnect.removeAt(static_cast<uint32_t>(exists));
         connect.serviceConnected(NEService::eServiceConnection::ServiceDisconnected, self());
     }
 
@@ -317,10 +317,6 @@ void ProxyBase::freeProxy( IEProxyListener & connect )
 
     if ((proxy.use_count() == 1) || (mProxyInstCount == 1))
     {
-        OUTPUT_WARN("The proxy [ %s ] instance count is zero, going to delete object at address [ %p]"
-                        , ProxyAddress::convAddressToPath(getProxyAddress()).getString()
-                        , this);
-
         if ( false == mIsStopped )
         {
             stopAllServiceNotifications( );
@@ -507,7 +503,7 @@ void ProxyBase::unregisterListener( IENotificationEventConsumer *consumer )
     }
 }
 
-int ProxyBase::prepareListeners( ProxyBase::ProxyListenerList& out_listenerList, unsigned int msgId, const SequenceNumber & seqNrToSearch )
+uint32_t ProxyBase::prepareListeners( ProxyBase::ProxyListenerList& out_listenerList, unsigned int msgId, const SequenceNumber & seqNrToSearch )
 {
     TRACE_SCOPE(areg_component_ProxyBase_prepareListeners);
     ProxyBase::Listener searchListener(msgId, NEService::SEQUENCE_NUMBER_ANY);

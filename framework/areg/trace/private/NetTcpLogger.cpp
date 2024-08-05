@@ -125,20 +125,20 @@ void NetTcpLogger::connectedRemoteServiceChannel(const Channel & channel)
     }
 }
 
-void NetTcpLogger::disconnectedRemoteServiceChannel(const Channel & channel)
+void NetTcpLogger::disconnectedRemoteServiceChannel(const Channel & /* channel */)
 {
     ASSERT(mChannel.isValid() == false);
     mIsEnabled = false;
     mClientConnection.setCookie(NEService::COOKIE_UNKNOWN);
 }
 
-void NetTcpLogger::lostRemoteServiceChannel(const Channel & channel)
+void NetTcpLogger::lostRemoteServiceChannel(const Channel & /* channel */)
 {
     ASSERT(mChannel.isValid() == false);
     mClientConnection.setCookie(NEService::COOKIE_UNKNOWN);
 }
 
-void NetTcpLogger::failedSendMessage(const RemoteMessage & msgFailed, Socket & whichTarget)
+void NetTcpLogger::failedSendMessage(const RemoteMessage & msgFailed, Socket & /* whichTarget */)
 {
     ASSERT(mIsEnabled);
     if (mLogConfiguration.getStackSize() > 0)
@@ -149,12 +149,12 @@ void NetTcpLogger::failedSendMessage(const RemoteMessage & msgFailed, Socket & w
     sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceLost);
 }
 
-void NetTcpLogger::failedReceiveMessage(Socket & whichSource)
+void NetTcpLogger::failedReceiveMessage(Socket & /* whichSource */)
 {
     sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceLost);
 }
 
-void NetTcpLogger::failedProcessMessage(const RemoteMessage & msgUnprocessed)
+void NetTcpLogger::failedProcessMessage(const RemoteMessage & /* msgUnprocessed */)
 {
 }
 
@@ -203,6 +203,30 @@ void NetTcpLogger::processReceivedMessage(const RemoteMessage & msgReceived, Soc
             }
             break;
 
+        case NEService::eFuncIdRange::SystemServiceNotifyRegister:      // fall through
+        case NEService::eFuncIdRange::ServiceLastId:                    // fall through
+        case NEService::eFuncIdRange::SystemServiceQueryInstances:      // fall through
+        case NEService::eFuncIdRange::SystemServiceRequestRegister:     // fall through
+        case NEService::eFuncIdRange::SystemServiceDisconnect:          // fall through
+        case NEService::eFuncIdRange::SystemServiceConnect:             // fall through
+        case NEService::eFuncIdRange::ResponseServiceProviderConnection:// fall through
+        case NEService::eFuncIdRange::RequestServiceProviderConnection: // fall through
+        case NEService::eFuncIdRange::ResponseServiceProviderVersion:   // fall through
+        case NEService::eFuncIdRange::RequestServiceProviderVersion:    // fall through
+        case NEService::eFuncIdRange::RequestRegisterService:           // fall through
+        case NEService::eFuncIdRange::ComponentCleanup:                 // fall through
+        case NEService::eFuncIdRange::SystemServiceNotifyInstances:     // fall through
+        case NEService::eFuncIdRange::ServiceLogRegisterScopes:         // fall through
+        case NEService::eFuncIdRange::ServiceLogScopesUpdated:          // fall through
+        case NEService::eFuncIdRange::ServiceLogConfigurationSaved:     // fall through
+        case NEService::eFuncIdRange::ServiceLogMessage:                // fall through
+        case NEService::eFuncIdRange::AttributeLastId:                  // fall through
+        case NEService::eFuncIdRange::AttributeFirstId:                 // fall through
+        case NEService::eFuncIdRange::ResponseLastId:                   // fall through
+        case NEService::eFuncIdRange::ResponseFirstId:                  // fall through
+        case NEService::eFuncIdRange::RequestLastId:                    // fall through
+        case NEService::eFuncIdRange::RequestFirstId:                   // fall through
+        case NEService::eFuncIdRange::EmptyFunctionId:                  // fall through
         default:
             ASSERT(false);
         }

@@ -135,8 +135,4 @@ void IENotificationEventConsumer::startEventProcessing( Event& eventElem )
     {
         processNotificationEvent(*eventNotify);
     }
-    else
-    {
-        OUTPUT_WARN("Received not a Notification Event [ %s ]. Ignoring event processing", eventElem.getRuntimeClassName().getString());
-    }
 }

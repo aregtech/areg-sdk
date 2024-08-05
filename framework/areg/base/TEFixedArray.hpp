@@ -173,7 +173,7 @@ public:
      *          There should be possibility to stream values and if VALUE is not a
      *          primitive, but an object, it should have implemented streaming operator.
      * \param   stream  The stream to write values.
-     * \param   input   The fixed array object containing value to stream.
+     * \param   output  The fixed array object containing value to stream.
      **/
     template<typename V>
     friend IEOutStream & operator << ( IEOutStream & stream, const TEFixedArray<V> & output );

@@ -62,7 +62,6 @@ bool TimerManagerBase::runDispatcher(void)
         }
         else
         {
-            OUTPUT_DBG("Received exit event. Going to exit System Timer Thread!");
             whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventExit);
         }
 
@@ -92,24 +91,8 @@ void TimerManagerBase::readyForEvents(bool isReady)
 
 bool TimerManagerBase::startTimerManagerThread(void)
 {
-    bool result = false;
-    if (isReady() == false)
-    {
-        ASSERT(isRunning() == false);
-        result = createThread(NECommon::WAIT_INFINITE) && waitForDispatcherStart(NECommon::WAIT_INFINITE);
-#ifdef _DEBUG
-        if (result == false)
-        {
-            OUTPUT_ERR("Failed to create [ %s ] System Timer Thread", this->getName().getString());
-        }
-#endif  // _DEBUG
-    }
-    else
-    {
-        result = true;
-    }
-
-    return result;
+    ASSERT(isReady() || (isRunning() == false));
+    return (isReady() || (createThread(NECommon::WAIT_INFINITE) && waitForDispatcherStart(NECommon::WAIT_INFINITE)));
 }
 
 void TimerManagerBase::stopTimerManagerThread(bool waitComplete)

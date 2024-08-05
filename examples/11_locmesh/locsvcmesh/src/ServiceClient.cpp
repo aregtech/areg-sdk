@@ -63,7 +63,7 @@ void ServiceClient::responseHelloWorld( const String & clientName, unsigned int 
     mID = clientId;
 }
 
-void ServiceClient::broadcastReachedMaximum( int maxNumber )
+void ServiceClient::broadcastReachedMaximum( int /* maxNumber */ )
 {
     TRACE_SCOPE(examples_11_locsvcmesh_ServiceClient_broadcastReachedMaximum);
     TRACE_WARN("Service notify reached message output maximum, starting shutdown procedure");
@@ -79,7 +79,7 @@ void ServiceClient::processTimer(Timer & timer)
     requestHelloWorld(timer.getName());
 }
 
-inline String ServiceClient::timerName( Component & owner ) const
+inline String ServiceClient::timerName( Component & /* owner */ ) const
 {
     ASSERT( getProxy( ) != nullptr );
     String result = "";

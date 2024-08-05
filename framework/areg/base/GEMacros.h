@@ -339,7 +339,7 @@
  * \brief   Returns absolute value of digit. The return value is always positive
  **/
 #ifndef MACRO_ABS
-    #define MACRO_ABS(x)                        ( (x) < 0 ? -1 * (x) : (x) )
+    #define MACRO_ABS(x)                        ( (x) >= 0 ? (x) : -1 * (x) )
 #endif  // MACRO_ABS
 
 /**
@@ -360,7 +360,7 @@
 #endif  // MACRO_REMAIN_SIZE
 
 #ifndef MACRO_MAKE_CONST_PTR
-    #define MACRO_MAKE_CONST_PTR(ptr)		    ((const unsigned char *)(ptr))
+    #define MACRO_MAKE_CONST_PTR(ptr)		    (reinterpret_cast<const unsigned char *>(ptr))
 #endif // !MACRO_MAKE_CONST_PTR
 
 #ifndef MACRO_MAKE_PTR
@@ -368,23 +368,23 @@
 #endif // !MACRO_MAKE_PTR
 
 #ifndef MACRO_MAKE_NUM_PTR
-    #define MACRO_MAKE_NUM_PTR(type, num)       ((type)(num))
+    #define MACRO_MAKE_NUM_PTR(type, num)       (static_cast<type>(reinterpret_cast<uintptr_t>(num)))
 #endif  // MACRO_MAKE_NUM_PTR
 
 #ifndef MACRO_MAKE_NUMBER64
-    #define MACRO_MAKE_NUMBER64(num)            ((uint64_t)(num))
+    #define MACRO_MAKE_NUMBER64(num)            (static_cast<uint64_t>(num))
 #endif // !MACRO_MAKE_NUMBER64
 
 #ifndef MACRO_MAKE_NUMBER32
-    #define MACRO_MAKE_NUMBER32(num)	        (uint32_t)MACRO_MAKE_NUMBER64(num)
+    #define MACRO_MAKE_NUMBER32(num)	        static_cast<uint32_t>MACRO_MAKE_NUMBER64(num)
 #endif // !MACRO_MAKE_NUMBER32
 
 #ifndef MACRO_MAKE_NUMBER
-    #define MACRO_MAKE_NUMBER(num)              ((size_t)(num))
+    #define MACRO_MAKE_NUMBER(num)              (static_cast<size_t>(num))
 #endif  // !MACRO_MAKE_NUMBER
 
 #ifndef MACRO_PTR2NUMBER
-    #define MACRO_PTR2NUMBER(ptr)               static_cast<size_t>( MACRO_MAKE_CONST_PTR(ptr) - MACRO_MAKE_CONST_PTR(nullptr) )
+    #define MACRO_PTR2NUMBER(ptr)               static_cast<size_t>( MACRO_MAKE_CONST_PTR(ptr) - static_cast<const unsigned char *>(nullptr) )
 #endif  // MACRO_PTR2NUMBER
 
 #ifndef MACRO_PTR2INT32
@@ -392,11 +392,11 @@
 #endif  // MACRO_PTR2INT32
 
 #ifndef MACRO_COUNT_SIZE
-    #define MACRO_COUNT_SIZE(first, last)       static_cast<int32_t>( MACRO_MAKE_CONST_PTR(last) - MACRO_MAKE_CONST_PTR(first) )
+    #define MACRO_COUNT_SIZE(first, last)       static_cast<uint32_t>( MACRO_MAKE_CONST_PTR(last) - MACRO_MAKE_CONST_PTR(first) )
 #endif  // MACRO_COUNT_SIZE
 
 #ifndef MACRO_ELEM_COUNT
-    #define MACRO_ELEM_COUNT(first, last)       static_cast<int32_t>( last - first )
+    #define MACRO_ELEM_COUNT(first, last)       static_cast<uint32_t>( last - first )
 #endif // !MACRO_ELEM_COUNT
 
 #ifndef MACRO_OFFSETOF
@@ -438,7 +438,7 @@
 //! followed with the file name and the line number to prompt.
 #ifndef MACRO_TODO
     #ifdef MS_VISUAL_CPP
-        #define MACRO_TODO(msg)             __pragma(message(">>> TODO :: " MACRO_MAKE_STRING(msg) ": here --> " __FILE__":"MACRO_CONV_STRING(__LINE__)))
+        #define MACRO_TODO(msg)             __pragma(message(">>> TODO :: " MACRO_MAKE_STRING(msg) ": here --> " __FILE__":" MACRO_CONV_STRING(__LINE__)))
     #else   // MS_VISUAL_CPP
         #define MACRO_TODO(msg)
     #endif  // MS_VISUAL_CPP

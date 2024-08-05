@@ -80,7 +80,6 @@ bool ClientReceiveThread::runDispatcher(void)
     readyForEvents(false);
     removeAllEvents( );
 
-    OUTPUT_WARN("The Dispatcher [ %s ] completed job and stopping running.", mDispatcherName.getString());
     TRACE_DBG("Exiting client service dispatcher thread [ %s ] with result [ %s ]"
                 , getName().getString()
                 , whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventExit) ? "SUCCESS" : "FAILURE");

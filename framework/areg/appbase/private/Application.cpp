@@ -55,8 +55,6 @@ void Application::initApplication(  bool startTracing   /*= true */
                                   , const char * configFile /*= NEApplication::DEFAULT_CONFIG_FILE */
                                   , IEConfigurationListener* configListener /*= nullptr*/)
 {
-    OUTPUT_DBG("Going to initialize application");
-
     Application::_setAppState(NEApplication::eApplicationState::AppStateInitializing);
     Application::_osSetupHandlers();
     Application::setWorkingDirectory( nullptr );
@@ -71,25 +69,21 @@ void Application::initApplication(  bool startTracing   /*= true */
 
     if ( startTimer )
     {
-        OUTPUT_DBG("Starting timer manager");
         Application::startTimerManager();
     }
 
     if ( startWatchdog )
     {
-        OUTPUT_DBG("Starting watchdog manager");
         Application::startWatchdogManager();
     }
 
     if ( startServicing )
     {
-        OUTPUT_DBG("Starting service manager");
         Application::startServiceManager();
     }
 
     if (startRouting)
     {
-        OUTPUT_DBG("Starting message router TCP/IP client connection");
         Application::startMessageRouting(static_cast<unsigned int>(NERemoteService::eConnectionTypes::ConnectTcpip));
     }
 
@@ -144,61 +138,12 @@ const NERegistry::Model & Application::findModel( const char * modelName )
 void Application::setWorkingDirectory( const char * dirPath /*= nullptr*/ )
 {
     String path( NEString::isEmpty<char>(dirPath) ? Process::getInstance().getPath().getString() : dirPath);
-
-#ifdef _DEBUG
-    
-    if (File::setCurrentDir(path))
-    {
-        OUTPUT_DBG("Set current directory [ %s ]", path.getString());
-    }
-    else
-    {
-        OUTPUT_ERR("No information about current working directory. Ignoring to setup!");
-    }
-
-#else
-    
     File::setCurrentDir(path);
-
-#endif // _DEBUG
 }
 
 bool Application::startTracer(bool force /*= false*/ )
 {
-    bool result = false;
-
-    if (NETrace::isStarted() == false)
-    {
-        if (NETrace::startLogging())
-        {
-            result = true;
-        }
-        else if (force)
-        {
-            OUTPUT_WARN("The tracing is enabled, but there is neither configuration file specified, nor default exists.");
-            OUTPUT_WARN("Forcing to start logging with system default values.");
-            if ( NETrace::forceStartLogging() )
-            {
-                OUTPUT_INFO("Succeeded to start forced tracer!!!");
-                result = true;
-            }
-        }
-        else
-        {
-            OUTPUT_ERR("Failed to start tracer!");
-        }
-    }
-    else
-    {
-#if AREG_LOGS
-        OUTPUT_INFO("The tracer is already started, ignoring starting");
-#else   // !AREG_LOGS
-        OUTPUT_DBG("The sources are compiled without logging. Ignoring to start logging module.");
-#endif  // AREG_LOGS
-        result = true;
-    }
-
-    return result;
+    return NETrace::isStarted() || NETrace::startLogging() || (force && NETrace::forceStartLogging());
 }
 
 void Application::stopTracer(void)
@@ -250,7 +195,6 @@ bool Application::startServiceManager( void )
         }
         else
         {
-            OUTPUT_ERR("Failed to start service manager!");
             Application::_setAppState(NEApplication::eApplicationState::AppStateFailure);
         }
     }
@@ -258,8 +202,6 @@ bool Application::startServiceManager( void )
     {
         result = true;
         Application::_setAppState(NEApplication::eApplicationState::AppStateReady);
-
-        OUTPUT_INFO("The service manager has been started, ignoring to start service manager");
     }
 
     return result;
@@ -430,7 +372,7 @@ bool Application::loadConfiguration(const char* fileName /*= nullptr*/, IEConfig
     return result;
 }
 
-bool Application::saveConfiguration(const char* fileName /*= nullptr*/, IEConfigurationListener * listener /*= nullptr*/)
+bool Application::saveConfiguration(const char* fileName /*= nullptr*/, IEConfigurationListener * /*listener*/ /*= nullptr*/)
 {
     Application& theApp = Application::getInstance();
     return theApp.mConfigManager.saveConfig(fileName);
@@ -462,13 +404,18 @@ void Application::setupDefaultConfiguration(IEConfigurationListener * listener /
 
 bool Application::isConfigured(void)
 {
-    return Application::getInstance().mConfigManager.isConfigured();;
+    return Application::getInstance().mConfigManager.isConfigured();
 }
 
 bool Application::_setAppState(NEApplication::eApplicationState newState)
 {
     bool result = false;
     Application & theApp = Application::getInstance();
+    if (newState == NEApplication::eApplicationState::AppStateFailure)
+    {
+        theApp.mAppState = newState;
+    }
+
     switch (theApp.mAppState)
     {
     case NEApplication::eApplicationState::AppStateStopped:
@@ -502,6 +449,10 @@ bool Application::_setAppState(NEApplication::eApplicationState newState)
             result = true;
         }
         break;
+
+    case NEApplication::eApplicationState::AppStateFailure:
+        result = true;
+        break; // ignore
 
     default:
         ASSERT(false);

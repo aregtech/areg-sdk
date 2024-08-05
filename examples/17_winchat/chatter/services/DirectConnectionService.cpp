@@ -26,7 +26,7 @@ Component * DirectConnectionService::CreateComponent( const NERegistry::Componen
     return new DirectConnectionService( entry, owner, entry.getComponentData() );
 }
 
-void DirectConnectionService::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry )
+void DirectConnectionService::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & /* entry */ )
 {
     TRACE_SCOPE( chatter_DirectConnectionService_DeleteComponent );
     delete (&compObject);
@@ -145,13 +145,13 @@ void DirectConnectionService::requestConnectoinSetup( const NEDirectConnection::
         else
         {
             const NEDirectConnection::MapParticipants &  mapParticipants = getInitiatedConnections( );
-            const NEDirectConnection::ListParticipants & listParticipants= mapParticipants.getAt(initiator);
+            const NEDirectConnection::ListParticipants & tempList = mapParticipants.getAt(initiator);
             TRACE_WARN("[ %s ] at time-stamps [ %s ] has already initiated chat with [ %d ] clients. Ignoring chat setup."
                             , participant.nickName.getString()
                             , DateTime(initiator.sessionId).formatTime().getString()
                             , mapParticipants.getSize() );
-            participant.sessionId = getSession(listParticipants);
-            responseConnectoinSetup( true, participant, initiator, listParticipants );
+            participant.sessionId = getSession(tempList);
+            responseConnectoinSetup( true, participant, initiator, tempList );
         }
     }
     else

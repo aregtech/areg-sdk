@@ -66,7 +66,7 @@ void Thread::_osSetThreadName( id_type threadId, const char* threadName)
 #pragma warning(disable: 6312)
     __try
     {
-        RaiseException( SET_NAME_MS_VC_EXCEPTION, 0, sizeof(info)/sizeof(ULONG_PTR), (ULONG_PTR*)&info );
+        RaiseException( SET_NAME_MS_VC_EXCEPTION, 0, sizeof(info)/sizeof(ULONG_PTR), reinterpret_cast<ULONG_PTR *>(&info) );
     }
     __except(EXCEPTION_CONTINUE_EXECUTION)
     {
@@ -164,7 +164,7 @@ bool Thread::_osCreateSystemThread( void )
 
         unsigned long threadId  = 0;
         HANDLE handle = ::CreateThread( nullptr, 0,
-                                       (LPTHREAD_START_ROUTINE)&Thread::_windowsThreadRoutine, 
+                                      (LPTHREAD_START_ROUTINE)(&Thread::_windowsThreadRoutine), 
                                        static_cast<void *>(this), 0 /*CREATE_SUSPENDED*/, &threadId);
         if (handle != nullptr)
         {

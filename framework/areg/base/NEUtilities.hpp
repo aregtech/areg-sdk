@@ -333,7 +333,7 @@ namespace   NEUtilities
 
     /**
      * \brief   Converts time in microseconds to time in seconds.
-     * \param   microseconds    The time in microseconds.
+     * \param   microsecs   The time in microseconds.
      * \return  Returns time in seconds.
      **/
     inline time_t convToSeconds(const TIME64 & microsecs);
@@ -370,7 +370,7 @@ namespace   NEUtilities
     /**
      * \brief   Returns tm structure data as a 64-bit integer value in microseconds passed since Unix epoch,
      *          which is January 1, 1970 (UNIX epoch).
-     * \param   sysTime     The system time structure with data to convert.
+     * \param   time    The system time structure with data to convert.
      * \return  Returns microseconds passed since January 1, 1970 (UNIX epoch).
      **/
     AREG_API TIME64 convToTime(const struct tm& IN time);
@@ -408,10 +408,10 @@ namespace   NEUtilities
     /**
      * \brief   Converts given time in microseconds into the time in seconds, milliseconds and microseconds.
      *
-     * \param   time[in]    The time in microseconds to parse and extract.
-     * \param   secs[out]   On output, this contains the time in seconds.
-     * \param   milli[out]  On output, this contains the remaining time in milliseconds.
-     * \param   micro[out]  On output, this contains the remaining time in microseconds.
+     * \param   time  [in]  The time in microseconds to parse and extract.
+     * \param   secs  [out] On output, this contains the time in seconds.
+     * \param   milli [out] On output, this contains the remaining time in milliseconds.
+     * \param   micro [out] On output, this contains the remaining time in microseconds.
      **/
     AREG_API void convMicrosecs(const TIME64 & IN time, time_t & OUT secs, unsigned short & OUT milli, unsigned short & OUT micro);
 
@@ -522,10 +522,32 @@ namespace   NEUtilities
      *                              The length of buffer should be big enough
      *                              to contain prefix and prefix.
      * \param   length              The length of buffer to set name.
-     * \param   specChar    Special character used in generated name.
      * \return  Returns the content of 'out_buffer'. If 'out_buffer' is invalid, returns nullptr.
      **/
     AREG_API const char * generateName( const char * prefix, char * OUT out_buffer, int length);
+
+    /**
+     * \brief   This function generates and returns name 
+     *          using time-stamp value in nanoseconds in the name.
+     *          If passed prefix is nullptr, it will use predefined
+     *          NEUtilities::DEFAULT_GENERATED_NAME constant as a
+     *          prefix for name. Before calling this function,
+     *          the output buffer should be allocated and the length
+     *          of buffer should be big enough to contain prefix
+     *          and the time-stamp. The time-stamp requires at least
+     *          34 characters. Generated output name is in 
+     *          format <prefix>:{nn:nn:nn:nn:nn:nn:nn:nn})
+     * \param   prefix              The prefix to add in generated name.
+     *                              If this value is nullptr it will use
+     *                              NEUtilities::DEFAULT_GENERATED_NAME as
+     *                              a prefix for name.
+     * \param   out_buffer [out]    The output buffer to fill generated name.
+     *                              The length of buffer should be big enough
+     *                              to contain prefix and prefix.
+     * \param   length              The length of buffer to set name.
+     * \param   specChar    Special character used in generated name.
+     * \return  Returns the content of 'out_buffer'. If 'out_buffer' is invalid, returns nullptr.
+     **/
     AREG_API const char * generateName( const char * prefix, char * OUT out_buffer, int length, const char * specChar);
 
 /************************************************************************/
@@ -696,7 +718,7 @@ inline TIME64 NEUtilities::Duration::start( void )
     mStart      = std::chrono::steady_clock::now();
     mStop       = mStart;
 
-    return mStart.time_since_epoch( ).count( );
+    return static_cast<TIME64>(mStart.time_since_epoch( ).count( ));
 }
 
 inline TIME64 NEUtilities::Duration::stop( void )
@@ -706,47 +728,47 @@ inline TIME64 NEUtilities::Duration::stop( void )
         mStop = std::chrono::steady_clock::now( );
     }
 
-    return mStop.time_since_epoch( ).count( );
+    return static_cast<TIME64>(mStop.time_since_epoch( ).count( ));
 }
 
 inline TIME64 NEUtilities::Duration::getStart( void ) const
 {
-    return mStart.time_since_epoch( ).count( );
+    return static_cast<TIME64>(mStart.time_since_epoch( ).count( ));
 }
 
 inline TIME64 NEUtilities::Duration::getStop( void ) const
 {
-    return mStop.time_since_epoch( ).count( );
+    return static_cast<TIME64>(mStop.time_since_epoch( ).count( ));
 }
 
 inline uint64_t NEUtilities::Duration::passedNanoseconds( void ) const
 {
-    return (mStop - mStart).count();
+    return static_cast<uint64_t>((mStop - mStart).count());
 }
 
 inline uint64_t NEUtilities::Duration::passedMicroseconds( void ) const
 {
-    return std::chrono::duration_cast<std::chrono::microseconds>(mStop - mStart).count();
+    return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(mStop - mStart).count());
 }
 
 inline uint64_t NEUtilities::Duration::passedMilliseconds( void ) const
 {
-    return std::chrono::duration_cast<std::chrono::milliseconds>(mStop - mStart).count( );
+    return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(mStop - mStart).count( ));
 }
 
 inline uint64_t NEUtilities::Duration::passedSeconds( void ) const
 {
-    return std::chrono::duration_cast<std::chrono::seconds>(mStop - mStart).count( );
+    return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::seconds>(mStop - mStart).count( ));
 }
 
 inline uint64_t NEUtilities::Duration::passedMinutes( void ) const
 {
-    return std::chrono::duration_cast<std::chrono::minutes>(mStop - mStart).count( );
+    return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::minutes>(mStop - mStart).count( ));
 }
 
 inline uint64_t NEUtilities::Duration::durationSinceStart( void ) const
 {
-    return (mStop > mStart ? (mStop - mStart).count( ) : (std::chrono::steady_clock::now( ) - mStart).count( ));
+    return static_cast<uint64_t>((mStop > mStart ? (mStop - mStart).count( ) : (std::chrono::steady_clock::now( ) - mStart).count( )));
 }
 
 #endif  // AREG_BASE_NEUTILITIES_HPP

@@ -66,15 +66,15 @@ void ServiceManagerEventProcessor::processServiceEvent(   ServiceManagerEventDat
 
     case ServiceManagerEventData::eServiceManagerCommands::CMD_StopRoutingClient:
         {
-            for ( ServerList::MAPPOS pos = mServerList.firstPosition( ); mServerList.isValidPosition( pos ); pos = mServerList.nextPosition( pos ) )
+            for ( auto mapPos = mServerList.firstPosition( ); mServerList.isValidPosition( mapPos ); mapPos = mServerList.nextPosition( mapPos ) )
             {
                 ServerInfo si;
                 ClientList clientList;
 
-                mServerList.getAtPosition( pos, si, clientList );
-                for ( ClientList::LISTPOS pos = clientList.firstPosition( ); clientList.isValidPosition( pos ); pos = clientList.nextPosition( pos ) )
+                mServerList.getAtPosition( mapPos, si, clientList );
+                for ( auto listPos = clientList.firstPosition( ); clientList.isValidPosition( listPos ); listPos = clientList.nextPosition( listPos ) )
                 {
-                    const ClientInfo & client = clientList.valueAtPosition( pos );
+                    const ClientInfo & client = clientList.valueAtPosition( listPos );
                     if ( client.isConnected( ) )
                     {
                         _sendClientDisconnectEvent( client.getAddress(), si.getAddress( ), NEService::eServiceConnection::ServiceDisconnected );

@@ -26,7 +26,7 @@
     #pragma warning(disable: 4091)
 #endif  // _MSC_VER
 
-#include <dbghelp.h>
+#include <DbgHelp.h>
 
 #if _MSC_VER
     #pragma warning(default: 4091)
@@ -94,8 +94,8 @@ void AREG_API_IMPL NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *
             char message[_symNameLength + MAX_PATH + 8] = { 0 };
 
             char symBuffer[_sizeOfSymInfo]  = { 0 };
-            IMAGEHLP_LINE64     lineInfo    = { 0 };
-            IMAGEHLP_MODULE64   moduleInfo  = { 0 };
+            IMAGEHLP_LINE64     lineInfo   { };
+            IMAGEHLP_MODULE64   moduleInfo { };
             PSYMBOL_INFO        symbolInfo  = reinterpret_cast<PSYMBOL_INFO>(symBuffer);
 
             unsigned int curDepth = 0;
@@ -128,7 +128,7 @@ void AREG_API_IMPL NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *
                                     , _symNameLength + MAX_PATH + 8
                                     , _stackFormat
                                     , hasFile     ? lineInfo.FileName    : _msgFileUnavailable
-                                    , hasFile     ? lineInfo.LineNumber  : -1
+                                    , hasFile     ? static_cast<int32_t>(lineInfo.LineNumber)  : -1
                                     , hasFunction ? symbolInfo->Name     : _msgFunctionUnavailable
                                     , hasModule   ? moduleInfo.ImageName : _msgModuleUnavailable );
 

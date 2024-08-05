@@ -80,7 +80,7 @@ bool ServerConnectionBase::serverListen(int maxQueueSize /*= NESocket::MAXIMUM_L
 
 SOCKETHANDLE ServerConnectionBase::waitForConnectionEvent(NESocket::SocketAddress & out_addrNewAccepted)
 {
-    return mServerSocket.waitConnectionEvent(out_addrNewAccepted, static_cast<const SOCKETHANDLE *>(mMasterList), mMasterList.getSize());
+    return mServerSocket.waitConnectionEvent(out_addrNewAccepted, static_cast<const SOCKETHANDLE *>(mMasterList), static_cast<int32_t>(mMasterList.getSize()));
 }
 
 bool ServerConnectionBase::acceptConnection(SocketAccepted & clientConnection)

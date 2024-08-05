@@ -23,8 +23,6 @@
 #include "areg/trace/LogConfiguration.hpp"
 #include "logobserver/lib/LogObserverApi.h"
 
-#define IS_VALID(callback)  ((mCallbacks != nullptr) && ((callback) != nullptr))
-
 LoggerClient& LoggerClient::getInstance(void)
 {
     static LoggerClient _instance;
@@ -224,15 +222,15 @@ void LoggerClient::closeLoggingDatabase(void)
     mLogDatabase.disconnect();
 }
 
-void LoggerClient::prepareSaveConfiguration(ConfigManager& config)
+void LoggerClient::prepareSaveConfiguration(ConfigManager& /* config */)
 {
 }
 
-void LoggerClient::postSaveConfiguration(ConfigManager& config)
+void LoggerClient::postSaveConfiguration(ConfigManager& /* config */)
 {
 }
 
-void LoggerClient::prepareReadConfiguration(ConfigManager& config)
+void LoggerClient::prepareReadConfiguration(ConfigManager& /* config */)
 {
 }
 
@@ -241,7 +239,7 @@ void LoggerClient::postReadConfiguration(ConfigManager& config)
     FuncObserverConfigured evtConfig{ nullptr };
     FuncLogDbConfigured evtLogConfig{ nullptr };
     String address;
-    uint16_t port;
+    uint16_t port{0};
     String dbName;
     String dbLocation;
     String dbUser;
@@ -254,13 +252,13 @@ void LoggerClient::postReadConfiguration(ConfigManager& config)
         Lock lock(mLock);
         if (mCallbacks != nullptr)
         {
-            evtConfig = mCallbacks->evtObserverConfigured;
-            evtLogConfig = mCallbacks->evtLogDbConfigured;
-            address = config.getRemoteServiceAddress(LoggerClient::ServiceType, LoggerClient::ConnectType);
-            port = config.getRemoteServicePort(LoggerClient::ServiceType, LoggerClient::ConnectType);
-            dbName = config.getLogDatabaseProperty(NEPersistence::getLogDatabaseName().position);
-            dbLocation = config.getLogDatabaseProperty(NEPersistence::getLogDatabaseLocation().position);
-            dbUser = config.getLogDatabaseProperty(NEPersistence::getLogDatabaseUser().position);
+            evtConfig   = mCallbacks->evtObserverConfigured;
+            evtLogConfig= mCallbacks->evtLogDbConfigured;
+            address     = config.getRemoteServiceAddress(LoggerClient::ServiceType, LoggerClient::ConnectType);
+            port        = config.getRemoteServicePort(LoggerClient::ServiceType, LoggerClient::ConnectType);
+            dbName      = config.getLogDatabaseProperty(NEPersistence::getLogDatabaseName().position);
+            dbLocation  = config.getLogDatabaseProperty(NEPersistence::getLogDatabaseLocation().position);
+            dbUser      = config.getLogDatabaseProperty(NEPersistence::getLogDatabaseUser().position);
         }
     } while (false);
 
@@ -275,7 +273,9 @@ void LoggerClient::postReadConfiguration(ConfigManager& config)
     }
 }
 
-void LoggerClient::onSetupConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigManager& config)
+void LoggerClient::onSetupConfiguration( const NEPersistence::ListProperties&  /* listReadonly */
+                                        , const NEPersistence::ListProperties& /* listWritable */
+                                        , ConfigManager& /* config */)
 {
 }
 
@@ -384,7 +384,7 @@ void LoggerClient::connectedRemoteServiceChannel(const Channel& channel)
     }
 }
 
-void LoggerClient::disconnectedRemoteServiceChannel(const Channel& channel)
+void LoggerClient::disconnectedRemoteServiceChannel(const Channel& /* channel */)
 {
     FuncServiceConnected evtConnect{ nullptr };
     FuncObserverStarted evtStart{ nullptr };
@@ -415,7 +415,7 @@ void LoggerClient::disconnectedRemoteServiceChannel(const Channel& channel)
     }
 }
 
-void LoggerClient::lostRemoteServiceChannel(const Channel& channel)
+void LoggerClient::lostRemoteServiceChannel(const Channel& /* channel */)
 {
     FuncObserverStarted evtStart{ nullptr };
 
@@ -436,7 +436,7 @@ void LoggerClient::lostRemoteServiceChannel(const Channel& channel)
     }
 }
 
-void LoggerClient::failedSendMessage(const RemoteMessage& msgFailed, Socket& whichTarget)
+void LoggerClient::failedSendMessage(const RemoteMessage& /* msgFailed */, Socket& /* whichTarget */)
 {
     FuncMessagingFailed evtFailed{ nullptr };
     do
@@ -455,7 +455,7 @@ void LoggerClient::failedSendMessage(const RemoteMessage& msgFailed, Socket& whi
     }
 }
 
-void LoggerClient::failedReceiveMessage(Socket& whichSource)
+void LoggerClient::failedReceiveMessage(Socket& /* whichSource */)
 {
     FuncMessagingFailed evtFailed{ nullptr };
     do
@@ -474,7 +474,7 @@ void LoggerClient::failedReceiveMessage(Socket& whichSource)
     }
 }
 
-void LoggerClient::failedProcessMessage(const RemoteMessage& msgUnprocessed)
+void LoggerClient::failedProcessMessage(const RemoteMessage& /* msgUnprocessed */)
 {
 }
 
@@ -508,6 +508,29 @@ void LoggerClient::processReceivedMessage(const RemoteMessage& msgReceived, Sock
             }
             break;
 
+        case NEService::eFuncIdRange::SystemServiceNotifyRegister:      // fall through
+        case NEService::eFuncIdRange::ServiceLastId:                    // fall through
+        case NEService::eFuncIdRange::SystemServiceQueryInstances:      // fall through
+        case NEService::eFuncIdRange::SystemServiceRequestRegister:     // fall through
+        case NEService::eFuncIdRange::SystemServiceDisconnect:          // fall through
+        case NEService::eFuncIdRange::SystemServiceConnect:             // fall through
+        case NEService::eFuncIdRange::ResponseServiceProviderConnection:// fall through
+        case NEService::eFuncIdRange::RequestServiceProviderConnection: // fall through
+        case NEService::eFuncIdRange::ResponseServiceProviderVersion:   // fall through
+        case NEService::eFuncIdRange::RequestServiceProviderVersion:    // fall through
+        case NEService::eFuncIdRange::RequestRegisterService:           // fall through
+        case NEService::eFuncIdRange::ComponentCleanup:                 // fall through
+        case NEService::eFuncIdRange::ServiceLogConfigurationSaved:     // fall through
+        case NEService::eFuncIdRange::AttributeLastId:                  // fall through
+        case NEService::eFuncIdRange::AttributeFirstId:                 // fall through
+        case NEService::eFuncIdRange::ResponseLastId:                   // fall through
+        case NEService::eFuncIdRange::ResponseFirstId:                  // fall through
+        case NEService::eFuncIdRange::RequestLastId:                    // fall through
+        case NEService::eFuncIdRange::RequestFirstId:                   // fall through
+        case NEService::eFuncIdRange::EmptyFunctionId:                  // fall through
+        case NEService::eFuncIdRange::ServiceLogUpdateScopes:           // fall through
+        case NEService::eFuncIdRange::ServiceLogQueryScopes:            // fall through
+        case NEService::eFuncIdRange::ServiceSaveLogConfiguration:      // fall through
         default:
             ASSERT(false);
         }

@@ -121,7 +121,6 @@ namespace NEDebug
      *          If message is empty, nothing is output.
      *          Method is valid only for DEBUG build.
      * \param   msg     The message to output.
-     * \param   isError And additional flag, indicating whether it an error or not.
      **/
     void AREG_API outputMessageOS( const char * msg );
 }

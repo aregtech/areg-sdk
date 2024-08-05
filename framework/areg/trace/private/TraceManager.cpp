@@ -248,11 +248,12 @@ bool TraceManager::startLoggingThread( void )
             mLogStarted.lock( NECommon::WAIT_INFINITE );
         }
     }
+#ifdef  DEBUG
     else
     {
         ASSERT( false );
-        OUTPUT_ERR("Failed to create [ %s ] System Timer Thread", TraceManager::TRACER_THREAD_NAME);
     }
+#endif  // DEBUG
 
     return mIsStarted;
 }

@@ -71,7 +71,7 @@ SharedBuffer::SharedBuffer(const char * textString, unsigned int blockSize /*= N
 
     , mBlockSize        ( MACRO_ALIGN_SIZE(blockSize, NEMemory::BLOCK_SIZE) )
 {
-    unsigned int size   = (NEString::getStringLength<char>(textString) + 1) * sizeof(char);
+    unsigned int size   = (static_cast<uint32_t>(NEString::getStringLength<char>(textString)) + 1u) * sizeof(char);
     size = reserve(size, false);
     writeData( reinterpret_cast<const unsigned char *>(textString != nullptr ? textString : NEString::EmptyStringA.data( )), size);
 }
@@ -82,7 +82,7 @@ SharedBuffer::SharedBuffer(const wchar_t * textString, unsigned int blockSize /*
 
     , mBlockSize        ( MACRO_ALIGN_SIZE(blockSize, NEMemory::BLOCK_SIZE) )
 {
-    unsigned int size   = (NEString::getStringLength<wchar_t>(textString) + 1) * sizeof(wchar_t);
+    unsigned int size   = (static_cast<uint32_t>(NEString::getStringLength<wchar_t>(textString)) + 1u) * sizeof(wchar_t);
     size = reserve(size, false);
     writeData( reinterpret_cast<const unsigned char *>(textString != nullptr ? textString : NEString::EmptyStringW.data( )), size);
 }
@@ -172,10 +172,6 @@ const unsigned char* SharedBuffer::getBufferAtCurrentPosition( void ) const
         {
             ASSERT(curPos < written);
             result = getBuffer() + curPos;
-        }
-        else
-        {
-            OUTPUT_WARN("The current cursor position is at the end. Buffer at current position is nullptr.");
         }
     }
 

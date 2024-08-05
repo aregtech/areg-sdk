@@ -52,7 +52,7 @@ public:
 
     /**
      * \brief   Connects to the specified database.
-     * \param   dbpath  The path to the database. If needed, the path may contain
+     * \param   dbPath  The path to the database. If needed, the path may contain
      *                  file path or URL, user name and password. It is up to
      *                  Database engine to parse the path and initialize the connection.
      *                  If the parameter is empty, it should take the data from the

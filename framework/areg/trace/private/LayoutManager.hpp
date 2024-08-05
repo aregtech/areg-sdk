@@ -83,7 +83,6 @@ public:
      *          It will go through all layouts to generate message and write in stream.
      * \param   logMsg  The logging message to stream.
      * \param   stream  The streaming object to write output message.
-     * \return  Returns true if operation succeeded.
      **/
     void logMessage( const NETrace::sLogMessage & logMsg, IEOutStream & stream ) const;
 

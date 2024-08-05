@@ -42,7 +42,7 @@ public:
     enum { IDD = IDD_ABOUTBOX };
 
 protected:
-    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+    virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 
                                                         // Implementation
 protected:
@@ -109,7 +109,7 @@ BEGIN_MESSAGE_MAP(DistributedDialog, CPropertySheet)
     ON_WM_PAINT()
     ON_WM_DESTROY( )
     ON_WM_QUERYDRAGICON()
-    ON_COMMAND(IDOK, OnRedirectOK)
+    ON_COMMAND(IDOK, &DistributedDialog::OnRedirectOK)
 
     ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::eWndCommands::CmdServiceStartup      ), &DistributedDialog::OnCmdServiceStartup )
     ON_MESSAGE( MAKE_MESSAGE(NEDistributedApp::eWndCommands::CmdServiceNetwork      ), &DistributedDialog::OnCmdServiceNetwork )

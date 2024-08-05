@@ -249,7 +249,7 @@ LOGOBSERVER_API_IMPL bool logObserverConfigLoggerAddress(char* addrBuffer, uint3
         String addr{ client.getConfigLoggerAddress() };
         if ((addrBuffer != nullptr) && (addr.getLength() > static_cast<NEString::CharCount>(space)))
         {
-            result = NEString::copyString<char, char>(addrBuffer, space, addr.getString(), addr.getLength()) > 0;
+            result = NEString::copyString<char, char>(addrBuffer, static_cast<NEString::CharCount>(space), addr.getString(), addr.getLength()) > 0;
         }
     }
 

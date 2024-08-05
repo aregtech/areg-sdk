@@ -165,7 +165,7 @@ BEGIN_MESSAGE_MAP(PageNetworkSetup, CPropertyPage)
     ON_BN_CLICKED(IDC_BROKER_DISCONNECT, &PageNetworkSetup::OnClickedBrokerDisconnect)
     ON_BN_CLICKED( IDC_BUTTON_REGISTER, &PageNetworkSetup::OnClickedButtonRegister )
     ON_EN_UPDATE(IDC_EDIT_NICKNAME, &PageNetworkSetup::OnUpdateEditNickname)
-    ON_MESSAGE_VOID( WM_KICKIDLE, OnKickIdle )
+    ON_MESSAGE_VOID( WM_KICKIDLE, PageNetworkSetup::OnKickIdle )
     ON_UPDATE_COMMAND_UI( IDC_BROKER_CONNECT, &PageNetworkSetup::OnBnUpdateBrokerConnect )
     ON_UPDATE_COMMAND_UI( IDC_BROKER_DISCONNECT, &PageNetworkSetup::OnBnUdateBrokerDisconnect )
     ON_UPDATE_COMMAND_UI( IDC_BROKER_IPADDRESS, &PageNetworkSetup::OnUpdateRemoteData )
@@ -189,7 +189,7 @@ void PageNetworkSetup::OnClickedBrokerConnect()
         uint32_t temp = check.toUInt32( );
         if ( (temp != NESocket::InvalidPort) && (temp < 0xFFFFu) )
         {
-            mBrokerPort = temp;
+            mBrokerPort = static_cast<USHORT>(temp);
             String ipAddress;
             ipAddress.format( "%u.%u.%u.%u", ip1, ip2, ip3, ip4 );
             if ( Application::startMessageRouting( ipAddress, mBrokerPort ) )
@@ -266,7 +266,7 @@ void PageNetworkSetup::OnBnUpdateBrokerConnect( CCmdUI* pCmdUI )
     if ( (check.isNumeric( false ) == true) && (mCtrlAddress.GetAddress( ip1, ip2, ip3, ip4 ) == 4) )
     {
         uint32_t temp = check.toUInt32( );
-        mBrokerPort = temp > 0xFFFFu ? 0xFFFFu : temp;
+        mBrokerPort = temp > 0xFFFFu ? 0xFFFFu : static_cast<USHORT>(temp);
     }
     else
     {

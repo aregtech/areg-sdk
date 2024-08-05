@@ -699,7 +699,7 @@ inline const IEInStream & operator >> (const IEInStream & stream, NEMemory::uAli
  * \brief   Support streaming operator for NEMemory::uAlign type.
  *          Write NEMemory::uAlign to streaming object
  * \param   stream  The streaming object to write
- * \param   input   The NEMemory::uAlign item to write to stream
+ * \param   output  The NEMemory::uAlign item to write to stream
  * \return  Writing streaming object
  **/
 inline IEOutStream & operator << (IEOutStream & stream, const NEMemory::uAlign & output)
@@ -780,7 +780,7 @@ inline NEMath::eCompare NEMemory::memCompare( const void * memLeft, const void *
     }
     else if ( (memLeft != nullptr) && (memRight != nullptr) )
     {
-        uint32_t cmp = ::memcmp(memLeft, memRight, count);
+        int32_t cmp = ::memcmp(memLeft, memRight, count);
         result = (cmp > 0 ? NEMath::eCompare::Bigger : (cmp < 0 ?  NEMath::eCompare::Smaller : NEMath::eCompare::Equal));
     }
     else if ( memLeft != nullptr )
@@ -807,12 +807,12 @@ inline bool NEMemory::memEqual( const void * memLeft, const void * memRight, uin
 
 inline unsigned char * NEMemory::getBufferDataWrite(NEMemory::sByteBuffer * byteBuffer)
 {
-    return (byteBuffer != nullptr ? reinterpret_cast<unsigned char *>(byteBuffer) + byteBuffer->bufHeader.biOffset : 0);
+    return (byteBuffer != nullptr ? reinterpret_cast<unsigned char *>(byteBuffer) + byteBuffer->bufHeader.biOffset : nullptr);
 }
 
 inline const unsigned char * NEMemory::getBufferDataRead(const sByteBuffer * byteBuffer)
 {
-    return (byteBuffer != nullptr ? reinterpret_cast<const unsigned char *>(byteBuffer) + byteBuffer->bufHeader.biOffset : 0);
+    return (byteBuffer != nullptr ? reinterpret_cast<const unsigned char *>(byteBuffer) + byteBuffer->bufHeader.biOffset : nullptr);
 }
 
 /************************************************************************/

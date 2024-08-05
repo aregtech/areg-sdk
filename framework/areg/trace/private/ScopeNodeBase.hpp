@@ -114,7 +114,7 @@ protected:
      *          On output, the 'scopeName' does not contain the name of
      *          extracted node name. In the first cycle of the example, the
      *          node name would be "unittest__someTest_testFunction".
-     * \param   The name of the scope to extract node name.
+     * \param   scopeName   The name of the scope to extract node name.
      **/
     static String extractNodeName( String & scopeName );
 
@@ -152,7 +152,7 @@ public:
      *          the scope is a leaf. All others are nodes.
      *          On output, the 'scopePath' with contain the remaining path or an empty string
      *          if a leaf was created.
-     * \param   stopePath   The path of the scope to create a node. On output, this contains
+     * \param   scopePath   The path of the scope to create a node. On output, this contains
      *                      either the remaining path or empty string if a leaf was created.
      * \param   prioStates  Bitwise logging priority set to scope.
      * \return  Returns created node. It is either a node or a leaf.
@@ -177,9 +177,9 @@ public:
      *          contains the remaining part of the scope after creating child node. It is empty
      *          when creates and adds a leaf.
      *          Only root or nodes can contain child. This method is ignored in case of leaf.
-     * \param   scopePath       The name of the scope to generate a node. On output, this contains
-     *                          the remaining part of the scope name.
-     * \param   priorityState   The logging priority flags of the scope.
+     * \param   scopePath   The name of the scope to generate a node. On output, this contains
+     *                      the remaining part of the scope name.
+     * \param   prioStates  The log priority bitwise flag to add to nodes.
      * \return  Returns a pair of new node entry in the child list and a boolean flag indicating whether
      *          it created new entry or updated the existing.
      **/
@@ -335,7 +335,7 @@ public:
      *          The recursion continues until leaf. The new entry is added only if it is
      *          not existing in the child list.
      * \param   scopePath   The path name of the scope to generate and add child nodes.
-     * \param   prioState   The log priority bitwise flag to add to nodes.
+     * \param   prioStates  The log priority bitwise flag to add to nodes.
      * \return  Returns the number of nodes created or updated.
      **/
     unsigned int addChildRecursive( String & scopePath, unsigned int prioStates );
@@ -346,7 +346,6 @@ public:
      *          The recursion continues until leaf. The new entry is added only if it is
      *          not existing in the child list.
      * \param   traceScope  The logging scope, which contains the scope name and the log priority.
-     * \param   prioState   The log priority bitwise flag to add to nodes.
      * \return  Returns the number of nodes created or updated.
      **/
     unsigned int addChildRecursive( const TraceScope & traceScope );

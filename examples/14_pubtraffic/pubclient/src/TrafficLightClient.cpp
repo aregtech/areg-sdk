@@ -17,7 +17,7 @@ Component * TrafficLightClient::CreateComponent(const NERegistry::ComponentEntry
     return DEBUG_NEW TrafficLightClient(entry, owner);
 }
 
-void TrafficLightClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
+void TrafficLightClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
 {
     delete (&compObject);
 }

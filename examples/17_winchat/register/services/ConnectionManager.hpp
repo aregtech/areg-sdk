@@ -45,7 +45,7 @@ public:
      * \param   dateTime    Client connection request date time in UTC
      * \see     ResponseConnect
      **/
-    virtual void requestConnect( const String & nickName, const DateTime & dateTime );
+    virtual void requestConnect( const String & nickName, const DateTime & dateTime ) override;
 
     /**
      * \brief   Request call.
@@ -56,7 +56,7 @@ public:
      * \param   dateRegister    The connection registration time-stamp
      * \see     responseRegisterConnection
      **/
-    virtual void requestRegisterConnection( const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister );
+    virtual void requestRegisterConnection( const String & nickName, unsigned int cookie, unsigned int connectCookie, const DateTime & dateRegister ) override;
 
     /**
      * \brief   Request call.
@@ -66,7 +66,7 @@ public:
      * \param   dateTime    Disconnect request date-time
      * \see     Has no response
      **/
-    virtual void requestDisconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime );
+    virtual void requestDisconnect( const String & nickName, unsigned int cookie, const DateTime & dateTime ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // CentralMessager Interface Requests
@@ -82,7 +82,7 @@ public:
      * \param   dateTime    The time-stamp create on local host of initiator
      * \note    Has no response
      **/
-    virtual void requestSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime );
+    virtual void requestSendMessage( const String & nickName, unsigned int cookie, const String & newMessage, const DateTime & dateTime ) override;
 
     /**
      * \brief   Request call.
@@ -92,7 +92,7 @@ public:
      * \param   newMessage  The message typed.
      * \note    Has no response
      **/
-    virtual void requestKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage );
+    virtual void requestKeyTyping( const String & nickName, unsigned int cookie, const String & newMessage ) override;
 
 public:
 
@@ -124,7 +124,7 @@ protected:
      * \param   holder  The holder component of service interface of Stub,
      *                  which started up.
      **/
-    virtual void startupServiceInterface( Component & holder );
+    virtual void startupServiceInterface( Component & holder ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden constructor / destructor

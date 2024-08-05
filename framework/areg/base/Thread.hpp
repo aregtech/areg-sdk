@@ -295,7 +295,7 @@ public:
     /**
      * \brief	Search by thread ID and return pointer the thread object.
      *          If ID could not find, returns nullptr
-     * \param	threadID    The unique ID of thread to search
+     * \param	threadId    The unique ID of thread to search
      * \return	If not nullptr, the thread object was found.
      **/
     inline static Thread * findThreadById( id_type threadId );
@@ -303,8 +303,8 @@ public:
     /**
      * \brief	Search by thread context and return pointer the thread object.
      *          If Context could not find, returns nullptr
-     * \param	threadContext   The unique Context of thread.
-     *                          It contains Process and Thread IDs information
+     * \param	threadAddres    The unique address of the thread, that contains 
+     *                          the name of the thread, process and thread ID.
      * \return	If not nullptr, the thread object was found.
      **/
     inline static Thread * findThreadByAddress( const ThreadAddress & threadAddres );
@@ -312,7 +312,7 @@ public:
     /**
      * \brief   Lookup Thread by thread ID and returns Thread Address object,
      *          which contains information of Process ID and Thread ID.
-     * \param	threadID	The ID of thread to get address
+     * \param	threadId	The ID of thread to get address
      * \return	If found, returns valid thread address object.
      *          Otherwise returns invalid thread address.
      **/
@@ -341,7 +341,7 @@ public:
     inline static void switchThread( void );
 
     /**
-     * \brief   Return the ID of current thread.
+     * \brief   Returns the ID of current thread.
      **/
     inline static id_type getCurrentThreadId( void );
 
@@ -580,7 +580,6 @@ private:
      * \brief	Sets name to new created name. Might be useful during debugging.
      * \param	threadId	The unique ID of thread to set name
      * \param	threadName	The name to set.
-     * \return
      **/
     static void _osSetThreadName( id_type threadId, const char * threadName );
 

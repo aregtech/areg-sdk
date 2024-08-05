@@ -74,7 +74,7 @@
  *          If parsing an option fails, for example, if the value is out of range or the closing quote ("\"") of the string is missed,
  *          the `inField` field of the sOption contains error flag, which can be checked by static method `hasInputError(uint32_t flags)`.
  *
- * \examples:   These are examples of setting options:
+ *          Example:   These are examples of setting options:
  *              1. Command line simple options: '-a', '-b', '-c'
  *                  myapp -a -b -c
  *              2. Command line options with values, set by '=': '-a' = {1}, '-b' = {2.3} -c = {"something"}

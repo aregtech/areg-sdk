@@ -30,6 +30,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="sqlite3\CMakeLists.txt" />
+    <Text Include="CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="sqlite3\Readme.md" />

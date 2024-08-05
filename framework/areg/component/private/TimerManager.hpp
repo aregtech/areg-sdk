@@ -254,7 +254,7 @@ private:
 
     /**
      * \brief   Starts system timer and returns true if timer started with success.
-     * \param   timerInfo   The timer information object
+     * \param   timer   The timer object.
      * \return  Returns true if system timer started with success.
      **/
     static bool _osSystemTimerStart( Timer& timer );

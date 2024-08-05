@@ -71,7 +71,7 @@ class IEByteBuffer;
     friend inline const IEInStream & operator >> (const IEInStream & stream, data_type & input);                \
     /* \brief   Writing to stream operator. It reads data from output instance                          */      \
     /*          and writes data to stream object.                                                       */      \
-    friend inline IEOutStream & operator << (IEOutStream & stream, const data_type & output);                   \
+    friend inline IEOutStream & operator << (IEOutStream & stream, const data_type & output)                    \
 
 #define GLOBAL_DECLARE_STREAMABLE(data_type)                                                                    \
     /* \brief   Reading from stream operators. It reads data from stream and                            */      \
@@ -79,7 +79,7 @@ class IEByteBuffer;
     const IEInStream & operator >> (const IEInStream & stream, data_type & input);                              \
     /* \brief   Writing to stream operator. It reads data from output instance                          */      \
     /*          and writes data to stream object.                                                       */      \
-    IEOutStream & operator << (IEOutStream & stream, const data_type & output);                                 \
+    IEOutStream & operator << (IEOutStream & stream, const data_type & output)                                  \
 
 
 /**
@@ -200,10 +200,10 @@ public:
     /**
      * \brief   Reads string data from input stream object, copies into given wide-string object
      *          and returns the size in bytes of copied data.
-     * \param   ascii   The instance of wide-string object to copy data.
+     * \param   wide    The instance of wide-string object to copy data.
      * \return  Returns the size in bytes of copied string data.
      **/
-    virtual unsigned int read( WideString & wideString ) const = 0;
+    virtual unsigned int read( WideString & wide ) const = 0;
 
     /**
      * \brief   Resets cursor position and moves to the begin of data.
@@ -265,21 +265,21 @@ public:
 
     /**
      * \brief   Writes given 16-bit value into the stream and returns true if operation succeeded.
-     * \param   value8Bit   The 16-bit value to write into the stream.
+     * \param   value16Bit  The 16-bit value to write into the stream.
      * \return  Returns true if operation succeeded.
      **/
     virtual bool write16Bits( uint16_t value16Bit );
 
     /**
      * \brief   Writes given 32-bit value into the stream and returns true if operation succeeded.
-     * \param   value8Bit   The 32-bit value to write into the stream.
+     * \param   value32Bit  The 32-bit value to write into the stream.
      * \return  Returns true if operation succeeded.
      **/
     virtual bool write32Bits( uint32_t value32Bit );
 
     /**
      * \brief   Writes given 64-bit value into the stream and returns true if operation succeeded.
-     * \param   value8Bit   The 64-bit value to write into the stream.
+     * \param   value64Bit  The 64-bit value to write into the stream.
      * \return  Returns true if operation succeeded.
      **/
     virtual bool write64Bits( uint64_t value64Bit );
@@ -320,10 +320,10 @@ public:
     /**
      * \brief	Writes data to output stream object from given wide-string object and
      *         returns the size in bytes of written data.
-     * \param	ascii	The instance of wide-string object as a data source.
+     * \param	wide 	The instance of wide-string object as a data source.
      * \return	Returns the size in bytes of written data.
      **/
-    virtual unsigned int write( const WideString & wideString ) = 0;
+    virtual unsigned int write( const WideString & wide ) = 0;
 
     /**
      * \brief	Flushes cached data to output stream object.
@@ -369,18 +369,18 @@ public:
 /************************************************************************
  * \brief   Support streaming of primitives
  ************************************************************************/
-    DECLARE_STREAMABLE(bool)            //!< Declare primitive type bool as streamable
-    DECLARE_STREAMABLE(char)            //!< Declare primitive type char as streamable
-    DECLARE_STREAMABLE(wchar_t)         //!< Declare primitive type wchar_t as streamable
-    DECLARE_STREAMABLE(unsigned char)   //!< Declare primitive type unsigned char as streamable
-    DECLARE_STREAMABLE(short)           //!< Declare primitive type short as streamable
-    DECLARE_STREAMABLE(unsigned short)  //!< Declare primitive type unsigned short as streamable
-    DECLARE_STREAMABLE(int)             //!< Declare primitive type int as streamable
-    DECLARE_STREAMABLE(unsigned int)    //!< Declare primitive type unsigned int as streamable
-    DECLARE_STREAMABLE(int64_t)         //!< Declare primitive type int64_t as streamable
-    DECLARE_STREAMABLE(uint64_t)        //!< Declare primitive type uint64_t as streamable
-    DECLARE_STREAMABLE(float)           //!< Declare primitive type float as streamable
-    DECLARE_STREAMABLE(double)          //!< Declare primitive type double as streamable
+    DECLARE_STREAMABLE(bool);           //!< Declare primitive type bool as streamable
+    DECLARE_STREAMABLE(char);           //!< Declare primitive type char as streamable
+    DECLARE_STREAMABLE(wchar_t);        //!< Declare primitive type wchar_t as streamable
+    DECLARE_STREAMABLE(unsigned char);  //!< Declare primitive type unsigned char as streamable
+    DECLARE_STREAMABLE(short);          //!< Declare primitive type short as streamable
+    DECLARE_STREAMABLE(unsigned short); //!< Declare primitive type unsigned short as streamable
+    DECLARE_STREAMABLE(int);            //!< Declare primitive type int as streamable
+    DECLARE_STREAMABLE(unsigned int);   //!< Declare primitive type unsigned int as streamable
+    DECLARE_STREAMABLE(int64_t);        //!< Declare primitive type int64_t as streamable
+    DECLARE_STREAMABLE(uint64_t);       //!< Declare primitive type uint64_t as streamable
+    DECLARE_STREAMABLE(float);          //!< Declare primitive type float as streamable
+    DECLARE_STREAMABLE(double);         //!< Declare primitive type double as streamable
 
     /**
      * \brief   Writes an ASCII string to the stream

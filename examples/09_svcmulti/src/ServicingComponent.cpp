@@ -20,7 +20,7 @@ Component * ServicingComponent::CreateComponent(const NERegistry::ComponentEntry
     return DEBUG_NEW ServicingComponent( entry, owner, entry.getComponentData());
 }
 
-void ServicingComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
+void ServicingComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
 {
     delete (&compObject);
 }
@@ -29,7 +29,7 @@ DEF_TRACE_SCOPE(examples_09_svcmulti_ServicingComponent_startupServiceInterface)
 DEF_TRACE_SCOPE(examples_09_svcmulti_ServicingComponent_shutdownServiceIntrface);
 DEF_TRACE_SCOPE(examples_09_svcmulti_ServicingComponent_processTimer);
 
-ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread, NEMemory::uAlign OPT data)
+ServicingComponent::ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread, NEMemory::uAlign OPT /* data */)
     : Component ( entry, ownerThread )
     , StubBase  ( self(), NEService::getEmptyInterface() )
 

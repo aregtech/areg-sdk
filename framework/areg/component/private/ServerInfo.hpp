@@ -176,8 +176,8 @@ public:
     inline NEService::eServiceConnection getConnectionStatus( void ) const;
 
     /**
-     * \brief   Changes the state of server
-     * \param   serverState     The service connection state of server.
+     * \brief   Changes the network connection status.
+     * \param   newConnection   The service connection status.
      **/
     void setConnectionStatus( NEService::eServiceConnection newConnection );
 

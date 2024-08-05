@@ -100,7 +100,7 @@ void CentralMessaging::broadcastBroadcastMessage( const String & serverMessage, 
         NEString::copyString<TCHAR, TCHAR>( data->nickName, NECommon::MAXLEN_NICKNAME, NECommon::SERVER_NAME );
         NEString::copyString<TCHAR, char>( data->message, NECommon::MAXLEN_MESSAGE, serverMessage.getString( ) );
 
-        data->dataSave      = -1;
+        data->dataSave      = static_cast<uint64_t>(-1);
         data->timeReceived  = DateTime::getNow();
         data->timeSend      = dateTime;
 

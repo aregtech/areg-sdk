@@ -77,8 +77,8 @@ namespace NEUtilities
     /**
      * \brief   Converts the given time in microseconds passed since Unix epoch (1 January 1970) to the time
      *          broken in the structure of `sysTime` parameter.
-     * \param[in]   utcTime     The UTC time in microseconds since Unix epoch (1 January 1970) to break.
-     * \param[out]  localTime   The broken time structure. On output this contains structured calendar structure,
+     * \param[in]   timeValue   The UTC time in microseconds since Unix epoch (1 January 1970) to break.
+     * \param[out]  sysTime     The broken time structure. On output this contains structured calendar structure,
      *                          including milliseconds and microseconds.
      **/
     extern void _osConvToSystemTime(const TIME64& IN timeValue, NEUtilities::sSystemTime& OUT sysTime);
@@ -86,8 +86,8 @@ namespace NEUtilities
     /**
      * \brief   Converts the given time in microseconds passed since Unix epoch (1 January 1970) to the time
      *          broken in the tm structure.
-     * \param[in]   utcTime     The UTC time in microseconds since Unix epoch (1 January 1970) to break.
-     * \param[out]  localTime   The broken time structure. On output this contains structured calendar structure
+     * \param[in]   timeValue   The UTC time in microseconds since Unix epoch (1 January 1970) to break.
+     * \param[out]  time        The broken time structure. On output this contains structured calendar structure
      *                          without milliseconds and microseconds.
      **/
     extern void _osConvToTm(const TIME64& IN timeValue, struct tm& OUT time);
@@ -96,7 +96,7 @@ namespace NEUtilities
 // Local static methods.
 /************************************************************************/
 
-    NEMath::eCompare compareLargeIntegers( const NEMath::uLargeInteger & lhs, const NEMath::uLargeInteger & rhs )
+    static NEMath::eCompare _compareLargeIntegers( const NEMath::uLargeInteger & lhs, const NEMath::uLargeInteger & rhs )
     {
         NEMath::eCompare result = NEMath::eCompare::Equal;
         if ( lhs.u.highPart < rhs.u.highPart )
@@ -120,13 +120,13 @@ AREG_API_IMPL time_t NEUtilities::convToSeconds(const sSystemTime & sysTime)
 {
     const int year{ sysTime.stYear - 1900 };
     return    static_cast<time_t>(sysTime.stSecond)
-            + static_cast<time_t>(sysTime.stMinute      * NEUtilities::MIN_TO_SECS)
-            + static_cast<time_t>(sysTime.stHour        * NEUtilities::HOUR_TO_SECS)
-            + static_cast<time_t>((sysTime.stDayOfYear - 1) * NEUtilities::DAY_TO_SECS)
-            + static_cast<time_t>(((year -  70)     )   * NEUtilities::YEAR_TO_SECS)
-            + static_cast<time_t>(((year -  69) /   4)  * NEUtilities::DAY_TO_SECS)
-            - static_cast<time_t>(((year -   1) / 100)  * NEUtilities::DAY_TO_SECS)
-            + static_cast<time_t>(((year + 299) / 400)  * NEUtilities::DAY_TO_SECS);
+            + static_cast<time_t>(static_cast<TIME64>(sysTime.stMinute       ) * NEUtilities::MIN_TO_SECS)
+            + static_cast<time_t>(static_cast<TIME64>(sysTime.stHour         ) * NEUtilities::HOUR_TO_SECS)
+            + static_cast<time_t>(static_cast<TIME64>(sysTime.stDayOfYear - 1) * NEUtilities::DAY_TO_SECS)
+            + static_cast<time_t>(static_cast<TIME64>( year -  70            ) * NEUtilities::YEAR_TO_SECS)
+            + static_cast<time_t>(static_cast<TIME64>((year -  69) /   4     ) * NEUtilities::DAY_TO_SECS)
+            - static_cast<time_t>(static_cast<TIME64>((year -   1) / 100     ) * NEUtilities::DAY_TO_SECS)
+            + static_cast<time_t>(static_cast<TIME64>((year + 299) / 400     ) * NEUtilities::DAY_TO_SECS);
 }
 
 AREG_API_IMPL NEMath::eCompare NEUtilities::compareTimes( const TIME64 & lhs, const TIME64 & rhs )
@@ -135,13 +135,13 @@ AREG_API_IMPL NEMath::eCompare NEUtilities::compareTimes( const TIME64 & lhs, co
     lhsLi.quadPart  = lhs;
     rshLi.quadPart  = rhs;
 
-    return NEUtilities::compareLargeIntegers(lhsLi, rshLi);
+    return NEUtilities::_compareLargeIntegers(lhsLi, rshLi);
 }
 
 AREG_API_IMPL void NEUtilities::convMicrosecs(const TIME64& IN time, time_t& OUT secs, unsigned short& OUT milli, unsigned short& OUT micro)
 {
     secs = static_cast<time_t>(time / NEUtilities::SEC_TO_MICROSECS);
-    time_t rest = static_cast<time_t>(time % NEUtilities::SEC_TO_MICROSECS);
+    TIME64 rest = time % NEUtilities::SEC_TO_MICROSECS;
     milli = static_cast<unsigned short>(rest / NEUtilities::MILLISEC_TO_MICROSECS);
     micro = static_cast<unsigned short>(rest % NEUtilities::MILLISEC_TO_MICROSECS);
 }
@@ -192,7 +192,7 @@ AREG_API_IMPL void NEUtilities::convToSystemTime(const struct tm & IN time, sSys
 AREG_API_IMPL NEMath::eCompare NEUtilities::compareTimes( const NEUtilities::sSystemTime & lhs, const NEUtilities::sSystemTime & rhs )
 {
     TIME64 lhsTm{ NEUtilities::convToTime(lhs) };
-    TIME64 rshTm{ NEUtilities::convToTime(lhs) };
+    TIME64 rshTm{ NEUtilities::convToTime(rhs) };
     if (lhsTm > rshTm)
     {
         return NEMath::eCompare::Bigger;
@@ -250,7 +250,7 @@ AREG_API_IMPL const char * NEUtilities::generateName(const char * prefix, char *
         const char* spec = specChar != nullptr ? specChar : NECommon::DEFAULT_SPECIAL_CHAR.data();
         NEMath::uLargeInteger time{};
         auto now{ std::chrono::high_resolution_clock::now().time_since_epoch() };
-        time.quadPart = std::chrono::duration_cast<std::chrono::microseconds>(now).count();
+        time.quadPart = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(now).count());
 
         String::formatString( out_buffer, length, strFormat
                             , prefix != nullptr ? prefix : NEUtilities::DEFAULT_GENERATED_NAME.data()
@@ -305,27 +305,27 @@ AREG_API_IMPL TIME64 NEUtilities::convToTime( const NEUtilities::sSystemTime & I
     const int year{ sysTime.stYear - 1900 };
 
     return    static_cast<TIME64>(sysTime.stMicrosecs)
-            + static_cast<TIME64>(sysTime.stMillisecs       * NEUtilities::MILLISEC_TO_MICROSECS)
-            + static_cast<TIME64>(sysTime.stSecond          * NEUtilities::SEC_TO_MICROSECS)
-            + static_cast<TIME64>(sysTime.stMinute          * NEUtilities::MIN_TO_MICROSECS)
-            + static_cast<TIME64>(sysTime.stHour            * NEUtilities::HOUR_TO_MICROSECS)
-            + static_cast<TIME64>((sysTime.stDayOfYear - 1) * NEUtilities::DAY_TO_MICROSECS)
-            + static_cast<TIME64>(((year -  70)      )      * NEUtilities::YEAR_TO_MICROSECS)
-            + static_cast<TIME64>(((year -  69) /   4)      * NEUtilities::DAY_TO_MICROSECS)
-            - static_cast<TIME64>(((year -   1) / 100)      * NEUtilities::DAY_TO_MICROSECS)
-            + static_cast<TIME64>(((year + 299) / 400)      * NEUtilities::DAY_TO_MICROSECS);
+            + static_cast<TIME64>(sysTime.stMillisecs    ) * NEUtilities::MILLISEC_TO_MICROSECS
+            + static_cast<TIME64>(sysTime.stSecond       ) * NEUtilities::SEC_TO_MICROSECS
+            + static_cast<TIME64>(sysTime.stMinute       ) * NEUtilities::MIN_TO_MICROSECS
+            + static_cast<TIME64>(sysTime.stHour         ) * NEUtilities::HOUR_TO_MICROSECS
+            + static_cast<TIME64>(sysTime.stDayOfYear - 1) * NEUtilities::DAY_TO_MICROSECS
+            + static_cast<TIME64>( year -  70            ) * NEUtilities::YEAR_TO_MICROSECS
+            + static_cast<TIME64>((year -  69) /   4     ) * NEUtilities::DAY_TO_MICROSECS
+            - static_cast<TIME64>((year -   1) / 100     ) * NEUtilities::DAY_TO_MICROSECS
+            + static_cast<TIME64>((year + 299) / 400     ) * NEUtilities::DAY_TO_MICROSECS;
 }
 
 AREG_API_IMPL TIME64 NEUtilities::convToTime(const tm& IN time)
 {
-    return    static_cast<TIME64>(time.tm_sec                   * NEUtilities::SEC_TO_MICROSECS)
-            + static_cast<TIME64>(time.tm_min                   * NEUtilities::MIN_TO_MICROSECS)
-            + static_cast<TIME64>(time.tm_hour                  * NEUtilities::HOUR_TO_MICROSECS)
-            + static_cast<TIME64>(time.tm_yday                  * NEUtilities::DAY_TO_MICROSECS)
-            + static_cast<TIME64>(((time.tm_year - 70))         * NEUtilities::YEAR_TO_MICROSECS)
-            + static_cast<TIME64>(((time.tm_year - 69)  / 4)    * NEUtilities::DAY_TO_MICROSECS)
-            - static_cast<TIME64>(((time.tm_year - 1)   / 100)  * NEUtilities::DAY_TO_MICROSECS)
-            + static_cast<TIME64>(((time.tm_year + 299) / 400)  * NEUtilities::DAY_TO_MICROSECS);
+    return    static_cast<TIME64>(time.tm_sec               ) * NEUtilities::SEC_TO_MICROSECS
+            + static_cast<TIME64>(time.tm_min               ) * NEUtilities::MIN_TO_MICROSECS
+            + static_cast<TIME64>(time.tm_hour              ) * NEUtilities::HOUR_TO_MICROSECS
+            + static_cast<TIME64>(time.tm_yday              ) * NEUtilities::DAY_TO_MICROSECS
+            + static_cast<TIME64>(time.tm_year - 70         ) * NEUtilities::YEAR_TO_MICROSECS
+            + static_cast<TIME64>((time.tm_year - 69)  / 4  ) * NEUtilities::DAY_TO_MICROSECS
+            - static_cast<TIME64>((time.tm_year - 1)   / 100) * NEUtilities::DAY_TO_MICROSECS
+            + static_cast<TIME64>((time.tm_year + 299) / 400) * NEUtilities::DAY_TO_MICROSECS;
 }
 
 AREG_API_IMPL void NEUtilities::convToSystemTime( const TIME64 & IN timeValue, NEUtilities::sSystemTime & OUT sysTime )

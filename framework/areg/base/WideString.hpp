@@ -446,36 +446,116 @@ public:
     /**
      * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
      *          If string has not enough space to copy characters, it will reallocate the space.
-     *
      * \param   source  The source of string to copy characters.
-     * \param   pos     The position in source string to start to copy.
      * \param   count   The number of characters to copy. By default, it copies all characters.
-     * \param   ch      A character to assign.
      * \return  Returns modified string.
      **/
     WideString& assign(const char* source, NEString::CharCount count = NEString::COUNT_ALL);
+
+    /**
+     * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
+     *          If string has not enough space to copy characters, it will reallocate the space.
+     * \param   source  The source of string to copy characters.
+     * \param   count   The number of characters to copy. By default, it copies all characters.
+     * \return  Returns modified string.
+     **/
     inline WideString& assign(const wchar_t* source, NEString::CharCount count = NEString::COUNT_ALL);
+
+    /**
+     * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
+     *          If string has not enough space to copy characters, it will reallocate the space.
+     * \param   source  The source of string to copy characters.
+     * \param   pos     The position in source string to start to copy.
+     * \param   count   The number of characters to copy. By default, it copies all characters.
+     * \return  Returns modified string.
+     **/
     inline WideString& assign(const std::wstring& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+
+    /**
+     * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
+     *          If string has not enough space to copy characters, it will reallocate the space.
+     * \param   source  The source of string to copy characters.
+     * \param   pos     The position in source string to start to copy.
+     * \param   count   The number of characters to copy. By default, it copies all characters.
+     * \return  Returns modified string.
+     **/
     inline WideString& assign(const std::wstring_view& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+
+    /**
+     * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
+     *          If string has not enough space to copy characters, it will reallocate the space.
+     * \param   source  The source of string to copy characters.
+     * \param   pos     The position in source string to start to copy.
+     * \param   count   The number of characters to copy. By default, it copies all characters.
+     * \return  Returns modified string.
+     **/
     inline WideString& assign(const WideString& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+
+    /**
+     * \brief   Copies given amount of characters of given string and returns the amount of copied characters.
+     *          If string has not enough space to copy characters, it will reallocate the space.
+     * \param   ch      A character to assign.
+     * \return  Returns modified string.
+     **/
     inline WideString& assign(const wchar_t ch);
 
     /**
      * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
      *          and by amount of characters to append.
-     *
+     * \param   source  The source of string to append characters.
+     * \param   count   If specified, the number of characters to append. By default, it appends all characters.
+     * \return  Returns modified string.
+     **/
+    WideString& append(const char* source, NEString::CharCount count = NEString::COUNT_ALL);
+
+    /**
+     * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
+     *          and by amount of characters to append.
+     * \param   source  The source of string to append characters.
+     * \param   count   If specified, the number of characters to append. By default, it appends all characters.
+     * \return  Returns modified string.
+     **/
+    inline WideString& append(const wchar_t* source, NEString::CharCount count = NEString::COUNT_ALL);
+
+    /**
+     * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
+     *          and by amount of characters to append.
      * \param   source  The source of string to append characters.
      * \param   pos     If specified the valid zero-based position in the given string to append.
      *                  Otherwise, it append starting from the beginning.
      * \param   count   If specified, the number of characters to append. By default, it appends all characters.
+     * \return  Returns modified string.
+     **/
+    inline WideString& append(const std::wstring& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+
+    /**
+     * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
+     *          and by amount of characters to append.
+     * \param   source  The source of string to append characters.
+     * \param   pos     If specified the valid zero-based position in the given string to append.
+     *                  Otherwise, it append starting from the beginning.
+     * \param   count   If specified, the number of characters to append. By default, it appends all characters.
+     * \return  Returns modified string.
+     **/
+    inline WideString& append(const std::wstring_view& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+
+    /**
+     * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
+     *          and by amount of characters to append.
+     * \param   source  The source of string to append characters.
+     * \param   pos     If specified the valid zero-based position in the given string to append.
+     *                  Otherwise, it append starting from the beginning.
+     * \param   count   If specified, the number of characters to append. By default, it appends all characters.
+     * \return  Returns modified string.
+     **/
+    inline WideString& append(const WideString& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
+
+    /**
+     * \brief   Appends given string at the end. The given string can be limited by zero-based valid position
+     *          and by amount of characters to append.
      * \param   ch      A character to append.
      * \return  Returns modified string.
      **/
-    WideString& append(const char* source, NEString::CharCount count = NEString::COUNT_ALL);
-    inline WideString& append(const wchar_t* source, NEString::CharCount count = NEString::COUNT_ALL);
-    inline WideString& append(const std::wstring& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
-    inline WideString& append(const std::wstring_view& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
-    inline WideString& append(const WideString& source, NEString::CharPos pos = NEString::START_POS, NEString::CharCount count = NEString::COUNT_ALL);
     inline WideString& append(const wchar_t ch);
 
     /**

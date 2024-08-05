@@ -113,9 +113,11 @@ bool NEUtilities::sOptionData::setValue(const sOptions& whichOpt, uint32_t which
     case eOptionFlags::CmdStart:
     case eOptionFlags::CmdStop:
     case eOptionFlags::CmdQuit:
+    case eOptionFlags::CmdNothing:
         mFlags |= static_cast<uint32_t>(whichOpt.cmdValue);
         break;
 
+    case eOptionFlags::Error:
     default:
         mFlags = static_cast<uint32_t>(eOptionFlags::Error);
         result = false;

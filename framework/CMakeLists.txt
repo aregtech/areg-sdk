@@ -33,6 +33,7 @@ endif()
 if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
     target_compile_options(areg PRIVATE -fPIC)
 endif()
+target_compile_options(areg PRIVATE "${AREG_FRAMEWORK_COMPILER_OPT}")
 
 # Linker options
 target_link_libraries(areg PRIVATE ${AREG_LDFLAGS})

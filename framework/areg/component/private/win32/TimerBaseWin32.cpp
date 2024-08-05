@@ -23,7 +23,6 @@
 
 TIMERHANDLE TimerBase::_osCreateWaitableTimer()
 {
-    TIMERHANDLE result{ nullptr };
     TCHAR * name{ nullptr };
     TCHAR convertName[MAX_PATH];
 
@@ -33,16 +32,7 @@ TIMERHANDLE TimerBase::_osCreateWaitableTimer()
         name = convertName;
     }
 
-    result = static_cast<TIMERHANDLE>(::CreateWaitableTimer( nullptr, FALSE, name ));
-
-#ifdef _DEBUG
-    if ( result == nullptr )
-    {
-        OUTPUT_ERR( "Failed creating timer [ %s ], the system error code is [ 0x%p ]", mName.getString( ), GetLastError( ) );
-    }
-#endif // _DEBUG
-
-    return result;
+    return static_cast<TIMERHANDLE>(::CreateWaitableTimer( nullptr, FALSE, name ));
 }
 
 void TimerBase::_osDestroyWaitableTimer( TIMERHANDLE handle )

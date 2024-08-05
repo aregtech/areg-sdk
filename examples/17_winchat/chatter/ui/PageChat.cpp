@@ -73,7 +73,7 @@ void PageChat::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(PageChat, CPropertyPage)
     ON_WM_DESTROY( )
     ON_WM_TIMER()
-    ON_MESSAGE_VOID( WM_KICKIDLE, OnKickIdle )
+    ON_MESSAGE_VOID(WM_KICKIDLE, PageChat::OnKickIdle)
     ON_EN_UPDATE(IDC_EDIT_CHAT, &PageChat::OnUpdateEditChat)
     ON_EN_CHANGE(IDC_CHAT_TIMER, &PageChat::OnEnChangeChatTimer)
     ON_BN_CLICKED( IDC_CHECK_CHAT_MESSAGES, &PageChat::OnClickedCheckChatMessages )
@@ -236,7 +236,6 @@ void PageChat::OnClickedButtonCloseChat( )
         SetChatClient(nullptr);
     }
 
-    const NEDirectConnection::sInitiator & initiator = GetInitiator();
     String modelName = NEDistributedApp::PREFIX_MODEL + GetServiceName();
     ComponentLoader::unloadComponentModel(true, modelName );
 
@@ -351,11 +350,12 @@ void PageChat::outputTyping(CString nickName, CString message, uint32_t cookie )
     if ( message.IsEmpty() == false )
     {
         int pos = mLastItem;
-        for ( pos; pos < mCtrlList.GetItemCount(); ++ pos )
+        for ( ; pos < mCtrlList.GetItemCount(); ++ pos )
         {
             if ( cookie == static_cast<uint32_t>(mCtrlList.GetItemData(pos)) )
                 break;
         }
+        
         if ( pos == mCtrlList.GetItemCount() )
         {
             LVITEM lv;

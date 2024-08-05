@@ -223,11 +223,11 @@ namespace NETrace
      * \brief   From given string value returns log priority value.
      *          The string values should be followings:
      *          NOTSET, SCOPE, FATAL, ERROR, WARNING, INFO, DEBUG.
-     * \param   strPrio The priority string value to convert.
+     * \param   prio    The priority string value to convert.
      *                  The given string is not case sensitive.
      * \return  Returns appropriate logging priority value.
      **/
-    inline const NETrace::eLogPriority stringToLogPrio(const String& prio);
+    inline NETrace::eLogPriority stringToLogPrio(const String& prio);
 
     /**
      * \brief   Converts the bitwise set of priority into the human readable string.
@@ -239,11 +239,11 @@ namespace NETrace
     /**
      * \brief   Converts the human readable string with priorities separate by logical OR ('|')
      *          into bitwise set of integer value with priorities.
-     * \param   priorities      The human readable string with priorities separated by logical OR ('|')
-     *                          to convert into integer.
+     * \param   prio    The human readable string with priorities separated by logical OR ('|')
+     *                  to convert into integer.
      * \return  Returns converted integer value where the priorities are set bitwise.
      **/
-    AREG_API unsigned int makePriorities(const String& prioString);
+    AREG_API unsigned int makePriorities(const String& prio);
 
     /**
      * \brief   NETrace::LOG_MESSAGE_IZE
@@ -293,8 +293,9 @@ namespace NETrace
          * \brief   Initializes logging message and sets specified data.
          * \param   msgType     The logging message type.
          * \param   scopeId     The ID of message scope.
-         * \param   mstPrio     The priority of logging message.
+         * \param   msgPrio     The priority of logging message.
          * \param   message     The message text to output on target. Can be empty.
+         * \param   msgLen      The length of the message string.
          **/
         sLogMessage(NETrace::eLogMessageType msgType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const char * message, unsigned int msgLen);
         /**
@@ -351,7 +352,6 @@ namespace NETrace
      *                      If nullptr or empty, and default configuration file exist, loads configuration data from default file,
      *                      enables and starts logging.
      *                      If neither specified, nor default configuration file exist, it sets logging default values and start logging.
-     * \param   configFile
      * \return  Returns true if succeeded to start logging.
      **/
     AREG_API bool initAndStartLogging( const char * fileConfig = nullptr );
@@ -380,7 +380,7 @@ namespace NETrace
      *          information of specified log and the information permits logging, 
      *          i.e. the logging priority is not equal to NETrace::PrioNotset,
      *          the message texts can be logged in output target.
-     * \param   tarceScope  The instance of scope to activate to set appropriate logging priority.
+     * \param   traceScope  The instance of scope to activate to set appropriate logging priority.
      *                      If no priority information found, the messages of scope cannot be logged yet.
      * \note    It is not enough to activate scope to output message on the target.
      *          If configuration file does not have priority information, messages are not logged.
@@ -740,6 +740,7 @@ inline const String& NETrace::logPrioToString(NETrace::eLogPriority prio)
     case NETrace::eLogPriority::PrioDebug:
         return NETrace::PRIO_DEBUG_STR;
 
+    case NETrace::eLogPriority::PrioInvalid:        // fall through
     case NETrace::eLogPriority::PrioLogs:           // fall through
     case NETrace::eLogPriority::PrioValidLogs:      // fall through
     case NETrace::eLogPriority::PrioIgnore:         // fall through
@@ -751,7 +752,7 @@ inline const String& NETrace::logPrioToString(NETrace::eLogPriority prio)
     }
 }
 
-inline const NETrace::eLogPriority NETrace::stringToLogPrio(const String& prio)
+inline NETrace::eLogPriority NETrace::stringToLogPrio(const String& prio)
 {
     if (NETrace::PRIO_DEBUG_STR == prio)
         return NETrace::eLogPriority::PrioDebug;

@@ -31,8 +31,8 @@ public:
 
     /**
      * \brief   Instantiates the component object.
-     * \param   entry   The entry of registry, which describes the component.
-     * \param   owner   The component owning thread.
+     * \param   roleName    The role name of the component.
+     * \param   owner       The component owning thread.
      **/
     ServiceClient( const String & roleName, Component & owner );
 

@@ -32,7 +32,7 @@ NEService::StateArray::StateArray( unsigned char* thisBuffer, int elemCount )
     , mExternal     (true)
 {
     mValueList  = reinterpret_cast<NEService::eDataStateType *>(thisBuffer);
-    mElemCount  = elemCount;
+    mElemCount  = static_cast<uint32_t>(elemCount);
     resetStates();
 }
 
@@ -104,7 +104,7 @@ void NEService::ParameterArray::construct( const unsigned int * params, int coun
     {
         uint32_t single = static_cast<unsigned int>(sizeof(NEService::StateArray *));
         // count pointers to state array
-        uint32_t size   = count * single;
+        uint32_t size   = static_cast<uint32_t>(count) * single;
 
         // how many bytes need to skip to start param Elements
         uint32_t skipList   = size;
@@ -150,10 +150,6 @@ void NEService::ParameterArray::construct( const unsigned int * params, int coun
                     uint32_t next = static_cast<uint32_t>(sizeof(NEService::StateArray) + params[i] * sizeof(NEService::eDataStateType));
                     paramElem += next;
                 }
-                else
-                {
-                    ;  // no param, do nothing
-                }
 
                 // make sure that do not jump over the buffer
                 ASSERT(paramElem <= buffer + size);
@@ -174,9 +170,9 @@ unsigned int NEService::ParameterArray::countParamSpace( const unsigned int* par
     return result;
 }
 
-void NEService::ParameterArray::resetParamState( int whichParam )
+void NEService::ParameterArray::resetParamState( unsigned int whichParam )
 {
-    ASSERT(whichParam >= 0 && whichParam < mElemCount);
+    ASSERT((static_cast<int>(whichParam) >= 0) && (static_cast<int>(whichParam) < mElemCount));
     mParamList[whichParam]->resetStates();
 }
 
@@ -186,7 +182,7 @@ void NEService::ParameterArray::resetParamState( int whichParam )
 NEService::ProxyData::ProxyData( const NEService::SInterfaceData& ifData )
     : mImplVersion  (NEService::eDataStateType::DataIsUnavailable)
     , mIfData       (ifData)
-    , mAttrState    (static_cast<int>(ifData.idAttributeCount))
+    , mAttrState    (static_cast<uint32_t>(ifData.idAttributeCount))
     , mParamState   (ifData)
 {
     resetStates(); 
@@ -233,9 +229,9 @@ NEService::eDataStateType NEService::ProxyData::getDataState( unsigned int msgId
 
 unsigned int NEService::ProxyData::getResponseId( unsigned int requestId ) const
 {
-    int index = GET_REQ_INDEX(requestId);
+    unsigned int index = GET_REQ_INDEX(requestId);
     return  (
-                index >= 0 && index < static_cast<int>(mIfData.idRequestCount) ? 
+                (static_cast<int>(index) >= 0) && (index < mIfData.idRequestCount) ? 
                         static_cast<unsigned int>(mIfData.idRequestToResponseMap[index]) :
                         NEService::INVALID_MESSAGE_ID
             );

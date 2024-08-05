@@ -52,7 +52,7 @@ public:
      * \param   eventListener   The Event Listener object, which should
      *                          be signaled when receive new Event or when
      *                          the Queue is empty.
-     * \param   eventQueue      The instance of event queue object, which will keep event elements.
+     * \param   messageQueue    The instance of event queue object to keep event elements.
      **/
     EventQueue( IEQueueListener & eventListener, SortedEventStack & messageQueue );
 
@@ -235,7 +235,6 @@ private:
      *          Override method to provide queuing logic.
      * \param	eventCount	The number of event elements currently in the queue.
      *                      If zero, queue is empty, dispatcher can be suspended.
-     * \return  
      **/
     virtual void signalEvent(uint32_t eventCount ) override;
 

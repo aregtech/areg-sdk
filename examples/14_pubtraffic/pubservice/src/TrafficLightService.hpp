@@ -114,7 +114,7 @@ private:
     private:
         /**
          * \brief   Automatically triggered when event is dispatched by thread.
-         * \param   data    The Timer Event Data object containing Timer object.
+         * \param   timer   The Timer Event Data object containing Timer object.
          **/
         virtual void processTimer( Timer & timer ) override;
 

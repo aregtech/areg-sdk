@@ -127,15 +127,15 @@ PropertyKey & PropertyKey::operator = ( PropertyKey && source ) noexcept
     return (*this);
 }
 
-PropertyKey & PropertyKey::operator = ( const String & params )
+PropertyKey & PropertyKey::operator = ( const String & source )
 {
-    parseKey(params);
+    parseKey(source);
     return (*this);
 }
 
-PropertyKey & PropertyKey::operator = ( String && params )
+PropertyKey & PropertyKey::operator = ( String && source )
 {
-    parseKey(std::move(params));
+    parseKey(std::move(source));
     return (*this);
 }
 

@@ -129,33 +129,38 @@ bool DebugOutputLogger::isLoggerOpened(void) const
     return mIsOpened;
 }
 
+#if defined(OUTPUT_DEBUG)
 unsigned int DebugOutputLogger::write(const unsigned char * buffer, unsigned int size)
 {
-#if defined(OUTPUT_DEBUG)
     mOutputMessageA.append(reinterpret_cast<const char *>(buffer), size);
-#endif  // defined(OUTPUT_DEBUG)
     return size;
 }
+#else   // defined(OUTPUT_DEBUG)
+unsigned int DebugOutputLogger::write(const unsigned char * /* buffer */, unsigned int size)
+{
+    return size;
+}
+#endif  // defined(OUTPUT_DEBUG)
 
 unsigned int DebugOutputLogger::write(const IEByteBuffer & buffer)
 {
     return write(buffer.getBuffer(), buffer.getSizeUsed());
 }
 
-unsigned int DebugOutputLogger::write( const String & asciiString )
+unsigned int DebugOutputLogger::write( const String & ascii )
 {
 #if defined(OUTPUT_DEBUG)
-    mOutputMessageA += asciiString;
+    mOutputMessageA += ascii;
 #endif  // defined(OUTPUT_DEBUG)
-    return asciiString.getSpace();
+    return ascii.getSpace();
 }
 
-unsigned int DebugOutputLogger::write( const WideString & wideString )
+unsigned int DebugOutputLogger::write( const WideString & wide )
 {
 #if defined(OUTPUT_DEBUG)
-    mOutputMessageA += wideString;
+    mOutputMessageA += wide;
 #endif  // !defined(OUTPUT_DEBUG)
-    return wideString.getSpace();
+    return wide.getSpace();
 }
 
 void DebugOutputLogger::flush(void)

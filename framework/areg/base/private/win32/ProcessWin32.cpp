@@ -21,7 +21,7 @@
 
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 #include <Windows.h>
-#include <psapi.h>
+#include <Psapi.h>
 #include <tchar.h>
 
 //////////////////////////////////////////////////////////////////////////
@@ -40,7 +40,7 @@ void Process::_osInitilize( void )
     TCHAR fullPath[File::MAXIMUM_PATH];
     NEMemory::memZero(fullPath, (File::MAXIMUM_PATH) * sizeof(TCHAR));
 
-    if ( ::GetModuleFileNameEx( (HANDLE)(mProcessHandle), nullptr, fullPath, MAX_PATH) != 0 )
+    if ( ::GetModuleFileNameEx( static_cast<HANDLE>(mProcessHandle), nullptr, fullPath, MAX_PATH) != 0 )
     {
         String temp(fullPath);
         _initPaths(temp.getString());

@@ -28,7 +28,7 @@ Component * LoggerConsoleService::CreateComponent( const NERegistry::ComponentEn
     return DEBUG_NEW LoggerConsoleService( entry, owner, entry.getComponentData( ) );
 }
 
-void LoggerConsoleService::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry )
+void LoggerConsoleService::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & /* entry */ )
 {
     delete (&compObject);
 }

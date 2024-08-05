@@ -331,7 +331,7 @@ String PropertyValue::convToString(void) const
 inline void PropertyValue::_parseValue(void)
 {
     mValue.trimAll();
-    uint32_t len = mValue.getLength();
+    int32_t len = mValue.getLength();
     while ((len != 0) && (mValue[len - 1] == NEPersistence::SYNTAX_END_COMMAND))
     {
         len = mValue.resize(len - 1).getLength();

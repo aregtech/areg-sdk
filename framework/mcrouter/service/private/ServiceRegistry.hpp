@@ -107,7 +107,7 @@ public:
     /**
      * \brief   Returns the list of connected proxies address or empty list if no proxy is connected yet.
      * \param   addrService     The address of remote servicing stub to check.
-     * \param   Returns not empty list if there is any proxy requested connection.
+     * \return  Returns not empty list if there is any proxy requested connection.
      *          Otherwise, returns empty list.
      **/
     const ListServiceProxies & getProxyServiceList( const ServiceAddress & addrService ) const;
@@ -124,54 +124,54 @@ public:
     /**
      * \brief   Registers remote Proxy address and returns the registered Stub and Proxy service object.
      *          On output, the 'out_proxyService' parameter contains the data of remote proxy service object.
-     * \param   addProxy            The address of remote servicing proxy to register.
-     * \param   out_proxyService    On output, contains data of remote proxy service.
-     * \param   Returns servicing stub object with remote stub address and connection status data.
+     * \param[in]   addrProxy           The address of remote servicing proxy to register.
+     * \param[out]  out_proxyService    On output, contains data of remote proxy service.
+     * \return  Returns servicing stub object with remote stub address and connection status data.
      **/
     const ServiceStub & registerServiceProxy( const ProxyAddress & addrProxy, ServiceProxy & out_proxyService );
 
     /**
      * \brief   Unregisters remote Proxy address and returns the Stub and Proxy service object.
      *          On output, the 'out_proxyService' parameter contains the data of remote proxy service object.
-     * \param   addProxy            The address of remote servicing proxy to register.
-     * \param   out_proxyService    On output, contains data of remote proxy service.
-     * \param   Returns servicing stub object with remote stub address and connection status data.
+     * \param[in]   addrProxy           The address of remote servicing proxy to register.
+     * \param[out]  out_proxyService    On output, contains data of remote proxy service.
+     * \return  Returns servicing stub object with remote stub address and connection status data.
      **/
     const ServiceStub & unregisterServiceProxy( const ProxyAddress & addrProxy, ServiceProxy & out_proxyService );
 
     /**
      * \brief   Registers remote Stub address and returns the registered stub service object.
      *          On output, the 'out_listProxies' parameter contains the list of proxies waiting for Stub registration
-     * \param   addrStub            The address of remote servicing Stub to register.
-     * \param   out_listProxies     On output, contains list of remote service proxy waiting for connection
-     * \param   Returns servicing stub object with remote stub address and connection status data.
+     * \param[in]   addrStub            The address of remote servicing Stub to register.
+     * \param[out]  out_listProxies     On output, contains list of remote service proxy waiting for connection
+     * \return  Returns servicing stub object with remote stub address and connection status data.
      **/
     const ServiceStub & registerServiceStub( const StubAddress & addrStub, ListServiceProxies & out_listProxies );
 
     /**
      * \brief   Unregisters remote Stub address and returns the registered stub service object.
      *          On output, the 'out_listProxies' parameter contains the list of proxies previously connected to Stub
-     * \param   addrStub            The address of remote servicing Stub to register.
-     * \param   out_listProxies     On output, contains list of remote service proxy previously connected to Stub
-     * \param   Returns servicing stub object with remote stub address and connection status data.
+     * \param[in]   addrStub            The address of remote servicing Stub to register.
+     * \param[out]  out_listProxies     On output, contains list of remote service proxy previously connected to Stub
+     * \return  Returns servicing stub object with remote stub address and connection status data.
      **/
     const ServiceStub & unregisterServiceStub( const StubAddress & addrStub, ListServiceProxies & out_listProxies );
 
     /**
      * \brief   Call to receive list of registered remote stub and proxy services, which connection cookie is equal to 
      *          specified value. In output out_listStubs and out_lisProxies contain list of remote stub and proxy addresses.
-     * \param   cookie          The cookie to filter. Pass NEService::COOKIE_ANY to ignore filtering
-     * \param   out_listStubs   On output this will contain list of remote stub addresses connected with specified cookie value.
-     * \param   out_lisProxies  On output this will contain list of remote proxy addresses connected with specified cookie value.
+     * \param[in]   cookie          The cookie to filter. Pass NEService::COOKIE_ANY to ignore filtering
+     * \param[out]  out_listStubs   On output this will contain list of remote stub addresses connected with specified cookie value.
+     * \param[out]  out_lisProxies  On output this will contain list of remote proxy addresses connected with specified cookie value.
      **/
     void getServiceList(const ITEM_ID & cookie, TEArrayList<StubAddress> & OUT out_listStubs, TEArrayList<ProxyAddress> & OUT out_lisProxies ) const;
 
     /**
      * \brief   Call to get list of registered remote stub and proxy services of specified cookie source.
      *          In output out_listStubs and out_lisProxies contain list of remote stub and proxy addresses.
-     * \param   cookie          The cookie to filter. Pass NEService::COOKIE_ANY to ignore filtering
-     * \param   stubSource      On output the list contains stub address objects that have sources of specified cookie.
-     * \param   proxySources    On output the list contains proxy address objects that have sources of specified cookie.
+     * \param[in]   cookie          The cookie to filter. Pass NEService::COOKIE_ANY to ignore filtering
+     * \param[out]  stubSource      On output the list contains stub address objects that have sources of specified cookie.
+     * \param[out]  proxySources    On output the list contains proxy address objects that have sources of specified cookie.
      **/
     void getServiceSources(const ITEM_ID & cookie, TEArrayList<StubAddress> & OUT stubSource, TEArrayList<ProxyAddress> & OUT proxySources);
 

@@ -200,8 +200,8 @@ set(AREG_GENERATE_DIR "${AREG_BUILD_ROOT}/${AREG_GENERATE}")
 # CPP standard for the projects
 set(AREG_CXX_STANDARD 17)
 
-# Set bitness here
+# Specify default bitness, the system bitness is detected in 'common.cmake'
 set(AREG_BITNESS "64")
 
-# Specify CPU platform here
+# Specify CPU platform here, the system CPU platform is detected in 'commmon.cmake'
 set(AREG_PROCESSOR "x86_64")

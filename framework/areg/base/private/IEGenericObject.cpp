@@ -30,8 +30,3 @@ IEGenericObject::IEGenericObject(void* objData)
     : mObjData  (objData)
 {
 }
-
-IEGenericObject::~IEGenericObject( void )
-{
-    mObjData  = nullptr;
-}

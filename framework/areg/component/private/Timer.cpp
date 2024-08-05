@@ -153,10 +153,6 @@ void Timer::_queueTimer( void )
             {
                 mStarted = false;
                 TimerManager::stopTimer(self());
-                OUTPUT_WARN("Timer Object: Temporary stopped timer [ %s ]! current queued = [ %d ], max queue = [ %d ]"
-                                , mName.getString()
-                                , mCurrentQueued
-                                , mMaxQueued);
             }
         }
     }
@@ -173,22 +169,7 @@ void Timer::_unqueueTimer( void )
            if ((-- mCurrentQueued < mMaxQueued) && (mStarted == false))
            {
                 mStarted = TimerManager::startTimer(self(), *mDispatchThread);
-                OUTPUT_WARN("Timer Object: Restarting timer [ %s ]! started = [ %s ], current queued = [ %d ], max queue = [ %d ]"
-                                , mStarted ? "YES" : "NO"
-                                , mName.getString()
-                                , mCurrentQueued
-                                , mMaxQueued);
            }
-#ifdef _DEBUG
-
-           else if (mStarted == false)
-           {
-               OUTPUT_WARN("Timer Object: Ignore restart timer. Timer [ %s ] is not started, current queued = [ %d ], max queue = [ %d ]"
-                                , mName.getString()
-                                , mCurrentQueued
-                                , mMaxQueued);
-           }
-#endif  // _DEBUG
         }
     }
 }

@@ -80,7 +80,7 @@ namespace NESocket
          * \brief   Moves the socket address data from given source.
          * \param   source  The source of data to move.
          **/
-        SocketAddress( SocketAddress  && source ) noexcept;
+        SocketAddress( SocketAddress && source ) noexcept;
 
     //////////////////////////////////////////////////////////////////////////
     // Operators
@@ -524,7 +524,7 @@ namespace NESocket
      *          If failles, returns negative number.
      *          Returns zero if buffer is empty and nothing to sent.
      **/
-    AREG_API int sendData( SOCKETHANDLE hSocket, const unsigned char * dataBuffer, int dataLength, int blockMaxSize );
+    AREG_API int sendData( SOCKETHANDLE hSocket, const unsigned char * dataBuffer, uint32_t dataLength, uint32_t blockMaxSize );
 
     /**
      * \brief   NESocket::receiveData
@@ -541,7 +541,7 @@ namespace NESocket
      *          In case of failure, the specified socket should be closed.
      *          Returns zero if buffer is empty and nothing to receive.
      **/
-    AREG_API int receiveData( SOCKETHANDLE hSocket, unsigned char * dataBuffer, int dataLength, int blockMaxSize );
+    AREG_API int receiveData( SOCKETHANDLE hSocket, unsigned char * dataBuffer, uint32_t dataLength, uint32_t blockMaxSize );
 
     /**
      * \brief   NESocket::disableSend

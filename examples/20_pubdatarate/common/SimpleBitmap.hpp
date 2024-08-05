@@ -171,7 +171,7 @@ public:
      * 
      * \param   line    The line index.
      */
-    inline uint8_t* getLine(int32_t line) const;
+    inline uint8_t* getLine(uint32_t line) const;
 
     /**
      * \brief   Returns the pixels at specified coordinates, where the 
@@ -181,7 +181,7 @@ public:
      * \param   xCoord  The Y-coordinate of the bitmap, which specifies the column.
      * \param   yCoord  The X-coordinate of the bitmap, which specifies the row / line.
      */
-    inline uint8_t* getPixels(int32_t xCoord, int32_t yCoord) const;
+    inline uint8_t* getPixels(uint32_t xCoord, uint32_t yCoord) const;
 
     /**
      * /brief   Saves the bitmap into the specified file.
@@ -350,28 +350,28 @@ inline uint32_t SimpleBitmap::getHeight(void) const
 
 inline uint32_t SimpleBitmap::getRowBytes(void) const
 {
-    return static_cast<uint32_t>(mBitmap != nullptr ? _rowSize(mBitmap->bmpInfo.bmiWidth) : 0);
+    return mBitmap != nullptr ? _rowSize(static_cast<uint32_t>(mBitmap->bmpInfo.bmiWidth)) : 0u;
 }
 
-inline uint8_t* SimpleBitmap::getLine(int32_t line) const
+inline uint8_t* SimpleBitmap::getLine(uint32_t line) const
 {
     uint8_t* result = nullptr;
     if (mBitmap != nullptr)
     {
-        uint32_t offset = static_cast<uint32_t>(line) * _rowSize(mBitmap->bmpInfo.bmiWidth);
+        uint32_t offset = static_cast<uint32_t>(line) * _rowSize(static_cast<uint32_t>(mBitmap->bmpInfo.bmiWidth));
         result = _getData() + offset;
     }
 
     return result;
 }
 
-inline uint8_t* SimpleBitmap::getPixels(int32_t xCoord, int32_t yCoord) const
+inline uint8_t* SimpleBitmap::getPixels(uint32_t xCoord, uint32_t yCoord) const
 {
     uint8_t* result = nullptr;
-    if ((mBitmap != nullptr) && (xCoord >= 0) && (yCoord >= 0))
+    if ((mBitmap != nullptr) && (xCoord != 0) && (yCoord != 0))
     {
-        uint32_t offset = static_cast<uint32_t>(yCoord) * _rowSize(mBitmap->bmpInfo.bmiWidth);
-        uint32_t col    = static_cast<uint32_t>(xCoord) * (mBitmap->bmpInfo.bmiBitCount / 8);
+        uint32_t offset = yCoord * _rowSize(static_cast<uint32_t>(mBitmap->bmpInfo.bmiWidth));
+        uint32_t col    = xCoord * (mBitmap->bmpInfo.bmiBitCount / 8);
         result = _getData() + offset + col;
     }
 
@@ -441,7 +441,7 @@ inline bool SimpleBitmap::setBlock( const NELargeData::ImageBlock & block )
 
     uint8_t * pixels = getPixels( imgBlock->imageData.imgStartPos.coordX, imgBlock->imageData.imgStartPos.coordY );
     ::memcpy( pixels, reinterpret_cast<const uint8_t *>(imgBlock->imageData.imgRGB), imgBlock->imageData.imgRBGLen );
-    mChannelId  = imgBlock->channelId;
+    mChannelId  = static_cast<int32_t>(imgBlock->channelId);
     mFrameId    = imgBlock->frameSeqId;
 
     return true;

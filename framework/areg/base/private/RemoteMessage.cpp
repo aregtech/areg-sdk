@@ -27,7 +27,7 @@
 
 inline unsigned int RemoteMessage::_checksumCalculate( const NEMemory::sRemoteMessage & remoteMessage )
 {
-    const unsigned int offset   = MACRO_OFFSETOF( NEMemory::sRemoteMessageHeader, rbhSource );
+    const unsigned int offset   = offsetof( NEMemory::sRemoteMessageHeader, rbhSource );
     const unsigned char * data  = reinterpret_cast<const unsigned char *>(&remoteMessage.rbHeader.rbhSource);
     const unsigned int remain   = remoteMessage.rbHeader.rbhBufHeader.biOffset - offset;
     const unsigned int used     = remoteMessage.rbHeader.rbhBufHeader.biUsed;
@@ -94,10 +94,6 @@ unsigned int RemoteMessage::initBuffer(unsigned char *newBuffer, unsigned int bu
             header.rbhBufHeader.biUsed  = srcCount;
             NEMemory::memCopy( dstBuf, dataLength, srcBuf, srcCount );
         }
-    }
-    else
-    {
-        ; // do nothing
     }
 
     return result;

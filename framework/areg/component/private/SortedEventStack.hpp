@@ -106,10 +106,11 @@ public:
 
     /**
      * \brief   Pops the event from the FIFO stack.
-     * \param   newEvent    The pointer to the previously allocated event object.
+     * \param   stackEvent [out]    The address of the pointer to point on event object.
+     *                              This parameter must not be nullptr, but it may point to the nullptr object.
      * \return  Returns the number of elements in the stack.
      **/
-    uint32_t popEvent(Event** stackEvent);
+    uint32_t popEvent(Event** OUT stackEvent);
 
     /**
      * \brief   Returns true if the stack is empty.

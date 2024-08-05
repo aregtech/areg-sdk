@@ -63,7 +63,6 @@ public:
      *          Override method to provide queuing logic.
      * \param	eventCount	The number of event elements currently in the queue.
      *                      If zero, queue is empty, dispatcher can be suspended.
-     * \return  
      **/
     virtual void signalEvent(uint32_t eventCount ) = 0;
 

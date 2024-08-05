@@ -83,7 +83,7 @@ void ServerSendThread::processEvent( const SendMessageEventData & data )
         {
             if (mSaveDataSend)
             {
-                mBytesSend += sentBytes;
+                mBytesSend += static_cast<uint32_t>(sentBytes);
             }
 
             TRACE_DBG("Succeeded to send message [ %u ] to target [ %p ]", msgSend.getMessageId(), static_cast<id_type>(msgSend.getTarget()));

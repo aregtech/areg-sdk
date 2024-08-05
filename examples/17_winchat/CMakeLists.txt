@@ -29,6 +29,7 @@ target_compile_definitions(${project_chatter} PRIVATE "${MFC_DEFINES}")
 # Ensure Windows Subsystem and switch the entry point from main() method to 'wWinMainCRTStartup' implemented in MFC DLL.
 set_property(TARGET ${project_chatter} APPEND_STRING PROPERTY LINK_FLAGS " /SUBSYSTEM:WINDOWS /ENTRY:\"wWinMainCRTStartup\"")
 target_include_directories(${project_chatter}   BEFORE PRIVATE ${project_root})
+target_compile_options(${project_chatter} PRIVATE "${AREG_EXAMPLES_COMPILER_OPT}")
 
 # ####################################
 # 'register' project
@@ -45,3 +46,4 @@ target_compile_definitions(${project_register} PRIVATE "${MFC_DEFINES}")
 # Ensure Windows Subsystem and switch the entry point from main() method to 'wWinMainCRTStartup' implemented in MFC DLL.
 set_property(TARGET ${project_register} APPEND_STRING PROPERTY LINK_FLAGS " /SUBSYSTEM:WINDOWS /ENTRY:\"wWinMainCRTStartup\"")
 target_include_directories(${project_register}  BEFORE PRIVATE ${project_root})
+target_compile_options(${project_register} PRIVATE "${AREG_EXAMPLES_COMPILER_OPT}")

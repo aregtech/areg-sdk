@@ -26,14 +26,14 @@
 
 #if AREG_LOGS
 LogMessage::LogMessage(NETrace::eLogMessageType msgType, const TraceScope & traceScope )
-    : NETrace::sLogMessage( msgType, traceScope.getScopeId(), NETrace::PrioScope, traceScope.getScopeName().getString(), traceScope.getScopeName( ).getLength() )
+    : NETrace::sLogMessage( msgType, traceScope.getScopeId(), NETrace::PrioScope, traceScope.getScopeName().getString(), static_cast<uint32_t>(traceScope.getScopeName( ).getLength()) )
 {
     ASSERT( (msgType == NETrace::eLogMessageType::LogMessageScopeEnter) || (msgType == NETrace::eLogMessageType::LogMessageScopeExit) );
 }
 
 void LogMessage::setMessage(const char * message, int msgLen )
 {
-    uint32_t len = NEMemory::memCopy(this->logMessage, NETrace::LOG_MESSAGE_IZE - 1, message, msgLen);
+    uint32_t len = NEMemory::memCopy(this->logMessage, NETrace::LOG_MESSAGE_IZE - 1, message, static_cast<uint32_t>(msgLen));
     this->logMessage[len] = String::EmptyChar;
 }
 

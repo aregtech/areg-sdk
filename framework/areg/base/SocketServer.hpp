@@ -75,7 +75,7 @@ public:
      *          or receiving data, the socket should be created 
      *          and bound to host and port.
      *          Specified remoteAddress will be set as server address.
-     * \param   remoteAddress   Address of server.
+     * \param   serverAddress   The address of server socket.
      **/
     SocketServer( const NESocket::SocketAddress & serverAddress );
 

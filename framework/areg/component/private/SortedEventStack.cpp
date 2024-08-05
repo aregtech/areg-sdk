@@ -168,6 +168,8 @@ uint32_t SortedEventStack::pushEvent(Event * newEvent)
         _insertAtBegin(newEvent);
         break;
 
+    case Event::eEventPriority::EventPriorityUndefined: // fall through
+    case Event::eEventPriority::EventPriorityIgnore:    // fall through
     default:
         ASSERT(false);
         break;

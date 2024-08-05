@@ -352,8 +352,8 @@ bool OptionParser::parseOptions( StrList & optList )
             {
                 sOption & last = mInputOptions.lastEntry();
                 ASSERT( last.inRefSetup != NECommon::INVALID_INDEX );
-                _setInputValue( input, last, last.inRefSetup );
-                result = OptionParser::hasInputError( last.inField ) == false;
+                _setInputValue( input, last, static_cast<uint32_t>(last.inRefSetup) );
+                result = OptionParser::hasInputError( static_cast<uint32_t>(last.inField) ) == false;
             }
             else if ( mSetupOptions.isEmpty() == false)
             {
@@ -382,7 +382,7 @@ bool OptionParser::parseOptions( StrList & optList )
         else 
         {
             mInputOptions.add( opt );
-            result = OptionParser::hasInputError( opt.inField ) == false;
+            result = OptionParser::hasInputError( static_cast<uint32_t>(opt.inField) ) == false;
         }
     }
 
@@ -395,9 +395,9 @@ OptionParser::sOption OptionParser::_setupInput( bool isShort, String cmdLine, u
 
     const sOptionSetup & setup = mSetupOptions[ refSetup ];
     OptionParser::sOption opt;
-    opt.inField     = setup.optField;
+    opt.inField     = static_cast<int32_t>(setup.optField);
     opt.inCommand   = setup.optCmmand;
-    opt.inRefSetup  = refSetup;
+    opt.inRefSetup  = static_cast<int32_t>(refSetup);
 
     cmdLine.substring( static_cast<NEString::CharPos>(isShort ? setup.optShort.length() : setup.optLong.length()) );
     cmdLine.trimAll( );

@@ -98,24 +98,24 @@ bool WriteConverter::setDouble( double in_value )
 
 bool WriteConverter::setString( const char * in_value )
 {
-    const unsigned int size = in_value != nullptr ? static_cast<unsigned int>((NEString::getStringLength<char>(in_value) + 1) * sizeof(char)) : 0u;
+    const unsigned int size = in_value != nullptr ? (static_cast<unsigned int>(NEString::getStringLength<char>(in_value)) + 1u) * sizeof(char) : 0u;
     return (size != 0 ? mWriteStream.write(reinterpret_cast<const unsigned char *>(in_value), size) == size : false);
 }
 
 bool WriteConverter::setString( const wchar_t * in_value )
 {
-    const unsigned int size = in_value != nullptr ? static_cast<unsigned int>((NEString::getStringLength<wchar_t>(in_value) + 1) * sizeof(wchar_t)) : 0u;
+    const unsigned int size = in_value != nullptr ? (static_cast<unsigned int>(NEString::getStringLength<wchar_t>(in_value)) + 1u) * sizeof(wchar_t) : 0u;
     return (size != 0 ? mWriteStream.write(reinterpret_cast<const unsigned char *>(&in_value), size) == size : false);
 }
 
 bool WriteConverter::appendString( const char * in_value )
 {
-    const unsigned int size = in_value != nullptr ? static_cast<unsigned int>(NEString::getStringLength<char>(in_value) * sizeof(char)) : 0;
+    const unsigned int size = in_value != nullptr ? static_cast<unsigned int>(NEString::getStringLength<char>(in_value)) * sizeof(char) : 0u;
     return (size != 0 ? mWriteStream.write(reinterpret_cast<const unsigned char *>(in_value), size) == size : false);
 }
 
 bool WriteConverter::appendString( const wchar_t * in_value )
 {
-    const unsigned int size = in_value != nullptr ? static_cast<unsigned int>(NEString::getStringLength<wchar_t>(in_value) * sizeof(wchar_t)) : 0;
+    const unsigned int size = in_value != nullptr ? static_cast<unsigned int>(NEString::getStringLength<wchar_t>(in_value)) * sizeof(wchar_t) : 0u;
     return (size != 0 ? mWriteStream.write(reinterpret_cast<const unsigned char *>(in_value), size) == size : false);
 }

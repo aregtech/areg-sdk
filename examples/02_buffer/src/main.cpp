@@ -50,7 +50,7 @@ private:
     inline HelloThread & self( void )
     {
         return (*this);
-    };
+    }
 
 private:
     SharedBuffer &  mBuffer;

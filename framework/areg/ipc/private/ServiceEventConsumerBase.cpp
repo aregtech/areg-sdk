@@ -25,7 +25,7 @@ ReconnectTimerConsumer::ReconnectTimerConsumer(IEServiceEventConsumerBase& event
 {
 }
 
-void ReconnectTimerConsumer::processTimer(Timer& timer)
+void ReconnectTimerConsumer::processTimer(Timer& /* timer */)
 {
     mServiceEventConsumer.onServiceReconnectTimerExpired();
 }

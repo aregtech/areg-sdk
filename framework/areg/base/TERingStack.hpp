@@ -122,7 +122,7 @@ public:
      *          is not a primitive, but an object, it should have implemented streaming operator.
      *
      * \param   stream  The streaming object to write values
-     * \param   input   The Stack object to read out values.
+     * \param   output  The Stack object to read out values.
      **/
     template<typename V>
     friend IEOutStream & operator << ( IEOutStream & stream, const TERingStack<V> & output );
@@ -590,7 +590,6 @@ uint32_t TERingStack<VALUE>::pushLast( const VALUE& newElement )
             }
             else
             {
-                OUTPUT_WARN("The Ring Stack is not initialized, ignoring operation!");
                 ASSERT(mStackList == nullptr);
                 ASSERT(mElemCount == 0);
             }
@@ -703,10 +702,6 @@ VALUE TERingStack<VALUE>::popFirst( void )
         NEMemory::destroyElems<VALUE>( mStackList + mStartPosition, 1 );
         mStartPosition = (mStartPosition + 1) % mCapacity;
         -- mElemCount;
-    }
-    else
-    {
-        OUTPUT_ERR("The Ring Stack is empty, there is element to pop");
     }
 
     return result;

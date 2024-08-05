@@ -25,7 +25,7 @@ Component * ServiceClient::CreateComponent(const NERegistry::ComponentEntry & en
     return DEBUG_NEW ServiceClient(entry, owner);
 }
 
-void ServiceClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
+void ServiceClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
 {
     delete (&compObject);
 }
