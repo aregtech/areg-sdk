@@ -46,7 +46,7 @@ else()
 endif()
 
 # Disable clang common warnings
-list(APPEND AREG_COMMON_COMPILER_OPT
+list(APPEND AREG_OPT_DISABLE_WARN_COMMON
         -Wno-c++98-compat
         -Wno-c++98-compat-pedantic
         -Wno-covered-switch-default
@@ -62,42 +62,47 @@ list(APPEND AREG_COMMON_COMPILER_OPT
         -Wno-suggest-destructor-override
         -Wno-undefined-func-template
         -Wno-unsafe-buffer-usage
-        -Wno-unused-parameter
     )
 
 # disable framework warnings
-list(APPEND AREG_FRAMEWORK_COMPILER_OPT
+list(APPEND AREG_OPT_DISABLE_WARN_FRAMEWORK
         -Wno-cast-calling-convention
-        -Wno-cast-function-type-strict
+        -Wno-cast-function-type
         -Wno-format-nonliteral
-        -Wno-language-extension-token
         -Wno-null-pointer-subtraction
     )
 
+# disable tools warnings
+list(APPEND AREG_OPT_DISABLE_WARN_TOOLS
+        -Wno-format-nonliteral
+        -Wno-unused-parameter
+    )
+
 # disable example warnings (example 17 with MFC)
-list(APPEND AREG_EXAMPLES_COMPILER_OPT
-        -Wno-cast-function-type-strict 
+list(APPEND AREG_OPT_DISABLE_WARN_EXAMPLES
+        -Wno-cast-function-type 
         -Wno-cast-qual
         -Wno-disabled-macro-expansion
+        -Wno-extra-semi-stmt
         -Wno-keyword-macro
         -Wno-sign-conversion 
         -Wno-unused-local-typedef
         -Wno-unused-macros
-        -Wno-unused-parameter 
+        -Wno-unused-parameter
     )
 
 # disable warnings for generated codes
-list(APPEND AREG_CODEGEN_OPT 
+list(APPEND AREG_OPT_DISABLE_WARN_CODEGEN 
         -Wno-switch-enum
         -Wno-extra-semi-stmt
         -Wno-unused-parameter
     )
 
 # disable SQLite warnings
-list(APPEND AREG_SQLITE_COMPILER_OPT
+list(APPEND AREG_OPT_DISABLE_WARN_SQLITE
         -Wno-bad-function-cast
         -Wno-cast-align
-        -Wno-cast-function-type-strict
+        -Wno-cast-function-type
         -Wno-cast-qual
         -Wno-comma
         -Wno-disabled-macro-expansion

@@ -22,14 +22,14 @@ set_source_files_properties(${chatter_resources}  PROPERTIES LANGUAGE RC)
 list(APPEND chatter_src "${chatter_resources}")
 
 # 'chatter' project, compile for Windows system, set options
-add_executable(${project_chatter} WIN32 ${chatter_src})
-setAppOptions(${project_chatter} 17_generated)
+addExecutableEx(${project_chatter} "${chatter_src}" 17_generated)
 # Set compile definitions to link MFC DLL
+set_target_properties(${project_chatter} PROPERTIES WIN32_EXECUTABLE TRUE)
 target_compile_definitions(${project_chatter} PRIVATE "${MFC_DEFINES}")
 # Ensure Windows Subsystem and switch the entry point from main() method to 'wWinMainCRTStartup' implemented in MFC DLL.
 set_property(TARGET ${project_chatter} APPEND_STRING PROPERTY LINK_FLAGS " /SUBSYSTEM:WINDOWS /ENTRY:\"wWinMainCRTStartup\"")
-target_include_directories(${project_chatter}   BEFORE PRIVATE ${project_root})
-target_compile_options(${project_chatter} PRIVATE "${AREG_EXAMPLES_COMPILER_OPT}")
+target_include_directories(${project_chatter} BEFORE PRIVATE ${project_root})
+target_compile_options(${project_chatter} PRIVATE "${AREG_OPT_DISABLE_WARN_EXAMPLES}")
 
 # ####################################
 # 'register' project
@@ -39,11 +39,11 @@ macro_declare_project(17_register     "register")
 set_source_files_properties(${register_resources} PROPERTIES LANGUAGE RC)
 list(APPEND register_src ${register_resources})
 # 'register' project, compile for Windows system, set options
-add_executable(${project_register} WIN32 ${register_src})
-setAppOptions(${project_register} 17_generated)
+addExecutableEx(${project_register} "${register_src}" 17_generated)
 # Set compile definitions to link MFC DLL
+set_target_properties(${project_register} PROPERTIES WIN32_EXECUTABLE TRUE)
 target_compile_definitions(${project_register} PRIVATE "${MFC_DEFINES}")
 # Ensure Windows Subsystem and switch the entry point from main() method to 'wWinMainCRTStartup' implemented in MFC DLL.
 set_property(TARGET ${project_register} APPEND_STRING PROPERTY LINK_FLAGS " /SUBSYSTEM:WINDOWS /ENTRY:\"wWinMainCRTStartup\"")
 target_include_directories(${project_register}  BEFORE PRIVATE ${project_root})
-target_compile_options(${project_register} PRIVATE "${AREG_EXAMPLES_COMPILER_OPT}")
+target_compile_options(${project_register} PRIVATE "${AREG_OPT_DISABLE_WARN_EXAMPLES}")

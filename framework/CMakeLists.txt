@@ -33,7 +33,7 @@ endif()
 if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
     target_compile_options(areg PRIVATE -fPIC)
 endif()
-target_compile_options(areg PRIVATE "${AREG_FRAMEWORK_COMPILER_OPT}")
+target_compile_options(areg PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}" "${AREG_OPT_DISABLE_WARN_FRAMEWORK}")
 
 # Linker options
 target_link_libraries(areg PRIVATE ${AREG_LDFLAGS})
@@ -43,12 +43,14 @@ set_target_properties(areg PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STAN
 
 # build areg extended static library
 addStaticLib(areg-extend "${extend_SRC}")
+target_compile_options(areg-extend PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")
 
 # build log observer API library
 if (AREG_LOGOBSERVER_LIB MATCHES "shared")
 
     # build log observer API shared library
     addSharedLibEx(logobserverapi "${logobserverapi_SRC}" sqlite3)
+    target_compile_options(logobserverapi PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")
 
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
         target_compile_options(logobserverapi PRIVATE -fPIC)
@@ -65,6 +67,7 @@ if (AREG_LOGOBSERVER_LIB MATCHES "shared")
 else(AREG_LOGOBSERVER_LIB MATCHES "static")
     # build log observer API static library
     addStaticLib(logobserverapi "${logobserverapi_SRC}")
+    target_compile_options(logobserverapi PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")
 
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
         target_compile_options(logobserverapi PRIVATE -fPIC)
@@ -76,9 +79,11 @@ endif(AREG_LOGOBSERVER_LIB MATCHES "shared")
 
 # build mcrouter executable
 addExecutable(mcrouter "${mcrouter_SRC}")
+target_compile_options(mcrouter PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")
 
 # build logger executable
 addExecutable(logger "${logger_SRC}")
+target_compile_options(logger PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")
 
 # build log observer console application
 if (AREG_LOGOBSERVER_LIB MATCHES "shared")
@@ -88,6 +93,7 @@ else (AREG_LOGOBSERVER_LIB MATCHES "static")
     addExecutableEx(logobserver "${logobserverapp_SRC}" logobserverapi sqlite3)
     target_compile_definitions(logobserver PRIVATE IMP_LOGOBSERVER_LIB)
 endif()
+target_compile_options(logobserver PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")
 
 # copying log and router init files to 'bin/config'
 file(MAKE_DIRECTORY ${AREG_OUTPUT_BIN}/config)
