@@ -222,7 +222,7 @@ TEST(ArrayListTest, TestAdd)
     ASSERT_NE(arrMixed.getSize(), _lenMixed);
     ASSERT_EQ(arrUnique.getSize(), arrMixed.getSize());
 
-    for (uint32_t i = 0; i < static_cast<int>(arrMixed.getSize()); ++i)
+    for (uint32_t i = 0; i < arrMixed.getSize(); ++i)
     {
         ASSERT_FALSE(arrUnique.addIfUnique(arrMixed[i]));
     }
@@ -233,7 +233,7 @@ TEST(ArrayListTest, TestAdd)
     int lenUnq = arrUnique.getSize();
     int lenMix = arrMixed.getSize();
 
-    for (uint32_t i = 0; i < static_cast<int>(arrMixed.getSize()); ++i)
+    for (uint32_t i = 0; i < arrMixed.getSize(); ++i)
     {
         arrUnique.add(arrMixed[i]);
     }

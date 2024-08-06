@@ -61,6 +61,7 @@ list(APPEND AREG_OPT_DISABLE_WARN_COMMON
         -Wno-reserved-macro-identifier
         -Wno-suggest-destructor-override
         -Wno-undefined-func-template
+        -Wno-unknown-warning-option
         -Wno-unsafe-buffer-usage
     )
 
