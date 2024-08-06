@@ -248,7 +248,7 @@ endfunction(setSources)
 
 # ---------------------------------------------------------------------------
 # Description : This function is called to set the compiler short name such
-#               as 'g++', 'gcc', 'clang' or 'msvc', etc.
+#               as 'g++', 'gcc', 'clang', `clang-cl` or 'msvc', etc.
 # Function ...: findCompilerShortName
 # Parameters .: ${compiler_path}    -- The path to the compiler to guess the short name
 #               ${short_name_var}   -- The name of the variable to set the short name.
@@ -260,6 +260,12 @@ function(findCompilerShortName compiler_path short_name_var)
 
     set(FOUND_POS)
     set(${short_name_var} "unknown" PARENT_SCOPE)
+
+    string(FIND "${compiler_path}" "clang-cl" FOUND_POS REVERSE)
+    if (${FOUND_POS} GREATER -1)
+        set(${short_name_var} "clang-cl" PARENT_SCOPE)
+        return()
+    endif()
 
     string(FIND "${compiler_path}" "clang++" FOUND_POS REVERSE)
     if (${FOUND_POS} GREATER -1)
@@ -318,6 +324,12 @@ endfunction(findCompilerShortName)
 function(findCompilerFamilyName compiler_path family_var)
 
     set(FOUND_POS)
+
+    string(FIND "${compiler_path}" "clang-cl" FOUND_POS REVERSE)
+    if (${FOUND_POS} GREATER -1)
+        set(${family_var} "llvm" PARENT_SCOPE)
+        return()
+    endif()
 
     string(FIND "${compiler_path}" "clang++" FOUND_POS REVERSE)
     if (${FOUND_POS} GREATER -1)

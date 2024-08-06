@@ -145,7 +145,7 @@ jobs:
             }
 
             # compile AREG engine as a shared with CYGWIN g++ / gcc on Windows, enable AREG extensions and logs
-          - { name  : win-cygwin-shared-ext-log,
+            - { name  : win-cygwin-shared-ext-log,
               os    : windows-latest,
               lib   : shared,
               family: cygwin,
@@ -198,6 +198,66 @@ jobs:
               family: cygwin,
               cxx   : g++,
               cc    : gcc,
+              extend: OFF,
+              logs  : OFF,
+              test  : OFF
+            }
+
+          # compile AREG engine as a shared library with clang on Windows, enable AREG extensions and logs
+          - { name  : win-clang-shared-ext-log,
+              os    : windows-latest,
+              lib   : shared,
+              family: llvm,
+              cxx   : clang-cl,
+              cc    : clang-cl,
+              extend: ON,
+              logs  : ON,
+              test  : OFF
+            }
+
+            # compile AREG engine as a shared library with clang on Windows, enable AREG extensions and no logs
+          - { name  : win-clang-shared-ext-nolog,
+              os    : windows-latest,
+              lib   : shared,
+              family: llvm,
+              cxx   : clang-cl,
+              cc    : clang-cl,
+              extend: ON,
+              logs  : OFF,
+              test  : OFF
+            }
+
+            # compile AREG engine as a static library with clang on Windows, enable AREG extensions, logs, examples and tests
+          - { name  : win-clang-static-all-test,
+              os    : windows-latest,
+              lib   : static,
+              family: llvm,
+              cxx   : clang-cl,
+              cc    : clang-cl,
+              extend: ON,
+              logs  : ON,
+              test  : ON
+            }
+
+            # compile AREG engine as a static library with clang on Windows, enable AREG extensions, logs, examples and tests
+          - { name  : win-clang-shared-all-test,
+              os    : windows-latest,
+              lib   : shared,
+              family: llvm,
+              cxx   : clang-cl,
+              cc    : clang-cl,
+              extend: ON,
+              logs  : ON,
+              test  : ON
+            }
+
+            # compile AREG engine as a shared library with clang on Windows, disable AREG extensions and no logs
+          - { name  : win-clang-shared-noext-nolog,
+              os    : windows-latest,
+              lib   : shared,
+              family: llvm,
+              cxx   : clang-cl,
+              cc    : clang-cl,
               extend: OFF,
               logs  : OFF,
               test  : OFF

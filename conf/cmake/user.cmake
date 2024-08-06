@@ -22,7 +22,7 @@
 #
 # The default values are:
 #   1. AREG_COMPILER_FAMILY = <default> (possible values: gnu, cygwin, llvm, msvc)
-#   2. AREG_COMPILER        = <default> (possible values: g++, gcc, c++, cc, clang++, clang, cl)
+#   2. AREG_COMPILER        = <default> (possible values: g++, gcc, c++, cc, clang++, clang, clang-cl, cl)
 #   3. AREG_BINARY          = shared    (possible values: shared, static)
 #   4. AREG_BUILD_TYPE      = Release   (possible values: Release, Debug)
 #   5. AREG_BUILD_TESTS     = OFF       (possible values: ON, OFF)
@@ -30,9 +30,9 @@
 #   7. AREG_EXTENDED        = OFF       (possible values: ON, OFF)
 #   8. AREG_LOGS            = ON        (possible values: ON, OFF)
 #   9. AREG_BUILD_ROOT      = <areg-sdk>/product                                                (possible values: any full path)
-#  10. AREG_OUTPUT_DIR      = <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release     (possible values: any full path)
-#  11. AREG_OUTPUT_BIN      = <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release/bin (possible values: any full path)
-#  12. AREG_OUTPUT_LIB      = <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release/lib (possible values: any full path)
+#  10. AREG_OUTPUT_DIR      = <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release-<areg-lib>     (possible values: any full path)
+#  11. AREG_OUTPUT_BIN      = <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release-<areg-lib>/bin (possible values: any full path)
+#  12. AREG_OUTPUT_LIB      = <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release-<areg-lib>/lib (possible values: any full path)
 #  13. AREG_LOGOBSERVER_LIB = shared    (possible values: shared, static)
 #  14. AREG_PACKAGES        = <package location> (default value is ${AREG_BUILD_ROOT}/packages)
 #
@@ -42,7 +42,7 @@
 #   AREG_COMPILER_FAMILY is a simple and short way to specify the compiler.
 #       - The value 'gnu' will set g++ and gcc compilers for C++ and C.
 #       - The value 'cygwin' will set g++ and gcc compilers for C++ and C.
-#       - The value 'llvm' will set clang++ and clang compilers for C++ and C.
+#       - The value 'llvm' will set clang++,  clang and clang-cl (under windows) compilers for C++ and C.
 #       - The value 'msvc' will set Microsoft Visual C++ compiler for C++ and C.
 #
 # Example:
@@ -62,10 +62,10 @@
 # $ cmake -B ./build -D=AREG_BUILD_ROOT="~/projects/my_project/product"
 # ---------------------------------------------------------------------------
 
-# CPP compiler, possible values: g++, gcc, c++, cc, clang++, clang, cl
+# CPP compiler, possible values: g++, gcc, c++, cc, clang++, clang, clang-cl, cl
 set(AREG_CXX_COMPILER)
 
-# C compiler, possible values: gcc, clang, cl
+# C compiler, possible values: gcc, clang, clang-cl, cl
 set(AREG_C_COMPILER)
 
 # Check the compiler option.
@@ -80,8 +80,13 @@ if(DEFINED AREG_COMPILER_FAMILY AND NOT ${AREG_COMPILER_FAMILY} STREQUAL "")
         set(AREG_CXX_COMPILER "g++")
         set(AREG_C_COMPILER   "gcc")
     elseif(${AREG_COMPILER_FAMILY} STREQUAL "llvm")
-        set(AREG_CXX_COMPILER "clang++")
-        set(AREG_C_COMPILER   "clang")
+        if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+            set(AREG_CXX_COMPILER "clang-cl")
+            set(AREG_C_COMPILER   "clang-cl")
+        else()
+            set(AREG_CXX_COMPILER "clang++")
+            set(AREG_C_COMPILER   "clang")
+        endif()
     elseif(${AREG_COMPILER_FAMILY} STREQUAL "msvc")
         set(AREG_CXX_COMPILER "cl")
         set(AREG_C_COMPILER   "cl")
@@ -122,11 +127,13 @@ elseif(DEFINED AREG_COMPILER AND NOT ${AREG_COMPILER} STREQUAL "")
             set(AREG_COMPILER_FAMILY "gnu")
         endif()
 
-    elseif (${AREG_COMPILER} STREQUAL "clang++" OR ${AREG_COMPILER} STREQUAL "clang")
+    elseif (${AREG_COMPILER} STREQUAL "clang-cl" OR ${AREG_COMPILER} STREQUAL "clang++" OR ${AREG_COMPILER} STREQUAL "clang")
         # Clang compiler
 
         # Make sure that C-compiler is properly set
-        if (${AREG_COMPILER} STREQUAL "clang++")
+        if (${AREG_COMPILER} STREQUAL "clang-cl")
+            set(AREG_C_COMPILER     "clang-cl")
+        elseif (${AREG_COMPILER} STREQUAL "clang++")
             set(AREG_C_COMPILER     "clang")
         endif()
 
@@ -136,7 +143,7 @@ elseif(DEFINED AREG_COMPILER AND NOT ${AREG_COMPILER} STREQUAL "")
         set(AREG_COMPILER_FAMILY    "msvc")
     else()
         set(AREG_COMPILER_FAMILY)
-        message(WARNING ">>> Unrecognized compiler ${AREG_COMPILER}, supported compilers: \'gcc\', \'g++\', \'clang\', \'clang++\', \'cl\'")
+        message(WARNING ">>> Unrecognized compiler ${AREG_COMPILER}, supported compilers: \'gcc\', \'g++\', \'clang\', \'clang++\', \'clang-cl\', \'cl\'")
     endif()
 
 else()
