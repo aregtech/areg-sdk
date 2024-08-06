@@ -178,6 +178,6 @@ message(STATUS ">>> Build '${CMAKE_SYSTEM_NAME}' '${AREG_BITNESS}'-bit platform 
 message(STATUS ">>> Binary output folder '${AREG_OUTPUT_BIN}', executable extensions '${CMAKE_EXECUTABLE_SUFFIX}'")
 message(STATUS ">>> Generated files location '${AREG_GENERATE_DIR}', library output folder '${AREG_OUTPUT_LIB}'")
 message(STATUS ">>> Build examples is '${AREG_BUILD_EXAMPLES}', build tests is '${AREG_BUILD_TESTS}', AREG extended features are '${AREG_EXTENDED}', compile with logs '${AREG_LOGS}'")
-message(STATUS ">>> Java ${Java_VERSION_STRING} at location ${Java_JAVA_EXECUTABLE} is required by code generator. Minimum version 1.8")
+message(STATUS ">>> Java ${Java_VERSION_STRING} at location ${Java_JAVA_EXECUTABLE} is required by code generator. Minimum version 17")
 message(STATUS "-------------------- CMakeLists Status Report End ----------------------")
 message(STATUS CMAKE_SOURCE_DIR = ${CMAKE_SOURCE_DIR})
