@@ -24,7 +24,7 @@ jobs:
       matrix:
         config: # Create matrix with combinations
 
-            # compile AREG engine as a shared library with GNU g++ / gcc on Ubuntu Linux, enable AREG extensions and logs
+            # compile AREG engine as a shared library with GNU g++ / gcc on Ubuntu Linux, enable AREG extensions and logslogs
           - { name  : linux-gnu-shared-ext-log,
               os    : ubuntu-latest,
               lib   : shared,
