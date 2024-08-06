@@ -14,12 +14,12 @@ Component * ChatParticipantService::CreateComponent( const NERegistry::Component
     return (page != nullptr ? new ChatParticipantService( entry, owner, static_cast<ChatPrticipantHandler &>(*page) ) : nullptr);
 }
 
-void ChatParticipantService::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry )
+void ChatParticipantService::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & /* entry */ )
 {
     delete (&compObject);
 }
 
-NERegistry::Model ChatParticipantService::GetModel( const NEDirectMessager::sParticipant & initiator, const NEDirectMessager::ListParticipants & listParticipants, NEMemory::uAlign data )
+NERegistry::Model ChatParticipantService::GetModel( const NEDirectMessager::sParticipant & initiator, const NEDirectMessager::ListParticipants & /* listParticipants */, NEMemory::uAlign data )
 {
     String    serviceName = NEDistributedApp::getDirectMessagingRole( initiator.nickName, initiator.cookie, initiator.sessionId, true );
     String    roleName    = NEDistributedApp::getDirectMessagingRole( initiator.nickName, initiator.cookie, initiator.sessionId, false );

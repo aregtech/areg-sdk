@@ -361,7 +361,15 @@ void RouterClient::processReceivedMessage( const RemoteMessage & msgReceived, So
         case NEService::eFuncIdRange::ResponseServiceProviderVersion:   // fall through
         case NEService::eFuncIdRange::RequestServiceProviderVersion:    // fall through
         case NEService::eFuncIdRange::RequestRegisterService:           // fall through
-        case NEService::eFuncIdRange::ComponentCleanup:
+        case NEService::eFuncIdRange::ComponentCleanup:                 // fall through
+        case NEService::eFuncIdRange::SystemServiceNotifyInstances:     // fall through
+        case NEService::eFuncIdRange::ServiceLogRegisterScopes:         // fall through
+        case NEService::eFuncIdRange::ServiceLogUpdateScopes:           // fall through
+        case NEService::eFuncIdRange::ServiceLogQueryScopes:            // fall through
+        case NEService::eFuncIdRange::ServiceLogScopesUpdated:          // fall through
+        case NEService::eFuncIdRange::ServiceSaveLogConfiguration:      // fall through
+        case NEService::eFuncIdRange::ServiceLogConfigurationSaved:     // fall through
+        case NEService::eFuncIdRange::ServiceLogMessage:                // fall through
             break;
 
         case NEService::eFuncIdRange::AttributeLastId:          // fall through

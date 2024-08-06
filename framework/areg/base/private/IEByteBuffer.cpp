@@ -78,10 +78,6 @@ unsigned int IEByteBuffer::reserve(unsigned int size, bool copy)
                 }
             }
         }
-        else
-        {
-            OUTPUT_WARN("Ignoring resizing shared buffer.");
-        }
     }
     else
     {

@@ -21,7 +21,7 @@
 
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 #include <Windows.h>
-#include <shlobj.h>
+#include <ShlObj.h>
 
 #include "areg/base/SharedBuffer.hpp"
 #include "areg/base/Process.hpp"
@@ -143,17 +143,9 @@ bool File::_osOpenFile( void )
                 File::createDirCascaded( File::getFileDirectory(mFileName) );
             }
 
-            mFileHandle = static_cast<FILEHANDLE>(::CreateFileA(mFileName.getString(), access, shared, NULL, creation, attributes, NULL));
+            mFileHandle = static_cast<FILEHANDLE>(::CreateFileA(mFileName.getString(), access, shared, nullptr, creation, attributes, nullptr));
             result = isOpened();
         }
-        else
-        {
-            OUTPUT_ERR("Either file name or file open mode is not set.");
-        }
-    }
-    else
-    {
-        OUTPUT_WARN("File is already opened. Close file.");
     }
 
     return result;
@@ -170,10 +162,6 @@ unsigned int File::_osReadFile(unsigned char* buffer, unsigned int size) const
     if (::ReadFile(static_cast<HANDLE>(mFileHandle), buffer, static_cast<unsigned long>(size), &sizeRead, nullptr))
     {
         result = static_cast<unsigned int>(sizeRead);
-    }
-    else
-    {
-        OUTPUT_ERR("Failed to read file [ %s ], error code [ %p ].", mFileName.getString(), static_cast<id_type>(GetLastError()));
     }
 
     return result;
@@ -231,10 +219,6 @@ bool File::_osTruncateFile( void )
     if (SetFilePointer(static_cast<HANDLE>(mFileHandle), 0, nullptr, FILE_BEGIN) != IECursorPosition::INVALID_CURSOR_POSITION)
     {
         result = SetEndOfFile(static_cast<HANDLE>(mFileHandle)) ? true : false;
-    }
-    else
-    {
-        OUTPUT_ERR("Failed to set file pointer new position.");
     }
 
     return result;

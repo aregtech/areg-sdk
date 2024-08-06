@@ -102,9 +102,9 @@ public:
 
     /**
      * \brief   Initialize Stub address from given service item, role name and holder thread.
-     * \param   serviceItem     Service item, which contains basic information of service
-     * \param   roleName        The role name of holder component
-     * \param   threadName      Optional thread name of Stub. If nullptr, the current thread where Stub instantiated is set.
+     * \param   service     Service item, which contains basic information of service
+     * \param   roleName    The role name of holder component
+     * \param   threadName  Optional thread name of Stub. If nullptr, the current thread where Stub instantiated is set.
      **/
     StubAddress( const ServiceItem & service, const String & roleName, const String & threadName = String::getEmptyString() );
 
@@ -329,7 +329,6 @@ public:
     /**
      * \brief   Converts Stub address to string as a Address Path, containing
      *          path separator.
-     * \param   addrStub    The Stub address containing information to crate path
      * \return  Returns converted path of Stub as string, containing Stub address information
      **/
     String convToString( void ) const;
@@ -340,7 +339,6 @@ public:
      *          from Stub path.
      * \param   pathStub        The path of Stub object, containing information for address.
      * \param   out_nextPart    If not nullptr, on output this will contain remaining part of Stub path
-     * \return  Returns initialized StubAddress object, containing information taken from path
      **/
     void convFromString(const char* pathStub, const char** out_nextPart = nullptr);
 

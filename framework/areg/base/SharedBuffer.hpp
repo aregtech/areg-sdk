@@ -92,7 +92,7 @@ public:
      *          The reserved space should at least the size of the buffer to write.
      *          If the requested space to reserve is smaller than the size of the buffer,
      *          it will be increased to the size of the buffer.
-     * \brief   reserveSize Number of bytes to reserve in the shared buffer.
+     * \param   reserveSize Number of bytes to reserve in the shared buffer.
      * \param	buffer      The data to initialize byte buffer
      * \param	size        The length in bytes of data
      * \param   blockSize   The size of minimum block size to increase on resize.
@@ -180,7 +180,7 @@ public:
      * \brief	Friend global operator declaration to make Shared Buffer streamable.
      *          Writes the data from shared buffer to streaming
      * \param	stream	The data streaming object to write data
-     * \param	input	The Shared Buffer object to write data
+     * \param	output	The Shared Buffer object to write data
      * \return	Reference to Streaming object.
      **/
     friend inline IEOutStream & operator << ( IEOutStream & stream, const SharedBuffer & output );

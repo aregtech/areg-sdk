@@ -145,7 +145,7 @@ public:
      *          There should be possibility to stream every value of Stack and if VALUE
      *          is not a primitive, but an object, it should have implemented streaming operator.
      * \param   stream  The streaming object to write values
-     * \param   input   The Stack object to read out values.
+     * \param   output  The Stack object to read out values.
      **/
     template<typename V>
     friend IEOutStream & operator << (IEOutStream & stream, const TEStack<V> & output);
@@ -208,10 +208,17 @@ public:
      * \brief	Checks whether given element exist in the linked list or not. The elements of type
      *          VALUE should have comparing operators.
      * \param	elemSearch  The element to search.
-     * \param	startAt	    The position to start searching.
      * \return	Returns true if could find element starting at given position.
      **/
     inline bool contains(const VALUE& elemSearch) const;
+
+    /**
+     * \brief	Checks whether given element exist in the linked list or not. The elements of type
+     *          VALUE should have comparing operators.
+     * \param	elemSearch  The element to search.
+     * \param	startAt	    The position to start searching.
+     * \return	Returns true if could find element starting at given position.
+     **/
     inline bool contains(const VALUE& elemSearch, STACKPOS startAt) const;
 
     /**
@@ -315,11 +322,19 @@ public:
      *          The given position should be valid or equal to NECommon::START_POSITION
      *          to search at the beginning of stack.
      * \param   Value       The element value to search in the stack.
+     * \return  If found element, returns valid position. Otherwise, it returns invalid position.
+     **/
+    inline STACKPOS find(const VALUE & Value) const;
+
+    /**
+     * \brief   Searches element in the stack starting at given position.
+     *          The given position should be valid or equal to NECommon::START_POSITION
+     *          to search at the beginning of stack.
+     * \param   Value       The element value to search in the stack.
      * \param	searchAfter	If valid position, the searching starts from next element specified by position.
      *                      If invalid position, the searching starts from the beginning of the linked list.
      * \return  If found element, returns valid position. Otherwise, it returns invalid position.
      **/
-    inline STACKPOS find(const VALUE & Value) const;
     inline STACKPOS find(const VALUE& Value, STACKPOS searchAfter) const;
 
     /**

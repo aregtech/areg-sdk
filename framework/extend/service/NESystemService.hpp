@@ -88,7 +88,7 @@ namespace NESystemService
     /**
      * \brief   Returns the human readable string of NESystemService::eSystemState value
      **/
-    inline const char * const getString( NESystemService::eSystemServiceState serviceState );
+    inline const char * getString( NESystemService::eSystemServiceState serviceState );
 
     /**
      * \brief   The default option to run multicast System as a console application.
@@ -199,13 +199,15 @@ inline const char * NESystemService::getString( NESystemService::eServiceOption 
         return "NESystemService::CMD_Console";
     case NESystemService::eServiceOption::CMD_Verbose:
         return "NESystemService::CMD_Verbose";
+    case NESystemService::eServiceOption::CMD_Help:
+        return "NESystemService::eServiceOption::CMD_Help";
     default:
         ASSERT( false );
         return "ERR: Unexpected NESystemService::eServiceOption value!";
     }
 }
 
-inline const char * const NESystemService::getString( NESystemService::eSystemServiceState serviceState )
+inline const char * NESystemService::getString( NESystemService::eSystemServiceState serviceState )
 {
     switch ( serviceState )
     {
@@ -232,16 +234,16 @@ inline const char * const NESystemService::getString( NESystemService::eSystemSe
 template<typename CharType>
 inline char** NESystemService::convertArguments(CharType** argv, int argc)
 {
-    char** result = argc != 0 ? DEBUG_NEW char* [argc] : nullptr;
+    char** result = argc != 0 ? DEBUG_NEW char* [static_cast<uint32_t>(argc)] : nullptr;
     if (result != nullptr)
     {
-        for (int i = 0; i < argc; ++i)
+        for (uint32_t i = 0; i < static_cast<uint32_t>(argc); ++i)
         {
             CharType* entry = argv[i];
             uint32_t length = static_cast<uint32_t>(NEString::getStringLength<CharType>(entry));
             uint32_t size = length + 1u;
             char* arg = DEBUG_NEW char[size];
-            NEString::copyString<char, CharType>(arg, size, entry);
+            NEString::copyString<char, CharType>(arg, static_cast<NEString::CharCount>(size), entry);
             result[i] = arg;
         }
     }

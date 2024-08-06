@@ -59,9 +59,9 @@ protected:
 
     /**
      * \brief   Instantiates the component object.
-     * \param   ownerThread The instance of component owner thread.
-     * \param   roleName    The role name of component, given in the system.
-     * \param   data        The optional component data set in system. Can be empty / no data.
+     * \param   entry   The instance of the component entry that contains the component information.
+     * \param   owner   The instance of component owner thread.
+     * \param   data    The optional component data set in system. Can be empty / no data.
      **/
     RouterConsoleService( const NERegistry::ComponentEntry & entry, ComponentThread & owner, NEMemory::uAlign OPT data );
 

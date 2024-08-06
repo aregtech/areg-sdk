@@ -9,16 +9,22 @@ if ("${AREG_COMPILER_FAMILY}" STREQUAL "")
     message(STATUS ">>> Using system default settings: Compiler family = \'${AREG_COMPILER_FAMILY}\', CXX compiler = \'${AREG_CXX_COMPILER}\', CC compiler = \'${AREG_C_COMPILER}\'")
 endif()
 
+# Identify compiler short name
 findCompilerShortName("${CMAKE_CXX_COMPILER}" AREG_COMPILER_SHORT)
 
 # Identify the OS
 set(AREG_OS ${CMAKE_SYSTEM_NAME})
+# Identify CPU platform
 set(AREG_PROCESSOR ${CMAKE_SYSTEM_PROCESSOR})
 
-# Determining bitness by size of void pointer
+# Detect and set bitness here
 # 8 bytes ==> 64-bits (x64) and 4 bytes ==> 32-nit (x86)
-if(NOT ${CMAKE_SIZEOF_VOID_P} MATCHES "8")
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(AREG_BITNESS "64")
+elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
     set(AREG_BITNESS "32")
+else()
+    message(WARNING " >>< Undefined Bitness, use default!")
 endif()
 
 # -----------------------------------------------------
@@ -38,6 +44,7 @@ set(AREG_COMPILER_OPTIONS)
 set(AREG_EXTENDED_LIBS)
 # set areg compiler version
 set(AREG_COMPILER_VERSION)
+set(AREG_TARGET_COMPILER_OPTIONS)
 
 # Adding common definition
 add_definitions(-DUNICODE -D_UNICODE)
@@ -51,111 +58,30 @@ else()
     remove_definitions(-DNDEBUG -D_NDEBUG)
 endif()
 
+set(AREG_OPT_DISABLE_WARN_COMMON)
+set(AREG_OPT_DISABLE_WARN_FRAMEWORK)
+set(AREG_OPT_DISABLE_WARN_TOOLS)
+set(AREG_OPT_DISABLE_WARN_EXAMPLES)
+set(AREG_OPT_DISABLE_WARN_SQLITE)
+set(AREG_OPT_DISABLE_WARN_CODEGEN)
+
 # Checking Compiler for adding corresponded tweaks and flags
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
-    message(STATUS ">>> Preparing compiler settings for `clang`")
-
-    # POSIX API
-    add_definitions(-DPOSIX)
-    set(AREG_DEVELOP_ENV "Posix")
-
-    if (CMAKE_BUILD_TYPE MATCHES "Release")
-        list(APPEND AREG_COMPILER_OPTIONS -O2)
-    else()
-        list(APPEND AREG_COMPILER_OPTIONS -O0 -g3)
-    endif()
-
-    if(AREG_BITNESS MATCHES "32")
-        list(APPEND AREG_COMPILER_OPTIONS -m32)
-    else()
-        list(APPEND AREG_COMPILER_OPTIONS -m64)
-    endif()
-
-    # Clang compile options
-    list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 ${AREG_USER_DEFINES})
-    set(AREG_COMPILER_VERSION  -stdlib=libstdc++)
-    # Linker flags (-l is not necessary)
-    list(APPEND AREG_LDFLAGS stdc++ m pthread rt)
+    include(${AREG_CMAKE_CONFIG_DIR}/clang.cmake)
 
 elseif (CMAKE_COMPILER_IS_GNUCXX )
 
-    message(STATUS ">>> Preparing compiler settings for `GNU`")
-
-    # POSIX API
-    add_definitions(-DPOSIX)
-    set(AREG_DEVELOP_ENV "Posix")
-
-    if (CMAKE_BUILD_TYPE MATCHES "Release")
-        list(APPEND AREG_COMPILER_OPTIONS -O2)
-    else()
-        list(APPEND AREG_COMPILER_OPTIONS -O0 -g3)
-    endif()
-
-    if(AREG_BITNESS MATCHES "32")
-        list(APPEND AREG_COMPILER_OPTIONS -m32)
-    else()
-        list(APPEND AREG_COMPILER_OPTIONS -m64)
-    endif()
-
-    # GNU compile options
-    if (CYGWIN)
-        message(STATUS ">>> CYGWIN is detected")
-        list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -MMD ${AREG_USER_DEFINES})
-        set(AREG_COMPILER_VERSION  -std=gnu++17)
-    else()
-        list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -MMD ${AREG_USER_DEFINES})
-        set(AREG_COMPILER_VERSION -std=c++17)
-    endif()
-    # Linker flags (-l is not necessary)
-    list(APPEND AREG_LDFLAGS stdc++ m pthread rt)
+    include(${AREG_CMAKE_CONFIG_DIR}/gnu.cmake)
 
 elseif (MSVC)
 
-    message(STATUS ">>> Preparing compiler settings for `MSVC`")
-
-    # Visual Studio C++
-    # Windows / Win32 API
-    set(AREG_DEVELOP_ENV "Win32")
-    add_definitions(-DWINDOWS -D_WINDOWS -DWIN32 -D_WIN32)
-
-    if(NOT CMAKE_BUILD_TYPE MATCHES "Release")
-        list(APPEND AREG_COMPILER_OPTIONS -Od -RTC1 -c)
-    endif()
-        
-    if (${AREG_BITNESS} MATCHES "64")
-        add_definitions(-DWIN64 -D_WIN64)
-    endif()
-
-    # MS Visual C++ compile options
-    list(APPEND AREG_COMPILER_OPTIONS)
-    # Linker flags (-l is not necessary)
-    list(APPEND AREG_LDFLAGS advapi32 psapi shell32 ws2_32)
+    include(${AREG_CMAKE_CONFIG_DIR}/msvc.cmake)
 
 else()
 
     message(WARNING ">>> Unsupported compiler type. The result is unpredictable, by default use GNU compiler settings and POSIX API")
-    # POSIX API
-    add_definitions(-DPOSIX)
-    set(AREG_DEVELOP_ENV "Posix")
-
-    if (CMAKE_BUILD_TYPE MATCHES "Release")
-        list(APPEND AREG_COMPILER_OPTIONS -O2)
-    else()
-        list(APPEND AREG_COMPILER_OPTIONS -O0 -g3)
-    endif()
-
-    if(AREG_BITNESS MATCHES "32")
-        list(APPEND AREG_COMPILER_OPTIONS -m32)
-    else()
-        list(APPEND AREG_COMPILER_OPTIONS -m64)
-    endif()
-
-    # Compile options
-    list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0 -MMD ${AREG_USER_DEFINES})
-    set(AREG_COMPILER_VERSION -std=c++17)
-    # Linker flags (-l is not necessary)
-    list(APPEND AREG_LDFLAGS stdc++ m pthread rt)
+    include(${AREG_CMAKE_CONFIG_DIR}/gnu.cmake)
 
 endif()
 
@@ -173,7 +99,6 @@ if (AREG_LOGS)
 else()
     add_definitions(-DAREG_LOGS=0)
 endif()
-
 
 
 # -------------------------------------------------------
@@ -253,6 +178,6 @@ message(STATUS ">>> Build '${CMAKE_SYSTEM_NAME}' '${AREG_BITNESS}'-bit platform 
 message(STATUS ">>> Binary output folder '${AREG_OUTPUT_BIN}', executable extensions '${CMAKE_EXECUTABLE_SUFFIX}'")
 message(STATUS ">>> Generated files location '${AREG_GENERATE_DIR}', library output folder '${AREG_OUTPUT_LIB}'")
 message(STATUS ">>> Build examples is '${AREG_BUILD_EXAMPLES}', build tests is '${AREG_BUILD_TESTS}', AREG extended features are '${AREG_EXTENDED}', compile with logs '${AREG_LOGS}'")
-message(STATUS ">>> Java ${Java_VERSION_STRING} at location ${Java_JAVA_EXECUTABLE} is required by code generator. Minimum version 1.8")
+message(STATUS ">>> Java ${Java_VERSION_STRING} at location ${Java_JAVA_EXECUTABLE} is required by code generator. Minimum version 17")
 message(STATUS "-------------------- CMakeLists Status Report End ----------------------")
 message(STATUS CMAKE_SOURCE_DIR = ${CMAKE_SOURCE_DIR})

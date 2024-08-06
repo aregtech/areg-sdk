@@ -44,14 +44,6 @@ bool PersistenceManager::parseReadable(const char * filePath)
                         mMapReadOnly.setAt( static_cast<unsigned int>(newProperty), newProperty );
                         newProperty.resetData();
                     }
-                    else
-                    {
-                        ; // not relevant property, ignore
-                    }
-                }
-                else
-                {
-                    ; // get next
                 }
             }
         }
@@ -80,14 +72,6 @@ bool PersistenceManager::parseWritable(const char * filePath)
                         mMapWritable.setAt( static_cast<unsigned int>(newProperty), newProperty );
                         newProperty.resetData();
                     }
-                    else
-                    {
-                        ; // not relevant property, ignore
-                    }
-                }
-                else
-                {
-                    ; // get next
                 }
             }
         }

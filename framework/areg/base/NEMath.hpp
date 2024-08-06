@@ -43,7 +43,7 @@ namespace NEMath
 
     /**
      * \brief   Returns the value of character for specified sign
-     * \param   Passed sign value to get character
+     * \param   sign    Passed sign value to get character
      * \return  Returns '-' for negative sign, '+' for positive sign and '\0' (empty) for undefined.
      */
     inline char getChar(NEMath::eDigitSign sign );
@@ -276,8 +276,7 @@ namespace NEMath
     /************************************************************************/
     // NEMath::sLargeInteger declare global operators to make streamable
     /************************************************************************/
-        DECLARE_STREAMABLE(NEMath::sLargeInteger)
-
+        DECLARE_STREAMABLE(NEMath::sLargeInteger);
     };
 
 /************************************************************************/
@@ -329,7 +328,6 @@ namespace NEMath
      * \param	out_num Large Number to set bits.
      * \param	hi	    High bits to set
      * \param	lo	    Low bits to set
-     * \return	
      **/
     inline void setBits( sLargeInteger & out_num, unsigned int hi, unsigned int lo);
 
@@ -381,6 +379,7 @@ namespace NEMath
      * \brief	Return initial 32-bit value of Cyclic Redundancy Check (CRC)
      **/
     AREG_API unsigned int crc32Init( void );
+
     /**
      * \brief	Starts 32-bit Cyclic Redundancy Check (CRC) calculation.
      *          The function can be called cyclic on continues data.
@@ -400,7 +399,7 @@ namespace NEMath
 
     /**
      * \brief   NEMath::Crc32Start
-     * \brief	Starts 32-bit Cyclic Redundancy Check (CRC) calculation for string.
+     *          Starts 32-bit Cyclic Redundancy Check (CRC) calculation for string.
      *          The calculation continues until end of string is not matched
      *          The function can be called cyclic on continues data.
      *          On first step 'crcInit' value should be initialized value,
@@ -412,13 +411,13 @@ namespace NEMath
      *                      If unction is called cyclic, on next steps this
      *                      should be same value returned by this function.
      * \param	data	    Pointer to binary data to calculate 32-bit CRC
-     * \param	size	    The size in bytes of given buffer.
      * \return	32-bit value.
      **/
     AREG_API unsigned int crc32Start( unsigned int crcInit, const char * data );
+    
     /**
      * \brief   NEMath::Crc32Start
-     * \brief	Starts 32-bit Cyclic Redundancy Check (CRC) calculation of a single byte  value.
+     *      	Starts 32-bit Cyclic Redundancy Check (CRC) calculation of a single byte  value.
      *          The function can be called cyclic on continues data.
      *          On first step 'crcInit' value should be initialized value,
      *          i.e. the value returned by crc32Init() function.
@@ -428,8 +427,7 @@ namespace NEMath
      *                      i.e. the value returned by crc32Init() function.
      *                      If unction is called cyclic, on next steps this
      *                      should be same value returned by this function.
-     * \param	data	    Pointer to binary data to calculate 32-bit CRC
-     * \param	size	    The size in bytes of given buffer
+     * \param	uch	        The first unsigned 8-bit value to start calculating CRC.
      * \return	32-bit value.
      **/
     AREG_API unsigned int crc32Start( unsigned int crcInit, unsigned char uch );
@@ -466,7 +464,7 @@ namespace NEMath
      *          is that it works only for digits.
      * \param   number  The number to get absolute value
      * \return  Returns absolute value of digit.
-     * \tparam  Any primitive type
+     * \tparam  Digit   Any primitive type
      **/
     template<typename Digit>
     inline Digit makeAbsolute( Digit number );
@@ -491,7 +489,7 @@ inline const Type & NEMath::getMax( const Type & a, const Type & b )
 template <typename Type>
 inline Type NEMath::getAbs( const Type & val )
 {
-    return MACRO_ABS(val);
+    return (val >= 0 ? val : static_cast<Type>(val) * static_cast<Type>(-1));
 }
 
 template<typename Type>

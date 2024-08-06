@@ -61,6 +61,11 @@ int ServiceApplicationBase::serviceMain(int argc, char** argv)
         mCommunication.waitToComplete();
         break;
 
+    case NESystemService::eServiceOption::CMD_Help:
+    case NESystemService::eServiceOption::CMD_Verbose:
+    break;
+
+    case NESystemService::eServiceOption::CMD_Undefined:
     default:
         ASSERT(false);  // unexpected
         break;
@@ -69,7 +74,7 @@ int ServiceApplicationBase::serviceMain(int argc, char** argv)
     return result;
 }
 
-bool ServiceApplicationBase::serviceInitialize(int argc, char** argv)
+bool ServiceApplicationBase::serviceInitialize(int /* argc */, char** /* argv */)
 {
     // Start only tracing and timer manager.
     Application::initApplication( true
@@ -202,23 +207,25 @@ void ServiceApplicationBase::runService(void)
     Application::waitAppQuit(NECommon::WAIT_INFINITE);
 }
 
-void ServiceApplicationBase::prepareSaveConfiguration(ConfigManager& config)
+void ServiceApplicationBase::prepareSaveConfiguration(ConfigManager& /* config */)
 {
 }
 
-void ServiceApplicationBase::postSaveConfiguration(ConfigManager& config)
+void ServiceApplicationBase::postSaveConfiguration(ConfigManager& /* config */)
 {
 }
 
-void ServiceApplicationBase::prepareReadConfiguration(ConfigManager& config)
+void ServiceApplicationBase::prepareReadConfiguration(ConfigManager& /* config */)
 {
 }
 
-void ServiceApplicationBase::postReadConfiguration(ConfigManager& config)
+void ServiceApplicationBase::postReadConfiguration(ConfigManager& /* config */)
 {
 }
 
-void ServiceApplicationBase::onSetupConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigManager& config)
+void ServiceApplicationBase::onSetupConfiguration( const NEPersistence::ListProperties& /* listReadonly */
+                                                 , const NEPersistence::ListProperties& /* listWritable */
+                                                 , ConfigManager& /* config */)
 {
 }
 

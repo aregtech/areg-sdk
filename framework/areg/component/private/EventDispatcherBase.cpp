@@ -125,40 +125,16 @@ bool EventDispatcherBase::registerEventConsumer( const RuntimeClassID& whichClas
     mConsumerMap.lock();
 
     bool result = false;
-    OUTPUT_DBG("[ %s ] dispatcher: Registers consumer [ %p ] for event [ %s ]. The dispatcher state is [ %s ]"
-                , mDispatcherName.getString()
-                , reinterpret_cast<void *>(&whichConsumer)
-                , whichClass.getName().getString()
-                , isReady() ? "Ready" : "Not ready");
-
     EventConsumerList* listConsumers = mConsumerMap.findResourceObject(whichClass);
     if (listConsumers == nullptr)
     {
-        OUTPUT_DBG("[ %s ] dispatcher: Did not find consumer list for event [ %s ], creating new"
-                        , mDispatcherName.getString()
-                        , whichClass.getName().getString());
-        
         listConsumers   = DEBUG_NEW EventConsumerList();
         if (listConsumers != nullptr)
             mConsumerMap.registerResourceObject(whichClass, listConsumers);
     }
-#ifdef DEBUG
-    else
-    {
-        OUTPUT_DBG("[ %s ] dispatcher: Fount consumer list for event [ %s ]"
-                        , mDispatcherName.getString()
-                        , whichClass.getName().getString());
-    }
-#endif // DEBUG
 
     if ( (listConsumers != nullptr) && (listConsumers->existConsumer(whichConsumer) == false) )
     {
-        OUTPUT_DBG("[ %s ] dispatcher: Add new consumer. There are [ %d ] registered consumers for event [ %s ]. There are [ %d ] Consumer Lists in map"
-                    , mDispatcherName.getString()
-                    , listConsumers->getSize()
-                    , whichClass.getName().getString()
-                    , mConsumerMap.getSize());
-
         result = listConsumers->addConsumer(whichConsumer);
     }
 
@@ -171,33 +147,18 @@ bool EventDispatcherBase::unregisterEventConsumer( const RuntimeClassID & whichC
     mConsumerMap.lock();
 
     bool result = false;
-    OUTPUT_DBG("[ %s ] dispatcher: Going to unregister consumer [ %p ] for event class [ %s ]"
-                , mDispatcherName.getString()
-                , static_cast<void *>(&whichConsumer)
-                , whichClass.getName().getString());
-
     EventConsumerList* listConsumers = mConsumerMap.findResourceObject(whichClass);
     if (listConsumers != nullptr)
     {
-        OUTPUT_DBG("[ %s ] dispatcher: Found Consumer List for event class [ %s ], going to remove consumer. Number of consumers in list [ %d ]"
-                    , mDispatcherName.getString()
-                    , whichClass.getName().getString()
-                    , listConsumers->getSize());
-
         result = listConsumers->removeConsumer(whichConsumer);
         if (listConsumers->isEmpty())
         {
             mConsumerMap.unregisterResourceObject(whichClass);
             delete listConsumers;
-            OUTPUT_DBG("[ %s ] dispatcher: Consumer List of event [ %s ] is empty, unregistered from map and deleted. Still [ %d ] lists in map"
-                        , mDispatcherName.getString()
-                        , whichClass.getName().getString()
-                        , mConsumerMap.getSize());
         }
     }
     else
     {
-        OUTPUT_WARN("[ %s ] dispatcher: Did not find registered consumer list for event [ %s ]", mDispatcherName.getString(), whichClass.getName().getString());
         // AAvetyan:    The reason why it does not find, because it is cleaned in _clean() function.
         //              This is mainly happening in component, which has server interface implementation.
         //              To make graceful shutdown, in _clean() method should be set filtering.
@@ -214,8 +175,6 @@ int EventDispatcherBase::removeConsumer( IEEventConsumer & whichConsumer )
 {
     mConsumerMap.lock();
 
-    OUTPUT_DBG("[ %s ] dispatcher: Removing Consumer [ %p ] from Consumer Map", mDispatcherName.getString(), static_cast<void *>(&whichConsumer));
-
     int result = 0;
     TELinkedList<RuntimeClassID> removedList;
     RuntimeClassID     Key(RuntimeClassID::createEmptyClassID());
@@ -224,18 +183,10 @@ int EventDispatcherBase::removeConsumer( IEEventConsumer & whichConsumer )
     Value = mConsumerMap.resourceFirstKey(Key);
     while (Value != nullptr)
     {
-        OUTPUT_DBG("[ %s ] dispatcher: Found registered event entry [ %s ] for consumer [ %p ]"
-                    , mDispatcherName.getString()
-                    , Key.getName().getString()
-                    , static_cast<void*>(&whichConsumer));
         ASSERT(Value->isEmpty() == false);
-
         result += Value->removeConsumer(whichConsumer) ? 1 : 0;
         if (Value->isEmpty())
         {
-            OUTPUT_WARN("[ %s ] dispatcher: The Consumer List of event entry [ %s ] is empty, marking for deleting"
-                            , mDispatcherName.getString()
-                            , Key.getName().getString());
             removedList.pushFirst(Key);
         }
 
@@ -248,11 +199,6 @@ int EventDispatcherBase::removeConsumer( IEEventConsumer & whichConsumer )
         ASSERT(Value != nullptr);
         delete Value;
         Value = nullptr;
-
-        OUTPUT_WARN("[ %s ] dispatcher: Unregistered and deleted Consumer List of event entry [ %s ]. There are still [ %d ] Consumer Lists in map"
-                        , mDispatcherName.getString()
-                        , Key.getName().getString()
-                        , mConsumerMap.getSize());
     }
 
     mConsumerMap.unlock();
@@ -278,7 +224,6 @@ bool EventDispatcherBase::runDispatcher( void )
             {
                 if (eventElem == nullptr)
                 {
-                    OUTPUT_WARN("The event object is nullptr. Ignoring and waiting for lock.");
                     continue;
                 }
 
@@ -305,23 +250,17 @@ bool EventDispatcherBase::runDispatcher( void )
 
                 } while (eventElem != nullptr);
             }
-            else
-            {
-                OUTPUT_WARN(">>> Going to exit [ %s ] dispatcher", static_cast<const char *>(mDispatcherName.getString()));
-            }
         }
         else
         {
             whichEvent = static_cast<int>(EventDispatcherBase::eEventOrder::EventExit);
-            OUTPUT_WARN("Received exit event. Going to exit [ %s ] dispatcher", static_cast<const char *>(mDispatcherName.getString()));
         }
+
     } while (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventQueue));
 
     readyForEvents(false);
     removeAllEvents( );
     _clean();
-
-    OUTPUT_WARN("The Dispatcher [ %s ] completed job and stopping running.", mDispatcherName.getString());
 
     return (whichEvent == static_cast<int>(EventDispatcherBase::eEventOrder::EventExit));
 }
@@ -393,7 +332,6 @@ inline void EventDispatcherBase::_clean()
 {
     mConsumerMap.lock();
 
-    OUTPUT_WARN("[ %s ] dispatcher: Cleaning up, there are [ %d ] registered consumer maps", mDispatcherName.getString(), mConsumerMap.getSize());
     RuntimeClassID     Key(RuntimeClassID::createEmptyClassID());
     while (mConsumerMap.isEmpty() == false)
     {
@@ -401,11 +339,6 @@ inline void EventDispatcherBase::_clean()
         EventConsumerList* Value =  mConsumerMap.unregisterResourceObject(Key);
         Value->removeAllConsumers();
         delete Value;
-
-        OUTPUT_WARN("[ %s ] dispatcher: Unregistered and deleted Consumer List of event entry [ %s ]. There are still [ %d ] Consumer Lists in map"
-                        , mDispatcherName.getString()
-                        , Key.getName().getString()
-                        , mConsumerMap.getSize());
     }
 
     mConsumerMap.unlock();

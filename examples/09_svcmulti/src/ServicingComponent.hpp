@@ -54,8 +54,8 @@ protected:
 
     /**
      * \brief   Instantiates the component object.
+     * \param   entry       The entry of registry, which describes the component.
      * \param   ownerThread The instance of component owner thread.
-     * \param   roleName    The role name of component, given in the system.
      * \param   data        The optional component data set in system. Can be empty / no data.
      **/
     ServicingComponent(const NERegistry::ComponentEntry & entry, ComponentThread & ownerThread, NEMemory::uAlign OPT data);

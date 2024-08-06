@@ -168,7 +168,7 @@ private:
      * \param   isEnabled       The flag, indicating whether the logging in the database is enabler or not.
      * \param   dbName          The name of the  supported database.
      * \param   dbLocation      The relative or absolute path the database. The path may contain a mask.
-     * \param   dbUser          The database user to use when log in. If null or empty, the database may not require the user name.
+     * \param   user            The database user to use when log in. If null or empty, the database may not require the user name.
      **/
     static void callbackDatabaseConfigured(bool isEnabled, const char* dbName, const char* dbLocation, const char* user);
 
@@ -276,11 +276,6 @@ private:
 
     /**
      * \brief   Triggered to print the help message on console.
-     * \param   isCmdLine   Flag indicating whether it should print the help
-     *                      of using service in command line or help of user input commands.
-     *                      If 'true', the printing message is about using the service in
-     *                      command line. Otherwise, if application expects user inputs, prints
-     *                      the help of command options.
      * \return  Returns true if processed with success. Otherwise, returns false.
      **/
     static bool _processPrintHelp(void);

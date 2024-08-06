@@ -153,6 +153,31 @@ void LoggerServerService::dispatchAndForwardLoggerMessage(const RemoteMessage& m
         mLoggerProcessor.saveLogSourceConfiguration(msgForward);
         break;
 
+    case NEService::eFuncIdRange::EmptyFunctionId:                  // fall through
+    case NEService::eFuncIdRange::ComponentCleanup:                 // fall through
+    case NEService::eFuncIdRange::RequestRegisterService:           // fall through
+    case NEService::eFuncIdRange::RequestServiceProviderVersion:    // fall through
+    case NEService::eFuncIdRange::ResponseServiceProviderVersion:   // fall through
+    case NEService::eFuncIdRange::RequestServiceProviderConnection: // fall through
+    case NEService::eFuncIdRange::ResponseServiceProviderConnection:// fall through
+    case NEService::eFuncIdRange::SystemServiceConnect:             // fall through
+    case NEService::eFuncIdRange::SystemServiceDisconnect:          // fall through
+    case NEService::eFuncIdRange::SystemServiceNotifyConnection:    // fall through
+    case NEService::eFuncIdRange::SystemServiceQueryInstances:      // fall through
+    case NEService::eFuncIdRange::SystemServiceNotifyInstances:     // fall through
+    case NEService::eFuncIdRange::SystemServiceRequestRegister:     // fall through
+    case NEService::eFuncIdRange::SystemServiceNotifyRegister:      // fall through
+    case NEService::eFuncIdRange::ServiceLogRegisterScopes:         // fall through
+    case NEService::eFuncIdRange::ServiceLogScopesUpdated:          // fall through
+    case NEService::eFuncIdRange::ServiceLogConfigurationSaved:     // fall through
+    case NEService::eFuncIdRange::ServiceLogMessage:                // fall through
+    case NEService::eFuncIdRange::RequestFirstId:                   // fall through
+    case NEService::eFuncIdRange::ResponseFirstId:                  // fall through
+    case NEService::eFuncIdRange::AttributeFirstId:                 // fall through
+    case NEService::eFuncIdRange::RequestLastId:                    // fall through
+    case NEService::eFuncIdRange::ResponseLastId:                   // fall through
+    case NEService::eFuncIdRange::AttributeLastId:                  // fall through
+    case NEService::eFuncIdRange::ServiceLastId:                    // fall through
     default:
         ASSERT(false);
         break;
@@ -222,6 +247,15 @@ void LoggerServerService::onServiceMessageReceived(const RemoteMessage &msgRecei
     case NEService::eFuncIdRange::SystemServiceNotifyConnection:    // fall through
     case NEService::eFuncIdRange::SystemServiceRequestRegister:     // fall through
     case NEService::eFuncIdRange::SystemServiceNotifyRegister:      // fall through
+    case NEService::eFuncIdRange::EmptyFunctionId:                  // fall through
+    case NEService::eFuncIdRange::ComponentCleanup:                 // fall through
+    case NEService::eFuncIdRange::RequestFirstId:                   // fall through
+    case NEService::eFuncIdRange::ResponseFirstId:                  // fall through
+    case NEService::eFuncIdRange::AttributeFirstId:                 // fall through
+    case NEService::eFuncIdRange::RequestLastId:                    // fall through
+    case NEService::eFuncIdRange::ResponseLastId:                   // fall through
+    case NEService::eFuncIdRange::AttributeLastId:                  // fall through
+    case NEService::eFuncIdRange::ServiceLastId:                    // fall through
     default:
         TRACE_ERR("Unexpected logger service message!");
         ASSERT(false);
@@ -229,7 +263,7 @@ void LoggerServerService::onServiceMessageReceived(const RemoteMessage &msgRecei
     }
 }
 
-void LoggerServerService::processTimer(Timer& timer)
+void LoggerServerService::processTimer(Timer& /* timer */ )
 {
 }
 

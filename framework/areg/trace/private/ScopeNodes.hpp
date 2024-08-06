@@ -168,7 +168,7 @@ public:
   *          the scope is a leaf. All others are nodes.
   *          On output, the 'scopePath' with contain the remaining path or an empty string
   *          if a leaf was created.
-  * \param   stopePath   The path of the scope to create a node. On output, this contains
+  * \param   scopePath   The path of the scope to create a node. On output, this contains
   *                      either the remaining path or empty string if a leaf was created.
   * \param   prioStates  Bitwise logging priority set to scope.
   * \return  Returns created node. It is either a node or a leaf.
@@ -193,9 +193,9 @@ public:
      *          contains the remaining part of the scope after creating child node. It is empty
      *          when creates and adds a leaf.
      *          Only root or nodes can contain child. This method is ignored in case of leaf.
-     * \param   scopePath       The name of the scope to generate a node. On output, this contains
-     *                          the remaining part of the scope name.
-     * \param   priorityState   The logging priority flags of the scope.
+     * \param   scopePath   The name of the scope to generate a node. On output, this contains
+     *                      the remaining part of the scope name.
+     * \param   prioStates  Bitwise logging priority set to scope.
      * \return  Returns a pair of new node entry in the child list and a boolean flag indicating whether
      *          it created new entry or updated the existing.
      **/

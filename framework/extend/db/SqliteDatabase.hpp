@@ -78,7 +78,7 @@ public:
 
     /**
      * \brief   Connects to the specified SqliteDatabase.
-     * \param   dbpath  The path to the SqliteDatabase. If needed, the path may contain
+     * \param   dbPath  The path to the SqliteDatabase. If needed, the path may contain
      *                  file path or URL, user name and password. It is up to
      *                  SqliteDatabase engine to parse the path and initialize the connection.
      *                  If the parameter is empty, it should take the data from the

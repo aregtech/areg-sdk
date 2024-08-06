@@ -85,7 +85,7 @@ void ServiceComponent::requestHelloUblock( unsigned int clientId, unsigned int s
               << " Session = " << sessionId << std::endl;
 }
 
-void ServiceComponent::processTimer( Timer & timer )
+void ServiceComponent::processTimer( Timer & /* timer */ )
 {
     TRACE_SCOPE( examples_21_pubservice_ServiceComponent_processTimer );
     SessionEtnry entry = mSessionList.popFirst( );

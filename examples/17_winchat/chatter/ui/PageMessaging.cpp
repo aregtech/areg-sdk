@@ -182,7 +182,7 @@ BEGIN_MESSAGE_MAP(PageMessaging, CPropertyPage)
     ON_BN_CLICKED( IDC_CHECK_KEYTYPE, &PageMessaging::OnClickedCheckKeytype )
     ON_BN_CLICKED( IDC_CHECK_BROADCAST, &PageMessaging::OnClickedCheckBroadcast )
     ON_EN_CHANGE( IDC_EDIT_MESSAGE_ALL, &PageMessaging::OnChangeEditMessageAll )
-    ON_MESSAGE_VOID( WM_KICKIDLE, OnKickIdle )
+    ON_MESSAGE_VOID( WM_KICKIDLE, PageMessaging::OnKickIdle )
     ON_UPDATE_COMMAND_UI( IDC_BUTTON_SEND       , &PageMessaging::OnButtonUpdateSend )
     ON_UPDATE_COMMAND_UI( IDC_CHECK_MESSAGES    , &PageMessaging::OnCheckUpdate )
     ON_UPDATE_COMMAND_UI( IDC_CHECK_KEYTYPE     , &PageMessaging::OnCheckUpdate )
@@ -379,11 +379,12 @@ void PageMessaging::outputTyping( CString nickName, CString message, uint32_t co
     if ( message.IsEmpty() == false )
     {
         int pos = mLastItem;
-        for ( pos; pos < mCtrlList.GetItemCount(); ++ pos )
+        for ( ; pos < mCtrlList.GetItemCount(); ++ pos )
         {
             if ( cookie == static_cast<uint32_t>(mCtrlList.GetItemData(pos)) )
                 break;
         }
+        
         if ( pos == mCtrlList.GetItemCount() )
         {
             LVITEM lv;

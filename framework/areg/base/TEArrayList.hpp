@@ -180,7 +180,7 @@ public:
      *          There should be possibility to stream values and if VALUE is not a 
      *          primitive, but an object, it should have implemented streaming operator.
      * \param   stream  The stream to write values.
-     * \param   input   The array object containing value to stream.
+     * \param   output   The array object containing value to stream.
      **/
     template <typename V>
     friend IEOutStream & operator << (IEOutStream & stream, const TEArrayList< V > & output);
@@ -854,7 +854,7 @@ inline void TEArrayList< VALUE >::removeAt(uint32_t index, uint32_t elemCount /*
         }
         else
         {
-            ARRAYPOS last = first + elemCount;
+            ARRAYPOS last = first + static_cast<int32_t>(elemCount);
             mValueList.erase(first, last);
         }
     }
@@ -951,7 +951,7 @@ inline int TEArrayList< VALUE >::find( const VALUE & elemSearch, uint32_t startA
     if (startAt < static_cast<uint32_t>(mValueList.size()))
     {
         result = static_cast<int>(startAt) - 1;
-        auto it = std::find_if( mValueList.begin() + startAt, mValueList.end()
+        auto it = std::find_if( mValueList.begin() + static_cast<int32_t>(startAt), mValueList.end()
                               , [&](const auto& elem) { ++result; return (elemSearch == elem);});
 
         if (it == mValueList.end())
@@ -966,7 +966,7 @@ inline int TEArrayList< VALUE >::find( const VALUE & elemSearch, uint32_t startA
 template<typename VALUE >
 inline bool TEArrayList< VALUE >::contains( const VALUE & elemSearch, uint32_t startAt /*= 0*/ ) const
 {
-    return (startAt < static_cast<uint32_t>(mValueList.size()) ? std::find(mValueList.begin() + startAt, mValueList.end(), elemSearch) != mValueList.end() : false);
+    return (startAt < static_cast<uint32_t>(mValueList.size()) ? std::find(mValueList.begin() + static_cast<int32_t>(startAt), mValueList.end(), elemSearch) != mValueList.end() : false);
 }
 
 template<typename VALUE>
@@ -981,7 +981,7 @@ inline bool TEArrayList< VALUE >::removeElem( const VALUE & elemRemove, uint32_t
     bool result = false;
     if (searchAt < static_cast<uint32_t>(mValueList.size()))
     {
-        auto it = std::find(mValueList.begin() + searchAt, mValueList.end(), elemRemove);
+        auto it = std::find(mValueList.begin() + static_cast<int>(searchAt), mValueList.end(), elemRemove);
         if (it != mValueList.end())
         {
             mValueList.erase(it);
@@ -1069,7 +1069,7 @@ inline const typename TEArrayList< VALUE >::ARRAYPOS TEArrayList< VALUE >::getPo
 template<typename VALUE >
 inline typename TEArrayList< VALUE >::ARRAYPOS TEArrayList< VALUE >::getPosition(uint32_t index)
 {
-	auto it = index < static_cast<uint32_t>(mValueList.size()) ? mValueList.begin() + index : mValueList.end();
+	auto it = index < static_cast<uint32_t>(mValueList.size()) ? mValueList.begin() + static_cast<int>(index) : mValueList.end();
     return Constless<std::vector<VALUE>>::iter(mValueList, it);
 }
 

@@ -186,7 +186,7 @@ void IEStubEventConsumer::startEventProcessing( Event & eventElem )
         }
         else
         {
-            ; // ignore, wrong stub address
+            // ignore, wrong stub address
         }
     }
     else

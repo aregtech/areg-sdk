@@ -70,10 +70,6 @@ bool File::open(const String& fileName, unsigned int mode)
 
         result = open();
     }
-    else
-    {
-        OUTPUT_WARN("File is already opened. Close file.");
-    }
 
     return result;
 }
@@ -205,10 +201,10 @@ String File::genTempFileName(const char* prefix, bool unique, bool inTempFolder)
     if (inTempFolder)
     {
         String dir = File::getTempDir();
-        int len = _osCreateTempFileName(buffer, dir.getString(), name.getString(), unique);
-        if (len > 0)
+        uint32_t len = _osCreateTempFileName(buffer, dir.getString(), name.getString(), unique);
+        if (len != 0)
         {
-            name.assign(buffer, len);
+            name.assign(buffer, static_cast<NEString::CharCount>(len));
         }
         else
         {
@@ -286,7 +282,7 @@ String File::getFileDirectory(const char* filePath)
     NEString::CharPos pos = NEString::isEmpty<char>(filePath) ? NEString::INVALID_POS : NEString::findLast<char>( separator, filePath, NEString::END_POS, nullptr);
     if ( NEString::isPositionValid( pos ) )
     {
-        return String( filePath, (*(filePath + pos) == separator ? pos : pos + 1) );
+        return String( filePath, static_cast<uint32_t>(*(filePath + pos) == separator ? pos : pos + 1) );
     }
     else
     {
@@ -366,7 +362,7 @@ String File::getParentDir(const char * filePath)
     const char * end = nullptr;
     if (File::findParent(filePath, &end))
     {
-        result.assign(filePath, MACRO_ELEM_COUNT(filePath, end));
+        result.assign(filePath, static_cast<NEString::CharCount>(MACRO_ELEM_COUNT(filePath, end)) );
     }
 
     return result;
@@ -382,7 +378,7 @@ int File::splitPath(const char * filePath, StringList & in_out_List)
     {
         if ((*end == File::UNIX_SEPARATOR) || (*end == File::DOS_SEPARATOR))
         {
-            String node(start, MACRO_ELEM_COUNT(start, end));
+            String node(start, static_cast<uint32_t>(MACRO_ELEM_COUNT(start, end)));
             if (node.isEmpty() == false)
                 in_out_List.pushLast( node );
 
@@ -396,12 +392,12 @@ int File::splitPath(const char * filePath, StringList & in_out_List)
 
     if (start != end)
     {
-        String node(start, MACRO_ELEM_COUNT(start, end));
+        String node(start, static_cast<uint32_t>(MACRO_ELEM_COUNT(start, end)));
         if (node.isEmpty() == false)
             in_out_List.pushLast( node );
     }
 
-    return (in_out_List.getSize() - oldCount);
+    return static_cast<int>(in_out_List.getSize() - static_cast<uint32_t>(oldCount));
 }
 
 unsigned int File::read(IEByteBuffer & buffer) const
@@ -409,14 +405,14 @@ unsigned int File::read(IEByteBuffer & buffer) const
     return FileBase::read(buffer);
 }
 
-unsigned int File::read(String & asciiString) const
+unsigned int File::read(String & ascii) const
 {
-    return FileBase::read(asciiString);
+    return FileBase::read(ascii);
 }
 
-unsigned int File::read(WideString & wideString) const
+unsigned int File::read(WideString & wide) const
 {
-    return FileBase::read(wideString);
+    return FileBase::read(wide);
 }
 
 unsigned int File::read(unsigned char* buffer, unsigned int size) const
@@ -428,14 +424,6 @@ unsigned int File::read(unsigned char* buffer, unsigned int size) const
         {
             result = _osReadFile(buffer, size);
         }
-        else
-        {
-            OUTPUT_WARN("The length is zero, do not copy data.");
-        }
-    }
-    else
-    {
-        OUTPUT_ERR("Either file [ %s ] is not opened [ %s ], or reading mode is not set (mode = [ %d ]).", mFileName.getString(), isOpened() ? "true" : "false", mFileMode);
     }
 
     return result;
@@ -446,14 +434,14 @@ unsigned int File::write(const IEByteBuffer & buffer)
     return FileBase::write(buffer);
 }
 
-unsigned int File::write(const String & asciiString)
+unsigned int File::write(const String & ascii)
 {
-    return FileBase::write(asciiString);
+    return FileBase::write(ascii);
 }
 
-unsigned int File::write(const WideString & wideString)
+unsigned int File::write(const WideString & wide)
 {
-    return FileBase::write(wideString);
+    return FileBase::write(wide);
 }
 
 unsigned int File::write(const unsigned char* buffer, unsigned int size)
@@ -465,14 +453,6 @@ unsigned int File::write(const unsigned char* buffer, unsigned int size)
         {
             result = _osWriteFile(buffer, size);
         }
-        else
-        {
-            OUTPUT_WARN("The size of data is zero, ignoring to write data.");
-        }
-    }
-    else
-    {
-        OUTPUT_ERR("Either file [ %s ] is not opened [ %s ], or writing mode is not set (mode = [ %d ]).", mFileName.getString(), isOpened() ? "true" : "false", mFileMode);
     }
 
     return result;
@@ -502,7 +482,6 @@ unsigned int File::getLength(void) const
 
 unsigned int File::reserve(unsigned int newSize)
 {
-    OUTPUT_DBG("Going to reserve [ %u ] of data for file [ %s ].", newSize, mFileName.isEmpty() == false ? static_cast<const char*>(mFileName) : "null");
     unsigned int result = IECursorPosition::INVALID_CURSOR_POSITION;
     if (isOpened() && canWrite())
     {

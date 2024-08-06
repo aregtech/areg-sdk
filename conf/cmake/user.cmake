@@ -171,7 +171,7 @@ endif()
 
 # Set AREG extended features enable or disable flag to compiler additional optional features. By default, it is disabled.
 if (NOT DEFINED AREG_EXTENDED)
-    option(AREG_EXTENDED      "Enable extensions" OFF)
+    option(AREG_EXTENDED      "Enable extensions" ON)
 endif()
 
 # Modify 'AREG_LOGS' to enable or disable compilation with logs. By default, compile with logs
@@ -200,8 +200,8 @@ set(AREG_GENERATE_DIR "${AREG_BUILD_ROOT}/${AREG_GENERATE}")
 # CPP standard for the projects
 set(AREG_CXX_STANDARD 17)
 
-# Set bitness here
+# Specify default bitness, the system bitness is detected in 'common.cmake'
 set(AREG_BITNESS "64")
 
-# Specify CPU platform here
+# Specify CPU platform here, the system CPU platform is detected in 'commmon.cmake'
 set(AREG_PROCESSOR "x86_64")

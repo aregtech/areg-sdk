@@ -33,10 +33,4 @@ void IETimerConsumer::startEventProcessing( Event& eventElem )
     {
         processTimer(*timer);
     }
-    else
-    {
-        OUTPUT_ERR("Ignoring to process timer event. Either wrong runtime class [ %s ] or invalid timer pointer [ %p ]"
-                    , eventElem.getRuntimeClassName().getString()
-                    , timer);
-    }
 }

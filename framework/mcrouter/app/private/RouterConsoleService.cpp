@@ -28,7 +28,7 @@ Component * RouterConsoleService::CreateComponent( const NERegistry::ComponentEn
     return DEBUG_NEW RouterConsoleService( entry, owner, entry.getComponentData( ) );
 }
 
-void RouterConsoleService::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry )
+void RouterConsoleService::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & /* entry */ )
 {
     delete (&compObject);
 }

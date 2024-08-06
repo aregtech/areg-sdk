@@ -182,8 +182,8 @@ protected:
      *          The function will read configuration file and initialize settings.
      *          If file path is nullptr or empty, Remote Service will have default
      *          configuration settings.
-     * \param   configFile  Relative or absolute path of remote service configuration file.
-     *                      If nullptr or empty, it will use default settings.
+     * \param   service         The type of remote service to setup.
+     * \param   connectTypes    The type of connection to setup.
      * \return  Returns true if system could configure. Otherwise, it returns false.
      **/
     virtual bool setupServiceConnectionData(NERemoteService::eRemoteServices service, uint32_t connectTypes) override;
@@ -299,7 +299,7 @@ protected:
 
     /**
      * \brief   Called when need to send a communication message.
-     * \param   msgReceived     The received the communication message.
+     * \param   msgSend     The communication message sent.
      **/
     virtual void onServiceMessageSend(const RemoteMessage& msgSend) override;
 
@@ -528,6 +528,8 @@ inline const char * ServiceClientConnectionBase::getString(ServiceClientConnecti
 {
     switch (val)
     {
+    case ServiceClientConnectionBase::eConnectionState::DisconnectState:
+        return "ServiceClientConnectionBase::DisconnectState";
     case ServiceClientConnectionBase::eConnectionState::ConnectionStopped:
         return "ServiceClientConnectionBase::ConnectionStopped";
     case ServiceClientConnectionBase::eConnectionState::ConnectionStarting:
@@ -536,6 +538,8 @@ inline const char * ServiceClientConnectionBase::getString(ServiceClientConnecti
         return "ServiceClientConnectionBase::ConnectionStarted";
     case ServiceClientConnectionBase::eConnectionState::ConnectionStopping:
         return "ServiceClientConnectionBase::ConnectionStopping";
+    case ServiceClientConnectionBase::eConnectionState::ConnectState:
+        return "ServiceClientConnectionBase::ConnectState";
     default:
         return "ERR: Invalid value of ServiceClientConnectionBase::eConnectionState type";
     }

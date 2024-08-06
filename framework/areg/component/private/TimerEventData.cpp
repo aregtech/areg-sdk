@@ -82,14 +82,6 @@ bool TimerEvent::sendEvent(Timer & timer, DispatcherThread & dispatchThread)
             static_cast<Event *>(timerEvent)->deliverEvent();
             result = true;
         }
-        else
-        {
-            OUTPUT_ERR("Could not create Timer Event. Ignoring sending event");
-        }
-    }
-    else
-    {
-        OUTPUT_ERR("Invalid Dispatcher Thread. Ignoring sending event");
     }
 
     return result;

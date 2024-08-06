@@ -143,19 +143,19 @@ bool ScopeNodeBase::operator < ( const ScopeNodeBase & other ) const
     return (mNodeType == other.mNodeType ? (mNodeName < other.mNodeName) : (mNodeType < other.mNodeType));
 }
 
-const ScopeNodeBase & ScopeNodeBase::makeChildNode( String & IN OUT scopePath, unsigned int prioStates ) const
+const ScopeNodeBase & ScopeNodeBase::makeChildNode( String & IN OUT scopePath, unsigned int /* prioStates */ ) const
 {
     static ScopeNodeBase _invalidNode;
     scopePath = String::EmptyString;
     return _invalidNode;
 }
 
-std::pair<ScopeNodeBase &, bool> ScopeNodeBase::addChildNode( const ScopeNodeBase & child )
+std::pair<ScopeNodeBase &, bool> ScopeNodeBase::addChildNode( const ScopeNodeBase & /* child */ )
 {
     return std::pair<ScopeNodeBase &, bool>{ScopeNodeBase::invalidNode( ), false};
 }
 
-std::pair<ScopeNodeBase &, bool> ScopeNodeBase::addChildNode( String & scopePath, unsigned int prioStates )
+std::pair<ScopeNodeBase &, bool> ScopeNodeBase::addChildNode( String & /* scopePath */, unsigned int /* prioStates */ )
 {
     return std::pair<ScopeNodeBase &, bool>{ScopeNodeBase::invalidNode( ), false};
 }
@@ -197,8 +197,8 @@ String ScopeNodeBase::makeConfigString( const String & parent ) const
     if (isValid())
     {
         char scope[NETrace::LOG_MESSAGE_IZE];
-        int len = String::formatString(scope, NETrace::LOG_MESSAGE_IZE, "%s%s", parent.getString(), mNodeName.getString());
-        return String(scope, len > 0 ? len : 0);
+        uint32_t len = static_cast<uint32_t>(String::formatString(scope, NETrace::LOG_MESSAGE_IZE, "%s%s", parent.getString(), mNodeName.getString()));
+        return String(scope, len);
     }
     else
     {
@@ -206,7 +206,7 @@ String ScopeNodeBase::makeConfigString( const String & parent ) const
     }
 }
 
-unsigned int ScopeNodeBase::removePriorityNodesRecursive( unsigned int prioRemove )
+unsigned int ScopeNodeBase::removePriorityNodesRecursive( unsigned int /* prioRemove */ )
 {
     return 0;
 }

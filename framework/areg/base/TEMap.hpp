@@ -68,7 +68,7 @@
  *                  possible to convert to type 'const VALUE&'.
  **/
 template < typename KEY, typename VALUE>
-class TEMap : protected Constless<std::map<KEY, VALUE>>
+class TEMap : protected Constless< std::map<KEY, VALUE> >
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -179,7 +179,7 @@ public:
      *          There should be possibility to stream key and value pairs and if KEY or VALUE
      *          are not primitives, but an object, they should have implemented streaming operator.
      * \param   stream  The stream to write values.
-     * \param   input   The sorted map object containing value to stream.
+     * \param   output  The sorted map object containing value to stream.
      **/
     template < typename K, typename V >
     friend inline IEOutStream & operator << ( IEOutStream & stream, const TEMap<K, V> & output );
@@ -236,7 +236,7 @@ public:
 
     /**
      * \brief	Checks and returns true if the given element exist in the sorted map or not.
-     * \param	key	    The key of value to search.
+     * \param	Key	    The key of value to search.
      */
     inline bool contains(const KEY& Key) const;
 
@@ -322,8 +322,8 @@ public:
      *          If 'updateExisting' parameter is true, it updates the existing key and value.
      *          The method returns pair of value, where it indicates the position of the entry
      *          and the flag, indicating whether it added new entry or not.
-     * \param   Key             The key of the entry in the sorted map.
-     * \param   Value           The value of the entry in the sorted map.
+     * \param   newKey          The key of the entry in the sorted map.
+     * \param   newValue        The value of the entry in the sorted map.
      * \param   updateExisting  The flag, indicating whether should update the entry with the existing key.
      *                          If true, updates the existing key and value.
      *                          If, for example, 2 objects are compared by the name and not by
@@ -351,9 +351,15 @@ public:
      * \brief	Remove existing entry specified by the key and returns true if operation succeeded.
      *          Otherwise, returns false.
      * \param	Key	        The Key of the entry to search and remove.
-     * \param	out_Value   If succeeded to remove, on output it contains the value of the removed element.
      **/
     inline bool removeAt(const KEY& Key );
+
+    /**
+     * \brief	Remove existing entry specified by the key and returns true if operation succeeded.
+     *          Otherwise, returns false.
+     * \param	Key	        The Key of the entry to search and remove.
+     * \param	out_Value   If succeeded to remove, on output it contains the value of the removed element.
+     **/
     inline bool removeAt( const KEY & Key, VALUE & out_Value );
 
     /**
@@ -368,46 +374,71 @@ public:
     /**
      * \brief	Removes an element at the given position. The function returns next position of an entry in the sorted map
      *          or invalid position if removed last element in the map.
-     * \param	curPos      The valid position of the element in the sorted map to remove.
+     * \param	atPosition  The valid position of the element in the sorted map to remove.
+     * \return  Returns valid position of the next entry in the sorted map  or returns invalid position if
+     *          removed last element in the map.
+     **/
+    inline MAPPOS removePosition(MAPPOS atPosition);
+
+    /**
+     * \brief	Removes an element at the given position. The function returns next position of an entry in the sorted map
+     *          or invalid position if removed last element in the map.
+     * \param	atPosition  The valid position of the element in the sorted map to remove.
      * \param	out_Key     On output, this contains the key of the removed element
      * \param	out_Value   On output, this contains the value of the removed element.
      * \return  Returns valid position of the next entry in the sorted map  or returns invalid position if
      *          removed last element in the map.
      **/
-    inline MAPPOS removePosition(MAPPOS atPosition);
-    inline MAPPOS removePosition(MAPPOS IN curPos, KEY & OUT out_Key, VALUE & OUT out_Value );
+    inline MAPPOS removePosition(MAPPOS IN atPosition, KEY & OUT out_Key, VALUE & OUT out_Value );
 
     /**
      * \brief   Removes the first entry in the sorted map.
-     * 
+     **/
+    inline void removeFirst(void);
+
+    /**
+     * \brief   Removes the first entry in the sorted map.
      * \param   out_Key     On output it contains the key of the removed element in the sorted map.
      * \param   out_Value   On output it contains the value of the removed element in the sorted map.
      * \return  Returns true if sorted map was not empty and first entry is removed. Otherwise, returns false.
      **/
-    inline void removeFirst(void);
     inline bool removeFirst(KEY& OUT out_Key, VALUE& OUT out_Value);
 
     /**
      * \brief   Removes the last entry in the sorted map.
-     *
+     **/
+    inline void removeLast(void);
+
+    /**
+     * \brief   Removes the last entry in the sorted map.
      * \param   out_Key     On output it contains the key of the removed element in the sorted map.
      * \param   out_Value   On output it contains the value of the removed element in the sorted map.
      * \return  Returns true if sorted map was not empty and last entry is removed. Otherwise, returns false.
      **/
-    inline void removeLast(void);
     inline bool removeLast(KEY& OUT out_Key, VALUE& OUT out_Value);
 
     /**
      * \brief	Returns position of the next entry in the sorted map followed the given position.
-     *
      * \param	atPosition  The position of the entry to get next and extract values.
-     * \param	out_Key     On output, this contains key of given position.
-     * \param	out_Value   On output, this contains value of given position.
-     * \param	out_Element On output, this element contains pair of Key and Value specified by given position.
      * \return	Next valid position in the sorted map or invalid position if reached end of sorted map.
      **/
     inline MAPPOS nextPosition(MAPPOS IN atPosition) const;
+
+    /**
+     * \brief	Returns position of the next entry in the sorted map followed the given position.
+     * \param	atPosition  The position of the entry to get next and extract values.
+     * \param	out_Key     On output, this contains key of given position.
+     * \param	out_Value   On output, this contains value of given position.
+     * \return	Next valid position in the sorted map or invalid position if reached end of sorted map.
+     **/
     inline MAPPOS nextPosition(MAPPOS IN atPosition, KEY & OUT out_Key, VALUE & OUT out_Value ) const;
+
+    /**
+     * \brief	Returns position of the next entry in the sorted map followed the given position.
+     * \param	atPosition  The position of the entry to get next and extract values.
+     * \param	out_Element On output, this element contains pair of Key and Value specified by given position.
+     * \return	Next valid position in the sorted map or invalid position if reached end of sorted map.
+     **/
     inline MAPPOS nextPosition(MAPPOS IN atPosition, std::pair<KEY, VALUE> & OUT out_Element ) const;
 
     /**
@@ -415,9 +446,14 @@ public:
      * \param	atPosition	The position of the element to extract key and value.
      * \param	out_Key	    On output, contains key of the element at given position.
      * \param	out_Value   On output, contains value of the element at given position.
-     * \param	out_Element On output, contains the Key and Value pair of the element at given position
      **/
     inline void getAtPosition(MAPPOS IN atPosition, KEY & OUT out_Key, VALUE & OUT out_Value ) const;
+
+    /**
+     * \brief	Extract data of the key and value of the entry by given position.
+     * \param	atPosition	The position of the element to extract key and value.
+     * \param	out_Element On output, contains the Key and Value pair of the element at given position
+     **/
     inline void getAtPosition(MAPPOS IN atPosition, std::pair<KEY, VALUE> & OUT out_Element) const;
 
     /**

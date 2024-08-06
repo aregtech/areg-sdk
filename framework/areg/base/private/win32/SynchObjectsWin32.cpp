@@ -86,7 +86,7 @@ void SynchEvent::_osCreateEvent( bool initLock )
     mSynchObject = static_cast<void *>(CreateEvent( nullptr, mAutoReset ? FALSE : TRUE, initLock ? FALSE : TRUE, nullptr ));
 }
 
-bool SynchEvent::_osUnlockEvent( void * eventHandle )
+bool SynchEvent::_osUnlockEvent( void * /* eventHandle */ )
 {
     return ( ::SetEvent( static_cast<HANDLE>(mSynchObject) ) != FALSE );
 }
@@ -329,8 +329,8 @@ int MultiLock::_osLock( unsigned int timeout /* = NECommon::WAIT_INFINITE */, bo
     }
 
     int index = MultiLock::LOCK_INDEX_INVALID;
-    unsigned int maxEvent= static_cast<unsigned int>(WAIT_OBJECT_0 + mSizeCount);
-    unsigned int result  = mSizeCount > 0 ? WaitForMultipleObjectsEx(static_cast<unsigned int>(mSizeCount), static_cast<HANDLE *>(syncHandles), waitForAll ? TRUE : FALSE, timeout, isAlertable ? TRUE : FALSE) : WAIT_FAILED;
+    unsigned int maxEvent= static_cast<uint32_t>(WAIT_OBJECT_0) + static_cast<uint32_t>(mSizeCount);
+    unsigned int result  = mSizeCount > 0 ? WaitForMultipleObjectsEx(static_cast<uint32_t>(mSizeCount), static_cast<HANDLE *>(syncHandles), waitForAll ? TRUE : FALSE, timeout, isAlertable ? TRUE : FALSE) : WAIT_FAILED;
     if (result < maxEvent)
     {
         if (waitForAll == false)
@@ -369,9 +369,9 @@ namespace
 {
     inline double _getFrequencyNs(void)
     {
-        LARGE_INTEGER frequency{ 0 };
+        LARGE_INTEGER frequency{ };
         QueryPerformanceFrequency(&frequency);
-        return ( static_cast<double>(frequency.QuadPart / static_cast<double>(Wait::ONE_SEC.count())) );
+        return ( static_cast<double>(static_cast<double>(frequency.QuadPart) / static_cast<double>(Wait::ONE_SEC.count())) );
     }
 
     const double _ticksPerNs{ _getFrequencyNs() };
@@ -380,7 +380,7 @@ namespace
 
 void Wait::_osInitTimer(void)
 {
-    mTimer = ::CreateWaitableTimerEx( NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS );
+    mTimer = ::CreateWaitableTimerEx( nullptr, nullptr, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS );
 }
 
 void Wait::_osReleaseTimer(void)
@@ -411,7 +411,7 @@ Wait::eWaitResult Wait::_osWaitFor(const Wait::Duration& timeout) const
         LARGE_INTEGER start, dueTime;
         QueryPerformanceCounter(&start);
         // due time is current time in ticks + expected ticks
-        int64_t deadline = start.QuadPart + static_cast<int64_t>(timeout.count() * _ticksPerNs);
+        int64_t deadline = start.QuadPart + static_cast<int64_t>(static_cast<double>(timeout.count()) * _ticksPerNs);
         
         do
         {

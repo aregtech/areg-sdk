@@ -188,9 +188,9 @@ String ScopeNode::makeScopePath( const String & prefix ) const
     ASSERT(mNodeName.isEmpty() == false);
     ASSERT(isValid());
     char scope[NETrace::LOG_MESSAGE_IZE];
-    int len = String::formatString(scope, NETrace::LOG_MESSAGE_IZE, "%s%s%c", prefix.getString(), mNodeName.getString(), NELogging::SYNTAX_SCOPE_SEPARATOR);
+    uint32_t len = static_cast<uint32_t>(String::formatString(scope, NETrace::LOG_MESSAGE_IZE, "%s%s%c", prefix.getString(), mNodeName.getString(), NELogging::SYNTAX_SCOPE_SEPARATOR));
 
-    return String(scope, len > 0 ? len : 0);
+    return String(scope, len);
 }
 
 unsigned int ScopeNode::groupChildNodes( void )
@@ -293,13 +293,13 @@ unsigned int ScopeNode::groupRecursive( void )
 String ScopeNode::makeConfigString( const String & parent ) const
 {
     char scope[NETrace::LOG_MESSAGE_IZE];
-    int len = String::formatString( scope, NETrace::LOG_MESSAGE_IZE
-                                  , "%s%s%c%c"
-                                  , parent.getString()
-                                  , mNodeName.getString()
-                                  , NELogging::SYNTAX_SCOPE_SEPARATOR
-                                  , NELogging::SYNTAX_SCOPE_GROUP);
-    return String(scope, len > 0 ? len : 0);
+    uint32_t len = static_cast<uint32_t>(String::formatString(    scope, NETrace::LOG_MESSAGE_IZE
+                                                                , "%s%s%c%c"
+                                                                , parent.getString()
+                                                                , mNodeName.getString()
+                                                                , NELogging::SYNTAX_SCOPE_SEPARATOR
+                                                                , NELogging::SYNTAX_SCOPE_GROUP));
+    return String(scope, len);
 }
 
 unsigned int ScopeNode::removePriorityNodesRecursive( unsigned int prioRemove )

@@ -141,7 +141,7 @@ void StubBase::prepareRequest( Listener & listener, const SequenceNumber & seqNr
     mCurrListener = mListListener.firstPosition();
 }
 
-int StubBase::findListeners( unsigned int requestId, StubListenerList & out_listners ) const
+uint32_t StubBase::findListeners( unsigned int requestId, StubListenerList & out_listners ) const
 {
     StubBase::Listener listener(requestId, NEService::SEQUENCE_NUMBER_ANY);
     StubListenerList::LISTPOS pos = mListListener.find(listener);

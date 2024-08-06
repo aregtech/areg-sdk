@@ -49,7 +49,7 @@ Component * TrafficLightService::CreateComponent(const NERegistry::ComponentEntr
     return DEBUG_NEW TrafficLightService(entry, owner);
 }
 
-void TrafficLightService::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
+void TrafficLightService::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
 {
     delete (&compObject);
 }

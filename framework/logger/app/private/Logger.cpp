@@ -121,9 +121,9 @@ Logger & Logger::getInstance(void)
     return _logger;
 }
 
+#if AREG_EXTENDED
 void Logger::printStatus(const String& status)
 {
-#if AREG_EXTENDED
 
     if (Logger::getInstance().getCurrentOption() == NESystemService::eServiceOption::CMD_Console)
     {
@@ -133,8 +133,12 @@ void Logger::printStatus(const String& status)
         console.setCursorCurPosition(curPos);
     }
 
-#endif // AREG_EXTENDED
 }
+#else   // AREG_EXTENDED
+void Logger::printStatus(const String& /* status */)
+{
+}
+#endif  // AREG_EXTENDED
 
 Logger::Logger( void )
     : ServiceApplicationBase( mServiceServer )
@@ -254,12 +258,12 @@ void Logger::postReadConfiguration(ConfigManager& config)
     _enableLocalLogs(config, false);
 }
 
-void Logger::onSetupConfiguration(const NEPersistence::ListProperties& listReadonly, const NEPersistence::ListProperties& listWritable, ConfigManager& config)
+void Logger::onSetupConfiguration(const NEPersistence::ListProperties& /* listReadonly */, const NEPersistence::ListProperties& /* listWritable */, ConfigManager& config)
 {
     _enableLocalLogs(config, false);
 }
 
-void Logger::printHelp( bool isCmdLine )
+void Logger::printHelp( bool /* isCmdLine */ )
 {
 #if     AREG_EXTENDED
 
@@ -367,6 +371,7 @@ bool Logger::_checkCommand(const String& cmd)
                 Logger::_outputInfo("The feature is not implemented yet!!!");
                 break;
 
+            case eLoggerOptions::CMD_LogUndefined:
             default:
                 hasError = true;
                 break;
@@ -530,9 +535,9 @@ void Logger::_outputInstances( const NEService::MapInstances & instances )
 #endif  // AREG_EXTENDED
 }
 
+#if AREG_EXTENDED
 void Logger::_setVerboseMode( bool makeVerbose )
 {
-#if AREG_EXTENDED
 
     static constexpr std::string_view _verbose{ "Switching to verbose mode to output data rate ..." };
     static constexpr std::string_view _silence{ "Switching to silent mode, no data rate output ..." };
@@ -551,8 +556,8 @@ void Logger::_setVerboseMode( bool makeVerbose )
         }
         else
         {
-            console.outputMsg( NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data( ), 0.0f, DataRateHelper::MSG_BYTES.data( ) );
-            console.outputMsg( NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data( ), 0.0f, DataRateHelper::MSG_BYTES.data( ) );
+            console.outputMsg( NESystemService::COORD_SEND_RATE, NESystemService::FORMAT_SEND_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
+            console.outputMsg( NESystemService::COORD_RECV_RATE, NESystemService::FORMAT_RECV_DATA.data( ), 0.0, DataRateHelper::MSG_BYTES.data( ) );
             console.outputTxt( NESystemService::COORD_INFO_MSG, _verbose);
         }
 
@@ -561,13 +566,20 @@ void Logger::_setVerboseMode( bool makeVerbose )
 
     console.unlockConsole( );
 
-#else   // !AREG_EXTENDED
 
     static constexpr std::string_view _unsupported{"This option is available only with extended features"};
     printf( "%s\n", _unsupported.data( ) );
+}
+
+#else   // !AREG_EXTENDED
+
+void Logger::_setVerboseMode( bool /* makeVerbose */ )
+{
+    static constexpr std::string_view _unsupported{"This option is available only with extended features"};
+    printf( "%s\n", _unsupported.data( ) );
+}
 
 #endif  // AREG_EXTENDED
-}
 
 void Logger::_cleanHelp(void)
 {
@@ -704,7 +716,7 @@ String Logger::_normalizeScopeProperty(const String & scope)
             pos = result.findLast(NEPersistence::SYNTAX_OBJECT_SEPARATOR);
             if (result.isValidPosition(pos))
             {
-                result.insertAt(prop, static_cast<NEString::CharCount>(pos + NEPersistence::SYNTAX_OBJECT_SEPARATOR.length()));
+                result.insertAt(prop, pos + static_cast<NEString::CharCount>(NEPersistence::SYNTAX_OBJECT_SEPARATOR.length()));
             }
             else
             {

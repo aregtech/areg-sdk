@@ -70,7 +70,7 @@ public:
 
     /**
      * \brief   Creates service address. Sets given service name, version, service type and role name of owner component.
-     * \param   servieName      The name of service.
+     * \param   serviceName     The name of service.
      * \param   serviceVersion  The version of service.
      * \param   serviceType     The type of service.
      * \param   roleName        The role name of owner component.

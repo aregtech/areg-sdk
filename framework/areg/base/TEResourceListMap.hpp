@@ -202,9 +202,9 @@ public:
      * \brief	Removes Resource object from the resource list of the map.
      *          The function searches resource by checking every entry in the list.
      *          If found, removes the entry from the list. It remove empty resource
-     *          list if 'removeEmpty' parameter is true.
-     * \param	Resource	The resource object to lookup
-     * \param   removeEmpty If true and the resource list is empty, removes the entry.
+     *          list if 'remEmptyList' parameter is true.
+     * \param	Resource	    The resource object to lookup.
+     * \param   remEmptyList    If true and the resource list is empty, removes the entry.
      * \return	Returns true if found and removed the resource from the list.
      **/
     inline bool removeResourceObject( RESOURCE_OBJECT Resource, bool remEmptyList );

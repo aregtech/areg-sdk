@@ -249,7 +249,6 @@ protected:
      *          in this method.
      * \param	eventElem	Pointer to Event element, which has been finished
      *                      to be dispatched.
-     * \return	
      **/
     virtual void postDispatchEvent( Event * eventElem ) override;
 

@@ -63,16 +63,16 @@ class AREG_API Component   : public    RuntimeObject
     using ImplComponentResource = TEResourceMapImpl<unsigned int, Component *>;
     /**
      * \brief   The integer hash-map to store components where the keys are the calculated number of the component.
-     * \tparam  Component           The saved values are Component objects
+     *          Component           The saved values are Component objects.
      **/
     using MapComponentContainer  = TEIntegerHashMap<Component *>;
     /**
      * \brief   Component::MapComponentResource
      *          The Resource Map of instantiated components.
-     * \tparam  unsigned int            The calculated number of component as a key.
-     * \tparam  Component               The type of container values, it contains Components
-     * \tparam  MapComponentContainer   The hash-map object to store containers.
-     * \tparam  ImplComponentResource   The implementation of basic resource+map operations.
+     *          unsigned int            The calculated number of component as a key.
+     *          Component               The type of container values, it contains Components
+     *          MapComponentContainer   The hash-map object to store containers.
+     *          ImplComponentResource   The implementation of basic resource+map operations.
      **/
     using MapComponentResource  = TELockResourceMap<unsigned int, Component *, MapComponentContainer, ImplComponentResource>;
 //////////////////////////////////////////////////////////////////////////
@@ -87,7 +87,7 @@ public:
     /**
      * \brief   Component::ListServers
      *          The list of addresses of Servers.
-     * \tparam  StubBase  The pointer to base class of Stub objects.
+     *          StubBase  The pointer to base class of Stub objects.
      **/
     using ListServers           = TELinkedList<StubBase*>;
 

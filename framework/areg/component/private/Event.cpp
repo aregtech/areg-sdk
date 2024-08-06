@@ -118,7 +118,6 @@ void Event::deliverEvent( void )
     EventDispatcher * dispatcher = mTargetThread != nullptr ? &mTargetThread->getEventDispatcher( ) : nullptr;
     if ((dispatcher == nullptr) || (dispatcher->postEvent(*this) == false))
     {
-        OUTPUT_ERR("The event target is unknown! Event type [ %s ] is going to be deleted.", getRuntimeClassName().getString());
         destroy();
     }
 }
@@ -162,19 +161,8 @@ bool Event::removeEventListener( IEEventConsumer& eventConsumer )
 void Event::dispatchSelf( IEEventConsumer* consumer )
 {
     consumer = consumer != nullptr ? consumer : this->mConsumer;
-    if (consumer != nullptr)
+    if ((consumer != nullptr) && consumer->preprocessEvent(*this) )
     {
-        if ( consumer->preprocessEvent(*this) )
-        {
-            consumer->startEventProcessing(*this);
-        }
-        else
-        {
-            OUTPUT_WARN("The Event [ %s ] is interrupted and not going to be processed", getRuntimeClassName().getString());
-        }
-    }
-    else
-    {
-        OUTPUT_ERR("The Event [ %s ] has invalid consumer. The event cannot be processed!", getRuntimeClassName().getString());
+        consumer->startEventProcessing(*this);
     }
 }

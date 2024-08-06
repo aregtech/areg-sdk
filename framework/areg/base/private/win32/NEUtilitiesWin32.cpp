@@ -34,16 +34,16 @@ namespace NEUtilities
 
     TIME64 _osSystemTimeNow(void)
     {
-        struct timespec ts { 0 };
+        struct timespec ts { };
         return (std::timespec_get(&ts, TIME_UTC) != 0
-                ? static_cast<TIME64>((ts.tv_sec * NEUtilities::SEC_TO_MICROSECS) + (ts.tv_nsec / NEUtilities::MICROSEC_TO_NS))
-                : 0LL);
+                ? (static_cast<TIME64>(ts.tv_sec) * NEUtilities::SEC_TO_MICROSECS) + (static_cast<TIME64>(ts.tv_nsec) / NEUtilities::MICROSEC_TO_NS)
+                : 0uLL);
     }
 
     void _osSystemTimeNow( NEUtilities::sSystemTime & OUT sysTime, bool localTime )
     {
-        struct timespec ts { 0 };
-        struct tm now { 0 };
+        struct timespec ts { };
+        struct tm now { };
         if (std::timespec_get(&ts, TIME_UTC) != 0)
         {
             if (localTime)
@@ -55,8 +55,8 @@ namespace NEUtilities
                 gmtime_s(&now, &ts.tv_sec);
             }
 
-            unsigned short milli = static_cast<unsigned short>((ts.tv_nsec / MILLISEC_TO_NS));
-            unsigned short micro = static_cast<unsigned short>((ts.tv_nsec % MILLISEC_TO_NS) / MICROSEC_TO_NS);
+            unsigned short milli = static_cast<unsigned short>(static_cast<TIME64>(ts.tv_nsec) / MILLISEC_TO_NS);
+            unsigned short micro = static_cast<unsigned short>(static_cast<TIME64>(ts.tv_nsec) % MILLISEC_TO_NS) / MICROSEC_TO_NS;
 
             ASSERT(milli < 1000);
             ASSERT(micro < 1000);
@@ -82,7 +82,7 @@ namespace NEUtilities
         unsigned short milli, micro;
         NEUtilities::convMicrosecs(utcTime, secs, milli, micro);
 
-        struct tm tmLocal { 0 };
+        struct tm tmLocal { };
         if (RETURNED_OK == localtime_s(&tmLocal, &secs))
         {
             NEUtilities::convToSystemTime(tmLocal, localTime);

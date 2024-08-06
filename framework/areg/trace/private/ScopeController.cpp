@@ -222,10 +222,10 @@ void ScopeController::activateScope( TraceScope & traceScope )
     activateScope( traceScope, logPrio );
 }
 
-void ScopeController::activateScope( TraceScope & traceScope, unsigned int defaultPriority )
+void ScopeController::activateScope( TraceScope & traceScope, unsigned int defaultPrio )
 {
     const String & scopeName = traceScope.getScopeName( );
-    unsigned int scopePrio{ defaultPriority };
+    unsigned int scopePrio{ defaultPrio };
 
     if ( mConfigScopeList.find( scopeName, scopePrio ) )
     {
@@ -233,7 +233,7 @@ void ScopeController::activateScope( TraceScope & traceScope, unsigned int defau
     }
     else
     {
-        traceScope.setPriority( defaultPriority ); // set first default priority
+        traceScope.setPriority( defaultPrio ); // set first default priority
         String groupName( scopeName );
         NEString::CharPos pos = NEString::END_POS;
         do

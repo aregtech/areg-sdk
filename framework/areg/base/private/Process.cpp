@@ -48,9 +48,6 @@ Process::Process( void )
 void Process::_initPaths( const char * fullPath )
 {
     ASSERT(fullPath != nullptr);
-    OUTPUT_DBG("Initializing data of process [ %s ]", fullPath);
-
-
     mProcessFullPath = fullPath;
     std::filesystem::path procPath(mProcessFullPath.getData());
 

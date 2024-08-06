@@ -267,5 +267,5 @@ AREG_API_IMPL unsigned int NEMath::crc32Finish( unsigned int crc )
 
 AREG_API_IMPL double NEMath::round(double val)
 {
-    return ( (val) < 0.0 ? ::ceil( static_cast<float>(val) - 0.5 ) : ::floor( static_cast<float>(val) + 0.5 ) );
+    return ( (val) < 0.0 ? ::ceil( val - 0.5 ) : ::floor( val + 0.5 ) );
 }

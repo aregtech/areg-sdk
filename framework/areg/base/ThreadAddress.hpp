@@ -87,7 +87,7 @@ public:
     ThreadAddress( void );
     /**
      * \brief   Initialization constructor. Sets current process ID and the thread name.
-     * \param   threadID    Thread ID to set.
+     * \param   threadName  Thread name to set.
      **/
     explicit ThreadAddress( const char * threadName );
     explicit ThreadAddress( const String & threadName );
@@ -195,7 +195,7 @@ public:
 
     /**
      * \brief	Parse string and retrieves thread address data from path.
-     * \param	pathProxy	    The thread path as a string.
+     * \param	threadPath	    The thread path as a string.
      * \param	out_nextPart	If not a nullptr, on output this will contain remaining
      *                          part after getting thread path.
      **/

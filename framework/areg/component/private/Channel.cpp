@@ -73,7 +73,7 @@ String Channel::convToString( void ) const
 
     char buffer[ 128 ]{ 0 };
     int len = String::formatString( buffer, 128, format, mSource, mTarget, mCookie );
-    return (len > 0 ? String( buffer, len ) : String::getEmptyString());
+    return (len > 0 ? String( buffer, static_cast<uint32_t>(len) ) : String::getEmptyString());
 }
 
 const Channel & Channel::convFromString(const String & channel)

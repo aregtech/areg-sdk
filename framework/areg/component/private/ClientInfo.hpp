@@ -153,8 +153,8 @@ public:
      *          Otherwise, it sets client state undefined.
      *          Service Info is valid, if Role Name and Service Names are valid.
      *          For more information of Service Info see description of ServiceInfo class.
-     * \param   server  The address of Stub of server.
-     *                  If valid address, this will change the state of client to connected.
+     * \param   newConnection   The address of the Stub of server (service provider).
+     *                          If valid address, this will change the state of client to connected.
      **/
     void setConnectionStatus( NEService::eServiceConnection newConnection );
 

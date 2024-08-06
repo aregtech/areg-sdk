@@ -54,9 +54,9 @@ public:
      * \brief   Initialization constructor. Initialize Connection Event, which
      *          is indicating to Proxy specified in address that the connection
      *          with Stub, specified in address, either is established or lost.
-     * \param   proxy       The address of Proxy to send Connection Event.
-     * \param   server      The address of Stub object. If valid, Proxy can send request events.
-     * \param   isConnected The flag, indicating whether Proxy established connection or it is disconnected
+     * \param   proxy           The address of Proxy to send Connection Event.
+     * \param   server          The address of Stub object. If valid, Proxy can send request events.
+     * \param   connectStatus   Indicates the connection status.
      **/
     ProxyConnectEvent( const ProxyAddress & proxy, const StubAddress & server, NEService::eServiceConnection connectStatus );
 

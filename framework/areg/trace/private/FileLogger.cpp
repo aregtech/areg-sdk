@@ -61,10 +61,6 @@ bool FileLogger::openLogger( void )
                 logMessage(logMsgHello);
             }
         }
-        else
-        {
-            ; // no file specified
-        }
     }
 
     return mLogFile.isOpened();
@@ -108,6 +104,7 @@ void FileLogger::logMessage( const NETrace::sLogMessage & logMessage )
             getLayoutExitScope().logMessage( logMessage, static_cast<IEOutStream &>(mLogFile) );
             break;
 
+        case NETrace::eLogMessageType::LogMessageUndefined: // fall through
         default:
             ASSERT(false);  // unexpected message to log
             break;

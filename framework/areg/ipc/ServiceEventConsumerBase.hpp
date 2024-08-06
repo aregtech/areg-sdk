@@ -102,7 +102,7 @@ public:
 
     /**
      * \brief   Called when need to send a communication message.
-     * \param   msgReceived     The received the communication message.
+     * \param   msgSend     The communication message sent.
      **/
     virtual void onServiceMessageSend(const RemoteMessage& msgSend) = 0;
 
@@ -229,7 +229,7 @@ class AREG_API ServiceServerEventConsumer : public    IEServiceServerEventConsum
 public:
     /**
      * \brief   Constructs and initializes a Event consumer object
-     * \param   eventConsumer   The instance of event consumer to trigger connection status changed callbacks.
+     * \param   serviceEventConsumer    The instance of event consumer to trigger connection status changed callbacks.
      **/
     ServiceServerEventConsumer(IEServiceEventConsumerBase& serviceEventConsumer);
 

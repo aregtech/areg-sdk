@@ -300,7 +300,9 @@ public:
 
     /**
      * \brief   Returns true if specified Stub address is compatible with Proxy
-     * \param   addStub     The Stub address to check
+     * \param   addrStub    The Stub address to check.
+     * \return  Returns true if specified service provider address (stub-address)
+     *          is compatible with the proxy address.
      **/
     bool isStubCompatible( const StubAddress & addrStub ) const;
 

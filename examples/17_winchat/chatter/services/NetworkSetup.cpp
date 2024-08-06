@@ -7,8 +7,6 @@
 #include "chatter/NEDistributedApp.hpp"
 #include "chatter/ui/DistributedDialog.hpp"
 
-#define MAKE_HWND(wnd)      reinterpret_cast<HWND>(wnd)
-
 DEF_TRACE_SCOPE(chatter_NetworkSetup_serviceConnected);
 DEF_TRACE_SCOPE(chatter_NetworkSetup_responseConnect);
 

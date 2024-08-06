@@ -174,7 +174,7 @@ public:
      *          There should be possibility to stream every value of Linked List and if VALUE
      *          is not a primitive, but an object, it should have implemented streaming operator.
      * \param   stream  The streaming object to write values
-     * \param   input   The Linked List object to read out values.
+     * \param   output  The Linked List object to read out values.
      **/
     template<typename V>
     friend IEOutStream& operator << (IEOutStream& stream, const TESortedLinkedList<V>& output);
@@ -266,10 +266,17 @@ public:
      * \brief	Checks whether given element exist in the linked list or not. The elements of type
      *          VALUE should have comparing operators.
      * \param	elemSearch  The element to search.
-     * \param	startAt	    The position to start searching.
      * \return	Returns true if could find element starting at given position.
      **/
     inline bool contains(const VALUE& elemSearch) const;
+
+    /**
+     * \brief	Checks whether given element exist in the linked list or not. The elements of type
+     *          VALUE should have comparing operators.
+     * \param	elemSearch  The element to search.
+     * \param	startAt	    The position to start searching.
+     * \return	Returns true if could find element starting at given position.
+     **/
     inline bool contains(const VALUE& elemSearch, LISTPOS startAt) const;
 
     /**
@@ -491,7 +498,7 @@ public:
      * \brief	Removes element at given position and returns value of removed element.
      * \param	atPosition  Position of element to remove from Linked List.
      *                      It should be valid position, otherwise assertion is raised.
-     * \brief   Returns position following nest to removed position or invalid position
+     * \return  Returns position following nest to removed position or invalid position
      *          if last entry was removed.
      **/
     LISTPOS removeAt(LISTPOS atPosition);
@@ -501,7 +508,7 @@ public:
      * \param	atPosition  On input, position of element to remove from Linked List.
      *                      It should be valid position, otherwise assertion is raised.
      * \param   out_Value   On output, it contains value of removed element
-     * \brief   Returns position following nest to removed position or invalid position
+     * \return  Returns position following nest to removed position or invalid position
      *          if last entry was removed.
      **/
     LISTPOS removeAt(LISTPOS atPosition, VALUE& out_Value);
@@ -529,11 +536,18 @@ public:
      * \brief	Searches position of element by given value. If searchAfter is valid, the searching will be started
      *          from given position and will move to next element.
      * \param	searchValue	Value of element to search
+     * \return	Returns position of the element in the linked list.
+     **/
+    LISTPOS find(const VALUE& searchValue) const;
+
+    /**
+     * \brief	Searches position of element by given value. If searchAfter is valid, the searching will be started
+     *          from given position and will move to next element.
+     * \param	searchValue	Value of element to search
      * \param	searchAfter	If valid position, the searching starts from next element specified by position.
      *                      If invalid position, the searching starts from the beginning of the linked list.
      * \return	Returns position of the element in the linked list.
      **/
-    LISTPOS find(const VALUE& searchValue) const;
     LISTPOS find(const VALUE& searchValue, LISTPOS searchAfter) const;
 
     /**

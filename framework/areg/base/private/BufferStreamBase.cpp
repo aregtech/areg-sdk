@@ -85,17 +85,17 @@ unsigned int BufferStreamBase::read( IEByteBuffer & buffer ) const
 /**
  * \brief   Reads string data from Input Stream object, copies into given ASCII String and returns the size of copied data.
  **/
-unsigned int BufferStreamBase::read( String & asciiString ) const
+unsigned int BufferStreamBase::read( String & ascii ) const
 {
     unsigned int result = 0;
-    asciiString.clear();
+    ascii.clear();
 
     const unsigned int curPos = mReadPosition.getPosition();
     const unsigned char* data = getBufferToRead();
     if ( data != nullptr )
     {
-        asciiString.assign(reinterpret_cast<const char*>(data));
-        result = asciiString.getSpace();
+        ascii.assign(reinterpret_cast<const char*>(data));
+        result = ascii.getSpace();
         mReadPosition.setPosition(static_cast<int>(curPos + result), IECursorPosition::eCursorPosition::PositionBegin);
     }
 
@@ -105,17 +105,17 @@ unsigned int BufferStreamBase::read( String & asciiString ) const
 /**
  * \brief   Reads string data from Input Stream object, copies into given Wide String and returns the size of copied data.
  **/
-unsigned int BufferStreamBase::read( WideString & wideString ) const
+unsigned int BufferStreamBase::read( WideString & wide ) const
 {
     unsigned int result = 0;
-    wideString.clear();
+    wide.clear();
 
     const unsigned int curPos = mReadPosition.getPosition();
     const short * data = reinterpret_cast<const short *>( getBufferToRead() );
     if ( data != nullptr )
     {
-        wideString.assign(reinterpret_cast<const wchar_t *>(data));
-        result = wideString.getSpace();
+        wide.assign(reinterpret_cast<const wchar_t *>(data));
+        result = wide.getSpace();
         mReadPosition.setPosition(static_cast<int>(curPos + result), IECursorPosition::eCursorPosition::PositionBegin);
     }
 
@@ -167,17 +167,17 @@ unsigned int BufferStreamBase::write( const IEByteBuffer & buffer )
 /**
  * \brief   Writes string data from given ASCII String object to output stream object.
  **/
-unsigned int BufferStreamBase::write( const String & asciiString )
+unsigned int BufferStreamBase::write( const String & ascii )
 {
-    return write( reinterpret_cast<const unsigned char *>(asciiString.getString()), asciiString.getSpace() );
+    return write( reinterpret_cast<const unsigned char *>(ascii.getString()), ascii.getSpace() );
 }
 
 /**
  * \brief   Writes string data from given wide-char String object to output stream object.
  **/
-unsigned int BufferStreamBase::write( const WideString & wideString )
+unsigned int BufferStreamBase::write( const WideString & wide )
 {
-    return write(reinterpret_cast<const unsigned char*>(wideString.getString()), wideString.getSpace());
+    return write(reinterpret_cast<const unsigned char*>(wide.getString()), wide.getSpace());
 }
 
 /**
@@ -218,7 +218,7 @@ bool BufferStreamBase::isEqual( const BufferStreamBase &other ) const
     if ( (result == false) && (isValid() && other.isValid()))
     {
         unsigned int used = getSizeUsed();
-        result = (used == other.getSizeUsed()) && NEMemory::memEqual(getBuffer(), other.getBuffer(), static_cast<int>(used));
+        result = (used == other.getSizeUsed()) && NEMemory::memEqual(getBuffer(), other.getBuffer(), static_cast<uint32_t>(used));
     }
 
     return result;
@@ -256,10 +256,6 @@ unsigned int BufferStreamBase::insertAt( const unsigned char* buffer, unsigned i
                 setSizeUsed( MACRO_MAX(usedSize, newPos) );
                 mWritePosition.setPosition(static_cast<int>(newPos), IECursorPosition::eCursorPosition::PositionBegin);
             }
-            else
-            {
-                ; // do nothing, not enough space
-            }
         }
     }
 
@@ -278,7 +274,7 @@ unsigned int BufferStreamBase::writeData(const unsigned char* buffer, unsigned i
 
     if ((remain != 0) && (size != 0))
     {
-        result = NEMemory::memCopy( getBuffer( ) + writePos, static_cast<int>(remain), buffer, static_cast<int>(size) );
+        result = NEMemory::memCopy( getBuffer( ) + writePos, static_cast<uint32_t>(remain), buffer, static_cast<uint32_t>(size) );
         unsigned int usedSize   = mByteBuffer->bufHeader.biUsed;
         unsigned int newPos     = writePos + result;
         setSizeUsed( MACRO_MAX(usedSize, newPos) );
@@ -303,7 +299,7 @@ unsigned int BufferStreamBase::readData(unsigned char* buffer, unsigned int size
         if (result != 0)
         {
             const unsigned char* src = getBufferToRead();
-            NEMemory::memCopy(buffer, static_cast<int>(size), src, static_cast<int>(result));
+            NEMemory::memCopy(buffer, static_cast<uint32_t>(size), src, static_cast<uint32_t>(result));
             mReadPosition.setPosition(static_cast<int>(result), IECursorPosition::eCursorPosition::PositionCurrent);
         }
     }

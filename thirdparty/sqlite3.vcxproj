@@ -45,6 +45,7 @@
     <ClInclude Include="sqlite3\amalgamation\sqlite3ext.h" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="CMakeLists.txt" />
     <Text Include="sqlite3\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>

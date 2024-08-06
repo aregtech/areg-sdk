@@ -30,7 +30,10 @@ bool DirectConnectionClient::serviceConnected( NEService::eServiceConnection sta
     return result;
 }
 
-void DirectConnectionClient::responseConnectoinSetup( bool succeeded, const NEDirectConnection::sParticipant & target, const NEDirectConnection::sInitiator & initiator, const NEDirectConnection::ListParticipants & listParticipants )
+void DirectConnectionClient::responseConnectoinSetup( bool /* succeeded */
+                                                    , const NEDirectConnection::sParticipant & /* target */
+                                                    , const NEDirectConnection::sInitiator & initiator
+                                                    , const NEDirectConnection::ListParticipants & /* listParticipants */ )
 {
     ASSERT(mParticipantsHandler.GetInitiator() == initiator);
 }

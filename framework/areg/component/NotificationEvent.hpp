@@ -214,8 +214,8 @@ public:
      * \brief	Creates and sends Notification Event for
      *          specified notification consumer, and 
      *          containing specified notification data
-     * \param	data	    Notification Data to forward.
-     * \param	consumer	The Notification Consumer, which should be notified.
+     * \param	data	Notification Data to forward.
+     * \param	caller  The Notification Consumer, which should be notified.
      **/
     static void sendEvent(const NotificationEventData & data, IENotificationEventConsumer * caller = nullptr);
 

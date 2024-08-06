@@ -81,10 +81,7 @@ bool FileBuffer::open( void )
 
         mIsOpened   = isValid();
     }
-    else
-    {
-        OUTPUT_ERR("File is already opened. Close file.");
-    }
+
     return mIsOpened;
 }
 
@@ -105,10 +102,7 @@ bool FileBuffer::open(const String& fileName, unsigned int mode)
             result = open();
         }
     }
-    else
-    {
-        OUTPUT_ERR("File is already opened. Close file.");
-    }
+
     return result;
 }
 
@@ -128,10 +122,6 @@ unsigned int FileBuffer::read(unsigned char* buffer, unsigned int size) const
     {
         result = mSharedBuffer.read(buffer, size);
     }
-    else
-    {
-        OUTPUT_ERR("Either file is not opened [ %s ] or cannot read data [ %s ], check open mode.", isOpened() ? "true" : "false", canRead() ? "true" : "false");
-    }
     
     return result;
 }
@@ -148,10 +138,6 @@ unsigned int FileBuffer::write(const unsigned char* buffer, unsigned int size)
     if (isOpened() && canWrite())
     {
         result = mSharedBuffer.write(buffer, size);
-    }
-    else
-    {
-        OUTPUT_ERR("Either file is not opened [ %s ] or cannot write data [ %s ], check open mode.", isOpened() ? "true" : "false", canWrite() ? "true" : "false");
     }
 
     return result;
@@ -199,10 +185,7 @@ bool FileBuffer::truncate( void )
             result = true;
         }
     }
-    else
-    {
-        OUTPUT_ERR("The file is not opened or read only, cannot purge data! Close and open file again!");
-    }
+
     return result;
 }
 
@@ -240,14 +223,14 @@ unsigned int FileBuffer::read(IEByteBuffer & buffer) const
     return FileBase::read(buffer);
 }
 
-unsigned int FileBuffer::read(String & asciiString) const
+unsigned int FileBuffer::read(String & ascii) const
 {
-    return FileBase::read(asciiString);
+    return FileBase::read(ascii);
 }
 
-unsigned int FileBuffer::read(WideString & wideString) const
+unsigned int FileBuffer::read(WideString & wide) const
 {
-    return FileBase::read(wideString);
+    return FileBase::read(wide);
 }
 
 unsigned int FileBuffer::write(const IEByteBuffer & buffer)
@@ -255,12 +238,12 @@ unsigned int FileBuffer::write(const IEByteBuffer & buffer)
     return FileBase::write(buffer);
 }
 
-unsigned int FileBuffer::write(const String & asciiString)
+unsigned int FileBuffer::write(const String & ascii)
 {
-    return FileBase::write(asciiString);
+    return FileBase::write(ascii);
 }
 
-unsigned int FileBuffer::write(const WideString & wideString)
+unsigned int FileBuffer::write(const WideString & wide)
 {
-    return FileBase::write(wideString);
+    return FileBase::write(wide);
 }

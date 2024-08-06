@@ -64,7 +64,7 @@ void ThreadLocalStorage::setStorageItem(const String & Key, NEMemory::uAlign Val
 void ThreadLocalStorage::setStorageItem( const String & Key, const void* Value )
 {
     NEMemory::uAlign aln;
-    aln.alignPtr.mElement = (void *)(Value);
+    aln.alignPtr.mElement = const_cast<void *>(Value);
     setStorageItem(Key, aln);
 }
 

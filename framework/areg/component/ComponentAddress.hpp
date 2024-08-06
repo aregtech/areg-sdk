@@ -117,7 +117,6 @@ public:
      *          Use this constructor if Component is created in current
      *          component thread.
      * \param	roleName	The role name of component.
-     * \return	
      **/
     ComponentAddress( const String & roleName );
 

@@ -205,7 +205,7 @@ inline LogMessage::LogMessage( NETrace::eLogMessageType msgType )
 }
 
 inline LogMessage::LogMessage( NETrace::eLogMessageType msgType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const String & message )
-    : NETrace::sLogMessage( msgType, scopeId, msgPrio, message.getString(), message.getLength() )
+    : NETrace::sLogMessage( msgType, scopeId, msgPrio, message.getString(), static_cast<uint32_t>(message.getLength()) )
 {
 }
 

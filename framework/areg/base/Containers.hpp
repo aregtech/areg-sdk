@@ -83,7 +83,7 @@ public:
 
     /**
      * \brief	Creates Hash Map object where the keys are integers.
-     * \param	blockSize	The size of blocks in hash map to create at once.
+     * \param	hashSize	The size of blocks in hash map to create at once.
      *                      It cannot be more than MAP_MAX_BLOCK_SIZE
      **/
     TEIntegerHashMap( uint32_t hashSize );

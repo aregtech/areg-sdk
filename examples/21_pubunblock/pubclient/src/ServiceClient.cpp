@@ -165,7 +165,7 @@ void ServiceClient::onHelloServiceStateUpdate( NEHelloUnblock::eServiceState Hel
     }
 }
 
-void ServiceClient::processTimer( Timer & timer )
+void ServiceClient::processTimer( Timer & /* timer */ )
 {
     TRACE_SCOPE( examples_21_pubservice_ServiceClient_processTimer );
     ASSERT( mSequenceId < NEHelloUnblock::MaxMessages );

@@ -24,7 +24,6 @@
 
 #include <Windows.h>
 
-
  //////////////////////////////////////////////////////////////////////////
  //  Windows OS specific methods
  //////////////////////////////////////////////////////////////////////////
@@ -40,33 +39,19 @@ void WatchdogManager::_osSystemTimerStop(TIMERHANDLE handle)
 
 bool WatchdogManager::_osSystemTimerStart(Watchdog& watchdog)
 {
-    bool result = false;
-
     // the period of time. If should be fired several times, set the period value. Otherwise set zero to fire once.
     long period = 0;
-    int64_t dueTime = static_cast<int64_t>(watchdog.getTimeout()) * NEUtilities::MILLISEC_TO_100NS;  // timer from now
-    dueTime *= -1;
+    int64_t dueTime = static_cast<int64_t>(static_cast<TIME64>(watchdog.getTimeout()) * NEUtilities::MILLISEC_TO_100NS);  // timer from now
+    dueTime *= static_cast<int64_t>(-1);
     LARGE_INTEGER timeTrigger{ };
-    timeTrigger.LowPart  = static_cast<unsigned long>(MACRO_64_LO_BYTE32(dueTime));
-    timeTrigger.HighPart = static_cast<signed   long>(MACRO_64_HI_BYTE32(dueTime));
+    timeTrigger.LowPart  = static_cast<DWORD>(MACRO_64_LO_BYTE32(dueTime));
+    timeTrigger.HighPart = static_cast<LONG >(MACRO_64_HI_BYTE32(dueTime));
 
-    if (::SetWaitableTimer( watchdog.getHandle()
-                          , &timeTrigger
-                          , period
-                          , reinterpret_cast<PTIMERAPCROUTINE>(&WatchdogManager::_windowsWatchdogExpiredRoutine)
-                          , reinterpret_cast<void*>(watchdog.makeWatchdogId(watchdog.getId(), watchdog.getSequence())), FALSE) == FALSE)
-    {
-        OUTPUT_ERR("System Failed to start watchdog timer in period [ %d ] ms, timer name [ %s ]. System Error [ %p ]"
-                    , watchdog.getTimeout()
-                    , watchdog.getName().getString()
-                    , static_cast<id_type>(::GetLastError()));
-    }
-    else
-    {
-        result = true; // succeeded
-    }
-
-    return result;
+    return (::SetWaitableTimer(   watchdog.getHandle()
+                                , &timeTrigger
+                                , period
+                                , (PTIMERAPCROUTINE)(&WatchdogManager::_windowsWatchdogExpiredRoutine)
+                                , reinterpret_cast<void*>(watchdog.makeWatchdogId(watchdog.getId(), watchdog.getSequence())), FALSE) == TRUE);
 }
 
 /**

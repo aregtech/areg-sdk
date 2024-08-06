@@ -61,6 +61,9 @@ void TraceEventProcessor::processLogEvent( TraceEventData::eTraceAction cmdLog, 
         _traceLogMessage( stream );
         break;
 
+    case TraceEventData::eTraceAction::TraceUpdateScopes:   // fall through
+    case TraceEventData::eTraceAction::TraceQueryScopes:    // fall through
+    case TraceEventData::eTraceAction::TraceUndefined:      // fall through
     default:
         break; // ignore, do nothing
     }

@@ -158,7 +158,6 @@ public:
 
     /**
      * \brief   Overloaded placement new
-     * \param   size    Not used. Size of the memory block to allocate
      * \param   ptr     Pointer to the memory block where the object is located
      * \return  Pointer to the memory block where the object is located, same as 'ptr'
      **/
@@ -166,7 +165,6 @@ public:
 
     /**
      * \brief   Overloaded placement new
-     * \param   size    Not used. Size of the memory block to allocate
      * \param   ptr     Pointer to the memory block where the object is located
      * \return  Pointer to the memory block where the object is located, same as 'ptr'
      **/
@@ -177,7 +175,6 @@ public:
      *          Used in debugging version. In other versions, only allocates memory without
      *          containing other information.
      * \param   size    The size of the memory block to allocate
-     * \param   block   Not used. Block type. Always passed 1 as a normal block.
      * \param   file    Ignored in non-debug version. Source code file name, normally __FILE__
      * \param   line    Ignored in non-debug version. Source code line number, normally __LINE__
      * \return  Pointer to a memory block of size 'size' or nullptr in case of error.
@@ -189,7 +186,6 @@ public:
      *          Used in debugging version. In other versions, only allocates memory without
      *          containing other information.
      * \param   size    The size of the memory block to allocate
-     * \param   block   Not used. Block type. Always passed 1 as a normal block.
      * \param   file    Ignored in non-debug version. Source code file name, normally __FILE__
      * \param   line    Ignored in non-debug version. Source code line number, normally __LINE__
      * \return  Pointer to a memory block of size 'size' or nullptr in case of error.
@@ -227,7 +223,6 @@ public:
     /**
      * \brief   Overloaded array delete operator
      * \param   ptr     Pointer to the memory block to delete
-     * \param   size    Not used.
      **/
     void operator delete [ ] (void* ptr, size_t /*size*/);
 

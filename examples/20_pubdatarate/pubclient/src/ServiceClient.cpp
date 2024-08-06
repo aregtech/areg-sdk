@@ -25,7 +25,7 @@ Component * ServiceClient::CreateComponent(const NERegistry::ComponentEntry & en
     return DEBUG_NEW ServiceClient(entry, owner);
 }
 
-void ServiceClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
+void ServiceClient::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
 {
     delete (&compObject);
 }
@@ -42,7 +42,7 @@ ServiceClient::ServiceClient(const NERegistry::ComponentEntry & entry, Component
 {
 }
 
-void ServiceClient::startupComponent(ComponentThread& comThread)
+void ServiceClient::startupComponent(ComponentThread& /* comThread */)
 {
     TRACE_SCOPE(examples_20_clientdatarate_ServiceClient_startupComponent);
     TRACE_DBG("The component [ %s ] has been started", getRoleName().getString());
@@ -51,7 +51,7 @@ void ServiceClient::startupComponent(ComponentThread& comThread)
     Console& console = Console::getInstance();
     console.clearCurrentLine();
     console.outputTxt(COORD_TITLE, MSG_APP_TITLE);
-    console.outputMsg(COORD_DATA_RATE, MSG_DATA_RATE.data(), static_cast<float>(dataRate.first), dataRate.second.data(), mBlockCount);
+    console.outputMsg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data(), mBlockCount);
     console.refreshScreen();
 }
 
@@ -106,12 +106,12 @@ bool ServiceClient::serviceConnected( NEService::eServiceConnection status, Prox
     return result;
 }
 
-void ServiceClient::processTimer(Timer& timer)
+void ServiceClient::processTimer(Timer& /* timer */)
 {
     TRACE_SCOPE(examples_20_clientdatarate_ServiceClient_processTimer);
     Console& console = Console::getInstance();
     NEUtilities::DataLiteral dataRate = NEUtilities::convDataSize( mDataSize );
-    TRACE_DBG("The timeout expired, output data rate: [ %f %s]", static_cast<float>(dataRate.first), dataRate.second.data());
+    TRACE_DBG("The timeout expired, output data rate: [ %f %s]", static_cast<double>(dataRate.first), dataRate.second.data());
     console.outputMsg(COORD_DATA_RATE, MSG_DATA_RATE.data(), dataRate.first, dataRate.second.data(), mBlockCount);
     console.refreshScreen();
 

@@ -11,7 +11,7 @@ Component * ServiceComponent::CreateComponent(const NERegistry::ComponentEntry &
     return DEBUG_NEW ServiceComponent(entry, owner);
 }
 
-void ServiceComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
+void ServiceComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
 {
     delete (&compObject);
 }

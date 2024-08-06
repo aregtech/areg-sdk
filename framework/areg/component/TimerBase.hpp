@@ -167,8 +167,6 @@ protected:
      * \brief   Call to creates system waitable timer.
      *          The timer can be used if succeeded to create handle.
      *          It has OS specific implementation
-     * 
-     * \param   timer   The instance of the timer to create system waitable timer.
      * \return  Returns true if succeeded to create system timer or the timer was already created.
      **/
     bool createWaitableTimer( void );
@@ -176,8 +174,6 @@ protected:
     /**
      * \brief   Call to destroy system waitable.
      *          After calling this method, the timer cannot be used anymore.
-     * 
-     * \param   timer   The instance of the timer to destroy system waitable timer.
      **/
     void destroyWaitableTimer( void );
 

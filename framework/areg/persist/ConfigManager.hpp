@@ -368,10 +368,8 @@ public:
      * \brief   Saves the current configuration in the specified file object opened with write access.
      *          When saving, the existing entries are not changed, only module specific entries
      *          that are not marked as 'temporary'.
-     * \param   filePath    The relative of full path to the configuration file to write.
-     *                      If file is empty, uses the same name of previously opened file.
-     *                      If the current configuration file path is empty (defaults are initialized),
-     *                      it uses NEApplication::DEFAULT_CONFIG_FILE file to save.
+     * \param   srcFile     The instance of the file that contains consfiguration information.
+     * \param   dstFile     The instance of the destination file to save configuration information.
      * \param   listener    The pointer to the configuration listener to notify
      *                      before and after saving configuration to the file.
      *                      If nullptr, no notification is triggered.
@@ -639,7 +637,7 @@ public:
 
     /**
      * \brief   Returns the name of the service of the remote connection.
-     * \param   service     The remote service.
+     * \param   serviceType The remote service.
      * \param   connectType The connection type, which name should be read out.
      **/
     String getRemoteServiceName(NERemoteService::eRemoteServices serviceType, NERemoteService::eConnectionTypes connectType) const;
@@ -655,7 +653,7 @@ public:
 
     /**
      * \brief   Returns the remote service connection enabled or disabled flag.
-     * \param   service     The remote service.
+     * \param   serviceType The remote service.
      * \param   connectType The connection type, which name should be read out.
      * \return  If returns true, the specified remote service supports the specified connection type.
      *          Otherwise, it does not support
@@ -673,7 +671,7 @@ public:
 
     /**
      * \brief   Sets the enabled flag of the specified connection of the remote service.
-     * \param   service     The remote service.
+     * \param   serviceType The remote service.
      * \param   connectType The connection type to set the value.
      * \param   isTemporary Flag, indicating whether the modification is temporary or not.
      *                      The temporary changes are not saved in the configuration file.
@@ -689,7 +687,7 @@ public:
 
     /**
      * \brief   Returns the address of the remote service that supports the specified connection.
-     * \param   service     The remote service.
+     * \param   serviceType The remote service.
      * \param   connectType The connection type, which name should be read out.
      **/
     String getRemoteServiceAddress(NERemoteService::eRemoteServices serviceType, NERemoteService::eConnectionTypes connectType) const;
@@ -705,7 +703,7 @@ public:
 
     /**
      * \brief   Sets the address of the remote service to establish specified connection.
-     * \param   service     The remote service.
+     * \param   serviceType The remote service.
      * \param   connectType The connection type to set the value.
      * \param   isTemporary Flag, indicating whether the modification is temporary or not.
      *                      The temporary changes are not saved in the configuration file.
@@ -721,7 +719,7 @@ public:
 
     /**
      * \brief   Returns the port number the remote service that supports the specified connection.
-     * \param   service     The remote service.
+     * \param   serviceType The remote service.
      * \param   connectType The connection type, which name should be read out.
      **/
     uint16_t getRemoteServicePort(NERemoteService::eRemoteServices serviceType, NERemoteService::eConnectionTypes connectType) const;
@@ -737,7 +735,7 @@ public:
 
     /**
      * \brief   Sets the port number of the remote service to establish specified connection.
-     * \param   service     The remote service.
+     * \param   serviceType The remote service.
      * \param   connectType The connection type to set the value.
      * \param   isTemporary Flag, indicating whether the modification is temporary or not.
      *                      The temporary changes are not saved in the configuration file.

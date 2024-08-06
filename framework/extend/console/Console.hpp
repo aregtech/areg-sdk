@@ -110,7 +110,7 @@ public:
      *          length of the strings must be specified in the format.
      * 
      * \param   format      The format of input.
-     * \param   arguments   The list of pointers to the variables.
+     *          arguments   The list of pointers to the variables.
      * \return  Upon successful completion, these functions return true. Otherwise, returns false.
      **/
     bool readInputs(const char* format, ...) const;
@@ -175,8 +175,8 @@ public:
     void outputMsg(Console::Coord pos, const char* format, ...) const;
 
     /**
-     * \brief   Outputs the formated text message at the current cursor position.
-     * \param   format  The text format with arguments to output the message.
+     * \brief   Outputs the text message at the current cursor position.
+     * \param   text  The text to output.
      **/
     inline void printStr(const String& text) const;
     inline void printTxt(const std::string_view& text) const;
@@ -309,8 +309,8 @@ private:
     /**
      * \brief   A blocking call to wait for user input of string on the console.
      *          OS specific implementation.
-     * \brief   buffer  The buffer to fill in input, should be big enough.
-     * \brief   size    The size of buffer.
+     * \param   buffer  The buffer to fill in input, should be big enough.
+     * \param   size    The size of buffer.
      **/
     bool _osWaitInputString(char * buffer, uint32_t size) const;
 

@@ -193,7 +193,7 @@ protected:
      * \brief   Triggered when the Stub receives remote response request event to process.
      *          For example, send by Proxy and processed by Stub when need to start or stop
      *          to subscribe on information or response sent by Stub.
-     * \param   requestNotifyEvent  The remote response request event to be processed.
+     * \param   responseEvent   The remote response event sent on processed request.
      **/
     virtual void processRemoteResponseEvent( RemoteResponseEvent & responseEvent ) override;
 

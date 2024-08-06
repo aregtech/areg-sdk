@@ -47,7 +47,6 @@ EventDataStream::EventDataStream( EventDataStream::eEventData evetDataType, cons
     , mDataBuffer   ( )
     , mSharedList   ( )
 {
-    ;
 }
 
 EventDataStream::EventDataStream( const EventDataStream & buffer, const String & name )
@@ -149,14 +148,14 @@ unsigned int EventDataStream::read( IEByteBuffer & buffer ) const
     return result;
 }
 
-unsigned int EventDataStream::read( String & asciiString ) const
+unsigned int EventDataStream::read( String & ascii ) const
 {
-    return mDataBuffer.read(asciiString);
+    return mDataBuffer.read(ascii);
 }
 
-unsigned int EventDataStream::read( WideString & wideString ) const
+unsigned int EventDataStream::read( WideString & wide ) const
 {
-    return mDataBuffer.read(wideString);
+    return mDataBuffer.read(wide);
 }
 
 void EventDataStream::resetCursor( void ) const
@@ -185,14 +184,14 @@ unsigned int EventDataStream::write( const IEByteBuffer & buffer )
     return result;
 }
 
-unsigned int EventDataStream::write( const String & asciiString )
+unsigned int EventDataStream::write( const String & ascii )
 {
-    return mDataBuffer.write(asciiString);
+    return mDataBuffer.write(ascii);
 }
 
-unsigned int EventDataStream::write( const WideString & wideString )
+unsigned int EventDataStream::write( const WideString & wide )
 {
-    return mDataBuffer.write(wideString);
+    return mDataBuffer.write(wide);
 }
 
 void EventDataStream::flush( void )

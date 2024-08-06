@@ -30,13 +30,6 @@
     #pragma comment(lib, "14_generated.lib")
 #endif // WINDOWS
 
-#ifdef _WINDOWS
-    #define MACRO_SCANF(fmt, data, len)     scanf_s(fmt, data, len)
-#else   // _POSIX
-    #define MACRO_SCANF(fmt, data, len)     scanf(fmt, data)
-#endif  // _WINDOWS
-
-
 constexpr char const _modelName[]  { "TheModel" };   // The name of model
 constexpr char const _threadName[] { "TestSimpleTrafficThread" };	// The name of component thread
 

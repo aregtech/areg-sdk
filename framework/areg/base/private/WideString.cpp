@@ -59,7 +59,7 @@ namespace
         DigitType base = static_cast<DigitType>(NEString::eRadix::RadixBinary);
         bool isNegative = number < 0;
 
-        number = MACRO_ABS( number );
+        number = NEMath::getAbs<DigitType>(number);
         short idx = 0;
         do
         {
@@ -104,7 +104,7 @@ namespace
     {
         wchar_t buffer[ CharCount ] { 0 };
 
-        int32_t count = -1;
+        int32_t count{ -1 };
 #ifdef WINDOWS
         count = ::swprintf_s(buffer, CharCount, format, number);
 #else   // WINDOWS
@@ -146,23 +146,6 @@ namespace
         wchar_t buffer[ CharCount ] { 0 };
         int32_t count = _formatStringList( buffer, CharCount, format, argptr );
         result.assign( buffer, count > 0 ? count : 0 );
-        return count;
-    }
-
-    /**
-     * \brief   Formats the string. The buffer is allocated in the stack.
-     * \tparam  CharCount   The size of the buffer to allocate in the stack.
-     * \param   result      On output, this contain the result of conversion.
-     * \param   format      The format to convert.
-     * \return  Returns the number of characters in the buffer, not including null-character.
-     **/
-    template<int const CharCount = NEString::MSG_BUF_SIZE>
-    inline int32_t _formatString( WideString & result, const wchar_t * format, ... )
-    {
-        va_list argptr;
-        va_start( argptr, format );
-        int32_t count = _formatStringList<CharCount>(result, format, argptr );
-        va_end( argptr );
         return count;
     }
 
@@ -428,6 +411,7 @@ WideString WideString::makeString(int32_t number, NEString::eRadix radix /*= NES
         _formatDigit<int32_t>( result, L"%d", number );
         break;
     }
+
     return result;
 }
 
@@ -455,6 +439,7 @@ WideString WideString::makeString(uint32_t number, NEString::eRadix radix /*= NE
         _formatDigit<uint32_t>( result, L"%u", number );
         break;
     }
+
     return result;
 }
 
@@ -523,7 +508,7 @@ WideString WideString::makeString(uint64_t number, NEString::eRadix radix /*= NE
 WideString WideString::makeString(float number)
 {
     WideString result;
-    _formatDigit<float>( result, L"%f", number );
+    _formatDigit<double>( result, L"%f", static_cast<double>(number) );
     return result;
 }
 
@@ -606,10 +591,12 @@ WideString& WideString::assign(const char* source, NEString::CharCount count /*=
     if (NEString::isEmpty<char>(source) == false)
     {
         count = count == NEString::COUNT_ALL ? static_cast<NEString::CharCount>(strlen(source)) : count;
-        mData.resize(count);
+        mData.resize(static_cast<uint32_t>(count));
         wchar_t* dst = mData.data();
         while (--count >= 0)
+        {
             *dst++ = static_cast<wchar_t>(*source++);
+        }
 
         *dst = EmptyChar;
     }

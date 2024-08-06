@@ -59,7 +59,7 @@ namespace
         DigitType base = static_cast<DigitType>(NEString::eRadix::RadixBinary);
         bool isNegative = number < 0;
 
-        number = MACRO_ABS( number );
+        number = NEMath::getAbs<DigitType>(number);
         short idx = 0;
         do
         {
@@ -143,26 +143,9 @@ namespace
     template<int const CharCount = NEString::MSG_BUF_SIZE>
     inline int32_t _formatStringList( String & result, const char * format, va_list argptr )
     {
-        char buffer[ CharCount ];
+        char buffer[ CharCount ] { 0 };
         int32_t count = _formatStringList( buffer, CharCount, format, argptr );
         result.assign( buffer, count > 0 ? count : 0 );
-        return count;
-    }
-
-    /**
-     * \brief   Formats the string. The buffer is allocated in the stack.
-     * \tparam  CharCount   The size of the buffer to allocate in the stack.
-     * \param   result      On output, this contain the result of conversion.
-     * \param   format      The format to convert.
-     * \return  Returns the number of characters in the buffer, not including null-character.
-     **/
-    template<int const CharCount = NEString::MSG_BUF_SIZE>
-    inline int32_t _formatString( String & result, const char * format, ... )
-    {
-        va_list argptr;
-        va_start( argptr, format );
-        int32_t count = _formatStringList<CharCount>(result, format, argptr );
-        va_end( argptr );
         return count;
     }
 
@@ -428,6 +411,7 @@ String String::makeString(int32_t number, NEString::eRadix radix /*= NEString::R
         _formatDigit<int32_t>( result, "%d", number );
         break;
     }
+
     return result;
 }
 
@@ -455,6 +439,7 @@ String String::makeString(uint32_t number, NEString::eRadix radix /*= NEString::
         _formatDigit<uint32_t>( result, "%u", number );
         break;
     }
+
     return result;
 }
 
@@ -523,7 +508,7 @@ String String::makeString(uint64_t number, NEString::eRadix radix /*= NEString::
 String String::makeString(float number)
 {
     String result;
-    _formatDigit<float>( result, "%f", number );
+    _formatDigit<double>( result, "%f", static_cast<double>(number) );
     return result;
 }
 
@@ -606,10 +591,12 @@ String& String::assign(const wchar_t* source, NEString::CharCount count /*= NESt
     if (NEString::isEmpty<wchar_t>(source) == false)
     {
         count = count == NEString::COUNT_ALL ? static_cast<NEString::CharCount>(wcslen(source)) : count;
-        mData.resize(count);
+        mData.resize(static_cast<uint32_t>(count));
         char* dst = mData.data();
         while (--count >= 0)
+        {
             *dst++ = static_cast<char>(*source++);
+        }
 
         *dst = EmptyChar;
     }

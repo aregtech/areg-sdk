@@ -55,7 +55,7 @@ Component * ServicingComponent::CreateComponent(const NERegistry::ComponentEntry
     return DEBUG_NEW ServicingComponent(entry, owner);
 }
 
-void ServicingComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
+void ServicingComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
 {
     delete (&compObject);
 }
@@ -387,7 +387,7 @@ void ServicingComponent::_printInfo(void) const
     uint32_t bytesPerBlock  = mOptions.bytesPerBlock();
     uint64_t timePerBlock   = mOptions.nsPerBlock();
 
-    double blockRate = (static_cast<double>(NECommon::DURATION_1_SEC) / timePerBlock) * mOptions.mChannels;
+    double blockRate = (static_cast<double>(NECommon::DURATION_1_SEC) / static_cast<double>(timePerBlock)) * static_cast<double>(mOptions.mChannels);
     NEUtilities::DataLiteral dataRate = NEUtilities::convDataSize(static_cast<uint32_t>(blockRate * bytesPerBlock));
     NEUtilities::DataLiteral blockSize= NEUtilities::convDataSize(bytesPerBlock);
     NEUtilities::DataLiteral timeRate = NEUtilities::convDuration(timePerBlock);
@@ -400,10 +400,10 @@ void ServicingComponent::_printInfo(void) const
     console.printMsg("\tLines per Block .: % 8u lns.\n" , mOptions.mLines);
     console.printMsg("\tPixel Time ......: % 8u ns.\n"  , mOptions.mPixelTime);
     console.printMsg("\tChannels ........: % 8u ch.\n"  , mOptions.mChannels);
-    console.printMsg("\tTime per Block ..: % 8.02f %s.\n", static_cast<float>(timeRate.first), timeRate.second.data());
-    console.printMsg("\tBlock Size ......: % 8.02f %s.\n", static_cast<float>(blockSize.first), blockSize.second.data());
+    console.printMsg("\tTime per Block ..: % 8.02f %s.\n", static_cast<double>(timeRate.first), timeRate.second.data());
+    console.printMsg("\tBlock Size ......: % 8.02f %s.\n", static_cast<double>(blockSize.first), blockSize.second.data());
     console.printMsg("\tBlock Rate ......: % 8u blocks / sec.\n", static_cast<uint32_t>(blockRate));
-    console.printMsg("\tData Rate .......: % 8.02f %s / sec.\n", static_cast<float>(dataRate.first), dataRate.second.data());
+    console.printMsg("\tData Rate .......: % 8.02f %s / sec.\n", static_cast<double>(dataRate.first), dataRate.second.data());
     console.printMsg("\tConnected client : % 8d clients.\n", mClients);
     console.printTxt("---------------------------------------\n");
 

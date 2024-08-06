@@ -65,12 +65,12 @@ bool Console::_osSetup(void)
             mode |= ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
             SetConsoleMode(hStdOut, mode);
             DWORD written = 0;
-            if (WriteConsoleA(hStdOut, CMD_CLEAR_SCREEN.data(), static_cast<DWORD>(CMD_CLEAR_SCREEN.length()), &written, NULL) == TRUE)
+            if (WriteConsoleA(hStdOut, CMD_CLEAR_SCREEN.data(), static_cast<DWORD>(CMD_CLEAR_SCREEN.length()), &written, nullptr) == TRUE)
             {
                 written = 0;
-                WriteConsoleA(hStdOut, CMD_RESET.data(), static_cast<DWORD>(CMD_RESET.length()), &written, NULL);
+                WriteConsoleA(hStdOut, CMD_RESET.data(), static_cast<DWORD>(CMD_RESET.length()), &written, nullptr);
                 written = 0;
-                WriteConsoleA(hStdOut, CMD_SCROLL_BACK.data(), static_cast<DWORD>(CMD_SCROLL_BACK.length()), &written, NULL);
+                WriteConsoleA(hStdOut, CMD_SCROLL_BACK.data(), static_cast<DWORD>(CMD_SCROLL_BACK.length()), &written, nullptr);
                 mIsReady = true;
             }
             else
@@ -93,9 +93,9 @@ void Console::_osRelease(void)
         // restore previous mode.
         HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
         DWORD written = 0;
-        WriteConsoleA(hStdOut, CMD_CLEAR_SCREEN.data(), static_cast<DWORD>(CMD_CLEAR_SCREEN.length()), &written, NULL);
+        WriteConsoleA(hStdOut, CMD_CLEAR_SCREEN.data(), static_cast<DWORD>(CMD_CLEAR_SCREEN.length()), &written, nullptr);
         written = 0;
-        WriteConsoleA(hStdOut, CMD_RESET.data(), static_cast<DWORD>(CMD_RESET.length()), &written, NULL);
+        WriteConsoleA(hStdOut, CMD_RESET.data(), static_cast<DWORD>(CMD_RESET.length()), &written, nullptr);
         DWORD mode = static_cast<DWORD>(mContext);
         SetConsoleMode(hStdOut, mode);
         mContext = 0;
@@ -110,8 +110,8 @@ void Console::_osOutputText(Console::Coord pos, const String& text) const
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleCursorPosition(hStdOut, COORD{static_cast<int16_t>(pos.posX), static_cast<int16_t>(pos.posY)});
-    WriteConsoleA(hStdOut, CMD_CLEAR_LINE.data(), static_cast<DWORD>(CMD_CLEAR_LINE.length()), &written, NULL);
-    WriteConsoleA(hStdOut, text.getString(), static_cast<DWORD>(text.getLength()), &written, NULL);
+    WriteConsoleA(hStdOut, CMD_CLEAR_LINE.data(), static_cast<DWORD>(CMD_CLEAR_LINE.length()), &written, nullptr);
+    WriteConsoleA(hStdOut, text.getString(), static_cast<DWORD>(text.getLength()), &written, nullptr);
 }
 
 void Console::_osOutputText(Console::Coord pos, const std::string_view& text) const
@@ -121,8 +121,8 @@ void Console::_osOutputText(Console::Coord pos, const std::string_view& text) co
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleCursorPosition(hStdOut, COORD{ static_cast<int16_t>(pos.posX), static_cast<int16_t>(pos.posY) });
-    WriteConsoleA(hStdOut, CMD_CLEAR_LINE.data(), static_cast<DWORD>(CMD_CLEAR_LINE.length()), &written, NULL);
-    WriteConsoleA(hStdOut, text.data(), static_cast<DWORD>(text.length()), &written, NULL);
+    WriteConsoleA(hStdOut, CMD_CLEAR_LINE.data(), static_cast<DWORD>(CMD_CLEAR_LINE.length()), &written, nullptr);
+    WriteConsoleA(hStdOut, text.data(), static_cast<DWORD>(text.length()), &written, nullptr);
 }
 
 void Console::_osOutputText(const String& text) const
@@ -131,7 +131,7 @@ void Console::_osOutputText(const String& text) const
 
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    WriteConsoleA(hStdOut, text.getString(), static_cast<DWORD>(text.getLength()), &written, NULL);
+    WriteConsoleA(hStdOut, text.getString(), static_cast<DWORD>(text.getLength()), &written, nullptr);
 }
 
 void Console::_osOutputText(const std::string_view& text) const
@@ -140,7 +140,7 @@ void Console::_osOutputText(const std::string_view& text) const
 
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    WriteConsoleA(hStdOut, text.data(), static_cast<DWORD>(text.length()), &written, NULL);
+    WriteConsoleA(hStdOut, text.data(), static_cast<DWORD>(text.length()), &written, nullptr);
 }
 
 Console::Coord Console::_osGetCursorPosition(void) const
@@ -168,7 +168,7 @@ void Console::_osSetCursorCurPosition(Console::Coord pos) const
 bool Console::_osWaitInputString(char* buffer, uint32_t size) const
 {
     ASSERT(buffer != nullptr);
-    if (gets_s(buffer, static_cast<int>(size)) == nullptr)
+    if (gets_s(buffer, size) == nullptr)
         return false;
 
     return (NEString::trimRight<char>(buffer) > 0);
@@ -188,7 +188,7 @@ void Console::_osClearLine( void ) const
 
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    WriteConsoleA(hStdOut, CMD_CLEAR_LINE.data(), static_cast<DWORD>(CMD_CLEAR_LINE.length()), &written, NULL);
+    WriteConsoleA(hStdOut, CMD_CLEAR_LINE.data(), static_cast<DWORD>(CMD_CLEAR_LINE.length()), &written, nullptr);
 }
 
 void Console::_osClearScreen( void ) const
@@ -199,7 +199,7 @@ void Console::_osClearScreen( void ) const
     if (hStdOut != nullptr)
     {
         DWORD written = 0;
-        WriteConsoleA(hStdOut, CMD_CLEAR_SCREEN.data(), static_cast<DWORD>(CMD_CLEAR_SCREEN.length()), &written, NULL);
+        WriteConsoleA(hStdOut, CMD_CLEAR_SCREEN.data(), static_cast<DWORD>(CMD_CLEAR_SCREEN.length()), &written, nullptr);
     }
 }
 
@@ -213,7 +213,7 @@ void Console::_osSaveCursorPosition(void) const
     Lock lock(mLock);
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    WriteConsoleA(hStdOut, CMD_SAVE_CURSOR.data(), static_cast<DWORD>(CMD_SAVE_CURSOR.length()), &written, NULL);
+    WriteConsoleA(hStdOut, CMD_SAVE_CURSOR.data(), static_cast<DWORD>(CMD_SAVE_CURSOR.length()), &written, nullptr);
 }
 
 void Console::_osRestoreCursorPosition(void) const
@@ -221,7 +221,7 @@ void Console::_osRestoreCursorPosition(void) const
     Lock lock(mLock);
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    WriteConsoleA(hStdOut, CMD_RESTORE_CURSOR.data(), static_cast<DWORD>(CMD_RESTORE_CURSOR.length()), &written, NULL);
+    WriteConsoleA(hStdOut, CMD_RESTORE_CURSOR.data(), static_cast<DWORD>(CMD_RESTORE_CURSOR.length()), &written, nullptr);
 }
 
 void Console::_osMoveCursorOneLineUp(void) const
@@ -229,7 +229,7 @@ void Console::_osMoveCursorOneLineUp(void) const
     Lock lock(mLock);
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    WriteConsoleA(hStdOut, CMD_ONE_LINE_UP.data(), static_cast<DWORD>(CMD_ONE_LINE_UP.length()), &written, NULL);
+    WriteConsoleA(hStdOut, CMD_ONE_LINE_UP.data(), static_cast<DWORD>(CMD_ONE_LINE_UP.length()), &written, nullptr);
 }
 
 void Console::_osMoveCursorOneLineDown(void) const
@@ -237,7 +237,7 @@ void Console::_osMoveCursorOneLineDown(void) const
     Lock lock(mLock);
     DWORD written = 0;
     HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    WriteConsoleA(hStdOut, CMD_ONE_LINE_DOWN.data(), static_cast<DWORD>(CMD_ONE_LINE_DOWN.length()), &written, NULL);
+    WriteConsoleA(hStdOut, CMD_ONE_LINE_DOWN.data(), static_cast<DWORD>(CMD_ONE_LINE_DOWN.length()), &written, nullptr);
 }
 
 #endif  // defined(WINDOWS) && (AREG_EXTENDED)

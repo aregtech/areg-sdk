@@ -102,6 +102,7 @@ bool SystemServiceBase::prepareOptions(const OptionParser::InputOptionList& opts
             outHelp = true;
             break;
 
+        case NESystemService::eServiceOption::CMD_Undefined:    // fall through
         default:
             setCurrentOption(NESystemService::eServiceOption::CMD_Undefined);
             outHelp = true;

@@ -1207,12 +1207,12 @@ inline AnyTextLayout & AnyTextLayout::operator = ( AnyTextLayout && src ) noexce
 // CookieIdLayout class inline methods
 //////////////////////////////////////////////////////////////////////////
 
-inline CookieIdLayout& CookieIdLayout::operator=(const CookieIdLayout& src)
+inline CookieIdLayout& CookieIdLayout::operator=(const CookieIdLayout& /* src */)
 {
     return (*this);
 }
 
-inline CookieIdLayout& CookieIdLayout::operator=(CookieIdLayout&& src) noexcept
+inline CookieIdLayout& CookieIdLayout::operator=(CookieIdLayout&& /* src */) noexcept
 {
     return (*this);
 }

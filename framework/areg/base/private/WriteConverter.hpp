@@ -63,84 +63,84 @@ public:
 
     /**
      * \brief   Writes boolean value to the writable streaming object
-     * \param   in_value[in]    The boolean value to write to writable streaming object
+     * \param   in_value [in]    The boolean value to write to writable streaming object
      * \return  Returns true if operation succeeded
      **/
     bool setBool( bool in_value );
 
     /**
      * \brief   Writes 8-bit character value to the writable streaming object
-     * \param   in_value[in]    The 8-bit character value to write to writable streaming object
+     * \param   in_value [in]    The 8-bit character value to write to writable streaming object
      * \return  Returns true if operation succeeded
      **/
     bool setChar( char in_value );
 
     /**
      * \brief   Writes 16-bit wide-character value to the writable streaming object
-     * \param   in_value[in]    The 16-bit wide-character value to write to writable streaming object
+     * \param   in_value [in]    The 16-bit wide-character value to write to writable streaming object
      * \return  Returns true if operation succeeded
      **/
     bool setChar( wchar_t in_value );
 
     /**
      * \brief   Writes short integer value to the writable streaming object
-     * \param   in_value[in]    The short integer value to write to writable streaming object
+     * \param   in_value [in]    The short integer value to write to writable streaming object
      * \return  Returns true if operation succeeded
      **/
     bool setShort( short in_value );
 
     /**
      * \brief   Writes integer value to the writable streaming object
-     * \param   in_value[in]    The integer value to write to writable streaming object
+     * \param   in_value [in]    The integer value to write to writable streaming object
      * \return  Returns true if operation succeeded
      **/
     bool setInt( int in_value );
 
     /**
      * \brief   Writes 64-bit integer value to the writable streaming object
-     * \param   in_value[in]    The 64-bit integer value to write to writable streaming object
+     * \param   in_value [in]    The 64-bit integer value to write to writable streaming object
      * \return  Returns true if operation succeeded
      **/
     bool setInt64( int64_t in_value );
 
     /**
      * \brief   Writes number with floating point value to the writable streaming object
-     * \param   in_value[in]    The number with floating point value to write to writable streaming object
+     * \param   in_value [in]    The number with floating point value to write to writable streaming object
      * \return  Returns true if operation succeeded
      **/
     bool setFloat( float in_value );
 
     /**
      * \brief   Writes number with floating point value to the writable streaming object
-     * \param   in_value[in]    The number with floating point value to write to writable streaming object
+     * \param   in_value [in]    The number with floating point value to write to writable streaming object
      * \return  Returns true if operation succeeded
      **/
     bool setDouble( double in_value );
 
     /**
      * \brief   Writes ASCII string value to the writable streaming object
-     * \param   in_value[in]    The ASCII string value to write to writable streaming object
+     * \param   in_value [in]    The ASCII string value to write to writable streaming object
      * \return  Returns true if operation succeeded
      **/
     bool setString( const String & in_value );
  
     /**
      * \brief   Writes null-terminated ASCII string value to the writable streaming object
-     * \param   in_value[in]    The null-terminated ASCII string value to write to writable streaming object
+     * \param   in_value [in]    The null-terminated ASCII string value to write to writable streaming object
      * \return  Returns true if operation succeeded
      **/
     bool setString( const char * in_value );
 
     /**
      * \brief   Writes wide-char string value to the writable streaming object
-     * \param   in_value[in]    The wide-char string value to write to writable streaming object
+     * \param   in_value [in]    The wide-char string value to write to writable streaming object
      * \return  Returns true if operation succeeded
      **/
     bool setString( const WideString & in_value );
 
     /**
      * \brief   Writes null-terminated wide-char string value to the writable streaming object
-     * \param   in_value[in]    The null-terminated wide-char string value to write to writable streaming object
+     * \param   in_value [in]    The null-terminated wide-char string value to write to writable streaming object
      * \return  Returns true if operation succeeded
      **/
     bool setString( const wchar_t * in_value );
@@ -150,7 +150,7 @@ public:
      *          Unlike SetString() function, no end of string value will be added to the end.
      *          Call SetEndOfString with parameter 'false', to set ASCII end of string value
      *          when operation is completed.
-     * \param   in_value[in]    The null-terminated ASCII string value to write to writable streaming object
+     * \param   in_value [in]    The null-terminated ASCII string value to write to writable streaming object
      * \return  Returns true if operation succeeded
      **/
     bool appendString( const char * in_value );
@@ -160,7 +160,7 @@ public:
      *          Unlike SetString() function, no end of string value will be added to the end.
      *          Call SetEndOfString with parameter 'true', to set wide-char (Unicode) end of string value
      *          when operation is completed.
-     * \param   in_value[in]    The null-terminated wide-char (Unicode) string value to write to writable streaming object
+     * \param   in_value [in]    The null-terminated wide-char (Unicode) string value to write to writable streaming object
      * \return  Returns true if operation succeeded
      **/
     bool appendString( const wchar_t * in_value );
@@ -171,7 +171,7 @@ public:
      *          No end of string value will be added to the end.
      *          Call SetEndOfString with parameter 'false', to set ASCII end of string value
      *          when operation is completed.
-     * \param   in_value[in]    The ASCII string value to write to writable streaming object
+     * \param   in_value [in]    The ASCII string value to write to writable streaming object
      * \return  Returns true if operation succeeded
      **/
     bool writeLine( const char * in_value );
@@ -182,7 +182,7 @@ public:
      *          No end of string value will be added to the end.
      *          Call SetEndOfString with parameter 'true', to set wide-char (Unicode) end of string value
      *          when operation is completed.
-     * \param   in_value[in]    The null-terminated wide-char string value to write to writable streaming object
+     * \param   in_value [in]    The null-terminated wide-char string value to write to writable streaming object
      * \return  Returns true if operation succeeded
      **/
     bool writeLine( const wchar_t* in_value );

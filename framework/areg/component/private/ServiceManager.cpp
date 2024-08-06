@@ -61,13 +61,11 @@ ServiceManager & ServiceManager::getInstance( void )
 
 bool ServiceManager::_startServiceManager( void )
 {
-    OUTPUT_DBG("Starting Service Manager");
     return getInstance()._startServiceManagerThread( );
 }
 
 void ServiceManager::_stopServiceManager(bool waitComplete)
 {
-    OUTPUT_DBG( "Stopping Service Manager" );
     getInstance()._stopServiceManagerThread(waitComplete);
 }
 
@@ -268,25 +266,9 @@ void ServiceManager::readyForEvents( bool isReady )
 
 bool ServiceManager::_startServiceManagerThread( void )
 {
-    bool result = false;
     Lock lock(mLock);
-    if ( isReady() == false )
-    {
-        ASSERT(isRunning() == false);
-        if ( createThread(NECommon::WAIT_INFINITE) && waitForDispatcherStart(NECommon::WAIT_INFINITE) )
-        {
-            result = true;
-        }
-        else
-        {
-            OUTPUT_ERR("Failed to create [ %s ] Service Manager thread.", SERVICE_MANAGER_THREAD_NAME.data());
-        }
-    }
-    else
-    {
-        result = true;
-    }
-    return result;
+    ASSERT(isReady() || (isRunning() == false));
+    return (isReady() || (createThread(NECommon::WAIT_INFINITE) && waitForDispatcherStart(NECommon::WAIT_INFINITE)));
 }
 
 void ServiceManager::_stopServiceManagerThread(bool waitComplete)

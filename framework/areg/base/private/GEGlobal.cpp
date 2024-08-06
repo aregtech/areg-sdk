@@ -17,25 +17,25 @@
 
 #ifdef  WINDOWS
 
-    #if     WIN32
+    #if (defined(WIN32) && WIN32)
         MACRO_COMPILER_MESSAGE("Compiling with Win32 API")
     #else   // WIN32
         MACRO_COMPILER_MESSAGE( "Compiling in Windows with unknown API" )
     #endif // WIN32
 
-    #if     OUTPUT_DEBUG
+    #if (defined(OUTPUT_DEBUG) && OUTPUT_DEBUG)
         MACRO_COMPILER_MESSAGE("Compiling the sources WITH debug outputs, the output debug level is" OUTPUT_DEBUG_LEVEL)
     #else   // !OUTPUT_DEBUG
         MACRO_COMPILER_MESSAGE("Compiling the sources WITHOUT debug outputs")
     #endif // OUTPUT_DEBUG
 
-    #if     AREG_LOGS
+    #if (defined(AREG_LOGS) && AREG_LOGS)
         MACRO_COMPILER_MESSAGE("Compiling the sources WITH logs")
     #else   // !AREG_LOGS
         MACRO_COMPILER_MESSAGE("Compiling the sources WITHOUT logs")
     #endif // AREG_LOGS
 
-    #if     AREG_EXTENDED
+    #if (defined(AREG_EXTENDED) && AREG_EXTENDED)
         MACRO_COMPILER_MESSAGE("Compiling the sources WITH extended features")
     #else   // !AREG_EXTENDED
         MACRO_COMPILER_MESSAGE("Compiling the sources WITHOUT extended features")

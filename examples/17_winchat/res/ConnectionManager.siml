@@ -75,7 +75,7 @@
                 <Parameter DataType="DateTime" ID="23" Name="dateTime">
                     <Description>The client service connection time-stamp in UTC</Description>
                 </Parameter>
-                <Parameter DataType="eConnectionResult" ID="25" Name="result">
+                <Parameter DataType="eConnectionResult" ID="25" Name="conResult">
                     <Description>The connection operation result</Description>
                 </Parameter>
             </ParamList>

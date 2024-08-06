@@ -243,7 +243,6 @@ public:
      * \param   scopeName   The name of a single scope or scope group ended with '*' to change priority.
      * \param   scopeId     The ID of the scope, ignored in case of scope group.
      * \param   newPrio     The new priority to set. Can be bitwise combination of priorities.
-     * \return  Returns true if scope found and priority changed.
      **/
     static void updateScopes(const String & scopeName, unsigned int scopeId, unsigned int newPrio);
 
@@ -403,7 +402,6 @@ private:
 
     /**
      * \brief   Loads scopes and sets priorities specified in configuration.
-     * \return  Returns true, if loading of scopes succeeded.
      **/
     void traceStartLogs( void );
 

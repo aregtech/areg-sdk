@@ -76,7 +76,6 @@ ServiceClientConnectionBase::~ServiceClientConnectionBase(void)
 void ServiceClientConnectionBase::serviceConnectionEvent(const RemoteMessage& msgReceived)
 {
     TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_serviceConnectionEvent);
-    Lock lock(mLock);
 
     ITEM_ID cookie{ NEService::COOKIE_UNKNOWN };
     NEService::eServiceConnection connection{ NEService::eServiceConnection::ServiceConnectionUnknown };
@@ -116,8 +115,9 @@ void ServiceClientConnectionBase::serviceConnectionEvent(const RemoteMessage& ms
         }
         break;
 
-    case NEService::eServiceConnection::ServiceRejected:
-    case NEService::eServiceConnection::ServiceShutdown:
+    case NEService::eServiceConnection::ServiceConnectionUnknown:   // fall through
+    case NEService::eServiceConnection::ServiceRejected:            // fall through
+    case NEService::eServiceConnection::ServiceShutdown:            // fall through
     default:
         {
             cancelConnection();
@@ -220,7 +220,7 @@ void ServiceClientConnectionBase::onServiceReconnectTimerExpired( void )
 void ServiceClientConnectionBase::onServiceStart(void)
 {
     TRACE_SCOPE(areg_ipc_private_ServiceClientConnectionBase_onServiceConnectionStart);
-    TRACE_DBG("Starting remove servicing");;
+    TRACE_DBG("Starting remove servicing");
 
     mChannel.setCookie( NEService::COOKIE_LOCAL );
     mChannel.setSource( NEService::SOURCE_UNKNOWN );
@@ -340,11 +340,11 @@ void ServiceClientConnectionBase::onServiceExit( void )
     onServiceStop( );
 }
 
-void ServiceClientConnectionBase::onServiceMessageReceived( const RemoteMessage & msgReceived )
+void ServiceClientConnectionBase::onServiceMessageReceived( const RemoteMessage & /* msgReceived */ )
 {
 }
 
-void ServiceClientConnectionBase::onServiceMessageSend( const RemoteMessage & msgSend )
+void ServiceClientConnectionBase::onServiceMessageSend( const RemoteMessage & /* msgSend */ )
 {
 }
 

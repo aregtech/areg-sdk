@@ -56,6 +56,7 @@ protected:
      * \brief   Default constructor. Protected.
      **/
     IEGenericObject( void );
+
     /**
      * \brief   Initialization Constructor. Protected.
      **/
@@ -65,7 +66,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    virtual ~IEGenericObject( void );
+    virtual ~IEGenericObject( void ) = default;
 
 //////////////////////////////////////////////////////////////////////////
 // Overrides
@@ -109,6 +110,10 @@ public:
      *          The meaning of content may vary in different classes.
      **/
     void *  mObjData;
+
+private:
+    IEGenericObject(const IEGenericObject & /* src */) = delete;
+    IEGenericObject & operator = (const IEGenericObject & /* src */) = delete;
 };
 
 //////////////////////////////////////////////////////////////////////////

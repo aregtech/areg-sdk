@@ -174,8 +174,8 @@ NERegistry::ServiceList::ServiceList( const NERegistry::ServiceEntry & entry )
 
 const NERegistry::ServiceEntry & NERegistry::ServiceList::getService( const String & serviceName ) const
 {
-    int i = findService(serviceName);
-    return (i == NECommon::INVALID_INDEX ? NERegistry::invalidServiceEntry() : mListServices.getAt(i));
+    int index = findService(serviceName);
+    return (index == NECommon::INVALID_INDEX ? NERegistry::invalidServiceEntry() : mListServices.getAt(static_cast<uint32_t>(index)));
 }
 
 int NERegistry::ServiceList::findService( const NERegistry::ServiceEntry & entry ) const
@@ -256,7 +256,7 @@ NERegistry::WorkerThreadList::WorkerThreadList( const NERegistry::WorkerThreadEn
 const NERegistry::WorkerThreadEntry & NERegistry::WorkerThreadList::getWorkerThread( const String & threadName ) const
 {
     int index = findThread(threadName);
-    return (index == NECommon::INVALID_INDEX ? NERegistry::invalidWorkerThreadEntry() : mListWorkers.getAt(index));
+    return (index == NECommon::INVALID_INDEX ? NERegistry::invalidWorkerThreadEntry() : mListWorkers.getAt(static_cast<uint32_t>(index)));
 }
 
 int NERegistry::WorkerThreadList::findThread( const String & threadName ) const
@@ -334,7 +334,7 @@ NERegistry::DependencyList::DependencyList( const NERegistry::DependencyEntry & 
 const NERegistry::DependencyEntry & NERegistry::DependencyList::getDependency( const String & roleName ) const
 {
     int index = findDependency(roleName);
-    return (index == NECommon::INVALID_INDEX ? NERegistry::invalidDepedencyEntry() : mListDependencies.getAt(index) );
+    return (index == NECommon::INVALID_INDEX ? NERegistry::invalidDepedencyEntry() : mListDependencies.getAt(static_cast<uint32_t>(index)) );
 }
 
 int NERegistry::DependencyList::findDependency( const NERegistry::DependencyEntry & entry ) const
@@ -535,7 +535,7 @@ NERegistry::ServiceEntry & NERegistry::ComponentEntry::addSupportedService(const
         mSupportedServices.mListServices.add(NERegistry::ServiceEntry(serviceName, version));
     }
 
-    return mSupportedServices.mListServices.getAt(index);
+    return mSupportedServices.mListServices.getAt(static_cast<uint32_t>(index));
 }
 
 bool NERegistry::ComponentEntry::removeSupportedService( const String & serviceName )
@@ -628,7 +628,7 @@ NERegistry::DependencyEntry & NERegistry::ComponentEntry::addDependencyService(c
 {
     int index = static_cast<int>(mDependencyServices.mListDependencies.getSize());
     mDependencyServices.mListDependencies.add(NERegistry::DependencyEntry(roleName));
-    return mDependencyServices.mListDependencies.getAt(index);
+    return mDependencyServices.mListDependencies.getAt(static_cast<uint32_t>(index));
 }
 
 int NERegistry::ComponentEntry::findDependencyService( const NERegistry::DependencyEntry& entry ) const
@@ -711,7 +711,7 @@ NERegistry::ComponentList::ComponentList(  const NERegistry::ComponentEntry & en
 const NERegistry::ComponentEntry & NERegistry::ComponentList::getComponent( const String & roleName ) const
 {
     int index = findComponent(roleName);
-    return (index != NECommon::INVALID_INDEX ? mListComponents.getAt(index) : NERegistry::invalidComponentEntry());
+    return (index != NECommon::INVALID_INDEX ? mListComponents.getAt(static_cast<uint32_t>(index)) : NERegistry::invalidComponentEntry());
 }
 
 int NERegistry::ComponentList::findComponent(const String & roleName) const
@@ -815,7 +815,7 @@ NERegistry::ComponentEntry & NERegistry::ComponentThreadEntry::addComponent(cons
         mComponents.mListComponents.add( NERegistry::ComponentEntry(mThreadName.getString(), roleName, funcCreate, funcDelete));
     }
 
-    return mComponents.mListComponents.getAt(index);
+    return mComponents.mListComponents.getAt(static_cast<uint32_t>(index));
 }
 
 bool NERegistry::ComponentThreadEntry::removeComponent( const String & roleName )
@@ -873,7 +873,7 @@ NERegistry::ComponentThreadList::ComponentThreadList( const NERegistry::Componen
 const NERegistry::ComponentThreadEntry & NERegistry::ComponentThreadList::getThread( const String & threadName ) const
 {
     int index = findThread(threadName);
-    return (index != NECommon::INVALID_INDEX ? mListThreads.getAt(index) : NERegistry::invalidThreadEntry());
+    return (index != NECommon::INVALID_INDEX ? mListThreads.getAt(static_cast<uint32_t>(index)) : NERegistry::invalidThreadEntry());
 }
 
 int NERegistry::ComponentThreadList::findThread( const NERegistry::ComponentThreadEntry& entry ) const
@@ -979,7 +979,7 @@ NERegistry::ComponentThreadEntry & NERegistry::Model::addThread(const String & t
         mModelThreads.mListThreads.add(NERegistry::ComponentThreadEntry(threadName));
     }
 
-    return mModelThreads.mListThreads.getAt(index);
+    return mModelThreads.mListThreads.getAt(static_cast<uint32_t>(index));
 }
 
 bool NERegistry::Model::removeThread( const String & threadName )

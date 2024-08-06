@@ -77,7 +77,7 @@ public:
      *          event is going to be processed.
      * \param   eventElem   The notification event object to process.
      **/
-    virtual void processNotificationEvent( NotificationEvent & eventElem ) = 0;
+    virtual void processNotificationEvent( NotificationEvent & eventElem ) override = 0;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

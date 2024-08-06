@@ -56,7 +56,7 @@ void PageConnections::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(PageConnections, CPropertyPage)
     ON_BN_CLICKED( IDC_BUTTON_INITIATE_CHAT, &PageConnections::OnClickedButtonInitiateChat )
-    ON_MESSAGE_VOID( WM_KICKIDLE, OnKickIdle )
+    ON_MESSAGE_VOID( WM_KICKIDLE, PageConnections::OnKickIdle )
     ON_UPDATE_COMMAND_UI( IDC_BUTTON_INITIATE_CHAT, &PageConnections::OnBnUpdateInitiateChat )
     ON_WM_DESTROY( )
 END_MESSAGE_MAP()
@@ -239,7 +239,7 @@ const String & PageConnections::GetRegisteredName( void ) const
     return mConnectionHandler.GetNickName( );
 }
 
-const uint32_t PageConnections::GetRegisteredCookie( void ) const
+uint32_t PageConnections::GetRegisteredCookie( void ) const
 {
     return mConnectionHandler.GetCookie( );
 }

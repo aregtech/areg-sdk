@@ -113,38 +113,40 @@ void PubSubController::onThreadRuns(void)
             cmd = opts.getSize() == 1u ? static_cast<eCommands>(opts[0u].inCommand) : eCommands::CMD_Error;
             switch (cmd)
             {
-            case eCommands::CMD_Invalidate:
+            case PubSubController::eCommands::CMD_Invalidate:
                 invalidate();
                 message = "Requested to invalidate data...";
                 break;
 
-            case eCommands::CMD_Pause:
+            case PubSubController::eCommands::CMD_Pause:
                 stop();
                 message = "Requested to pause service...";
                 break;
 
-            case eCommands::CMD_Start:
+            case PubSubController::eCommands::CMD_Start:
                 start();
                 message = "Requested to start service...";
                 break;
 
-            case eCommands::CMD_Quit:
+            case PubSubController::eCommands::CMD_Quit:
                 quit();
                 message = "Request to quit application...";
                 break;
 
-            case eCommands::CMD_Help:
+            case PubSubController::eCommands::CMD_Help:
                 break;
 
+            case PubSubController::eCommands::CMD_Undefined:
+            case PubSubController::eCommands::CMD_Error:
             default:
-                cmd = eCommands::CMD_Error;
+                cmd = PubSubController::eCommands::CMD_Error;
                 message.format(NECommon::FormatError.data(), usrInput.getString());
                 break;
             }
         }
         else
         {
-            cmd = eCommands::CMD_Error;
+            cmd = PubSubController::eCommands::CMD_Error;
             message.format(NECommon::FormatError.data(), usrInput.getString());
         }
 

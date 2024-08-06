@@ -70,7 +70,7 @@ void DateTime::formatTime(const DateTime& dateTime, String& OUT result, const st
     {
         time_t secs;
         unsigned short milli, micro;
-        struct tm conv { 0 };
+        struct tm conv { };
         NEUtilities::convMicrosecs(dateTime.mDateTime, secs, milli, micro);
         NEUtilities::convToLocalTm(dateTime.mDateTime, conv);
 

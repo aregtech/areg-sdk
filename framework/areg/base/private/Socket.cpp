@@ -106,12 +106,12 @@ void Socket::closeSocket(void)
 
 int Socket::sendData( const unsigned char * buffer, int length ) const
 {
-    return (isValid() ? NESocket::sendData( *mSocket, buffer, length, mSendSize ) : -1);
+    return (isValid() ? NESocket::sendData( *mSocket, buffer, static_cast<uint32_t>(length), static_cast<uint32_t>(mSendSize) ) : -1);
 }
 
 int Socket::receiveData( unsigned char * buffer, int length ) const
 {
-    return (isValid( ) ? NESocket::receiveData( *mSocket, buffer, length, mRecvSize ) : -1);
+    return (isValid( ) ? NESocket::receiveData( *mSocket, buffer, static_cast<uint32_t>(length), static_cast<uint32_t>(mRecvSize) ) : -1);
 }
 
 bool Socket::setAddress(const char * hostName, unsigned short portNr, bool isServer)

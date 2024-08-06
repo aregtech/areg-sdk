@@ -43,13 +43,13 @@ public:
     void OnDefaultClicked( void );
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 
 	DECLARE_MESSAGE_MAP()
 public:
-    virtual BOOL OnInitDialog( );
-    virtual BOOL OnKillActive( );
-    virtual BOOL OnSetActive( );
+    virtual BOOL OnInitDialog( ) override;
+    virtual BOOL OnKillActive( ) override;
+    virtual BOOL OnSetActive( ) override;
 
 public:
     afx_msg void OnClickedCheckChatMessages( );

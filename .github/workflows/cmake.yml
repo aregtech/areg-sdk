@@ -283,7 +283,7 @@ jobs:
       - name: Setup Java JDK to run code generator
         uses: actions/setup-java@v4.2.1
         with: 
-          java-version: 11
+          java-version: 17
           java-package: jre
           distribution: temurin
 
@@ -320,7 +320,7 @@ jobs:
       - name: Build with CMake
         working-directory: ${{github.workspace}}
         # Build your program with the given configuration
-        run: cmake --build ${{env.CACHE_DEST}} -j 16
+        run: cmake --build ${{env.CACHE_DEST}} -j 20
 
       - name: Run Unit Tests
         if: matrix.config.test == 'ON'

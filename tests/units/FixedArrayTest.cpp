@@ -134,7 +134,6 @@ TEST(FixedArrayTest, TestValues)
     using FixedArray = TEFixedArray<int>;
     constexpr uint32_t elemCount{ 10u };
     constexpr int32_t arr[]{ 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
-    constexpr int len{ MACRO_ARRAYLEN(arr) };
 
     FixedArray notEmpty(elemCount);
     const int* dst = notEmpty.getValues();

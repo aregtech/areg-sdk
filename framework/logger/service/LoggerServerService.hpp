@@ -162,7 +162,7 @@ protected:
 
     /**
      * \brief   Called when need to send a communication message.
-     * \param   msgReceived     The received the communication message. 
+     * \param   msgSend     The the communication message to send. 
      **/
     virtual void onServiceMessageSend(const RemoteMessage & msgSend) override;
 

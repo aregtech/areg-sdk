@@ -101,7 +101,7 @@ Version & Version::convFromString( const String & version )
     pos = version.substring( minor, NECommon::OBJECT_SEPARATOR, pos);
     version.substring( patch, NECommon::OBJECT_SEPARATOR, pos);
 
-    mMajor  = major.toUInt32();;
+    mMajor  = major.toUInt32();
     mMinor  = minor.toUInt32();
     mPatch  = (mMajor != 0) && (mMinor != 0) ? patch.toUInt32() : 0;
 
@@ -160,7 +160,7 @@ String Version::convToString( void ) const
 
     char buffer[ 128 ]{ 0 };
     int len = String::formatString( buffer, 128, format, mMajor, NECommon::OBJECT_SEPARATOR, mMinor, NECommon::OBJECT_SEPARATOR, mPatch );
-    return (len > 0 ? String( buffer, len ) : String::getEmptyString());
+    return (len > 0 ? String( buffer, static_cast<uint32_t>(len) ) : String::getEmptyString());
 }
 
 //////////////////////////////////////////////////////////////////////////

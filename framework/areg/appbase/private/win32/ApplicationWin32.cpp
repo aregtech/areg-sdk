@@ -49,7 +49,7 @@ bool Application::_osStartLocalService(const wchar_t* serviceName, const wchar_t
         SC_HANDLE SvcHandle = ::OpenService(SeMHandle, serviceName, rights);
         if (SvcHandle != nullptr)
         {
-            SERVICE_STATUS serviceStatus = { 0 };
+            SERVICE_STATUS serviceStatus{ };
             if (::QueryServiceStatus(SvcHandle, &serviceStatus))
             {
                 switch (serviceStatus.dwCurrentState)

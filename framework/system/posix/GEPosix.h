@@ -54,7 +54,7 @@
 
 #else // defined(BIT64) || defined(_BIT64)
 
-    #if __GNUC__
+    #if defined(__GNUC__) && (__GNUC__)
         #if __x86_64__ || __ppc64__
             #define BIT64
             #define _BIT64

@@ -106,7 +106,7 @@ public:
      * \brief   Triggered when the system changes the service control state.
      *          This is operated via operating system and valid for Windows OS.
      *          In Linux OS this has no effect.
-     * \tparam  control     The control triggered by system.
+     * \param   control     The control triggered by system.
      **/
     void controlService(SystemServiceBase::eServiceControl control);
 
@@ -232,7 +232,7 @@ public:
 
     /**
      * \brief   Sets the current command of message router service.
-     * \param   cmdService  The message router service command to set.
+     * \param   optService  The router service command option to set.
      **/
     inline void setCurrentOption( NESystemService::eServiceOption optService );
 

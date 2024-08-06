@@ -481,7 +481,7 @@ namespace NEString
      *          Readable are characters, which can be read by human and white-space.
      * \param   ch      ASCII character to check.
      * \return  Returns true if character is readable.
-     * \tparam  The type of ASCII range character. Expecting 8-bit or 16-bit character in range 0 - 0xFF
+     * \tparam  CharType    The type of ASCII range character. Expecting 8-bit or 16-bit character in range 0 - 0xFF
      * \note    The readable and printable characters differ, which readable character can be read without
      *          additional system support. For example, the horizontal and vertical tabs, or carriage return are not considered as readable.
      * \see     isPrintable
@@ -495,7 +495,7 @@ namespace NEString
      *          plus all other white-spaces like tabs, new-line, carriage return, etc..
      * \param   ch      ASCII character to check.
      * \return  Returns true if character is printable.
-     * \tparam  The type of ASCII range character. Expecting 8-bit or 16-bit character in range 0 - 0xFF
+     * \tparam  CharType    The type of ASCII range character. Expecting 8-bit or 16-bit character in range 0 - 0xFF
      * \note    The printable characters include readable characters, but not vice-versa. In addition, it includes
      *          all other white-spaces like tabs, new-line, carriage return, etc.
      * \see     isPrintable
@@ -507,7 +507,7 @@ namespace NEString
      * \brief   Checks whether the character is one of matches in the sequence.
      * \param   ch          The character to check.
      * \param   chSequence  The sequence of characters to have at least one match.
-     * \tparam  The type of ASCII range character. Expecting 8-bit or 16-bit character in range 0 - 0xFF
+     * \tparam  CharType    The type of ASCII range character. Expecting 8-bit or 16-bit character in range 0 - 0xFF
      * \return  Returns true if given character matches one of entries in the given sequence.
      **/
     template<typename CharType>
@@ -688,12 +688,19 @@ namespace NEString
      * \brief   Returns true if a give string starts with specified phrase.
      * \param   strString       The string to check the phrase.
      * \param   phrase          The phrase to check.
-     * \param   ch              The character to check.
      * \param   caseSensitive   If false, it with check ignoring upper / lower case. Otherwise, checks exact match.
      * \return  Returns true if the string starts with given phrase.
      **/
     template<typename CharType>
     bool stringStartsWith(const CharType * strString, const CharType * phrase, bool caseSensitive = true);
+
+    /**
+     * \brief   Returns true if a give string starts with specified phrase.
+     * \param   strString       The string to check the phrase.
+     * \param   ch              The character to check.
+     * \param   caseSensitive   If false, it with check ignoring upper / lower case. Otherwise, checks exact match.
+     * \return  Returns true if the string starts with given phrase.
+     **/
     template<typename CharType>
     bool stringStartsWith(const CharType * strString, const CharType ch, bool caseSensitive = true);
 
@@ -701,12 +708,19 @@ namespace NEString
      * \brief   Returns true if a give string ends with specified phrase.
      * \param   strString   The string to check the phrase.
      * \param   phrase      The phrase to check.
-     * \param   ch              The character to check.
      * \param   caseSensitive If false, it with check ignoring upper / lower case. Otherwise, checks exact match.
      * \return  Returns true if the string ends with given phrase.
      **/
     template<typename CharType>
     bool stringEndsWith(const CharType * strString, const CharType * phrase, bool caseSensitive = true);
+
+    /**
+     * \brief   Returns true if a give string ends with specified phrase.
+     * \param   strString   The string to check the phrase.
+     * \param   ch              The character to check.
+     * \param   caseSensitive If false, it with check ignoring upper / lower case. Otherwise, checks exact match.
+     * \return  Returns true if the string ends with given phrase.
+     **/
     template<typename CharType>
     bool stringEndsWith(const CharType * strString, const CharType ch, bool caseSensitive = true);
 
@@ -771,7 +785,6 @@ namespace NEString
      *                  than the approximate size of buffer. The method start checking for buffer
      *                  sizes 128, 256, 512 and 1024. If it is required to allocate more than
      *                  1024 bytes, the function returns -1.
-     * \param   dummy   Not used.
      * \param   format  The formatting string to calculate required size.
      * \param   argptr  The pointer to the argument list that fits the format.
      * \return  Returned values are 128, 256, 512, 1024 or -1 if failed to format or the required
@@ -786,8 +799,8 @@ namespace NEString
 
     /**
      * \brief   Checks whether the buffer size fits to format a string.
-     * \param   size    A constant expression to check the size.
-     * \param   dummy   Is not used.
+     * \tparam  size    A constant expression to check the size.
+     * \tparam  dummy   Is not used.
      * \param   format  The formatting string.
      * \param   argptr  The pointer to the argument list.
      * \return  Returns true if the checking size is enough to format the string.
@@ -806,12 +819,12 @@ template<typename CharType, typename IntType>
 int NEString::makeString( CharType * strDst, NEString::CharCount charCount, IntType digit, NEString::eRadix radix )
 {
     int result = 0;
+    IntType num = NEMath::getAbs<IntType>(digit);
     if ( (NEString::isEmpty<CharType>(strDst) == false) && (charCount > 1) )
     {
         static const CharType _valid[]  = {'0', '1', '2', '3', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', '\0'};
 
         CharType * dst = strDst;
-        IntType num    = MACRO_ABS(digit);
         radix = radix != NEString::eRadix::RadixAutomatic ? radix : NEString::eRadix::RadixDecimal;
 
         if ((radix >= NEString::eRadix::RadixBinary) && (radix <= NEString::eRadix::RadixHexadecimal) )
@@ -834,7 +847,6 @@ int NEString::makeString( CharType * strDst, NEString::CharCount charCount, IntT
     }
     else
     {
-        IntType num = MACRO_ABS( digit );
         radix = radix != NEString::eRadix::RadixAutomatic ? radix : NEString::eRadix::RadixDecimal;
 
         if ( (radix >= NEString::eRadix::RadixBinary) && (radix <= NEString::eRadix::RadixHexadecimal) )
@@ -1104,7 +1116,7 @@ NEString::CharPos NEString::findLast( CharType   chSearch
             {
                 if ( *end == chSearch )
                 {
-                    result = MACRO_ELEM_COUNT(strSource, end);
+                    result = static_cast<NEString::CharPos>(MACRO_ELEM_COUNT(strSource, end));
                     --end;
                     if ( (out_next != nullptr) && (end >= strSource) )
                     {
@@ -1686,9 +1698,12 @@ inline NEString::CharCount NEString::getStringLength( const CharType * theString
     if ( NEString::isEmpty<CharType>(theString) == false )
     {
         result = 1;
-        while ( * ++ theString != static_cast<CharType>(EndOfString) )
+        while ( *++theString != static_cast<CharType>(EndOfString) )
+        {
             ++ result;
+        }
     }
+
     return result;
 }
 
@@ -1704,7 +1719,7 @@ inline NEString::CharCount NEString::getStringLineLength(const CharType* theStri
         }
     }
 
-    return MACRO_ELEM_COUNT(start, theString);
+    return static_cast<NEString::CharCount>( MACRO_ELEM_COUNT(start, theString) );
 }
 
 template<typename CharDst, typename CharSrc>
@@ -1713,17 +1728,17 @@ NEString::CharCount NEString::copyString( CharDst *           strDst
                                         , const CharSrc *     strSrc
                                         , NEString::CharCount charsCopy /*= NEString::COUNT_ALL*/)
 {
-    constexpr int sizeSrc = sizeof( CharSrc );
-    constexpr int sizeDst = sizeof( CharDst );
+    constexpr uint32_t sizeSrc { sizeof( CharSrc ) };
+    constexpr uint32_t sizeDst { sizeof( CharDst ) };
 
-    NEString::CharCount result = 0;
+    uint32_t result { 0 };
 
     if ( sizeSrc == sizeDst )
     {
         if ( strDst != nullptr )
         {
             charsCopy = charsCopy == NEString::COUNT_ALL ? NEString::getStringLength<CharSrc>( strSrc ) : charsCopy;
-            result = NEMemory::memCopy( strDst, dstSpace * sizeDst, strSrc, charsCopy * sizeSrc ) / sizeDst;
+            result = NEMemory::memCopy( strDst, static_cast<uint32_t>(dstSpace) * sizeDst, strSrc, static_cast<uint32_t>(charsCopy) * sizeSrc ) / sizeDst;
             strDst[result] = NEString::EndOfString;
         }
     }
@@ -1739,7 +1754,7 @@ NEString::CharCount NEString::copyString( CharDst *           strDst
                 *dst++ = static_cast<CharDst>(*strSrc++);
 
             *dst = static_cast<CharDst>(EndOfString);
-            result = static_cast<NEString::CharCount>(dst - strDst);
+            result = static_cast<uint32_t>(dst - strDst);
         }
     }
     else if (strDst != nullptr)
@@ -1747,7 +1762,7 @@ NEString::CharCount NEString::copyString( CharDst *           strDst
         strDst[0] = NEString::EndOfString;
     }
 
-    return result;
+    return static_cast<NEString::CharCount>(result);
 }
 
 template <typename CharType>

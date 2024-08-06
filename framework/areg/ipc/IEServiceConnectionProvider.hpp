@@ -68,8 +68,8 @@ public:
      *          The function will read configuration file and initialize settings.
      *          If file path is nullptr or empty, Remote Service will have default 
      *          configuration settings.
-     * \param   service     The service module name of the configuration to extract connection information.
-     * \param   connectType The bitwise set of connection types like 'tcpip' or 'udp'.
+     * \param   service         The service module name of the configuration to extract connection information.
+     * \param   connectTypes    The bitwise set of connection types like 'tcpip' or 'udp'.
      * \return  Returns true if system could configure. Otherwise, it returns false.
      **/
     virtual bool setupServiceConnectionData( NERemoteService::eRemoteServices service, uint32_t connectTypes ) = 0;

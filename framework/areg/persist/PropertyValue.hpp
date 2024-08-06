@@ -61,7 +61,7 @@ public:
     explicit PropertyValue(bool bValue);
     /**
      * \brief   Initializes Value from list of identifiers.
-     * \param   value    The Value as a list of identifiers to set.
+     * \param   idList  The Value as a list of identifiers to set.
      **/
     explicit PropertyValue( const std::vector<Identifier> & idList );
     /**

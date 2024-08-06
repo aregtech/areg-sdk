@@ -96,12 +96,12 @@ TEST( FileTest, Win32FileRead )
     constexpr char fileName[ ]{ "./config/areg.init" };
     ASSERT_TRUE( PathFileExistsA(fileName) );
 
-    HANDLE hFile = ::CreateFileA( fileName, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_READONLY, NULL );
-    ASSERT_TRUE( hFile != NULL );
+    HANDLE hFile = ::CreateFileA( fileName, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_READONLY, nullptr );
+    ASSERT_TRUE( hFile != nullptr );
 
     char buffer[ 1024 ]{ 0 };
     DWORD dwRead{ 0 };
-    ASSERT_TRUE( ::ReadFile( hFile, buffer, 1024, &dwRead, NULL ) );
+    ASSERT_TRUE( ::ReadFile( hFile, buffer, 1024, &dwRead, nullptr ) );
     ASSERT_EQ( dwRead, 1024 );
     ASSERT_EQ( buffer[ 0 ], '#' );
 
@@ -123,20 +123,20 @@ TEST( FileTest, Win32FileReadWrite )
     constexpr char fileNameRead[ ]{ "./config/areg.init" };
     constexpr char fileNameWrite[ ]{ "./write_with_win32.txt" };
 
-    HANDLE hFileRead = ::CreateFileA( fileNameRead, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_READONLY, NULL );
-    ASSERT_TRUE( hFileRead != NULL );
+    HANDLE hFileRead = ::CreateFileA( fileNameRead, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_READONLY, nullptr );
+    ASSERT_TRUE( hFileRead != nullptr );
 
     char buffer[ 1024 ]{ 0 };
     DWORD dwRead{ 0 };
-    ASSERT_TRUE( ::ReadFile( hFileRead, buffer, 1024, &dwRead, NULL ) );
+    ASSERT_TRUE( ::ReadFile( hFileRead, buffer, 1024, &dwRead, nullptr ) );
     ASSERT_EQ( dwRead, 1024 );
     ASSERT_EQ( buffer[ 0 ], '#' );
     ASSERT_TRUE( ::CloseHandle( hFileRead ));
 
-    HANDLE hFileWrite = ::CreateFileA( fileNameWrite, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
-    ASSERT_TRUE( hFileWrite != NULL );
+    HANDLE hFileWrite = ::CreateFileA( fileNameWrite, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr );
+    ASSERT_TRUE( hFileWrite != nullptr );
     DWORD dwWrite{ 0 };
-    ASSERT_TRUE( ::WriteFile( hFileWrite, buffer, 1024, &dwWrite, NULL ) );
+    ASSERT_TRUE( ::WriteFile( hFileWrite, buffer, 1024, &dwWrite, nullptr ) );
     ASSERT_EQ( dwWrite, 1024 );
 
     ASSERT_TRUE( ::CloseHandle( hFileWrite ));

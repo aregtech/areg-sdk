@@ -28,9 +28,6 @@
 #include "logobserver/lib/LogObserverApi.h"
 #include "logobserver/lib/private/LoggerClient.hpp"
 
-#define IS_VALID(callback)  ((mLoggerClient.mCallbacks != nullptr) && ((callback) != nullptr))
-
-
 ObserverMessageProcessor::ObserverMessageProcessor(LoggerClient& loggerClient)
     : mLoggerClient (loggerClient)
 {
@@ -259,9 +256,9 @@ void ObserverMessageProcessor::notifyLogMessage(const RemoteMessage& msgReceived
                 msgLog.msgTimestamp = static_cast<unsigned long long>(msgRemote->logTimestamp);
                 msgLog.msgScopeId   = static_cast<unsigned int>(msgRemote->logScopeId);
 
-                NEString::copyString(msgLog.msgLogText, LENGTH_MESSAGE, msgRemote->logMessage, msgRemote->logMessageLen);
-                NEString::copyString(msgLog.msgThread, LENGTH_NAME, msgRemote->logThread, msgRemote->logThreadLen);
-                NEString::copyString(msgLog.msgModule, LENGTH_NAME, msgRemote->logModule, msgRemote->logModuleLen);
+                NEString::copyString(msgLog.msgLogText, LENGTH_MESSAGE, msgRemote->logMessage, static_cast<NEString::CharCount>(msgRemote->logMessageLen));
+                NEString::copyString(msgLog.msgThread, LENGTH_NAME, msgRemote->logThread     , static_cast<NEString::CharCount>(msgRemote->logThreadLen) );
+                NEString::copyString(msgLog.msgModule, LENGTH_NAME, msgRemote->logModule     , static_cast<NEString::CharCount>(msgRemote->logModuleLen) );
             }
             else if (mLoggerClient.mCallbacks->evtLogMessageEx != nullptr)
             {

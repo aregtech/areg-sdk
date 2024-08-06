@@ -31,7 +31,7 @@ PatientServiceWorkerConsumer::PatientServiceWorkerConsumer(const char * consumer
 {
 }
 
-void PatientServiceWorkerConsumer::registerEventConsumers(WorkerThread & workThread, ComponentThread & masterThread )
+void PatientServiceWorkerConsumer::registerEventConsumers(WorkerThread & /* workThread */, ComponentThread & /* masterThread */ )
 {
     bool quitApp = false;
 
@@ -45,7 +45,7 @@ void PatientServiceWorkerConsumer::registerEventConsumers(WorkerThread & workThr
         char firstName[128] = {0};
         char lastName[128]  = {0};
         float weight        = 0.0f;
-        int age             = 0;
+        uint32_t age        = 0u;
 
         printf("\n===============================");
         printf("\nEnter Patient information .....\n");
@@ -107,6 +107,6 @@ void PatientServiceWorkerConsumer::registerEventConsumers(WorkerThread & workThr
     Application::signalAppQuit();
 }
 
-void PatientServiceWorkerConsumer::unregisterEventConsumers(WorkerThread & workThread)
+void PatientServiceWorkerConsumer::unregisterEventConsumers(WorkerThread & /* workThread */)
 {
 }

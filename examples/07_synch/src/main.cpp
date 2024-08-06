@@ -43,10 +43,10 @@ class GoodbyeThread;
 // Synchronization objects
 //////////////////////////////////////////////////////////////////////////
 
-SynchEvent  gEventExit(true, false);    //!< Non-signaled, manual reset event
-SynchEvent  gEventRun(true, true);      //!< Non-signaled, auto-reset event
-Mutex       gMutexWait(false);          //!< Not locked mutex
-Mutex       gMutexDummy(false);         //!< Not locked mutex
+static SynchEvent  gEventExit(true, false);    //!< Non-signaled, manual reset event
+static SynchEvent  gEventRun(true, true);      //!< Non-signaled, auto-reset event
+static Mutex       gMutexWait(false);          //!< Not locked mutex
+static Mutex       gMutexDummy(false);         //!< Not locked mutex
 
 //!< HelloThread class declaration, simple thread.
 class HelloThread   : public    Thread

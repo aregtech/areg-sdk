@@ -73,13 +73,13 @@ public:
 
     /**
      * \brief   Copies data and time data from given source.
-     * \param   src     The source to copy data.
+     * \param   dateTime    The source to copy data.
      **/
     DateTime( const DateTime & dateTime );
 
     /**
      * \brief   Moves data and time data from given source.
-     * \param   src     The source to move data.
+     * \param   dateTime    The source to move data.
      **/
     DateTime( DateTime && dateTime ) noexcept;
 
@@ -183,7 +183,7 @@ public:
     /**
      * \brief   Writes (serializes) date and time value to streaming object.
      * \param   stream  Streaming object to serialized date and time value
-     * \param   input   Date and time object, which is contains date and time value and
+     * \param   output  Date and time object, which is contains date and time value and
      *                  should be serialized to streaming object
      **/
     friend inline IEOutStream & operator << ( IEOutStream & stream, const DateTime & output );
@@ -206,7 +206,6 @@ public:
      * \brief   Retrieves and returns current time either in UTC or local time.
      * \param   timeData    On output, it will contain the time values.
      * \param   localTime   If true, timeData is converted to local time.
-     * \return  Returns current date and time value.
      **/
     static void getNow( NEUtilities::sSystemTime & OUT timeData, bool localTime );
 
@@ -248,7 +247,7 @@ public:
      * \brief   Set the date time value. The new value should be set in microseconds since Unix epoch.
      * \param   newTime     The new time in microseconds since Unix epoch (January 1, 1970).
      **/
-    inline const void setTime(const TIME64& newTime);
+    inline void setTime(const TIME64& newTime);
 
     /**
      * \brief   Returns true, if time value is not zero
@@ -403,9 +402,9 @@ inline const TIME64 & DateTime::getTime( void ) const
     return mDateTime;
 }
 
-inline const void DateTime::setTime(const TIME64& newTime)
+inline void DateTime::setTime(const TIME64& newTime)
 {
-    mDateTime = newTime;;
+    mDateTime = newTime;
 }
 
 inline bool DateTime::isValid( void ) const

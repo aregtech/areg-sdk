@@ -93,7 +93,7 @@ void PageConnections::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(PageConnections, CPropertyPage)
     ON_BN_CLICKED(IDC_BUTTON_BROADCAST, &PageConnections::OnClickedButtonBroadcast)
-    ON_MESSAGE_VOID( WM_KICKIDLE, OnKickIdle )
+    ON_MESSAGE_VOID( WM_KICKIDLE, PageConnections::OnKickIdle )
     ON_UPDATE_COMMAND_UI( IDC_BUTTON_BROADCAST, &PageConnections::OnBtnBroadcastUpdate )
     ON_UPDATE_COMMAND_UI( IDC_EDIT_BROADCAST, &PageConnections::OnEditBroadcastUpdate )
     ON_WM_CREATE( )
@@ -276,8 +276,8 @@ LRESULT PageConnections::OnCmdSendMessage( WPARAM wParam, LPARAM lParam )
 
         for ( int i = mLastItem; i < mCtrlList.GetItemCount(); ++ i )
         {
-            LPARAM lParam = mCtrlList.GetItemData(i);
-            if ( data->dataSave == static_cast<uint64_t>(lParam) )
+            LPARAM itmData = mCtrlList.GetItemData(i);
+            if ( data->dataSave == static_cast<uint64_t>(itmData) )
             {
                 mCtrlList.DeleteItem(i);
                 break;
@@ -315,8 +315,8 @@ LRESULT PageConnections::OnCmdTypeMessage( WPARAM wParam, LPARAM lParam )
             {
                 for ( int i = mLastItem; i < mCtrlList.GetItemCount( ); ++ i )
                 {
-                    LPARAM lParam = mCtrlList.GetItemData( i );
-                    if ( data->dataSave == static_cast<uint64_t>(lParam) )
+                    LPARAM itmData = mCtrlList.GetItemData( i );
+                    if ( data->dataSave == static_cast<uint64_t>(itmData) )
                     {
                         if ( isEmpty )
                             mCtrlList.DeleteItem(i);

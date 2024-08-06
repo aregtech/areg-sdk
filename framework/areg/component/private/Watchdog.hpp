@@ -127,12 +127,12 @@ public:
     /**
      * \brief   Returns the watchdog ID.
      */
-    inline const Watchdog::GUARD_ID getId(void) const;
+    inline Watchdog::GUARD_ID getId(void) const;
 
     /**
      * \brief   Returns the watchdog activation sequence number.
      **/
-    inline const Watchdog::SEQUENCE_ID getSequence(void) const;
+    inline Watchdog::SEQUENCE_ID getSequence(void) const;
 
     /**
      * \brief   Returns the instance of component thread that contains this watchdog.
@@ -216,12 +216,12 @@ inline bool Watchdog::isValid(void) const
     return (mHandle != nullptr);
 }
 
-inline const Watchdog::GUARD_ID Watchdog::getId(void) const
+inline Watchdog::GUARD_ID Watchdog::getId(void) const
 {
     return mGuardId;
 }
 
-inline const Watchdog::SEQUENCE_ID Watchdog::getSequence(void) const
+inline Watchdog::SEQUENCE_ID Watchdog::getSequence(void) const
 {
     return mSequence;
 }

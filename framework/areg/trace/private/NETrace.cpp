@@ -349,12 +349,12 @@ AREG_API_IMPL RemoteMessage NETrace::createLogMessage(const NETrace::sLogMessage
         if (NETrace::eLogDataType::LogDataLocal != dataType)
         {
             const String& threadName{ Thread::getThreadName(static_cast<id_type>(log->logThreadId)) };
-            NEMemory::memCopy(log->logThread, NETrace::LOG_NAMES_SIZE, threadName.getString(), threadName.getLength() + 1);
-            log->logThreadLen   = threadName.getLength();
+            NEMemory::memCopy(log->logThread, NETrace::LOG_NAMES_SIZE, threadName.getString(), static_cast<uint32_t>(threadName.getLength()) + 1);
+            log->logThreadLen   = static_cast<uint32_t>(threadName.getLength());
 
             const String& module = Process::getInstance().getAppName();
-            NEMemory::memCopy(log->logModule, NETrace::LOG_NAMES_SIZE, module.getString(), module.getLength() + 1);
-            log->logModuleLen   = module.getLength();
+            NEMemory::memCopy(log->logModule, NETrace::LOG_NAMES_SIZE, module.getString(), static_cast<uint32_t>(module.getLength()) + 1);
+            log->logModuleLen   = static_cast<uint32_t>(module.getLength());
         }
     }
 #endif  // AREG_LOGS

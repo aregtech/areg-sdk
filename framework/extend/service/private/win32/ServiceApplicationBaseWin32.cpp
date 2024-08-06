@@ -46,9 +46,9 @@ VOID WINAPI _win32ServiceCtrlHandler(DWORD);
 
 namespace
 {
-    SERVICE_STATUS          _serviceStatus{ 0 };
+    SERVICE_STATUS          _serviceStatus{ };
     SERVICE_STATUS_HANDLE   _statusHandle{ nullptr };
-    SERVICE_TABLE_ENTRY     _serviceTable[]{ {nullptr, &::_win32ServiceMain}, {nullptr, nullptr} };
+    // SERVICE_TABLE_ENTRY     _serviceTable[]{ {nullptr, &::_win32ServiceMain}, {nullptr, nullptr} };
 } // namespace
 
 //////////////////////////////////////////////////////////////////////////
@@ -138,12 +138,12 @@ bool ServiceApplicationBase::_osCcreateService(void)
                 description.lpDescription = getServiceDescription();
                 ::ChangeServiceConfig2(reinterpret_cast<SC_HANDLE>(mSvcHandle), SERVICE_CONFIG_DESCRIPTION, &description);
 
-                SERVICE_FAILURE_ACTIONS_FLAG actionFlag = { 1 };
+                SERVICE_FAILURE_ACTIONS_FLAG actionFlag { 1 };
                 actionFlag.fFailureActionsOnNonCrashFailures = TRUE;
                 ::ChangeServiceConfig2(reinterpret_cast<SC_HANDLE>(mSvcHandle), SERVICE_CONFIG_FAILURE_ACTIONS_FLAG, &actionFlag);
 
                 constexpr uint32_t count{ 5 };
-                SERVICE_FAILURE_ACTIONS failures = { 0 };
+                SERVICE_FAILURE_ACTIONS failures { };
                 SC_ACTION actions[count];
 
                 failures.dwResetPeriod  = INFINITE;

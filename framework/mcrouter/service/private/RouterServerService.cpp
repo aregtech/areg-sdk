@@ -174,7 +174,15 @@ void RouterServerService::onServiceMessageReceived(const RemoteMessage &msgRecei
     case NEService::eFuncIdRange::RequestRegisterService:           // fall through
     case NEService::eFuncIdRange::ComponentCleanup:                 // fall through
     case NEService::eFuncIdRange::SystemServiceNotifyRegister:      // fall through
-    case NEService::eFuncIdRange::SystemServiceNotifyConnection:
+    case NEService::eFuncIdRange::SystemServiceNotifyConnection:    // fall through
+    case NEService::eFuncIdRange::SystemServiceNotifyInstances:     // fall through
+    case NEService::eFuncIdRange::ServiceLogRegisterScopes:         // fall through
+    case NEService::eFuncIdRange::ServiceLogUpdateScopes:           // fall through
+    case NEService::eFuncIdRange::ServiceLogQueryScopes:            // fall through
+    case NEService::eFuncIdRange::ServiceLogScopesUpdated:          // fall through
+    case NEService::eFuncIdRange::ServiceSaveLogConfiguration:      // fall through
+    case NEService::eFuncIdRange::ServiceLogConfigurationSaved:     // fall through
+    case NEService::eFuncIdRange::ServiceLogMessage:                // fall through
         break;
 
     case NEService::eFuncIdRange::ResponseServiceProviderConnection:// fall through

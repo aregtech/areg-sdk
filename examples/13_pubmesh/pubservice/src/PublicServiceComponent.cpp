@@ -23,7 +23,7 @@ Component * PublicServiceComponent::CreateComponent( const NERegistry::Component
     return DEBUG_NEW PublicServiceComponent(entry, owner);
 }
 
-void PublicServiceComponent::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & entry )
+void PublicServiceComponent::DeleteComponent( Component & compObject, const NERegistry::ComponentEntry & /* entry */ )
 {
     delete (&compObject);
 }

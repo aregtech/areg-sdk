@@ -417,7 +417,7 @@ inline NECommon::sParticipant::sParticipant( void )
     : sessionId   ( InvalidSession )
     , cookie      ( InvalidCookie )
     , nickName    (  )
-{   ;   }
+{      }
 /**
  * Every filed of structure should have copy constructor.
  **/
@@ -425,12 +425,12 @@ inline NECommon::sParticipant::sParticipant( const NECommon::sParticipant & src 
     : sessionId   ( src.sessionId )
     , cookie      ( src.cookie )
     , nickName    ( src.nickName )
-{   ;   }
+{      }
 /**
  * No extra function is called, every field of structure should be able to be cleaned.
  **/
 inline NECommon::sParticipant::~sParticipant( void )
-{   ;   }
+{      }
 /**
  * Copies data from given source.
  **/

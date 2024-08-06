@@ -128,26 +128,25 @@ IMPLEMENT_RUNTIME(NullDispatcherThread, ComponentThread)
 //////////////////////////////////////////////////////////////////////////
 inline NullDispatcherThread::NullDispatcherThread( void )
     : ComponentThread(NullDispatcherName)
-{   ;               }
+{                   }
 
 //////////////////////////////////////////////////////////////////////////
 // NullDispatcherThread class. Disable basic functionalities.
 //////////////////////////////////////////////////////////////////////////
 bool NullDispatcherThread::registerEventConsumer( const RuntimeClassID & /* whichClass*/, IEEventConsumer & /*whichConsumer*/ )
-{   return false;    }
+{   return false;   }
 
 bool NullDispatcherThread::unregisterEventConsumer( const RuntimeClassID & /*whichClass*/, IEEventConsumer & /* whichConsumer*/ )
-{   return false;    }
+{   return false;   }
 
 int NullDispatcherThread::removeConsumer( IEEventConsumer & /* whichConsumer*/ )
-{   return 0;        }
+{   return 0;       }
 
 bool NullDispatcherThread::hasRegisteredConsumer( const RuntimeClassID & /* whichClass */ ) const
-{   return false;    }
+{   return false;   }
 
 bool NullDispatcherThread::postEvent( Event& eventElem )
 {
-    OUTPUT_ERR("Wrong event dispatcher to post event type [ %s ], going to destroy", eventElem.getRuntimeClassName().getString());
     eventElem.destroy();
     ASSERT(false);
     return false;
@@ -217,9 +216,7 @@ DispatcherThread::DispatcherThread (const String & threadName )
 //////////////////////////////////////////////////////////////////////////
 bool DispatcherThread::postEvent( Event& eventElem )
 {
-    OUTPUT_ERR("Wrong postEvent function call, destroying event [ %s ]", eventElem.getRuntimeClassName().getString());
     eventElem.destroy();
-
     ASSERT(false);  // <= this should not be called.
     // You may want to call EventDispatcher::postEvent() and/or filter events here
 

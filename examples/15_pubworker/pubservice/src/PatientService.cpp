@@ -18,7 +18,7 @@ Component * PatientService::CreateComponent(const NERegistry::ComponentEntry & e
     return DEBUG_NEW PatientService(entry, owner);
 }
 
-void PatientService::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
+void PatientService::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
 {
     delete (&compObject);
 }

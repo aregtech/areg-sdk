@@ -183,13 +183,13 @@ public:
 
     /**
      * \brief   Copy constructor.
-     * \param   src     The source of data to copy.
+     * \param   source  The source of data to copy.
      **/
     inline ServiceManagerEventData( const ServiceManagerEventData & source );
 
     /**
      * \brief   Move constructor.
-     * \param   src     The source of data to move.
+     * \param   source  The source of data to move.
      **/
     inline ServiceManagerEventData( ServiceManagerEventData && source ) noexcept;
 

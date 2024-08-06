@@ -15,7 +15,7 @@ Component * ClientComponent::CreateComponent(const NERegistry::ComponentEntry & 
     return DEBUG_NEW ClientComponent(entry, owner);
 }
 
-void ClientComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & entry)
+void ClientComponent::DeleteComponent(Component & compObject, const NERegistry::ComponentEntry & /* entry */)
 {
     delete (&compObject);
 }

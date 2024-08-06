@@ -264,7 +264,7 @@ inline void NELargeData::ImageBlock::release(void)
 
 inline uint32_t NELargeData::ImageBlock::getSize(void) const
 {
-    return (mBlock != 0 ? mBlock->blockSize : 0);
+    return (mBlock != nullptr ? mBlock->blockSize : 0);
 }
 
 inline bool NELargeData::ImageBlock::isEmpty(void) const
