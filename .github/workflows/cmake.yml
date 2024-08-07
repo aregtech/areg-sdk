@@ -357,11 +357,11 @@ jobs:
         if: matrix.config.os == 'windows-latest'
         run: echo "PATH=C:\cygwin;C:\cygwin\bin;%ProgramFiles%\llvm\bin;C:\cygwin\lib;%SYSTEMROOT%\system32;%PATH%" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
-        - name: Set cmake cache destination for Linux
+      - name: Set cmake cache destination for Linux
         if: matrix.config.os == 'ubuntu-latest'
         run: echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> "$GITHUB_ENV"
 
-        - name: Set cmake cache destination for Windows
+      - name: Set cmake cache destination for Windows
         if: matrix.config.os == 'windows-latest' || matrix.config.os == 'windows-2022'
         run: echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> $env:GITHUB_ENV
 
