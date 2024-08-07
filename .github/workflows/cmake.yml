@@ -369,13 +369,13 @@ jobs:
         if: matrix.config.os == 'windows-2022'
         run: echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> $env:GITHUB_ENV
 
-      - name: Configure CMake with enabled extended feature and select compiler family for Linux
+      - name: Configure CMake with enabled extended feature and select compiler family under Linux
         if: matrix.config.os == 'ubuntu-latest' && matrix.config.extend == 'ON' 
         working-directory: ${{github.workspace}}
         run: |
           cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGS:BOOL=${{matrix.config.logs}} -DAREG_BUILD_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_BUILD_TESTS:BOOL=${{matrix.config.test}}
 
-      - name: Configure CMake for disabled extended feature and select compiler name for Linux
+      - name: Configure CMake for disabled extended feature and select compiler name under Linux
         if: matrix.config.os == 'ubuntu-latest' && matrix.config.extend == 'OFF'
         working-directory: ${{github.workspace}}
         run: |
