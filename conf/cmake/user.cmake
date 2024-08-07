@@ -72,7 +72,7 @@ set(AREG_C_COMPILER)
 # Check and set the simple and shortest way to set the compiler
 if(DEFINED AREG_COMPILER_FAMILY AND NOT ${AREG_COMPILER_FAMILY} STREQUAL "")
 
-    message(STATUS ">>> User selected C/C++ compiler family \'${AREG_COMPILER_FAMILY}\' to build under CMAKE_SYSTEM_NAME = \'${CMAKE_SYSTEM_NAME}\', CMAKE_SYSTEM_XXX=\'${CMAKE_SYSTEM_XXX}\', MSVC=\'${MSVC}\'")
+    message(STATUS ">>> User selected C/C++ compiler family \'${AREG_COMPILER_FAMILY}\' to build under CMAKE_SYSTEM_NAME = \'${CMAKE_SYSTEM_NAME}\', WIN32=\'${WIN32}\' MSVC=\'${MSVC}\'")
     if(${AREG_COMPILER_FAMILY} STREQUAL "gnu")
         set(AREG_CXX_COMPILER "g++")
         set(AREG_C_COMPILER   "gcc")
