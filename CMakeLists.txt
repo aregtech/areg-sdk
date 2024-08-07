@@ -21,9 +21,9 @@ include(${AREG_CMAKE_CONFIG_DIR}/user.cmake)
 # Otherwise, use system default compiler.
 # See in 'common.cmake'
 if (NOT "${AREG_COMPILER_FAMILY}" STREQUAL "")
-    set(CMAKE_CXX_COMPILER  "${AREG_CXX_COMPILER}")
-    set(CMAKE_C_COMPILER    "${AREG_C_COMPILER}")
-    set(CMAKE_CXX_COMPILER_ID "${AREG_COMPILER_ID}")
+    set(CMAKE_CXX_COMPILER      "${AREG_CXX_COMPILER}")
+    set(CMAKE_C_COMPILER        "${AREG_C_COMPILER}")
+    # set(CMAKE_CXX_COMPILER_ID   "${AREG_COMPILER_ID}")
     message(STATUS ">>> Set CMAKE_CXX_COMPILER compiler \'${CMAKE_CXX_COMPILER}\'")
 else()
     message(STATUS ">>> Use system default CMAKE_CXX_COMPILER compiler \'${CMAKE_CXX_COMPILER}\'")
