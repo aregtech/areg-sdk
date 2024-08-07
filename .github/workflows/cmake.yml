@@ -205,7 +205,7 @@ jobs:
 
           # compile AREG engine as a shared library with clang on Windows, enable AREG extensions and logs
           - { name  : win-clang-shared-ext-log,
-              os    : windows-2022,
+              os    : windows-latest,
               lib   : shared,
               family: llvm,
               cxx   : clang-cl,
@@ -217,7 +217,7 @@ jobs:
 
             # compile AREG engine as a shared library with clang on Windows, enable AREG extensions and no logs
           - { name  : win-clang-shared-ext-nolog,
-              os    : windows-2022,
+              os    : windows-latest,
               lib   : shared,
               family: llvm,
               cxx   : clang-cl,
@@ -241,7 +241,7 @@ jobs:
 
             # compile AREG engine as a static library with clang on Windows, enable AREG extensions, logs, examples and tests
           - { name  : win-clang-shared-all-test,
-              os    : windows-2022,
+              os    : windows-latest,
               lib   : shared,
               family: llvm,
               cxx   : clang-cl,
@@ -253,7 +253,7 @@ jobs:
 
             # compile AREG engine as a shared library with clang on Windows, disable AREG extensions and no logs
           - { name  : win-clang-shared-noext-nolog,
-              os    : windows-2022,
+              os    : windows-latest,
               lib   : shared,
               family: llvm,
               cxx   : clang-cl,
