@@ -230,8 +230,8 @@ TEST(ArrayListTest, TestAdd)
     ASSERT_EQ(arrUnique.getSize(), arrMixed.getSize());
     const int* values = arrMixed.getValues();
     ASSERT_TRUE(::memcmp(values, _unique, sizeof(int) * _lenUnique) == 0);
-    int lenUnq = arrUnique.getSize();
-    int lenMix = arrMixed.getSize();
+    uint32_t lenUnq = arrUnique.getSize();
+    uint32_t lenMix = arrMixed.getSize();
 
     for (uint32_t i = 0; i < arrMixed.getSize(); ++i)
     {
@@ -346,7 +346,7 @@ TEST(ArrayListTest, TestInsert)
 
     for (uint32_t i = 0; i < _len2; ++i)
     {
-        arr2.insertAt(i, i, 1);
+        arr2.insertAt(i, static_cast<int>(i), 1);
         EXPECT_EQ(arr2[i], _arr2[i]);
     }
 
@@ -459,11 +459,11 @@ TEST(ArrayListTest, TestFind)
         EXPECT_TRUE(arr.contains(i, 0));
         EXPECT_EQ(arr.find(i, 0), i);
         
-        EXPECT_TRUE(arr.contains(i, i));
-        EXPECT_EQ(arr.find(i, i), i);
+        EXPECT_TRUE(arr.contains(i, static_cast<uint32_t>(i)));
+        EXPECT_EQ(arr.find(i, static_cast<uint32_t>(i)), i);
 
-        EXPECT_FALSE(arr.contains(i, i + 1));
-        EXPECT_EQ(arr.find(i, i + 1), NECommon::INVALID_INDEX);
+        EXPECT_FALSE(arr.contains(i, static_cast<uint32_t>(i) + 1u));
+        EXPECT_EQ(arr.find(i, static_cast<uint32_t>(i) + 1u), NECommon::INVALID_INDEX);
     }
 
     EXPECT_FALSE(arr.contains(0, _len1 * 2));

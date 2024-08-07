@@ -93,7 +93,7 @@ void PubSubController::shutdownComponent(ComponentThread & comThread)
 void PubSubController::onThreadRuns(void)
 {
     Console & console = Console::getInstance();
-    OptionParser parser(ValidOptions, static_cast<int>(MACRO_ARRAYLEN(ValidOptions)));
+    OptionParser parser(ValidOptions, MACRO_ARRAYLEN(ValidOptions));
     console.lockConsole();
     console.enableConsoleInput(true);
     printMessage(String::EmptyString, eCommands::CMD_Undefined);

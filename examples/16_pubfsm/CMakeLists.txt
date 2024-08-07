@@ -10,3 +10,4 @@ macro_declare_project(16_pubservice   "pubservice")
 # add executables
 addExecutableEx(${project_pubclient}    "${pubclient_src}"  16_generated)
 addExecutableEx(${project_pubservice}   "${pubservice_src}" 16_generated)
+target_compile_options(${project_pubservice} PRIVATE -Wno-extra-semi-stmt)

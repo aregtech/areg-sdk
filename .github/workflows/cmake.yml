@@ -357,14 +357,9 @@ jobs:
         with:
           packages: cmake, dos2unix, flexdll, gcc-g++, git, ncurses, libncurses-devel, make
 
-      - name: Set cmake cache destination for Linux
-        if: matrix.config.os == 'ubuntu-latest'
+      - name: Set cmake cache destination
         run: echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> "$GITHUB_ENV"
-         
-      - name: Set cmake cache destination for Windows
-        if: matrix.config.os == 'windows-latest'
-        run: echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> $env:GITHUB_ENV
-         
+
       - name: Configure CMake with enabled extended feature and select compiler family
         if: matrix.config.extend == 'ON'
         working-directory: ${{github.workspace}}

@@ -42,14 +42,14 @@ void SystemServiceBase::resetDefaultOptions(void)
     mCommunication.enableCalculateDataRate(NESystemService::DEFAULT_VERBOSE);
 }
 
-bool SystemServiceBase::parseOptions( int argc, const char ** argv, const OptionParser::sOptionSetup * optSetup, int optCount )
+bool SystemServiceBase::parseOptions( int argc, const char ** argv, const OptionParser::sOptionSetup * optSetup, uint32_t optCount )
 {
     bool result{ false };
 
     if (argc > 1)
     {
         OptionParser parser(optSetup, optCount);
-        if (parser.parseCommandLine(static_cast<const char**>(argv), argc))
+        if (parser.parseCommandLine(static_cast<const char**>(argv), argc > 1 ? static_cast<uint32_t>(argc) : 0))
         {
             result = prepareOptions(parser.getOptions());
         }
@@ -68,7 +68,7 @@ bool SystemServiceBase::parseOptions( int argc, const char ** argv, const Option
     return result;
 }
 
-bool SystemServiceBase::parseOptions(int argc, char** argv, const OptionParser::sOptionSetup* optSetup, int optCount)
+bool SystemServiceBase::parseOptions(int argc, char** argv, const OptionParser::sOptionSetup* optSetup, uint32_t optCount)
 {
     const char* temp{ argv != nullptr ? static_cast<const char*>(*argv) : nullptr };
     return (temp != nullptr ? parseOptions(argc, &temp, optSetup, optCount) : false);

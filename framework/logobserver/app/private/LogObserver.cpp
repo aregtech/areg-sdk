@@ -307,7 +307,7 @@ void LogObserver::logMain( int /* argc */, char ** /* argv */ )
 
 bool LogObserver::_checkCommand(const String& cmd)
 {
-    OptionParser parser( LogObserver::ValidOptions, static_cast<int>(MACRO_ARRAYLEN( LogObserver::ValidOptions )) );
+    OptionParser parser( LogObserver::ValidOptions, MACRO_ARRAYLEN(LogObserver::ValidOptions) );
     bool quit{ false };
     bool hasError {false};
 

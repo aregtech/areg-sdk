@@ -125,8 +125,8 @@ public:
      *          found no failure and the application can continue working.
      *          To interrupt the application, return false.
      **/
-    virtual bool parseOptions( int argc, const char ** argv, const OptionParser::sOptionSetup * optSetup, int optCount );
-    virtual bool parseOptions( int argc, char** argv, const OptionParser::sOptionSetup* optSetup, int optCount);
+    virtual bool parseOptions( int argc, const char ** argv, const OptionParser::sOptionSetup * optSetup, uint32_t optCount );
+    virtual bool parseOptions( int argc, char** argv, const OptionParser::sOptionSetup* optSetup, uint32_t optCount);
 
     /**
      * \brief   Checks the listed options and prepares to dispatch.

@@ -18,6 +18,13 @@ if (AREG_BUILD_TESTS)
 	FetchContent_MakeAvailable(googletest)
     set(GOOGLE_TEST_BASE "${GTEST_INCLUDE_DIRS}")
     include_directories(${GOOGLE_TEST_BASE})
+
+    target_compile_options(gtest PRIVATE "${AREG_OPT_DISABLE_WARN_THIRDPARTY}")
+    target_compile_options(gtest_main PRIVATE "${AREG_OPT_DISABLE_WARN_THIRDPARTY}")
+
+    target_compile_options(gmock PRIVATE "${AREG_OPT_DISABLE_WARN_THIRDPARTY}")
+    target_compile_options(gmock_main PRIVATE "${AREG_OPT_DISABLE_WARN_THIRDPARTY}")
+
     add_library(GTest::GTest INTERFACE IMPORTED)
     target_link_libraries(GTest::GTest INTERFACE gtest_main)
 
@@ -28,7 +35,7 @@ if (AREG_BUILD_TESTS)
 
     # Include AREG SDK unit test directory.
     include(GoogleTest)
-
+    
     # For Windows: Prevent overriding the parent project's compiler/linker settings
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
     include(${AREG_UNIT_TEST_BASE}/CMakeLists.txt)

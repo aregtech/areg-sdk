@@ -277,7 +277,7 @@ void MulticastRouter::stopConsoleService( void )
 
 bool MulticastRouter::_checkCommand(const String& cmd)
 {
-    OptionParser parser( MulticastRouter::ValidOptions, static_cast<int>(MACRO_ARRAYLEN( MulticastRouter::ValidOptions )) );
+    OptionParser parser( MulticastRouter::ValidOptions, MACRO_ARRAYLEN( MulticastRouter::ValidOptions) );
     bool quit{ false };
     bool hasError{ false };
 

@@ -6,4 +6,4 @@ list(APPEND sqlite_SRC
 include_directories(${sqlite_BASE})
 
 addStaticLib_C(sqlite3 "${sqlite_SRC}")
-target_compile_options(sqlite3 PRIVATE "${AREG_OPT_DISABLE_WARN_SQLITE}")
+target_compile_options(sqlite3 PRIVATE "${AREG_OPT_DISABLE_WARN_THIRDPARTY}")

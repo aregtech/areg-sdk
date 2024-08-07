@@ -247,7 +247,7 @@ void Publisher::processTimer(Timer & timer)
 void Publisher::onThreadRuns(void)
 {
     Console & console = Console::getInstance();
-    OptionParser parser(ValidOptions, static_cast<int>(MACRO_ARRAYLEN(ValidOptions)));
+    OptionParser parser(ValidOptions, MACRO_ARRAYLEN(ValidOptions));
     console.clearScreen();
     console.enableConsoleInput(true);
     printMessage(String::EmptyString, eCommands::CMD_Undefined);
