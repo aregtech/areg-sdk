@@ -353,9 +353,11 @@ jobs:
         with:
           packages: cmake, dos2unix, flexdll, gcc-g++, git, ncurses, libncurses-devel, make
 
-      - name: Install LLVM on Windows
+      - name: Install LLVM and Ninja on Windows
         if: matrix.config.os == 'windows-latest' && matrix.config.family == 'llvm'
-        run: choco install -y llvm
+        run: |
+            choco install -y llvm
+            choco install -y ninja
 
       - name: Set Windows PATH environment variable
         if: matrix.config.os == 'windows-latest'
