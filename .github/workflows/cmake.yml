@@ -339,7 +339,7 @@ jobs:
 
       - name: Checkout AREG engine (AREG SDK) source codes
         uses: actions/checkout@v4
-        
+
       - name: Setup Java JDK to run code generator
         uses: actions/setup-java@v4.2.1
         with: 
@@ -357,21 +357,26 @@ jobs:
         with:
           packages: cmake, dos2unix, flexdll, gcc-g++, git, ncurses, libncurses-devel, make
 
-      - name: Set cmake cache destination
+      - name: Set cmake cache destination for Linux
+        if: matrix.config.os == 'ubuntu-latest'
         run: echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> "$GITHUB_ENV"
+
+      - name: Set cmake cache destination for Windows
+        if: matrix.config.os == 'windows-latest'
+        run: echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> $env:GITHUB_ENV
 
       - name: Configure CMake with enabled extended feature and select compiler family
         if: matrix.config.extend == 'ON'
         working-directory: ${{github.workspace}}
         run: |
           cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGS:BOOL=${{matrix.config.logs}} -DAREG_BUILD_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_BUILD_TESTS:BOOL=${{matrix.config.test}}
-    
+
       - name: Configure CMake for disabled extended feature and select compiler name
         if: matrix.config.extend == 'OFF'
         working-directory: ${{github.workspace}}
         run: |
           cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER=${{matrix.config.cc}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGS:BOOL=${{matrix.config.logs}} -DAREG_BUILD_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_BUILD_TESTS:BOOL=${{matrix.config.test}}
-    
+
       - name: Build with CMake
         working-directory: ${{github.workspace}}
         # Build your program with the given configuration
