@@ -68,9 +68,6 @@ set(AREG_CXX_COMPILER)
 # C compiler, possible values: gcc, clang, clang-cl, cl
 set(AREG_C_COMPILER)
 
-# Compiler ID
-set(AREG_COMPILER_ID)
-
 # Check the compiler option.
 # Check and set the simple and shortest way to set the compiler
 if(DEFINED AREG_COMPILER_FAMILY AND NOT ${AREG_COMPILER_FAMILY} STREQUAL "")
@@ -79,11 +76,9 @@ if(DEFINED AREG_COMPILER_FAMILY AND NOT ${AREG_COMPILER_FAMILY} STREQUAL "")
     if(${AREG_COMPILER_FAMILY} STREQUAL "gnu")
         set(AREG_CXX_COMPILER "g++")
         set(AREG_C_COMPILER   "gcc")
-        set(AREG_COMPILER_ID "GNU")
     elseif(${AREG_COMPILER_FAMILY} STREQUAL "cygwin")
         set(AREG_CXX_COMPILER "g++")
         set(AREG_C_COMPILER   "gcc")
-        set(AREG_COMPILER_ID "GNU")
     elseif(${AREG_COMPILER_FAMILY} STREQUAL "llvm")
         if (WIN32)
             set(AREG_CXX_COMPILER "clang-cl")
@@ -92,11 +87,9 @@ if(DEFINED AREG_COMPILER_FAMILY AND NOT ${AREG_COMPILER_FAMILY} STREQUAL "")
             set(AREG_CXX_COMPILER "clang++")
             set(AREG_C_COMPILER   "clang")
         endif()
-        set(AREG_COMPILER_ID "Clang")
     elseif(${AREG_COMPILER_FAMILY} STREQUAL "msvc")
         set(AREG_CXX_COMPILER "cl")
         set(AREG_C_COMPILER   "cl")
-        set(AREG_COMPILER_ID "MSVC")
     else()
         message(WARNING ">>> Unrecognized compiler family ${AREG_COMPILER_FAMILY}, supported values: \'gnu\', \'llvm\', \'cygwin\', \'msvc\''")
     endif()
@@ -120,7 +113,6 @@ elseif(DEFINED AREG_COMPILER AND NOT ${AREG_COMPILER} STREQUAL "")
             set(AREG_COMPILER_FAMILY "gnu")
         endif()
 
-        set(AREG_COMPILER_ID "GNU")
     elseif (${AREG_COMPILER} STREQUAL "c++" OR ${AREG_COMPILER} STREQUAL "cc")
         # GNU compiler
 
@@ -135,7 +127,6 @@ elseif(DEFINED AREG_COMPILER AND NOT ${AREG_COMPILER} STREQUAL "")
             set(AREG_COMPILER_FAMILY "gnu")
         endif()
         
-        set(AREG_COMPILER_ID "GNU")
     elseif (${AREG_COMPILER} STREQUAL "clang-cl" OR ${AREG_COMPILER} STREQUAL "clang++" OR ${AREG_COMPILER} STREQUAL "clang")
         # Clang compiler
 
@@ -148,10 +139,8 @@ elseif(DEFINED AREG_COMPILER AND NOT ${AREG_COMPILER} STREQUAL "")
 
         set(AREG_COMPILER_FAMILY    "llvm")
         
-        set(AREG_COMPILER_ID "Clang")
     elseif (${AREG_COMPILER} STREQUAL "cl")
         set(AREG_COMPILER_FAMILY    "msvc")
-        set(AREG_COMPILER_ID "MSVC")
     else()
         set(AREG_COMPILER_FAMILY)
         message(WARNING ">>> Unrecognized compiler ${AREG_COMPILER}, supported compilers: \'gcc\', \'g++\', \'clang\', \'clang++\', \'clang-cl\', \'cl\'")
