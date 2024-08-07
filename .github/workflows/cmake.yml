@@ -394,13 +394,13 @@ jobs:
           cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER=${{matrix.config.cc}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGS:BOOL=${{matrix.config.logs}} -DAREG_BUILD_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_BUILD_TESTS:BOOL=${{matrix.config.test}} -G "Visual Studio 17 2022" -T ClangCL
 
       - name: Configure CMake with enabled extended feature and select compiler family for Windows
-        if: matrix.config.extend == 'ON' && matrix.config.os == 'windows-2022' && && matrix.config.family != 'llvm'
+        if: matrix.config.extend == 'ON' && matrix.config.os == 'windows-2022' && matrix.config.family != 'llvm'
         working-directory: ${{github.workspace}}
         run: |
           cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGS:BOOL=${{matrix.config.logs}} -DAREG_BUILD_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_BUILD_TESTS:BOOL=${{matrix.config.test}}
 
       - name: Configure CMake for disabled extended feature and select compiler name for Windows
-        if: matrix.config.extend == 'OFF' && matrix.config.os == 'windows-2022' && && matrix.config.family != 'llvm'
+        if: matrix.config.extend == 'OFF' && matrix.config.os == 'windows-2022' && matrix.config.family != 'llvm'
         working-directory: ${{github.workspace}}
         run: |
           cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER=${{matrix.config.cc}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGS:BOOL=${{matrix.config.logs}} -DAREG_BUILD_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_BUILD_TESTS:BOOL=${{matrix.config.test}}
