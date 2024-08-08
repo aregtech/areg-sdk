@@ -46,11 +46,12 @@
     <ClCompile Include="units\DateTimeTest.cpp" />
     <ClCompile Include="units\DemoTest.cpp" />
     <ClCompile Include="units\FileTest.cpp" />
-    <ClCompile Include="units\FixedArrayTest.cpp" />
     <ClCompile Include="units\LogScopesTest.cpp" />
     <ClCompile Include="units\OptionParserTest.cpp" />
     <ClCompile Include="units\StringUtilsTest.cpp" />
-    <ClCompile Include="units\ArrayListTest.cpp" />
+    <ClCompile Include="units\TEArrayListTest.cpp" />
+    <ClCompile Include="units\TEFixedArrayTest.cpp" />
+    <ClCompile Include="units\TEHashMapTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="units\GUnitTest.hpp" />

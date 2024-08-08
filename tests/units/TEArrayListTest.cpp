@@ -23,7 +23,7 @@
 /**
  * \brief   Test TEArrayList constructors.
  **/
-TEST(ArrayListTest, TestConstructors)
+TEST(TEArrayListTest, TestConstructors)
 {
     using Array = TEArrayList<int>;
 
@@ -71,7 +71,7 @@ TEST(ArrayListTest, TestConstructors)
 /**
  * \brief   Tests the validity of the array index.
  **/
-TEST(ArrayListTest, TestIndexValidity)
+TEST(TEArrayListTest, TestIndexValidity)
 {
     using Array = TEArrayList<int>;
 
@@ -104,7 +104,7 @@ TEST(ArrayListTest, TestIndexValidity)
 /**
  * \brief   Tests the content of the array.
  **/
-TEST(ArrayListTest, TestArrayContent)
+TEST(TEArrayListTest, TestArrayContent)
 {
     using Array = TEArrayList<int>;
 
@@ -152,7 +152,7 @@ TEST(ArrayListTest, TestArrayContent)
 /**
  * \brief   Tests setting, getting and the content of the values of the array.
  **/
-TEST(ArrayListTest, TestGetSetAndContent)
+TEST(TEArrayListTest, TestGetSetAndContent)
 {
     using Array = TEArrayList<int>;
 
@@ -183,7 +183,7 @@ TEST(ArrayListTest, TestGetSetAndContent)
 /**
  * \brief   Tests the 'add' method of the array.
  **/
-TEST(ArrayListTest, TestAdd)
+TEST(TEArrayListTest, TestAdd)
 {
     using Array = TEArrayList<int>;
 
@@ -244,7 +244,7 @@ TEST(ArrayListTest, TestAdd)
 /**
  * \brief   Tests the 'append' method of the array.
  **/
-TEST(ArrayListTest, TestAppend)
+TEST(TEArrayListTest, TestAppend)
 {
     using Array = TEArrayList<int>;
 
@@ -295,7 +295,7 @@ TEST(ArrayListTest, TestAppend)
  * \brief   Tests the 'copy' and 'move' methods of the array.
  **/
 
-TEST(ArrayListTest, TestCopyMove)
+TEST(TEArrayListTest, TestCopyMove)
 {
     using Array = TEArrayList<int>;
 
@@ -330,7 +330,7 @@ TEST(ArrayListTest, TestCopyMove)
 /**
  * \brief   Tests the 'insert' method of the array.
  **/
-TEST(ArrayListTest, TestInsert)
+TEST(TEArrayListTest, TestInsert)
 {
     using Array = TEArrayList<int>;
 
@@ -372,7 +372,7 @@ TEST(ArrayListTest, TestInsert)
 /**
  * \brief   Tests the 'removeAt' method of the array.
  **/
-TEST(ArrayListTest, TestRemoveAt)
+TEST(TEArrayListTest, TestRemoveAt)
 {
     using Array = TEArrayList<int>;
 
@@ -392,7 +392,7 @@ TEST(ArrayListTest, TestRemoveAt)
 /**
  * \brief   Tests the 'position' method of the array.
  **/
-TEST(ArrayListTest, TestRemovePosition)
+TEST(TEArrayListTest, TestRemovePosition)
 {
     using Array = TEArrayList<int>;
 
@@ -415,7 +415,7 @@ TEST(ArrayListTest, TestRemovePosition)
 /**
  * \brief   Tests the 'removeElem' method of the array.
  **/
-TEST(ArrayListTest, TestRemoveElement)
+TEST(TEArrayListTest, TestRemoveElement)
 {
     using Array = TEArrayList<int>;
 
@@ -434,7 +434,7 @@ TEST(ArrayListTest, TestRemoveElement)
 /**
  * \brief   Tests the 'find' method (searching) of the array.
  **/
-TEST(ArrayListTest, TestFind)
+TEST(TEArrayListTest, TestFind)
 {
     using Array = TEArrayList<int>;
 
@@ -472,7 +472,7 @@ TEST(ArrayListTest, TestFind)
 /**
  * \brief   Tests the 'resize' method of the array.
  **/
-TEST(ArrayListTest, TestResize)
+TEST(TEArrayListTest, TestResize)
 {
     using Array = TEArrayList<int>;
 
@@ -507,7 +507,7 @@ TEST(ArrayListTest, TestResize)
 /**
  * \brief   Tests the 'reserve' method of the array.
  **/
-TEST(ArrayListTest, TestReserve)
+TEST(TEArrayListTest, TestReserve)
 {
     using Array = TEArrayList<int>;
 
@@ -537,7 +537,7 @@ TEST(ArrayListTest, TestReserve)
 /**
  * \brief   Tests the 'shift' method of the array.
  **/
-TEST(ArrayListTest, TestShift)
+TEST(TEArrayListTest, TestShift)
 {
     using Array = TEArrayList<int>;
 
@@ -589,7 +589,7 @@ TEST(ArrayListTest, TestShift)
 /**
  * \brief   Tests the 'first' and 'last' methods of the array to access elements by reference.
  **/
-TEST(ArrayListTest, TestEntries)
+TEST(TEArrayListTest, TestEntries)
 {
     using Array = TEArrayList<int>;
 
@@ -626,7 +626,7 @@ TEST(ArrayListTest, TestEntries)
 /**
  * \brief   Tests the streaming operators of the array.
  **/
-TEST(ArrayListTest, TestStream)
+TEST(TEArrayListTest, TestStream)
 {
     using Array = TEArrayList<int>;
 
