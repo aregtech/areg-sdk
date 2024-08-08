@@ -45,7 +45,7 @@ jobs:
           - {name: MSBuild-x64-noext-nolog,   platform: x64,    extend: 0,  logs: 0}
 
     steps:
-    - name: Checkout AREG engine (AREG SDK) source codes and submodules
+    - name: Checkout AREG engine (AREG SDK) source codes
       uses: actions/checkout@v4
 
     - name: Setup Java JDK to run code generator

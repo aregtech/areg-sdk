@@ -302,7 +302,7 @@ void Logger::stopConsoleService( void )
 
 bool Logger::_checkCommand(const String& cmd)
 {
-    OptionParser parser( Logger::ValidOptions, static_cast<int>(MACRO_ARRAYLEN( Logger::ValidOptions )) );
+    OptionParser parser( Logger::ValidOptions, MACRO_ARRAYLEN( Logger::ValidOptions ) );
     bool quit{ false };
     bool hasError {false};
 

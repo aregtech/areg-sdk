@@ -51,7 +51,7 @@ docs
   |
   +- /templates .......... --> Folder containing useful templates to create a projects.
   |
-  +- /wiki ............... --> Submodule to the AREG SDK Wiki pages.
+  +- /wiki ............... --> AREG SDK Wiki pages.
   |
   +- DEVELOP.md .......... --> Developer guide and technical explanations.
   |

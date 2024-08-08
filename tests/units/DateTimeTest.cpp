@@ -182,9 +182,9 @@ TEST( DateTimeTest, TestLocalTimeWin32 )
     _checkTimeStruct( utcTime, "UTC AREG " );
 
     NEUtilities::sSystemTime localTime{ };
-    TIME_ZONE_INFORMATION tzi{ 0 };
-    SYSTEMTIME utc{ 0 };
-    SYSTEMTIME local{ 0 };
+    TIME_ZONE_INFORMATION tzi{ };
+    SYSTEMTIME utc{ };
+    SYSTEMTIME local{ };
 
     _convAregSysTime2WinSysTime( utcTime, utc );
     _checkTimeStruct( utc, "UTC Win SYS " );
@@ -255,7 +255,7 @@ TEST( DateTimeTest, TestFormatISO8601 )
     NEUtilities::convToLocalTime( utcTime, localTime );
     _checkTimeStruct( localTime, "Areg Local " );
 
-    struct tm conv { 0 };
+    struct tm conv { };
     NEUtilities::convToTm( localTime, conv );
 
     _checkTimeStruct( conv, "struct tm Local " );

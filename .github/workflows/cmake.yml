@@ -146,7 +146,7 @@ jobs:
 
             # compile AREG engine as a shared with CYGWIN g++ / gcc on Windows, enable AREG extensions and logs
           - { name  : win-cygwin-shared-ext-log,
-              os    : windows-latest,
+              os    : windows-2022,
               lib   : shared,
               family: cygwin,
               cxx   : g++,
@@ -157,7 +157,7 @@ jobs:
 
             # compile AREG engine as a shared with CYGWIN g++ / gcc on Windows, enable AREG extensions and no logs
           - { name  : win-cygwin-shared-ext-nolog,
-              os    : windows-latest,
+              os    : windows-2022,
               lib   : shared,
               family: cygwin,
               cxx   : g++,
@@ -169,7 +169,7 @@ jobs:
 
             # compile AREG engine as a static with CYGWIN g++ / gcc on Windows, enable AREG extensions, logs, examples and tests
           - { name  : win-cygwin-static-all-test,
-              os    : windows-latest,
+              os    : windows-2022,
               lib   : static,
               family: cygwin,
               cxx   : g++,
@@ -181,7 +181,7 @@ jobs:
 
             # compile AREG engine as a static with CYGWIN g++ / gcc on Windows, enable AREG extensions, logs, examples and tests
           - { name  : win-cygwin-shared-all-test,
-              os    : windows-latest,
+              os    : windows-2022,
               lib   : shared,
               family: cygwin,
               cxx   : g++,
@@ -193,7 +193,7 @@ jobs:
 
             # compile AREG engine as a shared with CYGWIN g++ / gcc on Windows, disable AREG extensions and no logs
           - { name  : win-cygwin-shared-noext-nolog,
-              os    : windows-latest,
+              os    : windows-2022,
               lib   : shared,
               family: cygwin,
               cxx   : g++,
@@ -203,9 +203,69 @@ jobs:
               test  : OFF
             }
 
+          # compile AREG engine as a shared library with clang on Windows, enable AREG extensions and logs
+          - { name  : win-clang-shared-ext-log,
+              os    : windows-2022,
+              lib   : shared,
+              family: llvm,
+              cxx   : clang-cl,
+              cc    : clang-cl,
+              extend: ON,
+              logs  : ON,
+              test  : OFF
+            }
+
+            # compile AREG engine as a shared library with clang on Windows, enable AREG extensions and no logs
+          - { name  : win-clang-shared-ext-nolog,
+              os    : windows-2022,
+              lib   : shared,
+              family: llvm,
+              cxx   : clang-cl,
+              cc    : clang-cl,
+              extend: ON,
+              logs  : OFF,
+              test  : OFF
+            }
+
+            # compile AREG engine as a static library with clang on Windows, enable AREG extensions, logs, examples and tests
+          - { name  : win-clang-static-all-test,
+              os    : windows-2022,
+              lib   : static,
+              family: llvm,
+              cxx   : clang-cl,
+              cc    : clang-cl,
+              extend: ON,
+              logs  : ON,
+              test  : ON
+            }
+
+            # compile AREG engine as a static library with clang on Windows, enable AREG extensions, logs, examples and tests
+          - { name  : win-clang-shared-all-test,
+              os    : windows-2022,
+              lib   : shared,
+              family: llvm,
+              cxx   : clang-cl,
+              cc    : clang-cl,
+              extend: ON,
+              logs  : ON,
+              test  : ON
+            }
+
+            # compile AREG engine as a shared library with clang on Windows, disable AREG extensions and no logs
+          - { name  : win-clang-shared-noext-nolog,
+              os    : windows-2022,
+              lib   : shared,
+              family: llvm,
+              cxx   : clang-cl,
+              cc    : clang-cl,
+              extend: OFF,
+              logs  : OFF,
+              test  : OFF
+            }
+
             # compile AREG engine as a shared with MSVC on Windows, enable AREG extensions and logs
           - { name  : win-msvc-shared-ext-log,
-              os    : windows-latest,
+              os    : windows-2022,
               lib   : shared,
               family: msvc,
               cxx   : cl,
@@ -217,7 +277,7 @@ jobs:
 
             # compile AREG engine as a shared with MSVC on Windows, enable AREG extensions and no logs
           - { name  : win-msvc-shared-ext-nolog,
-              os    : windows-latest,
+              os    : windows-2022,
               lib   : shared,
               family: msvc,
               cxx   : cl,
@@ -229,7 +289,7 @@ jobs:
 
             # compile AREG engine as a static with MSVC on Windows, enable AREG extensions, logs, examples and tests
           - { name  : win-msvc-static-all-test,
-              os    : windows-latest,
+              os    : windows-2022,
               lib   : static,
               family: msvc,
               cxx   : cl,
@@ -241,7 +301,7 @@ jobs:
 
             # compile AREG engine as a static with MSVC on Windows, enable AREG extensions, logs, examples and tests
           - { name  : win-msvc-shared-all-test,
-              os    : windows-latest,
+              os    : windows-2022,
               lib   : shared,
               family: msvc,
               cxx   : cl,
@@ -253,7 +313,7 @@ jobs:
 
             # compile AREG engine as a shared with MSVC on Windows, enable AREG extensions and logs
           - { name  : win-msvc-shared-noext-log,
-              os    : windows-latest,
+              os    : windows-2022,
               lib   : shared,
               family: msvc,
               cxx   : cl,
@@ -265,7 +325,7 @@ jobs:
 
             # compile AREG engine as a shared with MSVC on Windows, enable AREG extensions and no logs
           - { name  : win-msvc-shared-noext-nolog,
-              os    : windows-latest,
+              os    : windows-2022,
               lib   : shared,
               family: msvc,
               cxx   : cl,
@@ -279,7 +339,7 @@ jobs:
 
       - name: Checkout AREG engine (AREG SDK) source codes
         uses: actions/checkout@v4
-        
+
       - name: Setup Java JDK to run code generator
         uses: actions/setup-java@v4.2.1
         with: 
@@ -288,11 +348,11 @@ jobs:
           distribution: temurin
 
       - name: Set Windows PATH environment variable
-        if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
+        if: matrix.config.os == 'windows-2022' && matrix.config.family == 'cygwin'
         run: echo "PATH=C:\cygwin;C:\cygwin\bin;C:\cygwin\lib;%SYSTEMROOT%\system32;%PATH%" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Install cygwin on Windows
-        if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
+        if: matrix.config.os == 'windows-2022' && matrix.config.family == 'cygwin'
         uses: cygwin/cygwin-install-action@v4
         with:
           packages: cmake, dos2unix, flexdll, gcc-g++, git, ncurses, libncurses-devel, make
@@ -300,23 +360,47 @@ jobs:
       - name: Set cmake cache destination for Linux
         if: matrix.config.os == 'ubuntu-latest'
         run: echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> "$GITHUB_ENV"
-         
+
       - name: Set cmake cache destination for Windows
-        if: matrix.config.os == 'windows-latest'
+        if: matrix.config.os == 'windows-2022'
         run: echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> $env:GITHUB_ENV
-         
-      - name: Configure CMake with enabled extended feature and select compiler family
-        if: matrix.config.extend == 'ON'
+
+      - name: Configure CMake with enabled extended feature and select compiler family under Linux
+        if: matrix.config.os == 'ubuntu-latest' && matrix.config.extend == 'ON' 
         working-directory: ${{github.workspace}}
         run: |
           cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGS:BOOL=${{matrix.config.logs}} -DAREG_BUILD_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_BUILD_TESTS:BOOL=${{matrix.config.test}}
-    
-      - name: Configure CMake for disabled extended feature and select compiler name
-        if: matrix.config.extend == 'OFF'
+
+      - name: Configure CMake for disabled extended feature and select compiler name under Linux
+        if: matrix.config.os == 'ubuntu-latest' && matrix.config.extend == 'OFF'
         working-directory: ${{github.workspace}}
         run: |
           cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER=${{matrix.config.cc}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGS:BOOL=${{matrix.config.logs}} -DAREG_BUILD_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_BUILD_TESTS:BOOL=${{matrix.config.test}}
-    
+
+      - name: Configure CMake with enabled extended feature and select compiler family for Windows compiled with ClangCL
+        if: matrix.config.extend == 'ON' && matrix.config.os == 'windows-2022' && matrix.config.family == 'llvm'
+        working-directory: ${{github.workspace}}
+        run: |
+          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGS:BOOL=${{matrix.config.logs}} -DAREG_BUILD_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_BUILD_TESTS:BOOL=${{matrix.config.test}} -G "Visual Studio 17 2022" -T ClangCL
+
+      - name: Configure CMake for disabled extended feature and select compiler name for Windows compiled with ClangCL
+        if: matrix.config.extend == 'OFF' && matrix.config.os == 'windows-2022' && matrix.config.family == 'llvm'
+        working-directory: ${{github.workspace}}
+        run: |
+          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER=${{matrix.config.cc}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGS:BOOL=${{matrix.config.logs}} -DAREG_BUILD_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_BUILD_TESTS:BOOL=${{matrix.config.test}} -G "Visual Studio 17 2022" -T ClangCL
+
+      - name: Configure CMake with enabled extended feature and select compiler family for Windows
+        if: matrix.config.extend == 'ON' && matrix.config.os == 'windows-2022' && matrix.config.family != 'llvm'
+        working-directory: ${{github.workspace}}
+        run: |
+          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGS:BOOL=${{matrix.config.logs}} -DAREG_BUILD_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_BUILD_TESTS:BOOL=${{matrix.config.test}}
+
+      - name: Configure CMake for disabled extended feature and select compiler name for Windows
+        if: matrix.config.extend == 'OFF' && matrix.config.os == 'windows-2022' && matrix.config.family != 'llvm'
+        working-directory: ${{github.workspace}}
+        run: |
+          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER=${{matrix.config.cc}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGS:BOOL=${{matrix.config.logs}} -DAREG_BUILD_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_BUILD_TESTS:BOOL=${{matrix.config.test}}
+
       - name: Build with CMake
         working-directory: ${{github.workspace}}
         # Build your program with the given configuration
@@ -334,7 +418,7 @@ jobs:
           echo "BUILD_DEST=product/build/${{matrix.config.family}}-${{matrix.config.cxx}}/linux-64-x86_64-release-${{matrix.config.lib}}" >> "$GITHUB_ENV"
 
       - name: Windows build path guess
-        if: always() && matrix.config.os == 'windows-latest'
+        if: always() && matrix.config.os == 'windows-2022'
         shell: bash
         run: |
           echo "BUILD_DEST=product/build/${{matrix.config.family}}-${{matrix.config.cxx}}/windows-64-amd64-release-${{matrix.config.lib}}" >> "$GITHUB_ENV"
@@ -353,8 +437,3 @@ jobs:
         with:
           name: ${{matrix.config.name}}
           path: ./${{matrix.config.name}}/
-
-      - name: Uninstall cygwin git package on Windows
-        if: matrix.config.os == 'windows-latest' && matrix.config.family == 'cygwin'
-        shell: cmd
-        run: c:\setup.exe -qnx git

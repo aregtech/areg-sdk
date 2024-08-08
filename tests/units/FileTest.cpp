@@ -25,7 +25,7 @@
 #include <filesystem>
 
 #ifdef WINDOWS
-    #include <shlwapi.h>
+    #include <Shlwapi.h>
 
     #pragma comment(lib, "Shlwapi.lib")
 #endif // WINDOWS

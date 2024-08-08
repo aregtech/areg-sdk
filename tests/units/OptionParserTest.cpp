@@ -289,7 +289,7 @@ TEST( OptionParserTest, OptionsSimpleNoData )
 
     const wchar_t * optLine{ L"-a -b -c" };
 
-    int setupCount = MACRO_ARRAYLEN( setup );
+    uint32_t setupCount = MACRO_ARRAYLEN( setup );
 
     OptionParser parser( setup, setupCount );
 

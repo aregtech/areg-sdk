@@ -100,33 +100,6 @@ list(APPEND AREG_OPT_DISABLE_WARN_CODEGEN
     )
 
 # disable SQLite warnings
-list(APPEND AREG_OPT_DISABLE_WARN_SQLITE
-        -Wno-bad-function-cast
-        -Wno-cast-align
-        -Wno-cast-function-type
-        -Wno-cast-qual
-        -Wno-comma
-        -Wno-disabled-macro-expansion
-        -Wno-double-promotion
-        -Wno-extra-semi-stmt
-        -Wno-format-nonliteral
-        -Wno-implicit-fallthrough
-        -Wno-implicit-float-conversion
-        -Wno-implicit-int-float-conversion
-        -Wno-implicit-int-conversion
-        -Wno-language-extension-token
-        -Wno-missing-prototypes
-        -Wno-missing-variable-declarations
-        -Wno-nonportable-system-include-path
-        -Wno-shorten-64-to-32
-        -Wno-sign-conversion
-        -Wno-sign-compare
-        -Wno-undef
-        -Wno-unreachable-code
-        -Wno-unreachable-code-break
-        -Wno-unreachable-code-return
-        -Wno-unused-but-set-variable
-        -Wno-unused-function
-        -Wno-unused-macros
-        -Wno-unused-variable
+list(APPEND AREG_OPT_DISABLE_WARN_THIRDPARTY
+        -Wno-everything
     )

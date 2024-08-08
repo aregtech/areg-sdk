@@ -54,7 +54,7 @@
  * \brief   Return size of statically defined array
  **/
 #ifndef MACRO_ARRAYLEN
-    #define MACRO_ARRAYLEN(a)   (sizeof(a) / sizeof(a[0]))
+    #define MACRO_ARRAYLEN(a)   static_cast<uint32_t>(sizeof(a) / sizeof(a[0]))
 #endif  // MACRO_ARRAYLEN
 
 /**

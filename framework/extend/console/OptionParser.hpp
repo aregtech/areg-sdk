@@ -256,11 +256,11 @@ public:
      **/
     struct sOption
     {
-        int     inCommand   { -1 }; //!< The digital value of the command.
-        int     inField     { 0  }; //!< The flag indicating the valid fields and values.
-        int     inRefSetup  { -1 }; //!< The reference index in the list of options setup, -1 is invalid index
-        uValues inValue     { 0  }; //!< Either integer or float value, depending on `inField`.
-        StrList inString    {    }; //!< The list of the strings, the `inField` should indicate string value
+        int         inCommand   { -1 }; //!< The digital value of the command.
+        uint32_t    inField     { 0  }; //!< The flag indicating the valid fields and values.
+        int         inRefSetup  { -1 }; //!< The reference index in the list of options setup, -1 is invalid index
+        uValues     inValue     { 0  }; //!< Either integer or float value, depending on `inField`.
+        StrList     inString    {    }; //!< The list of the strings, the `inField` should indicate string value
     };
 
     //!< The list of option validity setup.
@@ -352,8 +352,10 @@ public:
     /**
      * \brief   Copies the option validation setup from the given list.
      *          If empty, creates sets the option default validation entry.
+     * \param   initEntries     The list of entries.
+     * \param   count           The number of entries in the list.
      **/
-    OptionParser( const sOptionSetup * initEntries, int count );
+    OptionParser( const sOptionSetup * initEntries, uint32_t count );
 
     /**
      * \brief   Copies the option validation setup from the given source.
@@ -401,10 +403,10 @@ public:
      * \return  Returns true if succeeded to parse without error.
      *          Otherwise, returns false.
      **/
-    bool parseCommandLine( const char ** cmdLine,  int count);
-    bool parseCommandLine( const wchar_t ** cmdLine, int count );
-    bool parseCommandLine( char** IN cmdLine, int count);
-    bool parseCommandLine( wchar_t** IN cmdLine, int count);
+    bool parseCommandLine( const char ** cmdLine,  uint32_t count);
+    bool parseCommandLine( const wchar_t ** cmdLine, uint32_t count );
+    bool parseCommandLine( char** IN cmdLine, uint32_t count);
+    bool parseCommandLine( wchar_t** IN cmdLine, uint32_t count);
 
     /**
      * \brief   Parses the string passed as an options separated by space ' '.
