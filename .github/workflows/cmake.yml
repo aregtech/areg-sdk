@@ -340,10 +340,6 @@ jobs:
       - name: Checkout AREG engine (AREG SDK) source codes
         uses: actions/checkout@v4
 
-      - name: Setup MSVC environment
-        if: matrix.config.os == 'windows-2022' && matrix.config.family != 'cygwin'
-        uses: actions/setup-dotnet@v4
-
       - name: Setup Java JDK to run code generator
         uses: actions/setup-java@v4.2.1
         with: 
@@ -441,8 +437,3 @@ jobs:
         with:
           name: ${{matrix.config.name}}
           path: ./${{matrix.config.name}}/
-
-      - name: Uninstall cygwin git package on Windows
-        if: matrix.config.os == 'windows-2022' && matrix.config.family == 'cygwin'
-        shell: cmd
-        run: c:\setup.exe -qnx git
