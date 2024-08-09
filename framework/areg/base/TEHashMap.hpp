@@ -264,11 +264,6 @@ public:
     inline void clear(void);
 
     /**
-     * \brief   Delete extra entries in the hash map.
-     **/
-    inline void freeExtra(void);
-
-    /**
      * \brief   Sets the size of the hash-map to zero and deletes all capacity space.
      */
     inline void release(void);
@@ -276,8 +271,8 @@ public:
     /**
      * \brief	Searches an element entry by the given key.
      *          If found element, return true and on exit returns the value of element
-     * \param	Key	        The key to search.
-     * \param	out_Value   On output, contains value of found element
+     * \param[in]   Key	        The key to search.
+     * \param[out]  out_Value   On output, contains value of found element
      * \return	Returns true if there is an entry with the specified key.
      **/
     inline bool find( const KEY & Key, VALUE & OUT out_Value ) const;
@@ -323,7 +318,7 @@ public:
      *          then that element is not extracted from the source and remains unchanged.
      * \param   source  The source of hash map to merge.
      */
-    inline void merge( const TEHashMap<KEY, VALUE> & source );
+    inline void merge( TEHashMap<KEY, VALUE> & source );
     inline void merge( TEHashMap<KEY, VALUE> && source );
 
     /**
@@ -602,12 +597,6 @@ inline void TEHashMap<KEY, VALUE>::clear(void)
 }
 
 template < typename KEY, typename VALUE >
-inline void TEHashMap<KEY, VALUE>::freeExtra(void)
-{
-    mValueList.clear();
-}
-
-template < typename KEY, typename VALUE >
 inline void TEHashMap<KEY, VALUE>::release(void)
 {
     mValueList.clear();
@@ -674,7 +663,7 @@ inline void TEHashMap<KEY, VALUE>::setAt( std::pair<KEY, VALUE> && element)
 }
 
 template < typename KEY, typename VALUE >
-inline void TEHashMap<KEY, VALUE>::merge(const TEHashMap<KEY, VALUE>& source)
+inline void TEHashMap<KEY, VALUE>::merge(TEHashMap<KEY, VALUE>& source)
 {
     mValueList.merge(source.mValueList);
 }

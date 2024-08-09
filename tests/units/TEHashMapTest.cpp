@@ -111,6 +111,12 @@ TEST(TEHashMapTest, TestOperators)
     EXPECT_TRUE(hashMap3 != hashMap1);
     EXPECT_TRUE(hashMap3 != hashMap2);
     EXPECT_TRUE(hashMap1 != hashMap2);
+
+    hashMap1.clear();
+    hashMap3.release();
+    EXPECT_TRUE(hashMap1.isEmpty());
+    EXPECT_TRUE(hashMap3.isEmpty());
+    EXPECT_EQ(hashMap1, hashMap3);
 }
 
 /**
@@ -242,4 +248,86 @@ TEST(TEHashMapTest, TestPositionManipolation)
     }
 
     EXPECT_EQ(cnt, 0);
+}
+
+
+/**
+ * \brief   Test TEHashMap searching functionalities.
+ **/
+TEST(TEHashMapTest, TestSearching)
+{
+    using HashMap = TEHashMap<int, int>;
+    using POS = HashMap::MAPPOS;
+    constexpr uint32_t count{ 10 };
+    constexpr uint32_t listSize{ 20 };
+
+    HashMap hashMap;
+    for (int i = 0; i < static_cast<int>(count); ++i)
+    {
+        hashMap[i] = i;
+    }
+
+    for (int i = 0; i < listSize; ++i)
+    {
+        const int Key{ i };
+        int Value{ -1 };
+        POS pos = hashMap.find(i);
+        bool found = hashMap.find(Key, Value);
+        if (i < static_cast<int>(count))
+        {
+            EXPECT_TRUE(hashMap.isValidPosition(pos));
+            EXPECT_TRUE(found);
+            EXPECT_TRUE(hashMap.contains(Key));
+            EXPECT_EQ(hashMap.valueAtPosition(pos), Value);
+            EXPECT_EQ(hashMap.keyAtPosition(pos), Key);
+            EXPECT_EQ(Key, Value);
+        }
+        else
+        {
+            EXPECT_FALSE(hashMap.isValidPosition(pos));
+            EXPECT_FALSE(found);
+            EXPECT_FALSE(hashMap.contains(Key));
+            EXPECT_NE(Key, Value);
+        }
+    }
+}
+
+/**
+ * \brief   Test TEHashMap merging.
+ **/
+TEST(TEHashMapTest, TestMerging)
+{
+    using HashMap = TEHashMap<int, int>;
+    using POS = HashMap::MAPPOS;
+    constexpr uint32_t count{ 10 };
+    constexpr int32_t list[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
+    constexpr uint32_t listSize{ MACRO_ARRAYLEN(list) };
+
+    HashMap hashMap1, hashMap2, hashMap;
+    for (int i = 0; i < static_cast<int>(count); ++i)
+    {
+        hashMap1[i]     = i;
+        hashMap2[i + 10]= i + 10;
+    }
+
+    HashMap hashMap3;
+    hashMap3.merge(hashMap1);
+    EXPECT_TRUE(hashMap1.isEmpty());
+    EXPECT_FALSE(hashMap3.isEmpty());
+    EXPECT_NE(hashMap1, hashMap3);
+
+    hashMap1 = hashMap3;
+    EXPECT_EQ(hashMap1, hashMap3);
+
+    hashMap3.merge(std::move(hashMap1));
+    EXPECT_FALSE(hashMap1.isEmpty());
+    EXPECT_FALSE(hashMap3.isEmpty());
+    EXPECT_EQ(hashMap3.getSize(), count);
+    EXPECT_EQ(hashMap1, hashMap3);
+
+    hashMap3.merge(std::move(hashMap2));
+    EXPECT_TRUE(hashMap2.isEmpty());
+    EXPECT_FALSE(hashMap3.isEmpty());
+    EXPECT_NE(hashMap2, hashMap3);
+    EXPECT_NE(hashMap1, hashMap3);
 }
