@@ -166,12 +166,80 @@ TEST(TEHashMapTest, TestPositionAttributes)
 TEST(TEHashMapTest, TestPositionOperations)
 {
     using HashMap = TEHashMap<int, int>;
+    using POS = HashMap::MAPPOS;
     constexpr uint32_t count{ 10 };
+    constexpr int32_t coef{ 2 };
 
     HashMap hashMap;
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
-        hashMap.setAt(i, i);
-        EXPECT_EQ(hashMap.getAt(i), i);
+        hashMap.setAt(i, i * coef);
+        EXPECT_EQ(hashMap.getAt(i), i * coef);
     }
+
+    POS pos = hashMap.firstPosition();
+    EXPECT_TRUE(hashMap.isValidPosition(pos));
+
+    uint32_t cnt{ 0 };
+    while (hashMap.isValidPosition(pos))
+    {
+        int Key, Value;
+        hashMap.getAtPosition(pos, Key, Value);
+        EXPECT_TRUE(Value == Key * coef);
+        EXPECT_TRUE(Value == hashMap.valueAtPosition(pos));
+        EXPECT_TRUE(Key == hashMap.keyAtPosition(pos));
+
+        POS cur = pos;
+        int nextKey, nextValue;
+
+        pos = hashMap.nextPosition(cur, nextKey, nextValue);
+        EXPECT_TRUE((nextKey, Key + 1) || hashMap.isInvalidPosition(pos));
+        EXPECT_TRUE((nextValue, Value + coef) || hashMap.isInvalidPosition(pos));
+
+        pos = hashMap.nextPosition(cur);
+        ++cnt;
+        EXPECT_TRUE((hashMap.isValidPosition(pos)) || (cnt == count));
+    }
+
+    EXPECT_TRUE(cnt == count);
+    EXPECT_TRUE(hashMap.isInvalidPosition(pos));
+}
+
+/**
+ * \brief   Test TEHashMap positioning manipulation.
+ **/
+TEST(TEHashMapTest, TestPositionManipolation)
+{
+    using HashMap = TEHashMap<int, int>;
+    using POS = HashMap::MAPPOS;
+    constexpr uint32_t count{ 10 };
+    constexpr int32_t coef{ 2 };
+
+    HashMap hashMap;
+    for (int i = 0; i < static_cast<int>(count); ++i)
+    {
+        hashMap[i * coef] = i;
+    }
+
+    uint32_t cnt{ 0 };
+    for (POS pos = hashMap.firstPosition(); hashMap.isValidPosition(pos); ++cnt, pos = hashMap.nextPosition(pos))
+    {
+        hashMap.setPosition(pos, cnt * coef);
+        EXPECT_EQ(cnt * coef, hashMap.keyAtPosition(pos));
+        EXPECT_EQ(cnt * coef, hashMap.valueAtPosition(pos));
+        EXPECT_EQ(hashMap.keyAtPosition(pos), hashMap.valueAtPosition(pos));
+    }
+
+    EXPECT_EQ(cnt, count);
+    int idx{ 0 };
+    for (POS pos = hashMap.firstPosition(); hashMap.isValidPosition(pos); --cnt, ++ idx)
+    {
+        int Key, Value;
+        pos = hashMap.removePosition(pos, Key, Value);
+        EXPECT_EQ(idx * coef, Key);
+        EXPECT_EQ(idx * coef, Value);
+        EXPECT_EQ(Key, Value);
+    }
+
+    EXPECT_EQ(cnt, 0);
 }
