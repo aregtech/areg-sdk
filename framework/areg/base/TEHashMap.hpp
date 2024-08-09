@@ -561,7 +561,7 @@ inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::firstPositi
 template < typename KEY, typename VALUE >
 inline bool TEHashMap<KEY, VALUE>::isStartPosition(const MAPPOS pos) const
 {
-    return (pos == mValueList.begin());
+    return (isEmpty() == false) && (pos == mValueList.begin());
 }
 
 template < typename KEY, typename VALUE >

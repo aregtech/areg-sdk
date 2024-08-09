@@ -112,3 +112,66 @@ TEST(TEHashMapTest, TestOperators)
     EXPECT_TRUE(hashMap3 != hashMap2);
     EXPECT_TRUE(hashMap1 != hashMap2);
 }
+
+/**
+ * \brief   Test TEHashMap positioning attributes.
+ **/
+TEST(TEHashMapTest, TestPositionAttributes)
+{
+    using HashMap = TEHashMap<int, int>;
+    constexpr uint32_t count{ 10 };
+
+    HashMap hashMap;
+    auto invPos = hashMap.invalidPosition();
+    EXPECT_TRUE(hashMap.isInvalidPosition(invPos));
+
+    auto invFirst = hashMap.firstPosition();
+    EXPECT_FALSE(hashMap.isStartPosition(invFirst));
+
+    for (int i = 0; i < static_cast<int>(count); ++i)
+    {
+        auto invalid = hashMap.find(i);
+        EXPECT_FALSE(hashMap.isValidPosition(invalid));
+        EXPECT_TRUE(hashMap.isInvalidPosition(invalid));
+        EXPECT_FALSE(hashMap.checkPosition(invalid));
+        EXPECT_FALSE(hashMap.isStartPosition(invalid));
+
+        hashMap[i] = i;
+        
+        auto valid = hashMap.find(i);
+        EXPECT_TRUE(hashMap.isValidPosition(valid));
+        EXPECT_FALSE(hashMap.isInvalidPosition(valid));
+        EXPECT_TRUE(hashMap.checkPosition(valid));
+
+        if (i == 0u)
+        {
+            EXPECT_TRUE(hashMap.isStartPosition(valid));
+        }
+        else
+        {
+            EXPECT_FALSE(hashMap.isStartPosition(valid));
+        }
+    }
+
+    auto first = hashMap.firstPosition();
+    EXPECT_EQ(hashMap.valueAtPosition(first), 0);
+    EXPECT_TRUE(hashMap.isStartPosition(first));
+
+    EXPECT_TRUE(invPos == hashMap.invalidPosition());
+}
+
+/**
+ * \brief   Test TEHashMap positioning operations.
+ **/
+TEST(TEHashMapTest, TestPositionOperations)
+{
+    using HashMap = TEHashMap<int, int>;
+    constexpr uint32_t count{ 10 };
+
+    HashMap hashMap;
+    for (int i = 0; i < static_cast<int>(count); ++i)
+    {
+        hashMap.setAt(i, i);
+        EXPECT_EQ(hashMap.getAt(i), i);
+    }
+}
