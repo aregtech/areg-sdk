@@ -8,4 +8,5 @@ addUnitTest("${AREG_UNIT_TEST_PROJECT}"
     ${AREG_UNIT_TEST_BASE}/OptionParserTest.cpp
     ${AREG_UNIT_TEST_BASE}/TEArrayListTest.cpp
     ${AREG_UNIT_TEST_BASE}/TEFixedArrayTest.cpp
+    ${AREG_UNIT_TEST_BASE}/TEHashMapTest.cpp
 )

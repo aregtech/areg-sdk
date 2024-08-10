@@ -213,8 +213,8 @@ TEST(TEHashMapTest, TestPositionOperations)
         int nextKey, nextValue;
 
         pos = hashMap.nextPosition(cur, nextKey, nextValue);
-        EXPECT_TRUE((nextKey, Key + 1) || hashMap.isInvalidPosition(pos));
-        EXPECT_TRUE((nextValue, Value + coef) || hashMap.isInvalidPosition(pos));
+        EXPECT_TRUE((nextKey == (Key + 1)) || hashMap.isInvalidPosition(pos));
+        EXPECT_TRUE((nextValue == (Value + coef)) || hashMap.isInvalidPosition(pos));
 
         pos = hashMap.nextPosition(cur);
         ++cnt;
@@ -245,7 +245,7 @@ TEST(TEHashMapTest, TestPositionManipulation)
     uint32_t cnt{ 0 };
     for (POS pos = hashMap.firstPosition(); hashMap.isValidPosition(pos); ++cnt, pos = hashMap.nextPosition(pos))
     {
-        hashMap.setPosition(pos, cnt * coef);
+        hashMap.setPosition(pos, static_cast<int>(cnt * coef));
         EXPECT_EQ(cnt * coef, hashMap.keyAtPosition(pos));
         EXPECT_EQ(cnt * coef, hashMap.valueAtPosition(pos));
         EXPECT_EQ(hashMap.keyAtPosition(pos), hashMap.valueAtPosition(pos));
@@ -288,7 +288,7 @@ TEST(TEHashMapTest, TestSearching)
     //  Result:
     //      - entries with keys [0 .. 9] have valid position
     //      - entries with keys [10 .. 19] have invalid position
-    for (int i = 0; i < listSize; ++i)
+    for (int i = 0; i < static_cast<int>(listSize); ++i)
     {
         const int Key{ i };
         int Value{ -1 };
@@ -366,8 +366,6 @@ TEST(TEHashMapTest, TestMerging)
     constexpr int32_t evens[]   { 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42 };
     constexpr uint32_t lenOdd   { MACRO_ARRAYLEN(odds) };
     constexpr uint32_t lenEven  { MACRO_ARRAYLEN(odds) };
-    constexpr uint32_t mrg      { 11 };
-    constexpr uint32_t rem      {  9 };
     HashMap mapOdd, mapEven;
     for (uint32_t i = 0u; i < lenOdd; ++i)
     {
