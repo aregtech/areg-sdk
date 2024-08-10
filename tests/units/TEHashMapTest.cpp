@@ -298,36 +298,209 @@ TEST(TEHashMapTest, TestSearching)
 TEST(TEHashMapTest, TestMerging)
 {
     using HashMap = TEHashMap<int, int>;
-    using POS = HashMap::MAPPOS;
     constexpr uint32_t count{ 10 };
-    constexpr int32_t list[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
-    constexpr uint32_t listSize{ MACRO_ARRAYLEN(list) };
 
-    HashMap hashMap1, hashMap2, hashMap;
+    HashMap hashMap1, hashMap2;
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
-        hashMap1[i]     = i;
-        hashMap2[i + 10]= i + 10;
+        hashMap1[i]     = i;        //  0,  1,  2,  3,  4,  5,  6,  7,  8,  9
+        hashMap2[i + 10]= i + 10;   // 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
     }
 
-    HashMap hashMap3;
-    hashMap3.merge(hashMap1);
+    HashMap hashMap;
+    hashMap.merge(hashMap1);
     EXPECT_TRUE(hashMap1.isEmpty());
-    EXPECT_FALSE(hashMap3.isEmpty());
-    EXPECT_NE(hashMap1, hashMap3);
+    EXPECT_FALSE(hashMap.isEmpty());
+    EXPECT_NE(hashMap1, hashMap);
 
-    hashMap1 = hashMap3;
-    EXPECT_EQ(hashMap1, hashMap3);
+    hashMap1 = hashMap;
+    EXPECT_EQ(hashMap1, hashMap);
 
-    hashMap3.merge(std::move(hashMap1));
+    hashMap.merge(std::move(hashMap1));
     EXPECT_FALSE(hashMap1.isEmpty());
-    EXPECT_FALSE(hashMap3.isEmpty());
-    EXPECT_EQ(hashMap3.getSize(), count);
-    EXPECT_EQ(hashMap1, hashMap3);
+    EXPECT_FALSE(hashMap.isEmpty());
+    EXPECT_EQ(hashMap.getSize(), count);
+    EXPECT_EQ(hashMap1, hashMap);
 
-    hashMap3.merge(std::move(hashMap2));
+    hashMap.merge(std::move(hashMap2));
     EXPECT_TRUE(hashMap2.isEmpty());
-    EXPECT_FALSE(hashMap3.isEmpty());
-    EXPECT_NE(hashMap2, hashMap3);
-    EXPECT_NE(hashMap1, hashMap3);
+    EXPECT_FALSE(hashMap.isEmpty());
+    EXPECT_NE(hashMap2, hashMap);
+    EXPECT_NE(hashMap1, hashMap);
+
+    constexpr int32_t odds []   { 1, 3, 5, 7,  9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41 };
+    constexpr int32_t evens[]   { 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42 };
+    constexpr uint32_t lenOdd   { MACRO_ARRAYLEN(odds) };
+    constexpr uint32_t lenEven  { MACRO_ARRAYLEN(odds) };
+    constexpr uint32_t mrg      { 11 };
+    constexpr uint32_t rem      {  9 };
+
+    HashMap mapOdd, mapEven;
+    for (uint32_t i = 0u; i < lenOdd; ++i)
+    {
+        mapOdd[odds[i]] = odds[i];
+    }
+    for (uint32_t i = 0u; i < lenEven; ++i)
+    {
+        mapEven[evens[i]] = evens[i];
+    }
+
+    uint32_t mapSize = hashMap.getSize();
+    hashMap.merge(mapOdd);
+    EXPECT_FALSE(mapOdd.isEmpty());
+    EXPECT_EQ(mapOdd.getSize(), count);
+    EXPECT_EQ(hashMap.getSize(), mapSize + 11);
+
+    mapSize = hashMap.getSize();
+    hashMap.merge(std::move(mapEven));
+    EXPECT_FALSE(mapEven.isEmpty());
+    EXPECT_EQ(mapEven.getSize(), count - 1);
+    EXPECT_EQ(hashMap.getSize(), mapSize + 11 + 1);
+
+    for (int i = 0; i < static_cast<int>(hashMap.getSize()); ++i)
+    {
+        EXPECT_EQ(hashMap.getAt(i), i);
+        if ((i > 0) && (i < 20))
+        {
+            if ((i % 2) != 0)
+            {
+                EXPECT_TRUE( mapOdd.contains(i));
+                EXPECT_FALSE(mapEven.contains(i));
+            }
+            else
+            {
+                EXPECT_FALSE(mapOdd.contains(i));
+                EXPECT_TRUE(mapEven.contains(i));
+            }
+        }
+    }
+
+    EXPECT_FALSE(hashMap.contains(static_cast<int>(hashMap.getSize())));
+}
+
+/**
+ * \brief   Test addIfUnique method of the Hash Map object.
+ **/
+TEST(TEHashMapTest, TestAddUnique)
+{
+    using HashMap = TEHashMap<int, int>;
+    using POS = HashMap::MAPPOS;
+    constexpr uint32_t count{ 10 };
+
+    constexpr int unique    []{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    constexpr int notunique []{ 0, 1, 2, 3, 4, 0, 1, 2, 3, 4 };
+
+    HashMap hashMap;
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        std::pair<POS, bool> result = hashMap.addIfUnique(notunique[i], notunique[i]);
+        EXPECT_TRUE(hashMap.isValidPosition(result.first));
+        if (i < 5)
+        {
+            EXPECT_TRUE(result.second);
+        }
+        else
+        {
+            EXPECT_FALSE(result.second);
+        }
+    }
+
+    hashMap.release();
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        std::pair<POS, bool> result = hashMap.addIfUnique(unique[i], unique[i]);
+        EXPECT_TRUE(hashMap.isValidPosition(result.first));
+        EXPECT_TRUE(result.second);
+    }
+
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        std::pair<POS, bool> result = hashMap.addIfUnique(notunique[i], notunique[i]);
+        EXPECT_TRUE(hashMap.isValidPosition(result.first));
+        EXPECT_FALSE(result.second);
+    }
+}
+
+/**
+ * \brief   Test update method of the Hash Map object.
+ **/
+TEST(TEHashMapTest, TestUpdate)
+{
+    using HashMap = TEHashMap<int, int>;
+    constexpr uint32_t count{ 10 };
+    constexpr int arr[]{ 10, 11, 12, 13, 14, 15, 16, 17, 18, 19 };
+
+    HashMap hashMap;
+    for (int i = 0; i < static_cast<int>(count); ++i)
+    {
+        hashMap[i] = i;
+    }
+
+    for (int i = 0; i < static_cast<int>(count); ++i)
+    {
+        EXPECT_EQ(hashMap[i], i);
+        hashMap.updateAt(i, arr[i]);
+        EXPECT_EQ(hashMap[i], arr[i]);
+    }
+}
+
+/**
+ * \brief   Test nextEntry method of the Hash Map object.
+ **/
+TEST(TEHashMapTest, TestNextEntry)
+{
+    using HashMap = TEHashMap<int, int>;
+    using POS = HashMap::MAPPOS;
+    constexpr uint32_t count{ 10 };
+
+    HashMap hashMap;
+    for (int i = 0; i < static_cast<int>(count); ++i)
+    {
+        hashMap[i] = i;
+    }
+
+    int idx{ 0 };
+    POS pos = hashMap.firstPosition();
+    while (hashMap.isValidPosition(pos))
+    {
+        int Key{-1}, Value{-1};
+        if (idx < 9)
+        {
+            EXPECT_TRUE(hashMap.nextEntry(pos, Key, Value));
+            EXPECT_EQ(Key, idx + 1);
+            EXPECT_EQ(Value, idx + 1);
+        }
+        else
+        {
+            EXPECT_FALSE(hashMap.nextEntry(pos, Key, Value));
+            EXPECT_EQ(Key, -1);
+            EXPECT_EQ(Value, -1);
+        }
+
+        ++idx;
+    }
+}
+
+/**
+ * \brief   Test Hash Map streaming operators.
+ **/
+TEST(TEHashMapTest, TestStreaming)
+{
+    using HashMap = TEHashMap<int, int>;
+    constexpr uint32_t count{ 10 };
+
+    HashMap src;
+    for (int i = 0; i < static_cast<int>(count); ++i)
+    {
+        src[i] = i;
+    }
+
+    SharedBuffer stream;
+    stream << src;
+
+    stream.moveToBegin();
+    HashMap dst;
+    stream >> dst;
+
+    EXPECT_EQ(src, dst);
 }
