@@ -210,11 +210,16 @@ TEST(TEHashMapTest, TestPositionOperations)
         EXPECT_TRUE(Key == hashMap.keyAtPosition(pos));
 
         POS cur = pos;
-        int nextKey, nextValue;
+        int nextKey{ -1 }, nextValue{ -1 };
 
         pos = hashMap.nextPosition(cur, nextKey, nextValue);
         EXPECT_EQ(nextKey, Key);
         EXPECT_EQ(nextValue, Value);
+        if (hashMap.isValidPosition(pos))
+        {
+            EXPECT_EQ(hashMap.keyAtPosition(pos), nextKey + 1);
+            EXPECT_EQ(hashMap.valueAtPosition(pos), nextValue + coef);
+        }
 
         pos = hashMap.nextPosition(cur);
         ++cnt;
