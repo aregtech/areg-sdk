@@ -316,7 +316,9 @@ public:
      * \brief   Extracts elements from the given source and inserts into the hash map.
      *          If there is an entry with the key equivalent to the key from source element,
      *          then that element is not extracted from the source and remains unchanged.
-     * \param   source  The source of hash map to merge.
+     *          On output, the `source` parameter may be empty if all entries are merged, or
+     *          can be unchanged if the target object contains entries with the same keys.
+     * \param[in, out]  source  The source of hash map to merge.
      */
     inline void merge( TEHashMap<KEY, VALUE> & source );
     inline void merge( TEHashMap<KEY, VALUE> && source );
