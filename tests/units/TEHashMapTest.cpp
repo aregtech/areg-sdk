@@ -213,8 +213,8 @@ TEST(TEHashMapTest, TestPositionOperations)
         int nextKey, nextValue;
 
         pos = hashMap.nextPosition(cur, nextKey, nextValue);
-        EXPECT_TRUE((nextKey == (Key + 1)) || hashMap.isInvalidPosition(pos));
-        EXPECT_TRUE((nextValue == (Value + coef)) || hashMap.isInvalidPosition(pos));
+        EXPECT_EQ(nextKey, Key);
+        EXPECT_EQ(nextValue, Value);
 
         pos = hashMap.nextPosition(cur);
         ++cnt;
