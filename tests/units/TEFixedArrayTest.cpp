@@ -23,7 +23,7 @@
 /**
  * \brief   Test TEArrayList constructors.
  **/
-TEST(FixedArrayTest, TestConstructors)
+TEST(TEFixedArrayTest, TestConstructors)
 {
     using FixedArray = TEFixedArray<int>;
     constexpr uint32_t elemCount{ 10u };
@@ -77,7 +77,7 @@ TEST(FixedArrayTest, TestConstructors)
 /**
  * \brief   Testing copy and move methods of Fixed Array
  **/
-TEST(FixedArrayTest, TestCopyMove)
+TEST(TEFixedArrayTest, TestCopyMove)
 {
     using FixedArray = TEFixedArray<int>;
     constexpr uint32_t elemCount{ 10u };
@@ -129,7 +129,7 @@ TEST(FixedArrayTest, TestCopyMove)
 /**
  * \brief   Test values of the fixed array
  **/
-TEST(FixedArrayTest, TestValues)
+TEST(TEFixedArrayTest, TestValues)
 {
     using FixedArray = TEFixedArray<int>;
     constexpr uint32_t elemCount{ 10u };
@@ -150,7 +150,7 @@ TEST(FixedArrayTest, TestValues)
 /**
  * \brief   Testing searching methods like 'find' and 'contains' of fixed array
  **/
-TEST(FixedArrayTest, TestSearchElem)
+TEST(TEFixedArrayTest, TestSearchElem)
 {
     using FixedArray = TEFixedArray<int>;
     constexpr uint32_t elemCount{ 10u };
@@ -178,7 +178,7 @@ TEST(FixedArrayTest, TestSearchElem)
 /**
  * \brief   Testing the position of the element
  **/
-TEST(FixedArrayTest, TestElemPosition)
+TEST(TEFixedArrayTest, TestElemPosition)
 {
     using FixedArray = TEFixedArray<int>;
     constexpr uint32_t elemCount{ 10u };

@@ -92,7 +92,7 @@ public:
 
     /**
      * \brief	Constructs empty hash-map with hash table size 'hashSize'.
-     * \param	hashSize	The size of has map table. By default, MAP_DEFAULT_HASH_SIZE (64).
+     * \param	hashSize	The size of has map table. By default, MAP_DEFAULT_HASH_SIZE (63).
      **/
     TEHashMap( uint32_t hashSize = NECommon::MAP_DEFAULT_HASH_SIZE);
 
@@ -264,11 +264,6 @@ public:
     inline void clear(void);
 
     /**
-     * \brief   Delete extra entries in the hash map.
-     **/
-    inline void freeExtra(void);
-
-    /**
      * \brief   Sets the size of the hash-map to zero and deletes all capacity space.
      */
     inline void release(void);
@@ -276,8 +271,8 @@ public:
     /**
      * \brief	Searches an element entry by the given key.
      *          If found element, return true and on exit returns the value of element
-     * \param	Key	        The key to search.
-     * \param	out_Value   On output, contains value of found element
+     * \param[in]   Key	        The key to search.
+     * \param[out]  out_Value   On output, contains value of found element
      * \return	Returns true if there is an entry with the specified key.
      **/
     inline bool find( const KEY & Key, VALUE & OUT out_Value ) const;
@@ -321,9 +316,11 @@ public:
      * \brief   Extracts elements from the given source and inserts into the hash map.
      *          If there is an entry with the key equivalent to the key from source element,
      *          then that element is not extracted from the source and remains unchanged.
-     * \param   source  The source of hash map to merge.
+     *          On output, the `source` parameter may be empty if all entries are merged, or
+     *          can be unchanged if the target object contains entries with the same keys.
+     * \param[in,out]   source  The source of hash map to merge.
      */
-    inline void merge( const TEHashMap<KEY, VALUE> & source );
+    inline void merge( TEHashMap<KEY, VALUE> & source );
     inline void merge( TEHashMap<KEY, VALUE> && source );
 
     /**
@@ -561,7 +558,7 @@ inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::firstPositi
 template < typename KEY, typename VALUE >
 inline bool TEHashMap<KEY, VALUE>::isStartPosition(const MAPPOS pos) const
 {
-    return (pos == mValueList.begin());
+    return (isEmpty() == false) && (pos == mValueList.begin());
 }
 
 template < typename KEY, typename VALUE >
@@ -597,12 +594,6 @@ inline bool TEHashMap<KEY, VALUE>::checkPosition(const MAPPOS pos) const
 
 template < typename KEY, typename VALUE >
 inline void TEHashMap<KEY, VALUE>::clear(void)
-{
-    mValueList.clear();
-}
-
-template < typename KEY, typename VALUE >
-inline void TEHashMap<KEY, VALUE>::freeExtra(void)
 {
     mValueList.clear();
 }
@@ -674,7 +665,7 @@ inline void TEHashMap<KEY, VALUE>::setAt( std::pair<KEY, VALUE> && element)
 }
 
 template < typename KEY, typename VALUE >
-inline void TEHashMap<KEY, VALUE>::merge(const TEHashMap<KEY, VALUE>& source)
+inline void TEHashMap<KEY, VALUE>::merge(TEHashMap<KEY, VALUE>& source)
 {
     mValueList.merge(source.mValueList);
 }
