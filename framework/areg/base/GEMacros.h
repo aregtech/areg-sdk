@@ -169,6 +169,14 @@
 #endif  // MACRO_CONSTRUCT_64
 
 /**
+ * \brief   Compute the difference (delta) between 2 digits
+ **/
+#ifndef MACRO_DELTA
+    #define MACRO_DELTA(x, y)   ((x) > (y) ? (x) - (y) : (y) - (x))
+#endif // !MACRO_DELTA
+
+
+/**
  * \brief   Creates signed 64-bit integer literals
  **/
 #ifndef MACRO_LITERAL_INT64

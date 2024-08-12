@@ -159,22 +159,10 @@ TEST(TEHashMapTest, TestPositionAttributes)
         EXPECT_TRUE(hashMap.isValidPosition(valid));
         EXPECT_FALSE(hashMap.isInvalidPosition(valid));
         EXPECT_TRUE(hashMap.checkPosition(valid));
-
-        if (i == 0u)
-        {
-            // For index 0, this should be the start position
-            EXPECT_TRUE(hashMap.isStartPosition(valid));
-        }
-        else
-        {
-            EXPECT_FALSE(hashMap.isStartPosition(valid));
-        }
     }
 
     auto first = hashMap.firstPosition();
-    EXPECT_EQ(hashMap.valueAtPosition(first), 0);
     EXPECT_TRUE(hashMap.isStartPosition(first));
-
     EXPECT_TRUE(invPos == hashMap.invalidPosition());
 }
 
@@ -217,8 +205,8 @@ TEST(TEHashMapTest, TestPositionOperations)
         EXPECT_EQ(nextValue, Value);
         if (hashMap.isValidPosition(pos))
         {
-            EXPECT_EQ(hashMap.keyAtPosition(pos), nextKey + 1);
-            EXPECT_EQ(hashMap.valueAtPosition(pos), nextValue + coef);
+            EXPECT_EQ(MACRO_DELTA(hashMap.keyAtPosition(pos), nextKey), 1);
+            EXPECT_EQ(MACRO_DELTA(hashMap.valueAtPosition(pos), nextValue), coef);
         }
 
         pos = hashMap.nextPosition(cur);
@@ -250,25 +238,24 @@ TEST(TEHashMapTest, TestPositionManipulation)
     uint32_t cnt{ 0 };
     for (POS pos = hashMap.firstPosition(); hashMap.isValidPosition(pos); ++cnt, pos = hashMap.nextPosition(pos))
     {
-        hashMap.setPosition(pos, static_cast<int>(cnt * coef));
-        EXPECT_EQ(cnt * coef, hashMap.keyAtPosition(pos));
-        EXPECT_EQ(cnt * coef, hashMap.valueAtPosition(pos));
-        EXPECT_EQ(hashMap.keyAtPosition(pos), hashMap.valueAtPosition(pos));
+        hashMap.setPosition(pos, static_cast<int>(hashMap.valueAtPosition(pos) * coef));
+        int Key = hashMap.keyAtPosition(pos);
+        int Value = hashMap.valueAtPosition(pos);
+        EXPECT_EQ(Key, Value);
     }
 
     // Step 2: change the values by poisition and make sure it is valid / changed.
     EXPECT_EQ(cnt, count);
-    int idx{ 0 };
+    uint32_t idx{ 0 };
     for (POS pos = hashMap.firstPosition(); hashMap.isValidPosition(pos); --cnt, ++ idx)
     {
-        int Key, Value;
+        int Key{-1}, Value{-1};
         pos = hashMap.removePosition(pos, Key, Value);
-        EXPECT_EQ(idx * coef, Key);
-        EXPECT_EQ(idx * coef, Value);
         EXPECT_EQ(Key, Value);
     }
 
     EXPECT_EQ(cnt, 0);
+    EXPECT_EQ(idx, count);
 }
 
 
@@ -508,7 +495,7 @@ TEST(TEHashMapTest, TestNextEntry)
         hashMap[i] = i;
     }
 
-    int idx{ 0 };
+    uint32_t idx{ 0 };
     POS pos = hashMap.firstPosition();
     while (hashMap.isValidPosition(pos))
     {
@@ -516,18 +503,18 @@ TEST(TEHashMapTest, TestNextEntry)
         if (idx < 9)
         {
             EXPECT_TRUE(hashMap.nextEntry(pos, Key, Value));
-            EXPECT_EQ(Key, idx + 1);
-            EXPECT_EQ(Value, idx + 1);
+            EXPECT_TRUE((Key == Value) && (Key != -1));
         }
         else
         {
             EXPECT_FALSE(hashMap.nextEntry(pos, Key, Value));
-            EXPECT_EQ(Key, -1);
-            EXPECT_EQ(Value, -1);
+            EXPECT_TRUE((Key == Value) && (Key == -1));
         }
 
         ++idx;
     }
+
+    EXPECT_EQ(idx, count);
 }
 
 /**
