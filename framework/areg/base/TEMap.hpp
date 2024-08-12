@@ -255,11 +255,6 @@ public:
     inline void clear(void);
 
     /**
-     * \brief   Delete extra entries in the map.
-     **/
-    inline void freeExtra(void);
-
-    /**
      * \brief   Sets the size of the map to zero and deletes all capacity space.
      */
     inline void release(void);
@@ -582,12 +577,6 @@ inline bool TEMap<KEY, VALUE>::checkPosition(const MAPPOS pos) const
 
 template < typename KEY, typename VALUE >
 inline void TEMap<KEY, VALUE>::clear(void)
-{
-    mValueList.clear();
-}
-
-template < typename KEY, typename VALUE >
-inline void TEMap<KEY, VALUE>::freeExtra(void)
 {
     mValueList.clear();
 }
