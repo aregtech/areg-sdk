@@ -319,7 +319,7 @@ public:
      *          On output, the `source` parameter may be empty if all entries are merged, or
      *          can be unchanged if the target object contains entries with the same keys.
      * \param[in,out]   source  The source of hash map to merge.
-     */
+     **/
     inline void merge( TEHashMap<KEY, VALUE> & source );
     inline void merge( TEHashMap<KEY, VALUE> && source );
 
@@ -558,7 +558,7 @@ inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::firstPositi
 template < typename KEY, typename VALUE >
 inline bool TEHashMap<KEY, VALUE>::isStartPosition(const MAPPOS pos) const
 {
-    return (isEmpty() == false) && (pos == mValueList.begin());
+    return (mValueList.empty() == false) && (pos == mValueList.begin());
 }
 
 template < typename KEY, typename VALUE >

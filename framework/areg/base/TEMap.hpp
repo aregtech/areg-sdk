@@ -255,11 +255,6 @@ public:
     inline void clear(void);
 
     /**
-     * \brief   Delete extra entries in the map.
-     **/
-    inline void freeExtra(void);
-
-    /**
      * \brief   Sets the size of the map to zero and deletes all capacity space.
      */
     inline void release(void);
@@ -312,9 +307,11 @@ public:
      * \brief   Extracts elements from the given source and inserts into the sorted map.
      *          If there is an entry with the key equivalent to the key from source element,
      *          then that element is not extracted from the source and remains unchanged.
-     * \param   source  The source of map to merge.
-     */
-    inline void merge( const TEMap<KEY, VALUE> & source );
+     *          On output, the `source` parameter may be empty if all entries are merged, or
+     *          can be unchanged if the target object contains entries with the same keys.
+     * \param[in,out]   source  The source of the sorted map to merge.
+     **/
+    inline void merge( TEMap<KEY, VALUE> & source );
     inline void merge( TEMap<KEY, VALUE> && source );
 
     /**
@@ -546,7 +543,7 @@ inline typename TEMap<KEY, VALUE>::MAPPOS TEMap<KEY, VALUE>::firstPosition( void
 template < typename KEY, typename VALUE >
 inline bool TEMap<KEY, VALUE>::isStartPosition(const MAPPOS pos) const
 {
-    return (pos == mValueList.begin());
+    return (mValueList.empty() == false) && (pos == mValueList.begin());
 }
 
 template < typename KEY, typename VALUE >
@@ -582,12 +579,6 @@ inline bool TEMap<KEY, VALUE>::checkPosition(const MAPPOS pos) const
 
 template < typename KEY, typename VALUE >
 inline void TEMap<KEY, VALUE>::clear(void)
-{
-    mValueList.clear();
-}
-
-template < typename KEY, typename VALUE >
-inline void TEMap<KEY, VALUE>::freeExtra(void)
 {
     mValueList.clear();
 }
@@ -659,7 +650,7 @@ inline void TEMap<KEY, VALUE>::setAt( std::pair<KEY, VALUE> && element)
 }
 
 template < typename KEY, typename VALUE >
-inline void TEMap<KEY, VALUE>::merge(const TEMap<KEY, VALUE>& source)
+inline void TEMap<KEY, VALUE>::merge(TEMap<KEY, VALUE>& source)
 {
     mValueList.merge(source.mValueList);
 }
@@ -758,7 +749,7 @@ inline typename TEMap<KEY, VALUE>::MAPPOS TEMap<KEY, VALUE>::removePosition(type
     out_Key         = curPos->first;
     out_Value       = curPos->second;
 
-    return mValueList.erase(++curPos);
+    return mValueList.erase(curPos);
 }
 
 template < typename KEY, typename VALUE >
@@ -931,8 +922,6 @@ inline const IEInStream & operator >> ( const IEInStream & stream, TEMap<K, V> &
     stream >> size;
 
     input.mValueList.clear();
-    input.mValueList.reserve(size);
-
     for (uint32_t i = 0; i < size; ++ i)
     {
         K key;
