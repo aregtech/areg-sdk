@@ -53,6 +53,7 @@
     <ClCompile Include="units\TEFixedArrayTest.cpp" />
     <ClCompile Include="units\TEHashMapTest.cpp" />
     <ClCompile Include="units\TEMapTest.cpp" />
+    <ClCompile Include="units\TEPropertyTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="units\GUnitTest.hpp" />

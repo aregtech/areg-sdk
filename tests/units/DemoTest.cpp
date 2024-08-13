@@ -10,8 +10,8 @@
  * \file        units/DemoTest.Cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       AREG Platform, Google test dummy file.
- *              Created as a fist file to integrate GTest in AREG
+ * \brief       AREG Platform, AREG framework unit test file.
+ *              Google unit test dummy file, created as a fist file to integrate GTest in AREG
  ************************************************************************/
  /************************************************************************
   * Include files.

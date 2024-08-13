@@ -7,7 +7,7 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        units/TEMapTest.Cpp
+ * \file        units/TEMapTest.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, AREG framework unit test file.
@@ -20,16 +20,15 @@
 #include "areg/base/TEMap.hpp"
 #include "areg/base/SharedBuffer.hpp"
 
-  /**
-   * \brief   Test TEMap constructors.
-   **/
+/**
+ * \brief   Test TEMap constructors.
+ **/
 TEST(TEMapTest, TestConstructors)
 {
     using Map = TEMap<int, int>;
     constexpr uint32_t count{ 10 };
 
-    // Step 1: test default constructor and the constructor with the size of mao.
-    //  Result: the empty map is initialized.
+    // Step 1: test default constructor, initialize maps.
     Map map1, map2;
     EXPECT_TRUE(map1.isEmpty() && map2.isEmpty());
     for (int i = 0; i < static_cast<int>(count); ++i)

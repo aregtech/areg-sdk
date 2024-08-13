@@ -18,6 +18,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
+#include "areg/base/IEIOStream.hpp"
 
 /**
  * \brief   The TEProperty class template is an implementation of a pair of data,
@@ -73,10 +74,37 @@ public:
      **/
     inline bool operator != ( const TEProperty<KEY, VALUE> & other ) const;
 
+/************************************************************************/
+// Friend global operators to make property streamable
+/************************************************************************/
+
+    /**
+     * \brief   Reads out from the stream the key and value pairs of the property.
+     *          If property previously had key and value, they will be removed and new data
+     *          from the stream will be set. There should be possibility to initialize
+     *          key and value from streaming object and if KEY or VALUE are not primitives,
+     *          but objects, they should have implemented streaming operator.
+     * \param   stream  The streaming object to read values.
+     * \param   input   The property object to save initialized values.
+     **/
+    template < typename K, typename V >
+    friend inline const IEInStream & operator >> ( const IEInStream & stream, TEProperty<K, V> & input);
+
+    /**
+     * \brief   Writes to the stream the key and value pairs of the property.
+     *          The values will be written to the stream as a KEY and VALUE.
+     *          There should be possibility to stream key and value pairs and if KEY or VALUE
+     *          are not primitives, but objects, they should have implemented streaming operator.
+     * \param   stream  The stream to write values.
+     * \param   output  The property object containing value to stream.
+     **/
+    template < typename K, typename V >
+    friend inline IEOutStream & operator << ( IEOutStream & stream, const TEProperty<K, V> & output );
+
 //////////////////////////////////////////////////////////////////////////
 // Operations
 //////////////////////////////////////////////////////////////////////////
-protected:
+public:
 
     /**
      * \brief   Copies the key and value data of the pair from the given source.
@@ -235,6 +263,28 @@ template <typename KEY, typename VALUE>
 inline VALUE& TEProperty<KEY, VALUE>::getValue(void)
 {
     return mValue.second;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// TEProperty<KEY, VALUE> class friend methods
+//////////////////////////////////////////////////////////////////////////
+
+template < typename K, typename V >
+inline const IEInStream& operator >> (const IEInStream& stream, TEProperty<K, V>& input)
+{
+    K key;
+    V value;
+    stream >> key >> value;
+    input.setData(std::move(key), std::move(value));
+    return stream;
+}
+
+template < typename K, typename V >
+inline IEOutStream& operator << (IEOutStream& stream, const TEProperty<K, V>& output)
+{
+    stream << output.mValue.first;
+    stream << output.mValue.second;
+    return stream;
 }
 
 #endif  // AREG_BASE_TEPROPERTY_HPP
