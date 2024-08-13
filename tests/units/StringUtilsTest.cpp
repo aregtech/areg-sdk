@@ -7,15 +7,15 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        units/StringUtilsTest.Cpp
+ * \file        units/StringUtilsTest.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       AREG Platform, Google test dummy file.
+ * \brief       AREG Platform, AREG framework unit test file.
  *              Created as a fist file to integrate GTest in AREG
  ************************************************************************/
- /************************************************************************
-  * Include files.
-  ************************************************************************/
+/************************************************************************
+ * Include files.
+ ************************************************************************/
 #include "units/GUnitTest.hpp"
 #include "areg/base/String.hpp"
 

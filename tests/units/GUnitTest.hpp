@@ -12,7 +12,8 @@
  * \file        units/GUnitTest.hpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       AREG Platform, Unit Tests. Global configuration file.
+ * \brief       AREG Platform, AREG framework unit test file.
+ *              Global configuration file of AREG unit tests.
  ************************************************************************/
  /************************************************************************
   * Include files.

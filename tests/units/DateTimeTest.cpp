@@ -10,7 +10,8 @@
  * \file        units/DateTimeTest.Cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       AREG Platform, Google test of DateTime class.
+ * \brief       AREG Platform, AREG framework unit test file.
+ *              Tests of DateTime object.
  ************************************************************************/
  /************************************************************************
   * Include files.

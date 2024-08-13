@@ -7,7 +7,7 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        units/TEHashMapTest.Cpp
+ * \file        units/TEHashMapTest.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, AREG framework unit test file.
@@ -20,9 +20,9 @@
 #include "areg/base/TEHashMap.hpp"
 #include "areg/base/SharedBuffer.hpp"
 
-  /**
-   * \brief   Test TEHashMap constructors.
-   **/
+/**
+ * \brief   Test TEHashMap constructors.
+ **/
 TEST(TEHashMapTest, TestConstructors)
 {
     using HashMap = TEHashMap<int, int>;

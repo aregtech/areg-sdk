@@ -10,7 +10,8 @@
  * \file        units/FileTest.Cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       AREG Platform, Google test of File object.
+ * \brief       AREG Platform, AREG framework unit test file.
+ *              Tests of File object.
  ************************************************************************/
  /************************************************************************
   * Include files.
