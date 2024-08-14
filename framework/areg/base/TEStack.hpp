@@ -122,6 +122,20 @@ public:
     inline const VALUE& operator [] (STACKPOS atPosition) const;
     inline VALUE& operator [] (STACKPOS atPosition);
 
+    /**
+     * \brief   Compares 2 stack object and returns true if they are equal.
+     * \param   other   A stack object to compare.
+     * \return  Returns true if 2 stack objects are equal.
+     **/
+    inline bool operator == (const TEStack<VALUE> & other) const;
+
+    /**
+     * \brief   Compares 2 stack object and returns true if they are not equal.
+     * \param   other   A stack object to compare.
+     * \return  Returns true if 2 stack objects are not equal.
+     **/
+    inline bool operator != (const TEStack<VALUE> & other) const;
+
 public:
 /************************************************************************/
 // Friend global operators to make Stack streamable
@@ -611,6 +625,20 @@ inline VALUE& TEStack<VALUE>::operator [] (STACKPOS atPosition)
 {
     Lock lock(mSynchObject);
     return (*atPosition);
+}
+
+template <typename VALUE>
+inline bool TEStack<VALUE>::operator == (const TEStack<VALUE>& other) const
+{
+    Lock lock(mSynchObject);
+    return (mValueList == other.mValueList);
+}
+
+template <typename VALUE>
+inline bool TEStack<VALUE>::operator != (const TEStack<VALUE>& other) const
+{
+    Lock lock(mSynchObject);
+    return (mValueList != other.mValueList);
 }
 
 template <typename VALUE>
