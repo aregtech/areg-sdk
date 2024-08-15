@@ -76,3 +76,72 @@ TEST(TEStackTest, TestLockAndNolockStackConstructors)
     EXPECT_EQ(nolockMove1, nolock);
     EXPECT_EQ(nolockMove2, lock);
 }
+
+/**
+ * \brief   Test TEStack constructors.
+ **/
+TEST(TEStackTest, TestLockAndNolockStackOperators)
+{
+    using Stack = TEStack<int>;
+    using NolockStack = TENolockStack<int>;
+    using LockStack = TELockStack<int>;
+
+    constexpr uint32_t count{ 10 };
+    // Step 1: initialize 2 types of stacks -- lock and unlock
+    NolockStack nolock;
+    LockStack lock;
+
+    EXPECT_TRUE(lock.isEmpty() && nolock.isEmpty());
+    for (int i = 0; i < static_cast<int>(count); ++i)
+    {
+        nolock.pushFirst(i);
+        lock.pushFirst(i + static_cast<int>(count));
+    }
+    EXPECT_FALSE(lock.isEmpty() && nolock.isEmpty());
+
+    // Step 2:  Create NolockStack objects with copy constructors
+    NolockStack nolockCopy1;
+    NolockStack nolockCopy2;
+    EXPECT_TRUE(nolockCopy1.isEmpty() && nolockCopy2.isEmpty());
+    nolockCopy1 = nolock;
+    nolockCopy2 = lock;
+    EXPECT_FALSE(nolockCopy1.isEmpty() && nolockCopy2.isEmpty());
+    EXPECT_TRUE(nolockCopy1 == nolock);
+    EXPECT_TRUE(nolockCopy2 == lock);
+
+    // Step 3: Create LockStack objects with copy constructors.
+    LockStack lockCopy1;
+    LockStack lockCopy2;
+    EXPECT_TRUE(lockCopy1.isEmpty() && lockCopy2.isEmpty());
+    lockCopy1 = nolock;
+    lockCopy2 = lock;
+    EXPECT_FALSE(lockCopy1.isEmpty() && lockCopy2.isEmpty());
+    EXPECT_TRUE(lockCopy1 == nolock);
+    EXPECT_TRUE(lockCopy2 == lock);
+
+    // Step 4:  Create NolockStack objects with move constructors
+    NolockStack nolockMove1;
+    NolockStack nolockMove2;
+    EXPECT_TRUE(nolockMove1.isEmpty() && nolockMove2.isEmpty());
+    nolockMove1 = std::move(nolockCopy1);
+    nolockMove2 = std::move(nolockCopy2);
+    EXPECT_FALSE(nolockMove1.isEmpty() && nolockMove2.isEmpty());
+    EXPECT_TRUE(nolockMove1 != nolockCopy1);
+    EXPECT_TRUE(nolockMove2 != nolockCopy2);
+    EXPECT_TRUE(nolockCopy1.isEmpty() && nolockCopy2.isEmpty());
+    EXPECT_TRUE(nolockMove1 == nolock);
+    EXPECT_TRUE(nolockMove2 == lock);
+
+    // Step 5: Create LockStack objects with copy constructors.
+    LockStack lockMove1;
+    LockStack lockMove2;
+    EXPECT_TRUE(lockMove1.isEmpty() && lockMove2.isEmpty());
+    lockMove1 = std::move(lockCopy1);
+    lockMove2 = std::move(lockCopy2);
+    EXPECT_FALSE(lockMove1.isEmpty() && lockMove2.isEmpty());
+    EXPECT_TRUE(lockMove1 != lockCopy1);
+    EXPECT_TRUE(lockMove2 != lockCopy2);
+    EXPECT_TRUE(lockCopy1.isEmpty() && lockCopy2.isEmpty());
+    EXPECT_TRUE(nolockMove1 == nolock);
+    EXPECT_TRUE(nolockMove2 == lock);
+}

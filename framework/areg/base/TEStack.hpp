@@ -470,6 +470,22 @@ public:
      **/
     inline TELockStack<VALUE> & operator = ( TELockStack<VALUE> && source ) noexcept;
 
+    /**
+     * \brief   Copies entries from given sources. If stack had entries
+     *          all entries will be lost and new entries will be created.
+     * \param   source  The instance of source to copy stack entries.
+     * \return  Returns stack object.
+     **/
+    inline TELockStack<VALUE> & operator = ( const TEStack<VALUE> & source );
+
+    /**
+     * \brief   Moves entries from given sources. If stack had entries
+     *          all entries will be lost and new entries will be created.
+     * \param   source  The instance of source to move stack entries.
+     * \return  Returns stack object.
+     **/
+    inline TELockStack<VALUE> & operator = ( TEStack<VALUE> && source ) noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -549,6 +565,22 @@ public:
      * \return  Returns stack object.
      **/
     inline TENolockStack<VALUE> & operator = ( TENolockStack<VALUE> && source ) noexcept;
+
+    /**
+     * \brief   Copies entries from given sources. If stack had entries
+     *          all entries will be lost and new entries will be created.
+     * \param   source  The instance of source to copy stack entries.
+     * \return  Returns stack object.
+     **/
+    inline TENolockStack<VALUE> & operator = ( const TEStack<VALUE> & source );
+
+    /**
+     * \brief   Moves entries from given sources. If stack had entries
+     *          all entries will be lost and new entries will be created.
+     * \param   source  The instance of source to move stack entries.
+     * \return  Returns stack object.
+     **/
+    inline TENolockStack<VALUE> & operator = ( TEStack<VALUE> && source ) noexcept;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -631,6 +663,7 @@ template <typename VALUE>
 inline bool TEStack<VALUE>::operator == (const TEStack<VALUE>& other) const
 {
     Lock lock(mSynchObject);
+    Lock lockOther(other.mSynchObject);
     return (mValueList == other.mValueList);
 }
 
@@ -638,6 +671,7 @@ template <typename VALUE>
 inline bool TEStack<VALUE>::operator != (const TEStack<VALUE>& other) const
 {
     Lock lock(mSynchObject);
+    Lock lockOther(other.mSynchObject);
     return (mValueList != other.mValueList);
 }
 
@@ -951,6 +985,20 @@ inline TELockStack<VALUE> & TELockStack<VALUE>::operator = ( TELockStack<VALUE> 
     return (*this);
 }
 
+template <typename VALUE>
+inline TELockStack<VALUE>& TELockStack<VALUE>::operator = (const TEStack<VALUE> & source)
+{
+    static_cast<TEStack<VALUE> &>(*this) = source;
+    return (*this);
+}
+
+template <typename VALUE>
+inline TELockStack<VALUE>& TELockStack<VALUE>::operator = (TEStack<VALUE> && source) noexcept
+{
+    static_cast<TEStack<VALUE> &>(*this) = static_cast<TEStack<VALUE> &&>(source);
+    return (*this);
+}
+
 //////////////////////////////////////////////////////////////////////////
 // TENolockStack<VALUE> class template implementation
 //////////////////////////////////////////////////////////////////////////
@@ -999,6 +1047,20 @@ inline TENolockStack<VALUE> & TENolockStack<VALUE>::operator = ( const TENolockS
 
 template <typename VALUE>
 inline TENolockStack<VALUE> & TENolockStack<VALUE>::operator = ( TENolockStack<VALUE> && source ) noexcept
+{
+    static_cast<TEStack<VALUE> &>(*this) = static_cast<TEStack<VALUE> &&>(source);
+    return (*this);
+}
+
+template <typename VALUE>
+inline TENolockStack<VALUE> & TENolockStack<VALUE>::operator = ( const TEStack<VALUE> & source )
+{
+    static_cast<TEStack<VALUE> &>(*this) = source;
+    return (*this);
+}
+
+template <typename VALUE>
+inline TENolockStack<VALUE> & TENolockStack<VALUE>::operator = ( TEStack<VALUE> && source ) noexcept
 {
     static_cast<TEStack<VALUE> &>(*this) = static_cast<TEStack<VALUE> &&>(source);
     return (*this);
