@@ -275,6 +275,14 @@ public:
     inline bool unlock( void ) const;
 
     /**
+     * \brief	Sets new size of stack. If needed, either increases or truncates
+     *          elements in the stack. The elements of type VALUE should have default
+     *          constructor create and initialize elements.
+     * \param	newSize	    New size to set. If zero, stack is emptied.
+     **/
+    inline void resize(uint32_t newSize);
+
+    /**
      * \brief   Returns first inserted element in the stack without changing stack.
      *          The caller of function should make sure that the stack is not empty,
      *          otherwise it may cause system crash.
@@ -693,14 +701,14 @@ template <typename VALUE>
 inline bool TEStack<VALUE>::isStartPosition(STACKPOS pos) const
 {
     Lock lock(mSynchObject);
-    return (pos = mValueList.begin());
+    return (pos == mValueList.begin());
 }
 
 template <typename VALUE>
 inline bool TEStack<VALUE>::isLastPosition(STACKPOS pos) const
 {
     Lock lock(mSynchObject);
-    return (mValueList.empty() == false) && (pos = --mValueList.end());
+    return (mValueList.empty() == false) && (pos == --mValueList.end());
 }
 
 template <typename VALUE>
@@ -785,6 +793,13 @@ template <typename VALUE>
 inline bool TEStack<VALUE>::unlock( void ) const
 {
     return mSynchObject.unlock();
+}
+
+template<typename VALUE >
+inline void TEStack< VALUE >::resize(uint32_t newSize)
+{
+    Lock lock(mSynchObject);
+    mValueList.resize(newSize > NECommon::MAX_CONTAINER_SIZE ? NECommon::MAX_CONTAINER_SIZE : newSize);
 }
 
 template <typename VALUE>

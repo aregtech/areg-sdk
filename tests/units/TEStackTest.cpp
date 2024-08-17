@@ -99,7 +99,7 @@ TEST(TEStackTest, TestLockAndNolockStackOperators)
     }
     EXPECT_FALSE(lock.isEmpty() && nolock.isEmpty());
 
-    // Step 2:  Create NolockStack objects with copy constructors
+    // Step 2:  Create NolockStack objects and use assigning operator to copy from source.
     NolockStack nolockCopy1;
     NolockStack nolockCopy2;
     EXPECT_TRUE(nolockCopy1.isEmpty() && nolockCopy2.isEmpty());
@@ -109,7 +109,7 @@ TEST(TEStackTest, TestLockAndNolockStackOperators)
     EXPECT_TRUE(nolockCopy1 == nolock);
     EXPECT_TRUE(nolockCopy2 == lock);
 
-    // Step 3: Create LockStack objects with copy constructors.
+    // Step 3: Create LockStack objects and use assigning operator to copy from source.
     LockStack lockCopy1;
     LockStack lockCopy2;
     EXPECT_TRUE(lockCopy1.isEmpty() && lockCopy2.isEmpty());
@@ -119,7 +119,7 @@ TEST(TEStackTest, TestLockAndNolockStackOperators)
     EXPECT_TRUE(lockCopy1 == nolock);
     EXPECT_TRUE(lockCopy2 == lock);
 
-    // Step 4:  Create NolockStack objects with move constructors
+    // Step 4:  Create NolockStack objects and use assigning operator to move the source.
     NolockStack nolockMove1;
     NolockStack nolockMove2;
     EXPECT_TRUE(nolockMove1.isEmpty() && nolockMove2.isEmpty());
@@ -132,7 +132,7 @@ TEST(TEStackTest, TestLockAndNolockStackOperators)
     EXPECT_TRUE(nolockMove1 == nolock);
     EXPECT_TRUE(nolockMove2 == lock);
 
-    // Step 5: Create LockStack objects with copy constructors.
+    // Step 5: Create LockStack objects and use assigning operator to move the source.
     LockStack lockMove1;
     LockStack lockMove2;
     EXPECT_TRUE(lockMove1.isEmpty() && lockMove2.isEmpty());
@@ -144,4 +144,185 @@ TEST(TEStackTest, TestLockAndNolockStackOperators)
     EXPECT_TRUE(lockCopy1.isEmpty() && lockCopy2.isEmpty());
     EXPECT_TRUE(nolockMove1 == nolock);
     EXPECT_TRUE(nolockMove2 == lock);
+}
+
+/**
+ * \brief   Test TEStack positioning.
+ **/
+TEST(TEStackTest, TestLockAndNolockStackPositioning)
+{
+    using Stack = TEStack<int>;
+    using NolockStack = TENolockStack<int>;
+    using LockStack = TELockStack<int>;
+    using POS = Stack::STACKPOS;
+
+    constexpr uint32_t count{ 10 };
+
+    // Step 1: initialize 2 types of stacks -- lock and unlock
+    NolockStack nolock;
+    LockStack lock;
+    EXPECT_TRUE(nolock.isEmpty() && lock.isEmpty());
+
+    // Step 2: resize stacks, set new size equal to `count`, make sure they are not empty.
+    nolock.resize(count);
+    lock.resize(count);
+    EXPECT_FALSE(nolock.isEmpty() && lock.isEmpty());
+    EXPECT_EQ(nolock.getSize(), count);
+    EXPECT_EQ(lock.getSize(), count);
+
+    // Step 3: get the first position of the stacks and make sure that they are valid.
+    POS posNolock = nolock.firstPosition();
+    POS posLock = lock.firstPosition();
+    EXPECT_FALSE(nolock.isInvalidPosition(posNolock));
+    EXPECT_FALSE(lock.isInvalidPosition(posLock));
+    EXPECT_TRUE(nolock.isStartPosition(posNolock));
+    EXPECT_TRUE(lock.isStartPosition(posLock));
+
+    // Step 4: in the loop check each position of the stacks, check validity and check access via positioning.
+    for (int i = 0; i < static_cast<int>(count); ++i)
+    {
+        EXPECT_TRUE(nolock.isValidPosition(posNolock));
+        EXPECT_TRUE(lock.isValidPosition(posLock));
+
+        EXPECT_TRUE(nolock.checkPosition(posNolock));
+        EXPECT_TRUE(lock.checkPosition(posLock));
+
+        nolock.getAt(posNolock) = i;
+        lock[posLock] = nolock[posNolock];
+        EXPECT_EQ(lock.getAt(posLock), i);
+
+        if (i == static_cast<int>(count - 1u))
+        {
+            EXPECT_TRUE(nolock.isLastPosition(posNolock));
+            EXPECT_TRUE(lock.isLastPosition(posLock));
+        }
+
+        posNolock = nolock.nextPosition(posNolock);
+        posLock = lock.nextPosition(posLock);
+
+        EXPECT_FALSE(nolock.isStartPosition(posNolock));
+        EXPECT_FALSE(lock.isStartPosition(posLock));
+    }
+
+    // Step 5: make sure that the positions are invalid since reached end of stack.
+    EXPECT_TRUE(nolock.isInvalidPosition(posNolock));
+    EXPECT_TRUE(lock.isInvalidPosition(posLock));
+
+    // Step 6: compare 2 stacks that have same entries.
+    EXPECT_EQ(nolock, lock);
+
+    // Step 7: resize stacks, set new size 0, make sure they are empty.
+    nolock.resize(0);
+    lock.resize(0);
+    EXPECT_TRUE(nolock.isEmpty() && lock.isEmpty());
+    EXPECT_EQ(nolock.getSize(), 0);
+    EXPECT_EQ(lock.getSize(), 0);
+}
+
+/**
+ * \brief   Test TEStack resizing.
+ **/
+TEST(TEStackTest, TestLockAndNolockStackResizing)
+{
+    using Stack = TEStack<int>;
+    using NolockStack = TENolockStack<int>;
+    using LockStack = TELockStack<int>;
+    using POS = Stack::STACKPOS;
+
+    constexpr uint32_t count{ 10 };
+
+    // Step 1: initialize 2 types of stacks -- lock and unlock
+    NolockStack nolock;
+    LockStack lock;
+    EXPECT_TRUE(nolock.isEmpty() && lock.isEmpty());
+
+    // Step 2: resize `nolock` stack, set new size equal to `count`, make sure they it is not empty.
+    nolock.resize(count);
+    EXPECT_FALSE(nolock.isEmpty());
+    EXPECT_EQ(nolock.getSize(), count);
+
+    // Step 3: get the first position of the stacks and make sure that they are valid.
+    POS posNolock = nolock.firstPosition();
+
+    // Step 4: in the loop check each position of the stacks, check validity and check access via positioning.
+    for (int i = 0; i < static_cast<int>(count); ++i)
+    {
+        EXPECT_TRUE(nolock.isValidPosition(posNolock));
+        nolock[posNolock] = i;
+        lock.pushLast(nolock[posNolock]);
+
+        posNolock = nolock.nextPosition(posNolock);
+    }
+
+    EXPECT_EQ(nolock, lock);
+
+    nolock.resize(count * 2u);
+    lock.resize(count / 2u);
+    EXPECT_NE(nolock, lock);
+    EXPECT_EQ(nolock.getSize(), count * 2u);
+    EXPECT_EQ(lock.getSize(), count / 2u);
+
+    for (int i = 0; i < static_cast<int>(count * 2u); ++i)
+    {
+        int val = nolock.popFirst();
+        if (i < static_cast<int>(count))
+        {
+            EXPECT_EQ(val, i);
+        }
+    }
+
+    for (int i = 0; i < static_cast<int>(count / 2u); ++i)
+    {
+        int val = lock.popFirst();
+        EXPECT_EQ(val, i);
+    }
+
+    EXPECT_TRUE(nolock.isEmpty() && lock.isEmpty());
+    EXPECT_EQ(nolock.getSize(), 0);
+    EXPECT_EQ(lock.getSize(), 0);
+}
+
+/**
+ * \brief   Test TEStack resizing.
+ **/
+TEST(TEStackTest, TestLockAndNolockStackPushing)
+{
+    using Stack = TEStack<int>;
+    using NolockStack = TENolockStack<int>;
+    using LockStack = TELockStack<int>;
+    using POS = Stack::STACKPOS;
+
+    constexpr int arr[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    constexpr uint32_t count{ MACRO_ARRAYLEN(arr) };
+
+    // Step 1: initialize 2 types of stacks -- lock and unlock
+    NolockStack nolock;
+    LockStack lock;
+    EXPECT_TRUE(nolock.isEmpty() && lock.isEmpty());
+
+    for (int i = 0; i < static_cast<int>(count); ++i)
+    {
+        uint32_t sizeNolock = nolock.pushFirst(arr[i]);
+        uint32_t sizeLock = lock.pushLast(arr[i]);
+        EXPECT_EQ(sizeNolock, sizeLock);
+    }
+
+    EXPECT_NE(nolock, lock);
+
+    for (int i = 0; i < static_cast<int>(count); ++i)
+    {
+        EXPECT_EQ(nolock.getData()[i], arr[count - 1 - i]);
+        EXPECT_EQ(lock.getData()[i], arr[i]);
+    }
+
+
+    for (int i = 0; i < static_cast<int>(count); ++i)
+    {
+        int valNolock = nolock.popFirst();
+        int valLock = lock.popFirst();
+        EXPECT_EQ(valNolock, arr[count - 1 - i]);
+        EXPECT_EQ(valLock, arr[i]);
+    }
+
+    EXPECT_TRUE(nolock.isEmpty() && lock.isEmpty());
 }
