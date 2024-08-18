@@ -32,4 +32,5 @@ list(APPEND AREG_LDFLAGS stdc++ m pthread rt)
 # disable SQLite warnings
 list(APPEND AREG_OPT_DISABLE_WARN_THIRDPARTY
         -Wno-everything
+        -Wno-unused-function
     )

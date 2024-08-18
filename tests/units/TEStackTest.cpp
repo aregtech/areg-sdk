@@ -82,7 +82,6 @@ TEST(TEStackTest, TestLockAndNolockStackConstructors)
  **/
 TEST(TEStackTest, TestLockAndNolockStackOperators)
 {
-    using Stack = TEStack<int>;
     using NolockStack = TENolockStack<int>;
     using LockStack = TELockStack<int>;
 
@@ -287,10 +286,8 @@ TEST(TEStackTest, TestLockAndNolockStackResizing)
  **/
 TEST(TEStackTest, TestLockAndNolockStackPushing)
 {
-    using Stack = TEStack<int>;
     using NolockStack = TENolockStack<int>;
     using LockStack = TELockStack<int>;
-    using POS = Stack::STACKPOS;
 
     constexpr int arr[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     constexpr uint32_t count{ MACRO_ARRAYLEN(arr) };
@@ -311,7 +308,7 @@ TEST(TEStackTest, TestLockAndNolockStackPushing)
 
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
-        EXPECT_EQ(nolock.getData()[i], arr[count - 1 - i]);
+        EXPECT_EQ(nolock.getData()[i], arr[count - static_cast<uint32_t> (i + 1u)]);
         EXPECT_EQ(lock.getData()[i], arr[i]);
     }
 
@@ -320,7 +317,7 @@ TEST(TEStackTest, TestLockAndNolockStackPushing)
     {
         int valNolock = nolock.popFirst();
         int valLock = lock.popFirst();
-        EXPECT_EQ(valNolock, arr[count - 1 - i]);
+        EXPECT_EQ(valNolock, arr[count - static_cast<uint32_t> (i + 1u)]);
         EXPECT_EQ(valLock, arr[i]);
     }
 
