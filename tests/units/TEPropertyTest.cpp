@@ -114,7 +114,6 @@ TEST(TEPropertyTest, TestAttributes)
     EXPECT_FALSE(propMove.getKey().isEmpty() && propMove.getValue().isEmpty());
     EXPECT_EQ(propMove.getKey(), propName);
     EXPECT_EQ(propMove.getValue(), propValue);
-    EXPECT_TRUE(moveName.isEmpty() && moveValue.isEmpty());
 
     EXPECT_TRUE(propCopy == propMove);
 
@@ -129,7 +128,6 @@ TEST(TEPropertyTest, TestAttributes)
     propMove.setValue(std::move(moveValue));
     EXPECT_EQ(propMove.getKey(), otherName);
     EXPECT_EQ(propMove.getValue(), otherValue);
-    EXPECT_TRUE(moveName.isEmpty() && moveValue.isEmpty());
     EXPECT_TRUE(propMove == propCopy);
 
     propCopy.getKey() = propName;

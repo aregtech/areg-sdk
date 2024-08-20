@@ -122,6 +122,20 @@ public:
     inline const VALUE& operator [] (STACKPOS atPosition) const;
     inline VALUE& operator [] (STACKPOS atPosition);
 
+    /**
+     * \brief   Compares 2 stack object and returns true if they are equal.
+     * \param   other   A stack object to compare.
+     * \return  Returns true if 2 stack objects are equal.
+     **/
+    inline bool operator == (const TEStack<VALUE> & other) const;
+
+    /**
+     * \brief   Compares 2 stack object and returns true if they are not equal.
+     * \param   other   A stack object to compare.
+     * \return  Returns true if 2 stack objects are not equal.
+     **/
+    inline bool operator != (const TEStack<VALUE> & other) const;
+
 public:
 /************************************************************************/
 // Friend global operators to make Stack streamable
@@ -259,6 +273,14 @@ public:
      * \return  Returns true if stack successfully unlocked
      **/
     inline bool unlock( void ) const;
+
+    /**
+     * \brief	Sets new size of stack. If needed, either increases or truncates
+     *          elements in the stack. The elements of type VALUE should have default
+     *          constructor create and initialize elements.
+     * \param	newSize	    New size to set. If zero, stack is emptied.
+     **/
+    inline void resize(uint32_t newSize);
 
     /**
      * \brief   Returns first inserted element in the stack without changing stack.
@@ -456,6 +478,22 @@ public:
      **/
     inline TELockStack<VALUE> & operator = ( TELockStack<VALUE> && source ) noexcept;
 
+    /**
+     * \brief   Copies entries from given sources. If stack had entries
+     *          all entries will be lost and new entries will be created.
+     * \param   source  The instance of source to copy stack entries.
+     * \return  Returns stack object.
+     **/
+    inline TELockStack<VALUE> & operator = ( const TEStack<VALUE> & source );
+
+    /**
+     * \brief   Moves entries from given sources. If stack had entries
+     *          all entries will be lost and new entries will be created.
+     * \param   source  The instance of source to move stack entries.
+     * \return  Returns stack object.
+     **/
+    inline TELockStack<VALUE> & operator = ( TEStack<VALUE> && source ) noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -536,6 +574,22 @@ public:
      **/
     inline TENolockStack<VALUE> & operator = ( TENolockStack<VALUE> && source ) noexcept;
 
+    /**
+     * \brief   Copies entries from given sources. If stack had entries
+     *          all entries will be lost and new entries will be created.
+     * \param   source  The instance of source to copy stack entries.
+     * \return  Returns stack object.
+     **/
+    inline TENolockStack<VALUE> & operator = ( const TEStack<VALUE> & source );
+
+    /**
+     * \brief   Moves entries from given sources. If stack had entries
+     *          all entries will be lost and new entries will be created.
+     * \param   source  The instance of source to move stack entries.
+     * \return  Returns stack object.
+     **/
+    inline TENolockStack<VALUE> & operator = ( TEStack<VALUE> && source ) noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -614,6 +668,22 @@ inline VALUE& TEStack<VALUE>::operator [] (STACKPOS atPosition)
 }
 
 template <typename VALUE>
+inline bool TEStack<VALUE>::operator == (const TEStack<VALUE>& other) const
+{
+    Lock lock(mSynchObject);
+    Lock lockOther(other.mSynchObject);
+    return (mValueList == other.mValueList);
+}
+
+template <typename VALUE>
+inline bool TEStack<VALUE>::operator != (const TEStack<VALUE>& other) const
+{
+    Lock lock(mSynchObject);
+    Lock lockOther(other.mSynchObject);
+    return (mValueList != other.mValueList);
+}
+
+template <typename VALUE>
 inline uint32_t TEStack<VALUE>::getSize( void ) const
 {
     Lock lock( mSynchObject );
@@ -631,14 +701,14 @@ template <typename VALUE>
 inline bool TEStack<VALUE>::isStartPosition(STACKPOS pos) const
 {
     Lock lock(mSynchObject);
-    return (pos = mValueList.begin());
+    return (pos == mValueList.begin());
 }
 
 template <typename VALUE>
 inline bool TEStack<VALUE>::isLastPosition(STACKPOS pos) const
 {
     Lock lock(mSynchObject);
-    return (mValueList.empty() == false) && (pos = --mValueList.end());
+    return (mValueList.empty() == false) && (pos == --mValueList.end());
 }
 
 template <typename VALUE>
@@ -723,6 +793,13 @@ template <typename VALUE>
 inline bool TEStack<VALUE>::unlock( void ) const
 {
     return mSynchObject.unlock();
+}
+
+template<typename VALUE >
+inline void TEStack< VALUE >::resize(uint32_t newSize)
+{
+    Lock lock(mSynchObject);
+    mValueList.resize(newSize > NECommon::MAX_CONTAINER_SIZE ? NECommon::MAX_CONTAINER_SIZE : newSize);
 }
 
 template <typename VALUE>
@@ -923,6 +1000,20 @@ inline TELockStack<VALUE> & TELockStack<VALUE>::operator = ( TELockStack<VALUE> 
     return (*this);
 }
 
+template <typename VALUE>
+inline TELockStack<VALUE>& TELockStack<VALUE>::operator = (const TEStack<VALUE> & source)
+{
+    static_cast<TEStack<VALUE> &>(*this) = source;
+    return (*this);
+}
+
+template <typename VALUE>
+inline TELockStack<VALUE>& TELockStack<VALUE>::operator = (TEStack<VALUE> && source) noexcept
+{
+    static_cast<TEStack<VALUE> &>(*this) = static_cast<TEStack<VALUE> &&>(source);
+    return (*this);
+}
+
 //////////////////////////////////////////////////////////////////////////
 // TENolockStack<VALUE> class template implementation
 //////////////////////////////////////////////////////////////////////////
@@ -971,6 +1062,20 @@ inline TENolockStack<VALUE> & TENolockStack<VALUE>::operator = ( const TENolockS
 
 template <typename VALUE>
 inline TENolockStack<VALUE> & TENolockStack<VALUE>::operator = ( TENolockStack<VALUE> && source ) noexcept
+{
+    static_cast<TEStack<VALUE> &>(*this) = static_cast<TEStack<VALUE> &&>(source);
+    return (*this);
+}
+
+template <typename VALUE>
+inline TENolockStack<VALUE> & TENolockStack<VALUE>::operator = ( const TEStack<VALUE> & source )
+{
+    static_cast<TEStack<VALUE> &>(*this) = source;
+    return (*this);
+}
+
+template <typename VALUE>
+inline TENolockStack<VALUE> & TENolockStack<VALUE>::operator = ( TEStack<VALUE> && source ) noexcept
 {
     static_cast<TEStack<VALUE> &>(*this) = static_cast<TEStack<VALUE> &&>(source);
     return (*this);
