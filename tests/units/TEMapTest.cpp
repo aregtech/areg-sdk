@@ -115,7 +115,7 @@ TEST(TEMapTest, TestPositionAttributes)
     // Step 2: search for entries in the map and check the validity of the position.
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
-        // Before the entrie is inserted, the `find` method should return invalid position
+        // Before the entry is inserted, the `find` method should return invalid position
         auto invalid = map.find(i);
         EXPECT_FALSE(map.isValidPosition(invalid));
         EXPECT_TRUE(map.isInvalidPosition(invalid));
