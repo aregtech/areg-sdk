@@ -715,7 +715,8 @@ template <typename VALUE>
 inline typename TEStack<VALUE>::STACKPOS TEStack<VALUE>::invalidPosition(void) const
 {
     Lock lock(mSynchObject);
-    return Constless<std::deque<VALUE>>::iter(mValueList, mValueList.end());
+    auto end = mValueList.end();
+    return Constless<std::deque<VALUE>>::iter(mValueList, end);
 }
 
 template <typename VALUE>
@@ -746,7 +747,7 @@ inline bool TEStack<VALUE>::checkPosition(STACKPOS pos) const
 template<typename VALUE>
 inline bool TEStack<VALUE>::contains(const VALUE& elemSearch) const
 {
-    return contains(elemSearch, mValueList.begin());
+    return contains(elemSearch, firstPosition());
 }
 
 template<typename VALUE>

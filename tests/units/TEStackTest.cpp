@@ -219,6 +219,39 @@ TEST(TEStackTest, TestLockAndNolockStackPositioning)
 }
 
 /**
+ * \brief   Test TEStack position manipulation.
+ **/
+TEST(TEStackTest, TestLockAndNolockStackPositionManipulation)
+{
+    using Stack = TEStack<int>;
+    using NolockStack = TENolockStack<int>;
+    using LockStack = TELockStack<int>;
+    using POS = Stack::STACKPOS;
+
+    constexpr uint32_t count{ 10 };
+    NolockStack nolock;
+    LockStack lock;
+
+    for (int i = 0; i < static_cast<int>(count); ++i)
+    {
+        nolock.pushLast(i);
+    }
+
+    EXPECT_EQ(nolock.firstEntry(), 0);
+    EXPECT_EQ(nolock.lastEntry(), static_cast<int>(count - 1u));
+
+    for (POS pos = nolock.firstPosition(); nolock.isValidPosition(pos); pos = nolock.nextPosition(pos))
+    {
+        EXPECT_EQ(nolock.getAt(pos), nolock.valueAtPosition(pos));
+        int value = nolock.valueAtPosition(pos);
+        lock.pushFirst(value);
+        nolock.getAt(pos) = static_cast<int>(count) - (value + 1);
+    }
+
+    EXPECT_EQ(nolock, lock);
+}
+
+/**
  * \brief   Test TEStack resizing.
  **/
 TEST(TEStackTest, TestLockAndNolockStackResizing)
@@ -300,26 +333,94 @@ TEST(TEStackTest, TestLockAndNolockStackPushing)
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
         uint32_t sizeNolock = nolock.pushFirst(arr[i]);
+        EXPECT_EQ(nolock.firstEntry(), arr[i]);
         uint32_t sizeLock = lock.pushLast(arr[i]);
+        EXPECT_EQ(lock.lastEntry(), arr[i]);
         EXPECT_EQ(sizeNolock, sizeLock);
     }
 
     EXPECT_NE(nolock, lock);
 
-    for (int i = 0; i < static_cast<int>(count); ++i)
+    for (uint32_t i = 0; i < count; ++i)
     {
-        EXPECT_EQ(nolock.getData()[i], arr[count - static_cast<uint32_t> (i + 1u)]);
+        EXPECT_EQ(nolock.getData()[i], arr[count - (i + 1u)]);
         EXPECT_EQ(lock.getData()[i], arr[i]);
     }
 
 
-    for (int i = 0; i < static_cast<int>(count); ++i)
+    for (uint32_t i = 0; i < count; ++i)
     {
         int valNolock = nolock.popFirst();
         int valLock = lock.popFirst();
-        EXPECT_EQ(valNolock, arr[count - static_cast<uint32_t> (i + 1u)]);
+        EXPECT_EQ(valNolock, arr[count - (i + 1u)]);
         EXPECT_EQ(valLock, arr[i]);
     }
 
     EXPECT_TRUE(nolock.isEmpty() && lock.isEmpty());
+}
+
+/**
+ * \brief   Test TEStack search.
+ **/
+TEST(TEStackTest, TestLockAndNolockStackSearch)
+{
+    using Stack = TEStack<int>;
+    using NolockStack = TENolockStack<int>;
+    using LockStack = TELockStack<int>;
+    using POS = Stack::STACKPOS;
+
+    constexpr uint32_t count{ 10 };
+
+    NolockStack nolock;
+    LockStack lock;
+    for (int i = 0; i < static_cast<int>(count); ++i)
+    {
+        EXPECT_FALSE(nolock.contains(i));
+        nolock.pushLast(i);
+        POS pos = nolock.find(i);
+        EXPECT_TRUE(nolock.isValidPosition(pos));
+    }
+
+    for (int i = 0; i < static_cast<int>(count); ++i)
+    {
+        EXPECT_TRUE(nolock.contains(i));
+
+        POS src = nolock.find(i);
+        EXPECT_TRUE(nolock.isValidPosition(src));
+        
+        POS dst = lock.find(i);
+        EXPECT_TRUE(lock.isInvalidPosition(dst));
+        
+        lock.pushLast(nolock.valueAtPosition(src));
+    }
+
+    EXPECT_EQ(nolock.getData(), lock.getData());
+}
+
+
+/**
+ * \brief   Test TEStack copy and move.
+ **/
+TEST(TEStackTest, TestLockAndNolockStackCopyMove)
+{
+    using NolockStack = TENolockStack<int>;
+    using LockStack = TELockStack<int>;
+
+    constexpr uint32_t count{ 10 };
+
+    NolockStack nolockCopy, nolockMove;
+    LockStack lockCopy, lockMove;
+
+    for (int i = 0; i < static_cast<int>(count); ++i)
+    {
+        nolockCopy.pushLast(i);
+    }
+
+    lockCopy.copy(nolockCopy);
+    EXPECT_EQ(nolockCopy, lockCopy);
+
+    nolockMove = lockCopy;
+    lockMove.move(std::move(nolockMove));
+    EXPECT_TRUE(nolockMove.isEmpty());
+    EXPECT_EQ(lockMove, lockCopy);
 }
