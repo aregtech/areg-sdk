@@ -185,9 +185,9 @@ TEST(TELinkedListTest, TestPositionOperations)
         list.getNext(next) = static_cast<int>(count) + value;
     }
 
-    for (int i = 0; i < static_cast<int>(count); ++i)
+    for (uint32_t i = 0; i < count; ++i)
     {
-        EXPECT_EQ(list[i], static_cast<int>(count) + i);
+        EXPECT_EQ(list[i], static_cast<int>(count + i));
     }
 
     POS prev = list.lastPosition();
@@ -197,9 +197,9 @@ TEST(TELinkedListTest, TestPositionOperations)
         list.getPrev(prev) = value - static_cast<int>(count);
     }
 
-    for (int i = 0; i < static_cast<int>(count); ++i)
+    for (uint32_t i = 0; i < count; ++i)
     {
-        EXPECT_EQ(list.getAt(i), i);
+        EXPECT_EQ(list.getAt(i), static_cast<int>(i));
     }
 }
 
@@ -388,7 +388,7 @@ TEST(TELinkedListTest, TestMerging)
     EXPECT_EQ(list.getSize(), listSize + lenOdd + lenEven);
 
     // Step 7: make checkups. Entries in range [1 .. 19] are doubled. Other entries are not.
-    for (int i = 0; i < static_cast<int>(list.getSize()); ++i)
+    for (uint32_t i = 0; i < list.getSize(); ++i)
     {
         int value = list.getAt(i);
         POS pos = list.find(value);
@@ -413,7 +413,6 @@ TEST(TELinkedListTest, TestMerging)
 TEST(TELinkedListTest, TestPushUnique)
 {
     using LinkedList = TELinkedList<int>;
-    using POS = LinkedList::LISTPOS;
     constexpr uint32_t count{ 10 };
 
     constexpr int unique[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
