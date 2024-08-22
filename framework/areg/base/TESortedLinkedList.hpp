@@ -224,7 +224,7 @@ public:
      * \param   pos     The position to check.
      * \return  Returns true if specified position pointing start of the linked list.
      **/
-    inline bool isStartPosition(const LISTPOS pos) const;
+    inline bool isFirstPosition(const LISTPOS pos) const;
 
     /**
      * \brief   Returns true if specified position pointing start of the linked list.
@@ -710,7 +710,7 @@ inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::la
 }
 
 template <typename VALUE >
-inline bool TESortedLinkedList<VALUE>::isStartPosition(const TESortedLinkedList<VALUE>::LISTPOS pos) const
+inline bool TESortedLinkedList<VALUE>::isFirstPosition(const TESortedLinkedList<VALUE>::LISTPOS pos) const
 {
     return (pos == mValueList.begin());
 }

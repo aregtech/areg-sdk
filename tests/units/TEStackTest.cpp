@@ -174,8 +174,8 @@ TEST(TEStackTest, TestLockAndNolockStackPositioning)
     POS posLock = lock.firstPosition();
     EXPECT_FALSE(nolock.isInvalidPosition(posNolock));
     EXPECT_FALSE(lock.isInvalidPosition(posLock));
-    EXPECT_TRUE(nolock.isStartPosition(posNolock));
-    EXPECT_TRUE(lock.isStartPosition(posLock));
+    EXPECT_TRUE(nolock.isFirstPosition(posNolock));
+    EXPECT_TRUE(lock.isFirstPosition(posLock));
 
     // Step 4: in the loop check each position of the stacks, check validity and check access via positioning.
     for (int i = 0; i < static_cast<int>(count); ++i)
@@ -199,8 +199,8 @@ TEST(TEStackTest, TestLockAndNolockStackPositioning)
         posNolock = nolock.nextPosition(posNolock);
         posLock = lock.nextPosition(posLock);
 
-        EXPECT_FALSE(nolock.isStartPosition(posNolock));
-        EXPECT_FALSE(lock.isStartPosition(posLock));
+        EXPECT_FALSE(nolock.isFirstPosition(posNolock));
+        EXPECT_FALSE(lock.isFirstPosition(posLock));
     }
 
     // Step 5: make sure that the positions are invalid since reached end of stack.
@@ -423,4 +423,33 @@ TEST(TEStackTest, TestLockAndNolockStackCopyMove)
     lockMove.move(std::move(nolockMove));
     EXPECT_TRUE(nolockMove.isEmpty());
     EXPECT_EQ(lockMove, lockCopy);
+}
+
+/**
+ * \brief   Test TEStack streaming.
+ **/
+TEST(TEStackTest, TestLockAndNolockStackStreaming)
+{
+    using NolockStack = TENolockStack<int>;
+    using LockStack = TELockStack<int>;
+
+    constexpr uint32_t count{ 10 };
+
+    NolockStack nolock;
+    LockStack lock;
+    SharedBuffer stream;
+
+    for (int i = 0; i < static_cast<int>(count); ++i)
+    {
+        lock.pushLast(i);
+    }
+
+    EXPECT_EQ(lock.getSize(), count);
+    stream << lock;
+    EXPECT_FALSE(stream.isEmpty());
+
+    stream.moveToBegin();
+    stream >> nolock;
+    EXPECT_FALSE(nolock.isEmpty());
+    EXPECT_EQ(lock, nolock);
 }

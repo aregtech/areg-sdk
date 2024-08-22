@@ -13,9 +13,9 @@
  * \brief       AREG Platform, AREG framework unit test file.
  *              Tests of TEMap object.
  ************************************************************************/
- /************************************************************************
-  * Include files.
-  ************************************************************************/
+/************************************************************************
+ * Include files.
+ ************************************************************************/
 #include "units/GUnitTest.hpp"
 #include "areg/base/TEMap.hpp"
 #include "areg/base/SharedBuffer.hpp"
@@ -110,7 +110,7 @@ TEST(TEMapTest, TestPositionAttributes)
 
     // Step 1: in the empty map, take the first position, which must be invalid
     auto invFirst = map.firstPosition();
-    EXPECT_FALSE(map.isStartPosition(invFirst));
+    EXPECT_FALSE(map.isFirstPosition(invFirst));
 
     // Step 2: search for entries in the map and check the validity of the position.
     for (int i = 0; i < static_cast<int>(count); ++i)
@@ -120,7 +120,7 @@ TEST(TEMapTest, TestPositionAttributes)
         EXPECT_FALSE(map.isValidPosition(invalid));
         EXPECT_TRUE(map.isInvalidPosition(invalid));
         EXPECT_FALSE(map.checkPosition(invalid));
-        EXPECT_FALSE(map.isStartPosition(invalid));
+        EXPECT_FALSE(map.isFirstPosition(invalid));
 
         // Insert entrie
         map[i] = i;
@@ -133,7 +133,7 @@ TEST(TEMapTest, TestPositionAttributes)
     }
 
     auto first = map.firstPosition();
-    EXPECT_TRUE(map.isStartPosition(first));
+    EXPECT_TRUE(map.isFirstPosition(first));
     EXPECT_TRUE(invPos == map.invalidPosition());
 }
 

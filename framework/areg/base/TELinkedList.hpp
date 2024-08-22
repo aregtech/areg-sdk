@@ -207,7 +207,7 @@ public:
      * \brief   Returns true if specified position points the first entry in the linked list.
      * \param   pos     The position to check.
      **/
-    inline bool isStartPosition(const LISTPOS pos) const;
+    inline bool isFirstPosition(const LISTPOS pos) const;
 
     /**
      * \brief   Returns true if specified position points the last entry in the linked list.
@@ -330,15 +330,24 @@ public:
     inline LISTPOS prevPosition( LISTPOS atPosition ) const;
 
     /**
-     * \brief   Returns the value of entry at the given valid position.
+     * \brief   Returns the value of entry at the given valid position. The position must be valid.
+     *          The returned value can be used by left (l-value) and right (r-value) operations.
      * \param   atPosition  The valid position in Linked List
+     * \return  Returns the value of entry at the given valid position.
      **/
     inline VALUE& valueAtPosition(LISTPOS atPosition);
+
+    /**
+     * \brief   Returns the value of entry at the given valid position. The position must be valid.
+     *          The returned value can be used by right (r-value) operation.
+     * \param   atPosition  The valid position in Linked List
+     * \return  Returns the value of entry at the given valid position.
+     **/
     inline const VALUE & valueAtPosition( const LISTPOS atPosition ) const;
 
     /**
      * \brief   Returns element value by valid zero-based index, which can be used by left (l-value) and
-     *          right operation (r-value). The index should be valid.
+     *          right (r-value) operations. The index should be valid.
      **/
     inline VALUE & getAt( uint32_t index );
 
@@ -347,6 +356,22 @@ public:
      *          The index should be valid.
      **/
     inline const VALUE & getAt(uint32_t index ) const;
+
+    /**
+     * \brief   Returns the value of entry at the given valid position. The position must be valid.
+     *          The returned value can be used by left (l-value) and right (r-value) operations.
+     * \param   atPosition  The valid position in Linked List
+     * \return  Returns the value of entry at the given valid position.
+     **/
+    inline VALUE& getAt(LISTPOS atPosition);
+
+    /**
+     * \brief   Returns the value of entry at the given valid position. The position must be valid.
+     *          The returned value can be used by right (r-value) operation.
+     * \param   atPosition  The valid position in Linked List
+     * \return  Returns the value of entry at the given valid position.
+     **/
+    inline const VALUE& getAt(const LISTPOS atPosition) const;
 
     /**
      * \brief	Extracts next position and value of the element in the linked list followed position.
@@ -548,7 +573,7 @@ public:
      *          No elements are copied. The container other becomes empty after the operation.
      * \param   source  The source of linked list to merge.
      */
-    inline void merge(const TELinkedList<VALUE> & source);
+    inline void merge(TELinkedList<VALUE> & source);
     inline void merge(TELinkedList<VALUE> && source);
 
 protected:
@@ -651,7 +676,7 @@ inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::lastPosition( 
 }
 
 template <typename VALUE >
-inline bool TELinkedList<VALUE>::isStartPosition(const LISTPOS pos) const
+inline bool TELinkedList<VALUE>::isFirstPosition(const LISTPOS pos) const
 {
     return (pos == mValueList.begin());
 }
@@ -812,6 +837,18 @@ inline VALUE & TELinkedList<VALUE>::getAt(uint32_t index)
     ASSERT(isValidPosition(pos));
 
     return *pos;
+}
+
+template <typename VALUE >
+inline const VALUE& TELinkedList<VALUE>::getAt(const LISTPOS atPosition) const
+{
+    return valueAtPosition(atPosition);
+}
+
+template <typename VALUE >
+inline VALUE& TELinkedList<VALUE>::getAt(LISTPOS atPosition)
+{
+    return valueAtPosition(atPosition);
 }
 
 template <typename VALUE >
@@ -1153,7 +1190,7 @@ inline uint32_t TELinkedList<VALUE>::makeIndex(LISTPOS atPosition) const
 }
 
 template <typename VALUE >
-inline void TELinkedList<VALUE>::merge(const TELinkedList<VALUE>& source)
+inline void TELinkedList<VALUE>::merge(TELinkedList<VALUE>& source)
 {
     mValueList.merge(source.mValueList);
 }
