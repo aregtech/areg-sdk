@@ -13,9 +13,9 @@
  * \brief       AREG Platform, AREG framework unit test file.
  *              Tests of TEHashMap object.
  ************************************************************************/
- /************************************************************************
-  * Include files.
-  ************************************************************************/
+/************************************************************************
+ * Include files.
+ ************************************************************************/
 #include "units/GUnitTest.hpp"
 #include "areg/base/TEHashMap.hpp"
 #include "areg/base/SharedBuffer.hpp"
@@ -139,19 +139,19 @@ TEST(TEHashMapTest, TestPositionAttributes)
 
     // Step 1: in the empty hash-map, take the first position, which must be invalid
     auto invFirst = hashMap.firstPosition();
-    EXPECT_FALSE(hashMap.isStartPosition(invFirst));
+    EXPECT_FALSE(hashMap.isFirstPosition(invFirst));
 
     // Step 2: search for entries in the hash-map and check the validity of the position.
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
-        // Before the entrie is inserted, the `find` method should return invalid position
+        // Before the entry is inserted, the `find` method should return invalid position
         auto invalid = hashMap.find(i);
         EXPECT_FALSE(hashMap.isValidPosition(invalid));
         EXPECT_TRUE(hashMap.isInvalidPosition(invalid));
         EXPECT_FALSE(hashMap.checkPosition(invalid));
-        EXPECT_FALSE(hashMap.isStartPosition(invalid));
+        EXPECT_FALSE(hashMap.isFirstPosition(invalid));
 
-        // Insert entrie
+        // Insert entry
         hashMap[i] = i;
         
         // After the entry exists, the `find` method should return valid position.
@@ -162,7 +162,7 @@ TEST(TEHashMapTest, TestPositionAttributes)
     }
 
     auto first = hashMap.firstPosition();
-    EXPECT_TRUE(hashMap.isStartPosition(first));
+    EXPECT_TRUE(hashMap.isFirstPosition(first));
     EXPECT_TRUE(invPos == hashMap.invalidPosition());
 }
 
@@ -244,7 +244,7 @@ TEST(TEHashMapTest, TestPositionManipulation)
         EXPECT_EQ(Key, Value);
     }
 
-    // Step 2: change the values by poisition and make sure it is valid / changed.
+    // Step 2: change the values by position and make sure it is valid / changed.
     EXPECT_EQ(cnt, count);
     uint32_t idx{ 0 };
     for (POS pos = hashMap.firstPosition(); hashMap.isValidPosition(pos); --cnt, ++ idx)
@@ -324,7 +324,7 @@ TEST(TEHashMapTest, TestMerging)
     // Step 2:  
     //  - create empty hash-map object `hashMap`
     //  - merge [0 .. 1] entries with `hashMap`.
-    // Result: the source object is empty, all entries are extraced and merged
+    // Result: the source object is empty, all entries are extracted and merged
     HashMap hashMap;
     hashMap.merge(hashMap1);
     EXPECT_TRUE(hashMap1.isEmpty());
@@ -353,7 +353,7 @@ TEST(TEHashMapTest, TestMerging)
     EXPECT_NE(hashMap1, hashMap);
 
     // Step 5:
-    //  - create and initialize 2 hash-maps, wich keys and values are odd and even integers from 1 to 42 and totally have 21 entries each.
+    //  - create and initialize 2 hash-maps, which keys and values are odd and even integers from 1 to 42 and totally have 21 entries each.
     constexpr int32_t odds []   { 1, 3, 5, 7,  9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41 };
     constexpr int32_t evens[]   { 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42 };
     constexpr uint32_t lenOdd   { MACRO_ARRAYLEN(odds) };

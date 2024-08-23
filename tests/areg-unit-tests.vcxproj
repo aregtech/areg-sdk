@@ -52,6 +52,7 @@
     <ClCompile Include="units\TEArrayListTest.cpp" />
     <ClCompile Include="units\TEFixedArrayTest.cpp" />
     <ClCompile Include="units\TEHashMapTest.cpp" />
+    <ClCompile Include="units\TELinkedListTest.cpp" />
     <ClCompile Include="units\TEMapTest.cpp" />
     <ClCompile Include="units\TEPropertyTest.cpp" />
     <ClCompile Include="units\TEStackTest.cpp" />

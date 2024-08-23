@@ -377,12 +377,12 @@ public:
      * \brief   Returns true if specified position is equal to the end of the string.
      * \param   pos     The zero-based position in the string.
      **/
-    inline bool isEndPosition(NEString::CharPos pos) const;
+    inline bool isLastPosition(NEString::CharPos pos) const;
 
     /**
      * \brief   Returns true if string is not empty and the specified position is zero.
      **/
-    inline bool isStartPosition(NEString::CharPos pos) const;
+    inline bool isFirstPosition(NEString::CharPos pos) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Operations
@@ -1711,13 +1711,13 @@ inline bool TEString<CharType>::isInvalidPosition(NEString::CharPos pos) const
 }
 
 template<typename CharType>
-inline bool TEString<CharType>::isEndPosition(NEString::CharPos pos) const
+inline bool TEString<CharType>::isLastPosition(NEString::CharPos pos) const
 {
     return (pos == NEString::END_POS) || (pos >= static_cast<NEString::CharPos>(mData.length()));
 }
 
 template<typename CharType>
-inline bool TEString<CharType>::isStartPosition(NEString::CharPos pos) const
+inline bool TEString<CharType>::isFirstPosition(NEString::CharPos pos) const
 {
     return (mData.empty() == false) && (pos == NEString::START_POS);
 }

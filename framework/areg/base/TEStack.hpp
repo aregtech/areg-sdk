@@ -184,7 +184,7 @@ public:
      * \param   pos     The position to check.
      * \return  Returns true if specified position pointing start of the stack.
      **/
-    inline bool isStartPosition(const STACKPOS pos) const;
+    inline bool isFirstPosition(const STACKPOS pos) const;
 
     /**
      * \brief   Returns true if specified position pointing start of the stack.
@@ -698,7 +698,7 @@ inline bool TEStack<VALUE>::isEmpty( void ) const
 }
 
 template <typename VALUE>
-inline bool TEStack<VALUE>::isStartPosition(STACKPOS pos) const
+inline bool TEStack<VALUE>::isFirstPosition(STACKPOS pos) const
 {
     Lock lock(mSynchObject);
     return (pos == mValueList.begin());

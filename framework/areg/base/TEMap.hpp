@@ -209,7 +209,7 @@ public:
      * \brief   Returns true if specified position points the first entry in the sorted map.
      * \param   pos     The position to check.
      **/
-    inline bool isStartPosition(const MAPPOS pos) const;
+    inline bool isFirstPosition(const MAPPOS pos) const;
 
     /**
      * \brief   Returns the invalid position of the sorted map.
@@ -541,7 +541,7 @@ inline typename TEMap<KEY, VALUE>::MAPPOS TEMap<KEY, VALUE>::firstPosition( void
 }
 
 template < typename KEY, typename VALUE >
-inline bool TEMap<KEY, VALUE>::isStartPosition(const MAPPOS pos) const
+inline bool TEMap<KEY, VALUE>::isFirstPosition(const MAPPOS pos) const
 {
     return (mValueList.empty() == false) && (pos == mValueList.begin());
 }
