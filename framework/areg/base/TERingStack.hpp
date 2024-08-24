@@ -131,6 +131,11 @@ public:
      **/
     bool operator != (const TERingStack<VALUE>& other) const;
 
+    /**
+     * \brief   Returns element by its index. The index should not be more than the number of elements in the stack.
+     * \param   index   Zero-based index of the element in the stack.
+     * \return  Returns element by its index.
+     **/
     const VALUE& operator [] (uint32_t index) const;
     VALUE& operator [] (uint32_t index);
 
@@ -205,13 +210,23 @@ public:
     inline uint32_t capacity( void ) const;
 
     /**
-     * \brief   Returns true if Ring Stack is full
+     * \brief   Returns true if Ring Stack is full. The function returns false if
+     *          the ring stack is of 'resize of overlap' type, because it automatically changes the size.
      **/
     inline bool isFull( void ) const;
 
+    /**
+     * \brief   Returns element by its index. The index should not be more than the number of elements in the stack.
+     * \param   index   Zero-based index of the element in the stack.
+     * \return  Returns element by its index.
+     **/
     const VALUE & getAt(uint32_t index) const;
     VALUE& getAt(uint32_t index);
 
+    /**
+     * \brief   Sets new value at the passed index. The index is zero-based and should be valid.
+     * \param   index   Zero-based index of the entry to set the value.
+     **/
     void setAt(uint32_t index, const VALUE& newValue);
 
     /**
@@ -300,6 +315,19 @@ public:
      *          Otherwise, it returns NECommon::INVALID_INDEX.
      **/
     uint32_t find(const VALUE& elem, uint32_t startAt = NECommon::RING_START_POSITION) const;
+
+    /**
+     * \brief   Searches the specified element in the ring stack starting at the mentioned position
+     *          and returns true if the ring-stack contains specified element. The starting position
+     *          is zero-based and should not be more than the number of elements in the ring stack.
+     *          If the starting position is NECommon::RING_START_POSITION, it searches at the begin of
+     *          the ring stack.
+     * \param   elem    The element to search.
+     * \param   startAt The starting position to search. If the starting position is
+     *                  NECommon::RING_START_POSITION it searches from the begin of the ring stack.
+     * \return  Returns true if found an entry in the ring stack. Otherwise, returns false.
+     **/
+    bool contains(const VALUE& elem, uint32_t startAt = NECommon::RING_START_POSITION) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -765,7 +793,7 @@ template <typename VALUE>
 inline bool TERingStack<VALUE>::isFull( void ) const
 {
     Lock lock(mSynchObject);
-    return (mElemCount == mCapacity);
+    return (mOnOverlap != NECommon::eRingOverlap::ResizeOnOvelap) && (mElemCount == mCapacity);
 }
 
 template <typename VALUE>
@@ -1084,51 +1112,45 @@ uint32_t TERingStack<VALUE>::find(const VALUE& elem, uint32_t startAt /*= NEComm
 {
     Lock lock(mSynchObject);
 
-    uint32_t result = NECommon::INVALID_INDEX;
-    uint32_t pos = startAt == NECommon::RING_START_POSITION ? mStartPosition : startAt + 1;
-    if (pos <= mLastPosition)
-    {
-        while (pos <= mLastPosition)
-        {
-            if (elem == mStackList[pos])
-            {
-                result = pos;
-                break;
-            }
+    startAt = startAt == NECommon::RING_START_POSITION ? mStartPosition : startAt;
+    uint32_t pos = startAt;
+    uint32_t lastPos = mLastPosition > mStartPosition ? mLastPosition : mCapacity - 1;
 
-            ++ pos;
+    for (; pos <= lastPos; ++pos)
+    {
+        if (elem == mStackList[pos])
+        {
+            return pos;
         }
     }
-    else if (mOnOverlap == NECommon::eRingOverlap::ShiftOnOverlap)
+
+    if (true || (mOnOverlap == NECommon::eRingOverlap::ShiftOnOverlap))
     {
-        while (pos < mElemCount)
+        for (; pos < mElemCount; ++pos)
         {
             if (elem == mStackList[pos])
             {
-                result = pos;
-                break;
+                return pos;
             }
-
-            ++ pos;
         }
 
-        if (result == NECommon::INVALID_INDEX)
+        pos = 0;
+        for (; pos < startAt; ++pos)
         {
-            pos = 0;
-            while (pos <= mLastPosition)
+            if (elem == mStackList[pos])
             {
-                if (elem == mStackList[pos])
-                {
-                    result = pos;
-                    break;
-                }
-
-                ++ pos;
+                return pos;
             }
         }
     }
 
-    return result;
+    return NECommon::INVALID_INDEX;
+}
+
+template <typename VALUE>
+bool TERingStack<VALUE>::contains(const VALUE& elem, uint32_t startAt /*= NECommon::RING_START_POSITION*/) const
+{
+    return (find(elem, startAt) != NECommon::INVALID_INDEX);
 }
 
 template <typename VALUE>
