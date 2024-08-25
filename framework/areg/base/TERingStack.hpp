@@ -304,6 +304,10 @@ public:
      **/
     uint32_t reserve( uint32_t newCapacity );
 
+    void copy(const TERingStack<VALUE> & source);
+
+    void move(TERingStack<VALUE> && source);
+
     /**
      * \brief   Searches element in the stack starting at given position (index).
      *          The given position should be valid or equal to NECommon::RING_START_POSITION
@@ -380,7 +384,11 @@ private:
      **/
     inline void _emptyStack( void );
 
-    inline uint32_t _normIndex(uint32_t index) const;
+    inline void _copyElems(VALUE* dst, VALUE* src, uint32_t srcStart, uint32_t srcEnd, uint32_t srcCount, uint32_t srcCapacity);
+
+    inline uint32_t _norm2RingIndex(uint32_t index) const;
+
+    inline uint32_t _ring2NormIndex(uint32_t ring) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -594,20 +602,13 @@ template <typename VALUE>
 TERingStack<VALUE>::TERingStack(IEResourceLock& synchObject, const TERingStack<VALUE> & source)
     : mSynchObject  (synchObject)
     , mOnOverlap    (source.mOnOverlap)
-    , mStackList    (source.mCapacity != 0 ? reinterpret_cast<VALUE*>(DEBUG_NEW unsigned char[source.mCapacity * sizeof(VALUE)]) : nullptr)
+    , mStackList    (nullptr)
     , mElemCount    (0)
-    , mCapacity     (mStackList != nullptr ? source.mCapacity : 0)
+    , mCapacity     (0)
     , mStartPosition(0)
     , mLastPosition (0)
 {
-    if (mStackList != nullptr)
-    {
-        VALUE * list = NEMemory::constructElems<VALUE>(mStackList, source.mElemCount);
-        NEMemory::copyElems<VALUE>(list, static_cast<const VALUE*>(source.mStackList), mCapacity);
-        mElemCount      = source.mElemCount;
-        mStartPosition  = source.mStartPosition;
-        mLastPosition   = source.mLastPosition;
-    }
+    copy(source);
 }
 
 template <typename VALUE>
@@ -639,42 +640,14 @@ TERingStack<VALUE>::~TERingStack( void )
 template <typename VALUE>
 TERingStack<VALUE> & TERingStack<VALUE>::operator = ( const TERingStack<VALUE> & source )
 {
-    if (static_cast<const TERingStack<VALUE> *>(this) != &source)
-    {
-        Lock lock(mSynchObject);
-
-        _emptyStack();
-        source.lock();
-
-        reserve(static_cast<uint32_t>(source.mElemCount));
-        uint32_t pos = source.mStartPosition;
-        for (uint32_t i = 0; i < source.mElemCount; ++ i )
-        {
-            static_cast<void>(pushLast( source.mStackList[pos] ));
-            pos = ( pos + 1 ) % source.mCapacity;
-        }
-
-        source.unlock();
-    }
-
+    copy(source);
     return (*this);
 }
 
 template <typename VALUE>
 TERingStack<VALUE>& TERingStack<VALUE>::operator = (TERingStack<VALUE> && source) noexcept
 {
-    if (static_cast<TERingStack<VALUE> *>(this) != &source)
-    {
-        Lock lock1(mSynchObject);
-        Lock lock2(source.mSynchObject);
-
-        std::swap(mStackList, source.mStackList);
-        std::swap(mElemCount, source.mElemCount);
-        std::swap(mCapacity, source.mCapacity);
-        std::swap(mStartPosition, source.mStartPosition);
-        std::swap(mLastPosition, source.mLastPosition);
-    }
-
+    move(std::move(source));
     return (*this);
 }
 
@@ -801,7 +774,7 @@ const VALUE& TERingStack<VALUE>::getAt(uint32_t index) const
 {
     Lock lock(mSynchObject);
     ASSERT(index < mElemCount);
-    index = _normIndex(index);
+    index = _norm2RingIndex(index);
     return mStackList[index];
 }
 
@@ -810,7 +783,7 @@ VALUE& TERingStack<VALUE>::getAt(uint32_t index)
 {
     Lock lock(mSynchObject);
     ASSERT(index < mElemCount);
-    index = _normIndex(index);
+    index = _norm2RingIndex(index);
     return mStackList[index];
 }
 
@@ -819,7 +792,7 @@ void TERingStack<VALUE>::setAt(uint32_t index, const VALUE& newValue)
 {
     Lock lock(mSynchObject);
     ASSERT(index < mElemCount);
-    index = _normIndex(index);
+    index = _norm2RingIndex(index);
     mStackList[index] = newValue;
 }
 
@@ -1084,16 +1057,8 @@ uint32_t TERingStack<VALUE>::reserve(uint32_t newCapacity )
         VALUE * newList     = newCapacity != 0 ? reinterpret_cast<VALUE *>( DEBUG_NEW unsigned char[ newCapacity * sizeof(VALUE)] ) : nullptr;
         if (newList != nullptr)
         {
-            uint32_t posStart = mStartPosition;
             uint32_t elemCount = mElemCount;
-            for (uint32_t i = 0; i < elemCount; ++i)
-            {
-                VALUE* elem = newList + i;
-                NEMemory::constructElems<VALUE>(static_cast<void*>(elem), 1);
-                *elem = mStackList[posStart];
-                posStart = (posStart + 1) % mCapacity;
-            }
-
+            _copyElems(newList, this->mStackList, this->mStartPosition, this->mLastPosition, elemCount, this->mCapacity);
             _emptyStack();
             delete[] reinterpret_cast<unsigned char*>(mStackList);
             mStackList      = newList;
@@ -1105,6 +1070,55 @@ uint32_t TERingStack<VALUE>::reserve(uint32_t newCapacity )
     }
 
     return mCapacity;
+}
+
+template <typename VALUE>
+void TERingStack<VALUE>::copy(const TERingStack<VALUE>& source)
+{
+    if (static_cast<const TERingStack<VALUE> *>(this) != &source)
+    {
+        Lock lock1(mSynchObject);
+        Lock lock2(source.mSynchObject);
+
+        _emptyStack();
+        if (mStackList != nullptr)
+        {
+            delete[] reinterpret_cast<unsigned char*>(mStackList);
+            mStackList = nullptr;
+            mStartPosition = 0;
+            mLastPosition = 0;
+            mCapacity = 0;
+            mElemCount = 0;
+        }
+        
+        uint32_t capacity = source.mCapacity;
+        VALUE* newList = capacity != 0 ? reinterpret_cast<VALUE*>(DEBUG_NEW unsigned char[capacity * sizeof(VALUE)]) : nullptr;
+        if ((newList != nullptr) && (source.mElemCount != 0))
+        {
+            _copyElems(newList, source.mStackList, source.mStartPosition, source.mLastPosition, source.mElemCount, capacity);
+            mStackList      = newList;
+            mCapacity       = capacity;
+            mElemCount      = source.mElemCount;
+            mStartPosition  = 0u;
+            mLastPosition   = source.mElemCount % capacity;
+        }
+    }
+}
+
+template <typename VALUE>
+void TERingStack<VALUE>::move(TERingStack<VALUE> && source)
+{
+    if (static_cast<const TERingStack<VALUE> *>(this) != &source)
+    {
+        Lock lock1(mSynchObject);
+        Lock lock2(source.mSynchObject);
+
+        std::swap(mStackList, source.mStackList);
+        std::swap(mElemCount, source.mElemCount);
+        std::swap(mCapacity, source.mCapacity);
+        std::swap(mStartPosition, source.mStartPosition);
+        std::swap(mLastPosition, source.mLastPosition);
+    }
 }
 
 template <typename VALUE>
@@ -1170,9 +1184,36 @@ inline void TERingStack<VALUE>::_emptyStack( void )
 }
 
 template <typename VALUE>
-inline uint32_t TERingStack<VALUE>::_normIndex(uint32_t index) const
+inline void TERingStack<VALUE>::_copyElems(VALUE* dst, VALUE* src, uint32_t srcStart, uint32_t srcEnd, uint32_t srcCount, uint32_t srcCapacity)
+{
+    ASSERT(srcCapacity >= srcCount);
+    ASSERT((dst != nullptr) && (src != nullptr));
+
+    NEMemory::constructElems<VALUE>(static_cast<void*>(dst), srcCount);
+    if (srcEnd >= srcStart)
+    {
+        ASSERT((srcEnd - srcStart) == srcCount);
+        NEMemory::copyElems<VALUE>(dst, src + srcStart, srcCount);
+    }
+    else
+    {
+        uint32_t elemCopy = srcCapacity - srcStart;
+        ASSERT((elemCopy + srcEnd) == srcCount);
+        NEMemory::copyElems<VALUE>(dst, src + srcStart, elemCopy);
+        NEMemory::copyElems<VALUE>(dst + elemCopy, src, srcEnd);
+    }
+}
+
+template <typename VALUE>
+inline uint32_t TERingStack<VALUE>::_norm2RingIndex(uint32_t index) const
 {
     return ((mStartPosition + index) % mCapacity);
+}
+
+template <typename VALUE>
+inline uint32_t TERingStack<VALUE>::_ring2NormIndex(uint32_t ring) const
+{
+    return (ring >= mStartPosition ? ring - mStartPosition : (mCapacity - mStartPosition) + ring);
 }
 
 //////////////////////////////////////////////////////////////////////////
