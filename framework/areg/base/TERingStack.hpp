@@ -341,7 +341,7 @@ protected:
     /**
      * \brief   The instance of synchronization object to be used to make object thread-safe.
      **/
-    IEResourceLock &                mSynchObject;
+    IEResourceLock &                mSynchObj;
 
     /**
      * \brief   The overlapping flag. Set when stack is initialized and cannot be changed anymore.
@@ -366,12 +366,12 @@ protected:
     /**
      * \brief   The index of head element in array of stack
      **/
-    uint32_t                        mStartPosition;
+    uint32_t                        mHeadPosition;
 
     /**
      * \brief   The index of tail element in array of stack
      **/
-    uint32_t                        mLastPosition;
+    uint32_t                        mTailPosition;
 
 //////////////////////////////////////////////////////////////////////////
 // private methods
@@ -588,44 +588,44 @@ private:
 //////////////////////////////////////////////////////////////////////////
 template <typename VALUE>
 TERingStack<VALUE>::TERingStack( IEResourceLock & synchObject, uint32_t initCapacity /*= 0*/, NECommon::eRingOverlap onOverlap /*= NECommon::eRingOverlap::StopOnOverlap*/ )
-    : mSynchObject  ( synchObject )
-    , mOnOverlap    ( onOverlap )
-    , mStackList    ( initCapacity != 0 ? reinterpret_cast<VALUE*>(DEBUG_NEW unsigned char[initCapacity * sizeof(VALUE)]) : nullptr )
-    , mElemCount    ( 0 )
-    , mCapacity     ( mStackList != nullptr ? initCapacity : 0 )
-    , mStartPosition( 0 )
-    , mLastPosition ( 0 )
+    : mSynchObj ( synchObject )
+    , mOnOverlap( onOverlap )
+    , mStackList( initCapacity != 0 ? reinterpret_cast<VALUE*>(DEBUG_NEW unsigned char[initCapacity * sizeof(VALUE)]) : nullptr )
+    , mElemCount( 0 )
+    , mCapacity ( mStackList != nullptr ? initCapacity : 0 )
+    , mHeadPos  ( 0 )
+    , mTailPos  ( 0 )
 {
 }
 
 template <typename VALUE>
 TERingStack<VALUE>::TERingStack(IEResourceLock& synchObject, const TERingStack<VALUE> & source)
-    : mSynchObject  (synchObject)
-    , mOnOverlap    (source.mOnOverlap)
-    , mStackList    (nullptr)
-    , mElemCount    (0)
-    , mCapacity     (0)
-    , mStartPosition(0)
-    , mLastPosition (0)
+    : mSynchObj (synchObject)
+    , mOnOverlap(source.mOnOverlap)
+    , mStackList(nullptr)
+    , mElemCount(0)
+    , mCapacity (0)
+    , mHeadPos  (0)
+    , mTailPos  (0)
 {
     copy(source);
 }
 
 template <typename VALUE>
 TERingStack<VALUE>::TERingStack(IEResourceLock& synchObject, TERingStack<VALUE> && source) noexcept
-    : mSynchObject  (synchObject)
-    , mOnOverlap    (source.mOnOverlap)
-    , mStackList    (source.mStackList)
-    , mElemCount    (source.mElemCount)
-    , mCapacity     (source.mCapacity)
-    , mStartPosition(source.mStartPosition)
-    , mLastPosition (source.mLastPosition)
+    : mSynchObj (synchObject)
+    , mOnOverlap(source.mOnOverlap)
+    , mStackList(source.mStackList)
+    , mElemCount(source.mElemCount)
+    , mCapacity (source.mCapacity)
+    , mHeadPos  (source.mHeadPos)
+    , mTailPos  (source.mTailPos)
 {
     source.mStackList   = nullptr;
     source.mCapacity    = 0;
     source.mElemCount   = 0;
-    source.mLastPosition= 0;
-    source.mStartPosition=0;
+    source.mHeadPos     = 0;
+    source.mTailPos     = 0;
 }
 
 template <typename VALUE>
@@ -654,8 +654,8 @@ TERingStack<VALUE>& TERingStack<VALUE>::operator = (TERingStack<VALUE> && source
 template <typename VALUE>
 bool TERingStack<VALUE>::operator == (const TERingStack<VALUE>& other) const
 {
-    Lock lock1(mSynchObject);
-    Lock lock2(other.mSynchObject);
+    Lock lock1(mSynchObj);
+    Lock lock2(other.mSynchObj);
 
     bool result{ static_cast<const TERingStack<VALUE> *>(this) == &other };
 
