@@ -45,21 +45,23 @@ TEST(TERingStackTest, TestConstructorsStopOnOverlap)
         if (i < static_cast<int>(count))
         {
             EXPECT_FALSE(lock.isFull());
-            EXPECT_FALSE(nolock.isFull());
-            EXPECT_EQ(lock.pushFirst(i), static_cast<uint32_t>(i + 1));
-            EXPECT_EQ(nolock.pushLast(i), static_cast<uint32_t>(i + 1));
+            EXPECT_EQ(lock.push(i), static_cast<uint32_t>(i + 1));
             EXPECT_TRUE(lock.contains(i));
-            EXPECT_TRUE(nolock.contains(i));
+
+            EXPECT_FALSE(nolock.isFull());
+            EXPECT_EQ(nolock.push(i + static_cast<int>(count)), static_cast<uint32_t>(i + 1));
+            EXPECT_TRUE(nolock.contains(i + static_cast<int>(count)));
         }
         else
         {
             // no more space
             EXPECT_TRUE(lock.isFull());
-            EXPECT_TRUE(nolock.isFull());
-            EXPECT_EQ(lock.pushFirst(i), count);
-            EXPECT_EQ(nolock.pushLast(i), count);
+            EXPECT_EQ(lock.push(i), count);
             EXPECT_FALSE(lock.contains(i));
-            EXPECT_FALSE(nolock.contains(i));
+
+            EXPECT_TRUE(nolock.isFull());
+            EXPECT_EQ(nolock.push(i + static_cast<int>(count)), count);
+            EXPECT_FALSE(nolock.contains(i + static_cast<int>(count)));
         }
     }
 
@@ -162,23 +164,25 @@ TEST(TERingStackTest, TestConstructorsShiftOnOverlap)
         if (i < static_cast<int>(count))
         {
             EXPECT_FALSE(lock.isFull());
-            EXPECT_FALSE(nolock.isFull());
-            EXPECT_EQ(lock.pushFirst(i), static_cast<uint32_t>(i + 1));
-            EXPECT_EQ(nolock.pushLast(i), static_cast<uint32_t>(i + 1));
+            EXPECT_EQ(lock.push(i), static_cast<uint32_t>(i + 1));
             EXPECT_TRUE(lock.contains(i));
-            EXPECT_TRUE(nolock.contains(i));
+
+            EXPECT_FALSE(nolock.isFull());
+            EXPECT_EQ(nolock.push(i + static_cast<int>(count)), static_cast<uint32_t>(i + 1));
+            EXPECT_TRUE(nolock.contains(i + static_cast<int>(count)));
         }
         else
         {
             // no more space
             EXPECT_TRUE(lock.isFull());
-            EXPECT_TRUE(nolock.isFull());
-            EXPECT_EQ(lock.pushFirst(i), count);
-            EXPECT_EQ(nolock.pushLast(i), count);
+            EXPECT_EQ(lock.push(i), count);
             EXPECT_TRUE(lock.contains(i));
-            EXPECT_TRUE(nolock.contains(i));
             EXPECT_FALSE(lock.contains(i - static_cast<int>(count)));
-            EXPECT_FALSE(nolock.contains(i - static_cast<int>(count)));
+
+            EXPECT_TRUE(nolock.isFull());
+            EXPECT_EQ(nolock.push(i + static_cast<int>(count)), count);
+            EXPECT_TRUE(nolock.contains(i + static_cast<int>(count)));
+            EXPECT_FALSE(nolock.contains(i));
         }
     }
 
@@ -279,17 +283,18 @@ TEST(TERingStackTest, TestConstructorsResizeOnOvelap)
     for (int i = 0; i < loop; ++i)
     {
         EXPECT_FALSE(lock.isFull());
-        EXPECT_FALSE(nolock.isFull());
-        EXPECT_EQ(lock.pushFirst(i), static_cast<uint32_t>(i + 1));
-        EXPECT_EQ(nolock.pushLast(i), static_cast<uint32_t>(i + 1));
+        EXPECT_EQ(lock.push(i), static_cast<uint32_t>(i + 1));
         EXPECT_TRUE(lock.contains(i));
-        EXPECT_TRUE(nolock.contains(i));
+
+        EXPECT_FALSE(nolock.isFull());
+        EXPECT_EQ(nolock.push(i + static_cast<int>(count)), static_cast<uint32_t>(i + 1));
+        EXPECT_TRUE(nolock.contains(i + static_cast<int>(count)));
 
         if (i >= static_cast<int>(count))
         {
             // no more space
             EXPECT_TRUE(lock.contains(i - static_cast<int>(count)));
-            EXPECT_TRUE(nolock.contains(i - static_cast<int>(count)));
+            EXPECT_TRUE(nolock.contains(i));
         }
     }
 

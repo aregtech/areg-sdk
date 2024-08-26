@@ -469,6 +469,9 @@ namespace NEMath
     template<typename Digit>
     inline Digit makeAbsolute( Digit number );
 
+    template<typename Digit>
+    inline NEMath::eCompare compare(Digit left, Digit right);
+
 }
 //////////////////////////////////////////////////////////////////////////
 // NEMath namespace inline function implementation
@@ -503,6 +506,12 @@ inline Digit NEMath::makeAbsolute( Digit number )
 {
     Digit mask = number >> (sizeof( Digit ) * 8 - 1);
     return ((number + mask) ^ mask);
+}
+
+template<typename Digit>
+inline NEMath::eCompare NEMath::compare(Digit left, Digit right)
+{
+    return (left == right ? NEMath::eCompare::Equal : (left > right ? NEMath::eCompare::Bigger : NEMath::eCompare::Smaller));
 }
 
 inline char NEMath::getChar(NEMath::eDigitSign sign)

@@ -69,7 +69,7 @@ bool NetTcpLogger::openLogger(void)
         }
         else
         {
-            mRingStack.discard();
+            mRingStack.release();
         }
     }
     else
@@ -82,7 +82,7 @@ bool NetTcpLogger::openLogger(void)
 
 void NetTcpLogger::closeLogger(void)
 {
-    mRingStack.discard();
+    mRingStack.release();
     onServiceExit();
     unregisterForServiceClientCommands();
 }
@@ -97,7 +97,7 @@ void NetTcpLogger::logMessage(const NETrace::sLogMessage& logMessage)
         }
         else if (mRingStack.capacity() != 0)
         {
-            mRingStack.pushLast(NETrace::createLogMessage(logMessage, NETrace::eLogDataType::LogDataRemote, mChannel.getCookie()));
+            mRingStack.push(NETrace::createLogMessage(logMessage, NETrace::eLogDataType::LogDataRemote, mChannel.getCookie()));
         }
     }
 }
@@ -118,7 +118,7 @@ void NetTcpLogger::connectedRemoteServiceChannel(const Channel & channel)
     const ITEM_ID& cookie = channel.getCookie();
     while (mRingStack.isEmpty() == false)
     {
-        RemoteMessage msgLog{ mRingStack.popFirst() };
+        RemoteMessage msgLog{ mRingStack.pop() };
         msgLog.setSource(cookie);
         reinterpret_cast<NETrace::sLogMessage*>(msgLog.getBuffer())->logCookie = cookie;
         sendMessage(msgLog, Event::eEventPriority::EventPriorityNormal);
@@ -143,7 +143,7 @@ void NetTcpLogger::failedSendMessage(const RemoteMessage & msgFailed, Socket & /
     ASSERT(mIsEnabled);
     if (mLogConfiguration.getStackSize() > 0)
     {
-        mRingStack.pushLast(msgFailed);
+        mRingStack.push(msgFailed);
     }
 
     sendCommand(ServiceEventData::eServiceEventCommands::CMD_ServiceLost);
