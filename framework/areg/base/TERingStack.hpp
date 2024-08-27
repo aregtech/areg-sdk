@@ -420,11 +420,11 @@ private:
     /**
      * \brief   Compares 2 ring stack entries in the list and returns `Bigger`, `Equal` or `Smaller` depending on comparing results.
      * \param   left            The list of elements in the ring stack on the left side.
-     * \param   leftSide        The head position in the left ring stack.
+     * \param   leftStart       The head position in the left ring stack.
      * \param   leftCapacity    The capacity of the left ring stack.
      * \param   leftCount       The number of entries in the left ring stack.
      * \param   right           The list of elements in the ring stack on the right side.
-     * \param   rightSide       The head position in the right ring stack.
+     * \param   rightStart      The head position in the right ring stack.
      * \param   rightCapacity   The capacity of the right ring stack.
      * \param   rightCount      The number of entries in the right ring stack.
      * \return  Returns one of the values:
@@ -1061,7 +1061,7 @@ uint32_t TERingStack<VALUE>::find(const VALUE& elem, uint32_t startAt /*= NEComm
 {
     Lock lock(mSynchObj);
 
-    uint32_t result = NECommon::INVALID_INDEX;
+    uint32_t result = static_cast<uint32_t>(NECommon::INVALID_INDEX);
     startAt = startAt == NECommon::RING_START_POSITION ? 0 : startAt;
     for (uint32_t i = 0; i < mElemCount; ++i)
     {
@@ -1078,7 +1078,7 @@ uint32_t TERingStack<VALUE>::find(const VALUE& elem, uint32_t startAt /*= NEComm
 template <typename VALUE>
 bool TERingStack<VALUE>::contains(const VALUE& elem, uint32_t startAt /*= NECommon::RING_START_POSITION*/) const
 {
-    return (find(elem, startAt) != NECommon::INVALID_INDEX);
+    return (find(elem, startAt) != static_cast<uint32_t>(NECommon::INVALID_INDEX));
 }
 
 template <typename VALUE>

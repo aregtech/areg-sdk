@@ -577,7 +577,7 @@ TEST(TERingStackTest, TestPushPopStopOnOverlap)
         EXPECT_EQ(lockRing.pop(), resLock);
 
         int valNolock = nolockRing[0];
-        int resNolock = static_cast<int>(count + half) + i;
+        int resNolock = static_cast<int>(count) + half + i;
         EXPECT_EQ(valNolock, resNolock);
         EXPECT_EQ(nolockRing.pop(), resNolock);
     }
@@ -741,7 +741,7 @@ TEST(TERingStackTest, TestPushPopResizeOnOverlap)
         EXPECT_EQ(lockRing.pop(), resLock);
 
         int valNolock = nolockRing[0];
-        int resNolock = static_cast<int>(count + half) + i;
+        int resNolock = static_cast<int>(count) + half + i;
         EXPECT_EQ(valNolock, resNolock);
         EXPECT_EQ(nolockRing.pop(), resNolock);
     }
