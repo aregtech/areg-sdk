@@ -217,6 +217,13 @@ public:
     inline bool isFull( void ) const;
 
     /**
+     * \brief   Returns true if specified zero-based normalized index is valid.
+     *          The index is valid if it is smaller than the number of valid entries in the ring.
+     * \param   index   The index to check.
+     **/
+    inline bool isValidIndex(uint32_t index);
+
+    /**
      * \brief   Returns element by its index. The index should not be more than the number of elements in the stack.
      * \param   index   Zero-based index of the element in the stack.
      * \return  Returns element by its index.
@@ -776,6 +783,13 @@ inline bool TERingStack<VALUE>::isFull( void ) const
 {
     Lock lock(mSynchObj);
     return (mOnOverlap != NECommon::eRingOverlap::ResizeOnOvelap) && (mElemCount == mCapacity);
+}
+
+template <typename VALUE>
+inline bool TERingStack<VALUE>::isValidIndex(uint32_t index)
+{
+    Lock lock(mSynchObj);
+    return (index < mElemCount);
 }
 
 template <typename VALUE>

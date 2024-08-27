@@ -364,3 +364,144 @@ TEST(TERingStackTest, TestConstructorsResizeOnOvelap)
     EXPECT_EQ(lockCopy1.getSize(), 0u);
     EXPECT_EQ(lockCopy1.capacity(), 0u);
 }
+
+/**
+ * \brief   Test TERingStack operators, access element by index, equality.
+ **/
+TEST(TERingStackTest, TestOperatorsIndex)
+{
+    using LockRing = TELockRingStack<uint32_t>;
+    using NolockRing = TENolockRingStack<uint32_t>;
+    constexpr uint32_t count{ 10 };
+
+    LockRing lockStop(count, NECommon::eRingOverlap::StopOnOverlap), lockShift(count, NECommon::eRingOverlap::ShiftOnOverlap), lockResize(count, NECommon::eRingOverlap::ResizeOnOvelap);
+    NolockRing nolockStop(count, NECommon::eRingOverlap::StopOnOverlap), nolockShift(count, NECommon::eRingOverlap::ShiftOnOverlap), nolockResize(count, NECommon::eRingOverlap::ResizeOnOvelap);
+
+    EXPECT_TRUE((lockStop == lockShift) && (lockShift == lockResize) && (nolockStop == nolockShift) && (nolockShift == nolockResize));
+    EXPECT_TRUE((lockStop == nolockStop) && (lockShift == nolockShift) && (lockResize == nolockResize));
+
+    uint32_t loop = count * 2;
+    for (uint32_t i = 0; i < loop; ++i)
+    {
+        if (i < count)
+        {
+            EXPECT_EQ(lockStop.push(i), i + 1u);
+            EXPECT_EQ(lockStop[i], i);
+
+            EXPECT_EQ(lockShift.push(i + count), i + 1u);
+            EXPECT_EQ(lockShift[i], i + count);
+
+            EXPECT_EQ(lockResize.push(i), i + 1u);
+            EXPECT_EQ(lockResize[i], i);
+            lockResize[i] = i + loop;
+            EXPECT_EQ(lockResize[i], i + loop);
+
+            EXPECT_EQ(nolockStop.push(i), i + 1u);
+            EXPECT_EQ(nolockStop[i], i);
+
+            EXPECT_EQ(nolockShift.push(i + count), i + 1u);
+            EXPECT_EQ(nolockShift[i], i + count);
+
+            EXPECT_EQ(nolockResize.push(i), i + 1u);
+            EXPECT_EQ(nolockResize[i], i);
+            nolockResize[i] = i + loop;
+            EXPECT_EQ(nolockResize[i], i + loop);
+        }
+        else
+        {
+            EXPECT_EQ(lockStop.push(i), count);
+            EXPECT_FALSE(lockStop.isValidIndex(i));
+            EXPECT_EQ(lockStop[i - count], i - count);
+
+            EXPECT_EQ(lockShift.push(i + count), count);
+            EXPECT_FALSE(lockStop.isValidIndex(i));
+            EXPECT_EQ(lockShift[lockShift.getSize() - 1], i + count);
+            EXPECT_EQ(lockShift[0], i + 1);
+
+            EXPECT_EQ(lockResize.push(i), i + 1);
+            EXPECT_EQ(lockResize[i], i);
+            lockResize[i] = i + loop;
+            EXPECT_EQ(lockResize[i], i + loop);
+
+            EXPECT_EQ(nolockStop.push(i), count);
+            EXPECT_FALSE(nolockStop.isValidIndex(i));
+            EXPECT_EQ(nolockStop[i - count], i - count);
+
+            EXPECT_EQ(nolockShift.push(i + count), count);
+            EXPECT_FALSE(nolockStop.isValidIndex(i));
+            EXPECT_EQ(nolockShift[lockShift.getSize() - 1], i + count);
+            EXPECT_EQ(nolockShift[0], i + 1);
+
+            EXPECT_EQ(nolockResize.push(i), i + 1);
+            EXPECT_EQ(nolockResize[i], i);
+            nolockResize[i] = i + loop;
+            EXPECT_EQ(nolockResize[i], i + loop);
+        }
+    }
+
+    EXPECT_TRUE((lockStop == nolockStop) && (lockShift == nolockShift) && (lockResize == nolockResize));
+    EXPECT_TRUE((lockStop != lockShift) && (lockStop != lockResize) && (lockShift != nolockResize));
+    EXPECT_TRUE((nolockStop != nolockShift) && (nolockStop != nolockResize) && (nolockShift != lockResize));
+}
+
+
+/**
+ * \brief   Test TERingStack operators, access element by index, equality.
+ **/
+TEST(TERingStackTest, TestOperatorsCopyMove)
+{
+    using LockRing = TELockRingStack<uint32_t>;
+    using NolockRing = TENolockRingStack<uint32_t>;
+    constexpr uint32_t count{ 10 };
+
+    LockRing lockStop(count, NECommon::eRingOverlap::StopOnOverlap), lockShift(count, NECommon::eRingOverlap::ShiftOnOverlap), lockResize(count, NECommon::eRingOverlap::ResizeOnOvelap);
+    NolockRing nolockStop(count, NECommon::eRingOverlap::StopOnOverlap), nolockShift(count, NECommon::eRingOverlap::ShiftOnOverlap), nolockResize(count, NECommon::eRingOverlap::ResizeOnOvelap);
+
+    uint32_t loop = count * 2;
+    for (uint32_t i = 0; i < loop; ++i)
+    {
+        lockStop.push(i);
+        lockShift.push(i + count);
+
+        nolockStop.push(i);
+        nolockShift.push(i + count);
+    }
+
+    LockRing copyStop1(count, NECommon::eRingOverlap::StopOnOverlap), copyShift1(count, NECommon::eRingOverlap::ShiftOnOverlap), copyResize1(count, NECommon::eRingOverlap::ResizeOnOvelap);
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        copyStop1.push(i + count);
+        copyShift1.push(i);
+    }
+
+    EXPECT_NE(copyStop1, lockStop);
+    EXPECT_NE(copyShift1, nolockShift);
+
+    copyStop1 = lockStop;
+    EXPECT_EQ(copyStop1, lockStop);
+
+    copyShift1 = nolockShift;
+    EXPECT_EQ(copyShift1, nolockShift);
+
+    lockResize = copyResize1;
+    EXPECT_EQ(copyResize1, lockResize);
+
+    LockRing moveStop1(count, NECommon::eRingOverlap::StopOnOverlap), moveShift1(count, NECommon::eRingOverlap::ShiftOnOverlap), moveResize1(count, NECommon::eRingOverlap::ResizeOnOvelap);
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        moveStop1.push(i + count);
+        moveShift1.push(i);
+    }
+
+    EXPECT_NE(moveStop1, lockStop);
+    moveStop1 = std::move(lockStop);
+    EXPECT_EQ(moveStop1, copyStop1);
+
+    EXPECT_NE(moveShift1, nolockShift);
+    moveShift1 = std::move(nolockShift);
+    EXPECT_EQ(moveShift1, copyShift1);
+
+    lockResize = std::move(moveResize1);
+    EXPECT_TRUE(lockResize.isEmpty());
+    EXPECT_EQ(moveResize1, nolockResize);
+}
