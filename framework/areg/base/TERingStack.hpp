@@ -245,7 +245,7 @@ public:
      *          2.  If overlap flag is ShiftOnOverlap, the element will be set at the tail of stack,
      *              but the size of Ring Stack will not be changed. The element on head of stack 
      *              will be lost.
-     *          3.  If overlap flag is ResizeOnOvelap, it will resize ring stack
+     *          3.  If overlap flag is ResizeOnOverlap, it will resize ring stack
      *              by increasing capacity twice. If capacity was zero, it will set to 2.
      * \param   newElement  New element to set at the end of Ring Stack.
      * \return  Returns size of stack.
@@ -285,7 +285,7 @@ public:
      *              Then the elements will be set by removing head of stack until all elements from given source
      *              are not copied. The capacity of stack will remain unchanged. If during copying stack is full,
      *              the elements at head are lost.
-     *          3.  If overlap flag is ResizeOnOvelap and if elements in source are bigger than capacity of stack,
+     *          3.  If overlap flag is ResizeOnOverlap and if elements in source are bigger than capacity of stack,
      *              the capacity of stack will be increased that no elements are lost and all elements from source
      *              are copied. No data will be lost.
      * \param   source  The source of Ring stack to get elements.
@@ -782,7 +782,7 @@ template <typename VALUE>
 inline bool TERingStack<VALUE>::isFull( void ) const
 {
     Lock lock(mSynchObj);
-    return (mOnOverlap != NECommon::eRingOverlap::ResizeOnOvelap) && (mElemCount == mCapacity);
+    return (mOnOverlap != NECommon::eRingOverlap::ResizeOnOverlap) && (mElemCount == mCapacity);
 }
 
 template <typename VALUE>
@@ -912,7 +912,7 @@ uint32_t TERingStack<VALUE>::push( const VALUE& newElement )
             }
             break;
 
-        case NECommon::eRingOverlap::ResizeOnOvelap:
+        case NECommon::eRingOverlap::ResizeOnOverlap:
             if ( reserve(static_cast<uint32_t>(mCapacity != 0 ? mCapacity : 1) * 2) >= (mElemCount + 1) )
             {
                 ASSERT(mCapacity >= mElemCount + 1);
@@ -1112,9 +1112,9 @@ inline void TERingStack<VALUE>::_copyElems(VALUE* dst, VALUE* src, uint32_t srcS
     else
     {
         uint32_t elemCopy = srcCapacity - srcStart;
-        ASSERT((elemCopy + srcEnd) == srcCount);
+        ASSERT((elemCopy + srcEnd + 1) == srcCount);
         NEMemory::copyElems<VALUE>(dst, src + srcStart, elemCopy);
-        NEMemory::copyElems<VALUE>(dst + elemCopy, src, srcEnd);
+        NEMemory::copyElems<VALUE>(dst + elemCopy, src, srcEnd + 1);
     }
 }
 

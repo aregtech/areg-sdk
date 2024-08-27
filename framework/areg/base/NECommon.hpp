@@ -41,7 +41,7 @@ namespace NECommon
      *          2.  ShiftOnOverlap  --  Do not change ring capacity if it is full,
      *                                  but shift start position, i.e. overwrite 
      *                                  the first element of ring and insert new element.
-     *          3. ResizeOnOvelap   --  Always resize ring if it is full. This changes
+     *          3. ResizeOnOverlap   --  Always resize ring if it is full. This changes
      *                                  the actual capacity of ring, making it bigger.
      **/
     enum class eRingOverlap : uint8_t
@@ -59,7 +59,7 @@ namespace NECommon
         /**
          * \brief   Resize ring, if it is full. No element is lost.
          **/
-        , ResizeOnOvelap    = 2
+        , ResizeOnOverlap    = 2
 
     };
 
