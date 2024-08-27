@@ -976,7 +976,7 @@ uint32_t TERingStack<VALUE>::add( const TERingStack<VALUE> & source )
         uint32_t pos = source.mHeadPos;
         for (uint32_t i = 0u; i < source.mElemCount; ++i)
         {
-            pushLast(source[i]);
+            push(source[i]);
         }
     }
 
