@@ -493,6 +493,9 @@ namespace NEMath
      *          -- NEMath::eCompare::Equal if `left` and `right` objects are equal.
      *          -- NEMath::eCompare::Bigger if `left object is bigger than the `right` object.
      *          -- NEMath::eCompare::Smaller if `left object is smaller than the `right` object.
+     * \param   left    The left side object to compare.
+     * \param   right   The right side object to compare.
+     * \tparam  Type    Any type of object that is possible to compare with the comparing operator.
      **/
     template<typename Type>
     inline NEMath::eCompare compare(const Type & left, const Type & right);
