@@ -27,6 +27,7 @@
 
 #include "areg/base/IEIOStream.hpp"
 #include "areg/base/NEMemory.hpp"
+#include "areg/base/NEMath.hpp"
 
 /************************************************************************
  * Hierarchies. Following class are declared.
@@ -68,7 +69,7 @@ class TERingStack
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
-public:
+protected:
     /**
      * \brief   Ring Stack initialization. Gets instance of synchronization object,
      *          initial capacity value and the overlapping flag, used when
@@ -85,17 +86,59 @@ public:
      **/
     ~TERingStack( void );
 
+protected:
+    /**
+     * \brief   Creates a Ring Stack object and copies elements from the given source.
+     * \param   synchObject     Reference to synchronization object.
+     * \param   source          The source of Ring Stack elements.
+     **/
+    explicit TERingStack(IEResourceLock& synchObject, const TERingStack<VALUE>& source);
+
+    /**
+     * \brief   Creates a Ring Stack object and moves elements from the given source.
+     * \param   synchObject     Reference to synchronization object.
+     * \param   source          The source of Ring Stack elements.
+     **/
+    explicit TERingStack(IEResourceLock& synchObject, TERingStack<VALUE> && source) noexcept;
+
 //////////////////////////////////////////////////////////////////////////
 // Operators
 //////////////////////////////////////////////////////////////////////////
 public:
     /**
-     * \brief   Assigning operator. Copies ring stack entries from given source.
+     * \brief   Copies ring stack entries from given source.
      *          If capacity of destination stack is smaller, it will be enlarged.
      * \param   source  The source of ring stack entries to get entries.
      * \return  Returns ring stack object
      **/
     TERingStack<VALUE> & operator = ( const TERingStack<VALUE> & source );
+
+    /**
+     * \brief   Moves ring stack entries from given source.
+     *          It as well swaps all entries of source and destination, but
+     *          does not change the overlapping type and synchronization object.
+     * \param   source  The source of ring stack entries to get entries.
+     * \return  Returns ring stack object
+     **/
+    TERingStack<VALUE>& operator = (TERingStack<VALUE> && source) noexcept;
+
+    /**
+     * \brief   Compares 2 ring stack object and returns true if they are equal.
+     **/
+    bool operator == (const TERingStack<VALUE>& other) const;
+
+    /**
+     * \brief   Compares 2 ring stack object and returns true if they are not equal.
+     **/
+    bool operator != (const TERingStack<VALUE>& other) const;
+
+    /**
+     * \brief   Returns element by its index. The index should not be more than the number of elements in the stack.
+     * \param   index   Zero-based index of the element in the stack.
+     * \return  Returns element by its index.
+     **/
+    const VALUE& operator [] (uint32_t index) const;
+    VALUE& operator [] (uint32_t index);
 
 /************************************************************************/
 // Friend global operators to make Stack streamable
@@ -143,6 +186,11 @@ public:
     inline bool isEmpty( void ) const;
 
     /**
+     * \brief   Returns the overlapping type of the Ring Stack
+     **/
+    inline NECommon::eRingOverlap getOverlap(void) const;
+
+    /**
      * \brief   Locks stack that methods can be accessed only from locking thread.
      *          In case if NolockSynchObject is used, no locking will happen,
      *          the function will return immediately and thread will continue to run.
@@ -163,9 +211,31 @@ public:
     inline uint32_t capacity( void ) const;
 
     /**
-     * \brief   Returns true if Ring Stack is full
+     * \brief   Returns true if Ring Stack is full. The function returns false if
+     *          the ring stack is of 'resize of overlap' type, because it automatically changes the size.
      **/
     inline bool isFull( void ) const;
+
+    /**
+     * \brief   Returns true if specified zero-based normalized index is valid.
+     *          The index is valid if it is smaller than the number of valid entries in the ring.
+     * \param   index   The index to check.
+     **/
+    inline bool isValidIndex(uint32_t index);
+
+    /**
+     * \brief   Returns element by its index. The index should not be more than the number of elements in the stack.
+     * \param   index   Zero-based index of the element in the stack.
+     * \return  Returns element by its index.
+     **/
+    const VALUE & getAt(uint32_t index) const;
+    VALUE& getAt(uint32_t index);
+
+    /**
+     * \brief   Sets new value at the passed index. The index is zero-based and should be valid.
+     * \param   index   Zero-based index of the entry to set the value.
+     **/
+    void setAt(uint32_t index, const VALUE& newValue);
 
     /**
      * \brief   Pushes new element at the end of Ring Stack
@@ -175,33 +245,19 @@ public:
      *          2.  If overlap flag is ShiftOnOverlap, the element will be set at the tail of stack,
      *              but the size of Ring Stack will not be changed. The element on head of stack 
      *              will be lost.
-     *          3.  If overlap flag is ResizeOnOvelap, it will resize ring stack
+     *          3.  If overlap flag is ResizeOnOverlap, it will resize ring stack
      *              by increasing capacity twice. If capacity was zero, it will set to 2.
      * \param   newElement  New element to set at the end of Ring Stack.
      * \return  Returns size of stack.
      **/
-    uint32_t pushLast( const VALUE& newElement );
-
-    /**
-     * \brief   Sets element at the head of ring stack that on pop call, the element will be
-     *          popped first. If Ring stack is full, the operation depends on overlapping flag:
-     *          1.  If overlap flag is StopOnOverlap, the element will not be set.
-     *          2.  If overlap flag is ShiftOnOverlap, the element will be set at the head of stack,
-     *              but the size of Ring Stack will not be changed. The element on tail of stack
-     *              will be lost.
-     *          3.  If overlap flag is ResizeOnOvelap, it will resize ring stack
-     *              by increasing capacity twice. If capacity was zero, it will set to 2.
-     * \param   newElement  New element to set at the head of stack.
-     * \return  Returns size of stack.
-     **/
-    uint32_t pushFirst( const VALUE& newElement );
+    uint32_t push( const VALUE& newElement );
 
     /**
      * \brief   Removes element from head and returns value, decreases number of element by one.
      *          The stack should not be empty when method is called.
      * \return  Returns value of remove element.
      **/
-    VALUE popFirst( void );
+    VALUE pop( void );
 
     /**
      * \brief   Removes all elements from Ring stack and makes it empty.
@@ -212,11 +268,16 @@ public:
     /**
      * \brief   Clears the ring stack, deletes the list and sets capacity zero.
      **/
-    void discard( void );
+    void release( void );
 
     /**
-     * \brief   Copies elements from given source. The elements will be copied at the end of stack.
-     *          If capacity of stack is small to set copy all elements, the results depends on 
+     * \brief   Removes the extra entries in the ring stack and makes capacity equal to the number of elements in the stack.
+     **/
+    void freeExtra(void);
+
+    /**
+     * \brief   Adds elements from given source. The elements will be copied at the end of stack.
+     *          If capacity of stack is small to copy all elements from the source, the results depends on 
      *          overlapping flag of stack:
      *          1.  If overlap flag is StopOnOverlap, the elements will be copied until the stack is not full.
      *              When stack is full, no more elements will be copied.
@@ -224,7 +285,7 @@ public:
      *              Then the elements will be set by removing head of stack until all elements from given source
      *              are not copied. The capacity of stack will remain unchanged. If during copying stack is full,
      *              the elements at head are lost.
-     *          3.  If overlap flag is ResizeOnOvelap and if elements in source are bigger than capacity of stack,
+     *          3.  If overlap flag is ResizeOnOverlap and if elements in source are bigger than capacity of stack,
      *              the capacity of stack will be increased that no elements are lost and all elements from source
      *              are copied. No data will be lost.
      * \param   source  The source of Ring stack to get elements.
@@ -243,6 +304,18 @@ public:
     uint32_t reserve( uint32_t newCapacity );
 
     /**
+     * \brief   Copies entries from the given source. The previous entries will be lost and new entries will be set.
+     * \param   source  The source of entries to copy data.
+     **/
+    void copy(const TERingStack<VALUE> & source);
+
+    /**
+     * \brief   Moves entries from the given source. The previous entries are swapped with the source.
+     * \param   source  The source of entries to move data.
+     **/
+    void move(TERingStack<VALUE> && source);
+
+    /**
      * \brief   Searches element in the stack starting at given position (index).
      *          The given position should be valid or equal to NECommon::RING_START_POSITION
      *          to search at the beginning of stack.
@@ -254,6 +327,19 @@ public:
      **/
     uint32_t find(const VALUE& elem, uint32_t startAt = NECommon::RING_START_POSITION) const;
 
+    /**
+     * \brief   Searches the specified element in the ring stack starting at the mentioned position
+     *          and returns true if the ring-stack contains specified element. The starting position
+     *          is zero-based and should not be more than the number of elements in the ring stack.
+     *          If the starting position is NECommon::RING_START_POSITION, it searches at the begin of
+     *          the ring stack.
+     * \param   elem    The element to search.
+     * \param   startAt The starting position to search. If the starting position is
+     *                  NECommon::RING_START_POSITION it searches from the begin of the ring stack.
+     * \return  Returns true if found an entry in the ring stack. Otherwise, returns false.
+     **/
+    bool contains(const VALUE& elem, uint32_t startAt = NECommon::RING_START_POSITION) const;
+
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
@@ -262,7 +348,7 @@ protected:
     /**
      * \brief   The instance of synchronization object to be used to make object thread-safe.
      **/
-    IEResourceLock &                mSynchObject;
+    IEResourceLock &                mSynchObj;
 
     /**
      * \brief   The overlapping flag. Set when stack is initialized and cannot be changed anymore.
@@ -287,23 +373,72 @@ protected:
     /**
      * \brief   The index of head element in array of stack
      **/
-    uint32_t                        mStartPosition;
+    uint32_t                        mHeadPos;
 
     /**
      * \brief   The index of tail element in array of stack
      **/
-    uint32_t                        mLastPosition;
+    uint32_t                        mTailPos;
 
 //////////////////////////////////////////////////////////////////////////
 // private methods
 //////////////////////////////////////////////////////////////////////////
 private:
     /**
-     * \brief   Empties stack without locking object.
-     *          The capacity of stack remain unchanged. All elements will be lost.
-     *          Need to have it to call from destructor.
+     * \brief   Empties stack without locking object. The capacity of stack remain unchanged. All elements are lost.
      **/
-    void _emptyStack( void );
+    inline void _emptyStack( void );
+
+    /**
+     * \brief   Copies entries from the give source `src` to the destination `dst.
+     *          The destination must have enough space (capacity) to copy elements.
+     * \param   dst         The destination to copy elements.
+     * \param   src         The source of elements to copy data.
+     * \param   srcStart    The starting position in the source of stack to copy elements.
+     * \param   srcEnd      The last position in the source of stack to stop copying elements.
+     * \param   srcCount    The number of elements to copy elements.
+     * \param   srcCapacity The capacity of source, used to compute right position in the ring.
+     **/
+    inline void _copyElems(VALUE* dst, VALUE* src, uint32_t srcStart, uint32_t srcEnd, uint32_t srcCount, uint32_t srcCapacity);
+
+    /**
+     * \brief   Converts normalized index, such as zero-based index, into the appropriate internal index in the ring stack.
+     *          For example, the index 0 is equal to the head position.
+     * \param   index   The normalized index to convert.
+     * \return  Returns the internal index of the ring buffer and the index cannot be more than the capacity of the ring stack.
+     **/
+    inline uint32_t _norm2RingIndex(uint32_t index) const;
+
+    /**
+     * \brief   Converts the internal ring stack index into the normalized zero-based index.
+     *          For example, the head position of the ring is equal to normalized index 0.
+     * \param   ring    The internal ring stack index to convert.
+     * \return  Returns normalized zero-based index, which cannot be more than the number of elements in the ring stack.
+     **/
+    inline uint32_t _ring2NormIndex(uint32_t ring) const;
+
+    /**
+     * \brief   Compares 2 ring stack entries in the list and returns `Bigger`, `Equal` or `Smaller` depending on comparing results.
+     * \param   left            The list of elements in the ring stack on the left side.
+     * \param   leftStart       The head position in the left ring stack.
+     * \param   leftCapacity    The capacity of the left ring stack.
+     * \param   leftCount       The number of entries in the left ring stack.
+     * \param   right           The list of elements in the ring stack on the right side.
+     * \param   rightStart      The head position in the right ring stack.
+     * \param   rightCapacity   The capacity of the right ring stack.
+     * \param   rightCount      The number of entries in the right ring stack.
+     * \return  Returns one of the values:
+     *              1. NEMath::eCompare::Equal  -- if 2 lists are equal.
+     *              2. NEMath::eCompare::Bigger -- if `left` stack is bigger than the `right`.
+     *              2. NEMath::eCompare::Smaller-- if `left` stack is smaller than the `right`.
+     **/
+    inline NEMath::eCompare _compareRings(const VALUE* left, uint32_t leftStart, uint32_t leftCapacity, uint32_t leftCount, const VALUE* right, uint32_t rightStart, uint32_t rightCapacity, uint32_t rightCount) const;
+
+    /**
+     * \brief   Copies the stack from the given source.
+     * \param   source  The source of stack data to copy elements.
+     **/
+    inline void _copyStack(const TERingStack<VALUE>& source);
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
@@ -312,7 +447,6 @@ private:
     TERingStack( void ) = delete;
     TERingStack( const TERingStack<VALUE> & /*src*/ ) = delete;
     TERingStack( TERingStack<VALUE> && /*src*/ ) noexcept = delete;
-    TERingStack<VALUE> & operator = ( TERingStack<VALUE> && /*src*/ ) noexcept = delete;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -348,7 +482,15 @@ public:
      * \brief   Copy constructor.
      * \param   source  The source to copy data.
      **/
+    TELockRingStack( const TELockRingStack<VALUE> & source );
     TELockRingStack( const TERingStack<VALUE> & source );
+
+    /**
+     * \brief   Move constructor.
+     * \param   source  The source to move data.
+     **/
+    TELockRingStack(TELockRingStack<VALUE>&& source) noexcept;
+    TELockRingStack( TERingStack<VALUE> && source ) noexcept;
 
     /**
      * \brief   Destructor
@@ -365,7 +507,28 @@ public:
      * \param   source  The source of ring stack entries to get entries.
      * \return  Returns ring stack object
      **/
+    inline TELockRingStack<VALUE> & operator = ( const TELockRingStack<VALUE> & source );
     inline TELockRingStack<VALUE> & operator = ( const TERingStack<VALUE> & source );
+
+    /**
+     * \brief   Moves ring stack entries from given source.
+     *          It as well swaps all entries of source and destination, but
+     *          does not change the overlapping type and synchronization object.
+     * \param   source  The source of ring stack entries to get entries.
+     * \return  Returns ring stack object
+     **/
+    inline TELockRingStack<VALUE>& operator = (TELockRingStack<VALUE> && source) noexcept;
+    inline TELockRingStack<VALUE>& operator = (TERingStack<VALUE> && source) noexcept;
+
+    /**
+     * \brief   Compares 2 ring stack object and returns true if they are equal.
+     **/
+    inline bool operator == (const TERingStack<VALUE>& other) const;
+
+    /**
+     * \brief   Compares 2 ring stack object and returns true if they are not equal.
+     **/
+    inline bool operator != (const TERingStack<VALUE>& other) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -375,12 +538,6 @@ private:
      * \brief   Instance of ResourceLock to synchronize data access
      **/
     ResourceLock    mLock;
-
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    DECLARE_NOMOVE( TELockRingStack );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -414,7 +571,15 @@ public:
      * \brief   Copy constructor.
      * \param   source  The source to copy data.
      **/
+    TENolockRingStack( const TENolockRingStack<VALUE> & source );
     TENolockRingStack( const TERingStack<VALUE> & source );
+
+    /**
+     * \brief   Move constructor.
+     * \param   source  The source to move data.
+     **/
+    TENolockRingStack(TENolockRingStack<VALUE> && source ) noexcept;
+    TENolockRingStack( TERingStack<VALUE> && source ) noexcept;
 
     /**
      * \brief   Destructor
@@ -431,7 +596,28 @@ public:
      * \param   source  The source of ring stack entries to get entries.
      * \return  Returns ring stack object
      **/
+    inline TENolockRingStack<VALUE> & operator = ( const TENolockRingStack<VALUE> & source );
     inline TENolockRingStack<VALUE> & operator = ( const TERingStack<VALUE> & source );
+
+    /**
+     * \brief   Moves ring stack entries from given source.
+     *          It as well swaps all entries of source and destination, but
+     *          does not change the overlapping type and synchronization object.
+     * \param   source  The source of ring stack entries to get entries.
+     * \return  Returns ring stack object
+     **/
+    inline TENolockRingStack<VALUE>& operator = (TERingStack<VALUE> && source) noexcept;
+    inline TENolockRingStack<VALUE>& operator = (TENolockRingStack<VALUE> && source) noexcept;
+
+    /**
+     * \brief   Compares 2 ring stack object and returns true if they are equal.
+     **/
+    inline bool operator == (const TERingStack<VALUE>& other) const;
+
+    /**
+     * \brief   Compares 2 ring stack object and returns true if they are not equal.
+     **/
+    inline bool operator != (const TERingStack<VALUE>& other) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -441,12 +627,6 @@ private:
      * \brief   Synchronization object simulation.
      **/
     NolockSynchObject mNoLock;
-
-//////////////////////////////////////////////////////////////////////////
-// Forbidden calls
-//////////////////////////////////////////////////////////////////////////
-private:
-    DECLARE_NOMOVE( TENolockRingStack );
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -458,14 +638,53 @@ private:
 //////////////////////////////////////////////////////////////////////////
 template <typename VALUE>
 TERingStack<VALUE>::TERingStack( IEResourceLock & synchObject, uint32_t initCapacity /*= 0*/, NECommon::eRingOverlap onOverlap /*= NECommon::eRingOverlap::StopOnOverlap*/ )
-    : mSynchObject  ( synchObject )
-    , mOnOverlap    ( onOverlap )
-    , mStackList    ( initCapacity != 0 ? reinterpret_cast<VALUE*>(DEBUG_NEW unsigned char[initCapacity * sizeof(VALUE)]) : nullptr )
-    , mElemCount    ( 0 )
-    , mCapacity     ( mStackList != nullptr ? initCapacity : 0 )
-    , mStartPosition( 0 )
-    , mLastPosition ( 0 )
+    : mSynchObj ( synchObject )
+    , mOnOverlap( onOverlap )
+    , mStackList( initCapacity != 0 ? reinterpret_cast<VALUE*>(DEBUG_NEW unsigned char[initCapacity * sizeof(VALUE)]) : nullptr )
+    , mElemCount( 0 )
+    , mCapacity ( mStackList != nullptr ? initCapacity : 0 )
+    , mHeadPos  ( 0 )
+    , mTailPos  ( 0 )
 {
+}
+
+template <typename VALUE>
+TERingStack<VALUE>::TERingStack(IEResourceLock& synchObject, const TERingStack<VALUE> & source)
+    : mSynchObj (synchObject)
+    , mOnOverlap(source.mOnOverlap)
+    , mStackList(nullptr)
+    , mElemCount(0)
+    , mCapacity (0)
+    , mHeadPos  (0)
+    , mTailPos  (0)
+{
+    Lock lock(source.mSynchObj);
+    _copyStack(source);
+}
+
+template <typename VALUE>
+TERingStack<VALUE>::TERingStack(IEResourceLock& synchObject, TERingStack<VALUE> && source) noexcept
+    : mSynchObj (synchObject)
+    , mOnOverlap(source.mOnOverlap)
+    , mStackList(nullptr)
+    , mElemCount(0)
+    , mCapacity (0)
+    , mHeadPos  (0)
+    , mTailPos  (0)
+{
+    Lock lock(source.mSynchObj);
+
+    mStackList  = source.mStackList;
+    mElemCount  = source.mElemCount;
+    mCapacity   = source.mCapacity;
+    mHeadPos    = source.mHeadPos;
+    mTailPos    = source.mTailPos;
+
+    source.mStackList   = nullptr;
+    source.mCapacity    = 0;
+    source.mElemCount   = 0;
+    source.mHeadPos     = 0;
+    source.mTailPos     = 0;
 }
 
 template <typename VALUE>
@@ -480,113 +699,234 @@ TERingStack<VALUE>::~TERingStack( void )
 template <typename VALUE>
 TERingStack<VALUE> & TERingStack<VALUE>::operator = ( const TERingStack<VALUE> & source )
 {
-    if (static_cast<const TERingStack<VALUE> *>(this) != &source)
-    {
-        Lock lock(mSynchObject);
-
-        _emptyStack();
-        source.lock();
-
-        reserve(static_cast<uint32_t>(source.mElemCount));
-        uint32_t pos = source.mStartPosition;
-        for (uint32_t i = 0; i < source.mElemCount; ++ i )
-        {
-            static_cast<void>(pushLast( source.mStackList[pos] ));
-            pos = ( pos + 1 ) % source.mCapacity;
-        }
-
-        source.unlock();
-    }
+    copy(source);
     return (*this);
+}
+
+template <typename VALUE>
+TERingStack<VALUE>& TERingStack<VALUE>::operator = (TERingStack<VALUE> && source) noexcept
+{
+    move(std::move(source));
+    return (*this);
+}
+
+template <typename VALUE>
+bool TERingStack<VALUE>::operator == (const TERingStack<VALUE>& other) const
+{
+    Lock lock1(mSynchObj);
+    Lock lock2(other.mSynchObj);
+
+    bool result{ static_cast<const TERingStack<VALUE> *>(this) == &other };
+
+    if ((static_cast<const TERingStack<VALUE> *>(this) != &other) && (mElemCount == other.mElemCount))
+    {
+        result = _compareRings(mStackList, mHeadPos, mCapacity, mElemCount, other.mStackList, other.mHeadPos, other.mCapacity, other.mElemCount) == NEMath::eCompare::Equal;
+    }
+
+    return result;
+}
+
+template <typename VALUE>
+bool TERingStack<VALUE>::operator != (const TERingStack<VALUE>& other) const
+{
+    Lock lock1(mSynchObj);
+    Lock lock2(other.mSynchObj);
+
+    bool result{ (static_cast<const TERingStack<VALUE> *>(this) != &other) || (this->mElemCount != other.mElemCount)};
+
+    if ((static_cast<const TERingStack<VALUE> *>(this) != &other) && (this->mElemCount == other.mElemCount))
+    {
+        result = _compareRings(mStackList, mHeadPos, mCapacity, mElemCount, other.mStackList, other.mHeadPos, other.mCapacity, other.mElemCount) != NEMath::eCompare::Equal;
+    }
+
+    return result;
+}
+
+template <typename VALUE>
+const VALUE& TERingStack<VALUE>::operator [] (uint32_t index) const
+{
+    return getAt(index);
+}
+
+template <typename VALUE>
+VALUE& TERingStack<VALUE>::operator [] (uint32_t index)
+{
+    return getAt(index);
 }
 
 template <typename VALUE>
 inline uint32_t TERingStack<VALUE>::getSize( void ) const
 {
-    Lock lock( mSynchObject );
+    Lock lock( mSynchObj );
     return mElemCount;
 }
 
 template <typename VALUE>
 inline bool TERingStack<VALUE>::isEmpty( void ) const
 {
-    Lock lock( mSynchObject );
+    Lock lock( mSynchObj );
     return (mElemCount == 0);
+}
+
+template <typename VALUE>
+inline NECommon::eRingOverlap TERingStack<VALUE>::getOverlap(void) const
+{
+    return mOnOverlap;
 }
 
 template <typename VALUE>
 inline bool TERingStack<VALUE>::lock( void ) const
 {
-    return mSynchObject.lock(NECommon::WAIT_INFINITE);
+    return mSynchObj.lock(NECommon::WAIT_INFINITE);
 }
 
 template <typename VALUE>
 inline bool TERingStack<VALUE>::unlock( void ) const
 {
-    return mSynchObject.unlock();
+    return mSynchObj.unlock();
 }
 
 template <typename VALUE>
 inline uint32_t TERingStack<VALUE>::capacity( void ) const
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSynchObj);
     return mCapacity;
 }
 
 template <typename VALUE>
 inline bool TERingStack<VALUE>::isFull( void ) const
 {
-    Lock lock(mSynchObject);
-    return (mElemCount == mCapacity);
+    Lock lock(mSynchObj);
+    return (mOnOverlap != NECommon::eRingOverlap::ResizeOnOverlap) && (mElemCount == mCapacity);
+}
+
+template <typename VALUE>
+inline bool TERingStack<VALUE>::isValidIndex(uint32_t index)
+{
+    Lock lock(mSynchObj);
+    return (index < mElemCount);
+}
+
+template <typename VALUE>
+const VALUE& TERingStack<VALUE>::getAt(uint32_t index) const
+{
+    Lock lock(mSynchObj);
+    ASSERT(index < mElemCount);
+    index = _norm2RingIndex(index);
+    return mStackList[index];
+}
+
+template <typename VALUE>
+VALUE& TERingStack<VALUE>::getAt(uint32_t index)
+{
+    Lock lock(mSynchObj);
+    ASSERT(index < mElemCount);
+    index = _norm2RingIndex(index);
+    return mStackList[index];
+}
+
+template <typename VALUE>
+void TERingStack<VALUE>::setAt(uint32_t index, const VALUE& newValue)
+{
+    Lock lock(mSynchObj);
+    ASSERT(index < mElemCount);
+    index = _norm2RingIndex(index);
+    mStackList[index] = newValue;
 }
 
 template <typename VALUE>
 void TERingStack<VALUE>::clear( void )
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSynchObj);
     _emptyStack();
 }
 
 template<typename VALUE>
-void TERingStack<VALUE>::discard(void)
+void TERingStack<VALUE>::release(void)
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSynchObj);
     _emptyStack();
     delete[] reinterpret_cast<unsigned char*>(mStackList);
     mStackList = nullptr;
     mCapacity = 0;
 }
 
-template <typename VALUE>
-uint32_t TERingStack<VALUE>::pushLast( const VALUE& newElement )
+template<typename VALUE>
+void TERingStack<VALUE>::freeExtra(void)
 {
-    Lock lock(mSynchObject);
+    if (mCapacity != mElemCount)
+    {
+        uint32_t capacity = mElemCount;
+        VALUE* newList = capacity != 0 ? reinterpret_cast<VALUE*>(DEBUG_NEW unsigned char[capacity * sizeof(VALUE)]) : nullptr;
+        if (newList != nullptr)
+        {
+            if (mStackList != nullptr)
+            {
+                _copyElems(newList, mStackList, mHeadPos, mTailPos, mElemCount, capacity);
+                _emptyStack();
+                delete[] reinterpret_cast<unsigned char*>(mStackList);
+            }
+
+            mStackList  = newList;
+            mHeadPos    = 0;
+            mTailPos    = capacity - 1;
+            mElemCount  = capacity;
+            mCapacity   = capacity;
+        }
+        else if (capacity == 0)
+        {
+            if (mStackList != nullptr)
+            {
+                _emptyStack();
+                delete[] reinterpret_cast<unsigned char*>(mStackList);
+                mStackList = nullptr;
+            }
+
+            mCapacity   = 0u;
+        }
+    }
+}
+
+template <typename VALUE>
+uint32_t TERingStack<VALUE>::push( const VALUE& newElement )
+{
+    Lock lock(mSynchObj);
 
     if ( mElemCount < mCapacity )
     {
-        ASSERT( (mStartPosition != mLastPosition) || (mElemCount == 0) );
-
-        VALUE * block = mStackList + mLastPosition;
-        NEMemory::constructElems<VALUE>(block, 1);
-        *block = newElement;
-        mLastPosition = (mLastPosition + 1) % mCapacity;
-        ++ mElemCount;
+        ASSERT( (mHeadPos != mTailPos) || (mElemCount <= 1) );
+        if (mElemCount == 0)
+        {
+            VALUE* block = mStackList;
+            NEMemory::constructElems<VALUE>(block, 1);
+            *block = newElement;
+            mHeadPos = 0;
+            mTailPos = 0;
+            mElemCount = 1u;
+        }
+        else
+        {
+            mTailPos = (mTailPos + 1) % mCapacity;
+            VALUE* block = mStackList + mTailPos;
+            NEMemory::constructElems<VALUE>(block, 1);
+            *block = newElement;
+            ++mElemCount;
+        }
     }
     else
     {
         switch ( mOnOverlap )
         {
         case NECommon::eRingOverlap::ShiftOnOverlap:
-            ASSERT(mLastPosition == mStartPosition);
             if (mCapacity != 0)
             {
                 ASSERT(mStackList != nullptr);
-                VALUE* block = mStackList + mLastPosition;
+                mTailPos = (mTailPos + 1) % mCapacity;
+                mHeadPos = (mHeadPos + 1) % mCapacity;
+                VALUE* block = mStackList + mTailPos;
                 NEMemory::destroyElems<VALUE>(block, 1);
                 NEMemory::constructElems<VALUE>(block, 1);
                 *block = newElement;
-                mLastPosition = (mLastPosition + 1) % mCapacity;
-                mStartPosition = mLastPosition;
             }
             else
             {
@@ -595,77 +935,12 @@ uint32_t TERingStack<VALUE>::pushLast( const VALUE& newElement )
             }
             break;
 
-        case NECommon::eRingOverlap::ResizeOnOvelap:
+        case NECommon::eRingOverlap::ResizeOnOverlap:
             if ( reserve(static_cast<uint32_t>(mCapacity != 0 ? mCapacity : 1) * 2) >= (mElemCount + 1) )
             {
                 ASSERT(mCapacity >= mElemCount + 1);
-                VALUE * block = mStackList + mLastPosition;
-                NEMemory::constructElems<VALUE>(block, 1);
-                *block = newElement;
-                mLastPosition = (mLastPosition + 1) % mCapacity;
-                ++ mElemCount;
-            }
-            break;
-
-        case NECommon::eRingOverlap::StopOnOverlap:
-            OUTPUT_WARN("The new element is not set in Ring Stack, there is no more free space for new element");
-            break;  // do nothing
-
-        default:
-            OUTPUT_ERR("Invalid Overlap action!");
-            ASSERT(false);
-            break;
-        }
-    }
-
-    return mElemCount;
-}
-
-template <typename VALUE>
-uint32_t TERingStack<VALUE>::pushFirst( const VALUE& newElement )
-{
-    Lock lock(mSynchObject);
-
-    if ( (mElemCount + 1) <= mCapacity )
-    {
-        ASSERT( (mStartPosition != mLastPosition) || (mElemCount == 0) );
-
-        mStartPosition = mStartPosition != 0 ? mStartPosition - 1 : mCapacity - 1;
-        VALUE * block = mStackList + mStartPosition;
-        NEMemory::constructElems<VALUE>(block, 1);
-        *block = newElement;
-        ++ mElemCount;
-    }
-    else
-    {
-        switch ( mOnOverlap )
-        {
-        case NECommon::eRingOverlap::ShiftOnOverlap:
-            ASSERT( mLastPosition == mStartPosition );
-            if ( mCapacity != 0 )
-            {
-                ASSERT(mStackList != nullptr);
-                mStartPosition = mStartPosition != 0 ? mStartPosition - 1 : mCapacity - 1;
-                VALUE * block = mStackList + mStartPosition;
-                NEMemory::destroyElems<VALUE>(block, 1);
-                NEMemory::constructElems<VALUE>(block, 1);
-                *block = newElement;
-                mLastPosition = mStartPosition;
-            }
-            else
-            {
-                OUTPUT_WARN("The Ring Stack is not initialized, ignoring operation!");
-                ASSERT(mStackList == nullptr);
-                ASSERT(mElemCount == 0);
-            }
-            break;
-
-        case NECommon::eRingOverlap::ResizeOnOvelap:
-            if ( reserve(static_cast<uint32_t>(mCapacity != 0 ? mCapacity : 1) * 2) >= (mElemCount + 1) )
-            {
-                ASSERT(mCapacity >= mElemCount + 1);
-                mStartPosition = mStartPosition != 0 ? mStartPosition - 1 : mCapacity - 1;
-                VALUE * block = mStackList + mStartPosition;
+                mTailPos = (mTailPos + 1) % mCapacity;
+                VALUE * block = mStackList + mTailPos;
                 NEMemory::constructElems<VALUE>(block, 1);
                 *block = newElement;
                 ++ mElemCount;
@@ -687,9 +962,9 @@ uint32_t TERingStack<VALUE>::pushFirst( const VALUE& newElement )
 }
 
 template <typename VALUE>
-VALUE TERingStack<VALUE>::popFirst( void )
+VALUE TERingStack<VALUE>::pop( void )
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSynchObj);
     ASSERT( isEmpty() == false );
     VALUE result{ };
 
@@ -697,11 +972,17 @@ VALUE TERingStack<VALUE>::popFirst( void )
     {
         ASSERT( mCapacity != 0 );
         ASSERT( mStackList != nullptr );
+        ASSERT((mHeadPos != mTailPos) || (mElemCount == 1u));
 
-        result = mStackList[mStartPosition];
-        NEMemory::destroyElems<VALUE>( mStackList + mStartPosition, 1 );
-        mStartPosition = (mStartPosition + 1) % mCapacity;
+        result = mStackList[mHeadPos];
+        NEMemory::destroyElems<VALUE>( mStackList + mHeadPos, 1 );
+        mHeadPos = (mHeadPos + 1) % mCapacity;
         -- mElemCount;
+
+        if (mElemCount == 0)
+        {
+            mHeadPos = mTailPos = 0u;
+        }
     }
 
     return result;
@@ -710,114 +991,43 @@ VALUE TERingStack<VALUE>::popFirst( void )
 template <typename VALUE>
 uint32_t TERingStack<VALUE>::add( const TERingStack<VALUE> & source )
 {
-    Lock lock(mSynchObject);
-    uint32_t result = 0;
-    if ( static_cast<const TERingStack<VALUE> *>(this) != &source )
+    Lock lock(mSynchObj);
+    uint32_t result = mElemCount;
+    if (static_cast<const TERingStack<VALUE> *>(this) != &source)
     {
-        Lock lock2(source.mSynchObject);
-
-        uint32_t srcStart = source.mStartPosition;
-        if ( (mCapacity - mElemCount) >= source.mElemCount )
+        Lock lock2(source.mSynchObj);
+        for (uint32_t i = 0u; i < source.mElemCount; ++i)
         {
-            for (uint32_t i = 0; i < source.mElemCount; ++ i, ++ result )
-            {
-                VALUE * block = mStackList + mLastPosition;
-                NEMemory::constructElems<VALUE>(block, 1);
-                *block          = source.mStackList[srcStart];
-                mLastPosition   = (mLastPosition + 1) % mCapacity;
-                srcStart        = ( srcStart + 1 ) % source.mCapacity;
-                ++ mElemCount;
-            }
-        }
-        else
-        {
-            switch ( mOnOverlap )
-            {
-            case NECommon::eRingOverlap::ShiftOnOverlap:
-                ASSERT( mLastPosition == mStartPosition );
-                if ( mCapacity != 0 )
-                {
-                    for (uint32_t i = 0; i < source.mElemCount; ++ i, ++ result )
-                    {
-                        VALUE * block = mStackList + mLastPosition;
-                        NEMemory::destroyElems<VALUE>(block, 1);
-                        NEMemory::constructElems<VALUE>(block, 1);
-                        *block          = source.mStackList[srcStart];
-                        mLastPosition   = (mLastPosition + 1) % mCapacity;
-                        srcStart        = ( srcStart + 1 ) % source.mCapacity;
-                        mStartPosition  = mLastPosition;
-                    }
-                }
-                else
-                {
-                    OUTPUT_WARN("The Ring Stack is not initialized, ignoring operation!");
-                    ASSERT(mStackList == nullptr);
-                    ASSERT(mElemCount == 0);
-                }
-                break;
-
-            case NECommon::eRingOverlap::ResizeOnOvelap:
-                if ( reserve( static_cast<uint32_t>(mCapacity != 0 ? mCapacity : 1) * 2 ) > (mElemCount + 1 ))
-                {
-                    ASSERT(mCapacity >= (mElemCount + 1));
-                    for (uint32_t i = 0; i < source.mElemCount; ++ i, ++ result )
-                    {
-                        VALUE * block = mStackList + mLastPosition;
-                        NEMemory::constructElems<VALUE>(block, 1);
-                        *block = source.mStackList[srcStart];
-                        mLastPosition   = (mLastPosition + 1) % mCapacity;
-                        srcStart        = ( srcStart + 1 ) % source.mCapacity;
-                        ++ mElemCount;
-                    }
-                }
-                break;
-
-            case NECommon::eRingOverlap::StopOnOverlap:
-                OUTPUT_WARN("The new element is not set in Ring Stack, there is no more free space for new element");
-                break;  // do nothing
-
-            default:
-                OUTPUT_ERR("Invalid Overlap action!");
-                ASSERT(false);
-                break;
-            }
+            push(source[i]);
         }
     }
-    else
-    {
-        result = mElemCount;
-    }
 
-    return result;
+    return (mElemCount - result);
 }
 
 template <typename VALUE>
 uint32_t TERingStack<VALUE>::reserve(uint32_t newCapacity )
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSynchObj);
 
     if ( newCapacity > mCapacity )
     {
-        VALUE * newList     = newCapacity != 0 ? reinterpret_cast<VALUE *>( DEBUG_NEW unsigned char[ newCapacity * sizeof(VALUE)] ) : nullptr;
+        VALUE * newList = newCapacity != 0 ? reinterpret_cast<VALUE *>( DEBUG_NEW unsigned char[ newCapacity * sizeof(VALUE)] ) : nullptr;
         if (newList != nullptr)
         {
-            uint32_t posStart = mStartPosition;
             uint32_t elemCount = mElemCount;
-            for (uint32_t i = 0; i < elemCount; ++i)
+            if (mStackList != nullptr)
             {
-                VALUE* elem = newList + i;
-                NEMemory::constructElems<VALUE>(static_cast<void*>(elem), 1);
-                *elem = mStackList[posStart];
-                posStart = (posStart + 1) % mCapacity;
+                _copyElems(newList, mStackList, mHeadPos, mTailPos, elemCount, mCapacity);
+                _emptyStack();
+                delete[] reinterpret_cast<unsigned char*>(mStackList);
             }
 
-            _emptyStack();
-            delete[] reinterpret_cast<unsigned char*>(mStackList);
-            mStackList      = newList;
-            mStartPosition  = 0;
-            mElemCount      = elemCount;
-            mLastPosition   = elemCount % newCapacity;
-            mCapacity       = newCapacity;
+            mStackList = newList;
+            mHeadPos   = 0;
+            mTailPos   = elemCount - 1;
+            mElemCount = elemCount;
+            mCapacity  = newCapacity;
         }
     }
 
@@ -825,51 +1035,45 @@ uint32_t TERingStack<VALUE>::reserve(uint32_t newCapacity )
 }
 
 template <typename VALUE>
+void TERingStack<VALUE>::copy(const TERingStack<VALUE>& source)
+{
+    if (static_cast<const TERingStack<VALUE> *>(this) != &source)
+    {
+        Lock lock1(mSynchObj);
+        Lock lock2(source.mSynchObj);
+        _copyStack(source);
+    }
+}
+
+template <typename VALUE>
+void TERingStack<VALUE>::move(TERingStack<VALUE> && source)
+{
+    if (static_cast<const TERingStack<VALUE> *>(this) != &source)
+    {
+        Lock lock1(mSynchObj);
+        Lock lock2(source.mSynchObj);
+
+        std::swap(mStackList, source.mStackList);
+        std::swap(mElemCount, source.mElemCount);
+        std::swap(mCapacity, source.mCapacity);
+        std::swap(mHeadPos, source.mHeadPos);
+        std::swap(mTailPos, source.mTailPos);
+    }
+}
+
+template <typename VALUE>
 uint32_t TERingStack<VALUE>::find(const VALUE& elem, uint32_t startAt /*= NECommon::RING_START_POSITION*/) const
 {
-    Lock lock(mSynchObject);
+    Lock lock(mSynchObj);
 
-    uint32_t result = NECommon::INVALID_INDEX;
-    uint32_t pos = startAt == NECommon::RING_START_POSITION ? mStartPosition : startAt + 1;
-    if (pos <= mLastPosition)
+    uint32_t result = static_cast<uint32_t>(NECommon::INVALID_INDEX);
+    startAt = startAt == NECommon::RING_START_POSITION ? 0 : startAt;
+    for (uint32_t i = 0; i < mElemCount; ++i)
     {
-        while (pos <= mLastPosition)
+        if (elem == mStackList[_norm2RingIndex(i)])
         {
-            if (elem == mStackList[pos])
-            {
-                result = pos;
-                break;
-            }
-
-            ++ pos;
-        }
-    }
-    else if (mOnOverlap == NECommon::eRingOverlap::ShiftOnOverlap)
-    {
-        while (pos < mElemCount)
-        {
-            if (elem == mStackList[pos])
-            {
-                result = pos;
-                break;
-            }
-
-            ++ pos;
-        }
-
-        if (result == NECommon::INVALID_INDEX)
-        {
-            pos = 0;
-            while (pos <= mLastPosition)
-            {
-                if (elem == mStackList[pos])
-                {
-                    result = pos;
-                    break;
-                }
-
-                ++ pos;
-            }
+            result = i;
+            break;
         }
     }
 
@@ -877,19 +1081,111 @@ uint32_t TERingStack<VALUE>::find(const VALUE& elem, uint32_t startAt /*= NEComm
 }
 
 template <typename VALUE>
-void TERingStack<VALUE>::_emptyStack( void )
+bool TERingStack<VALUE>::contains(const VALUE& elem, uint32_t startAt /*= NECommon::RING_START_POSITION*/) const
+{
+    return (find(elem, startAt) != static_cast<uint32_t>(NECommon::INVALID_INDEX));
+}
+
+template <typename VALUE>
+inline void TERingStack<VALUE>::_emptyStack( void )
 {
     // do not delete stack, only remove elements and reset data.
     // keep capacity same
     for (uint32_t i = 0; i < mElemCount; ++ i)
     {
-        NEMemory::destroyElems<VALUE>( mStackList + mStartPosition, 1 );
-        mStartPosition = ( mStartPosition + 1 ) % mCapacity;
+        NEMemory::destroyElems<VALUE>( mStackList + mHeadPos, 1 );
+        mHeadPos = (mHeadPos + 1 ) % mCapacity;
     }
 
-    mStartPosition  = 0;
-    mLastPosition   = 0;
-    mElemCount      = 0;
+    mHeadPos    = 0;
+    mTailPos    = 0;
+    mElemCount  = 0;
+}
+
+template <typename VALUE>
+inline void TERingStack<VALUE>::_copyElems(VALUE* dst, VALUE* src, uint32_t srcStart, uint32_t srcEnd, uint32_t srcCount, uint32_t srcCapacity)
+{
+    ASSERT(srcCapacity >= srcCount);
+    ASSERT((dst != nullptr) && (src != nullptr));
+
+    NEMemory::constructElems<VALUE>(static_cast<void*>(dst), srcCount);
+    if (srcEnd >= srcStart)
+    {
+        ASSERT((srcEnd - srcStart + 1u) == srcCount);
+        NEMemory::copyElems<VALUE>(dst, src + srcStart, srcCount);
+    }
+    else
+    {
+        uint32_t elemCopy = srcCapacity - srcStart;
+        ASSERT((elemCopy + srcEnd + 1) == srcCount);
+        NEMemory::copyElems<VALUE>(dst, src + srcStart, elemCopy);
+        NEMemory::copyElems<VALUE>(dst + elemCopy, src, srcEnd + 1);
+    }
+}
+
+template <typename VALUE>
+inline uint32_t TERingStack<VALUE>::_norm2RingIndex(uint32_t index) const
+{
+    return ((mHeadPos + index) % mCapacity);
+}
+
+template <typename VALUE>
+inline uint32_t TERingStack<VALUE>::_ring2NormIndex(uint32_t ring) const
+{
+    return (ring >= mHeadPos ? ring - mHeadPos : (mCapacity - mHeadPos) + ring);
+}
+
+template <typename VALUE>
+inline NEMath::eCompare TERingStack<VALUE>::_compareRings( const VALUE* left, uint32_t leftStart, uint32_t leftCapacity, uint32_t leftCount
+                                                         , const VALUE* right, uint32_t rightStart, uint32_t rightCapacity, uint32_t rightCount) const
+{
+    ASSERT((leftStart < leftCapacity) && (rightStart < rightCapacity));
+    NEMath::eCompare result{ NEMath::eCompare::Equal };
+    uint32_t count = MACRO_MIN(leftCount, rightCount);
+    while (count != 0)
+    {
+        result = NEMath::compare<VALUE>(left[leftStart], right[rightStart]);
+        if (result != NEMath::eCompare::Equal)
+        {
+            return result;
+        }
+
+        leftStart = (leftStart + 1) % leftCapacity;
+        rightStart = (rightStart + 1) % rightCapacity;
+        --count;
+    }
+
+    return NEMath::compare<uint32_t>(leftCount, rightCount);
+}
+
+template <typename VALUE>
+inline void TERingStack<VALUE>::_copyStack(const TERingStack<VALUE>& source)
+{
+    _emptyStack();
+    VALUE* newList = mStackList;
+    uint32_t capacity = source.mCapacity;
+
+    if (mCapacity < capacity)
+    {
+        delete[] reinterpret_cast<unsigned char*>(mStackList);
+        mStackList = nullptr;
+        mCapacity = 0;
+        newList = capacity != 0 ? reinterpret_cast<VALUE*>(DEBUG_NEW unsigned char[capacity * sizeof(VALUE)]) : nullptr;
+    }
+
+    if ((newList != nullptr) && (source.mElemCount != 0))
+    {
+        if (source.mStackList != nullptr)
+        {
+            _copyElems(newList, source.mStackList, source.mHeadPos, source.mTailPos, source.mElemCount, capacity);
+        }
+
+        mStackList = newList;
+        mCapacity = capacity;
+        mElemCount = source.mElemCount;
+        mHeadPos = 0u;
+        mTailPos = source.mElemCount - 1;
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -903,6 +1199,13 @@ TELockRingStack<VALUE>::TELockRingStack(uint32_t initCapacity /*= 0*/, NECommon:
 }
 
 template <typename VALUE>
+TELockRingStack<VALUE>::TELockRingStack( const TELockRingStack<VALUE> & source )
+    : TERingStack<VALUE>    ( mLock, static_cast<const TERingStack<VALUE> &>(source) )
+    , mLock ( false )
+{
+}
+
+template <typename VALUE>
 TELockRingStack<VALUE>::TELockRingStack( const TERingStack<VALUE> & source )
     : TERingStack<VALUE>    ( mLock, source )
     , mLock ( false )
@@ -910,10 +1213,57 @@ TELockRingStack<VALUE>::TELockRingStack( const TERingStack<VALUE> & source )
 }
 
 template <typename VALUE>
+TELockRingStack<VALUE>::TELockRingStack( TERingStack<VALUE> && source ) noexcept
+    : TERingStack<VALUE>    ( mLock, std::move(source) )
+    , mLock ( false )
+{
+}
+
+template <typename VALUE>
+TELockRingStack<VALUE>::TELockRingStack(TELockRingStack<VALUE> && source ) noexcept
+    : TERingStack<VALUE>    ( mLock, std::move(static_cast<TERingStack<VALUE> &&>(source)) )
+    , mLock ( false )
+{
+}
+
+template <typename VALUE>
+inline TELockRingStack<VALUE> & TELockRingStack<VALUE>::operator = ( const TELockRingStack<VALUE> & source )
+{
+    static_cast<TERingStack<VALUE> &>(*this).operator = (static_cast<const TERingStack<VALUE> &>(source));
+    return (*this);
+}
+
+template <typename VALUE>
 inline TELockRingStack<VALUE> & TELockRingStack<VALUE>::operator = ( const TERingStack<VALUE> & source )
 {
-    static_cast<TERingStack<VALUE> &>(*this) = source;
+    static_cast<TERingStack<VALUE>&>(*this).operator = (static_cast<const TERingStack<VALUE>&>(source));
     return (*this);
+}
+
+template <typename VALUE>
+inline TELockRingStack<VALUE>& TELockRingStack<VALUE>::operator = (TELockRingStack<VALUE>&& source) noexcept
+{
+    static_cast<TERingStack<VALUE>&>(*this).operator = (std::move(static_cast<TERingStack<VALUE> &&>(source)));
+    return (*this);
+}
+
+template <typename VALUE>
+inline TELockRingStack<VALUE>& TELockRingStack<VALUE>::operator = (TERingStack<VALUE>&& source) noexcept
+{
+    static_cast<TERingStack<VALUE>&>(*this).operator = (std::move(static_cast<TERingStack<VALUE>&&>(source)));
+    return (*this);
+}
+
+template <typename VALUE>
+inline bool TELockRingStack<VALUE>::operator == (const TERingStack<VALUE>& other) const
+{
+    return static_cast<const TERingStack<VALUE>&>(*this).operator == (other);
+}
+
+template <typename VALUE>
+inline bool TELockRingStack<VALUE>::operator != (const TERingStack<VALUE>& other) const
+{
+    return static_cast<const TERingStack<VALUE>&>(*this).operator != (other);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -934,10 +1284,64 @@ TENolockRingStack<VALUE>::TENolockRingStack( const TERingStack<VALUE> & source )
 }
 
 template <typename VALUE>
+TENolockRingStack<VALUE>::TENolockRingStack( const TENolockRingStack<VALUE> & source )
+    : TERingStack<VALUE>    ( mNoLock, static_cast<const TERingStack<VALUE> &>(source) )
+    , mNoLock   ( )
+{
+}
+
+template <typename VALUE>
+TENolockRingStack<VALUE>::TENolockRingStack( TERingStack<VALUE> && source ) noexcept
+    : TERingStack<VALUE>    ( mNoLock, std::move(source) )
+    , mNoLock   ( )
+{
+}
+
+template <typename VALUE>
+TENolockRingStack<VALUE>::TENolockRingStack(TENolockRingStack<VALUE> && source ) noexcept
+    : TERingStack<VALUE>    ( mNoLock, std::move(static_cast<TERingStack<VALUE> &&>(source)) )
+    , mNoLock   ( )
+{
+}
+
+template <typename VALUE>
+inline TENolockRingStack<VALUE> & TENolockRingStack<VALUE>::operator = ( const TENolockRingStack<VALUE> & source )
+{
+    static_cast<TERingStack<VALUE> &>(*this).operator = (static_cast<const TERingStack<VALUE>&>(source));
+    return (*this);
+}
+
+template <typename VALUE>
 inline TENolockRingStack<VALUE> & TENolockRingStack<VALUE>::operator = ( const TERingStack<VALUE> & source )
 {
-    static_cast<TERingStack<VALUE> &>(*this) = source;
+    static_cast<TERingStack<VALUE>&>(*this).operator = (static_cast<const TERingStack<VALUE>&>(source));
     return (*this);
+}
+
+template <typename VALUE>
+inline TENolockRingStack<VALUE>& TENolockRingStack<VALUE>::operator = (TENolockRingStack<VALUE>&& source) noexcept
+{
+    static_cast<TERingStack<VALUE>&>(*this).operator = (std::move(static_cast<TERingStack<VALUE> &&>(source)));
+    return (*this);
+}
+
+template <typename VALUE>
+inline TENolockRingStack<VALUE>& TENolockRingStack<VALUE>::operator = (TERingStack<VALUE>&& source) noexcept
+{
+    static_cast<TERingStack<VALUE>&>(*this).operator = (std::move(static_cast<TERingStack<VALUE>&&>(source)));
+    return (*this);
+}
+
+template <typename VALUE>
+inline bool TENolockRingStack<VALUE>::operator == (const TERingStack<VALUE>& other) const
+{
+    return static_cast<const TERingStack<VALUE>&>(*this).operator == (other);
+}
+
+template <typename VALUE>
+inline bool TENolockRingStack<VALUE>::operator != (const TERingStack<VALUE>& other) const
+{
+    return static_cast<const TERingStack<VALUE>&>(*this).operator!=(other);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -947,19 +1351,23 @@ inline TENolockRingStack<VALUE> & TENolockRingStack<VALUE>::operator = ( const T
 template <typename V>
 const IEInStream & operator >> ( const IEInStream & stream, TERingStack<V> & input )
 {
-    Lock lock(input.mSynchObject);
+    Lock lock(input.mSynchObj);
 
     uint32_t size = 0;
     stream >> size;
 
     input.clear();
-    input.reserve(static_cast<uint32_t>(size));
-
-    for (uint32_t i = 0; i < size; i ++)
+    if ((input.reserve(size)) >= size && (size != 0))
     {
-        V newElement;
-        stream >> newElement;
-        static_cast<void>(input.pushLast(newElement));
+        NEMemory::constructElems<V>(input.mStackList, size);
+        for (uint32_t i = 0; i < size; i++)
+        {
+            stream >> input.mStackList[i];
+        }
+
+        input.mHeadPos = 0;
+        input.mTailPos = size - 1u;
+        input.mElemCount = size;
     }
 
     return stream;
@@ -968,11 +1376,11 @@ const IEInStream & operator >> ( const IEInStream & stream, TERingStack<V> & inp
 template <typename V>
 IEOutStream & operator << ( IEOutStream & stream, const TERingStack<V> & output )
 {
-    Lock lock(output.mSynchObject);
+    Lock lock(output.mSynchObj);
 
     uint32_t size = output.mElemCount;
     stream << size;
-    uint32_t pos = output.mStartPosition;
+    uint32_t pos = output.mHeadPos;
     for (uint32_t i = 0; i < size; i ++)
     {
         stream << output.mStackList[pos];
