@@ -41,25 +41,14 @@ namespace NECommon
      *          2.  ShiftOnOverlap  --  Do not change ring capacity if it is full,
      *                                  but shift start position, i.e. overwrite 
      *                                  the first element of ring and insert new element.
-     *          3. ResizeOnOverlap   --  Always resize ring if it is full. This changes
+     *          3. ResizeOnOverlap  --  Always resize ring if it is full. This changes
      *                                  the actual capacity of ring, making it bigger.
      **/
     enum class eRingOverlap : uint8_t
     {
-        /**
-         * \brief   Do not insert new element, if ring is full.
-         *          New element is lost.
-         **/
-          StopOnOverlap     = 0
-        /**
-         * \brief   Shifts start position, if ring is full, insert new element,
-         *          and do not resize ring. Last element is lost.
-         **/
-        , ShiftOnOverlap    = 1
-        /**
-         * \brief   Resize ring, if it is full. No element is lost.
-         **/
-        , ResizeOnOverlap    = 2
+          StopOnOverlap     = 0 //!< Do not insert new element, if ring is full. New element is lost.
+        , ShiftOnOverlap    = 1 //!< Shifts start position, if ring is full, insert new element, and do not resize ring. Last element is lost.
+        , ResizeOnOverlap   = 2 //!< Resize ring, if it is full. No element is lost.
 
     };
 
@@ -189,13 +178,13 @@ namespace NECommon
      * \brief   NECommon::MAP_DEFAULT_HASH_SIZE
      *          The size of hash table by default created in map. For hash map internal use
      **/
-    constexpr unsigned int  MAP_DEFAULT_HASH_SIZE   { static_cast<unsigned int>(64 - 1) };
+    constexpr unsigned int  MAP_DEFAULT_HASH_SIZE   { static_cast<unsigned int>(64u - 1u) };
 
     /**
      * \brief   NECommon::ARRAY_DEFAULT_CAPACITY
      *          The default capacity of the array.
      **/
-    constexpr unsigned int  ARRAY_DEFAULT_CAPACITY  { static_cast<unsigned int>(64) };
+    constexpr unsigned int  ARRAY_DEFAULT_CAPACITY  { static_cast<unsigned int>(64u) };
 
     /**
      * \brief   NECommon::RING_START_POSITION
