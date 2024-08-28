@@ -845,9 +845,13 @@ void TERingStack<VALUE>::freeExtra(void)
         VALUE* newList = capacity != 0 ? reinterpret_cast<VALUE*>(DEBUG_NEW unsigned char[capacity * sizeof(VALUE)]) : nullptr;
         if (newList != nullptr)
         {
-            _copyElems(newList, mStackList, mHeadPos, mTailPos, mElemCount, capacity);
-            _emptyStack();
-            delete[] reinterpret_cast<unsigned char*>(mStackList);
+            if (mStackList != nullptr)
+            {
+                _copyElems(newList, mStackList, mHeadPos, mTailPos, mElemCount, capacity);
+                _emptyStack();
+                delete[] reinterpret_cast<unsigned char*>(mStackList);
+            }
+
             mStackList  = newList;
             mHeadPos    = 0;
             mTailPos    = capacity - 1;
@@ -856,9 +860,13 @@ void TERingStack<VALUE>::freeExtra(void)
         }
         else if (capacity == 0)
         {
-            _emptyStack();
-            delete[] reinterpret_cast<unsigned char*>(mStackList);
-            mStackList  = nullptr;
+            if (mStackList != nullptr)
+            {
+                _emptyStack();
+                delete[] reinterpret_cast<unsigned char*>(mStackList);
+                mStackList = nullptr;
+            }
+
             mCapacity   = 0u;
         }
     }
@@ -973,7 +981,6 @@ uint32_t TERingStack<VALUE>::add( const TERingStack<VALUE> & source )
     if (static_cast<const TERingStack<VALUE> *>(this) != &source)
     {
         Lock lock2(source.mSynchObj);
-        uint32_t pos = source.mHeadPos;
         for (uint32_t i = 0u; i < source.mElemCount; ++i)
         {
             push(source[i]);
@@ -994,9 +1001,13 @@ uint32_t TERingStack<VALUE>::reserve(uint32_t newCapacity )
         if (newList != nullptr)
         {
             uint32_t elemCount = mElemCount;
-            _copyElems(newList, mStackList, mHeadPos, mTailPos, elemCount, mCapacity);
-            _emptyStack();
-            delete[] reinterpret_cast<unsigned char*>(mStackList);
+            if (mStackList != nullptr)
+            {
+                _copyElems(newList, mStackList, mHeadPos, mTailPos, elemCount, mCapacity);
+                _emptyStack();
+                delete[] reinterpret_cast<unsigned char*>(mStackList);
+            }
+
             mStackList = newList;
             mHeadPos   = 0;
             mTailPos   = elemCount - 1;
@@ -1030,7 +1041,11 @@ void TERingStack<VALUE>::copy(const TERingStack<VALUE>& source)
         
         if ((newList != nullptr) && (source.mElemCount != 0))
         {
-            _copyElems(newList, source.mStackList, source.mHeadPos, source.mTailPos, source.mElemCount, capacity);
+            if (source.mStackList != nullptr)
+            {
+                _copyElems(newList, source.mStackList, source.mHeadPos, source.mTailPos, source.mElemCount, capacity);
+            }
+
             mStackList  = newList;
             mCapacity   = capacity;
             mElemCount  = source.mElemCount;
@@ -1323,13 +1338,17 @@ const IEInStream & operator >> ( const IEInStream & stream, TERingStack<V> & inp
     stream >> size;
 
     input.clear();
-    input.reserve(static_cast<uint32_t>(size));
-
-    for (uint32_t i = 0; i < size; i ++)
+    if ((input.reserve(size)) >= size && (size != 0))
     {
-        V newElement;
-        stream >> newElement;
-        static_cast<void>(input.pushLast(newElement));
+        NEMemory::constructElems<V>(input.mStackList, size);
+        for (uint32_t i = 0; i < size; i++)
+        {
+            stream >> input.mStackList[i];
+        }
+
+        input.mHeadPos = 0;
+        input.mTailPos = size - 1u;
+        input.mElemCount = size;
     }
 
     return stream;

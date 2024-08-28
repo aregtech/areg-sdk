@@ -683,7 +683,7 @@ TEST(TERingStackTest, TestPushPopShiftOnOverlap)
 }
 
 /**
- * \brief   Test push and pop methods for TERingStack of ResizeOnOverlap type.
+ * \brief   Test push and pop methods of the TERingStack ResizeOnOverlap type.
  **/
 TEST(TERingStackTest, TestPushPopResizeOnOverlap)
 {
@@ -767,7 +767,7 @@ TEST(TERingStackTest, TestPushPopResizeOnOverlap)
 }
 
 /**
- * \brief   Test push and pop methods for TERingStack of ResizeOnOverlap type.
+ * \brief   Test push and pop methods of the TERingStack.
  **/
 TEST(TERingStackTest, TestClearFreeExtra)
 {
@@ -817,7 +817,7 @@ TEST(TERingStackTest, TestClearFreeExtra)
 }
 
 /**
- * \brief   Test push and pop methods for TERingStack of ResizeOnOverlap type.
+ * \brief   Test add method of the TERingStack.
  **/
 TEST(TERingStackTest, TestAdd)
 {
@@ -866,4 +866,200 @@ TEST(TERingStackTest, TestAdd)
         EXPECT_EQ(val, -1 * i);
         EXPECT_EQ(lockResize[static_cast<uint32_t>(i) + size], val);
     }
+}
+
+/**
+ * \brief   Test copy methods of the TERingStack.
+ **/
+TEST(TERingStackTest, TestCopy)
+{
+    using LockRing = TELockRingStack<int>;
+    using NolockRing = TENolockRingStack<int>;
+    constexpr uint32_t count{ 10 };
+
+    NolockRing nolock(count, NECommon::eRingOverlap::ResizeOnOverlap);
+    LockRing lockStop(count, NECommon::eRingOverlap::StopOnOverlap), lockShift(count, NECommon::eRingOverlap::ShiftOnOverlap), lockResize(count, NECommon::eRingOverlap::ResizeOnOverlap);
+    for (int i = 0; i < static_cast<int>(count); ++i)
+    {
+        lockShift.push(i);
+        lockResize.push(i);
+        nolock.push(-1 * i);
+    }
+
+    int half = static_cast<int>(count / 2u);
+    for (int i = 0; i < half; ++i)
+    {
+        lockStop.push(i);
+        lockResize.push(i);
+    }
+
+    lockStop.copy(nolock);
+    EXPECT_EQ(lockStop.getSize(), count);
+    EXPECT_EQ(lockStop, nolock);
+    EXPECT_TRUE(lockStop.isFull());
+
+    lockShift.copy(nolock);
+    EXPECT_EQ(lockShift.getSize(), count);
+    EXPECT_EQ(lockShift, nolock);
+    EXPECT_TRUE(lockShift.isFull());
+
+    lockResize.copy(nolock);
+    EXPECT_EQ(lockResize.getSize(), count);
+    EXPECT_EQ(lockResize, nolock);
+    EXPECT_FALSE(lockResize.isFull());
+
+    for (int i = 0; i < static_cast<int>(count); ++i)
+    {
+        int val = nolock[static_cast<uint32_t>(i)];
+        EXPECT_EQ(val, -1 * i);
+        EXPECT_EQ(lockStop[static_cast<uint32_t>(i)], val);
+        EXPECT_EQ(lockShift[static_cast<uint32_t>(i)], val);
+        EXPECT_EQ(lockResize[static_cast<uint32_t>(i)], val);
+    }
+}
+
+/**
+ * \brief   Test move methods of the TERingStack.
+ **/
+TEST(TERingStackTest, TestMove)
+{
+    using LockRing = TELockRingStack<int>;
+    using NolockRing = TENolockRingStack<int>;
+    constexpr uint32_t count{ 10 };
+
+    NolockRing nolock(count, NECommon::eRingOverlap::ResizeOnOverlap);
+    LockRing lockStop(count, NECommon::eRingOverlap::StopOnOverlap), lockShift(count, NECommon::eRingOverlap::ShiftOnOverlap), lockResize(count, NECommon::eRingOverlap::ResizeOnOverlap);
+    for (int i = 0; i < static_cast<int>(count); ++i)
+    {
+        lockStop.push(i);
+        lockResize.push(i);
+        nolock.push(-1 * i);
+    }
+
+    int half = static_cast<int>(count / 2u);
+    for (int i = 0; i < half; ++i)
+    {
+        lockShift.push(i);
+        lockResize.push(i + static_cast<int>(count));
+    }
+
+    nolock.move(std::move(lockStop));
+    EXPECT_EQ(lockStop.getSize(), count);
+    EXPECT_EQ(nolock.getSize(), count);
+    EXPECT_NE(lockStop, nolock);
+    for (int i = 0; i < static_cast<int>(count); ++i)
+    {
+        EXPECT_EQ(lockStop[static_cast<uint32_t>(i)], -1 * i);
+        EXPECT_EQ(nolock[static_cast<uint32_t>(i)], i);
+    }
+
+    lockStop.move(std::move(lockShift));
+    EXPECT_EQ(lockShift.getSize(), count);
+    EXPECT_EQ(lockStop.getSize(), static_cast<uint32_t>(half));
+    EXPECT_NE(lockShift, lockStop);
+    EXPECT_TRUE(lockShift.isFull());
+    EXPECT_FALSE(lockStop.isFull());
+    EXPECT_EQ(lockStop.getOverlap(), NECommon::eRingOverlap::StopOnOverlap);
+    EXPECT_EQ(lockShift.getOverlap(), NECommon::eRingOverlap::ShiftOnOverlap);
+    for (int i = 0; i < static_cast<int>(count); ++i)
+    {
+        EXPECT_EQ(lockShift[static_cast<uint32_t>(i)], -1 * i);
+        if (i < half)
+        {
+            EXPECT_EQ(lockStop[static_cast<uint32_t>(i)], i);
+        }
+    }
+
+    lockResize.move(std::move(lockShift));
+    EXPECT_EQ(lockResize.getSize(), count);
+    EXPECT_EQ(lockShift.getSize(), count + static_cast<uint32_t>(half));
+    EXPECT_NE(lockResize, nolock);
+    EXPECT_FALSE(lockResize.isFull());
+    EXPECT_EQ(lockResize.getOverlap(), NECommon::eRingOverlap::ResizeOnOverlap);
+    EXPECT_EQ(lockShift.getOverlap(), NECommon::eRingOverlap::ShiftOnOverlap);
+    for (int i = 0; i < static_cast<int>(count) + half; ++i)
+    {
+        EXPECT_EQ(lockShift[static_cast<uint32_t>(i)], i);
+        if (i < static_cast<int>(count))
+        {
+            EXPECT_EQ(lockResize[static_cast<uint32_t>(i)], -1 * i);
+        }
+    }
+}
+
+/**
+ * \brief   Test searching methods of the TERingStack.
+ **/
+TEST(TERingStackTest, TestSearching)
+{
+    using LockRing = TELockRingStack<int>;
+    constexpr uint32_t count{ 10 };
+
+    LockRing lockStop(count, NECommon::eRingOverlap::StopOnOverlap), lockShift(count, NECommon::eRingOverlap::ShiftOnOverlap), lockResize(count, NECommon::eRingOverlap::ResizeOnOverlap);
+    for (int i = 0; i < static_cast<int>(2 * count); ++i)
+    {
+        lockStop.push(i);
+        lockShift.push(i);
+        lockResize.push(i);
+    }
+
+    for (int i = 0; i < static_cast<int>(2 * count); ++i)
+    {
+        if (i < static_cast<int>(count))
+        {
+            EXPECT_TRUE(lockStop.isValidIndex(static_cast<uint32_t>(i)));
+            EXPECT_TRUE(lockShift.isValidIndex(static_cast<uint32_t>(i)));
+
+            EXPECT_TRUE(lockStop.contains(i));
+            uint32_t idx = lockStop.find(i);
+            EXPECT_EQ(idx, static_cast<uint32_t>(i));
+            EXPECT_TRUE(lockStop.isValidIndex(idx));
+
+            EXPECT_FALSE(lockShift.contains(i));
+            EXPECT_EQ(lockShift.find(i), static_cast<uint32_t>(NECommon::INVALID_INDEX));
+        }
+        else
+        {
+            EXPECT_FALSE(lockStop.isValidIndex(static_cast<uint32_t>(i)));
+            EXPECT_FALSE(lockShift.isValidIndex(static_cast<uint32_t>(i)));
+
+            EXPECT_FALSE(lockStop.contains(i));
+            EXPECT_EQ(lockStop.find(i), static_cast<uint32_t>(NECommon::INVALID_INDEX));
+
+            EXPECT_TRUE(lockShift.contains(i));
+            uint32_t idx = lockShift.find(i);
+            EXPECT_EQ(idx, static_cast<uint32_t>(i) - count);
+            EXPECT_TRUE(lockShift.isValidIndex(idx));
+        }
+
+        EXPECT_TRUE(lockResize.isValidIndex(static_cast<uint32_t>(i)));
+        EXPECT_TRUE(lockResize.contains(i));
+        uint32_t idx = lockResize.find(i);
+        EXPECT_EQ(idx, i);
+        EXPECT_TRUE(lockResize.isValidIndex(idx));
+    }
+}
+
+/**
+ * \brief   Test streaming operators of the TERingStack.
+ **/
+TEST(TERingStackTest, TestStreaming)
+{
+    using LockRing = TELockRingStack<int>;
+    constexpr uint32_t count{ 10 };
+
+    LockRing lockStop(count, NECommon::eRingOverlap::StopOnOverlap), lockShift(0, NECommon::eRingOverlap::ShiftOnOverlap);
+    for (int i = 0; i < static_cast<int>(count); ++i)
+    {
+        EXPECT_EQ(lockStop.push(i), static_cast<uint32_t>(i + 1));
+        EXPECT_EQ(lockShift.push(i), 0u);
+    }
+
+    SharedBuffer stream;
+    stream << lockStop;
+    EXPECT_FALSE(stream.isEmpty());
+    stream.moveToBegin();
+    stream >> lockShift;
+
+    EXPECT_EQ(lockStop, lockShift);
 }
