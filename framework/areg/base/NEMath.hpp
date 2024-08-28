@@ -31,8 +31,9 @@ namespace NEMath
 // NEMath types
 /************************************************************************/
     /**
-     * \brief   The enumeration of digit signs
-     *          NEMath::eDigitSign
+     * \brief   NEMath::eDigitSign
+     *          The enumeration of digit signs
+     *          
      **/
     typedef enum class E_DigitSign : int8_t
     {
@@ -49,7 +50,8 @@ namespace NEMath
     inline char getChar(NEMath::eDigitSign sign );
 
     /**
-     * \brief   The enum defines comparing results
+     * \brief   NEMath::eCompare
+     *          The enum defines comparing results
      **/
     typedef enum class E_CompareResult : int8_t
     {
@@ -58,30 +60,47 @@ namespace NEMath
         , Bigger    =  1    //!< Comparing result is greater
     } eCompare;
 
+    /**
+     * \brief   NEMath::sRect
+     *          The structure of rectangle object, 
+     *          which contains coordinate of the top-left corner, width and height.
+     **/
     typedef struct S_Rect
     {
-        int32_t     x       { 0 };
-        int32_t     y       { 0 };
-        uint32_t    width   { 0 };
-        uint32_t    height  { 0 };
+        int32_t     x       { 0 };  //!< Top left corner, X-coordinate.
+        int32_t     y       { 0 };  //!< Top left corner, Y-coordinate.
+        uint32_t    width   { 0 };  //!< Width of the rectangle.
+        uint32_t    height  { 0 };  //!< Height of the rectangle.
     } sRect;
 
+    /**
+     * \brief   NEMath::sSize
+     *          The structure of the size object, which contains width and height values.
+     **/
     typedef struct S_Size
     {
-        uint32_t    width   { 0 };
-        uint32_t    height  { 0 };
+        uint32_t    width   { 0 };  //!< The width of the size object.
+        uint32_t    height  { 0 };  //!< The height of the size object.
     } sSize;
 
-    typedef struct S_Posint
+    /**
+     * \brief   NEMath::sPoint
+     *          The structure of the point object, which contains X- and Y-coordinates.
+     **/
+    typedef struct S_Point
     {
-        int32_t     x;
-        int32_t     y;
+        int32_t     x;  //!< The X-coordinate of the point.
+        int32_t     y;  //!< The Y-coordinate of the point.
     } sPoint;
 
+    /**
+     * \brief   NEMath::sCoord
+     *          The structure of the Coordinate structure, which contains X- and Y-coordinates of a position.
+     **/
     typedef struct S_Coord
     {
-        int32_t     posX;
-        int32_t     posY;
+        int32_t     posX;   //!< The X-coordinate of a position.
+        int32_t     posY;   //!< The Y-coordinate of a position.
     } sCoord;
 
 /************************************************************************/
@@ -469,8 +488,14 @@ namespace NEMath
     template<typename Digit>
     inline Digit makeAbsolute( Digit number );
 
-    template<typename Digit>
-    inline NEMath::eCompare compare(Digit left, Digit right);
+    /**
+     * \brief   Compares 2 type of objects (primitives of objects) and return:
+     *          -- NEMath::eCompare::Equal if `left` and `right` objects are equal.
+     *          -- NEMath::eCompare::Bigger if `left object is bigger than the `right` object.
+     *          -- NEMath::eCompare::Smaller if `left object is smaller than the `right` object.
+     **/
+    template<typename Type>
+    inline NEMath::eCompare compare(const Type & left, const Type & right);
 
 }
 //////////////////////////////////////////////////////////////////////////
@@ -508,8 +533,8 @@ inline Digit NEMath::makeAbsolute( Digit number )
     return ((number + mask) ^ mask);
 }
 
-template<typename Digit>
-inline NEMath::eCompare NEMath::compare(Digit left, Digit right)
+template<typename Type>
+inline NEMath::eCompare NEMath::compare(const Type & left, const Type & right)
 {
     return (left == right ? NEMath::eCompare::Equal : (left > right ? NEMath::eCompare::Bigger : NEMath::eCompare::Smaller));
 }
