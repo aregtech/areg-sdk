@@ -434,6 +434,12 @@ private:
      **/
     inline NEMath::eCompare _compareRings(const VALUE* left, uint32_t leftStart, uint32_t leftCapacity, uint32_t leftCount, const VALUE* right, uint32_t rightStart, uint32_t rightCapacity, uint32_t rightCount) const;
 
+    /**
+     * \brief   Copies the stack from the given source.
+     * \param   source  The source of stack data to copy elements.
+     **/
+    inline void _copyStack(const TERingStack<VALUE>& source);
+
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls
 //////////////////////////////////////////////////////////////////////////
@@ -652,19 +658,28 @@ TERingStack<VALUE>::TERingStack(IEResourceLock& synchObject, const TERingStack<V
     , mHeadPos  (0)
     , mTailPos  (0)
 {
-    copy(source);
+    Lock lock(source.mSynchObj);
+    _copyStack(source);
 }
 
 template <typename VALUE>
 TERingStack<VALUE>::TERingStack(IEResourceLock& synchObject, TERingStack<VALUE> && source) noexcept
     : mSynchObj (synchObject)
     , mOnOverlap(source.mOnOverlap)
-    , mStackList(source.mStackList)
-    , mElemCount(source.mElemCount)
-    , mCapacity (source.mCapacity)
-    , mHeadPos  (source.mHeadPos)
-    , mTailPos  (source.mTailPos)
+    , mStackList(nullptr)
+    , mElemCount(0)
+    , mCapacity (0)
+    , mHeadPos  (0)
+    , mTailPos  (0)
 {
+    Lock lock(source.mSynchObj);
+
+    mStackList  = source.mStackList;
+    mElemCount  = source.mElemCount;
+    mCapacity   = source.mCapacity;
+    mHeadPos    = source.mHeadPos;
+    mTailPos    = source.mTailPos;
+
     source.mStackList   = nullptr;
     source.mCapacity    = 0;
     source.mElemCount   = 0;
@@ -1026,32 +1041,7 @@ void TERingStack<VALUE>::copy(const TERingStack<VALUE>& source)
     {
         Lock lock1(mSynchObj);
         Lock lock2(source.mSynchObj);
-
-        _emptyStack();
-        VALUE* newList = mStackList;
-        uint32_t capacity = source.mCapacity;
-
-        if (mCapacity < capacity) 
-        {
-            delete[] reinterpret_cast<unsigned char*>(mStackList);
-            mStackList = nullptr;
-            mCapacity = 0;
-            newList = capacity != 0 ? reinterpret_cast<VALUE*>(DEBUG_NEW unsigned char[capacity * sizeof(VALUE)]) : nullptr;
-        }
-        
-        if ((newList != nullptr) && (source.mElemCount != 0))
-        {
-            if (source.mStackList != nullptr)
-            {
-                _copyElems(newList, source.mStackList, source.mHeadPos, source.mTailPos, source.mElemCount, capacity);
-            }
-
-            mStackList  = newList;
-            mCapacity   = capacity;
-            mElemCount  = source.mElemCount;
-            mHeadPos    = 0u;
-            mTailPos    = source.mElemCount - 1;
-        }
+        _copyStack(source);
     }
 }
 
@@ -1168,6 +1158,35 @@ inline NEMath::eCompare TERingStack<VALUE>::_compareRings( const VALUE* left, ui
     return NEMath::compare<uint32_t>(leftCount, rightCount);
 }
 
+template <typename VALUE>
+inline void TERingStack<VALUE>::_copyStack(const TERingStack<VALUE>& source)
+{
+    _emptyStack();
+    VALUE* newList = mStackList;
+    uint32_t capacity = source.mCapacity;
+
+    if (mCapacity < capacity)
+    {
+        delete[] reinterpret_cast<unsigned char*>(mStackList);
+        mStackList = nullptr;
+        mCapacity = 0;
+        newList = capacity != 0 ? reinterpret_cast<VALUE*>(DEBUG_NEW unsigned char[capacity * sizeof(VALUE)]) : nullptr;
+    }
+
+    if ((newList != nullptr) && (source.mElemCount != 0))
+    {
+        if (source.mStackList != nullptr)
+        {
+            _copyElems(newList, source.mStackList, source.mHeadPos, source.mTailPos, source.mElemCount, capacity);
+        }
+
+        mStackList = newList;
+        mCapacity = capacity;
+        mElemCount = source.mElemCount;
+        mHeadPos = 0u;
+        mTailPos = source.mElemCount - 1;
+    }
+}
 
 //////////////////////////////////////////////////////////////////////////
 // TELockRingStack<VALUE> class template implementation

@@ -618,17 +618,21 @@ TEStack<VALUE>::TEStack( IEResourceLock & synchObject )
 template <typename VALUE>
 TEStack<VALUE>::TEStack( IEResourceLock & synchObject, const TEStack<VALUE> & source )
     : Constless<std::deque<VALUE>>( )
-    , mValueList    ( source.mValueList )
+    , mValueList    ( )
     , mSynchObject  ( synchObject )
 {
+    Lock lock(source.mSynchObject);
+    mValueList = source.mValueList;
 }
 
 template <typename VALUE>
 TEStack<VALUE>::TEStack( IEResourceLock & synchObject, TEStack<VALUE> && source ) noexcept
     : Constless<std::deque<VALUE>>( )
-    , mValueList    ( std::move(source.mValueList) )
+    , mValueList    ( )
     , mSynchObject  ( synchObject )
 {
+    Lock lock(source.mSynchObject);
+    mValueList = std::move(source.mValueList);
 }
 
 template <typename VALUE>
