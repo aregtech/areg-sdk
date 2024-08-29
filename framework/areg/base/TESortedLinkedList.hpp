@@ -96,45 +96,28 @@ public:
      * \brief	Assigning operator, assigns elements of src to the Linked List
      * \param	src	Source Linked List to get elements.
      **/
-    TESortedLinkedList<VALUE>& operator = (const TESortedLinkedList<VALUE>& src);
+    inline TESortedLinkedList<VALUE>& operator = (const TESortedLinkedList<VALUE>& src);
 
     /**
      * \brief	Move operator, moves elements of src to the Linked List
      * \param	src	Source Linked List to get elements.
      **/
-    TESortedLinkedList<VALUE>& operator = (TESortedLinkedList<VALUE>&& src) noexcept;
+    inline TESortedLinkedList<VALUE>& operator = (TESortedLinkedList<VALUE>&& src) noexcept;
 
     /**
      * \brief   Checks equality of 2 linked-list objects, and returns true if they are equal.
      *          There should be possible to compare VALUE types entries of linked list.
      * \param   other   The linked-list object to compare
      **/
-    bool operator == (const TESortedLinkedList<VALUE>& other) const;
+    inline bool operator == (const TESortedLinkedList<VALUE>& other) const;
 
     /**
      * \brief   Checks inequality of 2 linked-list objects, and returns true if they are not equal.
      *          There should be possible to compare VALUE types entries of linked list.
      * \param   other   The linked-list object to compare
      **/
-    bool operator != (const TESortedLinkedList<VALUE>& other) const;
+    inline bool operator != (const TESortedLinkedList<VALUE>& other) const;
 
-    /**
-     * \brief   Subscript operator. Returns reference to value of element
-     *          by given valid index. The index should be valid, otherwise
-     *          assertion raised. May be used on either the right (r-value)
-     *          or the left (l-value) of an assignment statement.
-     * \param   atIndex     The valid zero-based index.
-     * \return  Returns Value of Element at given index, the value can be modified
-     **/
-    inline VALUE& operator [] (uint32_t atIndex);
-    /**
-     * \brief   Subscript operator. Returns reference to value of element
-     *          by given valid Position. May be used on either the right
-     *          (r-value) or the left (l-value) of an assignment statement.
-     * \param   atPosition  The valid Linked List position.
-     * \return  Returns Value of Element at given Linked List position, the value can be modified
-     **/
-    inline VALUE& operator [] (LISTPOS atPosition);
 
     /**
      * \brief   Subscript operator. Returns value of element by given
@@ -144,6 +127,7 @@ public:
      * \return  Returns Value of Element at given index, the value should not be modified
      **/
     inline const VALUE& operator [] (uint32_t atIndex) const;
+
     /**
      * \brief   Subscript operator. Returns value of element by given
      *          valid Position. May be used only on the right.
@@ -308,14 +292,12 @@ public:
      *          On call the Linked List should not be empty, otherwise assertion is raised.
      **/
     inline const VALUE& firstEntry(void) const;
-    inline VALUE& firstEntry(void);
 
     /**
      * \brief   Returns value of tail element in Linked List container.
      *          On call the Linked List should not be empty, otherwise assertion is raised.
      **/
     inline const VALUE& lastEntry(void) const;
-    inline VALUE& lastEntry(void);
 
     /**
      * \brief	Returns given position value and on exit position of next element in Linked List container.
@@ -326,8 +308,7 @@ public:
      *                              or nullptr (INVALID_POSITION) if passed position on input is position of tail element
      * \return	Returns value of element at the given position.
      **/
-    inline const VALUE& getNext(LISTPOS& in_out_NextPosition) const;
-    inline VALUE& getNext(LISTPOS& in_out_NextPosition);
+    inline const VALUE & getNext(LISTPOS & IN OUT in_out_NextPosition) const;
 
     /**
      * \brief	Returns position of next element in Linked List
@@ -346,8 +327,7 @@ public:
      *                              or nullptr (INVALID_POSITION) if passed position on input is position of head element
      * \return	Returns value of element at the given position.
      **/
-    inline const VALUE& getPrev(LISTPOS& in_out_PrevPosition) const;
-    inline VALUE& getPrev(LISTPOS& in_out_PrevPosition);
+    inline const VALUE & getPrev(LISTPOS & IN OUT in_out_PrevPosition) const;
 
     /**
      * \brief	Returns position of previous element in Linked List
@@ -359,26 +339,10 @@ public:
 
     /**
      * \brief   Returns value of element at the give position.
-     *
      * \param   atPosition  The valid position in Linked List
      * \return  Returns Value at given position, which should not be modified.
      **/
     inline const VALUE& valueAtPosition(const LISTPOS atPosition) const;
-    /**
-     * \brief   Returns value of element at the give position.
-     *
-     * \param   atPosition  The valid position in Linked List
-     * \return  Returns Value at given position, which can be modified.
-     **/
-    inline VALUE& valueAtPosition(LISTPOS atPosition);
-
-    /**
-     * \brief	Returns the instance of element by give index. The index of head element is 0.
-     *          The index must not be more than GetSize() - 1.
-     * \param	index	The index of element to get value
-     * \return	The instance of element by give index.
-     **/
-    VALUE& getAt(uint32_t index);
 
     /**
      * \brief	Returns the value of element by give index. The index of head element is 0.
@@ -386,7 +350,14 @@ public:
      * \param	index	The index of element to get value
      * \return	The value of element by give index.
      **/
-    const VALUE& getAt(uint32_t index) const;
+    inline const VALUE& getAt(uint32_t index) const;
+
+    /**
+     * \brief   Returns value of element at the give position.
+     * \param   atPosition  The valid position in Linked List
+     * \return  Returns Value at given position, which should not be modified.
+     **/
+    inline const VALUE& getAt(const TESortedLinkedList<VALUE>::LISTPOS atPosition) const;
 
     /**
      * \brief	On exit, returns position and value of next element in Linked List container.
@@ -420,7 +391,7 @@ public:
     /**
      * \brief   Removes head element from Sorted Linked List.
      **/
-    void removeFirst(void);
+    inline void removeFirst(void);
 
     /**
      * \brief   Removes the head element from the linked list. On output, the 'value' contains
@@ -436,7 +407,7 @@ public:
     /**
      * \brief   Removes tail element from Sorted Linked List.
      **/
-    void removeLast(void);
+    inline void removeLast(void);
 
     /**
      * \brief   Removes the tails element from the linked list. On output, the 'value' contains
@@ -478,14 +449,14 @@ public:
      *          The linked list must not be empty.
      * \return  The popped out element from the header of the linked list.
      */
-    VALUE popFirst(void);
+    inline VALUE popFirst(void);
 
     /**
      * \brief   Pops the element at the tails of linked list and returns the stored value.
      *          The linked list must not be empty.
      * \return  The popped out element from the tail of the linked list.
      */
-    VALUE popLast(void);
+    inline VALUE popLast(void);
 
     /**
      * \brief	Sets new value at give position and returns old value of same element.
@@ -501,7 +472,7 @@ public:
      * \return  Returns position following nest to removed position or invalid position
      *          if last entry was removed.
      **/
-    LISTPOS removeAt(LISTPOS atPosition);
+    inline LISTPOS removeAt(LISTPOS atPosition);
 
     /**
      * \brief	Removes element at given position and on output returns value of removed element.
@@ -511,7 +482,7 @@ public:
      * \return  Returns position following nest to removed position or invalid position
      *          if last entry was removed.
      **/
-    LISTPOS removeAt(LISTPOS atPosition, VALUE& out_Value);
+    inline LISTPOS removeAt(LISTPOS atPosition, VALUE& out_Value);
 
     /**
      * \brief	Searches and removes first match of given element from Linked List.
@@ -538,7 +509,7 @@ public:
      * \param	searchValue	Value of element to search
      * \return	Returns position of the element in the linked list.
      **/
-    LISTPOS find(const VALUE& searchValue) const;
+    inline LISTPOS find(const VALUE& searchValue) const;
 
     /**
      * \brief	Searches position of element by given value. If searchAfter is valid, the searching will be started
@@ -548,7 +519,7 @@ public:
      *                      If invalid position, the searching starts from the beginning of the linked list.
      * \return	Returns position of the element in the linked list.
      **/
-    LISTPOS find(const VALUE& searchValue, LISTPOS searchAfter) const;
+    inline LISTPOS find(const VALUE& searchValue, LISTPOS searchAfter) const;
 
     /**
      * \brief	Returns position of element by given index. The index of head element is 0.
@@ -558,7 +529,7 @@ public:
      * \return	Returns position of element if index is valid, i.e. more or equal to 0 and less than GetSize().
      *          Otherwise returns nullptr (INVALID_POSITION)
      **/
-    LISTPOS findIndex(uint32_t index) const;
+    inline LISTPOS findIndex(uint32_t index) const;
 
     /**
      * \brief	Returns valid index of element by given valid position.
@@ -570,11 +541,23 @@ public:
 
     /**
      * \brief   Call to resort the linked list.
-     * \param   sortAscending    If true, the sorting is ascending. Otherwise, it sorts descending.
-     *                          By default, the sorting is ascending.
      **/
-    void resort(bool sortAscending = true);
+    void resort();
 
+    /**
+     * \brief   Merges entries from the `source` into *this.
+     *          No elements are copied, and the source container becomes empty after the merge.
+     *          The elements from `*this` always precede the elements from `source`, 
+     *          and the order of elements do not change, which means that the order 
+     *          of elements in the result list remain either ascending or descending.
+     * \param   source  The source of linked list to merge.
+     **/
+    inline void merge(TESortedLinkedList<VALUE> & source);
+    inline void merge(TESortedLinkedList<VALUE> && source);
+
+//////////////////////////////////////////////////////////////////////////
+// Protected methods
+//////////////////////////////////////////////////////////////////////////
 protected:
 
     /**
@@ -592,6 +575,18 @@ protected:
      * \return  Returns the position of the element at the given index.
      **/
     inline LISTPOS getPosition(uint32_t index);
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden methods
+//////////////////////////////////////////////////////////////////////////
+private:
+
+    /**
+     * \brief   Converts the constant iterator of the list into the LISPOS type.
+     * \param   cit     The constant iterator of the list.
+     * \return  Returns converted LISTPOS type.
+     **/
+    inline LISTPOS _citer2pos(typename std::list<VALUE>::const_iterator cit) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member Variables
@@ -620,7 +615,7 @@ TESortedLinkedList<VALUE>::TESortedLinkedList(bool sortAscending /*= true*/)
 }
 
 template <typename VALUE >
-TESortedLinkedList<VALUE>& TESortedLinkedList<VALUE>::operator = (const TESortedLinkedList<VALUE>& src)
+inline TESortedLinkedList<VALUE>& TESortedLinkedList<VALUE>::operator = (const TESortedLinkedList<VALUE>& src)
 {
     mValueList  = src.mValueList;
     mSorting    = src.mSorting;
@@ -628,7 +623,7 @@ TESortedLinkedList<VALUE>& TESortedLinkedList<VALUE>::operator = (const TESorted
 }
 
 template <typename VALUE >
-TESortedLinkedList<VALUE>& TESortedLinkedList<VALUE>::operator = (TESortedLinkedList<VALUE>&& src) noexcept
+inline TESortedLinkedList<VALUE>& TESortedLinkedList<VALUE>::operator = (TESortedLinkedList<VALUE>&& src) noexcept
 {
     mValueList  = std::move(src.mValueList);
     mSorting    = src.mSorting;
@@ -636,7 +631,7 @@ TESortedLinkedList<VALUE>& TESortedLinkedList<VALUE>::operator = (TESortedLinked
 }
 
 template <typename VALUE >
-bool TESortedLinkedList<VALUE>::operator == (const TESortedLinkedList<VALUE>& other) const
+inline bool TESortedLinkedList<VALUE>::operator == (const TESortedLinkedList<VALUE>& other) const
 {
     return (mValueList == other.mValueList);
 }
@@ -645,18 +640,6 @@ template <typename VALUE >
 bool TESortedLinkedList<VALUE>::operator != (const TESortedLinkedList<VALUE>& other) const
 {
     return (mValueList != other.mValueList);
-}
-
-template <typename VALUE >
-inline VALUE& TESortedLinkedList<VALUE>::operator [](uint32_t atIndex)
-{
-    return getAt(atIndex);
-}
-
-template <typename VALUE >
-inline VALUE& TESortedLinkedList<VALUE>::operator [](TESortedLinkedList<VALUE>::LISTPOS atPosition)
-{
-    return valueAtPosition(atPosition);
 }
 
 template <typename VALUE >
@@ -698,15 +681,13 @@ inline bool TESortedLinkedList<VALUE>::isDescending(void) const
 template <typename VALUE >
 inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::firstPosition(void) const
 {
-	auto cit = mValueList.begin();
-    return Constless<std::list<VALUE>>::iter(mValueList, cit);
+    return _citer2pos(mValueList.begin());
 }
 
 template <typename VALUE >
 inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::lastPosition(void) const
 {
-	auto cit = mValueList.empty() == false ? --mValueList.end() : mValueList.end();
-    return Constless<std::list<VALUE>>::iter(mValueList, cit);
+	return _citer2pos(mValueList.empty() == false ? --mValueList.end() : mValueList.end());
 }
 
 template <typename VALUE >
@@ -724,7 +705,7 @@ inline bool TESortedLinkedList<VALUE>::isLastPosition(const TESortedLinkedList<V
 template <typename VALUE >
 inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::invalidPosition(void) const
 {
-    return Constless<std::list<VALUE>>::iter(mValueList, mValueList.end());
+    return _citer2pos(mValueList.end());
 }
 
 template <typename VALUE >
@@ -750,19 +731,19 @@ inline bool TESortedLinkedList<VALUE>::checkPosition(const TESortedLinkedList<VA
 }
 
 template <typename VALUE >
-void TESortedLinkedList<VALUE>::clear(void)
+inline void TESortedLinkedList<VALUE>::clear(void)
 {
     mValueList.clear();
 }
 
 template <typename VALUE >
-void TESortedLinkedList<VALUE>::freeExtra(void)
+inline void TESortedLinkedList<VALUE>::freeExtra(void)
 {
     mValueList.clear();
 }
 
 template <typename VALUE >
-void TESortedLinkedList<VALUE>::release(void)
+inline void TESortedLinkedList<VALUE>::release(void)
 {
     mValueList.clear();
 }
@@ -775,37 +756,16 @@ inline const VALUE& TESortedLinkedList<VALUE>::firstEntry(void) const
 }
 
 template <typename VALUE >
-inline VALUE& TESortedLinkedList<VALUE>::firstEntry(void)
-{
-    ASSERT(mValueList.empty() == false);
-    return mValueList.front();
-}
-
-template <typename VALUE >
 inline const VALUE& TESortedLinkedList<VALUE>::lastEntry(void) const
 {
     ASSERT(mValueList.empty() == false);
     return mValueList.back();
 }
 
-template <typename VALUE >
-inline VALUE& TESortedLinkedList<VALUE>::lastEntry(void)
-{
-    ASSERT(mValueList.empty() == false);
-    return mValueList.back();
-}
-
-template <typename VALUE >
-inline const VALUE& TESortedLinkedList<VALUE>::getNext(TESortedLinkedList<VALUE>::LISTPOS& in_out_NextPosition) const
+template<typename VALUE>
+inline const VALUE& TESortedLinkedList<VALUE>::getNext(LISTPOS& IN OUT in_out_NextPosition) const
 {
     return *in_out_NextPosition++;
-}
-
-template <typename VALUE >
-inline VALUE& TESortedLinkedList<VALUE>::getNext(TESortedLinkedList<VALUE>::LISTPOS& in_out_NextPosition)
-{
-    LISTPOS pos = in_out_NextPosition++;
-    return *pos;
 }
 
 template <typename VALUE >
@@ -816,20 +776,13 @@ inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::ne
 }
 
 template <typename VALUE >
-inline const VALUE& TESortedLinkedList<VALUE>::getPrev(TESortedLinkedList<VALUE>::LISTPOS& in_out_PrevPosition) const
+inline const VALUE & TESortedLinkedList<VALUE>::getPrev(LISTPOS & IN OUT in_out_PrevPosition) const
 {
     ASSERT(in_out_PrevPosition != mValueList.end());
     LISTPOS pos = in_out_PrevPosition;
-    in_out_PrevPosition = in_out_PrevPosition == mValueList.begin() ? mValueList.end() : --in_out_PrevPosition;
-    return *pos;
-}
-
-template <typename VALUE >
-inline VALUE& TESortedLinkedList<VALUE>::getPrev(TESortedLinkedList<VALUE>::LISTPOS& in_out_PrevPosition)
-{
-    ASSERT(in_out_PrevPosition != mValueList.end());
-    LISTPOS pos = in_out_PrevPosition;
-    in_out_PrevPosition = in_out_PrevPosition == mValueList.begin() ? mValueList.end() : --in_out_PrevPosition;
+    LISTPOS beginPos = _citer2pos(mValueList.begin());
+    LISTPOS endPos = _citer2pos(mValueList.end());
+    in_out_PrevPosition = in_out_PrevPosition == beginPos ? endPos : --in_out_PrevPosition;
     return *pos;
 }
 
@@ -848,28 +801,19 @@ inline const VALUE& TESortedLinkedList<VALUE>::valueAtPosition(const TESortedLin
 }
 
 template <typename VALUE >
-inline VALUE& TESortedLinkedList<VALUE>::valueAtPosition(TESortedLinkedList<VALUE>::LISTPOS atPosition)
+inline const VALUE& TESortedLinkedList<VALUE>::getAt(uint32_t index) const
+{
+    LISTPOS pos = getPosition(index);
+    ASSERT(isValidPosition(pos));
+
+    return *pos;
+}
+
+template <typename VALUE >
+inline const VALUE& TESortedLinkedList<VALUE>::getAt(const TESortedLinkedList<VALUE>::LISTPOS atPosition) const
 {
     ASSERT(atPosition != mValueList.end());
     return *atPosition;
-}
-
-template <typename VALUE >
-const VALUE& TESortedLinkedList<VALUE>::getAt(uint32_t index) const
-{
-    LISTPOS pos = getPosition(index);
-    ASSERT(isValidPosition(pos));
-
-    return *pos;
-}
-
-template <typename VALUE >
-VALUE& TESortedLinkedList<VALUE>::getAt(uint32_t index)
-{
-    LISTPOS pos = getPosition(index);
-    ASSERT(isValidPosition(pos));
-
-    return *pos;
 }
 
 template <typename VALUE >
@@ -903,7 +847,7 @@ bool TESortedLinkedList<VALUE>::prevEntry(TESortedLinkedList<VALUE>::LISTPOS& in
 }
 
 template <typename VALUE >
-void TESortedLinkedList<VALUE>::removeFirst(void)
+inline void TESortedLinkedList<VALUE>::removeFirst(void)
 {
     ASSERT(mValueList.empty() == false);
     mValueList.pop_front();
@@ -924,7 +868,7 @@ bool TESortedLinkedList<VALUE>::removeFirst(VALUE& value)
 }
 
 template <typename VALUE >
-void TESortedLinkedList<VALUE>::removeLast(void)
+inline void TESortedLinkedList<VALUE>::removeLast(void)
 {
     ASSERT(mValueList.empty() == false);
     mValueList.pop_back();
@@ -1059,7 +1003,7 @@ std::pair<typename TESortedLinkedList<VALUE>::LISTPOS, bool> TESortedLinkedList<
 }
 
 template <typename VALUE >
-VALUE TESortedLinkedList<VALUE>::popFirst(void)
+inline VALUE TESortedLinkedList<VALUE>::popFirst(void)
 {
     ASSERT(mValueList.empty() == false);
     VALUE result = mValueList.front();
@@ -1068,7 +1012,7 @@ VALUE TESortedLinkedList<VALUE>::popFirst(void)
 }
 
 template <typename VALUE >
-VALUE TESortedLinkedList<VALUE>::popLast(void)
+inline VALUE TESortedLinkedList<VALUE>::popLast(void)
 {
     ASSERT(mValueList.empty() == false);
     VALUE result = mValueList.back();
@@ -1084,14 +1028,14 @@ inline void TESortedLinkedList<VALUE>::setAt(LISTPOS atPosition, const VALUE& ne
 }
 
 template <typename VALUE >
-typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::removeAt(LISTPOS atPosition)
+inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::removeAt(LISTPOS atPosition)
 {
     ASSERT(atPosition != mValueList.end());
     return mValueList.erase(atPosition);
 }
 
 template <typename VALUE >
-typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::removeAt(LISTPOS atPosition, VALUE& out_value)
+inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::removeAt(LISTPOS atPosition, VALUE& out_value)
 {
     LISTPOS result = invalidPosition();
 
@@ -1137,14 +1081,13 @@ bool TESortedLinkedList<VALUE>::removeEntry(const VALUE& removeElement, TESorted
 }
 
 template <typename VALUE >
-typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::find(const VALUE& searchValue) const
+inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::find(const VALUE& searchValue) const
 {
-    auto it = std::find(mValueList.begin(), mValueList.end(), searchValue);
-    return Constless<std::list<VALUE>>::iter(mValueList, it);
+    return _citer2pos(std::find(mValueList.begin(), mValueList.end(), searchValue));
 }
 
 template <typename VALUE >
-typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::find(const VALUE& searchValue, TESortedLinkedList<VALUE>::LISTPOS searchAfter) const
+inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::find(const VALUE& searchValue, TESortedLinkedList<VALUE>::LISTPOS searchAfter) const
 {
     LISTPOS end = invalidPosition();
     return (searchAfter != end ? static_cast<LISTPOS>(std::find(++searchAfter, end, searchValue)) : end);
@@ -1153,7 +1096,7 @@ typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::find(cons
 template <typename VALUE >
 inline bool TESortedLinkedList<VALUE>::contains(const VALUE& elemSearch) const
 {
-    return contains(elemSearch, mValueList.begin());
+    return contains(elemSearch, firstPosition());
 }
 
 template<typename VALUE>
@@ -1169,9 +1112,9 @@ inline const std::list<VALUE>& TESortedLinkedList<VALUE>::getData(void) const
 }
 
 template <typename VALUE >
-typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::findIndex(uint32_t index) const
+inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::findIndex(uint32_t index) const
 {
-    return Constless<std::list<VALUE>>::iter(mValueList, index < static_cast<uint32_t>(mValueList.size()) ? mValueList.begin() + index : mValueList.end());
+    return _citer2pos(index < static_cast<uint32_t>(mValueList.size()) ? mValueList.begin() + index : mValueList.end());
 }
 
 template <typename VALUE >
@@ -1187,19 +1130,37 @@ uint32_t TESortedLinkedList<VALUE>::makeIndex(LISTPOS atPosition) const
 }
 
 template <typename VALUE >
-void TESortedLinkedList<VALUE>::resort(bool sortAscending /*= true*/)
+void TESortedLinkedList<VALUE>::resort()
 {
-    NECommon::eSort newSort = sortAscending ? NECommon::eSort::SortAscending : NECommon::eSort::SortDescending;
-    if (newSort != mSorting)
+    if (isAscending())
     {
-        std::list<VALUE> temp(std::move(mValueList));
-        mValueList.clear();
-        mSorting = newSort;
+        mValueList.sort();
+    }
+    else
+    {
+        mValueList.sort(std::greater());
+    }
+}
 
-        for (auto& elem : temp)
-        {
-            add(std::move(elem));
-        }
+template <typename VALUE >
+inline void TESortedLinkedList<VALUE>::merge(TESortedLinkedList<VALUE>& source)
+{
+    mValueList.sort();
+    source.mValueList.sort();
+    mValueList.merge(source.mValueList);
+    resort();
+}
+
+template <typename VALUE >
+inline void TESortedLinkedList<VALUE>::merge(TESortedLinkedList<VALUE>&& source)
+{
+    mValueList.sort();
+    source.mValueList.sort();
+    mValueList.merge(std::move(source.mValueList));
+    resort();
+    if (source.isEmpty() == false)
+    {
+        source.mSorting = mSorting;
     }
 }
 
@@ -1211,7 +1172,7 @@ inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::ge
     for (uint32_t i = 1; i < count; ++i)
         ++pos;
 
-    return Constless<std::list<VALUE>>::iter(mValueList, pos);
+    return _citer2pos(pos);
 }
 
 template <typename VALUE >
@@ -1219,6 +1180,13 @@ inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::ge
 {
     return static_cast<const TESortedLinkedList<VALUE> *>(this)->getPosition(index);
 }
+
+template <typename VALUE >
+inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::_citer2pos(typename std::list<VALUE>::const_iterator cit) const
+{
+    return Constless<std::list<VALUE>>::iter(mValueList, cit);
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 // Friend function implementation
@@ -1230,8 +1198,12 @@ const IEInStream& operator >> (const IEInStream& stream, TESortedLinkedList<V>& 
     input.clear();
 
     uint32_t size = 0;
+    uint8_t sort = 0u;
     stream >> size;
+    stream >> sort;
     input.mValueList.resize(size);
+    input.mSorting = static_cast<NECommon::eSort>(sort);
+
     for (auto& elem : input.mValueList)
     {
         stream >> elem;
@@ -1244,7 +1216,10 @@ template <typename V>
 IEOutStream& operator << (IEOutStream& stream, const TESortedLinkedList<V>& output)
 {
     uint32_t size = output.getSize();
+    uint8_t sort = static_cast<uint8_t>(output.mSorting);
+
     stream << size;
+    stream << sort;
 
     for (const auto& elem : output.mValueList)
     {

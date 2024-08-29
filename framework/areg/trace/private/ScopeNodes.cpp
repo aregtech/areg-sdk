@@ -158,13 +158,15 @@ std::pair<ScopeNodeBase &, bool>  ScopeNode::addChildNode( const ScopeNodeBase &
     if ( child.isLeaf( ) )
     {
         auto atPos = mChildLeafs.addIfUnique( ScopeLeaf( child ), false );
-        scope = &(mChildLeafs.valueAtPosition( atPos.first ));
+        const ScopeNodeBase& leaf{ mChildLeafs.valueAtPosition(atPos.first) };
+        scope = const_cast<ScopeNodeBase *>(&leaf);
         newEntry = atPos.second;
     }
     else if (child.isNode( ))
     {
         auto atPos = mChildNodes.addIfUnique( ScopeNode( child ), false );
-        scope = &(mChildNodes.valueAtPosition( atPos.first ));
+        const ScopeNodeBase& node{ mChildNodes.valueAtPosition(atPos.first) };
+        scope = const_cast<ScopeNodeBase*>(&node);
         scope->addPriority(child.getPriority());
         newEntry = atPos.second;
     }
@@ -193,7 +195,7 @@ String ScopeNode::makeScopePath( const String & prefix ) const
     return String(scope, len);
 }
 
-unsigned int ScopeNode::groupChildNodes( void )
+unsigned int ScopeNode::groupChildNodes( void ) 
 {
     unsigned int result{ 0 };
     unsigned int sameLeafs{ mChildLeafs.getSize( ) };
@@ -283,7 +285,8 @@ unsigned int ScopeNode::groupRecursive( void )
     unsigned int result{ 0 };
     for ( auto pos = mChildNodes.firstPosition( ); mChildNodes.isValidPosition( pos ); pos = mChildNodes.nextPosition( pos ) )
     {
-        result += mChildNodes.valueAtPosition( pos ).groupRecursive( );
+        const ScopeNode& node{ mChildNodes.valueAtPosition(pos) };
+        result += const_cast<ScopeNode &>(node).groupRecursive( );
     }
 
     result += groupChildNodes( );
@@ -311,7 +314,7 @@ unsigned int ScopeNode::removePriorityNodesRecursive( unsigned int prioRemove )
         LeafList::LISTPOS pos = mChildLeafs.firstPosition( );
         while ( mChildLeafs.isValidPosition( pos ) )
         {
-            ScopeNodeBase & leaf = mChildLeafs.valueAtPosition( pos );
+            const ScopeNodeBase& leaf{ mChildLeafs.valueAtPosition(pos) };
             if ( leaf.getPriority( ) == prioRemove )
             {
                 pos = mChildLeafs.removeAt( pos );
@@ -334,10 +337,10 @@ unsigned int ScopeNode::removePriorityNodesRecursive( unsigned int prioRemove )
         NodeList::LISTPOS pos = mChildNodes.firstPosition( );
         while ( mChildNodes.isValidPosition( pos ) )
         {
-            ScopeNodeBase & node = mChildNodes.valueAtPosition( pos );
+            const ScopeNodeBase& node{ mChildNodes.valueAtPosition(pos) };
             if ( mChildNodes.valueAtPosition( pos ).getPriority( ) == prioRemove )
             {
-                result += node.removePriorityNodesRecursive( prioRemove );
+                result += const_cast<ScopeNodeBase &>(node).removePriorityNodesRecursive( prioRemove );
                 if (node.isEmpty() )
                 {
                     pos = mChildNodes.removeAt( pos );
@@ -346,7 +349,7 @@ unsigned int ScopeNode::removePriorityNodesRecursive( unsigned int prioRemove )
             }
             else
             {
-                node.removePriorityNodesRecursive( prioRemove );
+                const_cast<ScopeNodeBase&>(node).removePriorityNodesRecursive( prioRemove );
                 pos = mChildNodes.nextPosition( pos );
             }
         }

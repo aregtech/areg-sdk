@@ -56,6 +56,7 @@
     <ClCompile Include="units\TEMapTest.cpp" />
     <ClCompile Include="units\TEPropertyTest.cpp" />
     <ClCompile Include="units\TERingStackTest.cpp" />
+    <ClCompile Include="units\TESortedLinkedListTest.cpp" />
     <ClCompile Include="units\TEStackTest.cpp" />
   </ItemGroup>
   <ItemGroup>
