@@ -589,7 +589,6 @@ protected:
      * \param   index   The index of the element to return position.
      **/
     inline LISTPOS getPosition( uint32_t index ) const;
-    inline LISTPOS getPosition(uint32_t index);
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
@@ -1223,17 +1222,12 @@ template <typename VALUE >
 inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::getPosition(uint32_t index) const
 {
     typename std::list<VALUE>::const_iterator pos = index < static_cast<uint32_t>(mValueList.size()) ? mValueList.begin() : mValueList.end();
-    uint32_t count = index + 1;
-    for (uint32_t i = 1; i < count; ++i)
+    for (uint32_t i = 1; i <= index; ++i)
+    {
         ++pos;
+    }
 
     return _citer2pos(pos);
-}
-
-template <typename VALUE >
-inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::getPosition(uint32_t index)
-{
-    return static_cast<const TELinkedList<VALUE> *>(this)->getPosition(index);
 }
 
 template<typename VALUE>

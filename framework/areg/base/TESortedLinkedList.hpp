@@ -569,13 +569,6 @@ protected:
      **/
     inline LISTPOS getPosition(uint32_t index) const;
 
-    /**
-     * \brief   Returns the position of the element at the given index.
-     * \param   index   The index of the element to return position.
-     * \return  Returns the position of the element at the given index.
-     **/
-    inline LISTPOS getPosition(uint32_t index);
-
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods
 //////////////////////////////////////////////////////////////////////////
@@ -1169,17 +1162,12 @@ template <typename VALUE >
 inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::getPosition(uint32_t index) const
 {
     auto pos = index < static_cast<uint32_t>(mValueList.size()) ? mValueList.begin() : mValueList.end();
-    uint32_t count = index + 1;
-    for (uint32_t i = 1; i < count; ++i)
+    for (uint32_t i = 1; i <= index; ++i)
+    {
         ++pos;
+    }
 
     return _citer2pos(pos);
-}
-
-template <typename VALUE >
-inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::getPosition(uint32_t index)
-{
-    return static_cast<const TESortedLinkedList<VALUE> *>(this)->getPosition(index);
 }
 
 template <typename VALUE >
