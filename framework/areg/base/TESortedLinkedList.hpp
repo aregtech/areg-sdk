@@ -790,7 +790,8 @@ template <typename VALUE >
 inline typename TESortedLinkedList<VALUE>::LISTPOS TESortedLinkedList<VALUE>::prevPosition(TESortedLinkedList<VALUE>::LISTPOS atPosition) const
 {
     ASSERT(atPosition != mValueList.end());
-    return (atPosition == mValueList.begin() ? invalidPosition() : --atPosition);
+    typename std::list<VALUE>::iterator it = static_cast<typename std::list<VALUE>::iterator>(atPosition);
+    return (atPosition == mValueList.begin() ? invalidPosition() : static_cast<TESortedLinkedList<VALUE>::LISTPOS >(--it));
 }
 
 template <typename VALUE >
@@ -1138,7 +1139,7 @@ void TESortedLinkedList<VALUE>::resort()
     }
     else
     {
-        mValueList.sort(std::greater());
+        mValueList.sort(std::greater<VALUE>());
     }
 }
 

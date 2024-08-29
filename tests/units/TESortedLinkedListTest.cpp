@@ -478,8 +478,8 @@ TEST(TESortedLinkedListTest, TestSortingEntries)
     SortedList desc(false);
     for (int i = 0; i < count; ++i)
     {
-        asc.add(_list[i]);
-        desc.add(_list[i]);
+        asc.add(_list[static_cast<uint32_t>(i)]);
+        desc.add(_list[static_cast<uint32_t>(i)]);
     }
 
     EXPECT_NE(asc, desc);
@@ -494,16 +494,16 @@ TEST(TESortedLinkedListTest, TestSortingEntries)
 
     for (int i = 0; i < count; ++i)
     {
-        EXPECT_EQ(asc[i], _asc[i]);
-        EXPECT_EQ(desc[i], _desc[i]);
+        EXPECT_EQ(asc[static_cast<uint32_t>(i)], _asc[static_cast<uint32_t>(i)]);
+        EXPECT_EQ(desc[static_cast<uint32_t>(i)], _desc[static_cast<uint32_t>(i)]);
 
         EXPECT_TRUE(asc.isValidPosition(posAsc));
         EXPECT_TRUE(asc.isValidPosition(revAsc));
         EXPECT_TRUE(desc.isValidPosition(posDesc));
         EXPECT_TRUE(desc.isValidPosition(revDesc));
 
-        EXPECT_EQ(asc.valueAtPosition(posAsc), _asc[i]);
-        EXPECT_EQ(desc.valueAtPosition(posDesc), _desc[i]);
+        EXPECT_EQ(asc.valueAtPosition(posAsc), _asc[static_cast<uint32_t>(i)]);
+        EXPECT_EQ(desc.valueAtPosition(posDesc), _desc[static_cast<uint32_t>(i)]);
         EXPECT_EQ(desc.valueAtPosition(revDesc), asc.valueAtPosition(posAsc));
         EXPECT_EQ(asc.valueAtPosition(revAsc), desc.valueAtPosition(posDesc));
 
