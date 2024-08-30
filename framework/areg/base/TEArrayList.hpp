@@ -443,12 +443,18 @@ protected:
 //Hidden methods
 //////////////////////////////////////////////////////////////////////////
 private:
+
+    /**
+     * \brief   Converts the constant iterator of the vector into the ARRAYPOS type.
+     * \param   cit     The constant iterator of the vector.
+     * \return  Returns converted ARRAYPOS type.
+     **/
     inline ARRAYPOS _citer2pos(typename std::vector<VALUE>::const_iterator cit) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
 //////////////////////////////////////////////////////////////////////////
-private:
+protected:
     /**
      * \brief   The array of elements.
      **/

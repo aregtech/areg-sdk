@@ -575,7 +575,7 @@ protected:
 private:
 
     /**
-     * \brief   Converts the constant iterator of the list into the LISPOS type.
+     * \brief   Converts the constant iterator of the list into the LISTPOS type.
      * \param   cit     The constant iterator of the list.
      * \return  Returns converted LISTPOS type.
      **/
