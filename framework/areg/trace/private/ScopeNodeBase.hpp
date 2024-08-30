@@ -211,7 +211,7 @@ public:
      *          Only the root and nodes can group child entries.
      * \return  Returns number of nodes that where removed.
      **/
-    virtual unsigned int groupChildNodes( void ) ;
+    virtual unsigned int groupChildNodes( void );
 
     /**
      * \brief   Generates the scope setting and updates in the configuration.
