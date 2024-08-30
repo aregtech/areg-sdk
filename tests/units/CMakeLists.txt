@@ -13,5 +13,6 @@ addUnitTest("${AREG_UNIT_TEST_PROJECT}"
     ${AREG_UNIT_TEST_BASE}/TEMapTest.cpp
     ${AREG_UNIT_TEST_BASE}/TEPropertyTest.cpp
     ${AREG_UNIT_TEST_BASE}/TERingStackTest.cpp
+    ${AREG_UNIT_TEST_BASE}/TESortedLinkedListTest.cpp
     ${AREG_UNIT_TEST_BASE}/TEStackTest.cpp
 )

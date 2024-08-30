@@ -7,43 +7,43 @@
  * If not, please contact to info[at]aregtech.com
  *
  * \copyright   (c) 2017-2023 Aregtech UG. All rights reserved.
- * \file        units/TELinkedListTest.cpp
+ * \file        units/TESortedLinkedListTest.cpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
  * \brief       AREG Platform, AREG framework unit test file.
- *              Tests of TELinkedList object.
+ *              Tests of TESortedLinkedList object.
  ************************************************************************/
 /************************************************************************
  * Include files.
  ************************************************************************/
 #include "units/GUnitTest.hpp"
-#include "areg/base/TELinkedList.hpp"
+#include "areg/base/TESortedLinkedList.hpp"
 #include "areg/base/SharedBuffer.hpp"
 
  /**
-  * \brief   Test TELinkedList constructors.
+  * \brief   Test TESortedLinkedList constructors.
   **/
-TEST(TELinkedListTest, TestConstructors)
+TEST(TESortedLinkedListTest, TestConstructors)
 {
-    using LinkedList = TELinkedList<int>;
+    using SortedList = TESortedLinkedList<int>;
     constexpr uint32_t count{ 10 };
 
-    LinkedList empty, init;
+    SortedList empty, init;
     EXPECT_TRUE(empty.isEmpty() && init.isEmpty());
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
-        init.pushFirst(i);
+        init.add(i);
         EXPECT_EQ(init.getSize(), static_cast<uint32_t>(i + 1));
     }
 
     EXPECT_EQ(init.getSize(), count);
 
-    LinkedList copy(init);
+    SortedList copy(init);
     EXPECT_FALSE(copy.isEmpty());
     EXPECT_EQ(copy.getSize(), count);
     EXPECT_EQ(copy, init);
 
-    LinkedList move(std::move(init));
+    SortedList move(std::move(init));
     EXPECT_FALSE(move.isEmpty());
     EXPECT_TRUE(init.isEmpty());
     EXPECT_EQ(move.getSize(), count);
@@ -53,36 +53,36 @@ TEST(TELinkedListTest, TestConstructors)
 }
 
 /**
- * \brief   Test TELinkedList operators.
+ * \brief   Test TESortedLinkedList operators.
  **/
-TEST(TELinkedListTest, TestOperators)
+TEST(TESortedLinkedListTest, TestOperators)
 {
-    using LinkedList = TELinkedList<int>;
-    using POS = LinkedList::LISTPOS;
+    using SortedList = TESortedLinkedList<int>;
+    using POS = SortedList::LISTPOS;
     constexpr uint32_t count{ 10 };
 
-    LinkedList src;
+    SortedList src(false);
     EXPECT_TRUE(src.isEmpty());
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
-        src.pushLast(i);
-        EXPECT_EQ(src[static_cast<uint32_t>(i)], i);
+        src.add(i);
+        EXPECT_EQ(src[0u], i);
     }
 
-    int i = 0;
+    int i = static_cast<int>(count) - 1;
     for (POS pos = src.firstPosition(); src.isValidPosition(pos); pos = src.nextPosition(pos))
     {
         EXPECT_EQ(src[pos], i);
-        ++i;
+        --i;
     }
 
-    LinkedList copy;
+    SortedList copy;
     copy = src;
     EXPECT_EQ(copy.getSize(), count);
     EXPECT_EQ(copy, src);
     EXPECT_TRUE(copy == src);
 
-    LinkedList move;
+    SortedList move;
     move = std::move(src);
     EXPECT_TRUE(src.isEmpty());
     EXPECT_EQ(move.getSize(), count);
@@ -94,15 +94,15 @@ TEST(TELinkedListTest, TestOperators)
 
 
 /**
- * \brief   Test TELinkedList positioning attributes.
+ * \brief   Test TESortedLinkedList positioning attributes.
  **/
-TEST(TELinkedListTest, TestPositionAttributes)
+TEST(TESortedLinkedListTest, TestPositionAttributes)
 {
-    using LinkedList = TELinkedList<int>;
-    using POS = LinkedList::LISTPOS;
+    using SortedList = TESortedLinkedList<int>;
+    using POS = SortedList::LISTPOS;
     constexpr uint32_t count{ 10 };
 
-    LinkedList list;
+    SortedList list(false);
     POS first = list.firstPosition();
     POS last = list.lastPosition();
     EXPECT_TRUE(list.isInvalidPosition(first));
@@ -112,7 +112,7 @@ TEST(TELinkedListTest, TestPositionAttributes)
 
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
-        list.pushLast(i);
+        list.add(i);
     }
 
     first = list.firstPosition();
@@ -135,7 +135,6 @@ TEST(TELinkedListTest, TestPositionAttributes)
     {
         int value = list[pos];
         EXPECT_EQ(list.valueAtPosition(pos), value);
-        list[pos] = static_cast<int>(count) + value;
     }
 
     for (POS pos = list.lastPosition(); list.isValidPosition(pos); pos = list.prevPosition(pos))
@@ -149,73 +148,30 @@ TEST(TELinkedListTest, TestPositionAttributes)
     while (list.isValidPosition(next))
     {
         int value = list.getNext(next);
-        EXPECT_TRUE(list.isInvalidPosition(next) || ((value + 1) == list.valueAtPosition(next)));
+        EXPECT_TRUE(list.isInvalidPosition(next) || ((value - 1) == list.valueAtPosition(next)));
     }
 
     POS prev = list.lastPosition();
     while (list.isValidPosition(prev))
     {
         int value = list.getPrev(prev);
-        EXPECT_TRUE(list.isInvalidPosition(prev) || ((value - 1) == list.valueAtPosition(prev)));
+        EXPECT_TRUE(list.isInvalidPosition(prev) || ((value + 1) == list.valueAtPosition(prev)));
     }
 }
 
 /**
- * \brief   Test TELinkedList positioning operations.
+ * \brief   Test TESortedLinkedList positioning operations.
  **/
-TEST(TELinkedListTest, TestPositionOperations)
+TEST(TESortedLinkedListTest, TestPositionManipulation)
 {
-    using LinkedList = TELinkedList<int>;
-    using POS = LinkedList::LISTPOS;
+    using SortedList = TESortedLinkedList<int>;
+    using POS = SortedList::LISTPOS;
     constexpr uint32_t count{ 10 };
 
-    LinkedList list;
+    SortedList list(true);
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
-        list.pushLast(i);
-    }
-
-    EXPECT_EQ(list[0], list.firstEntry());
-    EXPECT_EQ(list[static_cast<int>(count) - 1], list.lastEntry());
-
-    POS next = list.firstPosition();
-    while (list.isValidPosition(next))
-    {
-        int value = list.valueAtPosition(next);
-        list.getNext(next) = static_cast<int>(count) + value;
-    }
-
-    for (uint32_t i = 0; i < count; ++i)
-    {
-        EXPECT_EQ(list[i], static_cast<int>(count + i));
-    }
-
-    POS prev = list.lastPosition();
-    while (list.isValidPosition(prev))
-    {
-        int value = list.valueAtPosition(prev);
-        list.getPrev(prev) = value - static_cast<int>(count);
-    }
-
-    for (uint32_t i = 0; i < count; ++i)
-    {
-        EXPECT_EQ(list.getAt(i), static_cast<int>(i));
-    }
-}
-
-/**
- * \brief   Test TELinkedList positioning operations.
- **/
-TEST(TELinkedListTest, TestPositionManipulation)
-{
-    using LinkedList = TELinkedList<int>;
-    using POS = LinkedList::LISTPOS;
-    constexpr uint32_t count{ 10 };
-
-    LinkedList list;
-    for (int i = 0; i < static_cast<int>(count); ++i)
-    {
-        list.pushLast(i);
+        list.add(i);
     }
 
     POS next = list.firstPosition();
@@ -259,19 +215,19 @@ TEST(TELinkedListTest, TestPositionManipulation)
 }
 
 /**
- * \brief   Test TELinkedList searching functionalities.
+ * \brief   Test TESortedLinkedList searching functionalities.
  **/
-TEST(TELinkedListTest, TestSearching)
+TEST(TESortedLinkedListTest, TestSearching)
 {
-    using LinkedList = TELinkedList<int>;
-    using POS = LinkedList::LISTPOS;
+    using SortedList = TESortedLinkedList<int>;
+    using POS = SortedList::LISTPOS;
     constexpr uint32_t count{ 10 };
 
-    LinkedList list;
+    SortedList list(true);
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
         EXPECT_FALSE(list.contains(i));
-        list.pushLast(i);
+        list.add(i);
         EXPECT_TRUE(list.contains(i));
     }
 
@@ -289,27 +245,27 @@ TEST(TELinkedListTest, TestSearching)
 }
 
 /**
- * \brief   Test TELinkedList merging.
+ * \brief   Test TESortedLinkedList merging.
  **/
-TEST(TELinkedListTest, TestMerging)
+TEST(TESortedLinkedListTest, TestMerging)
 {
-    using LinkedList = TELinkedList<int>;
-    using POS = LinkedList::LISTPOS;
+    using SortedList = TESortedLinkedList<int>;
+    using POS = SortedList::LISTPOS;
     constexpr uint32_t count{ 10 };
 
     // Step 1: initialize 2 linked lists with entries [0 .. 9] and [10 .. 19]
-    LinkedList list1, list2;
+    SortedList list1(true), list2(false);
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
-        list1.pushLast(i);      //  0,  1,  2,  3,  4,  5,  6,  7,  8,  9
-        list2.pushFirst(i + 10); // 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
+        list1.add(i);      //  0,  1,  2,  3,  4,  5,  6,  7,  8,  9
+        list2.add(i + 10); // 10, 11, 12, 13, 14, 15, 16, 17, 18, 19
     }
 
     // Step 2:  
     //  - create empty linked-list object `list`
     //  - merge [0 .. 1] entries with `list`.
     // Result: the source object is empty, all entries are extracted and merged
-    LinkedList list;
+    SortedList list(true);
     list.merge(list1);
     EXPECT_TRUE(list1.isEmpty());
     EXPECT_FALSE(list.isEmpty());
@@ -335,13 +291,12 @@ TEST(TELinkedListTest, TestMerging)
         EXPECT_EQ(val1, val2);
     }
 
-    // To merge, the LinkedList entries should be sorted. Check it.
-    LinkedList listUnorder;
-    listUnorder.pushFirst(3);
-    listUnorder.pushFirst(2);
-    listUnorder.pushFirst(5);
-    listUnorder.pushFirst(1);
-    listUnorder.pushFirst(4);
+    SortedList listUnorder(!list.isAscending());
+    listUnorder.add(3);
+    listUnorder.add(2);
+    listUnorder.add(5);
+    listUnorder.add(1);
+    listUnorder.add(4);
     uint32_t unordSize = listUnorder.getSize();
     unordSize += list.getSize();
     listUnorder.merge(list);
@@ -356,9 +311,10 @@ TEST(TELinkedListTest, TestMerging)
 
     // re-initialize the list with entries [0 .. 9]
     list.clear();
+    EXPECT_TRUE(list.isEmpty());
     for (int i = 0; i < static_cast<int>(count); ++i)
     {
-        list.pushLast(i);      //  0,  1,  2,  3,  4,  5,  6,  7,  8,  9
+        list.add(i);      //  0,  1,  2,  3,  4,  5,  6,  7,  8,  9
     }
 
     // Step 4:
@@ -376,14 +332,14 @@ TEST(TELinkedListTest, TestMerging)
     constexpr int32_t evens[]   { 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40, 42 };
     constexpr uint32_t lenOdd{ MACRO_ARRAYLEN(odds) };
     constexpr uint32_t lenEven{ MACRO_ARRAYLEN(odds) };
-    LinkedList listOdd, listEven;
+    SortedList listOdd(true), listEven(false);
     for (uint32_t i = 0u; i < lenOdd; ++i)
     {
-        listOdd.pushLast(odds[i]);
+        listOdd.add(odds[i]);
     }
     for (uint32_t i = 0u; i < lenEven; ++i)
     {
-        listEven.pushLast(evens[i]);
+        listEven.add(evens[i]);
     }
 
     // Step 6:
@@ -426,11 +382,11 @@ TEST(TELinkedListTest, TestMerging)
 }
 
 /**
- * \brief   Test pushXXXIfUnique method of the TELinkedList object.
+ * \brief   Test addIfUnique method of the TESortedLinkedList object.
  **/
-TEST(TELinkedListTest, TestPushUnique)
+TEST(TESortedLinkedListTest, TestAddIfUnique)
 {
-    using LinkedList = TELinkedList<int>;
+    using SortedList = TESortedLinkedList<int>;
     constexpr uint32_t count{ 10 };
 
     constexpr int unique[]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -439,10 +395,10 @@ TEST(TELinkedListTest, TestPushUnique)
     EXPECT_EQ(count, MACRO_ARRAYLEN(unique));
     EXPECT_EQ(count, MACRO_ARRAYLEN(notunique));
 
-    LinkedList list;
+    SortedList list(true);
     for (uint32_t i = 0; i < count; ++i)
     {
-        bool result = list.pushFirstIfUnique(notunique[i]);
+        bool result = list.addIfUnique(notunique[i]).second;
         if (i < 5)
         {
             EXPECT_TRUE(result);
@@ -456,108 +412,121 @@ TEST(TELinkedListTest, TestPushUnique)
     list.release();
     for (uint32_t i = 0; i < count; ++i)
     {
-        EXPECT_TRUE(list.pushLastIfUnique(unique[i]));
+        EXPECT_TRUE(list.addIfUnique(unique[i]).second);
     }
 
     for (uint32_t i = 0; i < count; ++i)
     {
-        EXPECT_FALSE(list.pushFirstIfUnique(notunique[i], true));
+        EXPECT_FALSE(list.addIfUnique(notunique[i], true).second);
     }
 }
 
 /**
- * \brief   Test insertAfter and insertBefore methods of the TELinkedList object.
+ * \brief   Test remove first / last methods of the TESortedLinkedList object.
  **/
-TEST(TELinkedListTest, TestInserting)
+TEST(TESortedLinkedListTest, TestRemoveEntries)
 {
-    using LinkedList = TELinkedList<int>;
-    using POS = LinkedList::LISTPOS;
-
-    constexpr int notunique[]{ 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5 };
-    constexpr uint32_t count{ MACRO_ARRAYLEN(notunique) };
-    constexpr uint32_t len{ count / 2u };
-
-    LinkedList list;
-    for (uint32_t i = 0; i < len; ++i)
-    {
-        POS pos = list.invalidPosition();
-        bool before = (i % 2u) == 0;
-        if (before)
-        {
-            pos = list.insertBefore(list.lastPosition(), notunique[i]);
-        }
-        else
-        {
-            pos = list.insertAfter(list.firstPosition(), notunique[i]);
-        }
-
-        EXPECT_TRUE(list.checkPosition(pos));
-        EXPECT_TRUE(list.isValidPosition(pos));
-        EXPECT_EQ(notunique[i], list.valueAtPosition(pos));
-    }
-
-    for (uint32_t i = len; i < count; ++i)
-    {
-        POS found = list.find(notunique[i]);
-        POS pos = list.invalidPosition();
-        EXPECT_TRUE(list.isValidPosition(found));
-        bool before = (i % 2u) == 0;
-        if (before)
-        {
-            pos = list.insertBefore(found, notunique[i]);
-            EXPECT_TRUE(list.valueAtPosition(pos) == list.valueAtPosition(found));
-        }
-        else
-        {
-            pos = list.insertAfter(found, notunique[i]);
-            EXPECT_TRUE(list.valueAtPosition(pos) == list.valueAtPosition(found));
-        }
-
-        EXPECT_TRUE(list.checkPosition(pos));
-        EXPECT_TRUE(list.isValidPosition(pos));
-        EXPECT_EQ(notunique[i], list.valueAtPosition(pos));
-    }
-}
-
-/**
- * \brief   Test remove first / last methods of the TELinkedList object.
- **/
-TEST(TELinkedListTest, TestRemoveEntries)
-{
-    using LinkedList = TELinkedList<int>;
+    using SortedList = TESortedLinkedList<int>;
     constexpr int32_t count{ 10 };
 
-    LinkedList list;
+    SortedList asc(true);
+    SortedList desc(false);
     for (int i = 0; i < count; ++i)
     {
-        list.pushLast(i);
+        asc.add(i);
+        desc.add(i);
     }
 
-    EXPECT_EQ(list.getSize(), static_cast<uint32_t>(count));
+    EXPECT_NE(asc, desc);
+    EXPECT_EQ(asc.getSize(), static_cast<uint32_t>(count));
+    EXPECT_EQ(desc.getSize(), static_cast<uint32_t>(count));
+
     for (int i = 0; i < (count / 2); ++i)
     {
-        int first{ -1 }, last{ -1 };
-        EXPECT_TRUE(list.removeFirst(first));
-        EXPECT_TRUE(list.removeLast(last));
-        EXPECT_EQ(i, first);
-        EXPECT_EQ(count - (i + 1), last);
+        int ascFirst{ -1 }, ascLast{ -1 };
+        EXPECT_TRUE(asc.removeFirst(ascFirst));
+        EXPECT_TRUE(asc.removeLast(ascLast));
+        EXPECT_EQ(i, ascFirst);
+        EXPECT_EQ(count - (i + 1), ascLast);
+
+        int descFirst{ -1 }, descLast{ -1 };
+        EXPECT_TRUE(desc.removeFirst(descFirst));
+        EXPECT_TRUE(desc.removeLast(descLast));
+        EXPECT_EQ(count - (i + 1), descFirst);
+        EXPECT_EQ(i, descLast);
+
     }
 
-    EXPECT_TRUE(list.isEmpty());
+    EXPECT_TRUE(asc.isEmpty());
+    EXPECT_TRUE(desc.isEmpty());
 }
 
 /**
- * \brief   Test TELinkedList streaming operators.
+ * \brief   Test ascending and descending behavior of the TESortedLinkedList object.
  **/
-TEST(TELinkedListTest, TestStreaming)
+TEST(TESortedLinkedListTest, TestSortingEntries)
 {
-    using LinkedList = TELinkedList<int>;
-    constexpr int32_t count{ 10 };
+    using SortedList = TESortedLinkedList<int>;
+    using POS = SortedList::LISTPOS;
 
-    LinkedList src;
+    constexpr int _list[]{ 5, 1, 0, 8, 3, 5, 6, 1, 5, 8, 2, 8, 9, 4, 7, 0 };
+    constexpr int _asc[] { 0, 0, 1, 1, 2, 3, 4, 5, 5, 5, 6, 7, 8, 8, 8, 9 };
+    constexpr int _desc[]{ 9, 8, 8, 8, 7, 6, 5, 5, 5, 4, 3, 2, 1, 1, 0, 0 };
+    constexpr int32_t count{ MACRO_ARRAYLEN(_list) };
+
+    SortedList asc(true);
+    SortedList desc(false);
     for (int i = 0; i < count; ++i)
     {
-        src.pushLast(i);
+        asc.add(_list[static_cast<uint32_t>(i)]);
+        desc.add(_list[static_cast<uint32_t>(i)]);
+    }
+
+    EXPECT_NE(asc, desc);
+    EXPECT_EQ(asc.getSize(), static_cast<uint32_t>(count));
+    EXPECT_EQ(desc.getSize(), static_cast<uint32_t>(count));
+
+    POS posAsc = asc.firstPosition();
+    POS revAsc = asc.lastPosition();
+
+    POS posDesc = desc.firstPosition();
+    POS revDesc = desc.lastPosition();
+
+    for (int i = 0; i < count; ++i)
+    {
+        EXPECT_EQ(asc[static_cast<uint32_t>(i)], _asc[static_cast<uint32_t>(i)]);
+        EXPECT_EQ(desc[static_cast<uint32_t>(i)], _desc[static_cast<uint32_t>(i)]);
+
+        EXPECT_TRUE(asc.isValidPosition(posAsc));
+        EXPECT_TRUE(asc.isValidPosition(revAsc));
+        EXPECT_TRUE(desc.isValidPosition(posDesc));
+        EXPECT_TRUE(desc.isValidPosition(revDesc));
+
+        EXPECT_EQ(asc.valueAtPosition(posAsc), _asc[static_cast<uint32_t>(i)]);
+        EXPECT_EQ(desc.valueAtPosition(posDesc), _desc[static_cast<uint32_t>(i)]);
+        EXPECT_EQ(desc.valueAtPosition(revDesc), asc.valueAtPosition(posAsc));
+        EXPECT_EQ(asc.valueAtPosition(revAsc), desc.valueAtPosition(posDesc));
+
+        posAsc = asc.nextPosition(posAsc);
+        revAsc = asc.prevPosition(revAsc);
+
+        posDesc = desc.nextPosition(posDesc);
+        revDesc = desc.prevPosition(revDesc);
+    }
+}
+
+/**
+ * \brief   Test TESortedLinkedList streaming operators.
+ **/
+TEST(TESortedLinkedListTest, TestStreaming)
+{
+    using SortedList = TESortedLinkedList<int>;
+    constexpr int32_t count{ 10 };
+
+    SortedList src(false);
+    for (int i = 0; i < count; ++i)
+    {
+        src.add(i);
     }
 
     SharedBuffer stream;
@@ -566,7 +535,7 @@ TEST(TELinkedListTest, TestStreaming)
     EXPECT_FALSE(stream.isEmpty());
 
     stream.moveToBegin();
-    LinkedList dst;
+    SortedList dst(true);
     stream >> dst;
 
     EXPECT_EQ(src, dst);

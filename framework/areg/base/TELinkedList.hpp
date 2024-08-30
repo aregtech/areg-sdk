@@ -569,13 +569,19 @@ public:
     inline uint32_t makeIndex( LISTPOS atPosition ) const;
 
     /**
-     * \brief   Extracts elements from the given source and inserts into the linked list.
-     *          No elements are copied. The container other becomes empty after the operation.
+     * \brief   Merges entries from the `source` into *this. Both lists should be sorted. 
+     *          No elements are copied, and the source container becomes empty after the merge.
+     *          For equivalent elements in the two lists, the elements from `*this` always precede
+     *          the elements from `source`, and the order of equivalent elements do not change, which
+     *          means that the order of elements in the result list is ascending.
      * \param   source  The source of linked list to merge.
-     */
+     **/
     inline void merge(TELinkedList<VALUE> & source);
     inline void merge(TELinkedList<VALUE> && source);
 
+//////////////////////////////////////////////////////////////////////////
+// Protected methods
+//////////////////////////////////////////////////////////////////////////
 protected:
 
     /**
@@ -583,7 +589,18 @@ protected:
      * \param   index   The index of the element to return position.
      **/
     inline LISTPOS getPosition( uint32_t index ) const;
-    inline LISTPOS getPosition(uint32_t index);
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden methods
+//////////////////////////////////////////////////////////////////////////
+private:
+
+    /**
+     * \brief   Converts the constant iterator of the list into the LISTPOS type.
+     * \param   cit     The constant iterator of the list.
+     * \return  Returns converted LISTPOS type.
+     **/
+    inline LISTPOS _citer2pos(typename std::list<VALUE>::const_iterator cit) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member Variables
@@ -664,15 +681,13 @@ inline uint32_t TELinkedList<VALUE>::getSize( void ) const
 template <typename VALUE >
 inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::firstPosition( void ) const
 {
-    auto cit = mValueList.begin();
-    return Constless<std::list<VALUE>>::iter(mValueList, cit);
+    return _citer2pos(mValueList.begin());
 }
 
 template <typename VALUE >
 inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::lastPosition( void ) const
 {
-    auto cit = mValueList.empty() == false ? --mValueList.end() : mValueList.end();
-    return Constless<std::list<VALUE>>::iter(mValueList, cit);
+    return _citer2pos(mValueList.empty() == false ? --mValueList.end() : mValueList.end());
 }
 
 template <typename VALUE >
@@ -690,8 +705,7 @@ inline bool TELinkedList<VALUE>::isLastPosition(const LISTPOS pos) const
 template <typename VALUE >
 inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::invalidPosition(void) const
 {
-	auto end = mValueList.end();
-    return Constless<std::list<VALUE>>::iter(mValueList, end);
+	return _citer2pos(mValueList.end());
 }
 
 template <typename VALUE >
@@ -787,7 +801,7 @@ inline const VALUE & TELinkedList<VALUE>::getPrev(LISTPOS& IN OUT in_out_PrevPos
 {
     ASSERT(in_out_PrevPosition != mValueList.end());
     LISTPOS pos = in_out_PrevPosition;
-    in_out_PrevPosition = in_out_PrevPosition == mValueList.begin() ? mValueList.end() : --in_out_PrevPosition;
+    in_out_PrevPosition = in_out_PrevPosition == _citer2pos(mValueList.begin()) ? _citer2pos(mValueList.end()) : --in_out_PrevPosition;
     return *pos;
 }
 
@@ -804,7 +818,7 @@ template <typename VALUE >
 inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::prevPosition(LISTPOS atPosition) const
 {
     ASSERT(atPosition != mValueList.end());
-    return (atPosition == mValueList.begin() ? invalidPosition() : --atPosition);
+    return _citer2pos(atPosition == mValueList.begin() ? invalidPosition() : --atPosition);
 }
 
 template <typename VALUE >
@@ -1142,8 +1156,7 @@ inline bool TELinkedList<VALUE>::removeEntry(const VALUE & removeElement, TELink
 template <typename VALUE >
 inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::find(const VALUE& searchValue) const
 {
-    auto it = std::find(mValueList.begin(), mValueList.end(), searchValue);
-    return Constless<std::list<VALUE>>::iter(mValueList, it);
+    return _citer2pos(std::find(mValueList.begin(), mValueList.end(), searchValue));
 }
 
 template <typename VALUE >
@@ -1192,12 +1205,16 @@ inline uint32_t TELinkedList<VALUE>::makeIndex(LISTPOS atPosition) const
 template <typename VALUE >
 inline void TELinkedList<VALUE>::merge(TELinkedList<VALUE>& source)
 {
+    mValueList.sort();
+    source.mValueList.sort();
     mValueList.merge(source.mValueList);
 }
 
 template <typename VALUE >
 inline void TELinkedList<VALUE>::merge(TELinkedList<VALUE>&& source)
 {
+    mValueList.sort();
+    source.mValueList.sort();
     mValueList.merge(std::move(source.mValueList));
 }
 
@@ -1205,17 +1222,18 @@ template <typename VALUE >
 inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::getPosition(uint32_t index) const
 {
     typename std::list<VALUE>::const_iterator pos = index < static_cast<uint32_t>(mValueList.size()) ? mValueList.begin() : mValueList.end();
-    uint32_t count = index + 1;
-    for (uint32_t i = 1; i < count; ++i)
+    for (uint32_t i = 1; i <= index; ++i)
+    {
         ++pos;
+    }
 
-    return Constless<std::list<VALUE>>::iter(mValueList, pos);
+    return _citer2pos(pos);
 }
 
-template <typename VALUE >
-inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::getPosition(uint32_t index)
+template<typename VALUE>
+inline typename TELinkedList<VALUE>::LISTPOS TELinkedList<VALUE>::_citer2pos(typename std::list<VALUE>::const_iterator cit) const
 {
-    return static_cast<const TELinkedList<VALUE> *>(this)->getPosition(index);
+    return Constless<std::list<VALUE>>::iter(mValueList, cit);
 }
 
 //////////////////////////////////////////////////////////////////////////

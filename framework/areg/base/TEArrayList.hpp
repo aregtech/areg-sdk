@@ -437,14 +437,19 @@ protected:
      * \return  Returns the position of the element at the given index.
      *          The value of returned position cannot be modified.
      **/
-    inline const ARRAYPOS getPosition( uint32_t index ) const;
+    inline ARRAYPOS getPosition( uint32_t index ) const;
+
+//////////////////////////////////////////////////////////////////////////
+//Hidden methods
+//////////////////////////////////////////////////////////////////////////
+private:
 
     /**
-     * \brief   Returns the position of the element at the given index.
-     * \param   index   The index of the element to return position.
-     * \return  Returns the position of the element at the given index.
+     * \brief   Converts the constant iterator of the vector into the ARRAYPOS type.
+     * \param   cit     The constant iterator of the vector.
+     * \return  Returns converted ARRAYPOS type.
      **/
-    inline ARRAYPOS getPosition(uint32_t index);
+    inline ARRAYPOS _citer2pos(typename std::vector<VALUE>::const_iterator cit) const;
 
 //////////////////////////////////////////////////////////////////////////
 // Member variables
@@ -1061,16 +1066,15 @@ inline void TEArrayList< VALUE >::setSize(uint32_t elemCount)
 }
 
 template<typename VALUE >
-inline const typename TEArrayList< VALUE >::ARRAYPOS TEArrayList< VALUE >::getPosition(uint32_t index) const
+inline typename TEArrayList< VALUE >::ARRAYPOS TEArrayList< VALUE >::getPosition(uint32_t index) const
 {
-    return Constless<std::vector<VALUE>>::iter(mValueList, index < static_cast<uint32_t>(mValueList.size()) ? mValueList.begin() + index : mValueList.end());
+    return _citer2pos(index < static_cast<uint32_t>(mValueList.size()) ? mValueList.begin() + index : mValueList.end());
 }
 
 template<typename VALUE >
-inline typename TEArrayList< VALUE >::ARRAYPOS TEArrayList< VALUE >::getPosition(uint32_t index)
+inline typename TEArrayList< VALUE >::ARRAYPOS TEArrayList< VALUE >::_citer2pos(typename std::vector<VALUE>::const_iterator cit) const
 {
-	auto it = index < static_cast<uint32_t>(mValueList.size()) ? mValueList.begin() + static_cast<int>(index) : mValueList.end();
-    return Constless<std::vector<VALUE>>::iter(mValueList, it);
+    return Constless<std::vector<VALUE>>::iter(mValueList, cit);
 }
 
 //////////////////////////////////////////////////////////////////////////
