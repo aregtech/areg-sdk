@@ -48,37 +48,42 @@ namespace NEString
      **/
     typedef enum E_CharDefs   : uint16_t
     {
-          CD_Undefined  =   0   //!< Undefined character type
-        , CD_EOfS       =   1   //!< End-of+string character
-        , CD_EndOfLine  =   2   //!< ENd-of-line character
-        , CD_CarReturn  =   4   //!< Carriage return character
-        , CD_WhiteSpace =   8   //!< Whitespace character
-        , CD_Delimiter  =  16   //!< Syntax Delimiter
-        , CD_Control    =  32   //!< Control key / value
-        , CD_Printable  =  64   //!< Printable character or character, which change text layout like space or tab
-        , CD_Number     = 128   //!< Numeric character
-        , CD_Symbol     = 256   //!< Symbol
-        , CD_Letter     = 512   //!< Letter
+          CD_Undefined  =   0   //!< bin = 0000 0000 0000 0000, Undefined character type
+        , CD_EOfS       =   1   //!< bin = 0000 0000 0000 0001, End-of+string character
+        , CD_EndOfLine  =   2   //!< bin = 0000 0000 0000 0010, ENd-of-line character
+        , CD_CarReturn  =   4   //!< bin = 0000 0000 0000 0100, Carriage return character
+        , CD_WhiteSpace =   8   //!< bin = 0000 0000 0000 1000, Whitespace character
+        , CD_Delimiter  =  16   //!< bin = 0000 0000 0001 0000, Syntax Delimiter
+        , CD_Control    =  32   //!< bin = 0000 0000 0010 0000, Control key / value
+        , CD_Printable  =  64   //!< bin = 0000 0000 0100 0000, Printable character or character, which change text layout like space or tab
+        , CD_Number     = 128   //!< bin = 0000 0000 1000 0000, Numeric character
+        , CD_Symbol     = 256   //!< bin = 0000 0001 0000 0000, Symbol
+        , CD_Letter     = 512   //!< bin = 0000 0010 0000 0000, Letter
+        , CD_LetterUp   = 1536  //!< bin = 0000 0110 0000 0000, Upper case letter
+        , CD_LetterLo   = 2560  //!< bin = 0000 1010 0000 0000, Lower case letter
 
     } eCharDefs;
 
     /**
-     * \brief   Returns the bit-wise value of character definition based on ASCII ISO8859-1
+     * \brief   Returns the bit-wise value of character definition based on first 256 symbols based on UTF-8 code page.
+     *          Reference: https://www.charset.org/utf-8
      * \param   ch      The character value to receive defined value.
-     */
-    AREG_API unsigned short getISO8859CharDef( int ch );
+     **/
+    AREG_API unsigned short getUTF8_256CharDef( int ch );
 
     /**
-     * \brief   Returns lower case letter of given character based on ASCII ISO8859-1, it if has any
+     * \brief   Returns upper case letters and symbols based on first 256 of UTF-8 code page.
+     *          Reference: https://www.charset.org/utf-8
      * \param   ch      The character value to receive defined value.
-     */
-    AREG_API unsigned int getISO8859LowerChar( int ch );
+     **/
+    AREG_API unsigned int makeUTF8_256UpperChar(int ch);
 
     /**
-     * \brief   Returns upper case letter of given character based on ASCII ISO8859-1, it if has any
+     * \brief   Returns lower case letters and symbols based on first 256 of UTF-8 code page.
+     *          Reference: https://www.charset.org/utf-8
      * \param   ch      The character value to receive defined value.
-     */
-    AREG_API unsigned int getISO8859UpperChar( int ch );
+     **/
+    AREG_API unsigned int makeUTF8_256LowerChar( int ch );
 
     //! ASCII locale.
     static const char* const LOCALE_ASCII   = "C";
@@ -87,7 +92,7 @@ namespace NEString
     static const char* const LOCALE_US_UTF8 = "en_US.UTF8";
 
     //! Currently installed C locale.
-    static const char* const LOCALE_DEFAULT   {LOCALE_ASCII};
+    static const char* const LOCALE_DEFAULT   { LOCALE_US_UTF8 };    // {LOCALE_ASCII};
 
     /**
      * \brief   Constant, defines count all characters in the string
@@ -178,7 +183,7 @@ namespace NEString
      * \brief   End of String value
      *          NEString::EndofString
      **/
-    constexpr char              EndOfString     { static_cast<char>('\0') };  //!< End of String, signed char (ASCII)
+    constexpr char              EndOfString     { static_cast<char>('\0') };  //!< End of String, signed char
 
     /**
      * \brief   End of String value
@@ -246,28 +251,42 @@ namespace NEString
     CharCount copyString( CharDst * strDst, CharCount dstSpace, const CharSrc * strSrc, CharCount charsCopy = NEString::COUNT_ALL );
 
     /**
-     * \brief   Converts given character to lower case. Valid only for ASCII characters.
+     * \brief   Converts given character to lower case based on first 256 of UTF-8 code page..
      * \param   ch      The character to convert to lower case.
-     * \return  If character is in ASCII range, it converts character to lower case. 
+     * \return  If character is in range [-128 .. 127], it converts character to lower case. 
      *          Otherwise, conversion is ignored and returns same value.
      **/
     template <typename CharType>
-    inline CharType makeAsciiLower(CharType ch);
+    inline CharType makeLower(CharType ch);
 
     /**
-     * \brief   Converts given character to upper case. Valid only for ASCII characters.
+     * \brief   Converts given character to upper case based on first 256 of UTF-8 code page.
      * \param   ch      The character to convert to upper case.
-     * \return  If character is in ASCII range, it converts character to upper case.
+     * \return  If character is in range [-128 .. 127], it converts character to upper case.
      *          Otherwise, conversion is ignored and returns same value.
      **/
     template <typename CharType>
-    inline CharType makeAsciiUpper(CharType ch);
+    inline CharType makeUpper(CharType ch);
+
+    /**
+     * \brief   Returns true if the specified character is lower case.
+     * \param   ch      The character to check.
+     **/
+    template<typename CharType>
+    inline bool isLower(CharType ch);
+
+    /**
+     * \brief   Returns true if the specified character is upper case.
+     * \param   ch      The character to check.
+     **/
+    template<typename CharType>
+    inline bool isUpper(CharType ch);
 
     /**
      * \brief   Compares 2 given strings (Left and Right side). The function compares 'charCount' characters
      *          in the strings or until end of string if charCount is equal to NEString::END_POS.
      *          if 'caseSensitive' is false, function ignores capital and lower cases.
-     *          The function is valid only for ASCII characters and it returns:
+     *          The function is valid only for first 256 character based on UTF-8 code page:
      *              -1 if Left-side string is bigger than Right-side string
      *               0 if Left-side and Right-side strings are equal
      *               1 if Left-side string is less than Right-side string.
@@ -289,7 +308,7 @@ namespace NEString
 
     /**
      * \brief   Compares 2 given strings (Left and Right side). The function compares complete string and ignores the upper and lower cases.
-     *          The function is valid only for ASCII characters and it returns:
+     *          The function is valid only for first 256 character based on UTF-8 code page:
      *              -1 if Left-side string is bigger than Right-side string
      *               0 if Left-side and Right-side strings are equal
      *               1 if Left-side string is less than Right-side string.
@@ -306,7 +325,7 @@ namespace NEString
     /**
      * \brief   Fast compares 2 string. The comparing is done until first match of null-termination
      *          and it is case sensitive.
-     *          The function is valid only for ASCII characters and it returns:
+     *          The function is valid only for first 256 character based on UTF-8 code page:
      *              -1 if Left-side string is less than Right-side string
      *               0 if Left-side and Right-side strings are equal
      *               1 if Left-side string is bigger than Right-side string.
@@ -338,7 +357,7 @@ namespace NEString
 
     /**
      * \brief   Fast compares 2 string. Compares first count characters.
-     *          The function is valid only for ASCII characters and it returns:
+     *          The function is valid only for first 256 character based on UTF-8 code page:
      *              -1 if Left-side string is less than Right-side string
      *               0 if Left-side and Right-side strings are equal
      *               1 if Left-side string is bigger than Right-side string.
@@ -354,7 +373,7 @@ namespace NEString
 
     /**
      * \brief   Fast compares first count symbols of 2 string. The comparing case sensitive.
-     *          The function is valid only for ASCII characters and it returns:
+     *          The function is valid only for first 256 character based on UTF-8 code page:
      *              -1 if Left-side string is less than Right-side string
      *               0 if Left-side and Right-side strings are equal
      *               1 if Left-side string is bigger than Right-side string.
@@ -372,7 +391,7 @@ namespace NEString
     /**
      * \brief   Fast compares 2 string ignoring sensitivity. The comparing is done until first match of null-termination
      *          and it is case sensitive.
-     *          The function is valid only for ASCII characters and it returns:
+     *          The function is valid only for first 256 character based on UTF-8 code page:
      *              -1 if Left-side string is bigger than Right-side string
      *               0 if Left-side and Right-side strings are equal
      *               1 if Left-side string is less than Right-side string.
@@ -388,8 +407,8 @@ namespace NEString
 
     /**
      * \brief   Returns true if given character is a letter.
-     *          The checkup is done based on ISO8859
-     * \param	ch	    ASCII character to check.
+     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
+     * \param   ch      The character in range [-128 .. 127] to check.
      * \return	Returns true if character is a letter.
      **/
     template<typename CharType>
@@ -397,8 +416,8 @@ namespace NEString
 
     /**
      * \brief   Returns true if given character is a number.
-     *          The checkup is done based on ISO8859
-     * \param	ch	    ASCII character to check.
+     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
+     * \param   ch      The character in range [-128 .. 127] to check.
      * \return	Returns true if character is numeric.
      **/
     template<typename CharType>
@@ -406,8 +425,8 @@ namespace NEString
 
     /**
      * \brief   Returns true if given character is a letter or number.
-     *          The checkup is done based on ISO8859
-     * \param	ch	    ASCII character to check.
+     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
+     * \param   ch      The character in range [-128 .. 127] to check.
      * \return	Returns true if character is a letter or numeric.
      **/
     template<typename CharType>
@@ -415,8 +434,8 @@ namespace NEString
 
     /**
      * \brief   Returns true if given character is a symbol, i.e. not a control key
-     *          The checkup is done based on ISO8859
-     * \param	ch	    ASCII character to check.
+     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
+     * \param   ch      The character in range [-128 .. 127] to check.
      * \return	Returns true if character is a symbol.
      **/
     template<typename CharType>
@@ -424,8 +443,8 @@ namespace NEString
 
     /**
      * \brief   Returns true if given character is a white-space.
-     *          The checkup is done based on ISO8859
-     * \param	ch	    ASCII character to check.
+     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
+     * \param   ch      The character in range [-128 .. 127] to check.
      * \return	Returns true if character is white-space symbol.
      **/
     template<typename CharType>
@@ -433,8 +452,8 @@ namespace NEString
 
     /**
      * \brief   Returns true if given character is used as delimiter in the syntax.
-     *          The checkup is done based on ISO8859
-     * \param	ch	    ASCII character to check.
+     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
+     * \param   ch      The character in range [-128 .. 127] to check.
      * \return	Returns true if character is syntax separator symbol.
      **/
     template<typename CharType>
@@ -442,8 +461,8 @@ namespace NEString
 
     /**
      * \brief	Checks whether the passed single character is end of line or not.
-     *          The checkup is done based on ISO8859
-     * \param	ch	    ASCII character to check.
+     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
+     * \param   ch      The character in range [-128 .. 127] to check.
      * \return	Returns true if character is end of line
      **/
     template<typename CharType>
@@ -451,8 +470,8 @@ namespace NEString
 
     /**
      * \brief	Checks whether the passed single character is a carriage return symbol or not.
-     *          The checkup is done based on ISO8859
-     * \param	ch	    ASCII character to check.
+     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
+     * \param   ch      The character in range [-128 .. 127] to check.
      * \return	Returns true if character is carriage return symbol.
      **/
     template<typename CharType>
@@ -460,8 +479,8 @@ namespace NEString
 
     /**
      * \brief	Checks whether the passed single character is a new line symbol or not.
-     *          The checkup is done based on ISO8859
-     * \param	ch	    ASCII character to check.
+     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
+     * \param   ch      The character in range [-128 .. 127] to check.
      * \return	Returns true if character is carriage return symbol.
      **/
     template<typename CharType>
@@ -469,19 +488,28 @@ namespace NEString
 
     /**
      * \brief	Checks whether the passed single character is an  end of string symbol.
-     *          The checkup is done based on ISO8859
-     * \param	ch	    ASCII character to check.
+     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
+     * \param   ch      The character in range [-128 .. 127] to check.
      * \return	Returns true if character is end of string symbol.
      **/
     template<typename CharType>
     inline bool isEndOfString( CharType ch );
 
     /**
+     * \brief	Checks whether the passed single character is a control symbol.
+     *          The checkup is done based on first 256 symbols based on UTF-8 code page.
+     * \param   ch      The character in range [-128 .. 127] to check.
+     * \return	Returns true if character is a control symbol.
+     **/
+    template<typename CharType>
+    inline bool isControl(CharType ch);
+
+    /**
      * \brief   Checks whether the given character is readable or not.
      *          Readable are characters, which can be read by human and white-space.
-     * \param   ch      ASCII character to check.
+     * \param   ch      The character in range [-128 .. 127] to check.
      * \return  Returns true if character is readable.
-     * \tparam  CharType    The type of ASCII range character. Expecting 8-bit or 16-bit character in range 0 - 0xFF
+     * \tparam  CharType    The type of character (char or wchar_t). Expecting 8-bit or 16-bit character in range 0 - 0xFF
      * \note    The readable and printable characters differ, which readable character can be read without
      *          additional system support. For example, the horizontal and vertical tabs, or carriage return are not considered as readable.
      * \see     isPrintable
@@ -493,9 +521,9 @@ namespace NEString
      * \brief   Checks whether the given character is printable or not.
      *          Printable are all characters, which can be printed. These include all readable characters, 
      *          plus all other white-spaces like tabs, new-line, carriage return, etc..
-     * \param   ch      ASCII character to check.
+     * \param   ch      The character in range [-128 .. 127] to check.
      * \return  Returns true if character is printable.
-     * \tparam  CharType    The type of ASCII range character. Expecting 8-bit or 16-bit character in range 0 - 0xFF
+     * \tparam  CharType    The type of character. Expecting 8-bit or 16-bit character in range 0 - 0xFF
      * \note    The printable characters include readable characters, but not vice-versa. In addition, it includes
      *          all other white-spaces like tabs, new-line, carriage return, etc.
      * \see     isPrintable
@@ -505,9 +533,9 @@ namespace NEString
 
     /**
      * \brief   Checks whether the character is one of matches in the sequence.
-     * \param   ch          The character to check.
+     * \param   ch          The character in range [-128 .. 127] to check.
      * \param   chSequence  The sequence of characters to have at least one match.
-     * \tparam  CharType    The type of ASCII range character. Expecting 8-bit or 16-bit character in range 0 - 0xFF
+     * \tparam  CharType    The type of character. Expecting 8-bit or 16-bit character in range 0 - 0xFF
      * \return  Returns true if given character matches one of entries in the given sequence.
      **/
     template<typename CharType>
@@ -1280,8 +1308,8 @@ bool NEString::stringStartsWith(const CharType * strString, const CharType * phr
             CharType ch2 = *phrase;
             if ( caseSensitive == false )
             {
-                ch1 = NEString::makeAsciiLower<CharType>(ch1);
-                ch2 = NEString::makeAsciiLower<CharType>(ch2);
+                ch1 = NEString::makeLower<CharType>(ch1);
+                ch2 = NEString::makeLower<CharType>(ch2);
             }
 
             if (ch1 != ch2)
@@ -1309,7 +1337,7 @@ bool NEString::stringStartsWith(const CharType* strString, const CharType ch, bo
         }
         else
         {
-            result = NEString::makeAsciiLower<CharType>(*strString) == NEString::makeAsciiLower<CharType>(ch);
+            result = NEString::makeLower<CharType>(*strString) == NEString::makeLower<CharType>(ch);
         }
     }
 
@@ -1350,7 +1378,7 @@ bool NEString::stringEndsWith(const CharType* strString, const CharType ch, bool
         }
         else
         {
-            result = NEString::makeAsciiLower<CharType>(strString[len - 1]) == NEString::makeAsciiLower<CharType>(ch);
+            result = NEString::makeLower<CharType>(strString[len - 1]) == NEString::makeLower<CharType>(ch);
         }
     }
 
@@ -1608,25 +1636,25 @@ inline bool NEString::isReadable( CharType ch )
                                  NEString::eCharDefs::CD_Number |
                                  NEString::eCharDefs::CD_Symbol;
 
-    return (((NEString::getISO8859CharDef( ch ) & def) != 0) || (ch == ' '));
+    return (((NEString::getUTF8_256CharDef( ch ) & def) != 0) || (ch == ' '));
 }
 
 template<typename CharType>
 inline bool NEString::isPrintable( CharType ch )
 {
-    return ((NEString::getISO8859CharDef( ch ) & static_cast<unsigned short>(NEString::eCharDefs::CD_Printable)) != 0);
+    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<unsigned short>(NEString::eCharDefs::CD_Printable)) != 0);
 }
 
 template<typename CharType>
 inline bool NEString::isEndOfLine( CharType ch )
 {
-    return ((NEString::getISO8859CharDef( ch ) & static_cast<unsigned short>(NEString::eCharDefs::CD_EndOfLine)) != 0);
+    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<unsigned short>(NEString::eCharDefs::CD_EndOfLine)) != 0);
 }
 
 template<typename CharType>
 inline bool NEString::isCarriageReturn( CharType ch )
 {
-    return ((NEString::getISO8859CharDef( ch ) & static_cast<unsigned short>(NEString::eCharDefs::CD_CarReturn)) != 0);
+    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<unsigned short>(NEString::eCharDefs::CD_CarReturn)) != 0);
 }
 
 template<typename CharType>
@@ -1638,37 +1666,43 @@ bool NEString::isNewLine( CharType ch )
 template<typename CharType>
 inline bool NEString::isEndOfString( CharType ch )
 {
-    return ((NEString::getISO8859CharDef(ch) & static_cast<unsigned short>(NEString::eCharDefs::CD_EOfS)) != 0);
+    return ((NEString::getUTF8_256CharDef(ch) & static_cast<unsigned short>(NEString::eCharDefs::CD_EOfS)) != 0);
+}
+
+template<typename CharType>
+inline bool NEString::isControl(CharType ch)
+{
+    return ((NEString::getUTF8_256CharDef(ch) & static_cast<unsigned short>(NEString::eCharDefs::CD_Control)) != 0);
 }
 
 template<typename CharType>
 inline bool NEString::isSymbol( CharType ch )
 {
-    return ((NEString::getISO8859CharDef(ch) & static_cast<unsigned short>(NEString::eCharDefs::CD_Symbol)) != 0);
+    return ((NEString::getUTF8_256CharDef(ch) & static_cast<unsigned short>(NEString::eCharDefs::CD_Symbol)) != 0);
 }
 
 template<typename CharType>
 inline bool NEString::isWhitespace( CharType ch )
 {
-    return ((NEString::getISO8859CharDef( ch ) & static_cast<unsigned short>(NEString::eCharDefs::CD_WhiteSpace)) != 0);
+    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<unsigned short>(NEString::eCharDefs::CD_WhiteSpace)) != 0);
 }
 
 template<typename CharType>
 inline bool NEString::isDelimited( CharType ch )
 {
-    return ((NEString::getISO8859CharDef( ch ) & static_cast<unsigned short>(NEString::eCharDefs::CD_Delimiter)) != 0);
+    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<unsigned short>(NEString::eCharDefs::CD_Delimiter)) != 0);
 }
 
 template<typename CharType>
 inline bool NEString::isLetter(CharType ch)
 {
-    return ((NEString::getISO8859CharDef( ch ) & static_cast<unsigned short>(NEString::eCharDefs::CD_Letter)) != 0);
+    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<unsigned short>(NEString::eCharDefs::CD_Letter)) != 0);
 }
 
 template<typename CharType>
 inline bool NEString::isNumeric(CharType ch)
 {
-    return ((NEString::getISO8859CharDef( ch ) & static_cast<unsigned short>(NEString::eCharDefs::CD_Number)) != 0);
+    return ((NEString::getUTF8_256CharDef( ch ) & static_cast<unsigned short>(NEString::eCharDefs::CD_Number)) != 0);
 }
 
 template<typename CharType>
@@ -1677,7 +1711,33 @@ inline bool NEString::isAlphanumeric(CharType ch)
     constexpr unsigned int def = NEString::eCharDefs::CD_Letter | 
                                  NEString::eCharDefs::CD_Number;
 
-    return ((NEString::getISO8859CharDef( ch ) & def) != 0);
+    return ((NEString::getUTF8_256CharDef( ch ) & def) != 0);
+}
+
+template <typename CharType>
+inline CharType NEString::makeLower(CharType ch)
+{
+    // return ((ch >= 'A') && (ch <= 'Z') ? ch - 'A' + 'a' : ch);
+    return static_cast<CharType>(NEString::makeUTF8_256LowerChar(ch));
+}
+
+template <typename CharType>
+inline CharType NEString::makeUpper(CharType ch)
+{
+    // return ((ch >= 'a') && (ch <= 'z') ? ch - 'a' + 'A' : ch);
+    return static_cast<CharType>(NEString::makeUTF8_256UpperChar(ch));
+}
+
+template<typename CharType>
+inline bool NEString::isLower(CharType ch)
+{
+    return ((NEString::getUTF8_256CharDef(ch) & static_cast<unsigned short>(NEString::eCharDefs::CD_LetterLo)) == static_cast<unsigned short>(NEString::eCharDefs::CD_LetterLo));
+}
+
+template<typename CharType>
+inline bool NEString::isUpper(CharType ch)
+{
+    return ((NEString::getUTF8_256CharDef(ch) & static_cast<unsigned short>(NEString::eCharDefs::CD_LetterUp)) == static_cast<unsigned short>(NEString::eCharDefs::CD_LetterUp));
 }
 
 inline bool NEString::isPositionValid(NEString::CharPos pos)
@@ -1765,20 +1825,6 @@ NEString::CharCount NEString::copyString( CharDst *           strDst
     return static_cast<NEString::CharCount>(result);
 }
 
-template <typename CharType>
-inline CharType NEString::makeAsciiLower(CharType ch)
-{
-    // return ((ch >= 'A') && (ch <= 'Z') ? ch - 'A' + 'a' : ch);
-    return static_cast<CharType>(NEString::getISO8859LowerChar(ch));
-}
-
-template <typename CharType>
-inline CharType NEString::makeAsciiUpper(CharType ch)
-{
-    // return ((ch >= 'a') && (ch <= 'z') ? ch - 'a' + 'A' : ch);
-    return static_cast<CharType>(NEString::getISO8859UpperChar(ch));
-}
-
 template<typename CharLhs, typename CharRhs>
 inline NEMath::eCompare NEString::compareIgnoreCase( const CharLhs *leftSide, const CharRhs * rightSide )
 {
@@ -1813,8 +1859,8 @@ NEMath::eCompare NEString::compareStrings( const CharLhs *leftSide
             CharRhs chRight = 0;
             while ((charCount-- > 0) && (*leftSide != NEString::EndOfString) && (*rightSide != NEString::EndOfString))
             {
-                chLeft = NEString::makeAsciiLower<CharLhs>(*leftSide);
-                chRight = NEString::makeAsciiLower<CharRhs>(*rightSide);
+                chLeft = NEString::makeLower<CharLhs>(*leftSide);
+                chRight = NEString::makeLower<CharRhs>(*rightSide);
                 if (chLeft != static_cast<CharLhs>(chRight))
                 {
                     break;
@@ -1876,7 +1922,7 @@ inline NEMath::eCompare NEString::compareFast(const CharLhs *leftSide, const Cha
 template<typename CharType>
 inline NEMath::eCompare NEString::compare(const CharType * leftSide, const CharType * rightSide)
 {
-    return NEString::compare<CharType, CharType>(leftSide, rightSide);
+    return NEString::compareFast<CharType, CharType>(leftSide, rightSide);
 }
 
 

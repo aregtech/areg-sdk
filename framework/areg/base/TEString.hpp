@@ -12,7 +12,7 @@
  * \file        areg/base/TEString.hpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       AREG Platform, ASCII string Class.
+ * \brief       AREG Platform, String class template based on first 256 character in UTF-8 code page.
  ************************************************************************/
 /************************************************************************
  * Include files.
@@ -1011,58 +1011,66 @@ public:
 
     /**
      * \brief   Checks and returns true if the string starts with the given phrase.
+     *          Valid only the first 256 characters based on UTF-8 code page.
      * \param phrase            The phrase to check.
-     * \param isCaseSensitive   If false, ignores the upper and lower cases. Valid only for ASCII strings.
+     * \param isCaseSensitive   If false, ignores the upper and lower cases.
      **/
     inline bool startsWith(const TEString<CharType>& phrase, bool isCaseSensitive = true) const;
 
     /**
      * \brief   Checks and returns true if the string starts with the given phrase.
+     *          Valid only the first 256 characters based on UTF-8 code page.
      * \param phrase            The phrase to check.
-     * \param isCaseSensitive   If false, ignores the upper and lower cases. Valid only for ASCII strings.
+     * \param isCaseSensitive   If false, ignores the upper and lower cases.
      **/
     inline bool startsWith(const std::basic_string<CharType>& phrase, bool isCaseSensitive = true) const;
 
     /**
      * \brief   Checks and returns true if the string starts with the given phrase.
+     *          Valid only the first 256 characters based on UTF-8 code page.
      * \param phrase            The phrase to check.
-     * \param isCaseSensitive   If false, ignores the upper and lower cases. Valid only for ASCII strings.
+     * \param isCaseSensitive   If false, ignores the upper and lower cases.
      **/
     inline bool startsWith(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive = true) const;
 
     /**
      * \brief   Checks and returns true if the string starts with the given phrase.
+     *          Valid only the first 256 characters based on UTF-8 code page.
      * \param phrase            The phrase to check.
-     * \param isCaseSensitive   If false, ignores the upper and lower cases. Valid only for ASCII strings.
+     * \param isCaseSensitive   If false, ignores the upper and lower cases.
      * \param count             The number of character in the phase. If NEString::COUNT_ALL it compare the complete phase.
      **/
     inline bool startsWith(const CharType* phrase, bool isCaseSensitive = true, NEString::CharCount count = NEString::COUNT_ALL) const;
 
     /**
      * \brief   Checks and returns true if the string ends with the given phrase.
+     *          Valid only the first 256 characters based on UTF-8 code page.
      * \param phrase            The phrase to check.
-     * \param isCaseSensitive   If false, ignores the upper and lower cases. Valid only for ASCII strings.
+     * \param isCaseSensitive   If false, ignores the upper and lower cases.
      **/
     inline bool endsWith(const TEString<CharType>& phrase, bool isCaseSensitive = true) const;
 
     /**
      * \brief   Checks and returns true if the string ends with the given phrase.
+     *          Valid only the first 256 characters based on UTF-8 code page.
      * \param phrase            The phrase to check.
-     * \param isCaseSensitive   If false, ignores the upper and lower cases. Valid only for ASCII strings.
+     * \param isCaseSensitive   If false, ignores the upper and lower cases.
      **/
     inline bool endsWith(const std::basic_string<CharType>& phrase, bool isCaseSensitive = true) const;
 
     /**
      * \brief   Checks and returns true if the string ends with the given phrase.
+     *          Valid only the first 256 characters based on UTF-8 code page.
      * \param phrase            The phrase to check.
-     * \param isCaseSensitive   If false, ignores the upper and lower cases. Valid only for ASCII strings.
+     * \param isCaseSensitive   If false, ignores the upper and lower cases.
      **/
     inline bool endsWith(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive = true) const;
 
     /**
      * \brief   Checks and returns true if the string ends with the given phrase.
+     *          Valid only the first 256 characters based on UTF-8 code page.
      * \param phrase            The phrase to check.
-     * \param isCaseSensitive   If false, ignores the upper and lower cases. Valid only for ASCII strings.
+     * \param isCaseSensitive   If false, ignores the upper and lower cases.
      * \param count             The number of character in the phase. If NEString::COUNT_ALL it compare the complete phase.
      **/
     inline bool endsWith(const CharType* phrase, bool isCaseSensitive = true, NEString::CharCount count = NEString::COUNT_ALL) const;
@@ -2857,6 +2865,7 @@ inline TEString<CharType>& TEString<CharType>::makeAlphanumeric(void)
             if (std::isalnum<CharType>(*src, loc))
                 *dst++ = *src;
         }
+
         *dst = static_cast<CharType>(NEString::EndOfString);
         mData.resize(static_cast<uint32_t>(dst - begin));
     }
