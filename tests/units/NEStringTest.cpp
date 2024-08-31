@@ -1,4 +1,4 @@
-/************************************************************************
+ï»¿/************************************************************************
  * This file is part of the AREG SDK core engine.
  * AREG SDK is dual-licensed under Free open source (Apache version 2.0
  * License) and Commercial (with various pricing models) licenses, depending
@@ -13,9 +13,9 @@
  * \brief       AREG Platform, AREG framework unit test file.
  *              The unit test for methods in NEString namespace.
  ************************************************************************/
- /************************************************************************
-  * Include files.
-  ************************************************************************/
+/************************************************************************
+ * Include files.
+ ************************************************************************/
 #include "units/GUnitTest.hpp"
 #include "gtest/gtest-param-test.h"
 
@@ -209,7 +209,7 @@ TEST(NEStringTest, LowerUpperNumericCase)
                  (ch == static_cast<char>(0x8E)) ||
                  (ch == static_cast<char>(0x9F)) )
         {
-            // is upper, control --> 138 (Š), 140 (Œ), 142 (Ž), 159 (Ÿ)
+            // is upper, control --> 138 (Å ), 140 (Å’), 142 (Å½), 159 (Å¸)
             EXPECT_TRUE(NEString::isUpper<char>(ch));
             EXPECT_FALSE(NEString::isLower<char>(ch));
             EXPECT_EQ(ch, upper);
@@ -223,7 +223,7 @@ TEST(NEStringTest, LowerUpperNumericCase)
                  (ch == static_cast<char>(0x9C)) ||
                  (ch == static_cast<char>(0x9E)) )
         {
-            // is lower, control --> 154 (š), 156 (œ), 158 (ž)
+            // is lower, control --> 154 (Å¡), 156 (Å“), 158 (Å¾)
             EXPECT_TRUE(NEString::isLower<char>(ch));
             EXPECT_FALSE(NEString::isUpper<char>(ch));
             EXPECT_EQ(ch, lower);
@@ -235,7 +235,7 @@ TEST(NEStringTest, LowerUpperNumericCase)
         }
         else if (ch == static_cast<char>(0xDF))
         {
-            // is German letter 'ss' --> 223 (ß), has no upper case
+            // is German letter 'ss' --> 223 (ÃŸ), has no upper case
             EXPECT_FALSE(NEString::isNumeric<char>(ch));
             EXPECT_TRUE(NEString::isLetter<char>(ch));
             EXPECT_TRUE(NEString::isAlphanumeric<char>(ch));
@@ -262,40 +262,76 @@ TEST(NEStringTest, LowerUpperNumericCase)
     }
 }
 
+/************************************************************************
+ * Parameterized tests to compare strings, with and without case sensitive
+ ************************************************************************/
+/**
+ * \brief   Parameters of strings and expected results of the tests.
+ **/
 struct CompareStringParams
 {
-    std::string_view left;
-    std::string_view right;
-    int              count;
-    bool             sensitive;
-    int              resSensitive;
-    int              resIgnore;
+    std::string_view left;          //!< Left string
+    std::string_view right;         //!< Right string
+    int              count;         //!< Characters count
+    int              resAllSens;    //!< Test result when compare all strings, case sensitive
+    int              resAllIgnore;  //!< Test result when compare all strings, ignore case sensitive
+    int              resCountSens;  //!< Test result when compare count number of characters in the strings, case sensitive
+    int              resCountIgnore;//!< Test result when compare count number of characters in the strings, ignore case sensitive
 };
 
+//!< Declare parameters.
 struct StringTestCompare : public ::testing::TestWithParam<CompareStringParams>
 {
     CompareStringParams params;
 };
 
-CompareStringParams StringTestCompare_params[]
+//!< List of parameters
+static CompareStringParams StringTestCompare_params[]
 {
-      { {"12345"}, {"12345"}, -2, false, 0, 0 }
-    , { {"12345"}, {"12345"}, -2, true , 0, 0 }
+      { {"12345"}   , {"12345"}     , -2,  0,  0,  0,  0 }
+    , { {"abcdefg"} , {"ABCDEFG"}   , -2,  1,  0,  1,  0 }
+    , { {"ABCDEFG"} , {"abcdefg"}   , -2, -1,  0, -1,  0 }
+    , { {"ABCdefg"} , {"ABcdeFG"}   , -2, -1,  0, -1,  0 }
+    , { {"ABcdEFG"} , {"AbcdEFG"}   , -2, -1,  0, -1,  0 }
+    , { {"abcdEFG"} , {"abCdEFG"}   , -2,  1,  0,  1,  0 }
+    , { {"12345"}   , {"123"}       ,  3,  1,  1,  0,  0 }
+    , { {"ABCdefg"} , {"ABcdEFG"}   ,  3, -1,  0, -1,  0 }
+    , { {"ABcdEFG"} , {"ABc"}       ,  3,  1,  1,  0,  0 }
+    , { {"abcdEFG"} , {"abCd"}      ,  3,  1,  1,  1,  0 }
+    , { {"abcdefg"} , {"abCdefg"}   ,  3,  1,  0,  1,  0 }
+    , { {"abc"}     , {"abCdefg"}   ,  3,  1, -1,  1,  0 }
 };
 
-INSTANTIATE_TEST_CASE_P(NEStringTest, StringTestCompare, ::testing::ValuesIn<CompareStringParams>(StringTestCompare_params));
-
+INSTANTIATE_TEST_SUITE_P(NEStringTest, StringTestCompare, ::testing::ValuesIn<CompareStringParams>(StringTestCompare_params));
+/**
+ * \brief   Compares strings with and without case sensitive, all characters or only `count` numbers of characters.
+ **/
 TEST_P(StringTestCompare, CompareStrings)
 {
     const CompareStringParams& param = GetParam();
     const char* left{ param.left.data() };
     const char* right{ param.right.data() };
 
-    EXPECT_EQ(NEString::compare<char>(left, right), static_cast<NEMath::eCompare>(param.resSensitive));
-    EXPECT_EQ(NEString::compareFastIgnoreCase<char>(left, right), static_cast<NEMath::eCompare>(param.resIgnore));
-    EXPECT_EQ(NEString::compareFast<char>(left, right), static_cast<NEMath::eCompare>(param.resSensitive));
-    EXPECT_EQ(NEString::compareFast<char>(left, right, param.count), static_cast<NEMath::eCompare>(param.resSensitive));
-    EXPECT_TRUE(NEString::compareStrings(left, right, param.count, param.sensitive) == static_cast<NEMath::eCompare>(param.resSensitive));
-    EXPECT_TRUE(NEString::compareIgnoreCase(left, right) == static_cast<NEMath::eCompare>(param.resIgnore));
-}
+    NEMath::eCompare result{};
 
+    result = NEString::compare<char, char>(left, right);
+    EXPECT_EQ(result, static_cast<NEMath::eCompare>(param.resAllSens));
+
+    result = NEString::compareIgnoreCase<char>(left, right);
+    EXPECT_EQ(result, static_cast<NEMath::eCompare>(param.resAllIgnore));
+
+    result = NEString::compare<char, char>(left, right, param.count);
+    EXPECT_EQ(result, static_cast<NEMath::eCompare>(param.resCountSens));
+
+    result = NEString::compareIgnoreCase<char, char>(left, right, param.count);
+    EXPECT_EQ(result, static_cast<NEMath::eCompare>(param.resCountIgnore));
+
+    result = NEString::compareFast<char>(left, right, param.count);
+    EXPECT_EQ(result, static_cast<NEMath::eCompare>(param.resCountSens));
+
+    result = NEString::compareStrings<char, char>(left, right, param.count, true);
+    EXPECT_EQ(result, static_cast<NEMath::eCompare>(param.resCountSens));
+
+    result = NEString::compareStrings<char, char>(left, right, param.count, false);
+    EXPECT_EQ(result, static_cast<NEMath::eCompare>(param.resCountIgnore));
+}

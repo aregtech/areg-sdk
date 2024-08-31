@@ -33,7 +33,6 @@
 #define PRINT   static_cast<uint16_t>(NEString::eCharDefs::CD_Printable                                         )   /* All printable characters, symbols and numbers, which may change text, including tab and whitespace */
 #define NUMBER  static_cast<uint16_t>(NEString::eCharDefs::CD_Number     | NEString::eCharDefs::CD_Printable    )   /* All numbers */
 #define SYMBOL  static_cast<uint16_t>(NEString::eCharDefs::CD_Symbol     | NEString::eCharDefs::CD_Printable    )   /* All symbols */
-#define LETTER  static_cast<uint16_t>(NEString::eCharDefs::CD_Letter     | NEString::eCharDefs::CD_Printable    )   /* All letters */
 #define LET_UP  static_cast<uint16_t>(NEString::eCharDefs::CD_LetterUp   | NEString::eCharDefs::CD_Printable    )   /* All upper case letters */
 #define LET_LO  static_cast<uint16_t>(NEString::eCharDefs::CD_LetterLo   | NEString::eCharDefs::CD_Printable    )   /* All lower case letters */
 

@@ -251,7 +251,7 @@ public:
      *          in the same sequence as they present in the source.
      * \param	src	    The source of array elements.
      **/
-    inline void copy(const TEFixedArray< VALUE >& src);
+    void copy(const TEFixedArray< VALUE >& src);
 
     /**
      * \brief	Moves all entries from given source. On output, the source of array is empty.
@@ -408,13 +408,7 @@ inline bool TEFixedArray<VALUE>::isValidIndex(uint32_t whichIndex) const
 template< typename VALUE >
 inline bool TEFixedArray<VALUE>::contains(const VALUE& elemSearch, uint32_t startAt /*= 0*/) const
 {
-    bool result = false;
-    for (uint32_t i = startAt; (result == false) && (i < mElemCount); ++i)
-    {
-        result = mValueList[i] == elemSearch;
-    }
-
-    return result;
+    return (find(elemSearch, startAt) != NECommon::INVALID_INDEX);
 }
 
 template< typename VALUE >
@@ -474,7 +468,7 @@ inline const VALUE* TEFixedArray<VALUE>::getValues( void ) const
 }
 
 template< typename VALUE >
-inline void TEFixedArray<VALUE>::copy(const TEFixedArray< VALUE >& src)
+void TEFixedArray<VALUE>::copy(const TEFixedArray< VALUE >& src)
 {
     if (static_cast<const TEFixedArray<VALUE> *>(this) != &src)
     {
@@ -495,12 +489,8 @@ inline void TEFixedArray<VALUE>::move(TEFixedArray< VALUE > && src) noexcept
 {
     if (static_cast<const TEFixedArray<VALUE> *>(this) != &src)
     {
-        delete[] mValueList;
-
-        mValueList = src.mValueList;
-        mElemCount = src.mElemCount;
-        src.mValueList = nullptr;
-        src.mElemCount = 0;
+        std::swap(mValueList, src.mValueList);
+        std::swap(mElemCount, src.mElemCount);
     }
 }
 
@@ -522,7 +512,7 @@ inline int TEFixedArray<VALUE>::find(const VALUE& elemSearch, uint32_t startAt /
 
 
 template< typename VALUE >
-inline void TEFixedArray<VALUE>::resize(uint32_t newLength)
+void TEFixedArray<VALUE>::resize(uint32_t newLength)
 {
     VALUE * newList = newLength != 0 ? DEBUG_NEW VALUE[newLength] : nullptr;
     uint32_t count = MACRO_MIN(newLength, mElemCount);

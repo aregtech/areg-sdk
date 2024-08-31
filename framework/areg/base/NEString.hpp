@@ -284,7 +284,8 @@ namespace NEString
 
     /**
      * \brief   Compares 2 given strings (Left and Right side). The function compares 'charCount' characters
-     *          in the strings or until end of string if charCount is equal to NEString::END_POS.
+     *          in the strings or until end of string is reached. If the number of characters is equal to `NEString::COUNT_ALL`
+     *          if compares the complete 2 string.
      *          if 'caseSensitive' is false, function ignores capital and lower cases.
      *          The function is valid only for first 256 character based on UTF-8 code page:
      *              -1 if Left-side string is bigger than Right-side string
@@ -292,12 +293,15 @@ namespace NEString
      *               1 if Left-side string is less than Right-side string.
      * \param   leftSide        The Left-side string to compare
      * \param   rightSide       The Right-side string to compare
-     * \param   charCount       The characters to compare or until end of string if equal to 'NEString::END_POS'
+     * \param   charCount       The number of characters to compare or until end of string is reached.
+     *                          If the number of characters is `NEString::COUNT_ALL`, compares the complete string.
      * \param   caseSensitive   If false, it will ignore upper and lower cases. 
      * \return  The function returns:
      *              -1 if Left-side string is bigger than Right-side string
      *               0 if Left-side and Right-side strings are equal
      *               1 if Left-side string is less than Right-side string.
+     * \tparam  CharLhs     The type of characters on left string. Either `char` or `wchar_t`.
+     * \tparam  CharRhs     The type of characters on right string. Either `char` or `wchar_t`.
      * \note    The results are based 'charCount' and 'caseSensitive' parameters.
      **/
     template<typename CharLhs, typename CharRhs>
@@ -312,18 +316,59 @@ namespace NEString
      *              -1 if Left-side string is bigger than Right-side string
      *               0 if Left-side and Right-side strings are equal
      *               1 if Left-side string is less than Right-side string.
+     * \param   leftSide    The Left-side string to compare.
+     * \param   rightSide   The Right-side string to compare.
+     * \param   count       The number of characters to compare.
+     * \return  The function returns:
+     *              -1 if Left-side string is bigger than Right-side string
+     *               0 if Left-side and Right-side strings are equal
+     *               1 if Left-side string is less than Right-side string.
+     * \tparam  CharLhs     The type of characters on left string. Either `char` or `wchar_t`.
+     * \tparam  CharRhs     The type of characters on right string. Either `char` or `wchar_t`.
+     **/
+    template<typename CharLhs, typename CharRhs>
+    inline NEMath::eCompare compareIgnoreCase( const CharLhs *leftSide, const CharRhs * rightSide, NEString::CharCount count );
+
+    /**
+     * \brief   Compares 2 string ignoring sensitivity. The comparing is done until first match of null-termination
+     *          and it is case sensitive.
+     *          The function is valid only for first 256 character based on UTF-8 code page:
+     *              -1 if Left-side string is bigger than Right-side string
+     *               0 if Left-side and Right-side strings are equal
+     *               1 if Left-side string is less than Right-side string.
      * \param   leftSide        The Left-side string to compare
      * \param   rightSide       The Right-side string to compare
      * \return  The function returns:
      *              -1 if Left-side string is bigger than Right-side string
      *               0 if Left-side and Right-side strings are equal
      *               1 if Left-side string is less than Right-side string.
+     * \tparam  CharLhs     The type of characters on left string. Either `char` or `wchar_t`.
+     * \tparam  CharRhs     The type of characters on right string. Either `char` or `wchar_t`.
      **/
     template<typename CharLhs, typename CharRhs>
-    inline NEMath::eCompare compareIgnoreCase( const CharLhs *leftSide, const CharRhs * rightSide );
+    inline NEMath::eCompare compareIgnoreCase(const CharLhs* leftSide, const CharRhs* rightSide);
 
     /**
-     * \brief   Fast compares 2 string. The comparing is done until first match of null-termination
+     * \brief   Compares 2 string. Compares first count characters.
+     *          The function is valid only for first 256 character based on UTF-8 code page:
+     *              -1 if Left-side string is less than Right-side string
+     *               0 if Left-side and Right-side strings are equal
+     *               1 if Left-side string is bigger than Right-side string.
+     * \param   leftSide    The Left-side string to compare.
+     * \param   rightSide   The Right-side string to compare.
+     * \param   count       The number of characters to compare.
+     * \return  The function returns:
+     *              -1 if Left-side string is less than Right-side string
+     *               0 if Left-side and Right-side strings are equal
+     *               1 if Left-side string is bigger than Right-side string.
+     * \tparam  CharLhs     The type of characters on left string. Either `char` or `wchar_t`.
+     * \tparam  CharRhs     The type of characters on right string. Either `char` or `wchar_t`.
+     **/
+    template<typename CharLhs, typename CharRhs>
+    inline NEMath::eCompare compare(const CharLhs* leftSide, const CharRhs* rightSide, NEString::CharCount count);
+
+    /**
+     * \brief   Compares 2 string. The comparing is done until first match of null-termination
      *          and it is case sensitive.
      *          The function is valid only for first 256 character based on UTF-8 code page:
      *              -1 if Left-side string is less than Right-side string
@@ -335,41 +380,11 @@ namespace NEString
      *              -1 if Left-side string is less than Right-side string
      *               0 if Left-side and Right-side strings are equal
      *               1 if Left-side string is bigger than Right-side string.
+     * \tparam  CharLhs     The type of characters on left string. Either `char` or `wchar_t`.
+     * \tparam  CharRhs     The type of characters on right string. Either `char` or `wchar_t`.
      **/
     template<typename CharLhs, typename CharRhs>
-    inline NEMath::eCompare compareFast(const CharLhs *leftSide, const CharRhs * rightSide);
-
-    /**
-     * \brief   Compares 2 null-terminated strings and returns:
-     *          -1 if leftSide string is smaller than the rightSide string;
-     *           0 if leftSide and rightSide strings are equal;
-     *           1 if leftSide string is bigger than the rightSide string.
-     * 
-     * \tparam  CharType    Either char or wchar_t.
-     * \param   leftSide    The null-terminated string to compare.
-     * \param   rightSide   The null-terminated string to compare.
-     * \return  Returns -1 if leftSide string is smaller than rightSide string.
-     *          Returns 0 if leftSide and rightSide strings are equal.
-     *          Returns 1 if leftSide string is bigger than the rightSide string.
-     **/
-    template<typename CharType>
-    inline NEMath::eCompare compare(const CharType * leftSide, const CharType * rightSide);
-
-    /**
-     * \brief   Fast compares 2 string. Compares first count characters.
-     *          The function is valid only for first 256 character based on UTF-8 code page:
-     *              -1 if Left-side string is less than Right-side string
-     *               0 if Left-side and Right-side strings are equal
-     *               1 if Left-side string is bigger than Right-side string.
-     * \param   leftSide        The Left-side string to compare
-     * \param   rightSide       The Right-side string to compare
-     * \return  The function returns:
-     *              -1 if Left-side string is less than Right-side string
-     *               0 if Left-side and Right-side strings are equal
-     *               1 if Left-side string is bigger than Right-side string.
-     **/
-    template<typename CharLhs, typename CharRhs>
-    inline NEMath::eCompare compareFast( const CharLhs *leftSide, const CharRhs * rightSide, NEString::CharCount count );
+    inline NEMath::eCompare compare(const CharLhs* leftSide, const CharRhs* rightSide);
 
     /**
      * \brief   Fast compares first count symbols of 2 string. The comparing case sensitive.
@@ -379,31 +394,15 @@ namespace NEString
      *               1 if Left-side string is bigger than Right-side string.
      * \param   leftSide    The Left-side string to compare
      * \param   rightSide   The Right-side string to compare
-     * \param   count       Number of characters to compare.
+     * \param   count       The number of characters to compare.
      * \return  The function returns:
      *              -1 if Left-side string is less than Right-side string
      *               0 if Left-side and Right-side strings are equal
      *               1 if Left-side string is bigger than Right-side string.
+     * \tparam  CharType    The type of characters. Either `char` or `wchar_t`.
      **/
     template<typename CharType>
     inline NEMath::eCompare compareFast( const CharType * leftSide, const CharType * rightSide, NEString::CharCount count );
-
-    /**
-     * \brief   Fast compares 2 string ignoring sensitivity. The comparing is done until first match of null-termination
-     *          and it is case sensitive.
-     *          The function is valid only for first 256 character based on UTF-8 code page:
-     *              -1 if Left-side string is bigger than Right-side string
-     *               0 if Left-side and Right-side strings are equal
-     *               1 if Left-side string is less than Right-side string.
-     * \param   leftSide        The Left-side string to compare
-     * \param   rightSide       The Right-side string to compare
-     * \return  The function returns:
-     *              -1 if Left-side string is bigger than Right-side string
-     *               0 if Left-side and Right-side strings are equal
-     *               1 if Left-side string is less than Right-side string.
-     **/
-    template<typename CharLhs, typename CharRhs>
-    inline NEMath::eCompare compareFastIgnoreCase(const CharLhs *leftSide, const CharRhs * rightSide);
 
     /**
      * \brief   Returns true if given character is a letter.
@@ -1826,12 +1825,6 @@ NEString::CharCount NEString::copyString( CharDst *           strDst
 }
 
 template<typename CharLhs, typename CharRhs>
-inline NEMath::eCompare NEString::compareIgnoreCase( const CharLhs *leftSide, const CharRhs * rightSide )
-{
-    return NEString::compareStrings<CharLhs, CharRhs>(leftSide, rightSide, NEString::COUNT_ALL, false);
-}
-
-template<typename CharLhs, typename CharRhs>
 NEMath::eCompare NEString::compareStrings( const CharLhs *leftSide
                                          , const CharRhs * rightSide
                                          , NEString::CharCount charCount    /*= COUNT_ALL*/
@@ -1839,41 +1832,93 @@ NEMath::eCompare NEString::compareStrings( const CharLhs *leftSide
 {
     NEMath::eCompare result = NEMath::eCompare::Bigger;
 
-    if (charCount == NEString::COUNT_ALL)
-    {
-        result = caseSensitive ? NEString::compareFast<CharLhs, CharRhs>(leftSide, rightSide) : NEString::compareFastIgnoreCase<CharLhs, CharRhs>(leftSide, rightSide);
-    }
-    else if ( reinterpret_cast<const void *>(leftSide) == reinterpret_cast<const void *>(rightSide) )
+    if (reinterpret_cast<const void*>(leftSide) == reinterpret_cast<const void*>(rightSide))
     {
         result = NEMath::eCompare::Equal;
     }
-    else if ( (leftSide != nullptr) && (rightSide != nullptr) )
+    else if ((leftSide != nullptr) && (rightSide != nullptr))
     {
-        if (caseSensitive)
+        if (charCount == NEString::COUNT_ALL)
         {
-            result = NEString::compareFast<CharLhs, CharRhs>(leftSide, rightSide, charCount);
+            CharLhs chLeft{ 0 };
+            CharRhs chRight{ 0 };
+            if (caseSensitive)
+            {
+                while (true)
+                {
+                    chLeft = *leftSide;
+                    chRight = *rightSide;
+                    if ((chLeft != static_cast<CharLhs>(chRight)) || (chLeft == NEString::EndOfString) || (chRight == NEString::EndOfString))
+                    {
+                        break;
+                    }
+
+                    ++leftSide;
+                    ++rightSide;
+                }
+            }
+            else
+            {
+                while (true)
+                {
+                    chLeft = NEString::makeLower<CharLhs>(*leftSide);
+                    chRight = NEString::makeLower<CharRhs>(*rightSide);
+                    if ((chLeft != static_cast<CharLhs>(chRight)) || (chLeft == NEString::EndOfString) || (chRight == NEString::EndOfString))
+                    {
+                        break;
+                    }
+
+                    ++leftSide;
+                    ++rightSide;
+                }
+            }
+
+            if (chLeft == static_cast<CharLhs>(chRight))
+                result = NEMath::eCompare::Equal;
+            else if (chLeft < static_cast<CharLhs>(chRight))
+                result = NEMath::eCompare::Smaller;
         }
         else
         {
-            CharLhs chLeft = 0;
-            CharRhs chRight = 0;
-            while ((charCount-- > 0) && (*leftSide != NEString::EndOfString) && (*rightSide != NEString::EndOfString))
+            CharLhs chLeft{ 0 };
+            CharRhs chRight{ 0 };
+            if (caseSensitive)
             {
-                chLeft = NEString::makeLower<CharLhs>(*leftSide);
-                chRight = NEString::makeLower<CharRhs>(*rightSide);
-                if (chLeft != static_cast<CharLhs>(chRight))
+                while (charCount > 0)
                 {
-                    break;
+                    chLeft = *leftSide;
+                    chRight = *rightSide;
+                    if ((chLeft != static_cast<CharLhs>(chRight)) || (chLeft == NEString::EndOfString) || (chRight == NEString::EndOfString))
+                    {
+                        break;
+                    }
+
+                    ++leftSide;
+                    ++rightSide;
+                    --charCount;
                 }
+            }
+            else
+            {
+                while (charCount > 0)
+                {
+                    chLeft = NEString::makeLower<CharLhs>(*leftSide);
+                    chRight = NEString::makeLower<CharRhs>(*rightSide);
+                    if ((chLeft != static_cast<CharLhs>(chRight)) || (chLeft == NEString::EndOfString) || (chRight == NEString::EndOfString))
+                    {
+                        break;
+                    }
 
-                ++leftSide;
-                ++rightSide;
+                    ++leftSide;
+                    ++rightSide;
+                    --charCount;
+                }
             }
 
-            if (chLeft < static_cast<CharLhs>(chRight))
-                result = NEMath::eCompare::Smaller;
-            else if (chLeft == static_cast<CharLhs>(chRight))
+            if (charCount == 0)
                 result = NEMath::eCompare::Equal;
+            else if (chLeft < static_cast<CharLhs>(chRight))
+                result = NEMath::eCompare::Smaller;
         }
     }
     else if ( rightSide != nullptr )
@@ -1885,142 +1930,46 @@ NEMath::eCompare NEString::compareStrings( const CharLhs *leftSide
 }
 
 template<typename CharLhs, typename CharRhs>
-inline NEMath::eCompare NEString::compareFast(const CharLhs *leftSide, const CharRhs * rightSide)
+inline NEMath::eCompare NEString::compareIgnoreCase(const CharLhs* leftSide, const CharRhs* rightSide, NEString::CharCount count)
 {
-    NEMath::eCompare result = NEMath::eCompare::Bigger;
-
-    if ( reinterpret_cast<const void *>(leftSide) == reinterpret_cast<const void *>(rightSide) )
-    {
-        result = NEMath::eCompare::Equal;
-    }
-    else if ( (leftSide != nullptr) && (rightSide != nullptr) )
-    {
-        while ((*leftSide != NEString::EndOfString) && (*rightSide != NEString::EndOfString))
-        {
-            if (*leftSide != static_cast<CharLhs>(*rightSide))
-            {
-                break;
-            }
-
-            ++leftSide;
-            ++rightSide;
-        }
-
-        if (*leftSide == static_cast<CharLhs>(*rightSide))
-            result = NEMath::eCompare::Equal;
-        else if (*leftSide < static_cast<CharLhs>(*rightSide))
-            result = NEMath::eCompare::Smaller;
-    }
-    else if (rightSide != nullptr)
-    {
-        result = NEMath::eCompare::Smaller;
-    }
-
-    return result;
+    return NEString::compareStrings<CharLhs, CharRhs>(leftSide, rightSide, count, false);
 }
-
-template<typename CharType>
-inline NEMath::eCompare NEString::compare(const CharType * leftSide, const CharType * rightSide)
-{
-    return NEString::compareFast<CharType, CharType>(leftSide, rightSide);
-}
-
 
 template<typename CharLhs, typename CharRhs>
-inline NEMath::eCompare NEString::compareFast( const CharLhs *leftSide, const CharRhs * rightSide, NEString::CharCount count )
+inline NEMath::eCompare NEString::compareIgnoreCase(const CharLhs* leftSide, const CharRhs* rightSide)
 {
-    NEMath::eCompare result = NEMath::eCompare::Bigger;
+    return NEString::compareStrings<CharLhs, CharRhs>(leftSide, rightSide, NEString::COUNT_ALL, false);
+}
 
-    if ( count == NEString::COUNT_ALL )
-    {
-        result = NEString::compareFast<CharLhs, CharRhs>(leftSide, rightSide);
-    }
-    else if ( reinterpret_cast<const void *>(leftSide) == reinterpret_cast<const void *>(rightSide) )
-    {
-        result = NEMath::eCompare::Equal;
-    }
-    else if ( (leftSide != nullptr) && (rightSide != nullptr) )
-    {
-        while ((*leftSide != NEString::EndOfString) && (*rightSide != NEString::EndOfString))
-        {
-            if (*leftSide != static_cast<CharLhs>(*rightSide))
-            {
-                break;
-            }
+template<typename CharLhs, typename CharRhs>
+inline NEMath::eCompare NEString::compare(const CharLhs* leftSide, const CharRhs* rightSide)
+{
+    return NEString::compareStrings<CharLhs, CharRhs>(leftSide, rightSide, NEString::COUNT_ALL, true);
+}
 
-            ++leftSide;
-            ++rightSide;
-        }
-
-        if (*leftSide == static_cast<CharLhs>(*rightSide))
-            result = NEMath::eCompare::Equal;
-        else if (*leftSide < static_cast<CharLhs>(*rightSide))
-            result = NEMath::eCompare::Smaller;
-    }
-    else if ( rightSide != nullptr )
-    {
-        result = NEMath::eCompare::Smaller;
-    }
-
-    return result;
+template<typename CharLhs, typename CharRhs>
+inline NEMath::eCompare NEString::compare(const CharLhs* leftSide, const CharRhs* rightSide, NEString::CharCount count)
+{
+    return NEString::compareStrings<CharLhs, CharRhs>(leftSide, rightSide, count, true);
 }
 
 template<typename CharType>
-inline NEMath::eCompare NEString::compareFast( const CharType * leftSide, const CharType * rightSide, NEString::CharCount count )
+inline NEMath::eCompare NEString::compareFast(const CharType* leftSide, const CharType* rightSide, NEString::CharCount count)
 {
     NEMath::eCompare result = NEMath::eCompare::Bigger;
     if (count == NEString::COUNT_ALL)
     {
-        result = NEString::compareFast<CharType, CharType>(rightSide, leftSide);
+        result = NEString::compareStrings<CharType, CharType>(leftSide, rightSide, NEString::COUNT_ALL, true);
     }
-    else if ( leftSide == rightSide )
+    else if (leftSide == rightSide)
     {
         result = NEMath::eCompare::Equal;
     }
-    else if ( (leftSide != nullptr) && (rightSide != nullptr) )
+    else if ((leftSide != nullptr) && (rightSide != nullptr))
     {
-        result = NEMemory::memCompare( leftSide, rightSide, count * sizeof( CharType ) );
+        result = NEMemory::memCompare(leftSide, rightSide, static_cast<uint32_t>(count) * sizeof(CharType));
     }
-    else if ( rightSide != nullptr )
-    {
-        result = NEMath::eCompare::Smaller;
-    }
-
-    return result;
-}
-
-template<typename CharLhs, typename CharRhs>
-inline NEMath::eCompare NEString::compareFastIgnoreCase(const CharLhs *leftSide, const CharRhs * rightSide)
-{
-    NEMath::eCompare result = NEMath::eCompare::Bigger;
-
-    if ( reinterpret_cast<const void *>(leftSide) == reinterpret_cast<const void *>(rightSide) )
-    {
-        result = NEMath::eCompare::Equal;
-    }
-    else if ( (leftSide != nullptr) && (rightSide != nullptr) )
-    {
-        CharLhs chLeft = 0;
-        CharRhs chRight = 0;
-        while ((*leftSide != NEString::EndOfString) && (*rightSide != NEString::EndOfString))
-        {
-            chLeft = *leftSide;
-            chRight = *rightSide;
-            if (chLeft != static_cast<CharLhs>(chRight))
-            {
-                break;
-            }
-
-            ++leftSide;
-            ++rightSide;
-        }
-
-        if (chLeft == static_cast<CharLhs>(chRight))
-            result = NEMath::eCompare::Equal;
-        else if (chLeft < static_cast<CharLhs>(chRight))
-            result = NEMath::eCompare::Smaller;
-    }
-    else if ( rightSide != nullptr )
+    else if (rightSide != nullptr)
     {
         result = NEMath::eCompare::Smaller;
     }

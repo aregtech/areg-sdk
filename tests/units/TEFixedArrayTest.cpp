@@ -65,7 +65,7 @@ TEST(TEFixedArrayTest, TestConstructors)
     EXPECT_NE(empty, toCopy);
 
     toMove = std::move(src);
-    EXPECT_TRUE(src.isEmpty());
+    EXPECT_FALSE(src.isEmpty());
     EXPECT_FALSE(toMove.isEmpty());
     EXPECT_EQ(toCopy, toMove);
 
@@ -117,7 +117,7 @@ TEST(TEFixedArrayTest, TestCopyMove)
     EXPECT_NE(empty, toCopy);
 
     toMove.move(std::move(src));
-    EXPECT_TRUE(src.isEmpty());
+    EXPECT_FALSE(src.isEmpty());
     EXPECT_FALSE(toMove.isEmpty());
     EXPECT_EQ(toCopy, toMove);
 
