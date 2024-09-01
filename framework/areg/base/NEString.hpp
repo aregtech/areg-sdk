@@ -251,6 +251,22 @@ namespace NEString
     CharCount copyString( CharDst * strDst, CharCount dstSpace, const CharSrc * strSrc, CharCount charsCopy = NEString::COUNT_ALL );
 
     /**
+     * \brief   Copies string from source to destination string.
+     *          The method does not reallocates space for destination string
+     *          if there is no enough space available in destination.
+     *          characters, the function will no
+     * \param   strDst      The destination string to copy characters.
+     * \param   strSrc      The source of string
+     * \param   charsCopy   The number of characters to copy.
+     *                      By default, it will try to copy all string if there is
+     *                      enough space available at destination.
+     * \return  Returns number of characters copied to destination string, which is minimum
+     *          of destination space and characters to copy. Returns zero if no character was copied.
+     **/
+    template<typename CharType>
+    CharCount copyStringFast(CharType* strDst, const CharType* strSrc, CharCount charsCopy = NEString::COUNT_ALL);
+
+    /**
      * \brief   Converts given character to lower case based on first 256 of UTF-8 code page..
      * \param   ch      The character to convert to lower case.
      * \return  If character is in range [-128 .. 127], it converts character to lower case. 
@@ -544,10 +560,9 @@ namespace NEString
      * \brief   In given string buffer removes white-space characters from left-side (from begin).
      * \param   strBuffer   The string buffer to remove white characters.
      * \param   strLen      The length of the string or NEString:COUNT_ALL if the length should be calculated.
-     * \return  Returns number of characters in the buffer.
      **/
     template<typename CharType>
-    CharCount trimLeft( CharType * strBuffer, CharCount strLen = NEString::COUNT_ALL );
+    void trimLeft( CharType * strBuffer, CharCount strLen = NEString::COUNT_ALL );
 
     /**
      * \brief   In removes white-space characters from left-side (from begin) 
@@ -558,19 +573,17 @@ namespace NEString
      *                  Otherwise, it will copy only first (lenDst - 1) characters and set end-of-string at the end.
      * \param   strSrc  The source string buffer.
      * \param   lenSrc  The length of the source string or NEString:COUNT_ALL if the length should be calculated.
-     * \return  Returns number of characters copied to the destination buffer.
      **/
     template<typename CharDst, typename CharSrc>
-    CharCount trimLeft( CharDst *strDst, CharCount lenDst, const CharSrc * strSrc, CharCount lenSrc = NEString::COUNT_ALL );
+    void trimLeft( CharDst *strDst, CharCount lenDst, const CharSrc * strSrc, CharCount lenSrc = NEString::COUNT_ALL );
 
     /**
      * \brief   In given string buffer removes white-space characters from right-side (from end).
      * \param   strBuffer   The string buffer to remove white characters.
      * \param   strLen      The length of the string or NEString:COUNT_ALL if the length should be calculated.
-     * \return  Returns number of characters in the buffer.
      **/
     template<typename CharType>
-    CharCount trimRight( CharType * strBuffer, CharCount strLen = NEString::COUNT_ALL );
+    void trimRight( CharType * strBuffer, CharCount strLen = NEString::COUNT_ALL );
 
     /**
      * \brief   In removes white-space characters from right-side (from end) 
@@ -581,19 +594,17 @@ namespace NEString
      *                  Otherwise, it will copy only first (lenDst - 1) characters and set end-of-string at the end.
      * \param   strSrc  The source string buffer.
      * \param   lenSrc  The length of the source string or NEString:COUNT_ALL if the length should be calculated.
-     * \return  Returns number of characters copied to the destination buffer.
      **/
     template<typename CharDst, typename CharSrc>
-    CharCount trimRight( CharDst *strDst, CharCount lenDst, const CharSrc * strSrc, CharCount lenSrc = NEString::COUNT_ALL );
+    void trimRight( CharDst *strDst, CharCount lenDst, const CharSrc * strSrc, CharCount lenSrc = NEString::COUNT_ALL );
 
     /**
      * \brief   In given string buffer removes white-space characters from left- and right-side (from begin and end).
      * \param   strBuffer   The string buffer to remove white characters.
      * \param   strLen      The length of the string or NEString:COUNT_ALL if the length should be calculated.
-     * \return  Returns number of characters in buffer.
      **/
     template<typename CharType>
-    CharCount trimAll( CharType * strBuffer, NEString::CharCount strLen = NEString::COUNT_ALL );
+    void trimAll( CharType * strBuffer, NEString::CharCount strLen = NEString::COUNT_ALL );
 
     /**
      * \brief   In removes white-space characters from left- and right-side (from begin and end)
@@ -604,10 +615,9 @@ namespace NEString
      *                  Otherwise, it will copy only first (lenDst - 1) characters and set end-of-string at the end.
      * \param   strSrc  The source string buffer.
      * \param   lenSrc  The length of the source string or NEString:COUNT_ALL if the length should be calculated.
-     * \return  Returns number of characters copied to the destination buffer.
      **/
     template<typename CharDst, typename CharSrc>
-    CharCount trimAll( CharDst *strDst, NEString::CharCount lenDst, const CharSrc * strSrc, NEString::CharCount lenSrc = NEString::COUNT_ALL );
+    void trimAll( CharDst *strDst, NEString::CharCount lenDst, const CharSrc * strSrc, NEString::CharCount lenSrc = NEString::COUNT_ALL );
 
     /**
      * \brief   Removes specified character from the string.
@@ -1418,13 +1428,11 @@ NEString::CharCount NEString::removeChar(const CharType chRemove, CharType* strS
 
 
 template<typename CharDst, typename CharSrc>
-NEString::CharCount NEString::trimAll( CharDst *            strDst
-                                     , NEString::CharCount  lenDst
-                                     , const CharSrc *      strSrc
-                                     , NEString::CharCount  lenSrc /*= NEString::COUNT_ALL*/ )
+void NEString::trimAll( CharDst *            strDst
+                      , NEString::CharCount  lenDst
+                      , const CharSrc *      strSrc
+                      , NEString::CharCount  lenSrc /*= NEString::COUNT_ALL*/ )
 {
-    NEString::CharCount result = 0;
-
     if ( (strDst != nullptr) && (lenDst > 0) )
     {
         CharDst * dst = strDst;
@@ -1439,73 +1447,75 @@ NEString::CharCount NEString::trimAll( CharDst *            strDst
             while ((end > begin) && NEString::isWhitespace<CharSrc>(*end) )
                 -- end;
 
-            ++ end;
+            if (NEString::isWhitespace<CharSrc>(*end) == false)
+                ++end;
 
             while ( (begin < end) && NEString::isWhitespace<CharSrc>(*begin) )
                 ++ begin;
 
-            if ( NEString::isWhitespace<CharSrc>(*begin) ==  false )
-            {
-                for ( ; (begin < end) && (lenDst > 1); -- lenDst)
-                    *dst ++ = static_cast<CharDst>(*begin ++);
+            for (; (begin < end) && (lenDst > 1); --lenDst)
+                *dst++ = static_cast<CharDst>(*begin++);
 
-                result = static_cast<int>(dst - strDst);
-                *dst   = static_cast<CharDst>(NEString::EndOfString);
-            }
+            *dst = static_cast<CharDst>(NEString::EndOfString);
         }
     }
-
-    return result;
 }
 
 template<typename CharType>
-NEString::CharCount NEString::trimAll( CharType * strBuffer, NEString::CharCount strLen /*= NEString::COUNT_ALL*/ )
+void NEString::trimAll( CharType * strBuffer, NEString::CharCount strLen /*= NEString::COUNT_ALL*/ )
 {
-    NEString::CharCount result = 0;
     if ( NEString::isEmpty<CharType>( strBuffer ) == false )
     {
-        strLen = strLen == NEString::COUNT_ALL ? NEString::getStringLength<CharType>( strBuffer ) : strLen;
-        if ( strLen > 0 )
+        NEString::CharCount shift = strLen == NEString::COUNT_ALL ? NEString::getStringLength<CharType>( strBuffer ) : strLen;
+        if ( shift > 0 )
         {
-            CharType * end  = strBuffer + strLen - 1;
+            CharType * end  = strBuffer + shift - 1;
             CharType * begin= strBuffer;
             CharType * buf  = strBuffer;
+            CharType * next = strBuffer + shift;
 
             while ( (end > begin) && NEString::isWhitespace<CharType>(*end) )
                 -- end;
 
-            *(++ end) = static_cast<CharType>(NEString::EndOfString);
+            if (NEString::isWhitespace<CharType>(*end) == false)
+                ++end;
 
             while ( (begin < end) && NEString::isWhitespace<CharType>(*begin) )
                 ++ begin;
 
-            result = static_cast<int>(end - begin);
             if (begin != buf)
             {
                 while (begin < end)
                     *buf ++ = *begin ++;
+            }
+            else
+            {
+                buf = end;
+            }
 
+            if (strLen != NEString::COUNT_ALL)
+            {
+                NEString::copyStringFast<CharType>(buf, next, NEString::COUNT_ALL);
+            }
+            else
+            {
                 *buf = static_cast<CharType>(NEString::EndOfString);
             }
         }
     }
-
-    return result;
 }
 
 template<typename CharDst, typename CharSrc>
-NEString::CharCount NEString::trimRight( CharDst *           strDst
-                                       , NEString::CharCount lenDst
-                                       , const CharSrc *     strSrc
-                                       , NEString::CharCount lenSrc /*= NEString::COUNT_ALL*/ )
+void NEString::trimRight( CharDst *           strDst
+                        , NEString::CharCount lenDst
+                        , const CharSrc *     strSrc
+                        , NEString::CharCount lenSrc /*= NEString::COUNT_ALL*/ )
 {
-    NEString::CharCount result = 0;
     if ((NEString::isEmpty<CharSrc>(strSrc) == false) && (strDst != nullptr) && (lenDst > 0) )
     {
         lenSrc = lenSrc == NEString::COUNT_ALL ? NEString::getStringLength<CharSrc>(strSrc) : lenSrc;
         if ( lenSrc > 0 )
         {
-            result = MACRO_MIN(lenSrc, lenDst - 1);
             const CharSrc * end   = strSrc + lenSrc - 1;
             const CharSrc * begin = strSrc;
             CharDst * dst         = strDst;
@@ -1513,49 +1523,57 @@ NEString::CharCount NEString::trimRight( CharDst *           strDst
             while ( (end != strSrc) && NEString::isWhitespace<CharSrc>(*end) )
                 -- end;
 
-            ++ end;
+            if (NEString::isWhitespace<CharSrc>(*end) == false)
+                ++ end;
 
             for ( ; (begin < end) && (lenDst > 1); -- lenDst)
                 *dst ++ = static_cast<CharDst>(*begin ++);
 
-            result = static_cast<int>(dst - strDst);
             *dst = static_cast<CharDst>(NEString::EndOfString);
         }
     }
-
-    return result;
 }
 
 template<typename CharType>
-NEString::CharCount NEString::trimRight( CharType * strBuffer, NEString::CharCount strLen /*= NEString::COUNT_ALL*/ )
+void NEString::trimRight( CharType * strBuffer, NEString::CharCount strLen /*= NEString::COUNT_ALL*/ )
 {
-    NEString::CharCount result = 0;
     if ( NEString::isEmpty<CharType>( strBuffer ) == false )
     {
-        strLen = strLen == NEString::COUNT_ALL ? NEString::getStringLength<CharType>(strBuffer) : strLen;
-        if ( strLen > 0 )
+        NEString::CharCount shift = strLen = strLen == NEString::COUNT_ALL ? NEString::getStringLength<CharType>(strBuffer) : strLen;
+        if ( shift > 0 )
         {
-            CharType * end  = strBuffer + strLen - 1;
+            CharType * end  = strBuffer + shift - 1;
             CharType * begin= strBuffer;
+            CharType * next = strBuffer + shift;
 
             while ( (end > begin) && NEString::isWhitespace<CharType>( *end ) )
                 -- end;
 
-            *(++ end) = static_cast<CharType>(NEString::EndOfString);
-            result = static_cast<int>(end - begin);
+            if (strLen == NEString::COUNT_ALL)
+            {
+                if (NEString::isWhitespace<CharType>(*end))
+                {
+                    *(end) = static_cast<CharType>(NEString::EndOfString);
+                }
+                else
+                {
+                    *(++end) = static_cast<CharType>(NEString::EndOfString);
+                }
+            }
+            else
+            {
+                NEString::copyStringFast<CharType>(NEString::isWhitespace<CharType>(*end) ? end : ++end, next, NEString::COUNT_ALL);
+            }
         }
     }
-
-    return result;
 }
 
 template<typename CharDst, typename CharSrc>
-NEString::CharCount NEString::trimLeft( CharDst *           strDst
-                                      , NEString::CharCount lenDst
-                                      , const CharSrc *     strSrc
-                                      , NEString::CharCount lenSrc /*= NEString::COUNT_ALL*/ )
+void NEString::trimLeft( CharDst *           strDst
+                       , NEString::CharCount lenDst
+                       , const CharSrc *     strSrc
+                       , NEString::CharCount lenSrc /*= NEString::COUNT_ALL*/ )
 {
-    NEString::CharCount result = 0;
     if ((NEString::isEmpty<CharSrc>(strSrc) == false) && (strDst != nullptr) && (lenDst > 0) )
     {
         lenSrc = lenSrc == NEString::COUNT_ALL ? NEString::getStringLength<CharSrc>(strSrc) : lenSrc;
@@ -1568,30 +1586,24 @@ NEString::CharCount NEString::trimLeft( CharDst *           strDst
             while ((end > begin) && NEString::isWhitespace<CharSrc>(*begin) )
                 ++ begin;
 
-            while (begin < end)
-                *dst ++ = static_cast<CharDst>(*begin ++);
+            for (; (begin < end) && (lenDst > 1); --lenDst)
+                *dst++ = static_cast<CharDst>(*begin++);
 
-            result  = static_cast<int>(dst - strDst);
             *dst    = static_cast<CharDst>(NEString::EndOfString);
         }
     }
-
-    return result;
 }
 
 template<typename CharType>
-NEString::CharCount NEString::trimLeft( CharType * strBuffer, NEString::CharCount strLen /*= NEString::COUNT_ALL*/ )
+void NEString::trimLeft( CharType * strBuffer, NEString::CharCount strLen /*= NEString::COUNT_ALL*/ )
 {
-    NEString::CharCount result = 0;
     if ( NEString::isEmpty<CharType>( strBuffer ) == false )
     {
-        strLen = strLen == NEString::COUNT_ALL ? NEString::getStringLength<CharType>(strBuffer) : strLen;
-        if ( strLen > 0 )
+        NEString::CharCount shift = strLen == NEString::COUNT_ALL ? NEString::getStringLength<CharType>(strBuffer) : strLen;
+        if (shift > 0 )
         {
-            result = strLen;
-
             const CharType * begin = strBuffer;
-            const CharType * end   = strBuffer + strLen;
+            const CharType * end   = strBuffer + shift;
             CharType * buf         = strBuffer;
 
             while ( (end > begin) && NEString::isWhitespace<CharType>(*begin) )
@@ -1602,13 +1614,17 @@ NEString::CharCount NEString::trimLeft( CharType * strBuffer, NEString::CharCoun
                 while ( begin < end)
                     *buf ++ = *begin ++;
 
-                result  = static_cast<int>(buf - strBuffer);
-                *buf    = static_cast<CharType>(NEString::EndOfString);
+                if (strLen == NEString::COUNT_ALL)
+                {
+                    *buf = static_cast<CharType>(NEString::EndOfString);
+                }
+                else
+                {
+                    NEString::copyStringFast<CharType>(buf, strBuffer + strLen, NEString::COUNT_ALL);
+                }
             }
         }
     }
-
-    return result;
 }
 
 template<typename CharType>
@@ -1820,6 +1836,23 @@ NEString::CharCount NEString::copyString( CharDst *           strDst
     {
         strDst[0] = NEString::EndOfString;
     }
+
+    return static_cast<NEString::CharCount>(result);
+}
+
+template<typename CharType>
+NEString::CharCount NEString::copyStringFast(CharType*            strDst
+                                            , const CharType*     strSrc
+                                            , NEString::CharCount charsCopy /*= NEString::COUNT_ALL*/)
+{
+    uint32_t result { 0 };
+    if (strDst != nullptr)
+    {
+        charsCopy = charsCopy == NEString::COUNT_ALL ? NEString::getStringLength<CharType>(strSrc) : charsCopy;
+        result = NEMemory::memCopy(strDst, static_cast<uint32_t>(charsCopy) * sizeof(CharType), strSrc, static_cast<uint32_t>(charsCopy) * sizeof(CharType)) / sizeof(CharType);
+    }
+
+    strDst[result] = static_cast<CharType>(NEString::EndOfString);
 
     return static_cast<NEString::CharCount>(result);
 }
