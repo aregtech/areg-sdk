@@ -381,9 +381,10 @@ static constexpr TrimStringsParams _listTrimString[]
     , { { "A   B     "      }   , {"A   B     "     }   , {"AB     "        }   , {"AB     "        },  4 } // 20
     , { {"Three String   "  }   , {"Three String   "}   , {"Three String   "}   , {"Three String   "},  5 } // 21
     , { {" Any   String  "  }   , {"Any   String  " }   , {" Any String  "  }   , {"Any String  "   },  6 } // 22
+    , { {""                 }   , {""               }   , {""               }   , {""               }, -2 } // 23
 };
 
-//!< Declare parameters.
+//!< Declare test with parameters.
 struct StringTestTrim : public ::testing::TestWithParam<TrimStringsParams>
 {
     TrimStringsParams params;
@@ -450,9 +451,10 @@ static constexpr TrimStringsParams _listTrimCopyString[]
     , { { "A   B     "      }   , {"A   "           }   , {"A"              }   , {"A"              },  4 } // 19
     , { {"Three String   "  }   , {"Three"          }   , {"Three"          }   , {"Three"          },  5 } // 20
     , { {" Any   String  "  }   , {"Any  "          }   , {" Any"           }   , {"Any"            },  6 } // 21
+    , { {""                 }   , {""               }   , {""               }   , {""               }, -2 } // 22
 };
 
-//!< Declare parameters.
+//!< Declare test with parameters.
 struct StringTestTrimCopy : public ::testing::TestWithParam<TrimStringsParams>
 {
     TrimStringsParams params;
@@ -487,4 +489,83 @@ TEST_P(StringTestTrimCopy, TrimCopyStrings)
     INSTANTIATE_TEST_SUITE_P(NEStringTest, StringTestTrimCopy, ::testing::ValuesIn<TrimStringsParams>(_listTrimCopyString));
 #else   // !defined(INSTANTIATE_TEST_SUITE_P)
     INSTANTIATE_TEST_CASE_P(NEStringTest, StringTestTrimCopy, ::testing::ValuesIn<TrimStringsParams>(_listTrimCopyString));
+#endif  // defined(INSTANTIATE_TEST_SUITE_P)
+
+/************************************************************************
+ * Parameterized tests to trim white-space in the strings and copy the result to another
+ ************************************************************************/
+
+/**
+ * \brief   The structure of testing strings, removing char and the results to check.
+ **/
+struct RemoveCharParams
+{
+    std::string_view    source;     //!< The original string to test.
+    char                remove;     //!< The character to remove.
+    std::string_view    resAll;     //!< The result when remove all matches
+    std::string_view    resOne;     //!< The result when remove only one (first match) character.
+};
+
+//!< List of parameters to test and the results to compare
+static constexpr RemoveCharParams _listRemoveCharParams[]
+{
+      { { "123123"      }, '1'  , {"2323"       }, {"23123"         } } // 0
+    , { {"1 2 3 4 5 "   }, ' '  , {"12345"      }, {"12 3 4 5 "     } } // 1
+    , { {" 1 2 3 4 5 "  }, ' '  , {"12345"      }, {"1 2 3 4 5 "    } } // 2
+    , { {"           "  }, ' '  , {""           }, {"          "    } } // 3
+    , { {"string"       }, '1'  , {"string"     }, {"string"        } } // 4
+    , { {"123"          }, '\0' , {"123"        }, {"123"           } } // 5
+    , { {""             }, '\0' , {""           }, {""              } } // 6
+};
+
+
+//!< Declare test with parameters.
+struct StringTestRemoveChar : public ::testing::TestWithParam<RemoveCharParams>
+{
+    RemoveCharParams params;
+};
+
+/**
+ * \brief   Trim strings, if needed takes only `count` number of characters in the string.
+ *          The result is copied to another buffer. The original string is not changed.
+ **/
+TEST_P(StringTestRemoveChar, RemoveChar)
+{
+    const RemoveCharParams& param = GetParam();
+    char buffer[64];
+
+    EXPECT_EQ(NEString::copyString<char>(buffer, 64, param.source.data(), NEString::COUNT_ALL), static_cast<NEString::CharCount>(param.source.length()));
+    const char* all = NEString::removeChar<char>(param.remove, buffer, true);
+    EXPECT_EQ(NEString::compareFast<char>(buffer, param.resAll.data(), NEString::COUNT_ALL), NEMath::eCompare::Equal);
+    EXPECT_TRUE(all != nullptr);
+    EXPECT_TRUE(NEString::isEndOfString<char>(*all));
+
+    NEString::CharCount len = NEString::getStringLength<char>(buffer);
+    NEString::CharCount count = static_cast<NEString::CharCount>(param.source.length()) - len;
+
+    EXPECT_EQ(NEString::copyString<char>(buffer, 64, param.source.data(), NEString::COUNT_ALL), static_cast<NEString::CharCount>(param.source.length()));
+    char* one = NEString::removeChar<char>(param.remove, buffer, false);
+    EXPECT_EQ(NEString::compareFast<char>(buffer, param.resOne.data(), NEString::COUNT_ALL), NEMath::eCompare::Equal);
+    EXPECT_TRUE(one != nullptr);
+
+    for ( ;count > 1; --count)
+    {
+        // we did not reach end of string.
+        EXPECT_TRUE(NEString::isEndOfString<char>(*one) == false);
+        // remove char starting at `one`
+        one = NEString::removeChar<char>(param.remove, one, false);
+    }
+
+    // no more character to remove, check it
+    EXPECT_TRUE(NEString::compareFast<char>(buffer, param.resAll.data(), NEString::COUNT_ALL) == NEMath::eCompare::Equal);
+
+    // the `one` might not reach end of string, call `removeChar` one more time and make sure that end of string reached
+    one = NEString::removeChar<char>(param.remove, buffer, false);
+    EXPECT_TRUE(NEString::isEndOfString<char>(*one));
+}
+
+#if defined(INSTANTIATE_TEST_SUITE_P)
+    INSTANTIATE_TEST_SUITE_P(NEStringTest, StringTestRemoveChar, ::testing::ValuesIn<RemoveCharParams>(_listRemoveCharParams));
+#else   // !defined(INSTANTIATE_TEST_SUITE_P)
+    INSTANTIATE_TEST_CASE_P(NEStringTest, StringTestRemoveChar, ::testing::ValuesIn<RemoveCharParams>(_listRemoveCharParams));
 #endif  // defined(INSTANTIATE_TEST_SUITE_P)

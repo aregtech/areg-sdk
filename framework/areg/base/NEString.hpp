@@ -624,12 +624,14 @@ namespace NEString
      * 
      * \param   chRemove    The character to search and remove.
      * \param   strSource   The string where the character should be searched and removed.
-     * \param   count       The number of characters to search in the string. By default it searches the complete string.
      * \param   removeAll   Flag, indicating whether it should remove only once or all matches.
-     * \return  Returns the number of characters in the modified string.
+     * \return  Returns one of following values:
+     *              1. If `removeAll` is `false`, returns the position of removed character if found;
+     *              2. If `removeAll` is `true`, returns end of string, indicating that there is no more character to remove;
+     *              3. If did not find any matching, returns end of string, indicating that there is no character to remove.
      **/
     template<typename CharType>
-    NEString::CharCount removeChar(const CharType chRemove, CharType* strSource, NEString::CharCount count = NEString::COUNT_ALL, bool removeAll = true);
+    CharType * removeChar(const CharType chRemove, CharType* strSource, bool removeAll = true);
 
     /**
      * \brief   Search a string inside of other string. The search starts at given position in the string.
@@ -671,9 +673,9 @@ namespace NEString
      **/
     template<typename CharType>
     CharPos findFirst( CharType chSearch
-                       , const CharType * strSource
-                       , CharPos startPos           = NEString::START_POS
-                       , const CharType ** out_next = nullptr );
+                     , const CharType * strSource
+                     , CharPos startPos           = NEString::START_POS
+                     , const CharType ** out_next = nullptr );
 
     /**
      * \brief   Reverse search a string inside of other string. The search starts at the given position and moves to begin of string.
@@ -694,9 +696,9 @@ namespace NEString
      **/
     template<typename CharType>
     CharPos findLast( const CharType * strPhrase
-                      , const CharType * strSource
-                      , CharPos startPos            = NEString::END_POS
-                      , const CharType ** out_next  = nullptr );
+                    , const CharType * strSource
+                    , CharPos startPos            = NEString::END_POS
+                    , const CharType ** out_next  = nullptr );
 
     /**
      * \brief   Reverse search the match of given character inside of string. The search starts at the given position and moves to begin of string.
@@ -717,9 +719,9 @@ namespace NEString
      **/
     template<typename CharType>
     CharPos findLast( CharType chSearch
-                      , const CharType * strSource
-                      , CharPos startPos            = NEString::END_POS
-                      , const CharType ** out_next  = nullptr );
+                    , const CharType * strSource
+                    , CharPos startPos            = NEString::END_POS
+                    , const CharType ** out_next  = nullptr );
 
     /**
      * \brief   Returns true if a give string starts with specified phrase.
@@ -1395,17 +1397,13 @@ bool NEString::stringEndsWith(const CharType* strString, const CharType ch, bool
 }
 
 template<typename CharType>
-NEString::CharCount NEString::removeChar(const CharType chRemove, CharType* strSource, NEString::CharCount count /*= NEString::COUNT_ALL*/, bool removeAll /*= true*/)
+CharType * NEString::removeChar(const CharType chRemove, CharType* strSource, bool removeAll /*= true*/)
 {
-    count = count == NEString::COUNT_ALL ? NEString::getStringLength<CharType>(strSource) : count;
-    if (count == 0)
-        return 0;
-
     CharType* dst = strSource;
     const CharType* src = strSource;
-    while ((count > 0) && (NEString::isEndOfString(*src) == false))
+
+    while (NEString::isEndOfString(*src) == false)
     {
-        --count;
         if (*src == chRemove)
         {
             ++src;
@@ -1418,14 +1416,13 @@ NEString::CharCount NEString::removeChar(const CharType chRemove, CharType* strS
         }
     }
 
+    CharType* result{ dst };
     while (NEString::isEndOfString(*src) == false)
         *dst++ = *src++;
 
-    *dst = static_cast<CharType>(NEString::EndOfString);
-    
-    return static_cast<NEString::CharCount>(dst - strSource);
+    *dst = static_cast<CharType>(NEString::EndOfString);    
+    return result;
 }
-
 
 template<typename CharDst, typename CharSrc>
 void NEString::trimAll( CharDst *            strDst
@@ -1458,6 +1455,10 @@ void NEString::trimAll( CharDst *            strDst
 
             *dst = static_cast<CharDst>(NEString::EndOfString);
         }
+    }
+    else if (strDst != nullptr)
+    {
+        *strDst = static_cast<CharDst>(NEString::EndOfString);
     }
 }
 
@@ -1532,6 +1533,10 @@ void NEString::trimRight( CharDst *           strDst
             *dst = static_cast<CharDst>(NEString::EndOfString);
         }
     }
+    else if (strDst != nullptr)
+    {
+        *strDst = static_cast<CharDst>(NEString::EndOfString);
+    }
 }
 
 template<typename CharType>
@@ -1591,6 +1596,10 @@ void NEString::trimLeft( CharDst *           strDst
 
             *dst    = static_cast<CharDst>(NEString::EndOfString);
         }
+    }
+    else if (strDst != nullptr)
+    {
+        *strDst = static_cast<CharDst>(NEString::EndOfString);
     }
 }
 
