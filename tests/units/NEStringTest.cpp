@@ -518,7 +518,6 @@ static constexpr RemoveCharParams _listRemoveCharParams[]
     , { {""             }, '\0' , {""           }, {""              } } // 6
 };
 
-
 //!< Declare test with parameters.
 struct StringTestRemoveChar : public ::testing::TestWithParam<RemoveCharParams>
 {
@@ -568,4 +567,94 @@ TEST_P(StringTestRemoveChar, RemoveChar)
     INSTANTIATE_TEST_SUITE_P(NEStringTest, StringTestRemoveChar, ::testing::ValuesIn<RemoveCharParams>(_listRemoveCharParams));
 #else   // !defined(INSTANTIATE_TEST_SUITE_P)
     INSTANTIATE_TEST_CASE_P(NEStringTest, StringTestRemoveChar, ::testing::ValuesIn<RemoveCharParams>(_listRemoveCharParams));
+#endif  // defined(INSTANTIATE_TEST_SUITE_P)
+
+/************************************************************************
+ * Parameterized tests to search substring
+ ************************************************************************/
+
+using PhraseList = std::vector<std::string_view>;
+
+/**
+ * \brief   The structure of testing strings, removing char and the results to check.
+ **/
+struct FindCharParams
+{
+    std::string_view    source;     //!< The original string to test.
+    char                ch;         //!< The character to remove.
+    int                 pos;
+    PhraseList          results;
+};
+
+//!< List of parameters to test and the results to compare
+static FindCharParams _listFindFirstCharParams[]
+{
+        { { "123123"        }, 'a'  , 0 , {                                             } } // 0
+      , { { "123123"        }, '1'  , 0 , { {"23123"}, {"23"}                           } } // 1
+      , { { "123123"        }, '2'  , 0 , { {"3123"}, {"3"}                             } } // 2
+      , { { "123123"        }, '3'  , 0 , { {"123"}                                     } } // 3
+      , { { "      "        }, ' '  , 0 , { {"     "}, {"    "}, {"   "}, {"  "}, {" "} } } // 4
+      , { { "123123"        }, '\0' , 0 , {                                             } } // 5
+      , { { "123125"        }, '5'  , 0 , {                                             } } // 6
+      , { { "0123125"       }, '0'  , 0 , { {"123125"}                                  } } // 7
+      , { { ""              }, '1'  , 0 , {                                             } } // 8
+      , { { ""              }, '\0' , 0 , {                                             } } // 9
+      , { { "123123"        }, '1'  , 1 , { {"23"}                                      } } // 10
+      , { { "123456"        }, '3'  , 2 , { {"456"}                                     } } // 11
+      , { { "123456"        }, '3'  , 3 , {                                             } } // 12
+      , { { "123456"        }, '6'  , 5 , {                                             } } // 13
+      , { { "123456"        }, '6'  , 6 , {                                             } } // 14
+      , { { "      "        }, ' '  , 2 , { {"   "}, {"  "}, {" "}                      } } // 15
+};
+
+//!< Declare test with parameters.
+struct StringTestFindFirstChar : public ::testing::TestWithParam<FindCharParams>
+{
+    FindCharParams params;
+};
+
+/**
+ * \brief   Trim strings, if needed takes only `count` number of characters in the string.
+ *          The result is copied to another buffer. The original string is not changed.
+ **/
+TEST_P(StringTestFindFirstChar, FindFirstChar)
+{
+    const FindCharParams& param{ GetParam() };
+    const char* next{ param.source.data() };
+    const char ch{ param.ch };
+    const PhraseList& results{ param.results };
+    NEString::CharCount pos{ param.pos };
+    NEString::CharCount posTemp{ param.pos };
+    const char* nextTemp{ nullptr };
+
+    for (uint32_t i = 0; i < results.size(); ++i)
+    {
+        const std::string_view& phrase{ results[i] };
+
+        posTemp = NEString::findFirst<char>(ch, next, posTemp, &nextTemp);
+        EXPECT_TRUE(phrase == nextTemp);
+        posTemp = 0;
+
+
+        pos = NEString::findFirst<char>(ch, param.source.data(), pos, &next);
+        EXPECT_TRUE(pos != NEString::INVALID_POS);
+        EXPECT_EQ(param.source[static_cast<uint32_t>(pos)], ch);
+        EXPECT_TRUE(phrase == next);
+        pos += 1;
+    }
+
+    pos = NEString::findFirst<char>(ch, param.source.data(), pos, &next);
+    if (pos != NEString::INVALID_POS)
+    {
+        EXPECT_EQ(param.source[static_cast<uint32_t>(pos)], ch);
+    }
+
+    EXPECT_TRUE(NEString::isEmpty<char>(next));
+    EXPECT_TRUE(next == nullptr);
+}
+
+#if defined(INSTANTIATE_TEST_SUITE_P)
+    INSTANTIATE_TEST_SUITE_P(NEStringTest, StringTestFindFirstChar, ::testing::ValuesIn<FindCharParams>(_listFindFirstCharParams));
+#else   // !defined(INSTANTIATE_TEST_SUITE_P)
+    INSTANTIATE_TEST_CASE_P(NEStringTest, StringTestFindFirstChar, ::testing::ValuesIn<FindCharParams>(_listFindFirstCharParams));
 #endif  // defined(INSTANTIATE_TEST_SUITE_P)
