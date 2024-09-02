@@ -702,19 +702,19 @@ namespace NEString
 
     /**
      * \brief   Reverse search the match of given character inside of string. The search starts at the given position and moves to begin of string.
-     *          If startPos is equal to NEString::END_POS, the search starts at the end of string. Otherwise, searches at given position.
-     *          If found the phrase in string, returns the position in buffer where could find character,
-     *          which is same as number of characters to skip from begin to match the character.
-     *          Otherwise, returns NEString::INVALID_POS.
+     *          If `startPos` is equal to `NEString::END_POS`, the search starts at the end of string. Otherwise, searches at the given position.
+     *          If found the character in the string, returns the position (zero-based index) in the give source buffer,
+     *          Otherwise, returns `NEString::INVALID_POS`.
      * \param   chSearch    The character to search in the string.
      * \param   strSource   The source of string to search.
-     * \param   startPos    The starting position to search phrase. If NEString::END_POS, starts searching at the end of given string buffer.
-     * \param   out_next    If the parameter is not nullptr, then:
-     *                          - On output, if not nullptr, this contains pointer in source string before character found.
-     *                          - On output, if nullptr, could not find the character.
-     *                      If parameter is nullptr, it is ignored.
+     * \param   startPos    The starting position to search phrase. If `NEString::END_POS`, starts reverse searching from the end of given string buffer.
+     * \param   out_next    It is an optional parameter. If the parameter is not `nullptr`, then:
+     *                          - If on output it is not `nullptr`, it indicates to the source of last match of character,
+     *                            i.e. it points to the searching character.
+     *                          - if on output it is `nullptr`, it indicates that could not find the character.
+     *                      This parameter is ignored if `nullptr`.
      * \return  If found the character, returns the position in buffer where met character.
-     *          If did not find, returns NEString::INVALID_POS
+     *          If did not find, returns `NEString::INVALID_POS`.
      * \note    This is reverse search, but the returned position is relevant to begin of string.
      **/
     template<typename CharType>
@@ -1156,7 +1156,6 @@ NEString::CharPos NEString::findLast( CharType   chSearch
                 if ( *end == chSearch )
                 {
                     result = static_cast<NEString::CharPos>(MACRO_ELEM_COUNT(strSource, end));
-                    --end;
                     if ( (out_next != nullptr) && (end >= strSource) )
                     {
                         *out_next = end;

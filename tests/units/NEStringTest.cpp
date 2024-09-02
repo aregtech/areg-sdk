@@ -570,7 +570,7 @@ TEST_P(StringTestRemoveChar, RemoveChar)
 #endif  // defined(INSTANTIATE_TEST_SUITE_P)
 
 /************************************************************************
- * Parameterized tests to search substring
+ * Parameterized tests to search a character from the begin of the string
  ************************************************************************/
 
 using PhraseList = std::vector<std::string_view>;
@@ -657,4 +657,76 @@ TEST_P(StringTestFindFirstChar, FindFirstChar)
     INSTANTIATE_TEST_SUITE_P(NEStringTest, StringTestFindFirstChar, ::testing::ValuesIn<FindCharParams>(_listFindFirstCharParams));
 #else   // !defined(INSTANTIATE_TEST_SUITE_P)
     INSTANTIATE_TEST_CASE_P(NEStringTest, StringTestFindFirstChar, ::testing::ValuesIn<FindCharParams>(_listFindFirstCharParams));
+#endif  // defined(INSTANTIATE_TEST_SUITE_P)
+
+/************************************************************************
+ * Parameterized tests to search a character from the end of the string
+ ************************************************************************/
+
+//!< List of parameters to test and the results to compare
+static FindCharParams _listFindLastCharParams[]
+{
+        { { "123123"        }, 'a'  , -2, {                                             } } // 0
+      , { { "123123"        }, '1'  , -2, { {"123"}, {"123123"}                         } } // 1
+      , { { "123123"        }, '2'  , -2, { {"23"}, {"23123"}                           } } // 2
+      , { { "123123"        }, '3'  , -2, { {"3"}, {"3123"}                             } } // 3
+      , { { "     "         }, ' '  , -2, { {" "},{ "  " }, {"   "}, {"    "}, {"     "}} } // 4
+      , { { "123123"        }, '\0' , -2, {                                             } } // 5
+      , { { "123125"        }, '5'  , -2, { {"5"}                                       } } // 6
+      , { { "0123125"       }, '0'  , -2, { {"0123125"}                                 } } // 7
+      , { { ""              }, '1'  , -2, {                                             } } // 8
+      , { { ""              }, '\0' , -2, {                                             } } // 9
+      , { { "123456"        }, '1'  ,  0, { {"123456"}                                  } } // 10
+      , { { "123456"        }, '1'  ,  1, { {"123456"}                                  } } // 11
+      , { { "123456"        }, '2'  ,  2, { {"23456"}                                   } } // 12
+      , { { "123456"        }, '3'  ,  3, { {"3456"}                                    } } // 13
+      , { { "123456"        }, '4'  ,  4, { {"456"}                                     } } // 14
+      , { { "123456"        }, '5'  ,  5, { {"56"}                                      } } // 15
+      , { { "123456"        }, '6'  ,  6, { {"6"}                                       } } // 16
+      , { { "123456"        }, '6'  ,  7, { {"6"}                                       } } // 17
+      , { { "123456"        }, '4'  ,  2, {                                             } } // 18
+      , { { "      "        }, ' '  ,  2, { {"    "}, {"     "}, {"      "}             } } // 19
+};
+
+//!< Declare test with parameters.
+struct StringTestFindLastChar : public ::testing::TestWithParam<FindCharParams>
+{
+    FindCharParams params;
+};
+
+/**
+ * \brief   Trim strings, if needed takes only `count` number of characters in the string.
+ *          The result is copied to another buffer. The original string is not changed.
+ **/
+TEST_P(StringTestFindLastChar, FindLastChar)
+{
+    const FindCharParams& param{ GetParam() };
+    const char* next{ param.source.data() };
+    const char ch{ param.ch };
+    const PhraseList& results{ param.results };
+    NEString::CharCount pos{ param.pos };
+
+    for (uint32_t i = 0; i < results.size(); ++i)
+    {
+        const std::string_view& phrase{ results[i] };
+
+        pos = NEString::findLast<char>(ch, param.source.data(), pos, &next);
+        EXPECT_TRUE(pos != NEString::INVALID_POS);
+        EXPECT_EQ(param.source[static_cast<uint32_t>(pos)], ch);
+        EXPECT_TRUE(phrase == next);
+        pos -= 1;
+
+        EXPECT_NE(pos, NEString::END_POS);
+    }
+
+    pos = NEString::findLast<char>(ch, param.source.data(), pos, &next);
+    EXPECT_EQ(pos, NEString::INVALID_POS);
+    EXPECT_TRUE(NEString::isEmpty<char>(next));
+    EXPECT_TRUE(next == nullptr);
+}
+
+#if defined(INSTANTIATE_TEST_SUITE_P)
+    INSTANTIATE_TEST_SUITE_P(NEStringTest, StringTestFindLastChar, ::testing::ValuesIn<FindCharParams>(_listFindLastCharParams));
+#else   // !defined(INSTANTIATE_TEST_SUITE_P)
+    INSTANTIATE_TEST_CASE_P(NEStringTest, StringTestFindLastChar, ::testing::ValuesIn<FindCharParams>(_listFindLastCharParams));
 #endif  // defined(INSTANTIATE_TEST_SUITE_P)
