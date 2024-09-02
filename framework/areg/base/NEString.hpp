@@ -1137,9 +1137,9 @@ const CharType * NEString::getPrintable( CharType * strSource, NEString::CharCou
 
 template<typename CharType>
 NEString::CharPos NEString::findLast( CharType   chSearch
-                                     , const CharType * strSource
-                                     , NEString::CharPos startPos /*= NEString::END_POS*/
-                                     , const CharType ** out_next /*= nullptr*/ )
+                                    , const CharType * strSource
+                                    , NEString::CharPos startPos /*= NEString::END_POS*/
+                                    , const CharType ** out_next /*= nullptr*/ )
 {
     NEString::CharPos result= NEString::INVALID_POS;
     if ( out_next != nullptr )
@@ -1174,9 +1174,9 @@ NEString::CharPos NEString::findLast( CharType   chSearch
 
 template<typename CharType>
 NEString::CharPos NEString::findLast( const CharType * strPhrase
-                                      , const CharType * strSource
-                                      , NEString::CharPos startPos /*= NEString::END_POS*/
-                                      , const CharType ** out_next /*= nullptr*/ )
+                                    , const CharType * strSource
+                                    , NEString::CharPos startPos /*= NEString::END_POS*/
+                                    , const CharType ** out_next /*= nullptr*/ )
 {
     NEString::CharPos result= NEString::INVALID_POS;
     if ( out_next != nullptr )
@@ -1224,9 +1224,9 @@ NEString::CharPos NEString::findLast( const CharType * strPhrase
 
 template<typename CharType>
 NEString::CharPos NEString::findFirst( CharType chSearch
-                                       , const CharType * strSource
-                                       , NEString::CharPos startPos /*= NEString::START_POS*/
-                                       , const CharType ** out_next /*= nullptr*/ )
+                                     , const CharType * strSource
+                                     , NEString::CharPos startPos /*= NEString::START_POS*/
+                                     , const CharType ** out_next /*= nullptr*/ )
 {
     NEString::CharPos result = NEString::INVALID_POS;
     if ( out_next != nullptr )
@@ -1259,9 +1259,9 @@ NEString::CharPos NEString::findFirst( CharType chSearch
 
 template<typename CharType>
 NEString::CharPos NEString::findFirst( const CharType * strPhrase
-                                       , const CharType * strSource
-                                       , NEString::CharPos startPos /*= NEString::START_POS*/
-                                       , const CharType ** out_next /*= nullptr*/ )
+                                     , const CharType * strSource
+                                     , NEString::CharPos startPos /*= NEString::START_POS*/
+                                     , const CharType ** out_next /*= nullptr*/ )
 {
     NEString::CharPos result= NEString::INVALID_POS;
 
@@ -1858,9 +1858,8 @@ NEString::CharCount NEString::copyStringFast(CharType*            strDst
     {
         charsCopy = charsCopy == NEString::COUNT_ALL ? NEString::getStringLength<CharType>(strSrc) : charsCopy;
         result = NEMemory::memCopy(strDst, static_cast<uint32_t>(charsCopy) * sizeof(CharType), strSrc, static_cast<uint32_t>(charsCopy) * sizeof(CharType)) / sizeof(CharType);
+        strDst[result] = static_cast<CharType>(NEString::EndOfString);
     }
-
-    strDst[result] = static_cast<CharType>(NEString::EndOfString);
 
     return static_cast<NEString::CharCount>(result);
 }

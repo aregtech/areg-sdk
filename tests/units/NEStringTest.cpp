@@ -270,13 +270,13 @@ TEST(NEStringTest, LowerUpperNumericCase)
  **/
 struct CompareStringParams
 {
-    std::string_view left;          //!< Left string
-    std::string_view right;         //!< Right string
-    int              count;         //!< Characters count
-    int              resAllSens;    //!< Test result when compare all strings, case sensitive
-    int              resAllIgnore;  //!< Test result when compare all strings, ignore case sensitive
-    int              resCountSens;  //!< Test result when compare count number of characters in the strings, case sensitive
-    int              resCountIgnore;//!< Test result when compare count number of characters in the strings, ignore case sensitive
+    std::string_view left;              //!< Left string
+    std::string_view right;             //!< Right string
+    int              count{};           //!< Characters count
+    int              resAllSens{};      //!< Test result when compare all strings, case sensitive
+    int              resAllIgnore{};    //!< Test result when compare all strings, ignore case sensitive
+    int              resCountSens{};    //!< Test result when compare count number of characters in the strings, case sensitive
+    int              resCountIgnore{};  //!< Test result when compare count number of characters in the strings, ignore case sensitive
 };
 
 //!< List of parameters
@@ -352,7 +352,7 @@ struct TrimStringsParams
     std::string_view    trimLeft;   //!< The result to trim left
     std::string_view    trimRight;  //!< The result to trim right
     std::string_view    trimAll;    //!< The result to trim all sides.
-    int                 count;      //!< The number of characters in the string to trim. NEString::COUNT_ALL means to take the complete string. Otherwise, only a part of string is taken.
+    int                 count{};    //!< The number of characters in the string to trim. NEString::COUNT_ALL means to take the complete string. Otherwise, only a part of string is taken.
 };
 
 //!< The list of parameters: the string to test and the expected results to compare
@@ -492,16 +492,16 @@ TEST_P(StringTestTrimCopy, TrimCopyStrings)
 #endif  // defined(INSTANTIATE_TEST_SUITE_P)
 
 /************************************************************************
- * Parameterized tests to trim white-space in the strings and copy the result to another
+ * Parameterized tests to test removing a character in the string.
  ************************************************************************/
 
 /**
- * \brief   The structure of testing strings, removing char and the results to check.
+ * \brief   The structure to use to test removing a single character in the string.
  **/
 struct RemoveCharParams
 {
     std::string_view    source;     //!< The original string to test.
-    char                remove;     //!< The character to remove.
+    char                remove{};   //!< The character to remove.
     std::string_view    resAll;     //!< The result when remove all matches
     std::string_view    resOne;     //!< The result when remove only one (first match) character.
 };
@@ -525,8 +525,7 @@ struct StringTestRemoveChar : public ::testing::TestWithParam<RemoveCharParams>
 };
 
 /**
- * \brief   Trim strings, if needed takes only `count` number of characters in the string.
- *          The result is copied to another buffer. The original string is not changed.
+ * \brief   Remove a char in the string.
  **/
 TEST_P(StringTestRemoveChar, RemoveChar)
 {
@@ -576,14 +575,14 @@ TEST_P(StringTestRemoveChar, RemoveChar)
 using PhraseList = std::vector<std::string_view>;
 
 /**
- * \brief   The structure of testing strings, removing char and the results to check.
+ * \brief   The structure to test searching a character in the string.
  **/
 struct FindCharParams
 {
     std::string_view    source;     //!< The original string to test.
-    char                ch;         //!< The character to remove.
-    int                 pos;
-    PhraseList          results;
+    char                ch{};       //!< The character to search.
+    int                 pos{};      //!< The position to start searching
+    PhraseList          results;    //!< The list of results to compare with.
 };
 
 //!< List of parameters to test and the results to compare
@@ -614,8 +613,7 @@ struct StringTestFindFirstChar : public ::testing::TestWithParam<FindCharParams>
 };
 
 /**
- * \brief   Trim strings, if needed takes only `count` number of characters in the string.
- *          The result is copied to another buffer. The original string is not changed.
+ * \brief   Find a character in the string. It searches from the specified position until end of string.
  **/
 TEST_P(StringTestFindFirstChar, FindFirstChar)
 {
@@ -629,17 +627,17 @@ TEST_P(StringTestFindFirstChar, FindFirstChar)
 
     for (uint32_t i = 0; i < results.size(); ++i)
     {
-        const std::string_view& phrase{ results[i] };
+        const std::string_view& result{ results[i] };
 
         posTemp = NEString::findFirst<char>(ch, next, posTemp, &nextTemp);
-        EXPECT_TRUE(phrase == nextTemp);
+        EXPECT_TRUE(result == nextTemp);
         posTemp = 0;
 
 
         pos = NEString::findFirst<char>(ch, param.source.data(), pos, &next);
         EXPECT_TRUE(pos != NEString::INVALID_POS);
         EXPECT_EQ(param.source[static_cast<uint32_t>(pos)], ch);
-        EXPECT_TRUE(phrase == next);
+        EXPECT_TRUE(result == next);
         pos += 1;
     }
 
@@ -695,8 +693,7 @@ struct StringTestFindLastChar : public ::testing::TestWithParam<FindCharParams>
 };
 
 /**
- * \brief   Trim strings, if needed takes only `count` number of characters in the string.
- *          The result is copied to another buffer. The original string is not changed.
+ * \brief   Find a character in the string. It searches from the specified position until begin of string.
  **/
 TEST_P(StringTestFindLastChar, FindLastChar)
 {
@@ -708,12 +705,12 @@ TEST_P(StringTestFindLastChar, FindLastChar)
 
     for (uint32_t i = 0; i < results.size(); ++i)
     {
-        const std::string_view& phrase{ results[i] };
+        const std::string_view& result{ results[i] };
 
         pos = NEString::findLast<char>(ch, param.source.data(), pos, &next);
         EXPECT_TRUE(pos != NEString::INVALID_POS);
         EXPECT_EQ(param.source[static_cast<uint32_t>(pos)], ch);
-        EXPECT_TRUE(phrase == next);
+        EXPECT_TRUE(result == next);
         pos -= 1;
 
         EXPECT_NE(pos, NEString::END_POS);
@@ -729,4 +726,105 @@ TEST_P(StringTestFindLastChar, FindLastChar)
     INSTANTIATE_TEST_SUITE_P(NEStringTest, StringTestFindLastChar, ::testing::ValuesIn<FindCharParams>(_listFindLastCharParams));
 #else   // !defined(INSTANTIATE_TEST_SUITE_P)
     INSTANTIATE_TEST_CASE_P(NEStringTest, StringTestFindLastChar, ::testing::ValuesIn<FindCharParams>(_listFindLastCharParams));
+#endif  // defined(INSTANTIATE_TEST_SUITE_P)
+
+/************************************************************************
+ * Parameterized tests to search a phrase in the string.
+ ************************************************************************/
+
+/**
+ * \brief   The structure to use to test searching a phrase in the string.
+ **/
+struct FindPhraseParams
+{
+    std::string_view    source;     //!< The original string to test.
+    std::string_view    phrase;     //!< The phrase to search.
+    int                 pos{};      //!< The position to start searching
+    PhraseList          results;    //!< The list of results to compare with.
+};
+
+//!< List of parameters to test and the results to compare
+static FindPhraseParams _listFindFirstPhraseParams[]
+{
+      { {"123123"       }, {"123"       },  0, {{"123"}                                 } }
+    , { {"1111111"      }, {"111"       },  0, {{"1111"}, {"1"}                         } }
+    , { {" 123123 "     }, {"23"        },  0, {{"123 "}, {" "}                         } }
+    , { {"         "    }, {"  "        },  0, {{"       "}, {"     "}, {"   "}, {" "}  } } // 4
+    , { {" 123123 "     }, {""          },  0, {                                        } }
+    , { {" 123123 45"   }, {"45"        },  0, {                                        } }
+    , { {"0123123 45"   }, {"01"        },  0, {{"23123 45"}                            } }
+    , { {"0123123 45"   }, {"AB"        },  0, {                                        } }
+    , { {""             }, {"AB"        },  0, {                                        } }
+    , { {""             }, {""          },  0, {                                        } }
+    , { {" 123123 "     }, {"312"       },  0, {{"3 "}                                  } }
+    , { {"ABCDEBFG"     }, {"ABCDEBFG"  },  0, {                                        } }
+    , { {"ABCDEBFG"     }, {"ABCDEBFGH" },  0, {                                        } }
+    , { {"123456789012a"}, {"123"       },  0, {{"456789012a"}                          } }
+    , { {"123123123123a"}, {"123"       },  1, {{"123123a"}, {"123a"}, {"a"}            } }
+    , { {"123123123123a"}, {"123"       },  2, {{"123123a"}, {"123a"}, {"a"}            } }
+    , { {"123123123123a"}, {"123"       },  3, {{"123123a"}, {"123a"}, {"a"}            } }
+    , { {"123123123123a"}, {"123"       },  4, {{"123a"}, {"a"}                         } }
+    , { {"123123123123a"}, {"123"       },  5, {{"123a"}, {"a"}                         } }
+    , { {"123123123123a"}, {"123"       },  6, {{"123a"}, {"a"}                         } }
+    , { {"123123123123a"}, {"123"       },  7, {{"a"}                                   } }
+    , { {"123123123123a"}, {"123"       },  8, {{"a"}                                   } }
+    , { {"123123123123a"}, {"123"       },  9, {{"a"}                                   } }
+    , { {"123123123123a"}, {"123"       }, 10, {                                        } }
+    , { {"123123123123a"}, {"123"       }, 11, {                                        } }
+    , { {"123123123123a"}, {"123"       }, 12, {                                        } }
+    , { {"123123123123a"}, {"123"       }, 13, {                                        } }
+};
+
+//!< Declare test with parameters.
+struct StringTestFindFirstPhrase : public ::testing::TestWithParam<FindPhraseParams>
+{
+    FindPhraseParams params;
+};
+
+/**
+ * \brief   Find a character in the string. It searches from the specified position until end of string.
+ **/
+TEST_P(StringTestFindFirstPhrase, FindFirstChar)
+{
+    const FindPhraseParams& param{ GetParam() };
+    const char* next{ param.source.data() };
+    const char * phrase{ param.phrase.data() };
+    const PhraseList& results{ param.results };
+    NEString::CharCount pos{ param.pos };
+    NEString::CharCount posTemp{ param.pos };
+    const char* nextTemp{ nullptr };
+    NEString::CharCount phraseCount{ static_cast<NEString::CharCount>(param.phrase.length()) };
+
+    for (uint32_t i = 0; i < results.size(); ++i)
+    {
+        const std::string_view& result{ results[i] };
+
+        posTemp = NEString::findFirst<char>(phrase, next, posTemp, &nextTemp);
+        EXPECT_TRUE(result == nextTemp);
+        posTemp = 0;
+
+
+        pos = NEString::findFirst<char>(phrase, param.source.data(), pos, &next);
+        EXPECT_TRUE(pos != NEString::INVALID_POS);
+        NEMath::eCompare comp = NEString::compareFast<char>(param.source.data() + pos, phrase, phraseCount);
+        EXPECT_EQ(comp, NEMath::eCompare::Equal);
+        EXPECT_TRUE(result == next);
+        pos += phraseCount;
+    }
+
+    pos = NEString::findFirst<char>(phrase, param.source.data(), pos, &next);
+    if (pos != NEString::INVALID_POS)
+    {
+        NEMath::eCompare comp = NEString::compareFast<char>(param.source.data() + pos, phrase, NEString::COUNT_ALL);
+        EXPECT_EQ(comp, NEMath::eCompare::Equal);
+    }
+
+    EXPECT_TRUE(NEString::isEmpty<char>(next));
+    EXPECT_TRUE(next == nullptr);
+}
+
+#if defined(INSTANTIATE_TEST_SUITE_P)
+    INSTANTIATE_TEST_SUITE_P(NEStringTest, StringTestFindFirstPhrase, ::testing::ValuesIn<FindPhraseParams>(_listFindFirstPhraseParams));
+#else   // !defined(INSTANTIATE_TEST_SUITE_P)
+    INSTANTIATE_TEST_CASE_P(NEStringTest, StringTestFindFirstPhrase, ::testing::ValuesIn<FindPhraseParams>(_listFindFirstPhraseParams));
 #endif  // defined(INSTANTIATE_TEST_SUITE_P)
