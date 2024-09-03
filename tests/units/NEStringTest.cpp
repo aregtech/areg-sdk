@@ -784,7 +784,7 @@ struct StringTestFindFirstPhrase : public ::testing::TestWithParam<FindPhrasePar
 /**
  * \brief   Find a character in the string. It searches from the specified position until end of string.
  **/
-TEST_P(StringTestFindFirstPhrase, FindFirstChar)
+TEST_P(StringTestFindFirstPhrase, FindFirstString)
 {
     const FindPhraseParams& param{ GetParam() };
     const char* next{ param.source.data() };
@@ -815,7 +815,7 @@ TEST_P(StringTestFindFirstPhrase, FindFirstChar)
     pos = NEString::findFirst<char>(phrase, param.source.data(), pos, &next);
     if (pos != NEString::INVALID_POS)
     {
-        NEMath::eCompare comp = NEString::compareFast<char>(param.source.data() + pos, phrase, NEString::COUNT_ALL);
+        NEMath::eCompare comp = NEString::compareFast<char>(param.source.data() + pos, phrase, phraseCount);
         EXPECT_EQ(comp, NEMath::eCompare::Equal);
     }
 
@@ -827,4 +827,89 @@ TEST_P(StringTestFindFirstPhrase, FindFirstChar)
     INSTANTIATE_TEST_SUITE_P(NEStringTest, StringTestFindFirstPhrase, ::testing::ValuesIn<FindPhraseParams>(_listFindFirstPhraseParams));
 #else   // !defined(INSTANTIATE_TEST_SUITE_P)
     INSTANTIATE_TEST_CASE_P(NEStringTest, StringTestFindFirstPhrase, ::testing::ValuesIn<FindPhraseParams>(_listFindFirstPhraseParams));
+#endif  // defined(INSTANTIATE_TEST_SUITE_P)
+
+/************************************************************************
+ * Parameterized tests to search a phrase in the string from the end.
+ ************************************************************************/
+
+//!< List of parameters to test and the results to compare
+static FindPhraseParams _listFindLastPhraseParams[]
+{
+      { {"123123"       }, {"123"       }, -2, {{"123"}, {"123123"}                                     } } // 0
+    , { {"1111111"      }, {"111"       }, -2, {{"111"}, {"111111"}                                     } } // 1
+    , { {" 123123 "     }, {"23"        }, -2, {{"23 "}, {"23123 "}                                     } } // 2
+    , { {"         "    }, {"  "        }, -2, {{"  "}, {"    "}, {"      "}, {"        "}              } } // 3
+    , { {" 123123 "     }, {""          }, -2, {                                                        } } // 4
+    , { {" 123123 45"   }, {"45"        }, -2, {{"45"}                                                  } } // 5
+    , { {"0123123 45"   }, {"01"        }, -2, {{"0123123 45"}                                          } } // 6
+    , { {"0123123 45"   }, {"AB"        }, -2, {                                                        } } // 7
+    , { {""             }, {"AB"        }, -2, {                                                        } } // 8
+    , { {""             }, {""          }, -2, {                                                        } } // 9
+    , { {" 123123 "     }, {"312"       }, -2, {{"3123 "}                                               } } // 10
+    , { {"ABCDEBFG"     }, {"ABCDEBFG"  }, -2, {{"ABCDEBFG"}                                            } } // 11
+    , { {"ABCDEBFG"     }, {"ABCDEBFGH" }, -2, {                                                        } } // 12
+    , { {"123456789012a"}, {"123"       }, -2, {{"123456789012a"}                                       } } // 13
+    , { {"123123123123a"}, {"123"       }, 13, {{"123a"}, {"123123a"}, {"123123123a"}, {"123123123123a"}} } // 14
+    , { {"123123123123a"}, {"123"       }, 12, {{"123a"}, {"123123a"}, {"123123123a"}, {"123123123123a"}} } // 15
+    , { {"123123123123a"}, {"123"       }, 11, {          {"123123a"}, {"123123123a"}, {"123123123123a"}} } // 16
+    , { {"123123123123a"}, {"123"       }, 10, {          {"123123a"}, {"123123123a"}, {"123123123123a"}} } // 17
+    , { {"123123123123a"}, {"123"       },  9, {          {"123123a"}, {"123123123a"}, {"123123123123a"}} } // 18
+    , { {"123123123123a"}, {"123"       },  8, {                       {"123123123a"}, {"123123123123a"}} } // 19
+    , { {"123123123123a"}, {"123"       },  7, {                       {"123123123a"}, {"123123123123a"}} } // 20
+    , { {"123123123123a"}, {"123"       },  6, {                       {"123123123a"}, {"123123123123a"}} } // 21
+    , { {"123123123123a"}, {"123"       },  5, {                                       {"123123123123a"}} } // 22
+    , { {"123123123123a"}, {"123"       },  4, {                                       {"123123123123a"}} } // 23
+    , { {"123123123123a"}, {"123"       },  3, {                                       {"123123123123a"}} } // 24
+    , { {"123123123123a"}, {"123"       },  2, {                                                        } } // 25
+    , { {"123123123123a"}, {"123"       },  1, {                                                        } } // 26
+    , { {"123123123123a"}, {"123"       },  0, {                                                        } } // 27
+};
+
+//!< Declare test with parameters.
+struct StringTestFindLastPhrase : public ::testing::TestWithParam<FindPhraseParams>
+{
+    FindPhraseParams params;
+};
+
+/**
+ * \brief   Find a character in the string. It searches from the specified position until end of string.
+ **/
+TEST_P(StringTestFindLastPhrase, FindLastString)
+{
+    const FindPhraseParams& param{ GetParam() };
+    const char* next{ param.source.data() };
+    const char * phrase{ param.phrase.data() };
+    const PhraseList& results{ param.results };
+    NEString::CharCount pos{ param.pos };
+
+    NEString::CharCount phraseCount{ static_cast<NEString::CharCount>(param.phrase.length()) };
+
+    for (uint32_t i = 0; i < results.size(); ++i)
+    {
+        const std::string_view& result{ results[i] };
+
+        pos = NEString::findLast<char>(phrase, param.source.data(), pos, &next);
+        EXPECT_TRUE(pos != NEString::INVALID_POS);
+        NEMath::eCompare comp = NEString::compareFast<char>(param.source.data() + pos, phrase, phraseCount);
+        EXPECT_EQ(comp, NEMath::eCompare::Equal);
+        EXPECT_TRUE(result == next);
+        // pos -= 1;
+    }
+
+    pos = NEString::findLast<char>(phrase, param.source.data(), pos, &next);
+    if (pos != NEString::INVALID_POS)
+    {
+        NEMath::eCompare comp = NEString::compareFast<char>(param.source.data() + pos, phrase, phraseCount);
+        EXPECT_EQ(comp, NEMath::eCompare::Equal);
+    }
+
+    EXPECT_TRUE(NEString::isEmpty<char>(next));
+    EXPECT_TRUE(next == nullptr);
+}
+
+#if defined(INSTANTIATE_TEST_SUITE_P)
+    INSTANTIATE_TEST_SUITE_P(NEStringTest, StringTestFindLastPhrase, ::testing::ValuesIn<FindPhraseParams>(_listFindLastPhraseParams));
+#else   // !defined(INSTANTIATE_TEST_SUITE_P)
+    INSTANTIATE_TEST_CASE_P(NEStringTest, StringTestFindLastPhrase, ::testing::ValuesIn<FindPhraseParams>(_listFindLastPhraseParams));
 #endif  // defined(INSTANTIATE_TEST_SUITE_P)

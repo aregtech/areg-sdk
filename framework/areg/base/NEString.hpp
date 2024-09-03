@@ -1184,12 +1184,12 @@ NEString::CharPos NEString::findLast( const CharType * strPhrase
 
     if ( (isEmpty<CharType>( strSource ) == false) && (isEmpty<CharType>( strPhrase ) == false) )
     {
-        CharPos posSrc = startPos == NEString::END_POS ? NEString::getStringLength<CharType>(strSource) - 1 : startPos;
-        CharPos posPhr = NEString::getStringLength<CharType>(strPhrase) - 1;
-        if ( (posSrc >= NEString::START_POS) && (posPhr >= NEString::START_POS) )
+        CharPos posSrc = startPos == NEString::END_POS ? NEString::getStringLength<CharType>(strSource) : startPos;
+        CharPos posPhr = NEString::getStringLength<CharType>(strPhrase);
+        if ( (posSrc > NEString::START_POS) && (posPhr > NEString::START_POS) )
         {
-            const CharType * end    = strSource + posSrc;
-            const CharType * phrase = strPhrase + posPhr;
+            const CharType * end    = strSource + posSrc - 1;
+            const CharType * phrase = strPhrase + posPhr - 1;
 
             while (end >= strSource)
             {
@@ -1198,7 +1198,7 @@ NEString::CharPos NEString::findLast( const CharType * strPhrase
                     const CharType * one = end    - 1;
                     const CharType * two = phrase - 1;
                     // no need to check (*one != static_cast<CharType>(EndofString))
-                    while ( (two >= strPhrase) && (*one == *two) )
+                    while ( (one >= strSource) && (two >= strPhrase) && (*one == *two) )
                     {
                         -- one;
                         -- two;
@@ -1206,7 +1206,8 @@ NEString::CharPos NEString::findLast( const CharType * strPhrase
 
                     if (  two < strPhrase )
                     {
-                        result = static_cast<NEString::CharPos>(one + 1 - strSource);
+                        ++one;
+                        result = static_cast<NEString::CharPos>(MACRO_ELEM_COUNT(strSource, one));
                         if ( (out_next != nullptr) && (one >= strSource) )
                             *out_next = one;
 
