@@ -782,7 +782,8 @@ struct StringTestFindFirstPhrase : public ::testing::TestWithParam<FindPhrasePar
 };
 
 /**
- * \brief   Find a character in the string. It searches from the specified position until end of string.
+ * \brief   Find a character in the string starting from the begin of the string.
+ *          It searches from the specified position until end of string.
  **/
 TEST_P(StringTestFindFirstPhrase, FindFirstString)
 {
@@ -873,7 +874,8 @@ struct StringTestFindLastPhrase : public ::testing::TestWithParam<FindPhrasePara
 };
 
 /**
- * \brief   Find a character in the string. It searches from the specified position until end of string.
+ * \brief   Find a phrase in the string starting from the end of the string.
+ *          It searches from the specified position until begin of the string.
  **/
 TEST_P(StringTestFindLastPhrase, FindLastString)
 {
@@ -913,3 +915,110 @@ TEST_P(StringTestFindLastPhrase, FindLastString)
 #else   // !defined(INSTANTIATE_TEST_SUITE_P)
     INSTANTIATE_TEST_CASE_P(NEStringTest, StringTestFindLastPhrase, ::testing::ValuesIn<FindPhraseParams>(_listFindLastPhraseParams));
 #endif  // defined(INSTANTIATE_TEST_SUITE_P)
+
+/************************************************************************
+ * Parameterized tests to verify whether the string starts or end with the specific phrase.
+ ************************************************************************/
+
+/**
+ * \brief   The structure to check the start and end of the string.
+ **/
+struct CompareSubstring
+{
+    std::string_view    source;                 //!< The original string to check
+    std::string_view    substr;                 //!< The substring to search
+    bool                isStart{ false };       //!< Flag, indicating whether the expected substring should search at start or end of string
+    bool                isSensetive{ false };   //!< Flag, indicating whether the characters are case sensitive or not.
+    bool                result{ false };        //!< The expected result when check the substring
+};
+
+//!< The list of testing parameters
+static constexpr CompareSubstring _listCompareSubstring[]
+{
+      { {"123456"   }, {"1"     }, true , true  , true  } // 0
+    , { {"123456"   }, {"123"   }, true , true  , true  } // 1
+    , { {"123456"   }, {"2"     }, true , true  , false } // 2
+    , { {"123456"   }, {"23"    }, true , true  , false } // 3
+    , { {"123456"   }, {"13"    }, true , true  , false } // 4
+    , { {"123456"   }, {"6"     }, false, true  , true  } // 5
+    , { {"123456"   }, {"456"   }, false, true  , true  } // 6
+    , { {"123456"   }, {"5"     }, false, true  , false } // 7
+    , { {"123456"   }, {"45"    }, false, true  , false } // 8
+    , { {"123456"   }, {"46"    }, false, true  , false } // 9
+    , { {"      "   }, {"  "    }, true , true  , true  } // 10
+    , { {"      "   }, {"  "    }, false, true  , true  } // 11
+    , { {""         }, {"  "    }, true , true  , false } // 12
+    , { {""         }, {"  "    }, false, true  , false } // 13
+    , { {"      "   }, {""      }, true , true  , false } // 14
+    , { {"      "   }, {""      }, false, true  , false } // 15
+    , { {"\n    "   }, {"  "    }, true , true  , false } // 16
+    , { {"    \n"   }, {"  "    }, false, true  , false } // 17
+    , { {"abcdef"   }, {"a"     }, true , true  , true  } // 18
+    , { {"abcdef"   }, {"A"     }, true , false , true  } // 19
+    , { {"abcdef"   }, {"abc"   }, true , true  , true  } // 20
+    , { {"abcdef"   }, {"AbC"   }, true , false , true  } // 21
+    , { {"abcdef"   }, {"b"     }, true , false , false } // 22
+    , { {"abcdef"   }, {"ac"    }, true , false , false } // 23
+    , { {"abcdef"   }, {"f"     }, false, true  , true  } // 24
+    , { {"abcdef"   }, {"F"     }, false, false , true  } // 25
+    , { {"abcdef"   }, {"def"   }, false, true  , true  } // 26
+    , { {"abcdef"   }, {"DeF"   }, false, false , true  } // 27
+    , { {"abcdef"   }, {"e"     }, false, false , false } // 28
+    , { {"abcdef"   }, {"Df"    }, false, false , false } // 29
+};
+
+//!< Declare test with parameters.
+struct StringTestStartsEnds : public ::testing::TestWithParam<CompareSubstring>
+{
+    CompareSubstring params;
+};
+
+/**
+ * \brief   Check whether the string starts or ends with the character or substring.
+ **/
+TEST_P(StringTestStartsEnds, StringStartsEnds)
+{
+    const CompareSubstring& param{ GetParam() };
+    const char* source = param.source.data();
+    const char* substr = param.substr.data();
+
+    if (param.isStart)
+    {
+        if (param.substr.length() > 1)
+        {
+            EXPECT_EQ(NEString::stringStartsWith<char>(source, substr, param.isSensetive), param.result);
+        }
+        else if (param.substr.length() == 1)
+        {
+            EXPECT_EQ(NEString::stringStartsWith<char>(source, *substr, param.isSensetive), param.result);
+        }
+        else
+        {
+            EXPECT_EQ(NEString::stringStartsWith<char>(source, substr, param.isSensetive), param.result);
+            EXPECT_EQ(NEString::stringStartsWith<char>(source, *substr, param.isSensetive), param.result);
+        }
+    }
+    else
+    {
+        if (param.substr.length() > 1)
+        {
+            EXPECT_EQ(NEString::stringEndsWith<char>(source, substr, param.isSensetive), param.result);
+        }
+        else if (param.substr.length() == 1)
+        {
+            EXPECT_EQ(NEString::stringEndsWith<char>(source, *substr, param.isSensetive), param.result);
+        }
+        else
+        {
+            EXPECT_EQ(NEString::stringEndsWith<char>(source, substr, param.isSensetive), param.result);
+            EXPECT_EQ(NEString::stringEndsWith<char>(source, *substr, param.isSensetive), param.result);
+        }
+    }
+}
+
+#if defined(INSTANTIATE_TEST_SUITE_P)
+    INSTANTIATE_TEST_SUITE_P(NEStringTest, StringTestStartsEnds, ::testing::ValuesIn<CompareSubstring>(_listCompareSubstring));
+#else   // !defined(INSTANTIATE_TEST_SUITE_P)
+    INSTANTIATE_TEST_CASE_P(NEStringTest, StringTestStartsEnds, ::testing::ValuesIn<CompareSubstring>(_listCompareSubstring));
+#endif  // defined(INSTANTIATE_TEST_SUITE_P)
+

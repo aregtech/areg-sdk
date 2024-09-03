@@ -1313,7 +1313,7 @@ bool NEString::stringStartsWith(const CharType * strString, const CharType * phr
     if ((isEmpty<CharType>(strString) == false) && (isEmpty<CharType>(phrase) == false))
     {
         result = true;
-        for ( ; (*phrase != NEString::EndOfString) && (*strString == NEString::EndOfString); ++ strString, ++ phrase )
+        for ( ; (*phrase != NEString::EndOfString) && (*strString != NEString::EndOfString); ++ strString, ++ phrase )
         {
             CharType ch1 = *strString;
             CharType ch2 = *phrase;
