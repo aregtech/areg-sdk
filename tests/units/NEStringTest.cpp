@@ -1096,6 +1096,10 @@ TEST_P(StringTestStartsEnds, StringStartsEnds)
     INSTANTIATE_TEST_CASE_P(NEStringTest, StringTestStartsEnds, ::testing::ValuesIn<CompareSubstring>(_listCompareSubstring));
 #endif  // defined(INSTANTIATE_TEST_SUITE_P)
 
+/************************************************************************
+ * Parameterized tests to verify reading a line of string.
+ ************************************************************************/
+
 struct StringLines
 {
     std::string_view    source;
@@ -1104,12 +1108,52 @@ struct StringLines
 
 static const StringLines _listStringLines[]
 {
-      { { "one\ntwo\nthree\nfour"           }, { {"one"     }, {"two"   }, {"three" }, {"four"  }                                           } }
-    , { { "one\r\ntwo\r\nthree\r\nfour"     }, { {"one"     }, {"two"   }, {"three" }, {"four"  }                                           } }
-    , { { "one\rtwo\rthree\rfour"           }, { {"one"     }, {"two"   }, {"three" }, {"four"  }                                           } }
-    , { { "one\ntwo\n\rthree\r\n\four\r"    }, { {"one"     }, {"two"   }, {""      }, {"three" }, {"four"  }                               } }
-    , { { "\none\ntwo\n\rthree\r\n\four\n"  }, { {""        }, { "one"  }, {"two"   }, {""      }, {"three" }, {"four"}, {""}               } }
-    , { { "one\n\ntwo\n\rthree\r\n\four\n"  }, { {""        }, { "one"  }, {"two"   }, {"three" }, {"four"  }, {""    }                     } }
-    , { { "one\n\ntwo\n\rthree\r\n\four\n"  }, { {""        }, { "one"  }, {""      }, { "two"  }, {""      }, { "three" }, {"four"}, {""}  } }
+      { { "one\ntwo\nthree\nfour"                       }, { {"one"     }, {"two"   }, {"three" }, {"four"  }                                               } } // 0
+    , { { "one\r\ntwo\r\nthree\r\nfour"                 }, { {"one"     }, {"two"   }, {"three" }, {"four"  }                                               } } // 1
+    , { { "one\rtwo\rthree\rfour"                       }, { {"one"     }, {"two"   }, {"three" }, {"four"  }                                               } } // 2
+    , { { "one\ntwo\n\rthree\r\nfour\r"                 }, { {"one"     }, {"two"   }, {""      }, {"three" }, {"four"  }                                   } } // 3
+    , { { "\none\ntwo\n\rthree\r\nfour\n"               }, { {""        }, {"one"   }, {"two"   }, {""      }, {"three" }, {"four"}                         } } // 4
+    , { { "one\n\ntwo\n\rthree\r\nfour\n\n"             }, { {"one"     }, {""      }, {"two"   }, {""      }, {"three" }, {"four"  }, {""    }             } } // 5
+    , { { "\rone\n\ntwo\n\rthree\r\nfour\n\r"           }, { {""        }, {"one"   }, {""      }, {"two"   }, {""      }, {"three" }, {"four"}, {""    }   } } // 6
+    , { { "\x01one\x02two\x03three\x04""four\x05\x06"   }, { {""        }, {"one"   }, {"two"   }, {"three" }, {"four"  }, {""      }                       } } // 7
+    , { { "\n\x7\r"                                     }, { {""        }, {""      }, {""      }                                                           } } // 8
+    , { { ""                                            }, { {""        }                                                                                   } } // 9
+    , { { "one, two, three, four"                       }, { {"one, two, three, four"}                                                                      } } // 10
 };
 
+//!< Declare test with parameters.
+struct StringTestGetLine : public ::testing::TestWithParam<StringLines>
+{
+    StringLines params;
+};
+
+/**
+ * \brief   Checks reading a line of string.
+ **/
+TEST_P(StringTestGetLine, StringGetLine)
+{
+    const StringLines& param{ GetParam() };
+    const char* source = param.source.data();
+    const PhraseList& lines = param.lines;
+
+    char buffer[256]{};
+    char* next{ buffer };
+    NEString::copyString(buffer, 256, source);
+
+    for (const auto& line : lines)
+    {
+        const char * result = NEString::getLine<char>(next, NEString::END_POS, &next);
+        EXPECT_TRUE(line == result);
+    }
+
+    EXPECT_TRUE(next == nullptr);
+
+    const char* result = NEString::getLine<char>(next, NEString::END_POS, &next);
+    EXPECT_TRUE(result == nullptr);
+}
+
+#if defined(INSTANTIATE_TEST_SUITE_P)
+    INSTANTIATE_TEST_SUITE_P(NEStringTest, StringTestGetLine, ::testing::ValuesIn<StringLines>(_listStringLines));
+#else   // !defined(INSTANTIATE_TEST_SUITE_P)
+    INSTANTIATE_TEST_CASE_P(NEStringTest, StringTestGetLine, ::testing::ValuesIn<StringLines>(_listStringLines));
+#endif  // defined(INSTANTIATE_TEST_SUITE_P)
