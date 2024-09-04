@@ -47,12 +47,12 @@ namespace
         /*   0 -   0 */   EOFS  | EOFL | CTRL                                                                           //   '\0', Null, end of string
         /*   1 -   4 */ , EOFL  | CTRL          , EOFL | CTRL           , EOFL | CTRL           , EOFL | CTRL           //    1 == SOH  ,   2 == STX    ,   3 == ETX    ,   4 == EOT
         /*   5 -   8 */ , EOFL  | CTRL          , EOFL | CTRL           , EOFL | CTRL           , EOFL | CTRL           //    5 == ENQ  ,   6 == ACK    ,   7 == BEL    ,   8 == '\b'
-        /*   9 -  12 */ , PRINT | CTRL | SPACE  , EOFL | CTRL | PRINT   , PRINT | CTRL          , EOFL | CTRL           //    9 == '\t' ,  10 == '\n'   ,  11 == '\v'   ,  12 == '\f'
+        /*   9 -  12 */ , SPACE | CTRL | PRINT  , EOFL | CTRL | PRINT   , PRINT | CTRL          , EOFL | CTRL           //    9 == '\t' ,  10 == '\n'   ,  11 == '\v'   ,  12 == '\f'
         /*  13 -  16 */ , DEOL  | CTRL | PRINT  , EOFL | CTRL           , EOFL | CTRL           , EOFL | CTRL           //   13 == '\r' ,  14 == SO     ,  15 == SI     ,  16 == DLE
         /*  17 -  20 */ , EOFL  | CTRL          , EOFL | CTRL           , EOFL | CTRL           , EOFL | CTRL           //   17 == DC1  ,  18 == DC2    ,  19 == DC3    ,  20 == DC4
         /*  21 -  24 */ , EOFL  | CTRL          , EOFL | CTRL           , EOFL | CTRL           , EOFL | CTRL           //   21 == NAK  ,  22 == SYN    ,  23 == ETB    ,  24 == CAN
         /*  25 -  28 */ , EOFL  | CTRL          , EOFL | CTRL           , EOFL | CTRL           , EOFL | CTRL           //   25 == EM   ,  26 == SUB    ,  27 == ESC    ,  28 == FS
-        /*  29 -  32 */ , EOFL  | CTRL          , EOFL | CTRL           , EOFL | CTRL           , PRINT | SPACE         //   29 == GS   ,  30 == RS     ,  31 == US     ,  32 == ' '
+        /*  29 -  32 */ , EOFL  | CTRL          , EOFL | CTRL           , EOFL | CTRL           , SPACE| PRINT          //   29 == GS   ,  30 == RS     ,  31 == US     ,  32 == ' '
         /*  33 -  36 */ , SYMBOL                , SYMBOL                , SYMBOL                , SYMBOL                //   33 == '!'  ,  34 == '\"'   ,  35 == '#'    ,  36 == '$'
         /*  37 -  40 */ , SYMBOL                , SYMBOL                , SYMBOL                , SYMBOL                //   37 == '%'  ,  38 == '&'    ,  39 == '\''   ,  40 == '('
         /*  41 -  44 */ , SYMBOL                , SYMBOL                , SYMBOL                , SYMBOL                //   41 == ')'  ,  42 == '*'    ,  43 == '+'    ,  44 == ','

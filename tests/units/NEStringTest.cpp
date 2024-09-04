@@ -262,6 +262,80 @@ TEST(NEStringTest, LowerUpperNumericCase)
     }
 }
 
+/**
+ * \brief   Test methods of checking the printable characters.
+ **/
+TEST(NEStringTest, GetPrintable)
+{
+    constexpr uint8_t printLow[]{ 9, 10, 11, 13 };
+    constexpr uint32_t sizePrintLow{ MACRO_ARRAYLEN(printLow) };
+    constexpr uint8_t nonPrintHigh[]{ 127, 129, 141, 143, 144, 157, 173 };
+    constexpr uint32_t sizeNonPrintHigh{ MACRO_ARRAYLEN(nonPrintHigh) };
+
+    constexpr uint32_t sizeNonPrint{ 31 - sizePrintLow + sizeNonPrintHigh + 1}; //plus one -- string zero-terminate
+    constexpr uint32_t sizePrint{ 0x0100 - sizeNonPrint };  // 256 - <non-printable>
+
+    char buffer[0xFF + 1u]{};
+    for (uint16_t i = 0; i < 0xFF; ++i)
+    {
+        buffer[i] = static_cast<char>(static_cast<uint8_t>(i + 1u));
+    }
+
+    buffer[0xFF] = NEString::EndOfString; // 256-th entry
+
+    uint32_t countPrintable{ 0 };
+    uint32_t countNonPrintable{ 0 };
+
+    char* next = { buffer };
+    do
+    {
+        const char* buf = NEString::getPrintable<char>(next, NEString::COUNT_ALL, &next);
+        while (NEString::isEndOfString(*buf) == false)
+        {
+            const uint8_t ch{ static_cast<uint8_t>(*buf) };
+            if (ch <= 31)
+            {
+                bool canPrint{ false };
+                for (uint32_t i = 0; i < sizePrintLow; ++i)
+                {
+                    if (ch == printLow[i])
+                    {
+                        // should happen once
+                        canPrint = true;
+                        break;
+                    }
+                }
+
+                EXPECT_TRUE(canPrint);
+            }
+            else if (ch >= 127u)
+            {
+                bool canPrint{ true };
+                for (uint32_t i = 0; i < sizeNonPrintHigh; ++i)
+                {
+                    if (ch == nonPrintHigh[i])
+                    {
+                        // should not happen
+                        canPrint = false;
+                        break;
+                    }
+                }
+
+                EXPECT_TRUE(canPrint);
+            }
+
+            EXPECT_TRUE(NEString::isPrintable(*buf));
+            ++countPrintable;
+            ++buf;
+        }
+
+        ++countNonPrintable;
+    } while (next != nullptr);
+
+    EXPECT_EQ(countPrintable, sizePrint);
+    EXPECT_EQ(countNonPrintable, sizeNonPrint);
+}
+
 /************************************************************************
  * Parameterized tests to compare strings, with and without case sensitive
  ************************************************************************/
@@ -1021,4 +1095,21 @@ TEST_P(StringTestStartsEnds, StringStartsEnds)
 #else   // !defined(INSTANTIATE_TEST_SUITE_P)
     INSTANTIATE_TEST_CASE_P(NEStringTest, StringTestStartsEnds, ::testing::ValuesIn<CompareSubstring>(_listCompareSubstring));
 #endif  // defined(INSTANTIATE_TEST_SUITE_P)
+
+struct StringLines
+{
+    std::string_view    source;
+    PhraseList          lines;
+};
+
+static const StringLines _listStringLines[]
+{
+      { { "one\ntwo\nthree\nfour"           }, { {"one"     }, {"two"   }, {"three" }, {"four"  }                                           } }
+    , { { "one\r\ntwo\r\nthree\r\nfour"     }, { {"one"     }, {"two"   }, {"three" }, {"four"  }                                           } }
+    , { { "one\rtwo\rthree\rfour"           }, { {"one"     }, {"two"   }, {"three" }, {"four"  }                                           } }
+    , { { "one\ntwo\n\rthree\r\n\four\r"    }, { {"one"     }, {"two"   }, {""      }, {"three" }, {"four"  }                               } }
+    , { { "\none\ntwo\n\rthree\r\n\four\n"  }, { {""        }, { "one"  }, {"two"   }, {""      }, {"three" }, {"four"}, {""}               } }
+    , { { "one\n\ntwo\n\rthree\r\n\four\n"  }, { {""        }, { "one"  }, {"two"   }, {"three" }, {"four"  }, {""    }                     } }
+    , { { "one\n\ntwo\n\rthree\r\n\four\n"  }, { {""        }, { "one"  }, {""      }, { "two"  }, {""      }, { "three" }, {"four"}, {""}  } }
+};
 

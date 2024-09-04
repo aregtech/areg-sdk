@@ -502,6 +502,41 @@ namespace NEString
     inline bool isNewLine( CharType ch );
 
     /**
+     * \brief   Checks whether the specified character is a Unix style 'new line', i.e. the symbol is equal to '\n'.
+     * \param   ch      The character in range [-128 .. 127] to check.
+     * \return  Returns `true` if specified character is equal to '\n'.
+     **/
+    template<typename CharType>
+    inline bool isUnixEndOfLine(CharType ch);
+
+    /**
+     * \brief   Checks whether the first character of the specified null-terminated string 
+     *          is a Unix style 'new line', i.e. the symbol is equal to '\n'.
+     * \param   source  The string to check.
+     * \return  Returns `true` if specified string is not null and the first character is equal to '\n'.
+     **/
+    template<typename CharType>
+    inline bool isUnixEndOfLine(const CharType * source);
+
+    /**
+     * \brief   Checks whether the specified characters define DOS style 'new line', i.e. the symbol is equal to '\r and '\n'.
+     * \param   ch1     The character in range [-128 .. 127] to check.
+     * \param   ch2     The character in range [-128 .. 127] to check.
+     * \return  Returns `true` if specified character `ch1` is equal to '\r' and the character `ch2` is equal to '\n'.
+     **/
+    template<typename CharType>
+    inline bool isDosEndOfLine(CharType ch1, CharType ch2);
+
+    /**
+     * \brief   Checks whether the first 2 characters of the specified null-terminated string
+     *          is DOS style 'new line', i.e. the symbol is equal to "\r\n".
+     * \param   source  The string to check.
+     * \return  Returns `true` if specified string is not null and the first two characters are equal to "\r\n".
+     **/
+    template<typename CharType>
+    inline bool isDosEndOfLine(const CharType* source);
+
+    /**
      * \brief	Checks whether the passed single character is an  end of string symbol.
      *          The checkup is done based on first 256 symbols based on UTF-8 code page.
      * \param   ch      The character in range [-128 .. 127] to check.
@@ -1074,7 +1109,7 @@ const CharType * NEString::getLine( CharType * strSource, NEString::CharCount ch
         {
             if (NEString::isEndOfLine<CharType>(*strSource))
             {
-                if ( NEString::isCarriageReturn<CharType>(*strSource) && NEString::isNewLine<CharType>( *(strSource + 1) ) )
+                if ( NEString::isDosEndOfLine<CharType>(*strSource, *(strSource + 1)) )
                 {
                     *strSource ++ = static_cast<CharType>(NEString::EndOfString);
                 }
@@ -1685,6 +1720,30 @@ template<typename CharType>
 bool NEString::isNewLine( CharType ch )
 {
     return (ch == static_cast<CharType>(NEString::EndOfLine));
+}
+
+template<typename CharType>
+bool NEString::isUnixEndOfLine(CharType ch)
+{
+    return NEString::isNewLine<CharType>(ch);
+}
+
+template<typename CharType>
+bool NEString::isUnixEndOfLine(const CharType * source)
+{
+    return (source != nullptr ? NEString::isUnixEndOfLine<CharType>(*source) : false);
+}
+
+template<typename CharType>
+bool NEString::isDosEndOfLine(CharType ch1, CharType ch2)
+{
+    return (NEString::isCarriageReturn<CharType>(ch1) && NEString::isUnixEndOfLine<CharType>(ch2));
+}
+
+template<typename CharType>
+bool NEString::isDosEndOfLine(const CharType * source)
+{
+    return (source != nullptr ? NEString::isDosEndOfLine<CharType>(*source, *(source + 1)) : false);
 }
 
 template<typename CharType>
