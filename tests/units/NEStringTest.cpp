@@ -703,19 +703,19 @@ TEST_P(StringTestFindFirstChar, FindFirstChar)
     {
         const std::string_view& result{ results[i] };
 
-        posTemp = NEString::findFirst<char>(ch, next, posTemp, &nextTemp);
+        posTemp = NEString::findFirst<char>(ch, next, posTemp, true, &nextTemp);
         EXPECT_TRUE(result == nextTemp);
         posTemp = 0;
 
 
-        pos = NEString::findFirst<char>(ch, param.source.data(), pos, &next);
+        pos = NEString::findFirst<char>(ch, param.source.data(), pos, true, &next);
         EXPECT_TRUE(pos != NEString::INVALID_POS);
         EXPECT_EQ(param.source[static_cast<uint32_t>(pos)], ch);
         EXPECT_TRUE(result == next);
         pos += 1;
     }
 
-    pos = NEString::findFirst<char>(ch, param.source.data(), pos, &next);
+    pos = NEString::findFirst<char>(ch, param.source.data(), pos, true, &next);
     if (pos != NEString::INVALID_POS)
     {
         EXPECT_EQ(param.source[static_cast<uint32_t>(pos)], ch);
@@ -781,7 +781,7 @@ TEST_P(StringTestFindLastChar, FindLastChar)
     {
         const std::string_view& result{ results[i] };
 
-        pos = NEString::findLast<char>(ch, param.source.data(), pos, &next);
+        pos = NEString::findLast<char>(ch, param.source.data(), pos, true, &next);
         EXPECT_TRUE(pos != NEString::INVALID_POS);
         EXPECT_EQ(param.source[static_cast<uint32_t>(pos)], ch);
         EXPECT_TRUE(result == next);
@@ -790,7 +790,7 @@ TEST_P(StringTestFindLastChar, FindLastChar)
         EXPECT_NE(pos, NEString::END_POS);
     }
 
-    pos = NEString::findLast<char>(ch, param.source.data(), pos, &next);
+    pos = NEString::findLast<char>(ch, param.source.data(), pos, true, &next);
     EXPECT_EQ(pos, NEString::INVALID_POS);
     EXPECT_TRUE(NEString::isEmpty<char>(next));
     EXPECT_TRUE(next == nullptr);
@@ -811,42 +811,48 @@ TEST_P(StringTestFindLastChar, FindLastChar)
  **/
 struct FindPhraseParams
 {
-    std::string_view    source;     //!< The original string to test.
-    std::string_view    phrase;     //!< The phrase to search.
-    int                 pos{};      //!< The position to start searching
-    PhraseList          results;    //!< The list of results to compare with.
+    std::string_view    source;         //!< The original string to test.
+    std::string_view    phrase;         //!< The phrase to search.
+    int                 pos{};          //!< The position to start searching
+    bool                isSensitive{};  //!< Indicates whether the searching is case sensitive or not.
+    PhraseList          results;        //!< The list of results to compare with.
 };
 
 //!< List of parameters to test and the results to compare
 static FindPhraseParams _listFindFirstPhraseParams[]
 {
-      { {"123123"       }, {"123"       },  0, {{"123"}                                 } }
-    , { {"1111111"      }, {"111"       },  0, {{"1111"}, {"1"}                         } }
-    , { {" 123123 "     }, {"23"        },  0, {{"123 "}, {" "}                         } }
-    , { {"         "    }, {"  "        },  0, {{"       "}, {"     "}, {"   "}, {" "}  } } // 4
-    , { {" 123123 "     }, {""          },  0, {                                        } }
-    , { {" 123123 45"   }, {"45"        },  0, {                                        } }
-    , { {"0123123 45"   }, {"01"        },  0, {{"23123 45"}                            } }
-    , { {"0123123 45"   }, {"AB"        },  0, {                                        } }
-    , { {""             }, {"AB"        },  0, {                                        } }
-    , { {""             }, {""          },  0, {                                        } }
-    , { {" 123123 "     }, {"312"       },  0, {{"3 "}                                  } }
-    , { {"ABCDEBFG"     }, {"ABCDEBFG"  },  0, {                                        } }
-    , { {"ABCDEBFG"     }, {"ABCDEBFGH" },  0, {                                        } }
-    , { {"123456789012a"}, {"123"       },  0, {{"456789012a"}                          } }
-    , { {"123123123123a"}, {"123"       },  1, {{"123123a"}, {"123a"}, {"a"}            } }
-    , { {"123123123123a"}, {"123"       },  2, {{"123123a"}, {"123a"}, {"a"}            } }
-    , { {"123123123123a"}, {"123"       },  3, {{"123123a"}, {"123a"}, {"a"}            } }
-    , { {"123123123123a"}, {"123"       },  4, {{"123a"}, {"a"}                         } }
-    , { {"123123123123a"}, {"123"       },  5, {{"123a"}, {"a"}                         } }
-    , { {"123123123123a"}, {"123"       },  6, {{"123a"}, {"a"}                         } }
-    , { {"123123123123a"}, {"123"       },  7, {{"a"}                                   } }
-    , { {"123123123123a"}, {"123"       },  8, {{"a"}                                   } }
-    , { {"123123123123a"}, {"123"       },  9, {{"a"}                                   } }
-    , { {"123123123123a"}, {"123"       }, 10, {                                        } }
-    , { {"123123123123a"}, {"123"       }, 11, {                                        } }
-    , { {"123123123123a"}, {"123"       }, 12, {                                        } }
-    , { {"123123123123a"}, {"123"       }, 13, {                                        } }
+      { {"123123"       }, {"123"       },  0, true , {{"123"}                                      } } // 0
+    , { {"1111111"      }, {"111"       },  0, true , {{"1111"}, {"1"}                              } } // 1
+    , { {" 123123 "     }, {"23"        },  0, true , {{"123 "}, {" "}                              } } // 2
+    , { {"         "    }, {"  "        },  0, true , {{"       "}, {"     "}, {"   "}, {" "}       } } // 3
+    , { {" 123123 "     }, {""          },  0, true , {                                             } } // 4
+    , { {" 123123 45"   }, {"45"        },  0, true , {                                             } } // 5
+    , { {"0123123 45"   }, {"01"        },  0, true , {{"23123 45"}                                 } } // 6
+    , { {"0123123 45"   }, {"AB"        },  0, true , {                                             } } // 7
+    , { {""             }, {"AB"        },  0, true , {                                             } } // 8
+    , { {""             }, {""          },  0, true , {                                             } } // 9
+    , { {" 123123 "     }, {"312"       },  0, true , {{"3 "}                                       } } // 10
+    , { {"ABCDEBFG"     }, {"ABCDEBFG"  },  0, true , {                                             } } // 11
+    , { {"ABCDEBFG"     }, {"ABCDEBFGH" },  0, true , {                                             } } // 12
+    , { {"123456789012a"}, {"123"       },  0, true , {{"456789012a"}                               } } // 13
+    , { {"123123123123a"}, {"123"       },  1, true , {{"123123a"}, {"123a"}, {"a"}                 } } // 14
+    , { {"123123123123a"}, {"123"       },  2, true , {{"123123a"}, {"123a"}, {"a"}                 } } // 15
+    , { {"123123123123a"}, {"123"       },  3, true , {{"123123a"}, {"123a"}, {"a"}                 } } // 16
+    , { {"123123123123a"}, {"123"       },  4, true , {{"123a"}, {"a"}                              } } // 17
+    , { {"123123123123a"}, {"123"       },  5, true , {{"123a"}, {"a"}                              } } // 18
+    , { {"123123123123a"}, {"123"       },  6, true , {{"123a"}, {"a"}                              } } // 19
+    , { {"123123123123a"}, {"123"       },  7, true , {{"a"}                                        } } // 20
+    , { {"123123123123a"}, {"123"       },  8, true , {{"a"}                                        } } // 21
+    , { {"123123123123a"}, {"123"       },  9, true , {{"a"}                                        } } // 22
+    , { {"123123123123a"}, {"123"       }, 10, true , {                                             } } // 23
+    , { {"123123123123a"}, {"123"       }, 11, true , {                                             } } // 24
+    , { {"123123123123a"}, {"123"       }, 12, true , {                                             } } // 25
+    , { {"123123123123a"}, {"123"       }, 13, true , {                                             } } // 26
+    , { {"abcabcabcabcd"}, {"abc"       },  0, true , {{"abcabcabcd"}, {"abcabcd"}, {"abcd"}, {"d"} } } // 27
+    , { {"ABCABCABCABCD"}, {"abc"       },  0, true , {                                             } } // 28
+    , { {"abcabcabcabcd"}, {"ABC"       },  0, false, {{"abcabcabcd"}, {"abcabcd"}, {"abcd"}, {"d"} } } // 29
+    , { {"ABCabcAbcABcd"}, {"abc"       },  0, false, {{"abcAbcABcd"}, {"AbcABcd"}, {"ABcd"}, {"d"} } } // 30
+    , { {"ABCabcAbcABcd"}, {"AbC"       },  0, false, {{"abcAbcABcd"}, {"AbcABcd"}, {"ABcd"}, {"d"} } } // 31
 };
 
 //!< Declare test with parameters.
@@ -874,23 +880,23 @@ TEST_P(StringTestFindFirstPhrase, FindFirstString)
     {
         const std::string_view& result{ results[i] };
 
-        posTemp = NEString::findFirst<char>(phrase, next, posTemp, &nextTemp);
+        posTemp = NEString::findFirst<char>(phrase, next, posTemp, param.isSensitive, &nextTemp);
         EXPECT_TRUE(result == nextTemp);
         posTemp = 0;
 
 
-        pos = NEString::findFirst<char>(phrase, param.source.data(), pos, &next);
+        pos = NEString::findFirst<char>(phrase, param.source.data(), pos, param.isSensitive, &next);
         EXPECT_TRUE(pos != NEString::INVALID_POS);
-        NEMath::eCompare comp = NEString::compareFast<char>(param.source.data() + pos, phrase, phraseCount);
+        NEMath::eCompare comp = NEString::compareStrings<char, char>(param.source.data() + pos, phrase, phraseCount, param.isSensitive);
         EXPECT_EQ(comp, NEMath::eCompare::Equal);
         EXPECT_TRUE(result == next);
         pos += phraseCount;
     }
 
-    pos = NEString::findFirst<char>(phrase, param.source.data(), pos, &next);
+    pos = NEString::findFirst<char>(phrase, param.source.data(), pos, param.isSensitive, &next);
     if (pos != NEString::INVALID_POS)
     {
-        NEMath::eCompare comp = NEString::compareFast<char>(param.source.data() + pos, phrase, phraseCount);
+        NEMath::eCompare comp = NEString::compareStrings<char, char>(param.source.data() + pos, phrase, phraseCount, param.isSensitive);
         EXPECT_EQ(comp, NEMath::eCompare::Equal);
     }
 
@@ -911,34 +917,39 @@ TEST_P(StringTestFindFirstPhrase, FindFirstString)
 //!< List of parameters to test and the results to compare
 static FindPhraseParams _listFindLastPhraseParams[]
 {
-      { {"123123"       }, {"123"       }, -2, {{"123"}, {"123123"}                                     } } // 0
-    , { {"1111111"      }, {"111"       }, -2, {{"111"}, {"111111"}                                     } } // 1
-    , { {" 123123 "     }, {"23"        }, -2, {{"23 "}, {"23123 "}                                     } } // 2
-    , { {"         "    }, {"  "        }, -2, {{"  "}, {"    "}, {"      "}, {"        "}              } } // 3
-    , { {" 123123 "     }, {""          }, -2, {                                                        } } // 4
-    , { {" 123123 45"   }, {"45"        }, -2, {{"45"}                                                  } } // 5
-    , { {"0123123 45"   }, {"01"        }, -2, {{"0123123 45"}                                          } } // 6
-    , { {"0123123 45"   }, {"AB"        }, -2, {                                                        } } // 7
-    , { {""             }, {"AB"        }, -2, {                                                        } } // 8
-    , { {""             }, {""          }, -2, {                                                        } } // 9
-    , { {" 123123 "     }, {"312"       }, -2, {{"3123 "}                                               } } // 10
-    , { {"ABCDEBFG"     }, {"ABCDEBFG"  }, -2, {{"ABCDEBFG"}                                            } } // 11
-    , { {"ABCDEBFG"     }, {"ABCDEBFGH" }, -2, {                                                        } } // 12
-    , { {"123456789012a"}, {"123"       }, -2, {{"123456789012a"}                                       } } // 13
-    , { {"123123123123a"}, {"123"       }, 13, {{"123a"}, {"123123a"}, {"123123123a"}, {"123123123123a"}} } // 14
-    , { {"123123123123a"}, {"123"       }, 12, {{"123a"}, {"123123a"}, {"123123123a"}, {"123123123123a"}} } // 15
-    , { {"123123123123a"}, {"123"       }, 11, {          {"123123a"}, {"123123123a"}, {"123123123123a"}} } // 16
-    , { {"123123123123a"}, {"123"       }, 10, {          {"123123a"}, {"123123123a"}, {"123123123123a"}} } // 17
-    , { {"123123123123a"}, {"123"       },  9, {          {"123123a"}, {"123123123a"}, {"123123123123a"}} } // 18
-    , { {"123123123123a"}, {"123"       },  8, {                       {"123123123a"}, {"123123123123a"}} } // 19
-    , { {"123123123123a"}, {"123"       },  7, {                       {"123123123a"}, {"123123123123a"}} } // 20
-    , { {"123123123123a"}, {"123"       },  6, {                       {"123123123a"}, {"123123123123a"}} } // 21
-    , { {"123123123123a"}, {"123"       },  5, {                                       {"123123123123a"}} } // 22
-    , { {"123123123123a"}, {"123"       },  4, {                                       {"123123123123a"}} } // 23
-    , { {"123123123123a"}, {"123"       },  3, {                                       {"123123123123a"}} } // 24
-    , { {"123123123123a"}, {"123"       },  2, {                                                        } } // 25
-    , { {"123123123123a"}, {"123"       },  1, {                                                        } } // 26
-    , { {"123123123123a"}, {"123"       },  0, {                                                        } } // 27
+      { {"123123"       }, {"123"       }, -2, true , {{"123"}, {"123123"}                                      } } // 0
+    , { {"1111111"      }, {"111"       }, -2, true , {{"111"}, {"111111"}                                      } } // 1
+    , { {" 123123 "     }, {"23"        }, -2, true , {{"23 "}, {"23123 "}                                      } } // 2
+    , { {"         "    }, {"  "        }, -2, true , {{"  "}, {"    "}, {"      "}, {"        "}               } } // 3
+    , { {" 123123 "     }, {""          }, -2, true , {                                                         } } // 4
+    , { {" 123123 45"   }, {"45"        }, -2, true , {{"45"}                                                   } } // 5
+    , { {"0123123 45"   }, {"01"        }, -2, true , {{"0123123 45"}                                           } } // 6
+    , { {"0123123 45"   }, {"AB"        }, -2, true , {                                                         } } // 7
+    , { {""             }, {"AB"        }, -2, true , {                                                         } } // 8
+    , { {""             }, {""          }, -2, true , {                                                         } } // 9
+    , { {" 123123 "     }, {"312"       }, -2, true , {{"3123 "}                                                } } // 10
+    , { {"ABCDEBFG"     }, {"ABCDEBFG"  }, -2, true , {{"ABCDEBFG"}                                             } } // 11
+    , { {"ABCDEBFG"     }, {"ABCDEBFGH" }, -2, true , {                                                         } } // 12
+    , { {"123456789012a"}, {"123"       }, -2, true , {{"123456789012a"}                                        } } // 13
+    , { {"123123123123a"}, {"123"       }, 13, true , {{"123a"}, {"123123a"}, {"123123123a"}, {"123123123123a"} } } // 14
+    , { {"123123123123a"}, {"123"       }, 12, true , {{"123a"}, {"123123a"}, {"123123123a"}, {"123123123123a"} } } // 15
+    , { {"123123123123a"}, {"123"       }, 11, true , {          {"123123a"}, {"123123123a"}, {"123123123123a"} } } // 16
+    , { {"123123123123a"}, {"123"       }, 10, true , {          {"123123a"}, {"123123123a"}, {"123123123123a"} } } // 17
+    , { {"123123123123a"}, {"123"       },  9, true , {          {"123123a"}, {"123123123a"}, {"123123123123a"} } } // 18
+    , { {"123123123123a"}, {"123"       },  8, true , {                       {"123123123a"}, {"123123123123a"} } } // 19
+    , { {"123123123123a"}, {"123"       },  7, true , {                       {"123123123a"}, {"123123123123a"} } } // 20
+    , { {"123123123123a"}, {"123"       },  6, true , {                       {"123123123a"}, {"123123123123a"} } } // 21
+    , { {"123123123123a"}, {"123"       },  5, true , {                                       {"123123123123a"} } } // 22
+    , { {"123123123123a"}, {"123"       },  4, true , {                                       {"123123123123a"} } } // 23
+    , { {"123123123123a"}, {"123"       },  3, true , {                                       {"123123123123a"} } } // 24
+    , { {"123123123123a"}, {"123"       },  2, true , {                                                         } } // 25
+    , { {"123123123123a"}, {"123"       },  1, true , {                                                         } } // 26
+    , { {"123123123123a"}, {"123"       },  0, true , {                                                         } } // 27
+    , { {"abcabcabcabcd"}, {"abc"       }, -2, true , {{"abcd"}, {"abcabcd"}, {"abcabcabcd"}, {"abcabcabcabcd"} } } // 28
+    , { {"ABCABCABCABCD"}, {"abc"       }, -2, true , {                                                         } } // 29
+    , { {"abcabcabcabcd"}, {"ABC"       }, -2, false, {{"abcd"}, {"abcabcd"}, {"abcabcabcd"}, {"abcabcabcabcd"} } } // 30
+    , { {"ABCabcAbcABcd"}, {"abc"       }, -2, false, {{"ABcd"}, {"AbcABcd"}, {"abcAbcABcd"}, {"ABCabcAbcABcd"} } } // 31
+    , { {"ABCabcAbcABcd"}, {"AbC"       }, -2, false, {{"ABcd"}, {"AbcABcd"}, {"abcAbcABcd"}, {"ABCabcAbcABcd"} } } // 32
 };
 
 //!< Declare test with parameters.
@@ -965,18 +976,17 @@ TEST_P(StringTestFindLastPhrase, FindLastString)
     {
         const std::string_view& result{ results[i] };
 
-        pos = NEString::findLast<char>(phrase, param.source.data(), pos, &next);
+        pos = NEString::findLast<char>(phrase, param.source.data(), pos, param.isSensitive, &next);
         EXPECT_TRUE(pos != NEString::INVALID_POS);
-        NEMath::eCompare comp = NEString::compareFast<char>(param.source.data() + pos, phrase, phraseCount);
+        NEMath::eCompare comp = NEString::compareStrings<char, char>(param.source.data() + pos, phrase, phraseCount, param.isSensitive);
         EXPECT_EQ(comp, NEMath::eCompare::Equal);
         EXPECT_TRUE(result == next);
-        // pos -= 1;
     }
 
-    pos = NEString::findLast<char>(phrase, param.source.data(), pos, &next);
+    pos = NEString::findLast<char>(phrase, param.source.data(), pos, param.isSensitive, &next);
     if (pos != NEString::INVALID_POS)
     {
-        NEMath::eCompare comp = NEString::compareFast<char>(param.source.data() + pos, phrase, phraseCount);
+        NEMath::eCompare comp = NEString::compareStrings<char, char>(param.source.data() + pos, phrase, phraseCount, param.isSensitive);
         EXPECT_EQ(comp, NEMath::eCompare::Equal);
     }
 
@@ -1156,4 +1166,66 @@ TEST_P(StringTestGetLine, StringGetLine)
     INSTANTIATE_TEST_SUITE_P(NEStringTest, StringTestGetLine, ::testing::ValuesIn<StringLines>(_listStringLines));
 #else   // !defined(INSTANTIATE_TEST_SUITE_P)
     INSTANTIATE_TEST_CASE_P(NEStringTest, StringTestGetLine, ::testing::ValuesIn<StringLines>(_listStringLines));
+#endif  // defined(INSTANTIATE_TEST_SUITE_P)
+
+/************************************************************************
+ * Parameterized tests to verify converting a string with digits and a sign into signed 32-bit integer.
+ ************************************************************************/
+
+struct StringInteger
+{
+    std::string_view    source;
+    std::vector<int>    digits;
+    PhraseList          remains;
+};
+
+static const StringInteger _listStringDigits[]
+{
+      { { "123"     }, {  123   }, {    } } // 0
+    , { {"-123"     }, { -123   }, {    } }
+    , { {" -123 "   }, { -123   }, {    } }
+    , { {" - 123 "  }, { -123   }, {    } }
+    , { {"   123 "  }, {  123   }, {    } }
+    , { {"-12345678901234567890123456789123456789"  }, {  455581931 }, {    } }
+    , { {"12345678901234567890123456789123456789"   }, { -455581931 }, {    } }
+};
+
+//!< Declare test with parameters.
+struct StringTestGetInteger : public ::testing::TestWithParam<StringInteger>
+{
+    StringInteger   params;
+};
+
+/**
+ * \brief   Checks reading a line of string.
+ **/
+TEST_P(StringTestGetInteger, StringGetInteger)
+{
+    const StringInteger& param{ GetParam() };
+    const char* source = param.source.data();
+    const PhraseList& remains = param.remains;
+    const std::vector<int>& digits = param.digits;
+
+    const char* next{ source };
+
+    uint32_t idx = 0;
+    for (auto num : digits)
+    {
+        int result = NEString::makeInteger(next, &next);
+        EXPECT_EQ(result, num);
+        if (idx < remains.size())
+        {
+            EXPECT_TRUE(remains[idx] == next);
+        }
+    }
+
+    int result = NEString::makeInteger(next, &next);
+    EXPECT_EQ(result, 0);
+    EXPECT_TRUE(next == nullptr);
+}
+
+#if defined(INSTANTIATE_TEST_SUITE_P)
+    INSTANTIATE_TEST_SUITE_P(NEStringTest, StringTestGetInteger, ::testing::ValuesIn<StringInteger>(_listStringDigits));
+#else   // !defined(INSTANTIATE_TEST_SUITE_P)
+    INSTANTIATE_TEST_CASE_P(NEStringTest, StringTestGetInteger, ::testing::ValuesIn<StringInteger>(_listStringDigits));
 #endif  // defined(INSTANTIATE_TEST_SUITE_P)

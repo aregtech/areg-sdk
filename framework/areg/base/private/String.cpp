@@ -71,7 +71,7 @@ namespace
 
         *dst    = static_cast<char>(NEString::EndOfString);
         int32_t count = static_cast<int32_t>(dst - buffer);
-        NEString::swapString<char>(buffer, count);
+        NEString::revertString<char>(buffer, count);
         if ( isNegative )
         {
             result = '-';
@@ -277,7 +277,7 @@ String String::getSubstring(const char * src, const char * strPhrase, const char
 
     if (NEString::isEmpty<char>(src) == false)
     {
-        NEString::CharPos pos = NEString::findFirst<char>(strPhrase, src, NEString::START_POS, out_next);
+        NEString::CharPos pos = NEString::findFirst<char>(strPhrase, src, NEString::START_POS, true, out_next);
         result.assign(src, NEString::isPositionValid(pos) ? pos : NEString::COUNT_ALL);
     }
 

@@ -240,7 +240,7 @@ String File::getFileNameWithExtension( const char* filePath )
         NEString::CharPos pos = NEString::getStringLength<char>(filePath) - 1;
         if (filePath[pos] != File::PATH_SEPARATOR )
         {
-            pos = NEString::findLast<char>( File::PATH_SEPARATOR, filePath, pos - 1, nullptr);
+            pos = NEString::findLast<char>( File::PATH_SEPARATOR, filePath, pos - 1, true, nullptr);
             if (NEString::isPositionValid(pos))
             {
                 result = filePath + pos + 1;
@@ -279,7 +279,7 @@ String File::getFileExtension( const char* filePath )
 String File::getFileDirectory(const char* filePath)
 {
     constexpr char separator{ File::PATH_SEPARATOR };
-    NEString::CharPos pos = NEString::isEmpty<char>(filePath) ? NEString::INVALID_POS : NEString::findLast<char>( separator, filePath, NEString::END_POS, nullptr);
+    NEString::CharPos pos = NEString::isEmpty<char>(filePath) ? NEString::INVALID_POS : NEString::findLast<char>( separator, filePath, NEString::END_POS, true, nullptr);
     if ( NEString::isPositionValid( pos ) )
     {
         return String( filePath, static_cast<uint32_t>(*(filePath + pos) == separator ? pos : pos + 1) );

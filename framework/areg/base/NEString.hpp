@@ -177,7 +177,7 @@ namespace NEString
      * \tparam  CharType    The type of characters in buffer.
      */
     template<typename CharType>
-    void swapString(CharType * strDst, CharCount charCount = NEString::COUNT_ALL);
+    void revertString(CharType * strDst, CharCount charCount = NEString::COUNT_ALL);
 
     /**
      * \brief   End of String value
@@ -276,6 +276,14 @@ namespace NEString
     inline CharType makeLower(CharType ch);
 
     /**
+     * \brief   Converts given null-terminated string to lower case based on first 256 of UTF-8 code page..
+     * \param   source  The null-terminated string to convert to lower case.
+     * \return  Returns the converted string. The return string and `source` parameter indicate same string buffer.
+     **/
+    template <typename CharType>
+    inline const CharType* makeLower(CharType* source);
+
+    /**
      * \brief   Converts given character to upper case based on first 256 of UTF-8 code page.
      * \param   ch      The character to convert to upper case.
      * \return  If character is in range [-128 .. 127], it converts character to upper case.
@@ -283,6 +291,14 @@ namespace NEString
      **/
     template <typename CharType>
     inline CharType makeUpper(CharType ch);
+
+    /**
+     * \brief   Converts given null-terminated string to lower case based on first 256 of UTF-8 code page..
+     * \param   source  The null-terminated string to convert to lower case.
+     * \return  Returns the converted string. The return string and `source` parameter indicate same string buffer.
+     **/
+    template <typename CharType>
+    inline const CharType* makeUpper(CharType* source);
 
     /**
      * \brief   Returns true if the specified character is lower case.
@@ -657,16 +673,21 @@ namespace NEString
     /**
      * \brief   Removes specified character from the string.
      * 
-     * \param   chRemove    The character to search and remove.
-     * \param   strSource   The string where the character should be searched and removed.
-     * \param   removeAll   Flag, indicating whether it should remove only once or all matches.
+     * \param   chRemove        The character to search and remove.
+     * \param   strSource       The string where the character should be searched and removed.
+     * \param   removeAll       Flag, indicating whether it should remove only once or all matches.
+     * \param   caseSensitive   Flag, indicating whether the remove character is case sensitive or not.
+     *                          If `caseSensitive` is `false` and `removeAll` parameter is `true`, all capital and small
+     *                          letters of specified `chRemove` character is removed in the string.
+     *                          If `caseSensitive` is false and `removeAll` parameter is `false`, the first matching capital or small
+     *                          letter of specified `chRemove` character is removed in the string.
      * \return  Returns one of following values:
-     *              1. If `removeAll` is `false`, returns the position of removed character if found;
+     *              1. If `removeAll` is `false`, returns the position of removed character if found.
      *              2. If `removeAll` is `true`, returns end of string, indicating that there is no more character to remove;
      *              3. If did not find any matching, returns end of string, indicating that there is no character to remove.
      **/
     template<typename CharType>
-    CharType * removeChar(const CharType chRemove, CharType* strSource, bool removeAll = true);
+    CharType * removeChar(const CharType chRemove, CharType* strSource, bool removeAll = true, bool caseSensitive = true);
 
     /**
      * \brief   Search a string inside of other string. The search starts at given position in the string.
@@ -674,21 +695,25 @@ namespace NEString
      *          If found the phrase in string, returns the position in buffer where could find character,
      *          which is same as number of characters to skip from begin to match the phrase.
      *          Otherwise, returns NEString::INVALID_POS.
-     * \param   strPhrase   The phrase to search in the string.
-     * \param   strSource   The source of string to search.
-     * \param   startPos    The starting position to search phrase. If NEString::START_POS, starts searching at begin of given string buffer.
-     * \param   out_next    If the parameter is not nullptr, then:
-     *                          - On output, if not nullptr, this contains pointer in source string next after phrase.
-     *                          - On output, if nullptr, could not find the phrase.
-     *                      If parameter is nullptr, it is ignored.
+     * \param   strPhrase       The phrase to search in the string.
+     * \param   strSource       The source of string to search.
+     * \param   startPos        The starting position to search phrase. If NEString::START_POS, starts searching at begin of given string buffer.
+     * \param   caseSensitive   The flag, indicating whether the searching should be case sensitive or not.
+     *                          If the flag is `true`, the exact match is searched.
+     *                          If the flag is `false`, the capital and small letters are ignored.
+     * \param   out_next        If the parameter is not nullptr, then:
+     *                              - On output, if not nullptr, this contains pointer in source string next after phrase.
+     *                              - On output, if nullptr, could not find the phrase.
+     *                          If parameter is nullptr, it is ignored.
      * \return  If found the phrase, returns the position in buffer where phrase starts.
      *          If did not find, returns NEString::INVALID_POS
      **/
     template<typename CharType>
     CharPos findFirst( const CharType * strPhrase
                      , const CharType * strSource
-                     , CharPos startPos           = NEString::START_POS
-                     , const CharType ** out_next = nullptr );
+                     , CharPos startPos             = NEString::START_POS
+                     , bool caseSensitive           = true
+                     , const CharType ** out_next   = nullptr );
 
     /**
      * \brief   Search the match of given character inside of string. The search starts at given position
@@ -696,21 +721,25 @@ namespace NEString
      *          If found character in string, returns the position in buffer where phrase starts,
      *          which is same as number of characters to skip from begin to match the character.
      *          Otherwise, returns NEString::INVALID_POS.
-     * \param   chSearch    The character to search in the string.
-     * \param   strSource   The source of string to search.
-     * \param   startPos    The starting position to search phrase. If NEString::START_POS, starts searching at begin of given string buffer.
-     * \param   out_next    If the parameter is not nullptr, then:
-     *                          - On output, if not nullptr, this contains pointer in source string next after character.
-     *                          - On output, if nullptr, could not find the character.
-     *                      If parameter is nullptr, it is ignored.
+     * \param   chSearch        The character to search in the string.
+     * \param   strSource       The source of string to search.
+     * \param   startPos        The starting position to search phrase. If NEString::START_POS, starts searching at begin of given string buffer.
+     * \param   caseSensitive   The flag, indicating whether the searching should be case sensitive or not.
+     *                          If the flag is `true`, the exact match is searched.
+     *                          If the flag is `false`, the capital and small letters are ignored.
+     * \param   out_next        If the parameter is not nullptr, then:
+     *                              - On output, if not nullptr, this contains pointer in source string next after character.
+     *                              - On output, if nullptr, could not find the character.
+     *                          If parameter is nullptr, it is ignored.
      * \return  If found the character, returns the position in buffer where met character.
      *          If did not find, returns NEString::INVALID_POS
      **/
     template<typename CharType>
     CharPos findFirst( CharType chSearch
                      , const CharType * strSource
-                     , CharPos startPos           = NEString::START_POS
-                     , const CharType ** out_next = nullptr );
+                     , CharPos startPos             = NEString::START_POS
+                     , bool caseSensitive           = true
+                     , const CharType ** out_next   = nullptr);
 
     /**
      * \brief   Reverse search a string inside of other string. The search starts at the given position and moves to begin of string.
@@ -718,13 +747,16 @@ namespace NEString
      *          If found the phrase in string, returns the position in buffer where phrase starts,
      *          which is same as number of characters to skip from begin to match the phrase.
      *          Otherwise, returns NEString::INVALID_POS.
-     * \param   strPhrase   The phrase to search in the string.
-     * \param   strSource   The source of string to search.
-     * \param   startPos    The starting position to search phrase. If NEString::END_POS, starts searching at the end of given string buffer.
-     * \param   out_next    If the parameter is not nullptr, then:
-     *                          - On output, if not nullptr, this contains pointer in source string before phrase starts.
-     *                          - On output, if nullptr, could not find the phrase.
-     *                      If parameter is nullptr, it is ignored.
+     * \param   strPhrase       The phrase to search in the string.
+     * \param   strSource       The source of string to search.
+     * \param   startPos        The starting position to search phrase. If NEString::END_POS, starts searching at the end of given string buffer.
+     * \param   caseSensitive   The flag, indicating whether the searching should be case sensitive or not.
+     *                          If the flag is `true`, the exact match is searched.
+     *                          If the flag is `false`, the capital and small letters are ignored.
+     * \param   out_next        If the parameter is not nullptr, then:
+     *                              - On output, if not nullptr, this contains pointer in source string before phrase starts.
+     *                              - On output, if nullptr, could not find the phrase.
+     *                          If parameter is nullptr, it is ignored.
      * \return  If found the phrase, returns the position in buffer where phrase starts.
      *          If did not find, returns NEString::INVALID_POS
      * \note    This is reverse search, but the returned position is relevant to begin of string.
@@ -733,21 +765,25 @@ namespace NEString
     CharPos findLast( const CharType * strPhrase
                     , const CharType * strSource
                     , CharPos startPos            = NEString::END_POS
-                    , const CharType ** out_next  = nullptr );
+                    , bool caseSensitive = true
+                    , const CharType ** out_next  = nullptr);
 
     /**
      * \brief   Reverse search the match of given character inside of string. The search starts at the given position and moves to begin of string.
      *          If `startPos` is equal to `NEString::END_POS`, the search starts at the end of string. Otherwise, searches at the given position.
      *          If found the character in the string, returns the position (zero-based index) in the give source buffer,
      *          Otherwise, returns `NEString::INVALID_POS`.
-     * \param   chSearch    The character to search in the string.
-     * \param   strSource   The source of string to search.
-     * \param   startPos    The starting position to search phrase. If `NEString::END_POS`, starts reverse searching from the end of given string buffer.
-     * \param   out_next    It is an optional parameter. If the parameter is not `nullptr`, then:
-     *                          - If on output it is not `nullptr`, it indicates to the source of last match of character,
-     *                            i.e. it points to the searching character.
-     *                          - if on output it is `nullptr`, it indicates that could not find the character.
-     *                      This parameter is ignored if `nullptr`.
+     * \param   chSearch        The character to search in the string.
+     * \param   strSource       The source of string to search.
+     * \param   startPos        The starting position to search phrase. If `NEString::END_POS`, starts reverse searching from the end of given string buffer.
+     * \param   caseSensitive   The flag, indicating whether the searching should be case sensitive or not.
+     *                          If the flag is `true`, the exact match is searched.
+     *                          If the flag is `false`, the capital and small letters are ignored.
+     * \param   out_next        It is an optional parameter. If the parameter is not `nullptr`, then:
+     *                              - If on output it is not `nullptr`, it indicates to the source of last match of character,
+     *                                i.e. it points to the searching character.
+     *                              - if on output it is `nullptr`, it indicates that could not find the character.
+     *                          This parameter is ignored if `nullptr`.
      * \return  If found the character, returns the position in buffer where met character.
      *          If did not find, returns `NEString::INVALID_POS`.
      * \note    This is reverse search, but the returned position is relevant to begin of string.
@@ -756,7 +792,8 @@ namespace NEString
     CharPos findLast( CharType chSearch
                     , const CharType * strSource
                     , CharPos startPos            = NEString::END_POS
-                    , const CharType ** out_next  = nullptr );
+                    , bool caseSensitive = true
+                    , const CharType ** out_next  = nullptr);
 
     /**
      * \brief   Returns true if a give string starts with specified phrase.
@@ -914,7 +951,7 @@ int NEString::makeString( CharType * strDst, NEString::CharCount charCount, IntT
                 *dst ++ = '-';
 
             *dst = static_cast<CharType>(NEString::EndOfString);
-            NEString::swapString<CharType>( strDst );
+            NEString::revertString<CharType>( strDst );
         }
 
         result = dst - strDst;
@@ -940,7 +977,7 @@ int NEString::makeString( CharType * strDst, NEString::CharCount charCount, IntT
 }
 
 template<typename CharType>
-void NEString::swapString( CharType * strDst, NEString::CharCount charCount /*= NEString::COUNT_ALL*/ )
+void NEString::revertString( CharType * strDst, NEString::CharCount charCount /*= NEString::COUNT_ALL*/ )
 {
     if ( NEString::isEmpty<CharType>( strDst ) == false )
     {
@@ -966,7 +1003,7 @@ template<typename CharType>
 int NEString::makeInteger(const CharType * strNumber, const CharType ** remain)
 {
     NEMath::eDigitSign sign = NEMath::eDigitSign::SignUndefined;
-    int result = 0;
+    uint32_t result = 0;
     if (isEmpty<CharType>(strNumber) == false)
     {
         CharType negative = getChar(NEMath::eDigitSign::SignNegative);
@@ -974,27 +1011,23 @@ int NEString::makeInteger(const CharType * strNumber, const CharType ** remain)
         for ( CharType ch = *strNumber; *strNumber != static_cast<CharType>(EndOfString); ++ strNumber )
         {
             ch = *strNumber;
+            if (isWhitespace<CharType>(ch))
+                continue;
+
             if (sign == NEMath::eDigitSign::SignUndefined)
             {
-                if ( isWhitespace(ch) == false )
+                sign = ch == negative ? NEMath::eDigitSign::SignNegative : NEMath::eDigitSign::SignPositive;
+                if ((ch == negative) || (ch == positive))
                 {
-                    sign = ch == negative ? NEMath::eDigitSign::SignNegative : NEMath::eDigitSign::SignPositive;
-                    if ((ch == negative) || (ch == positive))
-                    {
-                        // the sign is '-' or '+'
-                        continue;
-                    }
-                }
-                else
-                {
+                    // the sign is '-' or '+'
                     continue;
                 }
             }
 
             if ( isNumeric(ch) )
             {
-                result *= 10;
-                result += ch - static_cast<CharType>('0');
+                result *= 10u;
+                result += static_cast<uint32_t>(ch - static_cast<CharType>('0'));
             }
             else
             {
@@ -1003,10 +1036,16 @@ int NEString::makeInteger(const CharType * strNumber, const CharType ** remain)
         }
     }
     
-    if ( remain != nullptr )
-        *remain = strNumber;
+    if (remain != nullptr)
+    {
+        *remain = nullptr;
+        if (NEString::isEmpty<CharType>(strNumber) == false)
+        {
+            *remain = strNumber;
+        }
+    }
     
-    return (static_cast<int>(sign) * result);
+    return (static_cast<int>(sign) * static_cast<int>(result));
 }
 
 template<char dummy>
@@ -1174,6 +1213,7 @@ template<typename CharType>
 NEString::CharPos NEString::findLast( CharType   chSearch
                                     , const CharType * strSource
                                     , NEString::CharPos startPos /*= NEString::END_POS*/
+                                    , bool caseSensitive /*= true*/
                                     , const CharType ** out_next /*= nullptr*/ )
 {
     NEString::CharPos result= NEString::INVALID_POS;
@@ -1186,20 +1226,42 @@ NEString::CharPos NEString::findLast( CharType   chSearch
         if ( posSrc >= NEString::START_POS )
         {
             const CharType * end = strSource + posSrc;
-            while (end >= strSource)
+            if (caseSensitive)
             {
-                if ( *end == chSearch )
+                while (end >= strSource)
                 {
-                    result = static_cast<NEString::CharPos>(MACRO_ELEM_COUNT(strSource, end));
-                    if ( (out_next != nullptr) && (end >= strSource) )
+                    if (*end == chSearch)
                     {
-                        *out_next = end;
+                        result = static_cast<NEString::CharPos>(MACRO_ELEM_COUNT(strSource, end));
+                        if ((out_next != nullptr) && (end >= strSource))
+                        {
+                            *out_next = end;
+                        }
+
+                        break;
                     }
 
-                    break;
+                    --end;
                 }
+            }
+            else
+            {
+                const CharType ch{ NEString::makeLower<CharType>(chSearch) };
+                while (end >= strSource)
+                {
+                    if (NEString::makeLower<CharType>(*end) == ch)
+                    {
+                        result = static_cast<NEString::CharPos>(MACRO_ELEM_COUNT(strSource, end));
+                        if ((out_next != nullptr) && (end >= strSource))
+                        {
+                            *out_next = end;
+                        }
 
-                -- end;
+                        break;
+                    }
+
+                    --end;
+                }
             }
         }
     }
@@ -1211,6 +1273,7 @@ template<typename CharType>
 NEString::CharPos NEString::findLast( const CharType * strPhrase
                                     , const CharType * strSource
                                     , NEString::CharPos startPos /*= NEString::END_POS*/
+                                    , bool caseSensitive /*= true*/
                                     , const CharType ** out_next /*= nullptr*/ )
 {
     NEString::CharPos result= NEString::INVALID_POS;
@@ -1226,31 +1289,65 @@ NEString::CharPos NEString::findLast( const CharType * strPhrase
             const CharType * end    = strSource + posSrc - 1;
             const CharType * phrase = strPhrase + posPhr - 1;
 
-            while (end >= strSource)
+            if (caseSensitive)
             {
-                if ( *end == *phrase )
+                while (end >= strSource)
                 {
-                    const CharType * one = end    - 1;
-                    const CharType * two = phrase - 1;
-                    // no need to check (*one != static_cast<CharType>(EndofString))
-                    while ( (one >= strSource) && (two >= strPhrase) && (*one == *two) )
+                    if (*end == *phrase)
                     {
-                        -- one;
-                        -- two;
+                        const CharType* one = end - 1;
+                        const CharType* two = phrase - 1;
+                        // no need to check (*one != static_cast<CharType>(EndofString))
+                        while ((one >= strSource) && (two >= strPhrase) && (*one == *two))
+                        {
+                            --one;
+                            --two;
+                        }
+
+                        if (two < strPhrase)
+                        {
+                            ++one;
+                            result = static_cast<NEString::CharPos>(MACRO_ELEM_COUNT(strSource, one));
+                            if ((out_next != nullptr) && (one >= strSource))
+                                *out_next = one;
+
+                            break; // break the loop
+                        }
                     }
 
-                    if (  two < strPhrase )
-                    {
-                        ++one;
-                        result = static_cast<NEString::CharPos>(MACRO_ELEM_COUNT(strSource, one));
-                        if ( (out_next != nullptr) && (one >= strSource) )
-                            *out_next = one;
-
-                        break; // break the loop
-                    }
+                    --end;
                 }
+            }
+            else
+            {
+                CharType ch1{ NEString::makeLower<CharType>(*phrase) };
+                while (end >= strSource)
+                {
+                    CharType ch2{ NEString::makeLower<CharType>(*end) };
+                    if (ch1 == ch2)
+                    {
+                        const CharType* one = end - 1;
+                        const CharType* two = phrase - 1;
+                        // no need to check (*one != static_cast<CharType>(EndofString))
+                        while ((one >= strSource) && (two >= strPhrase) && (NEString::makeLower<CharType>(*one) == NEString::makeLower<CharType>(*two)))
+                        {
+                            --one;
+                            --two;
+                        }
 
-                -- end;
+                        if (two < strPhrase)
+                        {
+                            ++one;
+                            result = static_cast<NEString::CharPos>(MACRO_ELEM_COUNT(strSource, one));
+                            if ((out_next != nullptr) && (one >= strSource))
+                                *out_next = one;
+
+                            break; // break the loop
+                        }
+                    }
+
+                    --end;
+                }
             }
         }
     }
@@ -1262,6 +1359,7 @@ template<typename CharType>
 NEString::CharPos NEString::findFirst( CharType chSearch
                                      , const CharType * strSource
                                      , NEString::CharPos startPos /*= NEString::START_POS*/
+                                     , bool caseSensitive /*= true*/
                                      , const CharType ** out_next /*= nullptr*/ )
 {
     NEString::CharPos result = NEString::INVALID_POS;
@@ -1273,19 +1371,40 @@ NEString::CharPos NEString::findFirst( CharType chSearch
         if ( startPos >= NEString::START_POS )
         {
             const CharType * next = strSource + startPos;
-            while ( *next != static_cast<CharType>(EndOfString) )
+            if (caseSensitive)
             {
-                if (*next == chSearch)
+                while (*next != static_cast<CharType>(EndOfString))
                 {
-                    result = static_cast<NEString::CharPos>(next - strSource);
-                    next += 1;
-                    if ( (out_next != nullptr) && (*next != static_cast<CharType>(EndOfString)) )
-                        *out_next = next;
+                    if (*next == chSearch)
+                    {
+                        result = static_cast<NEString::CharPos>(next - strSource);
+                        next += 1;
+                        if ((out_next != nullptr) && (*next != static_cast<CharType>(EndOfString)))
+                            *out_next = next;
 
-                    break; // break the loop
+                        break; // break the loop
+                    }
+
+                    ++next;
                 }
+            }
+            else
+            {
+                const CharType ch{ NEString::makeLower<CharType>(chSearch) };
+                while (*next != static_cast<CharType>(EndOfString))
+                {
+                    if (NEString::makeLower<CharType>(*next) == ch)
+                    {
+                        result = static_cast<NEString::CharPos>(next - strSource);
+                        next += 1;
+                        if ((out_next != nullptr) && (*next != static_cast<CharType>(EndOfString)))
+                            *out_next = next;
 
-                ++ next;
+                        break; // break the loop
+                    }
+
+                    ++next;
+                }
             }
         }
     }
@@ -1297,6 +1416,7 @@ template<typename CharType>
 NEString::CharPos NEString::findFirst( const CharType * strPhrase
                                      , const CharType * strSource
                                      , NEString::CharPos startPos /*= NEString::START_POS*/
+                                     , bool caseSensitive /*= true*/
                                      , const CharType ** out_next /*= nullptr*/ )
 {
     NEString::CharPos result= NEString::INVALID_POS;
@@ -1309,31 +1429,63 @@ NEString::CharPos NEString::findFirst( const CharType * strPhrase
         if ( startPos >= NEString::START_POS )
         {
             const CharType * next = strSource + startPos;
-            while ( *next != static_cast<CharType>(NEString::EndOfString) )
+            if (caseSensitive)
             {
-                if ( *next == *strPhrase)
+                while (*next != static_cast<CharType>(NEString::EndOfString))
                 {
-                    const CharType * one = next + 1;
-                    const CharType * two = strPhrase + 1;
-                    // no need to check (*one != static_cast<CharType>(EndofString))
-
-                    while ( (*two != static_cast<CharType>(NEString::EndOfString)) && (*one == *two) )
+                    if (*next == *strPhrase)
                     {
-                        ++ one;
-                        ++ two;
+                        const CharType* one = next + 1;
+                        const CharType* two = strPhrase + 1;
+                        // no need to check (*one != static_cast<CharType>(EndofString))
+
+                        while ((*two != static_cast<CharType>(NEString::EndOfString)) && (*one == *two))
+                        {
+                            ++one;
+                            ++two;
+                        }
+
+                        if (*two == static_cast<CharType>(NEString::EndOfString))
+                        {
+                            result = static_cast<NEString::CharPos>(next - strSource);
+                            if ((out_next != nullptr) && (*one != static_cast<CharType>(NEString::EndOfString)))
+                                *out_next = one;
+
+                            break; // break the loop
+                        }
                     }
 
-                    if (*two == static_cast<CharType>(NEString::EndOfString))
-                    {
-                        result = static_cast<NEString::CharPos>(next - strSource);
-                        if ((out_next != nullptr) && (*one != static_cast<CharType>(NEString::EndOfString)))
-                            *out_next = one;
-
-                        break; // break the loop
-                    }
+                    ++next;
                 }
+            }
+            else
+            {
+                const CharType ch{ NEString::makeLower<CharType>(*strPhrase) };
+                while (*next != static_cast<CharType>(NEString::EndOfString))
+                {
+                    if (NEString::makeLower<CharType>(*next) == ch)
+                    {
+                        const CharType* one = next + 1;
+                        const CharType* two = strPhrase + 1;
+                        // no need to check (*one != static_cast<CharType>(EndofString))
+                        while ((*two != static_cast<CharType>(NEString::EndOfString)) && (NEString::makeLower<CharType>(*one) == NEString::makeLower<CharType>(*two)))
+                        {
+                            ++one;
+                            ++two;
+                        }
 
-                ++ next;
+                        if (*two == static_cast<CharType>(NEString::EndOfString))
+                        {
+                            result = static_cast<NEString::CharPos>(next - strSource);
+                            if ((out_next != nullptr) && (*one != static_cast<CharType>(NEString::EndOfString)))
+                                *out_next = one;
+
+                            break; // break the loop
+                        }
+                    }
+
+                    ++next;
+                }
             }
         }
     }
@@ -1348,20 +1500,28 @@ bool NEString::stringStartsWith(const CharType * strString, const CharType * phr
     if ((isEmpty<CharType>(strString) == false) && (isEmpty<CharType>(phrase) == false))
     {
         result = true;
-        for ( ; (*phrase != NEString::EndOfString) && (*strString != NEString::EndOfString); ++ strString, ++ phrase )
+        if (caseSensitive)
         {
-            CharType ch1 = *strString;
-            CharType ch2 = *phrase;
-            if ( caseSensitive == false )
+            for ( ; (*phrase != NEString::EndOfString) && (*strString != NEString::EndOfString); ++strString, ++phrase)
             {
-                ch1 = NEString::makeLower<CharType>(ch1);
-                ch2 = NEString::makeLower<CharType>(ch2);
+                if (*strString != *phrase)
+                {
+                    result = false;
+                    break;
+                }
             }
-
-            if (ch1 != ch2)
+        }
+        else
+        {
+            for (; (*phrase != NEString::EndOfString) && (*strString != NEString::EndOfString); ++strString, ++phrase)
             {
-                result = false;
-                break;
+                CharType ch1{ NEString::makeLower<CharType>(*strString) };
+                CharType ch2{ NEString::makeLower<CharType>(*phrase) };
+                if (ch1 != ch2)
+                {
+                    result = false;
+                    break;
+                }
             }
         }
 
@@ -1432,14 +1592,17 @@ bool NEString::stringEndsWith(const CharType* strString, const CharType ch, bool
 }
 
 template<typename CharType>
-CharType * NEString::removeChar(const CharType chRemove, CharType* strSource, bool removeAll /*= true*/)
+CharType * NEString::removeChar(const CharType chRemove, CharType* strSource, bool removeAll /*= true*/, bool caseSensitive /*= true*/)
 {
     CharType* dst = strSource;
     const CharType* src = strSource;
 
+    CharType ch1{ caseSensitive ? chRemove : NEString::makeLower<CharType>(chRemove) };
+
     while (NEString::isEndOfString(*src) == false)
     {
-        if (*src == chRemove)
+        CharType ch2{ caseSensitive ? *src : NEString::makeLower<CharType>(*src) };
+        if (ch1 == ch2)
         {
             ++src;
             if (removeAll == false)
@@ -1805,10 +1968,42 @@ inline CharType NEString::makeLower(CharType ch)
 }
 
 template <typename CharType>
+inline const CharType* NEString::makeLower(CharType* source)
+{
+    const CharType* result{ source };
+    if (NEString::isEmpty<CharType>(source) == false)
+    {
+        while (NEString::isEndOfString<CharType>(*source) == false)
+        {
+            *source = NEString::makeLower<CharType>(*source);
+            ++source;
+        }
+    }
+
+    return result;
+}
+
+template <typename CharType>
 inline CharType NEString::makeUpper(CharType ch)
 {
     // return ((ch >= 'a') && (ch <= 'z') ? ch - 'a' + 'A' : ch);
     return static_cast<CharType>(NEString::makeUTF8_256UpperChar(ch));
+}
+
+template <typename CharType>
+inline const CharType* NEString::makeUpper(CharType* source)
+{
+    const CharType* result{ source };
+    if (NEString::isEmpty<CharType>(source) == false)
+    {
+        while (NEString::isEndOfString<CharType>(*source) == false)
+        {
+            *source = NEString::makeUpper<CharType>(*source);
+            ++source;
+        }
+    }
+
+    return result;
 }
 
 template<typename CharType>
