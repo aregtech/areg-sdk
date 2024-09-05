@@ -149,7 +149,7 @@ NETrace::sLogMessage::sLogMessage(NETrace::eLogMessageType msgType, unsigned int
     logMessage[len] = String::EmptyChar;
 }
 #else   // AREG_LOGS
-NETrace::sLogMessage::sLogMessage(NETrace::eLogMessageType msgType, unsigned int scopeId, NETrace::eLogPriority msgPrio, const char* message, unsigned int msgLen)
+NETrace::sLogMessage::sLogMessage(NETrace::eLogMessageType msgType, unsigned int /*scopeId*/, NETrace::eLogPriority /*msgPrio*/, const char* /*message*/, unsigned int /*msgLen*/)
     : logDataType{ NETrace::eLogDataType::LogDataLocal }
     , logMsgType{ msgType }
     , logMessagePrio{ NETrace::eLogPriority::PrioNotset }
@@ -221,121 +221,78 @@ NETrace::sLogMessage & NETrace::sLogMessage::operator = (const NETrace::sLogMess
     return (*this);
 }
 
+//////////////////////////////////////////////////////////////////////////
+#if AREG_LOGS
+//////////////////////////////////////////////////////////////////////////
+
 AREG_API_IMPL bool NETrace::startLogging(const char * fileConfig /*= nullptr */ )
 {
-#if AREG_LOGS
     return TraceManager::startLogging(fileConfig);
-#else   // !AREG_LOGS
-    return true;
-#endif  // AREG_LOGS
 }
 
 AREG_API_IMPL void NETrace::stopLogging(bool waitComplete)
 {
-#if AREG_LOGS
     TraceManager::stopLogging(waitComplete);
-#endif  // AREG_LOGS
 }
 
 AREG_API_IMPL void NETrace::waitLoggingEnd(void)
 {
-#if AREG_LOGS
     TraceManager::waitLoggingEnd();
-#endif  // AREG_LOGS
 }
 
 AREG_API_IMPL void NETrace::activateScope(TraceScope & traceScope)
 {
-#if AREG_LOGS
     TraceManager::activateTraceScope(traceScope);
-#endif  // AREG_LOGS
 }
 
 AREG_API_IMPL bool NETrace::isStarted( void )
 {
-#if AREG_LOGS
     return TraceManager::isLoggingStarted();
-#else   // !AREG_LOGS
-    return true;
-#endif  // AREG_LOGS
 }
 
 AREG_API_IMPL bool NETrace::isConfigured(void)
 {
-#if AREG_LOGS
     return TraceManager::isLoggingConfigured();
-#else   // !AREG_LOGS
-    return true;
-#endif  // AREG_LOGS
 }
 
 AREG_API_IMPL bool NETrace::initializeLogging(const char * fileConfig)
 {
-#if AREG_LOGS
     return TraceManager::readLogConfig(fileConfig);
-#else   // !AREG_LOGS
-    return true;
-#endif  // AREG_LOGS
 }
 
 AREG_API_IMPL bool NETrace::isEnabled(void)
 {
-#if AREG_LOGS
     return TraceManager::isLoggingEnabled();
-#else   // !AREG_LOGS
-    return true;
-#endif  // AREG_LOGS
 }
 
 AREG_API_IMPL bool NETrace::saveLogging( const char * configFile )
 {
-#if AREG_LOGS
     return TraceManager::saveLogConfig(configFile);
-#else   // !AREG_LOGS
-    return true;
-#endif  // AREG_LOGS
 }
 
 AREG_API_IMPL unsigned int NETrace::makeScopeId( const char * scopeName )
 {
-#if AREG_LOGS
     return  NEMath::crc32Calculate(scopeName);
-#else   // !AREG_LOGS
-    return 0;
-#endif  // AREG_LOGS
 }
 
 AREG_API_IMPL unsigned int NETrace::makeScopeIdEx(const char* scopeName)
 {
-#if AREG_LOGS
     return  (NEString::stringEndsWith<char>(scopeName, NELogging::SYNTAX_SCOPE_GROUP, true) ? NEMath::CHECKSUM_IGNORE : NETrace::makeScopeId(scopeName));
-#else   // !AREG_LOGS
-    return 0;
-#endif  // AREG_LOGS
 }
 
 AREG_API_IMPL unsigned int NETrace::setScopePriority( const char * scopeName, unsigned int newPrio )
 {
-#if AREG_LOGS
     return TraceManager::setScopePriority( scopeName, newPrio );
-#else   // !AREG_LOGS
-    return true;
-#endif  // AREG_LOGS
 }
 
 AREG_API_IMPL unsigned int NETrace::getScopePriority( const char * scopeName )
 {
-#if AREG_LOGS
     return TraceManager::getScopePriority( scopeName );
-#else   // !AREG_LOGS
-    return static_cast<unsigned int>(NETrace::eLogPriority::PrioInvalid);
-#endif  // AREG_LOGS
 }
 
 AREG_API_IMPL RemoteMessage NETrace::createLogMessage(const NETrace::sLogMessage& logMessage, NETrace::eLogDataType dataType, const ITEM_ID& srcCookie)
 {
     RemoteMessage msgLog;
-#if AREG_LOGS
     if (msgLog.initMessage(_getLogMessage().rbHeader, sizeof(NETrace::sLogMessage)) != nullptr)
     {
         msgLog << logMessage;
@@ -357,23 +314,18 @@ AREG_API_IMPL RemoteMessage NETrace::createLogMessage(const NETrace::sLogMessage
             log->logModuleLen   = static_cast<uint32_t>(module.getLength());
         }
     }
-#endif  // AREG_LOGS
 
     return msgLog;
 }
 
 AREG_API_IMPL void NETrace::logMessage(const RemoteMessage& message)
 {
-#if AREG_LOGS
     return TraceManager::logMessage(message);
-#endif // AREG_LOGS
 }
 
 AREG_API_IMPL RemoteMessage NETrace::messageRegisterScopes(const ITEM_ID & source, const ITEM_ID & target, const NETrace::ScopeList & scopeList)
 {
     RemoteMessage msgScope;
-
-#if AREG_LOGS
     if (msgScope.initMessage(_getLogEmptyMessage().rbHeader) != nullptr)
     {
         msgScope.setMessageId(static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogRegisterScopes));
@@ -382,23 +334,18 @@ AREG_API_IMPL RemoteMessage NETrace::messageRegisterScopes(const ITEM_ID & sourc
 
         _storeScopeList(msgScope, scopeList);
     }
-#endif  // AREG_LOGS
 
     return msgScope;
 }
 
 AREG_API_IMPL void NETrace::logAnyMessageLocal(const NETrace::sLogMessage& logMessage)
 {
-#if AREG_LOGS
     TraceManager::logMessage(logMessage);
-#endif  // AREG_LOGS
 }
 
 AREG_API_IMPL RemoteMessage NETrace::messageUpdateScopes(const ITEM_ID& source, const ITEM_ID& target, const NETrace::ScopeNames& scopeNames)
 {
     RemoteMessage msgScope;
-
-#if AREG_LOGS
     if ((source != NEService::COOKIE_UNKNOWN) &&
         (target != NEService::COOKIE_UNKNOWN) &&
         (msgScope.initMessage(_getLogEmptyMessage().rbHeader) != nullptr))
@@ -413,23 +360,18 @@ AREG_API_IMPL RemoteMessage NETrace::messageUpdateScopes(const ITEM_ID& source, 
             msgScope << entry;
         }
     }
-#endif  // AREG_LOGS
 
     return msgScope;
 }
 
 AREG_API_IMPL void NETrace::logAnyMessage(const NETrace::sLogMessage& logMessage)
 {
-#if AREG_LOGS
     TraceManager::logMessage(SharedBuffer(reinterpret_cast<const unsigned char *>(&logMessage), sizeof(NETrace::sLogMessage)));
-#endif  // AREG_LOGS
 }
 
 AREG_API_IMPL RemoteMessage NETrace::messageUpdateScope(const ITEM_ID& source, const ITEM_ID& target, const String& scopeName, unsigned int scopeId, unsigned int scopePrio)
 {
     RemoteMessage msgScope;
-
-#if AREG_LOGS
     if ((source != NEService::COOKIE_UNKNOWN) &&
         (target != NEService::COOKIE_UNKNOWN) &&
         (msgScope.initMessage(_getLogEmptyMessage().rbHeader) != nullptr))
@@ -440,7 +382,6 @@ AREG_API_IMPL RemoteMessage NETrace::messageUpdateScope(const ITEM_ID& source, c
         msgScope << 1u;
         msgScope << scopeName << scopeId << scopePrio;
     }
-#endif  // AREG_LOGS
 
     return msgScope;
 }
@@ -448,8 +389,6 @@ AREG_API_IMPL RemoteMessage NETrace::messageUpdateScope(const ITEM_ID& source, c
 AREG_API_IMPL RemoteMessage NETrace::messageQueryInstances(const ITEM_ID& source, const ITEM_ID& target)
 {
     RemoteMessage msgQuery;
-
-#if AREG_LOGS
     if ((source != NEService::COOKIE_UNKNOWN) &&
         (target != NEService::COOKIE_UNKNOWN) &&
         (msgQuery.initMessage(_getLogEmptyMessage().rbHeader) != nullptr))
@@ -459,7 +398,6 @@ AREG_API_IMPL RemoteMessage NETrace::messageQueryInstances(const ITEM_ID& source
         msgQuery.setSource(source);
         msgQuery << target;
     }
-#endif  // AREG_LOGS
 
     return msgQuery;
 }
@@ -467,8 +405,6 @@ AREG_API_IMPL RemoteMessage NETrace::messageQueryInstances(const ITEM_ID& source
 AREG_API_IMPL RemoteMessage NETrace::messageQueryScopes(const ITEM_ID& source, const ITEM_ID& target)
 {
     RemoteMessage msgQuery;
-
-#if AREG_LOGS
     if ((source != NEService::COOKIE_UNKNOWN) &&
         (target != NEService::COOKIE_UNKNOWN) &&
         (msgQuery.initMessage(_getLogEmptyMessage().rbHeader) != nullptr))
@@ -478,7 +414,6 @@ AREG_API_IMPL RemoteMessage NETrace::messageQueryScopes(const ITEM_ID& source, c
         msgQuery.setSource(source);
         msgQuery << target;
     }
-#endif  // AREG_LOGS
 
     return msgQuery;
 }
@@ -486,8 +421,6 @@ AREG_API_IMPL RemoteMessage NETrace::messageQueryScopes(const ITEM_ID& source, c
 AREG_API_IMPL RemoteMessage NETrace::messageScopesUpdated(const ITEM_ID& source, const ITEM_ID& target, const NETrace::ScopeList& scopeList)
 {
     RemoteMessage msgScope;
-
-#if AREG_LOGS
     if (msgScope.initMessage(_getLogEmptyMessage().rbHeader) != nullptr)
     {
         msgScope.setMessageId(static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogScopesUpdated));
@@ -496,7 +429,6 @@ AREG_API_IMPL RemoteMessage NETrace::messageScopesUpdated(const ITEM_ID& source,
 
         _storeScopeList(msgScope, scopeList);
     }
-#endif  // AREG_LOGS
 
     return msgScope;
 }
@@ -504,8 +436,6 @@ AREG_API_IMPL RemoteMessage NETrace::messageScopesUpdated(const ITEM_ID& source,
 AREG_API_IMPL RemoteMessage NETrace::messageSaveConfiguration(const ITEM_ID& source, const ITEM_ID& target)
 {
     RemoteMessage msgRequest;
-
-#if AREG_LOGS
     if ((source != NEService::COOKIE_UNKNOWN) &&
         (target != NEService::COOKIE_UNKNOWN) &&
         (msgRequest.initMessage(_getLogEmptyMessage().rbHeader) != nullptr))
@@ -515,7 +445,6 @@ AREG_API_IMPL RemoteMessage NETrace::messageSaveConfiguration(const ITEM_ID& sou
         msgRequest.setSource(source);
         msgRequest << target;
     }
-#endif  // AREG_LOGS
 
     return msgRequest;
 }
@@ -523,41 +452,30 @@ AREG_API_IMPL RemoteMessage NETrace::messageSaveConfiguration(const ITEM_ID& sou
 AREG_API_IMPL RemoteMessage NETrace::messageConfigurationSaved(void)
 {
     RemoteMessage msgScope;
-
-#if AREG_LOGS
     if (msgScope.initMessage(_getLogEmptyMessage().rbHeader) != nullptr)
     {
         msgScope.setMessageId(static_cast<uint32_t>(NEService::eFuncIdRange::ServiceLogConfigurationSaved));
         msgScope.setTarget(NEService::COOKIE_LOGGER);
         msgScope.setSource(NETrace::getCookie());
     }
-#endif  // AREG_LOGS
 
     return msgScope;
 }
 
 AREG_API_IMPL void NETrace::setLogDatabaseEngine(IELogDatabaseEngine * dbEngine)
 {
-#if AREG_LOGS
     TraceManager::setLogDatabaseEngine(dbEngine);
-#endif // AREG_LOGS
-
 }
 
 AREG_API_IMPL bool NETrace::forceStartLogging(void)
 {
-#if AREG_LOGS
     TraceManager::setDefaultConfiguration(false);
     TraceManager::forceEnableLogging();
     return TraceManager::forceActivateLogging();
-#else   // !AREG_LOGS
-    return true;
-#endif  // AREG_LOGS
 }
 
 AREG_API_IMPL bool NETrace::initAndStartLogging(const char * fileConfig /*= nullptr */)
 {
-#if AREG_LOGS
     if (TraceManager::readLogConfig(fileConfig))
     {
         TraceManager::forceEnableLogging();
@@ -567,34 +485,184 @@ AREG_API_IMPL bool NETrace::initAndStartLogging(const char * fileConfig /*= null
     {
         return TraceManager::forceActivateLogging();
     }
-#else   // !AREG_LOGS
-    return true;
-#endif  // AREG_LOGS
 }
 
 AREG_API_IMPL const ITEM_ID & NETrace::getCookie(void)
 {
-#if AREG_LOGS
     return TraceManager::getConnectionCookie();
-#else   // !AREG_LOGS
-    return NEService::COOKIE_UNKNOWN;
-#endif  // AREG_LOGS
 }
 
 AREG_API_IMPL String NETrace::makePrioString(unsigned int priorities)
 {
-#if AREG_LOGS
     return Identifier::convToString(priorities, NEApplication::LogScopePriorityIndentifiers, static_cast<unsigned int>(NETrace::eLogPriority::PrioNotset));
-#else   // AREG_LOGS
-    return NETrace::PRIO_NOTSET_STR;
-#endif  // AREG_LOGS
 }
 
 AREG_API_IMPL unsigned int NETrace::makePriorities(const String& prioString)
 {
-#if AREG_LOGS
     return static_cast<NETrace::eLogPriority>(Identifier::convFromString(prioString, NEApplication::LogScopePriorityIndentifiers, static_cast<unsigned int>(NETrace::eLogPriority::PrioInvalid)));
-#else   // AREG_LOGS
-    return static_cast<unsigned int>(NETrace::eLogPriority::PrioNotset);
-#endif  // AREG_LOGS
 }
+
+//////////////////////////////////////////////////////////////////////////
+#else   // !AREG_LOGS
+//////////////////////////////////////////////////////////////////////////
+
+AREG_API_IMPL bool NETrace::startLogging(const char * /*fileConfig*/ /*= nullptr */ )
+{
+    return true;
+}
+
+AREG_API_IMPL void NETrace::stopLogging(bool /*waitComplete*/)
+{
+}
+
+AREG_API_IMPL void NETrace::waitLoggingEnd(void)
+{
+}
+
+AREG_API_IMPL void NETrace::activateScope(TraceScope & /*traceScope*/)
+{
+}
+
+AREG_API_IMPL bool NETrace::isStarted( void )
+{
+    return true;
+}
+
+AREG_API_IMPL bool NETrace::isConfigured(void)
+{
+    return true;
+}
+
+AREG_API_IMPL bool NETrace::initializeLogging(const char * /*fileConfig*/)
+{
+    return true;
+}
+
+AREG_API_IMPL bool NETrace::isEnabled(void)
+{
+    return true;
+}
+
+AREG_API_IMPL bool NETrace::saveLogging( const char * /*configFile*/ )
+{
+    return true;
+}
+
+AREG_API_IMPL unsigned int NETrace::makeScopeId( const char * /*scopeName*/ )
+{
+    return 0;
+}
+
+AREG_API_IMPL unsigned int NETrace::makeScopeIdEx(const char* /*scopeName*/)
+{
+    return 0;
+}
+
+AREG_API_IMPL unsigned int NETrace::setScopePriority( const char * /*scopeName*/, unsigned int /*newPrio*/ )
+{
+    return true;
+}
+
+AREG_API_IMPL unsigned int NETrace::getScopePriority( const char * /*scopeName*/ )
+{
+    return static_cast<unsigned int>(NETrace::eLogPriority::PrioInvalid);
+}
+
+AREG_API_IMPL RemoteMessage NETrace::createLogMessage(const NETrace::sLogMessage & /*logMessage*/, NETrace::eLogDataType /*dataType*/, const ITEM_ID & /*srcCookie*/)
+{
+    RemoteMessage msgLog;
+    return msgLog;
+}
+
+AREG_API_IMPL void NETrace::logMessage(const RemoteMessage& /*message*/)
+{
+}
+
+AREG_API_IMPL RemoteMessage NETrace::messageRegisterScopes(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/, const NETrace::ScopeList & /*scopeList*/)
+{
+    RemoteMessage msgScope;
+    return msgScope;
+}
+
+AREG_API_IMPL void NETrace::logAnyMessageLocal(const NETrace::sLogMessage & /*logMessage*/)
+{
+}
+
+AREG_API_IMPL RemoteMessage NETrace::messageUpdateScopes(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/, const NETrace::ScopeNames & /*scopeNames*/)
+{
+    RemoteMessage msgScope;
+    return msgScope;
+}
+
+AREG_API_IMPL void NETrace::logAnyMessage(const NETrace::sLogMessage & /*logMessage*/)
+{
+}
+
+AREG_API_IMPL RemoteMessage NETrace::messageUpdateScope(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/, const String & /*scopeName*/, unsigned int /*scopeId*/, unsigned int /*scopePrio*/)
+{
+    RemoteMessage msgScope;
+    return msgScope;
+}
+
+AREG_API_IMPL RemoteMessage NETrace::messageQueryInstances(const ITEM_ID& /*source*/, const ITEM_ID & /*target*/)
+{
+    RemoteMessage msgQuery;
+    return msgQuery;
+}
+
+AREG_API_IMPL RemoteMessage NETrace::messageQueryScopes(const ITEM_ID& /*source*/, const ITEM_ID & /*target*/)
+{
+    RemoteMessage msgQuery;
+    return msgQuery;
+}
+
+AREG_API_IMPL RemoteMessage NETrace::messageScopesUpdated(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/, const NETrace::ScopeList & /*scopeList*/)
+{
+    RemoteMessage msgScope;
+    return msgScope;
+}
+
+AREG_API_IMPL RemoteMessage NETrace::messageSaveConfiguration(const ITEM_ID & /*source*/, const ITEM_ID & /*target*/)
+{
+    RemoteMessage msgRequest;
+    return msgRequest;
+}
+
+AREG_API_IMPL RemoteMessage NETrace::messageConfigurationSaved(void)
+{
+    RemoteMessage msgScope;
+    return msgScope;
+}
+
+AREG_API_IMPL void NETrace::setLogDatabaseEngine(IELogDatabaseEngine * /*dbEngine*/)
+{
+}
+
+AREG_API_IMPL bool NETrace::forceStartLogging(void)
+{
+    return true;
+}
+
+AREG_API_IMPL bool NETrace::initAndStartLogging(const char * /*fileConfig*/ /*= nullptr */)
+{
+    return true;
+}
+
+AREG_API_IMPL const ITEM_ID & NETrace::getCookie(void)
+{
+    return NEService::COOKIE_UNKNOWN;
+}
+
+AREG_API_IMPL String NETrace::makePrioString(unsigned int /*priorities*/)
+{
+    return NETrace::PRIO_NOTSET_STR;
+}
+
+AREG_API_IMPL unsigned int NETrace::makePriorities(const String& /*prioString*/)
+{
+    return static_cast<unsigned int>(NETrace::eLogPriority::PrioNotset);
+}
+
+//////////////////////////////////////////////////////////////////////////
+#endif  // AREG_LOGS
+//////////////////////////////////////////////////////////////////////////

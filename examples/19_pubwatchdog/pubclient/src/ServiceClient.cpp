@@ -106,6 +106,8 @@ void ServiceClient::responseStartSleep( unsigned int timeoutSleep )
     }
 }
 
+#if AREG_LOGS
+
 void ServiceClient::requestStartSleepFailed( NEService::eResultType FailureReason )
 {
     TRACE_SCOPE( examples_19_pubclient_ServiceClient_requestStartSleepFailed );
@@ -123,3 +125,5 @@ void ServiceClient::requestShutdownServiceFailed( NEService::eResultType Failure
     TRACE_SCOPE( examples_19_pubclient_ServiceClient_requestShutdownServiceFailed );
     TRACE_WARN( "Request to shutdown service failed with reason [ %s ]", NEService::getString( FailureReason ) );
 }
+
+#endif  // AREG_LOGS

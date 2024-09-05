@@ -169,7 +169,8 @@ bool Console::_osWaitInputString(char* buffer, uint32_t size) const
             return false;
 #endif // WINDOWS
 
-    return (NEString::trimRight<char>(buffer) > 0);
+    NEString::trimRight<char>(buffer);
+    return ( NEString::isEmpty(buffer) == false );
 }
 
 void Console::_osRefreshScreen(void) const

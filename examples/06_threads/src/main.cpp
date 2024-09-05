@@ -189,12 +189,19 @@ void HelloDispatcher::readyForEvents(bool isReady )
     }
 }
 
+#if AREG_LOGS
 bool HelloDispatcher::dispatchEvent(Event & eventElem)
 {
     TRACE_SCOPE(main_HelloDispatcher_dispatchEvent);
     TRACE_DBG("Received event [ %s ], the custom event dispatching can be set here", eventElem.getRuntimeClassName().getString());
     return true; // break dispatching event, so that it is never called 'processTimer()' method.
 }
+#else   // AREG_LOGS
+bool HelloDispatcher::dispatchEvent(Event & /*eventElem*/)
+{
+    return true; // break dispatching event, so that it is never called 'processTimer()' method.
+}
+#endif  // AREG_LOGS
 
 DEF_TRACE_SCOPE(main_main);
 

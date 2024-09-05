@@ -56,6 +56,8 @@ void ServiceHelloWorld::requestHelloWorld( const String & roleName )
     }
 }
 
+#if AREG_LOGS
+
 void ServiceHelloWorld::requestShutdownService( unsigned int clientID, const String & roleName )
 {
     TRACE_SCOPE( examples_11_locsvcmesh_ServiceHelloWorld_requestShutdownService );
@@ -67,3 +69,15 @@ void ServiceHelloWorld::requestShutdownService( unsigned int clientID, const Str
         Application::signalAppQuit( );
     }
 }
+
+#else  // AREG_LOGS
+
+void ServiceHelloWorld::requestShutdownService( unsigned int /*clientID*/, const String & /*roleName*/ )
+{
+    if ( mIsMain )
+    {
+        Application::signalAppQuit( );
+    }
+}
+
+#endif  // AREG_LOGS

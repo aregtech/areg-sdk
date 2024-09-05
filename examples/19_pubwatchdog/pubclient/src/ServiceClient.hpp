@@ -94,6 +94,7 @@ protected:
      **/
     virtual void responseStartSleep( unsigned int timeoutSleep ) override;
 
+#if AREG_LOGS
     /**
      * \brief   Overwrite to handle error of StartSleep request call.
      * \param   FailureReason   The failure reason value of request call.
@@ -111,6 +112,7 @@ protected:
      * \param   FailureReason   The failure reason value of request call.
      **/
     virtual void requestShutdownServiceFailed( NEService::eResultType FailureReason ) override;
+#endif  // AREG_LOGS
 
 /************************************************************************/
 // IEProxyListener Overrides

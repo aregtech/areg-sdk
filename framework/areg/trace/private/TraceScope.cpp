@@ -68,7 +68,7 @@ TraceScope::TraceScope(const char* /*scopeName*/, NETrace::eLogPriority /*priori
 {
 }
 
-TraceScope::TraceScope(const IEInStream& stream)
+TraceScope::TraceScope(const IEInStream& /*stream*/ )
     : mScopeName    ()
     , mScopeId      ( 0 )
     , mScopePrio    ( static_cast<unsigned int>(NETrace::eLogPriority::PrioInvalid) )
