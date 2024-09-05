@@ -86,13 +86,16 @@ namespace NEString
     AREG_API unsigned int makeUTF8_256LowerChar( int ch );
 
     //! ASCII locale.
-    static const char* const LOCALE_ASCII   = "C";
+    static const char* const LOCALE_ASCII       = "C";
 
     //! en_US.UTF8 locale.
-    static const char* const LOCALE_US_UTF8 = "en_US.UTF8";
+    static const char* const LOCALE_US_UTF8     = "en_US.UTF8";
+
+    //! en_US.UTF8 locale.
+    static const char* const LOCALE_UTF8        = "C.UTF8";
 
     //! Currently installed C locale.
-    static const char* const LOCALE_DEFAULT   { LOCALE_US_UTF8 };    // {LOCALE_ASCII};
+    static const char* const LOCALE_DEFAULT   { LOCALE_UTF8 };
 
     /**
      * \brief   Constant, defines count all characters in the string
