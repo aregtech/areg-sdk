@@ -146,7 +146,8 @@ bool Console::_osWaitInputString(char* buffer, uint32_t size) const
     if ((mContext == 0) || (wgetnstr(reinterpret_cast<WINDOW*>(mContext), buffer, static_cast<int>(size)) != OK))
         return false;
 
-    return (NEString::trimRight<char>(buffer) > 0);
+    NEString::trimAll<char>(buffer);
+    return (NEString::isEmpty<char>(buffer) == false);
 }
 
 void Console::_osRefreshScreen(void) const

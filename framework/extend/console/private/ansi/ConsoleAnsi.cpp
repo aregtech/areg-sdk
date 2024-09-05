@@ -169,7 +169,7 @@ bool Console::_osWaitInputString(char* buffer, uint32_t size) const
             return false;
 #endif // WINDOWS
 
-    NEString::trimRight<char>(buffer);
+    NEString::trimAll<char>(buffer);
     return ( NEString::isEmpty(buffer) == false );
 }
 
