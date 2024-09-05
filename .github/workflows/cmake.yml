@@ -341,7 +341,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Java JDK to run code generator
-        uses: actions/setup-java@v4.2.1
+        uses: actions/setup-java@v4.2.2
         with: 
           java-version: 17
           java-package: jre
