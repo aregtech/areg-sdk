@@ -41,7 +41,7 @@ void ServiceHelloWorld::requestHelloWorld( const String & roleName )
 
     responseHelloWorld( roleName, clientId );
 
-    if ( mRemainRequest == 0 )
+    if (mRemainRequest <= 0)
     {
         TRACE_INFO( "Reached maximum to output messages, this should trigger the shutdown procedure." );
         if ( mIsMain )
