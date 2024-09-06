@@ -275,7 +275,7 @@ public:
      * \param[out]  out_Value   On output, contains value of found element
      * \return	Returns true if there is an entry with the specified key.
      **/
-    inline bool find( const KEY & Key, VALUE & OUT out_Value ) const;
+    bool find( const KEY & Key, VALUE & OUT out_Value ) const;
 
     /**
      * \brief	Search an element entry by the given key and returns the position in hash-map.
@@ -488,6 +488,18 @@ public:
     inline bool nextEntry(MAPPOS & IN OUT in_out_NextPosition, KEY & OUT out_NextKey, VALUE & OUT out_NextValue ) const;
 
 //////////////////////////////////////////////////////////////////////////
+//Hidden methods
+//////////////////////////////////////////////////////////////////////////
+private:
+
+    /**
+     * \brief   Converts the constant iterator of the unsorted-map into the MAPPOS type.
+     * \param   cit     The constant iterator of the unsorted map.
+     * \return  Returns converted MAPPOS type.
+     **/
+    inline MAPPOS _citer2pos(typename std::unordered_map<KEY, VALUE>::const_iterator cit) const;
+
+//////////////////////////////////////////////////////////////////////////
 // Member Variables
 //////////////////////////////////////////////////////////////////////////
 protected:
@@ -551,8 +563,7 @@ inline uint32_t TEHashMap<KEY, VALUE>::getSize( void ) const
 template < typename KEY, typename VALUE >
 inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::firstPosition( void ) const
 {
-    auto pos = mValueList.begin();
-    return Constless<std::unordered_map<KEY, VALUE>>::iter(mValueList, pos);
+    return _citer2pos(mValueList.begin());
 }
 
 template < typename KEY, typename VALUE >
@@ -564,8 +575,7 @@ inline bool TEHashMap<KEY, VALUE>::isFirstPosition(const MAPPOS pos) const
 template < typename KEY, typename VALUE >
 inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::invalidPosition(void) const
 {
-	auto end = mValueList.end();
-    return Constless<std::unordered_map<KEY, VALUE>>::iter(mValueList, end);
+	return _citer2pos(mValueList.end());
 }
 
 template < typename KEY, typename VALUE >
@@ -593,6 +603,18 @@ inline bool TEHashMap<KEY, VALUE>::checkPosition(const MAPPOS pos) const
 }
 
 template < typename KEY, typename VALUE >
+inline bool TEHashMap<KEY, VALUE>::contains(const KEY& Key) const
+{
+    return (mValueList.find(Key) != mValueList.end());
+}
+
+template<typename KEY, typename VALUE>
+inline const std::unordered_map<KEY, VALUE>& TEHashMap<KEY, VALUE>::getData(void) const
+{
+    return mValueList;
+}
+
+template < typename KEY, typename VALUE >
 inline void TEHashMap<KEY, VALUE>::clear(void)
 {
     mValueList.clear();
@@ -605,9 +627,9 @@ inline void TEHashMap<KEY, VALUE>::release(void)
 }
 
 template < typename KEY, typename VALUE >
-inline bool TEHashMap<KEY, VALUE>::find( const KEY & Key, VALUE & OUT out_Value ) const
+bool TEHashMap<KEY, VALUE>::find( const KEY & Key, VALUE & OUT out_Value ) const
 {
-    bool result = false;
+    bool result{ false };
     if (mValueList.empty() == false)
     {
         auto pos = mValueList.find(Key);
@@ -624,20 +646,19 @@ inline bool TEHashMap<KEY, VALUE>::find( const KEY & Key, VALUE & OUT out_Value 
 template < typename KEY, typename VALUE >
 inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::find(const KEY& Key) const
 {
-    auto cit = mValueList.empty() ? mValueList.end() : mValueList.find(Key);
-    return Constless<std::unordered_map<KEY, VALUE>>::iter(mValueList, cit);
+    return _citer2pos(mValueList.empty() ? mValueList.end() : mValueList.find(Key));
 }
 
 template < typename KEY, typename VALUE >
-inline bool TEHashMap<KEY, VALUE>::contains(const KEY& Key) const
+inline VALUE & TEHashMap<KEY, VALUE>::getAt( const KEY & Key )
 {
-    return (mValueList.find(Key) != mValueList.end());
+    return mValueList.at(Key);
 }
 
-template<typename KEY, typename VALUE>
-inline const std::unordered_map<KEY, VALUE>& TEHashMap<KEY, VALUE>::getData(void) const
+template < typename KEY, typename VALUE >
+inline const VALUE & TEHashMap<KEY, VALUE>::getAt(const KEY & Key) const
 {
-    return mValueList;
+    return mValueList.at(Key);
 }
 
 template < typename KEY, typename VALUE >
@@ -858,18 +879,6 @@ inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::nextPositio
 }
 
 template < typename KEY, typename VALUE >
-inline VALUE & TEHashMap<KEY, VALUE>::getAt( const KEY & Key )
-{
-    return mValueList.at(Key);
-}
-
-template < typename KEY, typename VALUE >
-inline const VALUE & TEHashMap<KEY, VALUE>::getAt(const KEY & Key) const
-{
-    return mValueList.at(Key);
-}
-
-template < typename KEY, typename VALUE >
 inline void TEHashMap<KEY, VALUE>::getAtPosition(TEHashMap<KEY, VALUE>::MAPPOS IN atPosition, KEY & OUT out_Key, VALUE & OUT out_Value) const
 {
     ASSERT(atPosition != mValueList.end());
@@ -924,6 +933,12 @@ inline bool TEHashMap<KEY, VALUE>::nextEntry(TEHashMap<KEY, VALUE>::MAPPOS & IN 
     }
 
     return result;
+}
+
+template<typename KEY, typename VALUE>
+inline typename TEHashMap<KEY, VALUE>::MAPPOS TEHashMap<KEY, VALUE>::_citer2pos(typename std::unordered_map<KEY, VALUE>::const_iterator cit) const
+{
+    return Constless<std::unordered_map<KEY, VALUE>>::iter(mValueList, cit);
 }
 
 //////////////////////////////////////////////////////////////////////////

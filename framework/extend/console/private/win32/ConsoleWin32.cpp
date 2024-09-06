@@ -171,7 +171,8 @@ bool Console::_osWaitInputString(char* buffer, uint32_t size) const
     if (gets_s(buffer, size) == nullptr)
         return false;
 
-    return (NEString::trimRight<char>(buffer) > 0);
+    NEString::trimAll<char>(buffer);
+    return (NEString::isEmpty<char>(buffer) == false);
 }
 
 void Console::_osRefreshScreen(void) const

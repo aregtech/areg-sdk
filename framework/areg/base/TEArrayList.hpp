@@ -293,7 +293,7 @@ public:
     inline TEArrayList< VALUE >& append( const TEArrayList< VALUE > & src );
     inline TEArrayList< VALUE >& append( const std::vector< VALUE > & src );
     inline TEArrayList< VALUE >& append( TEArrayList< VALUE > && src) noexcept;
-    inline TEArrayList< VALUE >& append( std::vector< VALUE > && src) noexcept;
+    TEArrayList< VALUE >& append( std::vector< VALUE > && src) noexcept;
 
     /**
      * \brief	Copies all entries from given source. If array previously had values,
@@ -318,7 +318,7 @@ public:
      * \param   newElement  Value of new element to insert.
      * \param   elemCount   If not one, it will repeat operation.
      **/
-    inline void insertAt( uint32_t startAt, const VALUE & newElement, uint32_t elemCount = 1 );
+    void insertAt( uint32_t startAt, const VALUE & newElement, uint32_t elemCount = 1 );
 
     /**
      * \brief   If position is valid, it shifts elements and inserts new elements from the
@@ -327,7 +327,7 @@ public:
      * \param	newArray	Sources of array elements to insert.
      * \param   count       Number of elements in the array.
      **/
-    inline void insertAt(uint32_t startAt, const VALUE * newArray, uint32_t count );
+    void insertAt(uint32_t startAt, const VALUE * newArray, uint32_t count );
 
     /**
      * \brief   If position is valid, it shifts elements and inserts new elements from the
@@ -336,14 +336,14 @@ public:
      * \param	newArray	Sources of array elements.
      **/
     inline void insertAt( uint32_t startAt, const TEArrayList< VALUE > & newArray );
-    inline void insertAt( uint32_t startAt, const std::vector< VALUE > & newArray );
+    void insertAt( uint32_t startAt, const std::vector< VALUE > & newArray );
 
     /**
      * \brief	Removes elements starting at given valid index position.
      * \param	index	    The index to start removing elements
      * \param	elemCount	Amount of elements to remove.
      **/
-    inline void removeAt(uint32_t index, uint32_t elemCount = 1);
+    void removeAt(uint32_t index, uint32_t elemCount = 1);
 
     /**
      * \brief   Remove the element at specified index and returns the removed element.
@@ -359,7 +359,7 @@ public:
      * \param	searchAt	The position to start searching.
      * \return	Returns true if found and removed the element.
      **/
-    inline bool removeElem(const VALUE & elemRemove, uint32_t searchAt = 0);
+    bool removeElem(const VALUE & elemRemove, uint32_t searchAt = 0);
 
     /**
      * \brief	Search element entry in the array and returns the index.
@@ -369,7 +369,7 @@ public:
      * \param	startAt	    The index to start searching.
      * \return	If found, returns valid index of element in array. Otherwise, returns -1.
      **/
-    inline int find( const VALUE & elemSearch, uint32_t startAt = 0 ) const;
+    int find( const VALUE & elemSearch, uint32_t startAt = 0 ) const;
 
     /**
      * \brief	Sets new size of array. If needed, either increases or truncates
@@ -487,21 +487,21 @@ TEArrayList< VALUE >::TEArrayList( uint32_t capacity /*= NECommon::ARRAY_DEFAULT
 }
 
 template<typename VALUE>
-inline TEArrayList<VALUE>::TEArrayList( const TEArrayList<VALUE> & src )
+TEArrayList<VALUE>::TEArrayList( const TEArrayList<VALUE> & src )
     : Constless<std::vector<VALUE>>( )
     , mValueList( src.mValueList )
 {
 }
 
 template<typename VALUE>
-inline TEArrayList<VALUE>::TEArrayList( const std::vector<VALUE> & src )
+TEArrayList<VALUE>::TEArrayList( const std::vector<VALUE> & src )
     : Constless<std::vector<VALUE>>( )
     , mValueList( src )
 {
 }
 
 template<typename VALUE>
-inline TEArrayList<VALUE>::TEArrayList(const VALUE* list, uint32_t count)
+TEArrayList<VALUE>::TEArrayList(const VALUE* list, uint32_t count)
     : Constless<std::vector<VALUE>>( )
     , mValueList( list != nullptr ? count : 0)
 {
@@ -517,22 +517,92 @@ inline TEArrayList<VALUE>::TEArrayList(const VALUE* list, uint32_t count)
 }
 
 template<typename VALUE>
-inline TEArrayList<VALUE>::TEArrayList( TEArrayList<VALUE> && src ) noexcept
+TEArrayList<VALUE>::TEArrayList( TEArrayList<VALUE> && src ) noexcept
     : Constless<std::vector<VALUE>>( )
     , mValueList( std::move(src.mValueList) )
 {
 }
 
 template<typename VALUE>
-inline TEArrayList<VALUE>::TEArrayList( std::vector<VALUE> && src ) noexcept
+TEArrayList<VALUE>::TEArrayList( std::vector<VALUE> && src ) noexcept
     : Constless<std::vector<VALUE>>( )
     , mValueList( std::move( src ) )
 {
 }
 
 template<typename VALUE>
-inline TEArrayList<VALUE>::~TEArrayList( void )
+TEArrayList<VALUE>::~TEArrayList( void )
 {
+}
+
+template<typename VALUE >
+inline VALUE& TEArrayList< VALUE >::operator [] (uint32_t index)
+{
+    ASSERT(isValidIndex(index));
+    return mValueList[index];
+}
+
+template<typename VALUE >
+inline const VALUE & TEArrayList< VALUE >::operator [] (uint32_t index) const
+{
+    ASSERT(isValidIndex(index));
+    return mValueList[index];
+}
+
+template<typename VALUE >
+inline TEArrayList< VALUE > & TEArrayList< VALUE >::operator = ( const TEArrayList< VALUE >& src )
+{
+    return this->operator = (src.mValueList);
+}
+
+template<typename VALUE >
+inline TEArrayList< VALUE > & TEArrayList< VALUE >::operator = ( const std::vector< VALUE >& src )
+{
+    mValueList = src;
+    return (*this);
+}
+
+template<typename VALUE >
+inline TEArrayList< VALUE > & TEArrayList< VALUE >::operator = ( TEArrayList< VALUE > && src ) noexcept
+{
+    return this->operator = (std::move(src.mValueList));
+}
+
+template<typename VALUE >
+inline TEArrayList< VALUE > & TEArrayList< VALUE >::operator = ( std::vector< VALUE > && src ) noexcept
+{
+    mValueList = std::move(src);
+    return (*this);
+}
+
+template<typename VALUE >
+inline bool TEArrayList< VALUE >::operator == ( const TEArrayList< VALUE >& other ) const
+{
+    return mValueList == other.mValueList;
+}
+
+template<typename VALUE >
+inline bool TEArrayList< VALUE >::operator == ( const std::vector< VALUE >& other ) const
+{
+    return mValueList == other;
+}
+
+template<typename VALUE >
+inline bool TEArrayList< VALUE >::operator != ( const TEArrayList< VALUE >& other ) const
+{
+    return this->operator != (other.mValueList);
+}
+
+template<typename VALUE >
+inline bool TEArrayList< VALUE >::operator != ( const std::vector< VALUE >& other ) const
+{
+    return mValueList != other;
+}
+
+template<typename VALUE >
+inline TEArrayList< VALUE >::operator const VALUE * ( void ) const
+{   
+    return static_cast<const VALUE *>(mValueList.data());
 }
 
 template<typename VALUE >
@@ -551,6 +621,18 @@ template<typename VALUE >
 inline bool TEArrayList< VALUE >::isValidIndex(uint32_t index) const
 {
     return (index < static_cast<uint32_t>(mValueList.size()));
+}
+
+template<typename VALUE >
+inline bool TEArrayList< VALUE >::contains( const VALUE & elemSearch, uint32_t startAt /*= 0*/ ) const
+{
+    return (startAt < static_cast<uint32_t>(mValueList.size()) ? std::find(mValueList.begin() + static_cast<int32_t>(startAt), mValueList.end(), elemSearch) != mValueList.end() : false);
+}
+
+template<typename VALUE>
+inline const std::vector<VALUE>& TEArrayList<VALUE>::getData(void) const
+{
+    return mValueList;
 }
 
 template<typename VALUE >
@@ -641,24 +723,6 @@ inline VALUE& TEArrayList< VALUE >::valueAtPosition( uint32_t atPosition )
 }
 
 template<typename VALUE >
-inline void TEArrayList< VALUE >::resize( uint32_t newSize )
-{
-    mValueList.resize(newSize > NECommon::MAX_CONTAINER_SIZE ? NECommon::MAX_CONTAINER_SIZE : newSize);
-}
-
-template<typename VALUE >
-inline void TEArrayList< VALUE >::reserve( uint32_t newCapacity)
-{
-    mValueList.reserve(newCapacity > NECommon::MAX_CONTAINER_SIZE ? NECommon::MAX_CONTAINER_SIZE : newCapacity);
-}
-
-template<typename VALUE >
-inline uint32_t TEArrayList< VALUE >::getCapacity(void) const
-{
-    return static_cast<uint32_t>(mValueList.capacity());
-}
-
-template<typename VALUE >
 inline const VALUE* TEArrayList< VALUE >::getValues( void ) const
 {
     return static_cast<const VALUE *>(mValueList.data());
@@ -726,7 +790,7 @@ inline TEArrayList< VALUE >& TEArrayList< VALUE >::append(TEArrayList< VALUE >&&
 }
 
 template<typename VALUE >
-inline TEArrayList< VALUE >& TEArrayList< VALUE >::append(std::vector< VALUE > && src) noexcept
+TEArrayList< VALUE >& TEArrayList< VALUE >::append(std::vector< VALUE > && src) noexcept
 {
     ASSERT(&mValueList != &src);
 
@@ -773,110 +837,7 @@ inline void TEArrayList< VALUE >::move(std::vector< VALUE > && src) noexcept
 }
 
 template<typename VALUE >
-inline VALUE& TEArrayList< VALUE >::operator [] (uint32_t index)
-{
-    ASSERT(isValidIndex(index));
-    return mValueList[index];
-}
-
-template<typename VALUE >
-inline const VALUE & TEArrayList< VALUE >::operator [] (uint32_t index) const
-{
-    ASSERT(isValidIndex(index));
-    return mValueList[index];
-}
-
-template<typename VALUE >
-inline TEArrayList< VALUE > & TEArrayList< VALUE >::operator = ( const TEArrayList< VALUE >& src )
-{
-    return this->operator = (src.mValueList);
-}
-
-template<typename VALUE >
-inline TEArrayList< VALUE > & TEArrayList< VALUE >::operator = ( const std::vector< VALUE >& src )
-{
-    mValueList = src;
-    return (*this);
-}
-
-template<typename VALUE >
-inline TEArrayList< VALUE > & TEArrayList< VALUE >::operator = ( TEArrayList< VALUE > && src ) noexcept
-{
-    return this->operator = (std::move(src.mValueList));
-}
-
-template<typename VALUE >
-inline TEArrayList< VALUE > & TEArrayList< VALUE >::operator = ( std::vector< VALUE > && src ) noexcept
-{
-    mValueList = std::move(src);
-    return (*this);
-}
-
-template<typename VALUE >
-inline bool TEArrayList< VALUE >::operator == ( const TEArrayList< VALUE >& other ) const
-{
-    return mValueList == other.mValueList;
-}
-
-template<typename VALUE >
-inline bool TEArrayList< VALUE >::operator == ( const std::vector< VALUE >& other ) const
-{
-    return mValueList == other;
-}
-
-template<typename VALUE >
-inline bool TEArrayList< VALUE >::operator != ( const TEArrayList< VALUE >& other ) const
-{
-    return this->operator != (other.mValueList);
-}
-
-template<typename VALUE >
-inline bool TEArrayList< VALUE >::operator != ( const std::vector< VALUE >& other ) const
-{
-    return mValueList != other;
-}
-
-template<typename VALUE >
-inline TEArrayList< VALUE >::operator const VALUE * ( void ) const
-{   
-    return static_cast<const VALUE *>(mValueList.data());
-}
-
-template<typename VALUE >
-inline void TEArrayList< VALUE >::removeAt(uint32_t index, uint32_t elemCount /*= 1*/)
-{
-    if (elemCount != 0)
-    {
-        uint32_t remain = static_cast<uint32_t>(mValueList.size()) - index;
-        elemCount = MACRO_MIN(elemCount, remain);
-        ASSERT(isValidIndex(index));
-        ASSERT(isValidIndex(index + elemCount - 1));
-
-        ARRAYPOS first = getPosition(index);
-        if (elemCount == 1)
-        {
-            mValueList.erase(first);
-        }
-        else
-        {
-            ARRAYPOS last = first + static_cast<int32_t>(elemCount);
-            mValueList.erase(first, last);
-        }
-    }
-}
-
-template<typename VALUE >
-inline VALUE TEArrayList< VALUE >::removePosition(uint32_t index)
-{
-    ASSERT(isValidIndex(index));
-    ARRAYPOS first = getPosition(index);
-    VALUE result = *first;
-    mValueList.erase(first);
-    return result;
-}
-
-template<typename VALUE >
-inline void TEArrayList< VALUE >::insertAt(uint32_t startAt, const VALUE& newElement, uint32_t elemCount /*= 1*/)
+void TEArrayList< VALUE >::insertAt(uint32_t startAt, const VALUE& newElement, uint32_t elemCount /*= 1*/)
 {
     if (elemCount != 0)
     {
@@ -899,7 +860,7 @@ inline void TEArrayList< VALUE >::insertAt(uint32_t startAt, const VALUE& newEle
 }
 
 template<typename VALUE >
-inline void TEArrayList< VALUE >::insertAt(uint32_t startAt, const VALUE* newArray, uint32_t count)
+void TEArrayList< VALUE >::insertAt(uint32_t startAt, const VALUE* newArray, uint32_t count)
 {
     if ((newArray != nullptr) && (count != 0))
     {
@@ -932,7 +893,7 @@ inline void TEArrayList< VALUE >::insertAt(uint32_t startAt, const TEArrayList< 
 }
 
 template<typename VALUE >
-inline void TEArrayList< VALUE >::insertAt(uint32_t startAt, const std::vector< VALUE >& newArray)
+void TEArrayList< VALUE >::insertAt(uint32_t startAt, const std::vector< VALUE >& newArray)
 {
     ASSERT(isValidIndex(startAt));
 
@@ -950,7 +911,57 @@ inline void TEArrayList< VALUE >::insertAt(uint32_t startAt, const std::vector< 
 }
 
 template<typename VALUE >
-inline int TEArrayList< VALUE >::find( const VALUE & elemSearch, uint32_t startAt /*= 0*/ ) const
+void TEArrayList< VALUE >::removeAt(uint32_t index, uint32_t elemCount /*= 1*/)
+{
+    if (elemCount != 0)
+    {
+        uint32_t remain = static_cast<uint32_t>(mValueList.size()) - index;
+        elemCount = MACRO_MIN(elemCount, remain);
+        ASSERT(isValidIndex(index));
+        ASSERT(isValidIndex(index + elemCount - 1));
+
+        ARRAYPOS first = getPosition(index);
+        if (elemCount == 1)
+        {
+            mValueList.erase(first);
+        }
+        else
+        {
+            ARRAYPOS last = first + static_cast<int32_t>(elemCount);
+            mValueList.erase(first, last);
+        }
+    }
+}
+
+template<typename VALUE >
+inline VALUE TEArrayList< VALUE >::removePosition(uint32_t index)
+{
+    ASSERT(isValidIndex(index));
+    ARRAYPOS first = getPosition(index);
+    VALUE result = *first;
+    mValueList.erase(first);
+    return result;
+}
+
+template<typename VALUE >
+bool TEArrayList< VALUE >::removeElem( const VALUE & elemRemove, uint32_t searchAt /*= 0*/ )
+{
+    bool result = false;
+    if (searchAt < static_cast<uint32_t>(mValueList.size()))
+    {
+        auto it = std::find(mValueList.begin() + static_cast<int>(searchAt), mValueList.end(), elemRemove);
+        if (it != mValueList.end())
+        {
+            mValueList.erase(it);
+            result = true;
+        }
+    }
+
+    return result;
+}
+
+template<typename VALUE >
+int TEArrayList< VALUE >::find( const VALUE & elemSearch, uint32_t startAt /*= 0*/ ) const
 {
     int result = NECommon::INVALID_INDEX;
     if (startAt < static_cast<uint32_t>(mValueList.size()))
@@ -969,32 +980,21 @@ inline int TEArrayList< VALUE >::find( const VALUE & elemSearch, uint32_t startA
 }
 
 template<typename VALUE >
-inline bool TEArrayList< VALUE >::contains( const VALUE & elemSearch, uint32_t startAt /*= 0*/ ) const
+inline void TEArrayList< VALUE >::resize( uint32_t newSize )
 {
-    return (startAt < static_cast<uint32_t>(mValueList.size()) ? std::find(mValueList.begin() + static_cast<int32_t>(startAt), mValueList.end(), elemSearch) != mValueList.end() : false);
-}
-
-template<typename VALUE>
-inline const std::vector<VALUE>& TEArrayList<VALUE>::getData(void) const
-{
-    return mValueList;
+    mValueList.resize(newSize > NECommon::MAX_CONTAINER_SIZE ? NECommon::MAX_CONTAINER_SIZE : newSize);
 }
 
 template<typename VALUE >
-inline bool TEArrayList< VALUE >::removeElem( const VALUE & elemRemove, uint32_t searchAt /*= 0*/ )
+inline void TEArrayList< VALUE >::reserve( uint32_t newCapacity)
 {
-    bool result = false;
-    if (searchAt < static_cast<uint32_t>(mValueList.size()))
-    {
-        auto it = std::find(mValueList.begin() + static_cast<int>(searchAt), mValueList.end(), elemRemove);
-        if (it != mValueList.end())
-        {
-            mValueList.erase(it);
-            result = true;
-        }
-    }
+    mValueList.reserve(newCapacity > NECommon::MAX_CONTAINER_SIZE ? NECommon::MAX_CONTAINER_SIZE : newCapacity);
+}
 
-    return result;
+template<typename VALUE >
+inline uint32_t TEArrayList< VALUE >::getCapacity(void) const
+{
+    return static_cast<uint32_t>(mValueList.capacity());
 }
 
 template<typename VALUE >

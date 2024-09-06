@@ -69,11 +69,21 @@ bool ServiceClient::serviceConnected( NEService::eServiceConnection status, Prox
     return result;
 }
 
+#if AREG_LOGS
+
 void ServiceClient::onServiceStateUpdate( NEHelloWatchdog::eState ServiceState, NEService::eDataStateType state )
 {
     TRACE_SCOPE(examples_18_locwatchdog_ServiceClient_onServiceStateUpdate);
     TRACE_DBG("Current service state is [ %s ], data state is [ %s ]", NEHelloWatchdog::getString(ServiceState), NEService::getString(state));
 }
+
+#else  // AREG_LOGS
+
+void ServiceClient::onServiceStateUpdate( NEHelloWatchdog::eState /*ServiceState*/, NEService::eDataStateType /*state*/ )
+{
+}
+
+#endif  // AREG_LOGS
 
 void ServiceClient::responseStartSleep( unsigned int timeoutSleep )
 {

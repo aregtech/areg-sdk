@@ -761,10 +761,17 @@ inline void NEMemory::memMove( void * memDst, const void * memSrc, uint32_t coun
 inline uint32_t NEMemory::memCopy( void * memDst, uint32_t dstSpace, const void * memSrc, uint32_t count )
 {
     uint32_t result = 0;
-    if ( (memDst != memSrc) && (memDst != nullptr) && (memSrc != nullptr) && (count > 0) && (dstSpace > 0) )
+    if (memDst != memSrc)
     {
-        result = MACRO_MIN(dstSpace, count);
-        ::memcpy(memDst, memSrc, result);
+        if ((memDst != nullptr) && (memSrc != nullptr) && (count > 0) && (dstSpace > 0))
+        {
+            result = MACRO_MIN(dstSpace, count);
+            ::memcpy(memDst, memSrc, result);
+        }
+    }
+    else
+    {
+        result = count;
     }
 
     return result;

@@ -47,6 +47,7 @@
     <ClCompile Include="units\DemoTest.cpp" />
     <ClCompile Include="units\FileTest.cpp" />
     <ClCompile Include="units\LogScopesTest.cpp" />
+    <ClCompile Include="units\NEStringTest.cpp" />
     <ClCompile Include="units\OptionParserTest.cpp" />
     <ClCompile Include="units\StringUtilsTest.cpp" />
     <ClCompile Include="units\TEArrayListTest.cpp" />

@@ -48,7 +48,7 @@ namespace
                         if (NEString::isPositionValid(pos))
                         {
                             char* name = buffer + pos + 1;
-                            if (NEString::compareFastIgnoreCase<char, char>(procName, name) == NEMath::eCompare::Equal)
+                            if (NEString::compareIgnoreCase<char, char>(procName, name) == NEMath::eCompare::Equal)
                             {
                                 pid = NEString::makeInteger<char>(dirEntry->d_name, nullptr);
                             }

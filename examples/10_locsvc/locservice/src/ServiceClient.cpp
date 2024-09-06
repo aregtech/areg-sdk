@@ -61,12 +61,19 @@ void ServiceClient::responseHelloWorld( void )
     TRACE_DBG("Received response on request to print greetings from the client");
 }
 
+#if AREG_LOGS
 void ServiceClient::broadcastReachedMaximum( int maxNumber )
 {
     TRACE_SCOPE(examples_10_locservice_ServiceClient_broadcastReachedMaximum );
     TRACE_WARN("Service notify reached maximum number of requests [ %d ], starting shutdown procedure", maxNumber );
     requestShutdownService( );
 }
+#else   // AREG_LOGS
+void ServiceClient::broadcastReachedMaximum( int /*maxNumber*/ )
+{
+    requestShutdownService( );
+}
+#endif  // AREG_LOGS
 
 void ServiceClient::processTimer(Timer & timer)
 {

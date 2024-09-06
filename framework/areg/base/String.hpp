@@ -37,7 +37,7 @@ class WideString;
 // String class declaration.
 //////////////////////////////////////////////////////////////////////////
 /**
- * \brief   ASCII string class declaration. Has basic functionalities
+ * \brief   8-bit string class declaration. Has basic functionalities
  *          to handle null-terminated string operations.
  *
  *          Use this class to declare member variables. This class also

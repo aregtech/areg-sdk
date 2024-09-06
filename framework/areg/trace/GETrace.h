@@ -287,7 +287,7 @@
     /**
      * \brief   If !AREG_LOGS is zero, does nothing
      **/
-    #define TRACER_STOP_LOGGING()                       {}
+    #define TRACER_STOP_LOGGING()                       
 
     /**
      * \brief   If !AREG_LOGS is zero, does nothing, no trace scope is declared.

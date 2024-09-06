@@ -12,7 +12,7 @@
  * \file        areg/base/TEString.hpp
  * \ingroup     AREG SDK, Automated Real-time Event Grid Software Development Kit
  * \author      Artak Avetyan
- * \brief       AREG Platform, ASCII string Class.
+ * \brief       AREG Platform, String class template based on first 256 character in UTF-8 code page.
  ************************************************************************/
 /************************************************************************
  * Include files.
@@ -1011,58 +1011,66 @@ public:
 
     /**
      * \brief   Checks and returns true if the string starts with the given phrase.
+     *          Valid only the first 256 characters based on UTF-8 code page.
      * \param phrase            The phrase to check.
-     * \param isCaseSensitive   If false, ignores the upper and lower cases. Valid only for ASCII strings.
+     * \param isCaseSensitive   If false, ignores the upper and lower cases.
      **/
     inline bool startsWith(const TEString<CharType>& phrase, bool isCaseSensitive = true) const;
 
     /**
      * \brief   Checks and returns true if the string starts with the given phrase.
+     *          Valid only the first 256 characters based on UTF-8 code page.
      * \param phrase            The phrase to check.
-     * \param isCaseSensitive   If false, ignores the upper and lower cases. Valid only for ASCII strings.
+     * \param isCaseSensitive   If false, ignores the upper and lower cases.
      **/
     inline bool startsWith(const std::basic_string<CharType>& phrase, bool isCaseSensitive = true) const;
 
     /**
      * \brief   Checks and returns true if the string starts with the given phrase.
+     *          Valid only the first 256 characters based on UTF-8 code page.
      * \param phrase            The phrase to check.
-     * \param isCaseSensitive   If false, ignores the upper and lower cases. Valid only for ASCII strings.
+     * \param isCaseSensitive   If false, ignores the upper and lower cases.
      **/
     inline bool startsWith(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive = true) const;
 
     /**
      * \brief   Checks and returns true if the string starts with the given phrase.
+     *          Valid only the first 256 characters based on UTF-8 code page.
      * \param phrase            The phrase to check.
-     * \param isCaseSensitive   If false, ignores the upper and lower cases. Valid only for ASCII strings.
+     * \param isCaseSensitive   If false, ignores the upper and lower cases.
      * \param count             The number of character in the phase. If NEString::COUNT_ALL it compare the complete phase.
      **/
     inline bool startsWith(const CharType* phrase, bool isCaseSensitive = true, NEString::CharCount count = NEString::COUNT_ALL) const;
 
     /**
      * \brief   Checks and returns true if the string ends with the given phrase.
+     *          Valid only the first 256 characters based on UTF-8 code page.
      * \param phrase            The phrase to check.
-     * \param isCaseSensitive   If false, ignores the upper and lower cases. Valid only for ASCII strings.
+     * \param isCaseSensitive   If false, ignores the upper and lower cases.
      **/
     inline bool endsWith(const TEString<CharType>& phrase, bool isCaseSensitive = true) const;
 
     /**
      * \brief   Checks and returns true if the string ends with the given phrase.
+     *          Valid only the first 256 characters based on UTF-8 code page.
      * \param phrase            The phrase to check.
-     * \param isCaseSensitive   If false, ignores the upper and lower cases. Valid only for ASCII strings.
+     * \param isCaseSensitive   If false, ignores the upper and lower cases.
      **/
     inline bool endsWith(const std::basic_string<CharType>& phrase, bool isCaseSensitive = true) const;
 
     /**
      * \brief   Checks and returns true if the string ends with the given phrase.
+     *          Valid only the first 256 characters based on UTF-8 code page.
      * \param phrase            The phrase to check.
-     * \param isCaseSensitive   If false, ignores the upper and lower cases. Valid only for ASCII strings.
+     * \param isCaseSensitive   If false, ignores the upper and lower cases.
      **/
     inline bool endsWith(const std::basic_string_view<CharType>& phrase, bool isCaseSensitive = true) const;
 
     /**
      * \brief   Checks and returns true if the string ends with the given phrase.
+     *          Valid only the first 256 characters based on UTF-8 code page.
      * \param phrase            The phrase to check.
-     * \param isCaseSensitive   If false, ignores the upper and lower cases. Valid only for ASCII strings.
+     * \param isCaseSensitive   If false, ignores the upper and lower cases.
      * \param count             The number of character in the phase. If NEString::COUNT_ALL it compare the complete phase.
      **/
     inline bool endsWith(const CharType* phrase, bool isCaseSensitive = true, NEString::CharCount count = NEString::COUNT_ALL) const;
@@ -1604,8 +1612,7 @@ inline bool TEString<CharType>::isNumeric(bool signIgnore /*= true*/) const
     // make sure the string is not empty
     if (*src != EmptyChar)
     {
-        std::locale loc(NEString::LOCALE_DEFAULT);
-        while (std::isdigit<CharType>(*src, loc))
+        while (std::isdigit(static_cast<int>(*src)) != 0)
             ++src;
 
         result = *src == EmptyChar;
@@ -1617,9 +1624,8 @@ inline bool TEString<CharType>::isNumeric(bool signIgnore /*= true*/) const
 template<typename CharType>
 inline bool TEString<CharType>::isAlphanumeric(void) const
 {
-    std::locale loc(NEString::LOCALE_DEFAULT );
     const CharType* src = mData.c_str();
-    while (std::isalnum<CharType>(*src, loc))
+    while (std::isalnum(static_cast<int>(*src)) != 0)
         ++src;
 
     return (*src == EmptyChar); // reached end of the string.
@@ -1630,7 +1636,7 @@ inline bool TEString<CharType>::isValidNameChar(const CharType checkChar) const
 {
     // initialize list of symbols for the valid names.
     constexpr CharType symbols[] = { '_', '\0'};
-    return std::isalnum(checkChar, std::locale(NEString::LOCALE_DEFAULT)) || NEString::isOneOf<CharType>(checkChar, symbols);
+    return (std::isalnum(static_cast<int>(checkChar)) != 0) || NEString::isOneOf<CharType>(checkChar, symbols);
 }
 
 template<typename CharType>
@@ -1825,11 +1831,10 @@ NEString::CharPos TEString<CharType>::findFirst( CharType chSearch
     if (isValidPosition(startPos) == false)
         return NEString::INVALID_POS;
 
-    std::locale loc(NEString::LOCALE_DEFAULT);
     const CharType* str = getBuffer(startPos);
-    CharType chUpper = caseSensitive ? chSearch : std::toupper(chSearch, loc);
-    CharType chLower = caseSensitive ? chSearch : std::tolower(chSearch, loc);
-
+    CharType chUpper = caseSensitive ? chSearch : static_cast<CharType>(std::toupper(static_cast<int>(chSearch)));
+    CharType chLower = caseSensitive ? chSearch : static_cast<CharType>(std::tolower(static_cast<int>(chSearch)));
+   
     while ((*str != EmptyChar) && (*str != chUpper) && (*str != chLower))
     {
         ++str;
@@ -1904,9 +1909,8 @@ NEString::CharPos TEString<CharType>::findLast(CharType chSearch, NEString::Char
     }
     else
     {
-        std::locale loc(NEString::LOCALE_DEFAULT);
-        CharType chUpper = std::toupper(chSearch, loc);
-        CharType chLower = std::tolower(chSearch, loc);
+        CharType chUpper = static_cast<CharType>(std::toupper(static_cast<int>(chSearch)));
+        CharType chLower = static_cast<CharType>(std::tolower(static_cast<int>(chSearch)));
 
         while ((end >= begin) && (*end != chUpper) && (*end != chLower))
         {
@@ -1970,7 +1974,6 @@ NEMath::eCompare TEString<CharType>::compare(const CharType* what, NEString::Cha
         const CharType* current = getBuffer(startAt);
         const CharType* other = what;
 
-        std::locale loc;
         result = NEMath::eCompare::Equal;
 
         CharType ch1{ EmptyChar };
@@ -1981,8 +1984,8 @@ NEMath::eCompare TEString<CharType>::compare(const CharType* what, NEString::Cha
             ch2 = *other++;
             if (caseSensitive == false)
             {
-                ch1 = std::tolower(ch1, loc);
-                ch2 = std::tolower(ch2, loc);
+                ch1 = static_cast<CharType>(std::tolower(static_cast<int>(ch1)));
+                ch2 = static_cast<CharType>(std::tolower(static_cast<int>(ch2)));
             }
 
             if (ch1 != ch2)
@@ -2596,10 +2599,9 @@ inline TEString<CharType>& TEString<CharType>::trimLeft(void)
     if (mData.empty() == false)
     {
         uint32_t count = 0;
-        std::locale loc(NEString::LOCALE_DEFAULT);
         for (const auto& ch : mData)
         {
-            if (std::isspace<CharType>(ch, loc) == false)
+            if (std::isspace(static_cast<int>(ch)) == 0)
                 break;
 
             ++count;
@@ -2627,10 +2629,9 @@ inline void TEString<CharType>::trimLeft(std::basic_string<CharType>& OUT strRes
     if (mData.empty() == false)
     {
         uint32_t count = 0;
-        std::locale loc(NEString::LOCALE_DEFAULT);
         for (const auto& ch : mData)
         {
-            if (std::isspace<CharType>(ch, loc) == false)
+            if (std::isspace(static_cast<int>(ch)) == 0)
                 break;
 
             ++count;
@@ -2649,10 +2650,9 @@ inline TEString<CharType>& TEString<CharType>::trimRight(void)
     if (mData.empty() == false)
     {
         uint32_t count = 0;
-        std::locale loc(NEString::LOCALE_DEFAULT);
         for (auto cit = mData.crbegin(); cit != mData.crend(); ++cit)
         {
-            if (std::isspace<CharType>(*cit, loc) == false)
+            if (std::isspace(static_cast<int>(*cit)) == 0)
                 break;
 
             ++count;
@@ -2680,10 +2680,9 @@ inline void TEString<CharType>::trimRight(std::basic_string<CharType>& OUT strRe
     if (mData.empty() == false)
     {
         uint32_t count = 0;
-        std::locale loc(NEString::LOCALE_DEFAULT);
         for (auto cit = mData.crbegin(); cit != mData.crend(); ++cit)
         {
-            if (std::isspace<CharType>(*cit, loc) == false)
+            if (std::isspace(static_cast<int>(*cit)) == 0)
                 break;
 
             ++count;
@@ -2702,12 +2701,11 @@ inline TEString<CharType>& TEString<CharType>::trimAll(void)
     if (mData.empty() == false)
     {
         uint32_t length = static_cast<uint32_t>(mData.length());
-        std::locale loc(NEString::LOCALE_DEFAULT);
 
         uint32_t left = 0;
         for (auto cit = mData.cbegin(); cit != mData.cend(); ++cit)
         {
-            if (std::isspace<CharType>(*cit, loc) == false)
+            if (std::isspace(static_cast<int>(*cit)) == 0)
                 break;
 
             ++left;
@@ -2716,7 +2714,7 @@ inline TEString<CharType>& TEString<CharType>::trimAll(void)
         uint32_t right = 0;
         for (auto cit = mData.crbegin(); cit != mData.crend(); ++cit)
         {
-            if (std::isspace<CharType>(*cit, loc) == false)
+            if (std::isspace(static_cast<int>(*cit)) == 0)
                 break;
 
             ++right;
@@ -2748,12 +2746,11 @@ inline void TEString<CharType>::trimAll(std::basic_string<CharType>& OUT strResu
     if (mData.empty() == false)
     {
         uint32_t length = static_cast<uint32_t>(mData.length());
-        std::locale loc(NEString::LOCALE_DEFAULT);
 
         uint32_t left = 0;
         for (auto cit = mData.cbegin(); cit != mData.cend(); ++cit)
         {
-            if (std::isspace<CharType>(*cit, loc) == false)
+            if (std::isspace(static_cast<int>(*cit)) == 0)
                 break;
 
             ++left;
@@ -2762,7 +2759,7 @@ inline void TEString<CharType>::trimAll(std::basic_string<CharType>& OUT strResu
         uint32_t right = 0;
         for (auto cit = mData.crbegin(); cit != mData.crend(); ++cit)
         {
-            if (std::isspace<CharType>(*cit, loc) == false)
+            if (std::isspace(static_cast<int>(*cit)) == 0)
                 break;
 
             ++right;
@@ -2778,10 +2775,9 @@ inline void TEString<CharType>::trimAll(std::basic_string<CharType>& OUT strResu
 template<typename CharType>
 inline TEString<CharType> & TEString<CharType>::makeLower( void )
 {
-    std::locale loc(NEString::LOCALE_DEFAULT);
     for (CharType * src = mData.data(); *src != TEString<CharType>::EmptyChar; ++src)
     {
-        *src = std::tolower(*src, loc);
+        *src = static_cast<CharType>(std::tolower(static_cast<int>(*src)));
     }
 
     return (*this);
@@ -2790,10 +2786,9 @@ inline TEString<CharType> & TEString<CharType>::makeLower( void )
 template<typename CharType>
 inline TEString<CharType> & TEString<CharType>::makeUpper( void )
 {
-    std::locale loc(NEString::LOCALE_DEFAULT);
     for (CharType * src = mData.data(); *src != TEString<CharType>::EmptyChar; ++src)
     {
-        *src = std::toupper(*src, loc);
+        *src = static_cast<CharType>(std::toupper(static_cast<int>(*src)));
     }
 
     return (*this);
@@ -2849,14 +2844,14 @@ inline TEString<CharType>& TEString<CharType>::makeAlphanumeric(void)
 {
     if (mData.empty() == false)
     {
-        std::locale loc(NEString::LOCALE_ASCII);
         CharType* begin = getBuffer(NEString::START_POS);
         CharType* dst = begin;
         for (const CharType* src = begin; *src != static_cast<CharType>(NEString::EndOfString); ++src)
         {
-            if (std::isalnum<CharType>(*src, loc))
+            if (std::isalnum(static_cast<int>(*src)) != 0)
                 *dst++ = *src;
         }
+
         *dst = static_cast<CharType>(NEString::EndOfString);
         mData.resize(static_cast<uint32_t>(dst - begin));
     }
@@ -2921,12 +2916,10 @@ inline NEMath::eCompare TEString<CharType>::compareStringIgnoreCase( NEString::C
             const CharType* leftSide = getBuffer(startPos);
             const CharType* rightSide = strOther;
 
-            std::locale loc(NEString::LOCALE_DEFAULT);
-
             while (count-- > 0)
             {
-                chLeft  = std::tolower(*leftSide ++, loc);
-                chRight = std::tolower(*rightSide ++, loc);
+                chLeft  = static_cast<CharType>(std::tolower(static_cast<int>(*leftSide ++)));
+                chRight = static_cast<CharType>(std::tolower(static_cast<int>(*rightSide ++)));
                 if (chLeft != chRight)
                 {
                     break;
@@ -3017,10 +3010,9 @@ inline NEString::CharPos TEString<CharType>::findFirstPhraseIgnoreCase(const std
     else if ((mData.length() - static_cast<uint32_t>(startPos)) < phrase.length())
         return NEString::END_POS;
 
-    std::locale loc(NEString::LOCALE_DEFAULT);
     auto it = std::search( mData.begin() + static_cast<int32_t>(startPos), mData.end()
                          , phrase.begin(), phrase.end()
-                         , [&](const CharType& ch1, const CharType& ch2) { return (std::tolower(ch1, loc) == std::tolower(ch2, loc)); }
+                         , [&](const CharType& ch1, const CharType& ch2) { return (std::tolower(static_cast<int>(ch1)) == std::tolower(static_cast<int>(ch2))); }
                          );
 
     return (it != mData.end() ? static_cast<NEString::CharPos>(std::distance(mData.begin(), it)) : NEString::END_POS);
@@ -3042,14 +3034,13 @@ inline NEString::CharPos TEString<CharType>::findFirstWord(const std::basic_stri
     else if ((mData.length() - static_cast<uint32_t>(startPos)) < word.length())
         return NEString::END_POS;
 
-    std::locale loc(NEString::LOCALE_DEFAULT);
 
     NEString::CharPos result = NEString::END_POS;
     while (result == NEString::END_POS)
     {
         auto it = std::search( mData.begin() + static_cast<int32_t>(startPos), mData.end()
                              , word.begin(), word.end()
-                             , [&](const CharType& ch1, const CharType& ch2){ return (caseSensitive ? ch1 == ch2 : std::tolower(ch1, loc) == std::tolower(ch2, loc)); }
+                             , [&](const CharType& ch1, const CharType& ch2){ return (caseSensitive ? ch1 == ch2 : std::tolower(static_cast<int>(ch1)) == std::tolower(static_cast<int>(ch2))); }
                              );
 
         if (it == mData.end())
@@ -3066,7 +3057,7 @@ inline NEString::CharPos TEString<CharType>::findFirstWord(const std::basic_stri
         CharType chPrev  = it == mData.begin() ? EmptyChar : *(it - 1);
         // One of them must be beginning of the word.
         // Example: search "word" or " word" in sentence "This is a word";
-        bool isBegin = !isValidNameChar(chBegin, loc) || !isValidNameChar(chPrev, loc);
+        bool isBegin = !isValidNameChar(chBegin) || !isValidNameChar(chPrev);
 
         // Take last char
         it += static_cast<int32_t>(word.length());
@@ -3075,7 +3066,7 @@ inline NEString::CharPos TEString<CharType>::findFirstWord(const std::basic_stri
         CharType chNext = (it != mData.end()) && ((it + 1) != mData.end()) ? *(it + 1) : EmptyChar;
         // One of them must be end of the word.
         // Example: search "word" or "word!" in sentence "This is a word!";
-        bool isEnd      = !isValidNameChar(chEnd, loc) || !isValidNameChar(chNext, loc);
+        bool isEnd      = !isValidNameChar(chEnd) || !isValidNameChar(chNext);
 
         if (isBegin && isEnd)
         {
@@ -3234,10 +3225,9 @@ inline bool TEString<CharType>::_hasPhrase(const CharType* fullString, const Cha
     }
     else
     {
-        std::locale loc(locale);
         for (; *phrase != TEString<CharType>::EmptyChar; ++phrase, ++fullString)
         {
-            if (std::tolower<CharType>(*phrase, loc) != std::tolower<CharType>(*fullString, loc))
+            if (std::tolower(static_cast<int>(*phrase)) != std::tolower(static_cast<int>(*fullString)))
             {
                 result = false;
                 break;

@@ -72,6 +72,7 @@ void ServiceClient::responseHelloWorld(const NEHelloWorld::sConnectedClient & cl
     mID = clientInfo.ccID;
 }
 
+#if AREG_LOGS
 void ServiceClient::broadcastReachedMaximum( int maxNumber )
 {
     TRACE_SCOPE(examples_12_pubclient_ServiceClient_broadcastReachedMaximum);
@@ -79,6 +80,13 @@ void ServiceClient::broadcastReachedMaximum( int maxNumber )
     requestShutdownService(mID, getRoleName());
     mID = 0;
 }
+#else   // AREG_LOGS
+void ServiceClient::broadcastReachedMaximum( int /*maxNumber*/ )
+{
+    requestShutdownService(mID, getRoleName());
+    mID = 0;
+}
+#endif  // AREG_LOGS
 
 void ServiceClient::processTimer(Timer & timer)
 {

@@ -4,6 +4,7 @@ addUnitTest("${AREG_UNIT_TEST_PROJECT}"
     ${AREG_UNIT_TEST_BASE}/DateTimeTest.cpp
     ${AREG_UNIT_TEST_BASE}/FileTest.cpp
     ${AREG_UNIT_TEST_BASE}/LogScopesTest.cpp
+    ${AREG_UNIT_TEST_BASE}/NEStringTest.cpp
     ${AREG_UNIT_TEST_BASE}/OptionParserTest.cpp
     ${AREG_UNIT_TEST_BASE}/StringUtilsTest.cpp
     ${AREG_UNIT_TEST_BASE}/TEArrayListTest.cpp
