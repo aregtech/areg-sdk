@@ -29,7 +29,8 @@ else(AREG_BINARY MATCHES "static")
     set_property(TARGET areg PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${AREG_OUTPUT_LIB})
 
 endif()
-add_dependencies(areg dummy)
+# add a dependency to make sure that output folders exist during build time.
+add_dependencies(areg areg-dummy)
 
 if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
     target_compile_options(areg PRIVATE -fPIC)

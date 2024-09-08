@@ -182,8 +182,11 @@ message(STATUS ">>> Java ${Java_VERSION_STRING} at location ${Java_JAVA_EXECUTAB
 message(STATUS "-------------------- CMakeLists Status Report End ----------------------")
 message(STATUS CMAKE_SOURCE_DIR = ${CMAKE_SOURCE_DIR})
 
-add_custom_target(dummy ALL COMMAND ${CMAKE_COMMAND} VERBATIM)
-add_custom_command( TARGET dummy PRE_BUILD
+# add a custom command to create output build folders if they are not existing.
+# create a dummy project to add as a dependency in all other projects.
+# this ensures that the commands to create directories are called first.
+add_custom_target(areg-dummy ALL COMMAND ${CMAKE_COMMAND} VERBATIM)
+add_custom_command( TARGET areg-dummy PRE_BUILD
                     COMMAND ${CMAKE_COMMAND} -E make_directory "${AREG_OUTPUT_DIR}"
                     COMMAND ${CMAKE_COMMAND} -E make_directory "${AREG_OUTPUT_BIN}"
                     COMMAND ${CMAKE_COMMAND} -E make_directory "${AREG_OUTPUT_LIB}"

@@ -39,7 +39,7 @@ function(addExecutableEx target_name source_list library_list)
     add_executable(${target_name} ${source_list})
     setAppOptions(${target_name} "${library_list}")
     target_include_directories(${target_name}  BEFORE PRIVATE ${CMAKE_CURRENT_LIST_DIR})
-    add_dependencies(${target_name} dummy)
+    add_dependencies(${target_name} areg-dummy)
 endfunction(addExecutableEx)
 
 # ---------------------------------------------------------------------------
@@ -101,7 +101,7 @@ function(addStaticLibEx target_name source_list library_list)
     add_library(${target_name} STATIC ${source_list})
     setStaticLibOptions(${target_name} "${library_list}")
     target_include_directories(${target_name}  BEFORE PRIVATE ${CMAKE_CURRENT_LIST_DIR})    
-    add_dependencies(${target_name} dummy)
+    add_dependencies(${target_name} areg-dummy)
 endfunction(addStaticLibEx)
 
 # ---------------------------------------------------------------------------
@@ -148,7 +148,7 @@ function(addStaticLibEx_C target_name source_list library_list)
     # set_target_properties(${target_name} PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON )
     set_property(TARGET ${target_name} PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${AREG_OUTPUT_LIB})
     target_include_directories(${target_name}  BEFORE PRIVATE ${CMAKE_CURRENT_LIST_DIR})    
-    add_dependencies(${target_name} dummy)
+    add_dependencies(${target_name} areg-dummy)
 endfunction(addStaticLibEx_C)
 
 # ---------------------------------------------------------------------------
@@ -208,7 +208,7 @@ function(addSharedLibEx target_name source_list library_list)
     add_library(${target_name} SHARED ${source_list})
     setSharedLibOptions(${target_name} "${library_list}")
     target_include_directories(${target_name}  BEFORE PRIVATE ${CMAKE_CURRENT_LIST_DIR})    
-    add_dependencies(${target_name} dummy)
+    add_dependencies(${target_name} areg-dummy)
 endfunction(addSharedLibEx)
 
 # ---------------------------------------------------------------------------
