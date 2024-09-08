@@ -29,6 +29,7 @@ else(AREG_BINARY MATCHES "static")
     set_property(TARGET areg PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${AREG_OUTPUT_LIB})
 
 endif()
+add_dependencies(areg dummy)
 
 if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
     target_compile_options(areg PRIVATE -fPIC)
@@ -95,16 +96,29 @@ else (AREG_LOGOBSERVER_LIB MATCHES "static")
 endif()
 target_compile_options(logobserver PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")
 
-# copying log and router init files to 'bin/config'
-file(MAKE_DIRECTORY ${AREG_OUTPUT_BIN}/config)
-file(COPY ${AREG_BASE}/areg/resources/areg.init DESTINATION ${AREG_OUTPUT_BIN}/config)
+if (NOT EXISTS "${AREG_OUTPUT_BIN}/config/areg.init")
+    # copying log and router init files to 'bin/config'
+    add_custom_command( TARGET areg POST_BUILD 
+                        COMMAND ${CMAKE_COMMAND} -E make_directory ${AREG_OUTPUT_BIN}/config
+                        COMMAND ${CMAKE_COMMAND} -E copy ${AREG_BASE}/areg/resources/areg.init ${AREG_OUTPUT_BIN}/config/areg.init
+                        VERBATIM)
+endif()
 
-if("${AREG_DEVELOP_ENV}" STREQUAL "Win32")
-    file(COPY ${mcrouter_RESOURCE}/mcrouter_install.bat DESTINATION ${AREG_OUTPUT_BIN}/)
-    file(COPY ${mcrouter_RESOURCE}/mcrouter_uninstall.bat DESTINATION ${AREG_OUTPUT_BIN}/)
-    file(COPY ${logger_RESOURCE}/logger_install.bat DESTINATION ${AREG_OUTPUT_BIN}/)
-    file(COPY ${logger_RESOURCE}/logger_uninstall.bat DESTINATION ${AREG_OUTPUT_BIN}/)
+if("${AREG_DEVELOP_ENV}" STREQUAL "Win32" OR ${CYGWIN})
+    add_custom_command( TARGET mcrouter POST_BUILD
+                        COMMAND ${CMAKE_COMMAND} -E copy ${mcrouter_RESOURCE}/mcrouter_install.bat  ${AREG_OUTPUT_BIN}/mcrouter_install.bat
+                        COMMAND ${CMAKE_COMMAND} -E copy ${mcrouter_RESOURCE}/mcrouter_uninstall.bat ${AREG_OUTPUT_BIN}/mcrouter_uninstall.bat
+                        VERBATIM)
+
+    add_custom_command( TARGET logger POST_BUILD
+                        COMMAND ${CMAKE_COMMAND} -E copy ${logger_RESOURCE}/logger_install.bat  ${AREG_OUTPUT_BIN}/logger_install.bat
+                        COMMAND ${CMAKE_COMMAND} -E copy ${logger_RESOURCE}/logger_uninstall.bat ${AREG_OUTPUT_BIN}/logger_uninstall.bat
+                        VERBATIM)
 else()
-    file(COPY ${mcrouter_RESOURCE}/mcrouter.service DESTINATION ${AREG_OUTPUT_BIN}/)
-    file(COPY ${logger_RESOURCE}/logger.service DESTINATION ${AREG_OUTPUT_BIN}/)
+    add_custom_command( TARGET mcrouter POST_BUILD
+                        COMMAND ${CMAKE_COMMAND} -E copy ${mcrouter_RESOURCE}/mcrouter.service ${AREG_OUTPUT_BIN}/mcrouter.service
+                        VERBATIM)
+    add_custom_command( TARGET logger POST_BUILD
+                        COMMAND ${CMAKE_COMMAND} -E copy ${logger_RESOURCE}/logger.service  ${AREG_OUTPUT_BIN}/logger.service
+                        VERBATIM)
 endif()

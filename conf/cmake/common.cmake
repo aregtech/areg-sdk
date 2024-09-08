@@ -181,3 +181,10 @@ message(STATUS ">>> Build examples is '${AREG_BUILD_EXAMPLES}', build tests is '
 message(STATUS ">>> Java ${Java_VERSION_STRING} at location ${Java_JAVA_EXECUTABLE} is required by code generator. Minimum version 17")
 message(STATUS "-------------------- CMakeLists Status Report End ----------------------")
 message(STATUS CMAKE_SOURCE_DIR = ${CMAKE_SOURCE_DIR})
+
+add_custom_target(dummy ALL COMMAND ${CMAKE_COMMAND} VERBATIM)
+add_custom_command( TARGET dummy PRE_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E make_directory "${AREG_OUTPUT_DIR}"
+                    COMMAND ${CMAKE_COMMAND} -E make_directory "${AREG_OUTPUT_BIN}"
+                    COMMAND ${CMAKE_COMMAND} -E make_directory "${AREG_OUTPUT_LIB}"
+                    VERBATIM)
