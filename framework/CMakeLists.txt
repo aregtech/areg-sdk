@@ -97,15 +97,13 @@ else (AREG_LOGOBSERVER_LIB MATCHES "static")
 endif()
 target_compile_options(logobserver PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")
 
-if (NOT EXISTS "${AREG_OUTPUT_BIN}/config/areg.init")
-    # copying log and router init files to 'bin/config'
-    add_custom_command( TARGET areg POST_BUILD 
-                        COMMAND ${CMAKE_COMMAND} -E make_directory ${AREG_OUTPUT_BIN}/config
-                        COMMAND ${CMAKE_COMMAND} -E copy ${AREG_BASE}/areg/resources/areg.init ${AREG_OUTPUT_BIN}/config/areg.init
-                        VERBATIM)
-endif()
+# copying log and router init files to 'bin/config'
+add_custom_command( TARGET areg POST_BUILD 
+                    COMMAND ${CMAKE_COMMAND} -E make_directory ${AREG_OUTPUT_BIN}/config
+                    COMMAND ${CMAKE_COMMAND} -E copy ${AREG_BASE}/areg/resources/areg.init ${AREG_OUTPUT_BIN}/config/areg.init
+                    VERBATIM)
 
-if("${AREG_DEVELOP_ENV}" STREQUAL "Win32" OR ${CYGWIN})
+if("${AREG_DEVELOP_ENV}" STREQUAL "Win32" OR CYGWIN)
     add_custom_command( TARGET mcrouter POST_BUILD
                         COMMAND ${CMAKE_COMMAND} -E copy ${mcrouter_RESOURCE}/mcrouter_install.bat  ${AREG_OUTPUT_BIN}/mcrouter_install.bat
                         COMMAND ${CMAKE_COMMAND} -E copy ${mcrouter_RESOURCE}/mcrouter_uninstall.bat ${AREG_OUTPUT_BIN}/mcrouter_uninstall.bat
