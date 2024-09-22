@@ -166,8 +166,6 @@ else()
     set(COMMON_COMPILE_DEF IMP_AREG_DLL)
 endif()
 
-set(FETCHCONTENT_BASE_DIR "${AREG_PACKAGES}" CACHE PATH "Location of AREG thirdparty packages" FORCE)
-
 find_package(Java COMPONENTS Runtime)
 if (NOT ${Java_FOUND})
     find_package(Java COMPONENTS Development)
@@ -179,5 +177,6 @@ message(STATUS ">>> Binary output folder '${AREG_OUTPUT_BIN}', executable extens
 message(STATUS ">>> Generated files location '${AREG_GENERATE_DIR}', library output folder '${AREG_OUTPUT_LIB}'")
 message(STATUS ">>> Build examples is '${AREG_BUILD_EXAMPLES}', build tests is '${AREG_BUILD_TESTS}', AREG extended features are '${AREG_EXTENDED}', compile with logs '${AREG_LOGS}'")
 message(STATUS ">>> Java ${Java_VERSION_STRING} at location ${Java_JAVA_EXECUTABLE} is required by code generator. Minimum version 17")
+message(STATUS ">>> Fetched projects are located in the \'${FETCHCONTENT_BASE_DIR}\' directory")
 message(STATUS "-------------------- CMakeLists Status Report End ----------------------")
 message(STATUS CMAKE_SOURCE_DIR = ${CMAKE_SOURCE_DIR})
