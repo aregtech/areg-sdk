@@ -186,14 +186,21 @@ if (NOT DEFINED AREG_LOGS)
     option(AREG_LOGS "Compile with logs" ON)
 endif()
 
-# Set the areg-sdk build root folder to output files.
-if (NOT DEFINED AREG_BUILD_ROOT OR "${AREG_BUILD_ROOT}" STREQUAL "")
-    set(AREG_BUILD_ROOT "${AREG_SDK_ROOT}/product")
-endif()
-
 # Set the areg log observer API library type.
 if (NOT DEFINED AREG_LOGOBSERVER_LIB OR NOT "${AREG_LOGOBSERVER_LIB}" STREQUAL "static")
     set(AREG_LOGOBSERVER_LIB "shared")
+endif()
+
+if (DEFINED PROJECT_BUILD_ROOT AND NOT "${PROJECT_BUILD_ROOT}" STREQUAL "")
+    # Set the areg-sdk build root folder to output files.
+    if (NOT DEFINED AREG_BUILD_ROOT OR "${AREG_BUILD_ROOT}" STREQUAL "")
+        set(AREG_BUILD_ROOT "${PROJECT_BUILD_ROOT}/product")
+    endif()
+else()
+    # Set the areg-sdk build root folder to output files.
+    if (NOT DEFINED AREG_BUILD_ROOT OR "${AREG_BUILD_ROOT}" STREQUAL "")
+        set(AREG_BUILD_ROOT "${PROJECT_SOURCE_DIR}/product")
+    endif()
 endif()
 
 if (NOT DEFINED AREG_PACKAGES OR "${AREG_PACKAGES}" STREQUAL "")

@@ -8,12 +8,14 @@ cmake_minimum_required(VERSION 3.20.0)
 # Areg root directory
 set(AREG_SDK_ROOT           "${CMAKE_CURRENT_LIST_DIR}")
 set(AREG_CMAKE_CONFIG_DIR   "${AREG_SDK_ROOT}/conf/cmake")
-set(AREG_BASE               "${AREG_SDK_ROOT}/framework")
-set(AREG_EXAMPLES           "${AREG_SDK_ROOT}/examples")
-set(AREG_TESTS              "${AREG_SDK_ROOT}/tests")
-set(AREG_THIRDPARTY         "${AREG_SDK_ROOT}/thirdparty")
-set(AREG_SDK_TOOLS			"${AREG_SDK_ROOT}/tools")
 
+# set(AREG_BASE               "${AREG_SDK_ROOT}/framework")
+# set(AREG_EXAMPLES           "${AREG_SDK_ROOT}/examples")
+# set(AREG_TESTS              "${AREG_SDK_ROOT}/tests")
+# set(AREG_THIRDPARTY         "${AREG_SDK_ROOT}/thirdparty")
+# set(AREG_SDK_TOOLS			"${AREG_SDK_ROOT}/tools")
+
+include(${AREG_CMAKE_CONFIG_DIR}/structure.cmake)
 include(${AREG_CMAKE_CONFIG_DIR}/functions.cmake)
 include(${AREG_CMAKE_CONFIG_DIR}/user.cmake)
 
