@@ -1,0 +1,10 @@
+{
+    "name": "areg-sdk",
+    "port-version": 0,
+    "homepage": "https://aregtech.com",
+    "description": "AREG is an asynchronous communication engine to simplify multiprocessing programming.",
+    "dependencies": [
+    ],
+    "features": {
+    }
+}

@@ -1,0 +1,8 @@
+{
+  "default": {
+    "areg-sdk": {
+      "baseline": "0",
+      "port-version": 0
+    }
+  }
+}
