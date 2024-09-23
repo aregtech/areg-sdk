@@ -10,8 +10,8 @@
 # ###########################################################################
 
 # Make sure that AREG_SDK_ROOT is set
-if (NOT DEFINED AREG_SDK_ROOT)
-    message(ERROR ">>> Set AREG_SDK_ROOT before including \'variable.cmake\' file")
+if (NOT DEFINED AREG_SDK_ROOT OR "${AREG_SDK_ROOT}" STREQUAL "")
+    message(FATAL_ERROR ">>> Set AREG_SDK_ROOT before including \'setup.cmake\' file. Stops building project.")
 endif()
 
 # The location of cmake configuration files.

@@ -81,6 +81,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "cmake", "cmake", "{5E95D089
 		conf\cmake\functions.cmake = conf\cmake\functions.cmake
 		conf\cmake\gnu.cmake = conf\cmake\gnu.cmake
 		conf\cmake\msvc.cmake = conf\cmake\msvc.cmake
+		conf\cmake\setup.cmake = conf\cmake\setup.cmake
 		conf\cmake\user.cmake = conf\cmake\user.cmake
 	EndProjectSection
 EndProject
