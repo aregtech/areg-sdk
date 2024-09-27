@@ -50,7 +50,6 @@ list(APPEND areg_SRC
 	${areg_BASE}/component/private/StubConnectEvent.cpp
 	${areg_BASE}/component/private/StubEvent.cpp
 	${areg_BASE}/component/private/TEEvent.cpp
-	${areg_BASE}/component/private/ThreadEventBase.cpp
 	${areg_BASE}/component/private/Timer.cpp
 	${areg_BASE}/component/private/TimerBase.cpp
 	${areg_BASE}/component/private/TimerEventData.cpp

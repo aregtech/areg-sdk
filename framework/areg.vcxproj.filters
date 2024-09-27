@@ -300,9 +300,6 @@
     <ClCompile Include="areg\component\private\StubEvent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\component\private\ThreadEventBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\component\private\Timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -876,9 +873,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\component\private\ServiceManagerEvents.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\component\private\ThreadEventBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\component\private\ClientInfo.hpp">

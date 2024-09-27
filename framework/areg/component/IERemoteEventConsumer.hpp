@@ -19,6 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
+#include "areg/component/IEEventConsumer.hpp"
 #include "areg/component/StreamableEvent.hpp"
 
 /************************************************************************
@@ -36,7 +37,7 @@ class RemoteResponseEvent;
  * \brief   The interface of remote event consumer. Derived by Stub object
  *          with type of remote to trigger event processing.
  **/
-class AREG_API IERemoteEventConsumer   : public    ThreadEventConsumerBase
+class AREG_API IERemoteEventConsumer   : public    IEEventConsumer
 {
 protected:
     /**

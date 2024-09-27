@@ -162,7 +162,6 @@
     <ClCompile Include="areg\component\private\StubAddress.cpp" />
     <ClCompile Include="areg\component\private\StubBase.cpp" />
     <ClCompile Include="areg\component\private\Channel.cpp" />
-    <ClCompile Include="areg\component\private\ThreadEventBase.cpp" />
     <ClCompile Include="areg\component\private\Timer.cpp" />
     <ClCompile Include="areg\component\private\IETimerConsumer.cpp" />
     <ClCompile Include="areg\component\private\TimerEventData.cpp" />
@@ -310,7 +309,6 @@
     <ClInclude Include="areg\component\StubBase.hpp" />
     <ClInclude Include="areg\base\SynchObjects.hpp" />
     <ClInclude Include="areg\base\Thread.hpp" />
-    <ClInclude Include="areg\component\private\ThreadEventBase.hpp" />
     <ClInclude Include="areg\base\ThreadLocalStorage.hpp" />
     <ClInclude Include="areg\component\Timer.hpp" />
     <ClInclude Include="areg\component\IETimerConsumer.hpp" />

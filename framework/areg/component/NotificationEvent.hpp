@@ -23,7 +23,8 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/component/private/ThreadEventBase.hpp"
+#include "areg/component/Event.hpp"
+#include "areg/component/IEEventConsumer.hpp"
 #include "areg/component/NEService.hpp"
 
 /************************************************************************
@@ -199,7 +200,7 @@ private:
  *          The state-machines as well use internal notification events
  *          when generate event to trigger in state-machine.
  **/
-class AREG_API NotificationEvent   : public ThreadEventBase
+class AREG_API NotificationEvent   : public Event
 {
 //////////////////////////////////////////////////////////////////////////
 // NotificationEvent class, Declare Runtime Event
@@ -287,7 +288,7 @@ private:
  *          Notification Event Consumer to be able to receive and process
  *          notifications from proxies.
  **/
-class AREG_API IENotificationEventConsumer  : public ThreadEventConsumerBase
+class AREG_API IENotificationEventConsumer  : public IEEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -325,7 +326,7 @@ public:
 //////////////////////////////////////////////////////////////////////////
 private:
 /************************************************************************/
-// ThreadEventConsumerBase overrides
+// IEEventConsumer overrides
 /************************************************************************/
 
     /**

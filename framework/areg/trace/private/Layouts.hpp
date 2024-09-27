@@ -18,8 +18,8 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/trace/private/NELogging.hpp"
 #include "areg/base/String.hpp"
+#include "areg/trace/private/NELogging.hpp"
 
 #if AREG_LOGS
 

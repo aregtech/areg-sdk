@@ -27,8 +27,7 @@
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 BufferPosition::BufferPosition( IEByteBuffer & buffer )
-    : IECursorPosition  ( )
-    , mBuffer           ( buffer )
+    : mBuffer           ( buffer )
     , mPosition         ( IECursorPosition::INVALID_CURSOR_POSITION )
 {
 }
