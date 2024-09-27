@@ -84,7 +84,7 @@ NotificationEventData & NotificationEventData::operator = ( NotificationEventDat
 //////////////////////////////////////////////////////////////////////////
 // NotificationEvent class, implement runtime
 //////////////////////////////////////////////////////////////////////////
-IMPLEMENT_RUNTIME_EVENT(NotificationEvent, ThreadEventBase)
+IMPLEMENT_RUNTIME_EVENT(NotificationEvent, Event)
 
 //////////////////////////////////////////////////////////////////////////
 // NotificationEvent class, static methods
@@ -104,8 +104,8 @@ void NotificationEvent::sendEvent( const NotificationEventData& data, IENotifica
 // NotificationEvent class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 NotificationEvent::NotificationEvent( const NotificationEventData& data )
-    : ThreadEventBase (Event::eEventType::EventNotifyClient)
-    , mData             (data)
+    : Event (Event::eEventType::EventNotifyClient)
+    , mData (data)
 {
     setTargetThread();
 }

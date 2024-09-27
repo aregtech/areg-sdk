@@ -59,11 +59,6 @@ public:
 public:
 
     /**
-     * \brief   Returns the list of registered service providers that contain the list of service consumers.
-     **/
-    inline const ServerList & getRegisteredServiceList( void ) const;
-
-    /**
      * \brief   Called to process Service Manager event.
      * \param   cmdService          The command of Service Manager event to process.
      * \param   stream              The streaming object to de-serialize data of objects.
@@ -75,10 +70,16 @@ public:
                             , IEServiceConnectionProvider& connectProvider
                             , IEServiceRegisterProvider & registerProvider );
 
+    /**
+     * \brief   Returns the list of registered service providers that contain the list of service consumers.
+     **/
+    inline const ServerList& getRegisteredServiceList(void) const;
+
 //////////////////////////////////////////////////////////////////////////
 // Hidden calls
 //////////////////////////////////////////////////////////////////////////
 private:
+
     /**
      * \brief   The function is called when it is requested to register the service provider.
      *          For example, when the service is created and need to be registered.

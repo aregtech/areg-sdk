@@ -88,8 +88,8 @@ IEOutStream & ProxyEvent::writeStream( IEOutStream & stream ) const
 // IEProxyEventConsumer class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 IEProxyEventConsumer::IEProxyEventConsumer( const ProxyAddress & proxy )
-    : ThreadEventConsumerBase   ( )
-    , mProxyAddress             ( proxy )
+    : IEEventConsumer   ( )
+    , mProxyAddress     ( proxy )
 {
 }
 

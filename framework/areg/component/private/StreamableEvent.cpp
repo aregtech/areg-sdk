@@ -22,18 +22,18 @@
 //////////////////////////////////////////////////////////////////////////
 // Runtime implementation
 //////////////////////////////////////////////////////////////////////////
-IMPLEMENT_RUNTIME_EVENT(StreamableEvent, ThreadEventBase)
+IMPLEMENT_RUNTIME_EVENT(StreamableEvent, Event)
 
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
 //////////////////////////////////////////////////////////////////////////
 StreamableEvent::StreamableEvent( Event::eEventType eventType )
-    : ThreadEventBase (eventType)
+    : Event (eventType)
 {
 }
 
 StreamableEvent::StreamableEvent( const IEInStream & stream )
-    : ThreadEventBase ( Event::eEventType::EventUnknown )
+    : Event ( Event::eEventType::EventUnknown )
 {
     stream >> Event::mEventType;
 }

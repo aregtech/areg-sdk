@@ -54,8 +54,8 @@
  *          to share data between different instances of thread.
  *          The instance of Shared Buffer can be used for data streaming.
  **/
-class AREG_API SharedBuffer : public BufferStreamBase  // This is data streaming object
-                            , public BufferPosition    // To control read and write operations
+class AREG_API SharedBuffer : public  BufferStreamBase  // This is data streaming object
+                            , public  IECursorPosition  // To control read and write operations
 {
     friend class FileBuffer;
 
@@ -229,6 +229,32 @@ public:
 //////////////////////////////////////////////////////////////////////////
 
 /************************************************************************/
+// IECursorPosition overrides
+/************************************************************************/
+    /**
+     * \brief	Returns the current position of pointer relative to begin in streaming data.
+     *          The valid position should not be equal to INVALID_CURSOR_POSITION.
+     *          Check current position validation before accessing data in streaming object.
+     * \return	Returns the current position of pointer relative to begin in streaming data.
+     **/
+    virtual unsigned int getPosition( void ) const override;
+
+    /**
+     * \brief	Sets the pointer position and returns current position in streaming data
+     *          The positive value of offset means move pointer forward.
+     *          The negative value of offset means move pointer back.
+     *
+     * \param	offset	The offset in bytes to move. Positive value means moving forward. Negative value means moving back.
+     * \param	startAt	Specifies the starting position of pointer and should have one of values:
+     *                  IECursorPosition::eCursorPosition::PositionBegin   -- position from the beginning of data
+     *                  IECursorPosition::eCursorPosition::PositionCurrent -- position from current pointer position
+     *                  IECursorPosition::eCursorPosition::PositionEnd     -- position from the end of file
+     *
+     * \return	If succeeds, returns the current position of pointer in bytes or value INVALID_CURSOR_POSITION if fails.
+     **/
+    virtual unsigned int setPosition( int offset, IECursorPosition::eCursorPosition startAt ) const override;
+
+/************************************************************************/
 // IEByteBuffer interface overrides, not implemented in BufferStreamBase
 /************************************************************************/
 
@@ -278,6 +304,12 @@ protected:
      *          This value is a constant and cannot be changed. Set during initialization.
      **/
     const unsigned int          mBlockSize;
+
+//////////////////////////////////////////////////////////////////////////
+// Hidden member variables
+//////////////////////////////////////////////////////////////////////////
+private:
+    BufferPosition              mBufferPosition;
 
 //////////////////////////////////////////////////////////////////////////
 // Local function member

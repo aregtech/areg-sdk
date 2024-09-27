@@ -20,7 +20,7 @@
  * Include files
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/component/private/ThreadEventBase.hpp"
+#include "areg/component/Event.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // StreamableEvent class declaration
@@ -33,7 +33,7 @@
  *          created and used directly. Instead, one of derived classes
  *          should be used.
  **/
-class AREG_API StreamableEvent : public ThreadEventBase
+class AREG_API StreamableEvent : public Event
 {
 //////////////////////////////////////////////////////////////////////////
 // friend classes

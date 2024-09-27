@@ -27,7 +27,7 @@
 /**
  * \brief   A service to output statistics..
  **/
-class RouterConsoleService  : public    SystemServiceConsole
+class RouterConsoleService  : private    SystemServiceConsole
 {
 public:
     //!< The console service role name

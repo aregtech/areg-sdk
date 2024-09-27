@@ -330,7 +330,7 @@ protected:
      *          This event is used to be able to notify client within component
      *          thread context even if client was instantiated in other thread.
      **/
-    class AREG_API ServiceAvailableEvent   : public ThreadEventBase
+    class AREG_API ServiceAvailableEvent   : public Event
     {
     //////////////////////////////////////////////////////////////////////////
     // Runtime internals
