@@ -65,8 +65,8 @@
     <None Include="logger\resources\logger.ico" />
     <None Include="logger\resources\logger.service" />
     <None Include="logger\resources\small.ico" />
-    <None Include="logger\resources\logger_install.bat" />
-    <None Include="logger\resources\logger_uninstall.bat" />
+    <None Include="logger\resources\logger.service.install.bat" />
+    <None Include="logger\resources\logger.service.uninstall.bat" />
     <None Include="logger\resources\logger_post_build.bat" />
   </ItemGroup>
   <ItemGroup>
