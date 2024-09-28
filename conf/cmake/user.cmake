@@ -220,11 +220,11 @@ if (NOT DEFINED AREG_INSTALL_PATH OR "${AREG_INSTALL_PATH}" STREQUAL "")
     set(TEMP1_VAL "$ENV{HOME}")
 
     if (NOT "${TEMP1_VAL}" STREQUAL "")
-        set(INST_PATH ${TEMP1_VAL})
+        file(TO_CMAKE_PATH "${TEMP1_VAL}" INST_PATH)
     else()
         set(TEMP1_VAL "$ENV{USERPROFILE}")
         if (NOT "${TEMP1_VAL}" STREQUAL "")
-            set(INST_PATH ${TEMP1_VAL})
+        file(TO_CMAKE_PATH "${TEMP1_VAL}" INST_PATH)
         endif()
     endif()
 
