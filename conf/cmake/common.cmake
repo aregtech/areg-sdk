@@ -153,7 +153,7 @@ set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${AREG_OUTPUT_DIR}
 include_directories(BEFORE "${AREG_BASE}" "${AREG_BUILD_ROOT}" "${AREG_GENERATE_DIR}" "${AREG_THIRDPARTY}")
 
 # Adding library search paths
-link_directories(BEFORE "./" "${AREG_OUTPUT_BIN}" "${AREG_OUTPUT_LIB}")
+link_directories(BEFORE "${AREG_OUTPUT_BIN}" "${AREG_OUTPUT_LIB}")
 
 # Only for Linux
 if(UNIX AND NOT CYGWIN)
@@ -166,8 +166,6 @@ if(AREG_BINARY MATCHES "static")
 else()
     set(COMMON_COMPILE_DEF IMP_AREG_DLL)
 endif()
-
-set(FETCHCONTENT_BASE_DIR "${AREG_PACKAGES}" CACHE PATH "Location of AREG thirdparty packages" FORCE)
 
 find_package(Java COMPONENTS Runtime)
 if (NOT ${Java_FOUND})
@@ -194,13 +192,3 @@ message(STATUS ">>> Installation ....: is set '${AREG_INSTALL}', thirdparty is '
 message(STATUS "=======================================================================================")
 message(STATUS "--------------------> AREG project CMakeLists Status Report End <----------------------")
 message(STATUS "=======================================================================================")
-
-# add a custom command to create output build folders if they are not existing.
-# create a dummy project to add as a dependency in all other projects.
-# this ensures that the commands to create directories are called first.
-add_custom_target(areg-dummy ALL COMMAND ${CMAKE_COMMAND} VERBATIM)
-add_custom_command( TARGET areg-dummy PRE_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E make_directory "${AREG_OUTPUT_DIR}"
-                    COMMAND ${CMAKE_COMMAND} -E make_directory "${AREG_OUTPUT_BIN}"
-                    COMMAND ${CMAKE_COMMAND} -E make_directory "${AREG_OUTPUT_LIB}"
-                    VERBATIM)
