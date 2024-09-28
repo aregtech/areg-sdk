@@ -1,4 +1,7 @@
+# ###########################################################################
 # MSVC compiler and linker options for Win32 API
+# Copyright 2022-2023 Aregtech
+# ###########################################################################
 
 message(STATUS ">>> Preparing compiler settings for `MSVC` and Win32 API")
 

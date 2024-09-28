@@ -1,4 +1,7 @@
+# ###########################################################################
 # GNU compiler and linker options for POSIX API
+# Copyright 2022-2023 Aregtech
+# ###########################################################################
 
 message(STATUS ">>> Preparing compiler settings for `GNU` with cygwin = '${CYGWIN}'")
 

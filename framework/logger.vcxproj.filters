@@ -44,13 +44,13 @@
     <None Include="logger\resources\logger.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="logger\resources\logger_install.bat">
+    <None Include="logger\resources\logger.service.install.bat">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="logger\resources\logger.service.uninstall.bat">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="logger\resources\logger_post_build.bat">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="logger\resources\logger_uninstall.bat">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="logger\resources\small.ico">

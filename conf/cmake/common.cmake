@@ -1,5 +1,6 @@
 # ###########################################################################
 # Common settings for all projects
+# Copyright 2022-2023 Aregtech
 # ###########################################################################
 
 if ("${AREG_COMPILER_FAMILY}" STREQUAL "")
@@ -152,7 +153,7 @@ set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${AREG_OUTPUT_DIR}
 include_directories(BEFORE "${AREG_BASE}" "${AREG_BUILD_ROOT}" "${AREG_GENERATE_DIR}" "${AREG_THIRDPARTY}")
 
 # Adding library search paths
-link_directories(BEFORE "${AREG_OUTPUT_BIN}" "${AREG_OUTPUT_LIB}")
+link_directories(BEFORE "./" "${AREG_OUTPUT_BIN}" "${AREG_OUTPUT_LIB}")
 
 # Only for Linux
 if(UNIX AND NOT CYGWIN)
@@ -173,14 +174,26 @@ if (NOT ${Java_FOUND})
     find_package(Java COMPONENTS Development)
 endif()
 
-message(STATUS "-------------------- CMakeLists Status Report Begin --------------------")
-message(STATUS ">>> Build '${CMAKE_SYSTEM_NAME}' '${AREG_BITNESS}'-bit platform '${AREG_PROCESSOR}', compiler '${CMAKE_CXX_COMPILER}', ID '${AREG_COMPILER_FAMILY}', build type '${CMAKE_BUILD_TYPE}'")
-message(STATUS ">>> Binary output folder '${AREG_OUTPUT_BIN}', executable extensions '${CMAKE_EXECUTABLE_SUFFIX}'")
-message(STATUS ">>> Generated files location '${AREG_GENERATE_DIR}', library output folder '${AREG_OUTPUT_LIB}'")
-message(STATUS ">>> Build examples is '${AREG_BUILD_EXAMPLES}', build tests is '${AREG_BUILD_TESTS}', AREG extended features are '${AREG_EXTENDED}', compile with logs '${AREG_LOGS}'")
-message(STATUS ">>> Java ${Java_VERSION_STRING} at location ${Java_JAVA_EXECUTABLE} is required by code generator. Minimum version 17")
-message(STATUS "-------------------- CMakeLists Status Report End ----------------------")
-message(STATUS CMAKE_SOURCE_DIR = ${CMAKE_SOURCE_DIR})
+if (AREG_INSTALL)
+    set(CMAKE_INSTALL_PREFIX "${AREG_INSTALL_PATH}")
+    option(INSTALL_GTEST "Disable Googletest installation" OFF)
+endif()
+
+message(STATUS "=======================================================================================")
+message(STATUS "--------------------> AREG project CMakeLists Status Report Begin <--------------------")
+message(STATUS "=======================================================================================")
+message(STATUS ">>> CMAKE_SOURCE_DIR = \'${CMAKE_SOURCE_DIR}\'")
+message(STATUS ">>> Build ...........: \'${CMAKE_SYSTEM_NAME}\' system, \'${AREG_BITNESS}\'-bit platform, '${AREG_PROCESSOR}' CPU, build type \'${CMAKE_BUILD_TYPE}\'")
+message(STATUS ">>> Compiler ........: \'${CMAKE_CXX_COMPILER}\', ID \'${AREG_COMPILER_FAMILY}\'")
+message(STATUS ">>> Binary output ...: \'${AREG_OUTPUT_BIN}\', extension '${CMAKE_EXECUTABLE_SUFFIX}'")
+message(STATUS ">>> Generated files .: \'${AREG_GENERATE_DIR}\' directory")
+message(STATUS ">>> Packages ........: \'${FETCHCONTENT_BASE_DIR}\' directory")
+message(STATUS ">>> Java version ....: \'${Java_VERSION_STRING}\' version in \'${Java_JAVA_EXECUTABLE}\' location. Minimum should be 17")
+message(STATUS ">>> Other options ...: examples = \'${AREG_BUILD_EXAMPLES}\', tests = \'${AREG_BUILD_TESTS}\', AREG extended = \'${AREG_EXTENDED}\', logs = \'${AREG_LOGS}\'")
+message(STATUS ">>> Installation ....: is set '${AREG_INSTALL}', thirdparty is '${AREG_INSTALL_DEPENDS}', installation location \'${CMAKE_INSTALL_PREFIX}\' directory")
+message(STATUS "=======================================================================================")
+message(STATUS "--------------------> AREG project CMakeLists Status Report End <----------------------")
+message(STATUS "=======================================================================================")
 
 # add a custom command to create output build folders if they are not existing.
 # create a dummy project to add as a dependency in all other projects.

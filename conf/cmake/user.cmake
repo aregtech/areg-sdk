@@ -5,36 +5,42 @@
 
 # ---------------------------------------------------------------------------
 # Pass the compiler options in command line or use the defaults:
-#   1. AREG_COMPILER_FAMILY -- Simple way to set CMAKE_CXX_COMPILER and CMAKE_C_COMPILER compilers
-#   2. AREG_COMPILER        -- Specifies one compiler to set for CXX and CC compilers
-#   3. AREG_BINARY          -- AREG engine binary type ('shared' or 'static')
-#   4. AREG_BUILD_TYPE      -- build configurations ('Debug' or 'Release')
-#   5. AREG_BUILD_TESTS     -- Build AREG engine unit tests
-#   6. AREG_BUILD_EXAMPLES  -- Build AREG engine examples
-#   7. AREG_EXTENDED        -- Enabled or disable extensions in AREG extended static library and it may require additional dependencies.
-#   8. AREG_LOGS            -- Enable or disable compilation with logs.
-#   9. AREG_BUILD_ROOT      -- The root directory for project(s) to build. By default is the "product" directory of areg-sdk root.
-#  10. AREG_OUTPUT_DIR      -- The output directory of build binaries
-#  11. AREG_OUTPUT_BIN      -- Set the path to folder to output compiled shared libraries and executables.
-#  12. AREG_OUTPUT_LIB      -- Set the path to folder to output compiled static libraries.
-#  13. AREG_LOGOBSERVER_LIB -- Set the log observer API library type. By default it is set as shared.
-#  14. AREG_PACKAGES        -- Set the location to install thirdparty packages. 
+#   1. AREG_COMPILER_FAMILY -- Simple way to set CMAKE_CXX_COMPILER and CMAKE_C_COMPILER compilers.
+#   2. AREG_COMPILER        -- Specifies one compiler name to set for CXX and CC projects.
+#   3. AREG_BINARY          -- Specifies the AREG Framework library type ('shared' or 'static'). By default it is 'shared'.
+#   4. AREG_LOGOBSERVER_LIB -- Specifies the Log Observer API library type ('shared' or 'static'). By default it is 'shared'.
+#   5. AREG_BUILD_TYPE      -- Build configurations ('Debug' or 'Release').
+#   6. AREG_BUILD_TESTS     -- Flag to enable or disable AREG Framework unit tests.
+#   7. AREG_BUILD_EXAMPLES  -- Flag to enable or disable AREG Framework examples.
+#   8. AREG_EXTENDED        -- Flag to enable or disable to compile AREG SDK project with AREG Framework extended features. This may require additional dependencies.
+#   9. AREG_LOGS            -- Flag to enable or disable compilation with logs. By default, it is enabled.
+#  10. AREG_INSTALL         -- Flag to enable or disable AREG SDK installation. By default, it is enabled.
+#  11. AREG_INSTALL_DEPENDS -- Flag to enable or disable AREG SDK to install thirdparty dependencies. The flag is ignored if AREG_INSTALL is 'OFF'. By default, it is disabled.
+#  11. AREG_BUILD_ROOT      -- The root directory to build or create generated files. By default is the './product' directory of areg-sdk root.
+#  12. AREG_OUTPUT_DIR      -- The output directory of build binaries.
+#  13. AREG_OUTPUT_BIN      -- The output directory of build executables or runtime binaries (shared libraries).
+#  14. AREG_OUTPUT_LIB      -- The output directory of static libraries.
+#  15. AREG_PACKAGES        -- The location to install thirdparty packages.
+#  16. AREG_INSTALL_PATH    -- The location to install AREG SDK binaries, headers, configuration files and tools. By default, it is created in the user home directory.
 #
 # The default values are:
 #   1. AREG_COMPILER_FAMILY = <default> (possible values: gnu, cygwin, llvm, msvc)
 #   2. AREG_COMPILER        = <default> (possible values: g++, gcc, c++, cc, clang++, clang, clang-cl, cl)
 #   3. AREG_BINARY          = shared    (possible values: shared, static)
-#   4. AREG_BUILD_TYPE      = Release   (possible values: Release, Debug)
-#   5. AREG_BUILD_TESTS     = OFF       (possible values: ON, OFF)
-#   6. AREG_BUILD_EXAMPLES  = ON        (possible values: ON, OFF)
-#   7. AREG_EXTENDED        = OFF       (possible values: ON, OFF)
-#   8. AREG_LOGS            = ON        (possible values: ON, OFF)
-#   9. AREG_BUILD_ROOT      = <areg-sdk>/product                                                (possible values: any full path)
-#  10. AREG_OUTPUT_DIR      = <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release-<areg-lib>     (possible values: any full path)
-#  11. AREG_OUTPUT_BIN      = <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release-<areg-lib>/bin (possible values: any full path)
-#  12. AREG_OUTPUT_LIB      = <areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release-<areg-lib>/lib (possible values: any full path)
-#  13. AREG_LOGOBSERVER_LIB = shared    (possible values: shared, static)
-#  14. AREG_PACKAGES        = <package location> (default value is ${AREG_BUILD_ROOT}/packages)
+#   4. AREG_LOGOBSERVER_LIB = shared    (possible values: shared, static)
+#   5. AREG_BUILD_TYPE      = Release   (possible values: Release, Debug)
+#   6. AREG_BUILD_TESTS     = OFF       (possible values: ON, OFF)
+#   7. AREG_BUILD_EXAMPLES  = ON        (possible values: ON, OFF)
+#   8. AREG_EXTENDED        = OFF       (possible values: ON, OFF)
+#   9. AREG_LOGS            = ON        (possible values: ON, OFF)
+#  10. AREG_INSTALL         = ON        (possible values: ON, OFF)
+#  11. AREG_INSTALL_DEPENDS = OFF       (possible values: ON, OFF)
+#  11. AREG_BUILD_ROOT      = '<areg-sdk>/product'                                                              (possible values: any valid path for outputs for product and generated files)
+#  12. AREG_OUTPUT_DIR      = '<areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release-<areg-lib>'        (possible values: any valid path for build outputs)
+#  13. AREG_OUTPUT_BIN      = '<areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release-<areg-lib>/bin'    (possible values: any valid path for binary outputs)
+#  14. AREG_OUTPUT_LIB      = '<areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release-<areg-lib>/lib'    (possible values: any valid path for library outputs)
+#  15. AREG_PACKAGES        = '${AREG_BUILD_ROOT}/packages'                                                     (possible values: any valid path for package location)
+#  16. AREG_INSTALL_PATH    = '${HOOME}/areg-sdk'; if '${HOOME}' is empty, use '${USERPROFILE}' or current dir. (possible values: any valid path to install AREG SDK outputs)   
 #
 # Hints:
 #
@@ -186,6 +192,15 @@ if (NOT DEFINED AREG_LOGS)
     option(AREG_LOGS "Compile with logs" ON)
 endif()
 
+# Modify 'AREG_INSTALL' to enable or disable installation of AREG SDK
+if (NOT DEFINED AREG_INSTALL)
+    option(AREG_INSTALL "Enable installation" ON)
+endif()
+
+if (NOT DEFINED AREG_INSTALL_DEPENDS)
+    option(AREG_INSTALL_DEPENDS "Disable installation of thirdparty dependencies" OFF)
+endif()
+
 # Set the areg-sdk build root folder to output files.
 if (NOT DEFINED AREG_BUILD_ROOT OR "${AREG_BUILD_ROOT}" STREQUAL "")
     set(AREG_BUILD_ROOT "${AREG_SDK_ROOT}/product")
@@ -198,6 +213,22 @@ endif()
 
 if (NOT DEFINED AREG_PACKAGES OR "${AREG_PACKAGES}" STREQUAL "")
     set(AREG_PACKAGES "${AREG_BUILD_ROOT}/packages")
+endif()
+
+if (NOT DEFINED AREG_INSTALL_PATH OR "${AREG_INSTALL_PATH}" STREQUAL "")
+    set(INST_PATH "${AREG_BUILD_ROOT}")
+    set(TEMP1_VAL "$ENV{HOME}")
+
+    if (NOT "${TEMP1_VAL}" STREQUAL "")
+        set(INST_PATH ${TEMP1_VAL})
+    else()
+        set(TEMP1_VAL "$ENV{USERPROFILE}")
+        if (NOT "${TEMP1_VAL}" STREQUAL "")
+            set(INST_PATH ${TEMP1_VAL})
+        endif()
+    endif()
+
+    set(AREG_INSTALL_PATH "${INST_PATH}/areg-sdk")
 endif()
 
 # The absolute path for generated files
