@@ -27,7 +27,10 @@
       <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>$(AregFrameworkSources)\logger\resources\logger_post_build.bat $(AregFrameworkSources)\logger\resources $(OutDir)</Command>
+      <Command>
+          call copy /D / y $(AregFrameworkSources)\logger\resources\logger.service.install.bat   $(OutDir)\logger.service.install.bat
+          call copy /D / y $(AregFrameworkSources)\logger\resources\logger.service.uninstall.bat $(OutDir)\logger.service.uninstall.bat
+      </Command>
       <Message Condition="Exists($(AregFrameworkResources))">Copy logger service installation scripts to the executable directory</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>

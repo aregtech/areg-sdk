@@ -1,5 +1,5 @@
 # ###########################################################################
-#               CMake opions of AREG SDK
+#               CMake options of AREG SDK
 # Copyright 2022-2023 Aregtech
 # ###########################################################################
 
@@ -32,9 +32,13 @@ set(CMAKE_BUILD_TYPE    ${AREG_BUILD_TYPE})
 set(CMAKE_BUILD_TYPE    ${AREG_BUILD_TYPE} CACHE STRING "Configuration Type" FORCE)
 set(CXX_STANDARD        ${AREG_CXX_STANDARD})
 
+# AREG SDK project name and version
+set(AREG_PROJECT_NAME "areg-sdk")
+set(AREG_PROJECT_VERSION "1.5.0")
+
 # Project's properties
-set(PROJECT_NAME "areg-sdk")
-set(PROJECT_VERSION "1.5.0")
+set(PROJECT_NAME ${AREG_PROJECT_NAME})
+set(PROJECT_VERSION ${AREG_PROJECT_VERSION})
 project("${PROJECT_NAME}" 
         VERSION "${PROJECT_VERSION}" 
         DESCRIPTION "AREG Communication Framework and Tools" 
@@ -55,3 +59,5 @@ endif()
 if(AREG_BUILD_TESTS)
     include(${AREG_TESTS}/CMakeLists.txt)
 endif()
+
+include(${AREG_CMAKE_CONFIG_DIR}/install.cmake)

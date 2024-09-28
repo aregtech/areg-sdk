@@ -28,7 +28,10 @@
       <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>$(AregFrameworkSources)\mcrouter\resources\mcrouter_post_build.bat $(AregFrameworkSources)\mcrouter\resources $(OutDir)</Command>
+      <Command>
+          call copy /D / y $(AregFrameworkSources)\mcrouter\resources\mcrouter.service.install.bat   $(OutDir)\mcrouter.service.install.bat
+          call copy /D / y $(AregFrameworkSources)\mcrouter\resources\mcrouter.service.uninstall.bat $(OutDir)\mcrouter.service.uninstall.bat
+      </Command>
       <Message Condition="Exists($(AregFrameworkResources))">Copy mcrouter service installation scripts to the executable directory</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>

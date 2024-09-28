@@ -14,8 +14,8 @@ set PATH=%SystemRoot%\System32;%PATH%
 
 :: copy dependencies
 
-copy /D /y %PROJECT_RESOUR_DIR%\mcrouter_install.bat    %TARGET_DIR%\mcrouter_install.bat
-copy /D /y %PROJECT_RESOUR_DIR%\mcrouter_uninstall.bat  %TARGET_DIR%\mcrouter_uninstall.bat
+copy /D /y %PROJECT_RESOUR_DIR%\mcrouter.service.install.bat   %TARGET_DIR%\mcrouter.service.install.bat
+copy /D /y %PROJECT_RESOUR_DIR%\mcrouter.service.uninstall.bat %TARGET_DIR%\mcrouter.service.uninstall.bat
 
 set PATH=%OLDPATH%
 

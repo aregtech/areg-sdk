@@ -14,8 +14,8 @@ set PATH=%SystemRoot%\System32;%PATH%
 
 :: copy dependencies
 
-copy /D /y %PROJECT_RESOUR_DIR%\logger_install.bat    %TARGET_DIR%\logger_install.bat
-copy /D /y %PROJECT_RESOUR_DIR%\logger_uninstall.bat  %TARGET_DIR%\logger_uninstall.bat
+copy /D /y %PROJECT_RESOUR_DIR%\logger.service.install.bat   %TARGET_DIR%\logger.service.install.bat
+copy /D /y %PROJECT_RESOUR_DIR%\logger.service.uninstall.bat %TARGET_DIR%\logger.service.uninstall.bat
 
 set PATH=%OLDPATH%
 

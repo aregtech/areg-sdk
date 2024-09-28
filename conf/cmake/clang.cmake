@@ -1,4 +1,7 @@
+# ###########################################################################
 # LLVM compiler and linker options for POSIX and Windows API
+# Copyright 2022-2023 Aregtech
+# ###########################################################################
 
 message(STATUS ">>> Preparing compiler settings for `clang` with '${AREG_OS}' API")
 

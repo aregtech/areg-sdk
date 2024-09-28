@@ -8,3 +8,4 @@ include("${logobserverapi_BASE}/private/CMakeLists.txt")
 if("${AREG_DEVELOP_ENV}" STREQUAL "Win32")
 	list(APPEND logobserverapi_SRC ${logobserverapi_RESOURCE}/logobserverapi.def)
 endif()
+
