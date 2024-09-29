@@ -78,7 +78,7 @@ set(AREG_C_COMPILER)
 # Check and set the simple and shortest way to set the compiler
 if(DEFINED AREG_COMPILER_FAMILY AND NOT ${AREG_COMPILER_FAMILY} STREQUAL "")
 
-    message(STATUS ">>> User selected C/C++ compiler family \'${AREG_COMPILER_FAMILY}\'")
+    message(STATUS "AREG: >>> User selected C/C++ compiler family \'${AREG_COMPILER_FAMILY}\'")
     if(${AREG_COMPILER_FAMILY} STREQUAL "gnu")
         set(AREG_CXX_COMPILER "g++")
         set(AREG_C_COMPILER   "gcc")
@@ -97,7 +97,7 @@ if(DEFINED AREG_COMPILER_FAMILY AND NOT ${AREG_COMPILER_FAMILY} STREQUAL "")
         set(AREG_CXX_COMPILER "cl")
         set(AREG_C_COMPILER   "cl")
     else()
-        message(WARNING ">>> Unrecognized compiler family ${AREG_COMPILER_FAMILY}, supported values: \'gnu\', \'llvm\', \'cygwin\', \'msvc\''")
+        message(WARNING "AREG: >>> Unrecognized compiler family ${AREG_COMPILER_FAMILY}, supported values: \'gnu\', \'llvm\', \'cygwin\', \'msvc\'")
     endif()
 
 elseif(DEFINED AREG_COMPILER AND NOT ${AREG_COMPILER} STREQUAL "")
@@ -149,12 +149,12 @@ elseif(DEFINED AREG_COMPILER AND NOT ${AREG_COMPILER} STREQUAL "")
         set(AREG_COMPILER_FAMILY    "msvc")
     else()
         set(AREG_COMPILER_FAMILY)
-        message(WARNING ">>> Unrecognized compiler ${AREG_COMPILER}, supported compilers: \'gcc\', \'g++\', \'clang\', \'clang++\', \'clang-cl\', \'cl\'")
+        message(WARNING "AREG: >>> Unrecognized compiler ${AREG_COMPILER}, supported compilers: \'gcc\', \'g++\', 'cc', \'c++\',\'clang\', \'clang++\', \'clang-cl\', \'cl\'")
     endif()
 
 else()
 
-    message(STATUS ">>> No compiler is selected, will use system default")
+    message(STATUS "AREG: >>> No compiler is selected, will use system default")
 
 endif()
 
@@ -220,11 +220,11 @@ if (NOT DEFINED AREG_INSTALL_PATH OR "${AREG_INSTALL_PATH}" STREQUAL "")
     set(TEMP1_VAL "$ENV{HOME}")
 
     if (NOT "${TEMP1_VAL}" STREQUAL "")
-        set(INST_PATH ${TEMP1_VAL})
+        file(TO_CMAKE_PATH "${TEMP1_VAL}" INST_PATH)
     else()
         set(TEMP1_VAL "$ENV{USERPROFILE}")
         if (NOT "${TEMP1_VAL}" STREQUAL "")
-            set(INST_PATH ${TEMP1_VAL})
+        file(TO_CMAKE_PATH "${TEMP1_VAL}" INST_PATH)
         endif()
     endif()
 
