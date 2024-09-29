@@ -80,5 +80,6 @@ set(FETCHCONTENT_BASE_DIR   "${AREG_PACKAGES}" CACHE PATH "Location of AREG thir
 
 if (SET_AREG_COMMON AND DEFINED PROJECT_SOURCE_DIR AND NOT "${PROJECT_SOURCE_DIR}" STREQUAL "")
     # include automatically 'common.cmake' because 'areg-sdk' sources where either fetched or included as a package.
+    message(STATUS "<<<< including common")
     include(${AREG_CMAKE_CONFIG_DIR}/common.cmake)
 endif()
