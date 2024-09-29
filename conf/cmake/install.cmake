@@ -8,8 +8,6 @@ if (AREG_INSTALL)
     message(STATUS "AREG: >>> Preparing AREG SDK installation settings")
 
     set(AREG_PACKAGE_NAME   "areg-sdk")
-    set(AREG_INCLUDE        "include")
-    set(AREG_LICENSES       "${AREG_INCLUDE}/licenses")
 
     # copy compiled binaries in the bin and lib directories
     install(TARGETS areg mcrouter logger logobserver areg-extend
@@ -23,7 +21,7 @@ if (AREG_INSTALL)
 
     # Copy AREG SDK all headers
     install(DIRECTORY framework/
-                DESTINATION ${AREG_INCLUDE} COMPONENT Development   COMPONENT ${AREG_PACKAGE_NAME}
+                DESTINATION framework COMPONENT Development   COMPONENT ${AREG_PACKAGE_NAME}
                 FILES_MATCHING
                     PATTERN "*.h" 
                     PATTERN "*.hpp"
@@ -34,13 +32,13 @@ if (AREG_INSTALL)
     )
 
     # Copy all CMake and MSVC configuration files.
-    install(DIRECTORY conf
-                DESTINATION ${AREG_INCLUDE} COMPONENT Development   COMPONENT ${AREG_PACKAGE_NAME}
+    install(DIRECTORY conf/
+                DESTINATION conf COMPONENT Development   COMPONENT ${AREG_PACKAGE_NAME}
     )
     
     # Copy all tools
-    install(DIRECTORY tools
-                DESTINATION .               COMPONENT Development   COMPONENT ${AREG_PACKAGE_NAME}
+    install(DIRECTORY tools/
+                DESTINATION tools               COMPONENT Development   COMPONENT ${AREG_PACKAGE_NAME}
     )
 
     # Copy AREG SDK license
@@ -74,8 +72,8 @@ if (AREG_INSTALL)
         )
 
         # Copy thirdparty sources with headers
-        install(DIRECTORY thirdparty
-                    DESTINATION ${AREG_INCLUDE} COMPONENT Development   COMPONENT ${AREG_PACKAGE_NAME}
+        install(DIRECTORY thirdparty/
+                    DESTINATION thirdparty COMPONENT Development   COMPONENT ${AREG_PACKAGE_NAME}
                             PATTERN "*.vcxproj*" EXCLUDE
         )
     
