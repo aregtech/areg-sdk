@@ -9,8 +9,23 @@
 # Copyright © 2022-2023 Aregtech
 # ###########################################################################
 
-# Make sure that AREG_SDK_ROOT is set
-if (NOT DEFINED AREG_SDK_ROOT OR "${AREG_SDK_ROOT}" STREQUAL "")
+option(SET_AREG_COMMON FALSE)
+if (DEFINED areg-sdk_SOURCE_DIR AND NOT "${areg-sdk_SOURCE_DIR}" STREQUAL "")
+    # AREG SDK source was fetched by an external application and 'areg-sdk_SOURCE_DIR' is the root of 'areg-sdk'
+    # Set AREG_SDK_ROOT if it was not set before
+    if (NOT DEFINED AREG_SDK_ROOT OR "${AREG_SDK_ROOT}" STREQUAL "")
+        set(AREG_SDK_ROOT       "${areg-sdk_SOURCE_DIR}")
+    endif()
+    option(SET_AREG_COMMON TRUE)
+elseif(DEFINED areg-sdk_DIR AND NOT "${areg-sdk_SOURCE_DIR}" STREQUAL "")
+    # AREG SDK is included as an external package and 'areg-sdk_DIR' is the root of 'areg-sdk'
+    # Set AREG_SDK_ROOT if it was not set before
+    if (NOT DEFINED AREG_SDK_ROOT OR "${AREG_SDK_ROOT}" STREQUAL "")
+        set(AREG_SDK_ROOT       "${areg-sdk_DIR}")
+    endif()
+    option(SET_AREG_COMMON TRUE)
+elseif (NOT DEFINED AREG_SDK_ROOT OR "${AREG_SDK_ROOT}" STREQUAL "")
+    # Make sure that AREG_SDK_ROOT is set before the 'setup.cmake' is included
     message(FATAL_ERROR "AREG: >>> Set AREG_SDK_ROOT before including \'setup.cmake\'. Stopping building the project.")
 endif()
 
@@ -62,3 +77,8 @@ set(CMAKE_BUILD_TYPE        ${AREG_BUILD_TYPE})
 set(CMAKE_BUILD_TYPE        ${AREG_BUILD_TYPE} CACHE STRING "Configuration Type" FORCE)
 set(CXX_STANDARD            ${AREG_CXX_STANDARD})
 set(FETCHCONTENT_BASE_DIR   "${AREG_PACKAGES}" CACHE PATH "Location of AREG thirdparty packages" FORCE)
+
+if (SET_AREG_COMMON AND DEFINED PROJECT_SOURCE_DIR AND NOT "${PROJECT_SOURCE_DIR}" STREQUAL "")
+    # include automatically 'common.cmake' because 'areg-sdk' sources where either fetched or included as a package.
+    include(${AREG_CMAKE_CONFIG_DIR}/common.cmake)
+endif()
