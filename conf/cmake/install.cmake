@@ -5,7 +5,7 @@
 
 if (AREG_INSTALL)
 
-    message(STATUS ">>> Preparing installation settings")
+    message(STATUS "AREG: >>> Preparing AREG SDK installation settings")
 
     set(AREG_PACKAGE_NAME   "areg-sdk")
     set(AREG_INCLUDE        "include")

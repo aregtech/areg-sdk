@@ -11,7 +11,7 @@
 
 # Make sure that AREG_SDK_ROOT is set
 if (NOT DEFINED AREG_SDK_ROOT OR "${AREG_SDK_ROOT}" STREQUAL "")
-    message(FATAL_ERROR ">>> Set AREG_SDK_ROOT before including \'setup.cmake\' file. Stops building project.")
+    message(FATAL_ERROR "AREG: >>> Set AREG_SDK_ROOT before including \'setup.cmake\'. Stopping building the project.")
 endif()
 
 # The location of cmake configuration files.
@@ -55,9 +55,6 @@ include(${AREG_CMAKE_CONFIG_DIR}/user.cmake)
 if (NOT "${AREG_COMPILER_FAMILY}" STREQUAL "")
     set(CMAKE_CXX_COMPILER  "${AREG_CXX_COMPILER}")
     set(CMAKE_C_COMPILER    "${AREG_C_COMPILER}")
-    message(STATUS ">>> Set CMAKE_CXX_COMPILER compiler \'${CMAKE_CXX_COMPILER}\'")
-else()
-    message(STATUS ">>> Use system default CMAKE_CXX_COMPILER compiler \'${CMAKE_CXX_COMPILER}\'")
 endif()
 
 # set CMake tool settings

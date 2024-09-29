@@ -3,7 +3,7 @@
 # Copyright 2022-2023 Aregtech
 # ###########################################################################
 
-message(STATUS ">>> Preparing compiler settings for `clang` with '${AREG_OS}' API")
+message(STATUS "AREG: >>> Preparing compiler settings for `clang` with '${AREG_OS}' API")
 
 if (AREG_OS STREQUAL "Windows")
 

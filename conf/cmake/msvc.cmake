@@ -3,7 +3,7 @@
 # Copyright 2022-2023 Aregtech
 # ###########################################################################
 
-message(STATUS ">>> Preparing compiler settings for `MSVC` and Win32 API")
+message(STATUS "AREG: >>> Preparing compiler settings for `MSVC` and Win32 API")
 
 # Visual Studio C++, Windows / Win32 API
 set(AREG_DEVELOP_ENV "Win32")

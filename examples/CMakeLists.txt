@@ -36,8 +36,8 @@ if (AREG_DEVELOP_ENV MATCHES "Win32")
         # Otherwise, output warning message and exclude from the build.
         include(${AREG_EXAMPLES}/17_winchat/CMakeLists.txt)
     else(MFC_FOUND)
-        message(NOTICE " >>> NOTE: due to missing installed MFC library, escaping compile projects:")
-        message(NOTICE " >>>		${AREG_EXAMPLES}/17_winchat")
+        message(NOTICE " AREG Examples: >>> Due to missing installed MFC library, escaping compile projects:")
+        message(NOTICE " AREG Examples: >>> ${AREG_EXAMPLES}/17_winchat")
     endif(MFC_FOUND)
 
 endif()
