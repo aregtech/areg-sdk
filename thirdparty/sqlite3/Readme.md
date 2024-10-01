@@ -75,9 +75,9 @@ For further details, refer to Microsoft's [tutorial on using vcpkg with CMake](h
   ./vcpkg install sqlite3:x64-linux
   ```
 
-> [!NOTE} 
+> [!NOTE]
 > For 32-bit systems, replace `x64` with `x86` in the command (`sqlite3:x86-windows` or `sqlite3:x86-linux`).
-<br/>
+
 > [!IMPORTANT]
 > You may be prompted to install additional dependencies during the package installation. Follow the recommendations provided.
 
@@ -107,7 +107,7 @@ cmake -B ./build -DAREG_SQLITE_PACKAGE=ON -DCMAKE_TOOLCHAIN_FILE="$env{VCPKG_ROO
 
 If the SQLite3 package is found, CMake will display an output similar to:
 ```txt
--- Found SQLite3: /home/dev/vcpkg/installed/x64-linux/include (found version "3.46.1")
+-- Found SQLite3: /path/to/vcpkg/installed/x64-linux/include (found version "3.46.1")
 ```
 
 In this case, CMake will link to the existing SQLite3 library instead of building a new one.
