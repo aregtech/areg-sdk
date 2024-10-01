@@ -16,12 +16,13 @@
 #   9. AREG_LOGS            -- Flag to enable or disable compilation with logs. By default, it is enabled.
 #  10. AREG_INSTALL         -- Flag to enable or disable AREG SDK installation. By default, it is enabled.
 #  11. AREG_INSTALL_DEPENDS -- Flag to enable or disable AREG SDK to install thirdparty dependencies. The flag is ignored if AREG_INSTALL is 'OFF'. By default, it is disabled.
-#  11. AREG_BUILD_ROOT      -- The root directory to build or create generated files. By default is the './product' directory of areg-sdk root.
-#  12. AREG_OUTPUT_DIR      -- The output directory of build binaries.
-#  13. AREG_OUTPUT_BIN      -- The output directory of build executables or runtime binaries (shared libraries).
-#  14. AREG_OUTPUT_LIB      -- The output directory of static libraries.
-#  15. AREG_PACKAGES        -- The location to install thirdparty packages.
-#  16. AREG_INSTALL_PATH    -- The location to install AREG SDK binaries, headers, configuration files and tools. By default, it is created in the user home directory.
+#  12. AREG_SQLITE_PACKAGE  -- Flag, indicating whether should use SQLite3 package available in the system or compile the source available in the 'thirdparty'
+#  13. AREG_BUILD_ROOT      -- The root directory to build or create generated files. By default is the './product' directory of 'areg-sdk' root.
+#  14. AREG_OUTPUT_DIR      -- The output directory of build binaries.
+#  15. AREG_OUTPUT_BIN      -- The output directory of build executables or runtime binaries (shared libraries).
+#  16. AREG_OUTPUT_LIB      -- The output directory of static libraries.
+#  17. AREG_PACKAGES        -- The location to install thirdparty packages.
+#  18. AREG_INSTALL_PATH    -- The location to install AREG SDK binaries, headers, configuration files and tools. By default, it is created in the user home directory.
 #
 # The default values are:
 #   1. AREG_COMPILER_FAMILY = <default> (possible values: gnu, cygwin, llvm, msvc)
@@ -35,12 +36,13 @@
 #   9. AREG_LOGS            = ON        (possible values: ON, OFF)
 #  10. AREG_INSTALL         = ON        (possible values: ON, OFF)
 #  11. AREG_INSTALL_DEPENDS = OFF       (possible values: ON, OFF)
-#  11. AREG_BUILD_ROOT      = '<areg-sdk>/product'                                                              (possible values: any valid path for outputs for product and generated files)
-#  12. AREG_OUTPUT_DIR      = '<areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release-<areg-lib>'        (possible values: any valid path for build outputs)
-#  13. AREG_OUTPUT_BIN      = '<areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release-<areg-lib>/bin'    (possible values: any valid path for binary outputs)
-#  14. AREG_OUTPUT_LIB      = '<areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release-<areg-lib>/lib'    (possible values: any valid path for library outputs)
-#  15. AREG_PACKAGES        = '${AREG_BUILD_ROOT}/packages'                                                     (possible values: any valid path for package location)
-#  16. AREG_INSTALL_PATH    = '${HOOME}/areg-sdk'; if '${HOOME}' is empty, use '${USERPROFILE}' or current dir. (possible values: any valid path to install AREG SDK outputs)   
+#  12. AREG_SQLITE_PACKAGE  = ON        (possible values: ON, OFF)
+#  13. AREG_BUILD_ROOT      = '<areg-sdk>/product'                                                              (possible values: any valid path for outputs for product and generated files)
+#  14. AREG_OUTPUT_DIR      = '<areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release-<areg-lib>'        (possible values: any valid path for build outputs)
+#  15. AREG_OUTPUT_BIN      = '<areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release-<areg-lib>/bin'    (possible values: any valid path for binary outputs)
+#  16. AREG_OUTPUT_LIB      = '<areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release-<areg-lib>/lib'    (possible values: any valid path for library outputs)
+#  17. AREG_PACKAGES        = '${AREG_BUILD_ROOT}/packages'                                                     (possible values: any valid path for package location)
+#  18. AREG_INSTALL_PATH    = '${HOOME}/areg-sdk'; if '${HOOME}' is empty, use '${USERPROFILE}' or current dir. (possible values: any valid path to install AREG SDK outputs)
 #
 # Hints:
 #
@@ -199,6 +201,10 @@ endif()
 
 if (NOT DEFINED AREG_INSTALL_DEPENDS)
     option(AREG_INSTALL_DEPENDS "Disable installation of thirdparty dependencies" OFF)
+endif()
+
+if (NOT DEFINED AREG_SQLITE_PACKAGE)
+    option(AREG_SQLITE_PACKAGE "Use SQLite3 installed package" ON)
 endif()
 
 # Set the areg-sdk build root folder to output files.

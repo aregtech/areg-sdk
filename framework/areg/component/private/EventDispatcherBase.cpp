@@ -49,9 +49,9 @@ EventDispatcherBase::~EventDispatcherBase( void )
 // EventDispatcherBase class, methods
 //////////////////////////////////////////////////////////////////////////
 
-bool EventDispatcherBase::isExitEvent( Event * anEvent ) const
+bool EventDispatcherBase::isExitEvent( const Event * anEvent ) const
 {
-    return (anEvent == static_cast<Event *>(&ExitEvent::getExitEvent( )));
+    return (anEvent == static_cast<const Event *>(&ExitEvent::getExitEvent( )));
 }
 
 void EventDispatcherBase::signalEvent( uint32_t eventCount )

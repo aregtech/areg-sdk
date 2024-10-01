@@ -26,6 +26,13 @@
 #include "areg/trace/NETrace.hpp"
 #include "areg/trace/private/NELogging.hpp"
 
+#if defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
+    #include <sqlite3.h>
+#else   // defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
+    #include "sqlite3/amalgamation/sqlite3.h"
+#endif  // defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
+
+
 namespace
 {
     //////////////////////////////////////////////////////////////////////////
@@ -243,7 +250,7 @@ inline bool LogSqliteDatabase::_open(const String& dbPath)
         File::createDirCascaded(folder);
     }
 
-    if (SQLITE_OK != sqlite3_open(mDbPath.getString(), &mDbObject))
+    if (SQLITE_OK != ::sqlite3_open(mDbPath.getString(), reinterpret_cast<sqlite3 **>(&mDbObject)))
     {
         _close();
         result = false;
@@ -256,7 +263,7 @@ inline void LogSqliteDatabase::_close(void)
 {
     if (mDbObject != nullptr)
     {
-        sqlite3_close(mDbObject);
+        ::sqlite3_close(reinterpret_cast<sqlite3*>(mDbObject));
         mDbObject = nullptr;
         mIsInitialized = false;
     }
@@ -319,7 +326,7 @@ inline bool LogSqliteDatabase::_execute(const char* sql)
     if (mDbLogEnabled)
     {
         ASSERT(NEString::isEmpty<char>(sql) == false);
-        return (mDbObject != nullptr ? SQLITE_OK == sqlite3_exec(mDbObject, sql, nullptr, nullptr, nullptr) : false);
+        return (mDbObject != nullptr ? SQLITE_OK == ::sqlite3_exec(reinterpret_cast<sqlite3*>(mDbObject), sql, nullptr, nullptr, nullptr) : false);
     }
 
     return false;

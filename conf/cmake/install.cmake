@@ -65,24 +65,27 @@ if (AREG_INSTALL)
     # Check and install thirdparty dependencies if needed
     if (AREG_INSTALL_DEPENDS)
 
-        # copy compiled binaries in the bin and lib directories
-        install( TARGETS sqlite3
-            ARCHIVE DESTINATION lib         COMPONENT Development   COMPONENT ${AREG_PACKAGE_NAME}
-                    PERMISSIONS OWNER_READ OWNER_WRITE               GROUP_READ WORLD_READ
-        )
+        # Check how SQLite was built
+        if (NOT AREG_FOUND_SQLITE3_PACKAGE)
+            # copy compiled binaries in the bin and lib directories
+            install( TARGETS sqlite3
+                ARCHIVE DESTINATION lib         COMPONENT Development   COMPONENT ${AREG_PACKAGE_NAME}
+                        PERMISSIONS OWNER_READ OWNER_WRITE               GROUP_READ WORLD_READ
+            )
 
-        # Copy thirdparty sources with headers
-        install(DIRECTORY thirdparty/
-                    DESTINATION thirdparty COMPONENT Development   COMPONENT ${AREG_PACKAGE_NAME}
-                            PATTERN "*.vcxproj*" EXCLUDE
-        )
+            # Copy thirdparty sources with headers
+            install(DIRECTORY thirdparty/
+                        DESTINATION thirdparty COMPONENT Development   COMPONENT ${AREG_PACKAGE_NAME}
+                                PATTERN "*.vcxproj*" EXCLUDE
+            )
     
-        # Copy thirdparty licenses
-        install(FILES ${AREG_THIRDPARTY}/sqlite3/LICENSE.txt
-                    DESTINATION licenses    COMPONENT Development   COMPONENT Runtime     COMPONENT ${AREG_PACKAGE_NAME}
-                        RENAME SQLITE.copyright
-                        PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
-        )
+            # Copy thirdparty licenses
+            install(FILES ${AREG_THIRDPARTY}/sqlite3/LICENSE.txt
+                        DESTINATION licenses    COMPONENT Development   COMPONENT Runtime     COMPONENT ${AREG_PACKAGE_NAME}
+                            RENAME SQLITE.copyright
+                            PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
+            )
+        endif(NOT AREG_FOUND_SQLITE3_PACKAGE)
 
     endif(AREG_INSTALL_DEPENDS)
 

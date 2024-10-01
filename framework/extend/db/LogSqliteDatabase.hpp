@@ -19,8 +19,6 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/trace/IELogDatabaseEngine.hpp"
-#include "sqlite3/amalgamation/sqlite3.h"
-
 #include "areg/base/String.hpp"
 
 //////////////////////////////////////////////////////////////////////////
@@ -233,7 +231,7 @@ protected:
     String      mDbPath;
 
     //!< The SQLite database object.
-    sqlite3*    mDbObject;
+    void *      mDbObject;
 
     //!< Flag, indicating whether the database and data tables are initialized or not.
     bool        mIsInitialized;

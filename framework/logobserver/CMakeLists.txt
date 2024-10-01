@@ -10,7 +10,7 @@ include("${logobserver_BASE}/app/CMakeLists.txt")
 if (AREG_LOGOBSERVER_LIB MATCHES "shared")
 
     # build log observer API shared library
-    addSharedLibEx(logobserverapi "${logobserverapi_SRC}" sqlite3)
+    addSharedLibEx(logobserverapi "${logobserverapi_SRC}" ${AREG_SQLITE_LIB_REF})
     target_compile_options(logobserverapi PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")
 
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
@@ -45,7 +45,7 @@ if (AREG_LOGOBSERVER_LIB MATCHES "shared")
     addExecutableEx(logobserver "${logobserverapp_SRC}" logobserverapi)
     target_compile_definitions(logobserver PRIVATE IMP_LOGOBSERVER_DLL)
 else (AREG_LOGOBSERVER_LIB MATCHES "static")
-    addExecutableEx(logobserver "${logobserverapp_SRC}" logobserverapi sqlite3)
+    addExecutableEx(logobserver "${logobserverapp_SRC}" logobserverapi ${AREG_SQLITE_LIB_REF})
     target_compile_definitions(logobserver PRIVATE IMP_LOGOBSERVER_LIB)
 endif()
 target_compile_options(logobserver PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")
