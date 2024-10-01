@@ -709,3 +709,27 @@ function(addUnitTest test_project test_sources)
     endforeach()
     addUnitTestEx("${test_project}" "${test_sources}" "")
 endfunction(addUnitTest)
+
+# ---------------------------------------------------------------------------
+# Description : This macro searches the specified package and if found,
+#               on output the variable passed as 'package_found' parameter is set 'ON'.
+#               Additionally, 
+#                   - the variable passed as 'package_includes' indicates the location of package includes;
+#                   - the variable passed as 'package_libraries' indicate the location of package libraries to link.
+# Macro ......: macro_find_package
+# Parameters .: ${package_name}     -- On input should contain the name of package to search.
+#               ${package_found}    -- On output contains flag indicating whether package found or not.
+#               ${package_includes} -- If package found, on output contains the locations of include headers of the package.
+#               ${package_libraries}-- if package found, on output contains the locations of libraries to use.
+# Example ....: macro_find_package(SQLite3 SQLITE_FOUND SQLITE_INCLUDE SQLITE_LIB)
+# ---------------------------------------------------------------------------
+macro(macro_find_package package_name package_found package_includes package_libraries)
+    find_package(${package_name})
+    if (${package_name}_FOUND)
+        set(${package_found} ON)
+        set(${package_includes} "${${package_name}_INCLUDE_DIR}")
+        set(${package_libraries} "${${package_name}_LIBRARY}")
+    else()
+        option(${package_found} OFF)
+    endif()
+endmacro(macro_find_package)
