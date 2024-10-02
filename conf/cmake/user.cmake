@@ -16,13 +16,15 @@
 #   9. AREG_LOGS            -- Flag to enable or disable compilation with logs. By default, it is enabled.
 #  10. AREG_INSTALL         -- Flag to enable or disable AREG SDK installation. By default, it is enabled.
 #  11. AREG_INSTALL_DEPENDS -- Flag to enable or disable AREG SDK to install thirdparty dependencies. The flag is ignored if AREG_INSTALL is 'OFF'. By default, it is disabled.
-#  12. AREG_SQLITE_PACKAGE  -- Flag, indicating whether should use SQLite3 package available in the system or compile the source available in the 'thirdparty'
-#  13. AREG_BUILD_ROOT      -- The root directory to build or create generated files. By default is the './product' directory of 'areg-sdk' root.
-#  14. AREG_OUTPUT_DIR      -- The output directory of build binaries.
-#  15. AREG_OUTPUT_BIN      -- The output directory of build executables or runtime binaries (shared libraries).
-#  16. AREG_OUTPUT_LIB      -- The output directory of static libraries.
-#  17. AREG_PACKAGES        -- The location to install thirdparty packages.
-#  18. AREG_INSTALL_PATH    -- The location to install AREG SDK binaries, headers, configuration files and tools. By default, it is created in the user home directory.
+#  12. AREG_USE_PACKAGES    -- Flag to enable or disable using installed packages in the system. If set, automatically forces 'AREG_SQLITE_PACKGE' and 'AREG_GTEST_PACKAGE' to be 'ON or 'OFF'.
+#  13. AREG_SQLITE_PACKAGE  -- Flag, indicating whether should use SQLite3 package available in the system or compile the library from sources.
+#  14. AREG_GTEST_PACKAGE   -- Flag, indicating whether should use GTest package available in the system or should compile the libraries from sources.
+#  15. AREG_BUILD_ROOT      -- The root directory to build or create generated files. By default is the './product' directory of 'areg-sdk' root.
+#  16. AREG_OUTPUT_DIR      -- The output directory of build binaries.
+#  17. AREG_OUTPUT_BIN      -- The output directory of build executables or runtime binaries (shared libraries).
+#  18. AREG_OUTPUT_LIB      -- The output directory of static libraries.
+#  19. AREG_PACKAGES        -- The location to install thirdparty packages.
+#  20. AREG_INSTALL_PATH    -- The location to install AREG SDK binaries, headers, configuration files and tools. By default, it is created in the user home directory.
 #
 # The default values are:
 #   1. AREG_COMPILER_FAMILY = <default> (possible values: gnu, cygwin, llvm, msvc)
@@ -36,13 +38,15 @@
 #   9. AREG_LOGS            = ON        (possible values: ON, OFF)
 #  10. AREG_INSTALL         = ON        (possible values: ON, OFF)
 #  11. AREG_INSTALL_DEPENDS = OFF       (possible values: ON, OFF)
-#  12. AREG_SQLITE_PACKAGE  = ON        (possible values: ON, OFF)
-#  13. AREG_BUILD_ROOT      = '<areg-sdk>/product'                                                              (possible values: any valid path for outputs for product and generated files)
-#  14. AREG_OUTPUT_DIR      = '<areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release-<areg-lib>'        (possible values: any valid path for build outputs)
-#  15. AREG_OUTPUT_BIN      = '<areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release-<areg-lib>/bin'    (possible values: any valid path for binary outputs)
-#  16. AREG_OUTPUT_LIB      = '<areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release-<areg-lib>/lib'    (possible values: any valid path for library outputs)
-#  17. AREG_PACKAGES        = '${AREG_BUILD_ROOT}/packages'                                                     (possible values: any valid path for package location)
-#  18. AREG_INSTALL_PATH    = '${HOOME}/areg-sdk'; if '${HOOME}' is empty, use '${USERPROFILE}' or current dir. (possible values: any valid path to install AREG SDK outputs)
+#  12. AREG_USE_PACKAGES    = ON        (possible values: ON, OFF)
+#  13. AREG_SQLITE_PACKAGE  = ON        (possible values: ON, OFF)
+#  14. AREG_GTEST_PACKAGE   = ON        (possible values: ON, OFF)
+#  15. AREG_BUILD_ROOT      = '<areg-sdk>/product'                                                              (possible values: any valid path for outputs for product and generated files)
+#  16. AREG_OUTPUT_DIR      = '<areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release-<areg-lib>'        (possible values: any valid path for build outputs)
+#  17. AREG_OUTPUT_BIN      = '<areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release-<areg-lib>/bin'    (possible values: any valid path for binary outputs)
+#  18. AREG_OUTPUT_LIB      = '<areg-sdk>/product/build/gnu-gcc/<os>-<bitness>-<cpu>-release-<areg-lib>/lib'    (possible values: any valid path for library outputs)
+#  19. AREG_PACKAGES        = '${AREG_BUILD_ROOT}/packages'                                                     (possible values: any valid path for package location)
+#  20. AREG_INSTALL_PATH    = '${HOOME}/areg-sdk'; if '${HOOME}' is empty, use '${USERPROFILE}' or current dir. (possible values: any valid path to install AREG SDK outputs)
 #
 # Hints:
 #
@@ -54,7 +58,7 @@
 #       - The value 'msvc' will set Microsoft Visual C++ compiler for C++ and C.
 #
 # Example:
-# $ cmake -B ./build -DAREG_COMPILER_FAMILY=llvm -DAREG_BUILD_TYPE=Release -DAREG_BUILD_TESTS=ON -DAREG_BUILD_EXAMPLES=ON
+# $ cmake -B ./build -DCMAKE_BUILD_TYPE=Debug -DAREG_COMPILER_FAMILY=llvm -DAREG_BUILD_TESTS=ON -DAREG_BUILD_EXAMPLES=ON
 # 
 # NOTE: if in command line specify AREG_CXX_COMPILER, the AREG_C_COMPILER
 #       must be specified as well. The both options must be specified
@@ -161,8 +165,8 @@ else()
 endif()
 
 # Set build configuration. Set "Debug" for debug build, and "Release" for release build.
-if (NOT DEFINED AREG_BUILD_TYPE OR NOT ${AREG_BUILD_TYPE} STREQUAL "Debug")
-    if (DEFINED CMAKE_BUILD_TYPE AND NOT ${CMAKE_BUILD_TYPE} STREQUAL "")
+if (NOT "${AREG_BUILD_TYPE}" STREQUAL "Debug")
+    if (NOT "${CMAKE_BUILD_TYPE}" STREQUAL "")
         set(AREG_BUILD_TYPE "${CMAKE_BUILD_TYPE}")
     else()
         set(AREG_BUILD_TYPE "Release")
@@ -175,36 +179,39 @@ if (NOT DEFINED AREG_BINARY OR NOT ${AREG_BINARY} STREQUAL "static")
 endif()
 
 # Build tests. By default it is disabled. To enable, set ON
-if (NOT DEFINED AREG_BUILD_TESTS)
-    option(AREG_BUILD_TESTS     "Build unit tests" OFF)
-endif()
+macro_create_option(AREG_BUILD_TESTS ON "Build unit tests")
 
 # Build examples. By default it is disabled. To enable, set ON
-if (NOT DEFINED AREG_BUILD_EXAMPLES)
-    option(AREG_BUILD_EXAMPLES  "Build examples"   ON)
-endif()
+macro_create_option(AREG_BUILD_EXAMPLES ON "Build examples")
 
 # Set AREG extended features enable or disable flag to compiler additional optional features. By default, it is disabled.
-if (NOT DEFINED AREG_EXTENDED)
-    option(AREG_EXTENDED      "Enable extensions" OFF)
-endif()
+macro_create_option(AREG_EXTENDED OFF "Enable extended feature")
 
 # Modify 'AREG_LOGS' to enable or disable compilation with logs. By default, compile with logs
-if (NOT DEFINED AREG_LOGS)
-    option(AREG_LOGS "Compile with logs" ON)
-endif()
+macro_create_option(AREG_LOGS ON "Compile with logs")
 
 # Modify 'AREG_INSTALL' to enable or disable installation of AREG SDK
-if (NOT DEFINED AREG_INSTALL)
-    option(AREG_INSTALL "Enable installation" ON)
-endif()
+macro_create_option(AREG_INSTALL ON "Enable installation")
 
-if (NOT DEFINED AREG_INSTALL_DEPENDS)
-    option(AREG_INSTALL_DEPENDS "Disable installation of thirdparty dependencies" OFF)
-endif()
+# Escape installing third-party dependencies  
+macro_create_option(AREG_INSTALL_DEPENDS OFF "Disable installation of thirdparty dependencies")
 
-if (NOT DEFINED AREG_SQLITE_PACKAGE)
-    option(AREG_SQLITE_PACKAGE "Use SQLite3 installed package" ON)
+# Check the request of using installed packages
+if (NOT DEFINED AREG_USE_PACKAGES)
+    # Set default values
+    macro_create_option(AREG_USE_PACKAGES      ON  "Enable using installed packages")
+    macro_create_option(AREG_SQLITE_PACKAGE    ON  "Use SQLite3 installed package")
+    macro_create_option(AREG_GTEST_PACKAGE     ON  "Use GTest installed package")
+elseif(AREG_USE_PACKAGES)
+    # Using packages is enabled by default, set values
+    macro_create_option(AREG_USE_PACKAGES      ON  "Enable using installed packages")
+    macro_create_option(AREG_SQLITE_PACKAGE    ON  "Use SQLite3 installed package")
+    macro_create_option(AREG_GTEST_PACKAGE     ON  "Use GTest installed package")
+else()
+    # Using packages is disabled by default, set values
+    macro_create_option(AREG_USE_PACKAGES      OFF "Enable using installed packages")
+    macro_create_option(AREG_SQLITE_PACKAGE    OFF "Use SQLite3 installed package")
+    macro_create_option(AREG_GTEST_PACKAGE     OFF "Use GTest installed package")
 endif()
 
 # Set the areg-sdk build root folder to output files.

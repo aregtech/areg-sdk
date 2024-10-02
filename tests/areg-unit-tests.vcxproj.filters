@@ -19,7 +19,7 @@
     <Text Include="CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="units\DemoTest.cpp">
+    <ClCompile Include="units\GUnitTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="units\LogScopesTest.cpp">

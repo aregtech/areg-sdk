@@ -52,7 +52,7 @@ set(AREG_COMPILER_VERSION)
 set(AREG_TARGET_COMPILER_OPTIONS)
 # Set the SQLite library reference
 set(AREG_SQLITE_LIB_REF sqlite3)
-option(AREG_FOUND_SQLITE3_PACKAGE "SQLite3 package" OFF)
+option(AREG_SQLITE_FOUND "SQLite3 package" OFF)
 
 # Adding common definition
 add_definitions(-DUNICODE -D_UNICODE)
@@ -108,6 +108,9 @@ else()
     add_definitions(-DAREG_LOGS=0)
 endif()
 
+if ( "${CMAKE_BUILD_TYPE}" STREQUAL "")
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "AREG build type")
+endif()
 
 # -------------------------------------------------------
 # Setup product paths

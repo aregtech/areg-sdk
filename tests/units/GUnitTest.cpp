@@ -19,10 +19,16 @@
 #include "units/GUnitTest.hpp"
 #include "areg/base/String.hpp"
 
+#ifdef WINDOWS
+    #pragma comment(lib, "areg.lib")
+    #pragma comment(lib, "areg-extend.lib")
+#endif // WINDOWS
+
+
 /**
  * \brief   A dummy test to run to make sure that Unit Tests are running.
  **/
-TEST(DemoTest, BasicAssertion)
+TEST(GUnitTestDummy, BasicAssertion)
 {
     EXPECT_EQ(2*2, 4);
 }
@@ -31,7 +37,7 @@ TEST(DemoTest, BasicAssertion)
  * \brief   A dummy test using AREG library to make sure that the unit tests are
  *          properly linked with AREG framework library.
  **/
-TEST( DemoTest, BasicString )
+TEST(GUnitTestDummy, BasicString )
 {
     constexpr std::string_view _hello{ "hello areg-sdk" };
 
