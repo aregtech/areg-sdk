@@ -491,8 +491,12 @@ private:
 
     /**
      * \brief   Cleans data of Thread object, i.e. reset running flag, invalidates thread info.
+     * \param   unregister  Flag, indicating whether it should search the thread object
+     *          in the resource maps and remove it. If 'true', it will search and remove
+     *          all pointers from the maps then close handles and reset variable.
+     *          Otherwise, it make only closes handles and resets variables.
      **/
-    void _cleanResources( void );
+    void _cleanResources( bool unregister);
 
     /**
      * \brief   Registers Thread. Returns true if succeed

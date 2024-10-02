@@ -111,7 +111,7 @@ public:
     /**
      * \brief   Destructor.
      **/
-    ~TEHashMap( void ) = default;
+    ~TEHashMap( void );
 
 //////////////////////////////////////////////////////////////////////////
 // Operators
@@ -534,6 +534,12 @@ template < typename KEY, typename VALUE >
 inline bool TEHashMap<KEY, VALUE>::operator != ( const TEHashMap<KEY, VALUE>& other ) const
 {
     return (mValueList != other.mValueList);
+}
+
+template<typename KEY, typename VALUE>
+inline TEHashMap<KEY, VALUE>::~TEHashMap(void)
+{
+    mValueList.clear();
 }
 
 template < typename KEY, typename VALUE >

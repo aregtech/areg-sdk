@@ -158,7 +158,7 @@ Thread::Thread(IEThreadConsumer &threadConsumer, const String & threadName )
 
 Thread::~Thread( void )
 {
-    _cleanResources();
+    _cleanResources(false);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -205,7 +205,7 @@ Thread::eCompletionStatus Thread::shutdownThread( unsigned int waitForStopMs /* 
 
     if ( mSynchObject.tryLock( ) )
     {
-        _cleanResources( );
+        _cleanResources( true );
         mSynchObject.unlock( );
     }
 
@@ -281,16 +281,20 @@ int Thread::_threadEntry( void )
         Thread::getCurrentThreadStorage().removeStoragteItem(STORAGE_THREAD_CONSUMER.data());
     }
 
-    _cleanResources();
+    _cleanResources( true );
 
     return static_cast<int>(result);
 }
 
-void Thread::_cleanResources( void )
+void Thread::_cleanResources(bool unregister)
 {
     Lock lock(mSynchObject);
 
-    _unregisterThread();
+    if (unregister)
+    {
+        _unregisterThread();
+    }
+
     THREADHANDLE handle{ mThreadHandle };
     mThreadHandle   = Thread::INVALID_THREAD_HANDLE;
     mThreadId       = Thread::INVALID_THREAD_ID;

@@ -30,22 +30,6 @@ project("${PROJECT_NAME}"
 # The 'common.cmake' file should be included after 'project' call
 include(${AREG_CMAKE_CONFIG_DIR}/common.cmake)
 
-message(STATUS "=======================================================================================")
-message(STATUS "--------------------> AREG project CMakeLists Status Report Begin <--------------------")
-message(STATUS "=======================================================================================")
-message(STATUS "AREG: >>> CMAKE_SOURCE_DIR = \'${CMAKE_SOURCE_DIR}\'")
-message(STATUS "AREG: >>> Build ...........: \'${CMAKE_SYSTEM_NAME}\' system, \'${AREG_BITNESS}\'-bit platform, '${AREG_PROCESSOR}' CPU, build type \'${CMAKE_BUILD_TYPE}\'")
-message(STATUS "AREG: >>> Compiler ........: \'${CMAKE_CXX_COMPILER}\', ID \'${AREG_COMPILER_FAMILY}\'")
-message(STATUS "AREG: >>> Binary output ...: \'${AREG_OUTPUT_BIN}\', extension '${CMAKE_EXECUTABLE_SUFFIX}'")
-message(STATUS "AREG: >>> Generated files .: \'${AREG_GENERATE_DIR}\' directory")
-message(STATUS "AREG: >>> Packages ........: \'${FETCHCONTENT_BASE_DIR}\' directory")
-message(STATUS "AREG: >>> Java version ....: \'${Java_VERSION_STRING}\' of version \'${Java_JAVA_EXECUTABLE}\'. Minimum should be 17")
-message(STATUS "AREG: >>> Other options ...: Examples = \'${AREG_BUILD_EXAMPLES}\', Unit Tests = \'${AREG_BUILD_TESTS}\', AREG Extended = \'${AREG_EXTENDED}\', Logs = \'${AREG_LOGS}\'")
-message(STATUS "AREG: >>> Installation ....: is '${AREG_INSTALL}', Thirdparty is '${AREG_INSTALL_DEPENDS}', location \'${CMAKE_INSTALL_PREFIX}\'")
-message(STATUS "=======================================================================================")
-message(STATUS "--------------------> AREG project CMakeLists Status Report End <----------------------")
-message(STATUS "=======================================================================================")
-
 # add a custom command to create output build folders if they are not existing.
 # create a dummy project to add as a dependency in all other projects.
 # this ensures that the commands to create directories are called first.
@@ -74,3 +58,21 @@ if(AREG_BUILD_TESTS)
 endif()
 
 include(${AREG_CMAKE_CONFIG_DIR}/install.cmake)
+
+# Print the configuration status
+message(STATUS "=======================================================================================")
+message(STATUS "----------------------> AREG project CMake Status Report Begin <-----------------------")
+message(STATUS "=======================================================================================")
+message(STATUS "AREG: >>> CMAKE_SOURCE_DIR = \'${CMAKE_SOURCE_DIR}\', build type \'${CMAKE_BUILD_TYPE}\'")
+message(STATUS "AREG: >>> Build ...........: \'${CMAKE_SYSTEM_NAME}\' system, \'${AREG_BITNESS}\'-bit platform, \'${AREG_PROCESSOR}\' CPU")
+message(STATUS "AREG: >>> Compiler ........: \'${CMAKE_CXX_COMPILER}\', ID \'${AREG_COMPILER_FAMILY}\'")
+message(STATUS "AREG: >>> Binary output ...: \'${AREG_OUTPUT_BIN}\', extension '${CMAKE_EXECUTABLE_SUFFIX}'")
+message(STATUS "AREG: >>> Generated files .: \'${AREG_GENERATE_DIR}\' directory")
+message(STATUS "AREG: >>> Packages ........: \'${FETCHCONTENT_BASE_DIR}\' directory")
+message(STATUS "AREG: >>> Java version ....: \'${Java_VERSION_STRING}\' of version \'${Java_JAVA_EXECUTABLE}\'. Minimum should be 17")
+message(STATUS "AREG: >>> Use of packages .: SQLite3 package use is \'${AREG_SQLITE_PACKAGE}\', GTest package use is \'${AREG_GTEST_PACKAGE}\' ")
+message(STATUS "AREG: >>> Other options ...: Examples = \'${AREG_BUILD_EXAMPLES}\', Unit Tests = \'${AREG_BUILD_TESTS}\', AREG Extended = \'${AREG_EXTENDED}\', Logs = \'${AREG_LOGS}\'")
+message(STATUS "AREG: >>> Installation ....: is '${AREG_INSTALL}', Thirdparty is '${AREG_INSTALL_DEPENDS}', location \'${CMAKE_INSTALL_PREFIX}\'")
+message(STATUS "=======================================================================================")
+message(STATUS "-----------------------> AREG project CMake Status Report End <------------------------")
+message(STATUS "=======================================================================================")

@@ -681,14 +681,12 @@ endfunction(addTest)
 # Usage ......: addUnitTestEx( <name of executable> "<list of sources>" "<list of libraries>")
 # ---------------------------------------------------------------------------
 function(addUnitTestEx test_project test_sources library_list)
-    if (DEFINED GOOGLE_TEST_BASE)
-        if (TARGET ${test_project})
-            target_sources(${test_project} PRIVATE "${test_sources}")
-        else()
-            list(APPEND google_test_libs "GTest::gtest_main" "GTest::gtest" "${library_list}")
-            addExecutableEx(${test_project} "${test_sources}" "${google_test_libs}")
-            gtest_discover_tests(${test_project} DISCOVERY_TIMEOUT 60)
-        endif()
+    if (TARGET ${test_project})
+        target_sources(${test_project} PRIVATE "${test_sources}")
+    else()
+        list(APPEND google_test_libs "GTest::gtest_main" "GTest::gtest" "${library_list}")
+        addExecutableEx(${test_project} "${test_sources}" "${google_test_libs}")
+        gtest_discover_tests(${test_project} DISCOVERY_TIMEOUT 60)
     endif()
 endfunction(addUnitTestEx)
 
@@ -719,17 +717,41 @@ endfunction(addUnitTest)
 # Macro ......: macro_find_package
 # Parameters .: ${package_name}     -- On input should contain the name of package to search.
 #               ${package_found}    -- On output contains flag indicating whether package found or not.
-#               ${package_includes} -- If package found, on output contains the locations of include headers of the package.
-#               ${package_libraries}-- if package found, on output contains the locations of libraries to use.
+#               ${package_includes} -- If package found, on output contains the location of include headers of the package.
+#                                      The value can be empty, check before use.
+#               ${package_libraries}-- If package found, on output contains the locations of libraries to use.
+#                                      The value can be empty, check before use.
 # Example ....: macro_find_package(SQLite3 SQLITE_FOUND SQLITE_INCLUDE SQLITE_LIB)
 # ---------------------------------------------------------------------------
 macro(macro_find_package package_name package_found package_includes package_libraries)
     find_package(${package_name})
     if (${package_name}_FOUND)
-        set(${package_found} ON)
-        set(${package_includes} "${${package_name}_INCLUDE_DIR}")
+        set(${package_found} TRUE)
+        set(${package_includes}  "${${package_name}_INCLUDE_DIR}")
         set(${package_libraries} "${${package_name}_LIBRARY}")
     else()
-        option(${package_found} OFF)
+        set(${package_found} FALSE)
     endif()
 endmacro(macro_find_package)
+
+# ---------------------------------------------------------------------------
+# Description : This macro creates a boolean variable (options / switches) to enable or disable,
+#               in the CMake during configuration. It forces to create variable
+#               in the CMake cache and update values with following logic:
+#                   1. If specified variable was not defined, it creates one and sets default value;
+#                   2. If it was created, it ensures that the variable has boolean type.
+# Macro ......: macro_create_option
+# Parameters .: ${var_name}     -- Should be the name of the boolean variable to define of modify.
+#               ${var_value}    -- Is the default value to set if variable was not defined. Ignored, if variable exists.
+#               ${var_describe} -- The short description of the variable, can be empty string.
+# Example ....: macro_create_option(AREG_LOGS ON "Compile with logs")
+# ---------------------------------------------------------------------------
+macro(macro_create_option var_name var_value var_describe)
+    if (NOT DEFINED ${var_name})
+        # option(${var_name} "${var_describe}" ${${var_value}})
+        set(${var_name} ${var_value} CACHE BOOL "${var_describe}" FORCE)
+    else()
+        set(_VAR_TEMP ${${var_name}})
+        set(${var_name} ${_VAR_TEMP} CACHE BOOL "${var_describe}" FORCE)
+    endif()
+endmacro(macro_create_option)

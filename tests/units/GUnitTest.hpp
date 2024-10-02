@@ -35,9 +35,4 @@
 #include "areg/base/GEGlobal.h"
 #include "gtest/gtest.h"
 
-#ifdef WINDOWS
-    #pragma comment(lib, "areg.lib")
-    #pragma comment(lib, "areg-extend.lib")
-#endif // WINDOWS
-
 #endif // !AREG_TESTS_UNITS_GUNITTESTS_HPP

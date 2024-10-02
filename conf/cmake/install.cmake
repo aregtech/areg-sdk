@@ -66,7 +66,7 @@ if (AREG_INSTALL)
     if (AREG_INSTALL_DEPENDS)
 
         # Check how SQLite was built
-        if (NOT AREG_FOUND_SQLITE3_PACKAGE)
+        if (NOT AREG_SQLITE_FOUND)
             # copy compiled binaries in the bin and lib directories
             install( TARGETS sqlite3
                 ARCHIVE DESTINATION lib         COMPONENT Development   COMPONENT ${AREG_PACKAGE_NAME}
@@ -85,7 +85,7 @@ if (AREG_INSTALL)
                             RENAME SQLITE.copyright
                             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
             )
-        endif(NOT AREG_FOUND_SQLITE3_PACKAGE)
+        endif(NOT AREG_SQLITE_FOUND)
 
     endif(AREG_INSTALL_DEPENDS)
 
