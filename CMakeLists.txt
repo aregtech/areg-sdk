@@ -16,7 +16,7 @@ include(${AREG_CMAKE_CONFIG_DIR}/setup.cmake)
 
 # AREG SDK project name and version
 set(AREG_PROJECT_NAME "areg-sdk")
-set(AREG_PROJECT_VERSION "1.5.0")
+set(AREG_PROJECT_VERSION "1.9.99.111")
 
 # Project's properties
 set(PROJECT_NAME ${AREG_PROJECT_NAME})
@@ -57,7 +57,9 @@ if(AREG_BUILD_TESTS)
     include(${AREG_TESTS}/CMakeLists.txt)
 endif()
 
-include(${AREG_CMAKE_CONFIG_DIR}/install.cmake)
+if (AREG_INSTALL)
+    include(${AREG_CMAKE_CONFIG_DIR}/install.cmake)
+endif(AREG_INSTALL)
 
 # Print the configuration status
 message(STATUS "=======================================================================================")
