@@ -187,7 +187,11 @@ if (NOT ${Java_FOUND})
 endif()
 
 if (AREG_INSTALL)
-    set(CMAKE_INSTALL_PREFIX "${AREG_INSTALL_PATH}")
-    option(INSTALL_GTEST "Disable Googletest installation" OFF)
     include(GNUInstallDirs)
+    include(CMakePackageConfigHelpers)
+    option(INSTALL_GTEST "Disable Googletest installation" OFF)
+
+    if (NOT "${AREG_INSTALL_PATH}" STREQUAL "")
+        set(CMAKE_INSTALL_PREFIX "${AREG_INSTALL_PATH}")
+    endif()
 endif()

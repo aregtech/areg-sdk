@@ -228,6 +228,7 @@ if (NOT DEFINED AREG_PACKAGES OR "${AREG_PACKAGES}" STREQUAL "")
     set(AREG_PACKAGES "${AREG_BUILD_ROOT}/packages")
 endif()
 
+#[===[
 if ("${AREG_INSTALL_PATH}" STREQUAL "")
     if ("${CMAKE_INSTALL_PREFIX}" STREQUAL "")
         set(INST_PATH "${AREG_BUILD_ROOT}")
@@ -247,6 +248,7 @@ if ("${AREG_INSTALL_PATH}" STREQUAL "")
         set(AREG_INSTALL_PATH "${CMAKE_INSTALL_PREFIX}")
     endif()
 endif()
+#]===]
 
 # The absolute path for generated files
 set(AREG_GENERATE "generate")
