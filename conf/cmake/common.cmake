@@ -3,6 +3,10 @@
 # Copyright 2022-2023 Aregtech
 # ###########################################################################
 
+if (NOT "${CMAKE_BUILD_TYPE}" STREQUAL "")
+    set(AREG_BUILD_TYPE "${CMAKE_BUILD_TYPE}")
+endif()
+
 if ("${AREG_COMPILER_FAMILY}" STREQUAL "")
     set(AREG_CXX_COMPILER "${CMAKE_CXX_COMPILER}")
     set(AREG_C_COMPILER   "${CMAKE_C_COMPILER}")
@@ -185,4 +189,5 @@ endif()
 if (AREG_INSTALL)
     set(CMAKE_INSTALL_PREFIX "${AREG_INSTALL_PATH}")
     option(INSTALL_GTEST "Disable Googletest installation" OFF)
+    include(GNUInstallDirs)
 endif()

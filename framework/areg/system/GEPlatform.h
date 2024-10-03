@@ -1,7 +1,7 @@
 #ifndef AREG_SYSTEM_GEPLATFORM_H
 #define AREG_SYSTEM_GEPLATFORM_H
 /************************************************************************
- * \file        system/GEPlatform.h
+ * \file        areg/system/GEPlatform.h
  * \ingroup     platform dependent files
  * \author      Artak Avetyan
  * \brief       AREG Framework, platform dependent includes
@@ -46,11 +46,11 @@
     #undef WINDOWS
     #undef _WINDOWS
 
-    #include "system/posix/GEPosix.h"
+    #include "areg/system/posix/GEPosix.h"
 
 #elif (defined(_WINDOWS) || defined(WINDOWS))
 
-    #include "system/windows/GEWindows.h"
+    #include "areg/system/windows/GEWindows.h"
 
 #else // !(defined(_WINDOWS) || defined(WINDOWS))
 

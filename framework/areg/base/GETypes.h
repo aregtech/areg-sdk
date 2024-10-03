@@ -24,7 +24,7 @@
  *          everywhere instead of the default types.
  *          included from GGlobal.h
  **/
-#include "system/GEPlatform.h"
+#include "areg/system/GEPlatform.h"
 
 #if defined(_MSC_VER) && (_MSC_VER < 1600 ) // MS express/studio 2008 or earlier
 

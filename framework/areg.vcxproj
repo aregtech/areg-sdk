@@ -407,9 +407,9 @@
     <ClInclude Include="areg\trace\private\NELogging.hpp" />
     <ClInclude Include="areg\persist\PropertyKey.hpp" />
     <ClInclude Include="areg\persist\IEConfigurationListener.hpp" />
-    <ClInclude Include="system\posix\GEPosix.h" />
-    <ClInclude Include="system\windows\GEWindows.h" />
-    <ClInclude Include="system\GEPlatform.h" />
+    <ClInclude Include="areg\system\posix\GEPosix.h" />
+    <ClInclude Include="areg\system\windows\GEWindows.h" />
+    <ClInclude Include="areg\system\GEPlatform.h" />
     <ClInclude Include="areg\component\private\WatchdogManager.hpp" />
   </ItemGroup>
   <ItemGroup>

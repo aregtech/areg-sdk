@@ -17,7 +17,6 @@
 
 #if defined(_POSIX) || defined(POSIX)
 
-#include "system/GEPlatform.h"
 #include "areg/base/File.hpp"
 
 #include <unistd.h>

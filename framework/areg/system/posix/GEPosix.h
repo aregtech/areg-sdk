@@ -2,7 +2,7 @@
 #define AREG_SYSTEM_POSIX_GEPOSIX_H
 
 /************************************************************************
-* \file        system/posix/GEPosix.h
+* \file        areg/system/posix/GEPosix.h
 * \ingroup     Framework globals
 * \author      Artak Avetyan
 * \brief       AREG Framework, platform dependent includes. POSIX specific directives

@@ -21,7 +21,7 @@ if (AREG_INSTALL)
 
     # Copy AREG SDK all headers
     install(DIRECTORY framework/
-                DESTINATION framework COMPONENT Development   COMPONENT ${AREG_PACKAGE_NAME}
+                DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT Development   COMPONENT ${AREG_PACKAGE_NAME}
                 FILES_MATCHING
                     PATTERN "*.h" 
                     PATTERN "*.hpp"

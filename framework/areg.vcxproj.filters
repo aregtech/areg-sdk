@@ -572,10 +572,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="system\windows\GEWindows.h">
+    <ClInclude Include="areg\system\windows\GEWindows.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="system\GEPlatform.h">
+    <ClInclude Include="areg\system\GEPlatform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\appbase\private\configure.hpp">
@@ -725,7 +725,7 @@
     <ClInclude Include="areg\trace\NETrace.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="system\posix\GEPosix.h">
+    <ClInclude Include="areg\system\posix\GEPosix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\TEResourceListMap.hpp">
