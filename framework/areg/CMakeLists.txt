@@ -42,6 +42,7 @@ target_link_libraries(areg PRIVATE ${AREG_LDFLAGS})
 
 # Library configuration
 set_target_properties(areg PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON )
+set_target_properties(areg PROPERTIES VERSION ${AREG_PROJECT_VERSION})
 
 # copying log and router init files to 'bin/config'
 add_custom_command( TARGET areg POST_BUILD 

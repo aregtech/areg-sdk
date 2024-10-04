@@ -37,6 +37,7 @@ else(AREG_LOGOBSERVER_LIB MATCHES "static")
     target_compile_definitions(logobserverapi PRIVATE EXP_LOGOBSERVER_LIB)
 
 endif(AREG_LOGOBSERVER_LIB MATCHES "shared")
+set_target_properties(logobserverapi    PROPERTIES VERSION ${AREG_PROJECT_VERSION})
 
 # ##################################################################
 # build log observer console application
@@ -48,4 +49,6 @@ else (AREG_LOGOBSERVER_LIB MATCHES "static")
     addExecutableEx(logobserver "${logobserverapp_SRC}" logobserverapi ${AREG_SQLITE_LIB_REF})
     target_compile_definitions(logobserver PRIVATE IMP_LOGOBSERVER_LIB)
 endif()
+
+set_target_properties(logobserver  PROPERTIES VERSION ${AREG_PROJECT_VERSION})
 target_compile_options(logobserver PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")

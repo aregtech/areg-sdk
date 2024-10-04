@@ -7,4 +7,5 @@ include("${extend_BASE}/service/private/CMakeLists.txt")
 
 # build areg extended static library
 addStaticLib(areg-extend "${extend_SRC}")
+set_target_properties(areg-extend  PROPERTIES VERSION ${AREG_PROJECT_VERSION})
 target_compile_options(areg-extend PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")
