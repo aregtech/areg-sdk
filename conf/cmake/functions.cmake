@@ -755,3 +755,35 @@ macro(macro_create_option var_name var_value var_describe)
         set(${var_name} ${_VAR_TEMP} CACHE BOOL "${var_describe}" FORCE)
     endif()
 endmacro(macro_create_option)
+
+# ---------------------------------------------------------------------------
+# Description : Recursively removes empty directories.
+#               The function checks whether the given \'dir_name\' is an
+#               existing directory and queries list of files and sub-directories
+#               in the given directory. If the result is empty list, it removes
+#               the directory. Otherwise, it loops the sub-directories searching
+#               and removing empty directories.
+# Function ...: removeEmptyDirs
+# Parameters .: ${dir_name}     -- The path of directory to check and remove.
+# Usage ......: removeEmptyDirs( <the full path of file or directory> )
+# ---------------------------------------------------------------------------
+function(removeEmptyDirs dir_name)
+    if (EXISTS "${dir_name}" AND IS_DIRECTORY "${dir_name}")
+        file(GLOB dir_to_remove "${dir_name}/*")
+        if ("${dir_to_remove}" STREQUAL "")
+            # The directory is empty, can be removed.
+            file(REMOVE_RECURSE "${dir_name}")
+        else()
+            foreach (entry IN LISTS dir_to_remove)
+                removeEmptyDirs("${entry}")
+            endforeach()
+
+            # After recursive check and possible remove, check one more time
+            # is the directory and remove if it is empty.
+            file(GLOB dir_to_remove "${dir_name}/*")
+            if ("${dir_to_remove}" STREQUAL "")            
+                file(REMOVE_RECURSE "${dir_name}")
+            endif()
+        endif()
+    endif()
+endfunction(removeEmptyDirs)

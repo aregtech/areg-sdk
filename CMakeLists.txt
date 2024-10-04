@@ -74,7 +74,7 @@ message(STATUS "AREG: >>> Packages ........: \'${FETCHCONTENT_BASE_DIR}\' direct
 message(STATUS "AREG: >>> Java version ....: \'${Java_VERSION_STRING}\' of version \'${Java_JAVA_EXECUTABLE}\'. Minimum should be 17")
 message(STATUS "AREG: >>> Use of packages .: SQLite3 package use is \'${AREG_SQLITE_PACKAGE}\', GTest package use is \'${AREG_GTEST_PACKAGE}\' ")
 message(STATUS "AREG: >>> Other options ...: Examples = \'${AREG_BUILD_EXAMPLES}\', Unit Tests = \'${AREG_BUILD_TESTS}\', AREG Extended = \'${AREG_EXTENDED}\', Logs = \'${AREG_LOGS}\'")
-message(STATUS "AREG: >>> Installation ....: is '${AREG_INSTALL}', Thirdparty is '${AREG_INSTALL_DEPENDS}', location \'${CMAKE_INSTALL_PREFIX}\'")
+message(STATUS "AREG: >>> Installation ....: is '${AREG_INSTALL}', location \'${CMAKE_INSTALL_PREFIX}\'")
 message(STATUS "=======================================================================================")
 message(STATUS "-----------------------> AREG project CMake Status Report End <------------------------")
 message(STATUS "=======================================================================================")

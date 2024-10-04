@@ -7,21 +7,33 @@ message(STATUS "AREG: >>> Preparing AREG SDK installation settings, CMAKE_PACKAG
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
-set(AREG_PACKAGE_NAME   "areg-sdk")
+set(AREG_PACKAGE_NAME   "areg")
+
+target_include_directories(areg PUBLIC
+	$<INSTALL_INTERFACE:include>
+)
 
 # copy compiled binaries in the bin and lib directories
-install(TARGETS areg mcrouter logger logobserver areg-extend
-    RUNTIME DESTINATION bin  COMPONENT Runtime      COMPONENT ${AREG_PACKAGE_NAME}
+install(TARGETS areg logobserverapi areg-extend
+    EXPORT ${AREG_PACKAGE_NAME}
+    RUNTIME DESTINATION bin  COMPONENT Development  COMPONENT ${AREG_PACKAGE_NAME}
             PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ WORLD_READ GROUP_EXECUTE WORLD_EXECUTE
-    LIBRARY DESTINATION bin  COMPONENT Runtime      COMPONENT ${AREG_PACKAGE_NAME}
+    LIBRARY DESTINATION bin  COMPONENT Development  COMPONENT ${AREG_PACKAGE_NAME}
             PERMISSIONS OWNER_READ OWNER_WRITE               GROUP_READ WORLD_READ
     ARCHIVE DESTINATION lib  COMPONENT Development  COMPONENT ${AREG_PACKAGE_NAME}
             PERMISSIONS OWNER_READ OWNER_WRITE               GROUP_READ WORLD_READ
 )
 
+install(TARGETS mcrouter logger logobserver
+    EXPORT ${AREG_PACKAGE_NAME}
+    RUNTIME DESTINATION tools/${AREG_PACKAGE_NAME}-dbg  COMPONENT Runtime      COMPONENT ${AREG_PACKAGE_NAME}
+            PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ WORLD_READ GROUP_EXECUTE WORLD_EXECUTE
+)
+
 # Copy AREG SDK all headers
 install(DIRECTORY framework/
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT Development   COMPONENT ${AREG_PACKAGE_NAME}
+            CONFIGURATIONS Release
             FILES_MATCHING
                 PATTERN "*.h" 
                 PATTERN "*.hpp"
@@ -31,20 +43,20 @@ install(DIRECTORY framework/
 )
 
 # Copy all CMake and MSVC configuration files.
-install(DIRECTORY conf/
+install(DIRECTORY ${AREG_CMAKE_CONFIG_DIR}
             DESTINATION conf COMPONENT Development   COMPONENT ${AREG_PACKAGE_NAME}
 )
-    
+
 # Copy all tools
 install(DIRECTORY tools/
-            DESTINATION ${AREG_PACKAGE_NAME}-tools  COMPONENT Development   COMPONENT ${AREG_PACKAGE_NAME}
+            DESTINATION tools/${AREG_PACKAGE_NAME}  COMPONENT Development   COMPONENT ${AREG_PACKAGE_NAME}
             DIRECTORY_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ WORLD_READ GROUP_EXECUTE WORLD_EXECUTE
 )
 
 # Copy AREG SDK license
 install(FILES LICENSE.txt
-            DESTINATION licenses        COMPONENT Development   COMPONENT Runtime   COMPONENT ${AREG_PACKAGE_NAME}
-                RENAME AREG.copyright
+            DESTINATION share/${AREG_PACKAGE_NAME} COMPONENT Development   COMPONENT Runtime   COMPONENT ${AREG_PACKAGE_NAME}
+                RENAME copyright
                 PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
 )
 
@@ -62,29 +74,6 @@ install(DIRECTORY ${AREG_OUTPUT_BIN}/
                 PATTERN "config" EXCLUDE
 )
 
-# Check and install thirdparty dependencies if needed
-if (AREG_INSTALL_DEPENDS)
-
-    # Check how SQLite was built
-    if (NOT AREG_SQLITE_FOUND)
-        # copy compiled binaries in the bin and lib directories
-        install( TARGETS sqlite3
-            ARCHIVE DESTINATION lib         COMPONENT Development   COMPONENT ${AREG_PACKAGE_NAME}
-                    PERMISSIONS OWNER_READ OWNER_WRITE               GROUP_READ WORLD_READ
-        )
-
-        # Copy thirdparty sources with headers
-        install(DIRECTORY thirdparty/
-                    DESTINATION thirdparty COMPONENT Development   COMPONENT ${AREG_PACKAGE_NAME}
-                            PATTERN "*.vcxproj*" EXCLUDE
-        )
-    
-        # Copy thirdparty licenses
-        install(FILES ${AREG_THIRDPARTY}/sqlite3/LICENSE.txt
-                    DESTINATION licenses    COMPONENT Development   COMPONENT Runtime     COMPONENT ${AREG_PACKAGE_NAME}
-                        RENAME SQLITE.copyright
-                        PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
-        )
-    endif(NOT AREG_SQLITE_FOUND)
-
-endif(AREG_INSTALL_DEPENDS)
+configure_file("${AREG_CMAKE_CONFIG_DIR}/areg.pc.in" areg.pc @ONLY)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/areg.pc" DESTINATION lib/pkgconfig)
+install(EXPORT ${AREG_PACKAGE_NAME} DESTINATION share/${AREG_PACKAGE_NAME} NAMESPACE areg:: FILE ${AREG_PACKAGE_NAME}.cmake EXPORT_LINK_INTERFACE_LIBRARIES)

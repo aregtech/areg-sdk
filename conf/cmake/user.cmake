@@ -194,7 +194,7 @@ macro_create_option(AREG_LOGS ON "Compile with logs")
 macro_create_option(AREG_INSTALL ON "Enable installation")
 
 # Escape installing third-party dependencies  
-macro_create_option(AREG_INSTALL_DEPENDS OFF "Disable installation of thirdparty dependencies")
+# macro_create_option(AREG_INSTALL_DEPENDS OFF "Disable installation of thirdparty dependencies")
 
 # Check the request of using installed packages
 if (NOT DEFINED AREG_USE_PACKAGES)
