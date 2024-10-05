@@ -138,7 +138,7 @@ configure_package_config_file("${AREG_EXPORTS_DIR}/config.cmake.in" "${CMAKE_CUR
 
 export(TARGETS areg aregextend areglogger
             NAMESPACE ${AREG_PACKAGE_NAME}::
-            FILE ${AREG_PACKAGE_NAME}-export.cmake
+            FILE ${AREG_PACKAGE_NAME}-targets.cmake
             EXPORT_LINK_INTERFACE_LIBRARIES
 )
 
@@ -153,6 +153,6 @@ install(EXPORT ${AREG_PACKAGE_NAME}
             DESTINATION share/${AREG_PACKAGE_NAME} 
             COMPONENT Development
             NAMESPACE ${AREG_PACKAGE_NAME}::
-            FILE areg-export.cmake
+            FILE ${AREG_PACKAGE_NAME}-targets.cmake
             EXPORT_LINK_INTERFACE_LIBRARIES
 )
