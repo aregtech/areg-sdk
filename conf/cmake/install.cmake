@@ -14,7 +14,7 @@ target_include_directories(areg PUBLIC
 )
 
 # copy compiled binaries in the bin and lib directories
-install(TARGETS areg logobserverapi areg-extend
+install(TARGETS areg aregextend areglogger
     EXPORT ${AREG_PACKAGE_NAME}
     RUNTIME DESTINATION bin  COMPONENT Development  COMPONENT ${AREG_PACKAGE_NAME}
             PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ WORLD_READ GROUP_EXECUTE WORLD_EXECUTE
@@ -24,7 +24,7 @@ install(TARGETS areg logobserverapi areg-extend
             PERMISSIONS OWNER_READ OWNER_WRITE               GROUP_READ WORLD_READ
 )
 
-install(TARGETS mcrouter logger logobserver
+install(TARGETS logger logobserver mcrouter
     EXPORT ${AREG_PACKAGE_NAME}
     RUNTIME DESTINATION tools/${AREG_PACKAGE_NAME}-dbg  COMPONENT Runtime      COMPONENT ${AREG_PACKAGE_NAME}
             PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ WORLD_READ GROUP_EXECUTE WORLD_EXECUTE
@@ -38,12 +38,12 @@ install(DIRECTORY framework/
                 PATTERN "*.h" 
                 PATTERN "*.hpp"
                 PATTERN "logger"            EXCLUDE
-                PATTERN "logobserver/app"   EXCLUDE
+                PATTERN "logobserver"       EXCLUDE
                 PATTERN "mcrouter"          EXCLUDE
 )
 
 # Copy all CMake and MSVC configuration files.
-install(DIRECTORY ${AREG_CMAKE_CONFIG_DIR}
+install(DIRECTORY ${AREG_SDK_ROOT}/conf
             DESTINATION conf COMPONENT Development   COMPONENT ${AREG_PACKAGE_NAME}
 )
 
@@ -76,4 +76,10 @@ install(DIRECTORY ${AREG_OUTPUT_BIN}/
 
 configure_file("${AREG_CMAKE_CONFIG_DIR}/areg.pc.in" areg.pc @ONLY)
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/areg.pc" DESTINATION lib/pkgconfig)
-install(EXPORT ${AREG_PACKAGE_NAME} DESTINATION share/${AREG_PACKAGE_NAME} NAMESPACE areg:: FILE ${AREG_PACKAGE_NAME}.cmake EXPORT_LINK_INTERFACE_LIBRARIES)
+configure_file("${AREG_CMAKE_CONFIG_DIR}/aregextend.pc.in" aregextend.pc @ONLY)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/aregextend.pc" DESTINATION lib/pkgconfig)
+configure_file("${AREG_CMAKE_CONFIG_DIR}/areglogger.pc.in" areglogger.pc @ONLY)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/areglogger.pc" DESTINATION lib/pkgconfig)
+install(EXPORT ${AREG_PACKAGE_NAME} DESTINATION share/${AREG_PACKAGE_NAME} NAMESPACE ${AREG_PACKAGE_NAME}:: FILE areg.cmake EXPORT_LINK_INTERFACE_LIBRARIES)
+install(EXPORT ${AREG_PACKAGE_NAME} DESTINATION share/${AREG_PACKAGE_NAME} NAMESPACE ${AREG_PACKAGE_NAME}:: FILE aregextend.cmake EXPORT_LINK_INTERFACE_LIBRARIES)
+install(EXPORT ${AREG_PACKAGE_NAME} DESTINATION share/${AREG_PACKAGE_NAME} NAMESPACE ${AREG_PACKAGE_NAME}:: FILE areglogger.cmake EXPORT_LINK_INTERFACE_LIBRARIES)

@@ -1,0 +1,21 @@
+LIBRARY areglogger
+
+EXPORTS
+    logObserverInitialize
+    logObserverRelease
+    logObserverConnectLogger
+    logObserverDisconnectLogger
+    logObserverPauseLogging
+    logObserverCurrentState
+    logObserverIsInitialized
+    logObserverIsConnected
+    logObserverIsStarted
+    logObserverLoggerAddress
+    logObserverLoggerPort
+    logObserverConfigLoggerEnabled
+    logObserverConfigLoggerAddress
+    logObserverConfigLoggerPort
+    logObserverRequestInstances
+    logObserverRequestScopes
+    logObserverRequestChangeScopePrio
+    logObserverRequestSaveConfig

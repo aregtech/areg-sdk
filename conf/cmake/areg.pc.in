@@ -5,9 +5,9 @@ includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@
 
 Name: areg
 Description: AREG communication framework
-Version: @PKGCONFIG_VERSION@
+Version: @PROJECT_VERSION@
 URL: https://github.com/aregtech/areg-sdk
-Libs: -L${libdir} -lareg -lareg-extend
+Libs: -L${libdir} @AREG_LDFLAGS@
 Requires: areg = @PROJECT_VERSION@
-Libs.private: @PKGCONFIG_LIBS_PRIVATE@
+Libs.private: -lareg
 Cflags: -I${includedir}

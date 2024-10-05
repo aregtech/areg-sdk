@@ -17,7 +17,7 @@
 #ifdef WIN32
     #pragma comment(lib, "areg.lib")
     #pragma comment(lib, "22_generated.lib")
-    #pragma comment(lib, "areg-extend.lib")
+    #pragma comment(lib, "aregextend.lib")
 #endif // WINDOWS
 
 //////////////////////////////////////////////////////////////////////////

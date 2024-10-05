@@ -17,7 +17,7 @@ function(setAppOptions item library_list)
     target_compile_options(${item} PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}")
 
     # Linking flags
-    target_link_libraries(${item} areg-extend ${library_list} areg ${AREG_EXTENDED_LIBS} ${AREG_LDFLAGS})
+    target_link_libraries(${item} aregextend ${library_list} areg ${AREG_EXTENDED_LIBS} ${AREG_LDFLAGS})
    
     # Adjusting CPP standard for target
     set_target_properties(${item} PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON )
@@ -180,7 +180,7 @@ function(setSharedLibOptions item library_list)
     target_compile_options(${item} PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}")
 
     # Linking flags
-    target_link_libraries(${item} areg-extend ${library_list} areg ${AREG_EXTENDED_LIBS} ${AREG_LDFLAGS})
+    target_link_libraries(${item} aregextend ${library_list} areg ${AREG_EXTENDED_LIBS} ${AREG_LDFLAGS})
 
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
         target_compile_options(${item} PRIVATE -fPIC)

@@ -8,6 +8,11 @@ include("${areg_BASE}/ipc/private/CMakeLists.txt")
 include("${areg_BASE}/persist/private/CMakeLists.txt")
 include("${areg_BASE}/trace/private/CMakeLists.txt")
 
+if (${AREG_DEVELOP_ENV} MATCHES "Win32")
+    set_source_files_properties("${areg_BASE}/resources/areg.rc" PROPERTIES LANGUAGE RC)
+    list(APPEND areg_SRC ${areg_BASE}/resources/areg.rc)
+endif()
+
 # build areg library
 if(AREG_BINARY MATCHES "shared")
     # Shared Library

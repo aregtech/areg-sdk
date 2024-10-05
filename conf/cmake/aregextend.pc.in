@@ -1,0 +1,13 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}/tools/areg
+libdir=${prefix}/lib
+includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@
+
+Name: aregextend
+Description: Extended objects of AREG communication framework
+Version: @PROJECT_VERSION@
+URL: https://github.com/aregtech/areg-sdk
+Libs: -L${libdir} @AREG_EXTENDED_LIBS@ @AREG_LDFLAGS@
+Requires: aregextend = @PROJECT_VERSION@
+Libs.private: -lsqlite3 -laregextend -lareg
+Cflags: -I${includedir}

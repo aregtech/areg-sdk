@@ -23,9 +23,9 @@
 #include "areg/base/String.hpp"
 #include "areg/persist/ConfigManager.hpp"
 
-#include "extend/service/NESystemService.hpp"
+#include "aregextend/service/NESystemService.hpp"
 
-#include "logobserver/lib/LogObserverApi.h"
+#include "areglogger/client/LogObserverApi.h"
 
 #include <stdio.h>
 

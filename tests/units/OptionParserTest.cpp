@@ -17,7 +17,7 @@
  * Include files.
  ************************************************************************/
 #include "units/GUnitTest.hpp"
-#include "extend/console/OptionParser.hpp"
+#include "aregextend/console/OptionParser.hpp"
 
 #include <vector>
 #include <string>

@@ -13,7 +13,7 @@
 
 #include "areg/appbase/Application.hpp"
 #include "areg/trace/GETrace.h"
-#include "extend/console/Console.hpp"
+#include "aregextend/console/Console.hpp"
 #include "common/src/NECommon.hpp"
 
 #include <string_view>

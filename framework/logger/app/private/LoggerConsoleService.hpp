@@ -19,7 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "extend/console/SystemServiceConsole.hpp"
+#include "aregextend/console/SystemServiceConsole.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // LoggerConsoleService class declaration

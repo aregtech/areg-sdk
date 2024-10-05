@@ -8,7 +8,7 @@
 #   1. AREG_COMPILER_FAMILY -- Simple way to set CMAKE_CXX_COMPILER and CMAKE_C_COMPILER compilers.
 #   2. AREG_COMPILER        -- Specifies one compiler name to set for CXX and CC projects.
 #   3. AREG_BINARY          -- Specifies the AREG Framework library type ('shared' or 'static'). By default it is 'shared'.
-#   4. AREG_LOGOBSERVER_LIB -- Specifies the Log Observer API library type ('shared' or 'static'). By default it is 'shared'.
+#   4. AREG_LOGGER_LIB      -- Specifies the Log Observer API library type ('shared' or 'static'). By default it is 'shared'.
 #   5. AREG_BUILD_TYPE      -- Build configurations ('Debug' or 'Release').
 #   6. AREG_BUILD_TESTS     -- Flag to enable or disable AREG Framework unit tests.
 #   7. AREG_BUILD_EXAMPLES  -- Flag to enable or disable AREG Framework examples.
@@ -29,7 +29,7 @@
 #   1. AREG_COMPILER_FAMILY = <default> (possible values: gnu, cygwin, llvm, msvc)
 #   2. AREG_COMPILER        = <default> (possible values: g++, gcc, c++, cc, clang++, clang, clang-cl, cl)
 #   3. AREG_BINARY          = shared    (possible values: shared, static)
-#   4. AREG_LOGOBSERVER_LIB = shared    (possible values: shared, static)
+#   4. AREG_LOGGER_LIB      = shared    (possible values: shared, static)
 #   5. AREG_BUILD_TYPE      = Release   (possible values: Release, Debug)
 #   6. AREG_BUILD_TESTS     = OFF       (possible values: ON, OFF)
 #   7. AREG_BUILD_EXAMPLES  = ON        (possible values: ON, OFF)
@@ -215,8 +215,8 @@ if (NOT DEFINED AREG_BUILD_ROOT OR "${AREG_BUILD_ROOT}" STREQUAL "")
 endif()
 
 # Set the areg log observer API library type.
-if (NOT DEFINED AREG_LOGOBSERVER_LIB OR NOT "${AREG_LOGOBSERVER_LIB}" STREQUAL "static")
-    set(AREG_LOGOBSERVER_LIB "shared")
+if (NOT DEFINED AREG_LOGGER_LIB OR NOT "${AREG_LOGGER_LIB}" STREQUAL "static")
+    set(AREG_LOGGER_LIB "shared")
 endif()
 
 if (NOT DEFINED AREG_PACKAGES OR "${AREG_PACKAGES}" STREQUAL "")

@@ -15,7 +15,7 @@
 #include "areg/component/Component.hpp"
 #include "areg/component/ComponentThread.hpp"
 #include "areg/trace/GETrace.h"
-#include "extend/console/Console.hpp"
+#include "aregextend/console/Console.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // Log scopes

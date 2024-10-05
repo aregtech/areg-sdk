@@ -12,7 +12,7 @@
 #include "pubclient/src/ServiceClient.hpp"
 #include "areg/trace/GETrace.h"
 #include "areg/appbase/Application.hpp"
-#include "extend/console/Console.hpp"
+#include "aregextend/console/Console.hpp"
 
 DEF_TRACE_SCOPE(examples_20_clientdatarate_ServiceClient_startupComponent);
 DEF_TRACE_SCOPE(examples_20_clientdatarate_ServiceClient_serviceConnected);

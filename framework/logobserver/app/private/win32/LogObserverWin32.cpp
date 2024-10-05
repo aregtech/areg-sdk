@@ -21,8 +21,8 @@
 #ifdef WINDOWS
 
 #pragma comment(lib, "areg.lib")
-#pragma comment(lib, "areg-extend.lib")
-#pragma comment(lib, "logobserverapi.lib")
+#pragma comment(lib, "aregextend.lib")
+#pragma comment(lib, "areglogger.lib")
 
 #ifndef WIN32_LEAN_AND_MEAN
     #define WIN32_LEAN_AND_MEAN

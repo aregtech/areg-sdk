@@ -536,7 +536,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logger", "framework\logger.
 		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3} = {FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "areg-extend", "framework\areg-extend.vcxproj", "{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "aregextend", "framework\aregextend.vcxproj", "{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "22_generated", "examples\22_pubsub\22_generated.vcxproj", "{73EC875E-F233-4FA9-B3AF-E2981EA59B3A}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -630,7 +630,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "24_subscribermulti", "examp
 		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3} = {FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logobserverapi", "framework\logobserverapi.vcxproj", "{B29F438E-904C-4929-903C-F4673182A417}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "areglogger", "framework\areglogger.vcxproj", "{B29F438E-904C-4929-903C-F4673182A417}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5} = {2DF8165C-EDE2-4F76-8D2C-2FFE82CB6CE5}
 		{A19D14E3-19FE-46FE-91CA-0BAD1CDB91C5} = {A19D14E3-19FE-46FE-91CA-0BAD1CDB91C5}

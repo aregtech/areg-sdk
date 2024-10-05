@@ -22,7 +22,7 @@
 
 #include "areg/component/NEService.hpp"
 #include "areg/base/TEArrayList.hpp"
-#include "extend/service/ServiceCommunicatonBase.hpp"
+#include "aregextend/service/ServiceCommunicatonBase.hpp"
 
 /************************************************************************
  * Dependencies

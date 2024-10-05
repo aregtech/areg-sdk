@@ -1,6 +1,6 @@
 # SQLite Sources in AREG SDK
 
-The AREG SDK uses SQLite to save log files in both the `logobserver` executable and the `logobserverapi` library. SQLite is used to create the database file and save logs. You can link SQLite in your application in two ways:
+The AREG SDK uses SQLite to save log files in both the `logobserver` executable and the `areglogger` library. SQLite is used to create the database file and save logs. You can link SQLite in your application in two ways:
 
 1. Build a **static** library from the SQLite source provided in the AREG SDK.
 2. Use an SQLite package already available in your system.
