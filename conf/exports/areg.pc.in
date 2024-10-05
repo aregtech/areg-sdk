@@ -7,7 +7,7 @@ Name: areg
 Description: AREG communication framework
 Version: @PROJECT_VERSION@
 URL: https://github.com/aregtech/areg-sdk
-Libs: -L${libdir} @AREG_LDFLAGS@
+Libs: -L${libdir} @AREG_LDFLAGS_STR@
 Requires: areg = @PROJECT_VERSION@
 Libs.private: -lareg
 Cflags: -I${includedir}

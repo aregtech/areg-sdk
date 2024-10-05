@@ -1,0 +1,23 @@
+@PACKAGE_INIT@
+include(CMakeFindDependencyMacro)
+
+set(AREG_SDK_ROOT           "@CMAKE_INSTALL_PREFIX@")
+set(AREG_BASE               "@CMAKE_INSTALL_FULL_INCLUDEDIR@")
+set(AREG_CMAKE_CONFIG_DIR   "@CMAKE_INSTALL_PREFIX@/share/@AREG_PACKAGE_NAME@/conf/cmake")
+set(AREG_SDK_TOOLS          "@CMAKE_INSTALL_PREFIX@/tools/@AREG_PACKAGE_NAME@)
+
+set(AREG_BINARY             "@AREG_BINARY@")
+set(AREG_BUILD_TYPE         "@AREG_BUILD_TYPE@")
+set(AREG_LOGS               "@AREG_LOGS@")
+set(AREG_LOGGER_LIB         "@AREG_LOGGER_LIB@")
+
+option(AREG_BUILD_TESTS     "No AREG Unit Tests"    OFF)
+option(AREG_BUILD_EXAMPLES  "No AREG Examples"      OFF)
+
+include("${CMAKE_CURRENT_LIST_DIR}/@TARGETS_EXPORT_NAME@.cmake")
+check_required_components("@PROJECT_NAME@")
+
+# Change the generated directory if the output should be somewhere else
+set(AREG_GENERATE           "${CMAKE_BINARY_DIR}/generate")
+# Change the build root directory if compiled fines are copied somewhere else.
+set(AREG_BUILD_ROOT         "${CMAKE_CURRENT_BINARY_DIR}")

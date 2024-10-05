@@ -31,9 +31,10 @@ endif()
 
 # Linker flags (-l is not necessary)
 list(APPEND AREG_LDFLAGS stdc++ m pthread rt)
+set(AREG_LDFLAGS_STR "-lstdc++ -lm -lpthread -lrt")
 
 # disable SQLite warnings
 list(APPEND AREG_OPT_DISABLE_WARN_THIRDPARTY
         -Wno-everything
         -Wno-unused-function
-    )
+)

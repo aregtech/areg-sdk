@@ -543,6 +543,46 @@ macro(macro_normalize_path normal_path os_path)
     endif()
 endmacro(macro_normalize_path)
 
+function(addServiceInterface_full gen_project_name source_root relative_path sub_dir interface_name build_root_path interface_output_path codegen_tool_path)
+
+    if (NOT ${Java_FOUND})
+        message(FATAL_ERROR "AREG Setup: No Java found, cannot run code generator. Install Java 17 or higher and try again!")
+        return()
+    endif()
+
+    set(interface_doc)
+    if (${sub_dir} STREQUAL "")
+        macro_normalize_path(interface_doc "${source_root}/${relative_path}/${interface_name}.siml")
+    else()
+        macro_normalize_path(interface_doc "${source_root}/${relative_path}/${sub_dir}/${interface_name}.siml")
+    endif()
+
+    execute_process(COMMAND ${Java_JAVA_EXECUTABLE} -jar ${codegen_tool_path} --root=${build_root_path} --doc=${interface_doc} --target=${interface_output_path})
+
+    set(generate_dir "${AREG_GENERATE_DIR}/${relative_path}")
+    set(proj_src)
+    list(APPEND proj_src
+            ${generate_dir}/private/${interface_name}ClientBase.cpp 
+            ${generate_dir}/private/${interface_name}Events.cpp 
+            ${generate_dir}/private/${interface_name}Proxy.cpp 
+            ${generate_dir}/private/${interface_name}Stub.cpp 
+            ${generate_dir}/private/NE${interface_name}.cpp 
+            ${generate_dir}/private/${interface_name}Events.hpp 
+            ${generate_dir}/private/${interface_name}Proxy.hpp 
+            ${generate_dir}/${interface_name}ClientBase.hpp 
+            ${generate_dir}/${interface_name}Stub.hpp 
+            ${generate_dir}/NE${interface_name}.hpp 
+    )
+
+    if (TARGET ${gen_project_name})
+        target_sources(${gen_project_name} PRIVATE "${proj_src}")
+    else()
+        message(STATUS "AREG Setup: Add service interface library ${gen_project_name}")
+        addStaticLib(${gen_project_name} "${proj_src}")
+        target_compile_options(${gen_project_name} PRIVATE "${AREG_OPT_DISABLE_WARN_CODEGEN}")
+    endif()
+endfunction(addServiceInterface_full)
+
 # ---------------------------------------------------------------------------
 # Description : This function calls service interface code generator to
 #               generate codes, includes the generated codes either in the
@@ -575,40 +615,11 @@ endmacro(macro_normalize_path)
 # ---------------------------------------------------------------------------
 function(addServiceInterfaceEx gen_project_name source_root relative_path sub_dir interface_name)
 
-    if (NOT ${Java_FOUND})
-        message(FATAL_ERROR "AREG Setup: No Java found, cannot run code generator. Install Java 17 or higher and try again!")
-        return()
-    endif()
+    macro_normalize_path(build_root_path        "${AREG_BUILD_ROOT}")
+    macro_normalize_path(interface_output_path  "${AREG_GENERATE}/${relative_path}")
+    macro_normalize_path(codegen_tool_path      "${AREG_SDK_TOOLS}/codegen.jar")
 
-    set(interface_doc)
-    if (${sub_dir} STREQUAL "")
-        macro_normalize_path(interface_doc "${source_root}/${relative_path}/${interface_name}.siml")
-    else()
-        macro_normalize_path(interface_doc "${source_root}/${relative_path}/${sub_dir}/${interface_name}.siml")
-    endif()
-    macro_normalize_path(root_path "${AREG_BUILD_ROOT}")
-    macro_normalize_path(interface_out "${AREG_GENERATE}/${relative_path}")
-    macro_normalize_path(codegen_path "${AREG_SDK_TOOLS}/codegen.jar")
-
-    execute_process(COMMAND ${Java_JAVA_EXECUTABLE} -jar ${codegen_path} --root=${root_path} --doc=${interface_doc} --target=${interface_out})
-
-    set(generate_dir "${AREG_GENERATE_DIR}/${relative_path}")
-    set(proj_src)
-    list(APPEND proj_src
-        ${generate_dir}/private/${interface_name}ClientBase.cpp 
-        ${generate_dir}/private/${interface_name}Events.cpp 
-        ${generate_dir}/private/${interface_name}Proxy.cpp 
-        ${generate_dir}/private/${interface_name}Stub.cpp 
-        ${generate_dir}/private/NE${interface_name}.cpp 
-        )
-
-    if (TARGET ${gen_project_name})
-        target_sources(${gen_project_name} PRIVATE "${proj_src}")
-    else()
-        message(STATUS "AREG Setup: Add service interface library ${gen_project_name}")
-        addStaticLib(${gen_project_name} "${proj_src}")
-        target_compile_options(${gen_project_name} PRIVATE "${AREG_OPT_DISABLE_WARN_CODEGEN}")
-    endif()
+    addServiceInterface_full(${gen_project_name} "${source_root}" "${relative_path}" "${sub_dir}" "${interface_name}" "${build_root_path}" "${interface_output_path}" "${codegen_tool_path}")
 
 endfunction(addServiceInterfaceEx)
 

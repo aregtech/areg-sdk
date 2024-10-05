@@ -20,7 +20,7 @@ if (AREG_OS STREQUAL "Windows")
     list(APPEND AREG_COMPILER_OPTIONS -Wall -c)
     # Linker flags (-l is not necessary)
     list(APPEND AREG_LDFLAGS advapi32 psapi shell32 ws2_32)
-
+    set(AREG_LDFLAGS_STR "-ladvapi32 -lpsapi -lshell32 -lws2_32")
 else(AREG_OS STREQUAL "Posix")
 
     if(CMAKE_BUILD_TYPE MATCHES Release)
@@ -38,6 +38,7 @@ else(AREG_OS STREQUAL "Posix")
     list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0)
     # Linker flags (-l is not necessary)
     list(APPEND AREG_LDFLAGS stdc++ m pthread rt)
+    set(AREG_LDFLAGS_STR "-lstdc++ -lm -lpthread -lrt")
     set(AREG_COMPILER_VERSION -stdlib=libstdc++)
 
 endif(AREG_OS STREQUAL "Windows")

@@ -47,10 +47,12 @@ set(AREG_CC_TOOLCHAIN  "${CMAKE_CC_COMPILER}")
 set(AREG_DEVELOP_ENV)
 # The linker flags
 set(AREG_LDFLAGS)
-# The compiler options
-set(AREG_COMPILER_OPTIONS)
+set(AREG_LDFLAGS_STR "")
 # set areg extended static library dependencies
 set(AREG_EXTENDED_LIBS)
+set(AREG_EXTENDED_LIBS_STR "")
+# The compiler options
+set(AREG_COMPILER_OPTIONS)
 # set areg compiler version
 set(AREG_COMPILER_VERSION)
 set(AREG_TARGET_COMPILER_OPTIONS)
@@ -101,6 +103,7 @@ if (AREG_EXTENDED)
     add_definitions(-DAREG_EXTENDED=1)
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
         list(APPEND AREG_EXTENDED_LIBS ncurses)
+        set(AREG_EXTENDED_LIBS_STR "-lncurses")
     endif()
 else()
     add_definitions(-DAREG_EXTENDED=0)
