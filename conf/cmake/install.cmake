@@ -145,9 +145,9 @@ export(TARGETS areg aregextend areglogger
 install(FILES
             "${CMAKE_CURRENT_BINARY_DIR}/${AREG_PACKAGE_NAME}-config-version.cmake"
             "${CMAKE_CURRENT_BINARY_DIR}/${AREG_PACKAGE_NAME}-config.cmake"
+            "${CMAKE_CURRENT_BINARY_DIR}/${AREG_PACKAGE_NAME}-export.cmake"
             DESTINATION share/${AREG_PACKAGE_NAME}
             COMPONENT Development
-            CONFIGURATIONS Release
 )
 
 install(EXPORT ${AREG_PACKAGE_NAME} 
@@ -156,5 +156,4 @@ install(EXPORT ${AREG_PACKAGE_NAME}
             NAMESPACE ${AREG_PACKAGE_NAME}::
             FILE areg.cmake
             EXPORT_LINK_INTERFACE_LIBRARIES
-            CONFIGURATIONS Release
 )
