@@ -1,4 +1,3 @@
-areg.pc:
 prefix=@CMAKE_INSTALL_PREFIX@
 exec_prefix=${prefix}/tools/areg
 libdir=${prefix}/lib
@@ -9,36 +8,5 @@ Description: AREG communication framework
 Version: @PROJECT_VERSION@
 URL: https://github.com/aregtech/areg-sdk
 Libs: -L${libdir} -lareg
-Requires: areg = @PROJECT_VERSION@
 Libs.private: @AREG_LDFLAGS_STR@
-Cflags: -I${includedir}
-
-aregextend.pc:
-prefix=@CMAKE_INSTALL_PREFIX@
-exec_prefix=${prefix}/tools/areg
-libdir=${prefix}/lib
-includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@
-
-Name: aregextend
-Description: Extended objects of AREG communication framework
-Version: @PROJECT_VERSION@
-URL: https://github.com/aregtech/areg-sdk
-Libs: -L${libdir} -laregextend -lareg
-Requires: aregextend = @PROJECT_VERSION@
-Libs.private: -lsqlite3 @AREG_EXTENDED_LIBS_STR@ @AREG_LDFLAGS_STR@
-Cflags: -I${includedir}
-
-areglogger.pc:
-prefix=@CMAKE_INSTALL_PREFIX@
-exec_prefix=${prefix}/tools/areg
-libdir=${prefix}/lib
-includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@
-
-Name: areglogger
-Description: Log observer client of AREG communication framework
-Version: @PROJECT_VERSION@
-URL: https://github.com/aregtech/areg-sdk
-Libs: -L${libdir} -lareglogger -laregextend -lareg
-Requires: aregextend = @PROJECT_VERSION@
-Libs.private:  -lsqlite3 @AREG_EXTENDED_LIBS_STR@ @AREG_LDFLAGS_STR@
 Cflags: -I${includedir}

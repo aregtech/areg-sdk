@@ -7,7 +7,8 @@ Name: areglogger
 Description: Log observer client of AREG communication framework
 Version: @PROJECT_VERSION@
 URL: https://github.com/aregtech/areg-sdk
-Libs: -L${libdir} @AREG_EXTENDED_LIBS_STR@ @AREG_LDFLAGS_STR@
-Requires: aregextend = @PROJECT_VERSION@
-Libs.private: -lsqlite3 -lareglogger -laregextend -lareg
+Requires: areg >= @PROJECT_VERSION@
+Requires.private: aregextend >= @PROJECT_VERSION@
+Libs: -L${libdir} -lareglogger -lareg
+Libs.private:  -lsqlite3 -laregextend @AREG_EXTENDED_LIBS_STR@ @AREG_LDFLAGS_STR@
 Cflags: -I${includedir}

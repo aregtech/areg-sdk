@@ -7,7 +7,7 @@ Name: aregextend
 Description: Extended objects of AREG communication framework
 Version: @PROJECT_VERSION@
 URL: https://github.com/aregtech/areg-sdk
-Libs: -L${libdir} @AREG_EXTENDED_LIBS_STR@ @AREG_LDFLAGS_STR@
-Requires: aregextend = @PROJECT_VERSION@
-Libs.private: -lsqlite3 -laregextend -lareg
+Requires: areg >= @PROJECT_VERSION@
+Libs: -L${libdir} -laregextend -lareg
+Libs.private: -lsqlite3 @AREG_EXTENDED_LIBS_STR@ @AREG_LDFLAGS_STR@
 Cflags: -I${includedir}

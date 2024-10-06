@@ -41,7 +41,7 @@ install(TARGETS areg aregextend areglogger
     EXPORT ${AREG_PACKAGE_NAME}
     RUNTIME DESTINATION bin  COMPONENT Development  COMPONENT Runtime
             PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ WORLD_READ GROUP_EXECUTE WORLD_EXECUTE
-    LIBRARY DESTINATION bin  COMPONENT Development  COMPONENT Runtime
+    LIBRARY DESTINATION lib  COMPONENT Development  COMPONENT Runtime
             PERMISSIONS OWNER_READ OWNER_WRITE               GROUP_READ WORLD_READ
     ARCHIVE DESTINATION lib  COMPONENT Development  COMPONENT Runtime
             PERMISSIONS OWNER_READ OWNER_WRITE               GROUP_READ WORLD_READ
@@ -101,7 +101,6 @@ install(DIRECTORY "${AREG_OUTPUT_BIN}/config"
             CONFIGURATIONS Release
 )
 
-#[[=========================
 configure_file("${AREG_EXPORTS_DIR}/areg.pc.in"         areg.pc         @ONLY)
 configure_file("${AREG_EXPORTS_DIR}/aregextend.pc.in"   aregextend.pc   @ONLY)
 configure_file("${AREG_EXPORTS_DIR}/areglogger.pc.in"   areglogger.pc   @ONLY)
@@ -110,15 +109,6 @@ install(FILES
             "${CMAKE_CURRENT_BINARY_DIR}/areg.pc"
             "${CMAKE_CURRENT_BINARY_DIR}/aregextend.pc"
             "${CMAKE_CURRENT_BINARY_DIR}/areglogger.pc"
-            DESTINATION lib/pkgconfig
-            COMPONENT Development   COMPONENT Runtime
-)
-===============]]
-
-configure_file("${AREG_EXPORTS_DIR}/areg.pc.in"         areg.pc         @ONLY)
-
-install(FILES 
-            "${CMAKE_CURRENT_BINARY_DIR}/areg.pc"
             DESTINATION lib/pkgconfig
             COMPONENT Development   COMPONENT Runtime
 )
