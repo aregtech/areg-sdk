@@ -60,7 +60,8 @@ set(AREG_COMPILER_VERSION)
 set(AREG_TARGET_COMPILER_OPTIONS)
 # Set the SQLite library reference
 set(AREG_SQLITE_LIB_REF sqlite3)
-option(AREG_SQLITE_FOUND "SQLite3 package" OFF)
+option(AREG_SQLITE_FOUND "SQLite3 package found flag" FALSE)
+option(AREG_GTEST_FOUND  "GTest package found flag"   FALSE)
 
 # Adding common definition
 add_definitions(-DUNICODE -D_UNICODE)

@@ -42,10 +42,16 @@ add_custom_command( TARGET areg-dummy PRE_BUILD
 
 include_directories(${AREG_BASE})
 include_directories(${AREG_THIRDPARTY})
+
 # build AREG Framework thirdparty software
 include(${AREG_THIRDPARTY}/CMakeLists.txt)
+if (NOT AREG_SQLITE_FOUND)
+    add_dependencies(sqlite3 areg-dummy)
+endif()
+
 # build AREG Framework software
 include(${AREG_BASE}/CMakeLists.txt)
+add_dependencies(areg areg-dummy)
 
 # build optional AREG project examples, if required
 if(AREG_BUILD_EXAMPLES)
@@ -55,14 +61,11 @@ endif()
 # build optional AREG Framework unit tests, if required
 if(AREG_BUILD_TESTS)
     include(${AREG_TESTS}/CMakeLists.txt)
+    if (NOT AREG_GTEST_FOUND)
+        add_dependencies(areg-unit-tests areg-dummy)
+    endif()
 endif()
 
-# add a dependency to make sure that output folders exist during build time.
-if (NOT AREG_SQLITE_FOUND)
-    add_dependencies(sqlite3 areg-dummy)
-endif()
-add_dependencies(areg               areg-dummy)
-add_dependencies(areg-unit-tests    areg-dummy)
 
 
 if (AREG_INSTALL)
