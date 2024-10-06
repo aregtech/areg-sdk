@@ -10,7 +10,7 @@ if (${AREG_DEVELOP_ENV} MATCHES "Win32")
 endif()
 
 # build logger executable
-addExecutable(logger "${logger_SRC}")
+addExecutableEx(logger ${AREG_PACKAGE_NAME} "${logger_SRC}" "")
 target_compile_options(logger PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")
 set_target_properties(logger PROPERTIES VERSION ${AREG_PROJECT_VERSION})
 

@@ -7,11 +7,22 @@ message(STATUS "AREG: >>> Preparing AREG SDK installation settings, CMAKE_PACKAG
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
-set(AREG_PACKAGE_NAME   "areg")
 set(AREG_EXPORTS_DIR "${AREG_CMAKE_CONFIG_DIR}/../exports")
 set(AREG_INSTALL_DST "${CMAKE_INSTALL_PREFIX}")
 
-target_include_directories(areg PUBLIC $<INSTALL_INTERFACE:include>)
+target_include_directories(areg         PUBLIC $<INSTALL_INTERFACE:include>)
+target_include_directories(aregextend   PUBLIC $<INSTALL_INTERFACE:include>)
+target_include_directories(areglogger   PUBLIC $<INSTALL_INTERFACE:include>)
+target_include_directories(logger       PUBLIC $<INSTALL_INTERFACE:include>)
+target_include_directories(logobserver  PUBLIC $<INSTALL_INTERFACE:include>)
+target_include_directories(mcrouter     PUBLIC $<INSTALL_INTERFACE:include>)
+
+target_link_directories(areg            PUBLIC $<INSTALL_INTERFACE:lib> $<INSTALL_INTERFACE:bin>)
+target_link_directories(aregextend      PUBLIC $<INSTALL_INTERFACE:lib> $<INSTALL_INTERFACE:bin>)
+target_link_directories(areglogger      PUBLIC $<INSTALL_INTERFACE:lib> $<INSTALL_INTERFACE:bin>)
+target_link_directories(logger          PUBLIC $<INSTALL_INTERFACE:lib> $<INSTALL_INTERFACE:bin>)
+target_link_directories(logobserver     PUBLIC $<INSTALL_INTERFACE:lib> $<INSTALL_INTERFACE:bin>)
+target_link_directories(mcrouter        PUBLIC $<INSTALL_INTERFACE:lib> $<INSTALL_INTERFACE:bin>)
 
 # Copy AREG SDK all headers
 install(DIRECTORY framework/
@@ -90,7 +101,7 @@ install(DIRECTORY "${AREG_OUTPUT_BIN}/config"
             CONFIGURATIONS Release
 )
 
-
+#[[=========================
 configure_file("${AREG_EXPORTS_DIR}/areg.pc.in"         areg.pc         @ONLY)
 configure_file("${AREG_EXPORTS_DIR}/aregextend.pc.in"   aregextend.pc   @ONLY)
 configure_file("${AREG_EXPORTS_DIR}/areglogger.pc.in"   areglogger.pc   @ONLY)
@@ -99,6 +110,15 @@ install(FILES
             "${CMAKE_CURRENT_BINARY_DIR}/areg.pc"
             "${CMAKE_CURRENT_BINARY_DIR}/aregextend.pc"
             "${CMAKE_CURRENT_BINARY_DIR}/areglogger.pc"
+            DESTINATION lib/pkgconfig
+            COMPONENT Development   COMPONENT Runtime
+)
+===============]]
+
+configure_file("${AREG_EXPORTS_DIR}/areg.pc.in"         areg.pc         @ONLY)
+
+install(FILES 
+            "${CMAKE_CURRENT_BINARY_DIR}/areg.pc"
             DESTINATION lib/pkgconfig
             COMPONENT Development   COMPONENT Runtime
 )

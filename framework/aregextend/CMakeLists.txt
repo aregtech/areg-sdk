@@ -12,6 +12,7 @@ endif()
 
 
 # build areg extended static library
-addStaticLib(aregextend "${extend_SRC}")
+addStaticLibEx(aregextend ${AREG_PACKAGE_NAME} "${extend_SRC}" "")
+
 set_target_properties(aregextend  PROPERTIES VERSION ${AREG_PROJECT_VERSION})
 target_compile_options(aregextend PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")

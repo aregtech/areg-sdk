@@ -12,10 +12,10 @@ endif()
 # build log observer console application
 # ##################################################################
 if (AREG_LOGGER_LIB MATCHES "shared")
-    addExecutableEx(logobserver "${logobserver_SRC}" areglogger)
+    addExecutableEx(logobserver ${AREG_PACKAGE_NAME} "${logobserver_SRC}" areglogger)
     target_compile_definitions(logobserver PRIVATE IMP_LOGGER_DLL)
 else (AREG_LOGGER_LIB MATCHES "static")
-    addExecutableEx(logobserver "${logobserver_SRC}" areglogger ${AREG_SQLITE_LIB_REF})
+    addExecutableEx(logobserver ${AREG_PACKAGE_NAME} "${logobserver_SRC}" areglogger ${AREG_SQLITE_LIB_REF})
     target_compile_definitions(logobserver PRIVATE IMP_LOGGER_LIB)
 endif()
 

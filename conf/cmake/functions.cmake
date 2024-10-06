@@ -17,7 +17,7 @@ function(setAppOptions item library_list)
     target_compile_options(${item} PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}")
 
     # Linking flags
-    target_link_libraries(${item} aregextend ${library_list} areg ${AREG_EXTENDED_LIBS} ${AREG_LDFLAGS})
+    target_link_libraries(${item} ${AREG_PACKAGE_NAME}::aregextend ${library_list} ${AREG_PACKAGE_NAME}::areg ${AREG_EXTENDED_LIBS} ${AREG_LDFLAGS})
    
     # Adjusting CPP standard for target
     set_target_properties(${item} PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON )
@@ -34,15 +34,17 @@ endfunction(setAppOptions)
 #               ${library_list} -- The list of libraries to link executable.
 # usage ......: addExecutableEx( <name of executable> <list of sources> <list of libraries> ) 
 # ---------------------------------------------------------------------------
-function(addExecutableEx target_name source_list library_list)
+function(addExecutableEx target_name target_namespace source_list library_list)
     set(exList "${ARGN}")
     foreach(item IN LISTS exList)
         list(APPEND library_list "${item}")
     endforeach()
     add_executable(${target_name} ${source_list})
+    if (NOT "${target_namespace}" STREQUAL "")
+        add_executable(${target_namespace}::${target_name} ALIAS ${target_name})
+    endif()
     setAppOptions(${target_name} "${library_list}")
     target_include_directories(${target_name}  BEFORE PRIVATE ${CMAKE_CURRENT_LIST_DIR})
-    add_dependencies(${target_name} areg-dummy)
 endfunction(addExecutableEx)
 
 # ---------------------------------------------------------------------------
@@ -54,7 +56,7 @@ endfunction(addExecutableEx)
 # usage ......: addExecutable( <name of executable> <list of sources> ) 
 # ---------------------------------------------------------------------------
 function(addExecutable target_name source_list)
-    addExecutableEx(${target_name} "${source_list}" "")
+    addExecutableEx(${target_name} "" "${source_list}" "")
 endfunction(addExecutable)
 
 
@@ -78,7 +80,7 @@ function(setStaticLibOptions item library_list)
         target_compile_options(${item} PRIVATE -fPIC)
     endif()
 
-    target_link_libraries(${item} ${library_list} areg ${AREG_LDFLAGS})
+    target_link_libraries(${item} ${library_list} ${AREG_PACKAGE_NAME}::areg ${AREG_LDFLAGS})
 
     # Adjusting CPP standard for target
     set_target_properties(${item} PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON )
@@ -96,15 +98,17 @@ endfunction(setStaticLibOptions)
 #               ${library_list} -- The list of libraries to link the static library.
 # usage ......: addStaticLibEx( <name of static library> <list of sources> <list of libraries> ) 
 # ---------------------------------------------------------------------------
-function(addStaticLibEx target_name source_list library_list)
+function(addStaticLibEx target_name target_namespace source_list library_list)
     set(exList "${ARGN}")
     foreach(item IN LISTS exList)
         list(APPEND library_list "${item}")
     endforeach()
     add_library(${target_name} STATIC ${source_list})
+    if (NOT "${target_namespace}" STREQUAL "")
+        add_library(${target_namespace}::${target_name} ALIAS ${target_name})
+    endif()
     setStaticLibOptions(${target_name} "${library_list}")
     target_include_directories(${target_name}  BEFORE PRIVATE ${CMAKE_CURRENT_LIST_DIR})    
-    add_dependencies(${target_name} areg-dummy)
 endfunction(addStaticLibEx)
 
 # ---------------------------------------------------------------------------
@@ -116,7 +120,7 @@ endfunction(addStaticLibEx)
 # usage ......: addStaticLib( <name of static library> <list of sources> ) 
 # ---------------------------------------------------------------------------
 function(addStaticLib target_name source_list)
-    addStaticLibEx(${target_name} "${source_list}" "")
+    addStaticLibEx(${target_name} "" "${source_list}" "")
 endfunction(addStaticLib)
 
 # ---------------------------------------------------------------------------
@@ -129,12 +133,16 @@ endfunction(addStaticLib)
 #               ${library_list} -- The list of libraries to link the static library.
 # usage ......: addStaticLibEx_C( <name of static library> <list of C-sources> <list of libraries> ) 
 # ---------------------------------------------------------------------------
-function(addStaticLibEx_C target_name source_list library_list)
+function(addStaticLibEx_C target_name target_namespace source_list library_list)
     set(exList "${ARGN}")
     foreach(item IN LISTS exList)
         list(APPEND library_list "${item}")
     endforeach()
     add_library(${target_name} STATIC ${source_list})
+    if (NOT "${target_namespace}" STREQUAL "")
+        add_library(${target_namespace}::${target_name} ALIAS ${target_name})
+    endif()
+
     target_compile_options(${target_name} PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}")
 
     # Set common compile definition
@@ -145,13 +153,12 @@ function(addStaticLibEx_C target_name source_list library_list)
         target_compile_options(${target_name} PRIVATE -fPIC)
     endif()
 
-    target_link_libraries(${target_name} ${library_list} areg ${AREG_LDFLAGS})
+    target_link_libraries(${target_name} ${library_list} ${AREG_PACKAGE_NAME}::areg ${AREG_LDFLAGS})
 
     # Adjusting CPP standard for target
     # set_target_properties(${target_name} PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON )
     set_property(TARGET ${target_name} PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${AREG_OUTPUT_LIB})
     target_include_directories(${target_name}  BEFORE PRIVATE ${CMAKE_CURRENT_LIST_DIR})    
-    add_dependencies(${target_name} areg-dummy)
 endfunction(addStaticLibEx_C)
 
 # ---------------------------------------------------------------------------
@@ -180,7 +187,7 @@ function(setSharedLibOptions item library_list)
     target_compile_options(${item} PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}")
 
     # Linking flags
-    target_link_libraries(${item} aregextend ${library_list} areg ${AREG_EXTENDED_LIBS} ${AREG_LDFLAGS})
+    target_link_libraries(${item} ${AREG_PACKAGE_NAME}::aregextend ${library_list} ${AREG_PACKAGE_NAME}::areg ${AREG_EXTENDED_LIBS} ${AREG_LDFLAGS})
 
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
         target_compile_options(${item} PRIVATE -fPIC)
@@ -203,15 +210,17 @@ endfunction(setSharedLibOptions)
 #               ${library_list} -- The list of libraries to link the shared library.
 # usage ......: addSharedLibEx( <name of shared library> <list of sources> <list of libraries> ) 
 # ---------------------------------------------------------------------------
-function(addSharedLibEx target_name source_list library_list)
+function(addSharedLibEx target_name target_namespace source_list library_list)
     set(exList "${ARGN}")
     foreach(item IN LISTS exList)
         list(APPEND library_list "${item}")
     endforeach()
     add_library(${target_name} SHARED ${source_list})
+    if (NOT "${target_namespace}" STREQUAL "")
+        add_library(${target_namespace}::${target_name} ALIAS ${target_name})
+    endif()
     setSharedLibOptions(${target_name} "${library_list}")
     target_include_directories(${target_name}  BEFORE PRIVATE ${CMAKE_CURRENT_LIST_DIR})    
-    add_dependencies(${target_name} areg-dummy)
 endfunction(addSharedLibEx)
 
 # ---------------------------------------------------------------------------
@@ -223,7 +232,7 @@ endfunction(addSharedLibEx)
 # usage ......: addSharedLib( <name of shared library> <list of sources> ) 
 # ---------------------------------------------------------------------------
 function(addSharedLib target_name target_source_list)
-    addSharedLibEx(${target_name} "${target_source_list}" "")
+    addSharedLibEx(${target_name} "" "${target_source_list}" "")
 endfunction(addSharedLib)
 
 # ---------------------------------------------------------------------------
@@ -673,7 +682,7 @@ endmacro(macro_add_service_interface)
 # ---------------------------------------------------------------------------
 function(addTest test_name test_source)
     list(APPEND google_test_libs "GTest::gtest_main" "GTest::gtest")
-    addExecutableEx(${test_name} "${test_source}" "${google_test_libs}")
+    addExecutableEx(${test_name} "" "${test_source}" "${google_test_libs}")
     gtest_discover_tests(${test_name} DISCOVERY_TIMEOUT 60)
 endfunction(addTest)
 
@@ -696,7 +705,7 @@ function(addUnitTestEx test_project test_sources library_list)
         target_sources(${test_project} PRIVATE "${test_sources}")
     else()
         list(APPEND google_test_libs "GTest::gtest_main" "GTest::gtest" "${library_list}")
-        addExecutableEx(${test_project} "${test_sources}" "${google_test_libs}")
+        addExecutableEx(${test_project} "" "${test_sources}" "${google_test_libs}")
         gtest_discover_tests(${test_project} DISCOVERY_TIMEOUT 60)
     endif()
 endfunction(addUnitTestEx)

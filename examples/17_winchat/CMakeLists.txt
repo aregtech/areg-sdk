@@ -22,7 +22,7 @@ set_source_files_properties(${chatter_resources}  PROPERTIES LANGUAGE RC)
 list(APPEND chatter_src "${chatter_resources}")
 
 # 'chatter' project, compile for Windows system, set options
-addExecutableEx(${project_chatter} "${chatter_src}" 17_generated)
+addExecutableEx(${project_chatter} "" "${chatter_src}" 17_generated)
 # Set compile definitions to link MFC DLL
 set_target_properties(${project_chatter} PROPERTIES WIN32_EXECUTABLE TRUE)
 target_compile_definitions(${project_chatter} PRIVATE "${MFC_DEFINES}")
@@ -39,7 +39,7 @@ macro_declare_project(17_register     "register")
 set_source_files_properties(${register_resources} PROPERTIES LANGUAGE RC)
 list(APPEND register_src ${register_resources})
 # 'register' project, compile for Windows system, set options
-addExecutableEx(${project_register} "${register_src}" 17_generated)
+addExecutableEx(${project_register} "" "${register_src}" 17_generated)
 # Set compile definitions to link MFC DLL
 set_target_properties(${project_register} PROPERTIES WIN32_EXECUTABLE TRUE)
 target_compile_definitions(${project_register} PRIVATE "${MFC_DEFINES}")

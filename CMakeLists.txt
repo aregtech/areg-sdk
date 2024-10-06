@@ -57,6 +57,14 @@ if(AREG_BUILD_TESTS)
     include(${AREG_TESTS}/CMakeLists.txt)
 endif()
 
+# add a dependency to make sure that output folders exist during build time.
+if (NOT AREG_SQLITE_FOUND)
+    add_dependencies(sqlite3 areg-dummy)
+endif()
+add_dependencies(areg               areg-dummy)
+add_dependencies(areg-unit-tests    areg-dummy)
+
+
 if (AREG_INSTALL)
     include(${AREG_CMAKE_CONFIG_DIR}/install.cmake)
 endif(AREG_INSTALL)

@@ -10,7 +10,7 @@ if (${AREG_DEVELOP_ENV} MATCHES "Win32")
 endif()
 
 # build mcrouter executable
-addExecutable(mcrouter "${mcrouter_SRC}")
+addExecutableEx(mcrouter ${AREG_PACKAGE_NAME} "${mcrouter_SRC}" "")
 target_compile_options(mcrouter PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")
 set_target_properties(mcrouter  PROPERTIES VERSION ${AREG_PROJECT_VERSION})
 

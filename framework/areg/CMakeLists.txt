@@ -17,6 +17,10 @@ endif()
 if(AREG_BINARY MATCHES "shared")
     # Shared Library
     add_library(areg SHARED ${areg_SRC})
+    if (NOT "${AREG_PACKAGE_NAME}" STREQUAL "")
+        add_library(${AREG_PACKAGE_NAME}::areg ALIAS areg)
+    endif()
+
     target_compile_definitions(areg PRIVATE EXP_AREG_DLL _USRDLL)
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
         target_compile_options(areg PRIVATE "-Bdynamic")
@@ -27,6 +31,9 @@ else(AREG_BINARY MATCHES "static")
 
     # Static Library
     add_library(areg STATIC ${areg_SRC})
+    if (NOT "${AREG_PACKAGE_NAME}" STREQUAL "")
+        add_library(${AREG_PACKAGE_NAME}::areg ALIAS areg)
+    endif()
     target_compile_definitions(areg PRIVATE EXP_AREG_LIB _LIB)
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
         target_compile_options(areg PRIVATE "-Bstatic")
@@ -34,8 +41,6 @@ else(AREG_BINARY MATCHES "static")
     set_property(TARGET areg PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${AREG_OUTPUT_LIB})
 
 endif()
-# add a dependency to make sure that output folders exist during build time.
-add_dependencies(areg areg-dummy)
 
 if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
     target_compile_options(areg PRIVATE -fPIC)

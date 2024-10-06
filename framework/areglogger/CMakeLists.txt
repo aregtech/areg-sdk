@@ -20,7 +20,7 @@ if (AREG_LOGGER_LIB MATCHES "shared")
     endif()
 
     # build log observer API shared library
-    addSharedLibEx(areglogger "${areglogger_SRC}" ${AREG_SQLITE_LIB_REF})
+    addSharedLibEx(areglogger ${AREG_PACKAGE_NAME} "${areglogger_SRC}" ${AREG_SQLITE_LIB_REF})
     target_compile_options(areglogger PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")
 
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
@@ -37,7 +37,7 @@ if (AREG_LOGGER_LIB MATCHES "shared")
 
 else(AREG_LOGGER_LIB MATCHES "static")
     # build log observer API static library
-    addStaticLib(areglogger "${areglogger_SRC}")
+    addStaticLibEx(areglogger ${AREG_PACKAGE_NAME} "${areglogger_SRC}" "")
     target_compile_options(areglogger PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")
 
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")

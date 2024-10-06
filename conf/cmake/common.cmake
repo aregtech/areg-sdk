@@ -3,6 +3,8 @@
 # Copyright 2022-2023 Aregtech
 # ###########################################################################
 
+set(AREG_PACKAGE_NAME   "areg")
+
 if (NOT "${CMAKE_BUILD_TYPE}" STREQUAL "")
     set(AREG_BUILD_TYPE "${CMAKE_BUILD_TYPE}")
 endif()
