@@ -12,8 +12,8 @@ add_definitions(-DWINDOWS -D_WINDOWS -DWIN32 -D_WIN32)
 if(NOT CMAKE_BUILD_TYPE MATCHES Release)
     list(APPEND AREG_COMPILER_OPTIONS -Od -RTC1 -c)
 endif()
-        
-if (${AREG_BITNESS} MATCHES "64")
+
+if (${AREG_BITNESS} EQUAL 64)
     add_definitions(-DWIN64 -D_WIN64)
 endif()
 

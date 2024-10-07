@@ -27,6 +27,11 @@ set(AREG_BINARY             "@AREG_BINARY@")
 # The library type of 'areglogger'. Static or dynamic.
 set(AREG_LOGGER_LIB         "@AREG_LOGGER_LIB@")
 
+# set platform specific variables.
+set(AREG_OS             "@AREG_OS@")
+set(AREG_DEVELOP_ENV    "@AREG_DEVELOP_ENV@")
+set(AREG_BITNESS        @AREG_BITNESS@)
+
 # Specify whether 'aregextend' is compiled with enabled extended objects flag
 option(AREG_EXTENDED        "AREG Extended object flag"         @AREG_EXTENDED@)
 # Specify whether the libraries where compiled with enabled logging.
@@ -87,4 +92,13 @@ if (AREG_LOGS)
     add_definitions(-DAREG_LOGS=1)
 else()
     add_definitions(-DAREG_LOGS=0)
+endif()
+
+if (AREG_DEVELOP_ENV STREQUAL "Win32")
+    add_definitions(-DWINDOWS -DWIN32)
+    if (${AREG_BITNESS} EQUAL 64)
+        add_definitions(-DWIN64)
+    endif()
+else()
+    add_definitions(-DPOSIX)
 endif()
