@@ -104,6 +104,7 @@ install(FILES "${AREG_BASE}/areg/resources/areg.init"
             CONFIGURATIONS Release
 )
 
+# Configure and install `pkg_config` files
 configure_file("${AREG_EXPORTS_DIR}/areg.pc.in"         exports/areg.pc         @ONLY)
 configure_file("${AREG_EXPORTS_DIR}/aregextend.pc.in"   exports/aregextend.pc   @ONLY)
 configure_file("${AREG_EXPORTS_DIR}/areglogger.pc.in"   exports/areglogger.pc   @ONLY)
@@ -116,6 +117,7 @@ install(FILES
             COMPONENT Development   COMPONENT Runtime
 )
 
+# configure and copy servicing script files.
 if ((WIN32) OR (CYGWIN))
 
     configure_file("${AREG_EXPORTS_DIR}/logger.service.install.bat.in"      "exports/logger.service.install.bat"    @ONLY)
@@ -148,6 +150,7 @@ else()
 
 endif()
 
+# Create and export 'cmake' configuration and version files.
 write_basic_package_version_file(exports/${AREG_PACKAGE_NAME}-config-version.cmake VERSION ${AREG_PROJECT_VERSION} COMPATIBILITY AnyNewerVersion) 
 configure_package_config_file("${AREG_EXPORTS_DIR}/config.cmake.in" 
                               "${CMAKE_CURRENT_BINARY_DIR}/exports/${AREG_PACKAGE_NAME}-config.cmake" 
@@ -172,4 +175,11 @@ install(EXPORT ${AREG_PACKAGE_NAME}
             NAMESPACE ${AREG_PACKAGE_NAME}::
             FILE ${AREG_PACKAGE_NAME}-targets.cmake
             EXPORT_LINK_INTERFACE_LIBRARIES
+)
+
+# Copy an example to create 'areg' based project.
+install(DIRECTORY ${AREG_EXPORTS_DIR}/example
+            DESTINATION share/${AREG_PACKAGE_NAME}
+            COMPONENT Development   COMPONENT Runtime
+            CONFIGURATIONS Release
 )

@@ -4,6 +4,30 @@
 # ###########################################################################
 
 # ---------------------------------------------------------------------------
+# Description : Checks and sets the C++ standard.
+#               The variable \'AREG_CXX_STANDARD\' should be already set
+#               before calling this macro.
+# Macro    ...: macro_check_fix_cxx_standard
+# Usage ......: macro_check_fix_cxx_standard() 
+# ---------------------------------------------------------------------------
+macro(macro_check_fix_cxx_standard)
+
+    if (NOT DEFINED AREG_CXX_STANDARD)
+        message(WARNING "AREG: >>> Cannot check and set C++ standard, variable \'AREG_CXX_STANDARD\' is not defined")
+        return()
+    endif()
+
+    if (NOT DEFINED CMAKE_CXX_STANDARD)
+        set(CMAKE_CXX_STANDARD  ${AREG_CXX_STANDARD})
+    elseif(${CMAKE_CXX_STANDARD} LESS ${AREG_CXX_STANDARD})
+        message(WARNING "AREG: >>> AREG requires minimum C++${AREG_CXX_STANDARD}, \
+                        current is C++${CMAKE_CXX_STANDARD}. \
+                        Change to avoid compilation errors. Example: \'set(CMAKE_CXX_STANDARD ${AREG_CXX_STANDARD})\'")
+    endif()
+
+endmacro(macro_check_fix_cxx_standard)
+
+# ---------------------------------------------------------------------------
 # Description : Sets the compiler and the linker options of the executable applications.
 #               Adds libraries to link. The AREG library is automatically added.
 # Function ...: setAppOptions
@@ -524,12 +548,23 @@ macro(macro_declare_project project_name project_alias)
     macro_declare_project_ex(${project_name} ${project_alias} ${project_alias})
 endmacro(macro_declare_project)
 
+# ---------------------------------------------------------------------------
+# Description : For CYGWIN builds, windows specific paths converts to 
+#               to 'cygwin' path. In all other cases, nothing is changed.
+#
+#               NOTE:   This macro does not fix the OS specific issues
+#                       of path separator.
+# Parameters .: ${normal_path}  -- Normalized path as a result.
+#               ${os_path}      -- OS specific path.
+# Macro ......: macro_normalize_path
+# Usage ......: macro_normalize_path( <result_variable> <OS specific path> ) 
+# ---------------------------------------------------------------------------
 macro(macro_normalize_path normal_path os_path)
     if (CYGWIN)
         execute_process(COMMAND cygpath.exe -m ${os_path} OUTPUT_VARIABLE ${normal_path})
         string (STRIP ${${normal_path}} ${normal_path})
     else()
-        set(${normal_path} ${os_path})
+        set(${normal_path} "${os_path}")
     endif()
 endmacro(macro_normalize_path)
 
