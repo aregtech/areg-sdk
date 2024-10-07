@@ -27,9 +27,6 @@ option(AREG_BUILD_EXAMPLES  "No AREG Examples"      OFF)
 # set to 'CMAKE_CURRENT_BINARY_DIR' if it should be in the compiled binaries directory
 set(AREG_BUILD_ROOT         "${CMAKE_SOURCE_DIR}/product")
 
-# Change the generated directory if the output should be somewhere else
-# set, for example, to 'CMAKE_BINARY_DIR' if the generated files should be in the compiled object directory
-set(AREG_GENERATE           "${AREG_BUILD_ROOT}/generate")
 
 # Add '${AREG_BASE}' path in the includes
 include_directories(${AREG_BASE})
