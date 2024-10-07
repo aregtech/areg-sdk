@@ -3,7 +3,7 @@ include(CMakeFindDependencyMacro)
 
 set(AREG_SDK_ROOT           "@CMAKE_INSTALL_PREFIX@")
 set(AREG_BASE               "@CMAKE_INSTALL_FULL_INCLUDEDIR@")
-set(AREG_SHARE              "@CMAKE_INSTALL_PREFIX@/share/@AREG_PACKAGE_NAME@)
+set(AREG_SHARE              "@CMAKE_INSTALL_PREFIX@/share/@AREG_PACKAGE_NAME@")
 set(AREG_SHARE_INIT         "${AREG_SHARE}/areg.init")
 set(AREG_CMAKE_CONFIG_DIR   "${AREG_SHARE}/conf/cmake")
 set(AREG_SDK_TOOLS          "@CMAKE_INSTALL_PREFIX@/tools/@AREG_PACKAGE_NAME@")
