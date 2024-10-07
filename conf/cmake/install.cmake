@@ -36,43 +36,16 @@ install(DIRECTORY framework/
         PATTERN "mcrouter"          EXCLUDE
 )
 
-if (NOT AREG_SQLITE_FOUND)
-    # Copy AREG SDK SQLite dependency library required by 'areglogger'
-    install(DIRECTORY thirdparty
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT Development
-        CONFIGURATIONS Release
-        FILES_MATCHING
-            PATTERN "*.h" 
-            PATTERN "*.c"
-    )
-endif(NOT AREG_SQLITE_FOUND)
-
-if (AREG_SQLITE_FOUND)
-    # copy compiled binaries in the bin and lib directories
-    install(TARGETS areg aregextend areglogger
-        EXPORT ${AREG_PACKAGE_NAME}
-        RUNTIME DESTINATION bin  COMPONENT Development  COMPONENT Runtime
-                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ WORLD_READ GROUP_EXECUTE WORLD_EXECUTE
-        LIBRARY DESTINATION lib  COMPONENT Development  COMPONENT Runtime
-                PERMISSIONS OWNER_READ OWNER_WRITE               GROUP_READ WORLD_READ
-        ARCHIVE DESTINATION lib  COMPONENT Development  COMPONENT Runtime
-                PERMISSIONS OWNER_READ OWNER_WRITE               GROUP_READ WORLD_READ
-    )
-
-else(AREG_SQLITE_FOUND)
-
-    # copy compiled binaries in the bin and lib directories, include 'aregsqlite3' dependent library
-    install(TARGETS areg aregextend areglogger aregsqlite3
-        EXPORT ${AREG_PACKAGE_NAME}
-        RUNTIME DESTINATION bin  COMPONENT Development  COMPONENT Runtime
-                PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ WORLD_READ GROUP_EXECUTE WORLD_EXECUTE
-        LIBRARY DESTINATION lib  COMPONENT Development  COMPONENT Runtime
-                PERMISSIONS OWNER_READ OWNER_WRITE               GROUP_READ WORLD_READ
-        ARCHIVE DESTINATION lib  COMPONENT Development  COMPONENT Runtime
-                PERMISSIONS OWNER_READ OWNER_WRITE               GROUP_READ WORLD_READ
-    )
-
-endif(AREG_SQLITE_FOUND)
+# copy compiled binaries in the bin and lib directories
+install(TARGETS areg aregextend areglogger
+    EXPORT ${AREG_PACKAGE_NAME}
+    RUNTIME DESTINATION bin  COMPONENT Development  COMPONENT Runtime
+            PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ WORLD_READ GROUP_EXECUTE WORLD_EXECUTE
+    LIBRARY DESTINATION lib  COMPONENT Development  COMPONENT Runtime
+            PERMISSIONS OWNER_READ OWNER_WRITE               GROUP_READ WORLD_READ
+    ARCHIVE DESTINATION lib  COMPONENT Development  COMPONENT Runtime
+            PERMISSIONS OWNER_READ OWNER_WRITE               GROUP_READ WORLD_READ
+)
 
 # Copy AREG configuration file
 install(FILES "${AREG_BASE}/areg/resources/areg.init"
@@ -96,17 +69,6 @@ install(FILES LICENSE.txt
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
             CONFIGURATIONS Release
 )
-
-if (NOT AREG_SQLITE_FOUND)
-    # Copy SQLite3 license
-    install(FILES thirdparty/sqlite3/LICENSE.txt
-                DESTINATION share/${AREG_PACKAGE_NAME}
-                COMPONENT Development   COMPONENT Runtime
-                RENAME areg-sqlite3-copyright
-                PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
-                CONFIGURATIONS Release
-    )
-endif(NOT AREG_SQLITE_FOUND)
 
 # Copy all CMake and MSVC configuration files.
 install(DIRECTORY ${AREG_SDK_ROOT}/conf/
@@ -193,19 +155,11 @@ endif()
 write_basic_package_version_file(${AREG_PACKAGE_NAME}-config-version.cmake VERSION ${AREG_PROJECT_VERSION} COMPATIBILITY AnyNewerVersion) 
 configure_package_config_file("${AREG_EXPORTS_DIR}/config.cmake.in" "${CMAKE_CURRENT_BINARY_DIR}/${AREG_PACKAGE_NAME}-config.cmake" INSTALL_DESTINATION share/${AREG_PACKAGE_NAME})
 
-if (AREG_SQLITE_FOUND)
-    export(TARGETS areg aregextend areglogger
-                NAMESPACE ${AREG_PACKAGE_NAME}::
-                FILE ${AREG_PACKAGE_NAME}-export.cmake
-                EXPORT_LINK_INTERFACE_LIBRARIES
-    )
-else(AREG_SQLITE_FOUND)
-    export(TARGETS areg aregextend areglogger aregsqlite3
-                NAMESPACE ${AREG_PACKAGE_NAME}::
-                FILE ${AREG_PACKAGE_NAME}-export.cmake
-                EXPORT_LINK_INTERFACE_LIBRARIES
-    )
-endif(AREG_SQLITE_FOUND)
+export(TARGETS areg aregextend areglogger
+            NAMESPACE ${AREG_PACKAGE_NAME}::
+            FILE ${AREG_PACKAGE_NAME}-targets.cmake
+            EXPORT_LINK_INTERFACE_LIBRARIES
+)
 
 install(FILES
             "${CMAKE_CURRENT_BINARY_DIR}/${AREG_PACKAGE_NAME}-config-version.cmake"
@@ -218,6 +172,6 @@ install(EXPORT ${AREG_PACKAGE_NAME}
             DESTINATION share/${AREG_PACKAGE_NAME} 
             COMPONENT Development
             NAMESPACE ${AREG_PACKAGE_NAME}::
-            FILE ${AREG_PACKAGE_NAME}-export.cmake
+            FILE ${AREG_PACKAGE_NAME}-targets.cmake
             EXPORT_LINK_INTERFACE_LIBRARIES
 )

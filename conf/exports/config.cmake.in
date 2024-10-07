@@ -17,7 +17,7 @@ option(AREG_EXTENDED        "AREG Extended object flag"         @AREG_EXTENDED@)
 option(AREG_LOGS            "AREG logging enable flag"          @AREG_LOGS@)
 option(AREG_SQLITE_PACKAGE  "AREG compiled with SQLite package" @AREG_SQLITE_PACKAGE@)
 
-include("${CMAKE_CURRENT_LIST_DIR}/@AREG_PACKAGE_NAME@-export.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/@AREG_PACKAGE_NAME@-targets.cmake")
 check_required_components("@AREG_PACKAGE_NAME@")
 
 option(AREG_BUILD_TESTS     "No AREG Unit Tests"    OFF)
