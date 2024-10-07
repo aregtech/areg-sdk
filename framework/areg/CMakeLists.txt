@@ -25,7 +25,7 @@ if(AREG_BINARY MATCHES "shared")
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
         target_compile_options(areg PRIVATE "-Bdynamic")
     endif()
-    set_property(TARGET areg PROPERTY LIBRARY_OUTPUT_DIRECTORY ${AREG_OUTPUT_BIN})
+    # set_property(TARGET areg PROPERTY LIBRARY_OUTPUT_DIRECTORY ${AREG_OUTPUT_BIN})
 
 else(AREG_BINARY MATCHES "static")
 
@@ -34,11 +34,12 @@ else(AREG_BINARY MATCHES "static")
     if (NOT "${AREG_PACKAGE_NAME}" STREQUAL "")
         add_library(${AREG_PACKAGE_NAME}::areg ALIAS areg)
     endif()
+
     target_compile_definitions(areg PRIVATE EXP_AREG_LIB _LIB)
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
         target_compile_options(areg PRIVATE "-Bstatic")
     endif()
-    set_property(TARGET areg PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${AREG_OUTPUT_LIB})
+    # set_property(TARGET areg PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${AREG_OUTPUT_LIB})
 
 endif()
 
@@ -51,11 +52,11 @@ target_compile_options(areg PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}" "${AREG_OP
 target_link_libraries(areg PRIVATE ${AREG_LDFLAGS})
 
 # Library configuration
-set_target_properties(areg PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON )
-set_target_properties(areg PROPERTIES VERSION ${AREG_PROJECT_VERSION})
+# set_target_properties(areg PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON )
+# set_target_properties(areg PROPERTIES VERSION ${AREG_PROJECT_VERSION})
 
 # copying log and router init files to 'bin/config'
 add_custom_command( TARGET areg POST_BUILD 
-                    COMMAND ${CMAKE_COMMAND} -E make_directory ${AREG_OUTPUT_BIN}/config
-                    COMMAND ${CMAKE_COMMAND} -E copy ${AREG_BASE}/areg/resources/areg.init ${AREG_OUTPUT_BIN}/config/areg.init
+                    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/config
+                    COMMAND ${CMAKE_COMMAND} -E copy ${AREG_BASE}/areg/resources/areg.init ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/config/areg.init
                     VERBATIM)

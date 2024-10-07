@@ -35,9 +35,8 @@ include(${AREG_CMAKE_CONFIG_DIR}/common.cmake)
 # this ensures that the commands to create directories are called first.
 add_custom_target(areg-dummy ALL COMMAND ${CMAKE_COMMAND} VERBATIM)
 add_custom_command( TARGET areg-dummy PRE_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E make_directory "${AREG_OUTPUT_DIR}"
-                    COMMAND ${CMAKE_COMMAND} -E make_directory "${AREG_OUTPUT_BIN}"
-                    COMMAND ${CMAKE_COMMAND} -E make_directory "${AREG_OUTPUT_LIB}"
+                    COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
+                    COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}"
                     VERBATIM)
 
 include_directories(${AREG_BASE})
@@ -46,7 +45,7 @@ include_directories(${AREG_THIRDPARTY})
 # build AREG Framework thirdparty software
 include(${AREG_THIRDPARTY}/CMakeLists.txt)
 if (NOT AREG_SQLITE_FOUND)
-    add_dependencies(sqlite3 areg-dummy)
+    add_dependencies(aregsqlite3 areg-dummy)
 endif()
 
 # build AREG Framework software
@@ -66,11 +65,16 @@ if(AREG_BUILD_TESTS)
     endif()
 endif()
 
-
-
-if (AREG_INSTALL)
+if (AREG_INSTALL AND AREG_SQLITE_FOUND)
     include(${AREG_CMAKE_CONFIG_DIR}/install.cmake)
-endif(AREG_INSTALL)
+elseif(AREG_INSTALL)
+    option(AREG_INSTALL "Enable install AREG SDK" OFF)
+    message(WARNING "AREG: >>> Forcing to set AREG_INSTALL to OFF, \
+                    because the project is compiled with local SQLite3 sources.\
+                    Recompile the project and enable using SQLite package by\
+                    setting 'AREG_USE_PACKAGES=ON' and specifying 'CMAKE_TOOLCHAIN_FILE' variable.\nExample:\n$ \
+                    cmake -B ./build -DAREG_USE_PACKAGES=ON -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DAREG_INSTALL=ON")
+endif()
 
 # Print the configuration status
 message(STATUS "=======================================================================================")
@@ -79,7 +83,7 @@ message(STATUS "================================================================
 message(STATUS "AREG: >>> CMAKE_SOURCE_DIR = \'${CMAKE_SOURCE_DIR}\', build type \'${CMAKE_BUILD_TYPE}\'")
 message(STATUS "AREG: >>> Build ...........: \'${CMAKE_SYSTEM_NAME}\' system, \'${AREG_BITNESS}\'-bit platform, \'${AREG_PROCESSOR}\' CPU")
 message(STATUS "AREG: >>> Compiler ........: \'${CMAKE_CXX_COMPILER}\', ID \'${AREG_COMPILER_FAMILY}\'")
-message(STATUS "AREG: >>> Binary output ...: \'${AREG_OUTPUT_BIN}\', extension '${CMAKE_EXECUTABLE_SUFFIX}'")
+message(STATUS "AREG: >>> Binary output ...: \'${CMAKE_RUNTIME_OUTPUT_DIRECTORY}\', extension '${CMAKE_EXECUTABLE_SUFFIX}'")
 message(STATUS "AREG: >>> Generated files .: \'${AREG_GENERATE_DIR}\' directory")
 message(STATUS "AREG: >>> Packages ........: \'${FETCHCONTENT_BASE_DIR}\' directory")
 message(STATUS "AREG: >>> Java version ....: \'${Java_VERSION_STRING}\' of version \'${Java_JAVA_EXECUTABLE}\'. Minimum should be 17")

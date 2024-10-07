@@ -20,8 +20,8 @@ function(setAppOptions item library_list)
     target_link_libraries(${item} ${AREG_PACKAGE_NAME}::aregextend ${library_list} ${AREG_PACKAGE_NAME}::areg ${AREG_EXTENDED_LIBS} ${AREG_LDFLAGS})
    
     # Adjusting CPP standard for target
-    set_target_properties(${item} PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON )
-    set_property(TARGET ${item} PROPERTY RUNTIME_OUTPUT_DIRECTORY ${AREG_OUTPUT_BIN})
+    # set_target_properties(${item} PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON )
+    # set_property(TARGET ${item} PROPERTY RUNTIME_OUTPUT_DIRECTORY ${AREG_OUTPUT_BIN})
 endfunction(setAppOptions)
 
 # ---------------------------------------------------------------------------
@@ -83,8 +83,8 @@ function(setStaticLibOptions item library_list)
     target_link_libraries(${item} ${library_list} ${AREG_PACKAGE_NAME}::areg ${AREG_LDFLAGS})
 
     # Adjusting CPP standard for target
-    set_target_properties(${item} PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON )
-    set_property(TARGET ${item} PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${AREG_OUTPUT_LIB})
+    # set_target_properties(${item} PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON )
+    # set_property(TARGET ${item} PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${AREG_OUTPUT_LIB})
 
 endfunction(setStaticLibOptions)
 
@@ -157,7 +157,7 @@ function(addStaticLibEx_C target_name target_namespace source_list library_list)
 
     # Adjusting CPP standard for target
     # set_target_properties(${target_name} PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON )
-    set_property(TARGET ${target_name} PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${AREG_OUTPUT_LIB})
+    # set_property(TARGET ${target_name} PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${AREG_OUTPUT_LIB})
     target_include_directories(${target_name}  BEFORE PRIVATE ${CMAKE_CURRENT_LIST_DIR})    
 endfunction(addStaticLibEx_C)
 
@@ -170,7 +170,7 @@ endfunction(addStaticLibEx_C)
 # usage ......: addStaticLib_C( <name of static library> <list of C-sources> ) 
 # ---------------------------------------------------------------------------
 function(addStaticLib_C target_name source_list)
-    addStaticLibEx_C(${target_name} "${source_list}" "")
+    addStaticLibEx_C(${target_name} "" "${source_list}" "")
 endfunction(addStaticLib_C)
 
 # ---------------------------------------------------------------------------
@@ -195,8 +195,8 @@ function(setSharedLibOptions item library_list)
     endif()
 
     # Adjusting CPP standard for target
-    set_target_properties(${item} PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON)
-    set_property(TARGET ${item} PROPERTY LIBRARY_OUTPUT_DIRECTORY ${AREG_OUTPUT_BIN})
+    # set_target_properties(${item} PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON)
+    # set_property(TARGET ${item} PROPERTY LIBRARY_OUTPUT_DIRECTORY ${AREG_OUTPUT_BIN})
 
 endfunction(setSharedLibOptions)
 

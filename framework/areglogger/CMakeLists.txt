@@ -47,4 +47,4 @@ else(AREG_LOGGER_LIB MATCHES "static")
     target_compile_definitions(areglogger PRIVATE EXP_LOGGER_LIB)
 
 endif(AREG_LOGGER_LIB MATCHES "shared")
-set_target_properties(areglogger    PROPERTIES VERSION ${AREG_PROJECT_VERSION})
+# set_target_properties(areglogger    PROPERTIES VERSION ${AREG_PROJECT_VERSION})

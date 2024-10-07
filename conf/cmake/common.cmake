@@ -59,7 +59,8 @@ set(AREG_COMPILER_OPTIONS)
 set(AREG_COMPILER_VERSION)
 set(AREG_TARGET_COMPILER_OPTIONS)
 # Set the SQLite library reference
-set(AREG_SQLITE_LIB_REF sqlite3)
+set(AREG_SQLITE_LIB_REF)
+set(AREG_SQLITE_LIB     sqlite3)
 option(AREG_SQLITE_FOUND "SQLite3 package found flag" FALSE)
 option(AREG_GTEST_FOUND  "GTest package found flag"   FALSE)
 
@@ -126,13 +127,25 @@ endif()
 # Setup product paths
 # -------------------------------------------------------
 
-# The output directory
-if (NOT DEFINED AREG_OUTPUT_DIR OR "${AREG_OUTPUT_DIR}" STREQUAL "")
-    # Relative path of the output folder for the builds
-    set(AREG_PRODUCT_PATH "build/${AREG_COMPILER_FAMILY}-${AREG_COMPILER_SHORT}/${AREG_OS}-${AREG_BITNESS}-${AREG_PROCESSOR}-${CMAKE_BUILD_TYPE}-${AREG_BINARY}")
-    string(TOLOWER "${AREG_PRODUCT_PATH}" AREG_PRODUCT_PATH)
-    # The absolute path of 'AREG_OUTPUT_DIR' for builds if it is not set.
-    set(AREG_OUTPUT_DIR "${AREG_BUILD_ROOT}/${AREG_PRODUCT_PATH}")
+if (AREG_ENABLE_OUTPUTS)
+
+    # The output directory
+    if (NOT DEFINED AREG_OUTPUT_DIR OR "${AREG_OUTPUT_DIR}" STREQUAL "")
+        # Relative path of the output folder for the builds
+        set(_product_path "build/${AREG_COMPILER_FAMILY}-${AREG_COMPILER_SHORT}/${AREG_OS}-${AREG_BITNESS}-${AREG_PROCESSOR}-${CMAKE_BUILD_TYPE}-${AREG_BINARY}")
+        string(TOLOWER "${_product_path}" _product_path)
+        # The absolute path of 'AREG_OUTPUT_DIR' for builds if it is not set.
+        set(AREG_OUTPUT_DIR "${AREG_BUILD_ROOT}/${_product_path}")
+        unset(_product_path)
+    endif()
+
+else()
+
+    # The output directory
+    if (NOT DEFINED AREG_OUTPUT_DIR OR "${AREG_OUTPUT_DIR}" STREQUAL "")
+        set(AREG_OUTPUT_DIR "${AREG_BUILD_ROOT}")
+    endif()
+
 endif()
 
 # The directory to output static libraries
@@ -173,7 +186,7 @@ set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${AREG_OUTPUT_DIR}
 include_directories(BEFORE "${AREG_BASE}" "${AREG_BUILD_ROOT}" "${AREG_GENERATE_DIR}" "${AREG_THIRDPARTY}")
 
 # Adding library search paths
-link_directories(BEFORE "${AREG_OUTPUT_BIN}" "${AREG_OUTPUT_LIB}")
+link_directories(BEFORE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}" "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}")
 
 # Only for Linux
 if(UNIX AND NOT CYGWIN)

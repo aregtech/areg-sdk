@@ -1,5 +1,5 @@
 # ###########################################################################
-# Either build 'sqlite3' static library or use system available build
+# Either build 'aregsqlite3' static library or use system available 'sqlite3' build
 # ###########################################################################
 
 
@@ -16,6 +16,7 @@ if (AREG_SQLITE_FOUND)
     message(STATUS "AREG: >>> Will use existing sqlite3 package")
     # If SQLite3 package found set appropriate preprocessor option to include right header.
     set(AREG_SQLITE_LIB_REF SQLite::SQLite3)
+    set(AREG_SQLITE_LIB     sqlite3)
     add_definitions(-DUSE_SQLITE_PACKAGE=1)
     
     if (NOT "${AREG_SQLITE_INCLUDES}" STREQUAL "")
@@ -24,7 +25,7 @@ if (AREG_SQLITE_FOUND)
 
 else(AREG_SQLITE_FOUND)
 
-    message(STATUS "AREG: >>> Will compile sqlite3 library")
+    message(STATUS "AREG: >>> Will compile aregsqlite3 library")
     # The SQLite3 package did not find, compile from available sources.
     set(AREG_SQLITE_PACKAGE OFF CACHE BOOL "Use SQLite3 installed package" FORCE)
     set(sqlite_BASE "${AREG_THIRDPARTY}/sqlite3")
@@ -34,8 +35,9 @@ else(AREG_SQLITE_FOUND)
 
     include_directories(${sqlite_BASE})
 
-    set(AREG_SQLITE_LIB_REF sqlite3)
-    addStaticLib_C(${AREG_SQLITE_LIB_REF} "${sqlite_SRC}")
-    target_compile_options(${AREG_SQLITE_LIB_REF} PRIVATE -DUSE_SQLITE_PACKAGE=0 "${AREG_OPT_DISABLE_WARN_THIRDPARTY}")
+    set(AREG_SQLITE_LIB_REF ${AREG_PACKAGE_NAME}::aregsqlite3)
+    set(AREG_SQLITE_LIB     aregsqlite3)
+    addStaticLibEx_C(${AREG_SQLITE_LIB} ${AREG_PACKAGE_NAME} "${sqlite_SRC}" "")
+    target_compile_options(${AREG_SQLITE_LIB} PRIVATE -DUSE_SQLITE_PACKAGE=0 "${AREG_OPT_DISABLE_WARN_THIRDPARTY}")
 
 endif(AREG_SQLITE_FOUND)

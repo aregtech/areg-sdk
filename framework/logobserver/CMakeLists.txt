@@ -19,5 +19,5 @@ else (AREG_LOGGER_LIB MATCHES "static")
     target_compile_definitions(logobserver PRIVATE IMP_LOGGER_LIB)
 endif()
 
-set_target_properties(logobserver  PROPERTIES VERSION ${AREG_PROJECT_VERSION})
+# set_target_properties(logobserver  PROPERTIES VERSION ${AREG_PROJECT_VERSION})
 target_compile_options(logobserver PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")

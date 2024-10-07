@@ -12,15 +12,15 @@ endif()
 # build logger executable
 addExecutableEx(logger ${AREG_PACKAGE_NAME} "${logger_SRC}" "")
 target_compile_options(logger PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")
-set_target_properties(logger PROPERTIES VERSION ${AREG_PROJECT_VERSION})
+# set_target_properties(logger PROPERTIES VERSION ${AREG_PROJECT_VERSION})
 
 if("${AREG_DEVELOP_ENV}" STREQUAL "Win32" OR CYGWIN)
     add_custom_command( TARGET logger POST_BUILD
-                        COMMAND ${CMAKE_COMMAND} -E copy "${logger_BASE}/resources/logger.service.install.bat"   "${AREG_OUTPUT_BIN}/logger.service.install.bat"
-                        COMMAND ${CMAKE_COMMAND} -E copy "${logger_BASE}/resources/logger.service.uninstall.bat" "${AREG_OUTPUT_BIN}/logger.service.uninstall.bat"
+                        COMMAND ${CMAKE_COMMAND} -E copy "${logger_BASE}/resources/logger.service.install.bat"   "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/logger.service.install.bat"
+                        COMMAND ${CMAKE_COMMAND} -E copy "${logger_BASE}/resources/logger.service.uninstall.bat" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/logger.service.uninstall.bat"
                         VERBATIM)
 else()
     add_custom_command( TARGET logger POST_BUILD
-                        COMMAND ${CMAKE_COMMAND} -E copy "${logger_BASE}/resources/logger.service" "${AREG_OUTPUT_BIN}/logger.service"
+                        COMMAND ${CMAKE_COMMAND} -E copy "${logger_BASE}/resources/logger.service" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/logger.service"
                         VERBATIM)
 endif()

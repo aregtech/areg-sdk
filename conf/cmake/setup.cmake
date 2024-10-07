@@ -60,5 +60,8 @@ endif()
 # set CMake tool settings
 set(CMAKE_BUILD_TYPE        ${AREG_BUILD_TYPE})
 set(CMAKE_BUILD_TYPE        ${AREG_BUILD_TYPE} CACHE STRING "Configuration Type" FORCE)
-set(CXX_STANDARD            ${AREG_CXX_STANDARD})
-set(FETCHCONTENT_BASE_DIR   "${AREG_PACKAGES}" CACHE PATH "Location of AREG thirdparty packages" FORCE)
+set(CMAKE_CXX_STANDARD      ${AREG_CXX_STANDARD})
+
+if (NOT "${AREG_PACKAGES}" STREQUAL "")
+    set(FETCHCONTENT_BASE_DIR   "${AREG_PACKAGES}" CACHE PATH "Location of AREG thirdparty packages" FORCE)
+endif()

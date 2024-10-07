@@ -176,6 +176,11 @@ if (NOT DEFINED AREG_BINARY OR NOT ${AREG_BINARY} STREQUAL "static")
     set(AREG_BINARY "shared")
 endif()
 
+# Set the areg log observer API library type.
+if (NOT DEFINED AREG_LOGGER_LIB OR NOT "${AREG_LOGGER_LIB}" STREQUAL "static")
+    set(AREG_LOGGER_LIB "shared")
+endif()
+
 # Build tests. By default it is disabled. To enable, set ON
 macro_create_option(AREG_BUILD_TESTS ON "Build unit tests")
 
@@ -209,46 +214,6 @@ else()
     macro_create_option(AREG_GTEST_PACKAGE     OFF "Use GTest installed package")
 endif()
 
-# Set the areg-sdk build root folder to output files.
-if (NOT DEFINED AREG_BUILD_ROOT OR "${AREG_BUILD_ROOT}" STREQUAL "")
-    set(AREG_BUILD_ROOT "${AREG_SDK_ROOT}/product")
-endif()
-
-# Set the areg log observer API library type.
-if (NOT DEFINED AREG_LOGGER_LIB OR NOT "${AREG_LOGGER_LIB}" STREQUAL "static")
-    set(AREG_LOGGER_LIB "shared")
-endif()
-
-if (NOT DEFINED AREG_PACKAGES OR "${AREG_PACKAGES}" STREQUAL "")
-    set(AREG_PACKAGES "${AREG_BUILD_ROOT}/packages")
-endif()
-
-#[===[
-if ("${AREG_INSTALL_PATH}" STREQUAL "")
-    if ("${CMAKE_INSTALL_PREFIX}" STREQUAL "")
-        set(INST_PATH "${AREG_BUILD_ROOT}")
-        set(TEMP1_VAL "$ENV{HOME}")
-
-        if (NOT "${TEMP1_VAL}" STREQUAL "")
-            file(TO_CMAKE_PATH "${TEMP1_VAL}" INST_PATH)
-        else()
-            set(TEMP1_VAL "$ENV{USERPROFILE}")
-            if (NOT "${TEMP1_VAL}" STREQUAL "")
-            file(TO_CMAKE_PATH "${TEMP1_VAL}" INST_PATH)
-            endif()
-        endif()
-
-        set(AREG_INSTALL_PATH "${INST_PATH}/areg-sdk")
-    else()
-        set(AREG_INSTALL_PATH "${CMAKE_INSTALL_PREFIX}")
-    endif()
-endif()
-#]===]
-
-# The absolute path for generated files
-set(AREG_GENERATE "generate")
-set(AREG_GENERATE_DIR "${AREG_BUILD_ROOT}/${AREG_GENERATE}")
-
 # CPP standard for the projects
 set(AREG_CXX_STANDARD 17)
 
@@ -257,3 +222,30 @@ set(AREG_BITNESS "64")
 
 # Specify CPU platform here, the system CPU platform is detected in 'commmon.cmake'
 set(AREG_PROCESSOR "x86_64")
+
+
+if (NOT DEFINED AREG_ENABLE_OUTPUTS OR AREG_ENABLE_OUTPUTS)
+    option(AREG_ENABLE_OUTPUTS "Enable changing output directories" TRUE)
+    # Set the areg-sdk build root folder to output files.
+    if (NOT DEFINED AREG_BUILD_ROOT OR "${AREG_BUILD_ROOT}" STREQUAL "")
+        set(AREG_BUILD_ROOT "${AREG_SDK_ROOT}/product")
+    endif()
+
+    if (NOT DEFINED AREG_PACKAGES OR "${AREG_PACKAGES}" STREQUAL "")
+        set(AREG_PACKAGES "${AREG_BUILD_ROOT}/packages")
+    endif()
+else()
+    option(AREG_ENABLE_OUTPUTS "Enable changing output directories" FALSE)
+    if (NOT DEFINED AREG_BUILD_ROOT OR "${AREG_BUILD_ROOT}" STREQUAL "")
+        set(AREG_BUILD_ROOT "${CMAKE_BINARY_DIR}")
+    endif()
+endif()
+
+# The relative path for generated files
+if ("${AREG_GENERATE}" STREQUAL "")
+    set(AREG_GENERATE "generate")
+endif()
+
+if ("${AREG_GENERATE_DIR}" STREQUAL "")
+    set(AREG_GENERATE_DIR "${AREG_BUILD_ROOT}/${AREG_GENERATE}")
+endif()

@@ -9,5 +9,5 @@ Version: @PROJECT_VERSION@
 URL: https://github.com/aregtech/areg-sdk
 Requires: areg >= @PROJECT_VERSION@
 Libs: -L${libdir} -laregextend -lareg
-Libs.private: -lsqlite3 @AREG_EXTENDED_LIBS_STR@ @AREG_LDFLAGS_STR@
+Libs.private: @AREG_EXTENDED_LIBS_STR@ @AREG_LDFLAGS_STR@
 Cflags: -I${includedir}
