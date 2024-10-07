@@ -1,6 +1,4 @@
-﻿# CMakeList.txt : CMake project for example, include source and define
-# project specific logic here.
-#
+﻿# CMakeList.txt : include source and link with 'areg::areg'
 cmake_minimum_required(VERSION 3.20.0)
 
 project ("example" CXX)
