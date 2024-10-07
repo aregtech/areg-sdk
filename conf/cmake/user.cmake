@@ -172,12 +172,24 @@ if (NOT "${AREG_BUILD_TYPE}" STREQUAL "Debug")
 endif()
 
 # Set the AREG binary library type to compile. Set "shared" if not "static"
-if (NOT DEFINED AREG_BINARY OR NOT ${AREG_BINARY} STREQUAL "static")
+if (NOT DEFINED AREG_BINARY)
+    if (DEFINED VCPKG_LIBRARY_LINKAGE AND "${VCPKG_LIBRARY_LINKAGE}" STREQUAL "static")
+        set(AREG_BINARY "static")
+    else()
+        set(AREG_BINARY "shared")
+    endif()
+elseif (NOT "${AREG_BINARY}" STREQUAL "static")
     set(AREG_BINARY "shared")
 endif()
 
 # Set the areg log observer API library type.
-if (NOT DEFINED AREG_LOGGER_LIB OR NOT "${AREG_LOGGER_LIB}" STREQUAL "static")
+if (NOT DEFINED AREG_LOGGER_LIB)
+    if (DEFINED VCPKG_LIBRARY_LINKAGE AND "${VCPKG_LIBRARY_LINKAGE}" STREQUAL "static")
+        set(AREG_LOGGER_LIB "static")
+    else()
+        set(AREG_LOGGER_LIB "shared")
+    endif()
+elseif (NOT "${AREG_LOGGER_LIB}" STREQUAL "static")
     set(AREG_LOGGER_LIB "shared")
 endif()
 

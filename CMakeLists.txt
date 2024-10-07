@@ -86,6 +86,7 @@ message(STATUS "AREG: >>> Compiler ........: \'${CMAKE_CXX_COMPILER}\', ID \'${A
 message(STATUS "AREG: >>> Binary output ...: \'${CMAKE_RUNTIME_OUTPUT_DIRECTORY}\', extension '${CMAKE_EXECUTABLE_SUFFIX}'")
 message(STATUS "AREG: >>> Generated files .: \'${AREG_GENERATE_DIR}\' directory")
 message(STATUS "AREG: >>> Packages ........: \'${FETCHCONTENT_BASE_DIR}\' directory")
+message(STATUS "AREG: >>> Build libraries .: areg is \'${AREG_BINARY}\', aregextend is static, areglogger is \'${AREG_LOGGER_LIB}\' library")
 message(STATUS "AREG: >>> Java version ....: \'${Java_VERSION_STRING}\' of version \'${Java_JAVA_EXECUTABLE}\'. Minimum should be 17")
 message(STATUS "AREG: >>> Use of packages .: SQLite3 package use is \'${AREG_SQLITE_PACKAGE}\', GTest package use is \'${AREG_GTEST_PACKAGE}\' ")
 message(STATUS "AREG: >>> Other options ...: Examples = \'${AREG_BUILD_EXAMPLES}\', Unit Tests = \'${AREG_BUILD_TESTS}\', AREG Extended = \'${AREG_EXTENDED}\', Logs = \'${AREG_LOGS}\'")

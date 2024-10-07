@@ -21,6 +21,7 @@ if (AREG_OS STREQUAL "Windows")
     # Linker flags (-l is not necessary)
     list(APPEND AREG_LDFLAGS advapi32 psapi shell32 ws2_32)
     set(AREG_LDFLAGS_STR "-ladvapi32 -lpsapi -lshell32 -lws2_32")
+
 else(AREG_OS STREQUAL "Posix")
 
     if(CMAKE_BUILD_TYPE MATCHES Release)
@@ -67,7 +68,7 @@ list(APPEND AREG_OPT_DISABLE_WARN_COMMON
         -Wno-undefined-func-template
         -Wno-unknown-warning-option
         -Wno-unsafe-buffer-usage
-    )
+)
 
 # disable framework warnings
 list(APPEND AREG_OPT_DISABLE_WARN_FRAMEWORK
@@ -75,13 +76,13 @@ list(APPEND AREG_OPT_DISABLE_WARN_FRAMEWORK
         -Wno-cast-function-type
         -Wno-format-nonliteral
         -Wno-null-pointer-subtraction
-    )
+)
 
 # disable tools warnings
 list(APPEND AREG_OPT_DISABLE_WARN_TOOLS
         -Wno-format-nonliteral
         -Wno-unused-parameter
-    )
+)
 
 # disable example warnings (example 17 with MFC)
 list(APPEND AREG_OPT_DISABLE_WARN_EXAMPLES
@@ -94,7 +95,7 @@ list(APPEND AREG_OPT_DISABLE_WARN_EXAMPLES
         -Wno-unused-local-typedef
         -Wno-unused-macros
         -Wno-unused-parameter
-    )
+)
 
 # disable warnings for generated codes
 list(APPEND AREG_OPT_DISABLE_WARN_CODEGEN 

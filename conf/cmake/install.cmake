@@ -10,6 +10,7 @@ include(CMakePackageConfigHelpers)
 set(AREG_EXPORTS_DIR "${AREG_CMAKE_CONFIG_DIR}/../exports")
 set(AREG_INSTALL_DST "${CMAKE_INSTALL_PREFIX}")
 
+# Setup AREG SDK exporting targets.
 target_include_directories(areg         PUBLIC $<INSTALL_INTERFACE:include>)
 target_include_directories(aregextend   PUBLIC $<INSTALL_INTERFACE:include>)
 target_include_directories(areglogger   PUBLIC $<INSTALL_INTERFACE:include>)
@@ -24,7 +25,7 @@ target_link_directories(logger          PUBLIC $<INSTALL_INTERFACE:lib> $<INSTAL
 target_link_directories(logobserver     PUBLIC $<INSTALL_INTERFACE:lib> $<INSTALL_INTERFACE:bin>)
 target_link_directories(mcrouter        PUBLIC $<INSTALL_INTERFACE:lib> $<INSTALL_INTERFACE:bin>)
 
-# Copy AREG SDK all headers
+# Copy all header files of AREG Framework
 install(DIRECTORY framework/
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT Development
     CONFIGURATIONS Release
@@ -36,12 +37,12 @@ install(DIRECTORY framework/
         PATTERN "mcrouter"          EXCLUDE
 )
 
-# copy compiled binaries in the bin and lib directories
+# Copy compiled binaries in the bin and lib directories
 install(TARGETS areg aregextend areglogger
     EXPORT ${AREG_PACKAGE_NAME}
     RUNTIME DESTINATION bin  COMPONENT Development  COMPONENT Runtime
             PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ WORLD_READ GROUP_EXECUTE WORLD_EXECUTE
-    LIBRARY DESTINATION lib  COMPONENT Development  COMPONENT Runtime
+    LIBRARY DESTINATION bin  COMPONENT Development  COMPONENT Runtime
             PERMISSIONS OWNER_READ OWNER_WRITE               GROUP_READ WORLD_READ
     ARCHIVE DESTINATION lib  COMPONENT Development  COMPONENT Runtime
             PERMISSIONS OWNER_READ OWNER_WRITE               GROUP_READ WORLD_READ
@@ -49,19 +50,13 @@ install(TARGETS areg aregextend areglogger
 
 # Copy AREG configuration file
 install(FILES "${AREG_BASE}/areg/resources/areg.init"
-            DESTINATION bin/config
-            COMPONENT Development   COMPONENT Runtime
-)
-
-# Copy AREG configuration file
-install(FILES "${AREG_BASE}/areg/resources/areg.init"
             DESTINATION share/${AREG_PACKAGE_NAME}
             COMPONENT Development   COMPONENT Runtime
-            PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
+            PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
             CONFIGURATIONS Release
 )
 
-# Copy AREG SDK license
+# Copy AREG SDK open source license
 install(FILES LICENSE.txt
             DESTINATION share/${AREG_PACKAGE_NAME}
             COMPONENT Development   COMPONENT Runtime
@@ -94,11 +89,10 @@ install(TARGETS logger logobserver mcrouter
             CONFIGURATIONS Release
 )
 
-# Copy additionally areg library
+# Copy additionally areg and areglogger dynamic libraries
 install(TARGETS areg areglogger
-    RUNTIME DESTINATION tools/${AREG_PACKAGE_NAME}
+    LIBRARY DESTINATION tools/${AREG_PACKAGE_NAME}
             COMPONENT Development   COMPONENT Runtime
-            PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ WORLD_READ GROUP_EXECUTE WORLD_EXECUTE
             CONFIGURATIONS Release
 )
 
@@ -106,54 +100,58 @@ install(TARGETS areg areglogger
 install(FILES "${AREG_BASE}/areg/resources/areg.init"
             DESTINATION tools/${AREG_PACKAGE_NAME}/config
             COMPONENT Development   COMPONENT Runtime
-            PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
+            PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
             CONFIGURATIONS Release
 )
 
-configure_file("${AREG_EXPORTS_DIR}/areg.pc.in"         areg.pc         @ONLY)
-configure_file("${AREG_EXPORTS_DIR}/aregextend.pc.in"   aregextend.pc   @ONLY)
-configure_file("${AREG_EXPORTS_DIR}/areglogger.pc.in"   areglogger.pc   @ONLY)
+configure_file("${AREG_EXPORTS_DIR}/areg.pc.in"         exports/areg.pc         @ONLY)
+configure_file("${AREG_EXPORTS_DIR}/aregextend.pc.in"   exports/aregextend.pc   @ONLY)
+configure_file("${AREG_EXPORTS_DIR}/areglogger.pc.in"   exports/areglogger.pc   @ONLY)
 
 install(FILES 
-            "${CMAKE_CURRENT_BINARY_DIR}/areg.pc"
-            "${CMAKE_CURRENT_BINARY_DIR}/aregextend.pc"
-            "${CMAKE_CURRENT_BINARY_DIR}/areglogger.pc"
+            "${CMAKE_CURRENT_BINARY_DIR}/exports/areg.pc"
+            "${CMAKE_CURRENT_BINARY_DIR}/exports/aregextend.pc"
+            "${CMAKE_CURRENT_BINARY_DIR}/exports/areglogger.pc"
             DESTINATION lib/pkgconfig
             COMPONENT Development   COMPONENT Runtime
 )
 
 if ((WIN32) OR (CYGWIN))
 
-    configure_file("${AREG_EXPORTS_DIR}/logger.service.install.bat.in"      "logger.service.install.bat"    @ONLY)
-    configure_file("${AREG_EXPORTS_DIR}/logger.service.uninstall.bat.in"    "logger.service.uninstall.bat"  @ONLY)
-    configure_file("${AREG_EXPORTS_DIR}/mcrouter.service.install.bat.in"    "mcrouter.service.install.bat"  @ONLY)
-    configure_file("${AREG_EXPORTS_DIR}/mcrouter.service.uninstall.bat.in"  "mcrouter.service.uninstall.bat" @ONLY)
+    configure_file("${AREG_EXPORTS_DIR}/logger.service.install.bat.in"      "exports/logger.service.install.bat"    @ONLY)
+    configure_file("${AREG_EXPORTS_DIR}/logger.service.uninstall.bat.in"    "exports/logger.service.uninstall.bat"  @ONLY)
+    configure_file("${AREG_EXPORTS_DIR}/mcrouter.service.install.bat.in"    "exports/mcrouter.service.install.bat"  @ONLY)
+    configure_file("${AREG_EXPORTS_DIR}/mcrouter.service.uninstall.bat.in"  "exports/mcrouter.service.uninstall.bat" @ONLY)
     install(FILES 
-            "${CMAKE_CURRENT_BINARY_DIR}/logger.service.install.bat"
-            "${CMAKE_CURRENT_BINARY_DIR}/logger.service.uninstall.bat"
-            "${CMAKE_CURRENT_BINARY_DIR}/mcrouter.service.install.bat"
-            "${CMAKE_CURRENT_BINARY_DIR}/mcrouter.service.uninstall.bat"
-            DESTINATION tools/${AREG_PACKAGE_NAME}
+            "${CMAKE_CURRENT_BINARY_DIR}/exports/logger.service.install.bat"
+            "${CMAKE_CURRENT_BINARY_DIR}/exports/logger.service.uninstall.bat"
+            "${CMAKE_CURRENT_BINARY_DIR}/exports/mcrouter.service.install.bat"
+            "${CMAKE_CURRENT_BINARY_DIR}/exports/mcrouter.service.uninstall.bat"
+            DESTINATION share/${AREG_PACKAGE_NAME}/service
             COMPONENT Development   COMPONENT Runtime
+            PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
             CONFIGURATIONS Release
     )
 
 else()
 
-    configure_file("${AREG_EXPORTS_DIR}/logger.service.in"      "logger.service"    @ONLY)
-    configure_file("${AREG_EXPORTS_DIR}/mcrouter.service.in"    "mcrouter.service"  @ONLY)
+    configure_file("${AREG_EXPORTS_DIR}/logger.service.in"      "exports/logger.service"    @ONLY)
+    configure_file("${AREG_EXPORTS_DIR}/mcrouter.service.in"    "exports/mcrouter.service"  @ONLY)
     install(FILES 
-            "${CMAKE_CURRENT_BINARY_DIR}/logger.service"
-            "${CMAKE_CURRENT_BINARY_DIR}/mcrouter.service"
+            "${CMAKE_CURRENT_BINARY_DIR}/exports/logger.service"
+            "${CMAKE_CURRENT_BINARY_DIR}/exports/mcrouter.service"
             DESTINATION share/${AREG_PACKAGE_NAME}/service
             COMPONENT Development   COMPONENT Runtime
+            PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
             CONFIGURATIONS Release
     )
 
 endif()
 
-write_basic_package_version_file(${AREG_PACKAGE_NAME}-config-version.cmake VERSION ${AREG_PROJECT_VERSION} COMPATIBILITY AnyNewerVersion) 
-configure_package_config_file("${AREG_EXPORTS_DIR}/config.cmake.in" "${CMAKE_CURRENT_BINARY_DIR}/${AREG_PACKAGE_NAME}-config.cmake" INSTALL_DESTINATION share/${AREG_PACKAGE_NAME})
+write_basic_package_version_file(exports/${AREG_PACKAGE_NAME}-config-version.cmake VERSION ${AREG_PROJECT_VERSION} COMPATIBILITY AnyNewerVersion) 
+configure_package_config_file("${AREG_EXPORTS_DIR}/config.cmake.in" 
+                              "${CMAKE_CURRENT_BINARY_DIR}/exports/${AREG_PACKAGE_NAME}-config.cmake" 
+                              INSTALL_DESTINATION share/${AREG_PACKAGE_NAME})
 
 export(TARGETS areg aregextend areglogger
             NAMESPACE ${AREG_PACKAGE_NAME}::
@@ -162,8 +160,8 @@ export(TARGETS areg aregextend areglogger
 )
 
 install(FILES
-            "${CMAKE_CURRENT_BINARY_DIR}/${AREG_PACKAGE_NAME}-config-version.cmake"
-            "${CMAKE_CURRENT_BINARY_DIR}/${AREG_PACKAGE_NAME}-config.cmake"
+            "${CMAKE_CURRENT_BINARY_DIR}/exports/${AREG_PACKAGE_NAME}-config-version.cmake"
+            "${CMAKE_CURRENT_BINARY_DIR}/exports/${AREG_PACKAGE_NAME}-config.cmake"
             DESTINATION share/${AREG_PACKAGE_NAME}
             COMPONENT Development
 )

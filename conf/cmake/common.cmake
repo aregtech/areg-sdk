@@ -119,10 +119,6 @@ else()
     add_definitions(-DAREG_LOGS=0)
 endif()
 
-if ( "${CMAKE_BUILD_TYPE}" STREQUAL "")
-    set(CMAKE_BUILD_TYPE Debug CACHE STRING "AREG build type")
-endif()
-
 # -------------------------------------------------------
 # Setup product paths
 # -------------------------------------------------------
@@ -205,6 +201,7 @@ if (NOT ${Java_FOUND})
     find_package(Java COMPONENTS Development)
 endif()
 
+# Check and setup variables for installation
 if (AREG_INSTALL)
     option(INSTALL_GTEST "Disable Googletest installation" OFF)
 
