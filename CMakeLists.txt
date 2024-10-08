@@ -69,11 +69,6 @@ if (AREG_INSTALL AND AREG_SQLITE_FOUND)
     include(${AREG_CMAKE_CONFIG_DIR}/install.cmake)
 elseif(AREG_INSTALL)
     option(AREG_INSTALL "Enable install AREG SDK" OFF)
-    message(WARNING "AREG: >>> Forcing to set AREG_INSTALL to OFF, \
-                    because the project is compiled with local SQLite3 sources.\
-                    Recompile the project and enable using SQLite package by\
-                    setting 'AREG_USE_PACKAGES=ON' and specifying 'CMAKE_TOOLCHAIN_FILE' variable.\nExample:\n$ \
-                    cmake -B ./build -DAREG_USE_PACKAGES=ON -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DAREG_INSTALL=ON")
 endif()
 
 # Print the configuration status

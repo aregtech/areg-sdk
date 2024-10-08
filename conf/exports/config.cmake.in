@@ -94,6 +94,7 @@ else()
     add_definitions(-DAREG_LOGS=0)
 endif()
 
+# Set the Platform API and the platform bitness.
 if (AREG_DEVELOP_ENV STREQUAL "Win32")
     add_definitions(-DWINDOWS -DWIN32)
     if (${AREG_BITNESS} EQUAL 64)

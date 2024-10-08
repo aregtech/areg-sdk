@@ -35,7 +35,7 @@ if (AREG_LOGGER_LIB MATCHES "shared")
         target_link_options(areglogger PRIVATE "/DEF:${areglogger_BASE}/resources/logobserver.def")
     endif()
 
-else(AREG_LOGGER_LIB MATCHES "static")
+else()
     # build log observer API static library
     addStaticLibEx(areglogger ${AREG_PACKAGE_NAME} "${areglogger_SRC}" "")
     target_compile_options(areglogger PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")
@@ -47,4 +47,3 @@ else(AREG_LOGGER_LIB MATCHES "static")
     target_compile_definitions(areglogger PRIVATE EXP_LOGGER_LIB)
 
 endif(AREG_LOGGER_LIB MATCHES "shared")
-# set_target_properties(areglogger    PROPERTIES VERSION ${AREG_PROJECT_VERSION})

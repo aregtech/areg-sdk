@@ -26,7 +26,12 @@
 #ifdef WINDOWS
     #pragma comment(lib, "areg")
     #pragma comment(lib, "aregextend")
+
+#if defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
     #pragma comment(lib, "sqlite3")
+#else   // defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
+    #pragma comment(lib, "aregsqlite3")
+#endif  //defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
 #endif // WINDOWS
 
 

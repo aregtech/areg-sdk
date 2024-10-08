@@ -27,7 +27,7 @@ if(AREG_BINARY MATCHES "shared")
     endif()
     # set_property(TARGET areg PROPERTY LIBRARY_OUTPUT_DIRECTORY ${AREG_OUTPUT_BIN})
 
-else(AREG_BINARY MATCHES "static")
+else()
 
     # Static Library
     add_library(areg STATIC ${areg_SRC})
@@ -41,7 +41,7 @@ else(AREG_BINARY MATCHES "static")
     endif()
     # set_property(TARGET areg PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${AREG_OUTPUT_LIB})
 
-endif()
+endif(AREG_BINARY MATCHES "shared")
 
 if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
     target_compile_options(areg PRIVATE -fPIC)
@@ -50,10 +50,6 @@ target_compile_options(areg PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}" "${AREG_OP
 
 # Linker options
 target_link_libraries(areg PRIVATE ${AREG_LDFLAGS})
-
-# Library configuration
-# set_target_properties(areg PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON )
-# set_target_properties(areg PROPERTIES VERSION ${AREG_PROJECT_VERSION})
 
 # copying log and router init files to 'bin/config'
 add_custom_command( TARGET areg POST_BUILD 

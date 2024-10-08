@@ -12,7 +12,6 @@ endif()
 # build mcrouter executable
 addExecutableEx(mcrouter ${AREG_PACKAGE_NAME} "${mcrouter_SRC}" "")
 target_compile_options(mcrouter PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")
-# set_target_properties(mcrouter  PROPERTIES VERSION ${AREG_PROJECT_VERSION})
 
 if("${AREG_DEVELOP_ENV}" STREQUAL "Win32" OR CYGWIN)
     add_custom_command( TARGET mcrouter POST_BUILD
