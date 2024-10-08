@@ -746,9 +746,6 @@
     <ClInclude Include="areg\base\private\posix\IESynchObjectBaseIX.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="areg\resources\resource.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="areg\appbase\Application.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -46,9 +46,6 @@
     <Text Include="areglogger\client\private\CMakeLists.txt">
       <Filter>Resource Files</Filter>
     </Text>
-    <Text Include="logobserver\CMakeLists.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
     <Text Include="areglogger\client\CMakeLists.txt">
       <Filter>Resource Files</Filter>
     </Text>

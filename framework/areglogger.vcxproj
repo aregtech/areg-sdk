@@ -21,7 +21,7 @@
   </ImportGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <PreprocessorDefinitions>$(ProjectCommonDefines);_USRDLL;IMP_AREG_DLL;EXP_LOGOBSERVER_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>$(ProjectCommonDefines);_USRDLL;IMP_AREG_DLL;EXP_LOGGER_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -47,7 +47,6 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="areglogger\CMakeLists.txt" />
-    <Text Include="logobserver\CMakeLists.txt" />
     <Text Include="areglogger\client\CMakeLists.txt" />
     <Text Include="areglogger\client\private\CMakeLists.txt" />
   </ItemGroup>

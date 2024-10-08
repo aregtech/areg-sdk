@@ -414,9 +414,6 @@
     <ClInclude Include="areg\component\private\WatchdogManager.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="areg\resources\resource.hpp" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="areg\Readme.md" />
     <None Include="areg\resources\areg.init" />
     <None Include="areg\resources\areg_post_build.bat" />
