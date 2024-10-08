@@ -6,4 +6,4 @@ addServiceInterface(10_generated res HelloWorld)
 macro_declare_project(10_locservice "locservice")
 
 # create executable
-addExecutableEx(${project_locservice}   "${locservice_src}" "10_generated")
+addExecutableEx(${project_locservice} "" "${locservice_src}" "10_generated")

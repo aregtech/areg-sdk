@@ -1,0 +1,8 @@
+@echo off
+
+rem : To install the AREG Multicast Router Service on local machine
+rem : run this file under Windows with Administrator rights
+
+@AREG_INSTALL_DST@/tools/@AREG_PACKAGE_NAME@/mcrouter.exe --install
+
+exit

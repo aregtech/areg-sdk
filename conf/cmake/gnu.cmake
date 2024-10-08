@@ -23,7 +23,7 @@ else()
     list(APPEND AREG_COMPILER_OPTIONS -O0 -g3)
 endif()
 
-if(AREG_BITNESS MATCHES "32")
+if(${AREG_BITNESS} EQUAL 32)
     list(APPEND AREG_COMPILER_OPTIONS -m32)
 else()
     list(APPEND AREG_COMPILER_OPTIONS -m64)
@@ -31,9 +31,10 @@ endif()
 
 # Linker flags (-l is not necessary)
 list(APPEND AREG_LDFLAGS stdc++ m pthread rt)
+set(AREG_LDFLAGS_STR "-lstdc++ -lm -lpthread -lrt")
 
 # disable SQLite warnings
 list(APPEND AREG_OPT_DISABLE_WARN_THIRDPARTY
         -Wno-everything
         -Wno-unused-function
-    )
+)

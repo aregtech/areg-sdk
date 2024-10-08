@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
+    <Import Project="$(SolutionDir)\msvc_setup.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(AregSdkRoot)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+  </ImportGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{B29F438E-904C-4929-903C-F4673182A417}</ProjectGuid>
+    <ProjectName>areglogger</ProjectName>
+    <RootNamespace>areglogger</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(AregSdkRoot)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>$(ProjectCommonDefines);_USRDLL;IMP_AREG_DLL;EXP_LOGGER_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
+    <ClCompile>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="areglogger\client\LogObserverApi.h" />
+    <ClInclude Include="areglogger\client\LogObserverSwitches.h" />
+    <ClInclude Include="areglogger\client\private\LoggerClient.hpp" />
+    <ClInclude Include="areglogger\client\private\ObserverMessageProcessor.hpp" />
+    <ClInclude Include="areglogger\resources\resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="areglogger\client\private\LoggerClient.cpp" />
+    <ClCompile Include="areglogger\client\private\LogObserverApi.cpp" />
+    <ClCompile Include="areglogger\client\private\ObserverMessageProcessor.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="areglogger\CMakeLists.txt" />
+    <Text Include="areglogger\client\CMakeLists.txt" />
+    <Text Include="areglogger\client\private\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="areglogger\resources\areglogger.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="areglogger\resources\areglogger.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

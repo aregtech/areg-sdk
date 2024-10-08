@@ -17,7 +17,7 @@
 #ifdef WINDOWS
 
 #pragma comment(lib, "areg.lib")
-#pragma comment(lib, "areg-extend.lib")
+#pragma comment(lib, "aregextend.lib")
 #pragma comment(lib, "advapi32.lib")
 #pragma comment(lib, "kernel32.lib")
 

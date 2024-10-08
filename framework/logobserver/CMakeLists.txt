@@ -1,51 +1,22 @@
 set(logobserver_BASE "${AREG_BASE}/logobserver")
-set(logobserverapi_SRC)
+set(logobserver_SRC)
 
-include("${logobserver_BASE}/lib/CMakeLists.txt")
-include("${logobserver_BASE}/app/CMakeLists.txt")
+include("${logobserver_BASE}/app/private/CMakeLists.txt")
 
-# ##################################################################
-# build log observer API library
-# ##################################################################
-if (AREG_LOGOBSERVER_LIB MATCHES "shared")
-
-    # build log observer API shared library
-    addSharedLibEx(logobserverapi "${logobserverapi_SRC}" ${AREG_SQLITE_LIB_REF})
-    target_compile_options(logobserverapi PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")
-
-    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
-        target_compile_options(logobserverapi PRIVATE -fPIC)
-    endif()
-
-    # log observer API shared library
-    target_compile_definitions(logobserverapi PRIVATE EXP_LOGOBSERVER_DLL)
-
-    # add MSVC linker option
-    if (MSVC)
-        target_link_options(logobserverapi PRIVATE "/DEF:${logobserverapi_RESOURCE}/logobserver.def")
-    endif()
-
-else(AREG_LOGOBSERVER_LIB MATCHES "static")
-    # build log observer API static library
-    addStaticLib(logobserverapi "${logobserverapi_SRC}")
-    target_compile_options(logobserverapi PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")
-
-    if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
-        target_compile_options(logobserverapi PRIVATE -fPIC)
-    endif()
-    # log observer API static library
-    target_compile_definitions(logobserverapi PRIVATE EXP_LOGOBSERVER_LIB)
-
-endif(AREG_LOGOBSERVER_LIB MATCHES "shared")
+if (${AREG_DEVELOP_ENV} MATCHES "Win32")
+    set_source_files_properties("${logobserver_BASE}/resources/logobserver.rc" PROPERTIES LANGUAGE RC)
+    list(APPEND logobserver_SRC ${logobserver_BASE}/app/resources/logobserver.rc)
+endif()
 
 # ##################################################################
 # build log observer console application
 # ##################################################################
-if (AREG_LOGOBSERVER_LIB MATCHES "shared")
-    addExecutableEx(logobserver "${logobserverapp_SRC}" logobserverapi)
-    target_compile_definitions(logobserver PRIVATE IMP_LOGOBSERVER_DLL)
-else (AREG_LOGOBSERVER_LIB MATCHES "static")
-    addExecutableEx(logobserver "${logobserverapp_SRC}" logobserverapi ${AREG_SQLITE_LIB_REF})
-    target_compile_definitions(logobserver PRIVATE IMP_LOGOBSERVER_LIB)
-endif()
+if (AREG_LOGGER_LIB MATCHES "shared")
+    addExecutableEx(logobserver ${AREG_PACKAGE_NAME} "${logobserver_SRC}" areglogger)
+    target_compile_definitions(logobserver PRIVATE IMP_LOGGER_DLL)
+else ()
+    addExecutableEx(logobserver ${AREG_PACKAGE_NAME} "${logobserver_SRC}" areglogger ${AREG_SQLITE_LIB_REF})
+    target_compile_definitions(logobserver PRIVATE IMP_LOGGER_LIB)
+endif(AREG_LOGGER_LIB MATCHES "shared")
+
 target_compile_options(logobserver PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")

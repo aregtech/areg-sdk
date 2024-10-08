@@ -6,4 +6,4 @@ addServiceInterface(18_generated res HelloWatchdog)
 macro_declare_project(18_locservice   "locservice")
 
 # add executable
-addExecutableEx(${project_locservice}   "${locservice_src}" 18_generated)
+addExecutableEx(${project_locservice}   "" "${locservice_src}" 18_generated)

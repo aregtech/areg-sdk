@@ -4,6 +4,30 @@
 # ###########################################################################
 
 # ---------------------------------------------------------------------------
+# Description : Checks and sets the C++ standard.
+#               The variable \'AREG_CXX_STANDARD\' should be already set
+#               before calling this macro.
+# Macro    ...: macro_check_fix_cxx_standard
+# Usage ......: macro_check_fix_cxx_standard() 
+# ---------------------------------------------------------------------------
+macro(macro_check_fix_cxx_standard)
+
+    if (NOT DEFINED AREG_CXX_STANDARD)
+        message(WARNING "AREG: >>> Cannot check and set C++ standard, variable \'AREG_CXX_STANDARD\' is not defined")
+        return()
+    endif()
+
+    if (NOT DEFINED CMAKE_CXX_STANDARD)
+        set(CMAKE_CXX_STANDARD  ${AREG_CXX_STANDARD})
+    elseif(${CMAKE_CXX_STANDARD} LESS ${AREG_CXX_STANDARD})
+        message(WARNING "AREG: >>> AREG requires minimum C++${AREG_CXX_STANDARD}, \
+                        current is C++${CMAKE_CXX_STANDARD}. \
+                        Change to avoid compilation errors. Example: \'set(CMAKE_CXX_STANDARD ${AREG_CXX_STANDARD})\'")
+    endif()
+
+endmacro(macro_check_fix_cxx_standard)
+
+# ---------------------------------------------------------------------------
 # Description : Sets the compiler and the linker options of the executable applications.
 #               Adds libraries to link. The AREG library is automatically added.
 # Function ...: setAppOptions
@@ -17,11 +41,7 @@ function(setAppOptions item library_list)
     target_compile_options(${item} PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}")
 
     # Linking flags
-    target_link_libraries(${item} areg-extend ${library_list} areg ${AREG_EXTENDED_LIBS} ${AREG_LDFLAGS})
-   
-    # Adjusting CPP standard for target
-    set_target_properties(${item} PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON )
-    set_property(TARGET ${item} PROPERTY RUNTIME_OUTPUT_DIRECTORY ${AREG_OUTPUT_BIN})
+    target_link_libraries(${item} ${AREG_PACKAGE_NAME}::aregextend ${library_list} ${AREG_PACKAGE_NAME}::areg ${AREG_EXTENDED_LIBS} ${AREG_LDFLAGS})
 endfunction(setAppOptions)
 
 # ---------------------------------------------------------------------------
@@ -34,15 +54,17 @@ endfunction(setAppOptions)
 #               ${library_list} -- The list of libraries to link executable.
 # usage ......: addExecutableEx( <name of executable> <list of sources> <list of libraries> ) 
 # ---------------------------------------------------------------------------
-function(addExecutableEx target_name source_list library_list)
+function(addExecutableEx target_name target_namespace source_list library_list)
     set(exList "${ARGN}")
     foreach(item IN LISTS exList)
         list(APPEND library_list "${item}")
     endforeach()
     add_executable(${target_name} ${source_list})
+    if (NOT "${target_namespace}" STREQUAL "")
+        add_executable(${target_namespace}::${target_name} ALIAS ${target_name})
+    endif()
     setAppOptions(${target_name} "${library_list}")
     target_include_directories(${target_name}  BEFORE PRIVATE ${CMAKE_CURRENT_LIST_DIR})
-    add_dependencies(${target_name} areg-dummy)
 endfunction(addExecutableEx)
 
 # ---------------------------------------------------------------------------
@@ -54,7 +76,7 @@ endfunction(addExecutableEx)
 # usage ......: addExecutable( <name of executable> <list of sources> ) 
 # ---------------------------------------------------------------------------
 function(addExecutable target_name source_list)
-    addExecutableEx(${target_name} "${source_list}" "")
+    addExecutableEx(${target_name} "" "${source_list}" "")
 endfunction(addExecutable)
 
 
@@ -78,12 +100,7 @@ function(setStaticLibOptions item library_list)
         target_compile_options(${item} PRIVATE -fPIC)
     endif()
 
-    target_link_libraries(${item} ${library_list} areg ${AREG_LDFLAGS})
-
-    # Adjusting CPP standard for target
-    set_target_properties(${item} PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON )
-    set_property(TARGET ${item} PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${AREG_OUTPUT_LIB})
-
+    target_link_libraries(${item} ${library_list} ${AREG_PACKAGE_NAME}::areg ${AREG_LDFLAGS})
 endfunction(setStaticLibOptions)
 
 # ---------------------------------------------------------------------------
@@ -96,15 +113,17 @@ endfunction(setStaticLibOptions)
 #               ${library_list} -- The list of libraries to link the static library.
 # usage ......: addStaticLibEx( <name of static library> <list of sources> <list of libraries> ) 
 # ---------------------------------------------------------------------------
-function(addStaticLibEx target_name source_list library_list)
+function(addStaticLibEx target_name target_namespace source_list library_list)
     set(exList "${ARGN}")
     foreach(item IN LISTS exList)
         list(APPEND library_list "${item}")
     endforeach()
     add_library(${target_name} STATIC ${source_list})
+    if (NOT "${target_namespace}" STREQUAL "")
+        add_library(${target_namespace}::${target_name} ALIAS ${target_name})
+    endif()
     setStaticLibOptions(${target_name} "${library_list}")
     target_include_directories(${target_name}  BEFORE PRIVATE ${CMAKE_CURRENT_LIST_DIR})    
-    add_dependencies(${target_name} areg-dummy)
 endfunction(addStaticLibEx)
 
 # ---------------------------------------------------------------------------
@@ -116,7 +135,7 @@ endfunction(addStaticLibEx)
 # usage ......: addStaticLib( <name of static library> <list of sources> ) 
 # ---------------------------------------------------------------------------
 function(addStaticLib target_name source_list)
-    addStaticLibEx(${target_name} "${source_list}" "")
+    addStaticLibEx(${target_name} "" "${source_list}" "")
 endfunction(addStaticLib)
 
 # ---------------------------------------------------------------------------
@@ -129,12 +148,16 @@ endfunction(addStaticLib)
 #               ${library_list} -- The list of libraries to link the static library.
 # usage ......: addStaticLibEx_C( <name of static library> <list of C-sources> <list of libraries> ) 
 # ---------------------------------------------------------------------------
-function(addStaticLibEx_C target_name source_list library_list)
+function(addStaticLibEx_C target_name target_namespace source_list library_list)
     set(exList "${ARGN}")
     foreach(item IN LISTS exList)
         list(APPEND library_list "${item}")
     endforeach()
     add_library(${target_name} STATIC ${source_list})
+    if (NOT "${target_namespace}" STREQUAL "")
+        add_library(${target_namespace}::${target_name} ALIAS ${target_name})
+    endif()
+
     target_compile_options(${target_name} PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}")
 
     # Set common compile definition
@@ -145,13 +168,7 @@ function(addStaticLibEx_C target_name source_list library_list)
         target_compile_options(${target_name} PRIVATE -fPIC)
     endif()
 
-    target_link_libraries(${target_name} ${library_list} areg ${AREG_LDFLAGS})
-
-    # Adjusting CPP standard for target
-    # set_target_properties(${target_name} PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON )
-    set_property(TARGET ${target_name} PROPERTY ARCHIVE_OUTPUT_DIRECTORY ${AREG_OUTPUT_LIB})
-    target_include_directories(${target_name}  BEFORE PRIVATE ${CMAKE_CURRENT_LIST_DIR})    
-    add_dependencies(${target_name} areg-dummy)
+    target_link_libraries(${target_name} ${library_list} ${AREG_PACKAGE_NAME}::areg ${AREG_LDFLAGS})
 endfunction(addStaticLibEx_C)
 
 # ---------------------------------------------------------------------------
@@ -163,7 +180,7 @@ endfunction(addStaticLibEx_C)
 # usage ......: addStaticLib_C( <name of static library> <list of C-sources> ) 
 # ---------------------------------------------------------------------------
 function(addStaticLib_C target_name source_list)
-    addStaticLibEx_C(${target_name} "${source_list}" "")
+    addStaticLibEx_C(${target_name} "" "${source_list}" "")
 endfunction(addStaticLib_C)
 
 # ---------------------------------------------------------------------------
@@ -180,17 +197,12 @@ function(setSharedLibOptions item library_list)
     target_compile_options(${item} PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}")
 
     # Linking flags
-    target_link_libraries(${item} areg-extend ${library_list} areg ${AREG_EXTENDED_LIBS} ${AREG_LDFLAGS})
+    target_link_libraries(${item} ${AREG_PACKAGE_NAME}::aregextend ${library_list} ${AREG_PACKAGE_NAME}::areg ${AREG_EXTENDED_LIBS} ${AREG_LDFLAGS})
 
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
         target_compile_options(${item} PRIVATE -fPIC)
         target_compile_options(${item} PRIVATE "-Bdynamic")
     endif()
-
-    # Adjusting CPP standard for target
-    set_target_properties(${item} PROPERTIES CXX_STANDARD ${AREG_CXX_STANDARD} CXX_STANDARD_REQUIRED ON)
-    set_property(TARGET ${item} PROPERTY LIBRARY_OUTPUT_DIRECTORY ${AREG_OUTPUT_BIN})
-
 endfunction(setSharedLibOptions)
 
 # ---------------------------------------------------------------------------
@@ -203,15 +215,17 @@ endfunction(setSharedLibOptions)
 #               ${library_list} -- The list of libraries to link the shared library.
 # usage ......: addSharedLibEx( <name of shared library> <list of sources> <list of libraries> ) 
 # ---------------------------------------------------------------------------
-function(addSharedLibEx target_name source_list library_list)
+function(addSharedLibEx target_name target_namespace source_list library_list)
     set(exList "${ARGN}")
     foreach(item IN LISTS exList)
         list(APPEND library_list "${item}")
     endforeach()
     add_library(${target_name} SHARED ${source_list})
+    if (NOT "${target_namespace}" STREQUAL "")
+        add_library(${target_namespace}::${target_name} ALIAS ${target_name})
+    endif()
     setSharedLibOptions(${target_name} "${library_list}")
     target_include_directories(${target_name}  BEFORE PRIVATE ${CMAKE_CURRENT_LIST_DIR})    
-    add_dependencies(${target_name} areg-dummy)
 endfunction(addSharedLibEx)
 
 # ---------------------------------------------------------------------------
@@ -223,7 +237,7 @@ endfunction(addSharedLibEx)
 # usage ......: addSharedLib( <name of shared library> <list of sources> ) 
 # ---------------------------------------------------------------------------
 function(addSharedLib target_name target_source_list)
-    addSharedLibEx(${target_name} "${target_source_list}" "")
+    addSharedLibEx(${target_name} "" "${target_source_list}" "")
 endfunction(addSharedLib)
 
 # ---------------------------------------------------------------------------
@@ -534,81 +548,138 @@ macro(macro_declare_project project_name project_alias)
     macro_declare_project_ex(${project_name} ${project_alias} ${project_alias})
 endmacro(macro_declare_project)
 
+# ---------------------------------------------------------------------------
+# Description : For CYGWIN builds, windows specific paths converts to 
+#               to 'cygwin' path. In all other cases, nothing is changed.
+#
+#               NOTE:   This macro does not fix the OS specific issues
+#                       of path separator.
+# Parameters .: ${normal_path}  -- Normalized path as a result.
+#               ${os_path}      -- OS specific path.
+# Macro ......: macro_normalize_path
+# Usage ......: macro_normalize_path( <result_variable> <OS specific path> ) 
+# ---------------------------------------------------------------------------
 macro(macro_normalize_path normal_path os_path)
     if (CYGWIN)
         execute_process(COMMAND cygpath.exe -m ${os_path} OUTPUT_VARIABLE ${normal_path})
         string (STRIP ${${normal_path}} ${normal_path})
     else()
-        set(${normal_path} ${os_path})
+        set(${normal_path} "${os_path}")
     endif()
 endmacro(macro_normalize_path)
 
 # ---------------------------------------------------------------------------
-# Description : This function calls service interface code generator to
-#               generate codes, includes the generated codes either in the
-#               new static library, if it does not exist, or adds to the
-#               list to the static library, if the library already exists.
-#               As parameters, the function receives the name of the static library,
-#               the root folder of the source codes, the relative path to the
-#               project or service interface files, which is included in the path
-#               of generate files, the sub-directory relative to "relative path",
-#               where the service interface files are located, but the path will not
-#               included in file paths of generate files, and the name of service interface,
-#               which should be the same as the file name of the service interface.
-#               For example if developer creates a service interface files of
-#               HelloWorld.siml and WeHaveFun.siml service interfaces, by first call of 
-#               addServiceInterfaceEx with project name 'fun_library', by first call of
-#               addServiceInterfaceEx(fun_library ... HelloWorld), this generates files of HelloWorld
-#               service interface. In second call addServiceInterfaceEx(fun_library ... WeHaveFun),
-#               it generates the source files and include them in the list of existing 'fun_library' static library.
-# Function ...: addServiceInterfaceEx
-# Parameters .: ${gen_project_name} -- The name of the generated static library.
-#               ${source_root}      -- The root directory of the sources.
-#                                      All relative paths, inclusive generated, are relative to this parameter.
-#               ${relative_path}    -- The relative path to the Service Interface.
-#                                      Same path is used to generate files.
-#               ${sub_dir}          -- The sub-directory of Service Interface file location.
-#                                      The path is excluded from generated files.
-#               ${interface_name}   -- The name of the Service Interface, which is the name of the Service Interface file without '.siml' extension.
-# Usage ......: addServiceInterfaceEx(<static library name> <root of sources like project root> <relative path> <sub-directory like 'res'> <Service Interface name>)
-# Example ....: addServiceInterfaceEx("fun_library" "~/project/my-fun/sources" "my/service/interfaces" "" FunInterface)
+# Description : This function invokes the service interface code generator 
+#               to produce source files and either adds them to a new static 
+#               library (if it doesn't exist) or includes them in an existing 
+#               one. It accepts the static library name, full paths to 
+#               Service Interface file, Service Interface name and paths for generated files.
+#               The service interface name must match the file name (without the .siml extension).
+#               
+#               Example: 
+#               For a project 'fun_library' with 'HelloWorld.siml' and 'WeHaveFun.siml' interfaces, 
+#               calling macro_add_service_interface("fun_library" ... HelloWorld ...) generates 
+#               source files for HelloWorld and includes them in the static library. 
+#               A subsequent call for WeHaveFun adds it to the same library.
+# 
+# macro name  : macro_add_service_interface
+# Parameters  : ${lib_name}         -- Name of the static library.
+#               ${interface_doc}    -- Full path to the Service Interface document file. 
+#               ${interface_name}   -- Name of the Service Interface (without '.siml').
+#               ${codegen_root}     -- Root directory for generating files.
+#               ${output_path}      -- Relative path for generated files.
+#               ${codegen_tool}     -- Full path to the code generator tool.
+# 
+# Usage       : macro_add_service_interface(<library name> <documend dir><interface name>.siml <interface name> <codegen root> <sub-path> <codegen tool>)
+# Example     : macro_add_service_interface("fun_library" "~/project/my-fun/sources/service/interfaces/FunInterface.siml" FunInterface "~/project/my-fun/" "generate/service/interfaces" /tools/areg/codegen.jar)
 # ---------------------------------------------------------------------------
-function(addServiceInterfaceEx gen_project_name source_root relative_path sub_dir interface_name)
+macro(macro_add_service_interface lib_name interface_doc interface_name codegen_root output_path codegen_tool)
 
     if (NOT ${Java_FOUND})
-        message(FATAL_ERROR "AREG Setup: No Java found, cannot run code generator. Install Java 17 or higher and try again!")
+        message(FATAL_ERROR "AREG Setup: Java not found! Install Java 17 or higher to run the code generator.")
         return()
     endif()
 
-    set(interface_doc)
+    # Run the code generator tool
+    execute_process(COMMAND ${Java_JAVA_EXECUTABLE} -jar ${codegen_tool} --root=${codegen_root} --doc=${interface_doc} --target=${output_path})
+
+    # Set paths for generated files
+    set(generate_dir "${codegen_root}/${output_path}")
+    
+    # List of generated source and header files
+    list(APPEND private_files
+        "${generate_dir}/private/${interface_name}ClientBase.cpp"
+        "${generate_dir}/private/${interface_name}Events.cpp"
+        "${generate_dir}/private/${interface_name}Proxy.cpp"
+        "${generate_dir}/private/${interface_name}Stub.cpp"
+        "${generate_dir}/private/NE${interface_name}.cpp"
+        "${generate_dir}/private/${interface_name}Events.hpp"
+        "${generate_dir}/private/${interface_name}Proxy.hpp"
+        "${generate_dir}/${interface_name}ClientBase.hpp"
+        "${generate_dir}/${interface_name}Stub.hpp"
+        "${generate_dir}/NE${interface_name}.hpp"
+    )
+
+    # Add generated files to an existing or new static library
+    if (TARGET ${lib_name})
+        target_sources(${lib_name} PRIVATE "${private_files}")
+    else()
+        message(STATUS "AREG Setup: Adding new service interface library ${lib_name}")
+        addStaticLib(${lib_name} "${private_files}")
+        target_compile_options(${lib_name} PRIVATE "${AREG_OPT_DISABLE_WARN_CODEGEN}")
+    endif()
+
+endmacro(macro_add_service_interface)
+
+# ---------------------------------------------------------------------------
+# Description : This function generates code for a service interface using a code 
+#               generator. The generated files are either added to a new static 
+#               library (if it doesn't exist) or included in an existing one.
+#               
+#               The function accepts the static library name, the root directory of 
+#               the source files, the relative path to the service interface files, 
+#               an optional sub-directory, and the name of the service interface (which 
+#               should match the file name without the '.siml' extension). 
+#               
+#               Example:
+#               If the project 'fun_library' contains service interfaces 'HelloWorld.siml' 
+#               and 'WeHaveFun.siml', calling addServiceInterfaceEx("fun_library" ... HelloWorld) 
+#               generates the HelloWorld interface files and includes them in the library. 
+#               Another call for WeHaveFun adds its files to the same library.
+# 
+# Function    : addServiceInterfaceEx
+# Parameters  : ${lib_name}         -- Name of the static library.
+#               ${source_root}      -- Root directory of the source files. All paths 
+#                                      are relative to this directory.
+#               ${relative_path}    -- Relative path to the Service Interface document. 
+#                                      This path is also used for generating files.
+#               ${sub_dir}          -- Optional sub-directory where the interface files are located. 
+#                                      This path is excluded from the generated file paths.
+#               ${interface_name}   -- Name of the Service Interface, matching the file name 
+#                                      without the '.siml' extension.
+# 
+# Usage       : addServiceInterfaceEx(<static library name> <source root> <relative path> <sub-directory> <interface name>)
+# Example     : addServiceInterfaceEx("fun_library" "~/project/my-fun/sources" "my/service/interfaces" "" FunInterface)
+# ---------------------------------------------------------------------------
+function(addServiceInterfaceEx lib_name source_root relative_path sub_dir interface_name)
+
+    macro_normalize_path(codegen_root   "${AREG_BUILD_ROOT}")
+    macro_normalize_path(output_path    "${AREG_GENERATE}/${relative_path}")
+    macro_normalize_path(codegen_tool   "${AREG_SDK_TOOLS}/codegen.jar")
+
     if (${sub_dir} STREQUAL "")
         macro_normalize_path(interface_doc "${source_root}/${relative_path}/${interface_name}.siml")
     else()
         macro_normalize_path(interface_doc "${source_root}/${relative_path}/${sub_dir}/${interface_name}.siml")
     endif()
-    macro_normalize_path(root_path "${AREG_BUILD_ROOT}")
-    macro_normalize_path(interface_out "${AREG_GENERATE}/${relative_path}")
-    macro_normalize_path(codegen_path "${AREG_SDK_TOOLS}/codegen.jar")
 
-    execute_process(COMMAND ${Java_JAVA_EXECUTABLE} -jar ${codegen_path} --root=${root_path} --doc=${interface_doc} --target=${interface_out})
-
-    set(generate_dir "${AREG_GENERATE_DIR}/${relative_path}")
-    set(proj_src)
-    list(APPEND proj_src
-        ${generate_dir}/private/${interface_name}ClientBase.cpp 
-        ${generate_dir}/private/${interface_name}Events.cpp 
-        ${generate_dir}/private/${interface_name}Proxy.cpp 
-        ${generate_dir}/private/${interface_name}Stub.cpp 
-        ${generate_dir}/private/NE${interface_name}.cpp 
-        )
-
-    if (TARGET ${gen_project_name})
-        target_sources(${gen_project_name} PRIVATE "${proj_src}")
-    else()
-        message(STATUS "AREG Setup: Add service interface library ${gen_project_name}")
-        addStaticLib(${gen_project_name} "${proj_src}")
-        target_compile_options(${gen_project_name} PRIVATE "${AREG_OPT_DISABLE_WARN_CODEGEN}")
-    endif()
+    macro_add_service_interface( ${lib_name}
+                                    "${interface_doc}" 
+                                    "${interface_name}" 
+                                    "${codegen_root}" 
+                                    "${output_path}" 
+                                    "${codegen_tool}"
+    )
 
 endfunction(addServiceInterfaceEx)
 
@@ -626,32 +697,17 @@ endfunction(addServiceInterfaceEx)
 #               of sources is ${CMAKE_SOURCE_DIR} and the relative path is the location
 #               of current 'CMakeLists.txt' file, i.e. ${CMAKE_CURRENT_LIST_DIR}.
 # Function ...: addServiceInterface
-# Parameters .: ${gen_project_name} -- The name of the generated static library.
+# Parameters .: ${lib_name}         -- The name of the generated static library.
 #               ${sub_dir}          -- The sub-directory of Service Interface file location.
 #                                      The path is excluded from generated files and relative to the location of the current 'CMakeLists.txt' file
 #               ${interface_name}   -- The name of the Service Interface, which is the name of the Service Interface file without '.siml' extension.
 # Usage ......: addServiceInterface(<static library name> <sub-directory like 'res'> <Service Interface name>)
 # Example ....: addServiceInterface("fun_library" "resources" FunInterface)
 # ---------------------------------------------------------------------------
-function(addServiceInterface gen_project_name sub_dir interface_name)
+function(addServiceInterface lib_name sub_dir interface_name)
     file(RELATIVE_PATH relative ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_LIST_DIR})
-    addServiceInterfaceEx(${gen_project_name} ${CMAKE_SOURCE_DIR} ${relative} ${sub_dir} ${interface_name})
+    addServiceInterfaceEx(${lib_name} ${CMAKE_SOURCE_DIR} ${relative} ${sub_dir} ${interface_name})
 endfunction(addServiceInterface)
-
-# ---------------------------------------------------------------------------
-# Description : This macro generates the codes and adds generated files to
-#               the list of sources to build 'gen_project_name' static library.
-#               It assumes that the location of the Service Interface file is
-#               same as the location of current 'CMakeLists.txt' and the root directory
-#               of sources is ${CMAKE_SOURCE_DIR}.
-# Macro ......: macro_add_service_interface
-# Parameters .: ${gen_project_name} -- The name of the generated static library.
-#               ${interface_name}   -- The name of the Service Interface, which is the name of the Service Interface file without '.siml' extension.
-# Example ....: macro_add_service_interface(fun_library FunInterface)
-# ---------------------------------------------------------------------------
-macro(macro_add_service_interface gen_project_name interface_name)
-    addServiceInterface(${gen_project_name} "" ${interface_name})
-endmacro(macro_add_service_interface)
 
 # ---------------------------------------------------------------------------
 # Description : This function creates a single test executable discovered by CTest.
@@ -662,7 +718,7 @@ endmacro(macro_add_service_interface)
 # ---------------------------------------------------------------------------
 function(addTest test_name test_source)
     list(APPEND google_test_libs "GTest::gtest_main" "GTest::gtest")
-    addExecutableEx(${test_name} "${test_source}" "${google_test_libs}")
+    addExecutableEx(${test_name} "" "${test_source}" "${google_test_libs}")
     gtest_discover_tests(${test_name} DISCOVERY_TIMEOUT 60)
 endfunction(addTest)
 
@@ -685,7 +741,7 @@ function(addUnitTestEx test_project test_sources library_list)
         target_sources(${test_project} PRIVATE "${test_sources}")
     else()
         list(APPEND google_test_libs "GTest::gtest_main" "GTest::gtest" "${library_list}")
-        addExecutableEx(${test_project} "${test_sources}" "${google_test_libs}")
+        addExecutableEx(${test_project} "" "${test_sources}" "${google_test_libs}")
         gtest_discover_tests(${test_project} DISCOVERY_TIMEOUT 60)
     endif()
 endfunction(addUnitTestEx)
@@ -755,3 +811,35 @@ macro(macro_create_option var_name var_value var_describe)
         set(${var_name} ${_VAR_TEMP} CACHE BOOL "${var_describe}" FORCE)
     endif()
 endmacro(macro_create_option)
+
+# ---------------------------------------------------------------------------
+# Description : Recursively removes empty directories.
+#               The function checks whether the given \'dir_name\' is an
+#               existing directory and queries list of files and sub-directories
+#               in the given directory. If the result is empty list, it removes
+#               the directory. Otherwise, it loops the sub-directories searching
+#               and removing empty directories.
+# Function ...: removeEmptyDirs
+# Parameters .: ${dir_name}     -- The path of directory to check and remove.
+# Usage ......: removeEmptyDirs( <the full path of file or directory> )
+# ---------------------------------------------------------------------------
+function(removeEmptyDirs dir_name)
+    if (EXISTS "${dir_name}" AND IS_DIRECTORY "${dir_name}")
+        file(GLOB dir_to_remove "${dir_name}/*")
+        if ("${dir_to_remove}" STREQUAL "")
+            # The directory is empty, can be removed.
+            file(REMOVE_RECURSE "${dir_name}")
+        else()
+            foreach (entry IN LISTS dir_to_remove)
+                removeEmptyDirs("${entry}")
+            endforeach()
+
+            # After recursive check and possible remove, check one more time
+            # is the directory and remove if it is empty.
+            file(GLOB dir_to_remove "${dir_name}/*")
+            if ("${dir_to_remove}" STREQUAL "")            
+                file(REMOVE_RECURSE "${dir_name}")
+            endif()
+        endif()
+    endif()
+endfunction(removeEmptyDirs)

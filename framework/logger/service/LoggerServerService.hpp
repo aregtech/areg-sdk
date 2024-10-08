@@ -23,7 +23,7 @@
 
 #include "areg/component/Timer.hpp"
 #include "areg/trace/NETrace.hpp"
-#include "extend/service/ServiceCommunicatonBase.hpp"
+#include "aregextend/service/ServiceCommunicatonBase.hpp"
 #include "logger/service/private/LoggerMessageProcessor.hpp"
 
 //////////////////////////////////////////////////////////////////////////

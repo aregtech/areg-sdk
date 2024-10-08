@@ -7,5 +7,5 @@ macro_declare_project(14_pubclient    "pubclient")
 macro_declare_project(14_pubservice   "pubservice")
 
 # add executables
-addExecutableEx(${project_pubclient}    "${pubclient_src}"  14_generated)
-addExecutableEx(${project_pubservice}   "${pubservice_src}" 14_generated)
+addExecutableEx(${project_pubclient}    "" "${pubclient_src}"  14_generated)
+addExecutableEx(${project_pubservice}   "" "${pubservice_src}" 14_generated)

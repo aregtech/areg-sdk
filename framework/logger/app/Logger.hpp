@@ -19,12 +19,12 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "extend/service/ServiceApplicationBase.hpp"
+#include "aregextend/service/ServiceApplicationBase.hpp"
 
 #include "areg/base/SynchObjects.hpp"
 #include "logger/app/NELoggerSettings.hpp"
 #include "logger/service/LoggerServerService.hpp"
-#include "extend/console/OptionParser.hpp"
+#include "aregextend/console/OptionParser.hpp"
 
 #include <utility>
 

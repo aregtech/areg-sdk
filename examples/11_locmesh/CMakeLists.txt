@@ -6,4 +6,4 @@ addServiceInterface(11_generated res HelloWorld)
 macro_declare_project(11_locmesh      "locsvcmesh")
 
 # create exicutable
-addExecutableEx(${project_locsvcmesh} "${locsvcmesh_src}" 11_generated)
+addExecutableEx(${project_locsvcmesh} "" "${locsvcmesh_src}" 11_generated)

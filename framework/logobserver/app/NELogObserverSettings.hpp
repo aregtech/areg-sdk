@@ -26,13 +26,13 @@
     #define IMP_AREG_LIB
 #endif  // !defined(IMP_AREG_DLL) && !defined(IMP_AREG_LIB) && !defined(IMPORT_SHARED_SYMBOLS) && !defined(IMPORT_STATIC_SYMBOLS)
 
-#if !defined(IMP_LOGOBSERVER_DLL) && !defined(IMP_LOGOBSERVER_LIB)
-    #define     IMP_LOGOBSERVER_DLL
-#endif  // !defined(IMP_LOGOBSERVER_DLL) || !defined(IMP_LOGOBSERVER_LIB)
+#if !defined(IMP_LOGGER_DLL) && !defined(IMP_LOGGER_LIB)
+    #define     IMP_LOGGER_DLL
+#endif  // !defined(IMP_LOGGER_DLL) || !defined(IMP_LOGGER_LIB)
 
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "logobserver/lib/LogObserverSwitches.h"
+#include "areglogger/client/LogObserverSwitches.h"
 
 #endif // AREG_LOGOBSERVER_APP_NELOGOBSERVERSETTINGS_HPP

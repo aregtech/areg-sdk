@@ -22,8 +22,8 @@
 #include "areg/persist/IEConfigurationListener.hpp"
 
 #include "areg/base/SynchObjects.hpp"
-#include "extend/console/Console.hpp"
-#include "extend/console/OptionParser.hpp"
+#include "aregextend/console/Console.hpp"
+#include "aregextend/console/OptionParser.hpp"
 
 #include <utility>
 

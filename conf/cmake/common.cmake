@@ -3,6 +3,12 @@
 # Copyright 2022-2023 Aregtech
 # ###########################################################################
 
+set(AREG_PACKAGE_NAME   "areg")
+
+if (NOT "${CMAKE_BUILD_TYPE}" STREQUAL "")
+    set(AREG_BUILD_TYPE "${CMAKE_BUILD_TYPE}")
+endif()
+
 if ("${AREG_COMPILER_FAMILY}" STREQUAL "")
     set(AREG_CXX_COMPILER "${CMAKE_CXX_COMPILER}")
     set(AREG_C_COMPILER   "${CMAKE_C_COMPILER}")
@@ -43,16 +49,20 @@ set(AREG_CC_TOOLCHAIN  "${CMAKE_CC_COMPILER}")
 set(AREG_DEVELOP_ENV)
 # The linker flags
 set(AREG_LDFLAGS)
-# The compiler options
-set(AREG_COMPILER_OPTIONS)
+set(AREG_LDFLAGS_STR "")
 # set areg extended static library dependencies
 set(AREG_EXTENDED_LIBS)
+set(AREG_EXTENDED_LIBS_STR "")
+# The compiler options
+set(AREG_COMPILER_OPTIONS)
 # set areg compiler version
 set(AREG_COMPILER_VERSION)
 set(AREG_TARGET_COMPILER_OPTIONS)
 # Set the SQLite library reference
-set(AREG_SQLITE_LIB_REF sqlite3)
-option(AREG_SQLITE_FOUND "SQLite3 package" OFF)
+set(AREG_SQLITE_LIB_REF)
+set(AREG_SQLITE_LIB     sqlite3)
+option(AREG_SQLITE_FOUND "SQLite3 package found flag" FALSE)
+option(AREG_GTEST_FOUND  "GTest package found flag"   FALSE)
 
 # Adding common definition
 add_definitions(-DUNICODE -D_UNICODE)
@@ -97,6 +107,7 @@ if (AREG_EXTENDED)
     add_definitions(-DAREG_EXTENDED=1)
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
         list(APPEND AREG_EXTENDED_LIBS ncurses)
+        set(AREG_EXTENDED_LIBS_STR "-lncurses")
     endif()
 else()
     add_definitions(-DAREG_EXTENDED=0)
@@ -108,21 +119,29 @@ else()
     add_definitions(-DAREG_LOGS=0)
 endif()
 
-if ( "${CMAKE_BUILD_TYPE}" STREQUAL "")
-    set(CMAKE_BUILD_TYPE Debug CACHE STRING "AREG build type")
-endif()
-
 # -------------------------------------------------------
 # Setup product paths
 # -------------------------------------------------------
 
-# The output directory
-if (NOT DEFINED AREG_OUTPUT_DIR OR "${AREG_OUTPUT_DIR}" STREQUAL "")
-    # Relative path of the output folder for the builds
-    set(AREG_PRODUCT_PATH "build/${AREG_COMPILER_FAMILY}-${AREG_COMPILER_SHORT}/${AREG_OS}-${AREG_BITNESS}-${AREG_PROCESSOR}-${CMAKE_BUILD_TYPE}-${AREG_BINARY}")
-    string(TOLOWER "${AREG_PRODUCT_PATH}" AREG_PRODUCT_PATH)
-    # The absolute path of 'AREG_OUTPUT_DIR' for builds if it is not set.
-    set(AREG_OUTPUT_DIR "${AREG_BUILD_ROOT}/${AREG_PRODUCT_PATH}")
+if (AREG_ENABLE_OUTPUTS)
+
+    # The output directory
+    if (NOT DEFINED AREG_OUTPUT_DIR OR "${AREG_OUTPUT_DIR}" STREQUAL "")
+        # Relative path of the output folder for the builds
+        set(_product_path "build/${AREG_COMPILER_FAMILY}-${AREG_COMPILER_SHORT}/${AREG_OS}-${AREG_BITNESS}-${AREG_PROCESSOR}-${CMAKE_BUILD_TYPE}-${AREG_BINARY}")
+        string(TOLOWER "${_product_path}" _product_path)
+        # The absolute path of 'AREG_OUTPUT_DIR' for builds if it is not set.
+        set(AREG_OUTPUT_DIR "${AREG_BUILD_ROOT}/${_product_path}")
+        unset(_product_path)
+    endif()
+
+else()
+
+    # The output directory
+    if (NOT DEFINED AREG_OUTPUT_DIR OR "${AREG_OUTPUT_DIR}" STREQUAL "")
+        set(AREG_OUTPUT_DIR "${AREG_BUILD_ROOT}")
+    endif()
+
 endif()
 
 # The directory to output static libraries
@@ -163,7 +182,7 @@ set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${AREG_OUTPUT_DIR}
 include_directories(BEFORE "${AREG_BASE}" "${AREG_BUILD_ROOT}" "${AREG_GENERATE_DIR}" "${AREG_THIRDPARTY}")
 
 # Adding library search paths
-link_directories(BEFORE "${AREG_OUTPUT_BIN}" "${AREG_OUTPUT_LIB}")
+link_directories(BEFORE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}" "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}")
 
 # Only for Linux
 if(UNIX AND NOT CYGWIN)
@@ -182,7 +201,11 @@ if (NOT ${Java_FOUND})
     find_package(Java COMPONENTS Development)
 endif()
 
+# Check and setup variables for installation
 if (AREG_INSTALL)
-    set(CMAKE_INSTALL_PREFIX "${AREG_INSTALL_PATH}")
     option(INSTALL_GTEST "Disable Googletest installation" OFF)
+
+    if (NOT "${AREG_INSTALL_PATH}" STREQUAL "")
+        set(CMAKE_INSTALL_PREFIX "${AREG_INSTALL_PATH}")
+    endif()
 endif()

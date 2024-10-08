@@ -20,7 +20,7 @@
 #ifdef WINDOWS
     #pragma comment(lib, "areg")
     #pragma comment(lib, "24_generated.lib")
-    #pragma comment(lib, "areg-extend.lib")
+    #pragma comment(lib, "aregextend.lib")
 #endif // WINDOWS
 
 constexpr char const _modelName[]  { "PubSub_model" };  //!< The name of model

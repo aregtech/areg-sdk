@@ -16,7 +16,7 @@ include(${AREG_CMAKE_CONFIG_DIR}/setup.cmake)
 
 # AREG SDK project name and version
 set(AREG_PROJECT_NAME "areg-sdk")
-set(AREG_PROJECT_VERSION "1.5.0")
+set(AREG_PROJECT_VERSION "1.9.99.111")
 
 # Project's properties
 set(PROJECT_NAME ${AREG_PROJECT_NAME})
@@ -35,17 +35,22 @@ include(${AREG_CMAKE_CONFIG_DIR}/common.cmake)
 # this ensures that the commands to create directories are called first.
 add_custom_target(areg-dummy ALL COMMAND ${CMAKE_COMMAND} VERBATIM)
 add_custom_command( TARGET areg-dummy PRE_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E make_directory "${AREG_OUTPUT_DIR}"
-                    COMMAND ${CMAKE_COMMAND} -E make_directory "${AREG_OUTPUT_BIN}"
-                    COMMAND ${CMAKE_COMMAND} -E make_directory "${AREG_OUTPUT_LIB}"
+                    COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}"
+                    COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}"
                     VERBATIM)
 
 include_directories(${AREG_BASE})
 include_directories(${AREG_THIRDPARTY})
+
 # build AREG Framework thirdparty software
 include(${AREG_THIRDPARTY}/CMakeLists.txt)
+if (NOT AREG_SQLITE_FOUND)
+    add_dependencies(aregsqlite3 areg-dummy)
+endif()
+
 # build AREG Framework software
 include(${AREG_BASE}/CMakeLists.txt)
+add_dependencies(areg areg-dummy)
 
 # build optional AREG project examples, if required
 if(AREG_BUILD_EXAMPLES)
@@ -55,9 +60,16 @@ endif()
 # build optional AREG Framework unit tests, if required
 if(AREG_BUILD_TESTS)
     include(${AREG_TESTS}/CMakeLists.txt)
+    if (NOT AREG_GTEST_FOUND)
+        add_dependencies(areg-unit-tests areg-dummy)
+    endif()
 endif()
 
-include(${AREG_CMAKE_CONFIG_DIR}/install.cmake)
+if (AREG_INSTALL AND AREG_SQLITE_FOUND)
+    include(${AREG_CMAKE_CONFIG_DIR}/install.cmake)
+elseif(AREG_INSTALL)
+    option(AREG_INSTALL "Enable install AREG SDK" OFF)
+endif()
 
 # Print the configuration status
 message(STATUS "=======================================================================================")
@@ -65,14 +77,15 @@ message(STATUS "----------------------> AREG project CMake Status Report Begin <
 message(STATUS "=======================================================================================")
 message(STATUS "AREG: >>> CMAKE_SOURCE_DIR = \'${CMAKE_SOURCE_DIR}\', build type \'${CMAKE_BUILD_TYPE}\'")
 message(STATUS "AREG: >>> Build ...........: \'${CMAKE_SYSTEM_NAME}\' system, \'${AREG_BITNESS}\'-bit platform, \'${AREG_PROCESSOR}\' CPU")
-message(STATUS "AREG: >>> Compiler ........: \'${CMAKE_CXX_COMPILER}\', ID \'${AREG_COMPILER_FAMILY}\'")
-message(STATUS "AREG: >>> Binary output ...: \'${AREG_OUTPUT_BIN}\', extension '${CMAKE_EXECUTABLE_SUFFIX}'")
+message(STATUS "AREG: >>> Compiler ........: \'${CMAKE_CXX_COMPILER}\', ID \'${AREG_COMPILER_FAMILY}\', C++${CMAKE_CXX_STANDARD}")
+message(STATUS "AREG: >>> Binary output ...: \'${CMAKE_RUNTIME_OUTPUT_DIRECTORY}\', extension '${CMAKE_EXECUTABLE_SUFFIX}'")
 message(STATUS "AREG: >>> Generated files .: \'${AREG_GENERATE_DIR}\' directory")
 message(STATUS "AREG: >>> Packages ........: \'${FETCHCONTENT_BASE_DIR}\' directory")
+message(STATUS "AREG: >>> Build libraries .: areg is \'${AREG_BINARY}\', aregextend is static, areglogger is \'${AREG_LOGGER_LIB}\' library")
 message(STATUS "AREG: >>> Java version ....: \'${Java_VERSION_STRING}\' of version \'${Java_JAVA_EXECUTABLE}\'. Minimum should be 17")
 message(STATUS "AREG: >>> Use of packages .: SQLite3 package use is \'${AREG_SQLITE_PACKAGE}\', GTest package use is \'${AREG_GTEST_PACKAGE}\' ")
 message(STATUS "AREG: >>> Other options ...: Examples = \'${AREG_BUILD_EXAMPLES}\', Unit Tests = \'${AREG_BUILD_TESTS}\', AREG Extended = \'${AREG_EXTENDED}\', Logs = \'${AREG_LOGS}\'")
-message(STATUS "AREG: >>> Installation ....: is '${AREG_INSTALL}', Thirdparty is '${AREG_INSTALL_DEPENDS}', location \'${CMAKE_INSTALL_PREFIX}\'")
+message(STATUS "AREG: >>> Installation ....: is '${AREG_INSTALL}', location \'${CMAKE_INSTALL_PREFIX}\'")
 message(STATUS "=======================================================================================")
 message(STATUS "-----------------------> AREG project CMake Status Report End <------------------------")
 message(STATUS "=======================================================================================")

@@ -1,6 +1,6 @@
-list(APPEND logobserverapp_SRC 
-	${logobserverapp_BASE}/private/LogObserver.cpp
-	${logobserverapp_BASE}/private/NELogObserverSettings.cpp
-    ${logobserverapp_BASE}/private/posix/LogObserverPosix.cpp
-    ${logobserverapp_BASE}/private/win32/LogObserverWin32.cpp
+list(APPEND logobserver_SRC 
+	${logobserver_BASE}/app/private/LogObserver.cpp
+	${logobserver_BASE}/app/private/NELogObserverSettings.cpp
+    ${logobserver_BASE}/app/private/posix/LogObserverPosix.cpp
+    ${logobserver_BASE}/app/private/win32/LogObserverWin32.cpp
 )

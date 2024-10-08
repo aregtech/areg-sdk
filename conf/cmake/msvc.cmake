@@ -12,8 +12,8 @@ add_definitions(-DWINDOWS -D_WINDOWS -DWIN32 -D_WIN32)
 if(NOT CMAKE_BUILD_TYPE MATCHES Release)
     list(APPEND AREG_COMPILER_OPTIONS -Od -RTC1 -c)
 endif()
-        
-if (${AREG_BITNESS} MATCHES "64")
+
+if (${AREG_BITNESS} EQUAL 64)
     add_definitions(-DWIN64 -D_WIN64)
 endif()
 
@@ -21,3 +21,4 @@ endif()
 list(APPEND AREG_COMPILER_OPTIONS)
 # Linker flags (-l is not necessary)
 list(APPEND AREG_LDFLAGS advapi32 psapi shell32 ws2_32)
+set(AREG_LDFLAGS_STR "-ladvapi32 -lpsapi -lshell32 -lws2_32")
