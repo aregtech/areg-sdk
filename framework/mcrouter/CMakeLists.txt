@@ -23,7 +23,7 @@ if("${AREG_DEVELOP_ENV}" STREQUAL "Win32" OR CYGWIN)
                         VERBATIM)
 else()
     add_custom_command( TARGET mcrouter POST_BUILD
-                        COMMAND ${CMAKE_COMMAND} -E copy "${_resourses}resources/mcrouter.service" "${_config}/mcrouter.service"
+                        COMMAND ${CMAKE_COMMAND} -E copy "${_resourses}/mcrouter.service" "${_config}/mcrouter.service"
                         VERBATIM)
 endif()
 

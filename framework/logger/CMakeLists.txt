@@ -23,7 +23,7 @@ if("${AREG_DEVELOP_ENV}" STREQUAL "Win32" OR CYGWIN)
                         VERBATIM)
 else()
     add_custom_command( TARGET logger POST_BUILD
-                        COMMAND ${CMAKE_COMMAND} -E copy "${_resourses}resources/logger.service" "${_config}/logger.service"
+                        COMMAND ${CMAKE_COMMAND} -E copy "${_resourses}/logger.service" "${_config}/logger.service"
                         VERBATIM)
 endif()
 
