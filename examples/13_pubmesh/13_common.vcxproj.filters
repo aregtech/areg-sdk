@@ -45,8 +45,4 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="common\CMakeLists.txt" />
-    <Text Include="common\src\CMakeLists.txt" />
-  </ItemGroup>
 </Project>

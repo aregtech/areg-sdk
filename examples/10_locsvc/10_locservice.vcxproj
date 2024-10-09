@@ -50,10 +50,6 @@
   <ItemGroup>
     <None Include="res\HelloWorld.siml" />
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="locservice\CMakeLists.txt" />
-    <Text Include="locservice\src\CMakeLists.txt" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

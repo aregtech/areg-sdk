@@ -1,11 +1,11 @@
-list(APPEND areg_SRC
-	${areg_BASE}/persist/private/ConfigManager.cpp
-	${areg_BASE}/persist/private/IEConfigurationListener.cpp
-	${areg_BASE}/persist/private/IEDatabaseEngine.cpp
-	${areg_BASE}/persist/private/NEPersistence.cpp
-	${areg_BASE}/persist/private/PersistenceManager.cpp
-	${areg_BASE}/persist/private/Property.cpp
-	${areg_BASE}/persist/private/PropertyKey.cpp
-	${areg_BASE}/persist/private/PropertyValue.cpp
+macro_add_source(areg_SRC "${AREG_BASE}"
+	areg/persist/private/ConfigManager.cpp
+	areg/persist/private/IEConfigurationListener.cpp
+	areg/persist/private/IEDatabaseEngine.cpp
+	areg/persist/private/NEPersistence.cpp
+	areg/persist/private/PersistenceManager.cpp
+	areg/persist/private/Property.cpp
+	areg/persist/private/PropertyKey.cpp
+	areg/persist/private/PropertyValue.cpp
 )
 

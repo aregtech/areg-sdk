@@ -33,8 +33,4 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="multiprocess\serviceproc\CMakeLists.txt" />
-    <Text Include="multiprocess\serviceproc\src\CMakeLists.txt" />
-  </ItemGroup>
 </Project>

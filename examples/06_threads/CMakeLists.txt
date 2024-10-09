@@ -1,2 +1,1 @@
-macro_declare_project_ex(06_threads threads "src")
-addExecutable(${project_threads} "${threads_src}")
+macro_example_declare_runnable(06_threads src/main.cpp)

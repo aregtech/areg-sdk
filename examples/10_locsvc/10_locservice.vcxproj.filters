@@ -38,8 +38,4 @@
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="locservice\CMakeLists.txt" />
-    <Text Include="locservice\src\CMakeLists.txt" />
-  </ItemGroup>
 </Project>

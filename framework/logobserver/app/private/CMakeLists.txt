@@ -1,6 +1,6 @@
-list(APPEND logobserver_SRC 
-	${logobserver_BASE}/app/private/LogObserver.cpp
-	${logobserver_BASE}/app/private/NELogObserverSettings.cpp
-    ${logobserver_BASE}/app/private/posix/LogObserverPosix.cpp
-    ${logobserver_BASE}/app/private/win32/LogObserverWin32.cpp
+macro_add_source(logobserver_SRC "${AREG_BASE}"
+	logobserver/app/private/LogObserver.cpp
+	logobserver/app/private/NELogObserverSettings.cpp
+    logobserver/app/private/posix/LogObserverPosix.cpp
+    logobserver/app/private/win32/LogObserverWin32.cpp
 )

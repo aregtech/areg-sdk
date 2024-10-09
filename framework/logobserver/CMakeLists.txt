@@ -1,11 +1,10 @@
-set(logobserver_BASE "${AREG_BASE}/logobserver")
 set(logobserver_SRC)
 
-include("${logobserver_BASE}/app/private/CMakeLists.txt")
+include("${AREG_BASE}/logobserver/app/private/CMakeLists.txt")
 
 if (${AREG_DEVELOP_ENV} MATCHES "Win32")
-    set_source_files_properties("${logobserver_BASE}/resources/logobserver.rc" PROPERTIES LANGUAGE RC)
-    list(APPEND logobserver_SRC ${logobserver_BASE}/app/resources/logobserver.rc)
+    set_source_files_properties("${AREG_BASE}/logobserver/resources/logobserver.rc" PROPERTIES LANGUAGE RC)
+    list(APPEND logobserver_SRC "${AREG_BASE}/logobserver/app/resources/logobserver.rc")
 endif()
 
 # ##################################################################
@@ -17,6 +16,6 @@ if (AREG_LOGGER_LIB MATCHES "shared")
 else ()
     addExecutableEx(logobserver ${AREG_PACKAGE_NAME} "${logobserver_SRC}" areglogger ${AREG_SQLITE_LIB_REF})
     target_compile_definitions(logobserver PRIVATE IMP_LOGGER_LIB)
-endif(AREG_LOGGER_LIB MATCHES "shared")
+endif()
 
 target_compile_options(logobserver PRIVATE "${AREG_OPT_DISABLE_WARN_TOOLS}")

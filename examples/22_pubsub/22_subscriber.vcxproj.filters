@@ -27,8 +27,4 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="subscriber\CMakeLists.txt" />
-    <Text Include="subscriber\src\CMakeLists.txt" />
-  </ItemGroup>
 </Project>

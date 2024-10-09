@@ -77,19 +77,17 @@ set(AREG_CXX_COMPILER)
 # C compiler, possible values: gcc, clang, clang-cl, cl
 set(AREG_C_COMPILER)
 
-# Check the compiler option.
-# Check and set the simple and shortest way to set the compiler
+# Check the compiler option and set compiler family and specific compiler commands accordingly.
 if(DEFINED AREG_COMPILER_FAMILY AND NOT ${AREG_COMPILER_FAMILY} STREQUAL "")
-
     message(STATUS "AREG: >>> User selected C/C++ compiler family \'${AREG_COMPILER_FAMILY}\'")
-    if(${AREG_COMPILER_FAMILY} STREQUAL "gnu")
+
+    # Map the AREG_COMPILER_FAMILY to the respective compiler commands
+    if(${AREG_COMPILER_FAMILY} MATCHES "gnu|cygwin")
         set(AREG_CXX_COMPILER "g++")
         set(AREG_C_COMPILER   "gcc")
-    elseif(${AREG_COMPILER_FAMILY} STREQUAL "cygwin")
-        set(AREG_CXX_COMPILER "g++")
-        set(AREG_C_COMPILER   "gcc")
+        set(AREG_COMPILER_FAMILY "gnu")  # Normalize family to "gnu" for consistency
     elseif(${AREG_COMPILER_FAMILY} STREQUAL "llvm")
-        if (WIN32)
+        if(WIN32)
             set(AREG_CXX_COMPILER "clang-cl")
             set(AREG_C_COMPILER   "clang-cl")
         else()
@@ -100,65 +98,44 @@ if(DEFINED AREG_COMPILER_FAMILY AND NOT ${AREG_COMPILER_FAMILY} STREQUAL "")
         set(AREG_CXX_COMPILER "cl")
         set(AREG_C_COMPILER   "cl")
     else()
-        message(WARNING "AREG: >>> Unrecognized compiler family ${AREG_COMPILER_FAMILY}, supported values: \'gnu\', \'llvm\', \'cygwin\', \'msvc\'")
+        message(WARNING "AREG: >>> Unrecognized compiler family \'${AREG_COMPILER_FAMILY}\', supported values: \'gnu\', \'llvm\', \'cygwin\', \'msvc\'")
     endif()
 
 elseif(DEFINED AREG_COMPILER AND NOT ${AREG_COMPILER} STREQUAL "")
+    message(STATUS "AREG: >>> User selected C/C++ compiler \'${AREG_COMPILER}\'")
 
-    set(AREG_CXX_COMPILER   "${AREG_COMPILER}")
-    set(AREG_C_COMPILER     "${AREG_COMPILER}")
+    # Set both C and C++ compilers based on AREG_COMPILER
+    set(AREG_CXX_COMPILER "${AREG_COMPILER}")
+    set(AREG_C_COMPILER "${AREG_COMPILER}")
 
-    if (${AREG_COMPILER} STREQUAL "g++" OR ${AREG_COMPILER} STREQUAL "gcc")
-        # GNU compiler
-
-        # Make sure that C-compiler is properly set
-        if (${AREG_COMPILER} STREQUAL "g++")
-            set(AREG_C_COMPILER     "gcc")
+    # Handle specific compiler identification
+    if(${AREG_COMPILER} MATCHES "g\\+\\+|gcc|c\\+\\+|cc")
+        if(${AREG_COMPILER} MATCHES "g\\+\\+|c\\+\\+")
+            set(AREG_C_COMPILER "gcc")  # Ensure C-compiler is gcc if C++ compiler is used
         endif()
 
+        # Detect Cygwin or GNU
         if (CYGWIN)
-            set(AREG_COMPILER_FAMILY "cygwin")
+            set(AREG_COMPILER_FAMILY "cygwin")  
         else()
             set(AREG_COMPILER_FAMILY "gnu")
         endif()
 
-    elseif (${AREG_COMPILER} STREQUAL "c++" OR ${AREG_COMPILER} STREQUAL "cc")
-        # GNU compiler
-
-        # Make sure that C-compiler is properly set
-        if (${AREG_COMPILER} STREQUAL "c++")
-            set(AREG_C_COMPILER     "cc")
+    elseif(${AREG_COMPILER} MATCHES "clang-cl|clang\\+\\+|clang")
+        if(${AREG_COMPILER} STREQUAL "clang-cl")
+            set(AREG_C_COMPILER "clang-cl")
+        elseif(${AREG_COMPILER} STREQUAL "clang++")
+            set(AREG_C_COMPILER "clang")
         endif()
-
-        if (CYGWIN)
-            set(AREG_COMPILER_FAMILY "cygwin")
-        else()
-            set(AREG_COMPILER_FAMILY "gnu")
-        endif()
-        
-    elseif (${AREG_COMPILER} STREQUAL "clang-cl" OR ${AREG_COMPILER} STREQUAL "clang++" OR ${AREG_COMPILER} STREQUAL "clang")
-        # Clang compiler
-
-        # Make sure that C-compiler is properly set
-        if (${AREG_COMPILER} STREQUAL "clang-cl")
-            set(AREG_C_COMPILER     "clang-cl")
-        elseif (${AREG_COMPILER} STREQUAL "clang++")
-            set(AREG_C_COMPILER     "clang")
-        endif()
-
-        set(AREG_COMPILER_FAMILY    "llvm")
-        
-    elseif (${AREG_COMPILER} STREQUAL "cl")
-        set(AREG_COMPILER_FAMILY    "msvc")
+        set(AREG_COMPILER_FAMILY "llvm")
+    elseif(${AREG_COMPILER} STREQUAL "cl")
+        set(AREG_COMPILER_FAMILY "msvc")
     else()
-        set(AREG_COMPILER_FAMILY)
-        message(WARNING "AREG: >>> Unrecognized compiler ${AREG_COMPILER}, supported compilers: \'gcc\', \'g++\', 'cc', \'c++\',\'clang\', \'clang++\', \'clang-cl\', \'cl\'")
+        message(WARNING "AREG: >>> Unrecognized compiler \'${AREG_COMPILER}\', supported compilers: \'gcc\', \'g++\', \'cc\', \'c++\', \'clang\', \'clang++\', \'clang-cl\', \'cl\'")
     endif()
 
 else()
-
-    message(STATUS "AREG: >>> No compiler is selected, will use system default")
-
+    message(STATUS "AREG: >>> No compiler is selected, using system default.")
 endif()
 
 # Set build configuration. Set "Debug" for debug build, and "Release" for release build.

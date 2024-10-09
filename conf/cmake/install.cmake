@@ -120,10 +120,10 @@ install(FILES
 # configure and copy servicing script files.
 if ((WIN32) OR (CYGWIN))
 
-    configure_file("${AREG_EXPORTS_DIR}/logger.service.install.bat.in"      "exports/logger.service.install.bat"    @ONLY)
-    configure_file("${AREG_EXPORTS_DIR}/logger.service.uninstall.bat.in"    "exports/logger.service.uninstall.bat"  @ONLY)
-    configure_file("${AREG_EXPORTS_DIR}/mcrouter.service.install.bat.in"    "exports/mcrouter.service.install.bat"  @ONLY)
-    configure_file("${AREG_EXPORTS_DIR}/mcrouter.service.uninstall.bat.in"  "exports/mcrouter.service.uninstall.bat" @ONLY)
+    configure_file("${AREG_EXPORTS_DIR}/logger.service.install.bat.in"      exports/logger.service.install.bat      @ONLY)
+    configure_file("${AREG_EXPORTS_DIR}/logger.service.uninstall.bat.in"    exports/logger.service.uninstall.bat    @ONLY)
+    configure_file("${AREG_EXPORTS_DIR}/mcrouter.service.install.bat.in"    exports/mcrouter.service.install.bat    @ONLY)
+    configure_file("${AREG_EXPORTS_DIR}/mcrouter.service.uninstall.bat.in"  exports/mcrouter.service.uninstall.bat  @ONLY)
     install(FILES 
             "${CMAKE_CURRENT_BINARY_DIR}/exports/logger.service.install.bat"
             "${CMAKE_CURRENT_BINARY_DIR}/exports/logger.service.uninstall.bat"

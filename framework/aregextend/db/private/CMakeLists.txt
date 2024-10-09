@@ -1,4 +1,4 @@
-list(APPEND extend_SRC
-    ${extend_BASE}/db/private/LogSqliteDatabase.cpp
-    ${extend_BASE}/db/private/SqliteDatabase.cpp
+macro_add_source(aregextend_SRC "${AREG_BASE}"
+    aregextend/db/private/LogSqliteDatabase.cpp
+    aregextend/db/private/SqliteDatabase.cpp
 )

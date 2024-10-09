@@ -1,7 +1,7 @@
-list(APPEND mcrouter_SRC
-	${mcrouter_BASE}/service/private/ListServiceProxies.cpp
-	${mcrouter_BASE}/service/private/RouterServerService.cpp
-	${mcrouter_BASE}/service/private/ServiceProxy.cpp
-	${mcrouter_BASE}/service/private/ServiceRegistry.cpp
-	${mcrouter_BASE}/service/private/ServiceStub.cpp
+macro_add_source(mcrouter_SRC "${AREG_BASE}"
+	mcrouter/service/private/ListServiceProxies.cpp
+	mcrouter/service/private/RouterServerService.cpp
+	mcrouter/service/private/ServiceProxy.cpp
+	mcrouter/service/private/ServiceRegistry.cpp
+	mcrouter/service/private/ServiceStub.cpp
 )

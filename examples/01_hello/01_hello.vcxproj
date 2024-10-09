@@ -43,7 +43,6 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="CMakeLists.txt" />
-    <Text Include="src\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.md" />

@@ -1,16 +1,15 @@
-set(areg_BASE "${AREG_BASE}/areg")
 set(areg_SRC)
 
-include("${areg_BASE}/appbase/private/CMakeLists.txt")
-include("${areg_BASE}/base/private/CMakeLists.txt")
-include("${areg_BASE}/component/private/CMakeLists.txt")
-include("${areg_BASE}/ipc/private/CMakeLists.txt")
-include("${areg_BASE}/persist/private/CMakeLists.txt")
-include("${areg_BASE}/trace/private/CMakeLists.txt")
+include("${AREG_BASE}/areg/appbase/private/CMakeLists.txt")
+include("${AREG_BASE}/areg/base/private/CMakeLists.txt")
+include("${AREG_BASE}/areg/component/private/CMakeLists.txt")
+include("${AREG_BASE}/areg/ipc/private/CMakeLists.txt")
+include("${AREG_BASE}/areg/persist/private/CMakeLists.txt")
+include("${AREG_BASE}/areg/trace/private/CMakeLists.txt")
 
 if (${AREG_DEVELOP_ENV} MATCHES "Win32")
-    set_source_files_properties("${areg_BASE}/resources/areg.rc" PROPERTIES LANGUAGE RC)
-    list(APPEND areg_SRC ${areg_BASE}/resources/areg.rc)
+    set_source_files_properties("${AREG_BASE}/areg/resources/areg.rc" PROPERTIES LANGUAGE RC)
+    list(APPEND areg_SRC ${AREG_BASE}/areg/resources/areg.rc)
 endif()
 
 # build areg library
@@ -25,7 +24,6 @@ if(AREG_BINARY MATCHES "shared")
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
         target_compile_options(areg PRIVATE "-Bdynamic")
     endif()
-    # set_property(TARGET areg PROPERTY LIBRARY_OUTPUT_DIRECTORY ${AREG_OUTPUT_BIN})
 
 else()
 

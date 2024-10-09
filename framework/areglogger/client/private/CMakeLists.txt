@@ -1,5 +1,5 @@
-list(APPEND areglogger_SRC 
-	${areglogger_BASE}/client/private/LogObserverApi.cpp
-	${areglogger_BASE}/client/private/LoggerClient.cpp
-	${areglogger_BASE}/client/private/ObserverMessageProcessor.cpp
+macro_add_source(areglogger_SRC "${AREG_BASE}"
+	areglogger/client/private/LogObserverApi.cpp
+	areglogger/client/private/LoggerClient.cpp
+	areglogger/client/private/ObserverMessageProcessor.cpp
 )

@@ -644,7 +644,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "logobserver", "framework\lo
 		{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3} = {FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sqlite3", "thirdparty\sqlite3.vcxproj", "{A19D14E3-19FE-46FE-91CA-0BAD1CDB91C5}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "aregsqlite3", "thirdparty\sqlite3.vcxproj", "{A19D14E3-19FE-46FE-91CA-0BAD1CDB91C5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "thirdparty", "thirdparty", "{BB98F00E-A26C-48A8-AE2A-CEECB9E3FFB1}"
 	ProjectSection(SolutionItems) = preProject

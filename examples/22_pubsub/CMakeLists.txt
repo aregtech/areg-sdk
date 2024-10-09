@@ -1,11 +1,13 @@
-
 # add service interface
 addServiceInterface(22_generated res PubSub)
 
 # add projects
-macro_declare_project(22_publisher  "publisher")
-macro_declare_project(22_subscriber "subscriber")
+macro_example_declare_runnable(22_publisher   22_generated
+    publisher/src/main.cpp
+    publisher/src/Publisher.cpp
+)
 
-# add executables
-addExecutableEx(${project_publisher}   	"" "${publisher_src}"  22_generated)
-addExecutableEx(${project_subscriber}   "" "${subscriber_src}" 22_generated)
+macro_example_declare_runnable(22_subscriber   22_generated
+    subscriber/src/main.cpp
+    subscriber/src/Subscriber.cpp
+)
