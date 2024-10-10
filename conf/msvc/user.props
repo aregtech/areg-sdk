@@ -68,9 +68,9 @@
         <!-- ****************************************************************************************************************************** -->
 
         <!-- Set the directory for generated source files.                                                                                  -->
-        <AregGenerateDir>$(AregBuildRoot)\generate</AregGenerateDir>
+        <AregGenerateDir Condition="'$(AregGenerateDir)'==''">$(AregBuildRoot)\generate</AregGenerateDir>
         <!-- Set the directory to download thirdparty packages. If change, also change the location in nuget.config file.                   -->
-        <AregPackages>$(AregBuildRoot)\packages</AregPackages>
+        <AregPackages Condition="'$(AregPackages)'==''">$(AregBuildRoot)\packages</AregPackages>
         <!-- Set the AREG Framework path.                                                                                                   -->
         <AregFrameworkSources>$(AregSdkRoot)\framework</AregFrameworkSources>
         <!-- Set the path of AREG Framework resources                                                                                       -->

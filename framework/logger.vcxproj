@@ -28,8 +28,8 @@
     </Link>
     <PostBuildEvent>
       <Command>
-          call copy /D / y $(AregFrameworkSources)\logger\resources\logger.service.install.bat   $(OutDir)\logger.service.install.bat
-          call copy /D / y $(AregFrameworkSources)\logger\resources\logger.service.uninstall.bat $(OutDir)\logger.service.uninstall.bat
+call copy /D / y $(AregFrameworkSources)\logger\resources\logger.service.install.bat   $(OutDir)\config\logger.service.install.bat
+call copy /D / y $(AregFrameworkSources)\logger\resources\logger.service.uninstall.bat $(OutDir)\config\logger.service.uninstall.bat
       </Command>
       <Message Condition="Exists($(AregFrameworkResources))">Copy logger service installation scripts to the executable directory</Message>
     </PostBuildEvent>
