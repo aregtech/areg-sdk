@@ -46,10 +46,6 @@
     <ClCompile Include="pubservice\src\main.cpp" />
     <ClCompile Include="pubservice\src\TrafficLightService.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="pubservice\CMakeLists.txt" />
-    <Text Include="pubservice\src\CMakeLists.txt" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

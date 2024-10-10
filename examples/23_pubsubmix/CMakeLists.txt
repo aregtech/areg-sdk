@@ -3,13 +3,21 @@
 addServiceInterface(23_generated res PubSubMix)
 
 # add projects
-macro_declare_project(23_common     "common")
-macro_declare_project(23_pubsubctrl "pubsubctrl")
-macro_declare_project(23_pubsubdyn  "pubsubdyn")
 
 # add static library
-addStaticLibEx(${project_common}       	"${common_src}"     23_generated)
+macro_example_declare_lib(23_common  23_generated
+    common/src/NECommon.cpp
+    common/src/Publisher.cpp
+    common/src/PubSubMixed.cpp
+    common/src/Subscriber.cpp
+)
 
-# add executable
-addExecutableEx(${project_pubsubctrl}   "${pubsubctrl_src}" 23_generated "${project_common}")
-addExecutableEx(${project_pubsubdyn}   	"${pubsubdyn_src}"  23_generated "${project_common}")
+# add examples
+macro_example_declare_runnable(23_pubsubctrl  23_generated 23_common
+    pubsubctrl/src/main.cpp
+    pubsubctrl/src/PubSubController.cpp
+)
+
+macro_example_declare_runnable(23_pubsubdyn   23_generated 23_common
+    pubsubdyn/src/main.cpp
+)

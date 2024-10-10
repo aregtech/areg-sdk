@@ -18,7 +18,7 @@
 
 #include "areg/base/Thread.hpp"
 #include "areg/component/Timer.hpp"
-#include "extend/console/OptionParser.hpp"
+#include "aregextend/console/OptionParser.hpp"
 
 /**
  * \brief   This service provider contains attributes (data) that send notifications on update.

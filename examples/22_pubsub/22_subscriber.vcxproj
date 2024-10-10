@@ -45,10 +45,6 @@
     <ClCompile Include="subscriber\src\main.cpp" />
     <ClCompile Include="subscriber\src\Subscriber.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="subscriber\CMakeLists.txt" />
-    <Text Include="subscriber\src\CMakeLists.txt" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

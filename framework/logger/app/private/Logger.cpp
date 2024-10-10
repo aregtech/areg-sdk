@@ -23,7 +23,7 @@
 #include "areg/base/String.hpp"
 #include "areg/trace/GETrace.h"
 
-#include "extend/console/Console.hpp"
+#include "aregextend/console/Console.hpp"
 
 #include <stdio.h>
 

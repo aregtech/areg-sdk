@@ -28,7 +28,7 @@
  *          should be included and/or defined here.
  **/
 
-#include "system/GEPlatform.h"
+#include "areg/system/GEPlatform.h"
 
 #define OUTPUT_DEBUG_LEVEL_DEBUG    4
 #define OUTPUT_DEBUG_LEVEL_INFO     3

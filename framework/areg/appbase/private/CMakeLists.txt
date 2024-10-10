@@ -1,7 +1,7 @@
-list(APPEND areg_SRC 
-    ${areg_BASE}/appbase/private/Application.cpp
-	${areg_BASE}/appbase/private/configure.cpp
-    ${areg_BASE}/appbase/private/NEApplication.cpp 
-	${areg_BASE}/appbase/private/posix/ApplicationPosix.cpp
-	${areg_BASE}/appbase/private/win32/ApplicationWin32.cpp
+macro_add_source(areg_SRC "${AREG_BASE}"
+    areg/appbase/private/Application.cpp
+	areg/appbase/private/configure.cpp
+    areg/appbase/private/NEApplication.cpp 
+	areg/appbase/private/posix/ApplicationPosix.cpp
+	areg/appbase/private/win32/ApplicationWin32.cpp
 )

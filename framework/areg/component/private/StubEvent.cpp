@@ -82,15 +82,15 @@ void StubEvent::deliverEvent( void )
 }
 
 //////////////////////////////////////////////////////////////////////////
-// IEStubEventConsumer class declaration
+// IEStubEventConsumer class implementation
 //////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
 // IEStubEventConsumer class, constructor / destructor
 //////////////////////////////////////////////////////////////////////////
 IEStubEventConsumer::IEStubEventConsumer( const StubAddress & stubAddress )
-    : ThreadEventConsumerBase   ( )
-    , mStubAddress              ( stubAddress )
+    : IEEventConsumer   ( )
+    , mStubAddress      ( stubAddress )
 {
 }
 
@@ -193,9 +193,4 @@ void IEStubEventConsumer::startEventProcessing( Event & eventElem )
     {
         processGenericEvent(eventElem);
     }
-}
-
-void IEStubEventConsumer::consumerRegistered( bool isRegistered )
-{
-    ThreadEventConsumerBase::consumerRegistered(isRegistered);
 }

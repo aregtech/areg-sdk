@@ -19,8 +19,4 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="pubsubdyn\CMakeLists.txt" />
-    <Text Include="pubsubdyn\src\CMakeLists.txt" />
-  </ItemGroup>
 </Project>

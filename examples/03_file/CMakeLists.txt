@@ -1,2 +1,1 @@
-macro_declare_project_ex(03_file file "src")
-addExecutable(${project_file} "${file_src}")
+macro_example_declare_runnable(03_file src/main.cpp)

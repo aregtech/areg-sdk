@@ -20,6 +20,7 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/trace/private/LoggerBase.hpp"
+
 #include "areg/base/SynchObjects.hpp"
 
 #if AREG_LOGS

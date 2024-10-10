@@ -8,8 +8,8 @@
   </ImportGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A19D14E3-19FE-46FE-91CA-0BAD1CDB91C5}</ProjectGuid>
-    <ProjectName>sqlite3</ProjectName>
-    <RootNamespace>sqlite3</RootNamespace>
+    <ProjectName>aregsqlite3</ProjectName>
+    <RootNamespace>aregsqlite3</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

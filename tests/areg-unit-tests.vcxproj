@@ -44,7 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="units\DateTimeTest.cpp" />
-    <ClCompile Include="units\DemoTest.cpp" />
+    <ClCompile Include="units\GUnitTest.cpp" />
     <ClCompile Include="units\FileTest.cpp" />
     <ClCompile Include="units\LogScopesTest.cpp" />
     <ClCompile Include="units\NEStringTest.cpp" />
@@ -68,7 +68,7 @@
     <ProjectReference Include="$(AregSdkRoot)\framework\areg.vcxproj">
       <Project>{2df8165c-ede2-4f76-8d2c-2ffe82cb6ce5}</Project>
     </ProjectReference>
-    <ProjectReference Include="$(AregSdkRoot)\framework\areg-extend.vcxproj">
+    <ProjectReference Include="$(AregSdkRoot)\framework\aregextend.vcxproj">
       <Project>{fbc5beae-01b9-4943-a5cb-0d3de2067eb3}</Project>
     </ProjectReference>
   </ItemGroup>

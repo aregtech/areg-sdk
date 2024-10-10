@@ -129,7 +129,12 @@ public:
      **/
     inline void removeExternalEventType(const RuntimeClassID & eventClassId);
 
-    bool isExitEvent( Event * anEvent ) const;
+    /**
+     * \brief   Returns true if the specified event object is a special reserved event indicating to exit the thread.
+     * \param   anEvent     A pointer to the event object to check.
+     * \return  Returns true, if dispatcher should complete the job and exit the thread.
+     **/
+    bool isExitEvent( const Event * anEvent ) const;
 
 /************************************************************************/
 // IEEventDispatcher overrides

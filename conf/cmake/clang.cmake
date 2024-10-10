@@ -1,6 +1,9 @@
+# ###########################################################################
 # LLVM compiler and linker options for POSIX and Windows API
+# Copyright 2022-2023 Aregtech
+# ###########################################################################
 
-message(STATUS ">>> Preparing compiler settings for `clang` with '${AREG_OS}' API")
+message(STATUS "AREG: >>> Preparing settings for CLang compiler and with '${AREG_OS}' API")
 
 if (AREG_OS STREQUAL "Windows")
 
@@ -17,6 +20,7 @@ if (AREG_OS STREQUAL "Windows")
     list(APPEND AREG_COMPILER_OPTIONS -Wall -c)
     # Linker flags (-l is not necessary)
     list(APPEND AREG_LDFLAGS advapi32 psapi shell32 ws2_32)
+    set(AREG_LDFLAGS_STR "-ladvapi32 -lpsapi -lshell32 -lws2_32")
 
 else(AREG_OS STREQUAL "Posix")
 
@@ -35,11 +39,12 @@ else(AREG_OS STREQUAL "Posix")
     list(APPEND AREG_COMPILER_OPTIONS -pthread -Wall -c -fmessage-length=0)
     # Linker flags (-l is not necessary)
     list(APPEND AREG_LDFLAGS stdc++ m pthread rt)
+    set(AREG_LDFLAGS_STR "-lstdc++ -lm -lpthread -lrt")
     set(AREG_COMPILER_VERSION -stdlib=libstdc++)
 
 endif(AREG_OS STREQUAL "Windows")
 
-if(AREG_BITNESS MATCHES "32")
+if(${AREG_BITNESS} EQUAL 32)
     list(APPEND AREG_COMPILER_OPTIONS -m32)
 else()
     list(APPEND AREG_COMPILER_OPTIONS -m64)
@@ -63,7 +68,7 @@ list(APPEND AREG_OPT_DISABLE_WARN_COMMON
         -Wno-undefined-func-template
         -Wno-unknown-warning-option
         -Wno-unsafe-buffer-usage
-    )
+)
 
 # disable framework warnings
 list(APPEND AREG_OPT_DISABLE_WARN_FRAMEWORK
@@ -71,13 +76,13 @@ list(APPEND AREG_OPT_DISABLE_WARN_FRAMEWORK
         -Wno-cast-function-type
         -Wno-format-nonliteral
         -Wno-null-pointer-subtraction
-    )
+)
 
 # disable tools warnings
 list(APPEND AREG_OPT_DISABLE_WARN_TOOLS
         -Wno-format-nonliteral
         -Wno-unused-parameter
-    )
+)
 
 # disable example warnings (example 17 with MFC)
 list(APPEND AREG_OPT_DISABLE_WARN_EXAMPLES
@@ -90,7 +95,7 @@ list(APPEND AREG_OPT_DISABLE_WARN_EXAMPLES
         -Wno-unused-local-typedef
         -Wno-unused-macros
         -Wno-unused-parameter
-    )
+)
 
 # disable warnings for generated codes
 list(APPEND AREG_OPT_DISABLE_WARN_CODEGEN 

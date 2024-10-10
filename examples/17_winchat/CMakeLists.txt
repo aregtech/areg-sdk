@@ -1,5 +1,3 @@
-set(project_root "${CMAKE_CURRENT_LIST_DIR}")
-
 # Set project to compile with MFC dynamic linked library
 set(CMAKE_MFC_FLAG PRIVATE 2)
 
@@ -16,34 +14,71 @@ list(APPEND MFC_DEFINES _AFXDLL _BIND_TO_CURRENT_CRT_VERSION _BIND_TO_CURRENT_MF
 # ####################################
 # 'chatter' project
 
-macro_declare_project(17_chatter      "chatter")
-# Set resource files to compile with Microsoft RC compiler
-set_source_files_properties(${chatter_resources}  PROPERTIES LANGUAGE RC)
-list(APPEND chatter_src "${chatter_resources}")
+macro_example_declare_runnable(17_chatter     17_generated
+    chatter/res/stdafx.cpp
+    chatter/res/chatter.rc
 
-# 'chatter' project, compile for Windows system, set options
-addExecutableEx(${project_chatter} "${chatter_src}" 17_generated)
-# Set compile definitions to link MFC DLL
-set_target_properties(${project_chatter} PROPERTIES WIN32_EXECUTABLE TRUE)
-target_compile_definitions(${project_chatter} PRIVATE "${MFC_DEFINES}")
+    chatter/DistrbutedApp.cpp
+    chatter/NEDistributedApp.cpp
+
+    chatter/services/CentralMessaging.cpp
+    chatter/services/ChatParticipantService.cpp
+    chatter/services/ChatPrticipantHandler.cpp
+    chatter/services/ConnectionHandler.cpp
+    chatter/services/ConnectionList.cpp
+    chatter/services/ConnectionService.cpp
+    chatter/services/DirectChatService.cpp
+    chatter/services/DirectConnectionClient.cpp
+    chatter/services/DirectConnectionService.cpp
+    chatter/services/DirectMessagingClient.cpp
+    chatter/services/NetworkSetup.cpp
+
+    chatter/ui/DistributedDialog.cpp
+    chatter/ui/PageChat.cpp
+    chatter/ui/PageConnections.cpp
+    chatter/ui/PageMessaging.cpp
+    chatter/ui/PageNetworkSetup.cpp
+)
+
+# Set resource files to compile with Microsoft RC compiler
+set_source_files_properties(chatter/res/chatter.rc  PROPERTIES LANGUAGE RC)
+
 # Ensure Windows Subsystem and switch the entry point from main() method to 'wWinMainCRTStartup' implemented in MFC DLL.
-set_property(TARGET ${project_chatter} APPEND_STRING PROPERTY LINK_FLAGS " /SUBSYSTEM:WINDOWS /ENTRY:\"wWinMainCRTStartup\"")
-target_include_directories(${project_chatter} BEFORE PRIVATE ${project_root})
-target_compile_options(${project_chatter} PRIVATE "${AREG_OPT_DISABLE_WARN_EXAMPLES}")
+set_target_properties(17_chatter PROPERTIES 
+        WIN32_EXECUTABLE    TRUE
+        LINK_FLAGS          " /SUBSYSTEM:WINDOWS /ENTRY:\"wWinMainCRTStartup\""
+)
+# Set compile definitions to link MFC DLL
+target_compile_definitions(17_chatter PRIVATE "${MFC_DEFINES}")
+target_compile_options(17_chatter PRIVATE "${AREG_OPT_DISABLE_WARN_EXAMPLES}")
 
 # ####################################
 # 'register' project
 
-macro_declare_project(17_register     "register")
+
+macro_example_declare_runnable(17_register     17_generated
+    register/res/stdafx.cpp
+    register/res/register.rc
+
+    register/CentralApp.cpp
+    register/NECentralApp.cpp
+
+    register/services/ConnectionManager.cpp
+    
+    register/ui/CentralDialog.cpp
+    register/ui/PageBrokerSetup.cpp
+    register/ui/PageConnections.cpp
+)
+
 # Set resource files to compile with Microsoft RC compiler
-set_source_files_properties(${register_resources} PROPERTIES LANGUAGE RC)
-list(APPEND register_src ${register_resources})
-# 'register' project, compile for Windows system, set options
-addExecutableEx(${project_register} "${register_src}" 17_generated)
-# Set compile definitions to link MFC DLL
-set_target_properties(${project_register} PROPERTIES WIN32_EXECUTABLE TRUE)
-target_compile_definitions(${project_register} PRIVATE "${MFC_DEFINES}")
+set_source_files_properties(register/res/register.rc PROPERTIES LANGUAGE RC)
+
 # Ensure Windows Subsystem and switch the entry point from main() method to 'wWinMainCRTStartup' implemented in MFC DLL.
-set_property(TARGET ${project_register} APPEND_STRING PROPERTY LINK_FLAGS " /SUBSYSTEM:WINDOWS /ENTRY:\"wWinMainCRTStartup\"")
-target_include_directories(${project_register}  BEFORE PRIVATE ${project_root})
-target_compile_options(${project_register} PRIVATE "${AREG_OPT_DISABLE_WARN_EXAMPLES}")
+set_target_properties(17_register PROPERTIES 
+        WIN32_EXECUTABLE    TRUE
+        LINK_FLAGS          " /SUBSYSTEM:WINDOWS /ENTRY:\"wWinMainCRTStartup\""
+)
+
+# Set compile definitions to link MFC DLL
+target_compile_definitions(17_register PRIVATE "${MFC_DEFINES}")
+target_compile_options(17_register PRIVATE "${AREG_OPT_DISABLE_WARN_EXAMPLES}")

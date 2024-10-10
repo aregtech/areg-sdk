@@ -19,7 +19,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "extend/console/SystemServiceConsole.hpp"
+#include "aregextend/console/SystemServiceConsole.hpp"
 
 //////////////////////////////////////////////////////////////////////////
 // RouterConsoleService class declaration
@@ -27,7 +27,7 @@
 /**
  * \brief   A service to output statistics..
  **/
-class RouterConsoleService  : public    SystemServiceConsole
+class RouterConsoleService  : private    SystemServiceConsole
 {
 public:
     //!< The console service role name

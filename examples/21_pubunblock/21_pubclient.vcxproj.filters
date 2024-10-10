@@ -27,8 +27,4 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="pubclient\CMakeLists.txt" />
-    <Text Include="pubclient\src\CMakeLists.txt" />
-  </ItemGroup>
 </Project>

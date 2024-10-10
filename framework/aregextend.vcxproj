@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
+    <Import Project="$(SolutionDir)\msvc_setup.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(AregSdkRoot)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+  </ImportGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{FBC5BEAE-01B9-4943-A5CB-0D3DE2067EB3}</ProjectGuid>
+    <ProjectName>aregextend</ProjectName>
+    <RootNamespace>aregextend</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(AregSdkRoot)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <OutDir>$(OutLibDir)\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
+    <ClCompile>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
+    <ClCompile>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>IMPORT_SHARED_SYMBOLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="aregextend\console\private\ansi\ConsoleAnsi.cpp" />
+    <ClCompile Include="aregextend\console\private\Console.cpp" />
+    <ClCompile Include="aregextend\console\private\ncurses\ConsoleNcurses.cpp" />
+    <ClCompile Include="aregextend\console\private\OptionParser.cpp" />
+    <ClCompile Include="aregextend\console\private\win32\ConsoleWin32.cpp" />
+    <ClCompile Include="aregextend\console\private\SystemServiceConsole.cpp" />
+    <ClCompile Include="aregextend\db\private\LogSqliteDatabase.cpp" />
+    <ClCompile Include="aregextend\db\private\SqliteDatabase.cpp" />
+    <ClCompile Include="aregextend\service\private\DataRateHelper.cpp" />
+    <ClCompile Include="aregextend\service\private\NESystemService.cpp" />
+    <ClCompile Include="aregextend\service\private\posix\ServiceApplicationBasePosix.cpp" />
+    <ClCompile Include="aregextend\service\private\ServiceApplicationBase.cpp" />
+    <ClCompile Include="aregextend\service\private\SystemServiceBase.cpp" />
+    <ClCompile Include="aregextend\service\private\IEServiceConnectionHandler.cpp" />
+    <ClCompile Include="aregextend\service\private\ServerConnection.cpp" />
+    <ClCompile Include="aregextend\service\private\ServerReceiveThread.cpp" />
+    <ClCompile Include="aregextend\service\private\ServerSendThread.cpp" />
+    <ClCompile Include="aregextend\service\private\ServiceCommunicatonBase.cpp" />
+    <ClCompile Include="aregextend\service\private\win32\ServiceApplicationBaseWin32.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="aregextend\CMakeLists.txt" />
+    <Text Include="aregextend\console\private\CMakeLists.txt" />
+    <Text Include="aregextend\db\private\CMakeLists.txt" />
+    <Text Include="aregextend\service\private\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="aregextend\console\Console.hpp" />
+    <ClInclude Include="aregextend\console\OptionParser.hpp" />
+    <ClInclude Include="aregextend\db\SqliteDatabase.hpp" />
+    <ClInclude Include="aregextend\db\LogSqliteDatabase.hpp" />
+    <ClInclude Include="aregextend\service\DataRateHelper.hpp" />
+    <ClInclude Include="aregextend\service\NESystemService.hpp" />
+    <ClInclude Include="aregextend\console\SystemServiceConsole.hpp" />
+    <ClInclude Include="aregextend\service\ServiceApplicationBase.hpp" />
+    <ClInclude Include="aregextend\service\SystemServiceBase.hpp" />
+    <ClInclude Include="aregextend\service\IEServiceConnectionHandler.hpp" />
+    <ClInclude Include="aregextend\service\ServerConnection.hpp" />
+    <ClInclude Include="aregextend\service\private\ServerReceiveThread.hpp" />
+    <ClInclude Include="aregextend\service\private\ServerSendThread.hpp" />
+    <ClInclude Include="aregextend\service\ServiceCommunicatonBase.hpp" />
+    <ClInclude Include="aregextend\resources\resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="aregextend\Readme.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="aregextend\resources\aregextend.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

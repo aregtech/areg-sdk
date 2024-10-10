@@ -15,7 +15,7 @@
 #include "areg/component/Component.hpp"
 
 #include "areg/base/Thread.hpp"
-#include "extend/console/OptionParser.hpp"
+#include "aregextend/console/OptionParser.hpp"
 #include "common/src/Publisher.hpp"
 #include "common/src/Subscriber.hpp"
 

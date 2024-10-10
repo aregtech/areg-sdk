@@ -1,12 +1,23 @@
 # ###########################################################################
 # Common settings for all projects
+# Copyright 2022-2023 Aregtech
 # ###########################################################################
+
+set(AREG_PACKAGE_NAME   "areg")
+
+if (NOT "${CMAKE_BUILD_TYPE}" STREQUAL "")
+    set(AREG_BUILD_TYPE "${CMAKE_BUILD_TYPE}")
+endif()
 
 if ("${AREG_COMPILER_FAMILY}" STREQUAL "")
     set(AREG_CXX_COMPILER "${CMAKE_CXX_COMPILER}")
     set(AREG_C_COMPILER   "${CMAKE_C_COMPILER}")
     findCompilerFamilyName("${CMAKE_CXX_COMPILER}" AREG_COMPILER_FAMILY)
-    message(STATUS ">>> Using system default settings: Compiler family = \'${AREG_COMPILER_FAMILY}\', CXX compiler = \'${AREG_CXX_COMPILER}\', CC compiler = \'${AREG_C_COMPILER}\'")
+
+    message(STATUS "AREG: >>> Use system default settings:")
+    message(STATUS "AREG: ... Compiler family = \'${AREG_COMPILER_FAMILY}\'")
+    message(STATUS "AREG: ... CXX compiler = \'${AREG_CXX_COMPILER}\'")
+    message(STATUS "AREG: ... CC  compiler = \'${AREG_C_COMPILER}\'")
 endif()
 
 # Identify compiler short name
@@ -20,11 +31,11 @@ set(AREG_PROCESSOR ${CMAKE_SYSTEM_PROCESSOR})
 # Detect and set bitness here
 # 8 bytes ==> 64-bits (x64) and 4 bytes ==> 32-nit (x86)
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(AREG_BITNESS "64")
+    set(AREG_BITNESS 64)
 elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-    set(AREG_BITNESS "32")
+    set(AREG_BITNESS 32)
 else()
-    message(WARNING " >>< Undefined Bitness, use default!")
+    message(WARNING "AREG: >>> Undefined Bitness, use default!")
 endif()
 
 # -----------------------------------------------------
@@ -38,13 +49,20 @@ set(AREG_CC_TOOLCHAIN  "${CMAKE_CC_COMPILER}")
 set(AREG_DEVELOP_ENV)
 # The linker flags
 set(AREG_LDFLAGS)
-# The compiler options
-set(AREG_COMPILER_OPTIONS)
+set(AREG_LDFLAGS_STR "")
 # set areg extended static library dependencies
 set(AREG_EXTENDED_LIBS)
+set(AREG_EXTENDED_LIBS_STR "")
+# The compiler options
+set(AREG_COMPILER_OPTIONS)
 # set areg compiler version
 set(AREG_COMPILER_VERSION)
 set(AREG_TARGET_COMPILER_OPTIONS)
+# Set the SQLite library reference
+set(AREG_SQLITE_LIB_REF)
+set(AREG_SQLITE_LIB     sqlite3)
+option(AREG_SQLITE_FOUND "SQLite3 package found flag" FALSE)
+option(AREG_GTEST_FOUND  "GTest package found flag"   FALSE)
 
 # Adding common definition
 add_definitions(-DUNICODE -D_UNICODE)
@@ -80,7 +98,7 @@ elseif (MSVC)
 
 else()
 
-    message(WARNING ">>> Unsupported compiler type. The result is unpredictable, by default use GNU compiler settings and POSIX API")
+    message(WARNING "AREG: >>> Unsupported compiler type may cause unpredicted results, use default GNU compiler settings and POSIX API")
     include(${AREG_CMAKE_CONFIG_DIR}/gnu.cmake)
 
 endif()
@@ -89,6 +107,7 @@ if (AREG_EXTENDED)
     add_definitions(-DAREG_EXTENDED=1)
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
         list(APPEND AREG_EXTENDED_LIBS ncurses)
+        set(AREG_EXTENDED_LIBS_STR "-lncurses")
     endif()
 else()
     add_definitions(-DAREG_EXTENDED=0)
@@ -100,18 +119,29 @@ else()
     add_definitions(-DAREG_LOGS=0)
 endif()
 
-
 # -------------------------------------------------------
 # Setup product paths
 # -------------------------------------------------------
 
-# The output directory
-if (NOT DEFINED AREG_OUTPUT_DIR OR "${AREG_OUTPUT_DIR}" STREQUAL "")
-    # Relative path of the output folder for the builds
-    set(AREG_PRODUCT_PATH "build/${AREG_COMPILER_FAMILY}-${AREG_COMPILER_SHORT}/${AREG_OS}-${AREG_BITNESS}-${AREG_PROCESSOR}-${CMAKE_BUILD_TYPE}-${AREG_BINARY}")
-    string(TOLOWER "${AREG_PRODUCT_PATH}" AREG_PRODUCT_PATH)
-    # The absolute path of 'AREG_OUTPUT_DIR' for builds if it is not set.
-    set(AREG_OUTPUT_DIR "${AREG_BUILD_ROOT}/${AREG_PRODUCT_PATH}")
+if (AREG_ENABLE_OUTPUTS)
+
+    # The output directory
+    if (NOT DEFINED AREG_OUTPUT_DIR OR "${AREG_OUTPUT_DIR}" STREQUAL "")
+        # Relative path of the output folder for the builds
+        set(_product_path "build/${AREG_COMPILER_FAMILY}-${AREG_COMPILER_SHORT}/${AREG_OS}-${AREG_BITNESS}-${AREG_PROCESSOR}-${CMAKE_BUILD_TYPE}-${AREG_BINARY}")
+        string(TOLOWER "${_product_path}" _product_path)
+        # The absolute path of 'AREG_OUTPUT_DIR' for builds if it is not set.
+        set(AREG_OUTPUT_DIR "${AREG_BUILD_ROOT}/${_product_path}")
+        unset(_product_path)
+    endif()
+
+else()
+
+    # The output directory
+    if (NOT DEFINED AREG_OUTPUT_DIR OR "${AREG_OUTPUT_DIR}" STREQUAL "")
+        set(AREG_OUTPUT_DIR "${AREG_BUILD_ROOT}")
+    endif()
+
 endif()
 
 # The directory to output static libraries
@@ -152,7 +182,7 @@ set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${AREG_OUTPUT_DIR}
 include_directories(BEFORE "${AREG_BASE}" "${AREG_BUILD_ROOT}" "${AREG_GENERATE_DIR}" "${AREG_THIRDPARTY}")
 
 # Adding library search paths
-link_directories(BEFORE "${AREG_OUTPUT_BIN}" "${AREG_OUTPUT_LIB}")
+link_directories(BEFORE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}" "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}")
 
 # Only for Linux
 if(UNIX AND NOT CYGWIN)
@@ -171,12 +201,11 @@ if (NOT ${Java_FOUND})
     find_package(Java COMPONENTS Development)
 endif()
 
-message(STATUS "-------------------- CMakeLists Status Report Begin --------------------")
-message(STATUS ">>> Build '${CMAKE_SYSTEM_NAME}' '${AREG_BITNESS}'-bit platform '${AREG_PROCESSOR}', compiler '${CMAKE_CXX_COMPILER}', ID '${AREG_COMPILER_FAMILY}', build type '${CMAKE_BUILD_TYPE}'")
-message(STATUS ">>> Binary output folder '${AREG_OUTPUT_BIN}', executable extensions '${CMAKE_EXECUTABLE_SUFFIX}'")
-message(STATUS ">>> Generated files location '${AREG_GENERATE_DIR}', library output folder '${AREG_OUTPUT_LIB}'")
-message(STATUS ">>> Build examples is '${AREG_BUILD_EXAMPLES}', build tests is '${AREG_BUILD_TESTS}', AREG extended features are '${AREG_EXTENDED}', compile with logs '${AREG_LOGS}'")
-message(STATUS ">>> Java ${Java_VERSION_STRING} at location ${Java_JAVA_EXECUTABLE} is required by code generator. Minimum version 17")
-message(STATUS ">>> Fetched projects are located in the \'${FETCHCONTENT_BASE_DIR}\' directory")
-message(STATUS "-------------------- CMakeLists Status Report End ----------------------")
-message(STATUS CMAKE_SOURCE_DIR = ${CMAKE_SOURCE_DIR})
+# Check and setup variables for installation
+if (AREG_INSTALL)
+    option(INSTALL_GTEST "Disable Googletest installation" OFF)
+
+    if (NOT "${AREG_INSTALL_PATH}" STREQUAL "")
+        set(CMAKE_INSTALL_PREFIX "${AREG_INSTALL_PATH}")
+    endif()
+endif()

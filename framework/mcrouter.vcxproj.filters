@@ -53,13 +53,13 @@
     <None Include="mcrouter\resources\mcrouter.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="mcrouter\resources\mcrouter_install.bat">
+    <None Include="mcrouter\resources\mcrouter.service.install.bat">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="mcrouter\resources\mcrouter.service.uninstall.bat">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="mcrouter\resources\mcrouter_post_build.bat">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="mcrouter\resources\mcrouter_uninstall.bat">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="mcrouter\resources\small.ico">

@@ -11,7 +11,8 @@
 
 # Make sure that AREG_SDK_ROOT is set
 if (NOT DEFINED AREG_SDK_ROOT OR "${AREG_SDK_ROOT}" STREQUAL "")
-    message(FATAL_ERROR ">>> Set AREG_SDK_ROOT before including \'setup.cmake\' file. Stops building project.")
+    # Make sure that AREG_SDK_ROOT is set before the 'setup.cmake' is included
+    message(FATAL_ERROR "AREG: >>> Set AREG_SDK_ROOT before including \'setup.cmake\'. Stopping building the project.")
 endif()
 
 # The location of cmake configuration files.
@@ -69,5 +70,10 @@ endif()
 # set CMake tool settings
 set(CMAKE_BUILD_TYPE        ${AREG_BUILD_TYPE})
 set(CMAKE_BUILD_TYPE        ${AREG_BUILD_TYPE} CACHE STRING "Configuration Type" FORCE)
-set(CXX_STANDARD            ${AREG_CXX_STANDARD})
-set(FETCHCONTENT_BASE_DIR   "${AREG_PACKAGES}" CACHE PATH "Location of AREG thirdparty packages" FORCE)
+
+# check and fix CXX standard
+macro_check_fix_cxx_standard()
+
+if (NOT "${AREG_PACKAGES}" STREQUAL "")
+    set(FETCHCONTENT_BASE_DIR   "${AREG_PACKAGES}" CACHE PATH "Location of AREG thirdparty packages" FORCE)
+endif()

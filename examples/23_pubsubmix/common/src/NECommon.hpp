@@ -14,7 +14,7 @@
 
 #include "areg/base/GEGlobal.h"
 
-#include "extend/console/Console.hpp"
+#include "aregextend/console/Console.hpp"
 #include <string_view>
 
 /**

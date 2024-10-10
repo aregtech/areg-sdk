@@ -300,9 +300,6 @@
     <ClCompile Include="areg\component\private\StubEvent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="areg\component\private\ThreadEventBase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="areg\component\private\Timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -575,10 +572,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="system\windows\GEWindows.h">
+    <ClInclude Include="areg\system\windows\GEWindows.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="system\GEPlatform.h">
+    <ClInclude Include="areg\system\GEPlatform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\appbase\private\configure.hpp">
@@ -728,7 +725,7 @@
     <ClInclude Include="areg\trace\NETrace.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="system\posix\GEPosix.h">
+    <ClInclude Include="areg\system\posix\GEPosix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\TEResourceListMap.hpp">
@@ -747,9 +744,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\base\private\posix\IESynchObjectBaseIX.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\resources\resource.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\appbase\Application.hpp">
@@ -876,9 +870,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\component\private\ServiceManagerEvents.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="areg\component\private\ThreadEventBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="areg\component\private\ClientInfo.hpp">
@@ -1139,6 +1130,9 @@
     <ClInclude Include="areg\trace\IELogDatabaseEngine.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="areg\resources\resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="areg\resources\areg_post_build.bat">
@@ -1150,11 +1144,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="areg\resources\areg.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
     <Text Include="CMakeLists.txt" />
     <Text Include="areg\CMakeLists.txt" />
     <Text Include="areg\appbase\private\CMakeLists.txt" />
@@ -1162,10 +1151,15 @@
     <Text Include="areg\base\private\posix\CMakeLists.txt" />
     <Text Include="areg\base\private\win32\CMakeLists.txt" />
     <Text Include="areg\component\private\CMakeLists.txt" />
-    <Text Include="areg\component\private\posix\CMakeLists.txt" />
-    <Text Include="areg\component\private\win32\CMakeLists.txt" />
     <Text Include="areg\ipc\private\CMakeLists.txt" />
     <Text Include="areg\persist\private\CMakeLists.txt" />
     <Text Include="areg\trace\private\CMakeLists.txt" />
+    <Text Include="areg\component\private\posix\CMakeLists.txt" />
+    <Text Include="areg\component\private\win32\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="areg\resources\areg.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

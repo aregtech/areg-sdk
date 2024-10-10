@@ -162,7 +162,6 @@
     <ClCompile Include="areg\component\private\StubAddress.cpp" />
     <ClCompile Include="areg\component\private\StubBase.cpp" />
     <ClCompile Include="areg\component\private\Channel.cpp" />
-    <ClCompile Include="areg\component\private\ThreadEventBase.cpp" />
     <ClCompile Include="areg\component\private\Timer.cpp" />
     <ClCompile Include="areg\component\private\IETimerConsumer.cpp" />
     <ClCompile Include="areg\component\private\TimerEventData.cpp" />
@@ -310,7 +309,6 @@
     <ClInclude Include="areg\component\StubBase.hpp" />
     <ClInclude Include="areg\base\SynchObjects.hpp" />
     <ClInclude Include="areg\base\Thread.hpp" />
-    <ClInclude Include="areg\component\private\ThreadEventBase.hpp" />
     <ClInclude Include="areg\base\ThreadLocalStorage.hpp" />
     <ClInclude Include="areg\component\Timer.hpp" />
     <ClInclude Include="areg\component\IETimerConsumer.hpp" />
@@ -384,6 +382,7 @@
     <ClInclude Include="areg\persist\PropertyValue.hpp" />
     <ClInclude Include="areg\persist\PersistenceManager.hpp" />
     <ClInclude Include="areg\persist\NEPersistence.hpp" />
+    <ClInclude Include="areg\resources\resource.h" />
     <ClInclude Include="areg\trace\IELogDatabaseEngine.hpp" />
     <ClInclude Include="areg\trace\private\DatabaseLogger.hpp" />
     <ClInclude Include="areg\trace\LogConfiguration.hpp" />
@@ -409,14 +408,10 @@
     <ClInclude Include="areg\trace\private\NELogging.hpp" />
     <ClInclude Include="areg\persist\PropertyKey.hpp" />
     <ClInclude Include="areg\persist\IEConfigurationListener.hpp" />
-    <ClInclude Include="system\posix\GEPosix.h" />
-    <ClInclude Include="system\windows\GEWindows.h" />
-    <ClInclude Include="system\GEPlatform.h" />
+    <ClInclude Include="areg\system\posix\GEPosix.h" />
+    <ClInclude Include="areg\system\windows\GEWindows.h" />
+    <ClInclude Include="areg\system\GEPlatform.h" />
     <ClInclude Include="areg\component\private\WatchdogManager.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="areg\resources\areg.rc" />
-    <ClInclude Include="areg\resources\resource.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="areg\Readme.md" />
@@ -436,6 +431,9 @@
     <Text Include="areg\persist\private\CMakeLists.txt" />
     <Text Include="areg\trace\private\CMakeLists.txt" />
     <Text Include="CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="areg\resources\areg.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

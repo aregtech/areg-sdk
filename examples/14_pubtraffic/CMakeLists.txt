@@ -3,9 +3,12 @@
 addServiceInterface(14_generated res SimpleTrafficLight)
 
 # add projects
-macro_declare_project(14_pubclient    "pubclient")
-macro_declare_project(14_pubservice   "pubservice")
+macro_example_declare_runnable(14_pubclient   14_generated
+    pubclient/src/main.cpp
+    pubclient/src/TrafficLightClient.cpp
+)
 
-# add executables
-addExecutableEx(${project_pubclient}    "${pubclient_src}"  14_generated)
-addExecutableEx(${project_pubservice}   "${pubservice_src}" 14_generated)
+macro_example_declare_runnable(14_pubservice  14_generated
+    pubservice/src/main.cpp
+    pubservice/src/TrafficLightService.cpp
+)

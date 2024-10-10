@@ -25,8 +25,8 @@
  * Includes
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
-#include "areg/component/private/ThreadEventBase.hpp"
-
+#include "areg/component/Event.hpp"
+#include "areg/component/IEEventConsumer.hpp"
 #include "areg/component/WorkerThread.hpp"
 
 /************************************************************************
@@ -129,7 +129,7 @@ template <class DATA_CLASS> class __##ConsumerClass##Extended;                  
 /** Does nothing, needed for Runtime Object information and declare processEvent() function                                 **/             \
 /*****************************************************************************************************************************/             \
 template <class DATA_CLASS>                                                                                                                 \
-class __##ConsumerClass : public    ThreadEventConsumerBase                                                                                 \
+class __##ConsumerClass : public    IEEventConsumer                                                                                         \
 {                                                                                                                                           \
 protected:                                                                                                                                  \
     /**                                                                                                                     **/             \
@@ -167,7 +167,7 @@ private:                                                                        
 /** Declaration of EventClass template class, derive from TEEvent template                                                  **/             \
 /*****************************************************************************************************************************/             \
 template <class DATA_CLASS>                                                                                                                 \
-class __##EventClass : public   ThreadEventBase                                                                                             \
+class __##EventClass : public   Event                                                                                                       \
 {                                                                                                                                           \
     /**                                                                                                                     **/             \
     /** Declare extended consumer friend class to be able to access Runtime Class ID private static function                **/             \
@@ -397,13 +397,13 @@ typedef __##EventClass<DATA_CLASS>       EventClass;                            
 /**                                                                                                                         **/             \
 /** Implement Runtime Object overrides and get Runtime Class ID                                                             **/             \
 /**                                                                                                                         **/             \
-IMPLEMENT_RUNTIME_TEMPLATE(template <class DATA_CLASS>, __##EventClass<DATA_CLASS>, ThreadEventBase, EventClass)                            \
+IMPLEMENT_RUNTIME_TEMPLATE(template <class DATA_CLASS>, __##EventClass<DATA_CLASS>, Event, EventClass)                                      \
 /** Constructor implementation, pass DataClass object and Event Consumer object. The event is internal.                     **/             \
 template <class DATA_CLASS>                                                                                                                 \
 __##EventClass<DATA_CLASS>::__##EventClass( const DATA_CLASS & data                                                                         \
                                           , __##ConsumerClass<DATA_CLASS> & listener                                                        \
                                           , Event::eEventPriority eventPrio /*= Event::DefaultPriority*/)                                   \
-    : ThreadEventBase (EventType), mData(data)                                                                                              \
+    : Event (EventType), mData(data)                                                                                                        \
 {                                                                                                                                           \
     this->setEventConsumer(static_cast<IEEventConsumer *>(&listener));                                                                      \
     this->setEventPriority(eventPrio);                                                                                                      \
@@ -413,7 +413,7 @@ template <class DATA_CLASS>                                                     
 __##EventClass<DATA_CLASS>::__##EventClass( Event::eEventType eventType                                                                     \
                                           , const DATA_CLASS & data                                                                         \
                                           , Event::eEventPriority eventPrio /*= Event::DefaultPriority*/)                                   \
-    : ThreadEventBase (eventType), mData(data)                                                                                              \
+    : Event (eventType), mData(data)                                                                                                        \
 {                                                                                                                                           \
     this->setEventPriority(eventPrio);                                                                                                      \
 }                                                                                                                                           \
@@ -423,7 +423,7 @@ __##EventClass<DATA_CLASS>::__##EventClass( Event::eEventType eventType         
                                           , const DATA_CLASS & data                                                                         \
                                           , __##ConsumerClass<DATA_CLASS> & listener                                                        \
                                           , Event::eEventPriority eventPrio /*= Event::DefaultPriority*/)                                   \
-    : ThreadEventBase (eventType), mData(data)                                                                                              \
+    : Event (eventType), mData(data)                                                                                                        \
 {                                                                                                                                           \
     this->setEventConsumer(static_cast<IEEventConsumer *>(&listener));                                                                      \
     this->setEventPriority(eventPrio);                                                                                                      \
@@ -432,7 +432,7 @@ __##EventClass<DATA_CLASS>::__##EventClass( Event::eEventType eventType         
 template <class DATA_CLASS>                                                                                                                 \
 __##EventClass<DATA_CLASS>::__##EventClass( const DATA_CLASS & data                                                                         \
                                           , Event::eEventPriority eventPrio /*= Event::DefaultPriority*/)                                   \
-    : ThreadEventBase (EventType), mData(data)                                                                                              \
+    : Event (EventType), mData(data)                                                                                                        \
 {                                                                                                                                           \
     this->setEventPriority(eventPrio);                                                                                                      \
 }                                                                                                                                           \

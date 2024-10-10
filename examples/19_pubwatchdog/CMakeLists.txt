@@ -3,10 +3,12 @@
 addServiceInterface(19_generated res HelloWatchdog)
 
 # add projects
-macro_declare_project(19_pubclient    "pubclient")
-macro_declare_project(19_pubservice   "pubservice")
+macro_example_declare_runnable(19_pubclient   19_generated
+    pubclient/src/main.cpp
+    pubclient/src/ServiceClient.cpp
+)
 
-
-# add executables
-addExecutableEx(${project_pubclient}  "${pubclient_src}"  19_generated)
-addExecutableEx(${project_pubservice} "${pubservice_src}" 19_generated)
+macro_example_declare_runnable(19_pubservice   19_generated
+    pubservice/src/main.cpp
+    pubservice/src/ServicingComponent.cpp
+)

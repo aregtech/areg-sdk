@@ -31,8 +31,8 @@
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
 #include "areg/base/RuntimeObject.hpp"
+#include "areg/component/IEEventConsumer.hpp"
 #include "areg/component/StreamableEvent.hpp"
-
 #include "areg/component/ProxyAddress.hpp"
 #include "areg/component/StubAddress.hpp"
 
@@ -41,7 +41,7 @@
  ************************************************************************/
 // class StreamableEvent
     class StubEvent;
-// class ThreadEventConsumerBase
+// class IEEventConsumer
     class IEStubEventConsumer;
 
 /************************************************************************
@@ -175,7 +175,7 @@ private:
  *          consumer of Stub specific events. It is extended in StubBase
  *          class, which is a base class for all Stub objects.
  **/
-class AREG_API IEStubEventConsumer  : public ThreadEventConsumerBase
+class AREG_API IEStubEventConsumer  : public IEEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor
@@ -243,16 +243,6 @@ protected:
      * \param   status          The service consumer connection status.
      **/
     virtual void processClientConnectEvent( const ProxyAddress & proxyAddress, NEService::eServiceConnection status ) = 0;
-
-    /**
-     * \brief   This function is triggered when object is adding listener
-     *          and triggered by dispatcher to indicate whether consumer
-     *          registered or not.
-     * \param isRegistered  On adding listener, this parameter
-     *                      should be true. On removing -- false.
-     *                      Otherwise there was an error adding listener.
-     **/
-    virtual void consumerRegistered( bool isRegistered ) override;
 
 //////////////////////////////////////////////////////////////////////////
 // Hidden methods

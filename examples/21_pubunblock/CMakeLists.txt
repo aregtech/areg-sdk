@@ -1,11 +1,13 @@
-
 # add service interface
 addServiceInterface(21_generated res HelloUnblock)
 
 # add projects
-macro_declare_project(21_pubclient    "pubclient")
-macro_declare_project(21_pubservice   "pubservice")
+macro_example_declare_runnable(21_pubclient   21_generated
+    pubclient/src/main.cpp
+    pubclient/src/ServiceClient.cpp
+)
 
-# add executables
-addExecutableEx(${project_pubclient}  "${pubclient_src}"  21_generated)
-addExecutableEx(${project_pubservice} "${pubservice_src}" 21_generated)
+macro_example_declare_runnable(21_pubservice   21_generated
+    pubservice/src/main.cpp
+    pubservice/src/ServiceComponent.cpp
+)

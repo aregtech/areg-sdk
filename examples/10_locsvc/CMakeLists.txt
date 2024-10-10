@@ -2,8 +2,9 @@
 # Add service interface files
 addServiceInterface(10_generated res HelloWorld)
 
-# add a project
-macro_declare_project(10_locservice "locservice")
-
-# create executable
-addExecutableEx(${project_locservice}   "${locservice_src}" "10_generated")
+# add project
+macro_example_declare_runnable(10_locservice  10_generated 
+    locservice/src/main.cpp
+    locservice/src/ServiceClient.cpp
+    locservice/src/ServicingComponent.cpp
+)

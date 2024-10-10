@@ -1,2 +1,4 @@
-macro_declare_project_ex(09_svcmulti svcmulti "src")
-addExecutable(${project_svcmulti} "${svcmulti_src}")
+macro_example_declare_runnable(09_svcmulti 
+    src/main.cpp
+    src/ServicingComponent.cpp
+)

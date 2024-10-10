@@ -1,2 +1,1 @@
-macro_declare_project_ex(02_buffer buffer "src")
-addExecutable(${project_buffer} "${buffer_src}")
+macro_example_declare_runnable(02_buffer src/main.cpp)

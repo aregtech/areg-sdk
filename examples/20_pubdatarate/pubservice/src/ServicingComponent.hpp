@@ -22,7 +22,7 @@
 #include "areg/base/SynchObjects.hpp"
 #include "areg/base/Thread.hpp"
 #include "areg/component/Timer.hpp"
-#include "extend/console/Console.hpp"
+#include "aregextend/console/Console.hpp"
 
 #include "common/SimpleBitmap.hpp"
 #include "common/NELargeData.hpp"

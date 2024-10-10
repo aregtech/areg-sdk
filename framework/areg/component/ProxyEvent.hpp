@@ -20,6 +20,7 @@
  * Include files.
  ************************************************************************/
 #include "areg/base/GEGlobal.h"
+#include "areg/component/IEEventConsumer.hpp"
 #include "areg/component/StreamableEvent.hpp"
 #include "areg/component/ProxyAddress.hpp"
 
@@ -158,7 +159,7 @@ private:
  *              function depending on event runtime class ID.
  * 
  **/
-class AREG_API IEProxyEventConsumer : public ThreadEventConsumerBase
+class AREG_API IEProxyEventConsumer : public IEEventConsumer
 {
 //////////////////////////////////////////////////////////////////////////
 // Constructor / Destructor

@@ -27,7 +27,10 @@
       <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>$(AregFrameworkSources)\logger\resources\logger_post_build.bat $(AregFrameworkSources)\logger\resources $(OutDir)</Command>
+      <Command>
+          call copy /D / y $(AregFrameworkSources)\logger\resources\logger.service.install.bat   $(OutDir)\logger.service.install.bat
+          call copy /D / y $(AregFrameworkSources)\logger\resources\logger.service.uninstall.bat $(OutDir)\logger.service.uninstall.bat
+      </Command>
       <Message Condition="Exists($(AregFrameworkResources))">Copy logger service installation scripts to the executable directory</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -62,14 +65,15 @@
     <None Include="logger\resources\logger.ico" />
     <None Include="logger\resources\logger.service" />
     <None Include="logger\resources\small.ico" />
-    <None Include="logger\resources\logger_install.bat" />
-    <None Include="logger\resources\logger_uninstall.bat" />
+    <None Include="logger\resources\logger.service.install.bat" />
+    <None Include="logger\resources\logger.service.uninstall.bat" />
     <None Include="logger\resources\logger_post_build.bat" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="logger\app\private\CMakeLists.txt" />
     <Text Include="logger\CMakeLists.txt" />
     <Text Include="logger\resources\Readme.md" />
+    <Text Include="logger\service\private\CMakeLists.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

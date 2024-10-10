@@ -50,10 +50,6 @@
     <ClInclude Include="pubclient\src\PatientClient.hpp" />
     <ClInclude Include="res\NECommon.hpp" />
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="pubclient\CMakeLists.txt" />
-    <Text Include="pubclient\src\CMakeLists.txt" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

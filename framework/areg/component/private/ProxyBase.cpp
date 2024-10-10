@@ -149,10 +149,10 @@ bool ProxyBase::Listener::operator == ( const ProxyBase::Listener& other ) const
 // ProxyBase::ServiceAvailableEvent class implementation
 //////////////////////////////////////////////////////////////////////////
 
-IMPLEMENT_RUNTIME_EVENT(ProxyBase::ServiceAvailableEvent, ThreadEventBase)
+IMPLEMENT_RUNTIME_EVENT(ProxyBase::ServiceAvailableEvent, Event)
 
 ProxyBase::ServiceAvailableEvent::ServiceAvailableEvent( IENotificationEventConsumer & consumer )
-    : ThreadEventBase   ( Event::eEventType::EventExternal )
+    : Event             ( Event::eEventType::EventExternal )
     , mNotifyConsumer   ( consumer )
     , mDelayConnectEvent( 0 )
 {

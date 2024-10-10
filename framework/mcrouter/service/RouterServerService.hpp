@@ -22,7 +22,7 @@
 
 #include "areg/ipc/IEServiceRegisterConsumer.hpp"
 #include "areg/ipc/IEServiceRegisterProvider.hpp"
-#include "extend/service/ServiceCommunicatonBase.hpp"
+#include "aregextend/service/ServiceCommunicatonBase.hpp"
 
 #include "mcrouter/service/private/ServiceRegistry.hpp"
 

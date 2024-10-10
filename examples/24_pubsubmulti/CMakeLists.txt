@@ -3,9 +3,14 @@
 addServiceInterface(24_generated res PubSub)
 
 # add projects
-macro_declare_project(24_publisher          "publisher")
-macro_declare_project(24_subscribermulti    "subscribermulti")
+macro_example_declare_runnable(24_publisher  24_generated
+    publisher/src/main.cpp
+    publisher/src/Publisher.cpp
+)
 
-# add executables
-addExecutableEx(${project_publisher}   	    "${publisher_src}"       24_generated)
-addExecutableEx(${project_subscribermulti}  "${subscribermulti_src}" 24_generated)
+macro_example_declare_runnable(24_subscribermulti  24_generated
+    subscribermulti/src/main.cpp
+    subscribermulti/src/Subscriber.cpp
+    subscribermulti/src/SubscriberBase.cpp
+    subscribermulti/src/SubscriberSecond.cpp
+)

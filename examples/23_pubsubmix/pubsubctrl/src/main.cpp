@@ -11,7 +11,7 @@
 #include "areg/appbase/Application.hpp"
 #include "areg/component/ComponentLoader.hpp"
 #include "areg/trace/GETrace.h"
-#include "extend/console/Console.hpp"
+#include "aregextend/console/Console.hpp"
 
 #include "common/src/NECommon.hpp"
 #include "common/src/PubSubMixed.hpp"
@@ -21,7 +21,7 @@
     #pragma comment(lib, "areg.lib")
     #pragma comment(lib, "23_generated.lib")
     #pragma comment(lib, "23_common.lib")
-    #pragma comment(lib, "areg-extend.lib")
+    #pragma comment(lib, "aregextend.lib")
 #endif // WINDOWS
 
 namespace
