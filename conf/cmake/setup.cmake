@@ -9,7 +9,6 @@
 # Copyright © 2022-2023 Aregtech
 # ###########################################################################
 
-# Make sure that AREG_SDK_ROOT is set
 if (NOT DEFINED AREG_SDK_ROOT OR "${AREG_SDK_ROOT}" STREQUAL "")
     # Make sure that AREG_SDK_ROOT is set before the 'setup.cmake' is included
     message(FATAL_ERROR "AREG: >>> Set AREG_SDK_ROOT before including \'setup.cmake\'. Stopping building the project.")
@@ -45,12 +44,6 @@ if (NOT DEFINED AREG_SDK_TOOLS OR "${AREG_SDK_TOOLS}" STREQUAL "")
     set(AREG_SDK_TOOLS			"${AREG_SDK_ROOT}/tools")
 endif()
 
-# The location of building root directories.
-# By default it is the root directory of the project, where the 'product' subfolder is created.
-if (NOT DEFINED PROJECT_BUILD_ROOT OR "${PROJECT_BUILD_ROOT}" STREQUAL "")
-    set(PROJECT_BUILD_ROOT         "${CMAKE_SOURCE_DIR}")
-endif()
-
 # setup functions
 include(${AREG_CMAKE_CONFIG_DIR}/functions.cmake)
 # setup user configurations
@@ -62,9 +55,6 @@ include(${AREG_CMAKE_CONFIG_DIR}/user.cmake)
 if (NOT "${AREG_COMPILER_FAMILY}" STREQUAL "")
     set(CMAKE_CXX_COMPILER  "${AREG_CXX_COMPILER}")
     set(CMAKE_C_COMPILER    "${AREG_C_COMPILER}")
-    message(STATUS ">>> Set CMAKE_CXX_COMPILER compiler \'${CMAKE_CXX_COMPILER}\'")
-else()
-    message(STATUS ">>> Use system default CMAKE_CXX_COMPILER compiler \'${CMAKE_CXX_COMPILER}\'")
 endif()
 
 # set CMake tool settings
