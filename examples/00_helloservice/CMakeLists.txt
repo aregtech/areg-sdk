@@ -3,13 +3,26 @@
 addServiceInterface(00_generated res HelloService)
 
 # add projects
-macro_declare_project_ex(00_pubclient     "clientproc"    "multiprocess/clientproc")
-macro_declare_project_ex(00_pubservice    "serviceproc"   "multiprocess/serviceproc")
-macro_declare_project_ex(00_onethread     "onethread"     "onethread")
-macro_declare_project_ex(00_twothreads    "twothreads"    "twothreads")
+macro_example_declare_runnable(00_pubclient   00_generated 
+    common/src/ClientComponent.cpp
+    common/src/ServiceComponent.cpp
+    multiprocess/clientproc/src/main.cpp
+)
 
-# add executables
-addExecutableEx(${project_clientproc}   "" "${clientproc_src}"     00_generated)
-addExecutableEx(${project_serviceproc}  "" "${serviceproc_src}"    00_generated)
-addExecutableEx(${project_onethread}    "" "${onethread_src}"      00_generated)
-addExecutableEx(${project_twothreads}   "" "${twothreads_src}"     00_generated)
+macro_example_declare_runnable(00_pubservice  00_generated 
+    common/src/ClientComponent.cpp
+    common/src/ServiceComponent.cpp
+    multiprocess/serviceproc/src/main.cpp
+)
+
+macro_example_declare_runnable(00_onethread   00_generated
+    common/src/ClientComponent.cpp
+    common/src/ServiceComponent.cpp
+    onethread/src/main.cpp
+)
+
+macro_example_declare_runnable(00_twothreads  00_generated
+    common/src/ClientComponent.cpp
+    common/src/ServiceComponent.cpp
+    twothreads/src/main.cpp
+)

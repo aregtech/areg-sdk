@@ -1,2 +1,1 @@
-macro_declare_project_ex(07_synch synch "src")
-addExecutable(${project_synch} "${synch_src}")
+macro_example_declare_runnable(07_synch src/main.cpp)

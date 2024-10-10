@@ -1,13 +1,13 @@
-list(APPEND extend_SRC
-    ${extend_BASE}/service/private/DataRateHelper.cpp
-    ${extend_BASE}/service/private/IEServiceConnectionHandler.cpp
-    ${extend_BASE}/service/private/NESystemService.cpp
-    ${extend_BASE}/service/private/ServerConnection.cpp
-    ${extend_BASE}/service/private/ServerReceiveThread.cpp
-    ${extend_BASE}/service/private/ServerSendThread.cpp
-    ${extend_BASE}/service/private/ServiceApplicationBase.cpp
-    ${extend_BASE}/service/private/ServiceCommunicatonBase.cpp
-    ${extend_BASE}/service/private/SystemServiceBase.cpp
-    ${extend_BASE}/service/private/posix/ServiceApplicationBasePosix.cpp
-    ${extend_BASE}/service/private/win32/ServiceApplicationBaseWin32.cpp
+macro_add_source(aregextend_SRC "${AREG_BASE}"
+    aregextend/service/private/DataRateHelper.cpp
+    aregextend/service/private/IEServiceConnectionHandler.cpp
+    aregextend/service/private/NESystemService.cpp
+    aregextend/service/private/ServerConnection.cpp
+    aregextend/service/private/ServerReceiveThread.cpp
+    aregextend/service/private/ServerSendThread.cpp
+    aregextend/service/private/ServiceApplicationBase.cpp
+    aregextend/service/private/ServiceCommunicatonBase.cpp
+    aregextend/service/private/SystemServiceBase.cpp
+    aregextend/service/private/posix/ServiceApplicationBasePosix.cpp
+    aregextend/service/private/win32/ServiceApplicationBaseWin32.cpp
 )

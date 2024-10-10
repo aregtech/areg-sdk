@@ -33,8 +33,4 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="onethread\CMakeLists.txt" />
-    <Text Include="onethread\src\CMakeLists.txt" />
-  </ItemGroup>
 </Project>

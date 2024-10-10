@@ -1,2 +1,1 @@
-macro_declare_project_ex(05_timer timer "src")
-addExecutable(${project_timer} "${timer_src}")
+macro_example_declare_runnable(05_timer src/main.cpp)

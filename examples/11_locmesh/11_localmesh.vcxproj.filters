@@ -45,8 +45,4 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="locsvcmesh\CMakeLists.txt" />
-    <Text Include="locsvcmesh\src\CMakeLists.txt" />
-  </ItemGroup>
 </Project>

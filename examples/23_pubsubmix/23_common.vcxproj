@@ -50,10 +50,6 @@
     <ClCompile Include="common\src\PubSubMixed.cpp" />
     <ClCompile Include="common\src\Subscriber.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="common\CMakeLists.txt" />
-    <Text Include="common\src\CMakeLists.txt" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

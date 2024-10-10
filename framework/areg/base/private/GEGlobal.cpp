@@ -23,12 +23,6 @@
         MACRO_COMPILER_MESSAGE( "Compiling in Windows with unknown API" )
     #endif // WIN32
 
-    #if (defined(OUTPUT_DEBUG) && OUTPUT_DEBUG)
-        MACRO_COMPILER_MESSAGE("Compiling the sources WITH debug outputs, the output debug level is" OUTPUT_DEBUG_LEVEL)
-    #else   // !OUTPUT_DEBUG
-        MACRO_COMPILER_MESSAGE("Compiling the sources WITHOUT debug outputs")
-    #endif // OUTPUT_DEBUG
-
     #if (defined(AREG_LOGS) && AREG_LOGS)
         MACRO_COMPILER_MESSAGE("Compiling the sources WITH logs")
     #else   // !AREG_LOGS

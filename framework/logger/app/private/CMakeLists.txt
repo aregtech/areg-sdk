@@ -1,7 +1,7 @@
-list(APPEND logger_SRC 
-	${logger_BASE}/app/private/Logger.cpp
-    ${logger_BASE}/app/private/LoggerConsoleService.cpp
-	${logger_BASE}/app/private/NELoggerSettings.cpp
-    ${logger_BASE}/app/private/posix/LoggerPosix.cpp
-    ${logger_BASE}/app/private/win32/LoggerWin32.cpp
+macro_add_source(logger_SRC "${AREG_BASE}"
+	logger/app/private/Logger.cpp
+    logger/app/private/LoggerConsoleService.cpp
+	logger/app/private/NELoggerSettings.cpp
+    logger/app/private/posix/LoggerPosix.cpp
+    logger/app/private/win32/LoggerWin32.cpp
 )

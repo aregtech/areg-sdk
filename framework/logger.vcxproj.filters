@@ -91,5 +91,6 @@
     <Text Include="logger\CMakeLists.txt" />
     <Text Include="logger\app\private\CMakeLists.txt" />
     <Text Include="logger\resources\Readme.md" />
+    <Text Include="logger\service\private\CMakeLists.txt" />
   </ItemGroup>
 </Project>

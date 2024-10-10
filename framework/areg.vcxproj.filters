@@ -1151,11 +1151,11 @@
     <Text Include="areg\base\private\posix\CMakeLists.txt" />
     <Text Include="areg\base\private\win32\CMakeLists.txt" />
     <Text Include="areg\component\private\CMakeLists.txt" />
-    <Text Include="areg\component\private\posix\CMakeLists.txt" />
-    <Text Include="areg\component\private\win32\CMakeLists.txt" />
     <Text Include="areg\ipc\private\CMakeLists.txt" />
     <Text Include="areg\persist\private\CMakeLists.txt" />
     <Text Include="areg\trace\private\CMakeLists.txt" />
+    <Text Include="areg\component\private\posix\CMakeLists.txt" />
+    <Text Include="areg\component\private\win32\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="areg\resources\areg.rc">

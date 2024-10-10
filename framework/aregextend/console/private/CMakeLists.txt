@@ -1,8 +1,8 @@
-list(APPEND extend_SRC
-    ${extend_BASE}/console/private/Console.cpp
-    ${extend_BASE}/console/private/OptionParser.cpp
-    ${extend_BASE}/console/private/SystemServiceConsole.cpp
-    ${extend_BASE}/console/private/ansi/ConsoleAnsi.cpp
-    ${extend_BASE}/console/private/ncurses/ConsoleNcurses.cpp
-    ${extend_BASE}/console/private/win32/ConsoleWin32.cpp
+macro_add_source(aregextend_SRC "${AREG_BASE}"
+    aregextend/console/private/Console.cpp
+    aregextend/console/private/OptionParser.cpp
+    aregextend/console/private/SystemServiceConsole.cpp
+    aregextend/console/private/ansi/ConsoleAnsi.cpp
+    aregextend/console/private/ncurses/ConsoleNcurses.cpp
+    aregextend/console/private/win32/ConsoleWin32.cpp
 )

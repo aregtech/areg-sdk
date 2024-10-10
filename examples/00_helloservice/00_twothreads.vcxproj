@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
-        <Import Project="$(SolutionDir)\msvc_setup.props"/>
-    </ImportGroup>
-    <ImportGroup Label="PropertySheets">
+  <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
+    <Import Project="$(SolutionDir)\msvc_setup.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
     <Import Project="$(AregSdkRoot)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
@@ -28,10 +28,6 @@
   <ItemGroup>
     <ClInclude Include="common\src\ClientComponent.hpp" />
     <ClInclude Include="common\src\ServiceComponent.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="twothreads\CMakeLists.txt" />
-    <Text Include="twothreads\src\CMakeLists.txt" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
     <ClCompile>
