@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
-    <Import Project="$(SolutionDir)\msvc_setup.props" />
+    <Import Project="$(SolutionDir)msvc_setup.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(AregSdkRoot)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+    <Import Project="$(AregSdkRoot)conf\msvc\compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0A2D4D13-6AC2-4602-BF8F-DA73133C1974}</ProjectGuid>
@@ -17,7 +17,7 @@
     <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(AregSdkRoot)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
+    <Import Project="$(AregSdkRoot)conf\msvc\project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -27,11 +27,8 @@
       <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>
-          call copy /D / y $(AregFrameworkSources)\logger\resources\logger.service.install.bat   $(OutDir)\logger.service.install.bat
-          call copy /D / y $(AregFrameworkSources)\logger\resources\logger.service.uninstall.bat $(OutDir)\logger.service.uninstall.bat
-      </Command>
-      <Message Condition="Exists($(AregFrameworkResources))">Copy logger service installation scripts to the executable directory</Message>
+      <Command>$(AregFrameworkSources)logger\resources\logger_post_build.bat "$(AregFrameworkSources)logger\resources\" "$(OutDir)"</Command>
+      <Message>Call post-build script to copy  logger service install and uninstall scripts to the config directory.</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
@@ -56,18 +53,18 @@
     <ClInclude Include="logger\service\LoggerServerService.hpp" />
     <ClInclude Include="logger\service\private\LoggerMessageProcessor.hpp" />
     <ClInclude Include="system\GEPlatform.h" />
-    <ClInclude Include="logger\resources\resource.hpp" />
-    <ClInclude Include="logger\resources\targetver.hpp" />
+    <ClInclude Include="logger\resources\resource.h" />
+    <ClInclude Include="logger\resources\targetver.h" />
     <ResourceCompile Include="logger\resources\logger.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="logger\Readme.md" />
     <None Include="logger\resources\logger.ico" />
     <None Include="logger\resources\logger.service" />
+    <None Include="logger\resources\logger_post_build.bat" />
     <None Include="logger\resources\small.ico" />
     <None Include="logger\resources\logger.service.install.bat" />
     <None Include="logger\resources\logger.service.uninstall.bat" />
-    <None Include="logger\resources\logger_post_build.bat" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="logger\app\private\CMakeLists.txt" />

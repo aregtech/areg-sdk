@@ -18,10 +18,10 @@
     <ClInclude Include="system\GEPlatform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="logger\resources\resource.hpp">
+    <ClInclude Include="logger\resources\resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="logger\resources\targetver.hpp">
+    <ClInclude Include="logger\resources\targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="logger\app\NELoggerSettings.hpp">
@@ -50,14 +50,16 @@
     <None Include="logger\resources\logger.service.uninstall.bat">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="logger\resources\logger_post_build.bat">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="logger\resources\small.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="logger\Readme.md" />
-    <None Include="logger\resources\logger.service" />
+    <None Include="logger\resources\logger_post_build.bat">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="logger\resources\logger.service">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="logger\app\private\Logger.cpp">

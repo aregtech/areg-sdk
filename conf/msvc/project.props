@@ -7,16 +7,16 @@
         <_PropertySheetDisplayName>project</_PropertySheetDisplayName>
     </PropertyGroup>
     <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
-        <Import Project="$(SolutionDir)\msvc_setup.props"/>
+        <Import Project="$(SolutionDir)msvc_setup.props"/>
     </ImportGroup>
     <ImportGroup Label="PropertySheets">
-        <Import Project="$(AregSdkRoot)\conf\msvc\project_defaults.props"/>
+        <Import Project="$(AregSdkRoot)conf\msvc\project_defaults.props"/>
     </ImportGroup>
     <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
     <ImportGroup Label="ExtensionSettings">
     </ImportGroup>
     <ImportGroup Label="PropertySheets">
-        <Import Project="$(AregSdkRoot)\conf\msvc\user.props" />
+        <Import Project="$(AregSdkRoot)conf\msvc\user.props" />
     </ImportGroup>
     <PropertyGroup Label="UserMacros">
         <ProjectIncludes>$(ProjectDir);$(AregCommonIncludes);</ProjectIncludes>
@@ -24,8 +24,8 @@
         <ProjectCommonDefines Condition="'$(Platform)'=='x64'"  >$(AregCommonDefines);UNICODE;_UNICODE;WINDOWS;_WINDOWS;WIN32;_WIN32;WIN64;_WIN64</ProjectCommonDefines>
     </PropertyGroup>
     <PropertyGroup>
-        <IntDir>$(OutObjDir)\</IntDir>
-        <OutDir>$(OutBinDir)\</OutDir>
+        <IntDir>$(OutObjDir)</IntDir>
+        <OutDir>$(OutBinDir)</OutDir>
     </PropertyGroup>
     <PropertyGroup>
         <OutputPath>$(OutDir)</OutputPath>
@@ -43,7 +43,7 @@
             <ExceptionHandling>Sync</ExceptionHandling>
         </ClCompile>
         <Link>
-            <ImportLibrary>$(OutLibDir)\$(TargetName).lib</ImportLibrary>
+            <ImportLibrary>$(OutLibDir)$(TargetName).lib</ImportLibrary>
             <AdditionalLibraryDirectories>$(OutLibDir);$(OutBinDir);%(AdditionalLibraryDirectories);</AdditionalLibraryDirectories>
         </Link>
         <ResourceCompile>

@@ -18,36 +18,36 @@
     <None Include="res\PatientInformation.siml" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)\examples\15_pubworker\private\NEPatientInformation.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\15_pubworker\private\NEPatientInformation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)\examples\15_pubworker\private\PatientInformationClientBase.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\15_pubworker\private\PatientInformationClientBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)\examples\15_pubworker\private\PatientInformationEvents.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\15_pubworker\private\PatientInformationEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)\examples\15_pubworker\private\PatientInformationProxy.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\15_pubworker\private\PatientInformationProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)\examples\15_pubworker\private\PatientInformationStub.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\15_pubworker\private\PatientInformationStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(AregGenerateDir)\examples\15_pubworker\private\PatientInformationEvents.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\15_pubworker\private\PatientInformationEvents.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)\examples\15_pubworker\private\PatientInformationProxy.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\15_pubworker\private\PatientInformationProxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)\examples\15_pubworker\NEPatientInformation.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\15_pubworker\NEPatientInformation.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)\examples\15_pubworker\PatientInformationClientBase.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\15_pubworker\PatientInformationClientBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)\examples\15_pubworker\PatientInformationStub.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\15_pubworker\PatientInformationStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

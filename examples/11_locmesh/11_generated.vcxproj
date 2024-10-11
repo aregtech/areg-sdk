@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
-    <Import Project="$(SolutionDir)\msvc_setup.props" />
+    <Import Project="$(SolutionDir)msvc_setup.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(AregSdkRoot)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+    <Import Project="$(AregSdkRoot)conf\msvc\compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1D3A6135-F0EE-4531-B682-55270B70B699}</ProjectGuid>
@@ -17,11 +17,11 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(AregSdkRoot)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
+    <Import Project="$(AregSdkRoot)conf\msvc\project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(OutLibDir)\</OutDir>
+    <OutDir>$(OutLibDir)</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
     <ClCompile>
@@ -45,18 +45,18 @@
     <None Include="res\HelloWorld.siml" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)\examples\11_locmesh\private\HelloWorldClientBase.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\11_locmesh\private\HelloWorldEvents.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\11_locmesh\private\HelloWorldProxy.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\11_locmesh\private\HelloWorldStub.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\11_locmesh\private\NEHelloWorld.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\11_locmesh\private\HelloWorldClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\11_locmesh\private\HelloWorldEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\11_locmesh\private\HelloWorldProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\11_locmesh\private\HelloWorldStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\11_locmesh\private\NEHelloWorld.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(AregGenerateDir)\examples\11_locmesh\HelloWorldClientBase.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\11_locmesh\HelloWorldStub.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\11_locmesh\NEHelloWorld.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\11_locmesh\private\HelloWorldEvents.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\11_locmesh\private\HelloWorldProxy.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\11_locmesh\HelloWorldClientBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\11_locmesh\HelloWorldStub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\11_locmesh\NEHelloWorld.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\11_locmesh\private\HelloWorldEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\11_locmesh\private\HelloWorldProxy.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

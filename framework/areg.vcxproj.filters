@@ -1135,11 +1135,13 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="areg\resources\areg_post_build.bat">
+    <None Include="areg\Readme.md">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="areg\Readme.md" />
     <None Include="areg\resources\areg.init">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="areg\resources\areg_post_build.bat">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

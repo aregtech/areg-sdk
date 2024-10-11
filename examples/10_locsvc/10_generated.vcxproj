@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
-    <Import Project="$(SolutionDir)\msvc_setup.props" />
+    <Import Project="$(SolutionDir)msvc_setup.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(AregSdkRoot)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+    <Import Project="$(AregSdkRoot)conf\msvc\compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4056956C-7E12-4432-86F8-D900A52866A4}</ProjectGuid>
@@ -17,11 +17,11 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(AregSdkRoot)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
+    <Import Project="$(AregSdkRoot)conf\msvc\project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(OutLibDir)\</OutDir>
+    <OutDir>$(OutLibDir)</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
     <ClCompile>
@@ -42,18 +42,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)\examples\10_locsvc\private\HelloWorldClientBase.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\10_locsvc\private\HelloWorldEvents.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\10_locsvc\private\HelloWorldProxy.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\10_locsvc\private\HelloWorldStub.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\10_locsvc\private\NEHelloWorld.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\10_locsvc\private\HelloWorldClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\10_locsvc\private\HelloWorldEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\10_locsvc\private\HelloWorldProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\10_locsvc\private\HelloWorldStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\10_locsvc\private\NEHelloWorld.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(AregGenerateDir)\examples\10_locsvc\HelloWorldClientBase.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\10_locsvc\HelloWorldStub.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\10_locsvc\NEHelloWorld.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\10_locsvc\private\HelloWorldEvents.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\10_locsvc\private\HelloWorldProxy.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\10_locsvc\HelloWorldClientBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\10_locsvc\HelloWorldStub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\10_locsvc\NEHelloWorld.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\10_locsvc\private\HelloWorldEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\10_locsvc\private\HelloWorldProxy.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\HelloWorld.siml" />

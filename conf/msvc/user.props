@@ -12,7 +12,7 @@
     <!-- Each Solution should have 'msvc_setup.props' file to set at least the AregSdkRoot property                                         -->
     <!-- ********************************************************************************************************************************** -->
     <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
-        <Import Project="$(SolutionDir)\msvc_setup.props"/>
+        <Import Project="$(SolutionDir)msvc_setup.props"/>
     </ImportGroup>
 
     <!-- ********************************************************************************************************************************** -->
@@ -39,16 +39,16 @@
         <!-- ****************************************************************************************************************************** -->
         <!-- Check AregBuildRoot settings. If missed, by default, it is a 'product' subdirectory relative to 'SolutionDir'.                 -->
         <!-- ****************************************************************************************************************************** -->
-        <AregBuildRoot Condition="'$(AregBuildRoot)'==''">$(SolutionDir)product</AregBuildRoot>
+        <AregBuildRoot Condition="'$(AregBuildRoot)'==''">$(SolutionDir)product\</AregBuildRoot>
         <!-- ****************************************************************************************************************************** -->
         <!-- Check and set AregOutputDir, AregOutputLib, AregOutputBin and AregOutputObj.                                                   -->
         <!-- ****************************************************************************************************************************** -->
         <AregProductPath>build\msvc-$(VCCompilerVersion)\$(OS)-$(Platform)-$(Configuration)</AregProductPath>
         <AregProductPath>$(AregProductPath.ToLower())</AregProductPath>
-        <AregOutputDir Condition="'$(AregOutputDir)'==''">$(AregBuildRoot)\$(AregProductPath)</AregOutputDir>
-        <AregOutputLib Condition="'$(AregOutputLib)'==''">$(AregOutputDir)\lib</AregOutputLib>
-        <AregOutputBin Condition="'$(AregOutputBin)'==''">$(AregOutputDir)\bin</AregOutputBin>
-        <AregOutputObj Condition="'$(AregOutputObj)'==''">$(AregOutputDir)\obj\$(ProjectName)</AregOutputObj>
+        <AregOutputDir Condition="'$(AregOutputDir)'==''">$(AregBuildRoot)$(AregProductPath)\</AregOutputDir>
+        <AregOutputLib Condition="'$(AregOutputLib)'==''">$(AregOutputDir)lib\</AregOutputLib>
+        <AregOutputBin Condition="'$(AregOutputBin)'==''">$(AregOutputDir)bin\</AregOutputBin>
+        <AregOutputObj Condition="'$(AregOutputObj)'==''">$(AregOutputDir)obj\$(ProjectName)\</AregOutputObj>
 
         <!-- ****************************************************************************************************************************** -->
         <!-- Add preprocessor defines here to set for all projects.                                                                         -->
@@ -68,19 +68,19 @@
         <!-- ****************************************************************************************************************************** -->
 
         <!-- Set the directory for generated source files.                                                                                  -->
-        <AregGenerateDir>$(AregBuildRoot)\generate</AregGenerateDir>
+        <AregGenerateDir Condition="'$(AregGenerateDir)'==''">$(AregBuildRoot)generate\</AregGenerateDir>
         <!-- Set the directory to download thirdparty packages. If change, also change the location in nuget.config file.                   -->
-        <AregPackages>$(AregBuildRoot)\packages</AregPackages>
+        <AregPackages Condition="'$(AregPackages)'==''">$(AregBuildRoot)packages\</AregPackages>
         <!-- Set the AREG Framework path.                                                                                                   -->
-        <AregFrameworkSources>$(AregSdkRoot)\framework</AregFrameworkSources>
+        <AregFrameworkSources>$(AregSdkRoot)framework\</AregFrameworkSources>
         <!-- Set the path of AREG Framework resources                                                                                       -->
-        <AregFrameworkResources>$(AregFrameworkSources)\areg\resources</AregFrameworkResources>
+        <AregFrameworkResources>$(AregFrameworkSources)areg\resources\</AregFrameworkResources>
         <!-- Set the path of thirdparty software components. Set for all projects.                                                          -->
-        <AregThirdpartyDir>$(AregSdkRoot)\thirdparty</AregThirdpartyDir>
+        <AregThirdpartyDir>$(AregSdkRoot)thirdparty\</AregThirdpartyDir>
         <!-- Set the path of AREG SDK Examples.                                                                                             -->
-        <AregExamplesDir>$(AregSdkRoot)\examples</AregExamplesDir>
+        <AregExamplesDir>$(AregSdkRoot)examples\</AregExamplesDir>
         <!-- Set the path of AREG SDK unit tests.                                                                                           -->
-        <AregTestsDir>$(AregSdkRoot)\tests</AregTestsDir>
+        <AregTestsDir>$(AregSdkRoot)tests\</AregTestsDir>
 
         <!-- ****************************************************************************************************************************** -->
         <!-- Common compiler and linker options. Set for all projects.                                                                      -->
@@ -102,7 +102,7 @@
         <!-- ****************************************************************************************************************************** -->
         <!-- SQLite3 directory for embedded database. Do not change.                                                                           -->
         <!-- ****************************************************************************************************************************** -->
-        <SQLiteDir>$(AregThirdpartyDir)\sqlite3</SQLiteDir>
+        <SQLiteDir>$(AregThirdpartyDir)sqlite3\</SQLiteDir>
 
     </PropertyGroup>
 

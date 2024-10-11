@@ -2,10 +2,10 @@
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.220531.1\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.220531.1\build\native\Microsoft.Windows.CppWinRT.props')" />
   <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
-    <Import Project="$(SolutionDir)\msvc_setup.props" />
+    <Import Project="$(SolutionDir)msvc_setup.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(AregSdkRoot)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+    <Import Project="$(AregSdkRoot)conf\msvc\compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{24A4F250-C09B-40BF-A6F2-25BD8ABBED6F}</ProjectGuid>
@@ -18,7 +18,7 @@
     <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(AregSdkRoot)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
+    <Import Project="$(AregSdkRoot)conf\msvc\project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -28,11 +28,8 @@
       <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>
-          call copy /D / y $(AregFrameworkSources)\mcrouter\resources\mcrouter.service.install.bat   $(OutDir)\mcrouter.service.install.bat
-          call copy /D / y $(AregFrameworkSources)\mcrouter\resources\mcrouter.service.uninstall.bat $(OutDir)\mcrouter.service.uninstall.bat
-      </Command>
-      <Message Condition="Exists($(AregFrameworkResources))">Copy mcrouter service installation scripts to the executable directory</Message>
+      <Command>$(AregFrameworkSources)mcrouter\resources\mcrouter_post_build.bat "$(AregFrameworkSources)mcrouter\resources\" "$(OutDir)"</Command>
+      <Message>Call post-build script to copy  mcrouter service install and uninstall scripts to the config directory.</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
@@ -63,19 +60,19 @@
     <ClInclude Include="system\GEPlatform.h" />
     <ClInclude Include="mcrouter\app\MulticastRouter.hpp" />
     <ClInclude Include="mcrouter\app\NEMulticastRouterSettings.hpp" />
-    <ClInclude Include="mcrouter\resources\resource.hpp" />
-    <ClInclude Include="mcrouter\resources\targetver.hpp" />
+    <ClInclude Include="mcrouter\resources\resource.h" />
+    <ClInclude Include="mcrouter\resources\targetver.h" />
     <ResourceCompile Include="mcrouter\resources\mcrouter.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="mcrouter\Readme.md" />
     <None Include="mcrouter\resources\mcrouter.service" />
     <None Include="mcrouter\resources\mcrouter.ico" />
+    <None Include="mcrouter\resources\mcrouter_post_build.bat" />
     <None Include="mcrouter\resources\Readme.md" />
     <None Include="mcrouter\resources\small.ico" />
     <None Include="mcrouter\resources\mcrouter.service.install.bat" />
     <None Include="mcrouter\resources\mcrouter.service.uninstall.bat" />
-    <None Include="mcrouter\resources\mcrouter_post_build.bat" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="mcrouter\app\private\CMakeLists.txt" />

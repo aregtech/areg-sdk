@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
-    <Import Project="$(SolutionDir)\msvc_setup.props" />
+    <Import Project="$(SolutionDir)msvc_setup.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(AregSdkRoot)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+    <Import Project="$(AregSdkRoot)conf\msvc\compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{BAD5F8A5-B916-4E76-8594-78B003C1155B}</ProjectGuid>
@@ -17,11 +17,11 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(AregSdkRoot)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
+    <Import Project="$(AregSdkRoot)conf\msvc\project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(OutLibDir)\</OutDir>
+    <OutDir>$(OutLibDir)</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
     <ClCompile>
@@ -48,48 +48,48 @@
     <None Include="res\DirectMessager.siml" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)\examples\17_winchat\private\CentralMessagerClientBase.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\17_winchat\private\CentralMessagerEvents.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\17_winchat\private\CentralMessagerProxy.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\17_winchat\private\CentralMessagerStub.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\17_winchat\private\ConnectionManagerClientBase.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\17_winchat\private\ConnectionManagerEvents.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\17_winchat\private\ConnectionManagerProxy.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\17_winchat\private\ConnectionManagerStub.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\17_winchat\private\DirectConnectionClientBase.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\17_winchat\private\DirectConnectionEvents.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\17_winchat\private\DirectConnectionProxy.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\17_winchat\private\DirectConnectionStub.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\17_winchat\private\DirectMessagerClientBase.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\17_winchat\private\DirectMessagerEvents.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\17_winchat\private\DirectMessagerProxy.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\17_winchat\private\DirectMessagerStub.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\17_winchat\private\NECentralMessager.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\17_winchat\private\NEConnectionManager.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\17_winchat\private\NEDirectConnection.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\17_winchat\private\NEDirectMessager.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\17_winchat\private\CentralMessagerClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\17_winchat\private\CentralMessagerEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\17_winchat\private\CentralMessagerProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\17_winchat\private\CentralMessagerStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\17_winchat\private\ConnectionManagerClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\17_winchat\private\ConnectionManagerEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\17_winchat\private\ConnectionManagerProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\17_winchat\private\ConnectionManagerStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\17_winchat\private\DirectConnectionClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\17_winchat\private\DirectConnectionEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\17_winchat\private\DirectConnectionProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\17_winchat\private\DirectConnectionStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\17_winchat\private\DirectMessagerClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\17_winchat\private\DirectMessagerEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\17_winchat\private\DirectMessagerProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\17_winchat\private\DirectMessagerStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\17_winchat\private\NECentralMessager.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\17_winchat\private\NEConnectionManager.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\17_winchat\private\NEDirectConnection.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\17_winchat\private\NEDirectMessager.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(AregGenerateDir)\examples\17_winchat\CentralMessagerClientBase.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\17_winchat\CentralMessagerStub.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\17_winchat\ConnectionManagerClientBase.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\17_winchat\ConnectionManagerStub.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\17_winchat\DirectConnectionClientBase.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\17_winchat\DirectConnectionStub.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\17_winchat\DirectMessagerClientBase.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\17_winchat\DirectMessagerStub.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\17_winchat\NECentralMessager.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\17_winchat\NEConnectionManager.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\17_winchat\NEDirectConnection.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\17_winchat\NEDirectMessager.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\17_winchat\private\CentralMessagerEvents.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\17_winchat\private\CentralMessagerProxy.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\17_winchat\private\ConnectionManagerEvents.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\17_winchat\private\ConnectionManagerProxy.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\17_winchat\private\DirectConnectionEvents.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\17_winchat\private\DirectConnectionProxy.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\17_winchat\private\DirectMessagerEvents.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\17_winchat\private\DirectMessagerProxy.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\17_winchat\CentralMessagerClientBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\17_winchat\CentralMessagerStub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\17_winchat\ConnectionManagerClientBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\17_winchat\ConnectionManagerStub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\17_winchat\DirectConnectionClientBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\17_winchat\DirectConnectionStub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\17_winchat\DirectMessagerClientBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\17_winchat\DirectMessagerStub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\17_winchat\NECentralMessager.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\17_winchat\NEConnectionManager.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\17_winchat\NEDirectConnection.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\17_winchat\NEDirectMessager.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\17_winchat\private\CentralMessagerEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\17_winchat\private\CentralMessagerProxy.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\17_winchat\private\ConnectionManagerEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\17_winchat\private\ConnectionManagerProxy.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\17_winchat\private\DirectConnectionEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\17_winchat\private\DirectConnectionProxy.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\17_winchat\private\DirectMessagerEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\17_winchat\private\DirectMessagerProxy.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
