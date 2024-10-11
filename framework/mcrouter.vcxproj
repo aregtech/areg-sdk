@@ -28,11 +28,8 @@
       <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>
-call copy /D / y $(AregFrameworkSources)\mcrouter\resources\mcrouter.service.install.bat   $(OutDir)\config\mcrouter.service.install.bat
-call copy /D / y $(AregFrameworkSources)\mcrouter\resources\mcrouter.service.uninstall.bat $(OutDir)\config\mcrouter.service.uninstall.bat
-      </Command>
-      <Message Condition="Exists($(AregFrameworkResources))">Copy mcrouter service installation scripts to the executable directory</Message>
+      <Command>$(AregFrameworkSources)\mcrouter\resources\mcrouter_post_build.bat "$(AregFrameworkSources)\mcrouter\resources" "$(OutDir)"</Command>
+      <Message>Call post-build script to copy  mcrouter service install and uninstall scripts to the config directory.</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
@@ -63,19 +60,19 @@ call copy /D / y $(AregFrameworkSources)\mcrouter\resources\mcrouter.service.uni
     <ClInclude Include="system\GEPlatform.h" />
     <ClInclude Include="mcrouter\app\MulticastRouter.hpp" />
     <ClInclude Include="mcrouter\app\NEMulticastRouterSettings.hpp" />
-    <ClInclude Include="mcrouter\resources\resource.hpp" />
-    <ClInclude Include="mcrouter\resources\targetver.hpp" />
+    <ClInclude Include="mcrouter\resources\resource.h" />
+    <ClInclude Include="mcrouter\resources\targetver.h" />
     <ResourceCompile Include="mcrouter\resources\mcrouter.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="mcrouter\Readme.md" />
     <None Include="mcrouter\resources\mcrouter.service" />
     <None Include="mcrouter\resources\mcrouter.ico" />
+    <None Include="mcrouter\resources\mcrouter_post_build.bat" />
     <None Include="mcrouter\resources\Readme.md" />
     <None Include="mcrouter\resources\small.ico" />
     <None Include="mcrouter\resources\mcrouter.service.install.bat" />
     <None Include="mcrouter\resources\mcrouter.service.uninstall.bat" />
-    <None Include="mcrouter\resources\mcrouter_post_build.bat" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="mcrouter\app\private\CMakeLists.txt" />

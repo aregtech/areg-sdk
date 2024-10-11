@@ -35,10 +35,10 @@
     <ClInclude Include="logobserver\app\NELogObserverSettings.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="logobserver\app\resources\resource.hpp">
+    <ClInclude Include="logobserver\resources\resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="logobserver\app\resources\targetver.hpp">
+    <ClInclude Include="logobserver\resources\targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -48,15 +48,15 @@
     <Text Include="logobserver\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="logobserver\app\resources\logobserver.ico">
+    <Image Include="logobserver\resources\logobserver.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="logobserver\app\resources\small.ico">
+    <Image Include="logobserver\resources\small.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="logobserver\app\resources\logobserver.rc">
+    <ResourceCompile Include="logobserver\resources\logobserver.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

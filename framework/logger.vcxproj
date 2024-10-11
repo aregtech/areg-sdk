@@ -27,11 +27,8 @@
       <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>
-call copy /D / y $(AregFrameworkSources)\logger\resources\logger.service.install.bat   $(OutDir)\config\logger.service.install.bat
-call copy /D / y $(AregFrameworkSources)\logger\resources\logger.service.uninstall.bat $(OutDir)\config\logger.service.uninstall.bat
-      </Command>
-      <Message Condition="Exists($(AregFrameworkResources))">Copy logger service installation scripts to the executable directory</Message>
+      <Command>$(AregFrameworkSources)\logger\resources\logger_post_build.bat "$(AregFrameworkSources)\logger\resources" "$(OutDir)"</Command>
+      <Message>Call post-build script to copy  logger service install and uninstall scripts to the config directory.</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
@@ -56,18 +53,18 @@ call copy /D / y $(AregFrameworkSources)\logger\resources\logger.service.uninsta
     <ClInclude Include="logger\service\LoggerServerService.hpp" />
     <ClInclude Include="logger\service\private\LoggerMessageProcessor.hpp" />
     <ClInclude Include="system\GEPlatform.h" />
-    <ClInclude Include="logger\resources\resource.hpp" />
-    <ClInclude Include="logger\resources\targetver.hpp" />
+    <ClInclude Include="logger\resources\resource.h" />
+    <ClInclude Include="logger\resources\targetver.h" />
     <ResourceCompile Include="logger\resources\logger.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="logger\Readme.md" />
     <None Include="logger\resources\logger.ico" />
     <None Include="logger\resources\logger.service" />
+    <None Include="logger\resources\logger_post_build.bat" />
     <None Include="logger\resources\small.ico" />
     <None Include="logger\resources\logger.service.install.bat" />
     <None Include="logger\resources\logger.service.uninstall.bat" />
-    <None Include="logger\resources\logger_post_build.bat" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="logger\app\private\CMakeLists.txt" />

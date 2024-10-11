@@ -7,7 +7,7 @@
         <_PropertySheetDisplayName>project</_PropertySheetDisplayName>
     </PropertyGroup>
     <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
-        <Import Project="$(SolutionDir)\msvc_setup.props"/>
+        <Import Project="$(SolutionDir)msvc_setup.props"/>
     </ImportGroup>
     <ImportGroup Label="PropertySheets">
         <Import Project="$(AregSdkRoot)\conf\msvc\project_defaults.props"/>

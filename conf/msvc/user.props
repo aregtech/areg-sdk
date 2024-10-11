@@ -12,7 +12,7 @@
     <!-- Each Solution should have 'msvc_setup.props' file to set at least the AregSdkRoot property                                         -->
     <!-- ********************************************************************************************************************************** -->
     <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
-        <Import Project="$(SolutionDir)\msvc_setup.props"/>
+        <Import Project="$(SolutionDir)msvc_setup.props"/>
     </ImportGroup>
 
     <!-- ********************************************************************************************************************************** -->

@@ -36,8 +36,8 @@
   <ItemGroup>
     <ClInclude Include="logobserver\app\LogObserver.hpp" />
     <ClInclude Include="logobserver\app\NELogObserverSettings.hpp" />
-    <ClInclude Include="logobserver\app\resources\resource.hpp" />
-    <ClInclude Include="logobserver\app\resources\targetver.hpp" />
+    <ClInclude Include="logobserver\resources\resource.h" />
+    <ClInclude Include="logobserver\resources\targetver.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="logobserver\app\private\LogObserver.cpp" />
@@ -51,11 +51,11 @@
     <Text Include="logobserver\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="logobserver\app\resources\logobserver.ico" />
-    <Image Include="logobserver\app\resources\small.ico" />
+    <Image Include="logobserver\resources\logobserver.ico" />
+    <Image Include="logobserver\resources\small.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="logobserver\app\resources\logobserver.rc" />
+    <ResourceCompile Include="logobserver\resources\logobserver.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

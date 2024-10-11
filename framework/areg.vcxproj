@@ -27,8 +27,8 @@
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command Condition="Exists($(AregFrameworkResources))">$(AregFrameworkResources)\areg_post_build.bat $(AregFrameworkResources) $(OutDir)</Command>
-      <Message Condition="Exists($(AregFrameworkResources))">Copy configuration files into the executable directory</Message>
+      <Command>$(AregFrameworkResources)\areg_post_build.bat "$(AregFrameworkResources)" "$(OutDir)"</Command>
+      <Message>Call post-build script to copy AREG configuration file template.</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
