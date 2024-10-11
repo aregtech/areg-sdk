@@ -18,36 +18,36 @@
     <None Include="res\HelloWorld.siml" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)\examples\12_pubsvc\private\HelloWorldClientBase.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\12_pubsvc\private\HelloWorldClientBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)\examples\12_pubsvc\private\HelloWorldEvents.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\12_pubsvc\private\HelloWorldEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)\examples\12_pubsvc\private\HelloWorldProxy.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\12_pubsvc\private\HelloWorldProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)\examples\12_pubsvc\private\HelloWorldStub.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\12_pubsvc\private\HelloWorldStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)\examples\12_pubsvc\private\NEHelloWorld.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\12_pubsvc\private\NEHelloWorld.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(AregGenerateDir)\examples\12_pubsvc\private\HelloWorldEvents.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\12_pubsvc\private\HelloWorldEvents.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)\examples\12_pubsvc\private\HelloWorldProxy.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\12_pubsvc\private\HelloWorldProxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)\examples\12_pubsvc\HelloWorldClientBase.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\12_pubsvc\HelloWorldClientBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)\examples\12_pubsvc\HelloWorldStub.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\12_pubsvc\HelloWorldStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)\examples\12_pubsvc\NEHelloWorld.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\12_pubsvc\NEHelloWorld.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

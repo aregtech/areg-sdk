@@ -20,36 +20,36 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)\examples\21_pubunblock\private\HelloUnblockClientBase.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\21_pubunblock\private\HelloUnblockClientBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)\examples\21_pubunblock\private\HelloUnblockEvents.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\21_pubunblock\private\HelloUnblockEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)\examples\21_pubunblock\private\HelloUnblockProxy.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\21_pubunblock\private\HelloUnblockProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)\examples\21_pubunblock\private\HelloUnblockStub.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\21_pubunblock\private\HelloUnblockStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)\examples\21_pubunblock\private\NEHelloUnblock.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\21_pubunblock\private\NEHelloUnblock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(AregGenerateDir)\examples\21_pubunblock\private\HelloUnblockEvents.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\21_pubunblock\private\HelloUnblockEvents.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)\examples\21_pubunblock\private\HelloUnblockProxy.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\21_pubunblock\private\HelloUnblockProxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)\examples\21_pubunblock\HelloUnblockClientBase.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\21_pubunblock\HelloUnblockClientBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)\examples\21_pubunblock\HelloUnblockStub.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\21_pubunblock\HelloUnblockStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)\examples\21_pubunblock\NEHelloUnblock.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\21_pubunblock\NEHelloUnblock.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

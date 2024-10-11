@@ -1,4 +1,4 @@
-@echo off
+@echo on
 SETLOCAL
 
 :: full path of resource folder
@@ -11,8 +11,8 @@ set OLDPATH=%PATH%
 set PATH=%SystemRoot%\System32;%PATH%
 
 :: create 'config' directory if does not exist and copy file
-IF NOT EXIST %TARGET_DIR%\config mkdir      %TARGET_DIR%\config
-copy /D /y %RESOURCE_DIR%\areg.init   %TARGET_DIR%\config\areg.init
+IF NOT EXIST "%TARGET_DIR%config" mkdir "%TARGET_DIR%config"
+copy /D /y "%RESOURCE_DIR%areg.init"   "%TARGET_DIR%config\"
 
 :: restore PATH
 set PATH=%OLDPATH%

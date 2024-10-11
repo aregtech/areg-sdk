@@ -18,36 +18,36 @@
     <None Include="res\HelloWatchdog.siml" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)\examples\18_locwatchdog\private\HelloWatchdogClientBase.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\18_locwatchdog\private\HelloWatchdogClientBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)\examples\18_locwatchdog\private\HelloWatchdogEvents.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\18_locwatchdog\private\HelloWatchdogEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)\examples\18_locwatchdog\private\HelloWatchdogProxy.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\18_locwatchdog\private\HelloWatchdogProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)\examples\18_locwatchdog\private\HelloWatchdogStub.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\18_locwatchdog\private\HelloWatchdogStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)\examples\18_locwatchdog\private\NEHelloWatchdog.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\18_locwatchdog\private\NEHelloWatchdog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(AregGenerateDir)\examples\18_locwatchdog\private\HelloWatchdogEvents.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\18_locwatchdog\private\HelloWatchdogEvents.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)\examples\18_locwatchdog\private\HelloWatchdogProxy.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\18_locwatchdog\private\HelloWatchdogProxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)\examples\18_locwatchdog\HelloWatchdogClientBase.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\18_locwatchdog\HelloWatchdogClientBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)\examples\18_locwatchdog\HelloWatchdogStub.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\18_locwatchdog\HelloWatchdogStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)\examples\18_locwatchdog\NEHelloWatchdog.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\18_locwatchdog\NEHelloWatchdog.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

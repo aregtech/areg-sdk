@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" Condition="'$(AregSdkRoot)'==''">
-    <Import Project="$(SolutionDir)\msvc_setup.props" />
+    <Import Project="$(SolutionDir)msvc_setup.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(AregSdkRoot)\conf\msvc\compile.props" Label="LocalAppCompileSettings" />
+    <Import Project="$(AregSdkRoot)conf\msvc\compile.props" Label="LocalAppCompileSettings" />
   </ImportGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{EB228067-EA4D-452C-91FC-91DB3B445C31}</ProjectGuid>
@@ -17,11 +17,11 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(AregSdkRoot)\conf\msvc\project.props" Label="LocalAppDataPlatform" />
+    <Import Project="$(AregSdkRoot)conf\msvc\project.props" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(OutLibDir)\</OutDir>
+    <OutDir>$(OutLibDir)</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Debug'">
     <ClCompile>
@@ -45,18 +45,18 @@
     <None Include="res\HelloUnblock.siml" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)\examples\21_pubunblock\private\HelloUnblockClientBase.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\21_pubunblock\private\HelloUnblockEvents.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\21_pubunblock\private\HelloUnblockProxy.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\21_pubunblock\private\HelloUnblockStub.cpp" />
-    <ClCompile Include="$(AregGenerateDir)\examples\21_pubunblock\private\NEHelloUnblock.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\21_pubunblock\private\HelloUnblockClientBase.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\21_pubunblock\private\HelloUnblockEvents.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\21_pubunblock\private\HelloUnblockProxy.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\21_pubunblock\private\HelloUnblockStub.cpp" />
+    <ClCompile Include="$(AregGenerateDir)examples\21_pubunblock\private\NEHelloUnblock.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(AregGenerateDir)\examples\21_pubunblock\HelloUnblockClientBase.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\21_pubunblock\HelloUnblockStub.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\21_pubunblock\NEHelloUnblock.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\21_pubunblock\private\HelloUnblockEvents.hpp" />
-    <ClInclude Include="$(AregGenerateDir)\examples\21_pubunblock\private\HelloUnblockProxy.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\21_pubunblock\HelloUnblockClientBase.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\21_pubunblock\HelloUnblockStub.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\21_pubunblock\NEHelloUnblock.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\21_pubunblock\private\HelloUnblockEvents.hpp" />
+    <ClInclude Include="$(AregGenerateDir)examples\21_pubunblock\private\HelloUnblockProxy.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

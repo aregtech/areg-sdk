@@ -18,36 +18,36 @@
     <None Include="res\HelloWatchdog.siml" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(AregGenerateDir)\examples\19_pubwatchdog\private\HelloWatchdogClientBase.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubwatchdog\private\HelloWatchdogClientBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)\examples\19_pubwatchdog\private\HelloWatchdogEvents.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubwatchdog\private\HelloWatchdogEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)\examples\19_pubwatchdog\private\HelloWatchdogProxy.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubwatchdog\private\HelloWatchdogProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)\examples\19_pubwatchdog\private\HelloWatchdogStub.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubwatchdog\private\HelloWatchdogStub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="$(AregGenerateDir)\examples\19_pubwatchdog\private\NEHelloWatchdog.cpp">
+    <ClCompile Include="$(AregGenerateDir)examples\19_pubwatchdog\private\NEHelloWatchdog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(AregGenerateDir)\examples\19_pubwatchdog\private\HelloWatchdogEvents.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubwatchdog\private\HelloWatchdogEvents.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)\examples\19_pubwatchdog\private\HelloWatchdogProxy.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubwatchdog\private\HelloWatchdogProxy.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)\examples\19_pubwatchdog\HelloWatchdogClientBase.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubwatchdog\HelloWatchdogClientBase.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)\examples\19_pubwatchdog\HelloWatchdogStub.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubwatchdog\HelloWatchdogStub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="$(AregGenerateDir)\examples\19_pubwatchdog\NEHelloWatchdog.hpp">
+    <ClInclude Include="$(AregGenerateDir)examples\19_pubwatchdog\NEHelloWatchdog.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
