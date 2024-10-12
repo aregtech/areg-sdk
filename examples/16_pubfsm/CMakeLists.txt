@@ -4,12 +4,12 @@ addServiceInterface(16_generated res PowerManager)
 addServiceInterface(16_generated res TrafficController)
 
 # add projects
-macro_example_declare_runnable(16_pubclient   16_generated
+macro_declare_executable(16_pubclient   16_generated
     pubclient/src/main.cpp
     pubclient/src/TrafficLightClient.cpp
 )
 
-macro_example_declare_runnable(16_pubservice  16_generated
+macro_declare_executable(16_pubservice  16_generated
     pubservice/src/IETrafficLightActionHandler.cpp
     pubservice/src/main.cpp
     pubservice/src/NETrafficLightFSM.cpp
