@@ -73,10 +73,15 @@ endfunction(setAppOptions)
 # ---------------------------------------------------------------------------
 function(addExecutableEx target_name target_namespace source_list library_list)
 
+    # Ensure the source list is not empty
+    if (NOT source_list)
+        message(FATAL_ERROR "AREG: >>> Source list for executable \'${target_name}\' is empty")
+    endif()
+
     # Gather any additional libraries passed as arguments (ARGN)
     set(exList "${ARGN}")
-    foreach(item IN LISTS exList)
-        list(APPEND library_list "${item}")
+    foreach(_item IN LISTS exList)
+        list(APPEND library_list "${_item}")
     endforeach()
 
     # Create the executable with the specified source files
@@ -149,8 +154,8 @@ function(addStaticLibEx target_name target_namespace source_list library_list)
 
     # Gather any additional libraries passed as arguments (ARGN)
     set(exList "${ARGN}")
-    foreach(item IN LISTS exList)
-        list(APPEND library_list "${item}")
+    foreach(_item IN LISTS exList)
+        list(APPEND library_list "${_item}")
     endforeach()
 
     # Create the static library with the specified source files
@@ -195,8 +200,8 @@ endfunction(addStaticLib)
 # ---------------------------------------------------------------------------
 function(addStaticLibEx_C target_name target_namespace source_list library_list)
     set(exList "${ARGN}")
-    foreach(item IN LISTS exList)
-        list(APPEND library_list "${item}")
+    foreach(_item IN LISTS exList)
+        list(APPEND library_list "${_item}")
     endforeach()
     add_library(${target_name} STATIC ${source_list})
     if (NOT "${target_namespace}" STREQUAL "")
@@ -277,8 +282,8 @@ function(addSharedLibEx target_name target_namespace source_list library_list)
 
     # Gather any additional libraries passed as arguments (ARGN)
     set(exList "${ARGN}")
-    foreach(item IN LISTS exList)
-        list(APPEND library_list "${item}")
+    foreach(_item IN LISTS exList)
+        list(APPEND library_list "${_item}")
     endforeach()
 
     # Create the shared library with the specified source files
@@ -575,13 +580,211 @@ endfunction(removeEmptyDirs)
 # ---------------------------------------------------------------------------
 macro(macro_add_source result_list src_base_dir)
     set(_list "${ARGN}")
-    foreach(item IN LISTS _list)
-        set(_src "${src_base_dir}/${item}")
+    foreach(_item IN LISTS _list)
+        set(_src "${src_base_dir}/${_item}")
         if (EXISTS "${_src}")
             list(APPEND ${result_list} "${_src}")
         else()
-            message(FATAL_ERROR "AREG: >>> The item '${item}' does not exist in '${src_base_dir}'")
+            message(FATAL_ERROR "AREG: >>> The item '${_item}' does not exist in '${src_base_dir}'")
         endif()
     endforeach()
     unset(_list)
 endmacro(macro_add_source)
+
+
+# ---------------------------------------------------------------------------
+# Description : This macro processes a list of input arguments that can include:
+#                   1. **CMake targets** (predefined libraries or targets).
+#                   2. **Source files**: Files provided with either absolute paths or 
+#                      paths relative to the current directory.
+#                   3. **Resource files** (*.rc): Windows-specific resource files.
+#               The macro categorizes the input arguments into three separate lists:
+#                   1. **Libraries list**: Contains any known CMake targets.
+#                   2. **Source files list**: Includes valid source files (.cpp, .c) 
+#                      from either the provided absolute paths or relative paths.
+#                   3. **Resource files list**: Filters out .rc files, specifically for Windows,
+#                      and stores them in a separate list.
+#
+# Parameters  : ${res_sources}   -- Output: A list containing the parsed source files.
+#               ${res_libs}      -- Output: A list containing the recognized CMake targets (libraries).
+#               ${res_resources} -- Output: A list containing the identified resource files (*.rc).
+#               ${ARGN}          -- Input: A list of files, libraries, or resources to be categorized.
+#
+# Behavior ...: 
+#               - If a file does not exist, either as a full path or relative to the current directory, 
+#                 the macro throws a fatal error.
+#               - On Windows, it specifically identifies and appends resource files (*.rc) to the 
+#                 resources list.
+#
+# Usage ......: macro_parse_arguments(<var sources> <var libs> <var resources> my_target my/app/main.cpp my/lib/object.cpp my/resource/resource.rc)
+#               Example: macro_parse_arguments(src_files lib_targets res_files my_lib src/main.cpp src/object.cpp res/resource.rc)
+# ---------------------------------------------------------------------------
+macro(macro_parse_arguments res_sources res_libs res_resources)
+    set(_list "${ARGN}")
+    foreach(_item IN LISTS _list)
+        # Check if the _item is a known CMake target
+        if (TARGET ${_item})
+            list(APPEND ${res_libs} ${_item})
+        # Check if the _item is an existing file, relative or full path
+        elseif (EXISTS "${_item}")
+            list(APPEND ${res_sources} "${_item}")
+        elseif (EXISTS "${CMAKE_CURRENT_LIST_DIR}/${_item}")
+            list(APPEND ${res_sources} "${CMAKE_CURRENT_LIST_DIR}/${_item}")
+        else()
+            message(FATAL_ERROR "AREG: >>> File \'${_item}\' does not exist, ignoring")
+        endif()
+    endforeach()
+
+    # Separate out resource files (*.rc) for setting their properties on Windows
+    foreach(_file IN LISTS ${res_sources})
+        cmake_path(GET _file EXTENSION _ext)
+        if (_ext STREQUAL "rc")
+            list(APPEND ${res_resources} "${_file}")
+        endif()
+    endforeach()
+
+endmacro(macro_parse_arguments)
+
+# ---------------------------------------------------------------------------
+# Description : This macro declares a static library by processing the provided list of
+#               arguments and categorizing them into three main groups:
+#                   1. **Source Files**: These are the .cpp or .c files used to build the library.
+#                      The macro supports both absolute paths and paths relative to the current directory.
+#                   2. **Libraries**: These are existing CMake targets (predefined libraries) 
+#                      that the static library depends on.
+#                   3. **Resource Files**: These are .rc files (Windows resource files). 
+#                      On Windows systems, the macro ensures they are processed using the appropriate RC language settings.
+#               The macro declares a static library target using the collected source files and linked libraries.
+#               It also handles resource file configuration on Windows platforms.
+#
+# Parameters  : ${lib_name}  -- The name of the static library to be declared.
+#               ${ARGN}      -- The list of source files, libraries, and resource files.
+#                               The files can be specified with full or relative paths.
+#
+# Notes ......: 
+#               - Throws a fatal error if no source files are provided.
+#               - On Windows, resource files (*.rc) are set to use the RC language automatically.
+# 
+# Usage ......: macro_declare_static_library(<lib_name> <list_of_sources_libraries_and_resources>)
+#               Example: macro_declare_static_library(myStaticLib src/main.cpp src/resource.rc libSomeDependency)
+# ---------------------------------------------------------------------------
+macro(macro_declare_static_library lib_name)
+
+    # Parse arguments to get sources, libraries, and resources
+    macro_parse_arguments(_sources _libs _resources "${ARGN}")
+
+    # Ensure the source list is not empty
+    if (NOT _sources)
+        message(FATAL_ERROR "AREG: >>> Source list for executable \'${exe_name}\' is empty")
+    endif()
+
+    # Declare the static library using gathered sources and libraries
+    addStaticLibEx(${lib_name} "" "${_sources}" "${_libs}")
+
+    # If on Windows, set the RC files' language property
+    if (AREG_DEVELOP_ENV MATCHES "Win32" AND _resources)
+        set_source_files_properties(${_resources} PROPERTIES LANGUAGE RC)
+    endif()
+
+    # Clean up temporary variables
+    unset(_sources)
+    unset(_libs)
+    unset(_resources)
+
+endmacro(macro_declare_static_library)
+
+# ---------------------------------------------------------------------------
+# Description : This macro declares a shared library by processing the provided list of
+#               arguments and categorizing them into three main groups:
+#                   1. **Source Files**: These are the .cpp or .c files used to build the library.
+#                      The macro supports both absolute paths and paths relative to the current directory.
+#                   2. **Libraries**: These are existing CMake targets (predefined libraries) 
+#                      that the shared library depends on.
+#                   3. **Resource Files**: These are .rc files (Windows resource files). 
+#                      On Windows systems, the macro ensures they are processed using the appropriate RC language settings.
+#               The macro declares a shared library target using the collected source files and linked libraries.
+#               It also handles resource file configuration on Windows platforms.
+#
+# Parameters  : ${lib_name}  -- The name of the shared library to be declared.
+#               ${ARGN}      -- The list of source files, libraries, and resource files.
+#                               The files can be specified with full or relative paths.
+#
+# Notes ......: 
+#               - Throws a fatal error if no source files are provided.
+#               - On Windows, resource files (*.rc) are set to use the RC language automatically.
+# 
+# Usage ......: macro_declare_static_library(<lib_name> <list_of_sources_libraries_and_resources>)
+#               Example: macro_declare_static_library(myStaticLib src/main.cpp src/resource.rc libSomeDependency)
+# ---------------------------------------------------------------------------
+macro(macro_declare_shared_library lib_name)
+
+    # Parse arguments to get sources, libraries, and resources
+    macro_parse_arguments(_sources _libs _resources "${ARGN}")
+
+    # Ensure the source list is not empty
+    if (NOT _sources)
+        message(FATAL_ERROR "AREG: >>> Source list for executable \'${exe_name}\' is empty")
+    endif()
+
+    # Declare the shared library using gathered sources and libraries
+    addSharedLibEx(${lib_name} "" "${_sources}" "${_libs}")
+
+    # If on Windows, set the RC files' language property
+    if (AREG_DEVELOP_ENV MATCHES "Win32" AND _resources)
+        set_source_files_properties(${_resources} PROPERTIES LANGUAGE RC)
+    endif()
+
+    # Clean up temporary variables
+    unset(_sources)
+    unset(_libs)
+    unset(_resources)
+
+endmacro(macro_declare_shared_library)
+
+# ---------------------------------------------------------------------------
+# Description : This macro declares an executable by processing the provided list of
+#               arguments and categorizing them into three main groups:
+#                   1. **Source Files**: These are the .cpp or .c files used to build the library.
+#                      The macro supports both absolute paths and paths relative to the current directory.
+#                   2. **Libraries**: These are existing CMake targets (predefined libraries) 
+#                      that the executable depends on.
+#                   3. **Resource Files**: These are .rc files (Windows resource files). 
+#                      On Windows systems, the macro ensures they are processed using the appropriate RC language settings.
+#               The macro declares a executable target using the collected source files and linked libraries.
+#               It also handles resource file configuration on Windows platforms.
+#
+# Parameters  : ${lib_name}  -- The name of the executable to be declared.
+#               ${ARGN}      -- The list of source files, libraries, and resource files.
+#                               The files can be specified with full or relative paths.
+#
+# Notes ......: 
+#               - Throws a fatal error if no source files are provided.
+#               - On Windows, resource files (*.rc) are set to use the RC language automatically.
+# 
+# Usage ......: macro_declare_static_library(<lib_name> <list_of_sources_libraries_and_resources>)
+#               Example: macro_declare_static_library(myStaticLib src/main.cpp src/resource.rc libSomeDependency)
+# ---------------------------------------------------------------------------
+macro(macro_declare_executable exe_name)
+
+    # Parse arguments to get sources, libraries, and resources
+    macro_parse_arguments(_sources _libs _resources "${ARGN}")
+
+    # Ensure the source list is not empty
+    if (NOT _sources)
+        message(FATAL_ERROR "AREG: >>> Source list for executable \'${exe_name}\' is empty")
+    endif()
+
+    # Declare the executable using gathered sources and libraries
+    addExecutableEx(${exe_name} "" "${_sources}" "${_libs}")
+
+    # If on Windows, set the RC files' language property
+    if (AREG_DEVELOP_ENV MATCHES "Win32" AND _resources)
+        set_source_files_properties(${_resources} PROPERTIES LANGUAGE RC)
+    endif()
+
+    # Clean up temporary variables
+    unset(_sources)
+    unset(_libs)
+    unset(_resources)
+
+endmacro(macro_declare_executable)

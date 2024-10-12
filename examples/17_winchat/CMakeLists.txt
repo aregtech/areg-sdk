@@ -14,7 +14,8 @@ list(APPEND MFC_DEFINES _AFXDLL _BIND_TO_CURRENT_CRT_VERSION _BIND_TO_CURRENT_MF
 # ####################################
 # 'chatter' project
 
-macro_example_declare_runnable(17_chatter     17_generated
+macro_declare_executable(17_chatter 
+    17_generated
     chatter/res/stdafx.cpp
     chatter/res/chatter.rc
 
@@ -40,9 +41,6 @@ macro_example_declare_runnable(17_chatter     17_generated
     chatter/ui/PageNetworkSetup.cpp
 )
 
-# Set resource files to compile with Microsoft RC compiler
-set_source_files_properties(chatter/res/chatter.rc  PROPERTIES LANGUAGE RC)
-
 # Ensure Windows Subsystem and switch the entry point from main() method to 'wWinMainCRTStartup' implemented in MFC DLL.
 set_target_properties(17_chatter PROPERTIES 
         WIN32_EXECUTABLE    TRUE
@@ -56,7 +54,7 @@ target_compile_options(17_chatter PRIVATE "${AREG_OPT_DISABLE_WARN_EXAMPLES}")
 # 'register' project
 
 
-macro_example_declare_runnable(17_register     17_generated
+macro_declare_executable(17_register    17_generated
     register/res/stdafx.cpp
     register/res/register.rc
 
@@ -69,9 +67,6 @@ macro_example_declare_runnable(17_register     17_generated
     register/ui/PageBrokerSetup.cpp
     register/ui/PageConnections.cpp
 )
-
-# Set resource files to compile with Microsoft RC compiler
-set_source_files_properties(register/res/register.rc PROPERTIES LANGUAGE RC)
 
 # Ensure Windows Subsystem and switch the entry point from main() method to 'wWinMainCRTStartup' implemented in MFC DLL.
 set_target_properties(17_register PROPERTIES 
