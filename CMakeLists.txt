@@ -14,6 +14,21 @@ set(AREG_CMAKE_CONFIG_DIR   "${AREG_SDK_ROOT}/conf/cmake")
 # before 'project' call.
 include(${AREG_CMAKE_CONFIG_DIR}/setup.cmake)
 
+# If compiler family name is not empty.
+# Otherwise, use system default compiler.
+# See in 'common.cmake'
+if (NOT "${AREG_COMPILER_FAMILY}" STREQUAL "")
+    set(CMAKE_CXX_COMPILER  "${AREG_CXX_COMPILER}")
+    set(CMAKE_C_COMPILER    "${AREG_C_COMPILER}")
+endif()
+
+# set CMake tool settings
+set(CMAKE_BUILD_TYPE        ${AREG_BUILD_TYPE} CACHE STRING "Configuration Type" FORCE)
+
+if (${AREG_COMPILER_FAMILY} MATCHES "llvm" AND WIN32)
+    set(CMAKE_GENERATOR_TOOLSET ClangCL)
+endif()
+
 # AREG SDK project name and version
 set(AREG_PROJECT_NAME "areg-sdk")
 set(AREG_PROJECT_VERSION "1.9.99.111")

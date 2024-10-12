@@ -49,20 +49,8 @@ include(${AREG_CMAKE_CONFIG_DIR}/functions.cmake)
 # setup user configurations
 include(${AREG_CMAKE_CONFIG_DIR}/user.cmake)
 
-# If compiler family name is not empty.
-# Otherwise, use system default compiler.
-# See in 'common.cmake'
-if (NOT "${AREG_COMPILER_FAMILY}" STREQUAL "")
-    set(CMAKE_CXX_COMPILER  "${AREG_CXX_COMPILER}")
-    set(CMAKE_C_COMPILER    "${AREG_C_COMPILER}")
-endif()
-
-# set CMake tool settings
-set(CMAKE_BUILD_TYPE        ${AREG_BUILD_TYPE})
-set(CMAKE_BUILD_TYPE        ${AREG_BUILD_TYPE} CACHE STRING "Configuration Type" FORCE)
-
 # check and fix CXX standard
-macro_check_fix_cxx_standard()
+macro_check_fix_areg_cxx_standard()
 
 if (NOT "${AREG_PACKAGES}" STREQUAL "")
     set(FETCHCONTENT_BASE_DIR   "${AREG_PACKAGES}" CACHE PATH "Location of AREG thirdparty packages" FORCE)

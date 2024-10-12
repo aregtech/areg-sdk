@@ -8,10 +8,10 @@
 #               The variable 'AREG_CXX_STANDARD' must be defined before calling this macro.
 #               If 'CMAKE_CXX_STANDARD' is not set, it will be assigned the value of 'AREG_CXX_STANDARD'.
 #               If 'CMAKE_CXX_STANDARD' is lower than 'AREG_CXX_STANDARD', a warning is displayed.
-# Macro    ...: macro_check_fix_cxx_standard
-# Usage ......: macro_check_fix_cxx_standard()
+# Macro    ...: macro_check_fix_areg_cxx_standard
+# Usage ......: macro_check_fix_areg_cxx_standard()
 # ---------------------------------------------------------------------------
-macro(macro_check_fix_cxx_standard)
+macro(macro_check_fix_areg_cxx_standard)
 
     # Ensure that the required 'AREG_CXX_STANDARD' variable is defined.
     if (NOT DEFINED AREG_CXX_STANDARD)
@@ -31,7 +31,7 @@ macro(macro_check_fix_cxx_standard)
                         Example: 'set(CMAKE_CXX_STANDARD ${AREG_CXX_STANDARD})'")
     endif()
 
-endmacro(macro_check_fix_cxx_standard)
+endmacro(macro_check_fix_areg_cxx_standard)
 
 # ---------------------------------------------------------------------------
 # Description : Configures the compiler and linker options for executable applications.
@@ -317,40 +317,43 @@ endfunction(addSharedLib)
 # ---------------------------------------------------------------------------
 # Description : Identifies and sets the short name of the compiler (e.g., 'g++', 'gcc',
 #               'clang', 'clang-cl', or 'msvc'). The result is stored in a variable.
-# Function ...: findCompilerShortName
-# Parameters .: ${compiler_path}   -- The full path of the compiler to check.
-#               ${short_name_var}  -- The variable in which to store the detected short name.
-# Usage ......: findCompilerShortName(<compiler path> <short name variable>)
-# Example ....: findCompilerShortName("${CMAKE_CXX_COMPILER}" AREG_COMPILER_SHORT)
+# macro ......: macro_find_compiler_short_name
+# Parameters .: ${compiler_path}   -- Input:  the full path of the compiler to check.
+#               ${short_name_var}  -- Output: the variable in which to store the detected short name.
+# Usage ......: macro_find_compiler_short_name(<compiler path> <short name variable>)
+# Example ....: macro_find_compiler_short_name("${CMAKE_CXX_COMPILER}" AREG_COMPILER_SHORT)
 #               This sets 'AREG_COMPILER_SHORT' with the compiler's short name.
 # ---------------------------------------------------------------------------
-function(findCompilerShortName compiler_path short_name_var)
+macro(macro_find_compiler_short_name compiler_path short_name_var)
 
     # Initialize the variable with 'unknown' to handle cases where no match is found.
-    set(${short_name_var} "unknown" PARENT_SCOPE)
+    set(${short_name_var} "unknown")
 
     # Search for specific compiler names within the provided path, starting with the most specific.
     foreach(compiler_name "clang-cl" "clang++" "clang" "g++" "gcc" "c++" "cc" "cl")
         string(FIND "${compiler_path}" "${compiler_name}" FOUND_POS REVERSE)
         if (${FOUND_POS} GREATER -1)
-            set(${short_name_var} "${compiler_name}" PARENT_SCOPE)
-            return()
+            set(${short_name_var} ${compiler_name})
+            break()
         endif()
     endforeach()
 
-endfunction(findCompilerShortName)
+endmacro(macro_find_compiler_short_name)
 
 # ---------------------------------------------------------------------------
 # Description : Identifies and sets the family of the compiler (e.g., 'gnu', 'llvm', 
 #               'msvc', or 'cygwin'). The result is stored in a variable.
-# Function ...: findCompilerFamilyName
-# Parameters .: ${compiler_path}   -- The full path of the compiler to check.
-#               ${family_var}      -- The variable in which to store the detected family name.
-# Usage ......: findCompilerFamilyName(<compiler path> <family name variable>)
-# Example ....: findCompilerFamilyName("${CMAKE_CXX_COMPILER}" AREG_COMPILER_FAMILY)
+# Macro ......: macro_find_compiler_family_name
+# Parameters .: ${compiler_path}   -- Input:  the full path of the compiler to check.
+#               ${family_var}      -- Output: the variable in which to store the detected family name.
+# Usage ......: macro_find_compiler_family_name(<compiler path> <family name variable>)
+# Example ....: macro_find_compiler_family_name("${CMAKE_CXX_COMPILER}" AREG_COMPILER_FAMILY)
 #               This sets 'AREG_COMPILER_FAMILY' with the family of the compiler.
 # ---------------------------------------------------------------------------
-function(findCompilerFamilyName compiler_path family_var)
+macro(macro_find_compiler_family_name compiler_path family_var)
+
+    # Set the family to 'unknown' if no match was found.
+    set(${family_var} "unknown")
 
     # Search for specific compiler families based on known compiler names.
     foreach(compiler_family_pair "clang-cl;llvm" "clang++;llvm" "clang;llvm" "g++;gnu" "gcc;gnu" "c++;gnu" "cc;gnu" "cl;msvc")
@@ -360,18 +363,15 @@ function(findCompilerFamilyName compiler_path family_var)
         string(FIND "${compiler_path}" "${family_compiler}" FOUND_POS REVERSE)
         if (${FOUND_POS} GREATER -1)
             if (CYGWIN AND ("${family_name}" STREQUAL "gnu"))
-                set(${family_var} "cygwin" PARENT_SCOPE)
+                set(${family_var} "cygwin")
             else()
-                set(${family_var} "${family_name}" PARENT_SCOPE)
+                set(${family_var} "${family_name}")
             endif()
-            return()
+            break()
         endif()
     endforeach()
 
-    # Set the family to 'unknown' if no match was found.
-    set(${family_var} "unknown" PARENT_SCOPE)
-
-endfunction(findCompilerFamilyName)
+endmacro(macro_find_compiler_family_name)
 
 # ---------------------------------------------------------------------------
 # Description : Converts Windows-specific paths to Cygwin format if running under Cygwin.
@@ -788,3 +788,94 @@ macro(macro_declare_executable exe_name)
     unset(_resources)
 
 endmacro(macro_declare_executable)
+
+macro(macro_setup_compiler compiler_family compiler_cxx compiler_c)
+    # Check the compiler option and set compiler family and specific compiler commands accordingly.
+    if(${compiler_family} STREQUAL "")
+        message(WARNING "AREG: >>> Cannot determine compiler by family, because it is empty")
+    endif()
+
+    # Map the compiler_family to the respective compiler commands
+    if(${compiler_family} MATCHES "gnu|cygwin")
+        set(${compiler_cxx} "g++")
+        set(${compiler_c}   "gcc")
+    elseif(${compiler_family} STREQUAL "llvm")
+        if(WIN32)
+            set(${compiler_cxx} "clang-cl")
+            set(${compiler_c}   "clang-cl")
+        else()
+            set(${compiler_cxx} "clang++")
+            set(${compiler_c}   "clang")
+        endif()
+    elseif(${compiler_family} STREQUAL "msvc")
+        set(${compiler_cxx} "cl")
+        set(${compiler_c}   "cl")
+    else()
+        message(WARNING "AREG: >>> Unrecognized compiler family \'${compiler_family}\', supported values: \'gnu\', \'llvm\', \'cygwin\', \'msvc\'")
+    endif()
+
+endmacro(macro_setup_compiler)
+
+macro(macro_setup_compiler_family compiler_name compiler_family compiler_c)
+
+    # Handle specific compiler identification
+    if(${compiler_name} MATCHES "g\\+\\+|gcc|c\\+\\+|cc")
+        if(${compiler_name} MATCHES "g\\+\\+|c\\+\\+")
+            set(${compiler_c} "gcc")  # Ensure C-compiler is gcc if C++ compiler is used
+        endif()
+
+        # Detect Cygwin or GNU
+        if (CYGWIN)
+            set(${compiler_family} "cygwin")  
+        else()
+            set(${compiler_family} "gnu")
+        endif()
+    elseif(${compiler_name} MATCHES "clang-cl|clang\\+\\+|clang")
+        if(${compiler_name} STREQUAL "clang-cl")
+            set(${compiler_c} "clang-cl")
+        elseif(${compiler_name} STREQUAL "clang++")
+            set(${compiler_c} "clang")
+        endif()
+        set(${compiler_family} "llvm")
+    elseif(${compiler_name} STREQUAL "cl")
+        set(${compiler_family} "msvc")
+    else()
+        message(WARNING "AREG: >>> Unrecognized compiler \'${compiler_name}\', supported compilers: \'gcc\', \'g++\', \'cc\', \'c++\', \'clang\', \'clang++\', \'clang-cl\', \'cl\'")
+    endif()
+
+endmacro(macro_setup_compiler_family)
+
+macro(macro_setup_compilers_data compiler_path compiler_family compiler_short compiler_cxx compiler_c compiler_found)
+
+    # Set the family to 'unknown' if no match was found.
+    set(${family_var} "unknown")
+
+    # Search for specific compiler families based on known compiler names.
+    foreach(_entry "clang-cl;llvm;clang-cl" "clang++;llvm;clang" "clang;llvm;clang" "g++;gnu;gcc" "gcc;gnu;gcc" "c++;gnu;cc" "cc;gnu;cc" "cl;msvc;cl")
+        list(GET _entry 0 _compiler)
+        list(GET _entry 1 _family)
+        list(GET _entry 2 _c_compiler)
+
+        string(FIND "${compiler_path}" "${_compiler}" FOUND_POS REVERSE)
+        if (${FOUND_POS} GREATER -1)
+            if (CYGWIN AND ("${family_name}" STREQUAL "gnu"))
+                set(${compiler_family} "cygwin")
+            else()
+                set(${compiler_family} "${_family}")
+            endif()
+
+            set(${compiler_short}   "${_compiler}")
+            set(${compiler_cxx}     "${compiler_path}")
+            if ("${_compiler}" STREQUAL "${_c_compiler}")
+                set(${compiler_c}     "${compiler_path}")
+            else()    
+                string(REPLACE "${_compiler}" "${_c_compiler}" ${compiler_c} "${compiler_path}")
+            endif()
+
+            set(${compiler_found} TRUE)
+
+            break()
+        endif()
+    endforeach()
+
+endmacro(macro_setup_compilers_data)

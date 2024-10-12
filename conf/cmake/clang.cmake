@@ -3,7 +3,7 @@
 # Copyright 2022-2023 Aregtech
 # ###########################################################################
 
-message(STATUS "AREG: >>> Preparing settings for CLang compiler and with '${AREG_OS}' API")
+message(STATUS "AREG: >>> Preparing settings for CLang compiler under \'${AREG_OS}\' platform, WIN32 = \'${WIN32}\'")
 
 if (AREG_OS STREQUAL "Windows")
 
@@ -22,7 +22,7 @@ if (AREG_OS STREQUAL "Windows")
     list(APPEND AREG_LDFLAGS advapi32 psapi shell32 ws2_32)
     set(AREG_LDFLAGS_STR "-ladvapi32 -lpsapi -lshell32 -lws2_32")
 
-else(AREG_OS STREQUAL "Posix")
+else()
 
     if(CMAKE_BUILD_TYPE MATCHES Release)
     # if Release
@@ -42,7 +42,7 @@ else(AREG_OS STREQUAL "Posix")
     set(AREG_LDFLAGS_STR "-lstdc++ -lm -lpthread -lrt")
     set(AREG_COMPILER_VERSION -stdlib=libstdc++)
 
-endif(AREG_OS STREQUAL "Windows")
+endif()
 
 if(${AREG_BITNESS} EQUAL 32)
     list(APPEND AREG_COMPILER_OPTIONS -m32)

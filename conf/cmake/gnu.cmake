@@ -3,7 +3,7 @@
 # Copyright 2022-2023 Aregtech
 # ###########################################################################
 
-message(STATUS "AREG: >>> Preparing settings for GNU compiler and POSIX API, Cygwin = '${CYGWIN}'")
+message(STATUS "AREG: >>> Preparing settings for GNU compiler under \'${AREG_OS}\' platform, Cygwin = \'${CYGWIN}\'")
 
 if (CYGWIN)
     set(AREG_COMPILER_FAMILY "cygwin")  

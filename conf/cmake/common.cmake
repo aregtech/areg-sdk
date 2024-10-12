@@ -9,20 +9,18 @@ if (NOT "${CMAKE_BUILD_TYPE}" STREQUAL "")
     set(AREG_BUILD_TYPE "${CMAKE_BUILD_TYPE}")
 endif()
 
+# Identify compiler short name
+set(AREG_COMPILER_SHORT)
 if ("${AREG_COMPILER_FAMILY}" STREQUAL "")
-    set(AREG_CXX_COMPILER "${CMAKE_CXX_COMPILER}")
-    set(AREG_C_COMPILER   "${CMAKE_C_COMPILER}")
-    findCompilerFamilyName("${CMAKE_CXX_COMPILER}" AREG_COMPILER_FAMILY)
+    macro_setup_compilers_data("${CMAKE_CXX_COMPILER}" AREG_COMPILER_FAMILY AREG_COMPILER_SHORT AREG_CXX_COMPILER AREG_C_COMPILER _found)
 
     message(STATUS "AREG: >>> Use system default settings:")
     message(STATUS "AREG: ... Compiler family = \'${AREG_COMPILER_FAMILY}\'")
     message(STATUS "AREG: ... CXX compiler = \'${AREG_CXX_COMPILER}\'")
     message(STATUS "AREG: ... CC  compiler = \'${AREG_C_COMPILER}\'")
+else()
+    macro_find_compiler_short_name("${CMAKE_CXX_COMPILER}" AREG_COMPILER_SHORT)
 endif()
-
-# Identify compiler short name
-findCompilerShortName("${CMAKE_CXX_COMPILER}" AREG_COMPILER_SHORT)
-
 # Identify the OS
 set(AREG_OS ${CMAKE_SYSTEM_NAME})
 # Identify CPU platform

@@ -26,7 +26,7 @@
 #  16. AREG_OUTPUT_BIN      -- Directory for output binaries (executables and shared libraries).
 #  17. AREG_OUTPUT_LIB      -- Directory for output static libraries.
 #  18. AREG_PACKAGES        -- Location for fetching third-party packages such as GTest.
-#  19. AREG_INSTALL_PATH    -- Location where AREG SDK binaries, headers, and tools are installed. Defaults to the user’s home directory.
+#  19. AREG_INSTALL_PATH    -- Location where AREG SDK binaries, headers, and tools are installed. Defaults to the user's home directory.
 #  20. AREG_ENABLE_OUTPUTS  -- If disabled, output directories will match the CMake binary directory.
 #
 # Default Values:
@@ -77,66 +77,53 @@ set(AREG_CXX_COMPILER)
 # C compiler, possible values: gcc, clang, clang-cl, cl
 set(AREG_C_COMPILER)
 
-# Check the compiler option and set compiler family and specific compiler commands accordingly.
-if(DEFINED AREG_COMPILER_FAMILY AND NOT ${AREG_COMPILER_FAMILY} STREQUAL "")
-    message(STATUS "AREG: >>> User selected C/C++ compiler family \'${AREG_COMPILER_FAMILY}\'")
+set(_compiler_setup FALSE)
 
-    # Map the AREG_COMPILER_FAMILY to the respective compiler commands
-    if(${AREG_COMPILER_FAMILY} MATCHES "gnu|cygwin")
-        set(AREG_CXX_COMPILER "g++")
-        set(AREG_C_COMPILER   "gcc")
-        set(AREG_COMPILER_FAMILY "gnu")  # Normalize family to "gnu" for consistency
-    elseif(${AREG_COMPILER_FAMILY} STREQUAL "llvm")
-        if(WIN32)
-            set(AREG_CXX_COMPILER "clang-cl")
-            set(AREG_C_COMPILER   "clang-cl")
-        else()
-            set(AREG_CXX_COMPILER "clang++")
-            set(AREG_C_COMPILER   "clang")
+if (NOT "${CMAKE_CXX_COMPILER}" STREQUAL "")
+    message(STATUS "AREG: >>> Using defined C++ compiler \'${CMAKE_CXX_COMPILER}\'")
+    macro_setup_compilers_data("${CMAKE_CXX_COMPILER}" _compiler_family _compiler_short _compiler_cxx _compiler_c _compiler_found)
+
+    if (_compiler_found)
+        if (DEFINED AREG_COMPILER_FAMILY AND NOT "${AREG_COMPILER_FAMILY}" STREQUAL "${_compiler_family}")
+            message(WARNING "AREG: Compiler family \'${AREG_COMPILER_FAMILY}\' was chosen, but it is ignored since compiling with other compiler")
         endif()
-    elseif(${AREG_COMPILER_FAMILY} STREQUAL "msvc")
-        set(AREG_CXX_COMPILER "cl")
-        set(AREG_C_COMPILER   "cl")
-    else()
-        message(WARNING "AREG: >>> Unrecognized compiler family \'${AREG_COMPILER_FAMILY}\', supported values: \'gnu\', \'llvm\', \'cygwin\', \'msvc\'")
+        if (DEFINED AREG_COMPILER)
+            string(FIND "${AREG_COMPILER}" "${_COMPILER_SHORT}" _found_pos)
+            if (_found_pos LESS 0)
+                message(WARNING "AREG: Compiler \'${AREG_COMPILER}\' was chosen, but it is ignored since compiling with compiler with other compiler")
+            endif()
+        endif()
+
+        set(AREG_COMPILER_FAMILY    "${_compiler_family}")
+        set(AREG_COMPILER           "${_compiler_short}")
+        set(AREG_CXX_COMPILER       "${_compiler_cxx}")
+        set(AREG_C_COMPILER         "${_compiler_c}")
+        set(_compiler_setup TRUE)
+
+        set(CMAKE_C_COMPILER    ${AREG_C_COMPILER})
+        set(CMAKE_CXX_COMPILER  ${AREG_CXX_COMPILER})
     endif()
-
-elseif(DEFINED AREG_COMPILER AND NOT ${AREG_COMPILER} STREQUAL "")
-    message(STATUS "AREG: >>> User selected C/C++ compiler \'${AREG_COMPILER}\'")
-
-    # Set both C and C++ compilers based on AREG_COMPILER
-    set(AREG_CXX_COMPILER "${AREG_COMPILER}")
-    set(AREG_C_COMPILER "${AREG_COMPILER}")
-
-    # Handle specific compiler identification
-    if(${AREG_COMPILER} MATCHES "g\\+\\+|gcc|c\\+\\+|cc")
-        if(${AREG_COMPILER} MATCHES "g\\+\\+|c\\+\\+")
-            set(AREG_C_COMPILER "gcc")  # Ensure C-compiler is gcc if C++ compiler is used
-        endif()
-
-        # Detect Cygwin or GNU
-        if (CYGWIN)
-            set(AREG_COMPILER_FAMILY "cygwin")  
-        else()
-            set(AREG_COMPILER_FAMILY "gnu")
-        endif()
-
-    elseif(${AREG_COMPILER} MATCHES "clang-cl|clang\\+\\+|clang")
-        if(${AREG_COMPILER} STREQUAL "clang-cl")
-            set(AREG_C_COMPILER "clang-cl")
-        elseif(${AREG_COMPILER} STREQUAL "clang++")
-            set(AREG_C_COMPILER "clang")
-        endif()
-        set(AREG_COMPILER_FAMILY "llvm")
-    elseif(${AREG_COMPILER} STREQUAL "cl")
-        set(AREG_COMPILER_FAMILY "msvc")
-    else()
-        message(WARNING "AREG: >>> Unrecognized compiler \'${AREG_COMPILER}\', supported compilers: \'gcc\', \'g++\', \'cc\', \'c++\', \'clang\', \'clang++\', \'clang-cl\', \'cl\'")
-    endif()
-
-else()
-    message(STATUS "AREG: >>> No compiler is selected, using system default.")
 endif()
+
+if (NOT _compiler_setup)
+    if(DEFINED AREG_COMPILER_FAMILY AND NOT ${AREG_COMPILER_FAMILY} STREQUAL "")
+        # Check the compiler option and set compiler family and specific compiler commands accordingly.
+        message(STATUS "AREG: >>> User selected C/C++ compiler family \'${AREG_COMPILER_FAMILY}\'")
+        macro_setup_compiler(${AREG_COMPILER_FAMILY} AREG_CXX_COMPILER AREG_C_COMPILER)
+    elseif(DEFINED AREG_COMPILER AND NOT ${AREG_COMPILER} STREQUAL "")
+        message(STATUS "AREG: >>> User selected C/C++ compiler \'${AREG_COMPILER}\'")
+
+        # Set both C and C++ compilers based on AREG_COMPILER
+        set(AREG_CXX_COMPILER "${AREG_COMPILER}")
+        set(AREG_C_COMPILER "${AREG_COMPILER}")
+
+        macro_setup_compiler(${AREG_COMPILER} AREG_COMPILER_FAMILY AREG_C_COMPILER)
+
+    else()
+        message(STATUS "AREG: >>> No compiler is selected, using system default.")
+    endif()
+endif()
+unset(_compiler_setup)
 
 # Set build configuration. Set "Debug" for debug build, and "Release" for release build.
 if (NOT "${AREG_BUILD_TYPE}" STREQUAL "Debug")
