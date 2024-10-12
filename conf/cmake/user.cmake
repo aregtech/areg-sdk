@@ -96,12 +96,16 @@ if (NOT "${CMAKE_CXX_COMPILER}" STREQUAL "")
 
         set(AREG_COMPILER_FAMILY    "${_compiler_family}")
         set(AREG_COMPILER           "${_compiler_short}")
-        set(AREG_CXX_COMPILER       "${_compiler_cxx}")
-        set(AREG_C_COMPILER         "${_compiler_c}")
         set(_compiler_setup TRUE)
 
-        set(CMAKE_C_COMPILER    ${AREG_C_COMPILER})
-        set(CMAKE_CXX_COMPILER  ${AREG_CXX_COMPILER})
+        set(AREG_CXX_COMPILER       "${CMAKE_CXX_COMPILER}")
+        if ("${CMAKE_CXX_COMPILER}" STREQUAL "")
+            set(AREG_C_COMPILER     "${_compiler_c}")
+            set(CMAKE_C_COMPILER    "${_compiler_c}")
+        else()
+            set(AREG_C_COMPILER     "${CMAKE_C_COMPILER}")
+        endif()
+
     endif()
 endif()
 
