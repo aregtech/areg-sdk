@@ -22,9 +22,17 @@ macro(macro_check_fix_areg_cxx_standard)
     # If 'CMAKE_CXX_STANDARD' is not set, assign 'AREG_CXX_STANDARD' to it.
     if (NOT DEFINED CMAKE_CXX_STANDARD)
         set(CMAKE_CXX_STANDARD          ${AREG_CXX_STANDARD})
-        set(CMAKE_CXX_EXTENSIONS        OFF)
-        set(CMAKE_CXX_STANDARD_REQUIRED ON)    
-    # If the current C++ standard is less than the required 'AREG_CXX_STANDARD', issue a warning.
+
+        # ###################################################################
+        # Do not disable extensions if googletest compilation is included.
+        # It causes googletest compilation due to using non-standard POSIX API use
+        # like 'fileno', 'fdopen' and 'mkstemp' method calls.
+        # ###################################################################
+        # set(CMAKE_CXX_EXTENSIONS        OFF)
+        # set(CMAKE_CXX_STANDARD_REQUIRED ON)    
+        # ###################################################################
+
+        # If the current C++ standard is less than the required 'AREG_CXX_STANDARD', issue a warning.
     elseif(${CMAKE_CXX_STANDARD} LESS ${AREG_CXX_STANDARD})
         message(WARNING "AREG: >>> AREG requires C++${AREG_CXX_STANDARD} or higher, \
                         current version is C++${CMAKE_CXX_STANDARD}. \
