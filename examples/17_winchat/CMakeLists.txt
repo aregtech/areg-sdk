@@ -13,7 +13,6 @@ list(APPEND MFC_DEFINES _AFXDLL _BIND_TO_CURRENT_CRT_VERSION _BIND_TO_CURRENT_MF
 
 # ####################################
 # 'chatter' project
-
 macro_declare_executable(17_chatter 
     17_generated
     chatter/res/stdafx.cpp
@@ -52,8 +51,6 @@ target_compile_options(17_chatter PRIVATE "${AREG_OPT_DISABLE_WARN_EXAMPLES}")
 
 # ####################################
 # 'register' project
-
-
 macro_declare_executable(17_register    17_generated
     register/res/stdafx.cpp
     register/res/register.rc

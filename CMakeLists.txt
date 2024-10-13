@@ -89,7 +89,7 @@ elseif(AREG_INSTALL)
 endif()
 
 # Print the configuration status
-printAregStatus(
+printAregConfigStatus(
     TRUE
     "AREG"
     "----------------------> AREG project CMake Status Report Begin <-----------------------"

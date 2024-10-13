@@ -346,16 +346,16 @@ endmacro(macro_normalize_path)
 #               source files for HelloWorld and includes them in the static library. 
 #               A subsequent call for WeHaveFun adds it to the same library.
 # 
-# macro name  : macro_add_service_interface
-# Parameters  : ${lib_name}         -- Name of the static library.
+# Macro ......: macro_add_service_interface
+# Parameters .: ${lib_name}         -- Name of the static library.
 #               ${interface_doc}    -- Full path to the Service Interface document file. 
 #               ${interface_name}   -- Name of the Service Interface (without '.siml').
 #               ${codegen_root}     -- Root directory for generating files.
 #               ${output_path}      -- Relative path for generated files.
 #               ${codegen_tool}     -- Full path to the code generator tool.
 # 
-# Usage       : macro_add_service_interface(<library name> <documend dir><interface name>.siml <interface name> <codegen root> <sub-path> <codegen tool>)
-# Example     : macro_add_service_interface("fun_library" "~/project/my-fun/sources/service/interfaces/FunInterface.siml" FunInterface "~/project/my-fun/" "generate/service/interfaces" /tools/areg/codegen.jar)
+# Usage ......: macro_add_service_interface(<library name> <documend dir><interface name>.siml <interface name> <codegen root> <sub-path> <codegen tool>)
+# Example ....: macro_add_service_interface("fun_library" "~/project/my-fun/sources/service/interfaces/FunInterface.siml" FunInterface "~/project/my-fun/" "generate/service/interfaces" /tools/areg/codegen.jar)
 # ---------------------------------------------------------------------------
 macro(macro_add_service_interface lib_name interface_doc interface_name codegen_root output_path codegen_tool)
 
@@ -401,12 +401,12 @@ endmacro(macro_add_service_interface)
 # ---------------------------------------------------------------------------
 # Description : Generates code for a service interface using a code generator and includes
 #               the generated files in a static library.
-# Parameters  : ${lib_name}       -- The static library name.
+# Function ...: addServiceInterfaceEx
+# Parameters .: ${lib_name}       -- The static library name.
 #               ${source_root}    -- The root directory of the source files.
 #               ${relative_path}  -- The relative path to the Service Interface files.
 #               ${sub_dir}        -- Optional sub-directory within relative_path (can be empty).
 #               ${interface_name} -- The name of the Service Interface (without the '.siml' extension).
-# Function ...: addServiceInterfaceEx
 # Usage ......: addServiceInterfaceEx(<static library> <source root> <relative path> <sub-directory> <interface name>)
 # Example ....: addServiceInterfaceEx("fun_library" "/home/develop/project/my-fun/sources" "my/service/interfaces" "" FunInterface)
 # ---------------------------------------------------------------------------
@@ -433,10 +433,10 @@ endfunction(addServiceInterfaceEx)
 # ---------------------------------------------------------------------------
 # Description : Wrapper for addServiceInterfaceEx, with the source root assumed
 #               to be ${CMAKE_SOURCE_DIR} and the relative path ${CMAKE_CURRENT_LIST_DIR}.
-# Parameters  : ${lib_name}       -- The name of the static library.
+# Function ...: addServiceInterface
+# Parameters .: ${lib_name}       -- The name of the static library.
 #               ${sub_dir}        -- The sub-directory of the service interface files.
 #               ${interface_name} -- The name of the Service Interface (without the '.siml' extension).
-# Function ...: addServiceInterface
 # Usage ......: addServiceInterface(<static library> <sub-directory> <Service Interface name>)
 # ---------------------------------------------------------------------------
 function(addServiceInterface lib_name sub_dir interface_name)
@@ -447,11 +447,11 @@ endfunction(addServiceInterface)
 # ---------------------------------------------------------------------------
 # Description : Searches for a package and sets output variables to indicate the package's
 #               include directories and libraries if found.
-# Parameters  : ${package_name}      -- The package name to search.
+# Macro ......: macro_find_package
+# Parameters .: ${package_name}      -- The package name to search.
 #               ${package_found}     -- Output variable, set to TRUE if the package is found.
 #               ${package_includes}  -- Output variable, set to the package's include directories (if any).
 #               ${package_libraries} -- Output variable, set to the package's libraries (if any).
-# Macro ......: macro_find_package
 # Usage ......: macro_find_package(<package> <found flag> <includes> <libraries>)
 # Example ....: macro_find_package(SQLite3 SQLITE_FOUND SQLITE_INCLUDE SQLITE_LIB)
 # ---------------------------------------------------------------------------
@@ -470,10 +470,10 @@ endmacro(macro_find_package)
 
 # ---------------------------------------------------------------------------
 # Description : Creates or updates a boolean cache variable in CMake, ensuring it is defined and set correctly.
-# Parameters  : ${var_name}     -- The name of the boolean variable.
+# Macro ......: macro_create_option
+# Parameters .: ${var_name}     -- The name of the boolean variable.
 #               ${var_value}    -- The default value if the variable is not yet defined.
 #               ${var_describe} -- A brief description of the variable for CMake cache.
-# Macro ......: macro_create_option
 # Usage ......: macro_create_option(<var_name> <default_value> <description>)
 # Example ....: macro_create_option(AREG_LOGS ON "Compile with logs")
 # ---------------------------------------------------------------------------
@@ -487,8 +487,8 @@ endmacro(macro_create_option)
 
 # ---------------------------------------------------------------------------
 # Description : Recursively removes empty directories.
-# Parameters  : ${dir_name} -- The directory path to check and potentially remove.
 # Function ...: removeEmptyDirs
+# Parameters .: ${dir_name} -- The directory path to check and potentially remove.
 # Usage ......: removeEmptyDirs(<directory path>)
 # ---------------------------------------------------------------------------
 function(removeEmptyDirs dir_name)
@@ -512,10 +512,10 @@ endfunction(removeEmptyDirs)
 
 # ---------------------------------------------------------------------------
 # Description : Adds source files to a list, checking if the files exist relative to the base directory.
-# Parameters  : ${result_list}  -- The output list of source files.
+# Macro ......: macro_add_source
+# Parameters .: ${result_list}  -- The output list of source files.
 #               ${src_base_dir} -- The base directory for the source files.
 #               ${ARGN}         -- The list of source files (relative to the base directory).
-# Macro ......: macro_add_source
 # Usage ......: set(aregextend_SRC)
 #               macro_add_source(aregextend_SRC "${AREG_FRAMEWORK}" aregextend/db/private/LogSqliteDatabase.cpp ...)
 # ---------------------------------------------------------------------------
@@ -546,16 +546,17 @@ endmacro(macro_add_source)
 #                   3. **Resource files list**: Filters out .rc files, specifically for Windows,
 #                      and stores them in a separate list.
 #
-# Parameters  : ${res_sources}   -- Output: A list containing the parsed source files.
-#               ${res_libs}      -- Output: A list containing the recognized CMake targets (libraries).
-#               ${res_resources} -- Output: A list containing the identified resource files (*.rc).
-#               ${ARGN}          -- Input: A list of files, libraries, or resources to be categorized.
-#
 # Behavior ...: 
 #               - If a file does not exist, either as a full path or relative to the current directory, 
 #                 the macro throws a fatal error.
 #               - On Windows, it specifically identifies and appends resource files (*.rc) to the 
 #                 resources list.
+#
+# Macro ......: macro_parse_arguments
+# Parameters .: ${res_sources}   -- Output: A list containing the parsed source files.
+#               ${res_libs}      -- Output: A list containing the recognized CMake targets (libraries).
+#               ${res_resources} -- Output: A list containing the identified resource files (*.rc).
+#               ${ARGN}          -- Input: A list of files, libraries, or resources to be categorized.
 #
 # Usage ......: macro_parse_arguments(<var sources> <var libs> <var resources> my_target my/app/main.cpp my/lib/object.cpp my/resource/resource.rc)
 #               Example: macro_parse_arguments(src_files lib_targets res_files my_lib src/main.cpp src/object.cpp res/resource.rc)
@@ -598,14 +599,15 @@ endmacro(macro_parse_arguments)
 #               The macro declares a static library target using the collected source files and linked libraries.
 #               It also handles resource file configuration on Windows platforms.
 #
-# Parameters  : ${lib_name}  -- The name of the static library to be declared.
-#               ${ARGN}      -- The list of source files, libraries, and resource files.
-#                               The files can be specified with full or relative paths.
-#
 # Notes ......: 
 #               - Throws a fatal error if no source files are provided.
 #               - On Windows, resource files (*.rc) are set to use the RC language automatically.
 # 
+# Macro ......: macro_declare_static_library
+# Parameters .: ${lib_name}  -- The name of the static library to be declared.
+#               ${ARGN}      -- The list of source files, libraries, and resource files.
+#                               The files can be specified with full or relative paths.
+#
 # Usage ......: macro_declare_static_library(<lib_name> <list_of_sources_libraries_and_resources>)
 #               Example: macro_declare_static_library(myStaticLib src/main.cpp src/resource.rc libSomeDependency)
 # ---------------------------------------------------------------------------
@@ -646,14 +648,15 @@ endmacro(macro_declare_static_library)
 #               The macro declares a shared library target using the collected source files and linked libraries.
 #               It also handles resource file configuration on Windows platforms.
 #
-# Parameters  : ${lib_name}  -- The name of the shared library to be declared.
-#               ${ARGN}      -- The list of source files, libraries, and resource files.
-#                               The files can be specified with full or relative paths.
-#
 # Notes ......: 
 #               - Throws a fatal error if no source files are provided.
 #               - On Windows, resource files (*.rc) are set to use the RC language automatically.
 # 
+# Macro ......: macro_declare_shared_library
+# Parameters .: ${lib_name}  -- The name of the shared library to be declared.
+#               ${ARGN}      -- The list of source files, libraries, and resource files.
+#                               The files can be specified with full or relative paths.
+#
 # Usage ......: macro_declare_static_library(<lib_name> <list_of_sources_libraries_and_resources>)
 #               Example: macro_declare_static_library(myStaticLib src/main.cpp src/resource.rc libSomeDependency)
 # ---------------------------------------------------------------------------
@@ -694,14 +697,15 @@ endmacro(macro_declare_shared_library)
 #               The macro declares a executable target using the collected source files and linked libraries.
 #               It also handles resource file configuration on Windows platforms.
 #
-# Parameters  : ${lib_name}  -- The name of the executable to be declared.
-#               ${ARGN}      -- The list of source files, libraries, and resource files.
-#                               The files can be specified with full or relative paths.
-#
 # Notes ......: 
 #               - Throws a fatal error if no source files are provided.
 #               - On Windows, resource files (*.rc) are set to use the RC language automatically.
 # 
+# Macro ......: macro_declare_executable
+# Parameters  : ${lib_name}  -- The name of the executable to be declared.
+#               ${ARGN}      -- The list of source files, libraries, and resource files.
+#                               The files can be specified with full or relative paths.
+#
 # Usage ......: macro_declare_static_library(<lib_name> <list_of_sources_libraries_and_resources>)
 #               Example: macro_declare_static_library(myStaticLib src/main.cpp src/resource.rc libSomeDependency)
 # ---------------------------------------------------------------------------
@@ -731,114 +735,178 @@ macro(macro_declare_executable exe_name)
 endmacro(macro_declare_executable)
 
 # ---------------------------------------------------------------------------
-# Description : Identifies compiler family, compiler short name,
-#               and guess the similar C-compiler by given
-#               C++ compiler. The C++ compiler may contain only
-#               name or the full path. If only name is specified,
-#               the path should be included in PATH environment variable.
-# Parameters .: ${compiler_path}    --  Input: the name of compiler executable or
-#                                       the full path of compiler.
-#               ${compiler_family}  --  Output: the name of variable that on output
-#                                       will contain the name of compiler family.
-#               ${compiler_short}   --  Output: the name of variable that on output
-#                                       will contain the short name of compiler.
-#               ${compiler_cxx}     --  Output: the name of variable that on output
-#                                       will contain the name of compiler. This value
-#                                       may be same as ${compiler_path}.
-#               ${compiler_c}       --  Output: the name of variable that on output
-#                                       will contain the name of C-compiler. The name
-#                                       or path may differ from ${CMAKE_C_COMPILER}.
-#               ${compiler_found}   --  Output: the name of variable that on output
-#                                       contains the flag, indicating whether the all
-#                                       other output values are valid or not. If
-#                                       the value is 'TRUE', compiler was identified
-#                                       and the value where set. Otherwise, the values
-#                                       in output variables should be ignored.
-# Macro ......: macro_setup_compilers_data
-# Usage ......: macro_setup_compilers_data("${CMAKE_CXX_COMPILER}"
-#                                           AREG_COMPILER_FAMILY
-#                                           AREG_COMPILER_SHORT
-#                                           AREG_CXX_COMPILER
-#                                           AREG_C_COMPILER
+# Description : This macro identifies the compiler family (e.g., GNU, Clang, MSVC),
+#               extracts a short name for the compiler, and attempts to guess the corresponding
+#               C compiler based on the provided C++ compiler path or name. It handles cases
+#               where only the compiler name is provided (assuming it is available in the system's PATH).
+#               If a match is found, it sets the output variables for the compiler family, short name,
+#               C++ compiler path, and C compiler path, and marks the process as successful.
+#               Otherwise, the output flag indicates failure.
+#
+# Note .......: Beside "gnu", "llvm", "msvc", the compilers for CYGWIN are included in the family "cygwin"
+#               to identify that the application is compiled in Windows under CYGWIN platform with GNU compilers.
+# Macro ......: macro_declare_executable
+# Parameters .: 
+#               - ${compiler_path}   -- Input: The name or full path of the C++ compiler executable.
+#               - ${compiler_family} -- Output: Variable to hold the identified compiler family (e.g., "gnu", "msvc").
+#               - ${compiler_short}  -- Output: Variable to hold the short name of the compiler (e.g., "gcc", "clang").
+#               - ${compiler_cxx}    -- Output: Variable to hold the C++ compiler path (usually same as ${compiler_path}).
+#               - ${compiler_c}      -- Output: Variable to hold the corresponding C compiler name or path.
+#               - ${compiler_found}  -- Output: Boolean flag indicating if the compiler was successfully identified ("TRUE" or "FALSE").
+#
+# Usage ......: macro_setup_compilers_data("${CMAKE_CXX_COMPILER}" 
+#                                           AREG_COMPILER_FAMILY 
+#                                           AREG_COMPILER_SHORT 
+#                                           AREG_CXX_COMPILER 
+#                                           AREG_C_COMPILER 
 #                                           _compiler_found
 #                                         )
 # ---------------------------------------------------------------------------
 macro(macro_setup_compilers_data compiler_path compiler_family compiler_short compiler_cxx compiler_c compiler_found)
 
     set(${compiler_found} FALSE)
-    # Search for specific compiler families based on known compiler names.
-    foreach(_entry "clang-cl;llvm;clang-cl" "clang++;llvm;clang" "clang;llvm;clang" "g++;gnu;gcc" "gcc;gnu;gcc" "c++;gnu;cc" "cc;gnu;cc" "cl;msvc;cl")
-        list(GET _entry 0 _compiler)
+    
+    # Iterate over known compilers to identify the compiler type
+    foreach(_entry "clang-cl;llvm;clang-cl" "clang++;llvm;clang" "clang;llvm;clang" "g++;gnu;gcc" "gcc;gnu;gcc" "cl;msvc;cl")
+        list(GET _entry 0 _cxx_compiler)
         list(GET _entry 1 _family)
         list(GET _entry 2 _c_compiler)
 
-        string(FIND "${compiler_path}" "${_compiler}" FOUND_POS REVERSE)
-        if (${FOUND_POS} GREATER -1)
-            if (CYGWIN AND ("${family_name}" STREQUAL "gnu"))
+        # Check if the provided compiler matches the known C++ compiler
+        string(FIND "${compiler_path}" "${_cxx_compiler}" _found_pos REVERSE)
+        if (_found_pos GREATER -1)
+            # Handle special case for CYGWIN and GNU family compilers
+            if (CYGWIN AND ("${_family}" STREQUAL "gnu"))
                 set(${compiler_family} "cygwin")
             else()
                 set(${compiler_family} "${_family}")
             endif()
 
-            set(${compiler_short}   "${_compiler}")
-            set(${compiler_cxx}     "${compiler_path}")
-            if ("${_compiler}" STREQUAL "${_c_compiler}")
-                set(${compiler_c}     "${compiler_path}")
-            else()    
-                string(REPLACE "${_compiler}" "${_c_compiler}" ${compiler_c} "${compiler_path}")
+            set(${compiler_short} "${_cxx_compiler}")
+            set(${compiler_cxx}   "${compiler_path}")
+
+            # Determine the corresponding C compiler path or name
+            if ("${_cxx_compiler}" STREQUAL "${_c_compiler}")
+                set(${compiler_c} "${compiler_path}")
+            else()
+                string(REPLACE "${_cxx_compiler}" "${_c_compiler}" ${compiler_c} "${compiler_path}")
             endif()
 
+            # Mark compiler as found
             set(${compiler_found} TRUE)
 
+            # break the loop, we have found
             break()
         endif()
     endforeach()
 
 endmacro(macro_setup_compilers_data)
 
+# ---------------------------------------------------------------------------
+# Description : This macro identifies the short name of the C++ and C compilers
+#               based on the provided compiler family (e.g., "gnu", "msvc", "llvm", "cygwin").
+#               It assumes that the compiler executables are available in the system's PATH.
+#               Once a match is found for the compiler family, it sets the output variables 
+#               for the short name, C++ compiler name, and C compiler name, and marks the process as successful.
+#               If no match is found, it sets the output flag to "FALSE".
+#
+# Note .......: The "cygwin" family is supported for GNU compilers on the CYGWIN platform in Windows.
+#
+# Macro ......: macro_setyp_compilers_data_by_family
+# Parameters .: 
+#               - ${compiler_family} -- Input: The name of the compiler family (e.g., "gnu", "msvc").
+#               - ${compiler_short}  -- Output: Variable to hold the short name of the compiler (e.g., "gcc", "clang").
+#               - ${compiler_cxx}    -- Output: Variable to hold the C++ compiler name.
+#               - ${compiler_c}      -- Output: Variable to hold the corresponding C compiler name.
+#               - ${compiler_found}  -- Output: Boolean flag indicating whether the compiler was successfully identified ("TRUE" or "FALSE").
+#
+# Usage ......: macro_setyp_compilers_data_by_family("gnu"
+#                                                    AREG_COMPILER_SHORT 
+#                                                    AREG_CXX_COMPILER 
+#                                                    AREG_C_COMPILER 
+#                                                    _compiler_found
+#                                                   )
+# ---------------------------------------------------------------------------
 macro(macro_setyp_compilers_data_by_family compiler_family compiler_short compiler_cxx compiler_c compiler_found)
 
     set(${compiler_found} FALSE)
-    # Search for specific compiler families based on known compiler names.
-    foreach(_entry "clang-cl;llvm;clang-cl" "clang++;llvm;clang" "clang;llvm;clang" "g++;gnu;gcc" "gcc;gnu;gcc" "c++;gnu;cc" "cc;gnu;cc" "cl;msvc;cl" "g++;cygwin;gcc")
+    
+    # Iterate over known compilers and match the family
+    foreach(_entry "clang++;llvm;clang" "g++;gnu;gcc" "cl;msvc;cl" "g++;cygwin;gcc")
         list(GET _entry 0 _compiler)
         list(GET _entry 1 _family)
         list(GET _entry 2 _c_compiler)
 
-        if (${_family} STREQUAL ${compiler_family})
-            set(${compiler_short}   ${_compiler})
-            set(${compiler_cxx}     ${_compiler})
-            set(${compiler_c}       ${_compiler})
-            set(${compiler_found}   TRUE)
+        if ("${_family}" STREQUAL "${compiler_family}")
+            # Special case for Windows
+            if ("${_family}" STREQUAL "llvm" and WIN32)
+                set(${compiler_short} "clang-cl")
+                set(${compiler_cxx}   "clang-cl")
+                set(${compiler_c}     "$clang-cl")
+            else()
+                set(${compiler_short} "${_compiler}")
+                set(${compiler_cxx}   "${_compiler}")
+                set(${compiler_c}     "${_c_compiler}")
+            endif()
 
+            # Mark compiler as found
+            set(${compiler_found} TRUE)
+
+            # break the loop, we have found
             break()
         endif()
     endforeach()
 
 endmacro(macro_setyp_compilers_data_by_family)
 
-function(printAregStatus var_make_print var_prefix var_header var_footer)
-    if (NOT var_make_print)
+# ---------------------------------------------------------------------------
+# Description : This function prints a detailed status report for the AREG project's CMake configuration.
+#               It provides an overview of the build environment, compiler, output directories, 
+#               and relevant configuration options such as installed packages and libraries.
+#
+# Function ...: printAregConfigStatus
+# Parameters .: 
+#               - ${var_make_print} -- Boolean flag indicating whether to print the status message. 
+#                                      If FALSE, the function exits without printing.
+#               - ${var_prefix}     -- A prefix added to each line of the status message (e.g., project name or custom label).
+#               - ${var_header}     -- A custom header message displayed at the beginning of the status report.
+#               - ${var_footer}     -- A custom footer message displayed at the end of the status report.
+#
+# Usage ......: printAregConfigStatus(
+#                                   TRUE
+#                                   "AREG"
+#                                   "----------------------> AREG project CMake Status Report Begin <-----------------------"
+#                                   "-----------------------> AREG project CMake Status Report End <------------------------"
+#                                   )
+# ---------------------------------------------------------------------------
+function(printAregConfigStatus var_make_print var_prefix var_header var_footer)
+    # If the flag is false, skip printing the status
+    if (NOT ${var_make_print})
         return()
     endif()
 
+    # Print the header section with separators
     message(STATUS "=======================================================================================")
     message(STATUS "${var_header}")
     message(STATUS "=======================================================================================")
-    message(STATUS "${var_prefix}: >>> CMAKE_SOURCE_DIR = \'${CMAKE_SOURCE_DIR}\', build type \'${CMAKE_BUILD_TYPE}\'")
-    message(STATUS "${var_prefix}: >>> Build ...........: \'${CMAKE_SYSTEM_NAME}\' system, \'${AREG_BITNESS}\'-bit platform, \'${AREG_PROCESSOR}\' CPU")
-    message(STATUS "${var_prefix}: >>> Compiler ........: \'${CMAKE_CXX_COMPILER}\'")
-    message(STATUS "${var_prefix}: >>> Compiler Version : C++ standard \'c++${CMAKE_CXX_STANDARD}\', compiler family \'${AREG_COMPILER_FAMILY}\'")
-    message(STATUS "${var_prefix}: >>> Binary output ...: \'${CMAKE_RUNTIME_OUTPUT_DIRECTORY}\', extension '${CMAKE_EXECUTABLE_SUFFIX}'")
-    message(STATUS "${var_prefix}: >>> Generated files .: \'${AREG_GENERATE_DIR}\' directory")
-    message(STATUS "${var_prefix}: >>> Packages ........: \'${FETCHCONTENT_BASE_DIR}\' directory")
-    message(STATUS "${var_prefix}: >>> Build libraries .: areg is \'${AREG_BINARY}\', aregextend is static, areglogger is \'${AREG_LOGGER_LIB}\' library")
-    message(STATUS "${var_prefix}: >>> Java version ....: \'${Java_VERSION_STRING}\' of version \'${Java_JAVA_EXECUTABLE}\'. Minimum should be 17")
-    message(STATUS "${var_prefix}: >>> Use of packages .: SQLite3 package use is \'${AREG_SQLITE_PACKAGE}\', GTest package use is \'${AREG_GTEST_PACKAGE}\' ")
-    message(STATUS "${var_prefix}: >>> Other options ...: Examples = \'${AREG_BUILD_EXAMPLES}\', Unit Tests = \'${AREG_BUILD_TESTS}\', AREG Extended = \'${AREG_EXTENDED}\', Logs = \'${AREG_LOGS}\'")
-    message(STATUS "${var_prefix}: >>> Installation ....: is '${AREG_INSTALL}', location \'${CMAKE_INSTALL_PREFIX}\'")
+
+    # Print detailed configuration status, each with the defined prefix
+    message(STATUS "${var_prefix}: >>> CMAKE_SOURCE_DIR    = '${CMAKE_SOURCE_DIR}', build type '${CMAKE_BUILD_TYPE}'")
+    message(STATUS "${var_prefix}: >>> Build Environment ..: System '${CMAKE_SYSTEM_NAME}', ${AREG_BITNESS}-bit platform, '${AREG_PROCESSOR}' CPU")
+    message(STATUS "${var_prefix}: >>> Compiler ...........: '${CMAKE_CXX_COMPILER}'")
+    message(STATUS "${var_prefix}: >>> Compiler Version ...: C++ standard 'c++${CMAKE_CXX_STANDARD}', compiler family '${AREG_COMPILER_FAMILY}'")
+    message(STATUS "${var_prefix}: >>> Binary Output Dir ..: '${CMAKE_RUNTIME_OUTPUT_DIRECTORY}', executable extension '${CMAKE_EXECUTABLE_SUFFIX}'")
+    message(STATUS "${var_prefix}: >>> Generated Files Dir : '${AREG_GENERATE_DIR}'")
+    message(STATUS "${var_prefix}: >>> Packages Dir .......: '${FETCHCONTENT_BASE_DIR}'")
+    message(STATUS "${var_prefix}: >>> Build Libraries ....: areg = '${AREG_BINARY}', aregextend = static, areglogger = '${AREG_LOGGER_LIB}'")
+    message(STATUS "${var_prefix}: >>> Java Version .......: '${Java_VERSION_STRING}', Java executable = '${Java_JAVA_EXECUTABLE}', minimum version required = 17")
+    message(STATUS "${var_prefix}: >>> Packages Use .......: SQLite3 package use = '${AREG_SQLITE_PACKAGE}', GTest package use = '${AREG_GTEST_PACKAGE}'")
+    message(STATUS "${var_prefix}: >>> Other Options ......: Examples = '${AREG_BUILD_EXAMPLES}', Unit Tests = '${AREG_BUILD_TESTS}', AREG Extended = '${AREG_EXTENDED}', Logs = '${AREG_LOGS}'")
+    message(STATUS "${var_prefix}: >>> Installation .......: Enabled = '${AREG_INSTALL}', location = '${CMAKE_INSTALL_PREFIX}'")
+
+    # Print the footer section with separators
     message(STATUS "=======================================================================================")
     message(STATUS "${var_footer}")
     message(STATUS "=======================================================================================")
 
-endfunction(printAregStatus)
+endfunction(printAregConfigStatus)

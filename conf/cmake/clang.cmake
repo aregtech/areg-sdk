@@ -27,10 +27,10 @@ else()
     if(CMAKE_BUILD_TYPE MATCHES Release)
     # if Release
         list(APPEND AREG_COMPILER_OPTIONS -O2)
-    else(Debug)
+    else()
     # if Debug
         list(APPEND AREG_COMPILER_OPTIONS -O0 -g3)
-    endif(CMAKE_BUILD_TYPE MATCHES Release)
+    endif()
 
     # POSIX API
     set(AREG_DEVELOP_ENV "Posix")

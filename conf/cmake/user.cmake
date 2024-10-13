@@ -78,6 +78,7 @@ set(AREG_C_COMPILER)
 # The short name of the compiler
 set(AREG_COMPILER_SHORT)
 
+# If the CMAKE_CXX_COMPILER is specified, ignore all others
 if (NOT "${CMAKE_CXX_COMPILER}" STREQUAL "")
 
     message(STATUS "AREG: >>> Using CMake specified C++ compiler \'${CMAKE_CXX_COMPILER}\'")
@@ -103,6 +104,7 @@ if (NOT "${CMAKE_CXX_COMPILER}" STREQUAL "")
         message(WARNING "AREG: >>> The CMake CXX compiler \'${CMAKE_CXX_COMPILER}\' is unknown, the results are unpredictable")
     endif(_compiler_found)
 
+# else if AREG_COMPILER_FAMILY is specified, guess compilers
 elseif(DEFINED AREG_COMPILER_FAMILY AND NOT ${AREG_COMPILER_FAMILY} STREQUAL "")
 
     # Check the compiler option and set compiler family and specific compiler commands accordingly.
@@ -119,6 +121,7 @@ elseif(DEFINED AREG_COMPILER_FAMILY AND NOT ${AREG_COMPILER_FAMILY} STREQUAL "")
         message(WARNING "AREG: >>> The \'${AREG_COMPILER_FAMILY}\' family compiler is unknown, the results are unpredictable")
     endif(_compiler_found)
 
+# else if AREG_COMPILER is specified, guess compilers
 elseif(DEFINED AREG_COMPILER AND NOT ${AREG_COMPILER} STREQUAL "")
 
     message(STATUS "AREG: >>> User selected C/C++ compiler \'${AREG_COMPILER}\'")
@@ -136,8 +139,8 @@ elseif(DEFINED AREG_COMPILER AND NOT ${AREG_COMPILER} STREQUAL "")
         message(WARNING "AREG: >>> The specified compiler \'${AREG_COMPILER}\' is unknown, the results are unpredictable")
     endif(_compiler_found)
 
+# else, use the system default C/C++ compilers
 else()
-
     message(STATUS "AREG: >>> No compiler is selected, using system default.")
 
 endif()
