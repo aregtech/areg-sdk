@@ -49,7 +49,7 @@ install(TARGETS areg aregextend areglogger
 )
 
 # Copy AREG configuration file
-install(FILES "${AREG_BASE}/areg/resources/areg.init"
+install(FILES "${AREG_FRAMEWORK}/areg/resources/areg.init"
             DESTINATION share/${AREG_PACKAGE_NAME}
             COMPONENT Development   COMPONENT Runtime
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ
@@ -97,7 +97,7 @@ install(TARGETS areg areglogger
 )
 
 # Copy AREG configuration file
-install(FILES "${AREG_BASE}/areg/resources/areg.init"
+install(FILES "${AREG_FRAMEWORK}/areg/resources/areg.init"
             DESTINATION tools/${AREG_PACKAGE_NAME}/config
             COMPONENT Development   COMPONENT Runtime
             PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ GROUP_WRITE WORLD_READ

@@ -1,4 +1,4 @@
-macro_add_source(areg_SRC "${AREG_BASE}"
+macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/persist/private/ConfigManager.cpp
 	areg/persist/private/IEConfigurationListener.cpp
 	areg/persist/private/IEDatabaseEngine.cpp

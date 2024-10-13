@@ -1,4 +1,4 @@
-macro_add_source(areg_SRC "${AREG_BASE}"
+macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
     areg/appbase/private/Application.cpp
 	areg/appbase/private/configure.cpp
     areg/appbase/private/NEApplication.cpp 

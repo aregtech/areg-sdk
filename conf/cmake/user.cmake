@@ -73,61 +73,74 @@
 
 # CPP compiler, possible values: g++, gcc, c++, cc, clang++, clang, clang-cl, cl
 set(AREG_CXX_COMPILER)
-
 # C compiler, possible values: gcc, clang, clang-cl, cl
 set(AREG_C_COMPILER)
-
-set(_compiler_setup FALSE)
+# The short name of the compiler
+set(AREG_COMPILER_SHORT)
 
 if (NOT "${CMAKE_CXX_COMPILER}" STREQUAL "")
-    message(STATUS "AREG: >>> Using defined C++ compiler \'${CMAKE_CXX_COMPILER}\'")
-    macro_setup_compilers_data("${CMAKE_CXX_COMPILER}" _compiler_family _compiler_short _compiler_cxx _compiler_c _compiler_found)
 
+    message(STATUS "AREG: >>> Using CMake specified C++ compiler \'${CMAKE_CXX_COMPILER}\'")
+    macro_setup_compilers_data("${CMAKE_CXX_COMPILER}" _compiler_family _compiler_short _cxx_compiler _c_compiler _compiler_found)
     if (_compiler_found)
         if (DEFINED AREG_COMPILER_FAMILY AND NOT "${AREG_COMPILER_FAMILY}" STREQUAL "${_compiler_family}")
             message(WARNING "AREG: Compiler family \'${AREG_COMPILER_FAMILY}\' was chosen, but it is ignored since compiling with other compiler")
         endif()
         if (DEFINED AREG_COMPILER)
-            string(FIND "${AREG_COMPILER}" "${_COMPILER_SHORT}" _found_pos)
+            string(FIND "${AREG_COMPILER}" "${_compiler_short}" _found_pos)
             if (_found_pos LESS 0)
                 message(WARNING "AREG: Compiler \'${AREG_COMPILER}\' was chosen, but it is ignored since compiling with compiler with other compiler")
             endif()
         endif()
 
         set(AREG_COMPILER_FAMILY    "${_compiler_family}")
-        set(AREG_COMPILER           "${_compiler_short}")
-        set(_compiler_setup TRUE)
-
+        set(AREG_COMPILER           "${CMAKE_CXX_COMPILER}")
+        set(AREG_COMPILER_SHORT     "${_compiler_short}")
         set(AREG_CXX_COMPILER       "${CMAKE_CXX_COMPILER}")
-        if ("${CMAKE_CXX_COMPILER}" STREQUAL "")
-            set(AREG_C_COMPILER     "${_compiler_c}")
-            set(CMAKE_C_COMPILER    "${_compiler_c}")
-        else()
-            set(AREG_C_COMPILER     "${CMAKE_C_COMPILER}")
-        endif()
-
-    endif()
-endif()
-
-if (NOT _compiler_setup)
-    if(DEFINED AREG_COMPILER_FAMILY AND NOT ${AREG_COMPILER_FAMILY} STREQUAL "")
-        # Check the compiler option and set compiler family and specific compiler commands accordingly.
-        message(STATUS "AREG: >>> User selected C/C++ compiler family \'${AREG_COMPILER_FAMILY}\'")
-        macro_setup_compiler(${AREG_COMPILER_FAMILY} AREG_CXX_COMPILER AREG_C_COMPILER)
-    elseif(DEFINED AREG_COMPILER AND NOT ${AREG_COMPILER} STREQUAL "")
-        message(STATUS "AREG: >>> User selected C/C++ compiler \'${AREG_COMPILER}\'")
-
-        # Set both C and C++ compilers based on AREG_COMPILER
-        set(AREG_CXX_COMPILER "${AREG_COMPILER}")
-        set(AREG_C_COMPILER "${AREG_COMPILER}")
-
-        macro_setup_compiler(${AREG_COMPILER} AREG_COMPILER_FAMILY AREG_C_COMPILER)
+        set(AREG_C_COMPILER         "${_c_compiler}")
 
     else()
-        message(STATUS "AREG: >>> No compiler is selected, using system default.")
-    endif()
+        message(WARNING "AREG: >>> The CMake CXX compiler \'${CMAKE_CXX_COMPILER}\' is unknown, the results are unpredictable")
+    endif(_compiler_found)
+
+elseif(DEFINED AREG_COMPILER_FAMILY AND NOT ${AREG_COMPILER_FAMILY} STREQUAL "")
+
+    # Check the compiler option and set compiler family and specific compiler commands accordingly.
+    message(STATUS "AREG: >>> User selected C/C++ compiler family \'${AREG_COMPILER_FAMILY}\'")
+    macro_setyp_compilers_data_by_family(${AREG_COMPILER_FAMILY} _compiler_short _cxx_compiler _c_compiler _compiler_found)
+    if (_compiler_found)
+
+        set(AREG_COMPILER           ${_cxx_compiler})
+        set(AREG_COMPILER_SHORT     ${_compiler_short})
+        set(AREG_CXX_COMPILER       ${_cxx_compiler})
+        set(AREG_C_COMPILER         ${_c_compiler})
+
+    else()
+        message(WARNING "AREG: >>> The \'${AREG_COMPILER_FAMILY}\' family compiler is unknown, the results are unpredictable")
+    endif(_compiler_found)
+
+elseif(DEFINED AREG_COMPILER AND NOT ${AREG_COMPILER} STREQUAL "")
+
+    message(STATUS "AREG: >>> User selected C/C++ compiler \'${AREG_COMPILER}\'")
+    # Set both C and C++ compilers based on AREG_COMPILER
+    macro_setup_compilers_data(${AREG_COMPILER} _compiler_family _compiler_short _cxx_compiler _c_compiler _compiler_found)
+
+    if (_compiler_found)
+
+        set(AREG_COMPILER_FAMILY    ${_compiler_family})
+        set(AREG_COMPILER_SHORT     ${_compiler_short})
+        set(AREG_CXX_COMPILER       ${_cxx_compiler})
+        set(AREG_C_COMPILER         ${_c_compiler})
+
+    else()
+        message(WARNING "AREG: >>> The specified compiler \'${AREG_COMPILER}\' is unknown, the results are unpredictable")
+    endif(_compiler_found)
+
+else()
+
+    message(STATUS "AREG: >>> No compiler is selected, using system default.")
+
 endif()
-unset(_compiler_setup)
 
 # Set build configuration. Set "Debug" for debug build, and "Release" for release build.
 if (NOT "${AREG_BUILD_TYPE}" STREQUAL "Debug")

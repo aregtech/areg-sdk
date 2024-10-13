@@ -8,7 +8,7 @@ include(CMakeFindDependencyMacro)
 # Root folder of the SDK
 set(AREG_SDK_ROOT           "@CMAKE_INSTALL_PREFIX@")
 # Location of 'areg', 'aregextend' and 'areglogger' header files
-set(AREG_BASE               "@CMAKE_INSTALL_FULL_INCLUDEDIR@")
+set(AREG_FRAMEWORK               "@CMAKE_INSTALL_FULL_INCLUDEDIR@")
 # Location of configuration, initialization and other shared files of AREG SDK
 set(AREG_SHARE_DIR          "@CMAKE_INSTALL_PREFIX@/share/@AREG_PACKAGE_NAME@")
 # Location of initialization file to copy as a template in the processes
@@ -59,8 +59,8 @@ option(AREG_BUILD_EXAMPLES  "No AREG Examples"      OFF)
 # set to 'CMAKE_CURRENT_BINARY_DIR' if it should be in the compiled binaries directory
 set(AREG_BUILD_ROOT         "${CMAKE_SOURCE_DIR}/product")
 
-# Add '${AREG_BASE}' path in the includes
-include_directories(${AREG_BASE})
+# Add '${AREG_FRAMEWORK}' path in the includes
+include_directories(${AREG_FRAMEWORK})
 # Pass the path to the shared 'areg.init' file to the source codes.
 
 # Pass path to the 'areg.init' file as a preprocessor definition

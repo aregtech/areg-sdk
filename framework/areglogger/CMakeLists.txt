@@ -1,11 +1,11 @@
 set(areglogger_SRC)
 
-include("${AREG_BASE}/areglogger/client/private/CMakeLists.txt")
+include("${AREG_FRAMEWORK}/areglogger/client/private/CMakeLists.txt")
 
 # add .rc file to the list of sources
 if("${AREG_DEVELOP_ENV}" STREQUAL "Win32")
-    set_source_files_properties("${AREG_BASE}/areglogger/resources/areglogger.rc" PROPERTIES LANGUAGE RC)
-	list(APPEND areglogger_SRC ${AREG_BASE}/areglogger/resources/areglogger.rc)
+    set_source_files_properties("${AREG_FRAMEWORK}/areglogger/resources/areglogger.rc" PROPERTIES LANGUAGE RC)
+	list(APPEND areglogger_SRC ${AREG_FRAMEWORK}/areglogger/resources/areglogger.rc)
 endif()
 
 # ##################################################################
@@ -15,7 +15,7 @@ if (AREG_LOGGER_LIB MATCHES "shared")
 
     # add .def file to the list of sources
     if("${AREG_DEVELOP_ENV}" STREQUAL "Win32")
-	    list(APPEND areglogger_SRC "${AREG_BASE}/areglogger/resources/areglogger.def")
+	    list(APPEND areglogger_SRC "${AREG_FRAMEWORK}/areglogger/resources/areglogger.def")
     endif()
 
     # build log observer API shared library
@@ -31,7 +31,7 @@ if (AREG_LOGGER_LIB MATCHES "shared")
 
     # add MSVC linker option
     if (MSVC)
-        target_link_options(areglogger PRIVATE "/DEF:\"${AREG_BASE}/areglogger/resources/logobserver.def\"")
+        target_link_options(areglogger PRIVATE "/DEF:\"${AREG_FRAMEWORK}/areglogger/resources/logobserver.def\"")
     endif()
 
 else()

@@ -10,17 +10,24 @@ if (NOT "${CMAKE_BUILD_TYPE}" STREQUAL "")
 endif()
 
 # Identify compiler short name
-set(AREG_COMPILER_SHORT)
 if ("${AREG_COMPILER_FAMILY}" STREQUAL "")
-    macro_setup_compilers_data("${CMAKE_CXX_COMPILER}" AREG_COMPILER_FAMILY AREG_COMPILER_SHORT AREG_CXX_COMPILER AREG_C_COMPILER _found)
 
-    message(STATUS "AREG: >>> Use system default settings:")
-    message(STATUS "AREG: ... Compiler family = \'${AREG_COMPILER_FAMILY}\'")
-    message(STATUS "AREG: ... CXX compiler = \'${AREG_CXX_COMPILER}\'")
-    message(STATUS "AREG: ... CC  compiler = \'${AREG_C_COMPILER}\'")
-else()
-    macro_find_compiler_short_name("${CMAKE_CXX_COMPILER}" AREG_COMPILER_SHORT)
+    macro_setup_compilers_data("${CMAKE_CXX_COMPILER}" AREG_COMPILER_FAMILY AREG_COMPILER_SHORT AREG_CXX_COMPILER AREG_C_COMPILER _compiler_found)
+    if (_compiler_found)
+        message(STATUS "AREG: >>> Use system default settings:")
+        message(STATUS "AREG: ... Compiler family = \'${AREG_COMPILER_FAMILY}\'")
+        message(STATUS "AREG: ... CXX compiler = \'${AREG_CXX_COMPILER}\'")
+        message(STATUS "AREG: ... CC  compiler = \'${AREG_C_COMPILER}\'")
+    else()
+        message(WARNING "AREG: >>> The compiler \'${${CMAKE_CXX_COMPILER}}\' i unknown, the compilation result is unpredictable")
+    endif(_compiler_found)
+
+elseif("${AREG_COMPILER_SHORT}" STREQUAL "")
+
+    message(FATAL_ERROR "AREG: >>> The cmake file \'${AREG_CMAKE_CONFIG_DIR}/setup.cmake\' should be included before \'common.cmake\', fix it and retry again.")
+
 endif()
+
 # Identify the OS
 set(AREG_OS ${CMAKE_SYSTEM_NAME})
 # Identify CPU platform
@@ -177,7 +184,7 @@ add_compile_options(${AREG_COMPILER_OPTIONS})
 set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${AREG_OUTPUT_DIR})
 
 # Add include search paths
-include_directories(BEFORE "${AREG_BASE}" "${AREG_BUILD_ROOT}" "${AREG_GENERATE_DIR}" "${AREG_THIRDPARTY}")
+include_directories(BEFORE "${AREG_FRAMEWORK}" "${AREG_BUILD_ROOT}" "${AREG_GENERATE_DIR}" "${AREG_THIRDPARTY}")
 
 # Adding library search paths
 link_directories(BEFORE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}" "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}")

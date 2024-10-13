@@ -2,9 +2,9 @@
 # ###########################################################################
 # User specific settings
 # ###########################################################################
-include("${AREG_BASE}/areg/CMakeLists.txt")
-include("${AREG_BASE}/aregextend/CMakeLists.txt")
-include("${AREG_BASE}/areglogger/CMakeLists.txt")
-include("${AREG_BASE}/logger/CMakeLists.txt")
-include("${AREG_BASE}/logobserver/CMakeLists.txt")
-include("${AREG_BASE}/mcrouter/CMakeLists.txt")
+include("${AREG_FRAMEWORK}/areg/CMakeLists.txt")
+include("${AREG_FRAMEWORK}/aregextend/CMakeLists.txt")
+include("${AREG_FRAMEWORK}/areglogger/CMakeLists.txt")
+include("${AREG_FRAMEWORK}/logger/CMakeLists.txt")
+include("${AREG_FRAMEWORK}/logobserver/CMakeLists.txt")
+include("${AREG_FRAMEWORK}/mcrouter/CMakeLists.txt")

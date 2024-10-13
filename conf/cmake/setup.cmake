@@ -6,7 +6,7 @@
 #
 # The variable 'AREG_SDK_ROOT' should be already set.
 # 
-# Copyright © 2022-2023 Aregtech
+# Copyright ï¿½ 2022-2023 Aregtech
 # ###########################################################################
 
 if (NOT DEFINED AREG_SDK_ROOT OR "${AREG_SDK_ROOT}" STREQUAL "")
@@ -20,8 +20,8 @@ if (NOT DEFINED AREG_CMAKE_CONFIG_DIR OR "${AREG_CMAKE_CONFIG_DIR}" STREQUAL "")
 endif()
 
 # The location of AREG Framework source codes.
-if (NOT DEFINED AREG_BASE OR "${AREG_BASE}" STREQUAL "")
-    set(AREG_BASE               "${AREG_SDK_ROOT}/framework")
+if (NOT DEFINED AREG_FRAMEWORK OR "${AREG_FRAMEWORK}" STREQUAL "")
+    set(AREG_FRAMEWORK               "${AREG_SDK_ROOT}/framework")
 endif()
 
 # The location of AREG Framework examples
@@ -48,6 +48,20 @@ endif()
 include(${AREG_CMAKE_CONFIG_DIR}/functions.cmake)
 # setup user configurations
 include(${AREG_CMAKE_CONFIG_DIR}/user.cmake)
+
+# Check whether the CMake CXX-compiler is set
+if ("${CMAKE_CXX_COMPILER}" STREQUAL "")
+    set(CMAKE_CXX_COMPILER    "${AREG_CXX_COMPILER}")
+else()
+    set(AREG_CXX_COMPILER     "${CMAKE_CXX_COMPILER}")
+endif()
+
+# Check whether the CMake C-compiler is set
+if ("${CMAKE_C_COMPILER}" STREQUAL "")
+    set(CMAKE_C_COMPILER    "${AREG_C_COMPILER}")
+else()
+    set(AREG_C_COMPILER     "${CMAKE_C_COMPILER}")
+endif()
 
 # check and fix CXX standard
 macro_check_fix_areg_cxx_standard()

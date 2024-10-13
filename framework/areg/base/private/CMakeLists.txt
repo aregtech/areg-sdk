@@ -1,5 +1,5 @@
 # Adding sources
-macro_add_source(areg_SRC "${AREG_BASE}"
+macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
     areg/base/private/BufferPosition.cpp
 	areg/base/private/BufferStreamBase.cpp
 	areg/base/private/Containers.cpp
@@ -44,5 +44,5 @@ macro_add_source(areg_SRC "${AREG_BASE}"
 	areg/base/private/WriteConverter.cpp
 )
 
-include("${AREG_BASE}/areg/base/private/win32/CMakeLists.txt")
-include("${AREG_BASE}/areg/base/private/posix/CMakeLists.txt")
+include("${AREG_FRAMEWORK}/areg/base/private/win32/CMakeLists.txt")
+include("${AREG_FRAMEWORK}/areg/base/private/posix/CMakeLists.txt")

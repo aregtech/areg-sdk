@@ -1,4 +1,4 @@
-macro_add_source(areg_SRC "${AREG_BASE}"
+macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/trace/private/DatabaseLogger.cpp
 	areg/trace/private/DebugOutputLogger.cpp
 	areg/trace/private/FileLogger.cpp

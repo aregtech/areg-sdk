@@ -576,7 +576,7 @@ endfunction(removeEmptyDirs)
 #               ${ARGN}         -- The list of source files (relative to the base directory).
 # Macro ......: macro_add_source
 # Usage ......: set(aregextend_SRC)
-#               macro_add_source(aregextend_SRC "${AREG_BASE}" aregextend/db/private/LogSqliteDatabase.cpp ...)
+#               macro_add_source(aregextend_SRC "${AREG_FRAMEWORK}" aregextend/db/private/LogSqliteDatabase.cpp ...)
 # ---------------------------------------------------------------------------
 macro(macro_add_source result_list src_base_dir)
     set(_list "${ARGN}")
@@ -847,9 +847,7 @@ endmacro(macro_setup_compiler_family)
 
 macro(macro_setup_compilers_data compiler_path compiler_family compiler_short compiler_cxx compiler_c compiler_found)
 
-    # Set the family to 'unknown' if no match was found.
-    set(${family_var} "unknown")
-
+    set(${compiler_found} FALSE)
     # Search for specific compiler families based on known compiler names.
     foreach(_entry "clang-cl;llvm;clang-cl" "clang++;llvm;clang" "clang;llvm;clang" "g++;gnu;gcc" "gcc;gnu;gcc" "c++;gnu;cc" "cc;gnu;cc" "cl;msvc;cl")
         list(GET _entry 0 _compiler)
@@ -879,3 +877,50 @@ macro(macro_setup_compilers_data compiler_path compiler_family compiler_short co
     endforeach()
 
 endmacro(macro_setup_compilers_data)
+
+macro(macro_setyp_compilers_data_by_family compiler_family compiler_short compiler_cxx compiler_c compiler_found)
+
+    set(${compiler_found} FALSE)
+    # Search for specific compiler families based on known compiler names.
+    foreach(_entry "clang-cl;llvm;clang-cl" "clang++;llvm;clang" "clang;llvm;clang" "g++;gnu;gcc" "gcc;gnu;gcc" "c++;gnu;cc" "cc;gnu;cc" "cl;msvc;cl" "g++;cygwin;gcc")
+        list(GET _entry 0 _compiler)
+        list(GET _entry 1 _family)
+        list(GET _entry 2 _c_compiler)
+
+        if (${_family} STREQUAL ${compiler_family})
+            set(${compiler_short}   ${_compiler})
+            set(${compiler_cxx}     ${_compiler})
+            set(${compiler_c}       ${_compiler})
+            set(${compiler_found}   TRUE)
+
+            break()
+        endif()
+    endforeach()
+
+endmacro(macro_setyp_compilers_data_by_family)
+
+function(printAregStatus var_make_print var_prefix var_header var_footer)
+    if (NOT var_make_print)
+        return()
+    endif()
+
+    message(STATUS "=======================================================================================")
+    message(STATUS "${var_header}")
+    message(STATUS "=======================================================================================")
+    message(STATUS "${var_prefix}: >>> CMAKE_SOURCE_DIR = \'${CMAKE_SOURCE_DIR}\', build type \'${CMAKE_BUILD_TYPE}\'")
+    message(STATUS "${var_prefix}: >>> Build ...........: \'${CMAKE_SYSTEM_NAME}\' system, \'${AREG_BITNESS}\'-bit platform, \'${AREG_PROCESSOR}\' CPU")
+    message(STATUS "${var_prefix}: >>> Compiler ........: \'${CMAKE_CXX_COMPILER}\'")
+    message(STATUS "${var_prefix}: >>> Compiler Version : C++ standard \'c++${CMAKE_CXX_STANDARD}\', compiler family \'${AREG_COMPILER_FAMILY}\'")
+    message(STATUS "${var_prefix}: >>> Binary output ...: \'${CMAKE_RUNTIME_OUTPUT_DIRECTORY}\', extension '${CMAKE_EXECUTABLE_SUFFIX}'")
+    message(STATUS "${var_prefix}: >>> Generated files .: \'${AREG_GENERATE_DIR}\' directory")
+    message(STATUS "${var_prefix}: >>> Packages ........: \'${FETCHCONTENT_BASE_DIR}\' directory")
+    message(STATUS "${var_prefix}: >>> Build libraries .: areg is \'${AREG_BINARY}\', aregextend is static, areglogger is \'${AREG_LOGGER_LIB}\' library")
+    message(STATUS "${var_prefix}: >>> Java version ....: \'${Java_VERSION_STRING}\' of version \'${Java_JAVA_EXECUTABLE}\'. Minimum should be 17")
+    message(STATUS "${var_prefix}: >>> Use of packages .: SQLite3 package use is \'${AREG_SQLITE_PACKAGE}\', GTest package use is \'${AREG_GTEST_PACKAGE}\' ")
+    message(STATUS "${var_prefix}: >>> Other options ...: Examples = \'${AREG_BUILD_EXAMPLES}\', Unit Tests = \'${AREG_BUILD_TESTS}\', AREG Extended = \'${AREG_EXTENDED}\', Logs = \'${AREG_LOGS}\'")
+    message(STATUS "${var_prefix}: >>> Installation ....: is '${AREG_INSTALL}', location \'${CMAKE_INSTALL_PREFIX}\'")
+    message(STATUS "=======================================================================================")
+    message(STATUS "${var_footer}")
+    message(STATUS "=======================================================================================")
+
+endfunction(printAregStatus)

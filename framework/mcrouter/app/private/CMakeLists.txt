@@ -1,4 +1,4 @@
-macro_add_source(mcrouter_SRC "${AREG_BASE}"
+macro_add_source(mcrouter_SRC "${AREG_FRAMEWORK}"
 	mcrouter/app/private/MulticastRouter.cpp
 	mcrouter/app/private/NEMulticastRouterSettings.cpp
     mcrouter/app/private/RouterConsoleService.cpp
