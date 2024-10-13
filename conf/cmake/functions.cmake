@@ -812,7 +812,7 @@ endmacro(macro_setup_compilers_data)
 #
 # Note .......: The "cygwin" family is supported for GNU compilers on the CYGWIN platform in Windows.
 #
-# Macro ......: macro_setyp_compilers_data_by_family
+# Macro ......: macro_setup_compilers_data_by_family
 # Parameters .: 
 #               - ${compiler_family} -- Input: The name of the compiler family (e.g., "gnu", "msvc").
 #               - ${compiler_short}  -- Output: Variable to hold the short name of the compiler (e.g., "gcc", "clang").
@@ -820,14 +820,14 @@ endmacro(macro_setup_compilers_data)
 #               - ${compiler_c}      -- Output: Variable to hold the corresponding C compiler name.
 #               - ${compiler_found}  -- Output: Boolean flag indicating whether the compiler was successfully identified ("TRUE" or "FALSE").
 #
-# Usage ......: macro_setyp_compilers_data_by_family("gnu"
+# Usage ......: macro_setup_compilers_data_by_family("gnu"
 #                                                    AREG_COMPILER_SHORT 
 #                                                    AREG_CXX_COMPILER 
 #                                                    AREG_C_COMPILER 
 #                                                    _compiler_found
 #                                                   )
 # ---------------------------------------------------------------------------
-macro(macro_setyp_compilers_data_by_family compiler_family compiler_short compiler_cxx compiler_c compiler_found)
+macro(macro_setup_compilers_data_by_family compiler_family compiler_short compiler_cxx compiler_c compiler_found)
 
     set(${compiler_found} FALSE)
     
@@ -839,10 +839,10 @@ macro(macro_setyp_compilers_data_by_family compiler_family compiler_short compil
 
         if ("${_family}" STREQUAL "${compiler_family}")
             # Special case for Windows
-            if ("${_family}" STREQUAL "llvm" and WIN32)
+            if (WIN32 AND "${_family}" STREQUAL "llvm")
                 set(${compiler_short} "clang-cl")
                 set(${compiler_cxx}   "clang-cl")
-                set(${compiler_c}     "$clang-cl")
+                set(${compiler_c}     "clang-cl")
             else()
                 set(${compiler_short} "${_compiler}")
                 set(${compiler_cxx}   "${_compiler}")
@@ -857,7 +857,7 @@ macro(macro_setyp_compilers_data_by_family compiler_family compiler_short compil
         endif()
     endforeach()
 
-endmacro(macro_setyp_compilers_data_by_family)
+endmacro(macro_setup_compilers_data_by_family)
 
 # ---------------------------------------------------------------------------
 # Description : This function prints a detailed status report for the AREG project's CMake configuration.

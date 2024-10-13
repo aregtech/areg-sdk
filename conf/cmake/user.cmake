@@ -109,7 +109,7 @@ elseif(DEFINED AREG_COMPILER_FAMILY AND NOT ${AREG_COMPILER_FAMILY} STREQUAL "")
 
     # Check the compiler option and set compiler family and specific compiler commands accordingly.
     message(STATUS "AREG: >>> User selected C/C++ compiler family \'${AREG_COMPILER_FAMILY}\'")
-    macro_setyp_compilers_data_by_family(${AREG_COMPILER_FAMILY} _compiler_short _cxx_compiler _c_compiler _compiler_found)
+    macro_setup_compilers_data_by_family(${AREG_COMPILER_FAMILY} _compiler_short _cxx_compiler _c_compiler _compiler_found)
     if (_compiler_found)
 
         set(AREG_COMPILER           ${_cxx_compiler})
