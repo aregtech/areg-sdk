@@ -21,8 +21,9 @@ macro(macro_check_fix_areg_cxx_standard)
 
     # If 'CMAKE_CXX_STANDARD' is not set, assign 'AREG_CXX_STANDARD' to it.
     if (NOT DEFINED CMAKE_CXX_STANDARD)
-        set(CMAKE_CXX_STANDARD  ${AREG_CXX_STANDARD})
-    
+        set(CMAKE_CXX_STANDARD          ${AREG_CXX_STANDARD})
+        set(CMAKE_CXX_EXTENSIONS        OFF)
+        set(CMAKE_CXX_STANDARD_REQUIRED ON)    
     # If the current C++ standard is less than the required 'AREG_CXX_STANDARD', issue a warning.
     elseif(${CMAKE_CXX_STANDARD} LESS ${AREG_CXX_STANDARD})
         message(WARNING "AREG: >>> AREG requires C++${AREG_CXX_STANDARD} or higher, \
@@ -767,7 +768,7 @@ macro(macro_setup_compilers_data compiler_path compiler_family compiler_short co
     set(${compiler_found} FALSE)
     
     # Iterate over known compilers to identify the compiler type
-    foreach(_entry "clang-cl;llvm;clang-cl" "clang++;llvm;clang" "clang;llvm;clang" "g++;gnu;gcc" "gcc;gnu;gcc" "cl;msvc;cl")
+    foreach(_entry "clang-cl;llvm;clang-cl" "clang++;llvm;clang" "clang;llvm;clang" "g++;gnu;gcc" "gcc;gnu;gcc" "c++;gnu;cc" "cc;gnu;cc" "cl;msvc;cl")
         list(GET _entry 0 _cxx_compiler)
         list(GET _entry 1 _family)
         list(GET _entry 2 _c_compiler)
@@ -895,10 +896,10 @@ function(printAregConfigStatus var_make_print var_prefix var_header var_footer)
     message(STATUS "${var_prefix}: >>> Build Environment ..: System '${CMAKE_SYSTEM_NAME}', ${AREG_BITNESS}-bit platform, '${AREG_PROCESSOR}' CPU")
     message(STATUS "${var_prefix}: >>> Compiler ...........: '${CMAKE_CXX_COMPILER}'")
     message(STATUS "${var_prefix}: >>> Compiler Version ...: C++ standard 'c++${CMAKE_CXX_STANDARD}', compiler family '${AREG_COMPILER_FAMILY}'")
-    message(STATUS "${var_prefix}: >>> Binary Output Dir ..: '${CMAKE_RUNTIME_OUTPUT_DIRECTORY}', executable extension '${CMAKE_EXECUTABLE_SUFFIX}'")
+    message(STATUS "${var_prefix}: >>> Binary Output Dir ..: '${CMAKE_RUNTIME_OUTPUT_DIRECTORY}'")
     message(STATUS "${var_prefix}: >>> Generated Files Dir : '${AREG_GENERATE_DIR}'")
     message(STATUS "${var_prefix}: >>> Packages Dir .......: '${FETCHCONTENT_BASE_DIR}'")
-    message(STATUS "${var_prefix}: >>> Build Libraries ....: areg = '${AREG_BINARY}', aregextend = static, areglogger = '${AREG_LOGGER_LIB}'")
+    message(STATUS "${var_prefix}: >>> Build Modules ......: areg = '${AREG_BINARY}', aregextend = static, areglogger = '${AREG_LOGGER_LIB}', executable extension '${CMAKE_EXECUTABLE_SUFFIX}'")
     message(STATUS "${var_prefix}: >>> Java Version .......: '${Java_VERSION_STRING}', Java executable = '${Java_JAVA_EXECUTABLE}', minimum version required = 17")
     message(STATUS "${var_prefix}: >>> Packages Use .......: SQLite3 package use = '${AREG_SQLITE_PACKAGE}', GTest package use = '${AREG_GTEST_PACKAGE}'")
     message(STATUS "${var_prefix}: >>> Other Options ......: Examples = '${AREG_BUILD_EXAMPLES}', Unit Tests = '${AREG_BUILD_TESTS}', AREG Extended = '${AREG_EXTENDED}', Logs = '${AREG_LOGS}'")

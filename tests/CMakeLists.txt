@@ -19,7 +19,7 @@ if (AREG_BUILD_TESTS)
     if (AREG_GTEST_FOUND)
         # Google Test package found, make no actions on it, the libraries can be used.
         option(AREG_GTEST_FOUND  "GTest package found flag"   TRUE)
-        message(STATUS "AREG: >>> Will use existing googletest package")
+        message(STATUS "AREG: >>> Will use existing in the system googletest package")
         if (NOT "${AREG_GTEST_INCLUDES}" STREQUAL "")
             include_directories("${AREG_GTEST_INCLUDES}")
         endif()
@@ -27,7 +27,7 @@ if (AREG_BUILD_TESTS)
     else(AREG_GTEST_FOUND)
 
         option(AREG_GTEST_FOUND  "GTest package found flag"   FALSE)
-        message(STATUS "AREG: >>> Will compile googletest libraries")
+        message(STATUS "AREG: >>> Fetching \'googletest\' sources to compile \'gtest\' libraries")
         # Google Test package did not find, fetch sources from repository.
         set(AREG_GTEST_PACKAGE OFF CACHE BOOL "Use GTest installed package" FORCE)
         include(FetchContent)

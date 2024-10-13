@@ -19,7 +19,7 @@ if ("${AREG_COMPILER_FAMILY}" STREQUAL "")
         message(STATUS "AREG: ... CXX compiler = \'${AREG_CXX_COMPILER}\'")
         message(STATUS "AREG: ... CC  compiler = \'${AREG_C_COMPILER}\'")
     else()
-        message(WARNING "AREG: >>> The compiler \'${${CMAKE_CXX_COMPILER}}\' i unknown, the compilation result is unpredictable")
+        message(WARNING "AREG: >>> The compiler \'${${CMAKE_CXX_COMPILER}}\' is unknown, the compilation result is unpredictable")
     endif(_compiler_found)
 
 elseif("${AREG_COMPILER_SHORT}" STREQUAL "")

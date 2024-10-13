@@ -50,20 +50,26 @@ include(${AREG_CMAKE_CONFIG_DIR}/functions.cmake)
 include(${AREG_CMAKE_CONFIG_DIR}/user.cmake)
 
 # Check whether the CMake CXX-compiler is set
-if ("${CMAKE_CXX_COMPILER}" STREQUAL "")
-    set(CMAKE_CXX_COMPILER    "${AREG_CXX_COMPILER}")
-else()
-    set(AREG_CXX_COMPILER     "${CMAKE_CXX_COMPILER}")
+if (NOT "${AREG_CXX_COMPILER}" STREQUAL "")
+    if ("${CMAKE_CXX_COMPILER}" STREQUAL "")
+        set(CMAKE_CXX_COMPILER  "${AREG_CXX_COMPILER}")
+    else()
+        # Force to set existing compiler
+        set(AREG_CXX_COMPILER   "${CMAKE_CXX_COMPILER}")
+    endif()
 endif()
 
 # Check whether the CMake C-compiler is set
-if ("${CMAKE_C_COMPILER}" STREQUAL "")
-    set(CMAKE_C_COMPILER    "${AREG_C_COMPILER}")
-else()
-    set(AREG_C_COMPILER     "${CMAKE_C_COMPILER}")
+if (NOT "${AREG_C_COMPILER}" STREQUAL "")
+    if ("${CMAKE_C_COMPILER}" STREQUAL "")
+        set(CMAKE_C_COMPILER    "${AREG_C_COMPILER}")
+    else()
+        # Force to set existing compiler
+        set(AREG_C_COMPILER     "${CMAKE_C_COMPILER}")
+    endif()
 endif()
 
-# check and fix CXX standard
+# check and fix CXX standard for AREG Framework sources.
 macro_check_fix_areg_cxx_standard()
 
 if (NOT "${AREG_PACKAGES}" STREQUAL "")

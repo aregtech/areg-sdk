@@ -79,10 +79,17 @@ set(AREG_C_COMPILER)
 set(AREG_COMPILER_SHORT)
 
 # If the CMAKE_CXX_COMPILER is specified, ignore all others
-if (NOT "${CMAKE_CXX_COMPILER}" STREQUAL "")
+if ((DEFINED CMAKE_CXX_COMPILER OR DEFINED CMAKE_C_COMPILER) AND (NOT "${CMAKE_CXX_COMPILER}" STREQUAL "" OR NOT "${CMAKE_C_COMPILER}" STREQUAL ""))
 
-    message(STATUS "AREG: >>> Using CMake specified C++ compiler \'${CMAKE_CXX_COMPILER}\'")
-    macro_setup_compilers_data("${CMAKE_CXX_COMPILER}" _compiler_family _compiler_short _cxx_compiler _c_compiler _compiler_found)
+    set(_sys_compiler "")
+    if (DEFINED CMAKE_CXX_COMPILER AND NOT "${CMAKE_CXX_COMPILER}" STREQUAL "")
+        set(_sys_compiler "${CMAKE_CXX_COMPILER}")
+    else()
+        set(_sys_compiler "${CMAKE_CXX_COMPILER}")
+    endif()
+
+    message(STATUS "AREG: >>> Using CMake specified C++ compiler \'${_sys_compiler}\'")
+    macro_setup_compilers_data("${_sys_compiler}" _compiler_family _compiler_short _cxx_compiler _c_compiler _compiler_found)
     if (_compiler_found)
         if (DEFINED AREG_COMPILER_FAMILY AND NOT "${AREG_COMPILER_FAMILY}" STREQUAL "${_compiler_family}")
             message(WARNING "AREG: Compiler family \'${AREG_COMPILER_FAMILY}\' was chosen, but it is ignored since compiling with other compiler")
@@ -95,14 +102,16 @@ if (NOT "${CMAKE_CXX_COMPILER}" STREQUAL "")
         endif()
 
         set(AREG_COMPILER_FAMILY    "${_compiler_family}")
-        set(AREG_COMPILER           "${CMAKE_CXX_COMPILER}")
+        set(AREG_COMPILER           "${_sys_compiler}")
         set(AREG_COMPILER_SHORT     "${_compiler_short}")
-        set(AREG_CXX_COMPILER       "${CMAKE_CXX_COMPILER}")
+        set(AREG_CXX_COMPILER       "${_sys_compiler}")
         set(AREG_C_COMPILER         "${_c_compiler}")
 
     else()
-        message(WARNING "AREG: >>> The CMake CXX compiler \'${CMAKE_CXX_COMPILER}\' is unknown, the results are unpredictable")
+        message(WARNING "AREG: >>> The CMake CXX compiler \'${_sys_compiler}\' is unknown, the results are unpredictable")
     endif(_compiler_found)
+
+    unset(__sys_compiler)
 
 # else if AREG_COMPILER_FAMILY is specified, guess compilers
 elseif(DEFINED AREG_COMPILER_FAMILY AND NOT ${AREG_COMPILER_FAMILY} STREQUAL "")
@@ -142,7 +151,6 @@ elseif(DEFINED AREG_COMPILER AND NOT ${AREG_COMPILER} STREQUAL "")
 # else, use the system default C/C++ compilers
 else()
     message(STATUS "AREG: >>> No compiler is selected, using system default.")
-
 endif()
 
 # Set build configuration. Set "Debug" for debug build, and "Release" for release build.
@@ -214,10 +222,10 @@ endif()
 set(AREG_CXX_STANDARD 17)
 
 # Specify default bitness, the system bitness is detected in 'common.cmake'
-set(AREG_BITNESS "64")
+set(AREG_BITNESS 64)
 
 # Specify CPU platform here, the system CPU platform is detected in 'commmon.cmake'
-set(AREG_PROCESSOR "x86_64")
+set(AREG_PROCESSOR x86_64)
 
 
 if (NOT DEFINED AREG_ENABLE_OUTPUTS OR AREG_ENABLE_OUTPUTS)
