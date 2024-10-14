@@ -1,9 +1,9 @@
 set(logger_SRC)
 
-include("${AREG_BASE}/logger/app/private/CMakeLists.txt")
-include("${AREG_BASE}/logger/service/private/CMakeLists.txt")
+include("${AREG_FRAMEWORK}/logger/app/private/CMakeLists.txt")
+include("${AREG_FRAMEWORK}/logger/service/private/CMakeLists.txt")
 
-set(_resourses  "${AREG_BASE}/logger/resources")
+set(_resourses  "${AREG_FRAMEWORK}/logger/resources")
 set(_config     "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/config")
 
 if (${AREG_DEVELOP_ENV} MATCHES "Win32")

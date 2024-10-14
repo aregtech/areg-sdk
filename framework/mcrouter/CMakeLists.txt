@@ -1,9 +1,9 @@
 set(mcrouter_SRC)
 
-include("${AREG_BASE}/mcrouter/app/private/CMakeLists.txt")
-include("${AREG_BASE}/mcrouter/service/private/CMakeLists.txt")
+include("${AREG_FRAMEWORK}/mcrouter/app/private/CMakeLists.txt")
+include("${AREG_FRAMEWORK}/mcrouter/service/private/CMakeLists.txt")
 
-set(_resourses  "${AREG_BASE}/mcrouter/resources")
+set(_resourses  "${AREG_FRAMEWORK}/mcrouter/resources")
 set(_config     "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/config")
 
 if (${AREG_DEVELOP_ENV} MATCHES "Win32")

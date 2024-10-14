@@ -1,4 +1,4 @@
-macro_add_source(areg_SRC "${AREG_BASE}"
+macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
     areg/component/private/Channel.cpp
 	areg/component/private/ClientInfo.cpp
 	areg/component/private/ClientList.cpp
@@ -61,5 +61,5 @@ macro_add_source(areg_SRC "${AREG_BASE}"
 	areg/component/private/WorkerThread.cpp
 )
 
-include("${AREG_BASE}/areg/component/private/posix/CMakeLists.txt")
-include("${AREG_BASE}/areg/component/private/win32/CMakeLists.txt")
+include("${AREG_FRAMEWORK}/areg/component/private/posix/CMakeLists.txt")
+include("${AREG_FRAMEWORK}/areg/component/private/win32/CMakeLists.txt")

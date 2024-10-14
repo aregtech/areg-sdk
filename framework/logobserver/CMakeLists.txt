@@ -1,10 +1,10 @@
 set(logobserver_SRC)
 
-include("${AREG_BASE}/logobserver/app/private/CMakeLists.txt")
+include("${AREG_FRAMEWORK}/logobserver/app/private/CMakeLists.txt")
 
 if (${AREG_DEVELOP_ENV} MATCHES "Win32")
-    set_source_files_properties("${AREG_BASE}/logobserver/resources/logobserver.rc" PROPERTIES LANGUAGE RC)
-    list(APPEND logobserver_SRC "${AREG_BASE}/logobserver/resources/logobserver.rc")
+    set_source_files_properties("${AREG_FRAMEWORK}/logobserver/resources/logobserver.rc" PROPERTIES LANGUAGE RC)
+    list(APPEND logobserver_SRC "${AREG_FRAMEWORK}/logobserver/resources/logobserver.rc")
 endif()
 
 # ##################################################################

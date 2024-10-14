@@ -6,7 +6,7 @@
 #
 # The variable 'AREG_SDK_ROOT' should be already set.
 # 
-# Copyright © 2022-2023 Aregtech
+# Copyright ï¿½ 2022-2023 Aregtech
 # ###########################################################################
 
 if (NOT DEFINED AREG_SDK_ROOT OR "${AREG_SDK_ROOT}" STREQUAL "")
@@ -20,8 +20,8 @@ if (NOT DEFINED AREG_CMAKE_CONFIG_DIR OR "${AREG_CMAKE_CONFIG_DIR}" STREQUAL "")
 endif()
 
 # The location of AREG Framework source codes.
-if (NOT DEFINED AREG_BASE OR "${AREG_BASE}" STREQUAL "")
-    set(AREG_BASE               "${AREG_SDK_ROOT}/framework")
+if (NOT DEFINED AREG_FRAMEWORK OR "${AREG_FRAMEWORK}" STREQUAL "")
+    set(AREG_FRAMEWORK               "${AREG_SDK_ROOT}/framework")
 endif()
 
 # The location of AREG Framework examples
@@ -49,20 +49,28 @@ include(${AREG_CMAKE_CONFIG_DIR}/functions.cmake)
 # setup user configurations
 include(${AREG_CMAKE_CONFIG_DIR}/user.cmake)
 
-# If compiler family name is not empty.
-# Otherwise, use system default compiler.
-# See in 'common.cmake'
-if (NOT "${AREG_COMPILER_FAMILY}" STREQUAL "")
-    set(CMAKE_CXX_COMPILER  "${AREG_CXX_COMPILER}")
-    set(CMAKE_C_COMPILER    "${AREG_C_COMPILER}")
+# Check whether the CMake CXX-compiler is set
+if (NOT "${AREG_CXX_COMPILER}" STREQUAL "")
+    if ("${CMAKE_CXX_COMPILER}" STREQUAL "")
+        set(CMAKE_CXX_COMPILER  "${AREG_CXX_COMPILER}")
+    else()
+        # Force to set existing compiler
+        set(AREG_CXX_COMPILER   "${CMAKE_CXX_COMPILER}")
+    endif()
 endif()
 
-# set CMake tool settings
-set(CMAKE_BUILD_TYPE        ${AREG_BUILD_TYPE})
-set(CMAKE_BUILD_TYPE        ${AREG_BUILD_TYPE} CACHE STRING "Configuration Type" FORCE)
+# Check whether the CMake C-compiler is set
+if (NOT "${AREG_C_COMPILER}" STREQUAL "")
+    if ("${CMAKE_C_COMPILER}" STREQUAL "")
+        set(CMAKE_C_COMPILER    "${AREG_C_COMPILER}")
+    else()
+        # Force to set existing compiler
+        set(AREG_C_COMPILER     "${CMAKE_C_COMPILER}")
+    endif()
+endif()
 
-# check and fix CXX standard
-macro_check_fix_cxx_standard()
+# check and fix CXX standard for AREG Framework sources.
+macro_check_fix_areg_cxx_standard()
 
 if (NOT "${AREG_PACKAGES}" STREQUAL "")
     set(FETCHCONTENT_BASE_DIR   "${AREG_PACKAGES}" CACHE PATH "Location of AREG thirdparty packages" FORCE)

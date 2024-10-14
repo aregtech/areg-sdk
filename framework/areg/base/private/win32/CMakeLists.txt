@@ -1,4 +1,4 @@
-macro_add_source( areg_SRC "${AREG_BASE}"
+macro_add_source( areg_SRC "${AREG_FRAMEWORK}"
     areg/base/private/win32/FileWin32.cpp
 	areg/base/private/win32/NEDebugWin32.cpp
 	areg/base/private/win32/NESocketWin32.cpp

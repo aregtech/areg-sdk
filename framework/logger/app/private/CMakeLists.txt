@@ -1,4 +1,4 @@
-macro_add_source(logger_SRC "${AREG_BASE}"
+macro_add_source(logger_SRC "${AREG_FRAMEWORK}"
 	logger/app/private/Logger.cpp
     logger/app/private/LoggerConsoleService.cpp
 	logger/app/private/NELoggerSettings.cpp

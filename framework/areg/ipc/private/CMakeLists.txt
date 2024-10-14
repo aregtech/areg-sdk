@@ -1,4 +1,4 @@
-macro_add_source(areg_SRC "${AREG_BASE}"
+macro_add_source(areg_SRC "${AREG_FRAMEWORK}"
 	areg/ipc/private/ClientConnection.cpp
 	areg/ipc/private/ClientReceiveThread.cpp
 	areg/ipc/private/ClientSendThread.cpp

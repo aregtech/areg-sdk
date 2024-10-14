@@ -1,4 +1,4 @@
-macro_add_source(aregextend_SRC "${AREG_BASE}"
+macro_add_source(aregextend_SRC "${AREG_FRAMEWORK}"
     aregextend/service/private/DataRateHelper.cpp
     aregextend/service/private/IEServiceConnectionHandler.cpp
     aregextend/service/private/NESystemService.cpp
