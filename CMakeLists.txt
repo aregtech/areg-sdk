@@ -70,6 +70,8 @@ if(AREG_BUILD_TESTS)
     if (NOT AREG_GTEST_FOUND)
         add_dependencies(areg-unit-tests areg-dummy)
     endif()
+else()
+    option(AREG_GTEST_PACKAGE "Use google test package" OFF)
 endif()
 
 if (AREG_INSTALL AND AREG_SQLITE_FOUND)
