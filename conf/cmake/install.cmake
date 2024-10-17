@@ -3,7 +3,7 @@
 # Copyright 2022-2023 Aregtech
 # ###########################################################################
 
-message(STATUS "AREG: >>> Preparing AREG SDK installation settings, CMAKE_PACKAGE_NAME = ${CMAKE_PACKAGE_NAME}")
+message(STATUS "AREG: >>> Preparing AREG SDK installation settings, Package name = '${CMAKE_PACKAGE_NAME}', Destination = '${CMAKE_INSTALL_PREFIX}'")
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -40,11 +40,11 @@ install(DIRECTORY framework/
 # Copy compiled binaries in the bin and lib directories
 install(TARGETS areg aregextend areglogger
     EXPORT ${AREG_PACKAGE_NAME}
-    RUNTIME DESTINATION bin  COMPONENT Development  COMPONENT Runtime
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}  COMPONENT Development  COMPONENT Runtime
             PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ WORLD_READ GROUP_EXECUTE WORLD_EXECUTE
-    LIBRARY DESTINATION bin  COMPONENT Development  COMPONENT Runtime
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}  COMPONENT Development  COMPONENT Runtime
             PERMISSIONS OWNER_READ OWNER_WRITE               GROUP_READ WORLD_READ
-    ARCHIVE DESTINATION lib  COMPONENT Development  COMPONENT Runtime
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}  COMPONENT Development  COMPONENT Runtime
             PERMISSIONS OWNER_READ OWNER_WRITE               GROUP_READ WORLD_READ
 )
 

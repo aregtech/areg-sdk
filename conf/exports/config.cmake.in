@@ -19,6 +19,8 @@ set(AREG_CMAKE_CONFIG_DIR   "${AREG_SHARE_DIR}/conf/cmake")
 set(AREG_SDK_TOOLS          "@CMAKE_INSTALL_PREFIX@/tools/@AREG_PACKAGE_NAME@")
 # Location of the AREG SDK code generator
 set(AREG_TOOL_CODEGEN       "${AREG_SDK_TOOLS}/codegen.jar")
+# Full path to 'areg.cmake' to include in projects
+set(AREG_CMAKE_EXPORTS      "${AREG_CMAKE_CONFIG_DIR}/areg.cmake")
 
 # The build type of AREG libraries.
 set(AREG_BUILD_TYPE         "@AREG_BUILD_TYPE@")

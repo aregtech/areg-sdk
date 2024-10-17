@@ -359,79 +359,55 @@ jobs:
 
       - name: Set cmake cache destination for Linux
         if: matrix.config.os == 'ubuntu-latest'
-        run: echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> "$GITHUB_ENV"
+        run: |
+            echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> "$GITHUB_ENV"
+            echo "BUILD_DEST=./product/build/${{matrix.config.family}}-${{matrix.config.cxx}}/linux-64-x86_64-release-${{matrix.config.lib}}" >> "$GITHUB_ENV"
+            echo "INSTALL_DEST=./product/install/${{matrix.config.family}}-${{matrix.config.cxx}}" >> "$GITHUB_ENV"
 
       - name: Set cmake cache destination for Windows
         if: matrix.config.os == 'windows-2022'
-        run: echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> $env:GITHUB_ENV
+        run: |
+            echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> $env:GITHUB_ENV
+            echo "BUILD_DEST=./product/build/${{matrix.config.family}}-${{matrix.config.cxx}}/windows-64-amd64-release-${{matrix.config.lib}}" >> $env:GITHUB_ENV
+            echo "INSTALL_DEST=./product/install/${{matrix.config.family}}-${{matrix.config.cxx}}" >> $env:GITHUB_ENV
 
-      - name: Configure CMake with enabled extended feature and select compiler family under Linux
-        if: matrix.config.os == 'ubuntu-latest' && matrix.config.extend == 'ON' 
+      - name: Configure CMake by selecting compiler family
+        if: matrix.config.extend == 'ON'
         working-directory: ${{github.workspace}}
         run: |
-          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGS:BOOL=${{matrix.config.logs}} -DAREG_BUILD_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_BUILD_TESTS:BOOL=${{matrix.config.test}}
+          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGS:BOOL=${{matrix.config.logs}} -DAREG_BUILD_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_BUILD_TESTS:BOOL=${{matrix.config.test}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_PATH:PATH="${{env.INSTALL_DEST}}"
 
-      - name: Configure CMake for disabled extended feature and select compiler name under Linux
-        if: matrix.config.os == 'ubuntu-latest' && matrix.config.extend == 'OFF'
+      - name: Configure CMake by selecting compiler name
+        if: matrix.config.extend == 'OFF'
         working-directory: ${{github.workspace}}
         run: |
-          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER=${{matrix.config.cc}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGS:BOOL=${{matrix.config.logs}} -DAREG_BUILD_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_BUILD_TESTS:BOOL=${{matrix.config.test}}
-
-      - name: Configure CMake with enabled extended feature and select compiler family for Windows compiled with ClangCL
-        if: matrix.config.extend == 'ON' && matrix.config.os == 'windows-2022' && matrix.config.family == 'llvm'
-        working-directory: ${{github.workspace}}
-        run: |
-          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGS:BOOL=${{matrix.config.logs}} -DAREG_BUILD_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_BUILD_TESTS:BOOL=${{matrix.config.test}} -G "Visual Studio 17 2022" -T ClangCL
-
-      - name: Configure CMake for disabled extended feature and select compiler name for Windows compiled with ClangCL
-        if: matrix.config.extend == 'OFF' && matrix.config.os == 'windows-2022' && matrix.config.family == 'llvm'
-        working-directory: ${{github.workspace}}
-        run: |
-          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER=${{matrix.config.cc}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGS:BOOL=${{matrix.config.logs}} -DAREG_BUILD_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_BUILD_TESTS:BOOL=${{matrix.config.test}} -G "Visual Studio 17 2022" -T ClangCL
-
-      - name: Configure CMake with enabled extended feature and select compiler family for Windows
-        if: matrix.config.extend == 'ON' && matrix.config.os == 'windows-2022' && matrix.config.family != 'llvm'
-        working-directory: ${{github.workspace}}
-        run: |
-          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER_FAMILY=${{matrix.config.family}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGS:BOOL=${{matrix.config.logs}} -DAREG_BUILD_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_BUILD_TESTS:BOOL=${{matrix.config.test}}
-
-      - name: Configure CMake for disabled extended feature and select compiler name for Windows
-        if: matrix.config.extend == 'OFF' && matrix.config.os == 'windows-2022' && matrix.config.family != 'llvm'
-        working-directory: ${{github.workspace}}
-        run: |
-          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER=${{matrix.config.cc}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGS:BOOL=${{matrix.config.logs}} -DAREG_BUILD_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_BUILD_TESTS:BOOL=${{matrix.config.test}}
+          cmake -B ${{env.CACHE_DEST}} -DAREG_COMPILER=${{matrix.config.cc}} -DAREG_BUILD_TYPE=${{env.BUILD_TYPE}} -DAREG_BINARY=${{matrix.config.lib}} -DAREG_EXTENDED:BOOL=${{matrix.config.extend}} -DAREG_LOGS:BOOL=${{matrix.config.logs}} -DAREG_BUILD_EXAMPLES:BOOL=${{matrix.config.test}} -DAREG_BUILD_TESTS:BOOL=${{matrix.config.test}} -DAREG_INSTALL:BOOL=ON -DAREG_INSTALL_PATH:PATH="${{env.INSTALL_DEST}}"
 
       - name: Build with CMake
         working-directory: ${{github.workspace}}
         # Build your program with the given configuration
         run: cmake --build ${{env.CACHE_DEST}} -j 20
 
-      - name: Run Unit Tests
+      - name: Install with CMake
+        working-directory: ${{github.workspace}}
+        # Install the binaries and headers
+        run: cmake --install ${{env.CACHE_DEST}}
+
+      - name: Run Unit Tests. Ignore if unit tests are not compiled
         if: matrix.config.test == 'ON'
         working-directory: ${{github.workspace}}
         run: ctest --test-dir ${{env.CACHE_DEST}} --output-on-failure --output-junit test_results.xml
 
-      - name: Linux build path guess
-        if: always() && matrix.config.os == 'ubuntu-latest'
-        shell: bash
-        run: |
-          echo "BUILD_DEST=product/build/${{matrix.config.family}}-${{matrix.config.cxx}}/linux-64-x86_64-release-${{matrix.config.lib}}" >> "$GITHUB_ENV"
-
-      - name: Windows build path guess
-        if: always() && matrix.config.os == 'windows-2022'
-        shell: bash
-        run: |
-          echo "BUILD_DEST=product/build/${{matrix.config.family}}-${{matrix.config.cxx}}/windows-64-amd64-release-${{matrix.config.lib}}" >> "$GITHUB_ENV"
-
-      - name: Copy test artifacts
+      - name: Copy test artifacts if unit tests fail. Ignore if unit tests are not compiled
         if: failure() && matrix.config.test == 'ON'
         working-directory: ${{github.workspace}}
         shell: bash
         run: |
           mkdir ./${{matrix.config.name}}/
           cp -R ./${{env.BUILD_DEST}}/bin/ ./${{matrix.config.name}}/
+          cp -R  {{env.INSTALL_DEST}} ./${{matrix.config.name}}/
 
-      - name: Upload artifacts if use of external packages is set OFF
+      - name: Upload artifacts if tests fail. Ignore if unit tests are not compiled
         if: failure() && matrix.config.test == 'ON'
         uses: actions/upload-artifact@v4
         with:

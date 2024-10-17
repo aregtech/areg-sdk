@@ -6,12 +6,13 @@
 #
 # The variable 'AREG_SDK_ROOT' should be already set.
 # 
-# Copyright � 2022-2023 Aregtech
+# Copyright (c) 2022-2023 Aregtech
 # ###########################################################################
 
 if (NOT DEFINED AREG_SDK_ROOT OR "${AREG_SDK_ROOT}" STREQUAL "")
     # Make sure that AREG_SDK_ROOT is set before the 'setup.cmake' is included
-    message(FATAL_ERROR "AREG: >>> Set AREG_SDK_ROOT before including \'setup.cmake\'. Stopping building the project.")
+    message(FATAL_ERROR "AREG: >>> Set \'AREG_SDK_ROOT\' before including \'setup.cmake\'. Stopping building the project.")
+    return()
 endif()
 
 # The location of cmake configuration files.
