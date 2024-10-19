@@ -79,7 +79,7 @@ namespace NESystemService
      * \brief   NESystemService::eSystemServiceState
      *          Describes the system service state.
      **/
-    enum class eSystemServiceState
+    enum class eSystemServiceState : int32_t
     {
           ServiceStopped    //!< Service is stopped.
         , ServiceStarting   //!< Service is in starting process.
@@ -194,18 +194,20 @@ inline const char * NESystemService::getString( NESystemService::eServiceOption 
     {
     case NESystemService::eServiceOption::CMD_Undefined:
         return "NESystemService::CMD_Undefined";
-    case NESystemService::eServiceOption::CMD_Install:
-        return "NESystemService::CMD_Install";
-    case NESystemService::eServiceOption::CMD_Uninstall:
-        return "NESystemService::CMD_Uninstall";
-    case NESystemService::eServiceOption::CMD_Service:
-        return "NESystemService::CMD_Service";
     case NESystemService::eServiceOption::CMD_Console:
         return "NESystemService::CMD_Console";
-    case NESystemService::eServiceOption::CMD_Verbose:
-        return "NESystemService::CMD_Verbose";
     case NESystemService::eServiceOption::CMD_Help:
-        return "NESystemService::eServiceOption::CMD_Help";
+        return "NESystemService::CMD_Help";
+    case NESystemService::eServiceOption::CMD_Load:
+        return "NESystemService::CMD_Load";
+    case NESystemService::eServiceOption::CMD_Install:
+        return "NESystemService::CMD_Install";
+    case NESystemService::eServiceOption::CMD_Service:
+        return "NESystemService::CMD_Service";
+    case NESystemService::eServiceOption::CMD_Uninstall:
+        return "NESystemService::eServiceOption::CMD_Uninstall";
+    case NESystemService::eServiceOption::CMD_Verbose:
+        return "NESystemService::eServiceOption::CMD_Verbose";
     default:
         ASSERT( false );
         return "ERR: Unexpected NESystemService::eServiceOption value!";
