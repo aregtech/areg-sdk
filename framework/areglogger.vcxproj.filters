@@ -52,13 +52,13 @@
     <Text Include="areglogger\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="areglogger\resources\areglogger.def">
-      <Filter>Source Files</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="areglogger\resources\areglogger.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="areglogger\resources\areglogger.def">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

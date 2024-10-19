@@ -53,15 +53,16 @@ private:
      **/
     enum class eLoggerOptions : int32_t
     {
-          CMD_LogUndefined  = 0 //!< Undefined command.
-        , CMD_LogQueryScopes    //!< Query the list of scopes
-        , CMD_LogSaveConfig     //!< Save the configuration file.
+          CMD_LogUndefined   = 0//!< Undefined command.
         , CMD_LogPrintHelp      //!< Output help message.
-        , CMD_LogInformation    //!< Display the list of logging source instances.
+        , CMD_LogLoad           //!< Start the application by loading initialization instructions from configuration file.
+        , CMD_LogPause          //!< Pause log observer
+        , CMD_LogRestart        //!< Start / Restart log observer
+        , CMD_LogInstances      //!< Display the list of log providers
+        , CMD_LogQuit           //!< Quit logger.
+        , CMD_LogQueryScopes    //!< Query the list of scopes
         , CMD_LogUpdateScope    //!< Set and update the log scope priorities.
-        , CMD_LogPause          //!< Pause log observer.
-        , CMD_LogQuit           //!< Quit log observer.
-        , CMD_LogRestart        //!< Restart / continue log observer .
+        , CMD_LogSaveConfig     //!< Save the configuration file.
         , CMD_LogStop           //!< Stop log observer.
     };
 
@@ -85,24 +86,29 @@ private:
      **/
     static constexpr sObserverStatus    ObserverStatus[]
     {
+          // ----------------------------------------------------------------------------------------------------
+          // | Option                           |  status                                           |  error    |
+          // ----------------------------------------------------------------------------------------------------
           //!< No status, no error
-          { eLoggerOptions::CMD_LogUndefined    , "", "" }
-          //!< The status and error message when query scopes.
-        , { eLoggerOptions::CMD_LogQueryScopes  , "Log observer queries scopes."                    , "Log observer failed to query scopes." }
-          //!< The status and error message when request to save configuration
-        , { eLoggerOptions::CMD_LogSaveConfig   , "Log observer requested to save configuration."   , "Log observer failed to request save config." }
+          { eLoggerOptions::CMD_LogUndefined    , ""                                                , "" }
           //!< No status or error when output print help
-        , { eLoggerOptions::CMD_LogPrintHelp    , "", "" }
-          //!< The status or error message when request to output list of  connected instances.
-        , { eLoggerOptions::CMD_LogInformation  , "List of connected instances ..."                 , "" }
-          //!< The status or error message when request to update scopes.
-        , { eLoggerOptions::CMD_LogUpdateScope  , "Log observer requested to update scopes."        , "Log observer failed to request update scopes." }
+        , { eLoggerOptions::CMD_LogPrintHelp    , ""                                                , "" }
+          //!< No status or error when Start the application by loading initialization instructions from configuration file.
+        , { eLoggerOptions::CMD_LogLoad         , ""                                                , "The configuration file does not exist or wrong, make default initialization." }
           //!< The status or error message when request to pause logging.
         , { eLoggerOptions::CMD_LogPause        , "Log observer is paused, type \'-r\' to resume."  , "" }
-          //!< No status or error when request to quit log observer
-        , { eLoggerOptions::CMD_LogQuit         , "", "" }
           //!< The status or error  message when request to start or resume log observer.
         , { eLoggerOptions::CMD_LogRestart      , "Log observer triggered connection."              , "Log observer failed to trigger connection. Check initialization." }
+          //!< The status or error message when request to output list of  connected instances.
+        , { eLoggerOptions::CMD_LogInstances    , "List of connected instances ..."                 , "" }
+          //!< No status or error when request to quit log observer
+        , { eLoggerOptions::CMD_LogQuit         , "", "" }
+          //!< The status and error message when query scopes.
+        , { eLoggerOptions::CMD_LogQueryScopes  , "Log observer queries scopes."                    , "Log observer failed to query scopes." }
+          //!< The status or error message when request to update scopes.
+        , { eLoggerOptions::CMD_LogUpdateScope  , "Log observer requested to update scopes."        , "Log observer failed to request update scopes." }
+          //!< The status and error message when request to save configuration
+        , { eLoggerOptions::CMD_LogSaveConfig   , "Log observer requested to save configuration."   , "Log observer failed to request save config." }
           //!< The status or error message when request to stop logging.
         , { eLoggerOptions::CMD_LogStop         , "Log observer stops, type \'-r\' to resume."      , "Log observer failed to stop. Restart application." }
     };

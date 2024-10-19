@@ -62,12 +62,13 @@ namespace
         , {"-c, --console   : Command to run mcrouter as a console application (default option). Usage: \'mcrouter --console\'"}
         , {"-h, --help      : Command to display this message on console."}
         , {"-i, --install   : Command to install mcrouter as a service. Valid only for Windows OS. Usage: \'mcrouter --install\'"}
-        , {"-l, --silent    : Command option to stop displaying data rate. Used in console application. Usage: --silent"}
+        , {"-l, --load      : Command to initialize from specified file. Used to start application. Usage: \'mcrouter --load=<path-to-init-file>\'"}
         , {"-n, --instances : Command option to display list of connected instances. Used in console application. Usage: --instances"}
         , {"-p, --pause     : Command option to pause connection. Used in console application. Usage: --pause"}
         , {"-q, --quit      : Command option to stop router and quit application. Used in console application. Usage: --quit"}
         , {"-r, --restart   : Command option to restart connection. Used in console application. Usage: --restart"}
         , {"-s, --service   : Command to run mcrouter as a system service. Usage: \'mcrouter --service\'"}
+        , {"-t, --silent    : Command option to stop displaying data rate. Used in console application. Usage: --silent"}
         , {"-u, --uninstall : Command to uninstall mcrouter as a service. Valid only for Windows OS. Usage: \'mcrouter --uninstall\'"}
         , {"-v, --verbose   : Command option to display data rate. Used in console application. Usage: --verbose"}
         , NESystemService::MSG_SEPARATOR
@@ -96,12 +97,12 @@ const OptionParser::sOptionSetup MulticastRouter::ValidOptions[ ]
       { "-c", "--console"   , static_cast<int>(eRouterOptions::CMD_RouterConsole)   , OptionParser::NO_DATA , {}, {}, {} }
     , { "-h", "--help"      , static_cast<int>(eRouterOptions::CMD_RouterPrintHelp) , OptionParser::NO_DATA , {}, {}, {} }
     , { "-i", "--install"   , static_cast<int>(eRouterOptions::CMD_RouterInstall)   , OptionParser::NO_DATA , {}, {}, {} }
-    , { "-l", "--silent"    , static_cast<int>(eRouterOptions::CMD_RouterSilent)    , OptionParser::NO_DATA , {}, {}, {} }
     , { "-n", "--instances" , static_cast<int>(eRouterOptions::CMD_RouterInstances) , OptionParser::NO_DATA , {}, {}, {} }
     , { "-p", "--pause"     , static_cast<int>(eRouterOptions::CMD_RouterPause)     , OptionParser::NO_DATA , {}, {}, {} }
     , { "-q", "--quit"      , static_cast<int>(eRouterOptions::CMD_RouterQuit)      , OptionParser::NO_DATA , {}, {}, {} }
     , { "-r", "--restart"   , static_cast<int>(eRouterOptions::CMD_RouterRestart)   , OptionParser::NO_DATA , {}, {}, {} }
     , { "-s", "--service"   , static_cast<int>(eRouterOptions::CMD_RouterService)   , OptionParser::NO_DATA , {}, {}, {} }
+    , { "-t", "--silent"    , static_cast<int>(eRouterOptions::CMD_RouterSilent)    , OptionParser::NO_DATA , {}, {}, {} }
     , { "-u", "--uninstall" , static_cast<int>(eRouterOptions::CMD_RouterUninstall) , OptionParser::NO_DATA , {}, {}, {} }
     , { "-v", "--verbose"   , static_cast<int>(eRouterOptions::CMD_RouterVerbose)   , OptionParser::NO_DATA , {}, {}, {} }
 };
@@ -325,10 +326,11 @@ bool MulticastRouter::_checkCommand(const String& cmd)
                 quit = true;
                 break;
 
-            case MulticastRouter::eRouterOptions::CMD_RouterConsole:     // pass through
-            case MulticastRouter::eRouterOptions::CMD_RouterInstall:     // pass through
-            case MulticastRouter::eRouterOptions::CMD_RouterUninstall:   // pass through
-            case MulticastRouter::eRouterOptions::CMD_RouterService:
+            case MulticastRouter::eRouterOptions::CMD_RouterConsole:    // pass through
+            case MulticastRouter::eRouterOptions::CMD_RouterInstall:    // pass through
+            case MulticastRouter::eRouterOptions::CMD_RouterUninstall:  // pass through
+            case MulticastRouter::eRouterOptions::CMD_RouterService:    // pass through
+            case MulticastRouter::eRouterOptions::CMD_RouterLoad:
                 MulticastRouter::_outputInfo("This command should be used in command line ...");
                 break;
 

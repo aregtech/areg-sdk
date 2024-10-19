@@ -20,11 +20,10 @@
 
 #include "areg/appbase/Application.hpp"
 #include "areg/base/DateTime.hpp"
+#include "areg/base/File.hpp"
 #include "areg/base/String.hpp"
 #include "areg/persist/ConfigManager.hpp"
-
 #include "aregextend/service/NESystemService.hpp"
-
 #include "areglogger/client/LogObserverApi.h"
 
 #include <stdio.h>
@@ -45,12 +44,13 @@ namespace
         , {"-e, --query     : Query the list of logging scopes. Usage: --query *, \'*\' can be a cookie ID."}
         , {"-f, --config    : Save current configuration.       Usage: --config"}
         , {"-h, --help      : Display this message on console.  Usage: --help"}
-        , {"-i, --info      : Display list of log instances.    Usage: --info"}
+        , {"-n, --instances : Display list of log instances.    Usage: --instances"}
+        , {"-l, --load      : Command line option to configure. Usage: \'./logobserver --load=<path-to-init-file>\'"}
         , {"-o, --scope     : Update log scope priorities.      Usage: --scope *::areg_base_NESocket=NOTSET, \'*\' can be a cookie."}
         , {"-p, --pause     : Pause the log observer.           Usage: --pause"}
         , {"-q, --quit      : Stop and quit the log observer.   Usage: --quit"}
         , {"-r, --restart   : Start / continue log observer.    Usage: --restart"}
-        , {"-s, --stop      : Stop log observer.                Usage: --stop"}
+        , {"-x, --stop      : Stop log observer.                Usage: --stop"}
         , NESystemService::MSG_SEPARATOR
     };
 
@@ -79,12 +79,13 @@ const OptionParser::sOptionSetup LogObserver::ValidOptions[ ]
       { "-e", "--query"     , static_cast<int>(eLoggerOptions::CMD_LogQueryScopes)  , OptionParser::STRING_NO_RANGE , {}, {}, {} }
     , { "-f", "--config"    , static_cast<int>(eLoggerOptions::CMD_LogSaveConfig)   , OptionParser::STRING_NO_RANGE , {}, {}, {} }
     , { "-h", "--help"      , static_cast<int>(eLoggerOptions::CMD_LogPrintHelp)    , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-i", "--info"      , static_cast<int>(eLoggerOptions::CMD_LogInformation)  , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-l", "--load"      , static_cast<int>(eLoggerOptions::CMD_LogLoad)         , OptionParser::STRING_NO_RANGE , {}, {}, {} }
+    , { "-n", "--instances" , static_cast<int>(eLoggerOptions::CMD_LogInstances)    , OptionParser::NO_DATA         , {}, {}, {} }
     , { "-o", "--scope"     , static_cast<int>(eLoggerOptions::CMD_LogUpdateScope)  , OptionParser::STRING_NO_RANGE , {}, {}, {} }
     , { "-p", "--pause"     , static_cast<int>(eLoggerOptions::CMD_LogPause)        , OptionParser::NO_DATA         , {}, {}, {} }
     , { "-q", "--quit"      , static_cast<int>(eLoggerOptions::CMD_LogQuit)         , OptionParser::NO_DATA         , {}, {}, {} }
     , { "-r", "--restart"   , static_cast<int>(eLoggerOptions::CMD_LogRestart)      , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-s", "--stop"      , static_cast<int>(eLoggerOptions::CMD_LogStop)         , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-x", "--stop"      , static_cast<int>(eLoggerOptions::CMD_LogStop)         , OptionParser::NO_DATA         , {}, {}, {} }
 };
 
 LogObserver & LogObserver::getInstance(void)
@@ -279,7 +280,7 @@ void LogObserver::callbackLogMessageEx(const unsigned char* logBuffer, uint32_t 
     }
 }
 
-void LogObserver::logMain( int /* argc */, char ** /* argv */ )
+void LogObserver::logMain( int argc, char ** argv )
 {
     sObserverEvents evts
     {
@@ -296,7 +297,23 @@ void LogObserver::logMain( int /* argc */, char ** /* argv */ )
         , &LogObserver::callbackLogMessageEx
     };
 
-    ::logObserverInitialize(&evts, nullptr);
+    Application::setWorkingDirectory(nullptr);
+    String fileConfig(NEApplication::DEFAULT_CONFIG_FILE);
+    OptionParser parser(LogObserver::ValidOptions, MACRO_ARRAYLEN(LogObserver::ValidOptions));
+    if (parser.parseCommandLine(argv, argc))
+    {
+        uint32_t pos = parser.findOption(static_cast<int32_t>(LogObserver::eLoggerOptions::CMD_LogLoad));
+        if (pos != NECommon::INVALID_POSITION)
+        {
+            String filePath{ parser.getOptions().getAt(pos).inString[0] };
+            if (File::existFile(filePath))
+            {
+                fileConfig = filePath;
+            }
+        }
+    }
+
+    ::logObserverInitialize(&evts, fileConfig.getString());
 
     _runConsoleInputExtended();
 
@@ -339,9 +356,9 @@ bool LogObserver::_checkCommand(const String& cmd)
                 status = &ObserverStatus[static_cast<uint32_t>(eLoggerOptions::CMD_LogPrintHelp)];
                 break;
 
-            case LogObserver::eLoggerOptions::CMD_LogInformation:
+            case LogObserver::eLoggerOptions::CMD_LogInstances:
                 processed = LogObserver::_processInfoInstances();
-                status = &ObserverStatus[static_cast<uint32_t>(eLoggerOptions::CMD_LogInformation)];
+                status = &ObserverStatus[static_cast<uint32_t>(eLoggerOptions::CMD_LogInstances)];
                 break;
 
             case LogObserver::eLoggerOptions::CMD_LogUpdateScope:
@@ -368,7 +385,8 @@ bool LogObserver::_checkCommand(const String& cmd)
                 status = &ObserverStatus[static_cast<uint32_t>(eLoggerOptions::CMD_LogStop)];
                 break;
 
-            case LogObserver::eLoggerOptions::CMD_LogUndefined:
+            case LogObserver::eLoggerOptions::CMD_LogLoad:      // fall through
+            case LogObserver::eLoggerOptions::CMD_LogUndefined: // fall through
             default:
                 hasError = true;
                 break;

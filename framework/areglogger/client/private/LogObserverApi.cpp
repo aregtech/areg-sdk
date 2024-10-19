@@ -24,13 +24,13 @@
 
 // Use these options if compile for Windows with MSVC
 #ifdef WINDOWS
-    #pragma comment(lib, "areg")
-    #pragma comment(lib, "aregextend")
+    #pragma comment(lib, "areg.lib")
+    #pragma comment(lib, "aregextend.lib")
 
 #if defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
     #pragma comment(lib, "sqlite3")
 #else   // defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
-    #pragma comment(lib, "aregsqlite3")
+    #pragma comment(lib, "aregsqlite3.lib")
 #endif  //defined(USE_SQLITE_PACKAGE) && (USE_SQLITE_PACKAGE != 0)
 #endif // WINDOWS
 

@@ -22,9 +22,10 @@
 #include "aregextend/service/ServiceApplicationBase.hpp"
 
 #include "areg/base/SynchObjects.hpp"
+#include "aregextend/console/OptionParser.hpp"
+#include "aregextend/service/NESystemService.hpp"
 #include "mcrouter/app/NEMulticastRouterSettings.hpp"
 #include "mcrouter/service/RouterServerService.hpp"
-#include "aregextend/console/OptionParser.hpp"
 
 #include <utility>
 
@@ -50,18 +51,19 @@ private:
      **/
     enum class eRouterOptions : int32_t
     {
-          CMD_RouterUndefined   //!< Undefined command.
-        , CMD_RouterPause       //!< Pause router.
-        , CMD_RouterRestart     //!< Restart router.
-        , CMD_RouterInstances   //!< Display list of connected instances.
-        , CMD_RouterVerbose     //!< Display data rate information if possible. Functions only with extended features
-        , CMD_RouterSilent      //!< Silent mode, no data rate is displayed.
-        , CMD_RouterPrintHelp   //!< Print help.
-        , CMD_RouterQuit        //!< Quit router.
-        , CMD_RouterConsole     //!< Run as console application. Valid only as a command line option
-        , CMD_RouterInstall     //!< Install as service. Valid only as a command line option in Windows OS
-        , CMD_RouterUninstall   //!< Uninstall as a service. Valid only as a command line option in Windows OS
-        , CMD_RouterService     //!< Start router as a service. Valid only as a command line option in Windows OS
+          CMD_RouterUndefined   = NESystemService::eServiceOption::CMD_Undefined    //!< Undefined command.
+        , CMD_RouterConsole     = NESystemService::eServiceOption::CMD_Console      //!< Run as console application. Valid only as a command line option
+        , CMD_RouterPrintHelp   = NESystemService::eServiceOption::CMD_Help         //!< Print help.
+        , CMD_RouterLoad        = NESystemService::eServiceOption::CMD_Load         //!< Start the service by loading initialization instructions from configuration file.
+        , CMD_RouterInstall     = NESystemService::eServiceOption::CMD_Install      //!< Install as service. Valid only as a command line option in Windows OS
+        , CMD_RouterService     = NESystemService::eServiceOption::CMD_Service      //!< Start router as a service. Valid only as a command line option in Windows OS
+        , CMD_RouterUninstall   = NESystemService::eServiceOption::CMD_Uninstall    //!< Uninstall as a service. Valid only as a command line option in Windows OS
+        , CMD_RouterVerbose     = NESystemService::eServiceOption::CMD_Verbose      //!< Display data rate information if possible. Functions only with extended features
+        , CMD_RouterPause       = NESystemService::eServiceOption::CMD_Custom       //!< Pause router.
+        , CMD_RouterRestart                                                         //!< Start / Restart router.
+        , CMD_RouterInstances                                                       //!< Display list of connected instances.
+        , CMD_RouterSilent                                                          //!< Silent mode, no data rate is displayed.
+        , CMD_RouterQuit                                                            //!< Quit router.
     };
 
     /**

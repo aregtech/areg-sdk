@@ -33,15 +33,18 @@ namespace NESystemService
      * \brief   NESystemService::eServiceOption
      *          Message routing service options.
      **/
-    enum class eServiceOption
+    enum class eServiceOption   : int32_t
     {
           CMD_Undefined     //!< Option is undefined.
-        , CMD_Install       //!< Option is to install (register) service in the system.
-        , CMD_Uninstall     //!< Option is to uninstall (unregister) service in the system.
-        , CMD_Service       //!< Option is to execute process as a system service (in background).
         , CMD_Console       //!< Option is to execute process as console application.
-        , CMD_Verbose       //!< Option is to display the data rate when execute process as console application.
         , CMD_Help          //!< Option is to display help on console.
+        , CMD_Load          //!< Option is to start the process and load configuration from specified file
+        , CMD_Install       //!< Option is to install (register) service in the system.
+        , CMD_Service       //!< Option is to execute process as a system service (in background).
+        , CMD_Uninstall     //!< Option is to uninstall (unregister) service in the system.
+        , CMD_Verbose       //!< Option is to display the data rate when execute process as console application.
+
+        , CMD_Custom        //!< No option, reserved for the custom options.
     };
 
     /**
@@ -54,20 +57,22 @@ namespace NESystemService
      **/
     const OptionParser::sOptionSetup ServiceOptionSetup[ ]
     {
-        //!< Default command.
-        { ""  , ""          , static_cast<int>(eServiceOption::CMD_Console)     , OptionParser::NO_DATA, {}, {}, {} }
-        //!< Command to install service. Valid for Windows OS, ignored in other cases.
-      , { "-i", "--install" , static_cast<int>(eServiceOption::CMD_Install)     , OptionParser::NO_DATA, {}, {}, {} }
-        //!< Command to uninstall service. Valid for Windows OS, ignored in other cases.
-      , { "-u", "--uninstall", static_cast<int>(eServiceOption::CMD_Uninstall)  , OptionParser::NO_DATA, {}, {}, {} }
-        //!< Command to run process as a system service process.
-      , { "-s", "--service" , static_cast<int>(eServiceOption::CMD_Service)     , OptionParser::NO_DATA, {}, {}, {} }
-        //!< Command to run process as a console application.
-      , { "-c", "--console" , static_cast<int>(eServiceOption::CMD_Console)     , OptionParser::NO_DATA, {}, {}, {} }
-        //!< Command to display data rate when run as console application.
-      , { "-v", "--verbose" , static_cast<int>(eServiceOption::CMD_Verbose)     , OptionParser::NO_DATA, {}, {}, {} }
-        //!< Command to display help on console.
-      , { "-h", "--help"    , static_cast<int>(eServiceOption::CMD_Help)        , OptionParser::NO_DATA, {}, {}, {} }
+          //!< Default command.
+          { ""  , ""            , static_cast<int>(eServiceOption::CMD_Console)     , OptionParser::NO_DATA         , {}, {}, {} }
+          //!< Command to run process as a console application.
+        , { "-c", "--console"   , static_cast<int>(eServiceOption::CMD_Console)     , OptionParser::NO_DATA         , {}, {}, {} }
+          //!< Command to display help on console.
+        , { "-h", "--help"      , static_cast<int>(eServiceOption::CMD_Help)        , OptionParser::NO_DATA         , {}, {}, {} }
+          //!< Command to display the error message.
+        , { "-l", "--load"      , static_cast<int>(eServiceOption::CMD_Load)        , OptionParser::STRING_NO_RANGE , {}, {}, {} }
+          //!< Command to install service. Valid for Windows OS, ignored in other cases.
+        , { "-i", "--install"   , static_cast<int>(eServiceOption::CMD_Install)     , OptionParser::NO_DATA         , {}, {}, {} }
+          //!< Command to run process as a system service process.
+        , { "-s", "--service"   , static_cast<int>(eServiceOption::CMD_Service)     , OptionParser::NO_DATA         , {}, {}, {} }
+          //!< Command to uninstall service. Valid for Windows OS, ignored in other cases.
+        , { "-u", "--uninstall" , static_cast<int>(eServiceOption::CMD_Uninstall)  , OptionParser::NO_DATA          , {}, {}, {} }
+          //!< Command to display data rate when run as console application.
+        , { "-v", "--verbose"   , static_cast<int>(eServiceOption::CMD_Verbose)     , OptionParser::NO_DATA         , {}, {}, {} }
     };
 
     /**

@@ -14,6 +14,8 @@
  ************************************************************************/
 #include "aregextend/service/SystemServiceBase.hpp"
 
+#include "areg/appbase/Application.hpp"
+#include "areg/base/File.hpp"
 #include "areg/trace/GETrace.h"
 #include "aregextend/console/Console.hpp"
 
@@ -33,12 +35,14 @@ SystemServiceBase::SystemServiceBase( ServiceCommunicatonBase & commBase )
     , mSystemServiceOption  ( NESystemService::DEFAULT_OPTION )
     , mSvcHandle            ( nullptr )
     , mSeMHandle            ( nullptr )
+    , mFileConfig           ( NEApplication::DEFAULT_CONFIG_FILE )
 {
 }
 
 void SystemServiceBase::resetDefaultOptions(void)
 {
     mSystemServiceOption = NESystemService::DEFAULT_OPTION;
+    mFileConfig = NEApplication::DEFAULT_CONFIG_FILE;
     mCommunication.enableCalculateDataRate(NESystemService::DEFAULT_VERBOSE);
 }
 
@@ -49,7 +53,7 @@ bool SystemServiceBase::parseOptions( int argc, const char ** argv, const Option
     if (argc > 1)
     {
         OptionParser parser(optSetup, optCount);
-        if (parser.parseCommandLine(static_cast<const char**>(argv), argc > 1 ? static_cast<uint32_t>(argc) : 0))
+        if (parser.parseCommandLine(argv, argc > 1 ? static_cast<uint32_t>(argc) : 0))
         {
             result = prepareOptions(parser.getOptions());
         }
@@ -70,8 +74,28 @@ bool SystemServiceBase::parseOptions( int argc, const char ** argv, const Option
 
 bool SystemServiceBase::parseOptions(int argc, char** argv, const OptionParser::sOptionSetup* optSetup, uint32_t optCount)
 {
-    const char* temp{ argv != nullptr ? static_cast<const char*>(*argv) : nullptr };
-    return (temp != nullptr ? parseOptions(argc, &temp, optSetup, optCount) : false);
+    bool result{ false };
+
+    if (argc > 1)
+    {
+        OptionParser parser(optSetup, optCount);
+        if (parser.parseCommandLine(argv, argc > 1 ? static_cast<uint32_t>(argc) : 0))
+        {
+            result = prepareOptions(parser.getOptions());
+        }
+        else
+        {
+            printHelp(true);
+            result = false;
+        }
+    }
+    else if (argc == 1)
+    {
+        resetDefaultOptions();
+        result = true;
+    }
+
+    return result;
 }
 
 bool SystemServiceBase::prepareOptions(const OptionParser::InputOptionList& opts)
@@ -84,12 +108,23 @@ bool SystemServiceBase::prepareOptions(const OptionParser::InputOptionList& opts
         const OptionParser::sOption& opt = opts[i];
         switch (static_cast<NESystemService::eServiceOption>(opt.inCommand))
         {
-        case NESystemService::eServiceOption::CMD_Install:
-        case NESystemService::eServiceOption::CMD_Uninstall:
-        case NESystemService::eServiceOption::CMD_Service:
-        case NESystemService::eServiceOption::CMD_Console:
+        case NESystemService::eServiceOption::CMD_Install:  // fall through
+        case NESystemService::eServiceOption::CMD_Uninstall:// fall through
+        case NESystemService::eServiceOption::CMD_Service:  // fall through
+        case NESystemService::eServiceOption::CMD_Console:  // fall through
             result = true;
             setCurrentOption(static_cast<NESystemService::eServiceOption>(opt.inCommand));
+            break;
+
+        case NESystemService::eServiceOption::CMD_Load:
+            {
+                result = true;
+                String filePath(opt.inString[0]);
+                if (File::existFile(filePath))
+                {
+                    mFileConfig = filePath;
+                }
+            }
             break;
 
         case NESystemService::eServiceOption::CMD_Verbose:
@@ -122,7 +157,6 @@ bool SystemServiceBase::prepareOptions(const OptionParser::InputOptionList& opts
 int SystemServiceBase::serviceMain( int argc, char ** argv )
 {
     int result{ RESULT_SUCCEEDED };
-
     if (serviceInitialize(argc, argv))
     {
         TRACE_SCOPE( utilities_service_base_SystemServiceBase_serviceMain );
