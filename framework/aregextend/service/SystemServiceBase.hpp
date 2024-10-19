@@ -327,6 +327,10 @@ protected:
      * \brief   OS specific service manager handle.
      **/
     void *                                  mSeMHandle;
+    /**
+     * \brief   The relative or full path to the configuration file. By default, NEApplication::DEFAULT_CONFIG_FILE
+     **/
+    String                                  mFileConfig;
 
 //////////////////////////////////////////////////////////////////////////
 // Forbidden calls

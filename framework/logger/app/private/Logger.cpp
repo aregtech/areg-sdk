@@ -60,18 +60,20 @@ namespace
           {"Usage of AREG Log collector (logger) :"}
         , NESystemService::MSG_SEPARATOR
         , {"-a, --save      : Command to save logs in the file. Used in console application. Usage: --save"}
+        , {"-b, --unsave    : Command to stop saving logs in the file. Used in console application. Usage: --unsave"}
         , {"-c, --console   : Command to run logger as a console application (default option). Usage: \'logger --console\'"}
         , {"-e, --query     : Command to query the list of logging scopes. Used in console application. Usage (\'*\' can be a cookie number): --query *"}
         , {"-f, --config    : Command to save current configuration, including log scopes in the config file. Used in console application. Usage: --config"}
         , {"-h, --help      : Command to display this message on console."}
         , {"-i, --install   : Command to install logger as a service. Valid only for Windows OS. Usage: \'logger --install\'"}
-        , {"-l, --silent    : Command option to stop displaying data rate. Used in console application. Usage: --silent"}
+        , {"-l, --load      : Command to initialize from specified file. Used to start application. Usage: \'logger --load=<path-to-init-file>\'"}
         , {"-n, --instances : Command option to display list of connected instances. Used in console application. Usage: --instances"}
         , {"-o, --scope     : Command to update log scope priority. Used in console application. Usage (\'*\' can be a cookie number): --scope *::areg_base_NESocket=NOTSET"}
         , {"-p, --pause     : Command option to pause connection. Used in console application. Usage: --pause"}
         , {"-q, --quit      : Command option to stop logger and quit application. Used in console application. Usage: --quit"}
         , {"-r, --restart   : Command option to restart connection. Used in console application. Usage: --restart"}
         , {"-s, --service   : Command to run logger as a system service. Usage: \'logger --service\'"}
+        , {"-t, --silent    : Command option to stop displaying data rate. Used in console application. Usage: --silent"}
         , {"-u, --uninstall : Command to uninstall logger as a service. Valid only for Windows OS. Usage: \'logger --uninstall\'"}
         , {"-v, --verbose   : Command option to display data rate. Used in console application. Usage: --verbose"}
         , NESystemService::MSG_SEPARATOR
@@ -104,13 +106,14 @@ const OptionParser::sOptionSetup Logger::ValidOptions[ ]
     , { "-f", "--config"    , static_cast<int>(eLoggerOptions::CMD_LogSaveConfig)   , OptionParser::STRING_NO_RANGE , {}, {}, {} }
     , { "-h", "--help"      , static_cast<int>(eLoggerOptions::CMD_LogPrintHelp)    , OptionParser::NO_DATA         , {}, {}, {} }
     , { "-i", "--install"   , static_cast<int>(eLoggerOptions::CMD_LogInstall)      , OptionParser::NO_DATA         , {}, {}, {} }
-    , { "-l", "--silent"    , static_cast<int>(eLoggerOptions::CMD_LogSilent)       , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-l", "--load"      , static_cast<int>(eLoggerOptions::CMD_LogLoad)         , OptionParser::STRING_NO_RANGE , {}, {}, {} }
     , { "-n", "--instances" , static_cast<int>(eLoggerOptions::CMD_LogInstances)    , OptionParser::NO_DATA         , {}, {}, {} }
     , { "-o", "--scope"     , static_cast<int>(eLoggerOptions::CMD_LogUpdateScope)  , OptionParser::STRING_NO_RANGE , {}, {}, {} }
     , { "-p", "--pause"     , static_cast<int>(eLoggerOptions::CMD_LogPause)        , OptionParser::NO_DATA         , {}, {}, {} }
     , { "-q", "--quit"      , static_cast<int>(eLoggerOptions::CMD_LogQuit)         , OptionParser::NO_DATA         , {}, {}, {} }
     , { "-r", "--restart"   , static_cast<int>(eLoggerOptions::CMD_LogRestart)      , OptionParser::NO_DATA         , {}, {}, {} }
     , { "-s", "--service"   , static_cast<int>(eLoggerOptions::CMD_LogService)      , OptionParser::NO_DATA         , {}, {}, {} }
+    , { "-t", "--silent"    , static_cast<int>(eLoggerOptions::CMD_LogSilent)       , OptionParser::NO_DATA         , {}, {}, {} }
     , { "-u", "--uninstall" , static_cast<int>(eLoggerOptions::CMD_LogUninstall)    , OptionParser::NO_DATA         , {}, {}, {} }
     , { "-v", "--verbose"   , static_cast<int>(eLoggerOptions::CMD_LogVerbose)      , OptionParser::NO_DATA         , {}, {}, {} }
 };
@@ -353,7 +356,8 @@ bool Logger::_checkCommand(const String& cmd)
             case eLoggerOptions::CMD_LogConsole:        // fall through
             case eLoggerOptions::CMD_LogInstall:        // fall through
             case eLoggerOptions::CMD_LogUninstall:      // fall through
-            case eLoggerOptions::CMD_LogService:
+            case eLoggerOptions::CMD_LogService:        // fall through
+            case eLoggerOptions::CMD_LogLoad:
                 Logger::_outputInfo("This command should be used in command line ...");
                 break;
 

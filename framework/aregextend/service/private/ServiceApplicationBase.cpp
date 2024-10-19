@@ -37,6 +37,7 @@ ServiceApplicationBase::ServiceApplicationBase(ServiceCommunicatonBase& commBase
 int ServiceApplicationBase::serviceMain(int argc, char** argv)
 {
     int result{ RESULT_SUCCEEDED };
+    Application::setWorkingDirectory(nullptr);
     if (parseOptions(argc, argv, NESystemService::ServiceOptionSetup, MACRO_ARRAYLEN(NESystemService::ServiceOptionSetup)) == false)
     {
         resetDefaultOptions();
@@ -56,6 +57,7 @@ int ServiceApplicationBase::serviceMain(int argc, char** argv)
         break;
 
     case NESystemService::eServiceOption::CMD_Service:  // fall through
+    case NESystemService::eServiceOption::CMD_Load:     // fall through
     case NESystemService::eServiceOption::CMD_Console:
         result = SystemServiceBase::serviceMain(static_cast<int>(argc), argv);
         mCommunication.waitToComplete();
@@ -82,7 +84,7 @@ bool ServiceApplicationBase::serviceInitialize(int /* argc */, char** /* argv */
                                 , false
                                 , true
                                 , false
-                                , NEApplication::DEFAULT_CONFIG_FILE.data()
+                                , mFileConfig.isEmpty() ? NEApplication::DEFAULT_CONFIG_FILE.data() : mFileConfig.getString()
                                 , static_cast<IEConfigurationListener*>(this));
     return _osInitializeService();
 }

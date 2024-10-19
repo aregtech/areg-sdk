@@ -261,7 +261,7 @@ protected:
 private:
 
     /**
-     * \brief   OS specific validity check of logger service.
+     * \brief   OS specific validity check of the service.
      **/
     bool _osIsValid( void ) const;
 
@@ -270,6 +270,9 @@ private:
      **/
     void _osFreeResources( void );
 
+    /**
+     * \brief   OS specific initialization of the service.
+     **/
     bool _osInitializeService( void );
 
     /**

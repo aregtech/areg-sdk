@@ -167,7 +167,7 @@ namespace
             optList.push_back( str );
         }
     }
-}
+} // namespace
 
 const OptionParser::sOptionSetup OptionParser::getDefaultOptionSetup( void )
 {
@@ -383,6 +383,21 @@ bool OptionParser::parseOptions( StrList & optList )
         {
             mInputOptions.add( opt );
             result = OptionParser::hasInputError( static_cast<uint32_t>(opt.inField) ) == false;
+        }
+    }
+
+    return result;
+}
+
+uint32_t OptionParser::findOption(int optId) const
+{
+    uint32_t result{ NECommon::INVALID_POSITION };
+    for (uint32_t i = 0; i < mInputOptions.getSize(); ++i)
+    {
+        if (mInputOptions.getAt(i).inCommand == optId)
+        {
+            result = i;
+            break;
         }
     }
 

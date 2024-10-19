@@ -25,6 +25,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
+      <ModuleDefinitionFile>areglogger/resources/areglogger.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(ConfigShortName)'=='Release'">
@@ -51,10 +52,10 @@
     <Text Include="areglogger\client\private\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="areglogger\resources\areglogger.def" />
+    <ResourceCompile Include="areglogger\resources\areglogger.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="areglogger\resources\areglogger.rc" />
+    <None Include="areglogger\resources\areglogger.def" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

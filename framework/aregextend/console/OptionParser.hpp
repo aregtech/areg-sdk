@@ -403,7 +403,7 @@ public:
      * \return  Returns true if succeeded to parse without error.
      *          Otherwise, returns false.
      **/
-    bool parseCommandLine( const char ** cmdLine,  uint32_t count);
+    bool parseCommandLine( const char ** cmdLine, uint32_t count );
     bool parseCommandLine( const wchar_t ** cmdLine, uint32_t count );
     bool parseCommandLine( char** IN cmdLine, uint32_t count);
     bool parseCommandLine( wchar_t** IN cmdLine, uint32_t count);
@@ -429,6 +429,16 @@ public:
      *          Otherwise, returns false.
      **/
     bool parseOptions( StrList & optList );
+
+    /**
+     * \brief   Searches in the command list the option of specified ID.
+     *          Returns valid index if found the option.
+     *          Otherwise, returns invalid index (NECommon::INVALID_POSITION).
+     * \param   optId   The ID of an option to search in list.
+     * \return  Returns valid index if found an option with specified ID.
+     *          Otherwise, returns invalid index (NECommon::INVALID_POSITION).
+     **/
+    uint32_t findOption(int optId) const;
 
     /**
      * \ brief  Returns the list of parsed options.

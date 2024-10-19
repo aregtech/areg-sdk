@@ -50,23 +50,24 @@ private:
      **/
     enum class eLoggerOptions : int32_t
     {
-          CMD_LogUndefined      //!< Undefined command.
-        , CMD_LogPause          //!< Pause logger.
-        , CMD_LogRestart        //!< Restart logger.
-        , CMD_LogInstances      //!< Display the names of connected instances.
-        , CMD_LogVerbose        //!< Display data rate information if possible. Functions only with extended features.
-        , CMD_LogSilent         //!< Silent mode, no data rate is displayed.
-        , CMD_LogPrintHelp      //!< Output help message.
-        , CMD_LogQuit           //!< Quit logger.
-        , CMD_LogConsole        //!< Run as console application. Valid only as a command line option.
-        , CMD_LogInstall        //!< Install as service. Valid only as a command line option in Windows OS.
-        , CMD_LogUninstall      //!< Uninstall as a service. Valid only as a command line option in Windows OS.
-        , CMD_LogQueryScopes    //!< Query the list of scopes
-        , CMD_LogService        //!< Start logger as a service. Valid only as a command line option in Windows OS.
-        , CMD_LogUpdateScope    //!< Set the scope priorities.
-        , CMD_LogSaveLogs       //!< Logger save logs in the file.
-        , CMD_LogSaveLogsStop   //!< Cancel saving logs in the file.
-        , CMD_LogSaveConfig     //!< Save the log configuration in the config file.
+          CMD_LogUndefined      = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Undefined)  //!< Undefined command.
+        , CMD_LogConsole        = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Console)    //!< Run as console application. Valid only as a command line option.
+        , CMD_LogPrintHelp      = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Help)       //!< Output help message.
+        , CMD_LogLoad           = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Load)       //!< Start the service by loading initialization instructions from configuration file.
+        , CMD_LogInstall        = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Install)    //!< Install as service. Valid only as a command line option in Windows OS.
+        , CMD_LogService        = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Service)    //!< Start logger as a service. Valid only as a command line option in Windows OS.
+        , CMD_LogUninstall      = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Uninstall)  //!< Uninstall as a service. Valid only as a command line option in Windows OS.
+        , CMD_LogVerbose        = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Verbose)    //!< Display data rate information if possible. Functions only with extended features.
+        , CMD_LogPause          = static_cast<int32_t>(NESystemService::eServiceOption::CMD_Custom)     //!< Pause logger.
+        , CMD_LogRestart                                                                                //!< Restart logger.
+        , CMD_LogInstances                                                                              //!< Display the names of connected log provider and log observer instances.
+        , CMD_LogSilent                                                                                 //!< Silent mode, no data rate is displayed.
+        , CMD_LogQuit                                                                                   //!< Quit logger.
+        , CMD_LogQueryScopes                                                                            //!< Query the list of scopes
+        , CMD_LogUpdateScope                                                                            //!< Set the scope priorities.
+        , CMD_LogSaveLogs                                                                               //!< Logger save logs in the file.
+        , CMD_LogSaveLogsStop                                                                           //!< Stop saving logs in the file.
+        , CMD_LogSaveConfig                                                                             //!< Save the log configuration in the config file.
     };
 
     /**
