@@ -111,7 +111,7 @@ Key benefits of AREG's fault-tolerant design include:
 * **Automatic Discovery:** Services are automatically discovered by clients without manual configuration.
 * **Thread-Safe Execution:** All service methods are executed within their respective thread contexts, ensuring thread safety and independence.
 
-<div align="right"><kbd>[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</kbd></div>
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
