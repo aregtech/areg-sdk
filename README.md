@@ -39,28 +39,24 @@
 - [Motivation](#motivation)
 - [Interface-centricity](#interface-centricity)
 - [More than embedded](#more-than-embedded)
-- [Composition](#composition)
-- [Clone sources](#clone-sources)
-- [Quick build](#quick-build)
-  - [Build with `cmake`](#build-with-cmake)
-  - [Build with `MSBuild`](#build-with-msbuild)
-  - [Build with WSL](#build-with-wsl)
-  - [Build with IDEs](#build-with-ides)
+- [Composition of AREG SDK](#composition-of-areg-sdk)
+- [Getting Started: Clone and Build the AREG SDK](#getting-started-clone-and-build-the-areg-sdk)
+  - [Cloning Sources](#cloning-sources)
+  - [Build Instructions](#build-instructions)
+    - [Build with CMake](#build-with-cmake)
     - [Build with Microsoft Visual Studio](#build-with-microsoft-visual-studio)
-    - [Build with Visual Studio Code](#build-with-visual-studio-code)
-- [Integration](#integration)
-  - [Start a Project](#start-a-project)
-    - [Start a project with CMake](#start-a-project-with-cmake)
-    - [Start a project with Microsoft Visual Studio](#start-a-project-with-microsoft-visual-studio)
-  - [Create Services](#create-services)
-  - [Integrate Service Interface](#integrate-service-interface)
-    - [Integrate in CMake](#integrate-in-cmake)
-    - [Integrate in Microsoft Visual Studio](#integrate-in-microsoft-visual-studio)
-  - [Develop Service](#develop-service)
-  - [Multicast Router Service](#multicast-router-service)
-  - [Log Collector Service](#log-collector-service)
-- [Pipeline](#pipeline)
-- [Use cases and benefits](#use-cases-and-benefits)
+    - [Additional Build Options](#additional-build-options)
+- [Integration and Development](#integration-and-development)
+  - [Starting a Project with CMake](#starting-a-project-with-cmake)
+  - [Starting a Project with Microsoft Visual Studio](#starting-a-project-with-microsoft-visual-studio)
+  - [Starting a Project using the `areg` Package](#starting-a-project-using-the-areg-package)
+  - [Service Creation and Development](#service-creation-and-development)
+  - [Example: Defining an Application Model](#example-defining-an-application-model)
+  - [Multicast Router and Log Collector](#multicast-router-and-log-collector)
+- [Pipeline and Roadmap](#pipeline-and-roadmap)
+  - [Future Plans](#future-plans)
+  - [Tools in Development](#tools-in-development)
+- [Use Cases and Benefits](#use-cases-and-benefits)
 - [Examples](#examples)
 - [License](#license)
 - [Call to action](#call-to-action)
@@ -140,7 +136,7 @@ The **AREG SDK** consists of several essential modules to streamline development
 
 ## Getting Started: Clone and Build the AREG SDK[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#getting-started-clone-and-build-the-areg-sdk)
 
-### Cloning Sources[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#cloning-sources)
+### Cloning Sources
 
 To obtain the AREG SDK source codes, use the following command:
 ```bash
@@ -167,7 +163,7 @@ For detailed build instructions, check the [Software Build](https://github.com/a
 > [!NOTE] 
 > Other POSIX-compliant operating systems and compilers have not yet been tested yet.
 
-### Build with CMake
+#### Build with CMake
 
 To compile the AREG SDK using **CMake**, follow these steps:
 
@@ -178,9 +174,9 @@ cmake --build ./build -j 20
 
 For custom builds, pass the options of overwrite the settings listed in [user.cmake](https://github.com/aregtech/areg-sdk/blob/master/conf/cmake/user.cmake).
 
-### Build with MSBuild
+#### Build with Microsoft Visual Studio
 
-To build with **MSBuild** on Windows, run the following or open `areg-sdk.sln` file in Microsoft Visual and build:
+Open `areg-sdk.sln` file in Microsoft Visual Studio and build the solution or build with **MSBuild** on Windows by running the following:
 
 ```bash
 MSBuild .
@@ -188,10 +184,10 @@ MSBuild .
 
 For more details on customizing builds, visit the [Build with MSBuild](https://github.com/aregtech/areg-sdk/wiki/03.-Software-build#build-with-msbuild-areg-sdksln) Wiki page.
 
-### Additional Build Options
+#### Additional Build Options
 
-- **IDE Support:** Includes instructions for **Microsoft Visual Studio** and **Visual Studio Code**.
-- **WSL Support:** Detailed steps for building under **Windows Subsystem for Linux (WSL)** are provided [here](https://github.com/aregtech/areg-sdk/wiki/04.-Build-with-Windows-Subsystem-for-Linux-(WSL)).
+- **IDE Support:** Includes instructions for **[Microsoft Visual Studio](./docs/wiki/msvs.md)** and **[Visual Studio Code](./docs/wiki/vscode.md)**.
+- **WSL Support:** Detailed steps for building under **[Windows Subsystem for Linux (WSL)](./docs/wiki/wsl.md)** are provided.
 
 > [!NOTE]
 > This chapter focuses on building AREG and examples using **Microsoft Visual Studio** and **Visual Studio Code**. The other IDEs are currently not in the focus.
@@ -339,12 +335,12 @@ For in-depth details of building and using these applications, review the descri
 
 The AREG SDK is continually evolving to provide developers with a lightweight and self-sufficient framework for creating complex applications on **Desktop**, **Embedded**, and **IoT edge** devices. The focus is on reducing development time by **30-50%** while maintaining robustness and flexibility.
 
-### Future Plans:
+### Future Plans
 Here are the upcoming features planned for future releases of the AREG SDK:
 - **Multi-channel and multi-protocol communication**: Enhanced support for different communication channels and protocols to improve flexibility and interoperability.
 - **Internet (web) category services**: Expansion into web-based services, enabling more modern, internet-driven applications.
 
-### Tools in Development:
+### Tools in Development
 Several powerful tools are being developed to enhance the AREG SDK experience:
 - **Service Interface Designer**: A visual tool to simplify the design and implementation of service interfaces.
 - **Interactive Log Viewer**: A tool to visualize and analyze logs, streamlining debugging and performance monitoring.
