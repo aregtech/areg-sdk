@@ -196,16 +196,17 @@ For more details on customizing builds, visit the **[Build with MSBuild](./docs/
 
 ---
 
-## Integration and Development[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#integration)
+## Integration and Development[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#integration-and-development)
 
-> [!TIP]  
-> For detailed examples, please refer to the **[AREG SDK Demo](https://github.com/aregtech/areg-sdk-demo)** project.
+For detailed examples, visit the **[AREG SDK Demo](https://github.com/aregtech/areg-sdk-demo)** project.
 
-Integrating the AREG SDK into a project is straightforward with the following three methods:
+### AREG SDK Integration Methods
 
-### Starting a Project with CMake
+There are three ways to integrate the AREG SDK into your project:
 
-To integrate AREG SDK into a CMake project, add the following to your `CMakeLists.txt`:
+#### 1. Integrate with CMake
+
+Add the following to your `CMakeLists.txt` to integrate AREG SDK:
 
 ```cmake
 find_package(areg CONFIG)
@@ -224,72 +225,50 @@ include("${AREG_CMAKE_CONFIG_DIR}/conf/cmake/areg.cmake")
 include_directories("${AREG_SDK_ROOT}/framework")
 ```
 
-This ensures that either the AREG SDK components are found or fetched the sources and included automatically. For detailed information of integrating with CMake, see the appropriate **[Integrate with CMake](./docs/wiki/CMAKE-INTEGRATE.md)** document.
+This either finds or fetches the AREG SDK components. See the **[CMake Integration Guide](./docs/wiki/CMAKE-INTEGRATE.md)** for more details.
 
-### Starting a Project with Microsoft Visual Studio
+### 2. Integrate with Microsoft Visual Studio
 
-To integrate with Microsoft Visual Studio:
-1. Add `areg-sdk` as a submodule to your project.
-2. Include the `*.vcxproj` files from the `<areg-sdk>/framework` directory in your solution.
-3. Link your project with the `areg` library and don't forget to set project depdencies.
+1. Add `areg-sdk` as a submodule.
+2. Include the `*.vcxproj` files from `<areg-sdk>/framework` in your solution.
+3. Link your project with the `areg` library and set project dependencies.
 
-This ensures that the sources of AREG SDK are compiled and linked with the project. For detailed information of integrating with Microsoft Visual Studio, see the appropriate **[Integrate with MS Visual Studio](./docs/wiki/MSVS-INTEGRATE.md)** document.
+For full details, see the **[Visual Studio Integration Guide](./docs/wiki/MSVS-INTEGRATE.md)**.
 
-### Starting a Project using the `areg` Package
+### 3. Using the `areg` Package (vcpkg)
 
-> [!IMPORTANT]  
-> Starting from AREG SDK version 2.0, the `areg` package is planned to be included in the official `vcpkg` environment.
-
-Using the `areg` package simplifies integration by avoiding manual compilation or submodule setup. Follow these steps:
+Starting with AREG SDK 2.0, you can integrate it using the `vcpkg` package manager:
 
 1. **Set up vcpkg:**  
-   Clone the **[vcpkg repository](https://github.com/microsoft/vcpkg)** and follow the **[installation instructions](https://github.com/microsoft/vcpkg#quick-start)** to set it up.
+   Follow the **[vcpkg installation instructions](https://github.com/microsoft/vcpkg#quick-start)**.
 
-2. **Install the `areg` package:**  
-   Use vcpkg to install the `areg` package and its dependencies. For example, on Linux, run:
+2. **Install and integrate the `areg` package:**
+   Example under Linux platform:  
    ```bash
    ./vcpkg install areg:linux-64
-   ```
-
-3. **Integrate with your environment:**  
-   Run the following command to integrate the `areg` package:
-   ```bash
    ./vcpkg integrate install
    ```
-   This command will display the required CMake options for integration.
 
-4. **CMake integration:**  
-   Add the following to your `CMakeLists.txt`:
+3. **Integrate with CMake:**  
+   Add the following to your `CMakeLists.txt` (replace `<example>` with your target name):
    ```cmake
    find_package(areg CONFIG REQUIRED)
-   ```
-   Then link your target with the `areg::areg` library:
-   ```cmake
    target_link_libraries(<example> PRIVATE areg::areg)
    ```
-   When building your project, use the CMake toolchain file from vcpkg:
+   When building your project, use the CMake toolchain file from `vcpkg` (replace `<vcpkg-root>` with the root path of `vcpkg` installation directory):
    ```bash
    cmake -B ./build -DCMAKE_TOOLCHAIN_FILE=<vcpkg-root>/scripts/buildsystems/vcpkg.cmake
    ```
-   where `<vcpkg-root>` should the root path of `vcpkg` installation directory.
-
-5. **Visual Studio integration:**  
-   For Microsoft Visual Studio, link your project with `areg.lib` either through project settings or by adding:
-   ```cpp
-   #pragma comment(lib, "areg")
-   ```
-
+   
 This ensures that the components and header files of AREG SDK and its dependencies are installed on the machine and can be used. For detailed information of installing and integrating with `areg` package, see the appropriate **[integrate `areg` package](./docs/wiki/AREG-PACKAGE.md)** document.
-
-<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ### Service Creation and Development
 
-Services can be created by following the **["Hello Service!"](./docs/HelloService.md)** tutorial, with step-by-step guidance for local and public services. Generated service interface files integrate with CMake or Visual Studio projects. Service Providers extend **xxxStub**, and Service Consumers extend **xxxClientBase**.
+Follow the **[“Hello Service!”](./docs/HelloService.md)** tutorial for step-by-step instructions. Generated service interface files integrate with CMake or Visual Studio projects. Service Providers extend **xxxStub**, and Service Consumers extend **xxxClientBase**.
 
-### Example: Defining an Application Model
+### Example: Application Model Setup
 
-When developing Service Provider and Service Consumer components, developers can easily decide whether these components should run in the same process (multithreading) or in different processes (multiprocessing). This decision is made when defining the **Application Model**. Below is an example of how to set up a *model* where the Service Provider and Service Consumer components run in the same process but on different threads.
+When developing Service Provider and Service Consumer components, developers can easily decide whether these components should run in the same process (multithreading) or in different processes (multiprocessing). This decision is made when defining the **Application Model**. Below is an example of setting up a *model* where the Service Provider and Service Consumer components run in the same process but on different threads.
 
 ```cpp
 BEGIN_MODEL("ServiceModel")
@@ -323,16 +302,10 @@ In this example:
 - **ServiceProvider** runs on `ProviderThread`, and **ServiceConsumer** runs on `ConsumerThread`.
 - The `ServiceConsumer` depends on the `ServiceProvider`, meaning it consumes the services provided by the `ServiceProvider`.
 
-Developers can similarly set up an application with multiple processes: one process running the Service Provider, and another running the Service Consumer. To see how to define both multithreading and multiprocessing applications, or a mixed model where the Service Provider and Consumer components are used across different processes, refer to the **[00_helloservice_](./examples/00_helloservice/)** example in the AREG SDK.
+You can also set up multiprocess applications using same components and changing *model*. Follow examples in the **[00_helloservice](./examples/00_helloservice/)** directory for details.
 
 > [!TIP]
-> Additionally, visit **[examples](./examples/README.md)** to see the list of demonstrated applications and features of the AREG communication engine.
-
-### Multicast Router and Log Collector
-
-Both **mcrouter** and **logger** are essential components for communication and log collection. Configuration templates for these services can be found in the `areg.init` file. Both processes are designed to run as console application or as *OS-managed* services.
-
-For in-depth details of building and using these applications, review the descriptions in **[Multicast Router Service](./docs/wiki/MCROUTER.md)** and **[Log Collector Service](./docs/wiki/LOGGER.md)** pages.
+> Visit **[examples](./examples/README.md)** to see the list of demonstrated applications and features of the AREG communication engine.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
