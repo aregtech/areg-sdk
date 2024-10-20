@@ -54,10 +54,7 @@
   - [Example: Defining an Application Model](#example-defining-an-application-model)
   - [Multicast Router and Log Collector](#multicast-router-and-log-collector)
 - [Pipeline and Roadmap](#pipeline-and-roadmap)
-  - [Future Plans](#future-plans)
-  - [Tools in Development](#tools-in-development)
 - [Use Cases and Benefits](#use-cases-and-benefits)
-- [Examples](#examples)
 - [License](#license)
 - [Call to action](#call-to-action)
 - [Thank you all!](#thank-you-all)
@@ -121,17 +118,17 @@ Key benefits of AREG's fault-tolerant design include:
 ## Composition of AREG SDK[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#composition-of-areg-sdk)
 
 The **AREG SDK** consists of several essential modules to streamline development:
-- [AREG communication engine (*areg*)](https://github.com/aregtech/areg-sdk/tree/master/framework/areg/): Core framework enabling communication between software components.
-- [Multicast router (_mcrouter_)](https://github.com/aregtech/areg-sdk/tree/master/framework/mcrouter/): Facilitates message routing between services.
-- [Log collector (*logger*)](https://github.com/aregtech/areg-sdk/tree/master/framework/logger/): Collects logs from various applications and forwards them to log observers.
-- [Log observer (*areglogger*)](https://github.com/aregtech/areg-sdk/tree/master/framework/areglogger/): Library for receiving logs from the log collector service.
-- [AREG Extended Library (*aregextend*)](https://github.com/aregtech/areg-sdk/tree/master/framework/aregextend/): Offers additional objects with extended features.
-- [Code generator](https://github.com/aregtech/areg-sdk/tree/master/tools/): Generates Service **Provider** and **Consumer** objects from Service Interface documents.
-- [Examples](https://github.com/aregtech/areg-sdk/tree/master/examples/): Illustrates the use of SDK components.
-- ["Lusan" UI Tool](https://github.com/aregtech/areg-sdk-tools): Simplifies and visualizes service design.
+- **[AREG communication engine (*areg*)](./framework/areg/):** Core framework enabling communication between software components.
+- **[Multicast router (_mcrouter_)](./framework/mcrouter/):** Facilitates message routing between services.
+- **[Log collector (*logger*)](./framework/logger/):** Collects logs from various applications and forwards them to log observers.
+- **[Log observer (*areglogger*)](./framework/areglogger/):** Library for receiving logs from the log collector service.
+- **[AREG Extended Library (*aregextend*)](./framework/aregextend/):** Offers additional objects with extended features.
+- **[Code generator](./master/tools/):** Generates Service **Provider** and **Consumer** objects from Service Interface documents.
+- **[Examples](./examples/):** Illustrates the features of AREG Framework and use of the AREG SDK components.
+- **[*Lusan* UI Tool](https://github.com/aregtech/areg-sdk-tools):** Simplifies and visualizes service design, log views.
 
 > [!NOTE]
-> The UI tool [Lusan](https://github.com/aregtech/areg-sdk-tools) is currently under the development. It supposed to provide multiple features like Service Interface design, log viewing and runtime testing. We call to join this open source project to develop the tool.
+> The UI tool **[Lusan](https://github.com/aregtech/areg-sdk-tools)** is currently under the development. It supposed to provide multiple features like Service Interface design, log viewing and runtime testing. We call to join this open source project to develop the tool.
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
@@ -160,7 +157,7 @@ The following build tools are supported:
 | **CMake**   | `CMakeLists.txt` | Linux, Windows, Cygwin | POSIX, Win32 | Build with CMake, VSCode, or MSVS. |
 | **MSBuild** | `areg-sdk.sln`   | Windows                | Win32        | Build with MSBuild or MSVS. |
 
-For detailed build instructions, check the [Software Build](https://github.com/aregtech/areg-sdk/wiki/03.-Software-build) page in the AREG SDK Wiki.
+For detailed build instructions, check the **[Software Build](./docs/wiki/BUILD.md)** page.
 
 
 > [!NOTE] 
@@ -175,7 +172,7 @@ cmake -B ./build
 cmake --build ./build -j 20
 ```
 
-For custom builds, pass the options of overwrite the settings listed in [user.cmake](./docs/wiki/USER-CMAKE.md).
+For custom builds, pass the options of overwrite the settings listed in **[user.cmake](./docs/wiki/USER-CMAKE.md)**.
 
 #### Build with Microsoft Visual Studio
 
@@ -185,7 +182,7 @@ Open `areg-sdk.sln` file in Microsoft Visual Studio and build the solution or bu
 MSBuild .
 ```
 
-For more details on customizing builds, visit the [Build with MSBuild](./docs/wiki/MSVS-BUILD.md) Wiki page.
+For more details on customizing builds, visit the **[Build with MSBuild](./docs/wiki/MSVS-BUILD.md)** document.
 
 #### Additional Build Options
 
@@ -202,7 +199,7 @@ For more details on customizing builds, visit the [Build with MSBuild](./docs/wi
 ## Integration and Development[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#integration)
 
 > [!TIP]  
-> For detailed examples, please refer to the [AREG SDK Demo](https://github.com/aregtech/areg-sdk-demo) project.
+> For detailed examples, please refer to the **[AREG SDK Demo](https://github.com/aregtech/areg-sdk-demo)** project.
 
 Integrating the AREG SDK into a project is straightforward with the following three methods:
 
@@ -227,7 +224,7 @@ include("${AREG_CMAKE_CONFIG_DIR}/conf/cmake/areg.cmake")
 include_directories("${AREG_SDK_ROOT}/framework")
 ```
 
-This ensures that either the AREG SDK components are found or fetched the sources and included automatically. For detailed information of integrating with CMake, see the appropriate [Integrate with CMake](./docs/wiki/CMAKE-INTEGRATE.md) document.
+This ensures that either the AREG SDK components are found or fetched the sources and included automatically. For detailed information of integrating with CMake, see the appropriate **[Integrate with CMake](./docs/wiki/CMAKE-INTEGRATE.md)** document.
 
 ### Starting a Project with Microsoft Visual Studio
 
@@ -236,7 +233,7 @@ To integrate with Microsoft Visual Studio:
 2. Include the `*.vcxproj` files from the `<areg-sdk>/framework` directory in your solution.
 3. Link your project with the `areg` library and don't forget to set project depdencies.
 
-This ensures that the sources of AREG SDK are compiled and linked with the project. For detailed information of integrating with Microsoft Visual Studio, see the appropriate [Integrate with MS Visual Studio](./docs/wiki/MSVS-INTEGRATE.md) document.
+This ensures that the sources of AREG SDK are compiled and linked with the project. For detailed information of integrating with Microsoft Visual Studio, see the appropriate **[Integrate with MS Visual Studio](./docs/wiki/MSVS-INTEGRATE.md)** document.
 
 ### Starting a Project using the `areg` Package
 
@@ -246,7 +243,7 @@ This ensures that the sources of AREG SDK are compiled and linked with the proje
 Using the `areg` package simplifies integration by avoiding manual compilation or submodule setup. Follow these steps:
 
 1. **Set up vcpkg:**  
-   Clone the [vcpkg repository](https://github.com/microsoft/vcpkg) and follow the [installation instructions](https://github.com/microsoft/vcpkg#quick-start) to set it up.
+   Clone the **[vcpkg repository](https://github.com/microsoft/vcpkg)** and follow the **[installation instructions](https://github.com/microsoft/vcpkg#quick-start)** to set it up.
 
 2. **Install the `areg` package:**  
    Use vcpkg to install the `areg` package and its dependencies. For example, on Linux, run:
@@ -282,13 +279,13 @@ Using the `areg` package simplifies integration by avoiding manual compilation o
    #pragma comment(lib, "areg")
    ```
 
-This ensures that the components and header files of AREG SDK and its dependencies are installed on the machine and can be used. For detailed information of installing and integrating with `areg` package, see the appropriate [integrate `areg` package](./docs/wiki/AREG-PACKAGE.md) document.
+This ensures that the components and header files of AREG SDK and its dependencies are installed on the machine and can be used. For detailed information of installing and integrating with `areg` package, see the appropriate **[integrate `areg` package](./docs/wiki/AREG-PACKAGE.md)** document.
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
 ### Service Creation and Development
 
-Services can be created by following the ["Hello Service!"](./docs/HelloService.md) tutorial, with step-by-step guidance for local and public services. Generated service interface files integrate with CMake or Visual Studio projects. Service Providers extend **xxxStub**, and Service Consumers extend **xxxClientBase**.
+Services can be created by following the **["Hello Service!"](./docs/HelloService.md)** tutorial, with step-by-step guidance for local and public services. Generated service interface files integrate with CMake or Visual Studio projects. Service Providers extend **xxxStub**, and Service Consumers extend **xxxClientBase**.
 
 ### Example: Defining an Application Model
 
@@ -326,14 +323,16 @@ In this example:
 - **ServiceProvider** runs on `ProviderThread`, and **ServiceConsumer** runs on `ConsumerThread`.
 - The `ServiceConsumer` depends on the `ServiceProvider`, meaning it consumes the services provided by the `ServiceProvider`.
 
-Developers can similarly set up an application with multiple processes: one process running the Service Provider, and another running the Service Consumer. To see how to define both multithreading and multiprocessing applications, or a mixed model where the Service Provider and Consumer components are used across different processes, refer to the [00_helloservice_](./examples/00_helloservice) example in the AREG SDK.
+Developers can similarly set up an application with multiple processes: one process running the Service Provider, and another running the Service Consumer. To see how to define both multithreading and multiprocessing applications, or a mixed model where the Service Provider and Consumer components are used across different processes, refer to the **[00_helloservice_](./examples/00_helloservice/)** example in the AREG SDK.
 
+> [!TIP]
+> Additionally, visit **[examples](./examples/README.md)** to see the list of demonstrated applications and features of the AREG communication engine.
 
 ### Multicast Router and Log Collector
 
-Both **mcrouter** and **logger** are essential components for communication and log collection. Configuration templates for these services can be found in the `areg.init` file. Both processes are designed to run as console application or as OS-managed services.
+Both **mcrouter** and **logger** are essential components for communication and log collection. Configuration templates for these services can be found in the `areg.init` file. Both processes are designed to run as console application or as *OS-managed* services.
 
-For in-depth details of building and using these applications, review the descriptions in [Multicast Router Service](./docs/wiki/MCROUTER.md) and [Log Collector Service](./docs/wiki/LOGGER.md) pages.
+For in-depth details of building and using these applications, review the descriptions in **[Multicast Router Service](./docs/wiki/MCROUTER.md)** and **[Log Collector Service](./docs/wiki/LOGGER.md)** pages.
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
@@ -341,22 +340,20 @@ For in-depth details of building and using these applications, review the descri
 
 ## Pipeline and Roadmap[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#pipeline-and-roadmap)
 
-The AREG SDK is continually evolving to provide developers with a lightweight and self-sufficient framework for creating complex applications on **Desktop**, **Embedded**, and **IoT edge** devices. The focus is on reducing development time by **30-50%** while maintaining robustness and flexibility.
+The AREG SDK is continuously evolving to help developers create complex applications more efficiently on **Desktop**, **Embedded**, and **IoT edge** devices. It aims to reduce development time by **30-50%** while ensuring reliability and flexibility.
 
-### Future Plans
-Here are the upcoming features planned for future releases of the AREG SDK:
-- **Multi-channel and multi-protocol communication**: Enhanced support for different communication channels and protocols to improve flexibility and interoperability.
-- **Internet (web) category services**: Expansion into web-based services, enabling more modern, internet-driven applications.
+**Upcoming Features:**
+- **Multi-channel & multi-protocol communication**: Enhanced support for various communication methods, improving interoperability.
+- **Internet category services**: Expansion into web-based services, enabling more modern, internet-driven applications.
 
-### Tools in Development
-Several powerful tools are being developed to enhance the AREG SDK experience:
-- **Service Interface Designer**: A visual tool to simplify the design and implementation of service interfaces.
-- **Interactive Log Viewer**: A tool to visualize and analyze logs, streamlining debugging and performance monitoring.
-- **Service Testing and Data Simulation Tool**: Facilitates testing by simulating services and data, allowing for better development practices and quicker iterations.
+**Tools in Development:**
+- **Service Interface Designer**: A visual tool to simplify service interface creation.
+- **Interactive Log Viewer**: A tool for easy log visualization and performance analysis.
+- **Service Testing & Simulation Tool**: Helps simulate services and data, streamlining testing and development.
 
-These tools are actively being developed in the [AREG SDK Tools](https://github.com/aregtech/areg-sdk-tools) repository and is part of the AREG SDK.
+The tools are actively being developed in the **[AREG SDK Tools repository](https://github.com/aregtech/areg-sdk-tools)**.
 
-<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+<div align="right"><kbd>[ <a href="#table-of-contents">↑ Back to top ↑</a> ]<kbd></div>
 
 ---
 
@@ -368,15 +365,7 @@ The AREG SDK enables efficient multithreading and multiprocessing communication.
 - **Real-time applications** for IoT devices.
 - **Simulation and test environments**.
 
-Explore [real-world use cases and examples](./docs/USECASES.md) to learn more about its applications.
-
-<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
-
----
-
-## Examples[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#examples)
-
-The [examples](./examples/) are part of AREG SDK and they illustrate the use of AREG framework objects, use of logs, and creation of **Local** and **Public** services. Visit [examples](./examples/README.md) to see the list of demonstrated applications and features of the AREG communication engine.
+Explore **[real-world use cases and examples](./docs/USECASES.md)** to learn more about its applications.
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
@@ -388,7 +377,7 @@ The AREG SDK is available under the **[Apache License Version 2.0](./LICENSE.txt
 - Commercial support.
 - Full rights to create and distribute software without open-source license obligations.
 
-For more information on commercial licensing, visit the [Aregtech](https://www.aregtech.com/) website or contact us at **info[at]aregtech[dot]com**.
+For more information on commercial licensing, visit the **[Aregtech](https://www.aregtech.com/)** website or contact us at **info[at]aregtech[dot]com**.
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 
@@ -404,7 +393,7 @@ We encourage the developer community to get involved and contribute to the growt
 
 For commercial support, training, or partnership inquiries, reach out to **info[at]aregtech[dot]com**.
 
-Lastly, please consider [starring the AREG SDK on GitHub](https://github.com/aregtech/areg-sdk/) to support the project and help grow our community!
+Lastly, please consider [**starring** the AREG SDK on GitHub](https://github.com/aregtech/areg-sdk/) to support the project and help grow our community!
 
 <div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
 

@@ -208,6 +208,8 @@ inline const char * NESystemService::getString( NESystemService::eServiceOption 
         return "NESystemService::eServiceOption::CMD_Uninstall";
     case NESystemService::eServiceOption::CMD_Verbose:
         return "NESystemService::eServiceOption::CMD_Verbose";
+    case NESystemService::eServiceOption::CMD_Custom:
+        return "NESystemService::eServiceOption::CMD_Custom";
     default:
         ASSERT( false );
         return "ERR: Unexpected NESystemService::eServiceOption value!";
