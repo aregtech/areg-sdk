@@ -75,7 +75,7 @@ As data is generated and collected at the edge of the network (**mist network**)
 * _Decrease data streaming_, which is a fundamental condition to optimize network communication.
 * _Autonomous, intelligent and self-aware devices_ with services directly in the environment of data origin.
 
-<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+<div align="right"><kbd>[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</kbd></div>
 
 ---
 
@@ -91,7 +91,7 @@ This interface-centric ORPC model mirrors object-oriented programming principles
 
 AREG’s design integrates **Client-Server (Request-Reply)** and **Publish-Subscribe (PubSub)** models, enabling it to support both action- and data-centric communication.
 
-<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+<div align="right"><kbd>[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</kbd></div>
 
 ---
 
@@ -111,7 +111,7 @@ Key benefits of AREG's fault-tolerant design include:
 * **Automatic Discovery:** Services are automatically discovered by clients without manual configuration.
 * **Thread-Safe Execution:** All service methods are executed within their respective thread contexts, ensuring thread safety and independence.
 
-<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+<div align="right"><kbd>[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</kbd></div>
 
 ---
 
@@ -353,7 +353,7 @@ The AREG SDK is continuously evolving to help developers create complex applicat
 
 The tools are actively being developed in the **[AREG SDK Tools repository](https://github.com/aregtech/areg-sdk-tools)**.
 
-<div align="right"><kbd>[ <a href="#table-of-contents">↑ Back to top ↑</a> ]<kbd></div>
+<div align="right"><kbd>[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</kbd></div>
 
 ---
 
