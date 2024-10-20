@@ -75,7 +75,7 @@ As data is generated and collected at the edge of the network (**mist network**)
 * _Decrease data streaming_, which is a fundamental condition to optimize network communication.
 * _Autonomous, intelligent and self-aware devices_ with services directly in the environment of data origin.
 
-<div align="right"><kbd>[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</kbd></div>
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
@@ -91,7 +91,7 @@ This interface-centric ORPC model mirrors object-oriented programming principles
 
 AREG’s design integrates **Client-Server (Request-Reply)** and **Publish-Subscribe (PubSub)** models, enabling it to support both action- and data-centric communication.
 
-<div align="right"><kbd>[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</kbd></div>
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
@@ -130,7 +130,7 @@ The **AREG SDK** consists of several essential modules to streamline development
 > [!NOTE]
 > The UI tool **[Lusan](https://github.com/aregtech/areg-sdk-tools)** is currently under the development. It supposed to provide multiple features like Service Interface design, log viewing and runtime testing. We call to join this open source project to develop the tool.
 
-<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
@@ -192,7 +192,7 @@ For more details on customizing builds, visit the **[Build with MSBuild](./docs/
 > [!NOTE]
 > This chapter focuses on building AREG and examples using **Microsoft Visual Studio** and **Visual Studio Code**. The other IDEs are currently not in the focus.
 
-<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
@@ -281,7 +281,7 @@ Using the `areg` package simplifies integration by avoiding manual compilation o
 
 This ensures that the components and header files of AREG SDK and its dependencies are installed on the machine and can be used. For detailed information of installing and integrating with `areg` package, see the appropriate **[integrate `areg` package](./docs/wiki/AREG-PACKAGE.md)** document.
 
-<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ### Service Creation and Development
 
@@ -334,7 +334,7 @@ Both **mcrouter** and **logger** are essential components for communication and 
 
 For in-depth details of building and using these applications, review the descriptions in **[Multicast Router Service](./docs/wiki/MCROUTER.md)** and **[Log Collector Service](./docs/wiki/LOGGER.md)** pages.
 
-<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
@@ -353,7 +353,7 @@ The AREG SDK is continuously evolving to help developers create complex applicat
 
 The tools are actively being developed in the **[AREG SDK Tools repository](https://github.com/aregtech/areg-sdk-tools)**.
 
-<div align="right"><kbd>[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</kbd></div>
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
@@ -367,7 +367,7 @@ The AREG SDK enables efficient multithreading and multiprocessing communication.
 
 Explore **[real-world use cases and examples](./docs/USECASES.md)** to learn more about its applications.
 
-<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
@@ -379,7 +379,7 @@ The AREG SDK is available under the **[Apache License Version 2.0](./LICENSE.txt
 
 For more information on commercial licensing, visit the **[Aregtech](https://www.aregtech.com/)** website or contact us at **info[at]aregtech[dot]com**.
 
-<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
@@ -395,7 +395,7 @@ For commercial support, training, or partnership inquiries, reach out to **info[
 
 Lastly, please consider [**starring** the AREG SDK on GitHub](https://github.com/aregtech/areg-sdk/) to support the project and help grow our community!
 
-<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
@@ -414,7 +414,7 @@ Special thanks to all contributors and supporters that starred this repository.
 Do you like this project? Please join us or [give](https://github.com/aregtech/areg-sdk/stargazers) a ⭐. This will help to attract more contributors.<br/>
 Do you have an idea or found a bug? Please open an [issue](https://github.com/aregtech/areg-sdk/issues) or start a [discussion](https://github.com/aregtech/areg-sdk/discussions).
 
-<div align="right">[ <a href="#table-of-contents">↑ Back to top ↑</a> ]</div>
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
 ---
 
