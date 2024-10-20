@@ -62,7 +62,8 @@
 - [Call to action](#call-to-action)
 - [Thank you all!](#thank-you-all)
 
-For full technical guidance of building and using AREG SDK, see the [following documents](./docs/wiki/).
+> [!IMPORTANT]
+> For full technical guidance of building and using AREG SDK, see the [following documents](./docs/wiki/).
 
 ---
 
