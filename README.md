@@ -88,7 +88,7 @@ At the core of AREG is **ORPC** (_Object Remote Procedure Call_), which targets 
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/interface-centric.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/interface-centric.png" alt="Diagram showing multiprocess communication" style="width:50%;height:50%"/></a></div>
 
-This **interface-centric ORPC** model mirrors object-oriented programming principles and is flexible in managing multiple object instances. It imposes no protocol limitations and supports bi-directional communication to ensure seamless messaging between connected software nodes. In this model:
+This **interface-driven ORPC** model mirrors object-oriented programming principles and is flexible in managing multiple object instances. It imposes no protocol limitations and supports bi-directional communication to ensure seamless messaging between connected software nodes. In this model:
 * **Service Providers** (micro-server objects) offer reusable, accessible services.
 * **Service Consumers** (client objects) invoke services without needing to know the network details.
 
@@ -305,7 +305,7 @@ int main(void)
 
 In this example:
 - **ServiceProvider** runs on `ProviderThread`, and **ServiceConsumer** runs on `ConsumerThread`.
-- `REGISTER_DEPENDENCY("ServiceProvider")` means `ServiceConsumer` consumes the services provided by `ServiceProvider`.
+- `REGISTER_DEPENDENCY("ServiceProvider")` means `ServiceConsumer` component consumes the services provided by `ServiceProvider`.
 
 You can also set up multiprocess applications using same components and changing *model*. As a practical example, follow projects in the **[00_helloservice](./examples/00_helloservice/)** directory.
 
@@ -324,7 +324,7 @@ For in-depth details of building and using these applications, review the descri
 
 ## Pipeline and Roadmap[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#pipeline-and-roadmap)
 
-The AREG SDK is continuously evolving to help developers create complex applications more efficiently on **Desktop**, **Embedded**, and **IoT edge** devices. It aims to reduce development time by **30-50%** while ensuring reliability and flexibility.
+The AREG SDK is continuously evolving to help developers create complex applications more efficiently on **Desktop**, **Embedded**, and **IoT edge** devices. It aims to reduce development time by **30-50%** while ensuring automation, reliability and flexibility.
 
 **Upcoming Features:**
 - **Multi-channel & multi-protocol communication**: Enhanced support for various communication methods, improving interoperability.
@@ -393,7 +393,7 @@ Special thanks to all contributors and supporters that starred this repository.
 
 [![Stargazers of @aregtech/areg-sdk repo](http://reporoster.com/stars/aregtech/areg-sdk)](https://github.com/aregtech/areg-sdk/stargazers)
 
-Do you like this project? Please join us or [give](https://github.com/aregtech/areg-sdk/stargazers) a ⭐. This will help to attract more contributors.<br/>
+Do you like this project? Join us or [give](https://github.com/aregtech/areg-sdk/stargazers) a ⭐.<br/>
 Do you have an idea or found a bug? Please open an [issue](https://github.com/aregtech/areg-sdk/issues) or start a [discussion](https://github.com/aregtech/areg-sdk/discussions).
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
