@@ -248,24 +248,27 @@ Before starting, visit the **[official vcpkg](https://github.com/microsoft/vcpkg
    ./vcpkg install areg:linux-64
    ./vcpkg integrate install
    ```
+   This ensures that the components and header files of AREG SDK and its dependencies are installed on the machine and can be used.
 
 2. **Integrate with CMake:**  
-   Add the following to your `CMakeLists.txt` (replace `<example>` with your target name):
+   Add the following script to your `CMakeLists.txt` (replace `<example>` with real target name):
    ```cmake
    find_package(areg CONFIG REQUIRED)
    target_link_libraries(<example> PRIVATE areg::areg)
    ```
-   When building your project, use the CMake toolchain file from `vcpkg` (replace `<vcpkg-root>` with the root path of `vcpkg` installation directory):
+   Use the CMake toolchain file from `vcpkg` (`<vcpkg-root>` is the root path of `vcpkg` directory) to configure and build the project:
    ```bash
    cmake -B ./build -DCMAKE_TOOLCHAIN_FILE=<vcpkg-root>/scripts/buildsystems/vcpkg.cmake
+   cmake --build ./build -j 20
    ```
+
 3. **Integrate with Microsoft Visual Studio:**
-   In Microsoft Visual Studio, make sure that the `areg` library is linked with the project binaries either via *Project Properties* or by adding this line of code in the source:
+   In Microsoft Visual Studio, make sure that the `areg` library is linked with the project binaries either via *Project Properties* or by adding this line of code:
    ```cpp
    #pragma comment(lib, "areg")
    ```
 
-This ensures that the components and header files of AREG SDK and its dependencies are installed on the machine and can be used. For detailed information of installing and integrating with `areg` package, see the appropriate **[integrate `areg` package](./docs/wiki/AREG-PACKAGE.md)** document.
+For detailed information of installing and integrating with `areg` package, see the appropriate **[integrate `areg` package](./docs/wiki/AREG-PACKAGE.md)** document.
 
 ### Service Creation and Development
 
@@ -305,7 +308,7 @@ int main(void)
 
 In this example:
 - **ServiceProvider** runs on `ProviderThread`, and **ServiceConsumer** runs on `ConsumerThread`.
-- The `ServiceConsumer` depends on the `ServiceProvider`, meaning it consumes the services provided by the `ServiceProvider`.
+- `REGISTER_DEPENDENCY("ServiceProvider")` means `ServiceConsumer` consumes the services provided by `ServiceProvider`.
 
 You can also set up multiprocess applications using same components and changing *model*. Follow examples in the **[00_helloservice](./examples/00_helloservice/)** directory for details.
 
