@@ -199,7 +199,7 @@ For further details on customizing builds, visit the **[Build with MSBuild](./do
 
 ## Integration and Development[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#integration-and-development)
 
-For a practical example of building real-time, distributed systems using **AREG SDK**, check out the **[AREG SDK Demo](https://github.com/aregtech/areg-sdk-demo)** project. This demo includes implementations for multithreading and multiprocessing application for **IoT mist- and fog-systems**.
+For a practical example of building real-time, distributed systems using **AREG SDK**, check out the **[AREG SDK Demo](https://github.com/aregtech/areg-sdk-demo)** project, which includes implementations of multitasking applications for **embedded, IoT mist- and fog-systems**.
 
 ### AREG SDK Integration Methods
 
@@ -249,7 +249,7 @@ Before starting, visit the **[official vcpkg](https://github.com/microsoft/vcpkg
    ./vcpkg integrate install
    ```
 
-2. **Integrate with CMake:** Add the following script to your `CMakeLists.txt` (replace `<example>` with real target name):
+2. **Integrate with CMake:** Add the following script to your `CMakeLists.txt` (replace `<example>` with real target):
    ```cmake
    find_package(areg CONFIG REQUIRED)
    target_link_libraries(<example> PRIVATE areg::areg)
@@ -273,7 +273,7 @@ Follow the **[“Hello Service!”](./docs/HelloService.md)** tutorial for step-
 
 ### Example: Application Model Setup
 
-When developing Service Provider and Service Consumer components, developers can easily determine whether to run components in the same process (multithreading) or in separate processes (multiprocessing) for optimal performance in real-time applications by defining the **Application Model**. Below is an example of setting up a *model* where the *Service Provider* and *Service Consumer* components run in the same process, but on different threads.
+When developing **Service Provider** and **Service Consumer** components, developers can easily determine whether to run components in the same process (multithreading) or in separate processes (multiprocessing) for optimal performance in real-time applications by defining the **Application Model**. Below is an example of setting up a *model* where the *Service Provider* and *Service Consumer* components run in the same process, but on different threads.
 
 ```cpp
 BEGIN_MODEL("ApplicationModel")
