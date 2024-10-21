@@ -118,7 +118,7 @@ The fault-tolerant design of AREG offers key advantages, such as:
 
 ## Composition of AREG SDK[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#composition-of-areg-sdk)
 
-The **AREG SDK** consists of several essential and auxiliary modules to streamline distributed, real-time applications development:
+The **AREG SDK** consists of several modules to streamline distributed, real-time applications development:
 - **[AREG communication engine (*areg*)](./framework/areg/):** Core framework enabling communication between software components.
 - **[Multicast router (_mcrouter_)](./framework/mcrouter/):** Facilitates message routing between services.
 - **[Log collector (*logger*)](./framework/logger/):** Collects logs from various applications and forwards them to log observers.
