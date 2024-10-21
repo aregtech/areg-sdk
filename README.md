@@ -242,15 +242,13 @@ For full details, see the **[Visual Studio Integration Guide](./docs/wiki/MSVS-I
 
 Before starting, visit the **[official vcpkg](https://github.com/microsoft/vcpkg)** repository to clone and install the `vcpkg` packaging manager tool in your PC.
 
-1. **Install and integrate the `areg` package:** 
-   Example that the components and headers of AREG SDK and its dependencies are installed under Linux:  
+1. **Install and integrate the `areg` package:** Example that the components and headers of AREG SDK and its dependencies are installed under Linux:  
    ```bash
    ./vcpkg install areg:linux-64
    ./vcpkg integrate install
    ```
 
-2. **Integrate with CMake:**  
-   Add the following script to your `CMakeLists.txt` (replace `<example>` with real target name):
+2. **Integrate with CMake:**  Add the following script to your `CMakeLists.txt` (replace `<example>` with real target name):
    ```cmake
    find_package(areg CONFIG REQUIRED)
    target_link_libraries(<example> PRIVATE areg::areg)
@@ -261,8 +259,7 @@ Before starting, visit the **[official vcpkg](https://github.com/microsoft/vcpkg
    cmake --build ./build -j 20
    ```
 
-3. **Integrate with Microsoft Visual Studio:**
-   In Microsoft Visual Studio, make sure that the `areg` library is linked with the project binaries either via *Project Properties* or by adding this line of code:
+3. **Integrate with Microsoft Visual Studio:** In Microsoft Visual Studio, make sure that the `areg` library is linked with the project binaries either via *Project Properties* or by adding this line of code:
    ```cpp
    #pragma comment(lib, "areg")
    ```
