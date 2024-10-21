@@ -50,7 +50,7 @@ The AREG SDK includes a variety of examples demonstrating features like multithr
 
 
 > [!NOTE]
-> The order of starting the applications does not affect system behavior. The AREG SDK supports fault tolerance, meaning the system runs smoothly as long as the Service Provider, Service Consumer, and the Multicast Router (**mcrouter**) are up, regardless of their startup sequence.
+> The order in which applications start does not affect system behavior. Since the **AREG Framework** supports fault tolerance, the system runs smoothly as long as the Service Provider, Service Consumer, and the Multicast Router (**mcrouter**) are running, regardless of their startup sequence.
 
 ### Available Examples:
 
@@ -118,7 +118,7 @@ The AREG SDK includes a variety of examples demonstrating features like multithr
     **IPC** example transferring large amounts of dummy data, demonstrating network data rate.
 
 22. **[21_pubunblock](./examples/21_pubunblock):**  
-    **IPC** example showing how to manually unblock requests and trigger multiple consumers, while handling provider responses when unblocked request processing is completed.
+**IPC** example demonstrating how to manually unblock pending requests, allowing them to be triggered multiple times while the request processing is still ongoing. Once the ongoing request processing is completed, the response can be manually sent. The **AREG Framework** ensures that responses are not mixed and are correctly delivered to the appropriate Consumer.
 
 23. **[22_pubsub](./examples/22_pubsub):**  
     **IPC** example demonstrating the PubSub feature, with one process as the Publisher and multiple Subscribers run in separate threads.
