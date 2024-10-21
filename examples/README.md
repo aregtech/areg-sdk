@@ -1,67 +1,133 @@
-# Examples
+
+# AREG SDK Examples
 
 ```
-This file is part of AREG SDK and describes the examples
-Copyright (c) 2017-2023, Aregtech
+This document is part of the AREG SDK and describes its examples.
+Copyright © 2017-2023, Aregtech
 Contact: info[at]aregtech.com
 Website: https://www.aregtech.com
 ```
 
-## Quick Build
+## Quick Build Guide
 
-The AREG SDK provides a collection of examples that showcase the engine and framework features. 
+To get started with AREG SDK, follow these steps:
 
-Please note that examples labeled as **IPC** (Inter-Process Communication) require the utilization of [_mcrouter_](https://github.com/aregtech/areg-sdk/tree/master/framework/mcrouter) and involve _Public_ services. To successfully test IPC applications, ensure that `mcrouter` is running. Examples not marked as **IPC** only involve _Local_ services and do not require `mcrouter` usage.
+### 1. Clone the AREG SDK Repository
+Clone the AREG SDK repository using the following command:
 
-To compile the examples, you must first build the _areg_ library and _mcrouter_. The examples can be built using `cmake`, `make`, or `msbuild`. To enable or disable the building of examples, utilize the `AREG_BUILD_EXAMPLES` option in `make` or `cmake`. By default, it is enabled. To disable it, set it to `OFF` or `0`.
+```bash
+git clone https://github.com/aregtech/areg-sdk.git
+```
 
-Example of quick build using `cmake`:
+### 2. Build the AREG SDK with CMake
+Use CMake to build the SDK:
+
 ```bash
 cmake -B ./build
-cmake --build ./build -j 8
+cmake --build ./build -j 20
 ```
 
-Example of quick build using `make`:
-```bash
-make all -j 8
+### 3. Build with Microsoft Visual Studio
+For Microsoft Visual Studio users, open the `areg-sdk.sln` file and build the projects. Alternatively, use the command line:
+
+```console
+MSBuild ./areg-sdk.sln
 ```
 
-Example of quick build using `msbuild`:
-```bash
-msbuild .
-```
+> [!NOTE]
+> To compile the example projects, ensure that the `AREG_EXAMPLES` option is **not** set to `OFF`. If `AREG_EXAMPLES=OFF`, examples will be excluded from the build.
 
-For more detailed information about the build process and the supported options, refer to the [Software-build](https://github.com/aregtech/areg-sdk/wiki/03.-Software-build) Wiki page of the AREG SDK.
+For more detailed build instructions and options, visit the [Build Documentation](./../docs/wiki/BUILD.md) in the AREG SDK Wiki.
 
 ---
 
-# List of Examples
+## AREG SDK Examples Overview
 
-Here is a list of examples available in the AREG SDK:
+The AREG SDK includes a variety of examples demonstrating features like multithreading, IPC, synchronization, and service components.
 
-0. [00_helloservice](https://github.com/aregtech/areg-sdk/tree/master/examples/00_helloservice) - A multithreading and multiprocessing application used as an example in the [Hello Service!](https://github.com/aregtech/areg-sdk/blob/master/docs/HelloService.md), which is a part of the [developer guide](https://github.com/aregtech/areg-sdk/blob/master/docs/DEVELOP.md).
-1. [01_hello](https://github.com/aregtech/areg-sdk/tree/master/examples/01_hello) - A multithreading console application that outputs the "Hello World" message.
-2. [02_buffer](https://github.com/aregtech/areg-sdk/tree/master/examples/02_buffer) - A multithreading console application demonstrating streaming in a shared buffer.
-3. [03_file](https://github.com/aregtech/areg-sdk/tree/master/examples/03_file) - A console application demonstrating working with text and binary files, including the use of file name masks.
-4. [04_trace](https://github.com/aregtech/areg-sdk/tree/master/examples/04_trace) - A multithreading console application for starting and using logging.
-5. [05_timer](https://github.com/aregtech/areg-sdk/tree/master/examples/05_timer) - A multithreading console application for starting the Timer Service and using various timers.
-6. [06_threads](https://github.com/aregtech/areg-sdk/tree/master/examples/06_threads) - A multithreading console application for starting and stopping various threads.
-7. [07_synch](https://github.com/aregtech/areg-sdk/tree/master/examples/07_synch) - A multithreading console application demonstrating the use of various combined synchronization objects.
-8. [08_service](https://github.com/aregtech/areg-sdk/tree/master/examples/08_service) - A multithreading console application for starting an empty servicing component.
-9. [09_svcmulti](https://github.com/aregtech/areg-sdk/tree/master/examples/09_svcmulti) - A multithreading console application for creating multiple instances of the same servicing component.
-10. [10_locsvc](https://github.com/aregtech/areg-sdk/tree/master/examples/10_locsvc) - A multithreading console application demonstrating a _Local_ servicing component.
-11. [11_locmesh](https://github.com/aregtech/areg-sdk/tree/master/examples/11_locmesh) - A multithreading console application demonstrating multiple instances of the same _Local_ service.
-12. [12_pubsvc](https://github.com/aregtech/areg-sdk/tree/master/examples/12_pubsvc) - A multiprocessing (**IPC**) application demonstrating a _Public_ service and the service client.
-13. [13_pubmesh](https://github.com/aregtech/areg-sdk/tree/master/examples/13_pubmesh) - A multiprocessing (**IPC**) application demonstrating a mesh of _Public_ and _Local_ services, along with the use of service clients.
-14. [14_pubtraffic](https://github.com/aregtech/areg-sdk/tree/master/examples/14_pubtraffic) - A multiprocessing (**IPC**) application demonstrating dynamic model creation and custom event processing.
-15. [15_pubworker](https://github.com/aregtech/areg-sdk/tree/master/examples/15_pubworker) - A multiprocessing (**IPC**) application demonstrating the definition of a _Worker Thread_ in the model and custom event processing.
-16. [16_pubfsm](https://github.com/aregtech/areg-sdk/tree/master/examples/16_pubfsm) - A multiprocessing (**IPC**) application demonstrating the work of a Finite State-Machine (FSM) using AREG framework features.
-17. [17_winchat](https://github.com/aregtech/areg-sdk/tree/master/examples/17_winchat) - A Windows GUI application (**IPC**) demonstrating dynamic modeling, fault tolerance, and a distributed system.
-18. [18_locwatchdog](https://github.com/aregtech/areg-sdk/tree/master/examples/18_locwatchdog) - A multithreading application demonstrating the watchdog feature with a local service.
-19. [19_pubwatchdog](https://github.com/aregtech/areg-sdk/tree/master/examples/19_pubwatchdog) - A multiprocessing (**IPC**) application demonstrating the watchdog feature with a local service.
-20. [20_pubdatarate](https://github.com/aregtech/areg-sdk/tree/master/examples/20_pubdatarate) - A multiprocessing (**IPC**) application demonstrating network communication data rate.
-21. [21_pubunblock](https://github.com/aregtech/areg-sdk/tree/master/examples/21_pubunblock) - A multiprocessing (**IPC**) application demonstrating manual unblocking of requests to process more pending requests.
+> [!IMPORTANT]
+> For examples marked with **IPC**, running the **mcrouter** is required. You can start **mcrouter** from the build directory to enable **inter-process communication** (*IPC*) during testing.
 
-Please note that the list may be updated periodically. We recommend checking the list regularly.
 
-For more details about each project, refer to the _ReadMe.md_ file of each example project.
+> [!NOTE]
+> The order of starting the applications does not affect system behavior. The AREG SDK supports fault tolerance, meaning the system runs smoothly as long as the Service Provider, Service Consumer, and the Multicast Router (**mcrouter**) are up, regardless of their startup sequence.
+
+### Available Examples:
+
+1. **[00_helloservice](./examples/00_helloservice):**  
+   A multithreaded and multiprocess application used in the [Hello Service Guide](https://github.com/aregtech/areg-sdk/blob/master/docs/HelloService.md).
+
+2. **[01_hello](./examples/01_hello):**  
+   A simple multithreaded console application that outputs "Hello World."
+
+3. **[02_buffer](./examples/02_buffer):**  
+   Demonstrates streaming in a shared buffer using multithreading.
+
+4. **[03_file](./examples/03_file):**  
+   Shows how to handle text and binary files, including file name masks.
+
+5. **[04_trace](./examples/04_trace):**  
+   Demonstrates logging and tracing in a multithreaded environment.
+
+6. **[05_timer](./examples/05_timer):**  
+   Demonstrates the Timer Service and various timer functions using multithreading.
+
+7. **[06_threads](./examples/06_threads):**  
+   Shows how to start and stop multiple threads.
+
+8. **[07_synch](./examples/07_synch):**  
+   Demonstrates synchronization with various objects in a multithreaded application.
+
+9. **[08_service](./examples/08_service):**  
+   Demonstrates starting an empty service component using multithreading.
+
+10. **[09_svcmulti](./examples/09_svcmulti):**  
+    Demonstrates creating multiple instances of the same service component in a multithreaded environment.
+
+11. **[10_locsvc](./examples/10_locsvc):**  
+    Demonstrates a local service component running in a multithreaded application.
+
+12. **[11_locmesh](./examples/11_locmesh):**  
+    Demonstrates multiple instances of a local service using multithreading.
+
+13. **[12_pubsvc](./examples/12_pubsvc):**  
+    **IPC** example of a Public Service, where the provider and consumer run in separate processes. Multiple consumers can be started, but only one provider should be running.
+
+14. **[13_pubmesh](./examples/13_pubmesh):**  
+    **IPC** example demonstrating a mesh of Public and Local services running across multiple processes and threads.
+
+15. **[14_pubtraffic](./examples/14_pubtraffic):**  
+    **IPC** example of a Public Service with data attributes and timers. One provider instance should run, with multiple consumers.
+
+16. **[15_pubworker](./examples/15_pubworker):**  
+    **IPC** example of a Public Service where the provider also contains a Worker Thread.
+
+17. **[16_pubfsm](./examples/16_pubfsm):**  
+    **IPC** example of a Service Provider with two Public Service Interfaces and an integrated Finite State-Machine (**FSM**). One provider instance and multiple consumer instances can be run.
+
+18. **[17_winchat](./examples/17_winchat):**  
+    **IPC** GUI application demonstrating dynamic modeling, fault tolerance, and distributed systems. One instance of the **register** application should be started, and multiple **chatter** instances can be run. The system remains operational even if **register** closes.
+
+19. **[18_locwatchdog](./examples/18_locwatchdog):**  
+    A local service example with a Watchdog, where the provider thread is restarted upon Watchdog timeout expiration.
+
+20. **[19_pubwatchdog](./examples/19_pubwatchdog):**  
+    **IPC** example of a Public Service where the provider runs in a thread with a Watchdog. The thread restarts when the Watchdog timeout expires.
+
+21. **[20_pubdatarate](./examples/20_pubdatarate):**  
+    **IPC** example transferring large amounts of dummy data, demonstrating network data rate.
+
+22. **[21_pubunblock](./examples/21_pubunblock):**  
+    **IPC** example showing how to manually unblock requests and trigger multiple consumers, while handling provider responses when unblocked request processing is completed.
+
+23. **[22_pubsub](./examples/22_pubsub):**  
+    **IPC** example demonstrating the PubSub feature, with one process as the Publisher and multiple Subscribers run in separate threads.
+
+24. **[23_pubsubmix](./examples/23_pubsubmix):**  
+    **IPC** example showing a mix of Publishers and Subscribers in processes and threads.
+
+25. **[24_pubsubmulti](./examples/24_pubsubmulti):**  
+    **IPC** example demonstrating multiple Publishers and multiple Subscribers across threads and processes.
+
+### More Information:
+For detailed information on each example, refer to the `ReadMe.md` file inside each project folder. The list of examples is updated regularly, so check back for new additions. 
