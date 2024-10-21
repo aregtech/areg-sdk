@@ -111,7 +111,7 @@ bool SystemServiceBase::prepareOptions(const OptionParser::InputOptionList& opts
         case NESystemService::eServiceOption::CMD_Install:  // fall through
         case NESystemService::eServiceOption::CMD_Uninstall:// fall through
         case NESystemService::eServiceOption::CMD_Service:  // fall through
-        case NESystemService::eServiceOption::CMD_Console:  // fall through
+        case NESystemService::eServiceOption::CMD_Console:
             result = true;
             setCurrentOption(static_cast<NESystemService::eServiceOption>(opt.inCommand));
             break;
@@ -137,7 +137,8 @@ bool SystemServiceBase::prepareOptions(const OptionParser::InputOptionList& opts
             outHelp = true;
             break;
 
-        case NESystemService::eServiceOption::CMD_Undefined:    // fall through
+        case NESystemService::eServiceOption::CMD_Undefined:// fall through
+        case NESystemService::eServiceOption::CMD_Custom:   // fall through
         default:
             setCurrentOption(NESystemService::eServiceOption::CMD_Undefined);
             outHelp = true;

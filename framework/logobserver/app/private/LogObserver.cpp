@@ -300,7 +300,7 @@ void LogObserver::logMain( int argc, char ** argv )
     Application::setWorkingDirectory(nullptr);
     String fileConfig(NEApplication::DEFAULT_CONFIG_FILE);
     OptionParser parser(LogObserver::ValidOptions, MACRO_ARRAYLEN(LogObserver::ValidOptions));
-    if (parser.parseCommandLine(argv, argc))
+    if (parser.parseCommandLine(argv, static_cast<uint32_t>(argc)))
     {
         uint32_t pos = parser.findOption(static_cast<int32_t>(LogObserver::eLoggerOptions::CMD_LogLoad));
         if (pos != NECommon::INVALID_POSITION)

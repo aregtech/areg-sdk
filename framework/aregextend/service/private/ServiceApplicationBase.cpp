@@ -58,7 +58,8 @@ int ServiceApplicationBase::serviceMain(int argc, char** argv)
 
     case NESystemService::eServiceOption::CMD_Service:  // fall through
     case NESystemService::eServiceOption::CMD_Load:     // fall through
-    case NESystemService::eServiceOption::CMD_Console:
+    case NESystemService::eServiceOption::CMD_Console:  // fall through
+    case NESystemService::eServiceOption::CMD_Custom:
         result = SystemServiceBase::serviceMain(static_cast<int>(argc), argv);
         mCommunication.waitToComplete();
         break;

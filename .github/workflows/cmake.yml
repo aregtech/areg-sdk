@@ -347,16 +347,6 @@ jobs:
           java-package: jre
           distribution: temurin
 
-      - name: Set Windows PATH environment variable
-        if: matrix.config.os == 'windows-2022' && matrix.config.family == 'cygwin'
-        run: echo "PATH=C:\cygwin;C:\cygwin\bin;C:\cygwin\lib;%SYSTEMROOT%\system32;%PATH%" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
-      - name: Install cygwin on Windows
-        if: matrix.config.os == 'windows-2022' && matrix.config.family == 'cygwin'
-        uses: cygwin/cygwin-install-action@v4
-        with:
-          packages: cmake, dos2unix, flexdll, gcc-g++, git, ncurses, libncurses-devel, make
-
       - name: Set cmake cache destination for Linux
         if: matrix.config.os == 'ubuntu-latest'
         run: |
@@ -370,6 +360,16 @@ jobs:
             echo "CACHE_DEST=./product/cache/${{matrix.config.family}}-${{matrix.config.cxx}}" >> $env:GITHUB_ENV
             echo "BUILD_DEST=./product/build/${{matrix.config.family}}-${{matrix.config.cxx}}/windows-64-amd64-release-${{matrix.config.lib}}" >> $env:GITHUB_ENV
             echo "INSTALL_DEST=./product/install/${{matrix.config.family}}-${{matrix.config.cxx}}" >> $env:GITHUB_ENV
+
+      - name: Set Windows PATH environment variable
+        if: matrix.config.os == 'windows-2022' && matrix.config.family == 'cygwin'
+        run: echo "PATH=C:\cygwin;C:\cygwin\bin;C:\cygwin\lib;%SYSTEMROOT%\system32;%PATH%" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Install cygwin on Windows
+        if: matrix.config.os == 'windows-2022' && matrix.config.family == 'cygwin'
+        uses: cygwin/cygwin-install-action@v4
+        with:
+          packages: cmake, dos2unix, flexdll, gcc-g++, git, ncurses, libncurses-devel, make
 
       - name: Configure CMake by selecting compiler family
         if: matrix.config.extend == 'ON'
