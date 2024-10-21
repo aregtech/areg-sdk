@@ -248,7 +248,7 @@ Before starting, visit the **[official vcpkg](https://github.com/microsoft/vcpkg
    ./vcpkg integrate install
    ```
 
-2. **Integrate with CMake:**  Add the following script to your `CMakeLists.txt` (replace `<example>` with real target name):
+2. **Integrate with CMake:** Add the following script to your `CMakeLists.txt` (replace `<example>` with real target):
    ```cmake
    find_package(areg CONFIG REQUIRED)
    target_link_libraries(<example> PRIVATE areg::areg)
