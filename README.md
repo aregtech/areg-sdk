@@ -242,7 +242,7 @@ For full details, see the **[Visual Studio Integration Guide](./docs/wiki/MSVS-I
 
 Before starting, visit the **[official vcpkg](https://github.com/microsoft/vcpkg)** repository to clone and install the `vcpkg` packaging manager tool in your PC.
 
-1. **Install and integrate the `areg` package:**
+1. **Install and integrate the `areg` package:** 
    Example that the components and headers of AREG SDK and its dependencies are installed under Linux:  
    ```bash
    ./vcpkg install areg:linux-64
