@@ -112,6 +112,7 @@ bool SystemServiceBase::prepareOptions(const OptionParser::InputOptionList& opts
         case NESystemService::eServiceOption::CMD_Uninstall:// fall through
         case NESystemService::eServiceOption::CMD_Service:  // fall through
         case NESystemService::eServiceOption::CMD_Console:  // fall through
+        case NESystemService::eServiceOption::CMD_Custom:   // fall through
             result = true;
             setCurrentOption(static_cast<NESystemService::eServiceOption>(opt.inCommand));
             break;
