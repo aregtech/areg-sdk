@@ -47,11 +47,12 @@
     - [Build with Microsoft Visual Studio](#build-with-microsoft-visual-studio)
     - [Additional Build Options](#additional-build-options)
 - [Integration and Development](#integration-and-development)
-  - [Starting a Project with CMake](#starting-a-project-with-cmake)
-  - [Starting a Project with Microsoft Visual Studio](#starting-a-project-with-microsoft-visual-studio)
-  - [Starting a Project using the `areg` Package](#starting-a-project-using-the-areg-package)
+  - [AREG SDK Integration Methods](#areg-sdk-integration-methods)
+    - [1. Integrate by Fetching sources](#1-integrate-by-fetching-sources)
+    - [2. Integrate as a project submodule](#2-integrate-as-a-project-submodule)
+    - [3. Integrate the `areg` Package (vcpkg)](#3-integrate-the-areg-package-vcpkg)
   - [Service Creation and Development](#service-creation-and-development)
-  - [Example: Defining an Application Model](#example-defining-an-application-model)
+  - [Example: Application Model Setup](#example-application-model-setup)
   - [Multicast Router and Log Collector](#multicast-router-and-log-collector)
 - [Pipeline and Roadmap](#pipeline-and-roadmap)
 - [Use Cases and Benefits](#use-cases-and-benefits)
@@ -310,6 +311,12 @@ You can also set up multiprocess applications using same components and changing
 
 > [!TIP]
 > Visit **[examples](./examples/README.md)** to see the list of demonstrated applications and features of the AREG communication engine.
+
+### Multicast Router and Log Collector
+
+Both **mcrouter** and **logger** are essential components for communication and log collection. Configuration templates for these services can be found in the `areg.init` file. Both processes are designed to run as console application or as *OS-managed* services.
+
+For in-depth details of building and using these applications, review the descriptions in **[Multicast Router Service](./docs/wiki/MCROUTER.md)** and **[Log Collector Service](./docs/wiki/LOGGER.md)** pages.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
