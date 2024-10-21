@@ -3,7 +3,7 @@
   <br /><br /><strong>AREG SDK</strong>
 </h1>
 
-*Discover AREG SDK, an advanced framework with tools for real-time communication in mist- and fog- network environments.*
+*Discover AREG - an advanced framework for real-time communication in mist- and fog- network environments.*
 
 [![Latest release](https://img.shields.io/github/v/release/aregtech/areg-sdk?label=Latest%20release&style=social)](https://github.com/aregtech/areg-sdk/releases/tag/v1.5.0)
 [![GitHub commits](https://img.shields.io/github/commits-since/aregtech/areg-sdk/v1.5.0.svg?style=social)](https://GitHub.com/aregtech/areg-sdk/commit/)
@@ -33,7 +33,7 @@
 
 ## Introduction[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#introduction)
 
-**AREG** (*Automated Real-time Event Grid*) is an advanced communication framework designed for seamless data transmission in IoT [fog- and mist-network environments](https://csrc.nist.gov/publications/detail/sp/500-325/final). Lightweight and platform-agnostic, AREG enables efficient, automated communication by combining **Client-Server** and **Publish-Subscribe** models. By adopting an interface-centric approach, AREG facilitates the creation of service grids, where multiple devices and software nodes function collaboratively as distributed micro-servers and clients, ensuring reliable real-time data exchange across a network of connected nodes.
+**AREG** (*Automated Real-time Event Grid*) is an advanced communication framework designed for seamless data transmission in IoT **[fog- and mist-network environments](https://csrc.nist.gov/publications/detail/sp/500-325/final)**. Lightweight and platform-agnostic, AREG enables efficient, automated communication by combining **Client-Server** and **Publish-Subscribe** models. By adopting an interface-centric approach, AREG facilitates the creation of service grids, where multiple devices and software nodes function collaboratively as **distributed micro-servers and clients**, ensuring reliable real-time data exchange across a network of connected nodes.
 
 ---
 
@@ -88,7 +88,7 @@ At the core of AREG is **ORPC** (_Object Remote Procedure Call_), which targets 
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/interface-centric.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/interface-centric.png" alt="Diagram showing multiprocess communication" style="width:50%;height:50%"/></a></div>
 
-This interface-centric ORPC model mirrors object-oriented programming principles and is flexible in managing multiple object instances. It imposes no protocol limitations and supports bi-directional communication to ensure seamless messaging between connected nodes. In this model:
+This **interface-centric ORPC** model mirrors object-oriented programming principles and is flexible in managing multiple object instances. It imposes no protocol limitations and supports bi-directional communication to ensure seamless messaging between connected software nodes. In this model:
 * **Service Providers** (micro-server objects) offer reusable, accessible services.
 * **Service Consumers** (client objects) invoke services without needing to know the network details.
 
@@ -100,7 +100,7 @@ AREG’s design integrates **Client-Server (Request-Reply)** and **Publish-Subsc
 
 ## More than Embedded[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#more-than-embedded)
 
-The **interface-centric** architecture of AREG is ideal for embedded applications, but its capabilities extend far beyond. AREG offers distributed and scalable solutions for **multithreading**, **multiprocessing**, and **internet**  communications, making it a versatile choice for a wide range of applications. Services in AREG are categorized into three types: **Local**, **Public**, and **Internet**, enabling flexible and efficient remote communication across diverse environments.
+The architecture of AREG is ideal for embedded applications, but its capabilities extend far beyond. AREG offers distributed and scalable solutions for **multithreading**, **multiprocessing**, and **internet**  communications, making it a versatile choice for a wide range of applications. Services in AREG are categorized into three types: **Local**, **Public**, and **Internet**, enabling flexible and efficient remote communication across diverse environments.
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-services.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-services.png" alt="Diagram showing Services and AREG Framework message handling" style="width:70%;height:70%"/></a></div>
 
@@ -118,7 +118,7 @@ The fault-tolerant design of AREG offers key advantages, such as:
 
 ## Composition of AREG SDK[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#composition-of-areg-sdk)
 
-**AREG SDK** is a comprehensive **communication framework** designed for building **distributed**, **real-time applications**. Its flexibility makes it ideal for use in **real-time data transfer**, **fog computing**, **microservices**, and **edge computing** environments, offering seamless communication across devices and services. The **AREG SDK** consists of several essential modules to streamline development:
+The **AREG SDK** consists of several essential and auxiliary modules to streamline distributed, real-time applications development:
 - **[AREG communication engine (*areg*)](./framework/areg/):** Core framework enabling communication between software components.
 - **[Multicast router (_mcrouter_)](./framework/mcrouter/):** Facilitates message routing between services.
 - **[Log collector (*logger*)](./framework/logger/):** Collects logs from various applications and forwards them to log observers.
