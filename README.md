@@ -3,6 +3,8 @@
   <br /><br /><strong>AREG SDK</strong>
 </h1>
 
+*Discover AREG SDK, an advanced framework with tools for real-time communication in mist- and fog- network environments.*
+
 [![Latest release](https://img.shields.io/github/v/release/aregtech/areg-sdk?label=Latest%20release&style=social)](https://github.com/aregtech/areg-sdk/releases/tag/v1.5.0)
 [![GitHub commits](https://img.shields.io/github/commits-since/aregtech/areg-sdk/v1.5.0.svg?style=social)](https://GitHub.com/aregtech/areg-sdk/commit/)
 [![Stars](https://img.shields.io/github/stars/aregtech/areg-sdk?style=social)](https://github.com/aregtech/areg-sdk/stargazers)
@@ -31,7 +33,7 @@
 
 ## Introduction[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#introduction)
 
-**AREG** (*Automated Real-time Event Grid*) is an advanced communication framework designed for seamless data transmission in IoT [fog- and mist-network environments](https://csrc.nist.gov/publications/detail/sp/500-325/final). Lightweight and platform-agnostic, AREG enables efficient, automated communication using a combination of **Client-Server** and **Publish-Subscribe** models. By adopting an interface-centric approach, AREG facilitates the creation of service grids, where multiple devices and software nodes function collaboratively as distributed micro-servers and clients, and ensure reliable real-time data exchange across a network of connected nodes.
+**AREG** (*Automated Real-time Event Grid*) is an advanced communication framework designed for seamless data transmission in IoT [fog- and mist-network environments](https://csrc.nist.gov/publications/detail/sp/500-325/final). Lightweight and platform-agnostic, AREG enables efficient, automated communication by combining **Client-Server** and **Publish-Subscribe** models. By adopting an interface-centric approach, AREG facilitates the creation of service grids, where multiple devices and software nodes function collaboratively as distributed micro-servers and clients, ensuring reliable real-time data exchange across a network of connected nodes.
 
 ---
 
@@ -69,12 +71,12 @@
 
 Traditionally, devices act as connected clients to stream data to the cloud or fog servers for further processing.
 
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/mist-network.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/mist-network.png" alt="IoT-to-Cloud (Nebula) network" style="width:70%;height:70%"/></a></div>
+<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/mist-network.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/mist-network.png" alt="Diagram showing IoT-to-Cloud (Nebula) network connections" style="width:70%;height:70%"/></a></div>
 
-As data is generated and collected at the edge of the network (**mist network**), there is a growing need to redefine the role of connected Things and enable network-accessible _Public Services_ on the edge device, thereby extending the _Cloud_ capabilities to the extreme edge. This approach serves as a strong foundation for implementing robust solutions such as:
-* _Increase data privacy_, which is an important factor for sensitive data.
-* _Decrease data streaming_, which is a fundamental condition to optimize network communication.
-* _Autonomous, intelligent and self-aware devices_ with services directly in the environment of data origin.
+As data is generated and collected at the edge of the network (**mist network**), there is a growing need to redefine the role of connected Things and enable network-accessible _Public Services_ on the edge device, thereby extending the _Cloud_ capabilities to the extreme edge. This approach provides a robust foundation for solutions like:
+* **Enhancing data privacy**, which is crucial for sensitive information.
+* **Decrease data streaming**, which is a fundamental condition to optimize network communication.
+* **Autonomous, intelligent and self-aware devices** with services directly in the environment of data origin.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -84,10 +86,10 @@ As data is generated and collected at the edge of the network (**mist network**)
 
 At the core of AREG is **ORPC** (_Object Remote Procedure Call_), which targets interfaces on objects. This allows AREG to establish a **service mesh** or **service grid** where applications expose reusable services. Clients, without knowledge of the server’s network location, can request services seamlessly via method invocation.
 
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/interface-centric.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/interface-centric.png" alt="Service oriented and interface-centric" style="width:50%;height:50%"/></a></div>
+<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/interface-centric.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/interface-centric.png" alt="Diagram showing multiprocess communication" style="width:50%;height:50%"/></a></div>
 
 This interface-centric ORPC model mirrors object-oriented programming principles and is flexible in managing multiple object instances. It imposes no protocol limitations and supports bi-directional communication to ensure seamless messaging between connected nodes. In this model:
-* **Service Providers** (server objects) offer reusable, accessible services.
+* **Service Providers** (micro-server objects) offer reusable, accessible services.
 * **Service Consumers** (client objects) invoke services without needing to know the network details.
 
 AREG’s design integrates **Client-Server (Request-Reply)** and **Publish-Subscribe (PubSub)** models, enabling it to support both action- and data-centric communication.
@@ -98,14 +100,14 @@ AREG’s design integrates **Client-Server (Request-Reply)** and **Publish-Subsc
 
 ## More than Embedded[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#more-than-embedded)
 
-The **interface-centric** architecture of AREG is ideal for embedded applications, but its capabilities extend far beyond. AREG offers distributed and scalable solutions for **multithreading**, **multiprocessing**, and **internet-based**  communications, making it a versatile choice for a wide range of applications. Services in AREG are categorized into three types: **Local**, **Public**, and **Internet**, enabling flexible and efficient remote communication across diverse environments.
+The **interface-centric** architecture of AREG is ideal for embedded applications, but its capabilities extend far beyond. AREG offers distributed and scalable solutions for **multithreading**, **multiprocessing**, and **internet**  communications, making it a versatile choice for a wide range of applications. Services in AREG are categorized into three types: **Local**, **Public**, and **Internet**, enabling flexible and efficient remote communication across diverse environments.
 
-<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-services.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-services.png" alt="AREG SDK distributed services" style="width:70%;height:70%"/></a></div>
+<div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/areg-services.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/areg-services.png" alt="Diagram showing Services and AREG Framework message handling" style="width:70%;height:70%"/></a></div>
 
 > [!NOTE]
 > AREG currently supports **Local** (multithreading) and **Public** (multiprocessing) services.
 
-Key benefits of AREG's fault-tolerant design include:
+The fault-tolerant design of AREG offers key advantages, such as:
 * **Resilience:** Failure in one application does not affect the overall system.
 * **Automatic Discovery:** Services are automatically discovered by clients without manual configuration.
 * **Thread-Safe Execution:** All service methods are executed within their respective thread contexts, ensuring thread safety and independence.
@@ -116,7 +118,7 @@ Key benefits of AREG's fault-tolerant design include:
 
 ## Composition of AREG SDK[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#composition-of-areg-sdk)
 
-The **AREG SDK** consists of several essential modules to streamline development:
+**AREG SDK** is a comprehensive **communication framework** designed for building **distributed**, **real-time applications**. Its flexibility makes it ideal for use in **real-time data transfer**, **fog computing**, **microservices**, and **edge computing** environments, offering seamless communication across devices and services. The **AREG SDK** consists of several essential modules to streamline development:
 - **[AREG communication engine (*areg*)](./framework/areg/):** Core framework enabling communication between software components.
 - **[Multicast router (_mcrouter_)](./framework/mcrouter/):** Facilitates message routing between services.
 - **[Log collector (*logger*)](./framework/logger/):** Collects logs from various applications and forwards them to log observers.
@@ -127,7 +129,7 @@ The **AREG SDK** consists of several essential modules to streamline development
 - **[*Lusan* UI Tool](https://github.com/aregtech/areg-sdk-tools):** Simplifies and visualizes service design, log views.
 
 > [!NOTE]
-> The UI tool **[Lusan](https://github.com/aregtech/areg-sdk-tools)** is currently under the development. It supposed to provide multiple features like Service Interface design, log viewing and runtime testing. We call to join this open source project to develop the tool.
+> The UI tool **[Lusan](https://github.com/aregtech/areg-sdk-tools)** is currently under the development. It is supposed to provide multiple features like Service Interface design, log viewing, and runtime testing. We call to join this open source project to develop the tool.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -144,7 +146,7 @@ git clone https://github.com/aregtech/areg-sdk.git
 
 ### Build Instructions
 
-The AREG SDK is written in **C++17** and supports multiple platforms and compilers:
+The **AREG SDK** is written in **C++17** and supports multiple platforms and compilers:
 - **Supported platforms:** Linux, Windows, Cygwin and macOS. 
 - **Supported compilers:** GNU, Clang, MSVC and Cygwin GNU. 
 - **Supported CPU:** x86, x86_64, arm, and aarch64. 
@@ -160,28 +162,28 @@ For detailed build instructions, check the **[Software Build](./docs/wiki/BUILD.
 
 
 > [!NOTE] 
-> Other POSIX-compliant operating systems and compilers have not yet been tested yet.
+> Other POSIX-compliant operating systems and compilers have not been tested yet.
 
 #### Build with CMake
 
-To compile the AREG SDK using **CMake**, follow these steps:
+To compile the **AREG SDK** using **CMake**, follow these steps:
 
 ```bash
 cmake -B ./build
 cmake --build ./build -j 20
 ```
 
-For custom builds, pass the options of overwrite the settings listed in **[user.cmake](./docs/wiki/USER-CMAKE.md)**.
+For custom builds, pass the options via the command line or configure the options listed in **[user.cmake](./docs/wiki/USER-CMAKE.md)** in CMake script.
 
 #### Build with Microsoft Visual Studio
 
-Open `areg-sdk.sln` file in Microsoft Visual Studio and build the solution or build with **MSBuild** on Windows by running the following:
+Open `areg-sdk.sln` file in Microsoft Visual Studio and build the solution, or navigate to the root directory of the project and run build with **MSBuild**:
 
 ```bash
-MSBuild .
+MSBuild ./areg-sdk.sln
 ```
 
-For more details on customizing builds, visit the **[Build with MSBuild](./docs/wiki/MSVS-BUILD.md)** document.
+For further details on customizing builds, visit the **[Build with MSBuild](./docs/wiki/MSVS-BUILD.md)** document.
 
 #### Additional Build Options
 
@@ -197,7 +199,7 @@ For more details on customizing builds, visit the **[Build with MSBuild](./docs/
 
 ## Integration and Development[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#integration-and-development)
 
-For detailed examples, visit the **[AREG SDK Demo](https://github.com/aregtech/areg-sdk-demo)** project.
+For a practical example of building real-time, distributed systems using **AREG SDK**, check out the **[AREG SDK Demo](https://github.com/aregtech/areg-sdk-demo)** project. This demo includes implementations for multithreading and multiprocessing application for **IoT mist- and fog-systems**.
 
 ### AREG SDK Integration Methods
 
@@ -218,13 +220,13 @@ if (NOT areg_FOUND)
     )
     FetchContent_MakeAvailable(areg-sdk)
     set(AREG_SDK_ROOT "${areg-sdk_SOURCE_DIR}")
+    include_directories("${AREG_SDK_ROOT}/framework")
 endif()
 
 include("${AREG_CMAKE_CONFIG_DIR}/conf/cmake/areg.cmake")
-include_directories("${AREG_SDK_ROOT}/framework")
 ```
 
-This either finds or fetches the AREG SDK components. See the **[CMake Integration Guide](./docs/wiki/CMAKE-INTEGRATE.md)** for more details.
+This either finds or fetches the AREG SDK components from `master` branch. See the **[CMake Integration Guide](./docs/wiki/CMAKE-INTEGRATE.md)** for more details.
 
 #### 2. Integrate as a project submodule
 
@@ -237,17 +239,17 @@ For full details, see the **[Visual Studio Integration Guide](./docs/wiki/MSVS-I
 #### 3. Integrate the `areg` Package (vcpkg)
 
 > [!IMPORTANT]
-> Starting with AREG SDK 2.0, you can integrate it using the `vcpkg` package manager:
+> Starting with AREG SDK 2.0, you can integrate it using the `vcpkg` package manager.
 
-Before starting, visit the **[official vcpkg](https://github.com/microsoft/vcpkg)** repository to clone and install the `vcpkg` packaging manager tool in your PC.
+Before starting, visit the **[official vcpkg](https://github.com/microsoft/vcpkg)** repository to clone and install the `vcpkg` package manager tool in your PC.
 
-1. **Install and integrate the `areg` package:** Example that the components and headers of AREG SDK and its dependencies are installed under Linux:  
+1. **Install and integrate the `areg` package:** Example of the AREG SDK components, headers and its dependencies installation under Linux:  
    ```bash
    ./vcpkg install areg:linux-64
    ./vcpkg integrate install
    ```
 
-2. **Integrate with CMake:** Add the following script to your `CMakeLists.txt` (replace `<example>` with real target):
+2. **Integrate with CMake:** Add the following script to your `CMakeLists.txt` (replace `<example>` with real target name):
    ```cmake
    find_package(areg CONFIG REQUIRED)
    target_link_libraries(<example> PRIVATE areg::areg)
@@ -258,7 +260,7 @@ Before starting, visit the **[official vcpkg](https://github.com/microsoft/vcpkg
    cmake --build ./build -j 20
    ```
 
-3. **Integrate with Microsoft Visual Studio:** In Microsoft Visual Studio, make sure that the `areg` library is linked with the project binaries either via *Project Properties* or by adding this line of code:
+3. **Integrate with Microsoft Visual Studio:** In Microsoft Visual Studio, there is no need to add AREG SDK projects in the solution file. Develop projects and make sure to link `areg` library with binaries either in *Project Properties* or by adding this line of code:
    ```cpp
    #pragma comment(lib, "areg")
    ```
@@ -271,10 +273,10 @@ Follow the **[“Hello Service!”](./docs/HelloService.md)** tutorial for step-
 
 ### Example: Application Model Setup
 
-When developing Service Provider and Service Consumer components, developers can easily decide whether these components should run in the same process (multithreading) or in different processes (multiprocessing). This decision is made when defining the **Application Model**. Below is an example of setting up a *model* where the Service Provider and Service Consumer components run in the same process but on different threads.
+When developing Service Provider and Service Consumer components, developers can easily determine whether to run components in the same process (multithreading) or in separate processes (multiprocessing) for optimal performance in real-time applications by defining the **Application Model**. Below is an example of setting up a *model* where the *Service Provider* and *Service Consumer* components run in the same process, but on different threads.
 
 ```cpp
-BEGIN_MODEL("ServiceModel")
+BEGIN_MODEL("ApplicationModel")
     // Provider Thread
     BEGIN_REGISTER_THREAD("ProviderThread", NECommon::WATCHDOG_IGNORE)
         BEGIN_REGISTER_COMPONENT("ServiceProvider", ServiceComponent)
@@ -288,14 +290,14 @@ BEGIN_MODEL("ServiceModel")
             REGISTER_DEPENDENCY("ServiceProvider")
         END_REGISTER_COMPONENT("ServiceConsumer")
     END_REGISTER_THREAD("ConsumerThread")
-END_MODEL("ServiceModel")
+END_MODEL("ApplicationModel")
 
 int main(void)
 {
     Application::initApplication();
-    Application::loadModel("ServiceModel");
+    Application::loadModel("ApplicationModel");
     Application::waitAppQuit();
-    Application::unloadModel("ServiceModel");
+    Application::unloadModel("ApplicationModel");
     Application::releaseApplication();
     return 0;
 }
@@ -305,16 +307,16 @@ In this example:
 - **ServiceProvider** runs on `ProviderThread`, and **ServiceConsumer** runs on `ConsumerThread`.
 - `REGISTER_DEPENDENCY("ServiceProvider")` means `ServiceConsumer` consumes the services provided by `ServiceProvider`.
 
-You can also set up multiprocess applications using same components and changing *model*. Follow examples in the **[00_helloservice](./examples/00_helloservice/)** directory for details.
+You can also set up multiprocess applications using same components and changing *model*. As a practical example, follow projects in the **[00_helloservice](./examples/00_helloservice/)** directory.
 
 > [!TIP]
-> Visit **[examples](./examples/README.md)** to see the list of demonstrated applications and features of the AREG communication engine.
+> *Learn how AREG SDK simplifies the creation of Service Providers and Consumers, supporting both multithreading and multiprocessing for real-time, distributed applications.* Visit **[examples](./examples/README.md)** to see the list of demonstrated applications and features of the AREG communication engine.
 
 ### Multicast Router and Log Collector
 
-Both **mcrouter** and **logger** are essential components for communication and log collection. Configuration templates for these services can be found in the `areg.init` file. Both processes are designed to run as console application or as *OS-managed* services.
+Both **mcrouter** and **logger** are essential components for communication and log collection. Configuration templates for the multicast router and log collector services are provided in the `areg.init` file. Both processes are designed to run as console applications or as **Operating System managed** services.
 
-For in-depth details of building and using these applications, review the descriptions in **[Multicast Router Service](./docs/wiki/MCROUTER.md)** and **[Log Collector Service](./docs/wiki/LOGGER.md)** pages.
+For in-depth details of building and using these applications, review the descriptions in **[Multicast Router Service](./docs/wiki/MCROUTER.md)** and **[Log Collector Service](./docs/wiki/LOGGER.md)** pages. *Discover how the AREG SDK’s Multicast Router and Log Collector streamline communication and logging in edge computing and real-time data transfer systems.*
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -341,7 +343,7 @@ The tools are actively being developed in the **[AREG SDK Tools repository](http
 
 ## Use Cases and Benefits[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#use-cases-and-benefits)
 
-The AREG SDK enables efficient multithreading and multiprocessing communication. It is ideal for developing:
+The **AREG SDK** enables efficient multithreading and multiprocessing communication, offering full support for *edge computing* and *fog computing* use cases that demand efficient communication between devices and services in real-time. It is ideal for developing:
 
 - **Distributed solutions** for embedded systems.
 - **Real-time applications** for IoT devices.
@@ -359,7 +361,7 @@ The AREG SDK is available under the **[Apache License Version 2.0](./LICENSE.txt
 - Commercial support.
 - Full rights to create and distribute software without open-source license obligations.
 
-For more information on commercial licensing, visit the **[Aregtech](https://www.aregtech.com/)** website or contact us at **info[at]aregtech[dot]com**.
+For more information on commercial licensing, commercial support, trainings, or partnership inquiries, visit the **[Aregtech](https://www.aregtech.com/)** website or contact us at **info[at]aregtech[dot]com**.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
@@ -367,15 +369,13 @@ For more information on commercial licensing, visit the **[Aregtech](https://www
 
 ## Call to action[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#call-to-action)
 
-We encourage the developer community to get involved and contribute to the growth of the AREG SDK. Here’s how you can help:
+We encourage the developer community to get involved and contribute to the growth of the AREG SDK. Join AREG SDK community and collaborate with AREG developers. Here’s how you can help:
 
 - Check out our list of [open issues](https://github.com/aregtech/areg-sdk/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22) where assistance is needed.
 - If you have suggestions or need new features, open a [new issue](https://github.com/aregtech/areg-sdk/issues) or start a [discussion](https://github.com/aregtech/areg-sdk/discussions).
 - For pull requests, ensure that the code adheres to our coding style and allow time for review and testing.
 
-For commercial support, training, or partnership inquiries, reach out to **info[at]aregtech[dot]com**.
-
-Lastly, please consider [**starring** the AREG SDK on GitHub](https://github.com/aregtech/areg-sdk/) to support the project and help grow our community!
+Lastly, help us grow the AREG SDK community by **giving a star** on GitHub! Whether you’re working on **embedded applications**, **multiprocessing and multithreading applications**, **real-time data transfer**, **IoT applications**, or **microservices architecture**, your support helps us continue to improve this cutting-edge communication framework.
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
