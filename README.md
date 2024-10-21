@@ -204,9 +204,9 @@ For detailed examples, visit the **[AREG SDK Demo](https://github.com/aregtech/a
 
 There are three ways to integrate the AREG SDK into your project:
 
-#### 1. Integrate with CMake
+#### 1. Integrate by Fetching sources
 
-Add the following to your `CMakeLists.txt` to integrate AREG SDK:
+Add the following script to your `CMakeLists.txt` to integrate AREG SDK:
 
 ```cmake
 find_package(areg CONFIG)
@@ -227,29 +227,29 @@ include_directories("${AREG_SDK_ROOT}/framework")
 
 This either finds or fetches the AREG SDK components. See the **[CMake Integration Guide](./docs/wiki/CMAKE-INTEGRATE.md)** for more details.
 
-### 2. Integrate with Microsoft Visual Studio
+#### 2. Integrate as a project submodule
 
-1. Add `areg-sdk` as a submodule.
+1. Add `areg-sdk` as a **Git submodule** in your project.
 2. Include the `*.vcxproj` files from `<areg-sdk>/framework` in your solution.
 3. Link your project with the `areg` library and set project dependencies.
 
 For full details, see the **[Visual Studio Integration Guide](./docs/wiki/MSVS-INTEGRATE.md)**.
 
-### 3. Using the `areg` Package (vcpkg)
+#### 3. Integrate the `areg` Package (vcpkg)
 
-Starting with AREG SDK 2.0, you can integrate it using the `vcpkg` package manager:
+> [!IMPORTANT]
+> Starting with AREG SDK 2.0, you can integrate it using the `vcpkg` package manager:
 
-1. **Set up vcpkg:**  
-   Follow the **[vcpkg installation instructions](https://github.com/microsoft/vcpkg#quick-start)**.
+Before starting, visit the **[official vcpkg](https://github.com/microsoft/vcpkg)** repository to clone and install the `vcpkg` packaging manager tool in your PC.
 
-2. **Install and integrate the `areg` package:**
-   Example under Linux platform:  
+1. **Install and integrate the `areg` package:**
+   Example to install and integrate AREG SDK binaries and headers under Linux platform:  
    ```bash
    ./vcpkg install areg:linux-64
    ./vcpkg integrate install
    ```
 
-3. **Integrate with CMake:**  
+2. **Integrate with CMake:**  
    Add the following to your `CMakeLists.txt` (replace `<example>` with your target name):
    ```cmake
    find_package(areg CONFIG REQUIRED)
@@ -259,7 +259,12 @@ Starting with AREG SDK 2.0, you can integrate it using the `vcpkg` package manag
    ```bash
    cmake -B ./build -DCMAKE_TOOLCHAIN_FILE=<vcpkg-root>/scripts/buildsystems/vcpkg.cmake
    ```
-   
+3. **Integrate with Microsoft Visual Studio:**
+   In Microsoft Visual Studio, make sure that the `areg` library is linked with the project binaries either via *Project Properties* or by adding this line of code in the source:
+   ```cpp
+   #pragma comment(lib, "areg")
+   ```
+
 This ensures that the components and header files of AREG SDK and its dependencies are installed on the machine and can be used. For detailed information of installing and integrating with `areg` package, see the appropriate **[integrate `areg` package](./docs/wiki/AREG-PACKAGE.md)** document.
 
 ### Service Creation and Development
