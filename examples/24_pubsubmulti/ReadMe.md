@@ -1,17 +1,15 @@
-# 24_pubsubmulti Project Overview
+## 24_pubsubmulti Project Overview
 
-The [24_pubsubmulti](https://github.com/aregtech/areg-sdk/tree/master/examples/24_pubsubmulti) project showcases the utilization of a *Public Service* in a multi-processing environment, which acts like PubSub (Publish / Subscriber) service. In creates two processes where one process is publishing the data and another has 2 subscribers running in the same thread of the same component. The agenda if this example to demonstrate that the PubSub feature of AREG Engine does not create more events than it is necessary. The Subscriber objects are activated one after another having timing difference, but are subscribed on the data update. Indifferent when the subscribers are created, the messages are delivered to the target by exact needs. 2 types notifications to receive when subscribe on data, called 'Attributes':
-- **On change**: receive update notifications only if the value is changed. In this example it is a string, which sends notification only when value is changed.
-- **Always**   : receive update notification each time value is set even if the value is not changed.
+The **24_pubsubmulti** project demonstrates the use of a *Public Service* in a multi-process environment with one process acting as a data publisher and another containing two subscribers running in the same thread. The example shows how AREG's Pub/Sub feature minimizes event generation by delivering only necessary updates.
 
-The demonstration employing Object RPC (ORPC) for inter-process communication (IPC). The demonstration involves the creation of two applications: one serving as the *Service Provider* to act as a data Publisher and the other as the *Service Consumer* to act as a data Subscriber. The Subscriber can dynamically subscribe and unsubscribe on data update. All data update notifications receive automatically and the system guarantees that as soon as Subscriber assigns on data it receives the latest data even if it is not updated yet. This guaranties that if for any reason the Subscriber does not miss the update notification.
+Subscribers are activated at different times but are subscribed to the same data. The system ensures that messages are delivered efficiently. There are two types of notifications:
+- **On Change:** Notifications are sent only if the value changes.
+- **Always:** Notifications are sent every time the value is set, regardless of whether it changes.
 
-The project comprises three sub-projects:
+The project consists of three sub-projects:
 
-1. [generated](https://github.com/aregtech/areg-sdk/tree/master/examples/24_pubsubmulti/generated) (24_generated) - This sub-project contains a static library consisting of generated code derived from the [PubSub.siml](https://github.com/aregtech/areg-sdk/blob/master/examples/24_pubsubmulti/res/PubSub.siml) *Service Interface* document. The code generation is facilitated using the `codegen.jar` tool.
+1. **24_generated:** This is generated from the [PubSub.siml](./res/PubSub.siml) Service Interface document during CMake configuration or as a pre-build action in Visual Studio's `dummy` project.
+2. **[24_publisher](./publisher/):** A console application providing a network-discoverable *Public Service* that publishes data.
+3. **[24_subscribermulti](./subscriber/):** A console application with two *Service Subscribers* running in the same thread, subscribing to the data updates provided by the *Publisher*.
 
-2. [publisher](https://github.com/aregtech/areg-sdk/tree/master/examples/24_pubsubmulti/publisher) (24_publisher) - This sub-project represents a console application functioning as a network-discoverable *Public Service* provider, which acts as a Data Publisher service. Multiple remote *Service Consumers* as a Data Subscriber can connect to the network to subscribe on data provided by Publisher.
-
-3. [subscriber](https://github.com/aregtech/areg-sdk/tree/master/examples/24_pubsubmulti/subscribermulti) (24_subscribermulti) - This sub-project involves a console application housing a *Public Service* consumer object and acts as a Data Subscriber. It automatically discovers the service provided by the `24_publisher`, dynamically subscribes on Data that is interested and receives update notification 'On Change' and 'Always', depending on 'Attribute' (Data) Property, which is defined on design level. The process contains 2 Subscriber objects running in the same thread and same component. On the subscription, the Subscribers immediately receive the actual value of the attribute data and the flag indicating data validity, then when data is updated, each of them gets separate notifications. You can run multiple instances of the 24_subscribermulti making sure that all processes receive same value and the messages are not mixed.
-
-All communication takes place through `mcrouter`, a multicast router that can operate on any machine within the network. The use of the AREG SDK automates service discovery and ensures fault-tolerant system behavior. Consequently, the order in which the processes are started does not impact the functionality.
+Communication occurs through `mcrouter`, with AREG SDK ensuring service discovery and fault tolerance, making process startup order irrelevant.

@@ -1,8 +1,11 @@
 # 05_timer Project Overview
 
-The [05_timer](https://github.com/aregtech/areg-sdk/tree/master/examples/05_timer) project showcases the usage of timers in applications. It demonstrates the initialization, starting, and stopping of multiple timers, each processed in different threads. To utilize timers, the *Timer Service* (also known as *Timer Manager*) needs to be started. The timers are automatically dispatched in the thread of the timer owner.
+The **[05_timer](./05_timer)** project demonstrates the use of timers within multithreaded applications. It shows how to initialize, start, and stop multiple timers, each managed in separate threads. To use timers, the *Timer Service* (or *Timer Manager*) must be active. Timers are automatically handled in the thread of their respective owners.
 
-The project utilizes the following types of timers:
-- One-time timer: Executes a task only once.
-- Periodic timer: Executes a task a certain number of times.
-- Continuous timer: Executes a task continuously until it is stopped.
+The project includes the following types of timers:
+
+- **One-time timer**: Executes a task once and then stops.
+- **Periodic timer**: Executes a task repeatedly for a defined number of times.
+- **Continuous timer**: Executes a task continuously until manually stopped.
+
+This project highlights how to implement and manage timers for various scenarios.

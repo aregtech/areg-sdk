@@ -1,11 +1,9 @@
 ## 18_locwatchdog Project Overview
 
-[18_locwatchdog](https://github.com/aregtech/areg-sdk/tree/master/examples/18_locwatchdog) demonstrates the utilization of a watchdog in a Local Service. The watchdog acts as a guard to control threads, allowing developers to set a timeout in milliseconds. Threads that fail to respond within the specified runtime will be terminated and restarted by the system. When a thread is killed, all Service Providers and Service Consumers receive a *connection lost* notification. Upon restarting, they receive a *service available* or *client connection* notification, enabling them to resume communication. The watchdog can be disabled for a specific thread by setting a timeout of *0ms*.
+The **18_locwatchdog** project demonstrates the use of a *Watchdog* in a *Local Service*. The watchdog guards threads by setting a timeout, restarting any thread that fails to respond within that time. Notifications of thread termination and restart are sent to all *Service Providers* and *Service Consumers*.
 
-In this example application, the watchdog is triggered by putting the thread to sleep with a timeout greater than the watchdog's timeout. Once the watchdog timeout is reached, the system kills and restarts the thread.
+### Sub-Projects:
 
-The project consists of two sub-projects:
+1. **18_generated:** Generated from [HelloWatchdog.siml](./res/HelloWatchdog.siml) during CMake configuration or as a pre-build action in Visual Studio's `dummy` project.
 
-1. [generated](https://github.com/aregtech/areg-sdk/tree/master/examples/18_locwatchdog/generated) (18_generated): This static library contains the generated codes and common objects. It is generated from the [HelloWatchdog.siml](https://github.com/aregtech/areg-sdk/blob/master/examples/18_locwatchdog/res/HelloWatchdog.siml) Service Interface document using the `codegen.jar` tool.
-
-2. [locservice](https://github.com/aregtech/areg-sdk/tree/master/examples/18_locwatchdog/locservice) (18_locservice): This sub-project is a multithreaded application with a Local Service that is not accessible outside of the process. It contains two threads, one for the Service Provider and one for the Service Consumer. Developers can analyze the logs to track the execution and behavior of the watchdog in the application.
+2. **[18_locservice](./locservice/):** A multithreaded application with a *Local Service* not accessible externally. It contains two threads: one for the *Service Provider* and one for the *Service Consumer*. Logs track the watchdog’s behavior.

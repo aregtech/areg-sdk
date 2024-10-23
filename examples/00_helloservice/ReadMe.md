@@ -1,40 +1,22 @@
-# 00_helloservice Project Overview
 
-The [00_helloservice](https://github.com/aregtech/areg-sdk/tree/master/examples/00_helloservice) project is an example included in the developer guide. It showcases a console **IPC** and **multithreading** application and demonstrates the creation of service and client objects along with various deployment scenarios using the framework.
+## 00_helloservice Project Overview
 
-The project consists of the following major sub-projects and applications:
+The **00_helloservice** project is part of the developer guide that demonstrates a console-based application using **IPC** and **multithreading**. It showcases the creation of service and client objects and illustrates various deployment scenarios using the AREG framework.
 
-## generated (00_generated)
+### Project Structure:
 
-The [00_generated](https://github.com/aregtech/areg-sdk/tree/master/examples/00_helloservice/generated) sub-project is a static library that contains the generated code based on the [HelloService.siml](https://github.com/aregtech/areg-sdk/blob/master/examples/00_helloservice/res/HelloService.siml) Service Interface document located in the [res](https://github.com/aregtech/areg-sdk/blob/master/examples/00_helloservice/res) sub-folder. The code is generated using a code generator tool and compiled as a static library.
+1. **00_generated:** This is automatically generated from the [HelloService.siml](./res/HelloService.siml) Service Interface during CMake configuration or as a pre-build action in Visual Studio.
 
-To recover or update the generated sources, run `codegen.jar` from the `00_helloservice` folder using the following command:
-```
-java -jar ./../../tools/codegen.jar --root=./ --doc=res/HelloService.siml --target=generated/src
-```
+2. **[common](./common/):** Contains shared implementations of the Service Provider and Service Consumer components used across all sub-projects. This demonstrates how developers can create multithreading or multiprocessing applications by simply modifying the *Application Model*.
 
-## common
+3. **[00_onethread](./onethread/):** Demonstrates a scenario where the service provider and client coexist within a single thread of the same process. The implementations of both components are located in the *common* directory.
 
-The [common](https://github.com/aregtech/areg-sdk/tree/master/examples/00_helloservice/common/src) folder contains shared objects used across all other projects. It demonstrates the ease of changing the architecture of applications without requiring changes to the service providers and consumers.
+4. **[00_twothreads](./twothreads/):** Showcases a setup where the service provider and client operate in two separate threads within the same process. Again, the components' implementation resides in the *common* directory.
 
-## onethread (00_onethread)
+5. **[00_pubservice](./multiprocess/serviceproc/):** Provides a *Public Service* that allows multiple service consumers to make requests. The implementation of the service is found in the *common* directory.
 
-The [00_onethread](https://github.com/aregtech/areg-sdk/tree/master/examples/00_helloservice/onethread) application demonstrates a scenario where the service provider and client coexist within a single thread of the same process. The implementation of the service provider and consumer is located in the [common/src](https://github.com/aregtech/areg-sdk/tree/master/examples/00_helloservice/common/src) folder.
+6. **[00_pubclient](./multiprocess/clientproc/):** Contains a client object for the *Public Service*. Multiple instances can be created, allowing several service consumer objects to communicate with the service provider. The implementation is also located in the *common* directory.
 
-## twothreads (00_twothreads)
+---
 
-The [00_twothreads](https://github.com/aregtech/areg-sdk/tree/master/examples/00_helloservice/twothreads) application showcases a scenario where the service provider and client operate in two separate threads within the same process. The implementation of the service provider and consumer is located in the [common/src](https://github.com/aregtech/areg-sdk/tree/master/examples/00_helloservice/common/src) folder.
-
-## multiprocess
-
-The [multiprocess](https://github.com/aregtech/areg-sdk/tree/master/examples/00_helloservice/multiprocess) project consists of two sub-projects that communicate via IPC using Object RPC (ORPC).
-
-### serviceproc (00_pubservice)
-
-The [00_pubservice](https://github.com/aregtech/areg-sdk/tree/master/examples/00_helloservice/multiprocess/serviceproc) application provides a Public Service that allows service consumers (clients) to make requests. The implementation of the service provider and consumer is located in the [common/src](https://github.com/aregtech/areg-sdk/tree/master/examples/00_helloservice/common/src) folder.
-
-### clientproc (00_pubclient)
-
-The [00_pubclient](https://github.com/aregtech/areg-sdk/tree/master/examples/00_helloservice/multiprocess/clientproc) application contains a client object for the Public Service. Multiple instances of `00_clientproc` can be instantiated, enabling multiple service consumer objects to make requests on the service provider process. The implementation of the service provider and consumer is located in the [common/src](https://github.com/aregtech/areg-sdk/tree/master/examples/00_helloservice/common/src) folder.
-
-Please note that this project provides a comprehensive demonstration of different deployment scenarios and the usage of service and client objects.
+This project offers a complete demonstration of different deployment strategies and the usage of service and client objects, showcasing how services and consumers can interact across various threading and process configurations.

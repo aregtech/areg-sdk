@@ -1,16 +1,18 @@
-# 13_pubmesh Project Overview
 
-The [13_pubmesh](https://github.com/aregtech/areg-sdk/tree/master/examples/13_pubmesh) project showcases the powerful capabilities of AREG Framework by demonstrating a meshed network of distributed services composed of both *Public* and *Local* services. With AREG, the complex network is seamlessly handled, connecting Service Consumers with Service Providers and efficiently forwarding messages for processing.
+## 13_pubmesh Project Overview
 
-The project comprises the following sub-projects:
-1. [generated](https://github.com/aregtech/areg-sdk/tree/master/examples/13_pubmesh/generated) (13_generated): A static library containing generated code derived from the [HelloWorld.siml](https://github.com/aregtech/areg-sdk/blob/master/examples/13_pubmesh/res/HelloWorld.siml) *Service Interface* document, generated using the `codegen.jar` tool.
-2. [common](https://github.com/aregtech/areg-sdk/tree/master/examples/13_pubmesh/common) (13_common): A static library providing common objects used across other projects.
-3. [pubservice](https://github.com/aregtech/areg-sdk/tree/master/examples/13_pubmesh/pubservice) (13_pubservice): A console application featuring instances of *Public* and *Local* services.
-4. [pubsvcmesh](https://github.com/aregtech/areg-sdk/tree/master/examples/13_pubmesh/pubsvcmesh) (13_pubsvcmesh): An application with mixed instances of *Service Providers* and *Service Consumers*, forming a mesh network.
-5. [pubclients](https://github.com/aregtech/areg-sdk/tree/master/examples/13_pubmesh/pubclients) (13_pubclients): An application containing *Public* and *Local* service consumers.
+The **13_pubmesh** project showcases the AREG Framework’s ability to handle a meshed network of distributed services, combining *Public* and *Local* services. The framework seamlessly connects *Service Consumers* with *Service Providers* and forwards messages efficiently for processing.
 
-Communication within the system is facilitated through `mcrouter`, a multicast router that operates on any machine within the network. The AREG SDK automates service discovery and ensures fault-tolerant system behavior, making the order of process startup irrelevant.
+### Sub-Projects:
 
-The system guarantees the reliable delivery of calls to their intended targets without mixing or losing messages.
+1. **13_generated:** Generated from [LocalHelloWorld.siml](./res/LocalHelloWorld.siml), [PublicHelloWorld.siml](./res/PublicHelloWorld.siml), and [SystemShutdown.siml](./res/SystemShutdown.siml) Service Interface documents during CMake configuration or as a pre-build action in Visual Studio’s `dummy` project.
+   
+2. **[13_common](./common/):** A static library providing common objects shared across other sub-projects.
 
-To learn more about the project and explore the sub-projects in detail, visit the respective links provided. The AREG Framework empowers developers to create robust and interconnected systems, enabling efficient communication in distributed environments.
+3. **[13_pubservice](./pubservice/):** A console application that hosts both *Public* and *Local* service instances. It also includes a *Controller Service* (named `"PublicControllerService"`) that runs the `SystemShutdown` service, responsible for sending a shutdown message to notify all applications in the system to terminate gracefully.
+
+4. **[13_pubsvcmesh](./pubsvcmesh/):** An application that creates a mesh network with mixed instances of *Service Providers* and *Service Consumers*.
+
+5. **[13_pubclients](./pubclients/):** An application housing *Public* and *Local* service consumers.
+
+Communication is facilitated through `mcrouter`, a multicast router that operates on any machine within the network. The AREG SDK automates service discovery, ensuring fault-tolerant system behavior regardless of the process startup order. Messages are reliably delivered to the intended targets.

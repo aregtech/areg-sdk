@@ -1,13 +1,15 @@
-# 14_pubtraffic Project Overview
 
-The [14_pubtraffic](https://github.com/aregtech/areg-sdk/tree/master/examples/14_pubtraffic) project showcases dynamic model definition, loading and unloading of dynamic models, and the utilization of custom events in a multithreading application.
+## 14_pubtraffic Project Overview
 
-The project comprises three sub-projects:
+The **14_pubtraffic** project demonstrates dynamic model creation, loading/unloading, and the handling of custom events in a multithreaded application.
 
-1. [generated](https://github.com/aregtech/areg-sdk/tree/master/examples/14_pubtraffic/generated) (14_generated): This static library contains generated codes and common objects. It is created from the [SimpleTrafficLight.siml](https://github.com/aregtech/areg-sdk/blob/master/examples/14_pubtraffic/res/SimpleTrafficLight.siml) *Service Interface* document using the `codegen.jar` tool.
+### Sub-Projects:
 
-2. [pubservice](https://github.com/aregtech/areg-sdk/tree/master/examples/14_pubtraffic/pubservice) (14_pubservice): This sub-project provides both public and local services and handles custom events triggered by user interactions. Users can initiate commands such as `start` to begin service jobs, `stop` to halt service jobs, and `quit` or `q` to exit the applications (which also closes all others). To initiate the changing of light states, simply type `start`.
+1. **14_generated:** Generated from the [SimpleTrafficLight.siml](./res/SimpleTrafficLight.siml) Service Interface document during CMake configuration or as a pre-build action in Visual Studio's `dummy` project.
+   
+2. **[14_pubclient](./pubclient/):** A service consumer that dynamically creates models during runtime. Users can start multiple instances of this application and subscribe to different data sets using commands like `sn` (data of conventional *South-North* direction to subscribe) or `ew` (data of conventional *East-West* direction to subscribe).
 
-3. [pubclient](https://github.com/aregtech/areg-sdk/tree/master/examples/14_pubtraffic/pubclient) (14_pubclient): This sub-project features a service consumer that dynamically creates models during runtime. Multiple instances of the same application can be started and run, with each service provider instance generated with a unique name. Upon application startup, users can choose one of the following commands: `sn` to subscribe to one set of data updates or `ew` to subscribe to another set of data updates.
+3. **[14_pubservice](./pubservice/):** Provides both *Public* and *Local* services, handling custom events triggered by user commands like `start` (to begin service jobs), `stop` (to halt jobs), and `quit` (to exit).
 
-Communication within the system is facilitated by `mcrouter`, a multicast router that operates on any machine within the network. The AREG SDK automates service discovery and ensures a fault-tolerant system, making the order of process startup irrelevant.
+
+Communication is handled via `mcrouter`. The AREG SDK ensures fault tolerance and service discovery automation, making the order of process startup irrelevant.

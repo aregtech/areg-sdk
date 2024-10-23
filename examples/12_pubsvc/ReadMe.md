@@ -1,13 +1,14 @@
+
 # 12_pubsvc Project Overview
 
-The [12_pubsvc](https://github.com/aregtech/areg-sdk/tree/master/examples/12_pubsvc) project showcases the utilization of a *Public Service* in a multi-processing environment, employing Object RPC (ORPC) for inter-process communication (IPC). The demonstration involves the creation of two applications: one serving as the *Service Provider* and the other as the *Service Consumer*, making remote requests and receiving corresponding responses.
+The **12_pubsvc** project demonstrates the use of a *Public Service* in a multi-processing environment using Object RPC (ORPC) for inter-process communication (IPC). It involves two applications: a *Service Provider* and a *Service Consumer*, which send remote requests and receive responses.
 
-The project comprises three sub-projects:
+### Sub-Projects:
 
-1. [generated](https://github.com/aregtech/areg-sdk/tree/master/examples/12_pubsvc/generated) (12_generated) - This sub-project contains a static library consisting of generated code derived from the [HelloWorld.siml](https://github.com/aregtech/areg-sdk/blob/master/examples/12_pubsvc/res/HelloWorld.siml) *Service Interface* document. The code generation is facilitated using the `codegen.jar` tool.
+1. **12_generated:** This is generated from the [HelloWorld.siml](./res/HelloWorld.siml) Service Interface document during CMake configuration, or as a pre-build action in Visual Studio's `dummy` project.
+   
+2. **[12_pubservice](./pubservice):** A console application that functions as a network-discoverable *Public Service* provider. Multiple *Service Consumers* can connect and send requests for the provider to handle.
+   
+3. **[12_pubclient](./pubclient):** A console application that acts as a *Public Service* consumer. It automatically discovers the provider service and periodically sends remote request calls using a timer.
 
-2. [pubservice](https://github.com/aregtech/areg-sdk/tree/master/examples/12_pubsvc/pubservice) (12_pubservice) - This sub-project represents a console application functioning as a network-discoverable *Public Service* provider. Multiple remote *Service Consumers* can connect to the network and initiate requests to be executed by the `12_pubservice` application.
-
-3. [pubclient](https://github.com/aregtech/areg-sdk/tree/master/examples/12_pubsvc/pubclient) (12_pubclient) - This sub-project involves a console application housing a *Public Service* consumer object. It automatically discovers the service provided by the `12_pubservice` application and triggers remote request calls. A timer is employed to facilitate periodic request calls.
-
-All communication takes place through `mcrouter`, a multicast router that can operate on any machine within the network. The use of the AREG SDK automates service discovery and ensures fault-tolerant system behavior. Consequently, the order in which the processes are started does not impact the functionality.
+All communication happens through `mcrouter`, a multicast router that can run on any networked machine. The AREG SDK automates service discovery and ensures fault tolerance, so the process startup order doesn't affect functionality.

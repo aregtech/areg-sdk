@@ -1,5 +1,5 @@
 # 04_trace Project Overview
 
-The [04_trace](https://github.com/aregtech/areg-sdk/tree/master/examples/04_trace) project showcases the usage of logging (tracing) in applications. To enable logging, the source code needs to be compiled with the `AREG_LOGS` preprocessor define. Additionally, logging should be enabled in the [areg.init](https://github.com/aregtech/areg-sdk/blob/master/framework/areg/resources/areg.init) configuration file. By default, the `areg.init` file should be located in the `./config` sub-directory relative to the executable file. If the configuration file is not present, logging can be forcefully enabled with default settings.
+The **[04_trace](./04_trace)** project demonstrates how to implement logging (tracing) in applications using the AREG SDK. To enable logging, the source code must be compiled with the `AREG_LOGS=ON` preprocessor definition. Additionally, logging must be activated through the [areg.init](./../framework/areg/resources/areg.init) configuration file, typically located in the `./config` folder relative to the executable.
 
-In the demonstration, logging is forced to be enabled, and it utilizes the default logging settings.
+If the configuration file is missing, logging can still be forcefully enabled with default settings. In this example, logging is pre-configured to be active and uses default settings, showing how to log application behavior effectively.

@@ -1,5 +1,6 @@
+
 # 09_svcmulti Project Overview
 
-The [09_svcmulti](https://github.com/aregtech/areg-sdk/tree/master/examples/09_svcmulti) project builds upon the concepts demonstrated in the [08_service](https://github.com/aregtech/areg-sdk/tree/master/examples/08_service) project. It showcases how to create multiple instances of the same *Service* with different names. 
+The **09_svcmulti** project builds on the concepts introduced in the [08_service](./../08_service) project. It shows how to create multiple instances of the same *Service* with unique names.
 
-In this extended version, the project utilizes empty services and creates two identical instances of a *Local Service* but with distinct names. As a result, the system contains two providers of the *Local Service*.
+This project demonstrates the creation of two identical instances of a *Local Service* but with distinct names called *roles* defined in the *Application Model*. As a result, the system operates with two providers of the *Local Service* running in different threads.

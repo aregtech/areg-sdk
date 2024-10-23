@@ -1,15 +1,17 @@
 ## 17_winchat Project Overview
 
-**NOTE:** The 17_winchat project is designed specifically for Windows operating systems and compiled only with the Microsoft Visual C++ compiler.
+> [!IMPORTANT]
+> The **17_winchat** project is designed exclusively for Windows and requires **MFC** (*Microsoft Foundation Classes*) for compilation with Microsoft Visual C++.
 
-[17_winchat](https://github.com/aregtech/areg-sdk/tree/master/examples/17_winchat) is a Windows GUI application that showcases a fault-tolerant and distributed computing system for embedded devices. It demonstrates the dynamic creation and definition of models and utilizes a dynamic subscription service during runtime.
+The **17_winchat** project is a Windows GUI application showcasing a fault-tolerant distributed system. It demonstrates dynamic model creation and subscription services during runtime.
 
-The project consists of three sub-projects:
+### Sub-Projects:
 
-1. [generated](https://github.com/aregtech/areg-sdk/tree/master/examples/17_winchat/generated) (17_generated): This static library contains generated codes and common objects. It is generated from multiple Service Interface documents located in the [`res`](https://github.com/aregtech/areg-sdk/tree/master/examples/17_winchat/res) subfolder using the `codegen.jar` tool.
+1. **17_generated:** Generated from [CentralMessager.siml](./res/CentralMessager.siml), [ConnectionManager.siml](./res/ConnectionManager.siml), [DirectConnection.siml](./res/DirectConnection.siml), and [DirectMessager.siml](./res/DirectMessager.siml) during CMake configuration or as a pre-build action in Visual Studio's `dummy` project.
 
-2. [register](https://github.com/aregtech/areg-sdk/tree/master/examples/17_winchat/register) (17_register): This sub-project instantiates a Public Service that is utilized by all other applications. Upon starting the application, the user is prompted to manually enter the IP address of the multicast router (`mcrouter`) for establishing a connection.
+2. **[17_register](./register/):** Instantiates a *Public Service* used by other applications. Users manually input the IP address of the `mcrouter` during startup.
 
-3. [chatter](https://github.com/aregtech/areg-sdk/tree/master/examples/17_winchat/chatter) (17_chatter): The chatter sub-project contains an instance of Public Services and Service Consumers. It dynamically creates and loads models during runtime. Similar to the `register` sub-project, the user needs to manually enter the IP address of the multicast router (`mcrouter`) upon application startup to establish a connection.
+3. **[17_chatter](./chatter/):** Provides *Public Services* and *Service Consumers*. It dynamically creates models during runtime, requiring users to manually input the `mcrouter` IP address upon startup.
 
-Communication within the system is facilitated by `mcrouter`, a multicast router that operates on any machine within the network. The AREG SDK automates service discovery and ensures a fault-tolerant system, making the order of process startup irrelevant.
+Communication is facilitated by `mcrouter`. The AREG SDK ensures automatic service discovery and fault tolerance, making the order of process startup irrelevant.
+

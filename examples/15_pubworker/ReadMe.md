@@ -1,13 +1,13 @@
-# 15_pubworker Project Overview
+## 15_pubworker Project Overview
 
-The [15_pubworker](https://github.com/aregtech/areg-sdk/tree/master/examples/15_pubworker) project showcases the usage of *Worker Threads* and the processing of custom events in both the Worker and Component threads.
+The **15_pubworker** project demonstrates the use of *Worker Threads* and the processing of custom events in both Worker and Component threads.
 
 The project consists of three sub-projects:
 
-1. [generated](https://github.com/aregtech/areg-sdk/tree/master/examples/15_generated/generated) (15_generated): This static library contains generated codes and common objects. It is generated from the [PatientInformation.siml](https://github.com/aregtech/areg-sdk/blob/master/examples/15_pubworker/res/PatientInformation.siml) *Service Interface* document using the `codegen.jar` tool.
+1. **15_generated:** This is generated from the [PatientInformation.siml](./res/PatientInformation.siml) Service Interface document during CMake configuration or as a pre-build action in Visual Studio's `dummy` project.
 
-2. [pubservice](https://github.com/aregtech/areg-sdk/tree/master/examples/15_pubworker/pubservice) (15_pubservice): This sub-project includes an instance of a *Public Service Provider* and a *Worker Thread*. The Worker Thread receives user inputs from the console and updates the attributes of the Service. Both the Service and the Worker Thread are defined in the static model to load on startup and unload on exit.
+2. **[15_pubclient](./pubclient/):** This sub-project includes a *Service Consumer* and a *Worker Thread* in the model. The Worker Thread simulates an output device.
 
-3. [pubclient](https://github.com/aregtech/areg-sdk/tree/master/examples/15_pubworker/pubclient) (15_pubclient): This sub-project contains a *Service Consumer* and a *Worker Thread* defined in the model. The Worker Thread simulates the output device.
+3. **[15_pubservice](./pubservice/):** This sub-project includes a *Public Service Provider* and a *Worker Thread*. The Worker Thread processes user inputs from the console and updates the Service's attributes. Both the Service and the Worker Thread are part of the static model, loaded at startup and unloaded at exit.
 
-Communication within the system is facilitated by `mcrouter`, a multicast router that operates on any machine within the network. The AREG SDK automates service discovery and ensures a fault-tolerant system, making the order of process startup irrelevant.
+All communication is handled via `mcrouter`, a multicast router that works on any network machine. The AREG SDK automates service discovery and ensures fault tolerance, making the startup order of processes irrelevant.

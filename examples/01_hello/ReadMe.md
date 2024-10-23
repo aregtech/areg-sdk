@@ -1,3 +1,3 @@
 # 01_hello Project Overview
 
-The [01_hello](https://github.com/aregtech/areg-sdk/tree/master/examples/01_hello) project provides a simple demonstration of creating a thread to output the "Hello World!" message on the console. It showcases the usage of `Thread` and `IEThreadConsumer` objects.
+The **[01_hello](./01_hello)** project is a basic example that demonstrates how to create a thread to print the message "Hello World!" to the console. It showcases the use of the `Thread` class and the `IEThreadConsumer` interface to manage multithreading in the AREG SDK. This example is perfect for understanding the fundamentals of thread creation and execution within the SDK.
