@@ -10,22 +10,21 @@ Website: https://www.aregtech.com
 
 ## Introduction
 
-This repository contains a variety of example projects designed to demonstrate the capabilities of the AREG SDK. These examples showcase core concepts such as service creation, inter-process communication (IPC), multithreading, service discovery, fault-tolerance, and more. Below is a detailed overview of each example project and its components.
+The AREG SDK provides a robust framework for building applications that require **multithreading**, **multiprocessing** (**inter-process communication (IPC)**), and **real-time** event handling. This repository features a range of example projects designed to help developers quickly grasp the core functionalities of the AREG Framework, such as creating **service components**, managing **client-server interactions**, implementing **state-machines**, and developing **fault-tolerant** systems.
 
+This guide offers a detailed overview of each example, highlighting the key features that showcase **AREG's capabilities** in building **high-performance**, **real-time**, and distributed systems.
 
 ## Quick Build Guide
 
-Follow these steps to get started with AREG SDK:
+Follow these steps to get started with the AREG SDK:
 
 ### 1. Clone the AREG SDK Repository
-To clone the AREG SDK repository, run the following command:
 
 ```bash
 git clone https://github.com/aregtech/areg-sdk.git
 ```
 
 ### 2. Build the AREG SDK with CMake
-To build the SDK using CMake, follow these steps:
 
 ```bash
 cmake -B ./build
@@ -33,303 +32,302 @@ cmake --build ./build -j 20
 ```
 
 ### 3. Build with Microsoft Visual Studio
-If you're using Microsoft Visual Studio, open the `areg-sdk.sln` solution file in Visual Studio and build the projects. Alternatively, you can use the command line:
 
 ```console
 MSBuild ./areg-sdk.sln
 ```
 
-> [!NOTE]
-> To include the example projects in the build, make sure the `AREG_EXAMPLES` option is **not** set to `OFF`. If `AREG_EXAMPLES=OFF`, the examples will be excluded from the build.
+> [!NOTE]  
+> Ensure that the `AREG_EXAMPLES` option is **enabled** in CMake to include the examples in the build. By default, the build of examples is enabled. Example of forcing build boncifguration with enabled examples: `cmake -B ./build -DAREG_LOG:BOOL=ON`
 
-For more detailed build instructions and available options, refer to the [Build Documentation](./../docs/wiki/BUILD.md).
+For more details, refer to the [Build Documentation](./../docs/wiki/BUILD.md).
 
 ---
 
 ## AREG SDK Examples Overview
 
-The AREG SDK includes a variety of examples that showcase its features, such as multithreading, multiprocessing, synchronization, and service components.
+The AREG SDK includes a comprehensive set of examples that demonstrate **multithreading**, **IPC**, **service discovery**, **fault-tolerance**, and more.
+
+### Important Notes:
 
 > [!IMPORTANT]
-> Examples marked with **IPC** (*Inter-Process Communication*) require running the **mcrouter** to enable inter-process communication during testing. You can start **mcrouter** from the build directory as a console application.
 
-> [!NOTE]
-> The startup order of the applications does not affect system behavior. Since the **AREG Framework** supports fault tolerance, the system operates smoothly as long as the Service Provider, Service Consumer, and the Multicast Router (**mcrouter**) are running, regardless of their startup sequence.
+- **IPC Examples**: Projects that use **inter-process communication (IPC)** require the **mcrouter** service to facilitate communication between different processes. Run **mcrouter** from the build directory for testing.
+- **Fault-Tolerance**: The AREG SDK is designed with fault-tolerance in mind. The system works reliably as long as the **Service Provider**, **Service Consumer**, and **mcrouter** are running, regardless of their startup order.
+- All **xx_generate** projects are generated from **Service Interface** document files (`.siml`). For CMake build these projects and source files are generated during configuration. For Microsoft Visual Studio, these projects are predefined and the sources are generated as a pre-build event of `dummy` project, which exists in this `example` directory.
+- The project [17_winchat](./17_winchat/) is build only under Windows system with Microsoft Compilers (*MSVC* and *ClangCL*) and it requires *Microsoft Foundation Classes (MFC)*.
 
-### Available Examples:
-
-> [!CAUTION]
-> All **xx_generate** projects are generated from Service Interface document files (extension `.siml`) during CMake configuration. In case of Microsoft Visual Studio, the files of **xx_generate** are created via the script, which is triggered as a pre-build event of a `dummy` project with no functionality.
-
-### **[00_helloservice](./00_helloservice/)**
-
-The **[00_helloservice](./00_helloservice/)** project demonstrates the basics of creating service and client objects in multithreading or IPC scenarios by only changing the *Application Model*.
-
-- **Key Features**: Demonstrates single-thread, multi-thread, and multi-process service/client interactions via *model* definition.
-- **Sub-projects**:
-  - `00_onethread`: Service provider and client in the same thread.
-  - `00_twothreads`: Service provider and client in separate threads within the same process.
-  - `00_pubservice` and `00_pubclient`: Public Service and Client objects in separate processes, enabling multiple clients to interact with a single service provider.
+### Example Projects:
 
 ---
 
-### **[01_hello](./01_hello/)**
+#### **[00_helloservice](./00_helloservice/)**
 
-The **[01_hello](./01_hello)** project is a basic example that demonstrates how to create a thread.
+The **[00_helloservice](./00_helloservice/)** project introduces core concepts of creating **service** (*micro-server*) and **client** objects, showcasing how to switch between **multithreading** and **multiprocessing** by modifying the *Application Model*.
 
-- **Key Features**: Demonstrates basic example of a thread.
-- **Sub-project**:
-  - `01_hello`: Starts a thread, which prints "Hello World!", and waits that it completes and exits.
-
----
-
-### **[02_buffer](./02_buffer/)**
-
-The **[02_buffer](./02_buffer/)** project demonstrates how to use a *Shared Buffer* in a multithreading environment.
-
-- **Key Features**: Showcases data serialization in the memory shared between threads.
-- **Sub-project**:
-  - `02_buffer`: Serializes a data in the thread, starts a thread and passes the *Shared Buffer* to the thread, which then deserializes data and outputs on console.
+- **Key Features**: Single-thread, multi-thread, and multi-process service/client interactions.
+- **Sub-projects**:  
+  - `00_onethread`: Service provider and client in the same thread.  
+  - `00_twothreads`: Service provider and client in separate threads.  
+  - `00_pubservice` and `00_pubclient`: Service and client in different processes, allowing for scalable client-server interactions.
 
 ---
 
-### **[03_file](./03_file/)**
+#### **[01_hello](./01_hello/)**
 
-The **[03_file](./03_file/)** project demonstrates how to work with file objects in both text and binary formats.
+The **[01_hello](./01_hello/)** is a simple **multithreading** project that demonstrates the basics of creating and managing threads.
 
-- **Key Features**: Demonstrates create, write, read, copy and delete files, illustrates use of file name mask.
-- **Sub-project**:
-  - `03_file`: Handles text and binary files, operations with relative and absolute file path, and use of file name mask.
-
----
-
-### **[04_trace](./04_trace/)**
-
-The **[04_trace](./04_trace/)** project demonstrates the usage of tracing in the AREG SDK to log activities.
-
-- **Key Features**: Demonstrates logging and tracing functionality to debug and monitor applications.
-- **Sub-project**:
-  - `04_trace`: Initializes and starts logging service in the application, logs messages.
+- **Key Features**: Demonstrates thread creation and basic thread synchronization.
+- **Sub-project**:  
+  - `01_hello`: Starts a thread that prints "Hello World!" and manages its lifecycle.
 
 ---
 
-### **[05_timer](./05_timer/)**
+#### **[02_buffer](./02_buffer/)**
 
-The **[05_timer](./05_timer/)** project showcases the use of timers in multithreading environment.
+The **[02_buffer](./02_buffer/)** project demonstrates **shared memory** and **data serialization** between threads in a **multithreading** environment.
 
-- **Key Features**: Demonstrates periodic and continues timers, and the timer event processed in the thread.
-- **Sub-project**:
-  - `05_timer`: Implements one-time, periodic and continues timers, where the events are processed in the timer owning thread.
-
----
-
-### **[06_threads](./06_threads/)**
-
-The **[06_threads](./06_threads/)** project demonstrates the creation and management of custom *event dispatching* and simple threads.
-
-- **Key Features**: Showcases a simple and dispatcher thread to process timer events.
-- **Sub-project**:
-  - `06_threads`: Creates and handles two types of threads: `Thread` and `DispatcherThread` objects where `DispatcherThread` processes timer events.
+- **Key Features**: Shared buffer for passing serialized data between threads.
+- **Sub-project**:  
+  - `02_buffer`: Serializes data, passes it via shared memory buffer, and deserializes it in a separate thread.
 
 ---
 
-### **[07_synch](./07_synch/)**
+#### **[03_file](./03_file/)**
 
-The **[07_synch](./07_synch/)** project shows how synchronization mechanisms are used between threads in a multithreading environment.
+The **[03_file](./03_file/)** project shows how to handle file operations such as reading, writing, copying, and deleting files in both text and binary formats.
 
-- **Key Features**: Showcases `Mutex` and `SynchEvent` synchronization objects and the technique of waiting events.
-- **Sub-project**:
-  - `07_synch`: Utilizes synchronization object, simultaneously waits for one or all events of different synchronization types.
-
----
-
-### **[08_service](./08_service/)**
-
-The **[08_service](./08_service/)** project demonstrates creation of a component, which is providing a service (*Service Provider* component), and the creation of a simple *Application Model* to load and start service runtime.
-
-- **Key Features**: Creates a *Service Provider* component and defines a *model* to load runtime.
-- **Sub-project**:
-  - `08_service`: Implements a *Service Provider* component with empty service (no function), defines a *model*, which describes the thread and the component, a loads model to startup local service.
+- **Key Features**: File handling in **multithreading** environments.
+- **Sub-project**:  
+  - `03_file`: Performs file operations using relative/absolute paths and filename masks.
 
 ---
 
-### **[09_svcmulti](./09_svcmulti/)**
+#### **[04_trace](./04_trace/)**
 
-The **[09_svcmulti](./09_svcmulti/)** demonstrates reuse of the same *Service Provider* component.
+The **[04_trace](./04_trace/)** project demonstrates **tracing and logging** mechanisms to monitor and debug application activities.
 
-- **Key Features**: Demonstrates the creation of a model, the technique of service reuse in a thread-component definition.
-- **Sub-project**:
-  - `09_svcmulti`: An empty servicing component (no function) that is reused in the model by having other *role name*.
-
----
-
-### **[10_locsvc](./10_locsvc/)**
-
-The **[10_locsvc](./10_locsvc/)** project demonstrates how local services are defined using AREG's *application modeling* and how the service client object (*Service Consumer*) communicates with the micro-server (Service Provider) to trigger a remote method.
-
-- **Key Features**: Local multithreading communication between a service (*Service Provider*) and a client within a single process.
-- **Sub-project**:
-  - `10_locsvc`: Implements service and client in the same process, which are defined in the *Application Model*.
+- **Key Features**: Logs application actions for debugging and analysis.
+- **Sub-project**:  
+  - `04_trace`: Integrates AREG's logging service to trace messages during runtime.
 
 ---
 
-### **[11_locmesh](./11_locmesh/)**
+#### **[05_timer](./05_timer/)**
 
-The **[11_locmesh](./11_locmesh/)** project demonstrates a mesh of services that communicate in multithreading environment, simulating a distributed system in a single process.
+The **[05_timer](./05_timer/)** project is a demonstration of timers for handling **real-time** events in **multithreaded** applications.
 
-- **Key Features**: Local service mesh communication.
-- **Sub-project**:
-  - `11_locmesh`: Creates a mesh of interconnected local services, which are defined in the *Application Model*.
-
----
-
-### **[12_pubsvc](./12_pubsvc/)**
-
-The **[12_pubsvc](./12_pubsvc/)** is an *inter-process communication* (**IPC**) project that demonstrates simple implementation of an application with a component that provides a *Public* service (micro-server or *Service Provider*) and another application that contains a service consumer component (service client or *Service Consumer*).
-
-- **Key Features**: Public services that are accessible by external clients.
-- **Sub-project**:
-  - `12_pubservice`: A console application that functions as a network-discoverable *Public Service* provider (*micro-server* / *Service Provider*).
-  - `12_pubsvc`: A console application that acts as a *Public Service* consumer (client / *Service Consumer*).
+- **Key Features**: Implements periodic and one-time timers.
+- **Sub-project**:  
+  - `05_timer`: Uses timers to trigger events in a **multithreaded** environment.
 
 ---
 
-### **[13_pubmesh](./13_pubmesh/)**
+#### **[06_threads](./06_threads/)**
 
-The **[13_pubmesh](./13_pubmesh/)** is an *inter-process communication* (**IPC**) project that demonstrates a mesh network of *Public* services running across multiple processes and threads containing *Local* services.
+The **[06_threads](./06_threads/)** project explains how to create and manage custom **event dispatching** threads.
 
-- **Key Features**: Public service mesh network mixed with local services.
-- **Sub-project**:
-  - `13_common`: a library providing common objects shared across other sub-projects.
-  - `13_pubservice`: Hosts both *Public* and *Local* service instances, consumes *Local* services.
-  - `13_pubsvcmesh`: Creates a mesh network with mixed instances of service providers and consumers.
-  - `13_pubclients`: Housing *Public* service consumers, provides and consumes *Local* services for multithreading communication.
+- **Key Features**: Manages simple and dispatcher threads to process custom events.
+- **Sub-project**:  
+  - `06_threads`: Demonstrates thread management for **real-time** event handling.
 
 ---
 
-### **[14_pubtraffic](./14_pubtraffic/)**
+#### **[07_synch](./07_synch/)**
 
-The **[14_pubtraffic](./14_pubtraffic)** is an *inter-process communication* (**IPC**) project that demonstrates dynamic *Application Model* creation, load and unload functionality and custom event processing.
+The **[07_synch](./07_synch/)** project illustrates synchronization between multiple threads using **mutexes** and **events**.
 
-- **Key Features**: Demonstrates how the dynamic model is possible to create, creates custom event with custom data to process in multithreading environment.
-- **Sub-project**:
-  - `14_pubclient`: A service consumer that dynamically creates models during runtime, multiple instances can be started.
-  - `14_pubservice`: Provides both *Public* and *Local* services, and handles custom events with custom data.
-  - 
+- **Key Features**: Synchronization primitives for managing thread-safe operations.
+- **Sub-project**:  
+  - `07_synch`: Implements synchronized event handling across threads.
 
 ---
 
-### **[15_pubworker](./15_pubworker)**
+#### **[08_service](./08_service/)**
 
-The **[15_pubworker](./15_pubworker)** is an *inter-process communication* (**IPC**) project that demonstrates the use of *Worker Threads* and the processing of custom events in both Worker and Component threads.
+The **[08_service](./08_service/)** project introduces the creation of a **Service Provider** component and shows how to define an *Application Model* to launch services.
 
-- **Key Features**: Showcase a Worker and a Component threads that communicate using custom event with data.
-- **Sub-projects**:
-  - `15_pubclient`: Service Consumer simulating input/output processing via *Worker Thread*.
-  - `15_pubservice`: Public Service provider simulating input/output processing via *Worker Thread.
-
----
-
-### **[16_pubfsm](./16_pubfsm)**
-
-The **[16_pubfsm](./16_pubfsm/)** is an *inter-process communication* (**IPC**) project that demonstrates a *finite state machine* (**FSM**) within a public service to control its behavior based on events.
-
-- **Key Features**: Demonstrates *finite state machine* for controlling service behavior.
-- **Sub-project**:
-  - `16_pubclient`: Showcase dynamic models during runtime, allowing to start multiple instances with unique names.
-  - `16_pubservice`: Creates a *Public Service* with a *Finite-State Machine* (**FSM**).
+- **Key Features**: Service provider implementation in a single-threaded context.
+- **Sub-project**:  
+  - `08_service`: Defines and deploys a service component within an application model.
 
 ---
 
-### **[17_winchat](./17_winchat/)**
+#### **[09_svcmulti](./09_svcmulti/)**
 
-The **[17_winchat](./17_winchat/)** is an *inter-process communication* (**IPC**) project that demonstrates a Windows-based applications running in a fault tolerant environment.
+The **[09_svcmulti](./09_svcmulti/)** project demonstrates the reuse of service components across multiple threads or processes.
 
-- **Key Features**: Dynamic connection to the `mcrouter`, dynamic model creation and subscription services during runtime.
-- **Sub-project**:
-  - `17_register`: Instantiates a *Public Service* used by other applications.
-  - `17_chatter`: Provides *Public Services* and *Service Consumers*, dynamically loads *models* during runtime.
+- **Key Features**: Service reuse in different contexts via **multithreading** and **multiprocessing**.
+- **Sub-project**:  
+  - `09_svcmulti`: Implements a service that can be reused across different roles.
+
+---
+
+#### **[10_locsvc](./10_locsvc/)**
+
+The **[10_locsvc](./10_locsvc/)** project introduces **local service** communication between a **Service Provider** and **Service Consumer** within the same process.
+
+- **Key Features**: Local service interaction in a **multithreaded** environment.
+- **Sub-project**:  
+  - `10_locsvc`: Defines both service (*micro-server*) and client within the same process.
+
+---
+
+#### **[11_locmesh](./11_locmesh/)**
+
+The **[11_locmesh](./11_locmesh/)** project is a demonstration of **service mesh** architecture where services communicate across multiple threads within a single process.
+
+- **Key Features**: **Local service mesh** for **multithreading** communication.
+- **Sub-project**:  
+  - `11_locmesh`: Creates a mesh of interconnected services for real-time communication.
+
+---
+
+#### **[12_pubsvc](./12_pubsvc/)**
+
+The **[12_pubsvc](./12_pubsvc/)** project is an **inter-process communication (IPC)** project that illustrates a **Public Service** provider and its client interacting across processes.
+
+- **Key Features**: **Public services** accessible to clients in other processes.
+- **Sub-projects**:  
+  - `12_pubservice`: Provides a network-discoverable public service, which methods are triggered via **Object Remote Procedure Call (Object RPC or ORPC)**.
+  - `12_pubclient`: Connects to and consumes the public service.
+
+---
+
+#### **[13_pubmesh](./13_pubmesh/)**
+
+The **[13_pubmesh](./13_pubmesh/)** project demonstrates a **Public Service Mesh** across processes, integrating **local** and **public services**.
+
+- **Key Features**: **Public service mesh** across multiple processes.
+- **Sub-projects**:  
+  - `13_common`: Contains shared resources used by other sub-projects.
+  - `13_pubservice`: Provides and consumes both **public** and **local** services.
+  - `13_pubclients`: Hosts multiple client components.
+  - `13_pubsvcmesh`: Provides a mixture of **public** and **local** services.
+
+---
+
+#### **[14_pubtraffic](./14_pubtraffic/)**
+
+The **[14_pubtraffic](./14_pubtraffic/)** project shows how to dynamically create and modify the *Application Model* and handle custom events in an IPC system.
+
+- **Key Features**: Dynamic model creation and event processing.
+- **Sub-projects**:  
+  - `14_pubclient`: Dynamically creates models at runtime.  
+  - `14_pubservice`: Handles custom events with custom data.
+
+---
+
+#### **[15_pubworker](./15_pubworker/)**
+
+The **[15_pubworker](./15_pubworker/)** project is an **IPC** project that demonstrates the use of **worker threads** and how to process custom events.
+
+- **Key Features**: **Worker thread** processing in IPC scenarios.
+- **Sub-projects**:  
+  - `15_pubservice`: Provides a **Public Service** with a **Worker Thread** and custom event handling.
+  - `15_pubclient`: Provides a **Public Service Consumer** with a **Worker Thread** and custom event handling.
+
+---
+
+#### **[16_pubfsm](./16_pubfsm/)**
+
+The **[16_pubfsm](./16_pubfsm/)** project demonstrates the implementation of a **Finite State Machine (FSM)** to control service behavior.
+
+- **Key Features**: **FSM** for state-driven service behavior.
+- **Sub-projects**:  
+  - `16_pubservice`: Creates a **Public Service** with an integrated **FSM**.
+  - `16_pubclient`: Provides a dynamic *Application Modeling* to start multiple instances of the process, loads and start *Service Consumer*.
+
+---
+
+#### **[17_winchat](./17_winchat/)**
+
+The **[17_winchat](./17_winchat/)** project is a Windows-based chat application using **IPC** in a **fault-tolerant** system.
+
+- **Key Features**: Dynamic connection to **mcrouter** and real-time communication.
+- **Sub-projects**:  
+  - `17_register`: Instantiates a public service.  
+  - `17_chatter`: Provides and consumes public services.
 
 ---
 
 ### **[18_locwatchdog](./18_locwatchdog/)**
 
-The **[18_locwatchdog](./18_locwatchdog/)** project demonstrates a watchdog service that monitors threads and restarts them if they fail, so that the servicing components restart as well.
+The **[18_locwatchdog](./18_locwatchdog/)** project showcases a local **watchdog** service designed for **multithreaded** applications. It actively monitors threads and automatically restarts them if they fail, ensuring that service components remain operational and fault-tolerant.
 
-- **Key Features**: Local watchdog service for fault-tolerance.
+- **Key Features**: Implements a local watchdog for robust fault tolerance within a single process.
 - **Sub-project**:
-  - `18_locservice`: Monitors and restarts services within the same process.
+  - `18_locservice`: Monitors and restarts services within the same process, improving reliability and resilience.
 
 ---
 
-### **[19_pubwatchdog](./19_pubwatchdog)**
+### **[19_pubwatchdog](./19_pubwatchdog/)**
 
-The [19_pubwatchdog](./19_pubwatchdog/) is an *inter-process communication* (**IPC**) project that extends the watchdog concept to public services, monitoring services across processes for fault-tolerance.
+The **[19_pubwatchdog](./19_pubwatchdog/)** project extends the **watchdog** concept to support **inter-process communication (IPC)**, ensuring fault-tolerance across multiple processes. It monitors public services, restarts them in case of failure, and notifies all connected service consumers.
 
-- **Key Features**: A Watchdog that monitors a thread with a Public service, restarts services in case of failure and notifies all service consumers.
-- **Sub-project**:
-  - `19_pubclient`: The service consumer object receives *service disconnected* after simulated service provider crash.
-  - `19_pubservice`: Contains a Watchdog that is responsible to monitor threads with service providers.
-
----
-
-### **[20_pubdatarate](./20_pubdatarate)**
-
-The **[20_pubdatarate](./20_pubdatarate/)** is an *inter-process communication* (**IPC**) project that measures the data rate between a public service and multiple clients.
-
-- **Key Features**: Performance measurement of network data rates.
+- **Key Features**: A public service watchdog that monitors threads, restarts services upon failure, and ensures that consumers are notified of disconnections.
 - **Sub-projects**:
-  - `20_pubservice`: Generates and sends data.
-  - `20_pubclient`: Receives and measures data rate.
+  - `19_pubclient`: Simulates a service consumer that detects and reacts to provider failures by handling service disconnections.
+  - `19_pubservice`: Houses a watchdog responsible for monitoring threads with public service providers and ensuring fault recovery.
+
+---
+
+### **[20_pubdatarate](./20_pubdatarate/)**
+
+The **[20_pubdatarate](./20_pubdatarate/)** project is an **inter-process communication (IPC)** example that focuses on measuring the data rate between a public service and multiple clients. This project helps developers understand performance benchmarks in data transfer scenarios.
+
+- **Key Features**: Measures network data rates between a public service and its clients for performance evaluation.
+- **Sub-projects**:
+  - `20_pubservice`: Acts as a data generator, sending large datasets to connected clients.
+  - `20_pubclient`: Receives data from the service and measures the transfer rate, providing insights into system performance.
 
 ---
 
 ### **[21_pubunblock](./21_pubunblock/)**
 
-The [21_pubunblock](./21_pubunblock/) is an *inter-process communication* (**IPC**) project that demonstrates how to manually unblock service requests that are marked as busy, optimizing service throughput.
+The **[21_pubunblock](./21_pubunblock/)** project demonstrates how to improve service throughput in **inter-process communication (IPC)** by manually unblocking service requests marked as busy. This approach helps optimize request handling and resource utilization.
 
-- **Key Features**: Manual unblocking of service requests, manual preparation of the request.
+- **Key Features**: Manual unblocking of service requests, allowing faster request processing and optimized service management.
 - **Sub-projects**:
-  - `21_pubservice`: Manages request unblocking, prepares the response to reply back.
-  - `21_pubclient`: Sends frequent requests to the service before they processing is finished and checks if any request was rejected to be processed.
+  - `21_pubservice`: Manages service requests and provides functionality to manually unblock and prepare responses efficiently.
+  - `21_pubclient`: Frequently sends requests to the service and ensures proper handling of rejected or blocked requests, enhancing throughput.
 
 ---
 
-### **[22_pubsub](./22_pubsub)**
+### **[22_pubsub](./22_pubsub/)**
 
-The **[22_pubsub](./22_pubsub/)** is an *inter-process communication* (**IPC**) project that demonstrates the *Publish/Subscribe* pattern, where a publisher sends updates, and subscribers receive them.
+The **[22_pubsub](./22_pubsub/)** project demonstrates the **Publish/Subscribe (Pub/Sub)** pattern within an **inter-process communication (IPC)** setup. It allows a publisher to send data updates while subscribers receive real-time notifications whenever the data changes.
 
-- **Key Features**: Demonstrates publish/subscribe with notifications on data change.
+- **Key Features**: Implements the **Pub/Sub** model, providing real-time notifications when subscribed data is updated.
 - **Sub-projects**:
-  - `22_publisher`: Publishes data to subscribe on updates.
-  - `22_subscriber`: Receives updates when subscribed data are modified.
+  - `22_publisher`: Publishes updates, making data available to all subscribed clients.
+  - `22_subscriber`: Listens for changes and receives updates from the publisher when subscribed data is modified.
 
 ---
 
 ### **[23_pubsubmix](./23_pubsubmix/)**
 
-The **[23_pubsubmix](./23_pubsubmix)** is an *inter-process communication* (**IPC**) project that extends the Publish/Subscribe model, mixing publishers and subscribers in separate threads and processes.
+The **[23_pubsubmix](./23_pubsubmix/)** project extends the **Publish/Subscribe** model by introducing mixed configurations where publishers and subscribers are distributed across different threads and processes. This example showcases robust fault-tolerance during network interruptions in **multithreaded** and **multiprocess** environments.
 
-- **Key Features**: Mixed publisher/subscriber configuration with fault-tolerance during network interruptions.
-- **Sub-project**:
-  - `23_common`: library containing shared objects used by other processes.
-  - `23_pubsubctrl`: Acts as both a *Data Publisher* and *Data Subscriber*.
-  - `23_pubsubdyn`: Acts as both a *Data Publisher* and *Subscriber*, the 
+- **Key Features**: Fault-tolerant **Pub/Sub** model across both threads and processes, providing resilience during network disruptions.
+- **Sub-projects**:
+  - `23_common`: Contains shared resources used by other sub-projects.
+  - `23_pubsubctrl`: Acts as both a **Data Publisher** and **Data Subscriber**, dynamically adjusting its role based on the communication flow.
+  - `23_pubsubdyn`: Demonstrates flexibility by functioning as both a **Publisher** and **Subscriber**, supporting dynamic role switching across processes.
 
 ---
 
 ### **[24_pubsubmulti](./24_pubsubmulti/)**
 
-The **24_pubsubmulti** project optimizes the PubSub model by ensuring multiple subscribers only receive necessary notifications, reducing event overhead.
+The **[24_pubsubmulti](./24_pubsubmulti/)** project optimizes the **Publish/Subscribe (Pub/Sub)** model for multiple subscribers by reducing event overhead. It ensures that only necessary notifications are sent, improving system efficiency and performance.
 
-- **Key Features**: Efficient event notification handling for multiple subscribers.
-- **Sub-project**:
-  - `24_publisher`: Provides a network-discoverable *Public Service* that publishes data.
-  - `24_subscribermulti`: Subscribes on data provided by Public Service and checks that the data is not mixed with the local PubSub data.
+- **Key Features**: Efficient event notification system that minimizes overhead in **Pub/Sub** models involving multiple subscribers.
+- **Sub-projects**:
+  - `24_publisher`: Provides a network-discoverable **Public Service** that publishes data to clients.
+  - `24_subscribermulti`: Subscribes to the public service and verifies that received data is properly separated from local subscriptions, ensuring consistency.
 
 ---
 
 ### Conclusion
 
-These examples provide a comprehensive exploration of the AREG SDK’s capabilities, covering multithreading, IPC, service discovery, and fault-tolerance in various deployment scenarios. Each project highlights different aspects of the framework, making it easier for developers to build robust, efficient applications.
-
+These examples comprehensively demonstrate the versatility of the AREG SDK in managing **multithreading**, **inter-process communication (IPC)**, **service discovery**, and **fault-tolerance**. They provide practical insights into building scalable, efficient, and resilient systems using advanced patterns like **Publish/Subscribe**, **watchdogs**, and **real-time** data management.
