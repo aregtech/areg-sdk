@@ -38,7 +38,7 @@ MSBuild ./areg-sdk.sln
 ```
 
 > [!NOTE]  
-> Ensure that the `AREG_EXAMPLES` option is **enabled** in CMake to include the examples in the build. By default, the build of examples is enabled. Example of forcing build boncifguration with enabled examples: `cmake -B ./build -DAREG_LOG:BOOL=ON`
+> Ensure that the `AREG_EXAMPLES` option is **enabled** in CMake to include the examples in the build. By default, the build of examples is enabled. Example of forcing configure the build with enabled examples: `cmake -B ./build -AREG_EXAMPLES:BOOL=ON`
 
 For more details, refer to the [Build Documentation](./../docs/wiki/BUILD.md).
 
