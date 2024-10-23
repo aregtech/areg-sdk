@@ -10,7 +10,7 @@ Website: https://www.aregtech.com
 
 ## Introduction
 
-The AREG SDK provides a robust framework for building applications that require **multithreading**, **multiprocessing** (**inter-process communication (IPC)**), and **real-time** event handling. This repository features a range of example projects designed to help developers quickly grasp the core functionalities of the AREG Framework, such as creating **service components**, managing **client-server interactions**, implementing **state-machines**, and developing **fault-tolerant** systems.
+The AREG SDK provides a robust framework for building applications that require **multithreading**, **multiprocessing** (**inter-process communication or IPC**), and **real-time** event handling. This repository features a range of example projects designed to help developers quickly grasp the core functionalities of the AREG Framework, such as creating **service components**, managing **client-server interactions**, implementing **state-machines**, and developing **fault-tolerant** systems.
 
 This guide offers a detailed overview of each example, highlighting the key features that showcase **AREG's capabilities** in building **high-performance**, **real-time**, and distributed systems.
 
@@ -38,9 +38,9 @@ MSBuild ./areg-sdk.sln
 ```
 
 > [!NOTE]  
-> Ensure that the `AREG_EXAMPLES` option is **enabled** in CMake to include the examples in the build. By default, the build of examples is enabled. Example of forcing configure the build with enabled examples: `cmake -B ./build -AREG_EXAMPLES:BOOL=ON`
+> Ensure that the `AREG_EXAMPLES` option is **enabled** in CMake to include the examples in the build. By default, the build of examples is enabled, or configure the build with option like this: `cmake -B ./build -AREG_EXAMPLES:BOOL=ON`
 
-For more details, refer to the [Build Documentation](./../docs/wiki/BUILD.md).
+For more details, refer to the [Build Documentation](./../docs/wiki/BUILD.md), also see the list of default CMake variable settings in the [user.cmake](./../conf/cmake/user.cmake) file.
 
 ---
 
@@ -50,12 +50,10 @@ The AREG SDK includes a comprehensive set of examples that demonstrate **multith
 
 ### Important Notes:
 
-> [!IMPORTANT]
-
 - **IPC Examples**: Projects that use **inter-process communication (IPC)** require the **mcrouter** service to facilitate communication between different processes. Run **mcrouter** from the build directory for testing.
 - **Fault-Tolerance**: The AREG SDK is designed with fault-tolerance in mind. The system works reliably as long as the **Service Provider**, **Service Consumer**, and **mcrouter** are running, regardless of their startup order.
-- All **xx_generate** projects are generated from **Service Interface** document files (`.siml`). For CMake build these projects and source files are generated during configuration. For Microsoft Visual Studio, these projects are predefined and the sources are generated as a pre-build event of `dummy` project, which exists in this `example` directory.
-- The project [17_winchat](./17_winchat/) is build only under Windows system with Microsoft Compilers (*MSVC* and *ClangCL*) and it requires *Microsoft Foundation Classes (MFC)*.
+- **Generated projects:** All **xx_generate** projects are generated from **Service Interface** document files (`.siml`). For CMake build these projects and source files are generated during configuration. For Microsoft Visual Studio, these projects are predefined and the sources are generated as a pre-build event of `dummy` project, which exists in this `example` directory.
+- **MFC based projects:** The project [17_winchat](./17_winchat/) is build only under Windows system with Microsoft Compilers (*MSVC* and *ClangCL*) and it requires *Microsoft Foundation Classes (MFC)*.
 
 ### Example Projects:
 
@@ -251,7 +249,7 @@ The **[17_winchat](./17_winchat/)** project is a Windows-based chat application 
 
 ---
 
-### **[18_locwatchdog](./18_locwatchdog/)**
+#### **[18_locwatchdog](./18_locwatchdog/)**
 
 The **[18_locwatchdog](./18_locwatchdog/)** project showcases a local **watchdog** service designed for **multithreaded** applications. It actively monitors threads and automatically restarts them if they fail, ensuring that service components remain operational and fault-tolerant.
 
@@ -261,7 +259,7 @@ The **[18_locwatchdog](./18_locwatchdog/)** project showcases a local **watchdog
 
 ---
 
-### **[19_pubwatchdog](./19_pubwatchdog/)**
+#### **[19_pubwatchdog](./19_pubwatchdog/)**
 
 The **[19_pubwatchdog](./19_pubwatchdog/)** project extends the **watchdog** concept to support **inter-process communication (IPC)**, ensuring fault-tolerance across multiple processes. It monitors public services, restarts them in case of failure, and notifies all connected service consumers.
 
@@ -272,7 +270,7 @@ The **[19_pubwatchdog](./19_pubwatchdog/)** project extends the **watchdog** con
 
 ---
 
-### **[20_pubdatarate](./20_pubdatarate/)**
+#### **[20_pubdatarate](./20_pubdatarate/)**
 
 The **[20_pubdatarate](./20_pubdatarate/)** project is an **inter-process communication (IPC)** example that focuses on measuring the data rate between a public service and multiple clients. This project helps developers understand performance benchmarks in data transfer scenarios.
 
@@ -283,7 +281,7 @@ The **[20_pubdatarate](./20_pubdatarate/)** project is an **inter-process commun
 
 ---
 
-### **[21_pubunblock](./21_pubunblock/)**
+#### **[21_pubunblock](./21_pubunblock/)**
 
 The **[21_pubunblock](./21_pubunblock/)** project demonstrates how to improve service throughput in **inter-process communication (IPC)** by manually unblocking service requests marked as busy. This approach helps optimize request handling and resource utilization.
 
@@ -294,7 +292,7 @@ The **[21_pubunblock](./21_pubunblock/)** project demonstrates how to improve se
 
 ---
 
-### **[22_pubsub](./22_pubsub/)**
+#### **[22_pubsub](./22_pubsub/)**
 
 The **[22_pubsub](./22_pubsub/)** project demonstrates the **Publish/Subscribe (Pub/Sub)** pattern within an **inter-process communication (IPC)** setup. It allows a publisher to send data updates while subscribers receive real-time notifications whenever the data changes.
 
@@ -305,7 +303,7 @@ The **[22_pubsub](./22_pubsub/)** project demonstrates the **Publish/Subscribe (
 
 ---
 
-### **[23_pubsubmix](./23_pubsubmix/)**
+#### **[23_pubsubmix](./23_pubsubmix/)**
 
 The **[23_pubsubmix](./23_pubsubmix/)** project extends the **Publish/Subscribe** model by introducing mixed configurations where publishers and subscribers are distributed across different threads and processes. This example showcases robust fault-tolerance during network interruptions in **multithreaded** and **multiprocess** environments.
 
@@ -317,7 +315,7 @@ The **[23_pubsubmix](./23_pubsubmix/)** project extends the **Publish/Subscribe*
 
 ---
 
-### **[24_pubsubmulti](./24_pubsubmulti/)**
+#### **[24_pubsubmulti](./24_pubsubmulti/)**
 
 The **[24_pubsubmulti](./24_pubsubmulti/)** project optimizes the **Publish/Subscribe (Pub/Sub)** model for multiple subscribers by reducing event overhead. It ensures that only necessary notifications are sent, improving system efficiency and performance.
 
@@ -328,6 +326,6 @@ The **[24_pubsubmulti](./24_pubsubmulti/)** project optimizes the **Publish/Subs
 
 ---
 
-### Conclusion
+## Conclusion
 
 These examples comprehensively demonstrate the versatility of the AREG SDK in managing **multithreading**, **inter-process communication (IPC)**, **service discovery**, and **fault-tolerance**. They provide practical insights into building scalable, efficient, and resilient systems using advanced patterns like **Publish/Subscribe**, **watchdogs**, and **real-time** data management.
