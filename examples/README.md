@@ -8,11 +8,15 @@ Contact: info[at]aregtech.com
 Website: https://www.aregtech.com
 ```
 
+---
+
 ## Introduction
 
 The AREG SDK provides a robust framework for building applications that require **multithreading**, **multiprocessing** (**inter-process communication or IPC**), and **real-time** event handling. This repository features a range of example projects designed to help developers quickly grasp the core functionalities of the AREG Framework, such as creating **service components**, managing **client-server interactions**, implementing **state-machines**, and developing **fault-tolerant** systems.
 
 This guide offers a detailed overview of each example, highlighting the key features that showcase **AREG's capabilities** in building **high-performance**, **real-time**, and distributed systems.
+
+---
 
 ## Quick Build Guide
 
@@ -30,6 +34,13 @@ git clone https://github.com/aregtech/areg-sdk.git
 cmake -B ./build
 cmake --build ./build -j 20
 ```
+
+> [!IMPORTANT]
+> To build the examples, ensure the CMake option `AREG_EXAMPLES` is set to `ON`. This option is enabled by default.
+> If you want to disable the examples during the build process, set `AREG_EXAMPLES` to `OFF` using the following command:
+> ```bash
+> cmake -B ./build -DAREG_EXAMPLES:BOOL=OFF
+> ```
 
 ### 3. Build with Microsoft Visual Studio
 
