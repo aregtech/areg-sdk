@@ -1,6 +1,6 @@
 # 16_pubfsm Project Overview
 
-The **16_pubfsm** project demonstrates how to build and manage a *Finite-State Machine* (**FSM**) using the AREG Framework’s powerful features like *Timers*, and *Events*. This project showcases how FSM models can be developed to change the data and the states of Services.
+The **16_pubfsm** project demonstrates how to build and manage a *Finite-State Machine* (**FSM**) using the AREG Framework’s powerful features like *Timers* and *Events*. This project showcases how FSM models can be developed to change the data and the states of Services.
 
 ## Key Features
 

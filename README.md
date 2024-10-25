@@ -56,6 +56,7 @@
   - [Service Creation and Development](#service-creation-and-development)
   - [Example: Application Model Setup](#example-application-model-setup)
   - [Multicast Router and Log Collector](#multicast-router-and-log-collector)
+- [Examples](#examples)
 - [Pipeline and Roadmap](#pipeline-and-roadmap)
 - [Use Cases and Benefits](#use-cases-and-benefits)
 - [License](#license)
@@ -317,6 +318,29 @@ You can also set up multiprocess applications using same components and changing
 Both **mcrouter** and **logger** are essential components for communication and log collection. Configuration templates for the multicast router and log collector services are provided in the `areg.init` file. Both processes are designed to run as console applications or as **Operating System managed** services.
 
 For in-depth details of building and using these applications, review the descriptions in **[Multicast Router Service](./docs/wiki/MCROUTER.md)** and **[Log Collector Service](./docs/wiki/LOGGER.md)** pages. *Discover how the AREG SDK’s Multicast Router and Log Collector streamline communication and logging in edge computing and real-time data transfer systems.*
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
+## Examples [![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#examples)
+
+The AREG SDK provides practical examples that demonstrate **multithreaded** and **multiprocess** communication, **client-server** architecture, **object-oriented RPC (Object RPC)**, and **publish-subscribe** models. Each project showcases core features to support efficient development of distributed services.
+
+### Featured Examples:
+1. **[00_helloservice](./examples/00_helloservice/)**: Master service creation and usage across- single and multi-threaded environments, multi-processing environment, highlighting AREG’s intuitive, interface-driven model.
+
+2. **[04_trace](./examples/04_trace/)**: Configure and manage logging to track application behavior, supporting debugging, performance analysis, and log management.
+
+3. **[16_pubfsm](./examples/16_pubfsm/)**: Build and manage a *Finite-State Machine (FSM)* with AREG's *Timers* and *Events* for streamlined state transitions.
+
+4. **[19_pubwatchdog](./examples/19_pubwatchdog/)**: Set up a watchdog to monitor thread activity, automatically restart unresponsive threads, and notify components as needed.
+
+5. **[24_pubsubmulti](./examples/24_pubsubmulti/)**: Explore the efficient PubSub model, reducing data traffic by delivering only essential updates.
+
+For the complete example list and additional documentation, visit **[AREG SDK Examples](./examples/README.md)**.
+
+> *Accelerate your embedded, IoT edge, and real-time application development with these optimized examples.*
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 

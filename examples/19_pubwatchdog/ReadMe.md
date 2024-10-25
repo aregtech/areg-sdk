@@ -1,6 +1,6 @@
 # 19_pubwatchdog Project Overview
 
-The **19_pubwatchdog** project demonstrates the implementation of a **Watchdog** in a **Public Service** environment using the AREG Framework. It showcases how the watchdog monitors threads by setting timeouts, automatically restarting threads that fail to respond, and sending notifications to connected **Service Providers** and/or **Service Consumers**. This example highlights the AREG Framework's capabilities in maintaining a fault-tolerant, distributed system through effective thread management.
+The **19_pubwatchdog** project demonstrates the use of a **Watchdog** in an environment with **Public Service** using the AREG Framework. It showcases how the watchdog monitors threads by setting timeouts, automatically restarting threads that fail to respond, and sending notifications to connected **Service Providers** and/or **Service Consumers**. This example highlights the AREG Framework's capabilities in maintaining a fault-tolerant, distributed system through effective thread management.
 
 ## Key Concepts
 
