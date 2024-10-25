@@ -25,7 +25,7 @@ This dual-mode notification system offers flexibility depending on the use case,
 2. **[24_publisher](./publisher/)**:
    - An application that provides a network-discoverable *Public Service*, which acts as the *Data Publisher*. It generates and publishes data that is subscribed to by other applications. The publisher continuously provides updates based on the notification mode selected by the subscribers.
 
-3. **[24_subscribermulti](./subscriber/)**:
+3. **[24_subscribermulti](./subscribermulti/)**:
    - An application that includes two *Data Subscribers* running within the same thread. These subscribers are dynamically activated at different times but both subscribe to the same data source provided by the *Publisher*. This sub-project showcases how multiple subscribers can coexist in a single thread and efficiently receive updates, reducing unnecessary data traffic.
 
 ## Communication
