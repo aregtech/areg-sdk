@@ -36,22 +36,19 @@ cmake --build ./build -j 20
 ```
 
 > [!IMPORTANT]
-> To build the examples, ensure the CMake option `AREG_EXAMPLES` is set to `ON`. This option is enabled by default.
+> To build the examples, ensure the CMake option `AREG_EXAMPLES` is set to `ON`. This option is **enabled** by default.
 > If you want to disable the examples during the build process, set `AREG_EXAMPLES` to `OFF` using the following command:
 > ```bash
 > cmake -B ./build -DAREG_EXAMPLES:BOOL=OFF
 > ```
+
+For more details, refer to the [Build Documentation](./../docs/wiki/BUILD.md), also see the list of default CMake variable settings in the [user.cmake](./../conf/cmake/user.cmake) file.
 
 ### 3. Build with Microsoft Visual Studio
 
 ```console
 MSBuild ./areg-sdk.sln
 ```
-
-> [!NOTE]  
-> Ensure that the `AREG_EXAMPLES` option is **enabled** in CMake to include the examples in the build. By default, the build of examples is enabled, or configure the build with option like this: `cmake -B ./build -AREG_EXAMPLES:BOOL=ON`
-
-For more details, refer to the [Build Documentation](./../docs/wiki/BUILD.md), also see the list of default CMake variable settings in the [user.cmake](./../conf/cmake/user.cmake) file.
 
 ---
 
