@@ -1,18 +1,49 @@
+# 13_pubmesh Project Overview
 
-## 13_pubmesh Project Overview
+The **13_pubmesh** project demonstrates the AREG Framework’s capability to manage a **meshed network** of **distributed services**, integrating both **Public** and **Local Services**. The project showcases how the framework efficiently connects **Service Providers** and **Service Consumers** to handle **inter-process communication (IPC)** using *Object Remote Procedure Call (Object RPC)*, enabling scalable and reliable communication across the network.
 
-The **13_pubmesh** project showcases the AREG Framework’s ability to handle a meshed network of distributed services, combining *Public* and *Local* services. The framework seamlessly connects *Service Consumers* with *Service Providers* and forwards messages efficiently for processing.
+## Key Concepts
 
-### Sub-Projects:
+- **Distributed Service Mesh**: Learn how to create a meshed network where **Public** and **Local Services** interact seamlessly, enabling efficient message forwarding and processing across multiple nodes.
+- **Service Interface:** Utilize the Service Interface document and code generator to automate **Object Remote Procedure Call (Object RPC)** message creation and dispatching, enhancing efficiency and simplifying communication between host and remote target.
+- **IPC (Inter-Process Communication)**: Explore scenarios where service providers and consumers communicate across multiple processes.
+- **Service Discovery**: Both **Public** and **Local Services** are automatically discovered and connected within a process or across the network, ensuring real-time interaction and fault tolerance.
+  
+## Sub-Projects
 
-1. **13_generated:** Generated from [LocalHelloWorld.siml](./res/LocalHelloWorld.siml), [PublicHelloWorld.siml](./res/PublicHelloWorld.siml), and [SystemShutdown.siml](./res/SystemShutdown.siml) Service Interface documents during CMake configuration or as a pre-build action in Visual Studio’s `dummy` project.
-   
-2. **[13_common](./common/):** A static library providing common objects shared across other sub-projects.
+1. **13_generated**:
+   - This project contains code generated from the [LocalHelloWorld.siml](./res/LocalHelloWorld.siml), [PublicHelloWorld.siml](./res/PublicHelloWorld.siml), and [SystemShutdown.siml](./res/SystemShutdown.siml) Service Interface documents during CMake configuration or as a pre-build action in Visual Studio. The generated code automates **Object RPC** communication across the service mesh.
 
-3. **[13_pubservice](./pubservice/):** A console application that hosts both *Public* and *Local* service instances. It also includes a *Controller Service* (named `"PublicControllerService"`) that runs the `SystemShutdown` service, responsible for sending a shutdown message to notify all applications in the system to terminate gracefully.
+2. **[13_common](./common/)**:
+   - A static library that provides common objects and components shared by all sub-projects in this example, enabling code reuse and consistency across the mesh.
 
-4. **[13_pubsvcmesh](./pubsvcmesh/):** An application that creates a mesh network with mixed instances of *Service Providers* and *Service Consumers*.
+3. **[13_pubservice](./pubservice/)**:
+   - An application hosting both *Public* and *Local Service* instances. It also manages the `"PublicControllerService"` - a controller responsible for executing the `SystemShutdown` service to broadcast a system shutdown message across the network for graceful termination.
 
-5. **[13_pubclients](./pubclients/):** An application housing *Public* and *Local* service consumers.
+4. **[13_pubsvcmesh](./pubsvcmesh/)**:
+   - An application that has mixed multiple *Service Providers* and *Service Consumers*, demonstrating how distributed services interact and exchange messages across the system.
 
-Communication is facilitated through `mcrouter`, a multicast router that operates on any machine within the network. The AREG SDK automates service discovery, ensuring fault-tolerant system behavior regardless of the process startup order. Messages are reliably delivered to the intended targets.
+5. **[13_pubclients](./pubclients/)**:
+   - An application containing *Public* consumers and a *Local Service*, showcasing how consumers dynamically discover and interact with multiple providers in the mesh.
+
+## Communication
+
+- The communication in **13_pubmesh** is powered by **mcrouter**, a router running on any machine within the network. The AREG Framework handles **service discovery** and **fault tolerance**, ensuring that the startup order of processes does not affect the communication. The system is designed to ensure messages are reliably forwarded to their intended recipients within the mesh, even in complex multi-node environments.
+- **Object RPC for IPC**: The **Object RPC** protocol handles inter-process communication between the provider and consumers, enabling easy and efficient remote interaction. This is particularly important for scaling distributed systems, where different processes need to exchange data or requests seamlessly.
+
+## Key Features
+
+- **Meshed Network of Services**: Seamlessly integrates **Public Services** within a distributed mesh, demonstrating real-time communication across multiple nodes. Co-exist with **Local Services**.
+- **Object RPC Automation**: Utilizes the **code generator** to automatically create and manage **Object RPC** messages, reducing manual effort and improving development efficiency.
+- **Service Discovery and Fault Tolerance**: The AREG SDK ensures that services are automatically discovered and communication remains stable even if nodes or services start out of order.
+- **Graceful System Shutdown**: The system may easily have centralized shutdown service, ensuring that all connected applications terminate safely and synchronously when required.
+
+## Use Cases
+
+- **Distributed Service Networks**: Ideal for applications that require a **meshed architecture** where multiple **Public Services** may co-exist with **Local Services**, and interact across different machines, providing high availability and load distribution.
+- **Dynamic Service Interaction**: The project demonstrates how consumers and providers can dynamically discover and communicate with each other, making it perfect for systems that require **scalable** and **reliable** communication across a distributed network.
+- **Router**: Useful for scenarios where services need to message to multiple recipients, ensuring efficient message routing across the system.
+
+## Conclusion
+
+The **13_pubmesh** project highlights the power of the AREG SDK in managing a **distributed service mesh** that integrates both **Public** and **Local Services**. Through the use of **Object RPC**, automated service discovery, and fault tolerance, this project provides a comprehensive guide for developers looking to build scalable, reliable, and efficient service-based applications in a multi-process environment.

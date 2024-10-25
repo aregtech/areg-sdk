@@ -88,9 +88,9 @@ At the core of AREG is **ORPC** (_Object Remote Procedure Call_), which targets 
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/interface-centric.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/interface-centric.png" alt="Diagram showing multiprocess communication" style="width:50%;height:50%"/></a></div>
 
-This **interface-driven ORPC** model mirrors object-oriented programming principles and is flexible in managing multiple object instances. It imposes no protocol limitations and supports bi-directional communication to ensure seamless messaging between connected software nodes. In this model:
-* **Service Providers** (micro-server objects) offer reusable, accessible services.
-* **Service Consumers** (client objects) invoke services without needing to know the network details.
+This **interface-driven Object RPC** model mirrors object-oriented programming principles and is flexible in managing multiple object instances. It imposes no protocol limitations and supports bi-directional communication to ensure seamless messaging between connected software nodes. In this model:
+* **Service Providers** (*micro-server objects*) offer reusable, accessible services.
+* **Service Consumers** (*client objects*) invoke services without needing to know the network details.
 
 AREG’s design integrates **Client-Server (Request-Reply)** and **Publish-Subscribe (PubSub)** models, enabling it to support both action- and data-centric communication.
 

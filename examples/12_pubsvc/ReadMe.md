@@ -1,14 +1,43 @@
-
 # 12_pubsvc Project Overview
 
-The **12_pubsvc** project demonstrates the use of a *Public Service* in a multi-processing environment using Object RPC (ORPC) for inter-process communication (IPC). It involves two applications: a *Service Provider* and a *Service Consumer*, which send remote requests and receive responses.
+The **12_pubsvc** project demonstrates the implementation of a *Public Service* in a multi-process environment using **Object Remote Procedure Call (Object RPC)** for inter-process communication (IPC). This example involves two main applications: a *Service Provider* and a *Service Consumer*. The service provider handles remote requests sent by the consumer, allowing developers to understand how AREG Framework manages distributed systems and public services.
 
-### Sub-Projects:
+## Key Concepts
 
-1. **12_generated:** This is generated from the [HelloWorld.siml](./res/HelloWorld.siml) Service Interface document during CMake configuration, or as a pre-build action in Visual Studio's `dummy` project.
-   
-2. **[12_pubservice](./pubservice):** A console application that functions as a network-discoverable *Public Service* provider. Multiple *Service Consumers* can connect and send requests for the provider to handle.
-   
-3. **[12_pubclient](./pubclient):** A console application that acts as a *Public Service* consumer. It automatically discovers the provider service and periodically sends remote request calls using a timer.
+- **Public Service**: A service that can be discovered and accessed by remote consumers over the network.
+- **Object RPC for IPC**: The communication between the provider and consumers is handled via **Object Remote Procedure Call (Object RPC)**, which simplifies **Inter-Process Communication (IPC)**.
+- **Service Discovery**: The AREG Framework automates the discovery of the *Service Provider* by the *Service Consumer*, making the startup order of processes irrelevant.
 
-All communication happens through `mcrouter`, a multicast router that can run on any networked machine. The AREG SDK automates service discovery and ensures fault tolerance, so the process startup order doesn't affect functionality.
+## Sub-Projects
+
+1. **12_generated**:
+   - This code is generated from the [HelloWorld.siml](./res/HelloWorld.siml) Service Interface document during CMake configuration or as a pre-build action in Visual Studio. The generated code automates **Object RPC** message creation and dispatching, improving efficiency in communication between the *Service Provider* and *Service Consumer*. Object RPC is used for **IPC**, ensuring seamless remote interaction between processes.
+
+2. **[12_pubservice](./pubservice/)**:
+   - An application acting as a network-discoverable *Public Service* provider. It listens for remote requests from consumers and processes them. Multiple *Service Consumers* can connect to the provider simultaneously, sending requests to be handled.
+
+3. **[12_pubclient](./pubclient/)**:
+   - An application that acts as a *Public Service* consumer. The client application automatically discovers the *Public Service* provider using AREG Frameworks’s built-in service discovery. It periodically sends remote request calls using a timer, simulating real-world use cases where a service might need regular interactions with the provider.
+
+## Communication
+
+- **mcrouter**: All communication between the *Service Provider* and *Service Consumer* is managed through `mcrouter`, a multicast router that enables efficient message routing in distributed systems. It can run on any networked machine, ensuring flexible and robust message delivery.
+- **Object RPC for IPC**: The **Object RPC** protocol handles inter-process communication between the provider and consumers, enabling easy and efficient remote interaction. This is particularly important for scaling distributed systems, where different processes need to exchange data or requests seamlessly.
+
+## Key Features
+
+- **Automatic Service Discovery**: AREG Framework automates the discovery of the *Public Service*, so *Service Consumers* can easily connect to the provider without needing explicit configuration. This ensures smooth communication even when the processes are started in any order.
+  
+- **Fault Tolerance**: The AREG SDK ensures fault tolerance in service communication, meaning if a service fails, it can recover or restart without affecting the overall system’s operation.
+  
+- **Efficient Communication**: By using **Object RPC** for communication, the system reduces overhead and simplifies the development process. It ensures that requests and responses between the provider and consumers are dispatched efficiently.
+
+## Use Cases
+
+- **Distributed Applications**: The **12_pubsvc** project is ideal for scenarios where multiple clients need to communicate with a single service provider in a distributed network environment.
+  
+- **Public Services**: It is well-suited for applications where a network-accessible service needs to process requests from multiple consumers and maintain high availability and reliability.
+
+## Conclusion
+
+The **12_pubsvc** project showcases how AREG SDK simplifies the development of distributed systems with public services at the edge of the network. By leveraging **Object RPC** for **Inter-Process Communication (IPC)**, it enables efficient communication between the service provider and consumers in a multi-process environment. With automated service discovery and fault tolerance, this project highlights the flexibility and scalability of AREG SDK for building robust, real-time systems. Communication via `mcrouter` ensures seamless data exchange, making the project suitable for a variety of real-world use cases where distributed services are required.

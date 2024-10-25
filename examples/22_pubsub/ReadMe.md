@@ -1,15 +1,51 @@
-## 22_pubsub Project Overview
+# 22_pubsub Project Overview
 
-The **22_pubsub** project demonstrates a *Public Service* in a multi-process environment, following the Pub/Sub (Publish/Subscribe) model. It creates two processes: one publishes data, and the other subscribes to receive updates. There are two types of notifications:
-- **On Change:** Notifications are sent only if the value changes.
-- **Always:** Notifications are sent each time the value is set, regardless of whether it changes.
+The **22_pubsub** project demonstrates a distributed system using the *Publish/Subscribe* (Pub/Sub) model, where a *Public Service* (**Publisher**) shares data updates with multiple subscribing processes. The **Public Service** provides two notification modes:
 
-The system uses Object RPC (ORPC) for inter-process communication. Two applications are involved: one serves as a *Service Provider* (Publisher) and the other as a *Service Consumer* (Subscriber), which can dynamically subscribe or unsubscribe from data updates. The system guarantees that subscribers receive the latest data upon subscribing, even if it hasn't been recently updated.
+- **On Change**: Subscribers are notified only when data values change.
+- **Always**: Subscribers receive notifications every time data is updated, regardless of changes.
 
-The project consists of three sub-projects:
+When no **Subscriber** is listening for updates, the **Publisher** updates data internally without sending notifications, optimizing network traffic compared to many traditional Pub/Sub implementations.
 
-1. **22_generated:** This is generated from the [PubSub.siml](./res/PubSub.siml) Service Interface document during CMake configuration or as a pre-build action in Visual Studio's `dummy` project.
-2. **[22_publisher](./publisher/):** A console application acting as a *Public Service* provider, publishing data for multiple remote subscribers.
-3. **[22_subscriber](./subscriber/):** A console application acting as a *Public Service* consumer that subscribes to data provided by the *Publisher*. Multiple instances of this can run, ensuring that all receive the same data.
+This project uses **Object Remote Procedure Call (Object RPC)** for efficient **Inter-Process Communication (IPC)**, enabling seamless interaction between publishers and subscribers.
 
-Communication is handled through `mcrouter`, with the AREG SDK automating service discovery and ensuring fault-tolerant system behavior, so process startup order doesn’t impact functionality.
+## Key Concepts
+
+- **Publish/Subscribe Model**: This project employs the Pub/Sub model, where a publisher broadcasts updates, and multiple subscribers can join or leave dynamically to receive these updates.
+- **Service Interface Automation**: Code is generated from a **Service Interface** document, automating **Object RPC** message creation and dispatching. This streamlines process communication, reducing development time.
+- **Object RPC for IPC**: Leveraging **Object RPC** for inter-process communication allows the publisher and subscribers to exchange messages efficiently, supporting high-performance data distribution.
+
+## Project Structure
+
+1. **22_generated**:
+   - Contains code generated from the [PubSub.siml](./res/PubSub.siml) Service Interface document during CMake configuration or as a pre-build step in Visual Studio. This code automates **Object RPC** messaging, making **IPC** between the publisher and subscribers straightforward and efficient.
+
+2. **[22_publisher](./publisher/)**:
+   - Acts as the *Public Service Provider* or **Publisher**, broadcasting data updates to subscribed consumers. When any **Subscriber** is registered, it sends data notifications either on change or every time data is set, depending on the selected notification mode.
+
+3. **[22_subscriber](./subscriber/)**:
+   - A client application that acts as *Service Consumer* or **Subscriber**. It subscribes to updates from the *Publisher*. Multiple instances of this application can run, each subscribing to the same data. Subscribers receive the latest data immediately upon connecting, even if no recent updates have been broadcast.
+
+## Communication
+
+- **mcrouter**: `mcrouter` manages message delivery between the publisher and subscribers, ensuring reliable, fault-tolerant communication across the network.
+- **Object RPC for IPC**: The project utilizes **Object RPC** to simplify inter-process communication (IPC), facilitating efficient message exchange between the publisher and subscribers and enhancing system scalability.
+
+## Key Features
+
+- **Dynamic Subscription/Unsubscription**: Subscribers can join or leave the system at any time without affecting the ongoing publishing. The AREG Framework ensures that new subscribers receive the latest information as soon as they connect.
+- **Two Notification Modes**: The system supports two notification types:
+  - **On Change**: Subscribers are notified only when data changes.
+  - **Always**: Subscribers receive a notification every time data is updated, even if it hasn't changed.
+- **Immediate Data Updates**: Subscribers automatically receive the most recent data upon connection, ensuring they are always current, even if no new updates have recently been published.
+- **Fault-Tolerant Communication**: The AREG Framework and `mcrouter` ensure robust communication, automatically handling failures and maintaining service discovery. This fault tolerance keeps data updates reliable, even with network or process issues.
+
+## Use Cases
+
+- **Real-Time Data Distribution**: This project is ideal for applications requiring real-time data updates, such as stock price monitoring, sensor data collection, or event notification systems.
+- **Multi-Process Systems**: Perfect for systems with multiple processes that need to dynamically subscribe to or unsubscribe from data streams without disrupting service.
+- **Flexible Notification Systems**: Subscribers can choose between receiving updates only when there are changes or on every data event, allowing the system to meet a variety of real-time data monitoring needs.
+
+## Conclusion
+
+The **22_pubsub** project showcases a scalable implementation of the Pub/Sub model, supporting effective communication between distributed processes with **Object RPC** and **IPC**. By leveraging the AREG SDK’s service discovery and fault tolerance, the project provides a reliable and flexible solution for real-time data distribution in multi-process environments. This project is suited for scenarios requiring efficient, continuous data streams, demonstrating how publishers and subscribers interact smoothly in a distributed system.
