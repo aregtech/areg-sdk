@@ -123,7 +123,7 @@ The **[04_trace](./04_trace/)** project demonstrates **tracing and logging** mec
 
 The **[05_timer](./05_timer/)** project is a demonstration of timers for handling **real-time** events in **multithreaded** applications.
 
-- **Key Features**: Implements periodic and one-time timers.
+- **Key Features**: Implements one-time, periodic and continues timers.
 - **Sub-project**:  
   - `05_timer`: Uses timers to trigger events in a **multithreaded** environment.
 
@@ -161,7 +161,7 @@ The **[08_service](./08_service/)** project introduces the creation of a **Servi
 
 #### **[09_svcmulti](./09_svcmulti/)**
 
-The **[09_svcmulti](./09_svcmulti/)** project demonstrates the reuse of service components across multiple threads or processes.
+The **[09_svcmulti](./09_svcmulti/)** project demonstrates the reuse of service components across multiple threads defined in *Application Model*.
 
 - **Key Features**: Service reuse in different contexts via **multithreading** and **multiprocessing**.
 - **Sub-project**:  
@@ -171,9 +171,9 @@ The **[09_svcmulti](./09_svcmulti/)** project demonstrates the reuse of service 
 
 #### **[10_locsvc](./10_locsvc/)**
 
-The **[10_locsvc](./10_locsvc/)** project introduces **local service** communication between a **Service Provider** and **Service Consumer** within the same process.
+The **[10_locsvc](./10_locsvc/)** project introduces **Local Service**, and the communication between a **Service Provider** and **Service Consumer** within the same process.
 
-- **Key Features**: Local service interaction in a **multithreaded** environment.
+- **Key Features**: Local Service, and interaction between *Service Provider* and *Service Consumer* in a **multithreaded** environment.
 - **Sub-project**:  
   - `10_locsvc`: Defines both service (*micro-server*) and client within the same process.
 
@@ -181,9 +181,9 @@ The **[10_locsvc](./10_locsvc/)** project introduces **local service** communica
 
 #### **[11_locmesh](./11_locmesh/)**
 
-The **[11_locmesh](./11_locmesh/)** project is a demonstration of **service mesh** architecture where services communicate across multiple threads within a single process.
+The **[11_locmesh](./11_locmesh/)** project is a demonstration of **mesh of local services** where multiple service providers and consumers communicate across multiple threads within a single process.
 
-- **Key Features**: **Local service mesh** for **multithreading** communication.
+- **Key Features**: **Mesh of Local Services** and **multithreading** communication.
 - **Sub-project**:  
   - `11_locmesh`: Creates a mesh of interconnected services for real-time communication.
 
@@ -191,7 +191,7 @@ The **[11_locmesh](./11_locmesh/)** project is a demonstration of **service mesh
 
 #### **[12_pubsvc](./12_pubsvc/)**
 
-The **[12_pubsvc](./12_pubsvc/)** project is an **inter-process communication (IPC)** project that illustrates a **Public Service** provider and its client interacting across processes.
+The **[12_pubsvc](./12_pubsvc/)** project is an **inter-process communication (IPC)** project that illustrates a **Public Service** provider and its client (consumer) interacting across processes.
 
 - **Key Features**: **Public services** accessible to clients in other processes.
 - **Sub-projects**:  
@@ -202,36 +202,36 @@ The **[12_pubsvc](./12_pubsvc/)** project is an **inter-process communication (I
 
 #### **[13_pubmesh](./13_pubmesh/)**
 
-The **[13_pubmesh](./13_pubmesh/)** project demonstrates a **Public Service Mesh** across processes, integrating **local** and **public services**.
+The **[13_pubmesh](./13_pubmesh/)** project demonstrates a **Mesh of Public Services** across processes and integrating **Local Services** in the processes.
 
-- **Key Features**: **Public service mesh** across multiple processes.
+- **Key Features**: **Mesh of Public Services** across multiple processes.
 - **Sub-projects**:  
   - `13_common`: Contains shared resources used by other sub-projects.
-  - `13_pubservice`: Provides and consumes both **public** and **local** services.
-  - `13_pubclients`: Hosts multiple client components.
-  - `13_pubsvcmesh`: Provides a mixture of **public** and **local** services.
+  - `13_pubservice`: Provides and consumes both **Public** and **Local** Services. It also includes a Shutdown Service to signal a shutdown event for all processes.
+  - `13_pubclients`: Hosts multiple client (Consumer) components.
+  - `13_pubsvcmesh`: Provides a mixture of **Public** and **Local** services.
 
 ---
 
 #### **[14_pubtraffic](./14_pubtraffic/)**
 
-The **[14_pubtraffic](./14_pubtraffic/)** project shows how to dynamically create and modify the *Application Model* and handle custom events in an IPC system.
+The **[14_pubtraffic](./14_pubtraffic/)** project shows how to dynamically create and modify the *Application Model* and handle custom events in an IPC system based on AREG Framework.
 
 - **Key Features**: Dynamic model creation and event processing.
 - **Sub-projects**:  
   - `14_pubclient`: Dynamically creates models at runtime.  
-  - `14_pubservice`: Handles custom events with custom data.
+  - `14_pubservice`: Handles timer and custom events with custom data.
 
 ---
 
 #### **[15_pubworker](./15_pubworker/)**
 
-The **[15_pubworker](./15_pubworker/)** project is an **IPC** project that demonstrates the use of **worker threads** and how to process custom events.
+The **[15_pubworker](./15_pubworker/)** project is an **IPC** project that demonstrates the use of **Worker Threads** and how to process custom events using AREG Framework.
 
-- **Key Features**: **Worker thread** processing in IPC scenarios.
-- **Sub-projects**:  
-  - `15_pubservice`: Provides a **Public Service** with a **Worker Thread** and custom event handling.
-  - `15_pubclient`: Provides a **Public Service Consumer** with a **Worker Thread** and custom event handling.
+- **Key Features**: **Worker Thread** processing in multithreaded communication and IPC scenarios.
+- **Sub-projects**:
+  - `15_pubservice`: A **Public Service Provider** component with a **Worker Thread** and custom event handling used in multithreaded communication.
+  - `15_pubclient`: A **Public Service Consumer** component with a **Worker Thread** and custom event handling used in multithreaded communication.
 
 ---
 
@@ -252,29 +252,29 @@ The **[17_winchat](./17_winchat/)** project is a Windows-based chat application 
 
 - **Key Features**: Dynamic connection to **mcrouter** and real-time communication.
 - **Sub-projects**:  
-  - `17_register`: Instantiates a public service.  
-  - `17_chatter`: Provides and consumes public services.
+  - `17_register`: Instantiates a **Public Service** used by all processes.  
+  - `17_chatter`: Provides and consumes dynamic Public Services.
 
 ---
 
 #### **[18_locwatchdog](./18_locwatchdog/)**
 
-The **[18_locwatchdog](./18_locwatchdog/)** project showcases a local **watchdog** service designed for **multithreaded** applications. It actively monitors threads and automatically restarts them if they fail, ensuring that service components remain operational and fault-tolerant.
+The **[18_locwatchdog](./18_locwatchdog/)** project showcases a **Watchdog** object in Local Service case for **multithreaded** applications. It actively monitors threads and automatically restarts them if they fail, ensuring that service components remain operational and fault-tolerant.
 
-- **Key Features**: Implements a local watchdog for robust fault tolerance within a single process.
+- **Key Features**: Within a single process implements a Local Service in a thread with the Watchdog for robust fault tolerance.
 - **Sub-project**:
-  - `18_locservice`: Monitors and restarts services within the same process, improving reliability and resilience.
+  - `18_locservice`: Within multithreading process, a Watchdog monitors and restarts service, improving reliability and resilience.
 
 ---
 
 #### **[19_pubwatchdog](./19_pubwatchdog/)**
 
-The **[19_pubwatchdog](./19_pubwatchdog/)** project extends the **watchdog** concept to support **inter-process communication (IPC)**, ensuring fault-tolerance across multiple processes. It monitors public services, restarts them in case of failure, and notifies all connected service consumers.
+The **[19_pubwatchdog](./19_pubwatchdog/)** project extends the **Watchdog** concept to support **inter-process communication (IPC)**, ensuring fault-tolerance across multiple processes. It monitors public services, restarts them in case of failure, and notifies all connected service consumers.
 
-- **Key Features**: A public service watchdog that monitors threads, restarts services upon failure, and ensures that consumers are notified of disconnections.
+- **Key Features**: A Watchdog that monitors threads with Public Service, restarts services upon failure, and ensures that consumers are notified of disconnections.
 - **Sub-projects**:
-  - `19_pubclient`: Simulates a service consumer that detects and reacts to provider failures by handling service disconnections.
-  - `19_pubservice`: Houses a watchdog responsible for monitoring threads with public service providers and ensuring fault recovery.
+  - `19_pubclient`: Simulates a service consumer that reacts to Provider failures by handling service disconnections.
+  - `19_pubservice`: Houses a Watchdog responsible for monitoring threads with Public Service Providers and ensuring fault recovery.
 
 ---
 
@@ -291,12 +291,12 @@ The **[20_pubdatarate](./20_pubdatarate/)** project is an **inter-process commun
 
 #### **[21_pubunblock](./21_pubunblock/)**
 
-The **[21_pubunblock](./21_pubunblock/)** project demonstrates how to improve service throughput in **inter-process communication (IPC)** by manually unblocking service requests marked as busy. This approach helps optimize request handling and resource utilization.
+The **[21_pubunblock](./21_pubunblock/)** project demonstrates how to improve service throughput in **inter-process communication (IPC)** by manually unblocking service requests marked as busy. This approach helps optimize request handling and resource utilization in asynchronous communication.
 
-- **Key Features**: Manual unblocking of service requests, allowing faster request processing and optimized service management.
+- **Key Features**: Manual unblocking of service requests, allowing faster request processing and optimized service management in applications with asynchronous communication.
 - **Sub-projects**:
-  - `21_pubservice`: Manages service requests and provides functionality to manually unblock and prepare responses efficiently.
-  - `21_pubclient`: Frequently sends requests to the service and ensures proper handling of rejected or blocked requests, enhancing throughput.
+  - `21_pubservice`: Manages service requests in asynchronous communication and provides functionality to manually unblock and prepare responses efficiently.
+  - `21_pubclient`: Frequently sends requests to the service and ensures proper handling of requests and responses, enhancing throughput.
 
 ---
 
@@ -325,12 +325,12 @@ The **[23_pubsubmix](./23_pubsubmix/)** project extends the **Publish/Subscribe*
 
 #### **[24_pubsubmulti](./24_pubsubmulti/)**
 
-The **[24_pubsubmulti](./24_pubsubmulti/)** project optimizes the **Publish/Subscribe (Pub/Sub)** model for multiple subscribers by reducing event overhead. It ensures that only necessary notifications are sent, improving system efficiency and performance.
+The **[24_pubsubmulti](./24_pubsubmulti/)** project optimizes the **Publish/Subscribe (Pub/Sub)** model for multiple remote subscribers in one thread by reducing event overhead. It ensures that only necessary notifications are sent, improving system efficiency and performance.
 
-- **Key Features**: Efficient event notification system that minimizes overhead in **Pub/Sub** models involving multiple subscribers.
+- **Key Features**: Efficient event notification system that minimizes overhead in **Pub/Sub** models involving multiple subscribers within one thread.
 - **Sub-projects**:
   - `24_publisher`: Provides a network-discoverable **Public Service** that publishes data to clients.
-  - `24_subscribermulti`: Subscribes to the public service and verifies that received data is properly separated from local subscriptions, ensuring consistency.
+  - `24_subscribermulti`: Contains two Subscribes to the public service running in one thread. It verifies that received data is properly separated for subscriptions, ensuring consistency.
 
 ---
 
