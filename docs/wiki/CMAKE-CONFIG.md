@@ -237,7 +237,7 @@ The following are the available CMake options to configure the AREG SDK build. O
 ### Example Command for Configuring, building and installing AREG SDK binaries
 
 ```bash
-cmake -B ./product/cache/llvm -DAREG_COMPILER_FAMILY=llvm -DAREG_BUILD_TESTS=OFF -DAREG_BUILD_EXAMPLES=OFF -DAREG_USE_PACKAGES=ON -DAREG_INSTALL=ON -DAREG_INSTALL_PATH="/usr/local"
+cmake -B ./product/cache/llvm -DAREG_COMPILER_FAMILY=llvm -DAREG_BUILD_TESTS=OFF -DAREG_BUILD_EXAMPLES=OFF -DAREG_INSTALL=ON -DAREG_INSTALL_PATH="/usr/local"
 cmake --build ./product/cache/llvm -j 20
 sudo cmake --install ./product/cache/llvm
 ```
@@ -257,6 +257,28 @@ sudo cmake --install ./product/cache/llvm
 - **Custom Output Directories**: `AREG_BUILD_ROOT` can be used to set a specific location for all build-related binaries, aiding in project organization.
 
 - **Disable AREG SDK Outputs**: Set `AREG_ENABLE_OUTPUTS` to `OFF`, to use CMake defaults or custom locations for builds.
+
+- **Print AREG Configuration Status**: Include `setup.cmake` CMake file in your `CMakeLists.txt` file and use `printAregConfigStatus()` function to print configuration status like this:
+  ```txt
+    -- =======================================================================================
+    -- ----------------------> AREG project CMake Status Report Begin <-----------------------
+    -- =======================================================================================
+    -- AREG: >>> CMAKE_SOURCE_DIR    = '/home/runner/areg-sdk', build type 'Release'
+    -- AREG: >>> Build Environment ..: System 'Linux', 64-bit platform, 'x86_64' CPU
+    -- AREG: >>> Compiler ...........: '/usr/bin/clang++'
+    -- AREG: >>> Compiler Version ...: C++ standard 'c++17', compiler family 'llvm'
+    -- AREG: >>> Binary Output Dir ..: '/home/runner/areg-sdk/product/build/llvm-clang++/linux-64-x86_64-release-shared/bin'
+    -- AREG: >>> Generated Files Dir : '/home/runner/areg-sdk/product/generate'
+    -- AREG: >>> Packages Dir .......: '/home/runner/areg-sdk/product/packages'
+    -- AREG: >>> Build Modules ......: areg = 'shared', aregextend = static, areglogger = 'shared', executable extension '.out'
+    -- AREG: >>> Java Version .......: '17.0.13', Java executable = '/opt/hostedtoolcache/Java_Temurin-Hotspot_jre/17.0.13-11/x64/bin/java', minimum version required = 17
+    -- AREG: >>> Packages Use .......: SQLite3 package use = 'ON', GTest package use = 'OFF'
+    -- AREG: >>> Other Options ......: Examples = 'ON', Unit Tests = 'ON', AREG Extended = 'ON', Logs = 'ON'
+    -- AREG: >>> Installation .......: Enabled = 'ON', location = './product/install/llvm-clang++'
+    -- =======================================================================================
+    -- -----------------------> AREG project CMake Status Report End <------------------------
+    -- =======================================================================================
+```
 
 These options allow you to customize AREG SDK to align with specific project needs, simplifying integration.
 
