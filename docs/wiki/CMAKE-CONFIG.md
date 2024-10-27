@@ -9,44 +9,52 @@ The AREG SDK offers flexible build configurations via CMake, allowing users to c
 
 ## Table of Options
 
-1. [AREG_COMPILER_FAMILY](#areg_compiler_family)
-2. [AREG_COMPILER](#areg_compiler)
-3. [AREG_BINARY](#areg_binary)
-4. [AREG_LOGGER_LIB](#areg_logger_lib)
-5. [AREG_BUILD_TYPE](#areg_build_type)
-6. [AREG_BUILD_TESTS](#areg_build_tests)
-7. [AREG_BUILD_EXAMPLES](#areg_build_examples)
-8. [AREG_EXTENDED](#areg_extended)
-9. [AREG_LOGS](#areg_logs)
-10. [AREG_INSTALL](#areg_install)
-11. [AREG_USE_PACKAGES](#areg_use_packages)
-12. [AREG_SQLITE_PACKAGE](#areg_sqlite_package)
-13. [AREG_GTEST_PACKAGE](#areg_gtest_package)
-14. [AREG_BUILD_ROOT](#areg_build_root)
-15. [AREG_OUTPUT_DIR](#areg_output_dir)
-16. [AREG_OUTPUT_BIN](#areg_output_bin)
-17. [AREG_OUTPUT_LIB](#areg_output_lib)
-18. [AREG_PACKAGES](#areg_packages)
-19. [AREG_INSTALL_PATH](#areg_install_path)
-20. [AREG_ENABLE_OUTPUTS](#areg_enable_outputs)
+1. [AREG_COMPILER_FAMILY](#1-areg_compiler_family)
+2. [AREG_COMPILER](#2-areg_compiler)
+3. [AREG_BINARY](#3-areg_binary)
+4. [AREG_LOGGER_LIB](#4-areg_logger_lib)
+5. [AREG_BUILD_TYPE](#5-areg_build_type)
+6. [AREG_BUILD_TESTS](#6-areg_build_tests)
+7. [AREG_BUILD_EXAMPLES](#7-areg_build_examples)
+8. [AREG_EXTENDED](#8-areg_extended)
+9. [AREG_LOGS](#9-areg_logs)
+10. [AREG_INSTALL](#10-areg_install)
+11. [AREG_USE_PACKAGES](#11-areg_use_packages)
+12. [AREG_SQLITE_PACKAGE](#12-areg_sqlite_package)
+13. [AREG_GTEST_PACKAGE](#13-areg_gtest_package)
+14. [AREG_BUILD_ROOT](#14-areg_build_root)
+15. [AREG_OUTPUT_DIR](#15-areg_output_dir)
+16. [AREG_OUTPUT_BIN](#16-areg_output_bin)
+17. [AREG_OUTPUT_LIB](#17-areg_output_lib)
+18. [AREG_PACKAGES](#18-areg_packages)
+19. [AREG_INSTALL_PATH](#19-areg_install_path)
+20. [AREG_ENABLE_OUTPUTS](#20-areg_enable_outputs)
 
 ---
 
-The following are the available CMake options to configure the AREG SDK build. Options can be set directly in the command line, and default values are used if none are specified.
+## List of Options
+
+The following are the available CMake options to configure the AREG SDK build. Options can be set directly in the command line or before including `user.cmake` (`setup.cmake`) file, and default values are used if none are specified.
 
 ### 1. **AREG_COMPILER_FAMILY**
-   - **Description**: Specifies a quick way to set the C++ and C compilers by family.
+   - **Description**: Provides an easy way to set the compiler family for both C++ and C sources.
    - **Possible Values**: `gnu`, `cygwin`, `llvm`, `msvc`
-   - **Example**: `-DAREG_COMPILER_FAMILY=llvm`
+     - `gnu`: Defaults to `g++` (C++) and `gcc` (C)
+     - `llvm`: Defaults to `clang++` (C++) and `clang` (C)
+     - `cygwin`: Defaults to `g++` and `gcc` for Cygwin on Windows
+     - `msvc`: Uses `cl` for both C++ and C on Windows
+   - **Default**: `gnu` on Linux and Cygwin, `msvc` on Windows
+   - **Example**: `cmake -B ./build -DAREG_COMPILER_FAMILY=llvm`
  
 <div align="right"><kbd><a href="#table-of-options">↑ Back to top ↑</a></kbd></div>
 
 ---
 
 ### 2. **AREG_COMPILER**
-   - **Description**: Sets a specific compiler for C++ and C projects.
-   - **Possible Values**: `g++`, `gcc`, `clang++`, `clang`, `cl`, etc.
-   - **Example**: `-DAREG_COMPILER=g++`
+- **Description**: Defines the compiler for both C++ and C projects, using either the full path or a shorthand name (make sure the compiler’s directory is in your PATH environment variable). Alternatively, you can set the `CMAKE_CXX_COMPILER` variable directly, achieving the same effect. This option can be skipped if `CMAKE_CXX_COMPILER` is already specified.
+   - **Possible Values**: `g++`, `gcc`, `clang++`, `clang`, `c++`, `cc`, `cl`, `clang-cl`.
+   - **Defaults**: System default compiler.
+   - **Example**: `cmake -B ./build -DAREG_COMPILER=g++`
 
 <div align="right"><kbd><a href="#table-of-options">↑ Back to top ↑</a></kbd></div>
 
@@ -54,9 +62,9 @@ The following are the available CMake options to configure the AREG SDK build. O
 
 ### 3. **AREG_BINARY**
    - **Description**: Specifies the type of library for the AREG Framework.
-   - **Default**: `shared`
    - **Possible Values**: `shared`, `static`
-   - **Example**: `-DAREG_BINARY=static`
+   - **Default**: `shared`
+   - **Example**: `cmake -B ./build -DAREG_BINARY=static`
 
 <div align="right"><kbd><a href="#table-of-options">↑ Back to top ↑</a></kbd></div>
 
@@ -64,59 +72,59 @@ The following are the available CMake options to configure the AREG SDK build. O
 
 ### 4. **AREG_LOGGER_LIB**
    - **Description**: Sets the library type for the Log Observer API.
-   - **Default**: `shared`
    - **Possible Values**: `shared`, `static`
-   - **Example**: `-DAREG_LOGGER_LIB=static`
+   - **Default**: `shared`
+   - **Example**: `cmake -B ./build -DAREG_LOGGER_LIB=static`
 
 <div align="right"><kbd><a href="#table-of-options">↑ Back to top ↑</a></kbd></div>
 
 ---
 
 ### 5. **AREG_BUILD_TYPE**
-   - **Description**: Specifies the build configuration.
-   - **Default**: `Release`
+   - **Description**: Defines the build configuration type, equivalent to the CMake option `CMAKE_BUILD_TYPE`. If `AREG_BUILD_TYPE` is set, it will override `CMAKE_BUILD_TYPE`.
    - **Possible Values**: `Release`, `Debug`
-   - **Example**: `-DAREG_BUILD_TYPE=Debug`
+   - **Default**: `Release`
+   - **Example**: `cmake -B ./build -DAREG_BUILD_TYPE=Debug`
 
 <div align="right"><kbd><a href="#table-of-options">↑ Back to top ↑</a></kbd></div>
 
 ---
 
 ### 6. **AREG_BUILD_TESTS**
-   - **Description**: Enables or disables building unit tests.
-   - **Default**: `OFF`
+   - **Description**: Enables or disables building unit tests for the AREG SDK. If enabled, the tests build will require an additional dependency on `GTest`.
    - **Possible Values**: `ON`, `OFF`
-   - **Example**: `-DAREG_BUILD_TESTS=ON`
+   - **Default**: `OFF`
+   - **Example**: `cmake -B ./build -DAREG_BUILD_TESTS=ON`
 
 <div align="right"><kbd><a href="#table-of-options">↑ Back to top ↑</a></kbd></div>
 
 ---
 
 ### 7. **AREG_BUILD_EXAMPLES**
-   - **Description**: Enables or disables building example applications.
-   - **Default**: `ON`
+   - **Description**: Controls whether to build example applications for the AREG SDK. Enabling this option may require additional dependencies, such as MFC (Microsoft Foundation Classes) for GUI projects on Windows.
    - **Possible Values**: `ON`, `OFF`
-   - **Example**: `-DAREG_BUILD_EXAMPLES=OFF`
+   - **Default**: `ON`
+   - **Example**: `cmake -B ./build -DAREG_BUILD_EXAMPLES=OFF`
 
 <div align="right"><kbd><a href="#table-of-options">↑ Back to top ↑</a></kbd></div>
 
 ---
 
 ### 8. **AREG_EXTENDED**
-   - **Description**: Enables extended framework features, which may require additional dependencies.
-   - **Default**: `OFF`
+   - **Description**: Enables the compilation of the additional library of the AREG with extended features, which may introduce additional dependencies like `ncurses` on Linux and Cygwin platforms.
    - **Possible Values**: `ON`, `OFF`
-   - **Example**: `-DAREG_EXTENDED=ON`
-
+   - **Default**: `OFF`
+   - **Example**: `cmake -B ./build -DAREG_EXTENDED=ON`
+   
 <div align="right"><kbd><a href="#table-of-options">↑ Back to top ↑</a></kbd></div>
 
 ---
 
 ### 9. **AREG_LOGS**
-   - **Description**: Enables logging during compilation.
-   - **Default**: `ON`
+   - **Description**: Enables or disables compilation with logs. If compiled without logs, the applications using AREG Framework will not be able to log messages.
    - **Possible Values**: `ON`, `OFF`
-   - **Example**: `-DAREG_LOGS=OFF`
+   - **Default**: `ON`
+   - **Example**: `cmake -B ./build -DAREG_LOGS=OFF`
 
 <div align="right"><kbd><a href="#table-of-options">↑ Back to top ↑</a></kbd></div>
 
@@ -124,111 +132,114 @@ The following are the available CMake options to configure the AREG SDK build. O
 
 ### 10. **AREG_INSTALL**
    - **Description**: Enables or disables the SDK installation process.
-   - **Default**: `ON`
    - **Possible Values**: `ON`, `OFF`
-   - **Example**: `-DAREG_INSTALL=OFF`
+   - **Default**: `ON`
+   - **Example**: `cmake -B ./build -DAREG_INSTALL=OFF`
 
 <div align="right"><kbd><a href="#table-of-options">↑ Back to top ↑</a></kbd></div>
 
 ---
 
 ### 11. **AREG_USE_PACKAGES**
-   - **Description**: Enables or disables the use of system-installed packages.
-   - **Default**: `ON`
+   - **Description**: Enables or disables the use of system-installed thirdparty packages like *google test* or *SQLite3*. If disabled, will try either to fetch the sources from remote repository or compile the thirdparty *SQLite3* library.
    - **Possible Values**: `ON`, `OFF`
-   - **Example**: `-DAREG_USE_PACKAGES=OFF`
+   - **Default**: `ON`
+   - **Example**: `cmake -B ./build -DAREG_USE_PACKAGES=OFF`
 
 <div align="right"><kbd><a href="#table-of-options">↑ Back to top ↑</a></kbd></div>
 
 ---
 
 ### 12. **AREG_SQLITE_PACKAGE**
-   - **Description**: Determines if the system's SQLite3 package should be used.
-   - **Default**: `ON`
+   - **Description**: Determines if the system's SQLite3 package should be used or compile the existing sources in *thirdparty* directory.
    - **Possible Values**: `ON`, `OFF`
-   - **Example**: `-DAREG_SQLITE_PACKAGE=OFF`
+   - **Default**: `ON`
+   - **Example**: `cmake -B ./build -DAREG_SQLITE_PACKAGE=OFF`
 
 <div align="right"><kbd><a href="#table-of-options">↑ Back to top ↑</a></kbd></div>
 
 ---
 
 ### 13. **AREG_GTEST_PACKAGE**
-   - **Description**: Determines if the system’s GTest package should be used.
-   - **Default**: `ON`
+   - **Description**: Determines if the system’s GTest package should be used or fetch the sources from the official remote repository.
    - **Possible Values**: `ON`, `OFF`
-   - **Example**: `-DAREG_GTEST_PACKAGE=OFF`
+   - **Default**: `ON`
+   - **Example**: `cmake -B ./build -DAREG_GTEST_PACKAGE=OFF`
 
 <div align="right"><kbd><a href="#table-of-options">↑ Back to top ↑</a></kbd></div>
 
 ---
 
 ### 14. **AREG_BUILD_ROOT**
-   - **Description**: Defines the root directory for build files.
+   - **Description**: Defines the root directory for build binary files. The directory will be also used to fetch thirdparty dependencies.
    - **Default**: `<areg-sdk>/product`
-   - **Example**: `-DAREG_BUILD_ROOT=/path/to/custom/build`
+   - **Example**: `cmake -B ./build -DAREG_BUILD_ROOT=/path/to/custom/build`
 
 <div align="right"><kbd><a href="#table-of-options">↑ Back to top ↑</a></kbd></div>
 
 ---
 
 ### 15. **AREG_OUTPUT_DIR**
-   - **Description**: Sets the directory for build outputs.
+   - **Description**: Sets the directory for build binary outputs. By default, the sub-directories `bin` and `lib` will be used to output runtime binaries, shared and static libraries.
    - **Default**: `'<areg-sdk>/product/build/<default-compiler-family>/<os>-<bitness>-<cpu>-release-<areg-lib>'`
-   - **Example**: `-DAREG_OUTPUT_DIR=/custom/output`
+   - **Example**: `cmake -B ./build -DAREG_OUTPUT_DIR=/custom/output`
 
 <div align="right"><kbd><a href="#table-of-options">↑ Back to top ↑</a></kbd></div>
 
 ---
 
 ### 16. **AREG_OUTPUT_BIN**
-   - **Description**: Directory for output binaries (executables and shared libraries).
+   - **Description**: Directory for output runtime and shared library binaries. This is equivalent to CMake `CMAKE_RUNTIME_OUTPUT_DIRECTORY` and `CMAKE_LIBRARY_OUTPUT_DIRECTORY` settings.
    - **Default**: `AREG_OUTPUT_DIR/bin`
-   - **Example**: `-DAREG_OUTPUT_BIN=/custom/output/bin`
+   - **Example**: `cmake -B ./build -DAREG_OUTPUT_BIN=/custom/output/bin`
 
 <div align="right"><kbd><a href="#table-of-options">↑ Back to top ↑</a></kbd></div>
 
 ---
 
 ### 17. **AREG_OUTPUT_LIB**
-   - **Description**: Directory for output static libraries.
+   - **Description**: Directory for output static libraries. This is equivalent to CMake `CMAKE_ARCHIVE_OUTPUT_DIRECTORY` settings.
    - **Default**: `AREG_OUTPUT_DIR/lib`
-   - **Example**: `-DAREG_OUTPUT_LIB=/custom/output/lib`
+   - **Example**: `cmake -B ./build -DAREG_OUTPUT_LIB=/custom/output/lib`
 
 <div align="right"><kbd><a href="#table-of-options">↑ Back to top ↑</a></kbd></div>
 
 ---
 
 ### 18. **AREG_PACKAGES**
-   - **Description**: Location for fetching third-party packages.
+   - **Description**: Location for fetching third-party packages. By default it is `packages` subdirectory of `AREG_BUILD_ROOT`.
    - **Default**: `AREG_BUILD_ROOT/packages`
-   - **Example**: `-DAREG_PACKAGES=/path/to/packages`
+   - **Example**: `cmake -B ./build -DAREG_PACKAGES=/path/to/packages`
 
 <div align="right"><kbd><a href="#table-of-options">↑ Back to top ↑</a></kbd></div>
 
 ---
 
 ### 19. **AREG_INSTALL_PATH**
-   - **Description**: Directory for installing AREG SDK components.
-   - **Default**: `~/areg-sdk`
-   - **Example**: `-DAREG_INSTALL_PATH=/install/location`
+   - **Description**: Directory for installing AREG SDK build components.
+   - **Default**: `<user-profile>/areg-sdk`
+   - **Example**: `cmake -B ./build -DAREG_INSTALL_PATH=/install/location`
 
 <div align="right"><kbd><a href="#table-of-options">↑ Back to top ↑</a></kbd></div>
 
 ---
 
 ### 20. **AREG_ENABLE_OUTPUTS**
-   - **Description**: Controls whether output directories match the CMake binary directory.
-   - **Default**: `ON`
+   - **Description**: Controls whether output directories match the CMake binary directory or not. If disabled (`OFF`) the AREG SDK default settings `AREG_OUTPUT_XXX` are ignored and CMake default settings are used. This setting can be used if AREG Framework is compiled in the thirdparty project build, so that it will use the thirdparty settings, instead of defining own, AREG SDK specific settings.
    - **Possible Values**: `ON`, `OFF`
-   - **Example**: `-DAREG_ENABLE_OUTPUTS=OFF`
+   - **Default**: `ON`
+   - **Example**: `cmake -B ./build -DAREG_ENABLE_OUTPUTS=OFF`
 
 <div align="right"><kbd><a href="#table-of-options">↑ Back to top ↑</a></kbd></div>
 
 ---
 
-### Example Command for Configuring AREG SDK Build
+### Example Command for Configuring, building and installing AREG SDK binaries
+
 ```bash
-cmake -B ./build -DAREG_COMPILER_FAMILY=llvm -DAREG_BUILD_TESTS=ON -DAREG_BUILD_EXAMPLES=ON -DAREG_INSTALL=ON
+cmake -B ./product/cache/llvm -DAREG_COMPILER_FAMILY=llvm -DAREG_BUILD_TESTS=OFF -DAREG_BUILD_EXAMPLES=OFF -DAREG_USE_PACKAGES=ON -DAREG_INSTALL=ON -DAREG_INSTALL_PATH="/usr/local"
+cmake --build ./product/cache/llvm -j 20
+sudo cmake --install ./product/cache/llvm
 ```
 
 <div align="right"><kbd><a href="#table-of-options">↑ Back to top ↑</a></kbd></div>
@@ -240,3 +251,9 @@ cmake -B ./build -DAREG_COMPILER_FAMILY=llvm -DAREG_BUILD_TESTS=ON -DAREG_BUILD_
 - **Custom Output Directories**: Use `AREG_BUILD_ROOT` to direct binaries to a specific location within a project.
 
 These options allow you to customize the AREG SDK to fit project requirements and streamline integration.
+
+---
+
+## Integration
+
+Visit https://github.com/aregtech/areg-sdk-demo repository to see practical examples of various ways to integrate AREG Framework in the projects.
