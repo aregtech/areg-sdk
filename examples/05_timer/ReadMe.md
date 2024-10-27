@@ -1,6 +1,6 @@
 # 05_timer Project Overview
 
-The **05_timer** project demonstrates how to implement and manage timers in **multithreaded applications** using the AREG Framework. This example showcases the initialization, execution, processing and termination of multiple timers. It highlights how to trigger a timer within the thread concept and how to process the timer event after timeout expiration.
+The **05_timer** project demonstrates how to implement and manage timers (or **Timer Events**) in **multithreaded applications** using the AREG Framework. This example showcases the initialization, execution, processing and termination of multiple timers. It highlights how to trigger a timer within the thread concept and how to process the timer event after timeout expiration.
 
 ## Key Concepts
 
@@ -20,7 +20,7 @@ The project includes examples of different types of timers:
 
 - **Multiple Timers**: The project demonstrates how to manage multiple timers concurrently, each running in its own thread.
 - **Flexible Timer Control**: Timers can be started, paused, and stopped, giving developers control over how and when tasks are executed.
-- **Thread-Safe Operation**: The timers are managed in separate threads, ensuring thread safety and allowing for parallel execution of timed tasks within timer owning thread context.
+- **Thread-Safe Operation**: The timers (or **Timer Events**) are processed in *owner* thread context, ensuring thread safety.
 
 ## Project Structure
 

@@ -1,6 +1,6 @@
 # 22_pubsub Project Overview
 
-The **22_pubsub** project demonstrates a distributed system using the *Publish/Subscribe* (Pub/Sub) model, where a *Public Service* (**Publisher**) shares data updates with multiple subscribing processes. The **Public Service** provides two notification modes:
+The **22_pubsub** project demonstrates a system with distributed services using the *Publish/Subscribe* (Pub/Sub) model, where a *Public Service* (**Publisher**) shares data updates with multiple subscribing processes. The **Public Service** provides two notification modes:
 
 - **On Change**: Subscribers are notified only when data values change.
 - **Always**: Subscribers receive notifications every time data is updated, regardless of changes.
@@ -9,13 +9,16 @@ When no **Subscriber** is listening for updates, the **Publisher** updates data 
 
 This project uses **Object Remote Procedure Call (Object RPC)** for efficient **Inter-Process Communication (IPC)**, enabling seamless interaction between publishers and subscribers.
 
+> [!IMPORTANT]
+> To test this example, ensure an `mcrouter` process is running on a network-accessible machine to enable message routing. Verify that the `areg.init` configuration file includes the correct IP address and port number for the `mcrouter`.
+
 ## Key Concepts
 
 - **Publish/Subscribe Model**: This project employs the Pub/Sub model, where a publisher broadcasts updates, and multiple subscribers can join or leave dynamically to receive these updates.
 - **Service Interface Automation**: Code is generated from a **Service Interface** document, automating **Object RPC** message creation and dispatching. This streamlines process communication, reducing development time.
 - **Object RPC for IPC**: Leveraging **Object RPC** for inter-process communication allows the publisher and subscribers to exchange messages efficiently, supporting high-performance data distribution.
 
-## Project Structure
+## Sub-Projects
 
 1. **22_generated**:
    - Contains code generated from the [PubSub.siml](./res/PubSub.siml) Service Interface document during CMake configuration or as a pre-build step in Visual Studio. This code automates **Object RPC** messaging, making **IPC** between the publisher and subscribers straightforward and efficient.
@@ -28,8 +31,7 @@ This project uses **Object Remote Procedure Call (Object RPC)** for efficient **
 
 ## Communication
 
-- **mcrouter**: `mcrouter` manages message delivery between the publisher and subscribers, ensuring reliable, fault-tolerant communication across the network.
-- **Object RPC for IPC**: The project utilizes **Object RPC** to simplify inter-process communication (IPC), facilitating efficient message exchange between the publisher and subscribers and enhancing system scalability.
+Communication between the service provider and consumers is facilitated by **mcrouter** router, which is capable of operating across any networked machine. The AREG Framework automates **service discovery** and ensures **fault tolerance**, enabling reliable **IPC** and ensuring that the order of process startup does not affect the system’s functionality. Services are automatically discovered, and messages are forwarded seamlessly to their intended recipients, maintaining robust inter-process communication.
 
 ## Key Features
 

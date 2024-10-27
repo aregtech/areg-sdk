@@ -1,6 +1,9 @@
 # 14_pubtraffic Project Overview
 
-The **14_pubtraffic** project demonstrates how to dynamically create and manage models within a **multithreaded application**, showcasing the ability to handle custom events and dynamic model creation during runtime. The project utilizes **Inter-Process Communication (IPC)** and **Object Remote Procedure Call (Object RPC)** to enable seamless communication between services in a distributed environment.
+The **14_pubtraffic** project demonstrates how to dynamically create and manage models within a **multiprocessing application**, showcasing the ability to handle custom events and dynamic model creation during runtime. The project utilizes **Inter-Process Communication (IPC)** and **Object Remote Procedure Call (Object RPC)** to enable seamless communication between services in a distributed environment.
+
+> [!IMPORTANT]
+> To test this example, ensure an `mcrouter` process is running on a network-accessible machine to enable message routing. Verify that the `areg.init` configuration file includes the correct IP address and port number for the `mcrouter`.
 
 ## Key Concepts
 
@@ -8,10 +11,10 @@ The **14_pubtraffic** project demonstrates how to dynamically create and manage 
 - **Service Interface:** Utilize the Service Interface document and code generator to automate **Object Remote Procedure Call (Object RPC)** message creation and dispatching, enhancing efficiency and simplifying communication between host and remote target.
 - **Custom Event Handling**: Demonstrates the handling of custom events within a multithreaded system, triggered by user commands such as `start`, `stop`, and `quit`.
 
-## Project Structure
+## Sub-Projects
 
 1. **14_generated**:
-   - This project is a library of code, generated from the [SimpleTrafficLight.siml](./res/SimpleTrafficLight.siml) Service Interface document. The generated code automates **Object RPC** message creation and communication, enabling efficient interaction between service providers and consumers.
+   - Contains codes, generated from the [SimpleTrafficLight.siml](./res/SimpleTrafficLight.siml) Service Interface document. The generated code automates **Object RPC** message creation and communication, enabling efficient interaction between service providers and consumers.
 
 2. **[14_pubclient](./pubclient/)**:
    - A service consumer application that dynamically creates models during runtime. Multiple instances of this client can be launched, with each instance subscribing to different data sets via commands like `sn` (for nominal *South-North* direction data) or `ew` (for nominal *East-West* direction data).
@@ -25,7 +28,7 @@ Communication between the service provider and consumers is facilitated by **mcr
 
 ## Key Features
 
-- **Multithreaded Dynamic Model Management**: The ability to dynamically create models and manage their lifecycle during runtime in a **multithreaded** environment provides flexibility and scalability.
+- **Dynamic Model Management**: The ability to dynamically create models and manage their lifecycle during runtime in a **multithreaded** and **multiprocessing** environment provides flexibility and scalability.
 - **Object RPC and IPC**: The project demonstrates the use of **Object RPC** and **IPC** to handle communication between services, automating message dispatch and response handling across multiple processes.
 - **Custom Event Handling**: The service provider reacts to user commands by triggering custom events, offering fine-grained control over service behavior and interaction.
 

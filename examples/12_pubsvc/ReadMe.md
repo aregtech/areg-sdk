@@ -2,6 +2,9 @@
 
 The **12_pubsvc** project demonstrates the implementation of a *Public Service* in a multi-process environment using **Object Remote Procedure Call (Object RPC)** for inter-process communication (IPC). This example involves two main applications: a *Service Provider* and a *Service Consumer*. The service provider handles remote requests sent by the consumer, allowing developers to understand how AREG Framework manages distributed systems and public services.
 
+> [!IMPORTANT]
+> To test this example, ensure an `mcrouter` process is running on a network-accessible machine to enable message routing. Verify that the `areg.init` configuration file includes the correct IP address and port number for the `mcrouter`.
+
 ## Key Concepts
 
 - **Public Service**: A service that can be discovered and accessed by remote consumers over the network.
@@ -11,7 +14,7 @@ The **12_pubsvc** project demonstrates the implementation of a *Public Service* 
 ## Sub-Projects
 
 1. **12_generated**:
-   - This code is generated from the [HelloWorld.siml](./res/HelloWorld.siml) Service Interface document during CMake configuration or as a pre-build action in Visual Studio. The generated code automates **Object RPC** message creation and dispatching, improving efficiency in communication between the *Service Provider* and *Service Consumer*. Object RPC is used for **IPC**, ensuring seamless remote interaction between processes.
+   - Contains code is generated from the [HelloWorld.siml](./res/HelloWorld.siml) Service Interface document during CMake configuration or as a pre-build action in Visual Studio. The generated code automates **Object RPC** message creation and dispatching, improving efficiency in communication between the *Service Provider* and *Service Consumer*. Object RPC is used for **IPC**, ensuring seamless remote interaction between processes.
 
 2. **[12_pubservice](./pubservice/)**:
    - An application acting as a network-discoverable *Public Service* provider. It listens for remote requests from consumers and processes them. Multiple *Service Consumers* can connect to the provider simultaneously, sending requests to be handled.
@@ -21,7 +24,7 @@ The **12_pubsvc** project demonstrates the implementation of a *Public Service* 
 
 ## Communication
 
-- **mcrouter**: All communication between the *Service Provider* and *Service Consumer* is managed through `mcrouter`, a multicast router that enables efficient message routing in distributed systems. It can run on any networked machine, ensuring flexible and robust message delivery.
+- **mcrouter**: All communication between the *Service Provider* and *Service Consumer* is managed through `mcrouter`, which is a router that enables efficient message routing in distributed systems. It can run on any networked machine, ensuring flexible and robust message delivery.
 - **Object RPC for IPC**: The **Object RPC** protocol handles inter-process communication between the provider and consumers, enabling easy and efficient remote interaction. This is particularly important for scaling distributed systems, where different processes need to exchange data or requests seamlessly.
 
 ## Key Features
@@ -34,7 +37,7 @@ The **12_pubsvc** project demonstrates the implementation of a *Public Service* 
 
 ## Use Cases
 
-- **Distributed Applications**: The **12_pubsvc** project is ideal for scenarios where multiple clients need to communicate with a single service provider in a distributed network environment.
+- **Multiprocess Applications**: The **12_pubsvc** project is ideal for scenarios where multiple clients need to communicate with a single service provider in a network of distributed services.
   
 - **Public Services**: It is well-suited for applications where a network-accessible service needs to process requests from multiple consumers and maintain high availability and reliability.
 

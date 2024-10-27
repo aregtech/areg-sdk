@@ -1,8 +1,11 @@
 # 23_pubsubmix Project Overview
 
-The **23_pubsubmix** project demonstrates a hybrid *Publish/Subscribe* (Pub/Sub) service where both publishers and subscribers can operate within the same process or across different processes in a multi-process environment. This setup allows local subscribers to receive updates reliably, even during network disruptions.
+The **23_pubsubmix** project demonstrates a hybrid *Publish/Subscribe* (Pub/Sub) service where both publishers and subscribers can operate within the same process or across different processes in a multi-process environment. This setup allows local subscribers of **Public Service** data to receive updates reliably, even during network disruptions.
 
 Using **Object Remote Procedure Call (Object RPC)** for efficient **Inter-Process Communication (IPC)**, this project ensures that subscribers dynamically receive the latest data upon subscription, whether the communication is local or remote. This example highlights the flexibility of combining both local and remote Pub/Sub communication within the same application.
+
+> [!IMPORTANT]
+> To test this example, ensure an `mcrouter` process is running on a network-accessible machine to enable message routing. Verify that the `areg.init` configuration file includes the correct IP address and port number for the `mcrouter`.
 
 ## Key Concepts
 
@@ -10,7 +13,7 @@ Using **Object Remote Procedure Call (Object RPC)** for efficient **Inter-Proces
 - **Service Interface Automation**: Code generated from a **Service Interface** document automates **Object RPC** message creation and dispatch, simplifying Pub/Sub system implementation and improving efficiency for **IPC**.
 - **Object RPC for IPC**: This project leverages **Object RPC** for inter-process communication, facilitating efficient data exchange between processes or threads.
 
-## Project Structure
+## Sub-Projects
 
 1. **23_generated**:
    - Contains code generated from the [PubSubMix.siml](./res/PubSubMix.siml) Service Interface document, either during CMake configuration or as a pre-build step in Visual Studio. This code automates **Object RPC** messaging, simplifying communication across processes.

@@ -21,7 +21,7 @@ The **18_locwatchdog** project showcases the use of a **Watchdog** in a **Local 
 
 ## Communication
 
-- **Multithreading Communication**: All interactions within the project occur via multithreading communication. The **Watchdog** monitors threads, restarting them if they exceed the defined timeout, ensuring that services remain responsive without requiring external communication.
+**Multithreading Communication**: All interactions within the project occur via multithreading communication. The **Watchdog** monitors threads, restarting them if they exceed the defined timeout, ensuring that services remain responsive without requiring external communication.
 
 ## Key Features
 

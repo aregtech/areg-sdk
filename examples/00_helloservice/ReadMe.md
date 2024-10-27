@@ -5,23 +5,28 @@ The **00_helloservice** project is a foundational example from the AREG SDK, des
 
 ## Key Concepts
 
-- **Service and Client Objects**: Learn how to implement service providers and consumers using the AREG SDK.
+- **Service and Client Objects**: Learn how to implement service providers and consumers using the AREG Framework.
 - **Service Interface:** Utilize the Service Interface document and code generator to automate **Object Remote Procedure Call (Object RPC)** message creation and dispatching, enhancing efficiency and simplifying communication between host and remote target.
 - **Multithreading**: Understand how services and clients can coexist or run independently across threads.
-- **IPC (Inter-Process Communication)**: Explore scenarios where service providers and consumers communicate across multiple processes.
+- **IPC (Inter-Process Communication)**: Explore scenarios where service provider and consumer reusable objects communicate across multiple processes using **Object RPC**.
 - **Scalable Architecture**: The example demonstrates different deployment strategies, from single-threaded setups to more complex multiprocess applications only by changing *Application Model*.
 
 ## Project Structure
 
-1. **00_generated**: This directory contains files automatically created from the [HelloService.siml](./res/HelloService.siml) Service Interface. The files are generated during CMake setup or as a pre-build step in Visual Studio. The generated code simplifies and automates the process of creating and managing **RPC** and **inter-thread** communication between multiple threads and processes.
+1. **00_generated**: 
+   - This library contains files automatically created from the [HelloService.siml](./res/HelloService.siml) Service Interface. The files are generated during CMake setup or as a pre-build step in Visual Studio. The generated code simplifies and automates the process of creating and managing **RPC** based communication between multiple threads and processes.
 
-2. **[common](./common/)**: This directory holds shared implementations of both the **Service Provider** and **Service Consumer** components. These shared components are reused across different sub-projects, allowing developers to build multithreaded or multiprocessing applications by modifying the *Application Model* definition.
+2. **[common](./common/)**:
+   - This directory holds shared implementations of both the **Service Provider** and **Service Consumer** components. These shared components are reused across different sub-projects, allowing developers to build multithreaded or multiprocessing applications by modifying the *Application Model* definition.
 
-3. **[00_onethread](./onethread/)**: This example shows how the service provider and client can run in a single thread within the same process. Both components use the same thread, and their code is found in the *common* directory. The decision to organize them this way is made in the *Application Model* object.
+3. **[00_onethread](./onethread/)**:
+   - This example shows how the service provider and client can run in a single thread within the same process. Both components use the same thread, and their code is found in the *common* directory. The decision to organize them this way is made in the *Application Model* object.
 
-4. **[00_twothreads](./twothreads/)**: In this scenario, the service provider and client run in two separate threads within the same process. The shared implementations are again located in the *common* directory. The decision to organize them this way is made in the *Application Model* object.
+4. **[00_twothreads](./twothreads/)**:
+   - In this scenario, the service provider and client run in two separate threads within the same process. The shared implementations are again located in the *common* directory. The decision to organize them this way is made in the *Application Model* object.
 
-5. **[00_pubservice](./multiprocess/serviceproc/)** and **[00_pubclient](./multiprocess/clientproc/)**: These projects set up a *Public Service*, allowing the *Service Consumer* in the `00_pubclient` project to send requests to the *Service Provider* in the `00_pubservice` project. The service provider and consumer components are implemented in the *common* directory. This example shows how to define a multiprocess application using the *Application Model* object.
+5. **[00_pubservice](./multiprocess/serviceproc/)** and **[00_pubclient](./multiprocess/clientproc/)**:
+   - These projects set up a *Public Service*, allowing the *Service Consumer* in the `00_pubclient` project to send requests to the *Service Provider* in the `00_pubservice` project. The service provider and consumer components are implemented in the *common* directory. This example shows how to define a multiprocess application using the *Application Model* object.
 
 ## Key Features
 

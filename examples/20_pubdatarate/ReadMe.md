@@ -2,15 +2,18 @@
 
 The **20_pubdatarate** project demonstrates the network communication data rates within system using AREG SDK. This project highlights a service provider generating and sending a bitmap image data to connected service consumers, allowing developers to monitor and optimize data transfer rates in real-time. Both the **Service Provider** and **Service Consumer** applications display network data rates, providing insights into the performance of data-intensive applications.
 
+> [!IMPORTANT]
+> To test this example, ensure an `mcrouter` process is running on a network-accessible machine to enable message routing. Verify that the `areg.init` configuration file includes the correct IP address and port number for the `mcrouter`.
+
 ## Key Concepts
 
 - **Data Rate Monitoring**: The project showcases how to network data rates can be measured during communication between the service provider and service consumers, helping optimize performance in real-time.
 - **Service Interface Automation**: Code generated from the **Service Interface** document automates **Object Remote Procedure Call (Object RPC)** message creation, which streamlines communication between the host and remote consumers. This approach simplifies the handling of **Inter-Process Communication (IPC)**.
 
-## Project Structure
+## Sub-Projects
 
 1. **20_generated**:
-   - Generated from the [LargeData.siml](./res/LargeData.siml) Service Interface document during CMake configuration or as a pre-build action in Visual Studio. The generated code automates **Object RPC** for message creation and dispatching, which is crucial for efficient **Inter-Process Communication (IPC)** between service components.
+   - Contains codes generated from the [LargeData.siml](./res/LargeData.siml) Service Interface document during CMake configuration or as a pre-build action in Visual Studio. The generated code automates **Object RPC** for message creation and dispatching, which is crucial for efficient **Inter-Process Communication (IPC)** between service components.
 
 2. **[20_pubservice](./pubservice/)**:
    - This sub-project is a *Public Service* application that generates and sends bitmap image data to connected consumers. It dynamically responds to user input to create gray bitmap images, which are transmitted to service consumers for processing. The data rate for these transmissions is displayed in the console for real-time performance monitoring.

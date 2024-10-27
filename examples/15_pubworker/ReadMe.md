@@ -2,6 +2,9 @@
 
 The **15_pubworker** project demonstrates the use of **Worker Threads** to perform auxiliary work, and use custom event for the communication between **Worker** and **Component Threads** within a same process. By leveraging **Object Remote Procedure Call (Object RPC)** and **Inter-Process Communication (IPC)**, this project showcases how worker threads can be used to offload tasks and manage service attributes efficiently.
 
+> [!IMPORTANT]
+> To test this example, ensure an `mcrouter` process is running on a network-accessible machine to enable message routing. Verify that the `areg.init` configuration file includes the correct IP address and port number for the `mcrouter`.
+
 ## Key Concepts
 
 - **Worker Threads**: Learn how to utilize worker threads to handle background tasks, such as processing user input or simulating device output, ensuring that the component thread remains responsive.
@@ -38,4 +41,4 @@ Communication between the service provider, consumer, and worker threads is mana
 
 ## Conclusion
 
-The **15_pubworker** project demonstrates the power of **Worker Threads** in managing background tasks and processing custom events in a **multithreaded, distributed system**. With automated **Object RPC** and **IPC**, the project provides an efficient way to handle communication between service providers, consumers, and threads, making it an excellent resource for building scalable, responsive applications using the AREG SDK.
+The **15_pubworker** project demonstrates the power of **Worker Threads** in managing background tasks and processing custom events in a **multithreaded, service distributed system**. With automated **Object RPC** and **IPC**, the project provides an efficient way to handle communication between service providers, consumers, and threads, making it an excellent resource for building scalable, responsive applications using the AREG SDK.

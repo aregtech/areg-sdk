@@ -1,6 +1,6 @@
 # 06_thread Project Overview
 
-The **06_thread** project demonstrates how to create and manage **event-dispatching thread** and how the event-driven Thread differs from a simple Thread object in AREG Framework. This example highlights how timers and their associated events can be used to trigger and manage **event-driven threads** in a **multithreaded environment**.
+The **06_thread** project demonstrates how to create and manage **event-dispatching thread** (`DispatcherThread`) and how the event-driven Thread differs from a simple Thread object in AREG Framework. This example highlights how timers and their associated events can be used to trigger a task in **event-driven threads** of a **multithreaded environment**.
 
 ## Key Concepts
 
@@ -11,8 +11,8 @@ The **06_thread** project demonstrates how to create and manage **event-dispatch
 ## Features
 
 - **Custom Threads for Custom Event Processing**: The project illustrates how to create custom threads that handle event dispatching, which is essential for **event-driven architectures**.
-- **Timers as Event Triggers**: Timers are used to dispatch events, showing how to implement periodic or delayed event triggers in a multithreaded system.
-- **Multithreading and Event Handling**: This example demonstrates how to manage multiple threads in a **multithreaded application** while ensuring that events are processed efficiently and in a thread-safe manner.
+- **Timers as Event Triggers**: Timers are used to trigger periodic or delayed events in a multithreaded system.
+- **Multithreading and Event Handling**: This example demonstrates how to manage events to process them efficiently in a thread-safe manner.
 
 ## Project Structure
 

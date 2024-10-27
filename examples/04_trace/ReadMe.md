@@ -19,7 +19,7 @@ The **04_trace** project showcases how to implement **logging (tracing)** in app
 - **Log Priorities**: Assign different priorities to log messages (e.g., Error, Warning, Info, Debug) to focus on specific types of logs, especially during troubleshooting and debugging.
 - **Log Configuration File**: The `areg.init` file controls logging parameters, including which log scopes are active and which log priorities are captured. The file is usually located in the `./config` directory of the application.
 - **Default Logging Behavior**: Even without an `areg.init` file, logging can be enabled with default settings, ensuring that important logs are captured at runtime.
-- **Saving Logs**: The logs can be saved in the file as plain text of in the SQLite database if use `logger` service application and `logobserver` tool, which are part of AREG SDK.
+- **Saving Logs**: The logs can be saved as plain texts in the log-file, or in the SQLite database if use `logger` service application and `logobserver` tool, which are part of AREG SDK.
 
 ## Project Structure
 

@@ -2,6 +2,9 @@
 
 The **24_pubsubmulti** project demonstrates the use of a *Public Service* in a multi-process environment with one process acting as a data publisher and another process containing two subscribers running within the same thread. This example showcases how AREG's Pub/Sub (Publish/Subscribe) feature *efficiently minimizes* event generation by delivering only necessary updates, reducing unnecessary data traffic.
 
+> [!IMPORTANT]
+> To test this example, ensure an `mcrouter` process is running on a network-accessible machine to enable message routing. Verify that the `areg.init` configuration file includes the correct IP address and port number for the `mcrouter`.
+
 ## Key Concepts
 
 - **Efficient Event Delivery**: The project illustrates how AREG’s Pub/Sub system minimizes event notifications by sending updates only when necessary, ensuring that subscribers receive only relevant data.
@@ -17,10 +20,10 @@ The system supports two types of notifications for subscribers:
 
 This dual-mode notification system offers flexibility depending on the use case, allowing developers to optimize for either change-driven updates or continuous notifications.
 
-## Project Structure
+## Sub-Projects
 
 1. **24_generated**:
-   - This  library code is generated from the [PubSub.siml](./res/PubSub.siml) Service Interface document during CMake configuration or as a pre-build action in Visual Studio. The generated code automates **Object Remote Procedure Call (Object RPC)** message creation and dispatching, streamlining communication between the publisher and subscribers. The Object RPC is used for **Inter-Process Communication (IPC)** to handle data exchange efficiently across processes.
+   - This library contains code generated from the [PubSub.siml](./res/PubSub.siml) Service Interface document during CMake configuration or as a pre-build action in Visual Studio. The generated code automates **Object Remote Procedure Call (Object RPC)** message creation and dispatching, streamlining communication between the publisher and subscribers. The Object RPC is used for **Inter-Process Communication (IPC)** to handle data exchange efficiently across processes.
 
 2. **[24_publisher](./publisher/)**:
    - An application that provides a network-discoverable *Public Service*, which acts as the *Data Publisher*. It generates and publishes data that is subscribed to by other applications. The publisher continuously provides updates based on the notification mode selected by the subscribers.

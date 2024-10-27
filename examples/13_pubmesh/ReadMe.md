@@ -2,9 +2,12 @@
 
 The **13_pubmesh** project demonstrates the AREG Framework’s capability to manage a **meshed network** of **distributed services**, integrating both **Public** and **Local Services**. The project showcases how the framework efficiently connects **Service Providers** and **Service Consumers** to handle **inter-process communication (IPC)** using *Object Remote Procedure Call (Object RPC)*, enabling scalable and reliable communication across the network.
 
+> [!IMPORTANT]
+> To test this example, ensure an `mcrouter` process is running on a network-accessible machine to enable message routing. Verify that the `areg.init` configuration file includes the correct IP address and port number for the `mcrouter`.
+
 ## Key Concepts
 
-- **Distributed Service Mesh**: Learn how to create a meshed network where **Public** and **Local Services** interact seamlessly, enabling efficient message forwarding and processing across multiple nodes.
+- **Distributed Service Mesh**: Learn how to create a meshed network of services where **Public** and **Local Services** interact seamlessly, enabling efficient message forwarding and processing across multiple nodes.
 - **Service Interface:** Utilize the Service Interface document and code generator to automate **Object Remote Procedure Call (Object RPC)** message creation and dispatching, enhancing efficiency and simplifying communication between host and remote target.
 - **IPC (Inter-Process Communication)**: Explore scenarios where service providers and consumers communicate across multiple processes.
 - **Service Discovery**: Both **Public** and **Local Services** are automatically discovered and connected within a process or across the network, ensuring real-time interaction and fault tolerance.
@@ -28,7 +31,7 @@ The **13_pubmesh** project demonstrates the AREG Framework’s capability to manag
 
 ## Communication
 
-- The communication in **13_pubmesh** is powered by **mcrouter**, a router running on any machine within the network. The AREG Framework handles **service discovery** and **fault tolerance**, ensuring that the startup order of processes does not affect the communication. The system is designed to ensure messages are reliably forwarded to their intended recipients within the mesh, even in complex multi-node environments.
+- The communication in **13_pubmesh** is powered by `mcrouter`, which is a router running on any machine within the network. The AREG Framework handles **service discovery** and **fault tolerance**, ensuring that the startup order of processes does not affect the communication. The system is designed to ensure messages are reliably forwarded to their intended recipients within the mesh, even in complex multi-node environments.
 - **Object RPC for IPC**: The **Object RPC** protocol handles inter-process communication between the provider and consumers, enabling easy and efficient remote interaction. This is particularly important for scaling distributed systems, where different processes need to exchange data or requests seamlessly.
 
 ## Key Features

@@ -1,6 +1,6 @@
 # 08_service Project Overview
 
-The **08_service** project demonstrates how to create and manage simple **local service provider objects** within **multithreaded applications** using the AREG Framework. This example focuses on an *empty* **Local Service Interface**, which has no data and no methods, and only accessible within the same process and not visible externally.
+The **08_service** project demonstrates how to create and manage simple **local service provider objects** within **multithreaded applications** using the AREG Framework. This example focuses on an *empty* **Local Service**, which has no data and no methods, and only accessible within the same process and not visible externally.
 
 ## Key Concepts
 
@@ -10,8 +10,8 @@ The **08_service** project demonstrates how to create and manage simple **local 
 
 ## Features
 
-- **Local Service Interface**: The project demonstrates how to create a local service that is limited to internal process communication, ideal for scenarios where external access is not required.
-- **Service Registration and Lifecycle**: Learn how to register a service provider within a model and manage its lifecycle, from loading the service when the application starts to unloading it when the task finishes.
+- **Local Service**: The project demonstrates how to create a local service that is limited to internal process communication, ideal for scenarios where external access is not required.
+- **Service Registration and Lifecycle**: Learn how to register a service provider within a *model* and manage its lifecycle, from loading the service when the application starts to unloading it when the task finishes.
 - **Multithreading**: The service provider operates in a multithreaded context, showcasing how to handle local services in parallel with other tasks.
 
 ## Project Structure

@@ -2,6 +2,9 @@
 
 The **16_pubfsm** project demonstrates how to build and manage a *Finite-State Machine* (**FSM**) using the AREG Framework’s powerful features like *Timers* and *Events*. This project showcases how FSM models can be developed to change the data and the states of Services.
 
+> [!IMPORTANT]
+> To test this example, ensure an `mcrouter` process is running on a network-accessible machine to enable message routing. Verify that the `areg.init` configuration file includes the correct IP address and port number for the `mcrouter`.
+
 ## Key Features
 
 - **Finite-State Machine (FSM)**: Learn how the AREG Framework enables the creation of FSMs for complex event-driven applications, controlling service states and handling transitions.
@@ -10,21 +13,21 @@ The **16_pubfsm** project demonstrates how to build and manage a *Finite-State M
 ## Sub-Projects
 
 1. **16_generated**:
-   This sub-project is generated from the [PowerManager.siml](./res/PowerManager.siml) and [TrafficController.siml](./res/TrafficController.siml) service interface documents. The code is generated automatically during the CMake build process or as a pre-build action in Visual Studio. The generated code handles **Remote Procedure Calls (RPC)**, simplifying the communication between processes.
+   - This sub-project is generated from the [PowerManager.siml](./res/PowerManager.siml) and [TrafficController.siml](./res/TrafficController.siml) service interface documents. The code is generated automatically during the CMake build process or as a pre-build action in Visual Studio. The generated code handles **Remote Procedure Calls (RPC)**, simplifying the communication between processes.
 
 2. **[16_pubclient](./pubclient/)**:
-   This is a *Service Consumer* that can run as multiple consumer instances with unique names and subscribe to different data streams. Subscription commands include:
-   - `sn` for the nominal *South-North* traffic-light direction data.
-   - `ew` for the nominal *East-West* traffic-light direction data.
+   - This is a *Service Consumer* that can run as multiple consumer instances with unique names and subscribe to different data streams. Subscription commands include:
+     - `sn` for the nominal *South-North* traffic-light direction data.
+     - `ew` for the nominal *East-West* traffic-light direction data.
 
    This feature allows users to observe and interact with different data updates from the *Service Provider* in real time.
 
 3. **[16_pubservice](./pubservice/)**:  
-   This sub-project defines a *Public Service* that implements a **Finite-State Machine (FSM)** and imitates a traffic-light controller. The FSM model can be controlled using various commands, such as:
-   - `on`: Turn the FSM on.
-   - `start`: Start the FSM.
-   - `stop`: Stop the FSM.
-   - `off`: Turn the FSM off.
+   - This sub-project defines a *Public Service* that implements a **Finite-State Machine (FSM)** and imitates a traffic-light controller. The FSM model can be controlled using various commands, such as:
+     - `on`: Turn the FSM on.
+     - `start`: Start the FSM.
+     - `stop`: Stop the FSM.
+     - `off`: Turn the FSM off.
    
    This service interacts with *Service Consumers* through state transitions and broadcasts data updates when the FSM state changes.
 
@@ -35,7 +38,7 @@ The **16_pubfsm** project demonstrates how to build and manage a *Finite-State M
 
 ## Use Cases
 
-- **Finite-State Machines**: This project is ideal for applications that require complex state management with multiple events and triggers, such as traffic control systems, power management, or any system with real-time data processing.
+- **Finite-State Machines**: This project is ideal for applications that require complex state management with multiple events and triggers in a system with real-time data processing.
 - **Scalable Consumer Management**: With dynamic FSM models, multiple instances of *Service Consumers* can subscribe to different data streams, making the architecture highly scalable.
 - **Event-Driven Applications**: Perfect for developers looking to create event-driven applications that need to handle asynchronous communication and dynamic state transitions across multiple processes.
 

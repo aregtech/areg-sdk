@@ -2,19 +2,22 @@
 
 The **19_pubwatchdog** project demonstrates the use of a **Watchdog** in an environment with **Public Service** using the AREG Framework. It showcases how the watchdog monitors threads by setting timeouts, automatically restarting threads that fail to respond, and sending notifications to connected **Service Providers** and/or **Service Consumers**. This example highlights the AREG Framework's capabilities in maintaining a fault-tolerant, distributed system through effective thread management.
 
+> [!IMPORTANT]
+> To test this example, ensure an `mcrouter` process is running on a network-accessible machine to enable message routing. Verify that the `areg.init` configuration file includes the correct IP address and port number for the `mcrouter`.
+
 ## Key Concepts
 
 - **Watchdog for Public Services**: The Watchdog monitors threads in the application, ensuring they are responsive. If a thread fails to respond, the watchdog terminates and restarts the thread, while notifying all connected service providers and consumers.
 - **Service Interface Automation**: Using the AREG SDK's Service Interface and code generator, **Object Remote Procedure Call (Object RPC)** message creation and dispatching are automated. This enhances efficiency in communication between service components and simplifies the development process.
 - **Fault Tolerance**: The project demonstrates automatic thread recovery in real-time, ensuring the public service remains operational despite thread failures.
 
-## Project Structure
+## Sub-Projects
 
 1. **19_generated**:
    - Contains code generated from the [HelloWatchdog.siml](./res/HelloWatchdog.siml) Service Interface document during CMake configuration or as a pre-build action in Visual Studio. This generated code defines the necessary infrastructure for the Watchdog service and automates **Object RPC** messaging.
 
 2. **[19_pubclient](./pubclient/)**:
-   - A *Service Consumer* application that connects to the *Public Service Provider*. It sends requests to simulate delayed responses, triggering the watchdog's timeout mechanism.
+   - A *Public Service Consumer* application that connects to the *Public Service Provider*. It sends requests to simulate delayed responses, triggering the watchdog's timeout mechanism.
 
 3. **[19_pubservice](./pubservice/)**:
    - A *Public Service Provider* application where a thread, controlled by the watchdog, handles service requests. When the service thread becomes unresponsive (e.g., due to a simulated delay), the watchdog:
@@ -26,8 +29,7 @@ The **19_pubwatchdog** project demonstrates the use of a **Watchdog** in an envi
 
 ## Communication
 
-- **mcrouter**: All communication between the service provider and service consumers is handled through `mcrouter`, which is a router that supports distributed systems. The AREG SDK ensures automatic service discovery, efficient message routing, and fault tolerance, making the startup order of processes irrelevant.
-- **Object RPC (ORPC)**: The AREG SDK automates **Object Remote Procedure Call (ORPC)** message creation and dispatching, enabling seamless communication between the **Service Provider** and **Service Consumers**.
+Communication between the service provider and consumers is facilitated by **mcrouter** router, which is capable of operating across any networked machine. The AREG Framework automates **service discovery** and ensures **fault tolerance**, enabling reliable **IPC** and ensuring that the order of process startup does not affect the system’s functionality. Services are automatically discovered, and messages are forwarded seamlessly to their intended recipients, maintaining robust inter-process communication.
 
 ## Key Features
 

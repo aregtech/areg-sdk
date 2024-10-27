@@ -1,31 +1,34 @@
 # 02_buffer Project Overview
 
-The **02_buffer** project demonstrates how to manage a **Shared Buffer** in a **multithreaded environment** using the AREG framework. This example focuses on initializing a shared buffer, performing read and write operations, and efficiently handling data streaming between threads. It serves as a practical introduction to managing shared resources in **multithreaded applications**.
+The **02_buffer** project demonstrates how to manage a **Shared Buffer** in a **multithreaded environment** with the AREG framework. This example illustrates initializing a shared buffer, performing write and read operations, and efficiently streaming data between threads. In the AREG framework, the **Shared Buffer** facilitates data transfer by creating hard copies of primitives and objects in each thread, rather than synchronizing shared memory access.
+
+> [!NOTE]
+> `SharedBuffer` is not designed for synchronized, concurrent data sharing in a multithreaded environment. Since it does not lock data access, simultaneous writes from multiple threads can yield unpredictable results. `SharedBuffer` is intended to transfer data copies from one thread to another, rather than synchronize shared data access.
 
 ## Key Concepts
 
-- **Shared Buffer**: Learn how to create and manipulate a shared buffer that multiple threads can access for reading and writing data.
-- **Multithreading**: Understand how to manage multiple threads that interact with a shared resource, ensuring efficient and safe access.
-- **Thread Management**: The example utilizes the `Thread` class and the `IEThreadConsumer` interface for creating and managing threads, demonstrating how to coordinate thread activities.
+- **Shared Buffer**: See how to initialize and manage a shared buffer that transfers data values from one thread to multiple others, without synchronized data locking.
+- **Multithreading**: Understand the flow of primitive and object data between threads, achieving efficient data sharing without concurrent resource locking.
+- **Thread Management**: Uses the `Thread` class and `IEThreadConsumer` interface to manage thread lifecycles and coordinate activities.
 
 ## Features
 
-- **Buffer Initialization**: The project shows how to initialize a **Shared Buffer** in the AREG framework, which allows data to be passed between threads.
-- **Read and Write Operations**: Learn how threads can read from and write to a shared buffer without causing data corruption or race conditions.
-- **Data Streaming**: This example highlights the ease of data serialization and de-serialization.
+- **Buffer Initialization**: Learn how to initialize a **Shared Buffer** for safe data storage and transport across threads.
+- **Read and Write Operations**: Explore how threads perform serialized read and write operations on the buffer, with clear data flow between threads.
+- **Data Streaming**: See how data is serialized into and deserialized from the buffer, demonstrating straightforward data streaming.
 
 ## Project Structure
 
-- **Shared Buffer**: The core of the project revolves around the `SharedBuffer` class, which has a reference counter to disabling releasing the buffer while it is in use.
-- **Thread Management**: The `Thread` class and the `IEThreadConsumer` interface are used to control the lifecycle of the threads that interact with the shared buffer.
-- **Data Flow**: The project demonstrates how data can be streamed in the buffer.
+- **Shared Buffer**: The `SharedBuffer` class, with a reference counter, prevents buffer release while in use by multiple threads.
+- **Thread Management**: The `Thread` class and `IEThreadConsumer` interface enable smooth thread creation and interaction with the shared buffer.
+- **Data Flow**: Demonstrates efficient data streaming from one thread to others using the buffer.
 
 ## Use Cases
 
-- **Multithreaded Applications**: Ideal for developers who need to implement **shared resource management** in multithreaded applications.
-- **Inter-Thread Communication**: The project demonstrates simple way of data exchange between threads.
-- **Real-Time Data Processing**: This example is relevant for scenarios where data must be shared between threads.
+- **Multithreaded Applications**: Suitable for applications that require copying data between threads rather than synchronizing data access.
+- **Inter-Thread Communication**: Facilitates straightforward data exchange between threads.
+- **Real-Time Data Processing**: Ideal for scenarios requiring rapid, multi-threaded data distribution without shared memory conflicts.
 
 ## Conclusion
 
-The **02_buffer** project provides a clear example of how to stream the data in a **shared resources** in a **multithreaded environment** using the AREG framework.
+The **02_buffer** project is a practical guide to implementing inter-thread data streaming in a **multithreaded environment** with the AREG framework, emphasizing efficient data transfer without synchronization.
