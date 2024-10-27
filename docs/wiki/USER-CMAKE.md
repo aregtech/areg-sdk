@@ -1,1 +1,0 @@
-Placeholder to describe the options declared in `user.cmake`
