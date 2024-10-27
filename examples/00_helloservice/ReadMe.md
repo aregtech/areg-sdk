@@ -1,40 +1,44 @@
+
 # 00_helloservice Project Overview
 
-The [00_helloservice](https://github.com/aregtech/areg-sdk/tree/master/examples/00_helloservice) project is an example included in the developer guide. It showcases a console **IPC** and **multithreading** application and demonstrates the creation of service and client objects along with various deployment scenarios using the framework.
+The **00_helloservice** project is a foundational example from the AREG SDK, designed to demonstrate how to build an application using **Inter-Process Communication (IPC)** and **multithreading** only by changing the *Application Model*. This project showcases the creation and interaction of service (*micro-server*) and client objects, illustrating various deployment scenarios (various *models*) within the AREG framework.
 
-The project consists of the following major sub-projects and applications:
+## Key Concepts
 
-## generated (00_generated)
+- **Service and Client Objects**: Learn how to implement service providers and consumers using the AREG Framework.
+- **Service Interface:** Utilize the Service Interface document and code generator to automate **Object Remote Procedure Call (Object RPC)** message creation and dispatching, enhancing efficiency and simplifying communication between host and remote target.
+- **Multithreading**: Understand how services and clients can coexist or run independently across threads.
+- **IPC (Inter-Process Communication)**: Explore scenarios where service provider and consumer reusable objects communicate across multiple processes using **Object RPC**.
+- **Scalable Architecture**: The example demonstrates different deployment strategies, from single-threaded setups to more complex multiprocess applications only by changing *Application Model*.
 
-The [00_generated](https://github.com/aregtech/areg-sdk/tree/master/examples/00_helloservice/generated) sub-project is a static library that contains the generated code based on the [HelloService.siml](https://github.com/aregtech/areg-sdk/blob/master/examples/00_helloservice/res/HelloService.siml) Service Interface document located in the [res](https://github.com/aregtech/areg-sdk/blob/master/examples/00_helloservice/res) sub-folder. The code is generated using a code generator tool and compiled as a static library.
+## Project Structure
 
-To recover or update the generated sources, run `codegen.jar` from the `00_helloservice` folder using the following command:
-```
-java -jar ./../../tools/codegen.jar --root=./ --doc=res/HelloService.siml --target=generated/src
-```
+1. **00_generated**: 
+   - This library contains files automatically created from the [HelloService.siml](./res/HelloService.siml) Service Interface. The files are generated during CMake setup or as a pre-build step in Visual Studio. The generated code simplifies and automates the process of creating and managing **RPC** based communication between multiple threads and processes.
 
-## common
+2. **[common](./common/)**:
+   - This directory holds shared implementations of both the **Service Provider** and **Service Consumer** components. These shared components are reused across different sub-projects, allowing developers to build multithreaded or multiprocessing applications by modifying the *Application Model* definition.
 
-The [common](https://github.com/aregtech/areg-sdk/tree/master/examples/00_helloservice/common/src) folder contains shared objects used across all other projects. It demonstrates the ease of changing the architecture of applications without requiring changes to the service providers and consumers.
+3. **[00_onethread](./onethread/)**:
+   - This example shows how the service provider and client can run in a single thread within the same process. Both components use the same thread, and their code is found in the *common* directory. The decision to organize them this way is made in the *Application Model* object.
 
-## onethread (00_onethread)
+4. **[00_twothreads](./twothreads/)**:
+   - In this scenario, the service provider and client run in two separate threads within the same process. The shared implementations are again located in the *common* directory. The decision to organize them this way is made in the *Application Model* object.
 
-The [00_onethread](https://github.com/aregtech/areg-sdk/tree/master/examples/00_helloservice/onethread) application demonstrates a scenario where the service provider and client coexist within a single thread of the same process. The implementation of the service provider and consumer is located in the [common/src](https://github.com/aregtech/areg-sdk/tree/master/examples/00_helloservice/common/src) folder.
+5. **[00_pubservice](./multiprocess/serviceproc/)** and **[00_pubclient](./multiprocess/clientproc/)**:
+   - These projects set up a *Public Service*, allowing the *Service Consumer* in the `00_pubclient` project to send requests to the *Service Provider* in the `00_pubservice` project. The service provider and consumer components are implemented in the *common* directory. This example shows how to define a multiprocess application using the *Application Model* object.
 
-## twothreads (00_twothreads)
+## Key Features
 
-The [00_twothreads](https://github.com/aregtech/areg-sdk/tree/master/examples/00_helloservice/twothreads) application showcases a scenario where the service provider and client operate in two separate threads within the same process. The implementation of the service provider and consumer is located in the [common/src](https://github.com/aregtech/areg-sdk/tree/master/examples/00_helloservice/common/src) folder.
+- **Single-threaded and Multithreaded Examples**: Learn how to structure applications where the service provider and client either share the same thread or operate in separate threads within the same process.
+- **Multiprocessing with IPC**: Discover how to set up a service that communicates with multiple clients across different processes.
+- **Reusable Components**: The *common* directory demonstrates how to centralize service and client implementations for use across various deployment strategies.
+- **Object Remote Procedure Call (Object RPC)**: This project demonstrates how **Object RPC** facilitates communication between different threads and processes, enabling seamless request and response exchanges between components running in the same or multiple processes.
+- **Code generation**: A highly effective way to use the Service Interface document and code generator to reduce errors, avoid tedious tasks, and focus more on the core business logic of the application.
 
-## multiprocess
+## Use Cases
 
-The [multiprocess](https://github.com/aregtech/areg-sdk/tree/master/examples/00_helloservice/multiprocess) project consists of two sub-projects that communicate via IPC using Object RPC (ORPC).
-
-### serviceproc (00_pubservice)
-
-The [00_pubservice](https://github.com/aregtech/areg-sdk/tree/master/examples/00_helloservice/multiprocess/serviceproc) application provides a Public Service that allows service consumers (clients) to make requests. The implementation of the service provider and consumer is located in the [common/src](https://github.com/aregtech/areg-sdk/tree/master/examples/00_helloservice/common/src) folder.
-
-### clientproc (00_pubclient)
-
-The [00_pubclient](https://github.com/aregtech/areg-sdk/tree/master/examples/00_helloservice/multiprocess/clientproc) application contains a client object for the Public Service. Multiple instances of `00_clientproc` can be instantiated, enabling multiple service consumer objects to make requests on the service provider process. The implementation of the service provider and consumer is located in the [common/src](https://github.com/aregtech/areg-sdk/tree/master/examples/00_helloservice/common/src) folder.
-
-Please note that this project provides a comprehensive demonstration of different deployment scenarios and the usage of service and client objects.
+- **Multithreading in IPC Applications**: Ideal for developers looking to implement services that communicate efficiently across threads and processes.
+- **Service-Oriented Architectures**: Useful for building applications that follow a service-consumer model, allowing for scalable and modular design.
+- **Event-driven Architectures**: Ideal for building applications with asynchronous communication, enabling the design of scalable and autonomous systems.
+- **Cross-Platform Development**: The AREG SDK is designed for cross-platform applications, and this example provides a foundation for creating services that work on different operating systems.

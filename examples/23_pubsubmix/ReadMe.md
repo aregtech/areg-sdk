@@ -1,23 +1,51 @@
-# 22_pubsub Project Overview
+# 23_pubsubmix Project Overview
 
-The [23_pubsubmix](https://github.com/aregtech/areg-sdk/tree/master/examples/23_pubsubmix) project showcases the utilization of a *Public Service* in a multi-processing environment, which acts list PubSub (Publish / Subscriber) service. In this example there is a mixture of Publishers and Subscribers utilizing same Service Interface, running in the same process, but different threads, or different processes. There are 2 types notifications to receive when subscribe on data, called 'Attributes', and it depends on the design:
-- **On change**: receive update notifications only if the value is changed. In this example it is a string, which sends notification only when value is changed.
-- **Always**   : receive update notification each time value is set even if the value is not changed.
+The **23_pubsubmix** project demonstrates a hybrid *Publish/Subscribe* (Pub/Sub) service where both publishers and subscribers can operate within the same process or across different processes in a multi-process environment. This setup allows local subscribers of **Public Service** data to receive updates reliably, even during network disruptions.
 
-The agenda is to demonstrate that the Subscribers, which run in the same process still receive the data update notification, while the network connection is broken. During the test, start one instance of `23_pubsubctrl` and multiple instances of `23_pubsubdyn`. During the run, you can stop and restart the router `mcrouter`, you can invalidate data, can start and stop Publisher, etc., and each time:
-1. The local Subscribers remain alive and active, get the actual values, because run in the same process with the Publisher;
-2. The remote Subscribers get disconnected notifications and wait for the next update. As soon as get connection, they receive the actual values and continue run.
+Using **Object Remote Procedure Call (Object RPC)** for efficient **Inter-Process Communication (IPC)**, this project ensures that subscribers dynamically receive the latest data upon subscription, whether the communication is local or remote. This example highlights the flexibility of combining both local and remote Pub/Sub communication within the same application.
 
-The demonstration employing Object RPC (ORPC) for inter-process communication (IPC). The demonstration involves the creation of two applications: one serving as the *Service Provider* to act as a data Publisher and the other as the *Service Consumer* to act as a data Subscriber. The Subscriber can dynamically subscribe and unsubscribe on data update. All data update notifications receive automatically and the system guarantees that as soon as Subscriber assigns on data it receives the latest data even if it is not updated yet. This guaranties that if for any reason the Subscriber does not miss the update notification.
+> [!IMPORTANT]
+> To test this example, ensure an `mcrouter` process is running on a network-accessible machine to enable message routing. Verify that the `areg.init` configuration file includes the correct IP address and port number for the `mcrouter`.
 
-The project comprises three sub-projects:
+## Key Concepts
 
-1. [generated](https://github.com/aregtech/areg-sdk/tree/master/examples/23_pubsubmix/generated) (23_generated) - This sub-project contains a static library consisting of generated code derived from the [PubSubMix.siml](https://github.com/aregtech/areg-sdk/blob/master/examples/23_pubsubmix/res/PubSubMix.siml) *Service Interface* document. The code generation is facilitated using the `codegen.jar` tool.
+- **Hybrid Pub/Sub Model**: This model enables publishers and subscribers to reside within the same process or across multiple processes, ensuring robust communication regardless of network conditions.
+- **Service Interface Automation**: Code generated from a **Service Interface** document automates **Object RPC** message creation and dispatch, simplifying Pub/Sub system implementation and improving efficiency for **IPC**.
+- **Object RPC for IPC**: This project leverages **Object RPC** for inter-process communication, facilitating efficient data exchange between processes or threads.
 
-2. [common](https://github.com/aregtech/areg-sdk/tree/master/examples/22_pubsub/common) (23_common) - This sub-project is a static library consisting of common objects that are shared between other processes.
+## Sub-Projects
 
-3. [pubsubctrl](https://github.com/aregtech/areg-sdk/tree/master/examples/23_pubsubmix/pubsubctrl) (23_pubsubctrl) - This sub-project represents a console application functioning as a network-discoverable *Public Service* provider, which acts as a Data Publisher service, as well as contains Data Subscribers. Multiple remote *Service Consumers* as a Data Subscriber can connect to the network to subscribe on data provided by Publisher. It as well sends shutdown signal to all other connected processes, so that they quit application. Only one instance of this process should run, since the service role names are fixed.
+1. **23_generated**:
+   - Contains code generated from the [PubSubMix.siml](./res/PubSubMix.siml) Service Interface document, either during CMake configuration or as a pre-build step in Visual Studio. This code automates **Object RPC** messaging, simplifying communication across processes.
 
-3. [pubsubdyn](https://github.com/aregtech/areg-sdk/tree/master/examples/23_pubsubmix/23_pubsubdyn) (23_pubsubdyn) - This sub-project involves a console application housing a *Public Service* consumer object and acts as a mixture of Data Publisher and Data Subscribers. The Publishers publish data for the subscribers inside the process. It as well has Subscribers that receive data from `23_pubsubctrl`, so that it creates a mesh of Publishers and Subscribers. At least one Subscriber should run to discover the service provided by the `23_pubsubctrl` to receive updates as well as the state of the service to quit the application when `23_pubsubctrl` quits. All data have names and values (named data), which output on the console to see the updates from various Publishers.
+2. **[23_common](./common/)**:
+   - A static library containing shared objects and functions used by other project processes. This common library promotes modular design and reuse of core components.
 
-All communication takes place through `mcrouter`, a multicast router that can operate on any machine within the network. The use of the AREG SDK automates service discovery and ensures fault-tolerant system behavior. Consequently, the order in which the processes are started does not impact the functionality.
+3. **[23_pubsubctrl](./pubsubctrl/)**:
+   - An application acting as both a *Data Publisher* and a *Data Subscriber (Service Consumer)*. It publishes data to subscribers and subscribes to updates from other publishers. Additionally, this process manages communication and can send shutdown signals to all connected processes when needed.
+
+4. **[23_pubsubdyn](./pubsubdyn/)**:
+   - An application functioning as both a *Data Publisher* and *Data Subscriber*. It connects to the `23_pubsubctrl` service to publish and receive updates, allowing it to switch between publishing and subscribing dynamically based on system requirements.
+
+## Communication
+
+- **mcrouter**: The `mcrouter` manages message delivery between publishers and subscribers, ensuring reliable, fault-tolerant communication across the network.
+- **Object RPC for IPC**: Using **Object RPC** streamlines IPC, providing an adaptable, high-performance way to manage messaging between services and simplifying remote procedure call implementation for distributed Pub/Sub systems.
+
+## Key Features
+
+- **Hybrid Communication**: The Pub/Sub system supports both local and remote subscribers, allowing any process to function as both a **Publisher** and **Subscriber** simultaneously.
+- **Network Resilience**: All **Publishers** and **Subscribers** within the same process receive updates regardless of network connectivity, ensuring uninterrupted service.
+- **Immediate Data Updates**: Subscribers automatically receive the latest data upon connecting, ensuring they’re always up-to-date even if no recent updates have been published.
+- **Dynamic Subscription and Publishing**: Both *23_pubsubctrl* and *23_pubsubdyn* can seamlessly switch between publisher and subscriber roles, making the system highly adaptable in dynamic, multi-process environments.
+- **Fault-Tolerant Communication**: With `mcrouter` and the AREG SDK, the system remains fault-tolerant, supporting automatic service discovery and recovery, ensuring reliable Pub/Sub functionality even during failures.
+
+## Use Cases
+
+- **Multi-Process Communication**: Ideal for systems where multiple processes need to communicate and share data dynamically, particularly where local and remote subscribers are combined.
+- **Resilient Pub/Sub Systems**: Demonstrates building resilient Pub/Sub systems capable of continuing operation under challenging network conditions, making it well-suited for reliability-critical environments.
+- **Dynamic Data Distribution**: Allows for the flexible creation and connection of publishers and subscribers, making it suitable for real-time, multi-process data distribution.
+
+## Conclusion
+
+The **23_pubsubmix** project exemplifies the versatility of a hybrid Pub/Sub system, where publishers and subscribers can coexist in the same process or be distributed across multiple processes. By leveraging **Object RPC** for **Inter-Process Communication (IPC)** and maintaining fault-tolerant communication with `mcrouter`, this project showcases a resilient Pub/Sub architecture capable of reliable real-time data distribution, making it ideal for dynamic, multi-process environments where subscribers always stay updated.

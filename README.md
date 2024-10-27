@@ -56,6 +56,7 @@
   - [Service Creation and Development](#service-creation-and-development)
   - [Example: Application Model Setup](#example-application-model-setup)
   - [Multicast Router and Log Collector](#multicast-router-and-log-collector)
+- [Examples](#examples)
 - [Pipeline and Roadmap](#pipeline-and-roadmap)
 - [Use Cases and Benefits](#use-cases-and-benefits)
 - [License](#license)
@@ -88,9 +89,9 @@ At the core of AREG is **ORPC** (_Object Remote Procedure Call_), which targets 
 
 <div align="center"><a href="https://github.com/aregtech/areg-sdk/blob/master/docs/img/interface-centric.png"><img src="https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/interface-centric.png" alt="Diagram showing multiprocess communication" style="width:50%;height:50%"/></a></div>
 
-This **interface-driven ORPC** model mirrors object-oriented programming principles and is flexible in managing multiple object instances. It imposes no protocol limitations and supports bi-directional communication to ensure seamless messaging between connected software nodes. In this model:
-* **Service Providers** (micro-server objects) offer reusable, accessible services.
-* **Service Consumers** (client objects) invoke services without needing to know the network details.
+This **interface-driven Object RPC** model mirrors object-oriented programming principles and is flexible in managing multiple object instances. It imposes no protocol limitations and supports bi-directional communication to ensure seamless messaging between connected software nodes. In this model:
+* **Service Providers** (*micro-server objects*) offer reusable, accessible services.
+* **Service Consumers** (*client objects*) invoke services without needing to know the network details.
 
 AREG’s design integrates **Client-Server (Request-Reply)** and **Publish-Subscribe (PubSub)** models, enabling it to support both action- and data-centric communication.
 
@@ -317,6 +318,33 @@ You can also set up multiprocess applications using same components and changing
 Both **mcrouter** and **logger** are essential components for communication and log collection. Configuration templates for the multicast router and log collector services are provided in the `areg.init` file. Both processes are designed to run as console applications or as **Operating System managed** services.
 
 For in-depth details of building and using these applications, review the descriptions in **[Multicast Router Service](./docs/wiki/MCROUTER.md)** and **[Log Collector Service](./docs/wiki/LOGGER.md)** pages. *Discover how the AREG SDK’s Multicast Router and Log Collector streamline communication and logging in edge computing and real-time data transfer systems.*
+
+<div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
+
+---
+
+This version is strong, but a few minor adjustments can improve flow, consistency, and readability. Here’s a refined version:
+
+---
+
+## Examples[![](https://raw.githubusercontent.com/aregtech/areg-sdk/master/docs/img/pin.svg)](#examples)
+
+The AREG SDK offers hands-on examples demonstrating **Multithreading** and **Multiprocessing** applications, **Client-Server** and **Publish-Subscribe** models, **Object Remote Procedure Call (Object RPC)** and **Inter-Process Communication (IPC)**, featured **Finite-State Machines (FSM)** creation, and more. Each project highlights key features that facilitate efficient development of distributed services.
+
+**Some Featured Examples:**
+1. **[00_helloservice](./examples/00_helloservice/)**: Master service creation across single-threaded, multi-threaded, and multi-process environments, showcasing AREG’s intuitive, interface-driven approach.
+
+2. **[04_trace](./examples/04_trace/)**: Configure and manage logging to track application behavior, aiding debugging, performance analysis, and log management.
+
+3. **[16_pubfsm](./examples/16_pubfsm/)**: Build and control a *Finite-State Machine (FSM)* with AREG’s *Timers* and *Events* for smooth state transitions.
+
+4. **[19_pubwatchdog](./examples/19_pubwatchdog/)**: Implement a watchdog to monitor thread activity, restart unresponsive threads, and notify components as needed.
+
+5. **[24_pubsubmulti](./examples/24_pubsubmulti/)**: Explore the PubSub model, which reduces data traffic by delivering only relevant updates.
+
+For the full list of examples and additional documentation, visit **[AREG SDK Examples](./examples/README.md)**.
+
+> *Accelerate your multithreading, multiprocessing, embedded, IoT edge, and event-driven development with these examples. For technical inquiries, please contact us.*
 
 <div align="right"><kbd><a href="#table-of-contents">↑ Back to top ↑</a></kbd></div>
 
