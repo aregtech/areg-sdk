@@ -263,18 +263,18 @@ sudo cmake --install ./product/cache/llvm
   -- =======================================================================================
   -- ----------------------> AREG project CMake Status Report Begin <-----------------------
   -- =======================================================================================
-  -- AREG: >>> CMAKE_SOURCE_DIR    = '/home/runner/areg-sdk', build type 'Release'
+  -- AREG: >>> CMAKE_SOURCE_DIR    = '/mnt/c/projects/areg-sdk-demo', build type 'Release'
   -- AREG: >>> Build Environment ..: System 'Linux', 64-bit platform, 'x86_64' CPU
   -- AREG: >>> Compiler ...........: '/usr/bin/clang++'
   -- AREG: >>> Compiler Version ...: C++ standard 'c++17', compiler family 'llvm'
-  -- AREG: >>> Binary Output Dir ..: '/home/runner/areg-sdk/product/build/llvm-clang++/linux-64-x86_64-release-shared/bin'
-  -- AREG: >>> Generated Files Dir : '/home/runner/areg-sdk/product/generate'
-  -- AREG: >>> Packages Dir .......: '/home/runner/areg-sdk/product/packages'
+  -- AREG: >>> Binary Output Dir ..: '/mnt/c/projects/areg-sdk-demo/product/build/llvm-clang++/linux-64-x86_64-release-shared/bin'
+  -- AREG: >>> Generated Files Dir : '/mnt/c/projects/areg-sdk-demo/product/generate'
+  -- AREG: >>> Packages Dir .......: '/mnt/c/projects/areg-sdk-demo/product/packages'
   -- AREG: >>> Build Modules ......: areg = 'shared', aregextend = static, areglogger = 'shared', executable extension '.out'
-  -- AREG: >>> Java Version .......: '17.0.13', Java executable = '/opt/hostedtoolcache/Java_Temurin-Hotspot_jre/17.0.13-11/x64/bin/java', minimum version required = 17
-  -- AREG: >>> Packages Use .......: SQLite3 package use = 'ON', GTest package use = 'OFF'
-  -- AREG: >>> Other Options ......: Examples = 'ON', Unit Tests = 'ON', AREG Extended = 'ON', Logs = 'ON'
-  -- AREG: >>> Installation .......: Enabled = 'ON', location = './product/install/llvm-clang++'
+  -- AREG: >>> Java Version .......: '17.0.12', Java executable = '/usr/bin/java', minimum version required = 17
+  -- AREG: >>> Packages Use .......: SQLite3 package use = 'ON', GTest package use = 'ON'
+  -- AREG: >>> Other Options ......: Examples = 'OFF', Unit Tests = 'OFF', AREG Extended = 'OFF', Logs = 'ON'
+  -- AREG: >>> Installation .......: Enabled = 'ON', location = '/usr/local'
   -- =======================================================================================
   -- -----------------------> AREG project CMake Status Report End <------------------------
   -- =======================================================================================
