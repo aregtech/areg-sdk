@@ -20,14 +20,14 @@ This guide provides step-by-step instructions for building the **AREG SDK** on L
 ## System Requirements
 
 ### General Requirements
-Ensure your system has:
+Ensure your system includes the following:
 - **CMake** (version 3.20+)
 - **Git** for repository cloning
 - **Compatible Compilers**: *GNU*, *LLVM*, or *MSVC* (Windows only) supporting **C++17** or newer
 - **Java** (version 17+ for code generation tools)
 
 ### Platform-Specific Requirements
-- **Linux**: Install **ncurses** (needed by `aregextend`).
+- **Linux**: Install **ncurses** (required by `aregextend`).
 - **Windows**: Requires Microsoft Visual C++ and **MFC** for GUI examples.
 - **Optional Libraries**:
   - **Google Test (GTest)** for unit tests (or build from sources).
@@ -51,7 +51,7 @@ To install the necessary packages:
 sudo apt-get update && sudo apt-get upgrade -y
 sudo apt-get install -y git cmake build-essential clang libncurses-dev openjdk-17-jre
 ```
-This command installs essential tools, including `ncurses` for Linux builds.
+This command installs essential tools and libraries, including `ncurses` for Linux builds.
 
 #### Windows
 1. Download and install [Visual Studio](https://visualstudio.microsoft.com/) with CMake and Clang.
