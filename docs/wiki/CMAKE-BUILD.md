@@ -33,7 +33,7 @@ Ensure your system includes the following:
   - **Google Test (GTest)** for unit tests (or build from sources).
   - **SQLite3** (optional, or use the version in AREG SDK’s `thirdparty` directory).
 
-If your system does not meet these requirements, proceed to [Step 1: Installing Dependencies](#step-1-installing-dependencies).
+If your system does not meet these requirements, proceed to [Step 1: Installing Dependencies](#step-1-installing-dependencies); otherwise, start from [Step 2: Cloning the AREG SDK Repository](#step-2-cloning-the-areg-sdk-repository).
 
 ---
 
