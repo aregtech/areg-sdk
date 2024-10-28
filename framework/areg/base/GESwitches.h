@@ -128,7 +128,7 @@
 #endif  // defined(EXP_AREG_LIB) || defined(_EXP_AREG_LIB) || defined(EXPORT_STATIC_SYMBOLS) || defined(_EXPORT_STATIC_SYMBOLS)
 
 #if !defined(EXP_AREG_DLL) && !defined(EXP_AREG_LIB) && !defined(IMP_AREG_DLL) && !defined(IMP_AREG_LIB)
-    #pragma message ("WARNING: None of preprocessor defines are set. By default sets IMP_AREG_DLL. See GESwitches.h file of AREG API Core")
+    #pragma message("WARNING: No compiler option set for the AREG library. Using default IMP_AREG_DLL. To use a static library, define IMP_AREG_LIB. Refer to the GESwitches.h file in the AREG base for details.")
     #define IMP_AREG_DLL
 #endif  // !defined(EXP_AREG_DLL) && !defined(EXP_AREG_LIB) && !defined(IMP_AREG_DLL) && !defined(IMP_AREG_LIB)
 
