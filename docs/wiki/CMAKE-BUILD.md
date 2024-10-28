@@ -45,6 +45,8 @@ If your system does not meet these requirements, proceed to [Step 1: Installing 
 
 Follow these instructions to configure and build AREG SDK on your system.
 
+---
+
 ### Step 1: Installing Dependencies
 
 #### Linux
@@ -67,6 +69,8 @@ Install required packages with **[Cygwin installer](https://cygwin.com/install.h
 c:\cygwin\setup.exe -qgnO -s http://mirrors.kernel.org/sourceware/cygwin/ -l C:\cygwin\ -P cmake, dos2unix, flexdll, gcc-g++, make, git, ncurses, libncurses-devel
 ```
 
+---
+
 ### Step 2: Cloning the AREG SDK Repository
 
 Clone the AREG SDK repository to access the latest source code:
@@ -75,6 +79,8 @@ git clone https://github.com/aregtech/areg-sdk.git
 cd areg-sdk
 ```
 Navigate to the project directory to proceed with build commands.
+
+---
 
 ### Step 3: Configuring the Build
 
@@ -88,6 +94,8 @@ cmake -B ./build -DAREG_BUILD_TYPE=Debug -DAREG_EXAMPLES=ON -DAREG_TESTS=ON
 ```
 For additional configurations, refer to the [CMake Configuration Guide](./cmake-config.md).
 
+---
+
 ### Step 4: Building the Project
 
 Compile AREG SDK:
@@ -95,6 +103,8 @@ Compile AREG SDK:
 cmake --build ./build -j
 ```
 This command utilizes available cores for a faster build process.
+
+---
 
 ### Step 5: Running Tests and Installing
 
@@ -120,6 +130,8 @@ Install AREG SDK binaries and header files required to develop AREG Framework ba
   ```powershell
   cmake --install ./build
   ```
+
+---
 
 ## Additional IDE Configurations
 
