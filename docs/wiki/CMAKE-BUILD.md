@@ -3,18 +3,26 @@
 ## Introduction
 This guide details how to build the **AREG SDK** on Linux, Windows, or Cygwin using **CMake**. Follow these instructions to ensure a seamless build environment setup and project compilation. While the focus is on command-line builds, it also briefly covers building with **Microsoft Visual Studio** and **Visual Studio Code** using **CMake** build tool.
 
-**Table of Contents**
-1. [System Preparation](#system-preparation)
-2. [Installing Dependencies](#installing-dependencies)
-3. [Cloning the Repository](#cloning-the-repository)
-4. [Configuring the Build](#configuring-the-build)
-5. [Building the Project](#building-the-project)
-6. [Optional: Running Tests and Installation](#optional-running-tests-and-installation)
-7. [Additional IDE Configurations](#additional-ide-configurations)
+## Table of Contents
+- [System Requirement](#system-requirement)
+  - [General Requirements](#general-requirements)
+  - [Platform-Specific Requirements](#platform-specific-requirements)
+- [Configuration and Build](#configuration-and-build)
+  - [Step 1: Installing Dependencies](#step-1-installing-dependencies)
+    - [Linux](#linux)
+    - [Windows](#windows)
+    - [Cygwin](#cygwin)
+  - [Step 2: Clone AREG SDK Repository](#step-2-clone-areg-sdk-repository)
+  - [Step 3: Configuring the Build](#step-3-configuring-the-build)
+  - [Step 4: Building the Project](#step-4-building-the-project)
+  - [Step 5 (Optional): Running Tests and Installation](#step-5-optional-running-tests-and-installation)
+- [Additional IDE Configurations](#additional-ide-configurations)
 
 ---
 
-## System Preparation
+## System Requirement
+
+### General Requirements
 Before building, ensure your system meets these prerequisites:
 - **CMake** version 3.20+
 - **Git** for source code cloning
@@ -30,33 +38,34 @@ Before building, ensure your system meets these prerequisites:
 
 ---
 
-## **Step 1**: Installing Dependencies
+## Configuration and Build
+
+The followings are step-by-step explanations how to configure and build AREG SDK projects.
+
+### Step 1: Installing Dependencies
 
 Escape this step if your system matches all prerequisites. Otherwise, follow the instructions to install all dependencies in your system. Here is brief instructions to prepare the system.
 
-### Linux
+#### Linux
 Update and install required tools:
 ```bash
 sudo apt update
 sudo apt install -y cmake build-essential clang openjdk-17-jre libncurses-dev git
 ```
 
-### Windows
+#### Windows
 1. [Install Visual Studio](https://visualstudio.microsoft.com/) with CMake and Clang components.
 2. Install [Java](https://www.java.com/download/) and [Git](https://git-scm.com/download/win).
 
-### Cygwin
+#### Cygwin
 Use the **[Cygwin installer](https://cygwin.com/install.html)** or the following command to install required packages:
 ```powershell
 c:\cygwin\setup.exe -qgnO -s http://mirrors.kernel.org/sourceware/cygwin/ -l C:\cygwin\ -P cmake, dos2unix, flexdll, gcc-g++, make, git, ncurses, libncurses-devel
 ```
 
-#### Optional Dependencies
-If you are going to build AREG SDK sources with VSCode using CMake tool, download and install on your system the [Visual Studio Code](https://code.visualstudio.com/) following the official instructions.
-
 ---
 
-## **Step 2**: Clone AREG SDK Repository
+### Step 2: Clone AREG SDK Repository
 Clone the AREG SDK repository to your system:
 ```bash
 git clone https://github.com/aregtech/areg-sdk.git
@@ -65,7 +74,7 @@ cd areg-sdk
 
 ---
 
-## **Step 3**: Configuring the Build
+### Step 3: Configuring the Build
 
 Run CMake to initialize build configuration with default options:
 ```bash
@@ -76,11 +85,11 @@ To customize the build, modify options such as:
 ```bash
 cmake -B ./build -DAREG_BUILD_TYPE=Debug -DAREG_EXAMPLES=ON -DAREG_TESTS=ON
 ```
-For further customization, refer to the [CMake Configuration Guide](./CMAKE-CONFIG.md).
+For further customization, refer to the [CMake Configuration Guide](./cmake-config.md).
 
 ---
 
-## **Step 4**: Building the Project
+### Step 4: Building the Project
 
 Compile the AREG SDK sources:
 ```bash
@@ -90,7 +99,7 @@ This utilizes all available cores for faster builds.
 
 ---
 
-## **Optional Step 5**: Running Tests and Installation
+### Step 5 (Optional): Running Tests and Installation
 
 **Run Unit Tests**:
 
@@ -118,12 +127,13 @@ ctest --test-dir ./build --output-on-failure --output-junit test_results.xml
 ## Additional IDE Configurations
 
 For **Microsoft Visual Studio** or **Visual Studio Code** users:
-1. Open `<areg-sdk>` in your IDE.
+1. Open `<areg-sdk>` directory in your IDE.
 2. Right-click `CMakeLists.txt` and select *Configure*.
-3. Adjust AREG SDK [settings](./CMAKE-CONFIG.md) in the CMake cache if needed, then build the project from the IDE.
+3. Adjust [AREG SDK settings](./cmake-config.md) in the CMake cache if needed, then build the project from the IDE.
 
 **For further guidance** on Visual Studio setup, check [Visual Studio CMake Projects](https://learn.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio), and for VS Code, see [VS Code CMake Quickstart](https://code.visualstudio.com/docs/cpp/cmake-quickstart).
 
 ---
 
 This guide provides a comprehensive overview of setting up, building, and optionally testing AREG SDK on multiple platforms. For troubleshooting, consult the [AREG SDK documentation](https://github.com/aregtech/areg-sdk).
+
