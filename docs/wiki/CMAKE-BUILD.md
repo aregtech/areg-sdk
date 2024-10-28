@@ -4,19 +4,22 @@
 This guide details how to build the **AREG SDK** on Linux, Windows, or Cygwin using **CMake**. Follow these instructions to ensure a seamless build environment setup and project compilation. While the focus is on command-line builds, it also briefly covers building with **Microsoft Visual Studio** and **Visual Studio Code** using **CMake** build tool.
 
 ## Table of Contents
-- [System Requirement](#system-requirement)
-  - [General Requirements](#general-requirements)
-  - [Platform-Specific Requirements](#platform-specific-requirements)
-- [Configuration and Build](#configuration-and-build)
-  - [Step 1: Installing Dependencies](#step-1-installing-dependencies)
-    - [Linux](#linux)
-    - [Windows](#windows)
-    - [Cygwin](#cygwin)
-  - [Step 2: Clone AREG SDK Repository](#step-2-clone-areg-sdk-repository)
-  - [Step 3: Configuring the Build](#step-3-configuring-the-build)
-  - [Step 4: Building the Project](#step-4-building-the-project)
-  - [Step 5 (Optional): Running Tests and Installation](#step-5-optional-running-tests-and-installation)
-- [Additional IDE Configurations](#additional-ide-configurations)
+- [Building AREG SDK with CMake](#building-areg-sdk-with-cmake)
+  - [Introduction](#introduction)
+  - [Table of Contents](#table-of-contents)
+  - [System Requirement](#system-requirement)
+    - [General Requirements](#general-requirements)
+    - [Platform-Specific Requirements](#platform-specific-requirements)
+  - [Configuration and Build](#configuration-and-build)
+    - [Step 1: Installing Dependencies](#step-1-installing-dependencies)
+      - [Linux](#linux)
+      - [Windows](#windows)
+      - [Cygwin](#cygwin)
+    - [Step 2: Clone AREG SDK Repository](#step-2-clone-areg-sdk-repository)
+    - [Step 3: Configuring the Build](#step-3-configuring-the-build)
+    - [Step 4: Building the Project](#step-4-building-the-project)
+    - [Step 5 (Optional): Running Tests and Installation](#step-5-optional-running-tests-and-installation)
+  - [Additional IDE Configurations](#additional-ide-configurations)
 
 ---
 
@@ -35,6 +38,8 @@ Before building, ensure your system meets these prerequisites:
 - **Optional**: 
    - **Google Test (GTest)** package if going to build unit tests and if not going to build from sources;
    - **SQLite3** package if not going to build from sources, located in the `thirdparty` directory of AREG SDK.
+
+Follow [Step 1: Installing Dependencies](#step-1-installing-dependencies) if you system does not match the requirement.
 
 ---
 
