@@ -52,8 +52,8 @@ Follow these instructions to configure and build AREG SDK on your system.
 #### Linux
 To install required packages:
 ```bash
-sudo apt update
-sudo apt install -y git cmake build-essential clang openjdk-17-jre libncurses-dev
+sudo apt-get update | sudo apt-get upgrade -y
+sudo apt-get install -y git cmake build-essential clang libncurses-dev openjdk-17-jre 
 ```
 This command installs essential tools and libraries, including `ncurses` for Linux builds.
 
