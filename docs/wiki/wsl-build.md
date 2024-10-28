@@ -1,8 +1,10 @@
-# Building AREG SDK in Windows Subsystem for Linux (WSL)
+Here's a refined version with clearer grammar and structure:
+
+# Building AREG SDK on Windows Subsystem for Linux (WSL)
 
 ## Contents
 1. [General Information](#general-information)
-2. [Installing Linux Distribution in WSL](#installing-linux-distribution-in-wsl)
+2. [Installing a Linux Distribution in WSL](#installing-linux-distribution-in-wsl)
 3. [Troubleshooting WSL Updates](#troubleshooting-wsl-updates)
 4. [Installing Build Tools](#installing-build-tools)
 5. [Cloning AREG SDK in WSL](#cloning-areg-sdk-in-wsl)
@@ -13,21 +15,21 @@
 
 ## General Information
 
-The Windows Subsystem for Linux (WSL) enables Windows 10 (version 2004+) and higher users to install and use Linux utilities and command-line tools natively. WSL provides access to distributions like Ubuntu, OpenSUSE, and others, removing the need to switch between OS environments. 
+The Windows Subsystem for Linux (WSL) enables users of Windows 10 (version 2004+) and higher to install and use Linux utilities and command-line tools natively. WSL provides access to distributions like Ubuntu and OpenSUSE, removing the need to switch OS environments. 
 
-The following sections outline the setup, installation, and troubleshooting process for WSL to prepare your environment for building the AREG SDK.
+The following sections provide setup, installation, and troubleshooting steps to prepare your WSL environment for building the AREG SDK.
 
 ---
 
-## 1. Installing Linux Distribution in WSL
+## 1. Installing a Linux Distribution in WSL
 
-Follow [Microsoft’s WSL installation guide](https://learn.microsoft.com/en-us/windows/wsl/install-manual) for complete steps. For Ubuntu, use:
+Follow [Microsoft’s WSL installation guide](https://learn.microsoft.com/en-us/windows/wsl/install-manual) for complete steps. To install Ubuntu, use:
 ```bash
 wsl --install -d ubuntu
 ```
-Once installed, update packages in Ubuntu:
+After installation, update Ubuntu packages:
 ```bash
-sudo apt-get update | sudo apt-get upgrade -y
+sudo apt-get update && sudo apt-get upgrade -y
 ```
 
 ### Setting WSL Version to WSL2
@@ -41,7 +43,7 @@ sudo apt-get update | sudo apt-get upgrade -y
 
 ## 2. Troubleshooting WSL Updates
 
-Encountering errors with updates? Common solutions include:
+Experiencing update issues? Common solutions include:
 
 - **Error Code**: `Wsl/Service/CreateInstance/0x80040326`  
    Run:
@@ -49,13 +51,12 @@ Encountering errors with updates? Common solutions include:
    wsl --update
    ```
 
-- **Network Resolution Issues**: Temporary DNS issues may affect updates.
-  Normally, when try to update or install a package, the user sees messages like this: `W: Failed to fetch http://archive.ubuntu.com/ubuntu/dists/jammy/InRelease Temporary failure resolving 'archive.ubuntu.com'`. The problem might be related with wrong DNS in the `/etc/resolv.conf` file. For example, it could be written `nameserver 172.23.112.1`, which is a wrong DNS IP. Open `/etc/resolv.conf` in your WSL Terminal and change the *nameserver* to *Google DNS*:
+- **Network Resolution Issues**: DNS issues can cause update failures. You may see errors like `W: Failed to fetch http://archive.ubuntu.com/ubuntu/dists/jammy/InRelease Temporary failure resolving 'archive.ubuntu.com'`. This can stem from an incorrect DNS in `/etc/resolv.conf`. Open `/etc/resolv.conf` in the WSL Terminal and change the *nameserver* to *Google DNS*:
    ```bash
    sudo vim /etc/resolv.conf
    ```
-   Update `nameserver` to `8.8.8.8`, save the file, then retry the update.<br/>
-   Alternatively, you can execute the following command in the WSL Terminal to set the *nameserver* IP in the `/etc/resolv.conf` file:
+   Update `nameserver` to `8.8.8.8`, save the file, and retry the update.<br/>
+   Alternatively, execute this command in WSL Terminal to set the *nameserver* in `/etc/resolv.conf`:
    ```bash
    sudo sh -c "echo nameserver 8.8.8.8 > /etc/resolv.conf"
    ```
@@ -64,20 +65,20 @@ Encountering errors with updates? Common solutions include:
 
 ## 3. Installing Build Tools
 
-Install essential build tools and libraries for compiling AREG SDK:
+Install the essential tools and libraries to compile AREG SDK:
 ```bash
-sudo apt-get install -y git cmake build-essential clang libncurses-dev openjdk-17-jre 
+sudo apt-get install -y git cmake build-essential clang libncurses-dev openjdk-17-jre
 ```
 
-For package details, refer to your Linux distribution’s package list (e.g., [Ubuntu Packages](https://packages.ubuntu.com/)).<br/>
-Also see the **System Requirements** for Linux platform in the [Building AREG SDK with CMake](./cmake-build.md) document.
+For package specifics, consult your Linux distribution’s package list, such as [Ubuntu Packages](https://packages.ubuntu.com/).<br/>
+Refer to the **System Requirements** for Linux platforms in the [Building AREG SDK with CMake](./cmake-build.md) document.
 
 ---
 
 ## 4. Cloning AREG SDK in WSL
 
 ### Cloning Directly in WSL
-1. Create a `projects` folder and navigate to it:
+1. Create a `projects` directory and navigate to it:
    ```bash
    mkdir ~/projects && cd ~/projects
    ```
@@ -91,7 +92,7 @@ Also see the **System Requirements** for Linux platform in the [Building AREG SD
    ```
 
 ### Using an Existing Windows Clone
-Alternatively, instead of cloning, navigate to the project’s path in WSL. For instance, if on your *Windows* machine the sources of **AREG SDK** are located in `C:\projects\areg-sdk\`:
+Alternatively, navigate to the project path in WSL if already cloned on *Windows*. For instance, if **AREG SDK** is located at `C:\projects\areg-sdk\`:
 ```bash
 cd /mnt/c/projects/areg-sdk/
 ```
@@ -100,45 +101,47 @@ cd /mnt/c/projects/areg-sdk/
 
 ## 5. Compiling AREG SDK
 
-Example commands to build AREG SDK using CMake or Make:
-- **CMake with Clang and extended features (Release):**
+Example commands to build AREG SDK with CMake:
+
+- **CMake with Clang (Release):**
    ```bash
    cmake -B ./build -DAREG_COMPILER_FAMILY=llvm -DAREG_BUILD_TYPE=Release -DAREG_EXTENDED:BOOL=ON
    cmake --build ./build -j
    ```
+
 - **CMake with GCC (Debug):**
    ```bash
    cmake -B ./build -DAREG_COMPILER_FAMILY=gnu -DAREG_BUILD_TYPE=Debug -DAREG_EXTENDED:BOOL=ON
    cmake --build ./build -j
    ```
 
-Refer to the **[AREG SDK build](./cmake-build.md)** document for details.
+Refer to the **[AREG SDK build](./cmake-build.md)** document for further details.
 
 ---
 
 ## 6. Running Applications
 
-Navigate to the SDK’s root directory, e.g.,:
+Navigate to the SDK root directory, e.g.,:
 ```bash
 cd /mnt/c/projects/areg-sdk/
 ```
 
-Run applications in the `bin` directory, such as `10_locservice.out`:
+Run applications located in the `bin` directory, such as `10_locservice.out`:
 ```bash
 ./product/build/llvm-clang++/linux-64-x86_64-release/bin/10_locservice.out
 ```
 
-Example output:
+Sample output:
 ```
 A Demo to demonstrate simple request, response, and broadcast ...
-"Hello client [ TestServiceClient ]!", remain to process [ 36 ]
+"Hello client [ TestServiceClient ]!", remaining [ 36 ] to process.
 ...
-Exit application, check the logs for details!
+Exit application; check logs for details.
 ```
 
 > [!NOTE]  
-> For a complete list of examples and instructions on how to run them, see the [README](./../../examples/README.md) in the AREG SDK `examples` directory.
+> For a list of examples and detailed run instructions, see the [README](./../../examples/README.md) in the AREG SDK `examples` directory.
 
 ---
 
-By following these steps, you will be able to set up, troubleshoot, and run AREG SDK on WSL effectively.
+Following these steps will guide you through setting up, troubleshooting, and running AREG SDK on WSL effectively.
