@@ -369,7 +369,7 @@ jobs:
         if: matrix.config.os == 'windows-2022' && matrix.config.family == 'cygwin'
         uses: cygwin/cygwin-install-action@v4
         with:
-          packages: cmake, dos2unix, flexdll, gcc-g++, git, ncurses, libncurses-devel, make
+          packages: cmake, dos2unix, flexdll, gcc-g++, git, libncurses-devel, make
 
       - name: Configure CMake by selecting compiler family
         if: matrix.config.extend == 'ON'
@@ -386,7 +386,7 @@ jobs:
       - name: Build with CMake
         working-directory: ${{github.workspace}}
         # Build your program with the given configuration
-        run: cmake --build ${{env.CACHE_DEST}} -j 20
+        run: cmake --build ${{env.CACHE_DEST}} -j
 
       - name: Install with CMake
         working-directory: ${{github.workspace}}
@@ -405,7 +405,7 @@ jobs:
         run: |
           mkdir ./${{matrix.config.name}}/
           cp -R ./${{env.BUILD_DEST}}/bin/ ./${{matrix.config.name}}/
-          cp -R  ./${{env.INSTALL_DEST}}/  ./${{matrix.config.name}}/
+          cp -R ./${{env.INSTALL_DEST}}/   ./${{matrix.config.name}}/
 
       - name: Upload artifacts if tests fail. Ignore if unit tests are not compiled
         if: failure() && matrix.config.test == 'ON'
