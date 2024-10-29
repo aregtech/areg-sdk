@@ -253,7 +253,7 @@ public:
     /**
      * \brief   Parses the value and returns the list of identifiers.
      * \param   lookupList  The lookup list to convert literal identifiers into integer values.
-     * \return  Combined with logical OR operation digital value of the identifiers.
+     * \return  Combined with logical OR ('|') operation digital value of the identifiers.
      **/
     TEArrayList<Identifier> getIdentifierList(const std::vector<Identifier>& lookupList) const;
 
@@ -263,6 +263,22 @@ public:
      * \param   lookupList  The lookup list to find entry and convert to the string.
      **/
     void setIdentifierList(unsigned int idBits, const std::vector<Identifier>& lookupList);
+
+    /**
+     * \brief   Parses the value and returns the list of string. The strings in the value should be
+     *          separated by logical OR ('|') symbol to get the list. Otherwise, the returned array
+     *          has one entry and that entry is equal to the value.
+     * \param   makeUnique  Flag, indicating whether the entries in the result should be unique or not.
+     *                      If the flag is 'false', the entries in the result list are not checked.
+     * \return  Returns the list of strings.
+     **/
+    TEArrayList<String> getValueList(bool makeUnique = false) const;
+
+    /**
+     * \brief   Sets a list of string as a value.
+     * \param   list    The list of strings to set as a value;
+     **/
+    void setValueList(const std::vector<String>& list);
 
     /**
      * \brief   Parses given string, extracts Value data.
