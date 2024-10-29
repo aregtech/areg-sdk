@@ -1,5 +1,3 @@
-Here's a refined version with clearer grammar and structure:
-
 # Building AREG SDK on Windows Subsystem for Linux (WSL)
 
 ## Contents
