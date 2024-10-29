@@ -2,7 +2,7 @@
 
 ## Overview
 
-The AREG Framework simplifies data persistence with lightweight Key-Value pairs, stored in plain text. Unlike complex formats like XML or JSON, AREG’s [persistence module](./../../framework/areg/persist) is optimized for efficient data handling and quick initialization. The persistence module is not suited for large, complex data structures but is ideal for straightforward configuration storage.
+The AREG Framework simplifies data persistence with lightweight Key-Value pairs, stored in plain text. Unlike complex formats like XML or JSON, AREG's [persistence module](./../../framework/areg/persist) is optimized for efficient data handling and quick initialization. The persistence module is not suited for large, complex data structures but is ideal for straightforward configuration storage.
 
 ---
 
