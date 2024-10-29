@@ -27,8 +27,8 @@ Ensure your system includes the following:
 - **Java** (version 17+ for code generation tools)
 
 ### Platform-Specific Requirements
-- **Linux**: Install **ncurses** (required by `aregextend`).
-- **Windows**: Requires Microsoft Visual C++ and **MFC** for GUI examples.
+- **Linux**: Install **ncurses** (required by `aregextend` extended objects).
+- **Windows**: Requires Microsoft Visual C++, including packages **CMake** and **CLang compiler for Windows**, and **MFC** for GUI examples.
 - **Optional Libraries**:
   - **Google Test (GTest)** for unit tests (or build from sources).
   - **SQLite3** (optional, or use the version in AREG SDK’s `thirdparty` directory).
@@ -54,7 +54,7 @@ sudo apt-get install -y git cmake build-essential clang libncurses-dev openjdk-1
 This command installs essential tools and libraries, including `ncurses` for Linux builds.
 
 #### Windows
-1. Download and install [Visual Studio](https://visualstudio.microsoft.com/) with CMake and Clang.
+1. Download and install [Visual Studio](https://visualstudio.microsoft.com/), including packages **CMake** and **CLang compiler for Windows**.
 2. Install [Java](https://www.java.com/download/) and [Git](https://git-scm.com/download/win).
 
 After installing these tools, Windows will be ready for AREG SDK builds.
