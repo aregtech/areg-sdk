@@ -185,7 +185,7 @@ unsigned int PropertyValue::getIndetifier( const std::vector<Identifier> & idLis
     unsigned int result = Identifier::BAD_IDENTIFIER_VALUE;
     if ( (idList.empty() == false) && (mValue.isEmpty() == false) )
     {
-        std::vector<TEString<char>> list { mValue.split(NEPersistence::SYNTAX_LOGICAL_OR) };
+        std::vector<TEString<char>> list { mValue.split(NEPersistence::SYNTAX_VALUE_LIST_DELIMITER) };
         for (auto& entry : list)
         {
             String value{ entry.trimAll() };
@@ -240,7 +240,7 @@ TEArrayList<Identifier> PropertyValue::getIdentifierList(const std::vector<Ident
     TEArrayList<Identifier> result;
     if ((lookupList.empty() == false) && (mValue.isEmpty() == false))
     {
-        std::vector<TEString<char>> list{ mValue.split(NEPersistence::SYNTAX_LOGICAL_OR) };
+        std::vector<TEString<char>> list{ mValue.split(NEPersistence::SYNTAX_VALUE_LIST_DELIMITER) };
         for (auto& entry : list)
         {
             String value{ entry.trimAll() };
@@ -269,7 +269,7 @@ void PropertyValue::setIdentifierList(unsigned int idBits, const std::vector<Ide
             if (mValue.isEmpty() == false)
             {
                 mValue.append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER)
-                      .append(NEPersistence::SYNTAX_LOGICAL_OR)
+                      .append(NEPersistence::SYNTAX_VALUE_LIST_DELIMITER)
                       .append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER);
             }
 
@@ -286,11 +286,50 @@ void PropertyValue::setIndentifier(const std::vector<Identifier> & idList)
         if ( mValue.isEmpty() == false )
         {
             mValue.append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER)
-                  .append(NEPersistence::SYNTAX_LOGICAL_OR)
+                  .append(NEPersistence::SYNTAX_VALUE_LIST_DELIMITER)
                   .append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER);
         }
 
         mValue += entry.getName();
+    }
+}
+
+TEArrayList<String> PropertyValue::getValueList(bool makeUnique /*= false*/) const
+{
+    TEArrayList<String> result;
+    if (mValue.isEmpty() == false)
+    {
+        std::vector<TEString<char>> list{ mValue.split(NEPersistence::SYNTAX_VALUE_LIST_DELIMITER) };
+        for (auto& entry : list)
+        {
+            String value{ entry.trimAll() };
+            if (makeUnique)
+            {
+                result.addIfUnique(value);
+            }
+            else
+            {
+                result.add(value);
+            }
+        }
+    }
+
+    return result;
+}
+
+void PropertyValue::setValueList(const std::vector<String>& list)
+{
+    mValue.clear();
+    for (const auto& entry : list)
+    {
+        if (mValue.isEmpty() == false)
+        {
+            mValue.append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER)
+                  .append(NEPersistence::SYNTAX_VALUE_LIST_DELIMITER)
+                  .append(NEPersistence::SYNTAX_WHITESPACE_DELIMITER);
+        }
+
+        mValue += entry;
     }
 }
 
