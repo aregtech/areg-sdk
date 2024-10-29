@@ -46,6 +46,11 @@ namespace NEPersistence
     constexpr char              SYNTAX_WHITESPACE_DELIMITER { ' ' };
 
     /**
+     * \brief   List delimiter in the value.
+     **/
+    constexpr char              SYNTAX_VALUE_LIST_DELIMITER { '|' };
+
+    /**
      * \brief   Tab delimiter
      **/
     constexpr char              SYNTAX_TAB_DELIMITER        { '\t' };

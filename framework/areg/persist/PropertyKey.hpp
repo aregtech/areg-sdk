@@ -35,7 +35,7 @@
  *          The Property Key is valid if at least section and property exist.
  *          The other parts are optional and can be omitted if not used.
  *          The Property Key format:
- *              section.(module|*).property[.position]
+ *              section::(module|*)::property[::position]
  **/
 class AREG_API PropertyKey
 {
