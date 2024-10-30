@@ -1,8 +1,8 @@
 ﻿# Developing with AREG Logging System
 
-*This logging documentation provides guidance on activating, configuring, and effectively using AREG's advanced logging tools, allowing you to monitor and optimize multiprocess applications.*
+*This guide provides instructions for activating, configuring, and utilizing AREG's comprehensive logging tools to monitor and optimize multiprocess applications.*
 
-The AREG Framework offers a powerful and flexible logging system, tailored for developers monitoring multiprocess applications. This system is particularly valuable when debugging complex, multithreaded environments across multiple machines, where conventional debugging methods may slow applications and make time-sensitive bug analysis difficult. This document explains the steps to enable and use the logging system in the AREG Framework.
+The AREG Framework features a robust, adaptable logging system ideal for monitoring complex, multithreaded applications across distributed environments. This system allows developers to identify and troubleshoot timing-sensitive issues without slowing down application performance. This document explains how to enable and manage logging in the AREG Framework.
 
 ## Table of Contents
 
@@ -16,9 +16,9 @@ The AREG Framework offers a powerful and flexible logging system, tailored for d
 
 ## Overview
 
-The [AREG Framework](./../../framework/areg) includes a robust [logging module](./../../framework/areg/trace) called `trace`. Key features include:
+The [AREG Framework](./../../framework/areg) includes a powerful [logging module](./../../framework/areg/trace) called `trace`. Key capabilities include:
    - Enabling/disabling logs at compile and runtime
-   - Customizing logs by scope and priority for flexibility and precision
+   - Customizing logs by scope and priority for precise control
 
 This guide provides steps to compile and configure the AREG logging module effectively.
 
@@ -26,37 +26,38 @@ This guide provides steps to compile and configure the AREG logging module effec
 
 ## Compile-Time Log Activation
 
-Developers can enable or disable logging during compilation, allowing efficient debugging in development while minimizing latency in production builds. By default, logs are enabled. To change this setting:
+Logging can be enabled or disabled during compilation, allowing effective debugging during development while optimizing performance in production. By default, logs are enabled. To adjust this setting:
 
 1. **Using `cmake`:**  
-   - To enable: `cmake -B ./build -DAREG_LOGS=ON`
-   - To disable: `cmake -B ./build -DAREG_LOGS=OFF`
+   - Enable: `cmake -B ./build -DAREG_LOGS=ON`
+   - Disable: `cmake -B ./build -DAREG_LOGS=OFF`
    
 2. **Using `MSBuild`:**  
-   - To enable: `MSBuild /m /property:AregLogs=1 ./areg-sdk.sln`
-   - To disable: `MSBuild /m /property:AregLogs=0 ./areg-sdk.sln`
+   - Enable: `MSBuild /m /property:AregLogs=1 ./areg-sdk.sln`
+   - Disable: `MSBuild /m /property:AregLogs=0 ./areg-sdk.sln`
 
-> **Note:** When compiled without logs, all log-related calls are ignored.
+> [!NOTE]
+> When compiled without logs, all log-related calls are ignored.
 
 ---
 
 ## Enabling & Disabling Logs
 
-Once compiled with logs enabled (`AREG_LOGS=ON`), logging can be activated in several ways.
+Once compiled with logging enabled (`AREG_LOGS=ON`), logging can be managed as follows:
 
-### Activating Logs via `Application` Class
+### Activating Logs via the `Application` Class
 
-To initialize logging, use the static method `Application::initApplication()`:
+To initialize logging, use the `Application::initApplication()` method:
 
 ```cpp
 Application::initApplication(startTracing, startServicing, startRouting, startTimer, startWatchdog, configFile, listener);
 ```
 
-Alternatively, use `Application::startTracer(configFile, force)` for a targeted approach, where the `configFile` parameter specifies the path to the configuration file. Deactivate logging using `Application::stopTracer()` or `Application::releaseApplication()`.
+For specific configurations, use `Application::startTracer(configFile, force)`, where `configFile` specifies the configuration file path. To deactivate logging, use `Application::stopTracer()` or `Application::releaseApplication()`.
 
 ### Activating Logs via Macros
 
-For macro-based control, `GETrace.h` offers several macros to activate and manage logging. To activate logging, use `TRACER_CONFIGURE_AND_START(configFile)` or `TRACER_FORCE_LOGGING()`. To deactivate, use `TRACER_STOP_LOGGING()`.
+For macro-based control, `GETrace.h` includes macros to activate and manage logging. Use `TRACER_CONFIGURE_AND_START(configFile)` or `TRACER_FORCE_LOGGING()` to start logging and `TRACER_STOP_LOGGING()` to stop it.
 
 ```cpp
 #include "areg/trace/GETrace.h"
@@ -68,14 +69,14 @@ int main() {
 }
 ```
 
-> [!NOTE]
-> If compiled without logs (`AREG_LOGS=OFF`), these macros have no effect.
+> ![NOTE]
+> If compiled without logs (`AREG_LOGS=OFF`), these macros are non-functional.
 
 ---
 
 ## Scopes & Logging
 
-The AREG Framework’s logging system uses *logging scopes* to manage and filter logs by priority and message type. By assigning unique names to scopes, developers can enable specific logging areas within an application. Below is an example for a class `SomeClass` with methods `foo()` and `bar()`.
+The AREG logging system uses *logging scopes* to manage logs by priority and message type. By assigning names to scopes, developers can focus on specific logging areas. For instance, in a `SomeClass` with methods `foo()` and `bar()`:
 
 ```cpp
 #include "source/some/classes/SomeClass.hpp"
@@ -97,10 +98,10 @@ void SomeClass::bar() {
 }
 ```
 
-When scopes are activated, the logging system records all relevant messages, enabling developers to trace the flow of method calls and monitor execution durations.
+Activated scopes log relevant messages, enabling developers to trace method calls and monitor execution times effectively.
 
 ---
 
 ## Logging Configuration
 
-Configure logging settings using a configuration file (e.g., `areg.init`) located in the `./config` folder post-compilation. This file allows customizations such as defining log files, activating specific scopes, and setting message priorities. Refer to [Logging Configuration](./logging-config.md) for detailed setup instructions, which enable tailored log management and connection to the [Log Collector](./logger.md).
+Configure logging settings via a configuration file (e.g., `areg.init`) located in the `./config` folder post-compilation. This file allows defining log files, activating specific scopes, and setting message priorities. See the [Logging Configuration guide](./logging-config.md) for detailed setup instructions, which enable customized log management and integration with the [Log Collector](./logger.md).

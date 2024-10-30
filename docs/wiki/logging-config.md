@@ -1,111 +1,113 @@
 ﻿# AREG SDK Logging Configuration Guide
 
-The AREG SDK provides developers with a highly configurable logging system through the **AREG log configuration file** (`areg.init`). This file allows customization of log files, target destinations, scope settings, and message priority, enhancing debugging and runtime analysis.
+The AREG SDK offers a highly configurable logging system via the **AREG log configuration file** (`areg.init`), allowing customization of log files, destinations, scope settings, and message priority to support enhanced debugging and runtime analysis.
 
 ---
 
 ## Key Configuration Options
 
-Located by default in the `./config` folder, the `areg.init` file enables structured logging configurations with entries defined as `section::(module|*)::property[::position] = value`. Each entry combines mandatory and optional elements:
+The `areg.init` file, located in the `./config` folder by default, structures logging configurations using the format `section::(module|*)::property[::position] = value`. Each entry specifies:
 
-- **section**: Defines the area of logging (e.g., `log`, `logger`).
+- **section**: The log area (e.g., `log`, `logger`).
 - **module**: Targets specific applications or globally (`*`).
-- **property & position**: Specifies exact settings like file paths, target destinations, and logging levels.
+- **property & position**: Defines settings like file paths, destinations, and logging levels.
 
-For a full syntax guide, refer to the [AREG SDK Persistence Syntax documentation](./persistence-syntax.md).
+For more syntax details, see the [AREG SDK Persistence Syntax documentation](./persistence-syntax.md).
 
 ---
 
 ## Log Mechanisms and Destinations
 
-The configuration enables versatile logging outputs:
+This configuration supports various logging outputs:
 
-1. **Remote**: Routes logs to a remote collector.
-2. **File**: Saves logs locally, defined by `log::*::file::location`.
-3. **Debug Output**: Useful for real-time debugging within IDEs.
-4. **Database**: Stores logs in a structured database for analysis.
+1. **Remote** ......: Sends logs to a remote collector.
+2. **File** ........: Stores logs locally, specified by `log::*::file::location`.
+3. **Debug Output** : Provides real-time debugging within IDEs.
+4. **Database** ....: Logs data for structured analysis.
 
-Example settings:
+Example setup:
 ```plaintext
 log::*::target = remote | file | debug | db
 log::*::enable::file = true
 log::*::file::location = ./logs/%appname%_%time%.log
 ```
 
-The `log::*::enable` setting controls log activation, while specific settings (e.g., `log::*::remote::queue` queuing) optimize for startup or delayed connections.
-The logging file name may contain the file naming mask like `%appname%_%time%.log`, which means that the file name will conaint the name of the application and the timestamp.
+The `log::*::enable` setting manages log activation, while parameters (e.g., `log::*::remote::queue`) optimize start-up or delayed connections. The file naming mask `%appname%_%time%.log` dynamically includes the application name and timestamp.
 
 ---
 
 ## Configuring Log Message Layout
 
-Customize the log file format using the following in `areg.init`:
+Define log file formats in `areg.init` with the following:
 ```plaintext
 log::*::layout::enter       = %d: [ %t  %x.%z: Enter -->]%n    # Enter scope layout
 log::*::layout::message     = %d: [ %t  %p >>> ] %m%n          # Log message layout
 log::*::layout::exit        = %d: [ %t  %x.%z: Exit <-- ]%n    # Exit scope layout
 ```
-Available format specifiers:
-| Format |            Description                                               |
-|--------|----------------------------------------------------------------------|
-|  `%a`  | Output the ID of a logging object set by the logger.                 |
-|  `%c`  | Output tick-count value since process start.                         |
-|  `%d`  | Output day and time data.                                            |
-|  `%e`  | Output module (process) ID.                                          |
-|  `%m`  | Output logging message. The `%m` and `%z` are mutually exclusive.    |
-|  `%n`  | Output end-of-line character.                                        |
-|  `%p`  | Output message priority.                                             |
-|  `%s`  | Output message scope ID.                                             |
-|  `%t`  | Output thread ID.                                                    |
-|  `%x`  | Output module (process) name.                                        |
-|  `%y`  | Output thread name, if available.                                    |
-|  `%z`  | Output scope name. The `%z` and `%m` are mutual exclusive.           |
 
-Adjusting formats enables clear, consistent log messages across applications.
+| Format | Description                                    |
+|--------|------------------------------------------------|
+| `%a`   | Logging object ID.                             |
+| `%c`   | Tick-count since process start.                |
+| `%d`   | Date and time.                                 |
+| `%e`   | Module (process) ID.                           |
+| `%m`   | Logging message (exclusive with `%z`).         |
+| `%n`   | End-of-line character.                         |
+| `%p`   | Message priority.                              |
+| `%s`   | Message scope ID.                              |
+| `%t`   | Thread ID.                                     |
+| `%x`   | Module (process) name.                         |
+| `%y`   | Thread name, if available.                     |
+| `%z`   | Scope name (exclusive with `%m`).              |
+
+Adjusting formats ensures clear, uniform log messages across applications.
 
 ---
 
 ## Remote Log Collector Configuration
 
-To use a remote log collector, specify protocol, IP, and port:
+For remote logging, configure protocol, IP, and port:
 ```plaintext
 logger::*::connect = tcpip
 logger::*::address::tcpip = 127.0.0.1
 logger::*::port::tcpip = 8282
 ```
-This section ensures logs can be captured over a network by a central log collector service. Additionally, the log scopes and the message priorities can be configurable in real-time using the [Log Observer](./logobserver.md) console application.
+
+This setup enables central log collection over a network. Scopes and priorities are adjustable in real-time through the [Log Observer](./logobserver.md) console application.
 
 ---
 
 ## Scopes and Log Priorities
 
-The AREG Framework offers a flexible logging system that enables selective logging by scope and message priority, using *logging scopes* to filter logs efficiently. Scopes are configured in the `log` section with the `scope` property (`log::*::scope::*`), allowing initial setup at startup.
+AREG’s logging system supports selective logging by scope and priority, enabling efficient log filtering. Configure scopes in the `log` section using the `scope` property (`log::*::scope::*`) for initial setup.
 
-Developers can enable, disable, and set priorities for individual or grouped scopes. For example:
+Scopes can be enabled, disabled, or grouped by priority. Example configurations:
 ```plaintext
 log::app::scope::module_foo = DEBUG | SCOPE
 log::app::scope::module_bar = NOTSET
 ```
 
-Scopes may also be grouped with wildcards, such as `log::app::scope::module_*`, to apply priorities like `DEBUG | SCOPE` to all matching scopes. 
+You can apply priorities like `DEBUG | SCOPE` to scope groups using wildcards, such as `log::app::scope::module_*`.
 
 ### Log Priority Levels
 
-Configurable priority levels include:
-- **NOTSET**: No logging
-- **SCOPE**: Only logs scope entries/exits
-- **DEBUG**: Logs debug and higher
-- **INFO**: Logs informational messages and higher
-- **WARN**: Logs warnings and higher
-- **ERROR**: Logs errors and higher
-- **FATAL**: Only logs fatal errors
+Supported priorities include:
+| Priority   |  Explanation                         |
+|------------|--------------------------------------|
+| **NOTSET** | No logging.                          |
+| **SCOPE**  | Logs only scope entries/exits.       |
+| **DEBUG**  | Logs debug and higher.               |
+| **INFO**   | Logs informational and higher.       |
+| **WARN**   | Logs warnings and higher.            |
+| **ERROR**  | Logs errors and higher.              |
+| **FATAL**  | Logs fatal errors only.              |
 
-For instance, `WARN | SCOPE` will log *Warnings*, *Errors*, *Fatal Errors* and scope entries/exits, excluding *Debug* and *Information*.
+For instance, `WARN | SCOPE` logs *Warnings*, *Errors*, *Fatal Errors*, and scope entries/exits, excluding *Debug* and *Information* levels.
 
-The AREG Framework supports runtime log adjustments through its `logobserver` tool. This console application enables real-time scope and priority manipulation for greater logging control. For further details, refer to the [Log Observer documentation](./logobserver.md).
+The AREG Framework allows runtime adjustments using the `logobserver` tool, providing real-time control over scopes and priorities. For details, see the [Log Observer documentation](./logobserver.md).
 
 ---
 
 ## Conclusion
 
-This guide outlines the AREG SDK logging system's configurability, enabling efficient monitoring and debugging across applications. Explore additional settings for optimal performance, and refer to the AREG SDK documentation for advanced configuration details.
+This guide highlights the flexible configuration of the AREG SDK logging system, offering efficient application monitoring and debugging. Explore additional settings for optimal performance, and refer to the AREG SDK documentation for advanced configuration insights.
