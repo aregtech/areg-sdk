@@ -66,7 +66,7 @@ Setting descriptions:
 For further details, refer to the [AREG SDK Persistence Syntax documentation](./persistence-syntax.md).
 
 > [!NOTE]
-> AREG SDK includes a simple console application, `logobserver`, for capturing logs, adjusting log scopes, filtering priorities, and saving logs to a file or SQLite database. More details are available in the [logobserver documentation](./logobserver.md).
+> AREG SDK includes a console tool application, `logobserver`, for capturing logs, adjusting log scopes, filtering priorities, and saving logs to a file or SQLite database. More details are available in the [logobserver documentation](./logobserver.md).
 
 ---
 
