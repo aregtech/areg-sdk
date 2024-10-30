@@ -154,10 +154,10 @@ The **AREG SDK** is written in **C++17** and supports multiple platforms and com
 
 The following build tools are supported:
 
-| Tool | Solution | Platforms | API | Quick actions to compile |
-| --- | --- | --- | --- | --- |
+| Tool        | Solution         | Platforms              | API          | Quick actions to compile           |
+|-------------|------------------|------------------------|--------------|------------------------------------|
 | **CMake**   | `CMakeLists.txt` | Linux, Windows, Cygwin | POSIX, Win32 | Build with CMake, VSCode, or MSVS. |
-| **MSBuild** | `areg-sdk.sln`   | Windows                | Win32        | Build with MSBuild or MSVS. |
+| **MSBuild** | `areg-sdk.sln`   | Windows                | Win32        | Build with MSBuild or MSVS.        |
 
 For detailed build instructions, check the **[Software Build](./docs/wiki/BUILD.md)** page.
 
