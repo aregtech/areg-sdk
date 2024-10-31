@@ -174,7 +174,7 @@ service::*::list            = router | logger               # The list of availa
 # ---------------------------------------------------------------------------
 # Message router settings
 # ---------------------------------------------------------------------------
-router::*::service          = mcrouter                      # The name of the router service (process name)
+router::*::service          = mcrouter                      # The name of the message router service (process name)
 router::*::connect          = tcpip			                # The list of supported communication protocols
 router::*::enable::tcpip    = true			                # Communication protocol enable / disable flag
 router::*::address::tcpip   = localhost                     # Protocol specific connection IP-address, default IP is 127.0.0.1
@@ -183,10 +183,10 @@ router::*::port::tcpip      = 8181			                # Protocol specific connect
 # ---------------------------------------------------------------------------
 # Remote logger settings
 # ---------------------------------------------------------------------------
-logger::*::service          = logger                        # The name of the router service (process name)
+logger::*::service          = logger                        # The name of the log collector service (process name)
 logger::*::connect          = tcpip			                # The list of supported communication protocols
 logger::*::enable::tcpip    = true			                # Communication protocol enable / disable flag
-logger::*::address::tcpip   = 172.23.96.1                   # Protocol specific connection IP-address, default IP is 127.0.0.1
+logger::*::address::tcpip   = localhost                     # Protocol specific connection IP-address, default IP is 127.0.0.1
 logger::*::port::tcpip      = 8282			                # Protocol specific connection port number, default port is 8282
 
 # #######################################
@@ -197,9 +197,10 @@ logger::*::port::tcpip      = 8282			                # Protocol specific connect
 # Logging scopes
 # ###########################################################################
 
-log::*::scope::*			= DEBUG | SCOPE ;
-log::mcrouter::scope::*     = DEBUG | SCOPE ;
-log::logger::scope::*       = NOTSET ;
+log::*::scope::*			= DEBUG | SCOPE ;               # By default, activate and enable log scopes of all applications.
+log::mcrouter::scope::*     = WARN  | SCOPE ;               # The multicast router should output only warnings and errors.
+log::logger::scope::*       = NOTSET ;                      # No log messages from the log collector
+log::logobserver::scope::*  = NOTSET ;                      # No log messages from the log collector
 
 # ###########################################################################
 # End of global configuration

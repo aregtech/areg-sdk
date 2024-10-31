@@ -1,7 +1,3 @@
-Here is the revised document with improved clarity and grammar:
-
----
-
 # AREG SDK Multicast Router
 
 The **Multicast Router (mcrouter)** in AREG SDK enables efficient communication between Service Provider and Consumer nodes within a networked environment.
@@ -30,7 +26,7 @@ The Router is implemented in the [mcrouter](./../../framework/mcrouter) module a
 **To run as a service:**
 
 - **On Windows:** 
-  - Run `mcrouter.service.install.bat`, ensure the correct `mcrouter` path, and restart the system.
+  - Run `mcrouter.service.install.bat`, ensure the correct `mcrouter` path, and restart the system if needed.
   - Alternatively, run `mcrouter.exe --install` in the Terminal or PowerShell.
 
 - **On Linux:**
@@ -50,9 +46,9 @@ Regardless AREG SDK is fault-tolerant and order of starting process plays no rol
 
 ## Router Configuration
 
-The **mcrouter** uses a configuration file, typically [areg.init](./../../framework/areg/resources/areg.init), with settings defined as key-value pairs. Each setting uses the format `section::(module|*)::property[::position]`. Below is a sample configuration for `mcrouter` in `areg.init`:
+The **mcrouter** uses a configuration file, typically [areg.init](./../../framework/areg/resources/areg.init), with settings defined as key-value pairs. Each setting uses the format `section::(module|*)::property[::(position|*)] = value`. Below is a sample configuration for `mcrouter` in `areg.init`:
 
-```text
+```plaintext
 router::*::service          = mcrouter      # Router process name
 router::*::connect          = tcpip		    # Supported communication protocols
 router::*::enable::tcpip    = true		    # Enable/disable protocol
@@ -60,12 +56,19 @@ router::*::address::tcpip   = 172.23.96.1   # Connection IP address (default: 12
 router::*::port::tcpip      = 8181		    # Connection port number (default: 8181)
 ```
 
-Explanation of each setting:
-- `router::*::service`: Specifies the router process name.
-- `router::*::connect`: Lists supported protocols (TCP/IP in this example).
-- `router::*::enable::tcpip`: Enables/disables the protocol.
-- `router::*::address::tcpip`: Provides the router’s network-accessible IP.
-- `router::*::port::tcpip`: Assigns the port number.
+Applications use router settings in their configuration files to establish a network connection and initiate Inter-Process Communication (IPC). 
+
+> [!TIP]
+> For custom configurations, replace the wildcard `*` in properties with the specific application name (e.g., `router::someapp::address::tcpip = localhost`).
+
+Bellow is the explanation of each setting:
+|  Property Key Setting:        |   Description:                                            |
+|-------------------------------|-----------------------------------------------------------|
+| `router::*::service`          | Specifies the message router process name.                |
+| `router::*::connect`          | Lists supported protocols (**TCP/IP** in this example).   |
+| `router::*::enable::tcpip`    | Enables or disables the protocol.                         |
+| `router::*::address::tcpip`   | Provides the router’s network-accessible IP.              |
+| `router::*::port::tcpip`      | Assigns the port number.                                  |
 
 For further details, refer to the [AREG SDK Persistence Syntax](./persistence-syntax.md).
 
@@ -75,7 +78,7 @@ For further details, refer to the [AREG SDK Persistence Syntax](./persistence-sy
 
 The `mcrouter` can be run as either a console application or an OS-managed service. It has various commands for starting, configuring, and controlling its operation. Some commands are entered while `mcrouter` is running in the console, marked as **Console** in the options list. All others are command-line options to start the program.
 
-| Command               | Platform  | Description                   | Usage Example                 |
+| Command:              | Platform: | Description:                  | Usage Example:                |
 |-----------------------|-----------|-------------------------------|-------------------------------|
 | `-c, --console`       | All       | Run as a console application  | `mcrouter --console`          |
 | `-h, --help`          | All       | Display help message          | `mcrouter --help`             |
@@ -90,7 +93,7 @@ The `mcrouter` can be run as either a console application or an OS-managed servi
 | `-u, --uninstall`     | Windows   | Uninstall service             | `mcrouter --uninstall`        |
 | `-v, --verbose`       | Console   | Display data rate             | `-v`                          |
 
-Commands may be updated over time.
+Commands may vary with version updates.
 
 ---
 
@@ -109,14 +112,16 @@ mcrouter --load="./my/config/file.init"
 
 ### Application Setup
 
-Applications establish a `mcrouter` connection by specifying the path to their configuration file:
+Applications establish a `mcrouter` connection by starting message router client and specifying the path to their configuration file:
 
 ```cpp
 #include "areg/appbase/Application.hpp"
 
 int main()
 {
-    Application::initApplication(true, true, true, true, true, nullptr, "./config/myapp-router.init");
+    // start: logging, service manager, router client, timer manager, watchdog manager
+    // configure connections from "./config/myapp-services.init" file
+    Application::initApplication(true, true, true, true, true, "./config/myapp-services.init", nullptr);
     
     // Application-specific code here
 
