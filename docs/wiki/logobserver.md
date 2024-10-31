@@ -37,11 +37,13 @@ logger::*::address::tcpip   = 172.23.96.1   # Network IP address
 logger::*::port::tcpip      = 8282          # Port number for connection
 ```
 Setting descriptions:
-- `logger::*::service` .......: Specifies the log collector process name.
-- `logger::*::connect` .......: Lists supported protocols (TCP/IP in this example).
-- `logger::*::enable::tcpip` .: Activates or deactivates the protocol.
-- `logger::*::address::tcpip` : Specifies the Log Collector’s network-accessible IP.
-- `logger::*::port::tcpip` ...: Assigns the port number.
+|  Property Key Setting:        |   Description:                                        |
+|-------------------------------|-------------------------------------------------------|
+| `logger::*::service`          | Specifies the log collector process name.             |
+| `logger::*::connect`          | Lists supported protocols (TCP/IP in this example).   |
+| `logger::*::enable::tcpip`    | Activates or deactivates the protocol.                |
+| `logger::*::address::tcpip`   | Specifies the Log Collector’s network-accessible IP.  |
+| `logger::*::port::tcpip`      | Assigns the port number.                              |
 
 **Additional Log Observer-Specific Settings:**
 
@@ -75,7 +77,7 @@ In this setup, received log messages are saved in both a text file and a SQLite 
 
 Below are the key command-line options for managing the Log Observer. Options marked **Console** can be used during active `logobserver` operation, while others initiate program actions during startup.
 
-| Command               | Platform  | Description                   | Example                          |
+| Command:              | Platform: | Description:                  | Usage Example:                   |
 |-----------------------|-----------|-------------------------------|----------------------------------|
 | `-e, --query`         | Console   | Display list of log scopes    | `-e someapp`                     |
 | `-f, --config`        | Console   | Save current configuration    | `-f`                             |

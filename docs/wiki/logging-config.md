@@ -18,12 +18,14 @@ For more syntax details, see the [AREG SDK Persistence Syntax documentation](./p
 
 ## Log Mechanisms and Destinations
 
-This configuration supports various logging outputs:
+This configuration supports various logging outputs. Currently supported:
 
-1. **Remote** ......: Sends logs to a remote collector.
-2. **File** ........: Stores logs locally, specified by `log::*::file::location`.
-3. **Debug Output** : Provides real-time debugging within IDEs.
-4. **Database** ....: Logs data for structured analysis.
+|  Target Name:         |  Value:   |  Description:                                                 |
+|-----------------------|-----------|---------------------------------------------------------------|
+| **Remote Collector**  | *remote*  | Remote centralized log collector service.                     |
+| **Log File**          | *file*    | Stores logs locally, specified by `log::*::file::location`.   |
+| **Debug Output**      | *debug*   | Provides real-time debugging within IDEs (for MSVS).          |
+| **Database**          | *db*      | Logs data in database for structured analysis.                |
 
 Example setup:
 ```plaintext
@@ -45,20 +47,20 @@ log::*::layout::message     = %d: [ %t  %p >>> ] %m%n          # Log message lay
 log::*::layout::exit        = %d: [ %t  %x.%z: Exit <-- ]%n    # Exit scope layout
 ```
 
-| Format | Description                                    |
-|--------|------------------------------------------------|
-| `%a`   | Logging object ID.                             |
-| `%c`   | Tick-count since process start.                |
-| `%d`   | Date and time.                                 |
-| `%e`   | Module (process) ID.                           |
-| `%m`   | Logging message (exclusive with `%z`).         |
-| `%n`   | End-of-line character.                         |
-| `%p`   | Message priority.                              |
-| `%s`   | Message scope ID.                              |
-| `%t`   | Thread ID.                                     |
-| `%x`   | Module (process) name.                         |
-| `%y`   | Thread name, if available.                     |
-| `%z`   | Scope name (exclusive with `%m`).              |
+| Format:   | Description:                                   |
+|-----------|------------------------------------------------|
+| `%a`      | Logging object ID.                             |
+| `%c`      | Tick-count since process start.                |
+| `%d`      | Date and time.                                 |
+| `%e`      | Module (process) ID.                           |
+| `%m`      | Logging message (exclusive with `%z`).         |
+| `%n`      | End-of-line character.                         |
+| `%p`      | Message priority.                              |
+| `%s`      | Message scope ID.                              |
+| `%t`      | Thread ID.                                     |
+| `%x`      | Module (process) name.                         |
+| `%y`      | Thread name, if available.                     |
+| `%z`      | Scope name (exclusive with `%m`).              |
 
 Adjusting formats ensures clear, uniform log messages across applications.
 
@@ -92,17 +94,17 @@ You can apply priorities like `DEBUG | SCOPE` to scope groups using wildcards, s
 ### Log Priority Levels
 
 Supported priorities include:
-| Priority   |  Explanation                         |
+| Priority:  |  Explanation:                        |
 |------------|--------------------------------------|
 | **NOTSET** | No logging.                          |
-| **SCOPE**  | Logs only scope entries/exits.       |
+| **SCOPE**  | Logs only scope *enter* and *exit*.  |
 | **DEBUG**  | Logs debug and higher.               |
 | **INFO**   | Logs informational and higher.       |
 | **WARN**   | Logs warnings and higher.            |
 | **ERROR**  | Logs errors and higher.              |
 | **FATAL**  | Logs fatal errors only.              |
 
-For instance, `WARN | SCOPE` logs *Warnings*, *Errors*, *Fatal Errors*, and scope entries/exits, excluding *Debug* and *Information* levels.
+For instance, `WARN | SCOPE` logs *Warnings*, *Errors*, *Fatal Errors*, and scope *Enter/Exit*, excluding *Debug* and *Information* levels. The priority `DEBUG | SCOPE` will log all messages.
 
 The AREG Framework allows runtime adjustments using the `logobserver` tool, providing real-time control over scopes and priorities. For details, see the [Log Observer documentation](./logobserver.md).
 

@@ -57,11 +57,13 @@ These configurations enable applications to establish network connections with t
 > To customize settings for individual applications, replace the wildcard `*` with the application's name (e.g., `logger::someapp::enable::tcpip = false` for disabling network logging on `someapp`).
 
 Setting descriptions:
-- `logger::*::service` .......: Specifies the log collector process name.
-- `logger::*::connect` .......: Lists supported protocols (TCP/IP in this example).
-- `logger::*::enable::tcpip` .: Activates or deactivates the protocol.
-- `logger::*::address::tcpip` : Specifies the Log Collector’s network-accessible IP.
-- `logger::*::port::tcpip` ...: Assigns the port number.
+|  Property Key Setting:        |   Description:                                        |
+|-------------------------------|-------------------------------------------------------|
+| `logger::*::service`          | Specifies the log collector process name.             |
+| `logger::*::connect`          | Lists supported protocols (TCP/IP in this example).   |
+| `logger::*::enable::tcpip`    | Activates or deactivates the protocol.                |
+| `logger::*::address::tcpip`   | Specifies the Log Collector’s network-accessible IP.  |
+| `logger::*::port::tcpip`      | Assigns the port number.                              |
 
 For further details, refer to the [AREG SDK Persistence Syntax documentation](./persistence-syntax.md).
 
@@ -74,7 +76,7 @@ For further details, refer to the [AREG SDK Persistence Syntax documentation](./
 
 The Log Collector can run as a console application or OS-managed service. Key command-line options are listed below for starting, configuring, and controlling its operation. Some options, marked as **Console**, can be entered while `logger` is active; others start the program.
 
-| Command               | Platform  | Description                   | Usage Example                 |
+| Command:              | Platform: | Description:                  | Usage Example:                |
 |-----------------------|-----------|-------------------------------|-------------------------------|
 | `-a, --save`          | Console   | Save logs in a text file      | `-a`                          |
 | `-b, --unsave`        | Console   | Stop saving logs              | `-b`                          |

@@ -62,11 +62,13 @@ Applications use router settings in their configuration files to establish a net
 > For custom configurations, replace the wildcard `*` in properties with the specific application name (e.g., `router::someapp::address::tcpip = localhost`).
 
 Bellow is the explanation of each setting:
-- `router::*::service` .......: Specifies the message router process name.
-- `router::*::connect` .......: Lists supported protocols (**TCP/IP** in this example).
-- `router::*::enable::tcpip` .: Enables or disables the protocol.
-- `router::*::address::tcpip` : Provides the router’s network-accessible IP.
-- `router::*::port::tcpip` ...: Assigns the port number.
+|  Property Key Setting:        |   Description:                                            |
+|-------------------------------|-----------------------------------------------------------|
+| `router::*::service`          | Specifies the message router process name.                |
+| `router::*::connect`          | Lists supported protocols (**TCP/IP** in this example).   |
+| `router::*::enable::tcpip`    | Enables or disables the protocol.                         |
+| `router::*::address::tcpip`   | Provides the router’s network-accessible IP.              |
+| `router::*::port::tcpip`      | Assigns the port number.                                  |
 
 For further details, refer to the [AREG SDK Persistence Syntax](./persistence-syntax.md).
 
@@ -76,7 +78,7 @@ For further details, refer to the [AREG SDK Persistence Syntax](./persistence-sy
 
 The `mcrouter` can be run as either a console application or an OS-managed service. It has various commands for starting, configuring, and controlling its operation. Some commands are entered while `mcrouter` is running in the console, marked as **Console** in the options list. All others are command-line options to start the program.
 
-| Command               | Platform  | Description                   | Usage Example                 |
+| Command:              | Platform: | Description:                  | Usage Example:                |
 |-----------------------|-----------|-------------------------------|-------------------------------|
 | `-c, --console`       | All       | Run as a console application  | `mcrouter --console`          |
 | `-h, --help`          | All       | Display help message          | `mcrouter --help`             |
