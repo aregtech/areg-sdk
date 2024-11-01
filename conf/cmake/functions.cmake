@@ -46,20 +46,20 @@ endmacro(macro_check_fix_areg_cxx_standard)
 # Description : Configures the compiler and linker options for executable applications.
 #               Automatically links the AREG library, along with any additional libraries specified.
 # Function ...: setAppOptions
-# Parameters .: ${item}         -- The name of the executable to apply options to.
+# Parameters .: ${target_name}  -- The name of the executable to apply options to.
 #               ${library_list} -- The list of additional libraries to link with the executable.
 # Usage ......: setAppOptions(<name of executable> <list of libraries>)
 # ---------------------------------------------------------------------------
-function(setAppOptions item library_list)
+function(setAppOptions target_name library_list)
 
     # Set common compile definitions for the executable
-    target_compile_definitions(${item} PRIVATE ${COMMON_COMPILE_DEF})
+    target_compile_definitions(${target_name} PRIVATE ${COMMON_COMPILE_DEF})
 
     # Apply common compiler options, such as disabling certain warnings
-    target_compile_options(${item} PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}")
+    target_compile_options(${target_name} PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}")
 
     # Link the AREG library, additional specified libraries, and any extended or extra libraries
-    target_link_libraries(${item} 
+    target_link_libraries(${target_name}
         ${AREG_PACKAGE_NAME}::aregextend   # AREG extended library
         ${library_list}                    # Custom libraries to link
         ${AREG_PACKAGE_NAME}::areg         # Core AREG library
@@ -126,25 +126,25 @@ endfunction(addExecutable)
 # Description : Configures the compiler and linker options for a static library.
 #               Automatically links the AREG library and any other specified libraries.
 # Function ...: setStaticLibOptions
-# Parameters .: ${item}         -- The name of the static library to apply options to.
+# Parameters .: ${target_name}  -- The name of the static library to apply options to.
 #               ${library_list} -- The list of libraries to link with the static library.
 # Usage ......: setStaticLibOptions(<name of static library> <list of libraries>) 
 # ---------------------------------------------------------------------------
-function(setStaticLibOptions item library_list)
+function(setStaticLibOptions target_name library_list)
 
     # Apply common compile definitions and options for static libraries
-    target_compile_definitions(${item} PRIVATE ${COMMON_COMPILE_DEF} _LIB)
-    target_compile_options(${item} PRIVATE ${AREG_COMPILER_VERSION})
-    target_compile_options(${item} PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}")
+    target_compile_definitions(${target_name} PRIVATE ${COMMON_COMPILE_DEF} _LIB)
+    target_compile_options(${target_name} PRIVATE ${AREG_COMPILER_VERSION})
+    target_compile_options(${target_name} PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}")
 
     # Additional compile options for non-Windows platforms
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
-        target_compile_options(${item} PRIVATE "-Bstatic")  # Ensure static linking
-        target_compile_options(${item} PRIVATE -fPIC)       # Position-independent code
+        target_compile_options(${target_name} PRIVATE "-Bstatic")  # Ensure static linking
+        target_compile_options(${target_name} PRIVATE -fPIC)       # Position-independent code
     endif()
 
     # Link the static library with the provided libraries and AREG framework
-    target_link_libraries(${item} ${library_list} ${AREG_PACKAGE_NAME}::areg ${AREG_LDFLAGS})
+    target_link_libraries(${target_name} ${library_list} ${AREG_PACKAGE_NAME}::areg ${AREG_LDFLAGS})
 
 endfunction(setStaticLibOptions)
 
@@ -231,14 +231,6 @@ function(addStaticLibEx_C target_name target_namespace source_list library_list)
 endfunction(addStaticLibEx_C)
 
 # ---------------------------------------------------------------------------
-# Description : Adds static library compiled with C-compiler, sets the sources and
-#               the options of library. The AREG library is automatically added.
-# Function ...: addStaticLib_C
-# Parameters .: ${target_name}  -- The name of the static library to build.
-#               ${source_list}  -- The list of the sources to build the static library.
-# usage ......: addStaticLib_C( <name of static library> <list of C-sources> ) 
-# ---------------------------------------------------------------------------
-# ---------------------------------------------------------------------------
 # Description : Creates a static library compiled with C-compiler,
 #               sets its source files, applies necessary options.
 #               The AREG library is automatically linked, so no need to specify it.
@@ -255,23 +247,23 @@ endfunction(addStaticLib_C)
 # Description : Configures the compiler and linker options for a shared library.
 #               Automatically links the AREG library and any other specified libraries.
 # Function ...: setSharedLibOptions
-# Parameters .: ${item}         -- The name of the shared library to apply options to.
+# Parameters .: ${target_name}  -- The name of the shared library to apply options to.
 #               ${library_list} -- The list of libraries to link with the shared library.
 # Usage ......: setSharedLibOptions(<name of shared library> <list of libraries>) 
 # ---------------------------------------------------------------------------
-function(setSharedLibOptions item library_list)
+function(setSharedLibOptions target_name library_list)
 
     # Apply common compile definitions for shared libraries
-    target_compile_definitions(${item} PRIVATE ${COMMON_COMPILE_DEF} _USRDLL)
-    target_compile_options(${item} PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}")
+    target_compile_definitions(${target_name} PRIVATE ${COMMON_COMPILE_DEF} _USRDLL)
+    target_compile_options(${target_name} PRIVATE "${AREG_OPT_DISABLE_WARN_COMMON}")
 
     # Link the shared library with provided libraries and AREG framework
-    target_link_libraries(${item} ${AREG_PACKAGE_NAME}::aregextend ${library_list} ${AREG_PACKAGE_NAME}::areg ${AREG_EXTENDED_LIBS} ${AREG_LDFLAGS})
+    target_link_libraries(${target_name} ${AREG_PACKAGE_NAME}::aregextend ${library_list} ${AREG_PACKAGE_NAME}::areg ${AREG_EXTENDED_LIBS} ${AREG_LDFLAGS})
 
     # Additional compile options for non-Windows platforms
     if (NOT ${AREG_DEVELOP_ENV} MATCHES "Win32")
-        target_compile_options(${item} PRIVATE -fPIC)       # Position-independent code for shared libraries
-        target_compile_options(${item} PRIVATE "-Bdynamic") # Ensure dynamic linking
+        target_compile_options(${target_name} PRIVATE -fPIC)       # Position-independent code for shared libraries
+        target_compile_options(${target_name} PRIVATE "-Bdynamic") # Ensure dynamic linking
     endif()
 
 endfunction(setSharedLibOptions)
@@ -666,8 +658,8 @@ endmacro(macro_declare_static_library)
 #               ${ARGN}      -- The list of source files, libraries, and resource files.
 #                               The files can be specified with full or relative paths.
 #
-# Usage ......: macro_declare_static_library(<lib_name> <list_of_sources_libraries_and_resources>)
-#               Example: macro_declare_static_library(myStaticLib src/main.cpp src/resource.rc libSomeDependency)
+# Usage ......: macro_declare_shared_library(<lib_name> <list_of_sources_libraries_and_resources>)
+#               Example: macro_declare_shared_library(mySharedLib src/main.cpp src/resource.rc libSomeDependency)
 # ---------------------------------------------------------------------------
 macro(macro_declare_shared_library lib_name)
 
@@ -711,12 +703,12 @@ endmacro(macro_declare_shared_library)
 #               - On Windows, resource files (*.rc) are set to use the RC language automatically.
 # 
 # Macro ......: macro_declare_executable
-# Parameters  : ${lib_name}  -- The name of the executable to be declared.
+# Parameters  : ${exe_name}  -- The name of the executable to be declared.
 #               ${ARGN}      -- The list of source files, libraries, and resource files.
 #                               The files can be specified with full or relative paths.
 #
-# Usage ......: macro_declare_static_library(<lib_name> <list_of_sources_libraries_and_resources>)
-#               Example: macro_declare_static_library(myStaticLib src/main.cpp src/resource.rc libSomeDependency)
+# Usage ......: macro_declare_executable(<lib_name> <list_of_sources_libraries_and_resources>)
+#               Example: macro_declare_executable(myApplication src/main.cpp src/resource.rc libSomeDependency)
 # ---------------------------------------------------------------------------
 macro(macro_declare_executable exe_name)
 
@@ -761,19 +753,19 @@ endmacro(macro_declare_executable)
 #               - ${compiler_short}  -- Output: Variable to hold the short name of the compiler (e.g., "gcc", "clang").
 #               - ${compiler_cxx}    -- Output: Variable to hold the C++ compiler path (usually same as ${compiler_path}).
 #               - ${compiler_c}      -- Output: Variable to hold the corresponding C compiler name or path.
-#               - ${compiler_found}  -- Output: Boolean flag indicating if the compiler was successfully identified ("TRUE" or "FALSE").
+#               - ${compiler_supports}  -- Output: Boolean flag indicating if the compiler was successfully identified ("TRUE" or "FALSE").
 #
 # Usage ......: macro_setup_compilers_data("${CMAKE_CXX_COMPILER}" 
 #                                           AREG_COMPILER_FAMILY 
 #                                           AREG_COMPILER_SHORT 
 #                                           AREG_CXX_COMPILER 
 #                                           AREG_C_COMPILER 
-#                                           _compiler_found
+#                                           _compiler_supports
 #                                         )
 # ---------------------------------------------------------------------------
-macro(macro_setup_compilers_data compiler_path compiler_family compiler_short compiler_cxx compiler_c compiler_found)
+macro(macro_setup_compilers_data compiler_path compiler_family compiler_short compiler_cxx compiler_c compiler_supports)
 
-    set(${compiler_found} FALSE)
+    set(${compiler_supports} FALSE)
     
     # Iterate over known compilers to identify the compiler type
     foreach(_entry "clang-cl;llvm;clang-cl" "clang++;llvm;clang" "clang;llvm;clang" "g++;gnu;gcc" "gcc;gnu;gcc" "c++;gnu;cc" "cc;gnu;cc" "cl;msvc;cl")
@@ -802,7 +794,7 @@ macro(macro_setup_compilers_data compiler_path compiler_family compiler_short co
             endif()
 
             # Mark compiler as found
-            set(${compiler_found} TRUE)
+            set(${compiler_supports} TRUE)
 
             # break the loop, we have found
             break()
@@ -827,18 +819,18 @@ endmacro(macro_setup_compilers_data)
 #               - ${compiler_short}  -- Output: Variable to hold the short name of the compiler (e.g., "gcc", "clang").
 #               - ${compiler_cxx}    -- Output: Variable to hold the C++ compiler name.
 #               - ${compiler_c}      -- Output: Variable to hold the corresponding C compiler name.
-#               - ${compiler_found}  -- Output: Boolean flag indicating whether the compiler was successfully identified ("TRUE" or "FALSE").
+#               - ${compiler_supports}  -- Output: Boolean flag indicating whether the compiler was successfully identified ("TRUE" or "FALSE").
 #
 # Usage ......: macro_setup_compilers_data_by_family("gnu"
 #                                                    AREG_COMPILER_SHORT 
 #                                                    AREG_CXX_COMPILER 
 #                                                    AREG_C_COMPILER 
-#                                                    _compiler_found
+#                                                    _compiler_supports
 #                                                   )
 # ---------------------------------------------------------------------------
-macro(macro_setup_compilers_data_by_family compiler_family compiler_short compiler_cxx compiler_c compiler_found)
+macro(macro_setup_compilers_data_by_family compiler_family compiler_short compiler_cxx compiler_c compiler_supports)
 
-    set(${compiler_found} FALSE)
+    set(${compiler_supports} FALSE)
     
     # Iterate over known compilers and match the family
     foreach(_entry "clang++;llvm;clang" "g++;gnu;gcc" "cl;msvc;cl" "g++;cygwin;gcc")
@@ -859,7 +851,7 @@ macro(macro_setup_compilers_data_by_family compiler_family compiler_short compil
             endif()
 
             # Mark compiler as found
-            set(${compiler_found} TRUE)
+            set(${compiler_supports} TRUE)
 
             # break the loop, we have found
             break()
