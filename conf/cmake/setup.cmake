@@ -17,12 +17,22 @@ endif()
 
 # The location of cmake configuration files.
 if (NOT DEFINED AREG_CMAKE_CONFIG_DIR OR "${AREG_CMAKE_CONFIG_DIR}" STREQUAL "")
-    set(AREG_CMAKE_CONFIG_DIR   "${AREG_SDK_ROOT}/conf/cmake")
+    if (EXISTS "${AREG_SDK_ROOT}/conf/cmake/")
+        set(AREG_CMAKE_CONFIG_DIR   "${AREG_SDK_ROOT}/conf/cmake")
+    else()
+        message(FATAL_ERROR "AREG: >>> Cannot find \'conf\cmake\' sub-directory in the AREG SDK Root \'${AREG_SDK_ROOT}\'. Set \'AREG_CMAKE_CONFIG_DIR\' manually.")
+    endif()
 endif()
 
-# The location of AREG Framework source codes.
+# The location of AREG Framework header files.
 if (NOT DEFINED AREG_FRAMEWORK OR "${AREG_FRAMEWORK}" STREQUAL "")
-    set(AREG_FRAMEWORK               "${AREG_SDK_ROOT}/framework")
+    if (EXISTS "${AREG_SDK_ROOT}/framework/areg/")
+        set(AREG_FRAMEWORK               "${AREG_SDK_ROOT}/framework")
+    elseif (EXISTS "${AREG_SDK_ROOT}/include/areg/")
+        set(AREG_FRAMEWORK               "${AREG_SDK_ROOT}/include")
+    else()
+        message(FATAL_ERROR "AREG: >>> Cannot find AREG Framework headers in the AREG SDK Root \'${AREG_SDK_ROOT}\'. Set \'AREG_FRAMEWORK\' manually.")
+    endif()
 endif()
 
 # The location of AREG Framework examples

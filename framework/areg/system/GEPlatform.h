@@ -52,6 +52,16 @@
 
     #include "areg/system/windows/GEWindows.h"
 
+#elif (defined(__unix__) || defined(__linux__) || defined(__CYGWIN__) || defined(__FreeBSD__) || defined(__APPLE__))
+
+    #define POSIX
+    #include "areg/system/posix/GEPosix.h"
+
+#elif(defined(_WIN32) || defined(_WIN64))
+
+    #define WINDOWS
+    #include "areg/system/windows/GEWindows.h"
+
 #else // !(defined(_WINDOWS) || defined(WINDOWS))
 
     #error  Unsupported OS.
