@@ -227,7 +227,7 @@ endif()
 include("${AREG_CMAKE_CONFIG_DIR}/conf/cmake/areg.cmake")
 ```
 
-This either finds or fetches the AREG SDK components from `master` branch. See the **[CMake Integration Guide](./docs/wiki/CMAKE-INTEGRATE.md)** for more details.
+This either finds or fetches the AREG SDK components from `master` branch. See the **[CMake Integration Guide](./docs/wiki/cmake-integrate.md)** for more details.
 
 #### 2. Integrate as a project submodule
 

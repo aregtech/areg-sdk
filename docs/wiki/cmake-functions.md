@@ -59,7 +59,7 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable
 - **Purpose**: Normalizes Windows paths to Cygwin format, if applicable.
 - **Note**: This macro does not address OS-specific path separator issues.
 - **Parameters**:
-  - `normal_path` [out]: The normalized path.
+  - `normal_path` [out]: Name of variable to hold normalized path.
   - `os_path` [in]: The Windows-specific path to normalize.
 - **Usage**: `macro_normalize_path(<out-var> <windows-path>)`
 
@@ -75,8 +75,8 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable
 - **Usage**: `macro_add_service_interface(<name-lib> <full-path-siml> <root-gen> <relative-path> <codegen-tool>)`
 - **Example**:
    ```cmkae
-   macro_add_service_interface(funlib "/home/dev/project/fun/src/service/HelloWorld.siml" "/home/dev/project/fun/product" "generate/service" /tools/areg/codegen.jar)
-   macro_add_service_interface(funlib "/home/dev/project/fun/src/service/WeHaveFun.siml"  "/home/dev/project/fun/product" "generate/service" /tools/areg/codegen.jar)
+   macro_add_service_interface(funlib "/home/dev/fun/src/service/HelloWorld.siml" "/home/dev/fun/product" "generate/service" /tools/areg/codegen.jar)
+   macro_add_service_interface(funlib "/home/dev/fun/src/service/WeHaveFun.siml"  "/home/dev/fun/product" "generate/service" /tools/areg/codegen.jar)
    ```
 
 ### `macro_find_package`
@@ -111,7 +111,7 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable
 - **Syntax**: `macro_add_source(result_list src_base_dir ...)`
 - **Purpose**: Adds existing source files to a list based on a base directory. Checks file existence.
 - **Parameters**:
-  - `result_list` [in, out]: List of source files.
+  - `result_list` [in, out]: Name of variable that on output will contain the list of source files.
   - `src_base_dir` [in]: Base directory of the source files.
   - `${ARGN}` [in]: List of source files, relative to the base directory.
 - **Usage**: `macro_add_source(<src-list-var> <base-dirpath> <files>)`
@@ -128,9 +128,9 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable
   - Throws an error if file does not exist.
   - List of resource files is Windows specific, it contains files with extension `.rc`.
 - **Parameters**:
-  - `res_sources` [out]: List of source files.
-  - `res_libs` [out]: List of recognized CMake targets.
-  - `res_resources` [out]: List of resource files (`*.rc`).
+  - `res_sources` [out]: Name of variable that on output will contain the list of source files.
+  - `res_libs` [out]: Name of variable that on output will contain the list of recognized CMake targets.
+  - `res_resources` [out]: Name of variable that on output will contain the List of resource files (`*.rc`).
   - `${ARGN}` [in]: List of files, libraries, or resources to categorize.
 - **Usage**: `macro_parse_arguments(<sources-var> <libs-var> <resources-var> <sources-targets-resources>)`
 - **Example**:    
@@ -166,7 +166,7 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable
 - **Syntax**: `macro_declare_executable(exe_name ...)`
 - **Purpose**: Declares an executable target with categorized sources, libraries, and resources using **[macro_parse_arguments](#macro_parse_arguments)**.
 - **Parameters**:
-  - `exe_name` [in]: Name of the executable.
+  - `exe_name` [in]: Name of the target executable.
   - `${ARGN}` [in]: List of source files, libraries, and resources.
 - **Usage**: `macro_declare_executable(<executable-name> <sources-targets-resources>)`
 - **Example**:
@@ -180,11 +180,11 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable
 - **Note**: Beside "gnu", "llvm", "msvc", the GNU compilers for CYGWIN are included as a "cygwin" family.
 - **Parameters**:
   - `compiler_path` [in]: Path to the C++ compiler.
-  - `compiler_family` [out]: Compiler family (e.g., "gnu", "msvc", "llvm", "cygwin").
-  - `compiler_short` [out]: Short name of the compiler (e.g., "gcc", "clang", "cl").
-  - `compiler_cxx` [out]: C++ compiler path.
-  - `compiler_c` [out]: C compiler path.
-  - `is_identified` [out]: Boolean indicating successful identification.
+  - `compiler_family` [out]: Name of variable to hold compiler family (e.g., "gnu", "msvc", "llvm", "cygwin").
+  - `compiler_short` [out]: Name of variable to hold short name of the compiler (e.g., "gcc", "clang", "cl").
+  - `compiler_cxx` [out]: Name of variable to hold C++ compiler name, usually same as `compiler_path`.
+  - `compiler_c` [out]: Name of variable to hold C compiler path.
+  - `is_identified` [out]: Name of variable to hold Boolean indicating successful identification.
 - **Usage**: `macro_setup_compilers_data(<compiler> <family-var> <short-var> <CXX-compiler-var> <C-compiler-var> <identified-var>)`
 - **Example**:
    ```cmakr
@@ -197,10 +197,10 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable
 - **Note**: The "cygwin" family is supported for GNU compilers on the CYGWIN platform in Windows.
 - **Parameters**:
   - `compiler_family` [in]: Compiler family name (e.g., "gnu", "msvc").
-  - `compiler_short` [out]: Short name of the compiler (e.g., "gcc", "clang", "cl").
-  - `compiler_cxx` [out]: C++ compiler path.
-  - `compiler_c` [out]: C compiler path.
-  - `is_identified` [out]: Boolean indicating successful identification.
+  - `compiler_short` [out]: Name of variable to hold short name of the compiler (e.g., "gcc", "clang", "cl").
+  - `compiler_cxx` [out]: Name of variable to hold C++ compiler path.
+  - `compiler_c` [out]: Name of variable to hold C compiler path.
+  - `is_identified` [out]: Name of variable to hold Boolean indicating successful identification.
 - **Usage**: `macro_setup_compilers_data_by_family(<compiler-family> <short-var> <CXX-compiler-var> <C-compiler-var> <identified-var>)`
 - **Example**:
    ```cmake
@@ -224,14 +224,14 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable
 - **Purpose**: Creates an executable target with specified source files and libraries.
 - **Parameters**:
   - `target_name` [in]: The name of the executable target.
-  - `target_namespace` [in]: Namespace for aliasing.
+  - `target_namespace` [in]: Namespace for aliasing. Can be empty.
   - `source_list` [in]: List of source files used to build the target executable.
   - `library_list` [in]: Libraries to link with the executable.
 - **Usage**: `addExecutableEx(<target-name> <namespace-opt> <source-list> <library-list>)`
 
 ### `addExecutable`
 - **Syntax**: `addExecutable(target_name source_list)`
-- **Purpose**: Creates an executable target, setting up sources, options, and imports, and auto-linking the AREG Framework library.
+- **Purpose**: Wrapper for [`addExecutableEx`](#addexecutableex), assuming there is no aliasing and list of libraries to link. Creates an executable target, setting up sources, options, and imports, and auto-linking the AREG Framework library.
 - **Parameters**:
   - `target_name` [in]: Name of the executable to build.
   - `source_list` [in]: List of source files used to build the executable.
@@ -250,14 +250,14 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable
 - **Purpose**: Creates a static library with specified source files and options, importing and auto-linking the AREG Framework library along with any additional libraries.
 - **Parameters**:
   - `target_name` [in]: Name of the static library to build.
-  - `target_namespace` [in]: Namespace of the target, used for aliasing (pass an empty string if no aliasing is needed).
+  - `target_namespace` [in]: Namespace for aliasing. Can be empty string if no aliasing.
   - `source_list` [in]: List of source files to build the static library.
   - `library_list` [in]: List of libraries to link.
 - **Usage**: `addStaticLibEx(<target-name> <namespace-opt> <source-list> <library-list>)`
 
 ### `addStaticLib`
 - **Syntax**: `addStaticLib(target_name source_list)`
-- **Purpose**: Creates a static library, setting sources and options, importing, and auto-linking the AREG Framework library.
+- **Purpose**: Wrapper for [`addStaticLibEx`](#addstaticlibex), assuming there is no aliasing and no list of libraries to link. Creates a static library, setting sources and options, importing, and auto-linking the AREG Framework library.
 - **Parameters**:
   - `target_name` [in]: Name of the static library to build.
   - `source_list` [in]: List of source files to build the static library.
@@ -268,14 +268,14 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable
 - **Purpose**: Creates a static library compiled with C, setting sources, importing, and auto-linking the AREG Framework library along with any additional libraries.
 - **Parameters**:
   - `target_name` [in]: Name of the static library to build.
-  - `target_namespace` [in]: Namespace of the target, used for aliasing (pass an empty string if no aliasing is needed).
+  - `target_namespace` [in]: Namespace for aliasing. Pass empty string if no aliasing.
   - `source_list` [in]: List of C-source files to build the static library.
   - `library_list` [in]: Libraries to link with the static library.
 - **Usage**: `addStaticLibEx_C(<target-name> <namespace-opt> <C-source-list> <library-list>)`
 
 ### `addStaticLib_C`
 - **Syntax**: `addStaticLib_C(target_name source_list)`
-- **Purpose**: Creates a static library compiled with C, setting sources, importing, and auto-linking the AREG Framework library.
+- **Purpose**: Wrapper for [`addStaticLibEx_C`](#addstaticlibex_c), assuming there is no aliasing and list of libraries for linking. Creates a static library compiled with C, setting sources, importing, and auto-linking the AREG Framework library.
 - **Parameters**:
   - `target_name` [in]: Name of the static library to build.
   - `source_list` [in]: List of C-source files to build the static library.
@@ -292,16 +292,16 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable
 ### `addSharedLibEx`
 - **Syntax**: `addSharedLibEx(target_name target_namespace source_list library_list)`
 - **Purpose**: Creates a shared library with specified source files and options, importing and auto-linking the AREG Framework library along with any additional libraries.
-- **Parameters**:
+- **Parameters**: 
   - `target_name` [in]: Name of the shared library to build.
-  - `target_namespace` [in]: Namespace of the target, used for aliasing (pass an empty string if no aliasing is needed).
+  - `target_namespace` [in]: Namespace for aliasing. Can be empty string if no aliasing.
   - `source_list` [in]: List of source files to build the shared library.
   - `library_list` [in]: Libraries for linking.
 - **Usage**: `addSharedLibEx(<target-name> <namespace-opt> <source-list> <library-list>)`
 
 ### `addSharedLib`
 - **Syntax**: `addSharedLib(target_name source_list)`
-- **Purpose**: Creates a shared library with specified sources, options, imports, and auto-linking the AREG Framework library.
+- **Purpose**: Wrapper for [`addSharedLibEx`](#addsharedlibex), assuming there is no aliasing and no list for linking. Creates a shared library with specified sources, options, imports, and auto-linking the AREG Framework library.
 - **Parameters**:
   - `target_name` [in]: Name of the shared library to build.
   - `source_list` [in]: List of source files to build the shared library.
@@ -309,7 +309,7 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable
 
 ### `addServiceInterfaceEx`
 - **Syntax**: `addServiceInterfaceEx(lib_name source_root relative_path sub_dir interface_name)`
-- **Purpose**: Generates code and includes files for a Service Interface document (`.siml`) in a static library.
+- **Purpose**: Wrapper for [`macro_add_service_interface`](#macro_add_service_interface), assuming that the root directory for code generation is `AREG_BUILD_ROOT` and generated files are located in the `${AREG_GENERATE}/${relative_path}`. Generates code and includes files for a Service Interface document (`.siml`) in a static library.
 - **Parameters**:
   - `lib_name` [in]: Static library name.
   - `source_root` [in]: Source root directory.
@@ -324,10 +324,10 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable
 
 ### `addServiceInterface`
 - **Syntax**: `addServiceInterface(lib_name sub_dir interface_name)`
-- **Purpose**: A wrapper for `addServiceInterfaceEx`, assuming the source root as `CMAKE_SOURCE_DIR` and the relative path as `CMAKE_CURRENT_LIST_DIR`.
+- **Purpose**: A wrapper for [`addServiceInterfaceEx`](#addserviceinterfaceex), assuming the source root as `CMAKE_SOURCE_DIR` and the Service Interface document is located relative to+ `CMAKE_CURRENT_LIST_DIR`.
 - **Parameters**:
   - `lib_name` [in]: Static library name.
-  - `sub_dir` [in]: Optional sub-directory (can be empty).
+  - `sub_dir` [in]: Optional sub-directory, where the Service Interface document is located. Can be empty.
   - `interface_name` [in]: Service Interface name (excluding `.siml` extension).
 - **Usage**: `addServiceInterface(<library-name> <sub-dir-opt> <service-interface-name>)`
 
