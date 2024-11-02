@@ -75,8 +75,8 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable
 - **Usage**: `macro_add_service_interface(<name-lib> <full-path-siml> <root-gen> <relative-path> <codegen-tool>)`
 - **Example**:
    ```cmkae
-   macro_add_service_interface(funlib "~/project/fun/src/service/HelloWorld.siml" "~/project/fun/product" "generate/service" /tools/areg/codegen.jar)
-   macro_add_service_interface(funlib "~/project/fun/src/service/WeHaveFun.siml"  "~/project/fun/product" "generate/service" /tools/areg/codegen.jar)
+   macro_add_service_interface(funlib "/home/dev/project/fun/src/service/HelloWorld.siml" "/home/dev/project/fun/product" "generate/service" /tools/areg/codegen.jar)
+   macro_add_service_interface(funlib "/home/dev/project/fun/src/service/WeHaveFun.siml"  "/home/dev/project/fun/product" "generate/service" /tools/areg/codegen.jar)
    ```
 
 ### `macro_find_package`
@@ -319,7 +319,7 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable
 - **Usage**: `addServiceInterfaceEx(<library-name> <source-root> <relative-path> <sub-dir-opt> <service-interface-name>)`
 - **Example**:
    ```cmake
-   addServiceInterfaceEx("fun_library" "/home/develop/project/fun/src" "my/service/interfaces" "" FunInterface)
+   addServiceInterfaceEx("fun_library" "/home/dev/project/fun/src" "my/service/interfaces" "" FunInterface)
    ```
 
 ### `addServiceInterface`
