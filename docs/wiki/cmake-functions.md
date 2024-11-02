@@ -185,7 +185,7 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable
   - `compiler_cxx` [out]: C++ compiler path.
   - `compiler_c` [out]: C compiler path.
   - `is_identified` [out]: Boolean indicating successful identification.
-- **Usage**: `macro_setup_compilers_data(<compiler> <compiler-family-var> <compiler-short-var> <CXX-compiler-var> <C-compiler-var> <identified-var>)`
+- **Usage**: `macro_setup_compilers_data(<compiler> <family-var> <short-var> <CXX-compiler-var> <C-compiler-var> <identified-var>)`
 - **Example**:
    ```cmakr
    macro_setup_compilers_data("${CMAKE_CXX_COMPILER}" AREG_COMPILER_FAMILY AREG_COMPILER_SHORT AREG_CXX_COMPILER AREG_C_COMPILER _is_identified)
@@ -201,7 +201,7 @@ The [functions.cmake](./../../conf/cmake/functions.cmake) file includes reusable
   - `compiler_cxx` [out]: C++ compiler path.
   - `compiler_c` [out]: C compiler path.
   - `is_identified` [out]: Boolean indicating successful identification.
-- **Usage**: `macro_setup_compilers_data_by_family(<compiler-family> <compiler-short-var> <CXX-compiler-var> <C-compiler-var> <identified-var>)`
+- **Usage**: `macro_setup_compilers_data_by_family(<compiler-family> <short-var> <CXX-compiler-var> <C-compiler-var> <identified-var>)`
 - **Example**:
    ```cmake
    macro_setup_compilers_data_by_family("gnu" AREG_COMPILER_SHORT AREG_CXX_COMPILER AREG_C_COMPILER _is_identified)
