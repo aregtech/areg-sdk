@@ -656,14 +656,16 @@ endfunction(addServiceInterfaceEx)
 # ---------------------------------------------------------------------------
 function(addServiceInterface lib_name sub_dir interface_name)
     set(_cur_dir ${CMAKE_CURRENT_LIST_DIR})
+    set(_src_dir)
     string(FIND "${_cur_dir}" "${AREG_EXAMPLES}" _pos)
     if (${_pos} EQUAL 0)
-        file(RELATIVE_PATH relative_path ${AREG_SDK_ROOT} ${CMAKE_CURRENT_LIST_DIR})
+        set(_src_dir "${AREG_SDK_ROOT}")
     else()
-        file(RELATIVE_PATH relative_path ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_LIST_DIR})
+        set(_src_dir "${CMAKE_SOURCE_DIR}")
     endif()
 
-    addServiceInterfaceEx(${lib_name} ${CMAKE_SOURCE_DIR} ${relative_path} ${sub_dir} ${interface_name})
+    file(RELATIVE_PATH _relative_path "${_src_dir}" "${_cur_dir}")
+    addServiceInterfaceEx(${lib_name} "${_src_dir}" "${_relative_path}" "${sub_dir}" ${interface_name})
 endfunction(addServiceInterface)
 
 # ---------------------------------------------------------------------------
