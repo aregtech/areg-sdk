@@ -19,6 +19,6 @@
 /************************************************************************
  * Include files.
  ************************************************************************/
-#include "areg/base/GEGlobal.h"
+#include "areg/base/GESwitches.h"
 
 #endif  // AREG_APPBASE_PRIVATE_CONFIGURE_HPP

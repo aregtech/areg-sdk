@@ -16,6 +16,20 @@
  ************************************************************************/
 #include "areg/appbase/private/configure.hpp"
 
+#if !defined(EXP_AREG_DLL) && !defined(EXP_AREG_LIB) && !defined(IMP_AREG_DLL) && !defined(IMP_AREG_LIB)
+    #pragma message("WARNING: No import / export compiler option set. Use default IMP_AREG_DLL. Refer to the GESwitches.h file in the AREG base for details.")
+#endif  // !defined(EXP_AREG_DLL) && !defined(EXP_AREG_LIB) && !defined(IMP_AREG_DLL) && !defined(IMP_AREG_LIB)
+
+// By default, no AREG extended features.
+#if !defined(AREG_EXTENDED) && !defined(AREG_EXTEND)
+    #pragma message("The AREG_EXTENDED is not defined, setting default value 0")
+#endif  // AREG_EXTENDED
+
+// By default, compile with logs
+#ifndef AREG_LOGS
+    #pragma message("The AREG_LOGS is not defined, setting default value 1")
+#endif  // AREG_LOGS
+
 #ifdef  WIN32
 
     // Enable or disable memory leak detect only for Debug version
