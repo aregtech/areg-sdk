@@ -17,17 +17,17 @@
 #   7. AREG_BUILD_EXAMPLES  -- Enables or disables building examples for the AREG Framework.
 #   8. AREG_EXTENDED        -- Enables or disables extended AREG Framework features. May require additional dependencies.
 #   9. AREG_LOGS            -- Enables or disables logging during compilation. Defaults to 'enabled'.
-#  10. AREG_INSTALL         -- Enables or disables the installation of the AREG SDK. Defaults to 'enabled'. If enabled, any dependent libraries such as 'sqlite3' and 'ncurses' must also be installed.
-#  11. AREG_USE_PACKAGES    -- Enables or disables using installed packages. Controls other package options like SQLite and GTest.
-#  12. AREG_SQLITE_PACKAGE  -- Determines if the system's SQLite3 package should be used or compiled from source.
-#  13. AREG_GTEST_PACKAGE   -- Determines if the system's GTest package should be used or compiled from source.
+#  10. AREG_USE_PACKAGES    -- Enables or disables using installed packages. Controls other package options like SQLite and GTest.
+#  11. AREG_SQLITE_PACKAGE  -- Determines if the system's SQLite3 package should be used or compiled from source.
+#  12. AREG_GTEST_PACKAGE   -- Determines if the system's GTest package should be used or compiled from source.
+#  13. AREG_ENABLE_OUTPUTS  -- If disabled, output directories will match the CMake binary directory.
 #  14. AREG_BUILD_ROOT      -- Specifies the root directory for build files. Defaults to './product' within the AREG SDK root.
 #  15. AREG_OUTPUT_DIR      -- Directory where build outputs are placed.
 #  16. AREG_OUTPUT_BIN      -- Directory for output binaries (executables and shared libraries).
 #  17. AREG_OUTPUT_LIB      -- Directory for output static libraries.
 #  18. AREG_PACKAGES        -- Location for fetching third-party packages such as GTest.
-#  19. AREG_INSTALL_PATH    -- Location where AREG SDK binaries, headers, and tools are installed. Defaults to the user's home directory.
-#  20. AREG_ENABLE_OUTPUTS  -- If disabled, output directories will match the CMake binary directory.
+#  19. AREG_INSTALL         -- Enables or disables the installation of the AREG SDK. If enabled, any dependent libraries like 'sqlite3' and 'ncurses' also must be installed.
+#  20. AREG_INSTALL_PATH    -- Location where AREG SDK binaries, headers, and tools are installed. Defaults to the user's home directory.
 #
 # Default Values:
 #   1. AREG_COMPILER_FAMILY = <default> (possible values: gnu, cygwin, llvm, msvc)
@@ -35,21 +35,21 @@
 #   3. AREG_BINARY          = shared    (possible values: shared, static)
 #   4. AREG_LOGGER_LIB      = shared    (possible values: shared, static)
 #   5. AREG_BUILD_TYPE      = Release   (possible values: Release, Debug)
-#   6. AREG_BUILD_TESTS     = OFF       (possible values: ON, OFF)
+#   6. AREG_BUILD_TESTS     = ON        (possible values: ON, OFF)
 #   7. AREG_BUILD_EXAMPLES  = ON        (possible values: ON, OFF)
 #   8. AREG_EXTENDED        = OFF       (possible values: ON, OFF)
 #   9. AREG_LOGS            = ON        (possible values: ON, OFF)
-#  10. AREG_INSTALL         = ON        (possible values: ON, OFF)
-#  11. AREG_USE_PACKAGES    = ON        (possible values: ON, OFF)
-#  12. AREG_SQLITE_PACKAGE  = ON        (possible values: ON, OFF)
-#  13. AREG_GTEST_PACKAGE   = ON        (possible values: ON, OFF)
+#  10. AREG_USE_PACKAGES    = ON        (possible values: ON, OFF)
+#  11. AREG_SQLITE_PACKAGE  = ON        (possible values: ON, OFF)
+#  12. AREG_GTEST_PACKAGE   = ON        (possible values: ON, OFF)
+#  13. AREG_ENABLE_OUTPUTS  = ON        (possible values: ON, OFF)
 #  14. AREG_BUILD_ROOT      = '<areg-sdk>/product'    (path for output and generated files)
 #  15. AREG_OUTPUT_DIR      = '<areg-sdk>/product/build/<default-compiler family-name>/<os>-<bitness>-<cpu>-release-<areg-lib>'
 #  16. AREG_OUTPUT_BIN      = '<areg-sdk>/product/build/<default-compiler family-name>/<os>-<bitness>-<cpu>-release-<areg-lib>/bin'
 #  17. AREG_OUTPUT_LIB      = '<areg-sdk>/product/build/<default-compiler family-name>/<os>-<bitness>-<cpu>-release-<areg-lib>/lib'
 #  18. AREG_PACKAGES        = '${AREG_BUILD_ROOT}/packages'
-#  19. AREG_INSTALL_PATH    = '${HOME}/areg-sdk' (or '${USERPROFILE}' on Windows, defaults to current directory if unset)
-#  20. AREG_ENABLE_OUTPUTS  = ON        (possible values: ON, OFF)
+#  19. AREG_INSTALL         = ON        (possible values: ON, OFF)
+#  20. AREG_INSTALL_PATH    = '${HOME}/areg-sdk' (or '${USERPROFILE}' on Windows, defaults to current directory if unset)
 #
 # Hints:
 #   - AREG_COMPILER_FAMILY is an easy way to set compilers:
@@ -156,11 +156,11 @@ else()
 endif()
 
 # Set build configuration. Set "Debug" for debug build, and "Release" for release build.
-if (NOT "${AREG_BUILD_TYPE}" STREQUAL "Debug")
-    if (NOT "${CMAKE_BUILD_TYPE}" STREQUAL "")
-        set(AREG_BUILD_TYPE "${CMAKE_BUILD_TYPE}")
-    else()
+if (NOT DEFINED AREG_BUILD_TYPE OR "${AREG_BUILD_TYPE}" STREQUAL "")
+    if (NOT DEFINED CMAKE_BUILD_TYPE OR "${CMAKE_BUILD_TYPE}" STREQUAL "")
         set(AREG_BUILD_TYPE "Release")
+    else()
+        set(AREG_BUILD_TYPE "${CMAKE_BUILD_TYPE}")
     endif()
 endif()
 

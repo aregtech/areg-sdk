@@ -145,10 +145,8 @@ BOOL CentralDialog::OnInitDialog()
         pSysMenu->AppendMenu( MF_STRING, SC_MINIMIZE, _T( "Minimize" ) );
         pSysMenu->AppendMenu( MF_STRING, SC_RESTORE, _T( "Restore" ) );
 
-        BOOL bNameValid;
         CString strAboutMenu;
-        bNameValid = strAboutMenu.LoadString(IDS_ABOUTBOX);
-        ASSERT(bNameValid);
+        VERIFY(strAboutMenu.LoadString(IDS_ABOUTBOX));
         if (!strAboutMenu.IsEmpty())
         {
             pSysMenu->AppendMenu(MF_SEPARATOR);

@@ -73,14 +73,6 @@ option(AREG_GTEST_FOUND  "GTest package found flag"   FALSE)
 add_definitions(-DUNICODE -D_UNICODE)
 remove_definitions(-D_MBCS -DMBCS)
 
-if(CMAKE_BUILD_TYPE MATCHES Release)
-    add_definitions(-DNDEBUG)
-    remove_definitions(-DDEBUG -D_DEBUG)
-else()
-    add_definitions(-DDEBUG)
-    remove_definitions(-DNDEBUG -D_NDEBUG)
-endif()
-
 set(AREG_OPT_DISABLE_WARN_COMMON)
 set(AREG_OPT_DISABLE_WARN_FRAMEWORK)
 set(AREG_OPT_DISABLE_WARN_TOOLS)
@@ -93,7 +85,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
     include(${AREG_CMAKE_CONFIG_DIR}/clang.cmake)
 
-elseif (CMAKE_COMPILER_IS_GNUCXX )
+elseif (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_GNUCC)
 
     include(${AREG_CMAKE_CONFIG_DIR}/gnu.cmake)
 
@@ -209,7 +201,6 @@ endif()
 # Check and setup variables for installation
 if (AREG_INSTALL)
     option(INSTALL_GTEST "Disable Googletest installation" OFF)
-
     if (NOT "${AREG_INSTALL_PATH}" STREQUAL "")
         set(CMAKE_INSTALL_PREFIX "${AREG_INSTALL_PATH}")
     endif()

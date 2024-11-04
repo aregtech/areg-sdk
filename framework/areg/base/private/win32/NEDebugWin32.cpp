@@ -32,17 +32,21 @@
     #pragma warning(default: 4091)
 #endif  // _MSC_VER
 
+#ifdef  _DEBUG
 void AREG_API_IMPL NEDebug::outputMessageOS( const char * msg )
 {
-#ifdef  _DEBUG
     if ( NEString::isEmpty<char>( msg ) == false )
         ::OutputDebugStringA( msg );
-#endif  // _DEBUG
 }
+#else   // _DEBUG
+void AREG_API_IMPL NEDebug::outputMessageOS(const char* /*msg*/)
+{
+}
+#endif  // _DEBUG
 
+#ifdef  _DEBUG
 void AREG_API_IMPL NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *ep, std::list<std::string> & OUT out_callStack )
 {
-#ifdef  _DEBUG
 
     constexpr char  _stackFormat[]              { "        %s:(%d): %s: %s" };
     constexpr char  _msgFileUnavailable[]       { "<File and line number not available>" };
@@ -152,8 +156,11 @@ void AREG_API_IMPL NEDebug::dumpExceptionCallStack( struct _EXCEPTION_POINTERS *
     {
         out_callStack.push_back( _msgCannotExtractSym );
     }
-#endif  // _DEBUG
 }
+#else   // _DEBUG
+void AREG_API_IMPL NEDebug::dumpExceptionCallStack(struct _EXCEPTION_POINTERS* /*ep*/, std::list<std::string>& OUT /*out_callStack*/)
+{
+}
+#endif  // _DEBUG
 
 #endif  // _WINDOWS
-

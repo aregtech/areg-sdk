@@ -35,7 +35,7 @@
     // Enable or disable memory leak detect only for Debug version
     #ifdef  DEBUG
         #pragma comment(lib, "dbghelp.lib")
-    #endif  // _DEBUG
+    #endif  // DEBUG
 
     #pragma comment(lib, "advapi32.lib")
     #pragma comment(lib, "psapi.lib")

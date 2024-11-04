@@ -15,6 +15,9 @@ if (AREG_OS STREQUAL "Windows")
     # Win32 API
     set(AREG_DEVELOP_ENV "Win32")
     add_definitions(-DWINDOWS -D_WINDOWS -DWIN32 -D_WIN32)
+    if (${AREG_BITNESS} EQUAL 64)
+        add_definitions(-DWIN64 -D_WIN64)
+    endif()
 
     # Clang compile options
     list(APPEND AREG_COMPILER_OPTIONS -Wall -c)
@@ -56,6 +59,7 @@ list(APPEND AREG_OPT_DISABLE_WARN_COMMON
         -Wno-c++98-compat-pedantic
         -Wno-covered-switch-default
         -Wno-exit-time-destructors
+        -Wno-extra-semi-stmt
         -Wno-float-equal
         -Wno-global-constructors
         -Wno-inconsistent-missing-destructor-override
