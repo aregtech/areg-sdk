@@ -92,7 +92,7 @@ The following are the available CMake options to configure the AREG SDK build. O
 
 ### 1. **AREG_COMPILER_FAMILY**
    - **Description**: Provides an easy way to set the compiler family for both C++ and C sources.
-   - **Possible Values**: `gnu`, `cygwin`, `llvm`, `msvc`
+   - **Possible Values**: `gnu`, `llvm`, `msvc`, `cygwin`
      - `gnu`: Defaults to `g++` (C++) and `gcc` (C)
      - `llvm`: Defaults to `clang++` (C++) and `clang` (C)
      - `cygwin`: Defaults to `g++` and `gcc` for Cygwin on Windows
@@ -135,7 +135,7 @@ The following are the available CMake options to configure the AREG SDK build. O
 ---
 
 ### 5. **AREG_BUILD_TYPE**
-   - **Description**: Defines the build configuration type, equivalent to the CMake option `CMAKE_BUILD_TYPE`. If `AREG_BUILD_TYPE` is set, it will override `CMAKE_BUILD_TYPE`.
+   - **Description**: Defines the build configuration type, equivalent to the CMake option `CMAKE_BUILD_TYPE`. If `AREG_BUILD_TYPE` is set, it will override `CMAKE_BUILD_TYPE`. Otherwise, it takes the value of `CMAKE_BUILD_TYPE` if set, or `Release` if not set.
    - **Possible Values**: `Release`, `Debug`
    - **Default**: `Release`
    - **Example**: `cmake -B ./build -DAREG_BUILD_TYPE=Debug`
@@ -147,8 +147,8 @@ The following are the available CMake options to configure the AREG SDK build. O
 ### 6. **AREG_BUILD_TESTS**
    - **Description**: Enables or disables building unit tests for the AREG SDK. If enabled (`ON`), the tests build will require an additional dependency on `GTest`.
    - **Possible Values**: `ON`, `OFF`
-   - **Default**: `OFF`
-   - **Example**: `cmake -B ./build -DAREG_BUILD_TESTS=ON`
+   - **Default**: `ON`
+   - **Example**: `cmake -B ./build -DAREG_BUILD_TESTS=OFF`
 
 <div align="right"><kbd><a href="#options-table">↑ Back to top ↑</a></kbd></div>
 
@@ -235,7 +235,7 @@ The following are the available CMake options to configure the AREG SDK build. O
 
 ### 15. **AREG_OUTPUT_DIR**
    - **Description**: Sets the directory for all build outputs, including binaries and libraries. The subdirectories `bin` and `lib` are used for runtime binaries and libraries, respectively.
-   - **Default**: `'<areg-sdk>/product/build/<compiler-family>/<os>-<bitness>-<cpu>-release-<areg-lib>'`
+   - **Default**: `'{AREG_BUILD_ROOT}/build/<compiler-family>/<os>-<bitness>-<cpu>-<build-type><areg-lib-type>'`
    - **Example**: `cmake -B ./build -DAREG_OUTPUT_DIR=/custom/output`
 
 <div align="right"><kbd><a href="#options-table">↑ Back to top ↑</a></kbd></div>
@@ -244,7 +244,7 @@ The following are the available CMake options to configure the AREG SDK build. O
 
 ### 16. **AREG_OUTPUT_BIN**
    - **Description**: Defines the output directory for runtime binaries and shared libraries, aligning with CMake's `CMAKE_RUNTIME_OUTPUT_DIRECTORY` and `CMAKE_LIBRARY_OUTPUT_DIRECTORY`.
-   - **Default**: `AREG_OUTPUT_DIR/bin`
+   - **Default**: `{AREG_OUTPUT_DIR}/bin`
    - **Example**: `cmake -B ./build -DAREG_OUTPUT_BIN=/custom/output/bin`
 
 <div align="right"><kbd><a href="#options-table">↑ Back to top ↑</a></kbd></div>
@@ -253,7 +253,7 @@ The following are the available CMake options to configure the AREG SDK build. O
 
 ### 17. **AREG_OUTPUT_LIB**
    - **Description**: Specifies the output directory for static libraries, corresponding to the CMake setting `CMAKE_ARCHIVE_OUTPUT_DIRECTORY`.
-   - **Default**: `AREG_OUTPUT_DIR/lib`
+   - **Default**: `{AREG_OUTPUT_DIR}/lib`
    - **Example**: `cmake -B ./build -DAREG_OUTPUT_LIB=/custom/output/lib`
 
 <div align="right"><kbd><a href="#options-table">↑ Back to top ↑</a></kbd></div>
@@ -262,7 +262,7 @@ The following are the available CMake options to configure the AREG SDK build. O
 
 ### 18. **AREG_PACKAGES**
    - **Description**: Defines where third-party packages are stored. By default, this is set to a `packages` subdirectory within `AREG_BUILD_ROOT`.
-   - **Default**: `AREG_BUILD_ROOT/packages`
+   - **Default**: `{AREG_BUILD_ROOT}/packages`
    - **Example**: `cmake -B ./build -DAREG_PACKAGES=/path/to/packages`
 
 <div align="right"><kbd><a href="#options-table">↑ Back to top ↑</a></kbd></div>

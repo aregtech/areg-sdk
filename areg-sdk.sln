@@ -76,7 +76,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "img", "img", "{7BD2AAAA-FA5
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "cmake", "cmake", "{5E95D089-DBB0-467A-BC0A-B00B9297023A}"
 	ProjectSection(SolutionItems) = preProject
-		conf\cmake\areg.cmake = conf\cmake\areg.cmake
 		conf\cmake\clang.cmake = conf\cmake\clang.cmake
 		conf\cmake\common.cmake = conf\cmake\common.cmake
 		conf\cmake\functions.cmake = conf\cmake\functions.cmake
