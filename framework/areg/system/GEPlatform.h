@@ -16,29 +16,25 @@
             system dependent header files 
  ************************************************************************/
 
+#if !defined(DEBUG) && !defined(NDEBUG)
+    #define DEBUG
+#endif // !defined(DEBUG) && !defined(NDEBUG)
+
 #if defined(DEBUG)
     #undef  NDEBUG
-    #undef _NDEBUG
-    
+    #undef  _NDEBUG
     #ifndef _DEBUG
         #define _DEBUG
     #endif // !_DEBUG
-#elif defined(_DEBUG)
-    #undef  NDEBUG
-    #undef _NDEBUG
+#endif // DEBUG
 
-    #ifndef DEBUG
-        #define DEBUG
-    #endif // !DEBUG
-#elif defined(NDEBUG)
+#if defined(NDEBUG)
+    #undef  DEBUG
+    #undef _DEBUG
     #ifndef _NDEBUG
         #define _NDEBUG
     #endif // !_NDEBUG
-#elif defined(_NDEBUG)
-    #ifndef NDEBUG
-        #define NDEBUG
-    #endif // !NDEBUG
-#endif // DEBUG
+#endif // NDEBUG
 
 
 #if (defined(_POSIX) || defined(POSIX))

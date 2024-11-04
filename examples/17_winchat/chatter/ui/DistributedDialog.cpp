@@ -141,10 +141,8 @@ BOOL DistributedDialog::OnInitDialog()
     CMenu* pSysMenu = GetSystemMenu(FALSE);
     if (pSysMenu != nullptr )
     {
-        BOOL bNameValid;
         CString strAboutMenu;
-        bNameValid = strAboutMenu.LoadString(IDS_ABOUTBOX);
-        ASSERT(bNameValid);
+        VERIFY(strAboutMenu.LoadString(IDS_ABOUTBOX));
         if (!strAboutMenu.IsEmpty())
         {
             pSysMenu->AppendMenu(MF_SEPARATOR);

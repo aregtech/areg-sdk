@@ -84,5 +84,7 @@ endif()
 macro_check_fix_areg_cxx_standard()
 
 if (NOT "${AREG_PACKAGES}" STREQUAL "")
-    set(FETCHCONTENT_BASE_DIR   "${AREG_PACKAGES}" CACHE PATH "Location of AREG thirdparty packages" FORCE)
+    set(FETCHCONTENT_BASE_DIR   "${AREG_PACKAGES}" CACHE PATH "Location of AREG thirdparty packages")
+else()
+    set(AREG_PACKAGES "${FETCHCONTENT_BASE_DIR}")
 endif()

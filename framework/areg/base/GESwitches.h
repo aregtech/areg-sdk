@@ -39,96 +39,7 @@
    #error   "AREG_API is already defined. Undefine before include this file!"
 #endif
 
-#if defined(IMP_AREG_DLL) || defined(_IMP_AREG_DLL) || defined(IMPORT_SHARED_SYMBOLS) || defined(_IMPORT_SHARED_SYMBOLS)
-
-    #undef  IMP_AREG_DLL
-    #undef  IMP_AREG_LIB
-    #undef  EXP_AREG_DLL
-    #undef  EXP_AREG_LIB
-
-    #undef  _IMP_AREG_DLL
-    #undef  _IMP_AREG_LIB
-    #undef  _EXP_AREG_DLL
-    #undef  _EXP_AREG_LIB
-
-    #undef  IMPORT_SHARED_SYMBOLS
-    #undef  IMPORT_STATIC_SYMBOLS
-    #undef  EXPORT_SHARED_SYMBOLS
-    #undef  EXPORT_STATIC_SYMBOLS
-
-    #define IMP_AREG_DLL
-    #define _IMP_AREG_DLL
-
-#endif  // defined(IMP_AREG_DLL) || defined(_IMP_AREG_DLL) || defined(IMPORT_SHARED_SYMBOLS) || defined(_IMPORT_SHARED_SYMBOLS)
-
-#if defined(IMP_AREG_LIB) || defined(_IMP_AREG_LIB) || defined(IMPORT_STATIC_SYMBOLS) || defined(_IMPORT_STATIC_SYMBOLS)
-
-    #undef  IMP_AREG_DLL
-    #undef  IMP_AREG_LIB
-    #undef  EXP_AREG_DLL
-    #undef  EXP_AREG_LIB
-
-    #undef  _IMP_AREG_DLL
-    #undef  _IMP_AREG_LIB
-    #undef  _EXP_AREG_DLL
-    #undef  _EXP_AREG_LIB
-
-    #undef  IMPORT_SHARED_SYMBOLS
-    #undef  IMPORT_STATIC_SYMBOLS
-    #undef  EXPORT_SHARED_SYMBOLS
-    #undef  EXPORT_STATIC_SYMBOLS
-
-    #define IMP_AREG_LIB
-    #define _IMP_AREG_LIB
-
-#endif  // defined(IMP_AREG_LIB) || defined(_IMP_AREG_LIB) || defined(IMPORT_STATIC_SYMBOLS) || defined(_IMPORT_STATIC_SYMBOLS)
-
-#if defined(EXP_AREG_DLL) || defined(_EXP_AREG_DLL) || defined(EXPORT_SHARED_SYMBOLS) || defined(_EXPORT_SHARED_SYMBOLS)
-
-    #undef  IMP_AREG_DLL
-    #undef  IMP_AREG_LIB
-    #undef  EXP_AREG_DLL
-    #undef  EXP_AREG_LIB
-
-    #undef  _IMP_AREG_DLL
-    #undef  _IMP_AREG_LIB
-    #undef  _EXP_AREG_DLL
-    #undef  _EXP_AREG_LIB
-
-    #undef  IMPORT_SHARED_SYMBOLS
-    #undef  IMPORT_STATIC_SYMBOLS
-    #undef  EXPORT_SHARED_SYMBOLS
-    #undef  EXPORT_STATIC_SYMBOLS
-
-    #define EXP_AREG_DLL
-    #define _EXP_AREG_DLL
-
-#endif  // defined(EXP_AREG_DLL) || defined(_EXP_AREG_DLL) || defined(EXPORT_SHARED_SYMBOLS) || defined(_EXPORT_SHARED_SYMBOLS)
-
-#if defined(EXP_AREG_LIB) || defined(_EXP_AREG_LIB) || defined(EXPORT_STATIC_SYMBOLS) || defined(_EXPORT_STATIC_SYMBOLS)
-
-    #undef  IMP_AREG_DLL
-    #undef  IMP_AREG_LIB
-    #undef  EXP_AREG_DLL
-    #undef  EXP_AREG_LIB
-
-    #undef  _IMP_AREG_DLL
-    #undef  _IMP_AREG_LIB
-    #undef  _EXP_AREG_DLL
-    #undef  _EXP_AREG_LIB
-
-    #undef  IMPORT_SHARED_SYMBOLS
-    #undef  IMPORT_STATIC_SYMBOLS
-    #undef  EXPORT_SHARED_SYMBOLS
-    #undef  EXPORT_STATIC_SYMBOLS
-
-    #define EXP_AREG_LIB
-    #define _EXP_AREG_LIB
-
-#endif  // defined(EXP_AREG_LIB) || defined(_EXP_AREG_LIB) || defined(EXPORT_STATIC_SYMBOLS) || defined(_EXPORT_STATIC_SYMBOLS)
-
 #if !defined(EXP_AREG_DLL) && !defined(EXP_AREG_LIB) && !defined(IMP_AREG_DLL) && !defined(IMP_AREG_LIB)
-    #pragma message("WARNING: No compiler option set for the AREG library. Using default IMP_AREG_DLL. To use a static library, define IMP_AREG_LIB. Refer to the GESwitches.h file in the AREG base for details.")
     #define IMP_AREG_DLL
 #endif  // !defined(EXP_AREG_DLL) && !defined(EXP_AREG_LIB) && !defined(IMP_AREG_DLL) && !defined(IMP_AREG_LIB)
 
@@ -175,16 +86,12 @@
 #endif   // WIN32
 
 // By default, no AREG extended features.
-#if !defined(AREG_EXTENDED) && !defined(AREG_EXTEND)
-    #pragma message("The AREG_EXTENDED is not defined, setting default value 0")
+#if !defined(AREG_EXTENDED)
     #define AREG_EXTENDED   0
-#elif defined(AREG_EXTEND) && !defined(AREG_EXTENDED)
-    #define AREG_EXTENDED   AREG_EXTEND
 #endif  // AREG_EXTENDED
 
 // By default, compile with logs
 #ifndef AREG_LOGS
-    #pragma message("The AREG_LOGS is not defined, setting default value 1")
     #define AREG_LOGS       1
 #endif  // AREG_LOGS
 

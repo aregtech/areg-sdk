@@ -28,6 +28,7 @@
  *          should be included and/or defined here.
  **/
 
+
 #include "areg/system/GEPlatform.h"
 
 #define OUTPUT_DEBUG_LEVEL_DEBUG    4
@@ -48,7 +49,95 @@
     #define OUTPUT_DEBUG_LEVEL          OUTPUT_DEBUG_LEVEL_NONE
 #endif // DEBUG
 
- /**
+#if defined(IMP_AREG_DLL) || defined(_IMP_AREG_DLL) || defined(IMPORT_SHARED_SYMBOLS) || defined(_IMPORT_SHARED_SYMBOLS)
+
+    #undef  IMP_AREG_DLL
+    #undef  IMP_AREG_LIB
+    #undef  EXP_AREG_DLL
+    #undef  EXP_AREG_LIB
+
+    #undef  _IMP_AREG_DLL
+    #undef  _IMP_AREG_LIB
+    #undef  _EXP_AREG_DLL
+    #undef  _EXP_AREG_LIB
+
+    #undef  IMPORT_SHARED_SYMBOLS
+    #undef  IMPORT_STATIC_SYMBOLS
+    #undef  EXPORT_SHARED_SYMBOLS
+    #undef  EXPORT_STATIC_SYMBOLS
+
+    #define IMP_AREG_DLL
+    #define _IMP_AREG_DLL
+
+#endif  // defined(IMP_AREG_DLL) || defined(_IMP_AREG_DLL) || defined(IMPORT_SHARED_SYMBOLS) || defined(_IMPORT_SHARED_SYMBOLS)
+
+#if defined(IMP_AREG_LIB) || defined(_IMP_AREG_LIB) || defined(IMPORT_STATIC_SYMBOLS) || defined(_IMPORT_STATIC_SYMBOLS)
+
+    #undef  IMP_AREG_DLL
+    #undef  IMP_AREG_LIB
+    #undef  EXP_AREG_DLL
+    #undef  EXP_AREG_LIB
+
+    #undef  _IMP_AREG_DLL
+    #undef  _IMP_AREG_LIB
+    #undef  _EXP_AREG_DLL
+    #undef  _EXP_AREG_LIB
+
+    #undef  IMPORT_SHARED_SYMBOLS
+    #undef  IMPORT_STATIC_SYMBOLS
+    #undef  EXPORT_SHARED_SYMBOLS
+    #undef  EXPORT_STATIC_SYMBOLS
+
+    #define IMP_AREG_LIB
+    #define _IMP_AREG_LIB
+
+#endif  // defined(IMP_AREG_LIB) || defined(_IMP_AREG_LIB) || defined(IMPORT_STATIC_SYMBOLS) || defined(_IMPORT_STATIC_SYMBOLS)
+
+#if defined(EXP_AREG_DLL) || defined(_EXP_AREG_DLL) || defined(EXPORT_SHARED_SYMBOLS) || defined(_EXPORT_SHARED_SYMBOLS)
+
+    #undef  IMP_AREG_DLL
+    #undef  IMP_AREG_LIB
+    #undef  EXP_AREG_DLL
+    #undef  EXP_AREG_LIB
+
+    #undef  _IMP_AREG_DLL
+    #undef  _IMP_AREG_LIB
+    #undef  _EXP_AREG_DLL
+    #undef  _EXP_AREG_LIB
+
+    #undef  IMPORT_SHARED_SYMBOLS
+    #undef  IMPORT_STATIC_SYMBOLS
+    #undef  EXPORT_SHARED_SYMBOLS
+    #undef  EXPORT_STATIC_SYMBOLS
+
+    #define EXP_AREG_DLL
+    #define _EXP_AREG_DLL
+
+#endif  // defined(EXP_AREG_DLL) || defined(_EXP_AREG_DLL) || defined(EXPORT_SHARED_SYMBOLS) || defined(_EXPORT_SHARED_SYMBOLS)
+
+#if defined(EXP_AREG_LIB) || defined(_EXP_AREG_LIB) || defined(EXPORT_STATIC_SYMBOLS) || defined(_EXPORT_STATIC_SYMBOLS)
+
+    #undef  IMP_AREG_DLL
+    #undef  IMP_AREG_LIB
+    #undef  EXP_AREG_DLL
+    #undef  EXP_AREG_LIB
+
+    #undef  _IMP_AREG_DLL
+    #undef  _IMP_AREG_LIB
+    #undef  _EXP_AREG_DLL
+    #undef  _EXP_AREG_LIB
+
+    #undef  IMPORT_SHARED_SYMBOLS
+    #undef  IMPORT_STATIC_SYMBOLS
+    #undef  EXPORT_SHARED_SYMBOLS
+    #undef  EXPORT_STATIC_SYMBOLS
+
+    #define EXP_AREG_LIB
+    #define _EXP_AREG_LIB
+
+#endif  // defined(EXP_AREG_LIB) || defined(_EXP_AREG_LIB) || defined(EXPORT_STATIC_SYMBOLS) || defined(_EXPORT_STATIC_SYMBOLS)
+
+/**
  * \brief   Basic types
  **/
 #include "areg/base/GETypes.h"

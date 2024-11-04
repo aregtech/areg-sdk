@@ -17,8 +17,6 @@ if (${AREG_BITNESS} EQUAL 64)
     add_definitions(-DWIN64 -D_WIN64)
 endif()
 
-# MS Visual C++ compile options
-list(APPEND AREG_COMPILER_OPTIONS)
 # Linker flags (-l is not necessary)
 list(APPEND AREG_LDFLAGS advapi32 psapi shell32 ws2_32)
 set(AREG_LDFLAGS_STR "-ladvapi32 -lpsapi -lshell32 -lws2_32")
