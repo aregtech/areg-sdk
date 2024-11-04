@@ -386,7 +386,7 @@ jobs:
       - name: Build with CMake
         working-directory: ${{github.workspace}}
         # Build your program with the given configuration
-        run: cmake --build ${{env.CACHE_DEST}} -j 16
+        run: cmake --build ${{env.CACHE_DEST}} --config Release -j 16
 
       - name: Install with CMake
         working-directory: ${{github.workspace}}

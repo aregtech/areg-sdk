@@ -15,20 +15,73 @@
  *
  ************************************************************************/
 #include "areg/appbase/private/configure.hpp"
+#include "areg/base/GEMacros.h"
 
-#if !defined(EXP_AREG_DLL) && !defined(EXP_AREG_LIB) && !defined(IMP_AREG_DLL) && !defined(IMP_AREG_LIB)
-    #pragma message("WARNING: No import / export compiler option set. Use default IMP_AREG_DLL. Refer to the GESwitches.h file in the AREG base for details.")
-#endif  // !defined(EXP_AREG_DLL) && !defined(EXP_AREG_LIB) && !defined(IMP_AREG_DLL) && !defined(IMP_AREG_LIB)
+#ifdef DEBUG
 
-// By default, no AREG extended features.
-#if !defined(AREG_EXTENDED) && !defined(AREG_EXTEND)
-    #pragma message("The AREG_EXTENDED is not defined, setting default value 0")
-#endif  // AREG_EXTENDED
+    #if !defined(EXP_AREG_DLL) && !defined(EXP_AREG_LIB) && !defined(IMP_AREG_DLL) && !defined(IMP_AREG_LIB)
+        #ifdef MS_VISUAL_CPP
+            #pragma message(">>> WARNING: No import / export compiler option set. Use default IMP_AREG_DLL. Refer to the GESwitches.h file for details.")
+        #else
+            #pragma message ">>> WARNING: No import / export compiler option set. Use default IMP_AREG_DLL. Refer to the GESwitches.h file for details."
+        #endif
+    #endif  // !defined(EXP_AREG_DLL) && !defined(EXP_AREG_LIB) && !defined(IMP_AREG_DLL) && !defined(IMP_AREG_LIB)
 
-// By default, compile with logs
-#ifndef AREG_LOGS
-    #pragma message("The AREG_LOGS is not defined, setting default value 1")
-#endif  // AREG_LOGS
+    #if defined(WIN32)
+        #ifdef MS_VISUAL_CPP
+            #pragma message(">>> Compiling with Win32 API, Debug version")
+        #else
+            #pragma message ">>> Compiling with Win32 API, Debug version"
+        #endif
+    #else   // WIN32
+        #ifdef MS_VISUAL_CPP
+            #pragma message(">>> Compiling with POSIX API, Debug version")
+        #else
+            #pragma message ">>> Compiling with POSIX API, Debug version"
+        #endif
+    #endif
+
+    #if !defined(AREG_LOGS)
+        #ifdef MS_VISUAL_CPP
+            #pragma message(">>> The AREG_LOGS is not defined, setting default value 1")
+        #else
+            #pragma message ">>> The AREG_LOGS is not defined, setting default value 1"
+        #endif
+    #elif AREG_LOGS
+        #ifdef MS_VISUAL_CPP
+            #pragma message (">>> Compiling the sources WITH logs")
+        #else
+            #pragma message ">>> Compiling the sources WITH logs"
+        #endif
+    #else   // !AREG_LOGS
+        #ifdef MS_VISUAL_CPP
+            #pragma message (">>> Compiling the sources WITHOUT logs")
+        #else
+            #pragma message ">>> Compiling the sources WITHOUT logs"
+        #endif
+    #endif // AREG_LOGS
+
+    #if !defined(AREG_EXTENDED)
+        #ifdef MS_VISUAL_CPP
+            #pragma message(">>> The AREG_EXTENDED is not defined, setting default value 0")
+        #else
+            #pragma message ">>> The AREG_EXTENDED is not defined, setting default value 0"
+        #endif
+    #elif AREG_EXTENDED
+        #ifdef MS_VISUAL_CPP
+            #pragma message(">>> Compiling the sources WITH extended features")
+        #else
+            #pragma message ">>> Compiling the sources WITH extended features"
+        #endif
+    #else   // !AREG_EXTENDED
+        #ifdef MS_VISUAL_CPP
+            #pragma message (">>> Compiling the sources WITHOUT extended features")
+        #else
+            #pragma message ">>> Compiling the sources WITHOUT extended features"
+        #endif
+    #endif // AREG_EXTENDED
+
+#endif // DEBUG
 
 #ifdef  WIN32
 
@@ -41,7 +94,5 @@
     #pragma comment(lib, "psapi.lib")
     #pragma comment(lib, "shell32.lib")
     #pragma comment(lib, "ws2_32.lib")
-
-#else   // !WIN32
 
 #endif  // WIN32

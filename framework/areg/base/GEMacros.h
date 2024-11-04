@@ -413,43 +413,34 @@
 
 //!< MACRO to make strings.
 #ifndef MACRO_MAKE_STRING
-    #ifdef MS_VISUAL_CPP
-        //!< This macro makes a message string
-        #define MACRO_MAKE_STRING(x)        #x
-        //!< This macro converts a value to a string
-        #define MACRO_CONV_STRING(x)        MACRO_MAKE_STRING(x)
-    #else   // MS_VISUAL_CPP
-        #define MACRO_MAKE_STRING(x)
-        #define MACRO_CONV_STRING(x)
-    #endif  // MS_VISUAL_CPP
+    //!< This macro makes a message string
+    #define MACRO_MAKE_STRING(x)        #x
+    //!< This macro converts a value to a string
+    #define MACRO_CONV_STRING(x)        MACRO_MAKE_STRING(x)
 #endif // !MACRO_MAKE_STRING
 
 //!< This macro makes a message
 #ifndef MACRO_MAKE_MESSAGE
-    #ifdef MS_VISUAL_CPP
-        #define MACRO_MAKE_MESSAGE(x)       ">>> " MACRO_MAKE_STRING(x)
-    #else   // MS_VISUAL_CPP
-        #define MACRO_MAKE_MESSAGE(msg)
-    #endif  // MS_VISUAL_CPP
+    #define MACRO_MAKE_MESSAGE(x)       ">>> " ##x
 #endif // !MACRO_MAKE_MESSAGE
+
+#ifndef MACRO_DO_PRAGMA
+    #ifdef MS_VISUAL_CPP
+        #define MACRO_DO_PRAGMA(x) __pragma (#x)
+    #else
+        #define MACRO_DO_PRAGMA(x) _Pragma (#x)
+    #endif
+#endif // MACRO_DO_PRAGMA
 
 //!< This macro creates and outputs compile time message
 #ifndef MACRO_COMPILER_MESSAGE
-    #ifdef MS_VISUAL_CPP
-        #define MACRO_COMPILER_MESSAGE(msg) __pragma(message(MACRO_MAKE_MESSAGE(msg)))
-    #else   // MS_VISUAL_CPP
-        #define MACRO_COMPILER_MESSAGE(msg)
-    #endif  // MS_VISUAL_CPP
+    #define MACRO_COMPILER_MESSAGE(msg)     MACRO_DO_PRAGMA(message (">>> " #msg))
 #endif // !MACRO_COMPILER_MESSAGE
 
 //!< This macro creates and outputs compile time message with prefix "TODO" and the message,
 //! followed with the file name and the line number to prompt.
 #ifndef MACRO_TODO
-    #ifdef MS_VISUAL_CPP
-        #define MACRO_TODO(msg)             __pragma(message(">>> TODO :: " MACRO_MAKE_STRING(msg) ": here --> " __FILE__":" MACRO_CONV_STRING(__LINE__)))
-    #else   // MS_VISUAL_CPP
-        #define MACRO_TODO(msg)
-    #endif  // MS_VISUAL_CPP
+    #define MACRO_TODO(msg)                 MACRO_DO_PRAGMA(">>> TODO :: " #msg ": here --> " __FILE__":" MACRO_CONV_STRING(__LINE__))
 #endif // !MACRO_TODO
 
 
