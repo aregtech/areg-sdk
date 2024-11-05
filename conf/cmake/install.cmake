@@ -72,6 +72,14 @@ install(DIRECTORY ${AREG_SDK_ROOT}/conf/
             CONFIGURATIONS Release
 )
 
+# Copy 'areg.cmake' configuration file.
+install(FILES ${AREG_SDK_ROOT}/areg.cmake
+            DESTINATION share/${AREG_PACKAGE_NAME}/
+            COMPONENT Development   COMPONENT Runtime
+            PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
+            CONFIGURATIONS Release
+)
+
 # Copy all tools
 install(DIRECTORY tools/
             DESTINATION tools/${AREG_PACKAGE_NAME}
