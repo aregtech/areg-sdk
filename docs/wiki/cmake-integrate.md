@@ -1,83 +1,125 @@
-# Integrate AREG Framework with CMake
+# Integrating AREG Framework with CMake
 
-This document describes how to integrate AREG Framework into the existing project or how to build a new project using AREG Framework. The document describes 2 methods to integrate:
-1. Integrate by fetching the sources from **[AREG SDK](https://github.com/aregtech/areg-sdk)** repository;
-2. Integrate by using installed package with `vcpkg` tool.
-3. Integrate by creating `areg-sdk` submodule.
+This guide details how to integrate the AREG Framework into an existing project or to build a new project using AREG Framework. There are three primary methods for integration:
 
-> [!TIP]
-> For the practical working example of integrating AREG SDK libraries and tools, see the existing **[AREG SDK Demo](https://github.com/aregtech/areg-sdk-demo)**.
+1. **Fetch the source code** directly from the **[AREG SDK GitHub repository](https://github.com/aregtech/areg-sdk)**;
+2. **Install via `vcpkg`** as a prebuilt package;
+3. **Add AREG SDK as a Git submodule** to your project.
+
+> [!TIP]:
+> For a practical example of integrating AREG SDK libraries and tools, refer to the **[AREG SDK Demo](https://github.com/aregtech/areg-sdk-demo)** repository.
 
 ## Table of Contents
+- [AREG SDK General Requirements](#areg-sdk-general-requirements)
+- [General Information](#general-information)
+- [Example Code](#example-code)
+- [Integration Methods](#integration-methods)
+  - [Integrate by Fetching Sources](#integrate-by-fetching-sources)
+  - [Integrate Using `vcpkg` Package](#integrate-using-vcpkg-package)
+  - [Integrate as Git Submodule](#integrate-as-git-submodule)
+- [Advanced Integration](#advanced-integration)
+  - [Advanced CMake Options](#advanced-cmake-options)
+  - [Advanced CMake Functions](#advanced-cmake-functions)
+- [Conclusion](#conclusion)
 
+---
 
 ## AREG SDK General Requirements
 
-To be able to integrate AREG SDK sources or binaries in the project, ensure your system includes following:
-- **CMake** (version 3.20+)
-- **Git** for repository cloning
-- **Compatible Compilers**: *GNU*, *LLVM*, or *MSVC* (Windows only) supporting **C++17** or newer
-- **Java** (version 17+ for code generation tools)
+Ensure the following dependencies are installed to integrate AREG SDK sources or binaries into your project:
+
+- **CMake** version 3.20 or higher
+- **Git** for repository management
+- **Compatible Compilers**: GCC, LLVM, or MSVC (Windows only) supporting **C++17** or newer
+- **Java** version 17+ for code generation tools
+
+---
 
 ## General Information
 
-AREG SDK consists of several development projects:
-1. AREG Framework (`areg` library): the communication engine based on Object RPC.
-2. AREG Framework extension (`aregextend` library): An optional library with objects with extended utilities and features, which may cause additional dependencies.
-3. AREG Lob Observer API library (`areglogger` library): A library that log observer applications can use to receive log messages.
-4. AREG Multicast Router (`mcrouter` executable): A stand-alone application that runs as console application or OS-managed service to route RPC messages.
-5. AREG Log Collector (`logger` executable): A stand-alone application that runs as console application or OS-managed service to collect logs remotely.
-6. AREG Log Observer (`logobserver` executable): A stand-alone application to manage and store logs.
-7. AREG Code Generator (`codegen.jar` runnable): A stand-alone Java-based tool to generate Service Interface source codes.
+AREG SDK comprises several components:
 
-To build a projects or use tools, developers need to integrate AREG SDK in their projects. AREG SDK contains several utilities to help developers to integrate AREG SDK libraries and tools in the project with minimum efforts. Here in this document there is detailed description of integration.
+1. **AREG Framework (`areg` library)**: Core library for automations and Object RPC communication.
+2. **AREG Framework Extension (`aregextend` library)**: An optional library with extended utilities and features.
+3. **AREG Log Observer API (`areglogger` library)**: Enables applications to receive and manage log messages.
+4. **AREG Multicast Router (`mcrouter` executable)**: A console and OS-managed service to route RPC messages.
+5. **AREG Log Collector (`logger` executable)**: A console and OS-managed service to remotely collect logs.
+6. **AREG Log Observer (`logobserver` executable)**: Stand-alone console application for managing logs.
+7. **AREG Code Generator (`codegen.jar` runnable)**: A Java-based tool to generate Service Interface source code.
+
+These components provide a robust infrastructure for integrating AREG SDK in projects, ensuring streamlined development.
+
+---
 
 ## Example Code
 
-In this document, during entire example, we are going to use following `main.cpp` source code which you should create in a separate directory:
+Use the following code for all integration examples. Create a `main.cpp` file in a separate directory:
+
 ```cpp
 #include "areg/base/String.hpp"
 
-int main(void)
-{
+int main() {
     String str("Hello from AREG SDK!");
     std::cout << str.getData() << std::endl;
     return 0;
 }
 ```
 
-The next are examples to integrate AREG SDK libraries in your project.
+---
 
-## Integrate by fetching
+## Integration Methods
 
-Developers can integrate AREG SDK libraries in the project by fetching the sources and including them in the build process. To do so, follow these steps:
+### Integrate by Fetching Sources
 
-### Quick Setup
+1. **Declare the Project**:
+   Create a `CMakeLists.txt` file with the following content, ensuring the minimum CMake version is set to 3.20:
+   ```cmake
+   cmake_minimum_required(VERSION 3.20.0)
+   project(example)
+   ```
 
-**_Step 1_: Declare project**:
+2. **(Optional) Disable Examples and Tests**:
+   To speed up builds, disable examples and tests by adding these options, and additionally disable AREG SDK specific output directories:
+   ```cmake
+   option(AREG_BUILD_EXAMPLES "Disable examples" OFF)   # Disable build of examples
+   option(AREG_BUILD_TESTS "Disable tests" OFF)         # Disable build or unit tests
+   option(AREG_ENABLE_OUTPUTS "Disable outputs" OFF)    # Disable AREG SDK specific output directories
+   ```
 
-In the same location of `main.cpp` create `CMakeLists.txt` file with initial content. Pay attention that the CMake minimum required version should be `3.20`:
+3. **Fetch AREG SDK Sources**:
+   Add this script to `CMakeLists.txt` to fetch the sources from `master` branch:
+   ```cmake
+   include(FetchContent)
+   FetchContent_Declare(
+       areg-sdk
+       GIT_REPOSITORY https://github.com/aregtech/areg-sdk.git
+       GIT_TAG "master"
+   )
+   FetchContent_MakeAvailable(areg-sdk)
+   set(AREG_SDK_ROOT "${areg-sdk_SOURCE_DIR}")
+   include_directories("${AREG_SDK_ROOT}/framework")
+   ```
+
+4. **Build the Project**:
+   Define executable's sources and link `areg` library and build:
+   ```cmake
+   add_executable(example main.cpp)
+   target_link_libraries(example PRIVATE areg::areg)
+   ```
+
+At the end, your `CMakeLists.txt`  file should loook like this:
 ```cmake
+
+# Step 1: Declare the project
 cmake_minimum_required(VERSION 3.20.0)
 project(example)
-```
 
-**_Step 2_ (Optional): Disable examples and tests**:
+# Step 2: (Optional) Disable Examples and Tests
+option(AREG_BUILD_EXAMPLES "Disable examples" OFF)   # Disable build of examples
+option(AREG_BUILD_TESTS "Disable tests" OFF)         # Disable build or unit tests
+option(AREG_ENABLE_OUTPUTS "Disable outputs" OFF)    # Disable AREG SDK specific output directories
 
-To disable AREG SDK specific output paths, to disable building AREG SDK **examples** and **unit tests** to save build time, set following variables before fetching sources:
-```cmake
-option(AREG_ENABLE_OUTPUTS  "Disable outputs"  OFF) # No AREG SDK build outputs
-option(AREG_BUILD_EXAMPLES  "Disable examples" OFF) # No examples build
-option(AREG_BUILD_TESTS     "Disable tests"    OFF) # No unit tests build
-```
-
-These are optional settings. If you want to build all projects of AREG SDK and use specific output paths, ignore *Step 1*.
-
-
-**_Step 3_: Fetch AREG SDK sources**:
-
-Change your `CMakeLists.txt` and add following script:
-```cmake
+# Step 3: Fetch AREG SDK Sources
 include(FetchContent)
 FetchContent_Declare(
     areg-sdk
@@ -87,243 +129,156 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(areg-sdk)
 set(AREG_SDK_ROOT "${areg-sdk_SOURCE_DIR}")
 include_directories("${AREG_SDK_ROOT}/framework")
-```
 
-**_Step 4_: Make a build of project**:
-
-Now you are ready to use AREG SDK libraries. The following is an example of building `example` binary and linking with `areg` library:
-```cmake
+# Step 4: Build the Project
 add_executable (example main.cpp)
 target_link_libraries(example PRIVATE areg::areg)
 ```
 
-In total, the content of `CMakeLists.txt` should be following:
-```cmake
-
-# Step 1: Declare project
-cmake_minimum_required(VERSION 3.20.0)
-project(example)
-
-# Step 2 (optional): Disable examples and tests, disable change binary directory
-option(AREG_ENABLE_OUTPUTS  "Disable outputs"  OFF) # No AREG SDK build outputs
-option(AREG_BUILD_EXAMPLES  "Disable examples" OFF) # No examples build
-option(AREG_BUILD_TESTS     "Disable tests"    OFF) # No unit tests build
-
-# Step 3: Fetch AREG SDK sources
-include(FetchContent)
-FetchContent_Declare(
-    areg-sdk
-    GIT_REPOSITORY https://github.com/aregtech/areg-sdk.git
-    GIT_TAG "master"
-)
-FetchContent_MakeAvailable(areg-sdk)
-set(AREG_SDK_ROOT "${areg-sdk_SOURCE_DIR}")
-include_directories("${AREG_SDK_ROOT}/framework")
-
-# Step 4: Make a build of project
-add_executable (example main.cpp)
-target_link_libraries(example PRIVATE areg::areg)
-```
-
-### Quick project build
-
-Now you are ready to make a build. Open a *Terminal* or *PowerShell* (for Windows) to make a build.
-
-The following commands will fetch AREG SDK source, configure `example` project:
-```bash
-cmake -B ./build
-```
-
-The following builds `example` project:
-```bash
-cmake --build ./build
-```
-
-When build is completed, you can run `example` executable:
-```bash
-./build/example
-```
-
-And this run will make output:
-```plaintext
-Hello from AREG SDK!
-```
-
-## Integrate `areg` package
-
-### Setup `vcpkg` on system
-
-If you don't want to compile the AREG SDK sources and want to use binaries instead, you can use `vcpkg` tool to install AREG SDK binaries and dependencies in your system. Here there is a step-by-step explanation to do that.
+5. **Build Commands**:
+   Run these commands in *Terminal* or *PowerShell* to configure, build and run `example` console application:
+   ```bash
+   cmake -B ./build
+   cmake --build ./build
+   ./build/example
+   ```
+ 
+### Integrate Using `vcpkg` Package
 
 > [!IMPORTANT]
-> Starting with AREG SDK 2.0, you can integrate it using the `vcpkg` package manager. Before that the AREG SDK will not be available in `vcpkg`.
+> Starting with AREG SDK 2.0, you can integrate it using the `vcpkg` package manager. Before that, the AREG SDK is not available in `vcpkg`.
 
-**_Step 1_: Install `vcpkg`**:
+1. **Install `vcpkg`**:
+   Install `vcpkg` and ensure it’s updated. Follow instructions at the [vcpkg GitHub page](https://github.com/microsoft/vcpkg). If you already have `vcpkg` installed on your machine, make sure that you have latest data (*pull the data*).
 
-If you already have installed `vcpkg` package management tool on your system, you can skip this step, but make sure that you have latest content from `vcpkg` repository. If you don't have installed `vcpkg` package manager tool, clone, build and install `vcpkg` follow the instructions in the [official vcpkg repository](https://github.com/microsoft/vcpkg).
+2. **Install AREG SDK Package**:
+   Use the following commands:
+   - **Windows (64-bit)**:
+     ```bash
+     vcpkg install areg:x64-windows
+     ```
+   - **Linux (64-bit)**:
+     ```bash
+     vcpkg install areg:x64-linux
+     ```
+3. **Get Toolchain File Path**:
+   Use the following command to integrate AREG SDK binaries and get the path of toolchain.
+   ```bash
+   vcpkg integrate install
+   ```
+   This will display a message with information to include toolchain file in your build `-DCMAKE_TOOLCHAIN_FILE=<vcpkg-root>/scripts/buildsystems/vcpkg.cmake` where <vcpkg-root> is the path of `vcpkg` packet management directory.
 
-**_Step 2_: Install AREG SDK package**:
+3. **Integrate in CMake script**:
+   Create a `CMakeLists.txt` file with the following content, ensuring that CMake will either find the `areg` package or the build will fail:
+   ```cmake
+   cmake_minimum_required(VERSION 3.20.0)
+   project(example)
+   find_package(areg CONFIG REQUIRED)       # Find package with option 'REQUIRED'
+   include_directories(${AREG_FRAMEWORK})
+   add_executable(example main.cpp)
+   target_link_libraries(example PRIVATE areg::areg)
+   ```
 
-After installing `vcpkg` in your system, you should install AREG SDK binaries to make it available for the builds. Install the AREG SDK package using the following commands:
+4. **Build with Toolchain File**:
+   Run these commands in *Terminal* or *PowerShell* to configure, build and run `example` console application. To build, **replace** `<vcpkg-root>` with the actual path:
+   ```bash
+   cmake -B ./build -DCMAKE_TOOLCHAIN_FILE=<vcpkg-root>/scripts/buildsystems/vcpkg.cmake
+   cmake --build ./build
+   ./build/example
+   ```
 
-**Windows (64-bit):**
-```bash
-vcpkg install areg:x64-windows
-```
+### Integrate as Git Submodule
 
-**Linux (64-bit):**
-```bash
-vcpkg install areg:x64-linux
-```
+1. **Define Submodule**:
+   Add `areg-sdk` as a submodule by creating a `.gitmodules` file:
+   ```plaintext
+   [submodule "areg-sdk"]
+     path = areg-sdk
+     url = https://github.com/aregtech/areg-sdk.git
+   ```
 
-After installing the package, add the `vcpkg` toolchain to your project displayed after running this command. Copy the toolchain path to use in your `CMakeLists.txt`:
-```bash
-vcpkg integrate install
-```
+2. **Get AREG SDK Sources**:
+   Run these commands:
+   ```bash
+   git submodule update --init --recursive
+   git submodule update --remote --recursive
+   ```
 
-This command will display a path like this `-DCMAKE_TOOLCHAIN_FILE=<vcpkg-root>/scripts/buildsystems/vcpkg.cmake`, where `<vcpkg-root>` indicates the `vcpkg` package manager directory path.
+3. **Integrate in CMake script**:
+   Create a `CMakeLists.txt` file with the following content to build all projects and use AREG Framework:
+   ```cmake
+   cmake_minimum_required(VERSION 3.20.0)
+   project(example)
+   set(AREG_SDK_ROOT "${CMAKE_SOURCE_DIR}/areg-sdk")
+   include("${AREG_SDK_ROOT}/CMakeLists.txt")
+   add_executable(example main.cpp)
+   target_link_libraries(example PRIVATE areg::areg)
+   ```
 
-### Integrate `areg` package in your build
+4. **Build Commands**:
+   Run these commands in *Terminal* or *PowerShell* to configure, build and run `example` console application:
+   ```bash
+   cmake -B ./build
+   cmake --build ./build
+   ./build/example
+   ```
 
-**_Step 3_: Integrate in CMake build**:
+In all cases, your should be able to run `./build/example` executable, which will output `Hello from AREG SDK!` message on console.
 
-Now create or open the `CMakeLists.txt` file located with `main.cpp` file and type following:
-```cmake
-# Should be not less than 3.20
-cmake_minimum_required(VERSION 3.20.0)
-project(example)
-
-# This will search the 'areg' package or the configuration will fail
-find_package(areg CONFIG REQUIRED)
-include_directories(${AREG_FRAMEWORK})
-
-# Ready to build and link
-add_executable (example main.cpp)
-target_link_libraries(example PRIVATE areg::areg)
-```
-
-Now you are ready to compile and run `example` executable. Open *Terminal* or PowerShell in the project directory and run command (don't forget to replace the `<vcpkg-root>` with the real path):
-```bash
-cmake -B ./build -DCMAKE_TOOLCHAIN_FILE=<vcpkg-root>/scripts/buildsystems/vcpkg.cmake
-cmake --build ./build
-```
-
-When your project is compiled, you can run `example`:
-```bash
-./build/example
-```
-
-The result is:
-```plaintext
-Hello from AREG SDK!
-```
-
-## Integrate `areg-sdk` submodule
-
-### Define submodule
-
-Another method is to integrate `areg-sdk` as a submodule. For this, first of all your `example` project should be available on the Git. Then, you need to define `.gitmodules` file and declare this submodule:
-```plaintext
-[submodule "areg-sdk"]
-  path = areg-sdk
-  url = https://github.com/aregtech/areg-sdk.git
-```
-
-Open a *Terminal* or *PowerShell* in your project and run these commands:
-```bash
-git submodule update --init --recursive
-git submodule update --remote --recursive
-```
-
-This creates a `areg-sdk` submodule in the root directory of your `example` project.
-
-### Include build
-
-In the root directory of `example` create or modify `CMakeLists.txt` file to have following:
-```cmake
-# Step 1: Set CMkae version 3.20+
-cmake_minimum_required(VERSION 3.20.0)
-project(example)
-
-# Step 2 (optional): Disable examples and tests, disable change output directory
-option(AREG_ENABLE_OUTPUTS  "Disable outputs"  OFF) # No AREG SDK build outputs
-option(AREG_BUILD_EXAMPLES  "Disable examples" OFF) # No examples build
-option(AREG_BUILD_TESTS     "Disable tests"    OFF) # No unit tests build
-
-# Step 3: Include AREG SDK sources in the build
-set(AREG_SDK_ROOT "${CMAKE_SOURCE_DIR}/areg-sdk")
-include("${AREG_SDK_ROOT}/CMakeLists.txt")
-
-# Step 4: Compile and build your project
-add_executable (example main.cpp)
-target_link_libraries(example PRIVATE areg::areg)
-```
-
-Now your project is ready to be compiled:
-```bash
-cmake -B ./build
-cmake --build ./build
-```
-
-When your project is compiled, you can run `example`:
-```bash
-./build/example
-```
-
-The result is:
-```plaintext
-Hello from AREG SDK!
-```
+---
 
 ## Advanced Integration
 
 ### Advanced CMake Options
 
-In case if you want to use the advantages of AREG SDK settings and CMake functions, you can integrate and use advanced settings in your project by including `areg.cmake`, located in the `<areg-sdk>` root, to your `CMakeLists.txt` build configuration file. Change AREG SDK settings before including `areg.cmake`. For example, if you don't want to compiler the sources with logs or want to compile `aregextend` library with advanced features, you should do following:
+AREG SDK has
+
+The AREG SDK offers flexible build configurations via CMake, allowing users to customize compilation settings, output directories, library types, and additional features for tailored development environments. These options can be adjusted to optimize the AREG SDK binaries for different systems and to control features like testing, logging, and package usage. For the complete list of CMake options, refer to the [CMake Configuration Options for Building AREG SDK](./cmake-config.md) document.
+
+> [!IMPORTANT]
+> Set the settings before including `<areg-sdk>/areg.cmake` file in CMakeLists.txt file or before fetching the sources.
+
+For example, if the size of binary is actual and you want to compile your projects to use AREG Framework advanced features, set these options before `areg.cmake` is included
 ```cmake
 option(AREG_LOGS "Disable logs" OFF)
 option(AREG_EXTENDED "Build extended" ON)
 include(${AREG_SDK_ROOT}/areg.cmake)
 ```
 
-See the list of AREG SDK settings in the [CMake Configuration Options for Building AREG SDK](./cmake-config.md) document.
-
 ### Advanced CMake Functions
-
-When include `areg.cmake` in the project, it automatically includes the `functions.cmake` making AREG SDK CMake functions and macro available in the projects. The `functions.cmake` simplifies building projects based on `areg` library. For example, there is no need anymore to link the target with `areg` library or think about importing functions. The previous example of `CMakeLists.txt` when adding an executable and linking with `areg` library, could be done in one line:
+The `<areg-sdk>/areg.cmake` file refers to the `functions.cmake`, which contains set of CMake functions and macro to simplify build commands:
 ```cmake
 macro_declare_executable(example main.cpp)
 ```
 
-Additionally, it contains a function to generate Service Interface files and including them in the library. For example, if a project would have a Service Interface file named `CoolServices.siml`, it could be used in following way:
+The following script triggers code generator to generate C++ source files from the Service Interface document `CoolServices.siml`. The sources are compiled in a static library `coolservice` to use by other projects:
 ```cmake
-# Step 1: Generate codes from 'CoolService' service interface document and create 'coolservice' static library
 addServiceInterface(coolservice "" CoolService)
-# Create 'cool' executable by compiling 'main.cpp' and linking with 'coolservice' static library
 macro_declare_executable(cool coolservice main.cpp)
 ```
-In this example, on *"Step 1"* we generate files from Service Interface document and automatically include them in the build to compile a static library. On *"Step 2"*, we declare an executable, which is compiled with project sources and linked with the static library of Service Interface.
 
-For the complete list of available AREG SDK functions and macro, see [AREG SDK CMake Functions and Macros](./cmake-functions.md) Wiki document.
+See [AREG SDK CMake Functions and Macros](./cmake-functions.md) document for the list of reusable CMake functions and macro.
+
+---
 
 ## Conclusion
 
-We tried to keep simple to integrate AREG SDK libraries and headers in other projects. Considering the possibility to use CMake options, macro and functions, also considering that on some machines developers may have installed package managing tool like `vcpkg` and on the others machines it could be not installed, the final version of `CMakeLists.txt` to build out example project should be following.
-```
-# Step 1: Declare project
+For integrating AREG SDK, a comprehensive `CMakeLists.txt` might look like this:
+```cmake
+# Step 1: Declare the project
 cmake_minimum_required(VERSION 3.20.0)
 project(example)
 
-# Step 2: Search 'areg' package. If found, ready to use. Otherwise, fetch sources
+# Step 2: Find 'areg' package. If not found, fetch sources.
 find_package(areg CONFIG)
 if (NOT areg_FOUND)
 
     # Step 3 (optional): Disable examples and tests, set binary directory
-    option(AREG_BUILD_EXAMPLES  "Disable examples" OFF) # No examples build
-    option(AREG_BUILD_TESTS     "Disable tests"    OFF) # No unit tests build
-    set(AREG_BUILD_ROOT "${CMAKE_SOURCE_DIR}/product")  # Set the binary build directory
+    option(AREG_BUILD_EXAMPLES "Disable examples" OFF)  # Disable build of examples
+    option(AREG_BUILD_TESTS "Disable tests" OFF)        # Disable build or unit tests
+    set(AREG_BUILD_ROOT "${CMAKE_SOURCE_DIR}/product")  # Set the binary build output directory
 
-    # Step 4: Fetch AREG SDK sources
+    # Step 4: Fetch AREG SDK sources from master branch
     include(FetchContent)
     FetchContent_Declare(
         areg-sdk
@@ -337,6 +292,14 @@ endif()
 # Step 5: include 'areg.cmake' in configuration process
 include("${AREG_SDK_ROOT}/areg.cmake")
 
-# Step 6: Use defined macro to build a project
+# Step 6: Use macro to build the project
 macro_declare_executable(example main.cpp)
 ```
+
+> [!NOTE]
+> In this example, there is no need to link the project with `areg` library, because it is automatically done in the macro.
+
+In this example:
+- we try to find `areg` package
+- if not available, fetch and build sources
+- include `areg.cmake` file to benefit predefined CMake macro and functions, and declare `example` executable.
