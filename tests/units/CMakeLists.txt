@@ -49,4 +49,5 @@ macro_add_unit_test("${AREG_UNIT_TEST_PROJECT}"
     TERingStackTest.cpp
     TESortedLinkedListTest.cpp
     TEStackTest.cpp
+    StringTest.cpp
 )
