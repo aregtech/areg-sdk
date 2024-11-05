@@ -689,17 +689,23 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "example", "example", "{31AB
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wiki", "wiki", "{C33D0DF1-A5DB-4F6E-A526-6AA2B3C31AD3}"
 	ProjectSection(SolutionItems) = preProject
-		docs\wiki\AREG-PACKAGE.md = docs\wiki\AREG-PACKAGE.md
-		docs\wiki\BUILD.md = docs\wiki\BUILD.md
-		docs\wiki\CMAKE-INTEGRATE.md = docs\wiki\CMAKE-INTEGRATE.md
-		docs\wiki\LOGGER.md = docs\wiki\LOGGER.md
-		docs\wiki\MCROUTER.md = docs\wiki\MCROUTER.md
-		docs\wiki\MSVS-BUILD.md = docs\wiki\MSVS-BUILD.md
-		docs\wiki\MSVS-INTEGRATE.md = docs\wiki\MSVS-INTEGRATE.md
+		docs\wiki\areg-package.md = docs\wiki\areg-package.md
+		docs\wiki\build.md = docs\wiki\build.md
+		docs\wiki\cmake-build.md = docs\wiki\cmake-build.md
+		docs\wiki\cmake-config.md = docs\wiki\cmake-config.md
+		docs\wiki\cmake-functions.md = docs\wiki\cmake-functions.md
+		docs\wiki\cmake-integrate.md = docs\wiki\cmake-integrate.md
+		docs\wiki\logger.md = docs\wiki\logger.md
+		docs\wiki\logging-config.md = docs\wiki\logging-config.md
+		docs\wiki\logging-develop.md = docs\wiki\logging-develop.md
+		docs\wiki\logobserver.md = docs\wiki\logobserver.md
+		docs\wiki\mcrouter.md = docs\wiki\mcrouter.md
+		docs\wiki\msvc-build.md = docs\wiki\msvc-build.md
+		docs\wiki\msvc-integrate.md = docs\wiki\msvc-integrate.md
+		docs\wiki\persistence-syntax.md = docs\wiki\persistence-syntax.md
 		docs\wiki\README.md = docs\wiki\README.md
-		docs\wiki\USER-CMAKE.md = docs\wiki\USER-CMAKE.md
-		docs\wiki\VSCODE.md = docs\wiki\VSCODE.md
-		docs\wiki\WSL.md = docs\wiki\WSL.md
+		docs\wiki\vscode.md = docs\wiki\vscode.md
+		docs\wiki\wsl-build.md = docs\wiki\wsl-build.md
 	EndProjectSection
 EndProject
 Global

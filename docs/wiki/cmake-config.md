@@ -2,7 +2,7 @@
 
 ## CMake Configuration Overview
 
-The AREG SDK offers flexible build configurations via CMake, allowing users to customize compilation settings, output directories, library types, and additional features for tailored development environments. These options can be adjusted to optimize the SDK for different systems, such as Linux and Windows, and to control features like testing, logging, and package usage.
+The AREG SDK offers flexible build configurations via CMake, allowing users to customize compilation settings, output directories, library types, and additional features for tailored development environments. These options can be adjusted to optimize the AREG SDK binaries for different systems, such as Linux and Windows, and to control features like testing, logging, and package usage.
 
 > [!IMPORTANT]
 > The configuration options listed above are set in the [user.cmake](./../../conf/cmake/user.cmake) file, enabling both quick setup and precise build control for various project requirements.
